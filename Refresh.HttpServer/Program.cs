@@ -1,5 +1,6 @@
 ﻿using System.Net;
 using System.Text;
+using Refresh.HttpServer.Extensions;
 
 namespace Refresh.HttpServer;
 
@@ -21,11 +22,9 @@ public static class Program
                 {
                     context.Response.AddHeader("Server", "Refresh");
                     context.Response.AddHeader("Content-Type", "text/html");
-
-                    int i = 1;
-                    i--;
+                    
                     context.Response.OutputStream.Write(
-                        Encoding.Default.GetBytes("<html><body><h1>quite possibly</h1></body></html>\n" + 1 / i));
+                        Encoding.Default.GetBytes("<html><body><h1>quite possibly</h1></body></html>\n"));
 
                     context.Response.StatusCode = 200;
                 }
@@ -34,7 +33,12 @@ public static class Program
                     Console.WriteLine(e);
 
                     context.Response.AddHeader("Content-Type", "text/plain");
-                    context.Response.OutputStream.Write(Encoding.Default.GetBytes(e.ToString()));
+                    #if DEBUG
+                    context.Response.WriteString(e.ToString());
+                    #else
+                    context.Response.WriteString("Internal Server Error");
+                    #endif
+                    
                     context.Response.StatusCode = 500;
                     throw;
                 }
