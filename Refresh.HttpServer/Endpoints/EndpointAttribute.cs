@@ -8,28 +8,14 @@ namespace Refresh.HttpServer.Endpoints;
 [MeansImplicitUse]
 public class EndpointAttribute : Attribute
 {
-    public string Route;
-    public Method Method;
-    public ContentType ContentType;
+    public readonly string Route;
+    public readonly Method Method;
+    public readonly ContentType ContentType;
 
-    public EndpointAttribute(string route, Method method, ContentType contentType)
+    public EndpointAttribute(string route, Method method = Method.Get, ContentType contentType = ContentType.Plaintext)
     {
         this.Route = route;
         this.Method = method;
         this.ContentType = contentType;
-    }
-    
-    public EndpointAttribute(string route, Method method)
-    {
-        this.Route = route;
-        this.Method = method;
-        this.ContentType = ContentType.Plaintext;
-    }
-
-    public EndpointAttribute(string route)
-    {
-        this.Route = route;
-        this.Method = Method.Get;
-        this.ContentType = ContentType.Plaintext;
     }
 }
