@@ -1,7 +1,7 @@
 using System.Net;
 using Refresh.HttpServer.Endpoints;
 
-namespace RefreshTests.HttpServer;
+namespace RefreshTests.HttpServer.Endpoints;
 
 public class TestEndpoints : EndpointGroup
 {

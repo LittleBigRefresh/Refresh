@@ -1,5 +1,6 @@
 using System.Net;
 using Refresh.HttpServer;
+using RefreshTests.HttpServer.Endpoints;
 
 namespace RefreshTests.HttpServer.Tests;
 
