@@ -15,6 +15,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Refresh.GameServer", "Refre
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Refresh.Analyzers", "Refresh.Analyzers\Refresh.Analyzers.csproj", "{72DFF709-0D5C-4596-9064-5BCC3E16AD78}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RefreshTests.HttpServerManual", "RefreshTests.HttpServerManual\RefreshTests.HttpServerManual.csproj", "{91A42B0E-53D7-4D84-B162-10EBE79DE3E1}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -40,9 +42,14 @@ Global
 		{72DFF709-0D5C-4596-9064-5BCC3E16AD78}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{72DFF709-0D5C-4596-9064-5BCC3E16AD78}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{72DFF709-0D5C-4596-9064-5BCC3E16AD78}.Release|Any CPU.Build.0 = Release|Any CPU
+		{91A42B0E-53D7-4D84-B162-10EBE79DE3E1}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{91A42B0E-53D7-4D84-B162-10EBE79DE3E1}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{91A42B0E-53D7-4D84-B162-10EBE79DE3E1}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{91A42B0E-53D7-4D84-B162-10EBE79DE3E1}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
 		{1B045904-2B19-4E33-84E4-A5AEAEFB552D} = {231DC669-E0FA-4941-8D23-7D0233810E52}
 		{622EB919-5FD2-45FE-B006-4EE5C7849FDF} = {C508722A-5A90-4CFA-A773-011AE76B9896}
+		{91A42B0E-53D7-4D84-B162-10EBE79DE3E1} = {231DC669-E0FA-4941-8D23-7D0233810E52}
 	EndGlobalSection
 EndGlobal

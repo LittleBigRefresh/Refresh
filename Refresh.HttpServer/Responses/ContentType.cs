@@ -7,35 +7,47 @@ namespace Refresh.HttpServer.Responses;
 [SuppressMessage("ReSharper", "UnusedMember.Global")]
 public enum ContentType
 {
-    [ContentTypeName("text/html")] Html,
-    [ContentTypeName("text/plain")] Plaintext,
-    [ContentTypeName("text/xml")] Xml,
-    [ContentTypeName("text/json")] Json,
+    [ContentType("text/html", false)] Html,
+    [ContentType("text/plain", false)] Plaintext,
+    [ContentType("text/xml", true)] Xml,
+    [ContentType("text/json", true)] Json,
 }
 
 [AttributeUsage(AttributeTargets.Field)]
-internal class ContentTypeNameAttribute : Attribute
+internal class ContentTypeAttribute : Attribute
 {
     internal string Name { get; }
+    internal bool IsSerializable { get; }
 
-    internal ContentTypeNameAttribute(string name)
+    internal ContentTypeAttribute(string name, bool isSerializable)
     {
         this.Name = name;
+        this.IsSerializable = isSerializable;
     }
 }
 
 internal static class ContentTypeExtensions
 {
-    internal static string GetName(this ContentType contentType)
+    private static ContentTypeAttribute GetAttribute(ContentType contentType)
     {
         Type type = typeof(ContentType);
         
         MemberInfo? memberInfo = type.GetMember(contentType.ToString()).FirstOrDefault();
         Debug.Assert(memberInfo != null);
         
-        ContentTypeNameAttribute? attribute = memberInfo.GetCustomAttribute<ContentTypeNameAttribute>();
+        ContentTypeAttribute? attribute = memberInfo.GetCustomAttribute<ContentTypeAttribute>();
         Debug.Assert(attribute != null);
 
-        return attribute.Name;
+        return attribute;
+    }
+    
+    internal static string GetName(this ContentType contentType)
+    {
+        return GetAttribute(contentType).Name;
+    }
+    
+    internal static bool IsSerializable(this ContentType contentType)
+    {
+        return GetAttribute(contentType).IsSerializable;
     }
 }

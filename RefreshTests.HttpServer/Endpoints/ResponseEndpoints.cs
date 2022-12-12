@@ -1,6 +1,7 @@
 using System.Net;
 using Refresh.HttpServer.Endpoints;
 using Refresh.HttpServer.Responses;
+using RefreshTests.HttpServer.Tests;
 
 namespace RefreshTests.HttpServer.Endpoints;
 
@@ -22,5 +23,11 @@ public class ResponseEndpoints : EndpointGroup
     public Response ResponseObjectWithCode(HttpListenerContext context)
     {
         return new Response("works", ContentType.Plaintext, HttpStatusCode.Accepted); // random code lol
+    }
+
+    [Endpoint("/response/serializedXml", Method.Get, ContentType.Xml)]
+    public ResponseSerializationObject SerializedXml(HttpListenerContext context)
+    {
+        return new ResponseSerializationObject();
     }
 }
