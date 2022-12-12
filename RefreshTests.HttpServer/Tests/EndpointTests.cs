@@ -13,13 +13,13 @@ public class EndpointTests : ServerDependentTest
         HttpResponseMessage msg = client.Send(new HttpRequestMessage(HttpMethod.Get, "/"));
         Assert.That(msg.StatusCode, Is.EqualTo(HttpStatusCode.NotFound));
         
-        server.AddEndpoint<TestEndpoint>();
+        server.AddEndpointGroup<TestEndpoints>();
         
         msg = client.Send(new HttpRequestMessage(HttpMethod.Get, "/"));
         Assert.Multiple(async () =>
         {
             Assert.That(msg.StatusCode, Is.EqualTo(HttpStatusCode.OK));
-            Assert.That(await msg.Content.ReadAsStringAsync(), Is.EqualTo(TestEndpoint.TestString));
+            Assert.That(await msg.Content.ReadAsStringAsync(), Is.EqualTo(TestEndpoints.TestString));
         });
     }
 

@@ -1,6 +1,7 @@
 using System.Diagnostics;
 using System.Net;
 using System.Reflection;
+using JetBrains.Annotations;
 using NotEnoughLogs;
 using NotEnoughLogs.Loggers;
 using Refresh.HttpServer.Endpoints;
@@ -12,7 +13,7 @@ namespace Refresh.HttpServer;
 public class RefreshHttpServer
 {
     private readonly HttpListener _listener;
-    private readonly List<Endpoint> _endpoints = new();
+    private readonly List<EndpointGroup> _endpoints = new();
     private readonly LoggerContainer<HttpContext> _logger;
 
     public RefreshHttpServer(params string[] listenEndpoints)
@@ -51,7 +52,37 @@ public class RefreshHttpServer
         }
     }
 
-    public void HandleRequest(HttpListenerContext context)
+    [Pure]
+    private Response? InvokeEndpointByRequest(HttpListenerContext context)
+    {
+        foreach (EndpointGroup group in this._endpoints)
+        {
+            foreach (MethodInfo method in group.GetType().GetMethods())
+            {
+                EndpointAttribute? attribute = method.GetCustomAttribute<EndpointAttribute>();
+                if(attribute == null) continue;
+
+                // TODO: check http method
+                if (attribute.Route != context.Request.Url!.AbsolutePath) continue;
+                
+                object? val = method.Invoke(group, new object?[] { context });
+                
+                switch (val)
+                {
+                    case null:
+                        return new Response(Array.Empty<byte>(), attribute.ContentType, HttpStatusCode.NoContent);
+                    case Response response:
+                        return response;
+                    default:
+                        return new Response(val, attribute.ContentType);
+                }
+            }
+        }
+
+        return null;
+    }
+
+    private void HandleRequest(HttpListenerContext context)
     {
         Stopwatch requestStopwatch = new();
         requestStopwatch.Start();
@@ -60,11 +91,9 @@ public class RefreshHttpServer
         {
             context.Response.AddHeader("Server", "Refresh");
 
-            string? path = context.Request.Url?.AbsolutePath;
+            string path = context.Request.Url!.AbsolutePath;
 
-            Response? resp = this._endpoints
-                .FirstOrDefault(d => d.Route == path)?
-                .GetResponse(context);
+            Response? resp = this.InvokeEndpointByRequest(context);
 
             if (resp == null)
             {
@@ -117,23 +146,23 @@ public class RefreshHttpServer
         }
     }
     
-    private void AddEndpoint(Type type)
+    private void AddEndpointGroup(Type type)
     {
-        Endpoint? doc = (Endpoint?)Activator.CreateInstance(type);
+        EndpointGroup? doc = (EndpointGroup?)Activator.CreateInstance(type);
         Debug.Assert(doc != null);
         
         this._endpoints.Add(doc);
     }
 
-    public void AddEndpoint<TDoc>() where TDoc : Endpoint => this.AddEndpoint(typeof(TDoc));
+    public void AddEndpointGroup<TDoc>() where TDoc : EndpointGroup => this.AddEndpointGroup(typeof(TDoc));
 
     public void DiscoverEndpointsFromAssembly(Assembly assembly)
     {
         List<Type> types = assembly
             .GetTypes()
-            .Where(t => !t.IsAbstract && t.IsSubclassOf(typeof(Endpoint)))
+            .Where(t => !t.IsAbstract && t.IsSubclassOf(typeof(EndpointGroup)))
             .ToList();
 
-        foreach (Type type in types) this.AddEndpoint(type);
+        foreach (Type type in types) this.AddEndpointGroup(type);
     }
 }
