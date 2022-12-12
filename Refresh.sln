@@ -7,8 +7,6 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Refresh.HttpServer", "Refre
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Server Implementations", "Server Implementations", "{C508722A-5A90-4CFA-A773-011AE76B9896}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Refresh.TestServer", "Refresh.TestServer\Refresh.TestServer.csproj", "{ADB79C75-9E0E-4506-BB7A-487DE25A3916}"
-EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Tests", "Tests", "{231DC669-E0FA-4941-8D23-7D0233810E52}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RefreshTests.HttpServer", "RefreshTests.HttpServer\RefreshTests.HttpServer.csproj", "{1B045904-2B19-4E33-84E4-A5AEAEFB552D}"
@@ -26,17 +24,12 @@ Global
 		{FE688114-A9A5-46A6-A55F-FB4F8DE314BA}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{FE688114-A9A5-46A6-A55F-FB4F8DE314BA}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{FE688114-A9A5-46A6-A55F-FB4F8DE314BA}.Release|Any CPU.Build.0 = Release|Any CPU
-		{ADB79C75-9E0E-4506-BB7A-487DE25A3916}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{ADB79C75-9E0E-4506-BB7A-487DE25A3916}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{ADB79C75-9E0E-4506-BB7A-487DE25A3916}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{ADB79C75-9E0E-4506-BB7A-487DE25A3916}.Release|Any CPU.Build.0 = Release|Any CPU
 		{1B045904-2B19-4E33-84E4-A5AEAEFB552D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{1B045904-2B19-4E33-84E4-A5AEAEFB552D}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{1B045904-2B19-4E33-84E4-A5AEAEFB552D}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{1B045904-2B19-4E33-84E4-A5AEAEFB552D}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
-		{ADB79C75-9E0E-4506-BB7A-487DE25A3916} = {C508722A-5A90-4CFA-A773-011AE76B9896}
 		{1B045904-2B19-4E33-84E4-A5AEAEFB552D} = {231DC669-E0FA-4941-8D23-7D0233810E52}
 	EndGlobalSection
 EndGlobal
