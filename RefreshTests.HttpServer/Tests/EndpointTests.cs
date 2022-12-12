@@ -1,0 +1,40 @@
+using System.Net;
+using System.Net.NetworkInformation;
+using JetBrains.Annotations;
+using Refresh.HttpServer;
+
+namespace RefreshTests.HttpServer.Tests;
+
+public class EndpointTests : ServerDependentTest
+{
+    [Test]
+    public void ReturnsEndpoint()
+    {
+        (RefreshHttpServer? server, HttpClient? client) = this.Setup();
+        
+        HttpResponseMessage msg = client.Send(new HttpRequestMessage(HttpMethod.Get, "/"));
+        Assert.That(msg.StatusCode, Is.EqualTo(HttpStatusCode.NotFound));
+        
+        server.AddEndpoint<TestEndpoint>();
+        
+        msg = client.Send(new HttpRequestMessage(HttpMethod.Get, "/"));
+        Assert.Multiple(async () =>
+        {
+            Assert.That(msg.StatusCode, Is.EqualTo(HttpStatusCode.OK));
+            Assert.That(await msg.Content.ReadAsStringAsync(), Is.EqualTo(TestEndpoint.TestString));
+        });
+    }
+
+    [Test]
+    public void ReturnsNotFound()
+    {
+        (RefreshHttpServer? _, HttpClient? client) = this.Setup();
+        
+        HttpResponseMessage msg = client.Send(new HttpRequestMessage(HttpMethod.Get, "/"));
+        Assert.Multiple(async () =>
+        {
+            Assert.That(await msg.Content.ReadAsStringAsync(), Is.EqualTo("Not found: /"));
+            Assert.That(msg.StatusCode, Is.EqualTo(HttpStatusCode.NotFound));
+        });
+    }
+}
