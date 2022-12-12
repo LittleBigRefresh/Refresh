@@ -8,7 +8,7 @@ public class TestEndpoints : EndpointGroup
 {
     public const string TestString = "Test";
 
-    [Endpoint("/", Method.Get, ContentType.Plaintext)]
+    [Endpoint("/")]
     public string Test(HttpListenerContext context)
     {
         return TestString;

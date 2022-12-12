@@ -13,6 +13,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RefreshTests.HttpServer", "
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Refresh.GameServer", "Refresh.GameServer\Refresh.GameServer.csproj", "{622EB919-5FD2-45FE-B006-4EE5C7849FDF}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Refresh.Analyzers", "Refresh.Analyzers\Refresh.Analyzers.csproj", "{72DFF709-0D5C-4596-9064-5BCC3E16AD78}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -34,6 +36,10 @@ Global
 		{622EB919-5FD2-45FE-B006-4EE5C7849FDF}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{622EB919-5FD2-45FE-B006-4EE5C7849FDF}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{622EB919-5FD2-45FE-B006-4EE5C7849FDF}.Release|Any CPU.Build.0 = Release|Any CPU
+		{72DFF709-0D5C-4596-9064-5BCC3E16AD78}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{72DFF709-0D5C-4596-9064-5BCC3E16AD78}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{72DFF709-0D5C-4596-9064-5BCC3E16AD78}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{72DFF709-0D5C-4596-9064-5BCC3E16AD78}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
 		{1B045904-2B19-4E33-84E4-A5AEAEFB552D} = {231DC669-E0FA-4941-8D23-7D0233810E52}
