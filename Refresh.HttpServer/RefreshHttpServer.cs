@@ -20,23 +20,29 @@ public class RefreshHttpServer
             this._listener.Prefixes.Add(endpoint.ToString());
     }
 
-    public void Start() => this.StartAsync().Wait();
-    public async Task StartAsync()
+    public void Start()
     {
         this._listener.Start();
+        Task.Factory.StartNew(async () => await this.Block());
+    }
+    
+    public async Task StartAndBlockAsync()
+    {
+        this._listener.Start();
+        await this.Block();
+    }
 
-        while(true)
+    private async Task Block()
+    {
+        while (true)
         {
             HttpListenerContext context = await this._listener.GetContextAsync();
 
-            await Task.Factory.StartNew(() =>
-            {
-                HandleRequest(context);
-            });
+            await Task.Factory.StartNew(() => { this.HandleRequest(context); });
         }
     }
 
-    private void HandleRequest(HttpListenerContext context)
+    public void HandleRequest(HttpListenerContext context)
     {
         try
         {
@@ -51,14 +57,14 @@ public class RefreshHttpServer
             if (resp == null)
             {
                 context.Response.AddHeader("Content-Type", ContentType.Plaintext.GetName());
+                context.Response.StatusCode = (int)HttpStatusCode.NotFound;
                 context.Response.WriteString("Not found: " + path);
-                context.Response.StatusCode = 404;
             }
             else
             {
                 context.Response.AddHeader("Content-Type", resp.Value.ContentType.GetName());
-                context.Response.OutputStream.Write(resp.Value.Data);
                 context.Response.StatusCode = (int)resp.Value.StatusCode;
+                context.Response.OutputStream.Write(resp.Value.Data);
             }
         }
         catch (Exception e)
@@ -66,13 +72,13 @@ public class RefreshHttpServer
             Console.WriteLine(e);
 
             context.Response.AddHeader("Content-Type", ContentType.Plaintext.GetName());
+            context.Response.StatusCode = 500;
+            
 #if DEBUG
             context.Response.WriteString(e.ToString());
 #else
             context.Response.WriteString("Internal Server Error");
 #endif
-
-            context.Response.StatusCode = 500;
             throw;
         }
         finally
