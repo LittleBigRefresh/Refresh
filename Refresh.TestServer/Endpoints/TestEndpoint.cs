@@ -1,11 +1,12 @@
 using System.Net;
+using Refresh.HttpServer.Endpoints;
 using Refresh.HttpServer.Responses;
 
-namespace Refresh.HttpServer.Documents;
+namespace Refresh.TestServer.Endpoints;
 
-public class TestDocument : Document
+public class TestEndpoint : Endpoint
 {
-    public override string Name => "Test Document";
+    public override string Route => "/";
     public override Response GetResponse(HttpListenerContext context)
     {
         return new Response("test", ContentType.Plaintext);

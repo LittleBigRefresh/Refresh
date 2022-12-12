@@ -1,5 +1,7 @@
+using System.Diagnostics;
 using System.Net;
-using Refresh.HttpServer.Documents;
+using System.Reflection;
+using Refresh.HttpServer.Endpoints;
 using Refresh.HttpServer.Extensions;
 using Refresh.HttpServer.Responses;
 
@@ -8,6 +10,7 @@ namespace Refresh.HttpServer;
 public class RefreshHttpServer
 {
     private readonly HttpListener _listener;
+    private readonly List<Endpoint> _endpoints = new();
     
     public RefreshHttpServer(params Uri[] listenEndpoints)
     {
@@ -33,18 +36,30 @@ public class RefreshHttpServer
         }
     }
 
-    private static void HandleRequest(HttpListenerContext context)
+    private void HandleRequest(HttpListenerContext context)
     {
         try
         {
             context.Response.AddHeader("Server", "Refresh");
 
-            TestDocument document = new();
-            Response resp = document.GetResponse(context);
+            string? path = context.Request.Url?.AbsolutePath;
+            
+            Response? resp = this._endpoints
+                .FirstOrDefault(d => d.Route == path)?
+                .GetResponse(context);
 
-            context.Response.AddHeader("Content-Type", resp.ContentType.GetName());
-            context.Response.OutputStream.Write(resp.Data);
-            context.Response.StatusCode = (int)resp.StatusCode;
+            if (resp == null)
+            {
+                context.Response.AddHeader("Content-Type", ContentType.Plaintext.GetName());
+                context.Response.WriteString("Not found: " + path);
+                context.Response.StatusCode = 404;
+            }
+            else
+            {
+                context.Response.AddHeader("Content-Type", resp.Value.ContentType.GetName());
+                context.Response.OutputStream.Write(resp.Value.Data);
+                context.Response.StatusCode = (int)resp.Value.StatusCode;
+            }
         }
         catch (Exception e)
         {
@@ -64,5 +79,19 @@ public class RefreshHttpServer
         {
             context.Response.Close();
         }
+    }
+
+    public void AddEndpoint<TDoc>() where TDoc : Endpoint
+    {
+        Type type = typeof(TDoc);
+        Endpoint? doc = (Endpoint?)Activator.CreateInstance(type);
+        Debug.Assert(doc != null);
+        
+        this._endpoints.Add(doc);
+    }
+
+    public void DiscoverEndpointsFromAssembly(Assembly assembly)
+    {
+        throw new NotImplementedException();
     }
 }
