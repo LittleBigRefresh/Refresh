@@ -1,6 +1,4 @@
 using System.Net;
-using System.Net.NetworkInformation;
-using JetBrains.Annotations;
 using Refresh.HttpServer;
 
 namespace RefreshTests.HttpServer.Tests;
