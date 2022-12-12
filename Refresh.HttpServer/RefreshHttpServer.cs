@@ -1,6 +1,8 @@
 using System.Diagnostics;
 using System.Net;
 using System.Reflection;
+using NotEnoughLogs;
+using NotEnoughLogs.Loggers;
 using Refresh.HttpServer.Endpoints;
 using Refresh.HttpServer.Extensions;
 using Refresh.HttpServer.Responses;
@@ -11,13 +13,20 @@ public class RefreshHttpServer
 {
     private readonly HttpListener _listener;
     private readonly List<Endpoint> _endpoints = new();
-    
-    public RefreshHttpServer(params Uri[] listenEndpoints)
-    {
-        this._listener = new HttpListener();
+    private readonly LoggerContainer<HttpContext> _logger;
 
-        foreach (Uri endpoint in listenEndpoints) 
-            this._listener.Prefixes.Add(endpoint.ToString());
+    public RefreshHttpServer(params string[] listenEndpoints)
+    {
+        this._logger = new LoggerContainer<HttpContext>();
+        this._logger.RegisterLogger(new ConsoleLogger());
+
+        this._listener = new HttpListener();
+        this._listener.IgnoreWriteExceptions = true;
+        foreach (string endpoint in listenEndpoints)
+        {
+            this._logger.LogInfo(HttpContext.Startup, "Listening at URI " + endpoint);
+            this._listener.Prefixes.Add(endpoint);
+        }
     }
 
     public void Start()
@@ -44,12 +53,15 @@ public class RefreshHttpServer
 
     public void HandleRequest(HttpListenerContext context)
     {
+        Stopwatch requestStopwatch = new();
+        requestStopwatch.Start();
+        
         try
         {
             context.Response.AddHeader("Server", "Refresh");
 
             string? path = context.Request.Url?.AbsolutePath;
-            
+
             Response? resp = this._endpoints
                 .FirstOrDefault(d => d.Route == path)?
                 .GetResponse(context);
@@ -71,19 +83,37 @@ public class RefreshHttpServer
         {
             Console.WriteLine(e);
 
-            context.Response.AddHeader("Content-Type", ContentType.Plaintext.GetName());
-            context.Response.StatusCode = (int)HttpStatusCode.InternalServerError;
-            
+            try
+            {
+                context.Response.AddHeader("Content-Type", ContentType.Plaintext.GetName());
+                context.Response.StatusCode = (int)HttpStatusCode.InternalServerError;
+
 #if DEBUG
-            context.Response.WriteString(e.ToString());
+                context.Response.WriteString(e.ToString());
 #else
-            context.Response.WriteString("Internal Server Error");
+                context.Response.WriteString("Internal Server Error");
 #endif
-            throw;
+            }
+            catch
+            {
+                // ignored
+            }
         }
         finally
         {
-            context.Response.Close();
+            try
+            {
+                requestStopwatch.Stop();
+
+                this._logger.LogInfo(HttpContext.Request, $"Served request to {context.Request.RemoteEndPoint}: " +
+                                                          $"{context.Response.StatusCode} on '{context.Request.Url?.AbsolutePath}' " +
+                                                          $"({requestStopwatch.ElapsedMilliseconds}ms)");
+                context.Response.Close();
+            }
+            catch
+            {
+                // ignored
+            }
         }
     }
     
@@ -99,7 +129,10 @@ public class RefreshHttpServer
 
     public void DiscoverEndpointsFromAssembly(Assembly assembly)
     {
-        List<Type> types = assembly.GetTypes().Where(t => t.IsSubclassOf(typeof(Endpoint))).ToList();
+        List<Type> types = assembly
+            .GetTypes()
+            .Where(t => !t.IsAbstract && t.IsSubclassOf(typeof(Endpoint)))
+            .ToList();
 
         foreach (Type type in types) this.AddEndpoint(type);
     }

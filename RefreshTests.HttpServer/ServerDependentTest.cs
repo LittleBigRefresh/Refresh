@@ -30,7 +30,7 @@ public class ServerDependentTest
         Uri uri = new($"http://127.0.0.1:{_lowestPort}/");
         _lowestPort++;
 
-        RefreshHttpServer server = new(uri);
+        RefreshHttpServer server = new(uri.ToString());
         server.Start();
 
         HttpClient client = new();

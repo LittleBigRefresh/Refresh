@@ -9,6 +9,8 @@ public enum ContentType
 {
     [ContentTypeName("text/html")] Html,
     [ContentTypeName("text/plain")] Plaintext,
+    [ContentTypeName("text/xml")] Xml,
+    [ContentTypeName("text/json")] Json,
 }
 
 [AttributeUsage(AttributeTargets.Field)]
