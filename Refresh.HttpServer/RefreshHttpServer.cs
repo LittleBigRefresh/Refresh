@@ -86,18 +86,21 @@ public class RefreshHttpServer
             context.Response.Close();
         }
     }
-
-    public void AddEndpoint<TDoc>() where TDoc : Endpoint
+    
+    private void AddEndpoint(Type type)
     {
-        Type type = typeof(TDoc);
         Endpoint? doc = (Endpoint?)Activator.CreateInstance(type);
         Debug.Assert(doc != null);
         
         this._endpoints.Add(doc);
     }
 
+    public void AddEndpoint<TDoc>() where TDoc : Endpoint => this.AddEndpoint(typeof(TDoc));
+
     public void DiscoverEndpointsFromAssembly(Assembly assembly)
     {
-        throw new NotImplementedException();
+        List<Type> types = assembly.GetTypes().Where(t => t.IsSubclassOf(typeof(Endpoint))).ToList();
+
+        foreach (Type type in types) this.AddEndpoint(type);
     }
 }
