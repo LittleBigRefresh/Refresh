@@ -76,7 +76,6 @@ public class RouteAnalyzer : DiagnosticAnalyzer
 
         if (!namedType.BaseType?.Name.Contains("EndpointGroup") ?? true)
         {
-            context.ReportDiagnostic(Diagnostic.Create(RouteInInvalidClassRule, Location.None));
             foreach (Location location in method.Locations)
             {
                 context.ReportDiagnostic(Diagnostic.Create(RouteInInvalidClassRule, location));
