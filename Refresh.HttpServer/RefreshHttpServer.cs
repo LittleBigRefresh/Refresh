@@ -102,9 +102,8 @@ public class RefreshHttpServer
                 
                 foreach (EndpointAttribute attribute in attributes)
                 {
-                    // TODO: check http method
-                    if (attribute.Route != context.Request.Url!.AbsolutePath) continue;
-                    
+                    if(!attribute.UriMatchesRoute(context.Request.Url, out Dictionary<string, string> parameters)) continue;
+
                     // Build list to invoke endpoint method with
                     List<object?> invokeList = new() { 
                         new RequestContext // 1st argument is always the request context. This is fact, and is backed by an analyzer.
@@ -117,8 +116,10 @@ public class RefreshHttpServer
                     IDatabaseContext? dbCtx = null;
                     
                     // Next, lets iterate through the method's arguments and add some based on what we find.
-                    foreach (Type paramType in method.GetParameters().Select(p => p.ParameterType).Skip(1))
+                    foreach (ParameterInfo param in method.GetParameters().Skip(1))
                     {
+                        Type paramType = param.ParameterType;
+                        
                         if (paramType.IsAssignableTo(typeof(IUser)))
                         {
                             // Users will always be non-null at this point. Once again, this is backed by an analyzer.
@@ -129,6 +130,10 @@ public class RefreshHttpServer
                         {
                             // Pass in a database context if the endpoint needs one.
                             invokeList.Add(dbCtx = this._databaseProvider.GetContext());
+                        }
+                        else if (paramType == typeof(string))
+                        {
+                            invokeList.Add(parameters!.GetValueOrDefault(param.Name));
                         }
                     }
 
@@ -205,7 +210,7 @@ public class RefreshHttpServer
                 requestStopwatch.Stop();
 
                 this._logger.LogInfo(RefreshContext.Request, $"Served request to {context.Request.RemoteEndPoint}: " +
-                                                          $"{context.Response.StatusCode} on '{context.Request.Url?.AbsolutePath}' " +
+                                                          $"{context.Response.StatusCode} on '{context.Request.Url?.PathAndQuery}' " +
                                                           $"({requestStopwatch.ElapsedMilliseconds}ms)");
                 context.Response.Close();
             }
