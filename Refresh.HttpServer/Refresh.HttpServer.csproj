@@ -4,7 +4,6 @@
     <TargetFramework>net7.0</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
-    <IncludeAssets>runtime; build; native; contentfiles; analyzers</IncludeAssets>
   </PropertyGroup>
 
   <ItemGroup>

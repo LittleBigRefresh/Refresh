@@ -5,6 +5,7 @@
         <ImplicitUsings>enable</ImplicitUsings>
         <Nullable>enable</Nullable>
         <LangVersion>10</LangVersion>
+        <IncludeAssets>runtime; build; native; contentfiles; analyzers</IncludeAssets>
     </PropertyGroup>
 
     <ItemGroup>
