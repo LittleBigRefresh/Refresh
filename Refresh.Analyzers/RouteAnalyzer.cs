@@ -27,21 +27,30 @@ public class RouteAnalyzer : DiagnosticAnalyzer
         DiagnosticSeverity.Error,
         true,
         "This endpoint will be inaccessible due to invalid characters. All characters in the route must be within ASCII.");
+    
+    private static readonly DiagnosticDescriptor RouteInInvalidClassRule = new("RFSH003",
+        "Endpoint outside of EndpointGroup",
+        "Endpoint outside of EndpointGroup",
+        "Routing",
+        DiagnosticSeverity.Error,
+        true,
+        "In order for endpoints to be detected, they must first be in an EndpointGroup. Your class must extend this class.");
 
-    public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics => ImmutableArray.Create(EmptyRouteRule, InvalidRouteRule);
+    public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics => ImmutableArray.Create(EmptyRouteRule, InvalidRouteRule, RouteInInvalidClassRule);
 
     public override void Initialize(AnalysisContext context)
     {
         context.ConfigureGeneratedCodeAnalysis(GeneratedCodeAnalysisFlags.None);
         
         context.EnableConcurrentExecution();
-        context.RegisterSyntaxNodeAction(Analyze, SyntaxKind.Attribute);
+        context.RegisterSyntaxNodeAction(AnalyzeSyntax, SyntaxKind.Attribute);
+        context.RegisterSymbolAction(AnalyzeSymbol, SymbolKind.Method);
     }
 
-    private static void Analyze(SyntaxNodeAnalysisContext context)
+    private static void AnalyzeSyntax(SyntaxNodeAnalysisContext context)
     {
         AttributeSyntax attribute = (AttributeSyntax)context.Node;
-        if(attribute.Name.ToString() != "Endpoint") return;
+        if(!attribute.Name.ToString().EndsWith("Endpoint")) return;
 
         AttributeArgumentSyntax arg = attribute.ArgumentList!.Arguments[0];
         string text = arg.GetFirstToken().ValueText;
@@ -56,7 +65,23 @@ public class RouteAnalyzer : DiagnosticAnalyzer
         {
             context.ReportDiagnostic(Diagnostic.Create(InvalidRouteRule, arg.GetLocation()));
         }
+    }
 
+    private static void AnalyzeSymbol(SymbolAnalysisContext context)
+    {
+        IMethodSymbol method = (IMethodSymbol)context.Symbol;
+        if (!method.GetAttributes().Any(a => a.AttributeClass?.Name.EndsWith("EndpointAttribute") ?? false)) return;
+
+        INamedTypeSymbol namedType = method.ContainingType;
+
+        if (!namedType.BaseType?.Name.Contains("EndpointGroup") ?? true)
+        {
+            context.ReportDiagnostic(Diagnostic.Create(RouteInInvalidClassRule, Location.None));
+            foreach (Location location in method.Locations)
+            {
+                context.ReportDiagnostic(Diagnostic.Create(RouteInInvalidClassRule, location));
+            }
+        }
     }
 
 }
