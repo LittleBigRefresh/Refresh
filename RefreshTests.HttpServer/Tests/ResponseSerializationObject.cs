@@ -1,4 +1,5 @@
 using System.Xml.Serialization;
+using Newtonsoft.Json;
 
 namespace RefreshTests.HttpServer.Tests;
 
@@ -6,5 +7,6 @@ namespace RefreshTests.HttpServer.Tests;
 public class ResponseSerializationObject
 {
     [XmlElement("value")]
+    [JsonProperty("value")]
     public int Value { get; set; } = 69;
 }

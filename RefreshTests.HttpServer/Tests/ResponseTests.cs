@@ -1,6 +1,7 @@
 using System.Net;
 using System.Text;
 using System.Xml.Serialization;
+using Newtonsoft.Json;
 using Refresh.HttpServer;
 using RefreshTests.HttpServer.Endpoints;
 
@@ -26,14 +27,12 @@ public class ResponseTests : ServerDependentTest
     }
 
     [Test]
-    [TestCase("/response/serializedXml")]
-    // [TestCase("/response/serializedJson")]
-    public async Task CorrectResponseForSerializedObject(string endpoint)
+    public async Task CorrectResponseForSerializedXml()
     {
         (RefreshHttpServer? server, HttpClient? client) = this.Setup();
         server.AddEndpointGroup<ResponseEndpoints>();
         
-        HttpResponseMessage msg = await client.SendAsync(new HttpRequestMessage(HttpMethod.Get, endpoint));
+        HttpResponseMessage msg = await client.SendAsync(new HttpRequestMessage(HttpMethod.Get, "/response/serializedXml"));
         string text = await msg.Content.ReadAsStringAsync();
         
         Assert.That(text, Is.EqualTo("<responseSerializedObject><value>69</value></responseSerializedObject>"));
@@ -42,6 +41,24 @@ public class ResponseTests : ServerDependentTest
         XmlSerializer serializer = new(typeof(ResponseSerializationObject));
 
         ResponseSerializationObject? obj = (ResponseSerializationObject?)serializer.Deserialize(new MemoryStream(Encoding.Default.GetBytes(text)));
+        Assert.That(obj, Is.Not.Null);
+        Assert.That(obj!.Value, Is.EqualTo(69));
+    }
+    
+    [Test]
+    public async Task CorrectResponseForSerializedJson()
+    {
+        (RefreshHttpServer? server, HttpClient? client) = this.Setup();
+        server.AddEndpointGroup<ResponseEndpoints>();
+        
+        HttpResponseMessage msg = await client.SendAsync(new HttpRequestMessage(HttpMethod.Get, "/response/serializedJson"));
+        string text = await msg.Content.ReadAsStringAsync();
+        
+        Assert.That(text, Is.EqualTo("{\"value\":69}"));
+        
+        // technically we probably dont need to test deserialization but we should anyways
+        ResponseSerializationObject? obj = JsonConvert.DeserializeObject<ResponseSerializationObject>(text);
+        
         Assert.That(obj, Is.Not.Null);
         Assert.That(obj!.Value, Is.EqualTo(69));
     }

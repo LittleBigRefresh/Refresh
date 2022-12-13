@@ -2,6 +2,7 @@ using System.Net;
 using System.Text;
 using System.Xml;
 using System.Xml.Serialization;
+using Newtonsoft.Json;
 
 namespace Refresh.HttpServer.Responses;
 
@@ -14,7 +15,7 @@ public struct Response
         this.ContentType = contentType;
     }
 
-    #region XML Serialization setup
+    #region Serialization setup
     private static readonly XmlWriterSettings WriterSettings = new()
     {
         ConformanceLevel = ConformanceLevel.Document,
@@ -22,6 +23,7 @@ public struct Response
     };
 
     private static readonly XmlSerializerNamespaces Namespaces = new();
+    private static readonly JsonSerializer _jsonSerializer = new();
 
     static Response()
     {
@@ -40,20 +42,28 @@ public struct Response
             return;
         }
 
-        MemoryStream stream = new();
+        using MemoryStream stream = new();
         switch (contentType)
         {
             case ContentType.Html:
             case ContentType.Plaintext:
                 throw new InvalidOperationException();
             case ContentType.Xml:
-                XmlWriter writer = XmlWriter.Create(stream, WriterSettings);
+            {
+                using XmlWriter writer = XmlWriter.Create(stream, WriterSettings);
 
                 XmlSerializer serializer = new(data.GetType());
                 serializer.Serialize(writer, data, Namespaces);
                 break;
+            }
             case ContentType.Json:
-                throw new NotImplementedException();
+            {
+                using StreamWriter sw = new(stream);
+                using JsonWriter writer = new JsonTextWriter(sw);
+                
+                _jsonSerializer.Serialize(writer, data);
+                break;
+            }
             default:
                 throw new ArgumentOutOfRangeException(nameof(contentType), contentType, null);
         }

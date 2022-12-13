@@ -26,7 +26,8 @@ public class ResponseEndpoints : EndpointGroup
     }
 
     [Endpoint("/response/serializedXml", Method.Get, ContentType.Xml)]
-    public ResponseSerializationObject SerializedXml(HttpListenerContext context)
+    [Endpoint("/response/serializedJson", Method.Get, ContentType.Json)]
+    public ResponseSerializationObject SerializedObject(HttpListenerContext context)
     {
         return new ResponseSerializationObject();
     }

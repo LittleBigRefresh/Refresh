@@ -1,15 +1,16 @@
 using System.Net;
 using Refresh.HttpServer.Authentication.Dummy;
 using Refresh.HttpServer.Endpoints;
+using Refresh.HttpServer.Responses;
 
 namespace RefreshTests.HttpServer.Endpoints;
 
 public class AuthenticationEndpoints : EndpointGroup
 {
-    [Endpoint("/auth")]
+    [Endpoint("/auth", Method.Get, ContentType.Json)]
     [RequiresAuthentication]
-    public string Authentication(HttpListenerContext context, DummyUser user)
+    public DummyUser Authentication(HttpListenerContext context, DummyUser user)
     {
-        return "works";
+        return user;
     }
 }

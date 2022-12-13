@@ -1,5 +1,4 @@
 using System.Net;
-using Microsoft.VisualBasic;
 using Refresh.HttpServer;
 using RefreshTests.HttpServer.Endpoints;
 
@@ -18,7 +17,7 @@ public class AuthenticationTests : ServerDependentTest
         Assert.Multiple(async () =>
         {
             Assert.That(msg.StatusCode, Is.EqualTo(HttpStatusCode.OK));
-            Assert.That(await msg.Content.ReadAsStringAsync(), Is.EqualTo("works"));
+            Assert.That(await msg.Content.ReadAsStringAsync(), Is.EqualTo("{\"userId\":1,\"username\":\"Dummy\"}"));
         });
     }
     
