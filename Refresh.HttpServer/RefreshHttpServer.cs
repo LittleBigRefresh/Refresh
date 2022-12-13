@@ -4,6 +4,8 @@ using System.Reflection;
 using JetBrains.Annotations;
 using NotEnoughLogs;
 using NotEnoughLogs.Loggers;
+using Refresh.HttpServer.Authentication;
+using Refresh.HttpServer.Authentication.Dummy;
 using Refresh.HttpServer.Endpoints;
 using Refresh.HttpServer.Extensions;
 using Refresh.HttpServer.Responses;
@@ -15,6 +17,7 @@ public class RefreshHttpServer
     private readonly HttpListener _listener;
     private readonly List<EndpointGroup> _endpoints = new();
     private readonly LoggerContainer<HttpContext> _logger;
+    private IAuthenticationProvider<IUser> _authenticationProvider = new DummyAuthenticationProvider();
 
     public RefreshHttpServer(params string[] listenEndpoints)
     {
@@ -44,6 +47,12 @@ public class RefreshHttpServer
 
     private async Task Block()
     {
+        if (this._authenticationProvider is DummyAuthenticationProvider)
+        {
+            this._logger.LogWarning(HttpContext.Startup, "The server was started with a dummy authentication provider. " +
+                                                         "If your endpoints rely on authentication, users will always have full access.");
+        }
+        
         while (true)
         {
             HttpListenerContext context = await this._listener.GetContextAsync();
@@ -62,10 +71,21 @@ public class RefreshHttpServer
                 EndpointAttribute? attribute = method.GetCustomAttribute<EndpointAttribute>();
                 if(attribute == null) continue;
 
+                IUser? user = null;
+                if (method.GetCustomAttribute<RequiresAuthenticationAttribute>() != null)
+                {
+                    user = this._authenticationProvider.AuthenticateUser(context.Request);
+                    if (user == null)
+                        return new Response(Array.Empty<byte>(), ContentType.Plaintext, HttpStatusCode.Forbidden);
+                }
+
                 // TODO: check http method
                 if (attribute.Route != context.Request.Url!.AbsolutePath) continue;
-                
-                object? val = method.Invoke(group, new object?[] { context });
+
+                List<object?> invokeList = new() { context };
+                if(user != null) invokeList.Add(user);
+
+                object? val = method.Invoke(group, invokeList.ToArray());
                 
                 switch (val)
                 {
@@ -164,5 +184,10 @@ public class RefreshHttpServer
             .ToList();
 
         foreach (Type type in types) this.AddEndpointGroup(type);
+    }
+
+    public void UseAuthenticationProvider(IAuthenticationProvider<IUser> provider)
+    {
+        this._authenticationProvider = provider;
     }
 }
