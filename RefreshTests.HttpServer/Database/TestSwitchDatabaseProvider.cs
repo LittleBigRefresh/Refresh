@@ -1,5 +1,4 @@
 using Refresh.HttpServer.Database;
-using Refresh.HttpServer.Database.Dummy;
 
 namespace RefreshTests.HttpServer.Database;
 

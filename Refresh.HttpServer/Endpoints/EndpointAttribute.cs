@@ -1,9 +1,5 @@
-
-
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
-using System.Text;
-using System.Text.Encodings.Web;
 using System.Web;
 using JetBrains.Annotations;
 using Refresh.HttpServer.Responses;

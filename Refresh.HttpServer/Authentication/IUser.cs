@@ -1,5 +1,3 @@
-using Newtonsoft.Json;
-
 namespace Refresh.HttpServer.Authentication;
 
 #nullable disable
