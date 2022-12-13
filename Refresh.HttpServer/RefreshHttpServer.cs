@@ -6,6 +6,8 @@ using NotEnoughLogs;
 using NotEnoughLogs.Loggers;
 using Refresh.HttpServer.Authentication;
 using Refresh.HttpServer.Authentication.Dummy;
+using Refresh.HttpServer.Database;
+using Refresh.HttpServer.Database.Dummy;
 using Refresh.HttpServer.Endpoints;
 using Refresh.HttpServer.Extensions;
 using Refresh.HttpServer.Responses;
@@ -17,7 +19,9 @@ public class RefreshHttpServer
     private readonly HttpListener _listener;
     private readonly List<EndpointGroup> _endpoints = new();
     private readonly LoggerContainer<RefreshContext> _logger;
+    
     private IAuthenticationProvider<IUser> _authenticationProvider = new DummyAuthenticationProvider();
+    private IDatabaseProvider<IDatabaseContext> _databaseProvider = new DummyDatabaseProvider();
 
     public RefreshHttpServer(params string[] listenEndpoints)
     {
@@ -35,24 +39,40 @@ public class RefreshHttpServer
 
     public void Start()
     {
-        this._listener.Start();
+        this.RunStartupTasks();
         Task.Factory.StartNew(async () => await this.Block());
     }
     
     public async Task StartAndBlockAsync()
     {
-        this._listener.Start();
+        this.RunStartupTasks();
         await this.Block();
+    }
+
+    private void RunStartupTasks()
+    {
+        Stopwatch stopwatch = new();
+        stopwatch.Start();
+        
+        this._logger.LogInfo(RefreshContext.Startup, "Starting up...");
+        if (this._authenticationProvider is DummyAuthenticationProvider)
+        {
+            this._logger.LogWarning(RefreshContext.Startup, "The server was started with a dummy authentication provider. " +
+                                                            "If your endpoints rely on authentication, users will always have full access.");
+        }
+        
+        this._logger.LogDebug(RefreshContext.Startup, "Initializing database provider...");
+        this._databaseProvider.Initialize();
+        
+        this._logger.LogDebug(RefreshContext.Startup, "Starting listener...");
+        this._listener.Start();
+        
+        stopwatch.Stop();
+        this._logger.LogInfo(RefreshContext.Startup, $"Ready to go! Startup tasks took {stopwatch.ElapsedMilliseconds}ms.");
     }
 
     private async Task Block()
     {
-        if (this._authenticationProvider is DummyAuthenticationProvider)
-        {
-            this._logger.LogWarning(RefreshContext.Startup, "The server was started with a dummy authentication provider. " +
-                                                         "If your endpoints rely on authentication, users will always have full access.");
-        }
-        
         while (true)
         {
             HttpListenerContext context = await this._listener.GetContextAsync();
@@ -83,15 +103,30 @@ public class RefreshHttpServer
                 {
                     // TODO: check http method
                     if (attribute.Route != context.Request.Url!.AbsolutePath) continue;
-
+                    
+                    // Build list to invoke endpoint method with
                     List<object?> invokeList = new() { 
-                        new RequestContext
+                        new RequestContext // 1st argument is always the request context. This is fact, and is backed by an analyzer.
                         {
                             Request = context.Request,
                         },
                     };
                     
-                    if(user != null) invokeList.Add(user);
+                    // Next, lets iterate through the method's arguments and add some based on what we find.
+                    foreach (Type paramType in method.GetParameters().Select(p => p.ParameterType).Skip(1))
+                    {
+                        if (paramType.IsAssignableTo(typeof(IUser)))
+                        {
+                            // Users will always be non-null at this point. Once again, this is backed by an analyzer.
+                            Debug.Assert(user != null);
+                            invokeList.Add(user);
+                        }
+                        else if(paramType.IsAssignableTo(typeof(IDatabaseContext)))
+                        {
+                            // Pass in a database context if the endpoint needs one.
+                            invokeList.Add(this._databaseProvider.GetContext());
+                        }
+                    }
 
                     object? val = method.Invoke(group, invokeList.ToArray());
                 
@@ -198,5 +233,10 @@ public class RefreshHttpServer
     public void UseAuthenticationProvider(IAuthenticationProvider<IUser> provider)
     {
         this._authenticationProvider = provider;
+    }
+
+    public void UseDatabaseProvider(IDatabaseProvider<IDatabaseContext> provider)
+    {
+        this._databaseProvider = provider;
     }
 }
