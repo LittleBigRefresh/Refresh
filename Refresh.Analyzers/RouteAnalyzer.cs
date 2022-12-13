@@ -43,13 +43,6 @@ public class RouteAnalyzer : DiagnosticAnalyzer
         "Routing",
         DiagnosticSeverity.Error,
         true);
-    
-    private static readonly DiagnosticDescriptor RoutesRequireAuthenticationArgumentRule = new("RFSH004",
-        "Route requiring authentication must use specify user in second argument",
-        "Route requiring authentication must use specify user in second argument",
-        "Routing",
-        DiagnosticSeverity.Error,
-        true);
 
 
     public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics 
@@ -106,11 +99,8 @@ public class RouteAnalyzer : DiagnosticAnalyzer
             if(param.Type.Name != "RequestContext")
                 method.Locations.ReportDiagnosticsForAll(context, RouteMustUseCorrectContextRule);
 
-            bool hasAuthAttribute = method.GetAttributes()
-                .Any(a => a.AttributeClass?.Name.EndsWith("AuthenticationAttribute") ?? false);
-            
-            if(hasAuthAttribute && method.Parameters.Length < 2)
-                method.Locations.ReportDiagnosticsForAll(context, RoutesRequireAuthenticationArgumentRule);
+            // bool hasAuthAttribute = method.GetAttributes()
+                // .Any(a => a.AttributeClass?.Name.EndsWith("AuthenticationAttribute") ?? false);
         }
     }
 
