@@ -6,8 +6,5 @@ namespace Refresh.HttpServer.Authentication;
 
 public interface IUser
 {
-    [JsonProperty("userId")]
-    public ulong UserId { get; set; }
-    [JsonProperty("username")]
-    public string Username { get; set; }
+
 }

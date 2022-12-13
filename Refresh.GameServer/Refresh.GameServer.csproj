@@ -15,4 +15,8 @@
        </ProjectReference>
     </ItemGroup>
 
+    <ItemGroup>
+      <PackageReference Include="Realm" Version="10.18.0" />
+    </ItemGroup>
+
 </Project>
