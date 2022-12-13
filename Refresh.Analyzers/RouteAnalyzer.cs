@@ -5,6 +5,7 @@ using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.CodeAnalysis.Diagnostics;
+using Refresh.Analyzers.Extensions;
 
 namespace Refresh.Analyzers;
 
@@ -35,8 +36,27 @@ public class RouteAnalyzer : DiagnosticAnalyzer
         DiagnosticSeverity.Error,
         true,
         "In order for endpoints to be detected, they must first be in an EndpointGroup. Your class must extend this class.");
+    
+    private static readonly DiagnosticDescriptor RouteMustUseCorrectContextRule = new("RFSH004",
+        "Route must use RequestContext type in first argument",
+        "Route must use RequestContext type in first argument",
+        "Routing",
+        DiagnosticSeverity.Error,
+        true);
+    
+    private static readonly DiagnosticDescriptor RoutesRequireAuthenticationArgumentRule = new("RFSH004",
+        "Route requiring authentication must use specify user in second argument",
+        "Route requiring authentication must use specify user in second argument",
+        "Routing",
+        DiagnosticSeverity.Error,
+        true);
 
-    public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics => ImmutableArray.Create(EmptyRouteRule, InvalidRouteRule, RouteInInvalidClassRule);
+
+    public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics 
+        => ImmutableArray.Create(EmptyRouteRule,
+            InvalidRouteRule,
+            RouteInInvalidClassRule,
+            RouteMustUseCorrectContextRule);
 
     public override void Initialize(AnalysisContext context)
     {
@@ -76,10 +96,21 @@ public class RouteAnalyzer : DiagnosticAnalyzer
 
         if (!namedType.BaseType?.Name.Contains("EndpointGroup") ?? true)
         {
-            foreach (Location location in method.Locations)
-            {
-                context.ReportDiagnostic(Diagnostic.Create(RouteInInvalidClassRule, location));
-            }
+            method.Locations.ReportDiagnosticsForAll(context, RouteInInvalidClassRule);
+        }
+        
+        if(method.Parameters.Length == 0) method.Locations.ReportDiagnosticsForAll(context, RouteMustUseCorrectContextRule);
+        else
+        {
+            IParameterSymbol param = method.Parameters[0];
+            if(param.Type.Name != "RequestContext")
+                method.Locations.ReportDiagnosticsForAll(context, RouteMustUseCorrectContextRule);
+
+            bool hasAuthAttribute = method.GetAttributes()
+                .Any(a => a.AttributeClass?.Name.EndsWith("AuthenticationAttribute") ?? false);
+            
+            if(hasAuthAttribute && method.Parameters.Length < 2)
+                method.Locations.ReportDiagnosticsForAll(context, RoutesRequireAuthenticationArgumentRule);
         }
     }
 

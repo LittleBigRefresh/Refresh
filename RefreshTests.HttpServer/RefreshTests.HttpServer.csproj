@@ -18,6 +18,10 @@
 
     <ItemGroup>
       <ProjectReference Include="..\Refresh.HttpServer\Refresh.HttpServer.csproj" />
+      <ProjectReference Include="..\Refresh.Analyzers\Refresh.Analyzers.csproj">
+          <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
+          <OutputItemType>Analyzer</OutputItemType>
+      </ProjectReference>
     </ItemGroup>
 
 </Project>

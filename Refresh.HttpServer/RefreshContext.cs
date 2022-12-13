@@ -1,6 +1,6 @@
 namespace Refresh.HttpServer;
 
-public enum HttpContext
+public enum RefreshContext
 {
     Startup,
     Request,

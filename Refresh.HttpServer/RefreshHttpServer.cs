@@ -16,19 +16,19 @@ public class RefreshHttpServer
 {
     private readonly HttpListener _listener;
     private readonly List<EndpointGroup> _endpoints = new();
-    private readonly LoggerContainer<HttpContext> _logger;
+    private readonly LoggerContainer<RefreshContext> _logger;
     private IAuthenticationProvider<IUser> _authenticationProvider = new DummyAuthenticationProvider();
 
     public RefreshHttpServer(params string[] listenEndpoints)
     {
-        this._logger = new LoggerContainer<HttpContext>();
+        this._logger = new LoggerContainer<RefreshContext>();
         this._logger.RegisterLogger(new ConsoleLogger());
 
         this._listener = new HttpListener();
         this._listener.IgnoreWriteExceptions = true;
         foreach (string endpoint in listenEndpoints)
         {
-            this._logger.LogInfo(HttpContext.Startup, "Listening at URI " + endpoint);
+            this._logger.LogInfo(RefreshContext.Startup, "Listening at URI " + endpoint);
             this._listener.Prefixes.Add(endpoint);
         }
     }
@@ -49,7 +49,7 @@ public class RefreshHttpServer
     {
         if (this._authenticationProvider is DummyAuthenticationProvider)
         {
-            this._logger.LogWarning(HttpContext.Startup, "The server was started with a dummy authentication provider. " +
+            this._logger.LogWarning(RefreshContext.Startup, "The server was started with a dummy authentication provider. " +
                                                          "If your endpoints rely on authentication, users will always have full access.");
         }
         
@@ -84,7 +84,13 @@ public class RefreshHttpServer
                     // TODO: check http method
                     if (attribute.Route != context.Request.Url!.AbsolutePath) continue;
 
-                    List<object?> invokeList = new() { context };
+                    List<object?> invokeList = new() { 
+                        new RequestContext
+                        {
+                            Request = context.Request,
+                        },
+                    };
+                    
                     if(user != null) invokeList.Add(user);
 
                     object? val = method.Invoke(group, invokeList.ToArray());
@@ -157,7 +163,7 @@ public class RefreshHttpServer
             {
                 requestStopwatch.Stop();
 
-                this._logger.LogInfo(HttpContext.Request, $"Served request to {context.Request.RemoteEndPoint}: " +
+                this._logger.LogInfo(RefreshContext.Request, $"Served request to {context.Request.RemoteEndPoint}: " +
                                                           $"{context.Response.StatusCode} on '{context.Request.Url?.AbsolutePath}' " +
                                                           $"({requestStopwatch.ElapsedMilliseconds}ms)");
                 context.Response.Close();

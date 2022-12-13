@@ -1,5 +1,5 @@
-using System.Net;
 using System.Xml.Serialization;
+using Refresh.HttpServer;
 using Refresh.HttpServer.Endpoints;
 using Refresh.HttpServer.Responses;
 
@@ -8,7 +8,7 @@ namespace Refresh.GameServer.Endpoints;
 public class AuthenticationEndpoints : EndpointGroup
 {
     [GameEndpoint("login", Method.Post, ContentType.Xml)]
-    public LoginResponse Authenticate(HttpListenerContext context)
+    public LoginResponse Authenticate(RequestContext context)
     {
         return new LoginResponse
         {

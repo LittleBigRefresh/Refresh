@@ -1,4 +1,5 @@
 using System.Net;
+using Refresh.HttpServer;
 using Refresh.HttpServer.Authentication.Dummy;
 using Refresh.HttpServer.Endpoints;
 using Refresh.HttpServer.Responses;
@@ -9,7 +10,7 @@ public class AuthenticationEndpoints : EndpointGroup
 {
     [Endpoint("/auth", Method.Get, ContentType.Json)]
     [RequiresAuthentication]
-    public DummyUser Authentication(HttpListenerContext context, DummyUser user)
+    public DummyUser Authentication(RequestContext context, DummyUser user)
     {
         return user;
     }
