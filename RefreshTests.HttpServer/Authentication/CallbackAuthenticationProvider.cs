@@ -1,5 +1,4 @@
 using System.Net;
-using Refresh.HttpServer.Authentication;
 using Refresh.HttpServer.Authentication.Dummy;
 
 namespace RefreshTests.HttpServer.Authentication;

@@ -1,4 +1,3 @@
-using System.Net;
 using Refresh.HttpServer;
 using Refresh.HttpServer.Endpoints;
 

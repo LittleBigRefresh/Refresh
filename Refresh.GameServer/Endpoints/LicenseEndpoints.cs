@@ -1,6 +1,4 @@
-using System.Net;
 using Refresh.HttpServer;
-using Refresh.HttpServer.Authentication;
 using Refresh.HttpServer.Endpoints;
 using Refresh.HttpServer.Responses;
 

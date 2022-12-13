@@ -1,5 +1,4 @@
-﻿using System.Reflection;
-using Refresh.HttpServer;
+﻿using Refresh.HttpServer;
 using RefreshTests.HttpServer;
 
 RefreshHttpServer server = new("http://+:10060/");
