@@ -1,3 +1,4 @@
+using System.Collections.Immutable;
 using System.Diagnostics;
 using System.Net;
 using System.Reflection;
@@ -88,8 +89,8 @@ public class RefreshHttpServer
         {
             foreach (MethodInfo method in group.GetType().GetMethods())
             {
-                List<EndpointAttribute> attributes = method.GetCustomAttributes<EndpointAttribute>().ToList();
-                if(attributes.Count == 0) continue;
+                ImmutableArray<EndpointAttribute> attributes = method.GetCustomAttributes<EndpointAttribute>().ToImmutableArray();
+                if(attributes.Length == 0) continue;
 
                 IUser? user = null;
                 if (method.GetCustomAttribute<RequiresAuthenticationAttribute>() != null)
@@ -112,6 +113,9 @@ public class RefreshHttpServer
                         },
                     };
                     
+                    // Store database context so we can dispose it later
+                    IDatabaseContext? dbCtx = null;
+                    
                     // Next, lets iterate through the method's arguments and add some based on what we find.
                     foreach (Type paramType in method.GetParameters().Select(p => p.ParameterType).Skip(1))
                     {
@@ -124,12 +128,14 @@ public class RefreshHttpServer
                         else if(paramType.IsAssignableTo(typeof(IDatabaseContext)))
                         {
                             // Pass in a database context if the endpoint needs one.
-                            invokeList.Add(this._databaseProvider.GetContext());
+                            invokeList.Add(dbCtx = this._databaseProvider.GetContext());
                         }
                     }
 
                     object? val = method.Invoke(group, invokeList.ToArray());
+                    dbCtx?.Dispose();
                 
+                    // ReSharper disable once ConvertSwitchStatementToSwitchExpression
                     switch (val)
                     {
                         case null:

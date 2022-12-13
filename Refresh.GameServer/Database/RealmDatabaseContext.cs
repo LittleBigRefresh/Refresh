@@ -5,7 +5,7 @@ using Refresh.HttpServer.Database;
 
 namespace Refresh.GameServer.Database;
 
-public class RealmDatabaseContext : IDatabaseContext, IDisposable
+public class RealmDatabaseContext : IDatabaseContext
 {
     private readonly Realm _realm;
 

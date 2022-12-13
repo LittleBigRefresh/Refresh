@@ -1,6 +1,6 @@
 namespace Refresh.HttpServer.Database;
 
-public interface IDatabaseContext
+public interface IDatabaseContext : IDisposable
 {
     
 }
