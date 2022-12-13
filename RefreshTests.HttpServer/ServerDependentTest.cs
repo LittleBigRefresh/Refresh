@@ -10,7 +10,7 @@ public class ServerDependentTest
     private static int _lowestPort = 32768;
     
     [Pure]
-    private protected (RefreshHttpServer, HttpClient) Setup()
+    private protected (RefreshHttpServer, HttpClient) Setup(bool start = true)
     {
         // find free port to use for listener
         // we should probably find a way to send requests directly to the HttpListener, but this works for now
@@ -31,7 +31,7 @@ public class ServerDependentTest
         _lowestPort++;
 
         RefreshHttpServer server = new(uri.ToString());
-        server.Start();
+        if(start) server.Start();
 
         HttpClient client = new();
         client.BaseAddress = uri;
