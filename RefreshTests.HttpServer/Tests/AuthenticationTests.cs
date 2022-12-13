@@ -10,7 +10,7 @@ public class AuthenticationTests : ServerDependentTest
     [Test]
     public async Task WorksWhenAuthenticated()
     {
-        (RefreshHttpServer? server, HttpClient? client) = this.Setup();
+        (RefreshHttpServer server, HttpClient client) = this.Setup();
         server.AddEndpointGroup<AuthenticationEndpoints>();
         
         HttpResponseMessage msg = await client.SendAsync(new HttpRequestMessage(HttpMethod.Get, "/auth"));
@@ -25,7 +25,7 @@ public class AuthenticationTests : ServerDependentTest
     [Test]
     public async Task FailsWhenNotAuthenticated()
     {
-        (RefreshHttpServer? server, HttpClient? client) = this.Setup();
+        (RefreshHttpServer server, HttpClient client) = this.Setup();
         server.AddEndpointGroup<AuthenticationEndpoints>();
         
         client.DefaultRequestHeaders.Add("dummy-skip-auth", "true");

@@ -15,7 +15,7 @@ public class ResponseTests : ServerDependentTest
     [TestCase("/response/responseObjectWithCode", HttpStatusCode.Accepted)]
     public void CorrectResponseForAllTypes(string endpoint, HttpStatusCode codeToCheckFor)
     {
-        (RefreshHttpServer? server, HttpClient? client) = this.Setup();
+        (RefreshHttpServer server, HttpClient client) = this.Setup();
         server.AddEndpointGroup<ResponseEndpoints>();
         
         HttpResponseMessage msg = client.Send(new HttpRequestMessage(HttpMethod.Get, endpoint));
@@ -29,7 +29,7 @@ public class ResponseTests : ServerDependentTest
     [Test]
     public async Task CorrectResponseForSerializedXml()
     {
-        (RefreshHttpServer? server, HttpClient? client) = this.Setup();
+        (RefreshHttpServer server, HttpClient client) = this.Setup();
         server.AddEndpointGroup<ResponseEndpoints>();
         
         HttpResponseMessage msg = await client.SendAsync(new HttpRequestMessage(HttpMethod.Get, "/response/serializedXml"));
@@ -48,7 +48,7 @@ public class ResponseTests : ServerDependentTest
     [Test]
     public async Task CorrectResponseForSerializedJson()
     {
-        (RefreshHttpServer? server, HttpClient? client) = this.Setup();
+        (RefreshHttpServer server, HttpClient client) = this.Setup();
         server.AddEndpointGroup<ResponseEndpoints>();
         
         HttpResponseMessage msg = await client.SendAsync(new HttpRequestMessage(HttpMethod.Get, "/response/serializedJson"));
