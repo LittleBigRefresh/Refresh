@@ -68,8 +68,8 @@ public class RefreshHttpServer
         {
             foreach (MethodInfo method in group.GetType().GetMethods())
             {
-                EndpointAttribute? attribute = method.GetCustomAttribute<EndpointAttribute>();
-                if(attribute == null) continue;
+                List<EndpointAttribute> attributes = method.GetCustomAttributes<EndpointAttribute>().ToList();
+                if(attributes.Count == 0) continue;
 
                 IUser? user = null;
                 if (method.GetCustomAttribute<RequiresAuthenticationAttribute>() != null)
@@ -78,23 +78,26 @@ public class RefreshHttpServer
                     if (user == null)
                         return new Response(Array.Empty<byte>(), ContentType.Plaintext, HttpStatusCode.Forbidden);
                 }
-
-                // TODO: check http method
-                if (attribute.Route != context.Request.Url!.AbsolutePath) continue;
-
-                List<object?> invokeList = new() { context };
-                if(user != null) invokeList.Add(user);
-
-                object? val = method.Invoke(group, invokeList.ToArray());
                 
-                switch (val)
+                foreach (EndpointAttribute attribute in attributes)
                 {
-                    case null:
-                        return new Response(Array.Empty<byte>(), attribute.ContentType, HttpStatusCode.NoContent);
-                    case Response response:
-                        return response;
-                    default:
-                        return new Response(val, attribute.ContentType);
+                    // TODO: check http method
+                    if (attribute.Route != context.Request.Url!.AbsolutePath) continue;
+
+                    List<object?> invokeList = new() { context };
+                    if(user != null) invokeList.Add(user);
+
+                    object? val = method.Invoke(group, invokeList.ToArray());
+                
+                    switch (val)
+                    {
+                        case null:
+                            return new Response(Array.Empty<byte>(), attribute.ContentType, HttpStatusCode.NoContent);
+                        case Response response:
+                            return response;
+                        default:
+                            return new Response(val, attribute.ContentType);
+                    }
                 }
             }
         }

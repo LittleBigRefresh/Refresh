@@ -36,4 +36,25 @@ public class EndpointTests : ServerDependentTest
             Assert.That(msg.StatusCode, Is.EqualTo(HttpStatusCode.NotFound));
         });
     }
+    
+    [Test]
+    public void MultipleEndpointAttributesWork()
+    {
+        (RefreshHttpServer? server, HttpClient? client) = this.Setup();
+        server.AddEndpointGroup<MultipleEndpointsTest>();
+        
+        HttpResponseMessage msg = client.Send(new HttpRequestMessage(HttpMethod.Get, "/a"));
+        Assert.Multiple(async () =>
+        {
+            Assert.That(msg.StatusCode, Is.EqualTo(HttpStatusCode.OK));
+            Assert.That(await msg.Content.ReadAsStringAsync(), Is.EqualTo("works"));
+        });
+        
+        msg = client.Send(new HttpRequestMessage(HttpMethod.Get, "/b"));
+        Assert.Multiple(async () =>
+        {
+            Assert.That(msg.StatusCode, Is.EqualTo(HttpStatusCode.OK));
+            Assert.That(await msg.Content.ReadAsStringAsync(), Is.EqualTo("works"));
+        });
+    }
 }

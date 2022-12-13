@@ -6,6 +6,7 @@ using Refresh.HttpServer.Responses;
 namespace Refresh.HttpServer.Endpoints;
 
 [MeansImplicitUse]
+[AttributeUsage(AttributeTargets.Method, AllowMultiple = true)]
 public class EndpointAttribute : Attribute
 {
     public readonly string Route;
