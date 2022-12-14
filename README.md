@@ -2,7 +2,9 @@
 
 A work-in-progress second-generation custom server for LittleBigPlanet that focuses on code quality and reliability.
 
-![icon](https://github.com/LittleBigRefresh/Branding/blob/main/icons/refresh_512x.png)
+<p align="center">
+  <img width="300" src="https://github.com/LittleBigRefresh/Branding/blob/main/icons/refresh_transparent_512x.png">
+</p>
 
 # Building and running
 
