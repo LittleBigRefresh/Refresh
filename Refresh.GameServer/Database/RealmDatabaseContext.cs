@@ -16,6 +16,7 @@ public class RealmDatabaseContext : IDatabaseContext
 
     public void Dispose()
     {
+        this._realm.Refresh();
         this._realm.Dispose();
     }
 

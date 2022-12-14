@@ -78,12 +78,16 @@ public class RefreshHttpServer
         {
             HttpListenerContext context = await this._listener.GetContextAsync();
 
-            await Task.Factory.StartNew(() => { this.HandleRequest(context); });
+            await Task.Factory.StartNew(() =>
+            {
+                using IDatabaseContext database = this._databaseProvider.GetContext();
+                this.HandleRequest(context, database);
+            });
         }
     }
 
     [Pure]
-    private Response? InvokeEndpointByRequest(HttpListenerContext context)
+    private Response? InvokeEndpointByRequest(HttpListenerContext context, IDatabaseContext database)
     {
         foreach (EndpointGroup group in this._endpoints)
         {
@@ -111,10 +115,7 @@ public class RefreshHttpServer
                             Request = context.Request,
                         },
                     };
-                    
-                    // Store database context so we can dispose it later
-                    IDatabaseContext? dbCtx = null;
-                    
+
                     // Next, lets iterate through the method's arguments and add some based on what we find.
                     foreach (ParameterInfo param in method.GetParameters().Skip(1))
                     {
@@ -129,7 +130,7 @@ public class RefreshHttpServer
                         else if(paramType.IsAssignableTo(typeof(IDatabaseContext)))
                         {
                             // Pass in a database context if the endpoint needs one.
-                            invokeList.Add(dbCtx = this._databaseProvider.GetContext());
+                            invokeList.Add(database);
                         }
                         else if (paramType == typeof(string))
                         {
@@ -138,8 +139,7 @@ public class RefreshHttpServer
                     }
 
                     object? val = method.Invoke(group, invokeList.ToArray());
-                    dbCtx?.Dispose();
-                
+
                     // ReSharper disable once ConvertSwitchStatementToSwitchExpression
                     switch (val)
                     {
@@ -157,18 +157,18 @@ public class RefreshHttpServer
         return null;
     }
 
-    private void HandleRequest(HttpListenerContext context)
+    private void HandleRequest(HttpListenerContext context, IDatabaseContext database)
     {
         Stopwatch requestStopwatch = new();
         requestStopwatch.Start();
-        
+
         try
         {
             context.Response.AddHeader("Server", "Refresh");
 
             string path = context.Request.Url!.AbsolutePath;
 
-            Response? resp = this.InvokeEndpointByRequest(context);
+            Response? resp = this.InvokeEndpointByRequest(context, database);
 
             if (resp == null)
             {
