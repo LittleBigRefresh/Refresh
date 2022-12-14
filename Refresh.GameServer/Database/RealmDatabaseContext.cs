@@ -45,7 +45,7 @@ public class RealmDatabaseContext : IDatabaseContext
         Token token = new()
         {
             User = user,
-            TokenData = "yeah",
+            TokenData = Guid.NewGuid().ToString(),
         };
 
         this._realm.Write(() =>

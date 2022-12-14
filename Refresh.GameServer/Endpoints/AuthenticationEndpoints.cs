@@ -19,7 +19,7 @@ public class AuthenticationEndpoints : EndpointGroup
         
         return new LoginResponse
         {
-            TokenData = token.TokenData,
+            TokenData = "\r\nAuthorization: " + token.TokenData,
             ServerBrand = "Refresh",
         };
     }
