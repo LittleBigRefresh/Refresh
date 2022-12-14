@@ -13,7 +13,9 @@ public class GameUser : RealmObject, IUser, INeedsPreparationBeforeSerialization
     [PrimaryKey] [Indexed] [XmlIgnore] public ObjectId UserId { get; set; } = ObjectId.GenerateNewId();
     [Indexed] [Required] [XmlIgnore] public string Username { get; set; } = string.Empty;
 
-    [Ignored] [XmlElement("biography")] public string Description { get; set; } = "";
+    [XmlElement("biography")] public string Description { get; set; } = "";
+    
+    [XmlElement("location")] public GameLocation Location { get; set; }
 
     #region LBP Serialization Quirks
 
