@@ -144,7 +144,8 @@ public class RefreshHttpServer
                     switch (val)
                     {
                         case null:
-                            return new Response(Array.Empty<byte>(), attribute.ContentType, HttpStatusCode.NoContent);
+                            // TODO: add attribute to method to declare what null response code should be
+                            return new Response(Array.Empty<byte>(), attribute.ContentType, HttpStatusCode.NotFound);
                         case Response response:
                             return response;
                         default:
