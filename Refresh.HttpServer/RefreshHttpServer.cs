@@ -2,6 +2,7 @@ using System.Collections.Immutable;
 using System.Diagnostics;
 using System.Net;
 using System.Reflection;
+using System.Text;
 using JetBrains.Annotations;
 using NotEnoughLogs;
 using NotEnoughLogs.Loggers;
@@ -120,6 +121,28 @@ public class RefreshHttpServer
                     foreach (ParameterInfo param in method.GetParameters().Skip(1))
                     {
                         Type paramType = param.ParameterType;
+
+                        // Pass in the request body as a parameter
+                        if (param.Name == "body")
+                        {
+                            // If the request has no body and we have a body parameter, then it's probably safe to assume it's required.
+                            // Fire a bad request back if this is the case.
+                            if (!context.Request.HasEntityBody)
+                                return new Response(Array.Empty<byte>(), ContentType.Plaintext, HttpStatusCode.BadRequest);
+
+                            MemoryStream body = new((int)context.Request.ContentLength64);
+                            context.Request.InputStream.CopyTo(body);
+                            body.Position = 0;
+                            
+                            if(paramType == typeof(Stream)) invokeList.Add(body);
+                            else if(paramType == typeof(string)) invokeList.Add(Encoding.Default.GetString(body.GetBuffer()));
+                            else if(paramType == typeof(byte[])) invokeList.Add(body.GetBuffer());
+                            // TODO: Deserialize to paramType based on contentType here if we cant use the above simple types
+                            // We can't find a valid type to send or deserialization failed
+                            else return new Response(Array.Empty<byte>(), ContentType.Plaintext, HttpStatusCode.BadRequest);
+
+                            continue;
+                        }
                         
                         if (paramType.IsAssignableTo(typeof(IUser)))
                         {
@@ -134,6 +157,7 @@ public class RefreshHttpServer
                         }
                         else if (paramType == typeof(string))
                         {
+                            // Attempt to pass in a route parameter based on the method parameter's name
                             invokeList.Add(parameters!.GetValueOrDefault(param.Name));
                         }
                     }
