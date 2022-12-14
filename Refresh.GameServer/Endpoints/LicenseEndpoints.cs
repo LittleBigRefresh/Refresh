@@ -7,6 +7,7 @@ namespace Refresh.GameServer.Endpoints;
 public class LicenseEndpoints : EndpointGroup
 {
     [GameEndpoint("eula", Method.Get, ContentType.Plaintext)]
+    [RequiresAuthentication]
     public string License(RequestContext context)
     {
         return "Welcome to Refresh!";

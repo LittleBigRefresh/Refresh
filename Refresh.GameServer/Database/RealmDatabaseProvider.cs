@@ -12,11 +12,12 @@ public class RealmDatabaseProvider : IDatabaseProvider<RealmDatabaseContext>
     {
         this._configuration = new RealmConfiguration(Path.Join(Environment.CurrentDirectory, "refreshGameServer.realm"))
         {
-            SchemaVersion = 3,
+            SchemaVersion = 4,
             Schema = new[]
             {
                 typeof(GameUser),
                 typeof(GameLocation),
+                typeof(Token),
             },
             MigrationCallback = (migration, oldVersion) =>
             {

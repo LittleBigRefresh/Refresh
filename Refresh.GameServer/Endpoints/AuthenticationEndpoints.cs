@@ -14,10 +14,12 @@ public class AuthenticationEndpoints : EndpointGroup
     {
         GameUser? user = database.GetUser("jvyden420");
         user ??= database.CreateUser("jvyden420");
+
+        Token token = database.GenerateTokenForUser(user);
         
         return new LoginResponse
         {
-            Token = "yeah",
+            TokenData = token.TokenData,
             ServerBrand = "Refresh",
         };
     }
@@ -27,7 +29,7 @@ public class AuthenticationEndpoints : EndpointGroup
 public struct LoginResponse
 {
     [XmlElement("authTicket")]
-    public string Token { get; set; }
+    public string TokenData { get; set; }
     
     [XmlElement("lbpEnvVer")]
     public string ServerBrand { get; set; }

@@ -99,7 +99,7 @@ public class RefreshHttpServer
                 IUser? user = null;
                 if (method.GetCustomAttribute<RequiresAuthenticationAttribute>() != null)
                 {
-                    user = this._authenticationProvider.AuthenticateUser(context.Request);
+                    user = this._authenticationProvider.AuthenticateUser(context.Request, database);
                     if (user == null)
                         return new Response(Array.Empty<byte>(), ContentType.Plaintext, HttpStatusCode.Forbidden);
                 }

@@ -1,3 +1,4 @@
+using JetBrains.Annotations;
 using MongoDB.Bson;
 using Realms;
 using Refresh.GameServer.Database.Types;
@@ -9,7 +10,7 @@ public class RealmDatabaseContext : IDatabaseContext
 {
     private readonly Realm _realm;
 
-    public RealmDatabaseContext(Realm realm)
+    internal RealmDatabaseContext(Realm realm)
     {
         this._realm = realm;
     }
@@ -19,7 +20,7 @@ public class RealmDatabaseContext : IDatabaseContext
         this._realm.Refresh();
         this._realm.Dispose();
     }
-
+    
     public GameUser CreateUser(string username)
     {
         GameUser user = new()
@@ -34,6 +35,33 @@ public class RealmDatabaseContext : IDatabaseContext
         return user;
     }
 
+    [Pure]
     public GameUser? GetUser(ObjectId id) => this._realm.Find<GameUser>(id);
+    [Pure]
     public GameUser? GetUser(string username) => this._realm.All<GameUser>().FirstOrDefault(u => u.Username == username);
+    
+    public Token GenerateTokenForUser(GameUser user)
+    {
+        Token token = new()
+        {
+            User = user,
+            TokenData = "yeah",
+        };
+
+        this._realm.Write(() =>
+        {
+            this._realm.Add(token);
+        });
+        
+        return token;
+    }
+
+    [Pure]
+    public GameUser? GetUserFromTokenData(string? tokenData)
+    {
+        // ReSharper disable once ConvertIfStatementToReturnStatement
+        if (tokenData == null) return null;
+        
+        return this._realm.All<Token>().FirstOrDefault(t => t.TokenData == tokenData)?.User;
+    }
 }
