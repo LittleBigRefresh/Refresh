@@ -41,6 +41,9 @@ public struct Response
             this.Data = Encoding.Default.GetBytes(data?.ToString() ?? string.Empty);
             return;
         }
+        
+        if(data is INeedsPreparationBeforeSerialization prep) 
+            prep.PrepareForSerialization();
 
         using MemoryStream stream = new();
         switch (contentType)

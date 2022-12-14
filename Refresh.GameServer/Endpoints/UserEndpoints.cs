@@ -12,6 +12,7 @@ public class UserEndpoints : EndpointGroup
     [RequiresAuthentication]
     public GameUser? GetUser(RequestContext context, RealmDatabaseContext database, string name)
     {
-        return database.GetUser(name);
+        GameUser? user = database.GetUser(name);
+        return user;
     }
 }
