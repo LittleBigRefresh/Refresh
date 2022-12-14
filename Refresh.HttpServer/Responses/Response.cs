@@ -3,6 +3,7 @@ using System.Text;
 using System.Xml;
 using System.Xml.Serialization;
 using Newtonsoft.Json;
+using Refresh.HttpServer.Serialization;
 
 namespace Refresh.HttpServer.Responses;
 
@@ -53,7 +54,7 @@ public struct Response
                 throw new InvalidOperationException();
             case ContentType.Xml:
             {
-                using XmlWriter writer = XmlWriter.Create(stream, WriterSettings);
+                using RefreshXmlTextWriter writer = new(stream);
 
                 XmlSerializer serializer = new(data.GetType());
                 serializer.Serialize(writer, data, Namespaces);

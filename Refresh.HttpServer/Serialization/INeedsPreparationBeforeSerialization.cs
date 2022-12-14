@@ -1,4 +1,4 @@
-namespace Refresh.HttpServer.Responses;
+namespace Refresh.HttpServer.Serialization;
 
 public interface INeedsPreparationBeforeSerialization
 {

@@ -3,6 +3,7 @@ using MongoDB.Bson;
 using Realms;
 using Refresh.HttpServer.Authentication;
 using Refresh.HttpServer.Responses;
+using Refresh.HttpServer.Serialization;
 
 namespace Refresh.GameServer.Database.Types;
 
@@ -10,22 +11,21 @@ namespace Refresh.GameServer.Database.Types;
 public class GameUser : RealmObject, IUser, INeedsPreparationBeforeSerialization
 {
     [PrimaryKey] [Indexed] [XmlIgnore] public ObjectId UserId { get; set; } = ObjectId.GenerateNewId();
-    [Indexed] [Required] [XmlIgnore] public string Username { get; set; }
+    [Indexed] [Required] [XmlIgnore] public string Username { get; set; } = string.Empty;
 
-    [Ignored] [XmlElement("biography")] public string Description { get; set; } = "works";
+    [Ignored] [XmlElement("biography")] public string Description { get; set; } = "";
 
     #region LBP Serialization Quirks
-    [Ignored] [XmlAttribute("type")] public string Type { get; set; }
-    [Ignored] [XmlElement("npHandle")] public NameAndIcon Handle { get; set; }
+
+    [Ignored] [XmlAttribute("type")] public string? Type { get; set; }
+    [Ignored] [XmlElement("npHandle")] public NameAndIcon? Handle { get; set; }
     
     [Ignored]
     public class NameAndIcon
     {
-        [XmlText]
-        public string Username { get; set; }
-        
-        [XmlAttribute("icon")]
-        public string IconHash { get; set; }
+        [XmlText] public string Username { get; set; } = string.Empty;
+
+        [XmlAttribute("icon")] public string IconHash { get; set; } = string.Empty;
     }
 
     public void PrepareForSerialization()
