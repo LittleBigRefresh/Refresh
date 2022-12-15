@@ -120,6 +120,7 @@ public class RefreshHttpServer
                         new RequestContext // 1st argument is always the request context. This is fact, and is backed by an analyzer.
                         {
                             Request = context.Request,
+                            Logger = this._logger,
                         },
                     };
 

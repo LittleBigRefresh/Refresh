@@ -12,11 +12,12 @@ public class RealmDatabaseProvider : IDatabaseProvider<RealmDatabaseContext>
     {
         this._configuration = new RealmConfiguration(Path.Join(Environment.CurrentDirectory, "refreshGameServer.realm"))
         {
-            SchemaVersion = 4,
+            SchemaVersion = 5,
             Schema = new[]
             {
                 typeof(GameUser),
                 typeof(GameLocation),
+                typeof(UserPins),
                 typeof(Token),
             },
             MigrationCallback = (migration, oldVersion) =>
@@ -37,6 +38,11 @@ public class RealmDatabaseProvider : IDatabaseProvider<RealmDatabaseContext>
                             X = 0,
                             Y = 0,
                         };
+                    }
+                    
+                    //In version 4, GameLocation went from TopLevel -> Embedded, and UserPins was added
+                    if (oldVersion < 4) {
+                        newUser.Pins = new UserPins();
                     }
                 }
             }
