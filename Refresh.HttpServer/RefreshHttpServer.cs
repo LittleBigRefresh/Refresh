@@ -21,6 +21,7 @@ public class RefreshHttpServer
     private readonly HttpListener _listener;
     private readonly List<EndpointGroup> _endpoints = new();
     private readonly LoggerContainer<RefreshContext> _logger;
+    private readonly List<string> _unimplementedEndpoints = new();
     
     private IAuthenticationProvider<IUser> _authenticationProvider = new DummyAuthenticationProvider();
     private IDatabaseProvider<IDatabaseContext> _databaseProvider = new DummyDatabaseProvider();
@@ -29,6 +30,11 @@ public class RefreshHttpServer
     {
         this._logger = new LoggerContainer<RefreshContext>();
         this._logger.RegisterLogger(new ConsoleLogger());
+
+        foreach (string endpoint in File.ReadAllLines("unimplementedEndpoints.txt"))
+        {
+            this._unimplementedEndpoints.Add(endpoint);
+        }
 
         this._listener = new HttpListener();
         this._listener.IgnoreWriteExceptions = true;
@@ -237,6 +243,13 @@ public class RefreshHttpServer
                 this._logger.LogInfo(RefreshContext.Request, $"Served request to {context.Request.RemoteEndPoint}: " +
                                                           $"{context.Response.StatusCode} on '{context.Request.Url?.PathAndQuery}' " +
                                                           $"({requestStopwatch.ElapsedMilliseconds}ms)");
+
+                if (context.Response.StatusCode == 404 && !this._unimplementedEndpoints.Contains(context.Request.Url?.AbsolutePath))
+                {
+                    this._unimplementedEndpoints.Add(context.Request.Url?.PathAndQuery);
+                    System.IO.File.WriteAllLines("unimplementedEndpoints.txt", this._unimplementedEndpoints);
+                }
+                
                 context.Response.Close();
             }
             catch
