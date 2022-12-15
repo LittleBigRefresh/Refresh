@@ -54,6 +54,12 @@ public class EndpointAttribute : Attribute
         this.FullRoute = fullRoute;
     }
 
+    public EndpointAttribute(string route, ContentType contentType, Method method = Method.Get)
+        : this(route, method, contentType)
+    {
+        
+    }
+
     [SuppressMessage("ReSharper", "ConvertIfStatementToReturnStatement")]
     public bool UriMatchesRoute(Uri? uri, out Dictionary<string, string> parameters)
     {
