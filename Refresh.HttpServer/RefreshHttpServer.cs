@@ -21,21 +21,17 @@ public class RefreshHttpServer
     private readonly HttpListener _listener;
     private readonly List<EndpointGroup> _endpoints = new();
     private readonly LoggerContainer<RefreshContext> _logger;
-    private readonly List<string> _unimplementedEndpoints = new();
-    
+
     private IAuthenticationProvider<IUser> _authenticationProvider = new DummyAuthenticationProvider();
     private IDatabaseProvider<IDatabaseContext> _databaseProvider = new DummyDatabaseProvider();
+
+    public EventHandler<HttpListenerContext>? NotFound;
 
     public RefreshHttpServer(params string[] listenEndpoints)
     {
         this._logger = new LoggerContainer<RefreshContext>();
         this._logger.RegisterLogger(new ConsoleLogger());
-
-        foreach (string endpoint in File.ReadAllLines("unimplementedEndpoints.txt"))
-        {
-            this._unimplementedEndpoints.Add(endpoint);
-        }
-
+        
         this._listener = new HttpListener();
         this._listener.IgnoreWriteExceptions = true;
         foreach (string endpoint in listenEndpoints)
@@ -103,17 +99,19 @@ public class RefreshHttpServer
                 ImmutableArray<EndpointAttribute> attributes = method.GetCustomAttributes<EndpointAttribute>().ToImmutableArray();
                 if(attributes.Length == 0) continue;
 
-                IUser? user = null;
-                if (method.GetCustomAttribute<RequiresAuthenticationAttribute>() != null)
-                {
-                    user = this._authenticationProvider.AuthenticateUser(context.Request, database);
-                    if (user == null)
-                        return new Response(Array.Empty<byte>(), ContentType.Plaintext, HttpStatusCode.Forbidden);
-                }
-                
                 foreach (EndpointAttribute attribute in attributes)
                 {
                     if(!attribute.UriMatchesRoute(context.Request.Url, out Dictionary<string, string> parameters)) continue;
+                    
+                    this._logger.LogTrace(RefreshContext.Request, $"Handling request with {group.GetType().Name}.{method.Name}");
+
+                    IUser? user = null;
+                    if (method.GetCustomAttribute<RequiresAuthenticationAttribute>() != null)
+                    {
+                        user = this._authenticationProvider.AuthenticateUser(context.Request, database);
+                        if (user == null)
+                            return new Response(Array.Empty<byte>(), ContentType.Plaintext, HttpStatusCode.Forbidden);
+                    }
 
                     // Build list to invoke endpoint method with
                     List<object?> invokeList = new() { 
@@ -206,6 +204,8 @@ public class RefreshHttpServer
                 context.Response.AddHeader("Content-Type", ContentType.Plaintext.GetName());
                 context.Response.StatusCode = (int)HttpStatusCode.NotFound;
                 context.Response.WriteString("Not found: " + path);
+                
+                this.NotFound?.Invoke(this, context);
             }
             else
             {
@@ -244,12 +244,6 @@ public class RefreshHttpServer
                                                           $"{context.Response.StatusCode} on '{context.Request.Url?.PathAndQuery}' " +
                                                           $"({requestStopwatch.ElapsedMilliseconds}ms)");
 
-                if (context.Response.StatusCode == 404 && !this._unimplementedEndpoints.Contains(context.Request.Url?.AbsolutePath))
-                {
-                    this._unimplementedEndpoints.Add(context.Request.Url?.PathAndQuery);
-                    System.IO.File.WriteAllLines("unimplementedEndpoints.txt", this._unimplementedEndpoints);
-                }
-                
                 context.Response.Close();
             }
             catch
