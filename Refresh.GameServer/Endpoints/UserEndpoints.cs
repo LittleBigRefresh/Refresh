@@ -18,11 +18,22 @@ public class UserEndpoints : EndpointGroup
     }
 
     [GameEndpoint("updateUser", Method.Post, ContentType.Xml)]
-    public string? UpdateUser(RequestContext context, RealmDatabaseContext database, GameUser user, Stream body)
+    public string? UpdateUser(RequestContext context, RealmDatabaseContext database, GameUser user, string body)
     {
-        XmlSerializer serializer = new(typeof(UpdateUserData));
-        if (serializer.Deserialize(body) is not UpdateUserData updateUserData) return null;
         
+        XmlSerializer serializer = new(typeof(UpdateUserData));
+        UpdateUserData updateUserData;
+        try
+        {
+            if (serializer.Deserialize(new StringReader(body)) is not UpdateUserData data) return null;
+            updateUserData = data;
+        }
+        catch(Exception e)
+        {
+            context.Logger.LogError(RefreshContext.UserContent, $"Failed to update user: {e}\n\nXML: {body}");
+            return null;
+        }
+
         database.UpdateUserData(user, updateUserData);
 
         return string.Empty;

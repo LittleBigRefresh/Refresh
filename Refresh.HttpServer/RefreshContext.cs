@@ -4,4 +4,6 @@ public enum RefreshContext
 {
     Startup,
     Request,
+    Authentication,
+    UserContent,
 }
