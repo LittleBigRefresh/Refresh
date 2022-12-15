@@ -24,6 +24,24 @@ public class AuthenticationEndpoints : EndpointGroup
             ServerBrand = "Refresh",
         };
     }
+
+    private static readonly Lazy<string?> NetworkSettingsFile
+        = new Lazy<string?>(() => 
+        {
+            string path = Path.Combine(Environment.CurrentDirectory, "network_settings.nws");
+
+            return File.Exists(path) ? File.ReadAllText(path) : null;
+        });
+    
+    [GameEndpoint("network_settings.nws")]
+    public string? NetworkSettings(RequestContext context) {
+        string? networkSettings = NetworkSettingsFile.Value;
+        
+        if(networkSettings == null)
+            context.Logger.LogWarning(RefreshContext.Request, "network_settings.nws file is missing!");
+        
+        return networkSettings;
+    }
 }
 
 [XmlRoot("loginResult")]
