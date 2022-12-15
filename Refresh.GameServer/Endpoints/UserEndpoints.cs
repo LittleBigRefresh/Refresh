@@ -1,3 +1,4 @@
+using System.Xml.Serialization;
 using Refresh.GameServer.Database;
 using Refresh.GameServer.Database.Types;
 using Refresh.HttpServer;
@@ -15,4 +16,18 @@ public class UserEndpoints : EndpointGroup
         GameUser? user = database.GetUser(name);
         return user;
     }
+
+    [GameEndpoint("updateUser", Method.Post, ContentType.Xml)]
+    [RequiresAuthentication]
+    public string? UpdateUser(RequestContext context, RealmDatabaseContext database, GameUser user, Stream body)
+    {
+        XmlSerializer serializer = new(typeof(UpdateUserData));
+        if (serializer.Deserialize(body) is not UpdateUserData updateUserData) return null;
+        
+        database.UpdateUserData(user, updateUserData);
+
+        return string.Empty;
+    }
+
+
 }

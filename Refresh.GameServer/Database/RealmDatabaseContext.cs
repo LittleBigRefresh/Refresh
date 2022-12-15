@@ -1,7 +1,9 @@
+using System.Diagnostics.CodeAnalysis;
 using JetBrains.Annotations;
 using MongoDB.Bson;
 using Realms;
 using Refresh.GameServer.Database.Types;
+using Refresh.GameServer.Endpoints;
 using Refresh.HttpServer.Database;
 
 namespace Refresh.GameServer.Database;
@@ -63,5 +65,19 @@ public class RealmDatabaseContext : IDatabaseContext
         if (tokenData == null) return null;
         
         return this._realm.All<Token>().FirstOrDefault(t => t.TokenData == tokenData)?.User;
+    }
+
+    [SuppressMessage("ReSharper", "InvertIf")]
+    public void UpdateUserData(GameUser user, UpdateUserData data)
+    {
+        this._realm.Write(() =>
+        {
+            if (data.Description != null) user.Description = data.Description;
+            if (data.Location != null)
+            {
+                data.Location.LocationId = user.Location.LocationId;
+                user.Location = data.Location;
+            }
+        });
     }
 }
