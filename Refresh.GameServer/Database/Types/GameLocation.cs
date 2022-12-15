@@ -7,9 +7,6 @@ namespace Refresh.GameServer.Database.Types;
 [XmlType("location")]
 public class GameLocation : EmbeddedObject
 {
-    [XmlIgnore]
-    public ObjectId LocationId { get; set; } = ObjectId.GenerateNewId();
-    
     [XmlElement("y")]
     public int X { get; set; }
     [XmlElement("x")]

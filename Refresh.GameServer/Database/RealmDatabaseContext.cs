@@ -75,7 +75,6 @@ public class RealmDatabaseContext : IDatabaseContext
             if (data.Description != null) user.Description = data.Description;
             if (data.Location != null)
             {
-                data.Location.LocationId = user.Location.LocationId;
                 user.Location = data.Location;
             }
         });
