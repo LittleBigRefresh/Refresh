@@ -10,6 +10,15 @@ public class LicenseEndpoints : EndpointGroup
     [RequiresAuthentication]
     public string License(RequestContext context)
     {
+        //TODO: add configuration option for EULA
         return "Welcome to Refresh!";
+    }
+
+    [GameEndpoint("announce", Method.Get, ContentType.Plaintext)]
+    [RequiresAuthentication]
+    public string Announce(RequestContext context) 
+    {
+        //TODO: add configuration option for announce
+        return string.Empty;
     }
 }
