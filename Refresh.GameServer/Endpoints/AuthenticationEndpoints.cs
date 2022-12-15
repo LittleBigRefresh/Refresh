@@ -35,9 +35,11 @@ public class AuthenticationEndpoints : EndpointGroup
     
     [GameEndpoint("network_settings.nws")]
     public string? NetworkSettings(RequestContext context) {
+        bool created = NetworkSettingsFile.IsValueCreated;
+        
         string? networkSettings = NetworkSettingsFile.Value;
         
-        if(networkSettings == null)
+        if(!created && networkSettings == null)
             context.Logger.LogWarning(RefreshContext.Request, "network_settings.nws file is missing!");
         
         return networkSettings;
