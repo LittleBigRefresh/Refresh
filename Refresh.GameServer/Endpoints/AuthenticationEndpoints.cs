@@ -12,10 +12,19 @@ public class AuthenticationEndpoints : EndpointGroup
 {
     [GameEndpoint("login", Method.Post, ContentType.Xml)]
     [Authentication(false)]
-    public LoginResponse Authenticate(RequestContext context, RealmDatabaseContext database, Stream body)
+    public LoginResponse? Authenticate(RequestContext context, RealmDatabaseContext database, Stream body)
     {
-        Ticket ticket = Ticket.FromStream(body);
-        
+        Ticket ticket;
+        try
+        {
+            ticket = Ticket.FromStream(body);
+        }
+        catch(Exception e)
+        {
+            context.Logger.LogWarning(RefreshContext.Request, "Could not read ticket: " + e);
+            return null;
+        }
+
         GameUser? user = database.GetUser(ticket.Username);
         user ??= database.CreateUser(ticket.Username);
 
