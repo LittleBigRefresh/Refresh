@@ -1,4 +1,5 @@
 using System.Xml.Serialization;
+using NPTicket;
 using Refresh.GameServer.Database;
 using Refresh.GameServer.Database.Types;
 using Refresh.HttpServer;
@@ -11,10 +12,12 @@ public class AuthenticationEndpoints : EndpointGroup
 {
     [GameEndpoint("login", Method.Post, ContentType.Xml)]
     [Authentication(false)]
-    public LoginResponse Authenticate(RequestContext context, RealmDatabaseContext database)
+    public LoginResponse Authenticate(RequestContext context, RealmDatabaseContext database, Stream body)
     {
-        GameUser? user = database.GetUser("jvyden420");
-        user ??= database.CreateUser("jvyden420");
+        Ticket ticket = Ticket.FromStream(body);
+        
+        GameUser? user = database.GetUser(ticket.Username);
+        user ??= database.CreateUser(ticket.Username);
 
         Token token = database.GenerateTokenForUser(user);
         
