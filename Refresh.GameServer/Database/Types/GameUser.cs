@@ -16,6 +16,8 @@ public class GameUser : RealmObject, IUser, INeedsPreparationBeforeSerialization
     [XmlElement("biography")] public string Description { get; set; } = "";
     
     [XmlElement("location")] public GameLocation Location { get; set; }
+    
+    [XmlIgnore] public UserPins Pins { get; set; } = new UserPins();
 
     #region LBP Serialization Quirks
 

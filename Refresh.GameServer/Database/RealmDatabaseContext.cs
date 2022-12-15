@@ -80,4 +80,15 @@ public class RealmDatabaseContext : IDatabaseContext
             }
         });
     }
+
+    public void UpdateUserPins(GameUser user, UserPins pinsUpdate) 
+    {
+        this._realm.Write(() => {
+            user.Pins = new UserPins();
+
+            foreach (long pinsAward in pinsUpdate.Awards) user.Pins.Awards.Add(pinsAward);
+            foreach (long pinsAward in pinsUpdate.Progress) user.Pins.Progress.Add(pinsAward);
+            foreach (long profilePins in pinsUpdate.ProfilePins) user.Pins.ProfilePins.Add(profilePins);
+        });
+    }
 }

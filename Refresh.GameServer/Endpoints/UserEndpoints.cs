@@ -36,18 +36,18 @@ public class UserEndpoints : EndpointGroup
         using StreamReader   streamReader = new StreamReader(body);
         using JsonTextReader jsonReader   = new JsonTextReader(streamReader);
         
-        UpdateUserPins? updateUserPins = serializer.Deserialize<UpdateUserPins>(jsonReader);
+        UserPins? updateUserPins = serializer.Deserialize<UserPins>(jsonReader);
 
         //If the type is not correct, return null
         if (updateUserPins is null)
             return null;
         
-        //TODO: store the updated pins in the database, and return the new pins?
         //NOTE: the returned value in the packet capture has a few higher values than the ones sent in the request,
         //      so im not sure what we are supposed to return here, so im just passing it through with `profile_pins` nulled out
+        database.UpdateUserPins(user, updateUserPins);
 
         //Dont serialize profile pins, the packet capture doesnt have them in the return
-        updateUserPins.ProfilePins = null!;
+        updateUserPins.ProfilePins?.Clear();
 
         //Just return the same pins back to the client
         return JsonConvert.SerializeObject(updateUserPins, new JsonSerializerSettings {
