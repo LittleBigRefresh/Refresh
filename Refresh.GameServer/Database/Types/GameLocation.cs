@@ -5,7 +5,7 @@ using Realms;
 namespace Refresh.GameServer.Database.Types;
 
 [XmlType("location")]
-public class GameLocation : RealmObject
+public class GameLocation : EmbeddedObject
 {
     [XmlIgnore]
     public ObjectId LocationId { get; set; } = ObjectId.GenerateNewId();
