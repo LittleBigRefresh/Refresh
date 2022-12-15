@@ -27,6 +27,8 @@ public class RefreshHttpServer
 
     public EventHandler<HttpListenerContext>? NotFound;
 
+    public bool AssumeAuthenticationRequired = false;
+
     public RefreshHttpServer(params string[] listenEndpoints)
     {
         this._logger = new LoggerContainer<RefreshContext>();
@@ -106,7 +108,7 @@ public class RefreshHttpServer
                     this._logger.LogTrace(RefreshContext.Request, $"Handling request with {group.GetType().Name}.{method.Name}");
 
                     IUser? user = null;
-                    if (method.GetCustomAttribute<RequiresAuthenticationAttribute>() != null)
+                    if (method.GetCustomAttribute<AuthenticationAttribute>()?.Required ?? this.AssumeAuthenticationRequired)
                     {
                         user = this._authenticationProvider.AuthenticateUser(context.Request, database);
                         if (user == null)

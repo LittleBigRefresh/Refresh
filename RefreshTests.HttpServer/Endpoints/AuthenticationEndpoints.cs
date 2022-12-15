@@ -8,7 +8,7 @@ namespace RefreshTests.HttpServer.Endpoints;
 public class AuthenticationEndpoints : EndpointGroup
 {
     [Endpoint("/auth", Method.Get, ContentType.Json)]
-    [RequiresAuthentication]
+    [Authentication(true)]
     public DummyUser Authentication(RequestContext context, DummyUser user)
     {
         return user;

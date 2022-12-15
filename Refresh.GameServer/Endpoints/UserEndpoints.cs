@@ -10,7 +10,6 @@ namespace Refresh.GameServer.Endpoints;
 public class UserEndpoints : EndpointGroup
 {
     [GameEndpoint("user/{name}", Method.Get, ContentType.Xml)]
-    [RequiresAuthentication]
     public GameUser? GetUser(RequestContext context, RealmDatabaseContext database, string name)
     {
         GameUser? user = database.GetUser(name);
@@ -18,7 +17,6 @@ public class UserEndpoints : EndpointGroup
     }
 
     [GameEndpoint("updateUser", Method.Post, ContentType.Xml)]
-    [RequiresAuthentication]
     public string? UpdateUser(RequestContext context, RealmDatabaseContext database, GameUser user, Stream body)
     {
         XmlSerializer serializer = new(typeof(UpdateUserData));

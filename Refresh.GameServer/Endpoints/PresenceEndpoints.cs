@@ -8,15 +8,12 @@ namespace Refresh.GameServer.Endpoints;
 public class PresenceEndpoints : EndpointGroup
 {
     [GameEndpoint("playersInPodCount")]
-    [RequiresAuthentication]
     public int PlayersInPod(RequestContext context) => 1;
 
     [GameEndpoint("totalPlayerCount")]
-    [RequiresAuthentication]
     public int TotalPlayers(RequestContext context) => 1;
 
     [GameEndpoint("planetStats", Method.Get, ContentType.Xml)]
-    [RequiresAuthentication]
     public LevelStatistics GetLevelStatistics(RequestContext context) => new()
     {
         TotalTeamPicks = 0,

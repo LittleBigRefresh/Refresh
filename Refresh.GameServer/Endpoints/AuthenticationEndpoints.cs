@@ -10,6 +10,7 @@ namespace Refresh.GameServer.Endpoints;
 public class AuthenticationEndpoints : EndpointGroup
 {
     [GameEndpoint("login", Method.Post, ContentType.Xml)]
+    [Authentication(false)]
     public LoginResponse Authenticate(RequestContext context, RealmDatabaseContext database)
     {
         GameUser? user = database.GetUser("jvyden420");
