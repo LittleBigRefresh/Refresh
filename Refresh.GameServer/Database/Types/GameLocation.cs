@@ -11,7 +11,7 @@ public class GameLocation : RealmObject
     public ObjectId LocationId { get; set; } = ObjectId.GenerateNewId();
     
     [XmlElement("y")]
-    public short X { get; set; }
+    public int X { get; set; }
     [XmlElement("x")]
-    public short Y { get; set; }
+    public int Y { get; set; }
 }
