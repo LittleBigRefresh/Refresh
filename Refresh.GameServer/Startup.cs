@@ -1,5 +1,5 @@
 ﻿using System.Reflection;
-using Refresh.GameServer;
+using Refresh.GameServer.Authentication;
 using Refresh.GameServer.Database;
 using Refresh.HttpServer;
 

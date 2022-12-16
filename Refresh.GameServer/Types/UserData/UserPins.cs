@@ -1,7 +1,7 @@
 using Newtonsoft.Json;
 using Realms;
 
-namespace Refresh.GameServer.Database.Types; 
+namespace Refresh.GameServer.Types.UserData; 
 
 public class UserPins : EmbeddedObject {
 	[JsonProperty(PropertyName = "progress")]

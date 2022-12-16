@@ -2,10 +2,9 @@ using System.Xml.Serialization;
 using MongoDB.Bson;
 using Realms;
 using Refresh.HttpServer.Authentication;
-using Refresh.HttpServer.Responses;
 using Refresh.HttpServer.Serialization;
 
-namespace Refresh.GameServer.Database.Types;
+namespace Refresh.GameServer.Types.UserData;
 
 [XmlRoot("user")]
 public class GameUser : RealmObject, IUser, INeedsPreparationBeforeSerialization

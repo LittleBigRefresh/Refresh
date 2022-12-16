@@ -2,8 +2,9 @@ using System.Xml.Serialization;
 using MongoDB.Bson;
 using Newtonsoft.Json;
 using Realms;
+using Refresh.GameServer.Types.UserData;
 
-namespace Refresh.GameServer.Database.Types;
+namespace Refresh.GameServer.Authentication;
 
 #nullable disable
 

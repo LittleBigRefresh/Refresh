@@ -1,11 +1,11 @@
 using System.Diagnostics;
 using System.Net;
 using Refresh.GameServer.Database;
-using Refresh.GameServer.Database.Types;
+using Refresh.GameServer.Types.UserData;
 using Refresh.HttpServer.Authentication;
 using Refresh.HttpServer.Database;
 
-namespace Refresh.GameServer;
+namespace Refresh.GameServer.Authentication;
 
 public class GameAuthenticationProvider : IAuthenticationProvider<GameUser>
 {

@@ -1,7 +1,7 @@
 using System.Xml.Serialization;
 using Realms;
 
-namespace Refresh.GameServer.Database.Types;
+namespace Refresh.GameServer.Types.UserData;
 
 [XmlRoot("updateUser")]
 [Ignored]

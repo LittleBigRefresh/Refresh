@@ -1,5 +1,7 @@
 using Realms;
-using Refresh.GameServer.Database.Types;
+using Refresh.GameServer.Authentication;
+using Refresh.GameServer.Types;
+using Refresh.GameServer.Types.UserData;
 using Refresh.HttpServer.Database;
 
 namespace Refresh.GameServer.Database;

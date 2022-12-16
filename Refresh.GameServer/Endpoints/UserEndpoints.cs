@@ -1,7 +1,7 @@
 using System.Xml.Serialization;
 using Newtonsoft.Json;
 using Refresh.GameServer.Database;
-using Refresh.GameServer.Database.Types;
+using Refresh.GameServer.Types.UserData;
 using Refresh.HttpServer;
 using Refresh.HttpServer.Endpoints;
 using Refresh.HttpServer.Responses;

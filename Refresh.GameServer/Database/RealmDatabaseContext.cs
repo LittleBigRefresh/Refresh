@@ -2,8 +2,8 @@ using System.Diagnostics.CodeAnalysis;
 using JetBrains.Annotations;
 using MongoDB.Bson;
 using Realms;
-using Refresh.GameServer.Database.Types;
-using Refresh.GameServer.Endpoints;
+using Refresh.GameServer.Authentication;
+using Refresh.GameServer.Types.UserData;
 using Refresh.HttpServer.Database;
 
 namespace Refresh.GameServer.Database;

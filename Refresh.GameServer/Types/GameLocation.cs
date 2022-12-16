@@ -1,8 +1,7 @@
 using System.Xml.Serialization;
-using MongoDB.Bson;
 using Realms;
 
-namespace Refresh.GameServer.Database.Types;
+namespace Refresh.GameServer.Types;
 
 [XmlType("location")]
 public class GameLocation : EmbeddedObject
