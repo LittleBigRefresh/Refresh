@@ -20,7 +20,6 @@ public class UserEndpoints : EndpointGroup
     [GameEndpoint("updateUser", Method.Post, ContentType.Xml)]
     public string? UpdateUser(RequestContext context, RealmDatabaseContext database, GameUser user, string body)
     {
-        
         XmlSerializer serializer = new(typeof(UpdateUserData));
         UpdateUserData updateUserData;
         try
@@ -28,7 +27,7 @@ public class UserEndpoints : EndpointGroup
             if (serializer.Deserialize(new StringReader(body)) is not UpdateUserData data) return null;
             updateUserData = data;
         }
-        catch(Exception e)
+        catch (Exception e)
         {
             context.Logger.LogError(RefreshContext.UserContent, $"Failed to update user: {e}\n\nXML: {body}");
             return null;
@@ -40,19 +39,19 @@ public class UserEndpoints : EndpointGroup
     }
 
     [GameEndpoint("update_my_pins", Method.Get, ContentType.Xml)]
-    public string? UpdatePins(RequestContext context, RealmDatabaseContext database, GameUser user, Stream body) 
+    public string? UpdatePins(RequestContext context, RealmDatabaseContext database, GameUser user, Stream body)
     {
-        JsonSerializer serializer = new JsonSerializer();
+        JsonSerializer serializer = new();
 
-        using StreamReader   streamReader = new StreamReader(body);
-        using JsonTextReader jsonReader   = new JsonTextReader(streamReader);
-        
+        using StreamReader streamReader = new(body);
+        using JsonTextReader jsonReader = new(streamReader);
+
         UserPins? updateUserPins = serializer.Deserialize<UserPins>(jsonReader);
 
         //If the type is not correct, return null
         if (updateUserPins is null)
             return null;
-        
+
         //NOTE: the returned value in the packet capture has a few higher values than the ones sent in the request,
         //      so im not sure what we are supposed to return here, so im just passing it through with `profile_pins` nulled out
         database.UpdateUserPins(user, updateUserPins);
@@ -61,7 +60,8 @@ public class UserEndpoints : EndpointGroup
         updateUserPins.ProfilePins?.Clear();
 
         //Just return the same pins back to the client
-        return JsonConvert.SerializeObject(updateUserPins, new JsonSerializerSettings {
+        return JsonConvert.SerializeObject(updateUserPins, new JsonSerializerSettings
+        {
             NullValueHandling = NullValueHandling.Ignore,
         });
     }

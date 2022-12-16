@@ -1,6 +1,7 @@
 using Realms;
 using Refresh.GameServer.Authentication;
 using Refresh.GameServer.Types;
+using Refresh.GameServer.Types.Levels;
 using Refresh.GameServer.Types.UserData;
 using Refresh.HttpServer.Database;
 
@@ -14,7 +15,7 @@ public class RealmDatabaseProvider : IDatabaseProvider<RealmDatabaseContext>
     {
         this._configuration = new RealmConfiguration(Path.Join(Environment.CurrentDirectory, "refreshGameServer.realm"))
         {
-            SchemaVersion = 8,
+            SchemaVersion = 9,
             Schema = new[]
             {
                 typeof(GameUser),

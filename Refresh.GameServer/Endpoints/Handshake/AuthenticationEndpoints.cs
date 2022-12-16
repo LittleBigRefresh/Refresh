@@ -39,7 +39,7 @@ public class AuthenticationEndpoints : EndpointGroup
     }
 
     private static readonly Lazy<string?> NetworkSettingsFile
-        = new Lazy<string?>(() => 
+        = new(() => 
         {
             string path = Path.Combine(Environment.CurrentDirectory, "network_settings.nws");
 

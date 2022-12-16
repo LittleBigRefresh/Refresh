@@ -1,5 +1,7 @@
+using System.Xml.Serialization;
 using Refresh.GameServer.Database;
 using Refresh.GameServer.Types;
+using Refresh.GameServer.Types.Levels;
 using Refresh.GameServer.Types.UserData;
 using Refresh.HttpServer;
 using Refresh.HttpServer.Endpoints;
@@ -16,9 +18,26 @@ public class LevelEndpoints : EndpointGroup
     }
 
     [GameEndpoint("startPublish", ContentType.Xml)]
-    public GameLevel StartPublish(RequestContext context, GameUser user, RealmDatabaseContext database, string body)
+    public GameResourceLevel? StartPublish(RequestContext context, GameUser user, RealmDatabaseContext database, string body)
     {
         Console.WriteLine(body);
-        return new GameLevel();
+        
+        XmlSerializer serializer = new(typeof(GameLevel));
+        GameLevel level;
+        try
+        {
+            if (serializer.Deserialize(new StringReader(body)) is not GameLevel data) return null;
+            level = data;
+        }
+        catch (Exception e)
+        {
+            context.Logger.LogError(RefreshContext.UserContent, $"Failed to parse level data: {e}\n\nXML: {body}");
+            return null;
+        }
+
+        return new GameResourceLevel
+        {
+            Resources = level.XmlResources,
+        };
     }
 }
