@@ -17,12 +17,6 @@ public struct Response
     }
 
     #region Serialization setup
-    private static readonly XmlWriterSettings WriterSettings = new()
-    {
-        ConformanceLevel = ConformanceLevel.Document,
-        OmitXmlDeclaration = true,
-    };
-
     private static readonly XmlSerializerNamespaces Namespaces = new();
     private static readonly JsonSerializer _jsonSerializer = new();
 
@@ -37,7 +31,7 @@ public struct Response
         this.ContentType = contentType;
         this.StatusCode = statusCode;
 
-        if (skipSerialization || data == null || !contentType.IsSerializable())
+        if (skipSerialization || data is null or string || !contentType.IsSerializable())
         {
             this.Data = Encoding.Default.GetBytes(data?.ToString() ?? string.Empty);
             return;

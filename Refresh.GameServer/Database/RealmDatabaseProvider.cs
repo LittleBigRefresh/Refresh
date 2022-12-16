@@ -14,13 +14,14 @@ public class RealmDatabaseProvider : IDatabaseProvider<RealmDatabaseContext>
     {
         this._configuration = new RealmConfiguration(Path.Join(Environment.CurrentDirectory, "refreshGameServer.realm"))
         {
-            SchemaVersion = 6,
+            SchemaVersion = 8,
             Schema = new[]
             {
                 typeof(GameUser),
                 typeof(GameLocation),
                 typeof(UserPins),
                 typeof(Token),
+                typeof(GameLevel),
             },
             MigrationCallback = (migration, oldVersion) =>
             {
@@ -47,7 +48,7 @@ public class RealmDatabaseProvider : IDatabaseProvider<RealmDatabaseContext>
                         newUser.Pins = new UserPins();
                     }
                 }
-            }
+            },
         };
     }
 

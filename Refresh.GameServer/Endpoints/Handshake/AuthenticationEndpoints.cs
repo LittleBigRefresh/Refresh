@@ -7,7 +7,7 @@ using Refresh.HttpServer;
 using Refresh.HttpServer.Endpoints;
 using Refresh.HttpServer.Responses;
 
-namespace Refresh.GameServer.Endpoints;
+namespace Refresh.GameServer.Endpoints.Handshake;
 
 public class AuthenticationEndpoints : EndpointGroup
 {

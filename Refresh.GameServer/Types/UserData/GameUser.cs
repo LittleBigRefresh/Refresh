@@ -14,21 +14,34 @@ public class GameUser : RealmObject, IUser, INeedsPreparationBeforeSerialization
 
     [XmlElement("biography")] public string Description { get; set; } = "";
     
-    [XmlElement("location")] public GameLocation Location { get; set; }
+    [XmlElement("location")] public GameLocation Location { get; set; } = GameLocation.Zero;
     
-    [XmlIgnore] public UserPins Pins { get; set; } = new UserPins();
+    [XmlIgnore] public UserPins Pins { get; set; } = new();
 
     #region LBP Serialization Quirks
 
     [Ignored] [XmlAttribute("type")] public string? Type { get; set; }
     [Ignored] [XmlElement("npHandle")] public NameAndIcon? Handle { get; set; }
     
+    // TODO: Move the hellscape below to a source generator/partial class
+    [Ignored] [XmlElement("freeSlots")] public int? FreeSlots { get; set; }
+    [Ignored] [XmlElement("lbp2FreeSlots")] public int? FreeSlotsLBP2 { get; set; }
+    [Ignored] [XmlElement("lbp3FreeSlots")] public int? FreeSlotsLBP3 { get; set; }
+    [Ignored] [XmlElement("entitledSlots")] public int? EntitledSlots { get; set; }
+    [Ignored] [XmlElement("lbp2EntitledSlots")] public int? EntitledSlotsLBP2 { get; set; }
+    [Ignored] [XmlElement("lbp3EntitledSlots")] public int? EntitledSlotsLBP3 { get; set; }
+    [Ignored] [XmlElement("lbp1UsedSlots")] public int? UsedSlots { get; set; }
+    [Ignored] [XmlElement("lbp2UsedSlots")] public int? UsedSlotsLBP2 { get; set; }
+    [Ignored] [XmlElement("lbp3UsedSlots")] public int? UsedSlotsLBP3 { get; set; }
+    [Ignored] [XmlElement("lbp2PurchasedSlots")] public int? PurchasedSlotsLBP2 { get; set; }
+    [Ignored] [XmlElement("lbp3PurchasedSlots")] public int? PurchasedSlotsLBP3 { get; set; }
+    
     [Ignored]
     public class NameAndIcon
     {
         [XmlText] public string Username { get; set; } = string.Empty;
 
-        [XmlAttribute("icon")] public string IconHash { get; set; } = string.Empty;
+        [XmlAttribute("icon")] public string IconHash { get; set; } = "0";
     }
 
     public void PrepareForSerialization()
@@ -39,6 +52,21 @@ public class GameUser : RealmObject, IUser, INeedsPreparationBeforeSerialization
             Username = this.Username,
             IconHash = "",
         };
+        
+        this.FreeSlots = 20;
+        this.FreeSlotsLBP2 = 20;
+        this.FreeSlotsLBP3 = 20;
+        
+        this.EntitledSlots = 20;
+        this.EntitledSlotsLBP2 = 20;
+        this.EntitledSlotsLBP3 = 20;
+        
+        this.UsedSlots = 0;
+        this.UsedSlotsLBP2 = 0;
+        this.UsedSlotsLBP3 = 0;
+        
+        this.PurchasedSlotsLBP2 = 0;
+        this.PurchasedSlotsLBP3 = 0;
     }
     #endregion
 }

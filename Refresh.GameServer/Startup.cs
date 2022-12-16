@@ -14,6 +14,7 @@ server.UseAuthenticationProvider(new GameAuthenticationProvider());
 server.DiscoverEndpointsFromAssembly(Assembly.GetExecutingAssembly());
 
 #region Log unimplemented endpoints
+#if DEBUG
 
 const string endpointFile = "unimplementedEndpoints.txt";
 if(!File.Exists(endpointFile)) File.WriteAllText(endpointFile, string.Empty);
@@ -30,6 +31,7 @@ server.NotFound += (sender, context) =>
     File.WriteAllLines(endpointFile, unimplementedEndpoints);
 };
 
+#endif
 #endregion
 
 await server.StartAndBlockAsync();
