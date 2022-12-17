@@ -3,6 +3,7 @@ using JetBrains.Annotations;
 using MongoDB.Bson;
 using Realms;
 using Refresh.GameServer.Authentication;
+using Refresh.GameServer.Types.Levels;
 using Refresh.GameServer.Types.UserData;
 using Refresh.HttpServer.Database;
 
@@ -73,10 +74,7 @@ public class RealmDatabaseContext : IDatabaseContext
         this._realm.Write(() =>
         {
             if (data.Description != null) user.Description = data.Description;
-            if (data.Location != null)
-            {
-                user.Location = data.Location;
-            }
+            if (data.Location != null) user.Location = data.Location;
         });
     }
 
@@ -89,5 +87,17 @@ public class RealmDatabaseContext : IDatabaseContext
             foreach (long pinsAward in pinsUpdate.Progress) user.Pins.Progress.Add(pinsAward);
             foreach (long profilePins in pinsUpdate.ProfilePins) user.Pins.ProfilePins.Add(profilePins);
         });
+    }
+
+    public bool AddLevel(GameLevel level)
+    {
+        if (level.Publisher == null) throw new ArgumentNullException(nameof(level.Publisher));
+        
+        this._realm.Write(() =>
+        {
+            this._realm.Add(level);
+        });
+        
+        return true;
     }
 }
