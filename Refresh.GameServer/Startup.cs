@@ -2,6 +2,7 @@
 using Refresh.GameServer.Authentication;
 using Refresh.GameServer.Database;
 using Refresh.HttpServer;
+using Refresh.HttpServer.Storage;
 
 RefreshHttpServer server = new("http://+:10061/")
 {
@@ -10,6 +11,7 @@ RefreshHttpServer server = new("http://+:10061/")
 
 server.UseDatabaseProvider(new RealmDatabaseProvider());
 server.UseAuthenticationProvider(new GameAuthenticationProvider());
+server.UseDataStore(new FileSystemDataStore());
 
 server.DiscoverEndpointsFromAssembly(Assembly.GetExecutingAssembly());
 
