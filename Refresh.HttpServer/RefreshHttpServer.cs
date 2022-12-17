@@ -3,6 +3,7 @@ using System.Diagnostics;
 using System.Net;
 using System.Reflection;
 using System.Text;
+using System.Xml.Serialization;
 using JetBrains.Annotations;
 using NotEnoughLogs;
 using NotEnoughLogs.Loggers;
@@ -147,7 +148,21 @@ public class RefreshHttpServer
                             if(paramType == typeof(Stream)) invokeList.Add(body);
                             else if(paramType == typeof(string)) invokeList.Add(Encoding.Default.GetString(body.GetBuffer()));
                             else if(paramType == typeof(byte[])) invokeList.Add(body.GetBuffer());
-                            // TODO: Deserialize to paramType based on contentType here if we cant use the above simple types
+                            else if(attribute.ContentType == ContentType.Xml)
+                            {
+                                XmlSerializer serializer = new(paramType);
+                                try
+                                {
+                                    object? obj = serializer.Deserialize(new StreamReader(body));
+                                    if (obj == null) throw new Exception();
+                                    invokeList.Add(obj);
+                                }
+                                catch (Exception e)
+                                {
+                                    this._logger.LogError(RefreshContext.UserContent, $"Failed to parse object data: {e}\n\nXML: {body}");
+                                    return new Response(Array.Empty<byte>(), ContentType.Plaintext, HttpStatusCode.BadRequest);
+                                }
+                            }
                             // We can't find a valid type to send or deserialization failed
                             else return new Response(Array.Empty<byte>(), ContentType.Plaintext, HttpStatusCode.BadRequest);
 

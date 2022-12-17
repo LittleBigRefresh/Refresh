@@ -18,56 +18,24 @@ public class LevelEndpoints : EndpointGroup
     }
 
     [GameEndpoint("startPublish", ContentType.Xml)]
-    public GameResourceLevel? StartPublish(RequestContext context, GameUser user, RealmDatabaseContext database, string body)
+    public GameResourceLevel? StartPublish(RequestContext context, GameUser user, RealmDatabaseContext database, GameLevel body)
     {
-        Console.WriteLine(body);
-        
-        XmlSerializer serializer = new(typeof(GameLevel));
-        GameLevel level;
-        try
-        {
-            if (serializer.Deserialize(new StringReader(body)) is not GameLevel data) return null;
-            level = data;
-        }
-        catch (Exception e)
-        {
-            context.Logger.LogError(RefreshContext.UserContent, $"Failed to parse level data: {e}\n\nXML: {body}");
-            return null;
-        }
-
         return new GameResourceLevel
         {
-            Resources = level.XmlResources,
+            Resources = body.XmlResources,
         };
     }
 
     [GameEndpoint("publish", ContentType.Xml)]
-    public Response FinishPublishing(RequestContext context, GameUser user, RealmDatabaseContext database, string body)
+    public Response FinishPublishing(RequestContext context, GameUser user, RealmDatabaseContext database, GameLevel body)
     {
-        Console.WriteLine(body);
-        
-        XmlSerializer serializer = new(typeof(GameLevel));
-        GameLevel level;
-        try
-        {
-            if (serializer.Deserialize(new StringReader(body)) is not GameLevel data) 
-                return new Response(HttpStatusCode.BadRequest);
-            
-            level = data;
-        }
-        catch (Exception e)
-        {
-            context.Logger.LogError(RefreshContext.UserContent, $"Failed to parse level data: {e}\n\nXML: {body}");
-            return new Response(HttpStatusCode.BadRequest);
-        }
-
-        level.Publisher = user;
+        body.Publisher = user;
         
         // ReSharper disable once InvertIf
-        if (database.AddLevel(level))
+        if (database.AddLevel(body))
         {
-            level.PrepareForSerialization();
-            return new Response(level, ContentType.Xml);
+            body.PrepareForSerialization();
+            return new Response(body, ContentType.Xml);
         }
 
         return new Response(HttpStatusCode.BadRequest);
