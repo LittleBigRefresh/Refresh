@@ -100,4 +100,13 @@ public class RealmDatabaseContext : IDatabaseContext
         
         return true;
     }
+
+    public IEnumerable<GameLevel> GetLevelsByUser(GameUser user, int count, int skip) =>
+        this._realm.All<GameLevel>()
+            .Where(l => l.Publisher == user)
+            .AsEnumerable()
+            .Skip(skip)
+            .Take(count);
+
+    public int GetTotalLevelCount() => this._realm.All<GameLevel>().Count();
 }

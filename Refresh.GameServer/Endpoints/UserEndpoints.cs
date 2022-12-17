@@ -1,6 +1,7 @@
 using System.Xml.Serialization;
 using Newtonsoft.Json;
 using Refresh.GameServer.Database;
+using Refresh.GameServer.Types.Lists;
 using Refresh.GameServer.Types.UserData;
 using Refresh.HttpServer;
 using Refresh.HttpServer.Endpoints;
@@ -15,6 +16,29 @@ public class UserEndpoints : EndpointGroup
     {
         GameUser? user = database.GetUser(name);
         return user;
+    }
+
+    [GameEndpoint("users", Method.Get, ContentType.Xml)]
+    public GameUserList GetMultipleUsers(RequestContext context, RealmDatabaseContext database)
+    {
+        string[]? usernames = context.Request.QueryString.GetValues("u");
+        if (usernames == null) return new GameUserList();
+
+        List<GameUser> users = new(usernames.Length);
+
+        foreach (string username in usernames)
+        {
+            GameUser? user = database.GetUser(username);
+            if (user == null) continue;
+
+            user.PrepareForSerialization();
+            users.Add(user);
+        }
+
+        return new GameUserList
+        {
+            Users = users,
+        };
     }
 
     [GameEndpoint("updateUser", Method.Post, ContentType.Xml)]

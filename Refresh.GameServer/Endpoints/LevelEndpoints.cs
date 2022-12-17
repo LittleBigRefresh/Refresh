@@ -2,6 +2,7 @@ using System.Net;
 using System.Xml.Serialization;
 using Refresh.GameServer.Database;
 using Refresh.GameServer.Types.Levels;
+using Refresh.GameServer.Types.Lists;
 using Refresh.GameServer.Types.UserData;
 using Refresh.HttpServer;
 using Refresh.HttpServer.Endpoints;
@@ -12,9 +13,12 @@ namespace Refresh.GameServer.Endpoints;
 public class LevelEndpoints : EndpointGroup
 {
     [GameEndpoint("slots/by", ContentType.Xml)]
-    public string SlotsByUser(RequestContext context)
+    public GameMinimalLevelList SlotsByUser(RequestContext context, RealmDatabaseContext database, GameUser user)
     {
-        return "<slots total=\"0\" hint_start=\"0\"></slots>";
+        IEnumerable<GameMinimalLevel> list = database.GetLevelsByUser(user, 20, 0)
+            .Select(GameMinimalLevel.FromGameLevel);
+
+        return new GameMinimalLevelList(list, database.GetTotalLevelCount());
     }
 
     [GameEndpoint("startPublish", ContentType.Xml)]

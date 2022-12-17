@@ -35,14 +35,6 @@ public class GameUser : RealmObject, IUser, INeedsPreparationBeforeSerialization
     [Ignored] [XmlElement("lbp3UsedSlots")] public int? UsedSlotsLBP3 { get; set; }
     [Ignored] [XmlElement("lbp2PurchasedSlots")] public int? PurchasedSlotsLBP2 { get; set; }
     [Ignored] [XmlElement("lbp3PurchasedSlots")] public int? PurchasedSlotsLBP3 { get; set; }
-    
-    [Ignored]
-    public class NameAndIcon
-    {
-        [XmlText] public string Username { get; set; } = string.Empty;
-
-        [XmlAttribute("icon")] public string IconHash { get; set; } = "0";
-    }
 
     public void PrepareForSerialization()
     {
@@ -61,9 +53,9 @@ public class GameUser : RealmObject, IUser, INeedsPreparationBeforeSerialization
         this.EntitledSlotsLBP2 = 20;
         this.EntitledSlotsLBP3 = 20;
         
-        this.UsedSlots = 0;
-        this.UsedSlotsLBP2 = 0;
-        this.UsedSlotsLBP3 = 0;
+        this.UsedSlots = 1;
+        this.UsedSlotsLBP2 = 1;
+        this.UsedSlotsLBP3 = 1;
         
         this.PurchasedSlotsLBP2 = 0;
         this.PurchasedSlotsLBP3 = 0;

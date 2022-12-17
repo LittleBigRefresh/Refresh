@@ -1,4 +1,5 @@
 using System.Xml.Serialization;
+using Refresh.GameServer.Database;
 using Refresh.HttpServer;
 using Refresh.HttpServer.Endpoints;
 using Refresh.HttpServer.Responses;
@@ -14,10 +15,10 @@ public class PresenceEndpoints : EndpointGroup
     public int TotalPlayers(RequestContext context) => 1;
 
     [GameEndpoint("planetStats", Method.Get, ContentType.Xml)]
-    public LevelStatistics GetLevelStatistics(RequestContext context) => new()
+    public LevelStatistics GetLevelStatistics(RequestContext context, RealmDatabaseContext database) => new()
     {
+        TotalLevels = database.GetTotalLevelCount(),
         TotalTeamPicks = 0,
-        TotalLevels = 0,
     };
 
     [XmlRoot("planetStats")]
