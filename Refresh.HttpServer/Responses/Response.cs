@@ -25,6 +25,9 @@ public struct Response
     }
     #endregion
 
+    public Response(HttpStatusCode statusCode) : this("", ContentType.BinaryData, statusCode) 
+    {}
+
     public Response(object? data, ContentType contentType = ContentType.Html, HttpStatusCode statusCode = HttpStatusCode.OK, bool skipSerialization = false)
     {
         this.ContentType = contentType;
