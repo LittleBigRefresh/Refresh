@@ -13,6 +13,7 @@ using Refresh.HttpServer.Database.Dummy;
 using Refresh.HttpServer.Endpoints;
 using Refresh.HttpServer.Extensions;
 using Refresh.HttpServer.Responses;
+using Refresh.HttpServer.Storage;
 
 namespace Refresh.HttpServer;
 
@@ -24,6 +25,7 @@ public class RefreshHttpServer
 
     private IAuthenticationProvider<IUser> _authenticationProvider = new DummyAuthenticationProvider();
     private IDatabaseProvider<IDatabaseContext> _databaseProvider = new DummyDatabaseProvider();
+    private IDataStore _dataStore = new NullDataStore();
 
     public EventHandler<HttpListenerContext>? NotFound;
 
@@ -121,6 +123,7 @@ public class RefreshHttpServer
                         {
                             Request = context.Request,
                             Logger = this._logger,
+                            DataStore = this._dataStore,
                         },
                     };
 
@@ -284,5 +287,10 @@ public class RefreshHttpServer
     public void UseDatabaseProvider(IDatabaseProvider<IDatabaseContext> provider)
     {
         this._databaseProvider = provider;
+    }
+
+    public void UseDataStore(IDataStore dataStore)
+    {
+        this._dataStore = dataStore;
     }
 }
