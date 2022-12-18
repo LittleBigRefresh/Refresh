@@ -1,4 +1,3 @@
-using System.Xml.Serialization;
 using Newtonsoft.Json;
 using Refresh.GameServer.Database;
 using Refresh.GameServer.Types.Lists;
