@@ -9,7 +9,7 @@ public class GameMinimalLevel
     [XmlElement("icon")] public string IconHash { get; set; } = string.Empty;
     [XmlElement("description")] public string Description { get; set; } = string.Empty;
     [XmlElement("location")] public GameLocation Location { get; set; } = GameLocation.Zero;
-    [XmlElement("id")] public int SerializationId { get; set; }
+    [XmlElement("id")] public int LevelId { get; set; }
     [XmlElement("npHandle")] public NameAndIcon? Handle { get; set; }
     [XmlAttribute("type")] public string? Type { get; set; }
     
@@ -24,7 +24,7 @@ public class GameMinimalLevel
             IconHash = level.IconHash,
             Description = level.Description,
             Location = level.Location,
-            SerializationId = level.SerializationId,
+            LevelId = level.LevelId,
             Handle = level.Handle,
             Type = level.Type,
         };

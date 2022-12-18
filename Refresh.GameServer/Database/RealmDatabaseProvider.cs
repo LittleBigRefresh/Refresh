@@ -15,7 +15,7 @@ public class RealmDatabaseProvider : IDatabaseProvider<RealmDatabaseContext>
     {
         this._configuration = new RealmConfiguration(Path.Join(Environment.CurrentDirectory, "refreshGameServer.realm"))
         {
-            SchemaVersion = 9,
+            SchemaVersion = 10,
             Schema = new[]
             {
                 typeof(GameUser),
@@ -47,6 +47,21 @@ public class RealmDatabaseProvider : IDatabaseProvider<RealmDatabaseContext>
                     //In version 4, GameLocation went from TopLevel -> Embedded, and UserPins was added
                     if (oldVersion < 4) {
                         newUser.Pins = new UserPins();
+                    }
+                }
+                
+                // IQueryable<dynamic>? oldLevels = migration.OldRealm.DynamicApi.All("GameLevel");
+                IQueryable<GameLevel>? newLevels = migration.NewRealm.All<GameLevel>();
+
+                for (int i = 0; i < newLevels.Count(); i++)
+                {
+                    // dynamic oldLevel = oldLevels.ElementAt(i);
+                    GameLevel newLevel = newLevels.ElementAt(i);
+                    
+                    // In version 10, GameLevels switched to int-based ids.
+                    if (oldVersion < 10)
+                    {
+                        newLevel.LevelId = i + 1;
                     }
                 }
             },

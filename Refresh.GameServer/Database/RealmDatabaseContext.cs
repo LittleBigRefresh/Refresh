@@ -23,6 +23,15 @@ public class RealmDatabaseContext : IDatabaseContext
         this._realm.Dispose();
     }
     
+    private static readonly object IdLock = new();
+    private int GetNewId<T>() where T : IRealmObject
+    {
+        lock (IdLock)
+        {
+            return this._realm.All<T>().Count();
+        }
+    }
+    
     public GameUser CreateUser(string username)
     {
         GameUser user = new()
@@ -93,6 +102,7 @@ public class RealmDatabaseContext : IDatabaseContext
     public bool AddLevel(GameLevel level)
     {
         if (level.Publisher == null) throw new ArgumentNullException(nameof(level.Publisher));
+        level.LevelId = this.GetNewId<GameLevel>();
         
         this._realm.Write(() =>
         {

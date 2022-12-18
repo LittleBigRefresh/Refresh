@@ -10,7 +10,7 @@ namespace Refresh.GameServer.Types.Levels;
 [XmlType("slot")]
 public class GameLevel : RealmObject, INeedsPreparationBeforeSerialization
 {
-    [XmlIgnore] public ObjectId LevelId { get; set; } = ObjectId.GenerateNewId();
+    [XmlElement("id")] public int LevelId { get; set; }
     
     [XmlElement("name")] public string Title { get; set; } = string.Empty;
     [XmlElement("icon")] public string IconHash { get; set; } = string.Empty;
@@ -24,8 +24,7 @@ public class GameLevel : RealmObject, INeedsPreparationBeforeSerialization
     
     #region LBP Serialization Quirks
     [Ignored] [XmlAttribute("type")] public string? Type { get; set; }
-    [Ignored] [XmlElement("id")] public int SerializationId { get; set; }
-    
+
     [Ignored] [XmlElement("npHandle")] public NameAndIcon? Handle { get; set; }
 
     // Realm cant have IList types with setters? Fine, I'll play your game. ;p
@@ -46,7 +45,6 @@ public class GameLevel : RealmObject, INeedsPreparationBeforeSerialization
     public void PrepareForSerialization()
     {
         this.Type = "user";
-        this.SerializationId = this.LevelId.Timestamp;
         this.Handle = new NameAndIcon
         {
             Username = this.Publisher.Username,
