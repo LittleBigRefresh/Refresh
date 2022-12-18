@@ -114,6 +114,7 @@ public class RealmDatabaseContext : IDatabaseContext
         return true;
     }
 
+    [Pure]
     public IEnumerable<GameLevel> GetLevelsByUser(GameUser user, int count, int skip) =>
         this._realm.All<GameLevel>()
             .Where(l => l.Publisher == user)
@@ -121,5 +122,9 @@ public class RealmDatabaseContext : IDatabaseContext
             .Skip(skip)
             .Take(count);
 
+    [Pure]
     public int GetTotalLevelCount() => this._realm.All<GameLevel>().Count();
+
+    [Pure]
+    public GameLevel? GetLevelById(int id) => this._realm.All<GameLevel>().FirstOrDefault(l => l.LevelId == id);
 }

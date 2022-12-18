@@ -27,4 +27,13 @@ public class LevelEndpoints : EndpointGroup
 
         return new GameMinimalLevelList(list, database.GetTotalLevelCount());
     }
+
+    [GameEndpoint("s/user/{idStr}", ContentType.Xml)]
+    public GameLevel? LevelById(RequestContext context, RealmDatabaseContext database, string idStr)
+    {
+        int.TryParse(idStr, out int id);
+        if (id == default) return null;
+        
+        return database.GetLevelById(id);
+    }
 }
