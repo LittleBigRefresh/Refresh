@@ -1,6 +1,7 @@
 using System.Xml.Serialization;
 using MongoDB.Bson;
 using Realms;
+using Refresh.GameServer.Database;
 using Refresh.GameServer.Types.UserData;
 using Refresh.HttpServer.Serialization;
 
@@ -8,7 +9,7 @@ namespace Refresh.GameServer.Types.Levels;
 
 [XmlRoot("slot")]
 [XmlType("slot")]
-public class GameLevel : RealmObject, INeedsPreparationBeforeSerialization
+public class GameLevel : RealmObject, INeedsPreparationBeforeSerialization, ISequentialId
 {
     [XmlElement("id")] public int LevelId { get; set; }
     
@@ -19,6 +20,11 @@ public class GameLevel : RealmObject, INeedsPreparationBeforeSerialization
 
     [XmlElement("rootLevel")] public string RootResource { get; set; } = string.Empty;
     [XmlIgnore] public IList<string> Resources { get; } = new List<string>();
+    
+    public int SequentialId
+    {
+        set => this.LevelId = value;
+    }
 
     public GameUser Publisher { get; set; }
     

@@ -24,11 +24,17 @@ public class RealmDatabaseContext : IDatabaseContext
     }
     
     private static readonly object IdLock = new();
-    private int GetNewId<T>() where T : IRealmObject
+    private void AddSequentialObjectToDatabase<T>(T obj) where T : IRealmObject, ISequentialId
     {
         lock (IdLock)
         {
-            return this._realm.All<T>().Count();
+            this._realm.Write(() =>
+            {
+                int newId = this._realm.All<T>().Count() + 1;
+
+                obj.SequentialId = newId;
+                this._realm.Add(obj);
+            });
         }
     }
     
@@ -102,12 +108,8 @@ public class RealmDatabaseContext : IDatabaseContext
     public bool AddLevel(GameLevel level)
     {
         if (level.Publisher == null) throw new ArgumentNullException(nameof(level.Publisher));
-        level.LevelId = this.GetNewId<GameLevel>();
-        
-        this._realm.Write(() =>
-        {
-            this._realm.Add(level);
-        });
+
+        this.AddSequentialObjectToDatabase(level);
         
         return true;
     }
