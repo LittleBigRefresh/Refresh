@@ -37,12 +37,15 @@ public class RealmDatabaseContext : IDatabaseContext
         });
         return user;
     }
-
-    [Pure]
-    public GameUser? GetUser(ObjectId id) => this._realm.Find<GameUser>(id);
-    [Pure]
-    public GameUser? GetUser(string username) => this._realm.All<GameUser>().FirstOrDefault(u => u.Username == username);
     
+    [Pure]
+    [ContractAnnotation("null => null; notnull => canbenull")]
+    public GameUser? GetUser(string? username)
+    {
+        if (username == null) return null;
+        return this._realm.All<GameUser>().FirstOrDefault(u => u.Username == username);
+    }
+
     public Token GenerateTokenForUser(GameUser user)
     {
         Token token = new()
@@ -60,11 +63,10 @@ public class RealmDatabaseContext : IDatabaseContext
     }
 
     [Pure]
+    [ContractAnnotation("null => null; notnull => canbenull")]
     public GameUser? GetUserFromTokenData(string? tokenData)
     {
-        // ReSharper disable once ConvertIfStatementToReturnStatement
         if (tokenData == null) return null;
-        
         return this._realm.All<Token>().FirstOrDefault(t => t.TokenData == tokenData)?.User;
     }
 
