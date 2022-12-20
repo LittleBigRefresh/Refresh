@@ -9,7 +9,7 @@ This document details the steps and general tips on how to contribute to the Ref
 ## Software prerequisites
 - [.NET 7 SDK](https://dotnet.microsoft.com)
 - [Git](https://git-scm.com)
-- An IDE that supports .NET, Visual Studio, Visual Studio Code, JetBrains Rider, Eclipse, it's up to you!
+- An IDE that supports .NET; Visual Studio, Visual Studio Code, JetBrains Rider, Eclipse, it's up to you!
 - Any legally acquired PS3 or PSV LBP game, excluding Karting.
 - Access to [HEN](https://www.psx-place.com/threads/tutorial-ps3hen-the-great-ps3-hen-all-in-one-guide.24369/)/CFW (PS3), [Henkaku/Enso](https://vita.hacks.guide) (PSV), and/or [RPCS3](https://rpcs3.net) (PS3 on PC).
 
@@ -21,7 +21,9 @@ In order to use Git you must set up your configuration, this should ideally matc
 `$ git config --global user.email you@example.com`
 
 # Preparing your new development environment
-It's time to clone Refresh! Open a terminal to your working directory and clone the repository using Git
+It's almost time to clone Refresh! Create a fork by pressing the "Fork" button at the base of this repository.
+
+Afterwards, Open a terminal to your working directory and clone the repository using Git.
 
 `$ git clone https://github.com/LittleBigRefresh/Refresh`
 
