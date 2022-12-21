@@ -3,8 +3,8 @@
 This document details the steps and general tips on how to contribute to the Refresh private server software! Feel free to skip sections if you believe you're already set.
 
 ## Requirements:
-- Knowledge of the [.NET 7 SDK](https://learn.microsoft.com/dotnet/)
-- Ability to learn [Realm](https://realm.io), an easy to pick up database software
+- Basic knowledge of [.NET](https://learn.microsoft.com/dotnet/)
+- Ability to work with [Realm](https://realm.io) if necessary
 - Basic knowledge of "reverse engineering," specifically reading packet captures and (rarely) reading the game executable for the LBP series.
 
 ## Software prerequisites
