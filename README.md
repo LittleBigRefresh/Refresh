@@ -25,5 +25,7 @@ A work-in-progress second-generation custom server for LittleBigPlanet that focu
 1. `$ cd Refresh`
 1. `$ dotnet run -c Release --project Refresh.GameServer/`
 
+## Contributing
+To contribute to our project, it may be helpful to refer to our [contributing guide](CONTRIBUTING.md)!
 
 *Made with :heart: for the LittleBigPlanet community*

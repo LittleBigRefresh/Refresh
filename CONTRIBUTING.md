@@ -3,7 +3,8 @@
 This document details the steps and general tips on how to contribute to the Refresh private server software! Feel free to skip sections if you believe you're already set.
 
 ## Requirements:
-- Knowledge of the [.NET 7 SDK](https://learn.microsoft.com/dotnet/) and [Realm](https://realm.io) 
+- Knowledge of the [.NET 7 SDK](https://learn.microsoft.com/dotnet/)
+- Ability to learn [Realm](https://realm.io), an easy to pick up database software
 - Basic knowledge of "reverse engineering," specifically reading packet captures and (rarely) reading the game executable for the LBP series.
 
 ## Software prerequisites
@@ -23,13 +24,9 @@ In order to use Git you must set up your configuration, this should ideally matc
 # Preparing your new development environment
 It's almost time to clone Refresh! Create a fork by pressing the "Fork" button at the base of this repository.
 
-Afterwards, Open a terminal to your working directory and clone the repository using Git.
+Afterwards, Open a terminal to your working directory and clone the new fork using Git.
 
-`$ git clone https://github.com/LittleBigRefresh/Refresh`
-
-`$ cd Refresh`
-
-Restore the dependencies needed for development.
+Restore the dependencies needed for development after changing directory to the new fork.
 
 `$ dotnet restore`
 
@@ -41,7 +38,4 @@ To run the server software in **DEBUG** mode, simply write:
 
 Or use your IDE to do this for you.
 
-# Preparing your game for a connection to Refresh (PS3)
-# Preparing your game (continued) (PC)
-# Preparing your game (continued) (PSV)
-TBW
+### Follow up in the patching documentation for connecting using your choice of device, TBW
