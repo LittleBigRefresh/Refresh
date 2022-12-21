@@ -41,7 +41,7 @@ public class EndpointTests : ServerDependentTest
     public void MultipleEndpointAttributesWork()
     {
         (RefreshHttpServer server, HttpClient client) = this.Setup();
-        server.AddEndpointGroup<MultipleEndpointsTest>();
+        server.AddEndpointGroup<MultipleEndpoints>();
         
         HttpResponseMessage msg = client.Send(new HttpRequestMessage(HttpMethod.Get, "/a"));
         Assert.Multiple(async () =>

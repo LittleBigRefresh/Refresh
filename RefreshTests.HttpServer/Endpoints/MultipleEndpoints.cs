@@ -3,7 +3,7 @@ using Refresh.HttpServer.Endpoints;
 
 namespace RefreshTests.HttpServer.Endpoints;
 
-public class MultipleEndpointsTest : EndpointGroup
+public class MultipleEndpoints : EndpointGroup
 {
     [Endpoint("/a")]
     [Endpoint("/b")]

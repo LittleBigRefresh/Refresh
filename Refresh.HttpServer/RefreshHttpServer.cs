@@ -130,6 +130,9 @@ public class RefreshHttpServer
                             return new Response(Array.Empty<byte>(), ContentType.Plaintext, HttpStatusCode.Forbidden);
                     }
 
+                    HttpStatusCode nullCode = method.GetCustomAttribute<NullStatusCodeAttribute>()?.StatusCode ??
+                                              HttpStatusCode.NotFound;
+
                     // Build list to invoke endpoint method with
                     List<object?> invokeList = new() { 
                         new RequestContext // 1st argument is always the request context. This is fact, and is backed by an analyzer.
@@ -205,8 +208,7 @@ public class RefreshHttpServer
                     switch (val)
                     {
                         case null:
-                            // TODO: add attribute to method to declare what null response code should be
-                            return new Response(Array.Empty<byte>(), attribute.ContentType, HttpStatusCode.NotFound);
+                            return new Response(Array.Empty<byte>(), attribute.ContentType, nullCode);
                         case Response response:
                             return response;
                         default:
