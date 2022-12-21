@@ -4,6 +4,8 @@ using Refresh.GameServer.Database;
 using Refresh.HttpServer;
 using Refresh.HttpServer.Storage;
 
+RefreshConsole.AllocateConsole();
+
 RefreshHttpServer server = new("http://+:10061/")
 {
     AssumeAuthenticationRequired = true,
