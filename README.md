@@ -5,7 +5,7 @@ A work-in-progress second-generation custom server for LittleBigPlanet that focu
 [Join the Discord!](https://discord.gg/xN5yKdxmWG)
 
 <p align="center">
-  <img width="300" src="https://github.com/LittleBigRefresh/Branding/blob/main/icons/refresh_transparent_512x.png">
+  <img width="600" src="https://github.com/LittleBigRefresh/Branding/blob/main/logos/refresh_type_transparent.png">
 </p>
 
 # Building and running
