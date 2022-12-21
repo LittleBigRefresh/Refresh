@@ -1,6 +1,6 @@
 # New Contributor's Survival Guide
 
-This document details the steps and general tips on how to contribute to the Refresh private server software! Feel free to skip sections if you believe you're already set.
+This document details the steps and other important information on how to contribute to Refresh. Feel free to skip sections if you believe you're already set.
 
 ## Requirements:
 - Basic knowledge of [.NET](https://learn.microsoft.com/dotnet/)
