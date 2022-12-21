@@ -10,7 +10,7 @@ This document details the steps and general tips on how to contribute to the Ref
 ## Software prerequisites
 - [.NET 7 SDK](https://dotnet.microsoft.com)
 - [Git](https://git-scm.com)
-- An IDE that supports .NET; Visual Studio, Visual Studio Code, JetBrains Rider, Eclipse, it's up to you!
+- An IDE that supports .NET; Visual Studio, Visual Studio Code, JetBrains Rider, it's up to you!
 - Any legally acquired PS3 or PSV LBP game, excluding Karting.
 - Access to [HEN](https://www.psx-place.com/threads/tutorial-ps3hen-the-great-ps3-hen-all-in-one-guide.24369/)/CFW (PS3), [Henkaku/Enso](https://vita.hacks.guide) (PSV), and/or [RPCS3](https://rpcs3.net) (PS3 on PC).
 
