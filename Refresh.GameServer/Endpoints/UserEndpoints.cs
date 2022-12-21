@@ -1,3 +1,4 @@
+using System.Net;
 using Newtonsoft.Json;
 using Refresh.GameServer.Database;
 using Refresh.GameServer.Types.Lists;
@@ -48,6 +49,7 @@ public class UserEndpoints : EndpointGroup
     }
 
     [GameEndpoint("update_my_pins", Method.Get, ContentType.Xml)]
+    [NullStatusCode(HttpStatusCode.BadRequest)]
     public string? UpdatePins(RequestContext context, RealmDatabaseContext database, GameUser user, Stream body)
     {
         JsonSerializer serializer = new();

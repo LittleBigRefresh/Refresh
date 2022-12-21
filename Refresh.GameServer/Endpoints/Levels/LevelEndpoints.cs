@@ -1,3 +1,4 @@
+using System.Net;
 using Refresh.GameServer.Database;
 using Refresh.GameServer.Types.Levels;
 using Refresh.GameServer.Types.Lists;
@@ -11,6 +12,7 @@ namespace Refresh.GameServer.Endpoints.Levels;
 public class LevelEndpoints : EndpointGroup
 {
     [GameEndpoint("slots/by", ContentType.Xml)]
+    [NullStatusCode(HttpStatusCode.NotFound)]
     public GameMinimalLevelList? SlotsByUser(RequestContext context, RealmDatabaseContext database)
     {
         GameUser? user = database.GetUser(context.Request.QueryString["u"]);
@@ -29,6 +31,7 @@ public class LevelEndpoints : EndpointGroup
     }
 
     [GameEndpoint("s/user/{idStr}", ContentType.Xml)]
+    [NullStatusCode(HttpStatusCode.NotFound)]
     public GameLevel? LevelById(RequestContext context, RealmDatabaseContext database, string idStr)
     {
         int.TryParse(idStr, out int id);

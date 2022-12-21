@@ -1,3 +1,4 @@
+using System.Net;
 using System.Xml.Serialization;
 using NPTicket;
 using Refresh.GameServer.Authentication;
@@ -12,6 +13,7 @@ namespace Refresh.GameServer.Endpoints.Handshake;
 public class AuthenticationEndpoints : EndpointGroup
 {
     [GameEndpoint("login", Method.Post, ContentType.Xml)]
+    [NullStatusCode(HttpStatusCode.Forbidden)]
     [Authentication(false)]
     public LoginResponse? Authenticate(RequestContext context, RealmDatabaseContext database, Stream body)
     {
