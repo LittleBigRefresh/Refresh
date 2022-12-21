@@ -26,9 +26,6 @@ It's almost time to clone Refresh! Create a fork by pressing the "Fork" button a
 
 Afterwards, Open a terminal to your working directory and clone the new fork using Git.
 
-Restore the dependencies needed for development after changing directory to the new fork.
-
-`$ dotnet restore`
 
 Now, open the folder/workspace/solution with the IDE you chose. Explore the codebase, experiment, and have fun!
 
