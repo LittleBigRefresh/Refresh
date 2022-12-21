@@ -74,8 +74,20 @@ public class RefreshHttpServer
         this._databaseProvider.Initialize();
         
         this._logger.LogDebug(RefreshContext.Startup, "Starting listener...");
-        this._listener.Start();
-        
+        try
+        {
+            this._listener.Start();
+        }
+        catch(Exception e)
+        {
+            this._logger.LogCritical(RefreshContext.Startup, $"An exception occured while trying to start the listener: \n{e}");
+            this._logger.LogCritical(RefreshContext.Startup, "Visit this page to view troubleshooting steps: " +
+                                                             "https://littlebigrefresh.github.io/Docs/refresh-troubleshooting");
+            
+            this._logger.Dispose();
+            Environment.Exit(1);
+        }
+
         stopwatch.Stop();
         this._logger.LogInfo(RefreshContext.Startup, $"Ready to go! Startup tasks took {stopwatch.ElapsedMilliseconds}ms.");
     }
