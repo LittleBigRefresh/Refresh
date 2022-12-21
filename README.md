@@ -2,6 +2,8 @@
 
 A work-in-progress second-generation custom server for LittleBigPlanet that focuses on code quality and reliability.
 
+[Join the Discord!](https://discord.gg/xN5yKdxmWG)
+
 <p align="center">
   <img width="300" src="https://github.com/LittleBigRefresh/Branding/blob/main/icons/refresh_transparent_512x.png">
 </p>
