@@ -16,7 +16,8 @@ public static partial class RefreshConsole
         // ReSharper disable once ConvertIfStatementToConditionalTernaryExpression
         if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
         {
-            Debug.WriteLine($"{nameof(AllocConsole)} result: {AllocConsole()}");
+            int res = AllocConsole();
+            Debug.WriteLine($"{nameof(AllocConsole)} result: {res}");
         }
         else
         {
