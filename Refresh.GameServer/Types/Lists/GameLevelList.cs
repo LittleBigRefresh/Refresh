@@ -7,5 +7,6 @@ namespace Refresh.GameServer.Types.Lists;
 [XmlType("slots")]
 public class GameLevelList : GameList<Level>
 {
-    
+    [XmlElement("slot")]
+    public override List<Level> Items { get; set; }
 }

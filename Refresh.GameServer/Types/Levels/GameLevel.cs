@@ -11,7 +11,7 @@ namespace Refresh.GameServer.Types.Levels;
 [XmlType("slot")]
 public class GameLevel : RealmObject, INeedsPreparationBeforeSerialization, ISequentialId
 {
-    [XmlElement("id")] public int LevelId { get; set; }
+    [PrimaryKey] [Indexed] [XmlElement("id")] public int LevelId { get; set; }
     
     [XmlElement("name")] public string Title { get; set; } = string.Empty;
     [XmlElement("icon")] public string IconHash { get; set; } = string.Empty;
@@ -21,7 +21,7 @@ public class GameLevel : RealmObject, INeedsPreparationBeforeSerialization, ISeq
     [XmlElement("rootLevel")] public string RootResource { get; set; } = string.Empty;
     [XmlIgnore] public IList<string> Resources { get; } = new List<string>();
     
-    [XmlElement("firstPublished")] public long PublishDate { get; set; }
+    [XmlElement("firstPublished")] public long PublishDate { get; set; } // unix seconds
     [XmlElement("lastUpdated")] public long UpdateDate { get; set; }
     
     public int SequentialId
@@ -53,12 +53,15 @@ public class GameLevel : RealmObject, INeedsPreparationBeforeSerialization, ISeq
 
     public void PrepareForSerialization()
     {
-        this.Type = "user";
-        this.Handle = new NameAndIcon
+        if (this.Publisher != null)
         {
-            Username = this.Publisher.Username,
-            IconHash = string.Empty,
-        };
+            this.Type = "user";
+            this.Handle = NameAndIcon.FromUser(this.Publisher);
+        }
+        else
+        {
+            this.Type = "developer";
+        }
     }
     #endregion
 }

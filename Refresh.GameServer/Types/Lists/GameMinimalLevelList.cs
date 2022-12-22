@@ -14,4 +14,7 @@ public class GameMinimalLevelList : GameList<GameMinimalLevel>
         this.Total = total;
         this.Items = list.ToList();
     }
+
+    [XmlElement("slot")]
+    public override List<GameMinimalLevel> Items { get; set; }
 }

@@ -2,6 +2,7 @@ using System.Diagnostics.CodeAnalysis;
 using Realms;
 using Refresh.GameServer.Authentication;
 using Refresh.GameServer.Types;
+using Refresh.GameServer.Types.Comments;
 using Refresh.GameServer.Types.Levels;
 using Refresh.GameServer.Types.UserData;
 using Refresh.HttpServer.Database;
@@ -17,7 +18,7 @@ public class RealmDatabaseProvider : IDatabaseProvider<RealmDatabaseContext>
     {
         this._configuration = new RealmConfiguration(Path.Join(Environment.CurrentDirectory, "refreshGameServer.realm"))
         {
-            SchemaVersion = 11,
+            SchemaVersion = 12,
             Schema = new[]
             {
                 typeof(GameUser),
@@ -25,6 +26,7 @@ public class RealmDatabaseProvider : IDatabaseProvider<RealmDatabaseContext>
                 typeof(UserPins),
                 typeof(Token),
                 typeof(GameLevel),
+                typeof(GameComment),
             },
             MigrationCallback = (migration, oldVersion) =>
             {
@@ -52,6 +54,12 @@ public class RealmDatabaseProvider : IDatabaseProvider<RealmDatabaseContext>
                     //In version 4, GameLocation went from TopLevel -> Embedded, and UserPins was added
                     if (oldVersion < 4) {
                         newUser.Pins = new UserPins();
+                    }
+
+                    // In version 12, users were given IconHashes
+                    if (oldVersion < 12)
+                    {
+                        newUser.IconHash = "0";
                     }
                 }
                 

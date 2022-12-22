@@ -2,6 +2,7 @@ using System.Diagnostics.CodeAnalysis;
 using JetBrains.Annotations;
 using Realms;
 using Refresh.GameServer.Authentication;
+using Refresh.GameServer.Types.Comments;
 using Refresh.GameServer.Types.Levels;
 using Refresh.GameServer.Types.UserData;
 using Refresh.HttpServer.Database;
@@ -24,7 +25,7 @@ public class RealmDatabaseContext : IDatabaseContext
     }
     
     private static readonly object IdLock = new();
-    private void AddSequentialObjectToDatabase<T>(T obj) where T : IRealmObject, ISequentialId
+    private void AddSequentialObject<T>(T obj, IList<T>? list = null) where T : IRealmObject, ISequentialId
     {
         lock (IdLock)
         {
@@ -33,11 +34,25 @@ public class RealmDatabaseContext : IDatabaseContext
                 int newId = this._realm.All<T>().Count() + 1;
 
                 obj.SequentialId = newId;
+
                 this._realm.Add(obj);
             });
         }
+        
+        // Two writes are necessary here for some unexplainable reason
+        // We've already set a SequentialId so we can be outside the lock at this stage
+        if (list != null)
+        {
+            this._realm.Write(() =>
+            {
+                list.Add(obj);
+            });
+        }
     }
-    
+
+    private static long GetTimestampSeconds() => DateTimeOffset.UtcNow.ToUnixTimeSeconds();
+    private static long GetTimestampMilliseconds() => DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
+
     public GameUser CreateUser(string username)
     {
         GameUser user = new()
@@ -109,8 +124,12 @@ public class RealmDatabaseContext : IDatabaseContext
     {
         if (level.Publisher == null) throw new ArgumentNullException(nameof(level.Publisher));
 
-        this.AddSequentialObjectToDatabase(level);
+        this.AddSequentialObject(level);
         
+        long timestamp = GetTimestampSeconds();
+        level.PublishDate = timestamp;
+        level.UpdateDate = timestamp;
+
         return true;
     }
 
@@ -135,4 +154,24 @@ public class RealmDatabaseContext : IDatabaseContext
 
     [Pure]
     public GameLevel? GetLevelById(int id) => this._realm.All<GameLevel>().FirstOrDefault(l => l.LevelId == id);
+
+    public void PostCommentToProfile(GameUser profile, GameUser author, string content)
+    {
+        GameComment comment = new()
+        {
+            Author = author,
+            Content = content,
+            Timestamp = GetTimestampMilliseconds(),
+        };
+        
+        this.AddSequentialObject(comment, profile.ProfileComments);
+    }
+
+    public IEnumerable<GameComment> GetProfileComments(GameUser profile, int count, int skip) =>
+            profile.ProfileComments
+            .AsEnumerable()
+            .Skip(skip)
+            .Take(count);
+
+    public int GetTotalProfileComments(GameUser profile) => profile.ProfileComments.Count;
 }

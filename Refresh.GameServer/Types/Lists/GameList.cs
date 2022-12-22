@@ -9,11 +9,11 @@ public abstract class GameList<TItem>
 
     [XmlAttribute("hint_start")] public int NextPageStart
     {
-        get => 41;
+        get => this.Items.Count + 1;
         // ReSharper disable once ValueParameterNotUsed (will not serialize without setter)
         set {}
     }
-
-    [XmlElement("slot")]
-    public List<TItem> Items { get; set; } = new();
+    
+    [XmlIgnore]
+    public abstract List<TItem> Items { get; set; }
 }

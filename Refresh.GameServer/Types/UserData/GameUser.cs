@@ -1,6 +1,7 @@
 using System.Xml.Serialization;
 using MongoDB.Bson;
 using Realms;
+using Refresh.GameServer.Types.Comments;
 using Refresh.HttpServer.Authentication;
 using Refresh.HttpServer.Serialization;
 
@@ -11,6 +12,7 @@ public class GameUser : RealmObject, IUser, INeedsPreparationBeforeSerialization
 {
     [PrimaryKey] [Indexed] [XmlIgnore] public ObjectId UserId { get; set; } = ObjectId.GenerateNewId();
     [Indexed] [Required] [XmlIgnore] public string Username { get; set; } = string.Empty;
+    [XmlIgnore] public string IconHash { get; set; } = "0";
 
     [XmlElement("biography")] public string Description { get; set; } = "";
     
@@ -18,10 +20,14 @@ public class GameUser : RealmObject, IUser, INeedsPreparationBeforeSerialization
     
     [XmlIgnore] public UserPins Pins { get; set; } = new();
 
+    [XmlIgnore] public IList<GameComment> ProfileComments { get; }
+
     #region LBP Serialization Quirks
 
     [Ignored] [XmlAttribute("type")] public string? Type { get; set; }
     [Ignored] [XmlElement("npHandle")] public NameAndIcon? Handle { get; set; }
+    [Ignored] [XmlElement("commentCount")] public int? CommentCount { get; set; }
+    [Ignored] [XmlElement("commentsEnabled")] public bool? CommentsEnabled { get; set; }
     
     // TODO: Move the hellscape below to a source generator/partial class
     [Ignored] [XmlElement("freeSlots")] public int? FreeSlots { get; set; }
@@ -39,11 +45,9 @@ public class GameUser : RealmObject, IUser, INeedsPreparationBeforeSerialization
     public void PrepareForSerialization()
     {
         this.Type = "user";
-        this.Handle = new NameAndIcon
-        {
-            Username = this.Username,
-            IconHash = "",
-        };
+        this.Handle = NameAndIcon.FromUser(this);
+        this.CommentCount = this.ProfileComments.Count;
+        this.CommentsEnabled = true;
         
         this.FreeSlots = 20;
         this.FreeSlotsLBP2 = 20;
