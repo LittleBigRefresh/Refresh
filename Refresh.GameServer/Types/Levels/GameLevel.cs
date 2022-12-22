@@ -21,12 +21,15 @@ public class GameLevel : RealmObject, INeedsPreparationBeforeSerialization, ISeq
     [XmlElement("rootLevel")] public string RootResource { get; set; } = string.Empty;
     [XmlIgnore] public IList<string> Resources { get; } = new List<string>();
     
+    [XmlElement("firstPublished")] public long PublishDate { get; set; }
+    [XmlElement("lastUpdated")] public long UpdateDate { get; set; }
+    
     public int SequentialId
     {
         set => this.LevelId = value;
     }
 
-    public GameUser Publisher { get; set; }
+    public GameUser? Publisher { get; set; }
     
     #region LBP Serialization Quirks
     [Ignored] [XmlAttribute("type")] public string? Type { get; set; }

@@ -121,6 +121,14 @@ public class RealmDatabaseContext : IDatabaseContext
             .AsEnumerable()
             .Skip(skip)
             .Take(count);
+    
+    [Pure]
+    public IEnumerable<GameLevel> GetNewestLevels(int count, int skip) =>
+        this._realm.All<GameLevel>()
+            .OrderBy(l => l.PublishDate)
+            .AsEnumerable()
+            .Skip(skip)
+            .Take(count);
 
     [Pure]
     public int GetTotalLevelCount() => this._realm.All<GameLevel>().Count();

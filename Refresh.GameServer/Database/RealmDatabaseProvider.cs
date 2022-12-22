@@ -1,3 +1,4 @@
+using System.Diagnostics.CodeAnalysis;
 using Realms;
 using Refresh.GameServer.Authentication;
 using Refresh.GameServer.Types;
@@ -11,11 +12,12 @@ public class RealmDatabaseProvider : IDatabaseProvider<RealmDatabaseContext>
 {
     private RealmConfiguration _configuration = null!;
 
+    [SuppressMessage("ReSharper", "InvertIf")]
     public void Initialize()
     {
         this._configuration = new RealmConfiguration(Path.Join(Environment.CurrentDirectory, "refreshGameServer.realm"))
         {
-            SchemaVersion = 10,
+            SchemaVersion = 11,
             Schema = new[]
             {
                 typeof(GameUser),
@@ -26,6 +28,9 @@ public class RealmDatabaseProvider : IDatabaseProvider<RealmDatabaseContext>
             },
             MigrationCallback = (migration, oldVersion) =>
             {
+                // Get the current unix timestamp for when we add timestamps to objects
+                long timestamp = DateTimeOffset.UtcNow.ToUnixTimeSeconds();
+                
                 // IQueryable<dynamic>? oldUsers = migration.OldRealm.DynamicApi.All("GameUser");
                 IQueryable<GameUser>? newUsers = migration.NewRealm.All<GameUser>();
 
@@ -62,6 +67,14 @@ public class RealmDatabaseProvider : IDatabaseProvider<RealmDatabaseContext>
                     if (oldVersion < 10)
                     {
                         newLevel.LevelId = i + 1;
+                    }
+
+                    // In version 11, timestamps were added to levels.
+                    if (oldVersion < 11)
+                    {
+                        // Since we dont have a reference point for when the level was actually uploaded, default to now
+                        newLevel.PublishDate = timestamp;
+                        newLevel.UpdateDate = timestamp;
                     }
                 }
             },
