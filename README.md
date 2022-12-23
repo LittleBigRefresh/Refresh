@@ -8,24 +8,18 @@ A work-in-progress second-generation custom server for LittleBigPlanet that focu
   <img width="600" src="https://github.com/LittleBigRefresh/Branding/blob/main/logos/refresh_type_transparent.png">
 </p>
 
-# Building and running
+# Running
 
 > **Warning**:
 > Refresh is a heavy work-in-progress. Expect things to break, things to be deleted, and these instructions to change at any time.
 
-## Windows
+For building instructions, please view the [contributing guide](CONTRIBUTING.md).
 
-1. Install [Git for Windows](https://gitforwindows.org/)
-2. Install [.NET 7 SDK](https://dotnet.microsoft.com/en-us/download/dotnet/7.0)
-3. Open up a command prompt (win+R, type `cmd`, hit enter)
-4. `$ git clone https://github.com/LittleBigRefresh/Refresh.git`
-5. `$ cd Refresh`
-6. `$ dotnet run -c Release --project Refresh.GameServer/`
+1. [View the latest build artifacts](https://github.com/LittleBigRefresh/Refresh/actions/workflows/dotnet.yml)
+1. Click the top-most link that has a checkmark next to it.
+1. Download the latest artifact for your OS, extract it somewhere most convenient to you, and run it!
 
-## Linux/macOS
-1. `$ git clone https://github.com/LittleBigRefresh/Refresh.git`
-1. `$ cd Refresh`
-1. `$ dotnet run -c Release --project Refresh.GameServer/`
+To update, you can simply repeat this process, overwriting the previous files.
 
 ## Contributing
 To contribute to our project, it may be helpful to refer to our [contributing guide](CONTRIBUTING.md)!
