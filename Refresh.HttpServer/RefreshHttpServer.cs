@@ -85,7 +85,7 @@ public class RefreshHttpServer
                                                              "https://littlebigrefresh.github.io/Docs/refresh-troubleshooting");
             
             this._logger.Dispose();
-            Environment.Exit(1);
+            RefreshConsole.WaitForInputAndExit(1);
         }
 
         stopwatch.Stop();
