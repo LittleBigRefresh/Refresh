@@ -3,6 +3,8 @@ using Refresh.GameServer.Types.Levels;
 
 namespace Refresh.GameServer.Types.Lists;
 
+#nullable disable
+
 [XmlRoot("slots")]
 [XmlType("slots")]
 public class GameMinimalLevelList : GameList<GameMinimalLevel>

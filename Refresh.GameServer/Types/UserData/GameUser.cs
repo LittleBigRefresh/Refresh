@@ -20,7 +20,9 @@ public class GameUser : RealmObject, IUser, INeedsPreparationBeforeSerialization
     
     [XmlIgnore] public UserPins Pins { get; set; } = new();
 
+#pragma warning disable CS8618
     [XmlIgnore] public IList<GameComment> ProfileComments { get; }
+#pragma warning restore CS8618
 
     #region LBP Serialization Quirks
 

@@ -1,7 +1,10 @@
+using System.Diagnostics.CodeAnalysis;
 using Newtonsoft.Json;
 using Realms;
 
 namespace Refresh.GameServer.Types.UserData; 
+
+#nullable disable
 
 public class UserPins : EmbeddedObject {
 	[JsonProperty(PropertyName = "progress")]
