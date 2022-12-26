@@ -1,6 +1,7 @@
 using System.Net;
 using JetBrains.Annotations;
 using Refresh.GameServer.Database;
+using Refresh.GameServer.Extensions;
 using Refresh.GameServer.Types.Levels;
 using Refresh.GameServer.Types.Lists;
 using Refresh.GameServer.Types.UserData;
@@ -19,7 +20,7 @@ public class LevelEndpoints : EndpointGroup
         GameUser? user = database.GetUser(context.Request.QueryString["u"]);
         if (user == null) return null;
 
-        (int skip, int count) = this.GetPageData(context);
+        (int skip, int count) = context.GetPageData();
 
         IEnumerable<GameMinimalLevel> list = database.GetLevelsByUser(user, count, skip)
             .Select(GameMinimalLevel.FromGameLevel);
@@ -30,7 +31,7 @@ public class LevelEndpoints : EndpointGroup
     [GameEndpoint("slots", ContentType.Xml)]
     public GameMinimalLevelList NewestLevels(RequestContext context, RealmDatabaseContext database)
     {
-        (int skip, int count) = this.GetPageData(context);
+        (int skip, int count) = context.GetPageData();
         
         IEnumerable<GameMinimalLevel> list = database.GetNewestLevels(count, skip)
             .Select(GameMinimalLevel.FromGameLevel);
@@ -46,17 +47,5 @@ public class LevelEndpoints : EndpointGroup
         if (id == default) return null;
         
         return database.GetLevelById(id);
-    }
-
-    [Pure]
-    private (int, int) GetPageData(RequestContext context)
-    {
-        int.TryParse(context.Request.QueryString["pageStart"], out int skip);
-        if (skip != default) skip--;
-        
-        int.TryParse(context.Request.QueryString["pageSize"], out int count);
-        if (count == default) count = 20;
-
-        return (skip, count);
     }
 }

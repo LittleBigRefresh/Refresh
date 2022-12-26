@@ -1,6 +1,7 @@
 using System.Net;
 using JetBrains.Annotations;
 using Refresh.GameServer.Database;
+using Refresh.GameServer.Extensions;
 using Refresh.GameServer.Types.Comments;
 using Refresh.GameServer.Types.Lists;
 using Refresh.GameServer.Types.UserData;
@@ -29,24 +30,11 @@ public class CommentEndpoints : EndpointGroup
         GameUser? profile = database.GetUser(username);
         if (profile == null) return null;
         
-        (int skip, int count) = this.GetPageData(context);
+        (int skip, int count) = context.GetPageData();
 
         List<GameComment> comments = database.GetProfileComments(profile, count, skip).ToList();
         foreach (GameComment comment in comments) comment.PrepareForSerialization();
 
         return new GameCommentList(comments);
-    }
-    
-    // TODO: move this to an extension method on RequestContext? this is duplicated from LevelEndpoints.cs
-    [Pure]
-    private (int, int) GetPageData(RequestContext context)
-    {
-        int.TryParse(context.Request.QueryString["pageStart"], out int skip);
-        if (skip != default) skip--;
-        
-        int.TryParse(context.Request.QueryString["pageSize"], out int count);
-        if (count == default) count = 20;
-
-        return (skip, count);
     }
 }
