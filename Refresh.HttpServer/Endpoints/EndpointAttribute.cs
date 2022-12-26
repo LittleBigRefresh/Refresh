@@ -61,15 +61,14 @@ public class EndpointAttribute : Attribute
     }
 
     [SuppressMessage("ReSharper", "ConvertIfStatementToReturnStatement")]
-    public bool UriMatchesRoute(Uri? uri, out Dictionary<string, string> parameters)
+    public bool UriMatchesRoute(Uri? uri, Method method, out Dictionary<string, string> parameters)
     {
         parameters = new Dictionary<string, string>();
         if (uri == null) return false;
         
         string path = uri.AbsolutePath;
-                    
-        // TODO: check http method
-        
+
+        if (method != this.Method) return false;
         if (this.FullRoute == path) return true;
         if (this._parameterIndexes.Count != 0)
         {

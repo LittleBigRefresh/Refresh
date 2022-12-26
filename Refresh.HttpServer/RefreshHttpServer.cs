@@ -118,7 +118,13 @@ public class RefreshHttpServer
 
                 foreach (EndpointAttribute attribute in attributes)
                 {
-                    if(!attribute.UriMatchesRoute(context.Request.Url, out Dictionary<string, string> parameters)) continue;
+                    if (!attribute.UriMatchesRoute(
+                            context.Request.Url,
+                            MethodUtils.FromString(context.Request.HttpMethod),
+                            out Dictionary<string, string> parameters))
+                    {
+                        continue;
+                    }
                     
                     this._logger.LogTrace(RefreshContext.Request, $"Handling request with {group.GetType().Name}.{method.Name}");
 

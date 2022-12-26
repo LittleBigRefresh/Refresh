@@ -1,6 +1,7 @@
 using System.Net;
 using Refresh.HttpServer;
 using Refresh.HttpServer.Endpoints;
+using Refresh.HttpServer.Responses;
 using RefreshTests.HttpServer.Endpoints;
 
 namespace RefreshTests.HttpServer.Tests;
@@ -13,7 +14,7 @@ public class RoutingTests : ServerDependentTest
         EndpointAttribute attribute = new("/1234/1234");
         
         Assert.That(attribute.FullRoute, Is.EqualTo("/1234/1234"));
-        bool matches = attribute.UriMatchesRoute(new Uri("/1234/1234"), out Dictionary<string, string> parameters);
+        bool matches = attribute.UriMatchesRoute(new Uri("/1234/1234"), Method.Get, out Dictionary<string, string> parameters);
         
         Assert.Multiple(() =>
         {
@@ -29,7 +30,7 @@ public class RoutingTests : ServerDependentTest
         
         Assert.That(attribute.FullRoute, Is.EqualTo("/1234/1234/_"));
         
-        bool matches = attribute.UriMatchesRoute(new Uri("/1234/1234/asdf"), out Dictionary<string, string> parameters);
+        bool matches = attribute.UriMatchesRoute(new Uri("/1234/1234/asdf"), Method.Get, out Dictionary<string, string> parameters);
         Assert.Multiple(() =>
         {
             Assert.That(matches, Is.True);
