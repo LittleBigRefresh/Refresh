@@ -6,4 +6,5 @@ public enum RefreshContext
     Request,
     Authentication,
     UserContent,
+    Filter,
 }

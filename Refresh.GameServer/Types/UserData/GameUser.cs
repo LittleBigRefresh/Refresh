@@ -24,6 +24,8 @@ public partial class GameUser : RealmObject, IUser, INeedsPreparationBeforeSeria
     [XmlIgnore] public IList<GameComment> ProfileComments { get; }
 #pragma warning restore CS8618
 
+    public override string ToString() => $"{this.Username} ({this.UserId})";
+
     #region LBP Serialization Quirks
 
     [Ignored] [XmlAttribute("type")] public string? Type { get; set; }

@@ -76,4 +76,18 @@ public class UserEndpoints : EndpointGroup
             NullValueHandling = NullValueHandling.Ignore,
         });
     }
+
+    /// <summary>
+    /// Censor ("filter") strings sent by the client. Used for chat messages, speech bubble contents, etc.
+    /// </summary>
+    /// <param name="context">The request context.</param>
+    /// <param name="body">The string to censor.</param>
+    /// <param name="user">The user saying the string. Used for logging</param>
+    /// <returns>The string shown in-game.</returns>
+    [GameEndpoint("filter", Method.Post)]
+    public string Filter(RequestContext context, string body, GameUser user)
+    {
+        context.Logger.LogInfo(RefreshContext.Filter, $"<{user}>: {body}");
+        return body;
+    }
 }
