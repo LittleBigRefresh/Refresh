@@ -25,7 +25,8 @@ public class RealmDatabaseContext : IDatabaseContext
     }
     
     private static readonly object IdLock = new();
-    private void AddSequentialObject<T>(T obj, IList<T>? list = null) where T : IRealmObject, ISequentialId
+    // ReSharper disable once SuggestBaseTypeForParameter
+    private void AddSequentialObject<T>(T obj, IList<T>? list = null, Action? writtenCallback = null) where T : IRealmObject, ISequentialId
     {
         lock (IdLock)
         {
@@ -36,6 +37,7 @@ public class RealmDatabaseContext : IDatabaseContext
                 obj.SequentialId = newId;
 
                 this._realm.Add(obj);
+                if(list == null) writtenCallback?.Invoke();
             });
         }
         
@@ -46,6 +48,7 @@ public class RealmDatabaseContext : IDatabaseContext
             this._realm.Write(() =>
             {
                 list.Add(obj);
+                writtenCallback?.Invoke();
             });
         }
     }
@@ -124,11 +127,12 @@ public class RealmDatabaseContext : IDatabaseContext
     {
         if (level.Publisher == null) throw new ArgumentNullException(nameof(level.Publisher));
 
-        this.AddSequentialObject(level);
-        
         long timestamp = GetTimestampSeconds();
-        level.PublishDate = timestamp;
-        level.UpdateDate = timestamp;
+        this.AddSequentialObject(level, writtenCallback: () =>
+        {
+            level.PublishDate = timestamp;
+            level.UpdateDate = timestamp;
+        });
 
         return true;
     }
