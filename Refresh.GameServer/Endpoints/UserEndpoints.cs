@@ -1,4 +1,5 @@
 using System.Net;
+using System.Xml.Serialization;
 using Newtonsoft.Json;
 using Refresh.GameServer.Database;
 using Refresh.GameServer.Types.Lists;
@@ -42,9 +43,38 @@ public class UserEndpoints : EndpointGroup
     }
 
     [GameEndpoint("updateUser", Method.Post, ContentType.Xml)]
-    public string UpdateUser(RequestContext context, RealmDatabaseContext database, GameUser user, UpdateUserData body)
+    [NullStatusCode(HttpStatusCode.BadRequest)]
+    public string? UpdateUser(RequestContext context, RealmDatabaseContext database, GameUser user, string body)
     {
-        database.UpdateUserData(user, body);
+        UpdateUserData? data = null;
+        
+        // This stupid shit is caused by LBP sending two different root elements for this endpoint
+        // LBP is just fantastic man
+        try
+        {
+            XmlSerializer serializer = new(typeof(UpdateUserDataProfile));
+            if (serializer.Deserialize(new StringReader(body)) is not UpdateUserDataProfile profileData) return null;
+            data = profileData;
+        }
+        catch
+        {
+            // ignored
+        }
+        
+        try
+        {
+            XmlSerializer serializer = new(typeof(UpdateUserDataPlanets));
+            if (serializer.Deserialize(new StringReader(body)) is not UpdateUserDataPlanets planetsData) return null;
+            data = planetsData;
+        }
+        catch
+        {
+            // ignored
+        }
+
+        if (data == null) return null;
+        
+        database.UpdateUserData(user, data);
         return string.Empty;
     }
 

@@ -4,6 +4,11 @@ using Realms;
 namespace Refresh.GameServer.Types.UserData;
 
 [XmlRoot("updateUser")]
+public class UpdateUserDataProfile : UpdateUserData {}
+
+[XmlRoot("user")]
+public class UpdateUserDataPlanets : UpdateUserData {}
+
 [Ignored]
 public class UpdateUserData
 {
