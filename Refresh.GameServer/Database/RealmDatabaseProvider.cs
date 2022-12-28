@@ -89,8 +89,22 @@ public class RealmDatabaseProvider : IDatabaseProvider<RealmDatabaseContext>
         };
     }
 
-    public RealmDatabaseContext GetContext()
+    private readonly ThreadLocal<Realm> _realmStorage = new ThreadLocal<Realm>();
+    public RealmDatabaseContext GetContext() 
     {
-        return new RealmDatabaseContext(Realm.GetInstance(this._configuration));
+        this._realmStorage.Value ??= Realm.GetInstance(this._configuration);
+        
+        return new RealmDatabaseContext(this._realmStorage.Value);
+    }
+    
+    public void Dispose() 
+    {
+        foreach (Realm realmStorageValue in this._realmStorage.Values) 
+        {
+            realmStorageValue.Refresh();
+            realmStorageValue.Dispose();
+        }
+
+        this._realmStorage.Dispose();
     }
 }

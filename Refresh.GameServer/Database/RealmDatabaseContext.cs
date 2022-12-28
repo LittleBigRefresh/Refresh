@@ -20,8 +20,8 @@ public class RealmDatabaseContext : IDatabaseContext
 
     public void Dispose()
     {
+        //NOTE: we dont dispose the realm here, because the same thread may use it again, so we just `Refresh()` it
         this._realm.Refresh();
-        this._realm.Dispose();
     }
     
     private static readonly object IdLock = new();

@@ -13,4 +13,6 @@ public class TestSwitchDatabaseProvider : IDatabaseProvider<TestSwitchDatabaseCo
     {
         return new TestSwitchDatabaseContext();
     }
+    
+    public void Dispose() {}
 }

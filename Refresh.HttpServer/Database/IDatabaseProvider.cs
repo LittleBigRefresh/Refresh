@@ -1,6 +1,6 @@
 namespace Refresh.HttpServer.Database;
 
-public interface IDatabaseProvider<out TDatabaseContext> where TDatabaseContext : IDatabaseContext
+public interface IDatabaseProvider<out TDatabaseContext> : IDisposable where TDatabaseContext : IDatabaseContext
 {
     void Initialize();
 
