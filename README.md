@@ -2,7 +2,7 @@
 
 A work-in-progress second-generation custom server for LittleBigPlanet that focuses on code quality and reliability.
 
-[Join the Discord!](https://discord.gg/xN5yKdxmWG)
+[![Discord](https://img.shields.io/discord/1049223665243389953?label=Discord)](https://discord.gg/xN5yKdxmWG)
 
 <p align="center">
   <img width="600" src="https://github.com/LittleBigRefresh/Branding/blob/main/logos/refresh_type_transparent.png">
