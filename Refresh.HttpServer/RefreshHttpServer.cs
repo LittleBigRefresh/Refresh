@@ -282,7 +282,8 @@ public class RefreshHttpServer
                 requestStopwatch.Stop();
 
                 this._logger.LogInfo(RefreshContext.Request, $"Served request to {context.Request.RemoteEndPoint}: " +
-                                                          $"{context.Response.StatusCode} on '{context.Request.Url?.PathAndQuery}' " +
+                                                          $"{context.Response.StatusCode} on " +
+                                                          $"{context.Request.HttpMethod} '{context.Request.Url?.PathAndQuery}' " +
                                                           $"({requestStopwatch.ElapsedMilliseconds}ms)");
 
                 context.Response.Close();
