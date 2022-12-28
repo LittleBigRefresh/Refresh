@@ -11,7 +11,9 @@ RefreshHttpServer server = new("http://+:10061/")
     AssumeAuthenticationRequired = true,
 };
 
-server.UseDatabaseProvider(new RealmDatabaseProvider());
+using RealmDatabaseProvider databaseProvider = new RealmDatabaseProvider();
+
+server.UseDatabaseProvider(databaseProvider);
 server.UseAuthenticationProvider(new GameAuthenticationProvider());
 server.UseDataStore(new FileSystemDataStore());
 

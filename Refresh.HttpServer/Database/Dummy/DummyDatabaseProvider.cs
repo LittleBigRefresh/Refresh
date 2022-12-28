@@ -11,4 +11,6 @@ public class DummyDatabaseProvider : IDatabaseProvider<DummyDatabaseContext>
     {
         return new DummyDatabaseContext();
     }
+    
+    public void Dispose() {}
 }

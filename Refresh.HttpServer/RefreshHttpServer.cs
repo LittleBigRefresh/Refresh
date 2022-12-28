@@ -100,14 +100,19 @@ public class RefreshHttpServer
 
             await Task.Factory.StartNew(() =>
             {
-                using IDatabaseContext database = this._databaseProvider.GetContext();
+                //Create a new lazy to get a database context, if the value is never accessed, a database instance is never passed
+                Lazy<IDatabaseContext> database = new Lazy<IDatabaseContext>(this._databaseProvider.GetContext());
+                //Handle the request
                 this.HandleRequest(context, database);
+                
+                if(database.IsValueCreated)
+                    database.Value.Dispose();
             });
         }
     }
 
     [Pure]
-    private Response? InvokeEndpointByRequest(HttpListenerContext context, IDatabaseContext database)
+    private Response? InvokeEndpointByRequest(HttpListenerContext context, Lazy<IDatabaseContext> database)
     {
         foreach (EndpointGroup group in this._endpoints)
         {
@@ -131,7 +136,7 @@ public class RefreshHttpServer
                     IUser? user = null;
                     if (method.GetCustomAttribute<AuthenticationAttribute>()?.Required ?? this.AssumeAuthenticationRequired)
                     {
-                        user = this._authenticationProvider.AuthenticateUser(context.Request, database);
+                        user = this._authenticationProvider.AuthenticateUser(context.Request, database.Value);
                         if (user == null)
                             return new Response(Array.Empty<byte>(), ContentType.Plaintext, HttpStatusCode.Forbidden);
                     }
@@ -199,7 +204,7 @@ public class RefreshHttpServer
                         else if(paramType.IsAssignableTo(typeof(IDatabaseContext)))
                         {
                             // Pass in a database context if the endpoint needs one.
-                            invokeList.Add(database);
+                            invokeList.Add(database.Value);
                         }
                         else if (paramType == typeof(string))
                         {
@@ -227,7 +232,7 @@ public class RefreshHttpServer
         return null;
     }
 
-    private void HandleRequest(HttpListenerContext context, IDatabaseContext database)
+    private void HandleRequest(HttpListenerContext context, Lazy<IDatabaseContext> database)
     {
         Stopwatch requestStopwatch = new();
         requestStopwatch.Start();
