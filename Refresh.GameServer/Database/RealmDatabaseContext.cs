@@ -59,6 +59,8 @@ public class RealmDatabaseContext : IDatabaseContext
     private static long GetTimestampSeconds() => DateTimeOffset.UtcNow.ToUnixTimeSeconds();
     private static long GetTimestampMilliseconds() => DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
 
+    #region Users
+
     public GameUser CreateUser(string username)
     {
         GameUser user = new()
@@ -125,6 +127,9 @@ public class RealmDatabaseContext : IDatabaseContext
             foreach (long profilePins in pinsUpdate.ProfilePins) user.Pins.ProfilePins.Add(profilePins);
         });
     }
+    #endregion
+
+    #region Levels
 
     public bool AddLevel(GameLevel level)
     {
@@ -157,11 +162,35 @@ public class RealmDatabaseContext : IDatabaseContext
             .Take(count);
 
     [Pure]
+    public (IEnumerable<GameLevel> list, int count) SearchForLevels(int count, int skip, string query)
+    {
+        string[] keywords = query.Split(' ');
+        if (keywords.Length == 0) return (Array.Empty<GameLevel>(), 0);
+        
+        IQueryable<GameLevel> levels = this._realm.All<GameLevel>();
+        
+        foreach (string keyword in keywords)
+        {
+            if(string.IsNullOrWhiteSpace(keyword)) continue;
+
+            levels = levels.Where(l =>
+                // l.LevelId.ToString() == keyword ||
+                l.Title.Like(keyword, false) ||
+                l.Description.Like(keyword, false)
+            );
+        }
+
+        return (levels.AsEnumerable().Skip(skip).Take(count), levels.Count());
+    }
+
+    [Pure]
     public int GetTotalLevelCount() => this._realm.All<GameLevel>().Count();
 
     [Pure]
     public GameLevel? GetLevelById(int id) => this._realm.All<GameLevel>().FirstOrDefault(l => l.LevelId == id);
-
+    #endregion
+    
+    #region Comments
     public void PostCommentToProfile(GameUser profile, GameUser author, string content)
     {
         GameComment comment = new()
@@ -181,4 +210,5 @@ public class RealmDatabaseContext : IDatabaseContext
             .Take(count);
 
     public int GetTotalProfileComments(GameUser profile) => profile.ProfileComments.Count;
+    #endregion
 }
