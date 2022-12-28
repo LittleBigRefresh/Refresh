@@ -40,7 +40,6 @@ public class LevelEndpoints : EndpointGroup
     }
 
     [GameEndpoint("slots/search", ContentType.Xml)]
-    [Authentication(false)]
     public GameMinimalLevelList SearchForLevels(RequestContext context, RealmDatabaseContext database)
     {
         (int skip, int count) = context.GetPageData();
