@@ -15,7 +15,6 @@ public partial class GameUser : RealmObject, IUser, INeedsPreparationBeforeSeria
     [XmlIgnore] public string IconHash { get; set; } = "0";
 
     [XmlElement("biography")] public string Description { get; set; } = "";
-    
     [XmlElement("location")] public GameLocation Location { get; set; } = GameLocation.Zero;
     
     [XmlIgnore] public UserPins Pins { get; set; } = new();
@@ -23,6 +22,8 @@ public partial class GameUser : RealmObject, IUser, INeedsPreparationBeforeSeria
 #pragma warning disable CS8618
     [XmlIgnore] public IList<GameComment> ProfileComments { get; }
 #pragma warning restore CS8618
+
+    [XmlElement("planets")] public string PlanetsHash { get; set; } = "0";
 
     public override string ToString() => $"{this.Username} ({this.UserId})";
 

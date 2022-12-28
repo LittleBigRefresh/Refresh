@@ -18,7 +18,7 @@ public class RealmDatabaseProvider : IDatabaseProvider<RealmDatabaseContext>
     {
         this._configuration = new RealmConfiguration(Path.Join(Environment.CurrentDirectory, "refreshGameServer.realm"))
         {
-            SchemaVersion = 12,
+            SchemaVersion = 13,
             Schema = new[]
             {
                 typeof(GameUser),
@@ -52,15 +52,13 @@ public class RealmDatabaseProvider : IDatabaseProvider<RealmDatabaseContext>
                     }
                     
                     //In version 4, GameLocation went from TopLevel -> Embedded, and UserPins was added
-                    if (oldVersion < 4) {
-                        newUser.Pins = new UserPins();
-                    }
+                    if (oldVersion < 4) newUser.Pins = new UserPins();
 
                     // In version 12, users were given IconHashes
-                    if (oldVersion < 12)
-                    {
-                        newUser.IconHash = "0";
-                    }
+                    if (oldVersion < 12) newUser.IconHash = "0";
+                    
+                    // In version 13, users were given PlanetsHashes
+                    if (oldVersion < 13) newUser.PlanetsHash = "0";
                 }
                 
                 // IQueryable<dynamic>? oldLevels = migration.OldRealm.DynamicApi.All("GameLevel");

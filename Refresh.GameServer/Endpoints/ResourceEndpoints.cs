@@ -1,6 +1,7 @@
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Net;
+using Refresh.GameServer.Types.Lists;
 using Refresh.HttpServer;
 using Refresh.HttpServer.Endpoints;
 using Refresh.HttpServer.Responses;
@@ -34,4 +35,8 @@ public class ResourceEndpoints : EndpointGroup
         Debug.Assert(data != null);
         return new Response(data, ContentType.BinaryData);
     }
+
+    [GameEndpoint("showNotUploaded", Method.Post, ContentType.Xml)]
+    public ResourceList ShowNotUploaded(RequestContext context, ResourceList body) 
+        => new(body.Items.Where(r => !context.DataStore.ExistsInStore(r)));
 }

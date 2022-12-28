@@ -112,8 +112,10 @@ public class RealmDatabaseContext : IDatabaseContext
     {
         this._realm.Write(() =>
         {
+            // TODO: use reflection to avoid hardcoding this?
             if (data.Description != null) user.Description = data.Description;
             if (data.Location != null) user.Location = data.Location;
+            if (data.PlanetsHash != null) user.PlanetsHash = data.PlanetsHash;
         });
     }
 

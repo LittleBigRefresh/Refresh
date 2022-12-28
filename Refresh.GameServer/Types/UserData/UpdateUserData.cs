@@ -14,6 +14,10 @@ public class UpdateUserData
 {
     [XmlElement("biography")]
     public string? Description { get; set; }
+    
     [XmlElement("location")]
     public GameLocation? Location { get; set; }
+    
+    [XmlElement("planets")]
+    public string? PlanetsHash { get; set; }
 }
