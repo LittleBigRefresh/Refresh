@@ -9,7 +9,7 @@ namespace Refresh.GameServer.Endpoints;
 
 public class ResourceEndpoints : EndpointGroup
 {
-    [GameEndpoint("upload/{hash}")]
+    [GameEndpoint("upload/{hash}", Method.Post)]
     [SuppressMessage("ReSharper", "ConvertIfStatementToReturnStatement")]
     public Response UploadResource(RequestContext context, string hash, byte[] body)
     {

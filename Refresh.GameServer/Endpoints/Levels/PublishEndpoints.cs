@@ -10,7 +10,7 @@ namespace Refresh.GameServer.Endpoints.Levels;
 
 public class PublishEndpoints : EndpointGroup
 {
-    [GameEndpoint("startPublish", ContentType.Xml)]
+    [GameEndpoint("startPublish", ContentType.Xml, Method.Post)]
     public GameResourceLevel StartPublish(RequestContext context, GameUser user, RealmDatabaseContext database, GameLevel body)
     {
         return new GameResourceLevel
@@ -19,7 +19,7 @@ public class PublishEndpoints : EndpointGroup
         };
     }
 
-    [GameEndpoint("publish", ContentType.Xml)]
+    [GameEndpoint("publish", ContentType.Xml, Method.Post)]
     public Response FinishPublishing(RequestContext context, GameUser user, RealmDatabaseContext database, GameLevel body)
     {
         body.Publisher = user;
