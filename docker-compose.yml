@@ -1,0 +1,17 @@
+version: '3'
+services:
+  gameserver:
+    image: refresh:latest
+    container_name: refresh-gameserver
+    build: .
+    restart: unless-stopped
+    ports:
+      - "10064:10061"
+    environment:
+      SERVER: GameServer
+    healthcheck:
+      test: wget --spider -t1 -nv http://localhost:10061/LITTLEBIGPLANETPS3_XML/totalPlayerCount || exit 1
+      timeout: 10s
+      retries: 5
+    volumes:
+      - "./data:/refresh/data:z"
