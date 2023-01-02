@@ -1,4 +1,5 @@
 using System.Diagnostics.CodeAnalysis;
+using System.Reflection;
 using JetBrains.Annotations;
 using Realms;
 using Refresh.GameServer.Authentication;
@@ -112,10 +113,17 @@ public class RealmDatabaseContext : IDatabaseContext
     {
         this._realm.Write(() =>
         {
-            // TODO: use reflection to avoid hardcoding this?
-            if (data.Description != null) user.Description = data.Description;
-            if (data.Location != null) user.Location = data.Location;
-            if (data.PlanetsHash != null) user.PlanetsHash = data.PlanetsHash;
+            PropertyInfo[] userProps = typeof(GameUser).GetProperties();
+            foreach (PropertyInfo prop in typeof(UpdateUserData).GetProperties())
+            {
+                object? value = prop.GetValue(data);
+                if(value == null) continue;
+
+                PropertyInfo? userProp = userProps.FirstOrDefault(p => p.Name == prop.Name);
+                if (userProp == null) throw new ArgumentOutOfRangeException(prop.Name);
+                
+                userProp.SetValue(user, value);
+            }
         });
     }
 
