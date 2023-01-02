@@ -87,7 +87,7 @@ public class RealmDatabaseProvider : IDatabaseProvider<RealmDatabaseContext>
         };
     }
 
-    private readonly ThreadLocal<Realm> _realmStorage = new ThreadLocal<Realm>();
+    private readonly ThreadLocal<Realm> _realmStorage = new(true);
     public RealmDatabaseContext GetContext() 
     {
         this._realmStorage.Value ??= Realm.GetInstance(this._configuration);
