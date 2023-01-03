@@ -97,7 +97,8 @@ public class RealmDatabaseProvider : IDatabaseProvider<RealmDatabaseContext>
     
     public void Dispose() 
     {
-        foreach (Realm realmStorageValue in this._realmStorage.Values) {
+        foreach (Realm realmStorageValue in this._realmStorage.Values) 
+        {
             // ReSharper disable once ConditionalAccessQualifierIsNonNullableAccordingToAPIContract
             realmStorageValue?.Dispose();
         }
