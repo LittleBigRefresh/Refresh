@@ -8,10 +8,9 @@ namespace Refresh.GameServer.Endpoints.Handshake;
 public class LicenseEndpoints : EndpointGroup
 {
     [GameEndpoint("eula")]
-    public string License(RequestContext context)
+    public string License(RequestContext context, IGameServerConfig config)
     {
-        //TODO: add configuration option for EULA
-        return "Welcome to Refresh!";
+        return config.LicenseText;
     }
 
     [GameEndpoint("announce")]

@@ -53,7 +53,6 @@ public static partial class RefreshConsole
     /// it flashes startup errors leaving no chance for the user to read them.
     /// </summary>
     /// <param name="code">The exit code</param>
-    // TODO: Configuration option for advanced users to override this behaviour
     [ContractAnnotation("=> halt")]
     [DoesNotReturn]
     public static void WaitForInputAndExit(int code = 0)
