@@ -354,6 +354,8 @@ public class RefreshHttpServer
             .Build();
 
         this._config = config;
+        RefreshConsole.Config = config;
+        
         return config;
     }
 
@@ -384,5 +386,6 @@ public class RefreshHttpServer
     public void UseConfig(IConfig config)
     {
         this._config = config;
+        RefreshConsole.Config = config;
     }
 }
