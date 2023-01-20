@@ -58,7 +58,21 @@ public static partial class RefreshConsole
     [DoesNotReturn]
     public static void WaitForInputAndExit(int code = 0)
     {
-        if (WillConsoleBeDestroyed.Value)
+        bool overridePause = false;
+        
+        try
+        {
+            // When exiting from an exception, the default Refresh behavior on Windows is to pause before exiting if
+            // the console session is going to be destroyed. Setting this to true will override this behavior.
+            // Turn this on if you are hosting from inside a utility like screen/tmux and are having issues.
+            overridePause = Convert.ToBoolean(Environment.GetEnvironmentVariable("REFRESH_OVERRIDE_PAUSE_ON_INTERRUPTION"));
+        }
+        catch
+        {
+            // ignored
+        }
+        
+        if (!overridePause && WillConsoleBeDestroyed.Value)
         {
             Console.WriteLine("Press any key to continue...");
             Console.ReadKey();
