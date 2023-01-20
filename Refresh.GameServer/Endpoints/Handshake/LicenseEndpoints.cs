@@ -1,3 +1,4 @@
+using Refresh.GameServer.Configuration;
 using Refresh.HttpServer;
 using Refresh.HttpServer.Endpoints;
 using Refresh.HttpServer.Responses;
@@ -14,9 +15,8 @@ public class LicenseEndpoints : EndpointGroup
     }
 
     [GameEndpoint("announce")]
-    public string Announce(RequestContext context) 
+    public string Announce(RequestContext context, IGameServerConfig config) 
     {
-        //TODO: add configuration option for announce
-        return string.Empty;
+        return config.AnnounceText;
     }
 }

@@ -3,12 +3,16 @@ using System.Diagnostics;
 using System.Net;
 using System.Reflection;
 using System.Text;
+using System.Text.Json;
 using System.Xml.Serialization;
+using Config.Net;
+using Config.Net.Stores;
 using JetBrains.Annotations;
 using NotEnoughLogs;
 using NotEnoughLogs.Loggers;
 using Refresh.HttpServer.Authentication;
 using Refresh.HttpServer.Authentication.Dummy;
+using Refresh.HttpServer.Configuration;
 using Refresh.HttpServer.Database;
 using Refresh.HttpServer.Database.Dummy;
 using Refresh.HttpServer.Endpoints;
@@ -27,6 +31,7 @@ public class RefreshHttpServer
     private IAuthenticationProvider<IUser> _authenticationProvider = new DummyAuthenticationProvider();
     private IDatabaseProvider<IDatabaseContext> _databaseProvider = new DummyDatabaseProvider();
     private IDataStore _dataStore = new NullDataStore();
+    private IConfig? _config;
 
     public EventHandler<HttpListenerContext>? NotFound;
 
@@ -206,6 +211,13 @@ public class RefreshHttpServer
                             // Pass in a database context if the endpoint needs one.
                             invokeList.Add(database.Value);
                         }
+                        else if (paramType.IsAssignableTo(typeof(IConfig)))
+                        {
+                            if (this._config == null)
+                                throw new InvalidOperationException("A config was attempted to be passed into an endpoint, but there was no config set on startup!");
+                            
+                            invokeList.Add(this._config);
+                        }
                         else if (paramType == typeof(string))
                         {
                             // Attempt to pass in a route parameter based on the method parameter's name
@@ -333,5 +345,44 @@ public class RefreshHttpServer
     public void UseDataStore(IDataStore dataStore)
     {
         this._dataStore = dataStore;
+    }
+
+    private TConfig UseConfig<TConfig>(IConfigStore store) where TConfig : class, IConfig
+    {
+        TConfig config = new ConfigurationBuilder<TConfig>()
+            .UseConfigStore(store)
+            .Build();
+
+        this._config = config;
+        return config;
+    }
+
+    // TODO: Configuration hot reload?
+    public TConfig UseJsonConfig<TConfig>(string filename) where TConfig : class, IConfig
+    {
+        bool exists = File.Exists(filename);
+        
+        JsonConfigStore store = new(filename, true);
+        TConfig config = this.UseConfig<TConfig>(store);
+
+        if (!exists)
+        {
+            this._logger.LogInfo(RefreshContext.Startup,
+                $"A new JSON configuration file was created at {Path.GetFullPath(filename)}.");
+            
+            // Write blank configuration to disk
+            using FileStream file = File.OpenWrite(filename);
+            JsonSerializer.Serialize(file, config, new JsonSerializerOptions
+            {
+                WriteIndented = true,
+            });
+        }
+
+        return config;
+    }
+
+    public void UseConfig(IConfig config)
+    {
+        this._config = config;
     }
 }
