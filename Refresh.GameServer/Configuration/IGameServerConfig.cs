@@ -10,4 +10,8 @@ public interface IGameServerConfig : IConfig
     
     [DefaultValue("Welcome to Refresh!")]
     public string LicenseText { get; }
+    
+    // TODO: Move to IConfig when .NET 8 is released (https://github.com/dotnet/runtime/pull/78788)
+    [DefaultValue("http://127.0.0.1:10061")]
+    public string ExternalUrl { get; }
 }
