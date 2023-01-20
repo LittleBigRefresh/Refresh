@@ -3,7 +3,6 @@ using System.Diagnostics.CodeAnalysis;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using JetBrains.Annotations;
-using Refresh.HttpServer.Configuration;
 
 namespace Refresh.HttpServer;
 
@@ -12,8 +11,6 @@ namespace Refresh.HttpServer;
 /// </summary>
 public static partial class RefreshConsole
 {
-    internal static IConfig? Config { private get; set; }
-    
     [LibraryImport("kernel32.dll", EntryPoint = "AllocConsole")]
     private static partial int AllocConsole();
     
@@ -56,16 +53,17 @@ public static partial class RefreshConsole
     /// it flashes startup errors leaving no chance for the user to read them.
     /// </summary>
     /// <param name="code">The exit code</param>
+    // TODO: Configuration option for advanced users to override this behaviour
     [ContractAnnotation("=> halt")]
     [DoesNotReturn]
     public static void WaitForInputAndExit(int code = 0)
     {
-        if (!(bool)Config?.RefreshOverridePauseOnInterruption && WillConsoleBeDestroyed.Value)
+        if (WillConsoleBeDestroyed.Value)
         {
             Console.WriteLine("Press any key to continue...");
             Console.ReadKey();
         }
-
+        
         Environment.Exit(code);
     }
 }
