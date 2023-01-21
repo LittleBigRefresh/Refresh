@@ -5,6 +5,12 @@ using Refresh.GameServer.Database;
 using Bunkum.HttpServer;
 using Bunkum.HttpServer.Storage;
 
+#if DEBUGLOCALBUNKUM
+Console.WriteLine("Starting Refresh with LOCAL Bunkum!");
+#elif DEBUG
+Console.WriteLine("Starting Refresh with NuGet Bunkum");
+#endif
+
 BunkumConsole.AllocateConsole();
 
 BunkumHttpServer server = new("http://+:10061/")
