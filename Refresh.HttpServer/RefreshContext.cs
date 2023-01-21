@@ -7,4 +7,5 @@ public enum RefreshContext
     Authentication,
     UserContent,
     Filter,
+    Configuration,
 }

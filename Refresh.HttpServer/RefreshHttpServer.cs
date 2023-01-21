@@ -3,10 +3,7 @@ using System.Diagnostics;
 using System.Net;
 using System.Reflection;
 using System.Text;
-using System.Text.Json;
 using System.Xml.Serialization;
-using Config.Net;
-using Config.Net.Stores;
 using JetBrains.Annotations;
 using NotEnoughLogs;
 using NotEnoughLogs.Loggers;
@@ -31,7 +28,10 @@ public class RefreshHttpServer
     private IAuthenticationProvider<IUser> _authenticationProvider = new DummyAuthenticationProvider();
     private IDatabaseProvider<IDatabaseContext> _databaseProvider = new DummyDatabaseProvider();
     private IDataStore _dataStore = new NullDataStore();
-    private IConfig? _config;
+    
+    private Config? _config;
+    private Type? _configType;
+    private RefreshConfig _refreshConfig;
 
     public EventHandler<HttpListenerContext>? NotFound;
 
@@ -49,6 +49,8 @@ public class RefreshHttpServer
             this._logger.LogInfo(RefreshContext.Startup, "Listening at URI " + endpoint);
             this._listener.Prefixes.Add(endpoint);
         }
+
+        this._refreshConfig = Config.LoadFromFile<RefreshConfig>("refresh.json", this._logger);
     }
 
     public void Start()
@@ -211,11 +213,15 @@ public class RefreshHttpServer
                             // Pass in a database context if the endpoint needs one.
                             invokeList.Add(database.Value);
                         }
-                        else if (paramType.IsAssignableTo(typeof(IConfig)))
+                        else if (paramType.IsAssignableTo(this._configType))
                         {
                             if (this._config == null)
                                 throw new InvalidOperationException("A config was attempted to be passed into an endpoint, but there was no config set on startup!");
                             
+                            invokeList.Add(this._config);
+                        }
+                        else if (paramType.IsAssignableTo(typeof(RefreshConfig)))
+                        {
                             invokeList.Add(this._config);
                         }
                         else if (paramType == typeof(string))
@@ -347,42 +353,11 @@ public class RefreshHttpServer
         this._dataStore = dataStore;
     }
 
-    private TConfig UseConfig<TConfig>(IConfigStore store) where TConfig : class, IConfig
+    // TODO: Configuration hot reload
+    // TODO: .ini? would be helpful as it supports comments and we can document in the file itself
+    public void UseJsonConfig<TConfig>(string filename) where TConfig : Config, new()
     {
-        TConfig config = new ConfigurationBuilder<TConfig>()
-            .UseConfigStore(store)
-            .Build();
-
-        this._config = config;
-        return config;
-    }
-
-    // TODO: Configuration hot reload?
-    public TConfig UseJsonConfig<TConfig>(string filename) where TConfig : class, IConfig
-    {
-        bool exists = File.Exists(filename);
-        
-        JsonConfigStore store = new(filename, true);
-        TConfig config = this.UseConfig<TConfig>(store);
-
-        if (!exists)
-        {
-            this._logger.LogInfo(RefreshContext.Startup,
-                $"A new JSON configuration file was created at {Path.GetFullPath(filename)}.");
-            
-            // Write blank configuration to disk
-            using FileStream file = File.OpenWrite(filename);
-            JsonSerializer.Serialize(file, config, new JsonSerializerOptions
-            {
-                WriteIndented = true,
-            });
-        }
-
-        return config;
-    }
-
-    public void UseConfig(IConfig config)
-    {
-        this._config = config;
+        this._config = Config.LoadFromFile<TConfig>(filename, this._logger);
+        this._configType = typeof(TConfig);
     }
 }

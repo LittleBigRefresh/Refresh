@@ -1,5 +1,4 @@
 ﻿using System.Reflection;
-using Config.Net.Stores;
 using Refresh.GameServer.Authentication;
 using Refresh.GameServer.Configuration;
 using Refresh.GameServer.Database;
@@ -18,7 +17,7 @@ using RealmDatabaseProvider databaseProvider = new();
 server.UseDatabaseProvider(databaseProvider);
 server.UseAuthenticationProvider(new GameAuthenticationProvider());
 server.UseDataStore(new FileSystemDataStore());
-server.UseJsonConfig<IGameServerConfig>("refreshGameServer.json");
+server.UseJsonConfig<GameServerConfig>("refreshGameServer.json");
 
 server.DiscoverEndpointsFromAssembly(Assembly.GetExecutingAssembly());
 

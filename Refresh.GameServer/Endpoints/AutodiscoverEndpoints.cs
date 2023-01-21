@@ -1,6 +1,7 @@
 using Newtonsoft.Json;
 using Refresh.GameServer.Configuration;
 using Refresh.HttpServer;
+using Refresh.HttpServer.Configuration;
 using Refresh.HttpServer.Endpoints;
 using Refresh.HttpServer.Responses;
 
@@ -24,7 +25,7 @@ public class AutodiscoverEndpoints : EndpointGroup
 
     [Endpoint("/autodiscover", ContentType.Json)]
     [Authentication(false)]
-    public DiscoverResponse Autodiscover(RequestContext context, IGameServerConfig config) => new()
+    public DiscoverResponse Autodiscover(RequestContext context, RefreshConfig config) => new()
     {
         Url = config.ExternalUrl,
     };
