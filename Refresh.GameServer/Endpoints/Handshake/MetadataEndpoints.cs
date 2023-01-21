@@ -46,7 +46,7 @@ public class MetadataEndpoints : EndpointGroup
         
         // Only log this warning once
         if(!created && networkSettings == null)
-            context.Logger.LogWarning(RefreshContext.Request, "network_settings.nws file is missing! " +
+            context.Logger.LogWarning(BunkumContext.Request, "network_settings.nws file is missing! " +
                                                               "LBP will work without it, but it may be relevant to you if you are an advanced user.");
         
         return networkSettings;

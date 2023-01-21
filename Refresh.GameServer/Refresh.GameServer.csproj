@@ -23,6 +23,7 @@
     </ItemGroup>
 
     <ItemGroup>
+      <PackageReference Include="Bunkum" Version="1.0.0" />
       <PackageReference Include="NPTicket" Version="1.0.0" />
       <PackageReference Include="Realm" Version="10.18.0" />
     </ItemGroup>

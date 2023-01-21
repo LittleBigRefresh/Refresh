@@ -24,7 +24,7 @@ public class AuthenticationEndpoints : EndpointGroup
         }
         catch(Exception e)
         {
-            context.Logger.LogWarning(RefreshContext.Authentication, "Could not read ticket: " + e);
+            context.Logger.LogWarning(BunkumContext.Authentication, "Could not read ticket: " + e);
             return null;
         }
 

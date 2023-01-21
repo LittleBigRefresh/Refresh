@@ -117,7 +117,7 @@ public class UserEndpoints : EndpointGroup
     [GameEndpoint("filter", Method.Post)]
     public string Filter(RequestContext context, string body, GameUser user)
     {
-        context.Logger.LogInfo(RefreshContext.Filter, $"<{user}>: {body}");
+        context.Logger.LogInfo(BunkumContext.Filter, $"<{user}>: {body}");
         return body;
     }
 }

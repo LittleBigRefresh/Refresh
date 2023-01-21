@@ -25,7 +25,7 @@ public class AutodiscoverEndpoints : EndpointGroup
 
     [Endpoint("/autodiscover", ContentType.Json)]
     [Authentication(false)]
-    public DiscoverResponse Autodiscover(RequestContext context, RefreshConfig config) => new()
+    public DiscoverResponse Autodiscover(RequestContext context, BunkumConfig config) => new()
     {
         Url = config.ExternalUrl,
     };
