@@ -14,6 +14,6 @@ public class GameAuthenticationProvider : IAuthenticationProvider<GameUser>
         RealmDatabaseContext database = (RealmDatabaseContext)db;
         Debug.Assert(database != null);
 
-        return database.GetUserFromTokenData(request.Headers["Authorization"]);
+        return database.GetUserFromTokenData(request.Cookies["MM_AUTH"]?.Value);
     }
 }

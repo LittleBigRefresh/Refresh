@@ -35,7 +35,7 @@ public class AuthenticationEndpoints : EndpointGroup
         
         return new LoginResponse
         {
-            TokenData = "\r\nAuthorization: " + token.TokenData,
+            TokenData = "MM_AUTH=" + token.TokenData,
             ServerBrand = "Refresh",
         };
     }
