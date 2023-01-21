@@ -1,5 +1,5 @@
 using JetBrains.Annotations;
-using Refresh.HttpServer;
+using Bunkum.HttpServer;
 
 namespace Refresh.GameServer.Extensions;
 

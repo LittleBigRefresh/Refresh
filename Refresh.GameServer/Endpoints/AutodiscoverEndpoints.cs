@@ -1,9 +1,9 @@
 using Newtonsoft.Json;
 using Refresh.GameServer.Configuration;
-using Refresh.HttpServer;
-using Refresh.HttpServer.Configuration;
-using Refresh.HttpServer.Endpoints;
-using Refresh.HttpServer.Responses;
+using Bunkum.HttpServer;
+using Bunkum.HttpServer.Configuration;
+using Bunkum.HttpServer.Endpoints;
+using Bunkum.HttpServer.Responses;
 
 namespace Refresh.GameServer.Endpoints;
 

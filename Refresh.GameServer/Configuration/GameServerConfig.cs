@@ -1,5 +1,5 @@
 using System.Diagnostics.CodeAnalysis;
-using Refresh.HttpServer.Configuration;
+using Bunkum.HttpServer.Configuration;
 
 namespace Refresh.GameServer.Configuration;
 

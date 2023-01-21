@@ -5,7 +5,7 @@ using Refresh.GameServer.Types;
 using Refresh.GameServer.Types.Comments;
 using Refresh.GameServer.Types.Levels;
 using Refresh.GameServer.Types.UserData;
-using Refresh.HttpServer.Database;
+using Bunkum.HttpServer.Database;
 
 namespace Refresh.GameServer.Database;
 

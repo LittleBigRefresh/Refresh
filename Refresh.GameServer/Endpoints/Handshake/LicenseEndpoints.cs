@@ -1,7 +1,7 @@
 using Refresh.GameServer.Configuration;
-using Refresh.HttpServer;
-using Refresh.HttpServer.Endpoints;
-using Refresh.HttpServer.Responses;
+using Bunkum.HttpServer;
+using Bunkum.HttpServer.Endpoints;
+using Bunkum.HttpServer.Responses;
 
 namespace Refresh.GameServer.Endpoints.Handshake;
 

@@ -1,6 +1,6 @@
 using JetBrains.Annotations;
-using Refresh.HttpServer.Endpoints;
-using Refresh.HttpServer.Responses;
+using Bunkum.HttpServer.Endpoints;
+using Bunkum.HttpServer.Responses;
 
 namespace Refresh.GameServer;
 

@@ -2,8 +2,8 @@ using System.Xml.Serialization;
 using MongoDB.Bson;
 using Realms;
 using Refresh.GameServer.Types.Comments;
-using Refresh.HttpServer.Authentication;
-using Refresh.HttpServer.Serialization;
+using Bunkum.HttpServer.Authentication;
+using Bunkum.HttpServer.Serialization;
 
 namespace Refresh.GameServer.Types.UserData;
 

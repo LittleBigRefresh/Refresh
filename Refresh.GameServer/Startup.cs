@@ -2,12 +2,12 @@
 using Refresh.GameServer.Authentication;
 using Refresh.GameServer.Configuration;
 using Refresh.GameServer.Database;
-using Refresh.HttpServer;
-using Refresh.HttpServer.Storage;
+using Bunkum.HttpServer;
+using Bunkum.HttpServer.Storage;
 
-RefreshConsole.AllocateConsole();
+BunkumConsole.AllocateConsole();
 
-RefreshHttpServer server = new("http://+:10061/")
+BunkumHttpServer server = new("http://+:10061/")
 {
     AssumeAuthenticationRequired = true,
 };

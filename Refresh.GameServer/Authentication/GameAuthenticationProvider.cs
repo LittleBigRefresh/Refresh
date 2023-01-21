@@ -2,8 +2,8 @@ using System.Diagnostics;
 using System.Net;
 using Refresh.GameServer.Database;
 using Refresh.GameServer.Types.UserData;
-using Refresh.HttpServer.Authentication;
-using Refresh.HttpServer.Database;
+using Bunkum.HttpServer.Authentication;
+using Bunkum.HttpServer.Database;
 
 namespace Refresh.GameServer.Authentication;
 
