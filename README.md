@@ -15,11 +15,12 @@ A work-in-progress second-generation custom server for LittleBigPlanet that focu
 
 For building instructions, please view the [contributing guide](CONTRIBUTING.md).
 
-1. [View the latest build artifacts](https://github.com/LittleBigRefresh/Refresh/actions/workflows/dotnet.yml)
-1. Click the top-most link that has a checkmark next to it.
-1. Download the latest artifact for your OS, extract it somewhere most convenient to you, and run it!
+1. [View the latest releases](https://github.com/LittleBigRefresh/Refresh/releases)
+1. Click the "assets" dropdown on the top-most release.
+1. Download the artifact for your OS, extract it somewhere most convenient to you, and run it!
 
 To update, you can simply repeat this process, overwriting the previous files.
+In the future updates can (optionally) be handled by Refresh itself.
 
 ## Contributing
 To contribute to our project, it may be helpful to refer to our [contributing guide](CONTRIBUTING.md)!
