@@ -4,18 +4,20 @@ using Realms;
 using Refresh.GameServer.Types.Comments;
 using Bunkum.HttpServer.Authentication;
 using Bunkum.HttpServer.Serialization;
+using Newtonsoft.Json;
 
 namespace Refresh.GameServer.Types.UserData;
 
 [XmlRoot("user")]
+[JsonObject(MemberSerialization.OptIn)]
 public partial class GameUser : RealmObject, IUser, INeedsPreparationBeforeSerialization
 {
-    [PrimaryKey] [Indexed] [XmlIgnore] public ObjectId UserId { get; set; } = ObjectId.GenerateNewId();
-    [Indexed] [Required] [XmlIgnore] public string Username { get; set; } = string.Empty;
-    [XmlIgnore] public string IconHash { get; set; } = "0";
+    [PrimaryKey] [Indexed] [XmlIgnore] [JsonProperty] public ObjectId UserId { get; set; } = ObjectId.GenerateNewId();
+    [Indexed] [Required] [XmlIgnore] [JsonProperty] public string Username { get; set; } = string.Empty;
+    [XmlIgnore] [JsonProperty] public string IconHash { get; set; } = "0";
 
-    [XmlElement("biography")] public string Description { get; set; } = "";
-    [XmlElement("location")] public GameLocation Location { get; set; } = GameLocation.Zero;
+    [XmlElement("biography")] [JsonProperty] public string Description { get; set; } = "";
+    [XmlElement("location")] [JsonProperty] public GameLocation Location { get; set; } = GameLocation.Zero;
     
     [XmlIgnore] public UserPins Pins { get; set; } = new();
 

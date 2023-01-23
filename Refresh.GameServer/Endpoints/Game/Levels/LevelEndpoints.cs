@@ -1,15 +1,14 @@
 using System.Net;
-using JetBrains.Annotations;
+using Bunkum.HttpServer;
+using Bunkum.HttpServer.Endpoints;
+using Bunkum.HttpServer.Responses;
 using Refresh.GameServer.Database;
 using Refresh.GameServer.Extensions;
 using Refresh.GameServer.Types.Levels;
 using Refresh.GameServer.Types.Lists;
 using Refresh.GameServer.Types.UserData;
-using Bunkum.HttpServer;
-using Bunkum.HttpServer.Endpoints;
-using Bunkum.HttpServer.Responses;
 
-namespace Refresh.GameServer.Endpoints.Levels;
+namespace Refresh.GameServer.Endpoints.Game.Levels;
 
 public class LevelEndpoints : EndpointGroup
 {
@@ -17,7 +16,7 @@ public class LevelEndpoints : EndpointGroup
     [NullStatusCode(HttpStatusCode.NotFound)]
     public GameMinimalLevelList? LevelsByUser(RequestContext context, RealmDatabaseContext database)
     {
-        GameUser? user = database.GetUser(context.Request.QueryString["u"]);
+        GameUser? user = database.GetUserByUsername(context.Request.QueryString["u"]);
         if (user == null) return null;
 
         (int skip, int count) = context.GetPageData();

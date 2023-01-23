@@ -1,22 +1,21 @@
 using System.Net;
-using JetBrains.Annotations;
+using Bunkum.HttpServer;
+using Bunkum.HttpServer.Endpoints;
+using Bunkum.HttpServer.Responses;
 using Refresh.GameServer.Database;
 using Refresh.GameServer.Extensions;
 using Refresh.GameServer.Types.Comments;
 using Refresh.GameServer.Types.Lists;
 using Refresh.GameServer.Types.UserData;
-using Bunkum.HttpServer;
-using Bunkum.HttpServer.Endpoints;
-using Bunkum.HttpServer.Responses;
 
-namespace Refresh.GameServer.Endpoints;
+namespace Refresh.GameServer.Endpoints.Game;
 
 public class CommentEndpoints : EndpointGroup
 {
     [GameEndpoint("postUserComment/{username}", ContentType.Xml)]
     public Response PostProfileComment(RequestContext context, RealmDatabaseContext database, string username, GameComment body, GameUser user)
     {
-        GameUser? profile = database.GetUser(username);
+        GameUser? profile = database.GetUserByUsername(username);
         if (profile == null) return new Response(HttpStatusCode.NotFound);
         
         database.PostCommentToProfile(profile, user, body.Content);
@@ -27,7 +26,7 @@ public class CommentEndpoints : EndpointGroup
     [NullStatusCode(HttpStatusCode.NotFound)]
     public GameCommentList? GetProfileComments(RequestContext context, RealmDatabaseContext database, string username)
     {
-        GameUser? profile = database.GetUser(username);
+        GameUser? profile = database.GetUserByUsername(username);
         if (profile == null) return null;
         
         (int skip, int count) = context.GetPageData();

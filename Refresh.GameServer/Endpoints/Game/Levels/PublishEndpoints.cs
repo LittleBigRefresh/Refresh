@@ -1,12 +1,12 @@
 using System.Net;
-using Refresh.GameServer.Database;
-using Refresh.GameServer.Types.Levels;
-using Refresh.GameServer.Types.UserData;
 using Bunkum.HttpServer;
 using Bunkum.HttpServer.Endpoints;
 using Bunkum.HttpServer.Responses;
+using Refresh.GameServer.Database;
+using Refresh.GameServer.Types.Levels;
+using Refresh.GameServer.Types.UserData;
 
-namespace Refresh.GameServer.Endpoints.Levels;
+namespace Refresh.GameServer.Endpoints.Game.Levels;
 
 public class PublishEndpoints : EndpointGroup
 {

@@ -1,6 +1,6 @@
 using System.Runtime.Serialization;
 using System.Xml.Serialization;
-using Refresh.GameServer.Endpoints.Handshake;
+using Refresh.GameServer.Endpoints.Game.Handshake;
 
 namespace Refresh.GameServer.Types;
 

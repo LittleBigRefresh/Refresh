@@ -1,9 +1,8 @@
-using Refresh.GameServer.Configuration;
 using Bunkum.HttpServer;
 using Bunkum.HttpServer.Endpoints;
-using Bunkum.HttpServer.Responses;
+using Refresh.GameServer.Configuration;
 
-namespace Refresh.GameServer.Endpoints.Handshake;
+namespace Refresh.GameServer.Endpoints.Game.Handshake;
 
 public class LicenseEndpoints : EndpointGroup
 {

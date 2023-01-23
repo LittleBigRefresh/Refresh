@@ -1,10 +1,10 @@
 using System.Xml.Serialization;
-using Refresh.GameServer.Types;
 using Bunkum.HttpServer;
 using Bunkum.HttpServer.Endpoints;
 using Bunkum.HttpServer.Responses;
+using Refresh.GameServer.Types;
 
-namespace Refresh.GameServer.Endpoints.Handshake;
+namespace Refresh.GameServer.Endpoints.Game.Handshake;
 
 public class MetadataEndpoints : EndpointGroup
 {
