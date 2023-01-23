@@ -9,6 +9,11 @@ public static class CategoryHandler
     // ReSharper disable once InconsistentNaming
     private static readonly List<LevelCategory> _categories = new()
     {
-        new LevelCategory("newest", "", false, nameof(RealmDatabaseContext.GetNewestLevels)),
+        new LevelCategory("newest", "", false, nameof(RealmDatabaseContext.GetNewestLevels))
+        {
+            Name = "Newest Levels",
+            Description = "Levels that were uploaded recently",
+            IconHash = "g820623",
+        },
     };
 }

@@ -1,12 +1,19 @@
 using System.Reflection;
+using System.Text.Json.Serialization;
+using Newtonsoft.Json;
 using Refresh.GameServer.Database;
 using Refresh.GameServer.Types.UserData;
 
 namespace Refresh.GameServer.Types.Levels.Categories;
 
+[JsonObject(MemberSerialization.OptIn)]
 public class LevelCategory
 {
     private static readonly Lazy<MethodInfo[]> Methods = new(() => typeof(RealmDatabaseContext).GetMethods());
+    
+    [JsonProperty] public string Name { get; set; } = "";
+    [JsonProperty] public string Description { get; set; } = "";
+    [JsonProperty] public string IconHash { get; set; } = "0";
     
     internal LevelCategory(string apiRoute, string gameRoute, bool requiresUser, string funcName)
     {
@@ -22,13 +29,13 @@ public class LevelCategory
         this._method = method;
     }
 
-    public readonly string ApiRoute;
+    [JsonProperty] public readonly string ApiRoute;
     public readonly string GameRoute;
     
-    private readonly bool _requiresUser;
+    [JsonProperty("RequiresUser")] private readonly bool _requiresUser;
     private readonly MethodInfo _method;
 
-    public IEnumerable<GameLevel>? Fetch(RealmDatabaseContext database, GameUser? user, int count, int skip)
+    public virtual IEnumerable<GameLevel>? Fetch(RealmDatabaseContext database, GameUser? user, int count, int skip)
     {
         if (this._requiresUser && user == null) return null;
         
