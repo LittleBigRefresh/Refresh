@@ -1,17 +1,22 @@
+using System.Net;
 using Bunkum.HttpServer;
 using Bunkum.HttpServer.Endpoints;
 using Refresh.GameServer.Database;
 using Refresh.GameServer.Types.Levels;
+using Refresh.GameServer.Types.Levels.Categories;
+using Refresh.GameServer.Types.UserData;
 
 namespace Refresh.GameServer.Endpoints.Api;
 
 public class LevelApiEndpoints : EndpointGroup
 {
-    // TODO: System for level categories so they can be unified
-    [ApiEndpoint("levels/newest")]
+    [ApiEndpoint("levels/{route}")]
     [Authentication(false)]
-    public IEnumerable<GameLevel> GetLevelsByNewest(RequestContext context, RealmDatabaseContext database)
-        => database.GetNewestLevels(20, 0);
+    [NullStatusCode(HttpStatusCode.NotFound)]
+    public IEnumerable<GameLevel>? GetLevels(RequestContext context, RealmDatabaseContext database, GameUser? user, string route) 
+        => CategoryHandler.Categories
+            .FirstOrDefault(c => c.ApiRoute.StartsWith(route))?
+            .Fetch(database, user, 20, 0); // TODO: Implement count/skip for API
 
     [ApiEndpoint("level/id/{idStr}")]
     [Authentication(false)]
