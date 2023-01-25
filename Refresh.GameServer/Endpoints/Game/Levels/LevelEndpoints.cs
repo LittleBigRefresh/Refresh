@@ -20,7 +20,7 @@ public class LevelEndpoints : EndpointGroup
     [GameEndpoint("slots/{route}", ContentType.Xml)]
     public GameMinimalLevelList GetLevels(RequestContext context, RealmDatabaseContext database, GameUser? user, string route) =>
         new(CategoryHandler.Categories
-            .FirstOrDefault(c => c.ApiRoute.StartsWith(route))?
+            .FirstOrDefault(c => c.GameRoute.StartsWith(route))?
             .Fetch(context, database, user)?
             .Select(GameMinimalLevel.FromGameLevel), database.GetTotalLevelCount()); // TODO: proper level count
 
