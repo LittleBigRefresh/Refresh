@@ -17,7 +17,7 @@ public class ByUserLevelCategory : LevelCategory
     public override IEnumerable<GameLevel>? Fetch(RequestContext context, RealmDatabaseContext database, GameUser? user, object[]? extraArgs = null)
     {
         // Prefer username from query, but fallback to user passed into this category if it's missing
-        string? username = context.Request.QueryString["u"];
+        string? username = context.QueryString["u"];
         if (username != null) user = database.GetUserByUsername(username);
 
         if (user == null) return null;

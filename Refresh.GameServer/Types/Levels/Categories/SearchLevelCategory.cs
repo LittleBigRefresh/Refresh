@@ -13,7 +13,7 @@ public class SearchLevelCategory : LevelCategory
 
     public override IEnumerable<GameLevel>? Fetch(RequestContext context, RealmDatabaseContext database, GameUser? user, object[]? extraArgs = null)
     {
-        string? query = context.Request.QueryString["query"];
+        string? query = context.QueryString["query"];
         if (query == null) return null;
 
         extraArgs = new object[] { query };

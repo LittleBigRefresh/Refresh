@@ -40,7 +40,7 @@ public class LevelCategory
     {
         if (this._requiresUser && user == null) return null;
         
-        (int skip, int count) = context.GetPageData(context.Request.Url!.AbsolutePath.StartsWith("/api"));
+        (int skip, int count) = context.GetPageData(context.Url.AbsolutePath.StartsWith("/api"));
         
         IEnumerable<object> args;
 

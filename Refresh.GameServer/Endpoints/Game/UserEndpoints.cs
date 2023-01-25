@@ -22,7 +22,7 @@ public class UserEndpoints : EndpointGroup
     [GameEndpoint("users", Method.Get, ContentType.Xml)]
     public GameUserList GetMultipleUsers(RequestContext context, RealmDatabaseContext database)
     {
-        string[]? usernames = context.Request.QueryString.GetValues("u");
+        string[]? usernames = context.QueryString.GetValues("u");
         if (usernames == null) return new GameUserList();
 
         List<GameUser> users = new(usernames.Length);
