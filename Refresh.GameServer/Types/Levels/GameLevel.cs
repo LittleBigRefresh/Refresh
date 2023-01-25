@@ -1,5 +1,4 @@
 using System.Xml.Serialization;
-using MongoDB.Bson;
 using Realms;
 using Refresh.GameServer.Database;
 using Refresh.GameServer.Types.UserData;

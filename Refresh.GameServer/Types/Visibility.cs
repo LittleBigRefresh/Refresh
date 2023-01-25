@@ -1,4 +1,3 @@
-using System.Runtime.Serialization;
 using System.Xml.Serialization;
 using Refresh.GameServer.Endpoints.Game.Handshake;
 
