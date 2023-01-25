@@ -1,7 +1,9 @@
 using System.Reflection;
 using System.Text.Json.Serialization;
+using Bunkum.HttpServer;
 using Newtonsoft.Json;
 using Refresh.GameServer.Database;
+using Refresh.GameServer.Extensions;
 using Refresh.GameServer.Types.UserData;
 
 namespace Refresh.GameServer.Types.Levels.Categories;
@@ -35,9 +37,11 @@ public class LevelCategory
     [JsonProperty("RequiresUser")] private readonly bool _requiresUser;
     private readonly MethodInfo _method;
 
-    public virtual IEnumerable<GameLevel>? Fetch(RealmDatabaseContext database, GameUser? user, int count, int skip)
+    public virtual IEnumerable<GameLevel>? Fetch(RequestContext context, RealmDatabaseContext database, GameUser? user)
     {
         if (this._requiresUser && user == null) return null;
+        
+        (int skip, int count) = context.GetPageData(context.Request.Url!.AbsolutePath.StartsWith("/api"));
         
         object[] args;
 

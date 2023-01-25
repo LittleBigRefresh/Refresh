@@ -16,7 +16,7 @@ public class LevelApiEndpoints : EndpointGroup
     public IEnumerable<GameLevel>? GetLevels(RequestContext context, RealmDatabaseContext database, GameUser? user, string route) 
         => CategoryHandler.Categories
             .FirstOrDefault(c => c.ApiRoute.StartsWith(route))?
-            .Fetch(database, user, 20, 0); // TODO: Implement count/skip for API
+            .Fetch(context, database, user);
 
     [ApiEndpoint("levels")]
     [Authentication(false)]
