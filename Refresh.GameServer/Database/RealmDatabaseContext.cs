@@ -181,11 +181,12 @@ public class RealmDatabaseContext : IDatabaseContext
             .Skip(skip)
             .Take(count);
 
+    // FIXME: to get this to work with new categories I removed the total number of results, this is terrible
     [Pure]
-    public (IEnumerable<GameLevel> list, int count) SearchForLevels(int count, int skip, string query)
+    public IEnumerable<GameLevel> SearchForLevels(int count, int skip, string query)
     {
         string[] keywords = query.Split(' ');
-        if (keywords.Length == 0) return (Array.Empty<GameLevel>(), 0);
+        if (keywords.Length == 0) return Array.Empty<GameLevel>();
         
         IQueryable<GameLevel> levels = this._realm.All<GameLevel>();
         
@@ -200,7 +201,7 @@ public class RealmDatabaseContext : IDatabaseContext
             );
         }
 
-        return (levels.AsEnumerable().Skip(skip).Take(count), levels.Count());
+        return levels.AsEnumerable().Skip(skip).Take(count);
     }
 
     [Pure]

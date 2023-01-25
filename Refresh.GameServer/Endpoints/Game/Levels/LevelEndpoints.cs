@@ -24,18 +24,6 @@ public class LevelEndpoints : EndpointGroup
             .Fetch(context, database, user)?
             .Select(GameMinimalLevel.FromGameLevel), database.GetTotalLevelCount()); // TODO: proper level count
 
-    // [GameEndpoint("slots/search", ContentType.Xml)]
-    // public GameMinimalLevelList SearchForLevels(RequestContext context, RealmDatabaseContext database)
-    // {
-    //     (int skip, int count) = context.GetPageData();
-    //     string? query = context.Request.QueryString["query"];
-    //     if (query == null) return new GameMinimalLevelList();
-    //
-    //     (IEnumerable<GameLevel>? list, int totalResults) = database.SearchForLevels(count, skip, query);
-    //
-    //     return new GameMinimalLevelList(list.Select(GameMinimalLevel.FromGameLevel), totalResults);
-    // }
-
     [GameEndpoint("s/user/{idStr}", ContentType.Xml)]
     [NullStatusCode(HttpStatusCode.NotFound)]
     public GameLevel? LevelById(RequestContext context, RealmDatabaseContext database, string idStr)

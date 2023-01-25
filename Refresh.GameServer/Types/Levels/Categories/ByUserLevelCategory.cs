@@ -14,7 +14,7 @@ public class ByUserLevelCategory : LevelCategory
         this.IconHash = "g820625";
     }
 
-    public override IEnumerable<GameLevel>? Fetch(RequestContext context, RealmDatabaseContext database, GameUser? user)
+    public override IEnumerable<GameLevel>? Fetch(RequestContext context, RealmDatabaseContext database, GameUser? user, object[]? extraArgs = null)
     {
         // Prefer username from query, but fallback to user passed into this category if it's missing
         string? username = context.Request.QueryString["u"];
@@ -22,6 +22,6 @@ public class ByUserLevelCategory : LevelCategory
 
         if (user == null) return null;
         
-        return base.Fetch(context, database, user);
+        return base.Fetch(context, database, user, extraArgs);
     }
 }

@@ -36,13 +36,13 @@ public class LevelCategory
     [JsonProperty("RequiresUser")] private readonly bool _requiresUser;
     private readonly MethodInfo _method;
 
-    public virtual IEnumerable<GameLevel>? Fetch(RequestContext context, RealmDatabaseContext database, GameUser? user)
+    public virtual IEnumerable<GameLevel>? Fetch(RequestContext context, RealmDatabaseContext database, GameUser? user, object[]? extraArgs = null)
     {
         if (this._requiresUser && user == null) return null;
         
         (int skip, int count) = context.GetPageData(context.Request.Url!.AbsolutePath.StartsWith("/api"));
         
-        object[] args;
+        IEnumerable<object> args;
 
         // ReSharper disable once ConvertIfStatementToConditionalTernaryExpression
         if (this._requiresUser)
@@ -52,6 +52,8 @@ public class LevelCategory
         else
             args = new object[] { count, skip };
 
-        return (IEnumerable<GameLevel>)this._method.Invoke(database, args)!;
+        if (extraArgs != null) args = args.Concat(extraArgs);
+
+        return (IEnumerable<GameLevel>)this._method.Invoke(database, args.ToArray())!;
     }
 }

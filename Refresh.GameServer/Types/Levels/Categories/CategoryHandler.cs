@@ -16,5 +16,6 @@ public static class CategoryHandler
             IconHash = "g820623",
         },
         new ByUserLevelCategory(),
+        new SearchLevelCategory(),
     };
 }
