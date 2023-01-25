@@ -1,8 +1,8 @@
-using JetBrains.Annotations;
 using Bunkum.HttpServer.Endpoints;
 using Bunkum.HttpServer.Responses;
+using JetBrains.Annotations;
 
-namespace Refresh.GameServer;
+namespace Refresh.GameServer.Endpoints;
 
 [MeansImplicitUse]
 public class GameEndpointAttribute : EndpointAttribute

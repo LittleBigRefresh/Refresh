@@ -7,6 +7,7 @@ using Refresh.GameServer.Types.Comments;
 using Refresh.GameServer.Types.Levels;
 using Refresh.GameServer.Types.UserData;
 using Bunkum.HttpServer.Database;
+using MongoDB.Bson;
 
 namespace Refresh.GameServer.Database;
 
@@ -78,10 +79,19 @@ public class RealmDatabaseContext : IDatabaseContext
     
     [Pure]
     [ContractAnnotation("null => null; notnull => canbenull")]
-    public GameUser? GetUser(string? username)
+    public GameUser? GetUserByUsername(string? username)
     {
         if (username == null) return null;
         return this._realm.All<GameUser>().FirstOrDefault(u => u.Username == username);
+    }
+    
+    [Pure]
+    [ContractAnnotation("null => null; notnull => canbenull")]
+    public GameUser? GetUserByUuid(string? uuid)
+    {
+        if (uuid == null) return null;
+        if(!ObjectId.TryParse(uuid, out ObjectId objectId)) return null;
+        return this._realm.All<GameUser>().FirstOrDefault(u => u.UserId == objectId);
     }
 
     public Token GenerateTokenForUser(GameUser user)
@@ -171,11 +181,12 @@ public class RealmDatabaseContext : IDatabaseContext
             .Skip(skip)
             .Take(count);
 
+    // FIXME: to get this to work with new categories I removed the total number of results, this is terrible
     [Pure]
-    public (IEnumerable<GameLevel> list, int count) SearchForLevels(int count, int skip, string query)
+    public IEnumerable<GameLevel> SearchForLevels(int count, int skip, string query)
     {
         string[] keywords = query.Split(' ');
-        if (keywords.Length == 0) return (Array.Empty<GameLevel>(), 0);
+        if (keywords.Length == 0) return Array.Empty<GameLevel>();
         
         IQueryable<GameLevel> levels = this._realm.All<GameLevel>();
         
@@ -190,7 +201,7 @@ public class RealmDatabaseContext : IDatabaseContext
             );
         }
 
-        return (levels.AsEnumerable().Skip(skip).Take(count), levels.Count());
+        return levels.AsEnumerable().Skip(skip).Take(count);
     }
 
     [Pure]

@@ -1,5 +1,4 @@
 using System.Xml.Serialization;
-using Refresh.GameServer.Types.Comments;
 
 namespace Refresh.GameServer.Types.Lists;
 

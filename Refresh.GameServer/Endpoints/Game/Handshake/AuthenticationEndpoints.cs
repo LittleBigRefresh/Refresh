@@ -1,14 +1,14 @@
 using System.Net;
 using System.Xml.Serialization;
+using Bunkum.HttpServer;
+using Bunkum.HttpServer.Endpoints;
+using Bunkum.HttpServer.Responses;
 using NPTicket;
 using Refresh.GameServer.Authentication;
 using Refresh.GameServer.Database;
 using Refresh.GameServer.Types.UserData;
-using Bunkum.HttpServer;
-using Bunkum.HttpServer.Endpoints;
-using Bunkum.HttpServer.Responses;
 
-namespace Refresh.GameServer.Endpoints.Handshake;
+namespace Refresh.GameServer.Endpoints.Game.Handshake;
 
 public class AuthenticationEndpoints : EndpointGroup
 {
@@ -28,7 +28,7 @@ public class AuthenticationEndpoints : EndpointGroup
             return null;
         }
 
-        GameUser? user = database.GetUser(ticket.Username);
+        GameUser? user = database.GetUserByUsername(ticket.Username);
         user ??= database.CreateUser(ticket.Username);
 
         Token token = database.GenerateTokenForUser(user);

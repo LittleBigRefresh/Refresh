@@ -1,21 +1,21 @@
 using System.Net;
 using System.Xml.Serialization;
+using Bunkum.HttpServer;
+using Bunkum.HttpServer.Endpoints;
+using Bunkum.HttpServer.Responses;
 using Newtonsoft.Json;
 using Refresh.GameServer.Database;
 using Refresh.GameServer.Types.Lists;
 using Refresh.GameServer.Types.UserData;
-using Bunkum.HttpServer;
-using Bunkum.HttpServer.Endpoints;
-using Bunkum.HttpServer.Responses;
 
-namespace Refresh.GameServer.Endpoints;
+namespace Refresh.GameServer.Endpoints.Game;
 
 public class UserEndpoints : EndpointGroup
 {
     [GameEndpoint("user/{name}", Method.Get, ContentType.Xml)]
     public GameUser? GetUser(RequestContext context, RealmDatabaseContext database, string name)
     {
-        GameUser? user = database.GetUser(name);
+        GameUser? user = database.GetUserByUsername(name);
         return user;
     }
 
@@ -29,7 +29,7 @@ public class UserEndpoints : EndpointGroup
 
         foreach (string username in usernames)
         {
-            GameUser? user = database.GetUser(username);
+            GameUser? user = database.GetUserByUsername(username);
             if (user == null) continue;
 
             user.PrepareForSerialization();
