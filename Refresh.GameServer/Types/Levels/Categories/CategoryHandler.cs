@@ -15,5 +15,6 @@ public static class CategoryHandler
             Description = "Levels that were uploaded recently",
             IconHash = "g820623",
         },
+        new ByUserLevelCategory(),
     };
 }
