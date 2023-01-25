@@ -12,7 +12,7 @@ namespace Refresh.GameServer.Endpoints.Game.Levels;
 
 public class LevelEndpoints : EndpointGroup
 {
-    // Workaround shitty routing
+    // FIXME: Workaround shitty routing - see https://github.com/LittleBigRefresh/Refresh/pull/13#discussion_r1086131790 for details
     [GameEndpoint("slots", ContentType.Xml)]
     public GameMinimalLevelList NewestLevels(RequestContext context, RealmDatabaseContext database, GameUser? user) 
         => this.GetLevels(context, database, user, "newest");
