@@ -12,7 +12,7 @@ namespace Refresh.GameServer.Endpoints.Game;
 
 public class CommentEndpoints : EndpointGroup
 {
-    [GameEndpoint("postUserComment/{username}", ContentType.Xml)]
+    [GameEndpoint("postUserComment/{username}", ContentType.Xml, Method.Post)]
     public Response PostProfileComment(RequestContext context, RealmDatabaseContext database, string username, GameComment body, GameUser user)
     {
         GameUser? profile = database.GetUserByUsername(username);
