@@ -55,7 +55,7 @@ public class RealmDatabaseContext : IDatabaseContext
         }
     }
 
-    private void AddSequentialObject<T>(T obj, Action writtenCallback = null) where T : IRealmObject, ISequentialId 
+    private void AddSequentialObject<T>(T obj, Action? writtenCallback = null) where T : IRealmObject, ISequentialId 
         => this.AddSequentialObject(obj, null, writtenCallback);
 
     private static long GetTimestampSeconds() => DateTimeOffset.UtcNow.ToUnixTimeSeconds();
