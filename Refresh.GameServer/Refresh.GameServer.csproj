@@ -33,12 +33,17 @@
     </ItemGroup>
 
     <ItemGroup Condition="'$(Configuration)'!='DebugLocalBunkum'">
-        <PackageReference Include="Bunkum" Version="1.0.6" />
+        <PackageReference Include="Bunkum" Version="1.0.7" />
     </ItemGroup>
 
     <ItemGroup>
       <PackageReference Include="NPTicket" Version="1.0.0" />
       <PackageReference Include="Realm" Version="10.19.0" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <None Remove="refreshGameServer.realm" />
+      <None Remove="refreshGameServer.json" />
     </ItemGroup>
 
 </Project>
