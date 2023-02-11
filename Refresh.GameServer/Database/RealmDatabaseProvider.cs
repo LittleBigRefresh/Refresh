@@ -18,7 +18,7 @@ public class RealmDatabaseProvider : IDatabaseProvider<RealmDatabaseContext>
     {
         this._configuration = new RealmConfiguration(Path.Join(Environment.CurrentDirectory, "refreshGameServer.realm"))
         {
-            SchemaVersion = 13,
+            SchemaVersion = 14,
             Schema = new[]
             {
                 typeof(GameUser),
@@ -61,12 +61,12 @@ public class RealmDatabaseProvider : IDatabaseProvider<RealmDatabaseContext>
                     if (oldVersion < 13) newUser.PlanetsHash = "0";
                 }
                 
-                // IQueryable<dynamic>? oldLevels = migration.OldRealm.DynamicApi.All("GameLevel");
+                IQueryable<dynamic>? oldLevels = migration.OldRealm.DynamicApi.All("GameLevel");
                 IQueryable<GameLevel>? newLevels = migration.NewRealm.All<GameLevel>();
 
                 for (int i = 0; i < newLevels.Count(); i++)
                 {
-                    // dynamic oldLevel = oldLevels.ElementAt(i);
+                    dynamic oldLevel = oldLevels.ElementAt(i);
                     GameLevel newLevel = newLevels.ElementAt(i);
                     
                     // In version 10, GameLevels switched to int-based ids.
@@ -81,6 +81,13 @@ public class RealmDatabaseProvider : IDatabaseProvider<RealmDatabaseContext>
                         // Since we dont have a reference point for when the level was actually uploaded, default to now
                         newLevel.PublishDate = timestamp;
                         newLevel.UpdateDate = timestamp;
+                    }
+                    
+                    // In version 14, level timestamps were fixed
+                    if (oldVersion < 14)
+                    {
+                        newLevel.PublishDate = oldLevel.PublishDate * 1000;
+                        newLevel.UpdateDate = oldLevel.UpdateDate * 1000;
                     }
                 }
             },

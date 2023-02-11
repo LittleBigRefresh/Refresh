@@ -57,8 +57,7 @@ public class RealmDatabaseContext : IDatabaseContext
 
     private void AddSequentialObject<T>(T obj, Action? writtenCallback = null) where T : IRealmObject, ISequentialId 
         => this.AddSequentialObject(obj, null, writtenCallback);
-
-    private static long GetTimestampSeconds() => DateTimeOffset.UtcNow.ToUnixTimeSeconds();
+    
     private static long GetTimestampMilliseconds() => DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
 
     #region Users
@@ -155,7 +154,7 @@ public class RealmDatabaseContext : IDatabaseContext
     {
         if (level.Publisher == null) throw new ArgumentNullException(nameof(level.Publisher));
 
-        long timestamp = GetTimestampSeconds();
+        long timestamp = GetTimestampMilliseconds();
         this.AddSequentialObject(level, () =>
         {
             level.PublishDate = timestamp;
