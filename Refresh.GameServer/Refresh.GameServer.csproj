@@ -10,12 +10,6 @@
         <Platforms>AnyCPU</Platforms>
     </PropertyGroup>
     
-    <!-- Disable .pdb files on release builds -->
-    <PropertyGroup Condition="'$(Configuration)'=='Release'">
-        <DebugSymbols>False</DebugSymbols>
-        <DebugType>None</DebugType>
-    </PropertyGroup>
-    
     <PropertyGroup Condition=" '$(Configuration)' == 'DebugLocalBunkum' ">
       <DefineConstants>TRACE;DEBUG</DefineConstants>
       <DebugSymbols>true</DebugSymbols>
@@ -39,11 +33,6 @@
     <ItemGroup>
       <PackageReference Include="NPTicket" Version="1.0.0" />
       <PackageReference Include="Realm" Version="10.19.0" />
-    </ItemGroup>
-
-    <ItemGroup>
-      <None Remove="refreshGameServer.realm" />
-      <None Remove="refreshGameServer.json" />
     </ItemGroup>
 
 </Project>
