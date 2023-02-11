@@ -11,11 +11,20 @@ namespace Refresh.GameServer.Endpoints.Game.Levels;
 public class PublishEndpoints : EndpointGroup
 {
     [GameEndpoint("startPublish", ContentType.Xml, Method.Post)]
-    public GameResourceLevel StartPublish(RequestContext context, GameUser user, RealmDatabaseContext database, GameLevel body) 
-        => new()
+    public GameResourceLevel StartPublish(RequestContext context, RealmDatabaseContext database, GameLevel body)
+    {
+        List<string> hashes = new();
+        hashes.AddRange(body.XmlResources);
+        hashes.Add(body.RootResource);
+        hashes.Add(body.IconHash);
+
+        hashes.RemoveAll(r => r == "0" || r.StartsWith('g') || string.IsNullOrWhiteSpace(r));
+        
+        return new GameResourceLevel
         {
-            Resources = body.XmlResources.Where(r => !context.DataStore.ExistsInStore(r)).ToArray(),
+            Resources = hashes.Where(r => !context.DataStore.ExistsInStore(r)).ToArray(),
         };
+    }
 
     [GameEndpoint("publish", ContentType.Xml, Method.Post)]
     public Response FinishPublishing(RequestContext context, GameUser user, RealmDatabaseContext database, GameLevel body)
