@@ -1,3 +1,4 @@
+using System.Diagnostics;
 using System.Net;
 using System.Xml.Serialization;
 using Bunkum.HttpServer;
@@ -117,6 +118,9 @@ public class UserEndpoints : EndpointGroup
     [GameEndpoint("filter", Method.Post)]
     public string Filter(RequestContext context, string body, GameUser user)
     {
+        Debug.Assert(user != null);
+        Debug.Assert(body != null);
+        
         string msg = $"<{user}>: {body}"; // For some reason, the logger breaks if we put this directly into the call
         context.Logger.LogInfo(BunkumContext.Filter, msg);
         return body;
