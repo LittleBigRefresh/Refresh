@@ -79,7 +79,7 @@ public class UserEndpoints : EndpointGroup
         return string.Empty;
     }
 
-    [GameEndpoint("update_my_pins", Method.Get, ContentType.Xml)]
+    [GameEndpoint("update_my_pins", Method.Post, ContentType.Json)]
     [NullStatusCode(HttpStatusCode.BadRequest)]
     public string? UpdatePins(RequestContext context, RealmDatabaseContext database, GameUser user, Stream body)
     {
@@ -107,6 +107,9 @@ public class UserEndpoints : EndpointGroup
             NullValueHandling = NullValueHandling.Ignore,
         });
     }
+
+    [GameEndpoint("get_my_pins", Method.Get, ContentType.Json)]
+    public UserPins GetPins(RequestContext context, GameUser user) => user.Pins;
 
     /// <summary>
     /// Censor ("filter") strings sent by the client. Used for chat messages, speech bubble contents, etc.
