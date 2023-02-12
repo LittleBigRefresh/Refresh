@@ -32,7 +32,7 @@
 
     <ItemGroup>
       <PackageReference Include="NPTicket" Version="1.0.0" />
-      <PackageReference Include="Realm" Version="10.19.0" />
+      <PackageReference Include="Realm" Version="10.20.0" />
     </ItemGroup>
 
 </Project>
