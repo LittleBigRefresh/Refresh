@@ -195,6 +195,14 @@ public class RealmDatabaseContext : IDatabaseContext
         return oldSlot;
     }
 
+    public void DeleteLevel(GameLevel level)
+    {
+        this._realm.Write(() =>
+        {
+            this._realm.Remove(level);
+        });
+    }
+
     [Pure]
     public IEnumerable<GameLevel> GetLevelsByUser(GameUser user, int count, int skip) =>
         this._realm.All<GameLevel>()

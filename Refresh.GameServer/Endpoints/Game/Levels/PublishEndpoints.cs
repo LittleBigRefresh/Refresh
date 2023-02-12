@@ -55,4 +55,19 @@ public class PublishEndpoints : EndpointGroup
 
         return new Response(HttpStatusCode.BadRequest);
     }
+
+    [GameEndpoint("unpublish/{idStr}", ContentType.Xml, Method.Post)]
+    public Response DeleteLevel(RequestContext context, GameUser user, RealmDatabaseContext database, string idStr)
+    {
+        int.TryParse(idStr, out int id);
+        if (id == default) return new Response(HttpStatusCode.BadRequest);
+
+        GameLevel? level = database.GetLevelById(id);
+        if (level == null) return new Response(HttpStatusCode.NotFound);
+
+        if (level.Publisher?.UserId != user.UserId) return new Response(HttpStatusCode.Unauthorized);
+
+        database.DeleteLevel(level);
+        return new Response(HttpStatusCode.OK);
+    }
 }
