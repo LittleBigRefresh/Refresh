@@ -29,6 +29,21 @@ public class PublishEndpoints : EndpointGroup
     [GameEndpoint("publish", ContentType.Xml, Method.Post)]
     public Response FinishPublishing(RequestContext context, GameUser user, RealmDatabaseContext database, GameLevel body)
     {
+        if (body.LevelId != default) // Republish requests contain the id of the old level
+        {
+            context.Logger.LogInfo(BunkumContext.UserContent, "Republishing level id " + body.LevelId);
+
+            GameLevel? newBody;
+            // ReSharper disable once InvertIf
+            if ((newBody = database.UpdateLevel(body, user)) != null)
+            {
+                newBody.PrepareForSerialization();
+                return new Response(newBody, ContentType.Xml);
+            }
+
+            return new Response(HttpStatusCode.BadRequest);
+        }
+
         body.Publisher = user;
         
         // ReSharper disable once InvertIf

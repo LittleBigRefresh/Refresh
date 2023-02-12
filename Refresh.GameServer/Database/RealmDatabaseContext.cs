@@ -1,3 +1,4 @@
+using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
 using JetBrains.Annotations;
@@ -162,6 +163,36 @@ public class RealmDatabaseContext : IDatabaseContext
         });
 
         return true;
+    }
+
+    public GameLevel? UpdateLevel(GameLevel level, GameUser user)
+    {
+        // Verify if this level is able to be republished
+        GameLevel? oldSlot = this.GetLevelById(level.LevelId);
+        if (oldSlot == null) return null;
+            
+        Debug.Assert(oldSlot.Publisher != null);
+        if (oldSlot.Publisher.UserId != user.UserId) return null;
+        
+        // All checks passed, lets move
+
+        long oldDate = oldSlot.PublishDate;
+        this._realm.Write(() =>
+        {
+            PropertyInfo[] userProps = typeof(GameLevel).GetProperties();
+            foreach (PropertyInfo prop in userProps)
+            {
+                if (!prop.CanWrite || !prop.CanRead) continue;
+                prop.SetValue(oldSlot, prop.GetValue(level));
+            }
+
+            oldSlot.Publisher = user;
+            
+            oldSlot.PublishDate = oldDate;
+            oldSlot.UpdateDate = GetTimestampMilliseconds();
+        });
+
+        return oldSlot;
     }
 
     [Pure]
