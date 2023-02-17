@@ -19,7 +19,7 @@ public class RealmDatabaseProvider : IDatabaseProvider<RealmDatabaseContext>
     {
         this._configuration = new RealmConfiguration(Path.Join(Environment.CurrentDirectory, "refreshGameServer.realm"))
         {
-            SchemaVersion = 15,
+            SchemaVersion = 16,
             Schema = new[]
             {
                 typeof(GameUser),

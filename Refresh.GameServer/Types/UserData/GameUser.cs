@@ -5,6 +5,7 @@ using Refresh.GameServer.Types.Comments;
 using Bunkum.HttpServer.Authentication;
 using Bunkum.HttpServer.Serialization;
 using Newtonsoft.Json;
+using Refresh.GameServer.Types.Relations;
 
 namespace Refresh.GameServer.Types.UserData;
 
@@ -24,6 +25,11 @@ public partial class GameUser : RealmObject, IUser, INeedsPreparationBeforeSeria
 #pragma warning disable CS8618
     [XmlIgnore] public IList<GameComment> ProfileComments { get; }
 #pragma warning restore CS8618
+    
+    #nullable disable
+    [Backlink(nameof(HeartLevelRelation.User))]
+    [XmlIgnore] public IQueryable<HeartLevelRelation> HeartLevelRelations { get; }
+    #nullable restore
 
     [XmlElement("planets")] public string PlanetsHash { get; set; } = "0";
 
@@ -35,6 +41,7 @@ public partial class GameUser : RealmObject, IUser, INeedsPreparationBeforeSeria
     [Ignored] [XmlElement("npHandle")] public NameAndIcon? Handle { get; set; }
     [Ignored] [XmlElement("commentCount")] public int? CommentCount { get; set; }
     [Ignored] [XmlElement("commentsEnabled")] public bool? CommentsEnabled { get; set; }
+    [Ignored] [XmlElement("favouriteSlotCount")] public int? HeartedLevelCount { get; set; }
 
     private partial void SerializeSlots();
 
@@ -42,8 +49,11 @@ public partial class GameUser : RealmObject, IUser, INeedsPreparationBeforeSeria
     {
         this.Type = "user";
         this.Handle = NameAndIcon.FromUser(this);
+        
         this.CommentCount = this.ProfileComments.Count;
         this.CommentsEnabled = true;
+
+        this.HeartedLevelCount = this.HeartLevelRelations.Count();
         
         this.SerializeSlots();
     }
