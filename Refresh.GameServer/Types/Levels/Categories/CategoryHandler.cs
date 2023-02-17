@@ -17,5 +17,11 @@ public static class CategoryHandler
         },
         new ByUserLevelCategory(),
         new SearchLevelCategory(),
+        new LevelCategory("hearted", "favouriteSlots", true, nameof(RealmDatabaseContext.GetLevelsHeartedByUser))
+        {
+            Name = "Hearted Levels",
+            Description = "Levels you've hearted",
+            IconHash = "g820611",
+        },
     };
 }

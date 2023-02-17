@@ -6,6 +6,7 @@ using Refresh.GameServer.Types.Comments;
 using Refresh.GameServer.Types.Levels;
 using Refresh.GameServer.Types.UserData;
 using Bunkum.HttpServer.Database;
+using Refresh.GameServer.Types.Relations;
 
 namespace Refresh.GameServer.Database;
 
@@ -18,7 +19,7 @@ public class RealmDatabaseProvider : IDatabaseProvider<RealmDatabaseContext>
     {
         this._configuration = new RealmConfiguration(Path.Join(Environment.CurrentDirectory, "refreshGameServer.realm"))
         {
-            SchemaVersion = 14,
+            SchemaVersion = 15,
             Schema = new[]
             {
                 typeof(GameUser),
@@ -27,6 +28,7 @@ public class RealmDatabaseProvider : IDatabaseProvider<RealmDatabaseContext>
                 typeof(Token),
                 typeof(GameLevel),
                 typeof(GameComment),
+                typeof(HeartLevelRelation),
             },
             MigrationCallback = (migration, oldVersion) =>
             {

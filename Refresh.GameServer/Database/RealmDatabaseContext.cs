@@ -9,6 +9,7 @@ using Refresh.GameServer.Types.Levels;
 using Refresh.GameServer.Types.UserData;
 using Bunkum.HttpServer.Database;
 using MongoDB.Bson;
+using Refresh.GameServer.Types.Relations;
 
 namespace Refresh.GameServer.Database;
 
@@ -247,6 +248,30 @@ public class RealmDatabaseContext : IDatabaseContext
 
     [Pure]
     public GameLevel? GetLevelById(int id) => this._realm.All<GameLevel>().FirstOrDefault(l => l.LevelId == id);
+
+    public bool HeartLevel(GameLevel level, GameUser user)
+    {
+        if (this.IsLevelHeartedByUser(level, user)) return false;
+        
+        HeartLevelRelation relation = new(level, user);
+        this._realm.Write(() =>
+        {
+            this._realm.Add(relation);
+        });
+
+        return true;
+    }
+
+    private bool IsLevelHeartedByUser(GameLevel level, GameUser user) => this._realm.All<HeartLevelRelation>()
+        .FirstOrDefault(r => r.Level == level && r.User == user) != null;
+
+    public IEnumerable<GameLevel> GetLevelsHeartedByUser(GameUser user, int count, int skip) => this._realm.All<HeartLevelRelation>()
+            .Where(r => r.User == user)
+            .AsEnumerable()
+            .Select(r => r.Level)
+            .Skip(skip)
+            .Take(count);
+
     #endregion
     
     #region Comments

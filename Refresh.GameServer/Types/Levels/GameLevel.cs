@@ -4,6 +4,7 @@ using Refresh.GameServer.Database;
 using Refresh.GameServer.Types.UserData;
 using Bunkum.HttpServer.Serialization;
 using Newtonsoft.Json;
+using Refresh.GameServer.Types.Relations;
 
 namespace Refresh.GameServer.Types.Levels;
 
@@ -24,6 +25,11 @@ public class GameLevel : RealmObject, INeedsPreparationBeforeSerialization, ISeq
     
     [XmlElement("firstPublished")] [JsonProperty] public long PublishDate { get; set; } // unix seconds
     [XmlElement("lastUpdated")] [JsonProperty] public long UpdateDate { get; set; }
+
+    #nullable disable
+    [Backlink(nameof(HeartLevelRelation.Level))]
+    [XmlIgnore] public IQueryable<HeartLevelRelation> HeartRelations { get; }
+    #nullable restore
     
     public int SequentialId
     {
@@ -36,6 +42,8 @@ public class GameLevel : RealmObject, INeedsPreparationBeforeSerialization, ISeq
     [Ignored] [XmlAttribute("type")] public string? Type { get; set; }
 
     [Ignored] [XmlElement("npHandle")] public NameAndIcon? Handle { get; set; }
+    
+    [Ignored] [XmlElement("heartCount")] public int? HeartCount { get; set; }
 
     // Realm cant have IList types with setters? Fine, I'll play your game. ;p
     [Ignored]
@@ -54,6 +62,8 @@ public class GameLevel : RealmObject, INeedsPreparationBeforeSerialization, ISeq
 
     public void PrepareForSerialization()
     {
+        this.HeartCount = this.HeartRelations.Count();
+        
         if (this.Publisher != null)
         {
             this.Type = "user";

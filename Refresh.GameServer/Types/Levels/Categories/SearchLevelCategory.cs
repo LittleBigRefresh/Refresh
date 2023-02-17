@@ -8,7 +8,9 @@ public class SearchLevelCategory : LevelCategory
 {
     internal SearchLevelCategory() : base("search", "search", false, nameof(RealmDatabaseContext.SearchForLevels))
     {
-        // no name/description as this wont ever show up in-game
+        this.Name = "Search";
+        this.Description = "Search for new levels";
+        // no icon for now, too lazy to find
     }
 
     public override IEnumerable<GameLevel>? Fetch(RequestContext context, RealmDatabaseContext database, GameUser? user, object[]? extraArgs = null)

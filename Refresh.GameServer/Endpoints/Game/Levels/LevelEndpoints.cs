@@ -13,11 +13,6 @@ namespace Refresh.GameServer.Endpoints.Game.Levels;
 
 public class LevelEndpoints : EndpointGroup
 {
-    // FIXME: Workaround shitty routing - see https://github.com/LittleBigRefresh/Refresh/pull/13#discussion_r1086131790 for details
-    [GameEndpoint("slots", ContentType.Xml)]
-    public GameMinimalLevelList NewestLevels(RequestContext context, RealmDatabaseContext database, GameUser? user) 
-        => this.GetLevels(context, database, user, "newest");
-
     [GameEndpoint("slots/{route}", ContentType.Xml)]
     public GameMinimalLevelList GetLevels(RequestContext context, RealmDatabaseContext database, GameUser? user, string route) =>
         new(CategoryHandler.Categories
@@ -34,4 +29,21 @@ public class LevelEndpoints : EndpointGroup
         
         return database.GetLevelById(id);
     }
+
+    #region Quirk workarounds
+    // Some LBP2 level routes don't appear under `/slots/`.
+    // This is a list of endpoints to work around these - capturing all routes would break things.
+
+    [GameEndpoint("slots", ContentType.Xml)]
+    public GameMinimalLevelList NewestLevels(RequestContext context, RealmDatabaseContext database, GameUser? user) 
+        => this.GetLevels(context, database, user, "newest");
+
+    [GameEndpoint("favouriteSlots/{username}", ContentType.Xml)]
+    public GameMinimalHeartedLevelList FavouriteLevels(RequestContext context, RealmDatabaseContext database, string username)
+    {
+        GameMinimalLevelList levels = this.GetLevels(context, database, database.GetUserByUsername(username), "favouriteSlots");
+        return new GameMinimalHeartedLevelList(levels);
+    }
+
+    #endregion
 }
