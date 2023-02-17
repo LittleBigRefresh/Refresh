@@ -13,7 +13,7 @@ Console.WriteLine("Starting Refresh with NuGet Bunkum");
 
 BunkumConsole.AllocateConsole();
 
-BunkumHttpServer server = new(new Uri("http://10.0.0.100:10061/"))
+BunkumHttpServer server = new(new Uri("http://0.0.0.0:10061/"))
 {
     AssumeAuthenticationRequired = true,
     UseDigestSystem = true,
