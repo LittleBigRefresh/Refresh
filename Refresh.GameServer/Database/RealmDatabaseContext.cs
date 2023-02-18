@@ -249,7 +249,7 @@ public class RealmDatabaseContext : IDatabaseContext
     [Pure]
     public GameLevel? GetLevelById(int id) => this._realm.All<GameLevel>().FirstOrDefault(l => l.LevelId == id);
 
-    public bool HeartLevel(GameLevel level, GameUser user)
+    public bool FavouriteLevel(GameLevel level, GameUser user)
     {
         if (this.IsLevelHeartedByUser(level, user)) return false;
         
@@ -257,6 +257,21 @@ public class RealmDatabaseContext : IDatabaseContext
         this._realm.Write(() =>
         {
             this._realm.Add(relation);
+        });
+
+        return true;
+    }
+    
+    public bool UnfavouriteLevel(GameLevel level, GameUser user)
+    {
+        HeartLevelRelation? relation = this._realm.All<HeartLevelRelation>()
+            .FirstOrDefault(r => r.Level == level && r.User == user);
+
+        if (relation == null) return false;
+
+        this._realm.Write(() =>
+        {
+            this._realm.Remove(relation);
         });
 
         return true;
