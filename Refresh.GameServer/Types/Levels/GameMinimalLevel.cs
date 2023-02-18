@@ -7,6 +7,7 @@ public class GameMinimalLevel
 {
     [XmlElement("name")] public string Title { get; set; } = string.Empty;
     [XmlElement("icon")] public string IconHash { get; set; } = string.Empty;
+    [XmlElement("rootLevel")] public string RootResource { get; set; } = string.Empty;
     [XmlElement("description")] public string Description { get; set; } = string.Empty;
     [XmlElement("location")] public GameLocation Location { get; set; } = GameLocation.Zero;
     [XmlElement("id")] public int LevelId { get; set; }
@@ -22,6 +23,7 @@ public class GameMinimalLevel
         {
             Title = level.Title,
             IconHash = level.IconHash,
+            RootResource = level.RootResource,
             Description = level.Description,
             Location = level.Location,
             LevelId = level.LevelId,
