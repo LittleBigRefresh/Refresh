@@ -17,11 +17,17 @@ public static class CategoryHandler
         },
         new ByUserLevelCategory(),
         new SearchLevelCategory(),
-        new LevelCategory("hearted", "favouriteSlots", true, nameof(RealmDatabaseContext.GetLevelsHeartedByUser))
+        new LevelCategory("hearted", "favouriteSlots", true, nameof(RealmDatabaseContext.GetLevelsFavouritedByUser))
         {
-            Name = "Hearted Levels",
+            Name = "My Hearted Levels",
             Description = "Levels you've hearted",
             IconHash = "g820611",
+        },
+        new LevelCategory("queued", "lolcatftw", true, nameof(RealmDatabaseContext.GetLevelsQueuedByUser))
+        {
+            Name = "My Queue",
+            Description = "Levels you've queued",
+            IconHash = "g820614",
         },
     };
 }

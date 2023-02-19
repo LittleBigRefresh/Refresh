@@ -40,4 +40,34 @@ public class RelationEndpoints : EndpointGroup
         
         return new Response(HttpStatusCode.Unauthorized);
     }
+
+    [GameEndpoint("lolcatftw/add/user/{idStr}", Method.Post)]
+    public Response QueueLevel(RequestContext context, RealmDatabaseContext database, GameUser user, string idStr)
+    {
+        int.TryParse(idStr, out int id);
+        if (id == default) return new Response(HttpStatusCode.BadRequest);
+        
+        GameLevel? level = database.GetLevelById(id);
+        if (level == null) return new Response(HttpStatusCode.NotFound);
+        
+        if (database.QueueLevel(level, user))
+            return new Response(HttpStatusCode.OK);
+        
+        return new Response(HttpStatusCode.Unauthorized);
+    }
+    
+    [GameEndpoint("lolcatftw/remove/user/{idStr}", Method.Post)]
+    public Response DequeueLevel(RequestContext context, RealmDatabaseContext database, GameUser user, string idStr)
+    {
+        int.TryParse(idStr, out int id);
+        if (id == default) return new Response(HttpStatusCode.BadRequest);
+        
+        GameLevel? level = database.GetLevelById(id);
+        if (level == null) return new Response(HttpStatusCode.NotFound);
+        
+        if (database.DequeueLevel(level, user))
+            return new Response(HttpStatusCode.OK);
+        
+        return new Response(HttpStatusCode.Unauthorized);
+    }
 }

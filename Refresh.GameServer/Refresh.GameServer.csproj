@@ -5,7 +5,6 @@
         <TargetFramework>net7.0</TargetFramework>
         <ImplicitUsings>enable</ImplicitUsings>
         <Nullable>enable</Nullable>
-        <PublishSingleFile>true</PublishSingleFile>
         <Configurations>Debug;Release;DebugLocalBunkum</Configurations>
         <Platforms>AnyCPU</Platforms>
     </PropertyGroup>
@@ -13,6 +12,10 @@
     <PropertyGroup Condition=" '$(Configuration)' == 'DebugLocalBunkum' ">
       <DefineConstants>TRACE;DEBUG</DefineConstants>
       <DebugSymbols>true</DebugSymbols>
+    </PropertyGroup>
+    
+    <PropertyGroup Condition=" '$(Configuration)' == 'Release' ">
+        <PublishSingleFile>true</PublishSingleFile>
     </PropertyGroup>
 
     <ItemGroup Condition="'$(Configuration)'=='DebugLocalBunkum'">

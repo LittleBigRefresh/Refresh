@@ -19,6 +19,10 @@ public class LevelEndpoints : EndpointGroup
             .Fetch(context, database, user)?
             .Select(GameMinimalLevel.FromGameLevel), database.GetTotalLevelCount()); // TODO: proper level count
 
+    [GameEndpoint("slots/{route}/{username}", ContentType.Xml)]
+    public GameMinimalLevelList GetLevelsWithPlayer(RequestContext context, RealmDatabaseContext database, string route, string username)
+        => this.GetLevels(context, database, database.GetUserByUsername(username), route);
+
     [GameEndpoint("s/user/{idStr}", ContentType.Xml)]
     [NullStatusCode(HttpStatusCode.NotFound)]
     public GameLevel? LevelById(RequestContext context, RealmDatabaseContext database, string idStr)

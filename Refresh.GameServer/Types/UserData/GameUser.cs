@@ -27,8 +27,11 @@ public partial class GameUser : RealmObject, IUser, INeedsPreparationBeforeSeria
 #pragma warning restore CS8618
     
     #nullable disable
-    [Backlink(nameof(HeartLevelRelation.User))]
-    [XmlIgnore] public IQueryable<HeartLevelRelation> HeartLevelRelations { get; }
+    [Backlink(nameof(FavouriteLevelRelation.User))]
+    [XmlIgnore] public IQueryable<FavouriteLevelRelation> FavouriteLevelRelations { get; }
+    
+    [Backlink(nameof(FavouriteLevelRelation.User))]
+    [XmlIgnore] public IQueryable<QueueLevelRelation> QueueLevelRelations { get; }
     #nullable restore
 
     [XmlElement("planets")] public string PlanetsHash { get; set; } = "0";
@@ -41,7 +44,8 @@ public partial class GameUser : RealmObject, IUser, INeedsPreparationBeforeSeria
     [Ignored] [XmlElement("npHandle")] public NameAndIcon? Handle { get; set; }
     [Ignored] [XmlElement("commentCount")] public int? CommentCount { get; set; }
     [Ignored] [XmlElement("commentsEnabled")] public bool? CommentsEnabled { get; set; }
-    [Ignored] [XmlElement("favouriteSlotCount")] public int? HeartedLevelCount { get; set; }
+    [Ignored] [XmlElement("favouriteSlotCount")] public int? FavouriteLevelCount { get; set; }
+    [Ignored] [XmlElement("lolcatftwCount")] public int? QueuedLevelCount { get; set; }
 
     private partial void SerializeSlots();
 
@@ -53,7 +57,8 @@ public partial class GameUser : RealmObject, IUser, INeedsPreparationBeforeSeria
         this.CommentCount = this.ProfileComments.Count;
         this.CommentsEnabled = true;
 
-        this.HeartedLevelCount = this.HeartLevelRelations.Count();
+        this.FavouriteLevelCount = this.FavouriteLevelRelations.Count();
+        this.QueuedLevelCount = this.QueueLevelRelations.Count();
         
         this.SerializeSlots();
     }

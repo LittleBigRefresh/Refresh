@@ -19,7 +19,7 @@ public class RealmDatabaseProvider : IDatabaseProvider<RealmDatabaseContext>
     {
         this._configuration = new RealmConfiguration(Path.Join(Environment.CurrentDirectory, "refreshGameServer.realm"))
         {
-            SchemaVersion = 16,
+            SchemaVersion = 19,
             Schema = new[]
             {
                 typeof(GameUser),
@@ -28,7 +28,8 @@ public class RealmDatabaseProvider : IDatabaseProvider<RealmDatabaseContext>
                 typeof(Token),
                 typeof(GameLevel),
                 typeof(GameComment),
-                typeof(HeartLevelRelation),
+                typeof(FavouriteLevelRelation),
+                typeof(QueueLevelRelation),
             },
             MigrationCallback = (migration, oldVersion) =>
             {

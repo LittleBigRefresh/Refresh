@@ -27,8 +27,8 @@ public class GameLevel : RealmObject, INeedsPreparationBeforeSerialization, ISeq
     [XmlElement("lastUpdated")] [JsonProperty] public long UpdateDate { get; set; }
 
     #nullable disable
-    [Backlink(nameof(HeartLevelRelation.Level))]
-    [XmlIgnore] public IQueryable<HeartLevelRelation> HeartRelations { get; }
+    [Backlink(nameof(FavouriteLevelRelation.Level))]
+    [XmlIgnore] public IQueryable<FavouriteLevelRelation> FavouriteRelations { get; }
     #nullable restore
     
     public int SequentialId
@@ -62,7 +62,7 @@ public class GameLevel : RealmObject, INeedsPreparationBeforeSerialization, ISeq
 
     public void PrepareForSerialization()
     {
-        this.HeartCount = this.HeartRelations.Count();
+        this.HeartCount = this.FavouriteRelations.Count();
         
         if (this.Publisher != null)
         {
