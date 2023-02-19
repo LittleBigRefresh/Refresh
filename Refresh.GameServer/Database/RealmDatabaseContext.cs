@@ -304,10 +304,9 @@ public class RealmDatabaseContext : IDatabaseContext
 
     public IEnumerable<GameComment> GetProfileComments(GameUser profile, int count, int skip) =>
             profile.ProfileComments
+            .OrderByDescending(c => c.Timestamp)
             .AsEnumerable()
             .Skip(skip)
             .Take(count);
-
-    public int GetTotalProfileComments(GameUser profile) => profile.ProfileComments.Count;
     #endregion
 }
