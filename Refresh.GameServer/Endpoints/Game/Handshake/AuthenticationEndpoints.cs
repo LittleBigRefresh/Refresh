@@ -3,7 +3,6 @@ using System.Xml.Serialization;
 using Bunkum.CustomHttpListener.Parsing;
 using Bunkum.HttpServer;
 using Bunkum.HttpServer.Endpoints;
-using Bunkum.HttpServer.Responses;
 using NPTicket;
 using Refresh.GameServer.Authentication;
 using Refresh.GameServer.Database;

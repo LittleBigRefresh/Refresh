@@ -2,7 +2,6 @@ using System.Xml.Serialization;
 using Bunkum.CustomHttpListener.Parsing;
 using Bunkum.HttpServer;
 using Bunkum.HttpServer.Endpoints;
-using Bunkum.HttpServer.Responses;
 using Refresh.GameServer.Database;
 
 namespace Refresh.GameServer.Endpoints.Game;

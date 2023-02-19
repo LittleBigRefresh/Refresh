@@ -1,5 +1,4 @@
 using System.Diagnostics;
-using System.Net;
 using Bunkum.CustomHttpListener.Request;
 using Refresh.GameServer.Database;
 using Refresh.GameServer.Types.UserData;

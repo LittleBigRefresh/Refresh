@@ -1,5 +1,4 @@
 using System.Xml.Serialization;
-using NotEnoughLogs.Definitions;
 using Refresh.GameServer.Types.Levels;
 
 namespace Refresh.GameServer.Types.Lists;
