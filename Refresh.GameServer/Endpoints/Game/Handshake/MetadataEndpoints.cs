@@ -1,7 +1,9 @@
+using System.Net;
 using System.Xml.Serialization;
 using Bunkum.CustomHttpListener.Parsing;
 using Bunkum.HttpServer;
 using Bunkum.HttpServer.Endpoints;
+using Bunkum.HttpServer.Responses;
 using Refresh.GameServer.Types;
 
 namespace Refresh.GameServer.Endpoints.Game.Handshake;
@@ -39,7 +41,8 @@ public class MetadataEndpoints : EndpointGroup
         });
     
     [GameEndpoint("network_settings.nws")]
-    public string? NetworkSettings(RequestContext context) {
+    public string? NetworkSettings(RequestContext context)
+    {
         bool created = NetworkSettingsFile.IsValueCreated;
         
         string? networkSettings = NetworkSettingsFile.Value;
@@ -51,4 +54,7 @@ public class MetadataEndpoints : EndpointGroup
         
         return networkSettings;
     }
+
+    [GameEndpoint("t_conf")]
+    public Response TelemetryConfig(RequestContext context) => new(HttpStatusCode.Gone);
 }
