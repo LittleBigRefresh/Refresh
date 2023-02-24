@@ -119,6 +119,7 @@ public class UserEndpoints : EndpointGroup
     /// <param name="user">The user saying the string. Used for logging</param>
     /// <returns>The string shown in-game.</returns>
     [GameEndpoint("filter", Method.Post)]
+    [AllowEmptyBody]
     public string Filter(RequestContext context, string body, GameUser user)
     {
         Debug.Assert(user != null);
