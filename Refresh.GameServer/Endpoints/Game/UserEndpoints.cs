@@ -125,7 +125,27 @@ public class UserEndpoints : EndpointGroup
         Debug.Assert(body != null);
         
         string msg = $"<{user}>: {body}"; // For some reason, the logger breaks if we put this directly into the call
-        context.Logger.LogInfo(BunkumContext.Filter, msg);
+        try
+        {
+            context.Logger.LogInfo(BunkumContext.Filter, msg);
+        }
+        catch(Exception e)
+        {
+            // FIXME: workaround heisenbug
+            // this shouldn't crash but does somehow
+            /*
+[02/24/23 10:40:42] [Request:Trace] <AsyncMethodBuilderCore:Start> Handling request with UserEndpoints.Filter
+[02/24/23 10:40:42] [Request:Error] <<HandleRequest>d__19:MoveNext> System.Reflection.TargetInvocationException: Exception has been thrown by the target of an invocation.
+ ---> System.NullReferenceException: Object reference not set to an instance of an object.
+   at NotEnoughLogs.TraceHelper.GetTrace(Int32 depth, Int32 extraTraceLines)
+   at NotEnoughLogs.LoggerContainer`1.LogInfo(TContext context, String message)
+   at Refresh.GameServer.Endpoints.Game.UserEndpoints.Filter(RequestContext context, String body, GameUser user) in /home/jvyden/Documents/Refresh/Refresh.GameServer/Endpoints/Game/UserEndpoints.cs:line 128
+   at InvokeStub_UserEndpoints.Filter(Object, Object, IntPtr*)
+   at System.Reflection.MethodInvoker.Invoke(Object obj, IntPtr* args, BindingFlags invokeAttr)
+             */
+            Console.WriteLine("HIT FILTER BUG: " + e);
+            if(Debugger.IsAttached) Debugger.Break();
+        }
         return body;
     }
 }
