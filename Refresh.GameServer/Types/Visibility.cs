@@ -10,7 +10,7 @@ namespace Refresh.GameServer.Types;
 public enum Visibility
 {
     /// <summary>
-    /// User is okay with content 
+    /// User is okay with content being shown everywhere
     /// </summary>
     [XmlEnum("all")]
     All = 0,
