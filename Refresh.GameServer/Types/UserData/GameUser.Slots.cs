@@ -19,19 +19,19 @@ public partial class GameUser
 
     private partial void SerializeSlots()
     {
-        this.FreeSlots = 20;
-        this.FreeSlotsLBP2 = 20;
-        this.FreeSlotsLBP3 = 20;
-        
         this.EntitledSlots = 20;
         this.EntitledSlotsLBP2 = 20;
         this.EntitledSlotsLBP3 = 20;
         
-        this.UsedSlots = 1;
-        this.UsedSlotsLBP2 = 1;
-        this.UsedSlotsLBP3 = 1;
+        this.UsedSlots = 0;
+        this.UsedSlotsLBP2 = this.PublishedLevels.Count();
+        this.UsedSlotsLBP3 = 0;
         
         this.PurchasedSlotsLBP2 = 0;
         this.PurchasedSlotsLBP3 = 0;
+        
+        this.FreeSlots = 20;
+        this.FreeSlotsLBP2 = 20 - this.UsedSlotsLBP2;
+        this.FreeSlotsLBP3 = 20;
     }
 }

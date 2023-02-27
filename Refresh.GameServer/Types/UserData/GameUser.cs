@@ -5,6 +5,7 @@ using Refresh.GameServer.Types.Comments;
 using Bunkum.HttpServer.Authentication;
 using Bunkum.HttpServer.Serialization;
 using Newtonsoft.Json;
+using Refresh.GameServer.Types.Levels;
 using Refresh.GameServer.Types.Relations;
 
 namespace Refresh.GameServer.Types.UserData;
@@ -32,6 +33,9 @@ public partial class GameUser : RealmObject, IUser, INeedsPreparationBeforeSeria
     
     [Backlink(nameof(FavouriteLevelRelation.User))]
     [XmlIgnore] public IQueryable<QueueLevelRelation> QueueLevelRelations { get; }
+    
+    [Backlink(nameof(GameLevel.Publisher))]
+    [XmlIgnore] public IQueryable<GameLevel> PublishedLevels { get; }
     #nullable restore
 
     [XmlElement("planets")] public string PlanetsHash { get; set; } = "0";
