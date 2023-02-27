@@ -22,12 +22,10 @@ public partial class GameUser : RealmObject, IUser, INeedsPreparationBeforeSeria
     [XmlElement("location")] [JsonProperty] public GameLocation Location { get; set; } = GameLocation.Zero;
     
     [XmlIgnore] public UserPins Pins { get; set; } = new();
-
-#pragma warning disable CS8618
-    [XmlIgnore] public IList<GameComment> ProfileComments { get; }
-#pragma warning restore CS8618
     
     #nullable disable
+    [XmlIgnore] public IList<GameComment> ProfileComments { get; }
+    
     [Backlink(nameof(FavouriteLevelRelation.User))]
     [XmlIgnore] public IQueryable<FavouriteLevelRelation> FavouriteLevelRelations { get; }
     

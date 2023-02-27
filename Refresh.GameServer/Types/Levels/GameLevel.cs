@@ -36,7 +36,7 @@ public class GameLevel : RealmObject, INeedsPreparationBeforeSerialization, ISeq
         set => this.LevelId = value;
     }
 
-    [JsonProperty] public GameUser? Publisher { get; set; }
+    [XmlIgnore] [JsonProperty] public GameUser? Publisher { get; set; }
     
     #region LBP Serialization Quirks
     [Ignored] [XmlAttribute("type")] public string? Type { get; set; }

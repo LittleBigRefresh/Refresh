@@ -33,6 +33,34 @@ public class LevelEndpoints : EndpointGroup
         return database.GetLevelById(id);
     }
 
+    [GameEndpoint("slotList", ContentType.Xml)]
+    [NullStatusCode(HttpStatusCode.BadRequest)]
+    public GameLevelList? GetMultipleLevels(RequestContext context, RealmDatabaseContext database)
+    {
+        string[]? levelIds = context.QueryString.GetValues("s");
+        if (levelIds == null) return null;
+
+        List<GameLevel> levels = new();
+        
+        foreach (string levelIdStr in levelIds)
+        {
+            if (!int.TryParse(levelIdStr, out int levelId)) return null;
+            GameLevel? level = database.GetLevelById(levelId);
+
+            if (level == null) continue;
+            
+            level.PrepareForSerialization();
+            levels.Add(level);
+        }
+
+        return new GameLevelList
+        {
+            Items = levels,
+            Total = levels.Count,
+            NextPageStart = 0,
+        };
+    }
+
     #region Quirk workarounds
     // Some LBP2 level routes don't appear under `/slots/`.
     // This is a list of endpoints to work around these - capturing all routes would break things.
