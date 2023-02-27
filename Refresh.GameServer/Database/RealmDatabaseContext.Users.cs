@@ -40,30 +40,6 @@ public partial class RealmDatabaseContext // Users
         return this._realm.All<GameUser>().FirstOrDefault(u => u.UserId == objectId);
     }
 
-    public Token GenerateTokenForUser(GameUser user)
-    {
-        Token token = new()
-        {
-            User = user,
-            TokenData = Guid.NewGuid().ToString(),
-        };
-
-        this._realm.Write(() =>
-        {
-            this._realm.Add(token);
-        });
-        
-        return token;
-    }
-
-    [Pure]
-    [ContractAnnotation("null => null; notnull => canbenull")]
-    public GameUser? GetUserFromTokenData(string? tokenData)
-    {
-        if (tokenData == null) return null;
-        return this._realm.All<Token>().FirstOrDefault(t => t.TokenData == tokenData)?.User;
-    }
-
     [SuppressMessage("ReSharper", "InvertIf")]
     public void UpdateUserData(GameUser user, UpdateUserData data)
     {

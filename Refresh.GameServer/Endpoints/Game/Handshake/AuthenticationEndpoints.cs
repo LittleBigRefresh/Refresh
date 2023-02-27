@@ -3,6 +3,7 @@ using System.Xml.Serialization;
 using Bunkum.CustomHttpListener.Parsing;
 using Bunkum.HttpServer;
 using Bunkum.HttpServer.Endpoints;
+using Bunkum.HttpServer.Responses;
 using NPTicket;
 using Refresh.GameServer.Authentication;
 using Refresh.GameServer.Database;
@@ -38,6 +39,26 @@ public class AuthenticationEndpoints : EndpointGroup
             TokenData = "MM_AUTH=" + token.TokenData,
             ServerBrand = "Refresh",
         };
+    }
+
+    /// <summary>
+    /// Called by the game when it exits cleanly.
+    /// </summary>
+    [GameEndpoint("goodbye", Method.Post, ContentType.Xml)]
+    public Response RevokeThisToken(RequestContext context, RealmDatabaseContext database, GameUser user)
+    {
+        string? token = context.Cookies["MM_AUTH"];
+        
+        // we shouldn't ever hit this but handle it anyways
+        if (token == null) 
+            return new Response("Token was somehow null", ContentType.Plaintext, HttpStatusCode.InternalServerError);
+
+        bool result = database.RevokeTokenByTokenData(token);
+
+        if (!result)
+            return new Response(HttpStatusCode.Unauthorized);
+
+        return new Response(HttpStatusCode.OK);
     }
 }
 
