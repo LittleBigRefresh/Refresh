@@ -29,9 +29,15 @@ public partial class GameUser : RealmObject, IUser, INeedsPreparationBeforeSeria
     [Backlink(nameof(FavouriteLevelRelation.User))]
     [XmlIgnore] public IQueryable<FavouriteLevelRelation> FavouriteLevelRelations { get; }
     
-    [Backlink(nameof(FavouriteLevelRelation.User))]
+    [Backlink(nameof(QueueLevelRelation.User))]
     [XmlIgnore] public IQueryable<QueueLevelRelation> QueueLevelRelations { get; }
     
+    [Backlink(nameof(FavouriteUserRelation.UserToFavourite))]
+    [XmlIgnore] public IQueryable<FavouriteUserRelation> UsersFavouritingMe { get; }
+    
+    [Backlink(nameof(FavouriteUserRelation.UserFavouriting))]
+    [XmlIgnore] public IQueryable<FavouriteUserRelation> UsersFavourited { get; }
+
     [Backlink(nameof(GameLevel.Publisher))]
     [XmlIgnore] public IQueryable<GameLevel> PublishedLevels { get; }
     #nullable restore
@@ -47,7 +53,9 @@ public partial class GameUser : RealmObject, IUser, INeedsPreparationBeforeSeria
     [Ignored] [XmlElement("commentCount")] public int? CommentCount { get; set; }
     [Ignored] [XmlElement("commentsEnabled")] public bool? CommentsEnabled { get; set; }
     [Ignored] [XmlElement("favouriteSlotCount")] public int? FavouriteLevelCount { get; set; }
+    [Ignored] [XmlElement("favouriteUserCount")] public int? FavouriteUserCount { get; set; }
     [Ignored] [XmlElement("lolcatftwCount")] public int? QueuedLevelCount { get; set; }
+    [Ignored] [XmlElement("heartCount")] public int? HeartCount { get; set; }
 
     private partial void SerializeSlots();
 
@@ -60,7 +68,9 @@ public partial class GameUser : RealmObject, IUser, INeedsPreparationBeforeSeria
         this.CommentsEnabled = true;
 
         this.FavouriteLevelCount = this.FavouriteLevelRelations.Count();
+        this.FavouriteUserCount = this.UsersFavourited.Count();
         this.QueuedLevelCount = this.QueueLevelRelations.Count();
+        this.HeartCount = this.UsersFavouritingMe.Count();
         
         this.SerializeSlots();
     }

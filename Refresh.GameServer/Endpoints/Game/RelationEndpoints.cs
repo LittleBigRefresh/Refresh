@@ -4,7 +4,10 @@ using Bunkum.HttpServer;
 using Bunkum.HttpServer.Endpoints;
 using Bunkum.HttpServer.Responses;
 using Refresh.GameServer.Database;
+using Refresh.GameServer.Extensions;
 using Refresh.GameServer.Types.Levels;
+using Refresh.GameServer.Types.Lists;
+using Refresh.GameServer.Types.Relations;
 using Refresh.GameServer.Types.UserData;
 
 namespace Refresh.GameServer.Endpoints.Game;
@@ -39,6 +42,46 @@ public class RelationEndpoints : EndpointGroup
             return new Response(HttpStatusCode.OK);
         
         return new Response(HttpStatusCode.Unauthorized);
+    }
+    
+    [GameEndpoint("favourite/user/{username}", Method.Post)]
+    public Response FavouriteUser(RequestContext context, RealmDatabaseContext database, GameUser user, string username)
+    {
+        GameUser? userToFavourite = database.GetUserByUsername(username);
+        if (userToFavourite == null) return new Response(HttpStatusCode.NotFound);
+
+        if (database.FavouriteUser(userToFavourite, user))
+            return new Response(HttpStatusCode.OK);
+        
+        return new Response(HttpStatusCode.Unauthorized);
+    }
+    
+    [GameEndpoint("unfavourite/user/{username}", Method.Post)]
+    public Response UnfavouriteUser(RequestContext context, RealmDatabaseContext database, GameUser user, string username)
+    {
+        GameUser? userToFavourite = database.GetUserByUsername(username);
+        if (userToFavourite == null) return new Response(HttpStatusCode.NotFound);
+
+        if (database.UnfavouriteUser(userToFavourite, user))
+            return new Response(HttpStatusCode.OK);
+        
+        return new Response(HttpStatusCode.Unauthorized);
+    }
+
+    [GameEndpoint("favouriteUsers/{username}", ContentType.Xml)]
+    [NullStatusCode(HttpStatusCode.NotFound)]
+    public GameFavouriteUserList? GetFavouriteUsers(RequestContext context, RealmDatabaseContext database, string username)
+    {
+        GameUser? user = database.GetUserByUsername(username);
+        if (user == null) return null;
+
+        (int skip, int count) = context.GetPageData();
+        List<GameUser> users = database.GetUsersFavouritedByUser(user, count, skip)
+            .ToList();
+        
+        foreach (GameUser favouritedUser in users) favouritedUser.PrepareForSerialization();
+
+        return new GameFavouriteUserList(users, users.Count);
     }
 
     [GameEndpoint("lolcatftw/add/user/{idStr}", Method.Post)]

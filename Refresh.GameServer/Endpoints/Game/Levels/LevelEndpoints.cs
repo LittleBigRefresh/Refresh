@@ -70,10 +70,10 @@ public class LevelEndpoints : EndpointGroup
         => this.GetLevels(context, database, user, "newest");
 
     [GameEndpoint("favouriteSlots/{username}", ContentType.Xml)]
-    public GameMinimalHeartedLevelList FavouriteLevels(RequestContext context, RealmDatabaseContext database, string username)
+    public GameMinimalFavouriteLevelList FavouriteLevels(RequestContext context, RealmDatabaseContext database, string username)
     {
         GameMinimalLevelList levels = this.GetLevels(context, database, database.GetUserByUsername(username), "favouriteSlots");
-        return new GameMinimalHeartedLevelList(levels);
+        return new GameMinimalFavouriteLevelList(levels);
     }
 
     #endregion
