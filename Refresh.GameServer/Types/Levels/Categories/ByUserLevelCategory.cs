@@ -12,6 +12,7 @@ public class ByUserLevelCategory : LevelCategory
         this.Name = "Levels by you";
         this.Description = "A list of levels created by you!";
         this.IconHash = "g820625";
+        this.FontAwesomeIcon = "user";
     }
 
     public override IEnumerable<GameLevel>? Fetch(RequestContext context, RealmDatabaseContext database, GameUser? user, object[]? extraArgs = null)

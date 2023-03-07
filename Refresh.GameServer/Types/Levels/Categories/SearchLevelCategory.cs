@@ -10,6 +10,7 @@ public class SearchLevelCategory : LevelCategory
     {
         this.Name = "Search";
         this.Description = "Search for new levels";
+        this.FontAwesomeIcon = "magnifying-glass";
         // no icon for now, too lazy to find
     }
 

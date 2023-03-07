@@ -15,6 +15,7 @@ public class LevelCategory
     [JsonProperty] public string Name { get; set; } = "";
     [JsonProperty] public string Description { get; set; } = "";
     [JsonProperty] public string IconHash { get; set; } = "0";
+    [JsonProperty] public string FontAwesomeIcon { get; set; } = "faCertificate";
     
     internal LevelCategory(string apiRoute, string gameRoute, bool requiresUser, string funcName)
     {
