@@ -72,7 +72,7 @@ public partial class RealmDatabaseContext // Levels
     [Pure]
     public IEnumerable<GameLevel> GetNewestLevels(int count, int skip) =>
         this._realm.All<GameLevel>()
-            .OrderBy(l => l.PublishDate)
+            .OrderByDescending(l => l.PublishDate)
             .AsEnumerable()
             .Skip(skip)
             .Take(count);
