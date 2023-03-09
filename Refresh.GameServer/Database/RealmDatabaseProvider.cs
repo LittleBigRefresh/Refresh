@@ -19,7 +19,7 @@ public class RealmDatabaseProvider : IDatabaseProvider<RealmDatabaseContext>
     {
         this._configuration = new RealmConfiguration(Path.Join(Environment.CurrentDirectory, "refreshGameServer.realm"))
         {
-            SchemaVersion = 21,
+            SchemaVersion = 22,
             Schema = new[]
             {
                 typeof(GameUser),
@@ -94,6 +94,9 @@ public class RealmDatabaseProvider : IDatabaseProvider<RealmDatabaseContext>
                         newLevel.UpdateDate = oldLevel.UpdateDate * 1000;
                     }
                 }
+
+                // In version 22, tokens added expiry and types so just wipe them all
+                if (oldVersion < 22) migration.NewRealm.RemoveAll<Token>();
             },
         };
     }

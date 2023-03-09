@@ -6,12 +6,13 @@ namespace Refresh.GameServer.Database;
 
 public partial class RealmDatabaseContext
 {
-    public Token GenerateTokenForUser(GameUser user)
+    public Token GenerateTokenForUser(GameUser user, TokenType type)
     {
         Token token = new()
         {
             User = user,
             TokenData = Guid.NewGuid().ToString(),
+            TokenType = type,
         };
 
         this._realm.Write(() =>
@@ -23,11 +24,12 @@ public partial class RealmDatabaseContext
     }
 
     [Pure]
-    [ContractAnnotation("null => null; notnull => canbenull")]
-    public GameUser? GetUserFromTokenData(string? tokenData)
+    [ContractAnnotation("=> canbenull")]
+    public GameUser? GetUserFromTokenData(string tokenData, TokenType type)
     {
-        if (tokenData == null) return null;
-        return this._realm.All<Token>().FirstOrDefault(t => t.TokenData == tokenData)?.User;
+        return this._realm.All<Token>()
+            .FirstOrDefault(t => t.TokenData == tokenData && t.TokenType == type)?
+            .User;
     }
 
     public bool RevokeTokenByTokenData(string? tokenData)
