@@ -16,4 +16,7 @@ public class UserApiEndpoints : EndpointGroup
     [Authentication(false)]
     public GameUser? GetUserByUuid(RequestContext context, RealmDatabaseContext database, string uuid) 
         => database.GetUserByUuid(uuid);
+    
+    [ApiEndpoint("user/me")]
+    public GameUser GetMyUser(RequestContext context, GameUser user) => user;
 }

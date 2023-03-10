@@ -57,8 +57,9 @@ public partial class RealmDatabaseContext
     [ContractAnnotation("=> canbenull")]
     public GameUser? GetUserFromTokenData(string tokenData, TokenType type)
     {
+        string realType = type.ToString();
         return this._realm.All<Token>()
-            .FirstOrDefault(t => t.TokenData == tokenData && t.TokenType == type)?
+            .FirstOrDefault(t => t.TokenData == tokenData && t._TokenType == realType)?
             .User;
     }
     
