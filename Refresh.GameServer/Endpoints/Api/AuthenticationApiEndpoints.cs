@@ -1,4 +1,5 @@
 using System.Net;
+using System.Security.Cryptography;
 using Bunkum.CustomHttpListener.Parsing;
 using Bunkum.HttpServer;
 using Bunkum.HttpServer.Endpoints;
@@ -17,6 +18,22 @@ public class AuthenticationApiEndpoints : EndpointGroup
     {
         GameUser? user = database.GetUserByUsername(body.Username);
         if (user == null) return new Response(HttpStatusCode.NotFound);
+        
+        // if this is a legacy user, have them create a password on login
+        if (user.PasswordBcrypt == null)
+        {
+            byte[] tokenData = new byte[128];
+            using (RandomNumberGenerator rng = RandomNumberGenerator.Create()) 
+                rng.GetBytes(tokenData);
+
+            ApiResetPasswordResponse resetResp = new()
+            {
+                Reason = "The account you are trying to sign into is a legacy account. Please set a password.",
+                ResetToken = Convert.ToBase64String(tokenData),
+            };
+
+            return new Response(resetResp, ContentType.Json, HttpStatusCode.Unauthorized);
+        }
         
         Token token = database.GenerateTokenForUser(user, TokenType.Api);
 
@@ -37,7 +54,7 @@ public class AuthenticationApiEndpoints : EndpointGroup
 public class ApiAuthenticationRequest
 {
     public string Username { get; set; }
-    public string PasswordSha512 { get; set; }
+    public string PasswordBcrypt { get; set; }
 }
 
 [Serializable]
@@ -46,4 +63,10 @@ public class ApiAuthenticationResponse
     public string TokenData { get; set; }
     public string UserId { get; set; }
     public DateTimeOffset ExpiresAt { get; set; }
+}
+
+public class ApiResetPasswordResponse
+{
+    public string Reason { get; set; }
+    public string ResetToken { get; set; }
 }

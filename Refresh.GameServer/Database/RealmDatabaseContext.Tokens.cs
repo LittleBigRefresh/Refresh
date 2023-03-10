@@ -1,3 +1,4 @@
+using System.Security.Cryptography;
 using JetBrains.Annotations;
 using Refresh.GameServer.Authentication;
 using Refresh.GameServer.Types.UserData;
@@ -8,10 +9,15 @@ public partial class RealmDatabaseContext
 {
     public Token GenerateTokenForUser(GameUser user, TokenType type)
     {
+        // TODO: JWT (JSON Web Tokens) for TokenType.Api
+        byte[] tokenData = new byte[128];
+        using (RandomNumberGenerator rng = RandomNumberGenerator.Create()) 
+            rng.GetBytes(tokenData);
+
         Token token = new()
         {
             User = user,
-            TokenData = Guid.NewGuid().ToString(),
+            TokenData = Convert.ToBase64String(tokenData),
             TokenType = type,
         };
 

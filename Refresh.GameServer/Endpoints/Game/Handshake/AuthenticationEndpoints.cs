@@ -32,7 +32,7 @@ public class AuthenticationEndpoints : EndpointGroup
         GameUser? user = database.GetUserByUsername(ticket.Username);
         user ??= database.CreateUser(ticket.Username);
 
-        Token token = database.GenerateTokenForUser(user, TokenType.Api);
+        Token token = database.GenerateTokenForUser(user, TokenType.Game);
         
         return new LoginResponse
         {
