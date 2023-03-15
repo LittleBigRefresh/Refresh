@@ -9,14 +9,14 @@ namespace Refresh.GameServer.Middlewares;
 
 public class CrossOriginMiddleware : IMiddleware
 {
-    private static readonly List<string> _allowedMethods = new();
+    private static readonly List<string> AllowedMethods = new();
 
     static CrossOriginMiddleware()
     {
         foreach (Method method in Enum.GetValues<Method>())
         {
             if(method is Method.Options or Method.Invalid) continue;
-            _allowedMethods.Add(method.ToString().ToUpperInvariant());
+            AllowedMethods.Add(method.ToString().ToUpperInvariant());
         }
     }
     
@@ -29,8 +29,8 @@ public class CrossOriginMiddleware : IMiddleware
         if (context.Uri.AbsolutePath.StartsWith(ApiEndpointAttribute.BaseRoute))
         {
             context.ResponseHeaders.Add("Access-Control-Allow-Origin", "*");
-            context.ResponseHeaders.Add("Access-Control-Allow-Headers", "Authorization");
-            context.ResponseHeaders.Add("Access-Control-Allow-Methods", string.Join(", ", _allowedMethods));
+            context.ResponseHeaders.Add("Access-Control-Allow-Headers", "Authorization, Content-Type");
+            context.ResponseHeaders.Add("Access-Control-Allow-Methods", string.Join(", ", AllowedMethods));
             
             if (context.Method == Method.Options)
             {
