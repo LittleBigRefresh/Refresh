@@ -7,9 +7,21 @@ namespace Refresh.GameServer.Database;
 
 public partial class RealmDatabaseContext
 {
-    private static string GetTokenString()
+    private const int DefaultCookieLength = 128;
+    private const int MaxBase64Padding = 4;
+    private const int MaxGameCookieLength = 127;
+    private const string GameCookieHeader = "MM_AUTH=";
+    private static readonly int GameCookieLength;
+
+    static RealmDatabaseContext()
     {
-        byte[] tokenData = new byte[128];
+        // LBP cannot store tokens if >127 chars, calculate max possible length here
+        GameCookieLength = (int)Math.Floor((MaxGameCookieLength - GameCookieHeader.Length - MaxBase64Padding) * 3 / 4.0);
+    }
+    
+    private static string GetTokenString(int length)
+    {
+        byte[] tokenData = new byte[length];
         
         using RandomNumberGenerator rng = RandomNumberGenerator.Create();
         rng.GetBytes(tokenData);
@@ -20,12 +32,13 @@ public partial class RealmDatabaseContext
     public Token GenerateTokenForUser(GameUser user, TokenType type)
     {
         // TODO: JWT (JSON Web Tokens) for TokenType.Api
-
+        
+        int cookieLength = type == TokenType.Game ? GameCookieLength : DefaultCookieLength;
 
         Token token = new()
         {
             User = user,
-            TokenData = GetTokenString(),
+            TokenData = GetTokenString(cookieLength),
             TokenType = type,
         };
 
@@ -42,7 +55,7 @@ public partial class RealmDatabaseContext
         ResetToken token = new()
         {
             User = user,
-            TokenData = GetTokenString(),
+            TokenData = GetTokenString(DefaultCookieLength),
         };
 
         this._realm.Write(() =>
