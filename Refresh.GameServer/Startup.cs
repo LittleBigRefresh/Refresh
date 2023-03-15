@@ -30,6 +30,7 @@ server.UseJsonConfig<GameServerConfig>("refreshGameServer.json");
 
 server.AddMiddleware<NotFoundLogMiddleware>();
 server.AddMiddleware<DigestMiddleware>();
+server.AddMiddleware<CrossOriginMiddleware>();
 
 server.DiscoverEndpointsFromAssembly(Assembly.GetExecutingAssembly());
 
