@@ -13,6 +13,10 @@
       <DefineConstants>TRACE;DEBUG</DefineConstants>
       <DebugSymbols>true</DebugSymbols>
     </PropertyGroup>
+
+    <ItemGroup>
+        <Using Include="BCrypt.Net.BCrypt" Alias="BC"/>
+    </ItemGroup>
     
     <PropertyGroup Condition=" '$(Configuration)' == 'Release' ">
         <PublishSingleFile>true</PublishSingleFile>

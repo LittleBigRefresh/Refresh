@@ -11,13 +11,28 @@ namespace Refresh.GameServer.Endpoints.Api;
 
 public class AuthenticationApiEndpoints : EndpointGroup
 {
+    // How many rounds to do for password hashing (BCrypt)
+    // 14 is ~1 second for logins and reset, which is fair because logins are a one-time thing
+    // 200 OK on POST '/api/v2/resetPassword' (1058ms)
+    // 200 OK on POST '/api/v2/auth' (1087ms)
+    //
+    // If increased, passwords will automatically be rehashed at login time to use the new WorkFactor
+    // If decreased, passwords will stay at higher WorkFactor until reset
+    private const int WorkFactor = 14;
+
     [ApiEndpoint("auth", Method.Post)]
     [Authentication(false)]
     public Response Authenticate(RequestContext context, RealmDatabaseContext database, ApiAuthenticationRequest body)
     {
         GameUser? user = database.GetUserByUsername(body.Username);
-        if (user == null) return new Response(HttpStatusCode.NotFound);
+        if (user == null)
+        {
+            return new Response(new ApiErrorResponse("The username or password was incorrect."), ContentType.Json, HttpStatusCode.Forbidden);
+        }
         
+        // database.SetUserPassword(user, null);
+        // return new Response("");
+
         // if this is a legacy user, have them create a password on login
         if (user.PasswordBcrypt == null)
         {
@@ -31,7 +46,17 @@ public class AuthenticationApiEndpoints : EndpointGroup
 
             return new Response(resetResp, ContentType.Json, HttpStatusCode.Unauthorized);
         }
-        
+
+        if (BC.PasswordNeedsRehash(user.PasswordBcrypt, WorkFactor))
+        {
+            database.SetUserPassword(user, BC.HashPassword(body.PasswordSha512, WorkFactor));
+        }
+
+        if (!BC.Verify(body.PasswordSha512, user.PasswordBcrypt))
+        {
+            return new Response(new ApiErrorResponse("The username or password was incorrect."), ContentType.Json, HttpStatusCode.Forbidden);
+        }
+
         Token token = database.GenerateTokenForUser(user, TokenType.Api);
 
         ApiAuthenticationResponse resp = new()
@@ -55,7 +80,7 @@ public class AuthenticationApiEndpoints : EndpointGroup
             return new Response("Password is definitely not SHA512. Please hash the password - it'll work out better for both of us.",
                 ContentType.Plaintext, HttpStatusCode.BadRequest);
         
-        string? passwordBcrypt = BCrypt.Net.BCrypt.HashPassword(body.PasswordSha512);
+        string? passwordBcrypt = BC.HashPassword(body.PasswordSha512, WorkFactor);
         if (passwordBcrypt == null) return new Response(HttpStatusCode.InternalServerError);
 
         database.SetUserPassword(user, passwordBcrypt);
@@ -81,14 +106,29 @@ public class ApiAuthenticationResponse
     public DateTimeOffset ExpiresAt { get; set; }
 }
 
+[Serializable]
 public class ApiResetPasswordRequest
 {
     public string PasswordSha512 { get; set; }
     public string ResetToken { get; set; }
 }
 
+[Serializable]
 public class ApiResetPasswordResponse
 {
     public string Reason { get; set; }
     public string ResetToken { get; set; }
+}
+
+[Serializable]
+public class ApiErrorResponse
+{
+    public ApiErrorResponse() {}
+
+    public ApiErrorResponse(string reason)
+    {
+        this.Reason = reason;
+    }
+    
+    public string Reason { get; set; }
 }
