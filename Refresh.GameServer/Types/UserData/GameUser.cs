@@ -22,6 +22,8 @@ public partial class GameUser : RealmObject, IUser, INeedsPreparationBeforeSeria
     [XmlElement("biography")] [JsonProperty] public string Description { get; set; } = "";
     [XmlElement("location")] [JsonProperty] public GameLocation Location { get; set; } = GameLocation.Zero;
     
+    [XmlIgnore] [JsonProperty] public long JoinDate { get; set; } // unix seconds
+    
     [XmlIgnore] public UserPins Pins { get; set; } = new();
     
     #nullable disable

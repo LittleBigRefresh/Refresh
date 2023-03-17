@@ -19,7 +19,7 @@ public class RealmDatabaseProvider : IDatabaseProvider<RealmDatabaseContext>
     {
         this._configuration = new RealmConfiguration(Path.Join(Environment.CurrentDirectory, "refreshGameServer.realm"))
         {
-            SchemaVersion = 25,
+            SchemaVersion = 26,
             Schema = new[]
             {
                 typeof(GameUser),
@@ -67,6 +67,9 @@ public class RealmDatabaseProvider : IDatabaseProvider<RealmDatabaseContext>
                     
                     // In version 23, users were given bcrypt passwords
                     if (oldVersion < 23) newUser.PasswordBcrypt = null;
+                    
+                    // In version 26, users were given join dates
+                    if (oldVersion < 26) newUser.JoinDate = 0;
                 }
                 
                 IQueryable<dynamic>? oldLevels = migration.OldRealm.DynamicApi.All("GameLevel");
