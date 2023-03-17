@@ -20,6 +20,7 @@ public class LevelApiEndpoints : EndpointGroup
 
     [ApiEndpoint("levels")]
     [Authentication(false)]
+    [ClientCacheResponse(86400 / 2)] // cache for half a day
     public IEnumerable<LevelCategory> GetCategories(RequestContext context) => CategoryHandler.Categories;
 
     [ApiEndpoint("level/id/{idStr}")]

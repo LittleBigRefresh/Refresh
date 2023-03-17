@@ -15,7 +15,7 @@
     </PropertyGroup>
 
     <ItemGroup>
-        <Using Include="BCrypt.Net.BCrypt" Alias="BC"/>
+        <Using Include="BCrypt.Net.BCrypt" Alias="BC" />
     </ItemGroup>
     
     <PropertyGroup Condition=" '$(Configuration)' == 'Release' ">
@@ -37,7 +37,7 @@
     </ItemGroup>
 
     <ItemGroup Condition="'$(Configuration)'!='DebugLocalBunkum'">
-        <PackageReference Include="Bunkum" Version="2.2.0" />
+        <PackageReference Include="Bunkum" Version="2.2.1" />
     </ItemGroup>
 
     <ItemGroup>
