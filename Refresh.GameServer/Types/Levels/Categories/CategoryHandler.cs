@@ -16,6 +16,13 @@ public static class CategoryHandler
             IconHash = "g820623",
             FontAwesomeIcon = "calendar",
         },
+        new LevelCategory("random", "lbp2luckydip", false, nameof(RealmDatabaseContext.GetRandomLevels))
+        {
+            Name = "Lucky Dip",
+            Description = "A random assortment of levels!",
+            IconHash = "g820605",
+            FontAwesomeIcon = "shuffle",
+        },
         new ByUserLevelCategory(),
         new SearchLevelCategory(),
         new LevelCategory("hearted", "favouriteSlots", true, nameof(RealmDatabaseContext.GetLevelsFavouritedByUser))

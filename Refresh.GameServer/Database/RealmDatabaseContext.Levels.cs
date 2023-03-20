@@ -76,6 +76,16 @@ public partial class RealmDatabaseContext // Levels
             .AsEnumerable()
             .Skip(skip)
             .Take(count);
+    
+    [Pure]
+    public IEnumerable<GameLevel> GetRandomLevels(int count, int skip)
+    {
+        return this._realm.All<GameLevel>()
+            .AsEnumerable()
+            .OrderBy(l => Random.Shared.Next())
+            .Skip(skip)
+            .Take(count);
+    }
 
     // FIXME: to get this to work with new categories I removed the total number of results, this is terrible
     [Pure]
