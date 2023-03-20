@@ -19,12 +19,12 @@ public class Token : RealmObject
     
     // Realm can't store enums, use recommended workaround
     // ReSharper disable once InconsistentNaming (can't fix due to conflict with TokenType)
-    internal string _TokenType { get; set; }
+    internal int _TokenType { get; set; }
 
     public TokenType TokenType
     {
-        get => Enum.Parse<TokenType>(this._TokenType);
-        set => this._TokenType = value.ToString();
+        get => (TokenType)this._TokenType;
+        set => this._TokenType = (int)value;
     }
 
     public DateTimeOffset ExpiresAt { get; set; }
