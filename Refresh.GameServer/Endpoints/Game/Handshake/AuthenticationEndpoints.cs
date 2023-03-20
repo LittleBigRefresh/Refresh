@@ -32,7 +32,7 @@ public class AuthenticationEndpoints : EndpointGroup
         GameUser? user = database.GetUserByUsername(ticket.Username);
         user ??= database.CreateUser(ticket.Username);
 
-        Token token = database.GenerateTokenForUser(user, TokenType.Game);
+        Token token = database.GenerateTokenForUser(user, TokenType.Game, 14400); // 4 hours
         
         return new LoginResponse
         {

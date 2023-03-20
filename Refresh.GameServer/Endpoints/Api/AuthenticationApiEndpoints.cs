@@ -33,14 +33,11 @@ public partial class AuthenticationApiEndpoints : EndpointGroup
         {
             return new Response(new ApiErrorResponse("The username or password was incorrect."), ContentType.Json, HttpStatusCode.Forbidden);
         }
-        
-        // database.SetUserPassword(user, null);
-        // return new Response("");
 
         // if this is a legacy user, have them create a password on login
         if (user.PasswordBcrypt == null)
         {
-            ResetToken resetToken = database.GenerateResetTokenForUser(user);
+            Token resetToken = database.GenerateTokenForUser(user, TokenType.PasswordReset);
 
             ApiResetPasswordResponse resetResp = new()
             {
@@ -77,7 +74,7 @@ public partial class AuthenticationApiEndpoints : EndpointGroup
     [Authentication(false)]
     public Response ResetPassword(RequestContext context, RealmDatabaseContext database, ApiResetPasswordRequest body)
     {
-        GameUser? user = database.GetUserFromResetTokenData(body.ResetToken);
+        GameUser? user = database.GetUserFromTokenData(body.ResetToken, TokenType.PasswordReset);
         if (user == null) return new Response(HttpStatusCode.Unauthorized);
 
         if (body.PasswordSha512.Length != 128 || !Sha512Regex().IsMatch(body.PasswordSha512))

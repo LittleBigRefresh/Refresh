@@ -13,6 +13,8 @@ public partial class RealmDatabaseContext
     private const string GameCookieHeader = "MM_AUTH=";
     private static readonly int GameCookieLength;
 
+    private const int DefaultTokenExpirySeconds = 86400; // 1 day
+    
     static RealmDatabaseContext()
     {
         // LBP cannot store tokens if >127 chars, calculate max possible length here
@@ -29,7 +31,7 @@ public partial class RealmDatabaseContext
         return Convert.ToBase64String(tokenData);
     }
     
-    public Token GenerateTokenForUser(GameUser user, TokenType type)
+    public Token GenerateTokenForUser(GameUser user, TokenType type, int? tokenExpirySeconds = null)
     {
         // TODO: JWT (JSON Web Tokens) for TokenType.Api
         
@@ -40,22 +42,7 @@ public partial class RealmDatabaseContext
             User = user,
             TokenData = GetTokenString(cookieLength),
             TokenType = type,
-        };
-
-        this._realm.Write(() =>
-        {
-            this._realm.Add(token);
-        });
-        
-        return token;
-    }
-    
-    public ResetToken GenerateResetTokenForUser(GameUser user)
-    {
-        ResetToken token = new()
-        {
-            User = user,
-            TokenData = GetTokenString(DefaultCookieLength),
+            ExpiresAt = DateTimeOffset.Now.AddSeconds(tokenExpirySeconds ?? DefaultTokenExpirySeconds),
         };
 
         this._realm.Write(() =>
@@ -70,18 +57,19 @@ public partial class RealmDatabaseContext
     [ContractAnnotation("=> canbenull")]
     public GameUser? GetUserFromTokenData(string tokenData, TokenType type)
     {
-        return this._realm.All<Token>()
-            .FirstOrDefault(t => t.TokenData == tokenData && t._TokenType == (int)type)?
-            .User;
-    }
-    
-    [Pure]
-    [ContractAnnotation("=> canbenull")]
-    public GameUser? GetUserFromResetTokenData(string tokenData)
-    {
-        return this._realm.All<ResetToken>()
-            .FirstOrDefault(t => t.TokenData == tokenData)?
-            .User;
+        Token? token = this._realm.All<Token>()
+            .FirstOrDefault(t => t.TokenData == tokenData && t._TokenType == (int)type);
+
+        if (token == null) return null;
+
+        // ReSharper disable once InvertIf
+        if (token.ExpiresAt < DateTimeOffset.Now)
+        {
+            this._realm.Write(() => this._realm.Remove(token));
+            return null;
+        }
+
+        return token.User;
     }
 
     public void SetUserPassword(GameUser user, string passwordBcrypt)
