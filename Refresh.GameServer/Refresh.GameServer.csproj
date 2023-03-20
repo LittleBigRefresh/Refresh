@@ -13,6 +13,10 @@
       <DefineConstants>TRACE;DEBUG</DefineConstants>
       <DebugSymbols>true</DebugSymbols>
     </PropertyGroup>
+
+    <ItemGroup>
+        <Using Include="BCrypt.Net.BCrypt" Alias="BC" />
+    </ItemGroup>
     
     <PropertyGroup Condition=" '$(Configuration)' == 'Release' ">
         <PublishSingleFile>true</PublishSingleFile>
@@ -33,10 +37,11 @@
     </ItemGroup>
 
     <ItemGroup Condition="'$(Configuration)'!='DebugLocalBunkum'">
-        <PackageReference Include="Bunkum" Version="2.1.2" />
+        <PackageReference Include="Bunkum" Version="2.2.1" />
     </ItemGroup>
 
     <ItemGroup>
+      <PackageReference Include="BCrypt.Net-Next" Version="4.0.3" />
       <PackageReference Include="NPTicket" Version="1.0.0" />
       <PackageReference Include="Realm" Version="10.20.0" />
     </ItemGroup>

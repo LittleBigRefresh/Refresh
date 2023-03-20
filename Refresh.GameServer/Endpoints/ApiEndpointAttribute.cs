@@ -9,7 +9,7 @@ public class ApiEndpointAttribute : EndpointAttribute
 {
     // v2, since maybe we want to add add v1 for backwards compatibility with project lighthouse?
     // LegacyApiEndpointAttribute for lighthouse api
-    private const string BaseRoute = "/api/v2/";
+    public const string BaseRoute = "/api/v2/";
 
     public ApiEndpointAttribute(string route, Method method = Method.Get, ContentType contentType = ContentType.Json)
         : base(BaseRoute + route, method, contentType)

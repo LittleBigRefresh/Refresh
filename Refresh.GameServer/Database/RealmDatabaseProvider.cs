@@ -19,7 +19,7 @@ public class RealmDatabaseProvider : IDatabaseProvider<RealmDatabaseContext>
     {
         this._configuration = new RealmConfiguration(Path.Join(Environment.CurrentDirectory, "refreshGameServer.realm"))
         {
-            SchemaVersion = 21,
+            SchemaVersion = 28,
             Schema = new[]
             {
                 typeof(GameUser),
@@ -63,6 +63,12 @@ public class RealmDatabaseProvider : IDatabaseProvider<RealmDatabaseContext>
                     
                     // In version 13, users were given PlanetsHashes
                     if (oldVersion < 13) newUser.PlanetsHash = "0";
+                    
+                    // In version 23, users were given bcrypt passwords
+                    if (oldVersion < 23) newUser.PasswordBcrypt = null;
+                    
+                    // In version 26, users were given join dates
+                    if (oldVersion < 26) newUser.JoinDate = 0;
                 }
                 
                 IQueryable<dynamic>? oldLevels = migration.OldRealm.DynamicApi.All("GameLevel");
@@ -94,6 +100,9 @@ public class RealmDatabaseProvider : IDatabaseProvider<RealmDatabaseContext>
                         newLevel.UpdateDate = oldLevel.UpdateDate * 1000;
                     }
                 }
+
+                // In version 22, tokens added expiry and types so just wipe them all
+                if (oldVersion < 22) migration.NewRealm.RemoveAll<Token>();
             },
         };
     }

@@ -1,9 +1,11 @@
-﻿using System.Reflection;
+﻿using System.Diagnostics;
+using System.Reflection;
 using Refresh.GameServer.Authentication;
 using Refresh.GameServer.Configuration;
 using Refresh.GameServer.Database;
 using Bunkum.HttpServer;
 using Bunkum.HttpServer.Storage;
+using Refresh.GameServer.Middlewares;
 
 #if DEBUGLOCALBUNKUM
 Console.WriteLine("Starting Refresh with LOCAL Bunkum!");
@@ -16,7 +18,6 @@ BunkumConsole.AllocateConsole();
 BunkumHttpServer server = new()
 {
     AssumeAuthenticationRequired = true,
-    UseDigestSystem = true,
 };
 
 using RealmDatabaseProvider databaseProvider = new();
@@ -26,24 +27,10 @@ server.UseAuthenticationProvider(new GameAuthenticationProvider());
 server.UseDataStore(new FileSystemDataStore());
 server.UseJsonConfig<GameServerConfig>("refreshGameServer.json");
 
+server.AddMiddleware<NotFoundLogMiddleware>();
+server.AddMiddleware<DigestMiddleware>();
+server.AddMiddleware<CrossOriginMiddleware>();
+
 server.DiscoverEndpointsFromAssembly(Assembly.GetExecutingAssembly());
-
-#region Log unimplemented endpoints
-#if DEBUG
-
-const string endpointFile = "unimplementedEndpoints.txt";
-if(!File.Exists(endpointFile)) File.WriteAllText(endpointFile, string.Empty);
-List<string> unimplementedEndpoints = File.ReadAllLines(endpointFile).ToList();
-
-server.NotFound += (_, context) =>
-{
-    if (unimplementedEndpoints.Any(e => e.Split('?')[0] == context.Uri.AbsolutePath)) return;
-
-    unimplementedEndpoints.Add(context.Uri.PathAndQuery);
-    File.WriteAllLines(endpointFile, unimplementedEndpoints);
-};
-
-#endif
-#endregion
 
 await server.StartAndBlockAsync();

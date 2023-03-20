@@ -16,10 +16,13 @@ public partial class GameUser : RealmObject, IUser, INeedsPreparationBeforeSeria
 {
     [PrimaryKey] [Indexed] [XmlIgnore] [JsonProperty] public ObjectId UserId { get; set; } = ObjectId.GenerateNewId();
     [Indexed] [Required] [XmlIgnore] [JsonProperty] public string Username { get; set; } = string.Empty;
+    [Indexed] [XmlIgnore] [JsonIgnore] public string? PasswordBcrypt { get; set; } = null;
     [XmlIgnore] [JsonProperty] public string IconHash { get; set; } = "0";
 
     [XmlElement("biography")] [JsonProperty] public string Description { get; set; } = "";
     [XmlElement("location")] [JsonProperty] public GameLocation Location { get; set; } = GameLocation.Zero;
+    
+    [XmlIgnore] [JsonProperty] public long JoinDate { get; set; } // unix seconds
     
     [XmlIgnore] public UserPins Pins { get; set; } = new();
     
