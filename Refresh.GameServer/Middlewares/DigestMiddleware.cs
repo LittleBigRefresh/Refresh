@@ -17,8 +17,7 @@ public class DigestMiddleware : IMiddleware
     private string CalculateDigest(string url, Stream body, string auth)
     {
         using MemoryStream ms = new();
-
-        // FIXME: Directly referencing LBP in Bunkum
+        
         if (!url.StartsWith("/lbp/upload/"))
         {
             // get request body
@@ -40,7 +39,6 @@ public class DigestMiddleware : IMiddleware
     // Referenced from Project Lighthouse
     // https://github.com/LBPUnion/ProjectLighthouse/blob/d16132f67f82555ef636c0dabab5aabf36f57556/ProjectLighthouse.Servers.GameServer/Middlewares/DigestMiddleware.cs
     // https://github.com/LBPUnion/ProjectLighthouse/blob/19ea44e0e2ff5f2ebae8d9dfbaf0f979720bd7d9/ProjectLighthouse/Helpers/CryptoHelper.cs#L35
-    // TODO: make this non-lbp specific, or implement middlewares and move to game server
     private bool VerifyDigestRequest(ListenerContext context)
     {
         string url = context.Uri.AbsolutePath;

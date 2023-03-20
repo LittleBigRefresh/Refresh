@@ -18,7 +18,6 @@ BunkumConsole.AllocateConsole();
 BunkumHttpServer server = new()
 {
     AssumeAuthenticationRequired = true,
-    // UseDigestSystem = true,
 };
 
 using RealmDatabaseProvider databaseProvider = new();
