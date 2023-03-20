@@ -1,4 +1,5 @@
 using System.Net;
+using System.Text.RegularExpressions;
 using Bunkum.CustomHttpListener.Parsing;
 using Bunkum.HttpServer;
 using Bunkum.HttpServer.Endpoints;
@@ -9,7 +10,7 @@ using Refresh.GameServer.Types.UserData;
 
 namespace Refresh.GameServer.Endpoints.Api;
 
-public class AuthenticationApiEndpoints : EndpointGroup
+public partial class AuthenticationApiEndpoints : EndpointGroup
 {
     // How many rounds to do for password hashing (BCrypt)
     // 14 is ~1 second for logins and reset, which is fair because logins are a one-time thing
@@ -19,6 +20,9 @@ public class AuthenticationApiEndpoints : EndpointGroup
     // If increased, passwords will automatically be rehashed at login time to use the new WorkFactor
     // If decreased, passwords will stay at higher WorkFactor until reset
     private const int WorkFactor = 14;
+
+    [GeneratedRegex("^[a-f0-9]{128}$")]
+    private static partial Regex Sha512Regex();
 
     [ApiEndpoint("auth", Method.Post)]
     [Authentication(false)]
@@ -76,7 +80,7 @@ public class AuthenticationApiEndpoints : EndpointGroup
         GameUser? user = database.GetUserFromResetTokenData(body.ResetToken);
         if (user == null) return new Response(HttpStatusCode.Unauthorized);
 
-        if (body.PasswordSha512.Length != 128)
+        if (body.PasswordSha512.Length != 128 || !Sha512Regex().IsMatch(body.PasswordSha512))
             return new Response("Password is definitely not SHA512. Please hash the password - it'll work out better for both of us.",
                 ContentType.Plaintext, HttpStatusCode.BadRequest);
         
