@@ -28,7 +28,7 @@ public class PublishEndpoints : EndpointGroup
     }
 
     [GameEndpoint("publish", ContentType.Xml, Method.Post)]
-    public Response FinishPublishing(RequestContext context, GameUser user, RealmDatabaseContext database, GameLevel body)
+    public Response PublishLevel(RequestContext context, GameUser user, RealmDatabaseContext database, GameLevel body)
     {
         if (body.LevelId != default) // Republish requests contain the id of the old level
         {
@@ -46,15 +46,13 @@ public class PublishEndpoints : EndpointGroup
         }
 
         body.Publisher = user;
-        
-        // ReSharper disable once InvertIf
-        if (database.AddLevel(body))
-        {
-            body.PrepareForSerialization();
-            return new Response(body, ContentType.Xml);
-        }
 
-        return new Response(HttpStatusCode.BadRequest);
+        if (!database.AddLevel(body)) return new Response(HttpStatusCode.BadRequest);
+
+        database.CreateLevelUploadEvent(user, body);
+            
+        body.PrepareForSerialization();
+        return new Response(body, ContentType.Xml);
     }
 
     [GameEndpoint("unpublish/{idStr}", ContentType.Xml, Method.Post)]
