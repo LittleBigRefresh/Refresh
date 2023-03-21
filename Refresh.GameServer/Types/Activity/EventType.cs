@@ -4,6 +4,6 @@ namespace Refresh.GameServer.Types.Activity;
 
 public enum EventType
 {
-    [XmlEnum("level_upload")]
+    [XmlEnum("publish_level")]
     LevelUpload,
 }

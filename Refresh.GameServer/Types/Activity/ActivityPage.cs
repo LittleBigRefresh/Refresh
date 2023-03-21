@@ -2,6 +2,7 @@ using System.Xml.Serialization;
 using Newtonsoft.Json;
 using Refresh.GameServer.Database;
 using Refresh.GameServer.Types.Activity.Groups;
+using Refresh.GameServer.Types.Activity.SerializedEvents;
 using Refresh.GameServer.Types.Levels;
 using Refresh.GameServer.Types.Lists;
 using Refresh.GameServer.Types.UserData;
@@ -13,6 +14,12 @@ namespace Refresh.GameServer.Types.Activity;
 [XmlType("stream")]
 public class ActivityPage
 {
+    [XmlElement("start_timestamp")]
+    public long StartTimestamp { get; set; }
+    
+    [XmlElement("end_timestamp")]
+    public long EndTimestamp { get; set; }
+    
     [XmlIgnore]
     public List<Event> Events { get; set; }
 
@@ -50,8 +57,8 @@ public class ActivityPage
 
         List<GameLevel> levels = this.Events
             .Where(e => e.StoredDataType == EventDataType.Level)
+            .DistinctBy(e => e.StoredSequentialId)
             .Select(e => database.GetLevelFromEvent(e)!) // probably pretty inefficient
-            .DistinctBy(e => e.LevelId)
             .ToList();
 
         this.Levels = new GameLevelList
@@ -60,6 +67,12 @@ public class ActivityPage
         };
 
         this.Groups = generateGroups ? this.GenerateGroups(levels, users) : new ActivityGroups();
+
+        if (this.Events.Count > 0)
+        {
+            this.StartTimestamp = this.Events.First().Timestamp * 1000;
+            this.EndTimestamp = this.Events.Last().Timestamp * 1000;
+        }
     }
 
     private ActivityGroups GenerateGroups(List<GameLevel> levels, List<GameUser> users)
@@ -73,16 +86,22 @@ public class ActivityPage
                 groups.Groups.Add(new LevelActivityGroup
                 {
                     LevelId = @event.StoredSequentialId!.Value,
-                    Timestamp = @event.Timestamp,
+                    Timestamp = @event.Timestamp * 1000,
                     Subgroups = new Subgroups(new List<ActivityGroup>
                     {
                         new UserActivityGroup
                         {
                             Username = @event.User.Username,
-                            Timestamp = @event.Timestamp,
-                            Events = new Events(new List<Event>
+                            Timestamp = @event.Timestamp * 1000,
+                            Events = new Events(new List<SerializedEvent>
                             {
-                                @event,
+                                new SerializedLevelEvent
+                                {
+                                    Type = @event.EventType,
+                                    Timestamp = @event.Timestamp * 1000,
+                                    LevelId = @event.StoredSequentialId!.Value,
+                                    Actor = @event.User.Username,
+                                },
                             }),
                         },
                     }),

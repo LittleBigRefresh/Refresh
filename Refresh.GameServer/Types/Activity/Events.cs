@@ -1,4 +1,5 @@
 using System.Xml.Serialization;
+using Refresh.GameServer.Types.Activity.SerializedEvents;
 
 namespace Refresh.GameServer.Types.Activity;
 
@@ -6,9 +7,9 @@ namespace Refresh.GameServer.Types.Activity;
 [XmlType("events")]
 public class Events
 {
-    [XmlElement("event")] public List<Event> Items { get; set; } = new();
+    [XmlElement("event")] public List<SerializedEvent> Items { get; set; } = new();
 
-    public Events(List<Event> items)
+    public Events(List<SerializedEvent> items)
     {
         this.Items = items;
     }
