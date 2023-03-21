@@ -53,7 +53,7 @@ public class AuthenticationEndpoints : EndpointGroup
         if (token == null) 
             return new Response("Token was somehow null", ContentType.Plaintext, HttpStatusCode.InternalServerError);
 
-        bool result = database.RevokeTokenByTokenData(token);
+        bool result = database.RevokeTokenByTokenData(token, TokenType.Game);
 
         if (!result)
             return new Response(HttpStatusCode.Unauthorized);
