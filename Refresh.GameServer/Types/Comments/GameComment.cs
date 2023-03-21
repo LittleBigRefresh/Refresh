@@ -2,7 +2,7 @@ using System.Xml.Serialization;
 using Realms;
 using Refresh.GameServer.Database;
 using Refresh.GameServer.Types.UserData;
-using Refresh.HttpServer.Serialization;
+using Bunkum.HttpServer.Serialization;
 
 namespace Refresh.GameServer.Types.Comments;
 

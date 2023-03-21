@@ -1,7 +1,8 @@
+using Bunkum.CustomHttpListener.Parsing;
+using Bunkum.HttpServer;
+using Bunkum.HttpServer.Configuration;
+using Bunkum.HttpServer.Endpoints;
 using Newtonsoft.Json;
-using Refresh.HttpServer;
-using Refresh.HttpServer.Endpoints;
-using Refresh.HttpServer.Responses;
 
 namespace Refresh.GameServer.Endpoints;
 
@@ -16,14 +17,16 @@ public class AutodiscoverEndpoints : EndpointGroup
 
         [JsonProperty("serverBrand")]
         public string ServerBrand { get; set; } = "Refresh";
-
-        // TODO: Configuration option for external url
+        
         [JsonProperty("url")]
         public string Url { get; set; } = "http://127.0.0.1:10061";
     }
 
     [Endpoint("/autodiscover", ContentType.Json)]
     [Authentication(false)]
-    public DiscoverResponse Autodiscover(RequestContext context) => new DiscoverResponse();
+    public DiscoverResponse Autodiscover(RequestContext context, BunkumConfig config) => new()
+    {
+        Url = config.ExternalUrl,
+    };
 
 }

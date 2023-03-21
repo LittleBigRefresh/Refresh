@@ -3,57 +3,25 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.0.31903.59
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Refresh.HttpServer", "Refresh.HttpServer\Refresh.HttpServer.csproj", "{FE688114-A9A5-46A6-A55F-FB4F8DE314BA}"
-EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Server Implementations", "Server Implementations", "{C508722A-5A90-4CFA-A773-011AE76B9896}"
-EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Tests", "Tests", "{231DC669-E0FA-4941-8D23-7D0233810E52}"
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RefreshTests.HttpServer", "RefreshTests.HttpServer\RefreshTests.HttpServer.csproj", "{1B045904-2B19-4E33-84E4-A5AEAEFB552D}"
-EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Refresh.GameServer", "Refresh.GameServer\Refresh.GameServer.csproj", "{622EB919-5FD2-45FE-B006-4EE5C7849FDF}"
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Refresh.Analyzers", "Refresh.Analyzers\Refresh.Analyzers.csproj", "{72DFF709-0D5C-4596-9064-5BCC3E16AD78}"
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RefreshTests.HttpServerManual", "RefreshTests.HttpServerManual\RefreshTests.HttpServerManual.csproj", "{91A42B0E-53D7-4D84-B162-10EBE79DE3E1}"
-EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Code Quality", "Code Quality", "{F181D6FD-414C-463E-A134-149574DB2B0E}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
 		Release|Any CPU = Release|Any CPU
+		DebugLocalBunkum|Any CPU = DebugLocalBunkum|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
-		{FE688114-A9A5-46A6-A55F-FB4F8DE314BA}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{FE688114-A9A5-46A6-A55F-FB4F8DE314BA}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{FE688114-A9A5-46A6-A55F-FB4F8DE314BA}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{FE688114-A9A5-46A6-A55F-FB4F8DE314BA}.Release|Any CPU.Build.0 = Release|Any CPU
-		{1B045904-2B19-4E33-84E4-A5AEAEFB552D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{1B045904-2B19-4E33-84E4-A5AEAEFB552D}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{1B045904-2B19-4E33-84E4-A5AEAEFB552D}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{1B045904-2B19-4E33-84E4-A5AEAEFB552D}.Release|Any CPU.Build.0 = Release|Any CPU
 		{622EB919-5FD2-45FE-B006-4EE5C7849FDF}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{622EB919-5FD2-45FE-B006-4EE5C7849FDF}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{622EB919-5FD2-45FE-B006-4EE5C7849FDF}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{622EB919-5FD2-45FE-B006-4EE5C7849FDF}.DebugLocalBunkum|Any CPU.ActiveCfg = DebugLocalBunkum|Any CPU
+		{622EB919-5FD2-45FE-B006-4EE5C7849FDF}.DebugLocalBunkum|Any CPU.Build.0 = DebugLocalBunkum|Any CPU
+		{622EB919-5FD2-45FE-B006-4EE5C7849FDF}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{622EB919-5FD2-45FE-B006-4EE5C7849FDF}.Release|Any CPU.Build.0 = Release|Any CPU
-		{72DFF709-0D5C-4596-9064-5BCC3E16AD78}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{72DFF709-0D5C-4596-9064-5BCC3E16AD78}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{72DFF709-0D5C-4596-9064-5BCC3E16AD78}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{72DFF709-0D5C-4596-9064-5BCC3E16AD78}.Release|Any CPU.Build.0 = Release|Any CPU
-		{91A42B0E-53D7-4D84-B162-10EBE79DE3E1}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{91A42B0E-53D7-4D84-B162-10EBE79DE3E1}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{91A42B0E-53D7-4D84-B162-10EBE79DE3E1}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{91A42B0E-53D7-4D84-B162-10EBE79DE3E1}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
-		{1B045904-2B19-4E33-84E4-A5AEAEFB552D} = {231DC669-E0FA-4941-8D23-7D0233810E52}
-		{622EB919-5FD2-45FE-B006-4EE5C7849FDF} = {C508722A-5A90-4CFA-A773-011AE76B9896}
-		{91A42B0E-53D7-4D84-B162-10EBE79DE3E1} = {231DC669-E0FA-4941-8D23-7D0233810E52}
-		{231DC669-E0FA-4941-8D23-7D0233810E52} = {F181D6FD-414C-463E-A134-149574DB2B0E}
-		{72DFF709-0D5C-4596-9064-5BCC3E16AD78} = {F181D6FD-414C-463E-A134-149574DB2B0E}
 	EndGlobalSection
 EndGlobal

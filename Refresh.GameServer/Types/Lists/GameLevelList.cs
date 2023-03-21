@@ -1,5 +1,6 @@
 using System.Xml.Serialization;
 using NotEnoughLogs.Definitions;
+using Refresh.GameServer.Types.Levels;
 
 namespace Refresh.GameServer.Types.Lists;
 
@@ -7,8 +8,8 @@ namespace Refresh.GameServer.Types.Lists;
 
 [XmlRoot("slots")]
 [XmlType("slots")]
-public class GameLevelList : GameList<Level>
+public class GameLevelList : GameList<GameLevel>
 {
     [XmlElement("slot")]
-    public override List<Level> Items { get; set; }
+    public override List<GameLevel> Items { get; set; }
 }

@@ -5,7 +5,8 @@ using Refresh.GameServer.Types;
 using Refresh.GameServer.Types.Comments;
 using Refresh.GameServer.Types.Levels;
 using Refresh.GameServer.Types.UserData;
-using Refresh.HttpServer.Database;
+using Bunkum.HttpServer.Database;
+using Refresh.GameServer.Types.Relations;
 
 namespace Refresh.GameServer.Database;
 
@@ -18,7 +19,7 @@ public class RealmDatabaseProvider : IDatabaseProvider<RealmDatabaseContext>
     {
         this._configuration = new RealmConfiguration(Path.Join(Environment.CurrentDirectory, "refreshGameServer.realm"))
         {
-            SchemaVersion = 13,
+            SchemaVersion = 28,
             Schema = new[]
             {
                 typeof(GameUser),
@@ -27,6 +28,9 @@ public class RealmDatabaseProvider : IDatabaseProvider<RealmDatabaseContext>
                 typeof(Token),
                 typeof(GameLevel),
                 typeof(GameComment),
+                typeof(FavouriteLevelRelation),
+                typeof(QueueLevelRelation),
+                typeof(FavouriteUserRelation),
             },
             MigrationCallback = (migration, oldVersion) =>
             {
@@ -59,14 +63,20 @@ public class RealmDatabaseProvider : IDatabaseProvider<RealmDatabaseContext>
                     
                     // In version 13, users were given PlanetsHashes
                     if (oldVersion < 13) newUser.PlanetsHash = "0";
+                    
+                    // In version 23, users were given bcrypt passwords
+                    if (oldVersion < 23) newUser.PasswordBcrypt = null;
+                    
+                    // In version 26, users were given join dates
+                    if (oldVersion < 26) newUser.JoinDate = 0;
                 }
                 
-                // IQueryable<dynamic>? oldLevels = migration.OldRealm.DynamicApi.All("GameLevel");
+                IQueryable<dynamic>? oldLevels = migration.OldRealm.DynamicApi.All("GameLevel");
                 IQueryable<GameLevel>? newLevels = migration.NewRealm.All<GameLevel>();
 
                 for (int i = 0; i < newLevels.Count(); i++)
                 {
-                    // dynamic oldLevel = oldLevels.ElementAt(i);
+                    dynamic oldLevel = oldLevels.ElementAt(i);
                     GameLevel newLevel = newLevels.ElementAt(i);
                     
                     // In version 10, GameLevels switched to int-based ids.
@@ -82,7 +92,17 @@ public class RealmDatabaseProvider : IDatabaseProvider<RealmDatabaseContext>
                         newLevel.PublishDate = timestamp;
                         newLevel.UpdateDate = timestamp;
                     }
+                    
+                    // In version 14, level timestamps were fixed
+                    if (oldVersion < 14)
+                    {
+                        newLevel.PublishDate = oldLevel.PublishDate * 1000;
+                        newLevel.UpdateDate = oldLevel.UpdateDate * 1000;
+                    }
                 }
+
+                // In version 22, tokens added expiry and types so just wipe them all
+                if (oldVersion < 22) migration.NewRealm.RemoveAll<Token>();
             },
         };
     }
@@ -99,8 +119,8 @@ public class RealmDatabaseProvider : IDatabaseProvider<RealmDatabaseContext>
     {
         foreach (Realm realmStorageValue in this._realmStorage.Values) 
         {
-            realmStorageValue.Refresh();
-            realmStorageValue.Dispose();
+            // ReSharper disable once ConditionalAccessQualifierIsNonNullableAccordingToAPIContract
+            realmStorageValue?.Dispose();
         }
 
         this._realmStorage.Dispose();
