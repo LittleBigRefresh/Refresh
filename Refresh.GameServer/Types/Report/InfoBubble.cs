@@ -3,16 +3,16 @@ using Realms;
 
 namespace Refresh.GameServer.Types.Report;
 
-[XmlRoot(ElementName="infoBubble")]
+[XmlRoot("infoBubble")]
 public class InfoBubble : EmbeddedObject 
 { 
-    [XmlElement(ElementName="slot")] 
+    [XmlElement("slot")] 
     public Slot Slot { get; set; } 
 
-    [XmlElement(ElementName="name")] 
+    [XmlElement("name")] 
     public string Name { get; set; } 
 
-    [XmlElement(ElementName="description")] 
+    [XmlElement("description")] 
     public string Description { get; set; } 
 
     [XmlAttribute(AttributeName="type")] 

@@ -3,13 +3,13 @@ using Realms;
 
 namespace Refresh.GameServer.Types.Report;
 
-[XmlRoot(ElementName="screenElements")]
+[XmlRoot("screenElements")]
 public class ScreenElements : EmbeddedObject 
 { 
     [XmlIgnore]
     private IList<Slot> InternalSlot { get; }
 
-    [XmlElement(ElementName="slot")] 
+    [XmlElement("slot")] 
     public Slot[] Slot 
     {
         get => this.InternalSlot.ToArray();
@@ -25,7 +25,7 @@ public class ScreenElements : EmbeddedObject
     [XmlIgnore]
     private IList<Player> InternalPlayer { get; } 
     
-    [XmlElement(ElementName="player")] 
+    [XmlElement("player")] 
     public Player[] Player 
     {
         get => this.InternalPlayer.ToArray();

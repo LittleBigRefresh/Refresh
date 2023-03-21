@@ -3,9 +3,9 @@ using Realms;
 
 namespace Refresh.GameServer.Types.Report;
 
-[XmlRoot(ElementName="marqee")]
+[XmlRoot("marqee")]
 public class Marqee : EmbeddedObject 
 { 
-    [XmlElement(ElementName="rect")] 
+    [XmlElement("rect")] 
     public Rect Rect { get; set; } 
 }

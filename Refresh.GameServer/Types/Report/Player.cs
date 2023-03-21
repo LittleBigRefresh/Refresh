@@ -3,27 +3,27 @@ using Realms;
 
 namespace Refresh.GameServer.Types.Report;
 
-[XmlRoot(ElementName="player")]
+[XmlRoot("player")]
 public class Player : EmbeddedObject 
 { 
-    [XmlElement(ElementName="id")] 
+    [XmlElement("id")] 
     public string Username { get; set; } 
 
-    [XmlElement(ElementName="rect")] 
+    [XmlElement("rect")] 
     public Rect Rectangle { get; set; } 
 
-    [XmlAttribute(AttributeName="reporter")] 
+    [XmlAttribute("reporter")] 
     public bool Reporter { get; set; } 
 
-    [XmlAttribute(AttributeName="ingamenow")] 
+    [XmlAttribute("ingamenow")] 
     public bool IngameNow { get; set; } 
 
-    [XmlAttribute(AttributeName="playerNumber")] 
+    [XmlAttribute("playerNumber")] 
     public int PlayerNumber { get; set; } 
 
     [XmlText] 
     public string Text { get; set; } 
 
-    [XmlElement(ElementName="screenRect")] 
+    [XmlElement("screenRect")] 
     public ScreenRect ScreenRect { get; set; } 
 }

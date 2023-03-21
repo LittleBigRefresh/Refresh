@@ -3,7 +3,7 @@ using Realms;
 
 namespace Refresh.GameServer.Types.Report;
 
-[XmlRoot(ElementName = "rect")]
+[XmlRoot("rect")]
 public class Rect : EmbeddedObject 
 { 
     [XmlAttribute(AttributeName="t")] 

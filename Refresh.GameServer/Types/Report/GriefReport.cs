@@ -4,14 +4,14 @@ using Refresh.GameServer.Database;
 
 namespace Refresh.GameServer.Types.Report;
 
-[XmlRoot(ElementName = "griefReport")]
+[XmlRoot("griefReport")]
 public class GriefReport : RealmObject, ISequentialId 
 {
     [XmlIgnore]
     private IList<InfoBubble> InternalInfoBubble { get; }
     
     [Ignored]
-    [XmlElement(ElementName = "infoBubble")]
+    [XmlElement("infoBubble")]
     public InfoBubble[] InfoBubble 
     {
         get => this.InternalInfoBubble.ToArray();
@@ -27,35 +27,35 @@ public class GriefReport : RealmObject, ISequentialId
     [XmlIgnore]
     public GriefReportType Type { get => (GriefReportType)this.InternalType; set => this.InternalType = (int)value; }
 
-    [XmlElement(ElementName = "griefTypeId")]
+    [XmlElement("griefTypeId")]
     private int InternalType { get; set; }
 
-    [XmlElement(ElementName = "marqee")]
+    [XmlElement("marqee")]
     public Marqee Marqee { get; set; }
 
-    [XmlElement(ElementName = "levelOwner")]
+    [XmlElement("levelOwner")]
     public string LevelOwner { get; set; }
 
-    [XmlElement(ElementName = "initialStateHash")]
+    [XmlElement("initialStateHash")]
     public string InitialStateHash { get; set; }
 
-    [XmlElement(ElementName = "levelType")]
+    [XmlElement("levelType")]
     public string LevelType { get; set; }
 
-    [XmlElement(ElementName = "levelId")]
+    [XmlElement("levelId")]
     public int LevelId { get; set; }
 
-    [XmlElement(ElementName = "griefStateHash")]
+    [XmlElement("griefStateHash")]
     public string GriefStateHash { get; set; }
 
-    [XmlElement(ElementName = "jpegHash")]
+    [XmlElement("jpegHash")]
     public string JpegHash { get; set; }
 
     [XmlIgnore]
     private IList<Player> InternalPlayers { get; }
 
     [Ignored]
-    [XmlElement(ElementName = "player")]
+    [XmlElement("player")]
     public Player[] Players 
     {
         get => this.InternalPlayers.ToArray();
@@ -68,7 +68,7 @@ public class GriefReport : RealmObject, ISequentialId
         }
     }
 
-    [XmlElement(ElementName = "screenElements")]
+    [XmlElement("screenElements")]
     public ScreenElements ScreenElements { get; set; }
 
     [PrimaryKey]

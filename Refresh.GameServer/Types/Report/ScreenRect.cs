@@ -3,9 +3,9 @@ using Realms;
 
 namespace Refresh.GameServer.Types.Report;
 
-[XmlRoot(ElementName="screenRect")]
+[XmlRoot("screenRect")]
 public class ScreenRect : EmbeddedObject 
 { 
-    [XmlElement(ElementName="rect")] 
+    [XmlElement("rect")] 
     public Rect Rect { get; set; } 
 }

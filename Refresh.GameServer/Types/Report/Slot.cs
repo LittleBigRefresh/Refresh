@@ -3,27 +3,27 @@ using Realms;
 
 namespace Refresh.GameServer.Types.Report;
 
-[XmlRoot(ElementName="slot")]
+[XmlRoot("slot")]
 public class Slot : EmbeddedObject 
 { 
-    [XmlElement(ElementName="id")] 
+    [XmlElement("id")] 
     public int Id { get; set; } 
 
-    [XmlAttribute(AttributeName="type")] 
+    [XmlAttribute("type")] 
     public string Type { get; set; } 
 
     [XmlText] 
     public string Text { get; set; } 
 
-    [XmlElement(ElementName="screenRect")] 
+    [XmlElement("screenRect")] 
     public ScreenRect ScreenRect { get; set; } 
 
-    [XmlElement(ElementName="slotId")] 
+    [XmlElement("slotId")] 
     public string SlotId { get; set; } 
 
-    [XmlElement(ElementName="name")] 
+    [XmlElement("name")] 
     public string Name { get; set; } 
 
-    [XmlElement(ElementName="icon")] 
+    [XmlElement("icon")] 
     public string Icon { get; set; } 
 }
