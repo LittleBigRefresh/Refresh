@@ -16,7 +16,7 @@ public class Player : EmbeddedObject
     public bool Reporter { get; set; } 
 
     [XmlAttribute(AttributeName="ingamenow")] 
-    public bool Ingamenow { get; set; } 
+    public bool IngameNow { get; set; } 
 
     [XmlAttribute(AttributeName="playerNumber")] 
     public int PlayerNumber { get; set; } 
