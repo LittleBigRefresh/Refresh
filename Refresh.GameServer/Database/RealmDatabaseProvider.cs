@@ -20,7 +20,7 @@ public class RealmDatabaseProvider : IDatabaseProvider<RealmDatabaseContext>
     {
         this._configuration = new RealmConfiguration(Path.Join(Environment.CurrentDirectory, "refreshGameServer.realm"))
         {
-            SchemaVersion = 29,
+            SchemaVersion = 30,
             Schema = new[]
             {
                 typeof(GameUser),
@@ -105,6 +105,18 @@ public class RealmDatabaseProvider : IDatabaseProvider<RealmDatabaseContext>
 
                 // In version 22, tokens added expiry and types so just wipe them all
                 if (oldVersion < 22) migration.NewRealm.RemoveAll<Token>();
+                
+                // IQueryable<dynamic>? oldEvents = migration.OldRealm.DynamicApi.All("Event");
+                IQueryable<Event>? newEvents = migration.NewRealm.All<Event>();
+
+                for (int i = 0; i < newEvents.Count(); i++)
+                {
+                    // dynamic oldEvent = oldEvents.ElementAt(i);
+                    Event newEvent = newEvents.ElementAt(i);
+
+                    // In version 30, events were given timestamps
+                    if(oldVersion < 30) newEvent.Timestamp = timestamp;
+                }
             },
         };
     }

@@ -1,4 +1,7 @@
+using System.Diagnostics.CodeAnalysis;
+using System.Xml.Serialization;
 using MongoDB.Bson;
+using Newtonsoft.Json;
 using Realms;
 using Refresh.GameServer.Types.UserData;
 
@@ -10,6 +13,7 @@ namespace Refresh.GameServer.Types.Activity;
 /// An action performed by a user.
 /// </summary>
 [Serializable]
+[SuppressMessage("ReSharper", "UnusedMember.Global")]
 public class Event : RealmObject
 {
     /// <summary>
@@ -30,12 +34,16 @@ public class Event : RealmObject
     /// <summary>
     /// The user in question that created this event.
     /// </summary>
-    public GameUser User { get; set; }
+    [XmlIgnore] [JsonIgnore] public GameUser User { get; set; }
+
+    [XmlIgnore] public string UserId => this.User.UserId.ToString(); 
     
     /// <summary>
     /// Should this event be shown to other users on the server?
     /// </summary>
     public bool IsPrivate { get; set; }
+    
+    public long Timestamp { get; set; }
     
     /// <summary>
     /// The type of data that this event is referencing.
