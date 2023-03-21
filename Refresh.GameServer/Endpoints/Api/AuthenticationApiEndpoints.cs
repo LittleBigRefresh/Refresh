@@ -88,6 +88,16 @@ public partial class AuthenticationApiEndpoints : EndpointGroup
 
         return new Response(HttpStatusCode.OK);
     }
+
+    [ApiEndpoint("goodbye", Method.Post)]
+    [Authentication(false)]
+    public Response RevokeThisToken(RequestContext context, RealmDatabaseContext database)
+    {
+        bool success = database.RevokeTokenByTokenData(context.RequestHeaders["Authorization"], TokenType.Api);
+
+        if (success) return new Response(HttpStatusCode.OK);
+        return new Response(HttpStatusCode.Unauthorized);
+    }
 }
 
 #nullable disable

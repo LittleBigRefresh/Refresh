@@ -80,11 +80,11 @@ public partial class RealmDatabaseContext
         });
     }
 
-    public bool RevokeTokenByTokenData(string? tokenData)
+    public bool RevokeTokenByTokenData(string? tokenData, TokenType type)
     {
         if (tokenData == null) return false;
 
-        Token? token = this._realm.All<Token>().FirstOrDefault(t => t.TokenData == tokenData);
+        Token? token = this._realm.All<Token>().FirstOrDefault(t => t.TokenData == tokenData && t._TokenType == (int)type);
         if (token == null) return false;
 
         this._realm.Write(() =>

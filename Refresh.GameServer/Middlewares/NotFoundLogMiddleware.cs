@@ -12,7 +12,12 @@ public class NotFoundLogMiddleware : IMiddleware
 
     public NotFoundLogMiddleware()
     {
-         this._unimplementedEndpoints = File.ReadAllLines(EndpointFile).ToList();
+        if (!File.Exists(EndpointFile)) {
+            this._unimplementedEndpoints = new List<string>();
+            return;
+        }
+
+        this._unimplementedEndpoints = File.ReadAllLines(EndpointFile).ToList();
     }
     
     public void HandleRequest(ListenerContext context, Lazy<IDatabaseContext> database, Action next)
