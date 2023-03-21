@@ -14,14 +14,17 @@ namespace Refresh.GameServer.Types.Activity;
 /// </summary>
 [Serializable]
 [SuppressMessage("ReSharper", "UnusedMember.Global")]
+[JsonObject(MemberSerialization.OptOut, ItemNullValueHandling = NullValueHandling.Ignore)]
 public class Event : RealmObject
 {
     /// <summary>
     /// The ID of the event.
     /// </summary>
+    [XmlIgnore]
     public ObjectId EventId { get; set; } = ObjectId.GenerateNewId();
     
     [Ignored]
+    [XmlIgnore]
     public EventType EventType
     {
         get => (EventType)this._EventType;
@@ -41,14 +44,18 @@ public class Event : RealmObject
     /// <summary>
     /// Should this event be shown to other users on the server?
     /// </summary>
+    [XmlIgnore]
+    [JsonIgnore]
     public bool IsPrivate { get; set; }
     
+    [XmlElement("timestamp")]
     public long Timestamp { get; set; }
     
     /// <summary>
     /// The type of data that this event is referencing.
     /// </summary>
     [Ignored]
+    [XmlIgnore]
     public EventDataType StoredDataType
     {
         get => (EventDataType)this._StoredDataType;
@@ -61,10 +68,12 @@ public class Event : RealmObject
     /// <summary>
     /// The sequential ID of the object this event is referencing. If null, use <see cref="StoredObjectId"/>.
     /// </summary>
-    internal int? StoredSequentialId { get; set; }
+    [XmlIgnore]
+    public int? StoredSequentialId { get; set; }
     
     /// <summary>
     /// The ObjectId of the object this event is referencing. If null, use <see cref="StoredSequentialId"/>.
     /// </summary>
-    internal ObjectId? StoredObjectId { get; set; }
+    [XmlIgnore]
+    public ObjectId? StoredObjectId { get; set; }
 }

@@ -11,7 +11,7 @@ public class ActivityApiEndpoints : EndpointGroup
     [Authentication(false)]
     public ActivityPage GetRecentActivity(RequestContext context, RealmDatabaseContext database)
     {
-        ActivityPage page = new(database.GetRecentActivity(20, 0));
+        ActivityPage page = new(database);
         return page;
     }
 }
