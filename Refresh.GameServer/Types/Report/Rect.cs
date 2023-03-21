@@ -7,14 +7,14 @@ namespace Refresh.GameServer.Types.Report;
 public class Rect : EmbeddedObject 
 { 
     [XmlAttribute(AttributeName="t")] 
-    public int T { get; set; } 
+    public int Top { get; set; } 
 
     [XmlAttribute(AttributeName="l")] 
-    public int L { get; set; } 
+    public int Left { get; set; } 
 
     [XmlAttribute(AttributeName="b")] 
-    public int B { get; set; } 
+    public int Bottom { get; set; } 
 
     [XmlAttribute(AttributeName="r")] 
-    public int R { get; set; } 
+    public int Right { get; set; } 
 }
