@@ -54,7 +54,52 @@ public class MetadataEndpoints : EndpointGroup
         
         return networkSettings;
     }
+    
+    private static readonly Lazy<string?> TelemetryConfigFile
+        = new(() => 
+        {
+            string path = Path.Combine(Environment.CurrentDirectory, "telemetry.xml");
+
+            return File.Exists(path) ? File.ReadAllText(path) : null;
+        });
 
     [GameEndpoint("t_conf")]
-    public Response TelemetryConfig(RequestContext context) => new(HttpStatusCode.Gone);
+    [NullStatusCode(HttpStatusCode.Gone)]
+    public string? TelemetryConfig(RequestContext context) 
+    {
+        bool created = TelemetryConfigFile.IsValueCreated;
+        
+        string? telemetryConfig = TelemetryConfigFile.Value;
+        
+        // Only log this warning once
+        if (!created && telemetryConfig == null)
+            context.Logger.LogWarning(BunkumContext.Request, "telemetry.xml file is missing! " +
+                                                             "LBP will work without it, but it may be relevant to you if you are an advanced user.");
+
+        return telemetryConfig;
+    }
+    
+    private static readonly Lazy<string?> PromotionsFile
+        = new(() => 
+        {
+            string path = Path.Combine(Environment.CurrentDirectory, "promotions.xml");
+
+            return File.Exists(path) ? File.ReadAllText(path) : null;
+        });
+
+    [GameEndpoint("promotions")]
+    [NullStatusCode(HttpStatusCode.OK)]
+    public string? Promotions(RequestContext context) 
+    {
+        bool created = PromotionsFile.IsValueCreated;
+        
+        string? promotions = PromotionsFile.Value;
+        
+        // Only log this warning once
+        if(!created && promotions == null)
+            context.Logger.LogWarning(BunkumContext.Request, "promotions.xml file is missing! " +
+                                                             "LBP will work without it, but it may be relevant to you if you are an advanced user.");
+        
+        return promotions;
+    }
 }
