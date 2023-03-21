@@ -9,6 +9,9 @@ public class ActivityApiEndpoints : EndpointGroup
 {
     [ApiEndpoint("activity")]
     [Authentication(false)]
-    public IEnumerable<Event> GetRecentActivity(RequestContext context, RealmDatabaseContext database) 
-        => database.GetRecentActivity(20, 0);
+    public ActivityPage GetRecentActivity(RequestContext context, RealmDatabaseContext database)
+    {
+        ActivityPage page = new(database.GetRecentActivity(20, 0));
+        return page;
+    }
 }
