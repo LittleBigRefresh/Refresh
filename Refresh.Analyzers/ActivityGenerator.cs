@@ -84,7 +84,7 @@ public partial class RealmDatabaseContext
             string type = "Game" + name;
 
             string method = $@"
-    public {type}? Get{type}FromEvent(Event @event)
+    public {type}? Get{name}FromEvent(Event @event)
     {{
         if (@event.StoredDataType != EventDataType.{name})
             throw new InvalidOperationException(""Event does not store the correct data type (expected {name})"");

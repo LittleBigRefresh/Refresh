@@ -47,7 +47,7 @@ public class ActivityPage
 
         List<GameLevel> levels = this.Events
             .Where(e => e.StoredDataType == EventDataType.Level)
-            .Select(e => database.GetGameLevelFromEvent(e)!) // probably pretty inefficient
+            .Select(e => database.GetLevelFromEvent(e)!) // probably pretty inefficient
             .ToList();
 
         this.Levels = new GameLevelList
