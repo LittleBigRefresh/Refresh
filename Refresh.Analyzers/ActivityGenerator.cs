@@ -82,6 +82,20 @@ public partial class RealmDatabaseContext
         foreach (string name in names)
         {
             string type = "Game" + name;
+            
+            string idField;
+            string idFieldValue;
+
+            if (name != "User")
+            {
+                idField = "StoredSequentialId";
+                idFieldValue = idField + ".Value";
+            }
+            else
+            {
+                idField = "StoredObjectId";
+                idFieldValue = idField;
+            }
 
             string method = $@"
     public {type}? Get{name}FromEvent(Event @event)
@@ -89,11 +103,11 @@ public partial class RealmDatabaseContext
         if (@event.StoredDataType != EventDataType.{name})
             throw new InvalidOperationException(""Event does not store the correct data type (expected {name})"");
 
-        if (@event.StoredSequentialId == null)
-            throw new InvalidOperationException(""Event was not created correctly"");
+        if (@event.{idField} == null)
+            throw new InvalidOperationException(""Event was not created correctly, expected {idField} to not be null"");
 
         return this._realm.All<{type}>()
-            .FirstOrDefault(l => l.LevelId == @event.StoredSequentialId.Value);
+            .FirstOrDefault(l => l.{name}Id == @event.{idFieldValue});
     }}
 ";
 

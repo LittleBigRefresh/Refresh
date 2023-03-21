@@ -15,6 +15,8 @@ namespace Refresh.GameServer.Types.Activity;
 [Serializable]
 [SuppressMessage("ReSharper", "UnusedMember.Global")]
 [JsonObject(MemberSerialization.OptOut, ItemNullValueHandling = NullValueHandling.Ignore)]
+[XmlRoot("event")]
+[XmlType("event")]
 public class Event : RealmObject
 {
     /// <summary>
@@ -24,7 +26,7 @@ public class Event : RealmObject
     public ObjectId EventId { get; set; } = ObjectId.GenerateNewId();
     
     [Ignored]
-    [XmlIgnore]
+    [XmlAttribute("type")]
     public EventType EventType
     {
         get => (EventType)this._EventType;
