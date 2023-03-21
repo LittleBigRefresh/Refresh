@@ -83,9 +83,15 @@ public class ActivityPage
         {
             foreach (Event @event in this.Events.Where(e => e.StoredDataType == type))
             {
-                groups.Groups.Add(new LevelActivityGroup
+                GameLevelId id = new()
                 {
                     LevelId = @event.StoredSequentialId!.Value,
+                    Type = "user",
+                };
+
+                groups.Groups.Add(new LevelActivityGroup
+                {
+                    LevelId = id,
                     Timestamp = @event.Timestamp * 1000,
                     Subgroups = new Subgroups(new List<ActivityGroup>
                     {
@@ -99,7 +105,7 @@ public class ActivityPage
                                 {
                                     Type = @event.EventType,
                                     Timestamp = @event.Timestamp * 1000,
-                                    LevelId = @event.StoredSequentialId!.Value,
+                                    LevelId = id,
                                     Actor = @event.User.Username,
                                 },
                             }),
