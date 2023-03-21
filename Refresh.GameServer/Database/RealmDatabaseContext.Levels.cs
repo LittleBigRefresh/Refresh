@@ -82,7 +82,7 @@ public partial class RealmDatabaseContext // Levels
     {
         return this._realm.All<GameLevel>()
             .AsEnumerable()
-            .OrderBy(l => Random.Shared.Next())
+            .OrderBy(_ => Random.Shared.Next())
             .Skip(skip)
             .Take(count);
     }
