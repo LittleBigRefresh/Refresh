@@ -8,6 +8,7 @@ public enum GriefReportType
     Offensive = 3,
     Violence = 4,
     IllegalAct = 5,
+    // 6 is unknown
     TermsOfService = 7,
     Other = 8,
 }
