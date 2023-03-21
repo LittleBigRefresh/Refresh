@@ -10,7 +10,7 @@ public class Player : EmbeddedObject
     public string Username { get; set; } 
 
     [XmlElement(ElementName="rect")] 
-    public Rect Rect { get; set; } 
+    public Rect Rectangle { get; set; } 
 
     [XmlAttribute(AttributeName="reporter")] 
     public bool Reporter { get; set; } 
