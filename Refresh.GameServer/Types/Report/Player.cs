@@ -7,7 +7,7 @@ namespace Refresh.GameServer.Types.Report;
 public class Player : EmbeddedObject 
 { 
     [XmlElement(ElementName="id")] 
-    public string Id { get; set; } 
+    public string Username { get; set; } 
 
     [XmlElement(ElementName="rect")] 
     public Rect Rect { get; set; } 
