@@ -89,22 +89,24 @@ public class ActivityPage
                     Type = "user",
                 };
 
+                long timestamp = @event.Timestamp * 1000;
+
                 groups.Groups.Add(new LevelActivityGroup
                 {
                     LevelId = id,
-                    Timestamp = @event.Timestamp * 1000,
+                    Timestamp = timestamp,
                     Subgroups = new Subgroups(new List<ActivityGroup>
                     {
                         new UserActivityGroup
                         {
                             Username = @event.User.Username,
-                            Timestamp = @event.Timestamp * 1000,
+                            Timestamp = timestamp,
                             Events = new Events(new List<SerializedEvent>
                             {
                                 new SerializedLevelEvent
                                 {
                                     Type = @event.EventType,
-                                    Timestamp = @event.Timestamp * 1000,
+                                    Timestamp = timestamp,
                                     LevelId = id,
                                     Actor = @event.User.Username,
                                 },
