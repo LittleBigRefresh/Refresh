@@ -8,6 +8,7 @@ using Refresh.GameServer.Types.UserData;
 using Bunkum.HttpServer.Database;
 using Refresh.GameServer.Types.Activity;
 using Refresh.GameServer.Types.Relations;
+using Refresh.GameServer.Types.Report;
 
 namespace Refresh.GameServer.Database;
 
@@ -20,7 +21,7 @@ public class RealmDatabaseProvider : IDatabaseProvider<RealmDatabaseContext>
     {
         this._configuration = new RealmConfiguration(Path.Join(Environment.CurrentDirectory, "refreshGameServer.realm"))
         {
-            SchemaVersion = 30,
+            SchemaVersion = 31,
             Schema = new[]
             {
                 typeof(GameUser),
@@ -33,6 +34,15 @@ public class RealmDatabaseProvider : IDatabaseProvider<RealmDatabaseContext>
                 typeof(QueueLevelRelation),
                 typeof(FavouriteUserRelation),
                 typeof(Event),
+                //grief report items
+                typeof(GriefReport),
+                typeof(InfoBubble),
+                typeof(Marqee),
+                typeof(Player),
+                typeof(Rect),
+                typeof(ScreenElements),
+                typeof(ScreenRect),
+                typeof(Slot),
             },
             MigrationCallback = (migration, oldVersion) =>
             {

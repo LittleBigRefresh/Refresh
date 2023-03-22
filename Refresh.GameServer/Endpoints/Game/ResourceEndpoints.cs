@@ -11,9 +11,11 @@ namespace Refresh.GameServer.Endpoints.Game;
 
 public class ResourceEndpoints : EndpointGroup
 {
+    //NOTE: type does nothing here, but it's sent by LBP so we have to accept it
+    [GameEndpoint("upload/{hash}/{type}", Method.Post)]
     [GameEndpoint("upload/{hash}", Method.Post)]
     [SuppressMessage("ReSharper", "ConvertIfStatementToReturnStatement")]
-    public Response UploadResource(RequestContext context, string hash, byte[] body)
+    public Response UploadResource(RequestContext context, string hash, string type, byte[] body)
     {
         if (context.DataStore.ExistsInStore(hash))
             return new Response(HttpStatusCode.Conflict);
