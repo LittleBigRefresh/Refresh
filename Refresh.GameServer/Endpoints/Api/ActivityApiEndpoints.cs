@@ -1,3 +1,4 @@
+using System.Net;
 using Bunkum.HttpServer;
 using Bunkum.HttpServer.Endpoints;
 using Refresh.GameServer.Database;
@@ -8,10 +9,16 @@ namespace Refresh.GameServer.Endpoints.Api;
 public class ActivityApiEndpoints : EndpointGroup
 {
     [ApiEndpoint("activity")]
+    [NullStatusCode(HttpStatusCode.BadRequest)]
     [Authentication(false)]
-    public ActivityPage GetRecentActivity(RequestContext context, RealmDatabaseContext database)
+    public ActivityPage? GetRecentActivity(RequestContext context, RealmDatabaseContext database)
     {
-        ActivityPage page = new(database, generateGroups: false);
+        long timestamp = 0;
+
+        string? tsStr = context.QueryString["timestamp"];
+        if (tsStr != null && !long.TryParse(tsStr, out timestamp)) return null;
+
+        ActivityPage page = new(database, generateGroups: false, timestamp: timestamp);
         return page;
     }
 }

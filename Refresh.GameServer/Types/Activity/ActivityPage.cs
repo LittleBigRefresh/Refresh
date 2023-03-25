@@ -41,9 +41,9 @@ public class ActivityPage
         this.Users = new GameUserList();
     }
 
-    public ActivityPage(RealmDatabaseContext database, int count = 20, int skip = 0, bool generateGroups = true)
+    public ActivityPage(RealmDatabaseContext database, int count = 20, int skip = 0, long timestamp = 0, bool generateGroups = true)
     {
-        this.Events = new List<Event>(database.GetRecentActivity(count, skip));
+        this.Events = new List<Event>(database.GetRecentActivity(count, skip, timestamp / 1000));
         
         List<GameUser> users = this.Events
             .Select(e => e.User)
