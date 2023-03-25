@@ -6,4 +6,8 @@ public enum EventType
 {
     [XmlEnum("publish_level")]
     LevelUpload,
+    [XmlEnum("heart_level")]
+    LevelFavourite,
+    [XmlEnum("unheart_level")]
+    LevelUnfavourite,
 }
