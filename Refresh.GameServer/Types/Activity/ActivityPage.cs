@@ -43,6 +43,8 @@ public class ActivityPage
 
     public ActivityPage(RealmDatabaseContext database, int count = 20, int skip = 0, long timestamp = 0, bool generateGroups = true)
     {
+        if (timestamp == 0) timestamp = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
+        
         this.Events = new List<Event>(database.GetRecentActivity(count, skip, timestamp / 1000));
         
         List<GameUser> users = this.Events
@@ -91,6 +93,34 @@ public class ActivityPage
 
                 long timestamp = @event.Timestamp * 1000;
 
+                SerializedLevelEvent levelEvent;
+
+                // Level upload events have special properties
+                // TODO: cleanup somehow, lots of duplicated code
+                // cant put extra properties as nullable in base, nullables will still be serialized
+                if (@event.EventType == EventType.LevelUpload)
+                {
+                    levelEvent = new SerializedLevelUploadEvent
+                    {
+                        Type = @event.EventType,
+                        Timestamp = timestamp,
+                        LevelId = id,
+                        Actor = @event.User.Username,
+                        Republish = false,
+                        Count = 0,
+                    };
+                }
+                else
+                {
+                    levelEvent = new SerializedLevelEvent
+                    {
+                        Type = @event.EventType,
+                        Timestamp = timestamp,
+                        LevelId = id,
+                        Actor = @event.User.Username,
+                    };
+                }
+
                 groups.Groups.Add(new LevelActivityGroup
                 {
                     LevelId = id,
@@ -103,13 +133,7 @@ public class ActivityPage
                             Timestamp = timestamp,
                             Events = new Events(new List<SerializedEvent>
                             {
-                                new SerializedLevelEvent
-                                {
-                                    Type = @event.EventType,
-                                    Timestamp = timestamp,
-                                    LevelId = id,
-                                    Actor = @event.User.Username,
-                                },
+                                levelEvent,
                             }),
                         },
                     }),

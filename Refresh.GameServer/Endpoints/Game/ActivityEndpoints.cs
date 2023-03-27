@@ -19,7 +19,9 @@ public class ActivityEndpoints : EndpointGroup
         long timestamp = 0;
 
         string? tsStr = context.QueryString["timestamp"];
+        string? tsEndStr = context.QueryString["endTimestamp"];
         if (tsStr != null && !long.TryParse(tsStr, out timestamp)) return null;
+        if (tsEndStr != null && !long.TryParse(tsEndStr, out timestamp)) return null; // tsEnd overrides ts
         
         ActivityPage page = new(database, timestamp: timestamp);
         

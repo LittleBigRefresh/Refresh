@@ -8,6 +8,7 @@ public partial class RealmDatabaseContext // Activity
     public IEnumerable<Event> GetRecentActivity(int count, int skip, long timestamp) => 
         this._realm.All<Event>()
             .Where(e => e.Timestamp <= timestamp)
+            .OrderBy(e => e.Timestamp)
             .AsEnumerable()
             .Skip(skip)
             .Take(count);
@@ -16,6 +17,7 @@ public partial class RealmDatabaseContext // Activity
         this._realm.All<Event>()
             .Where(e => e.StoredDataType == EventDataType.Level && e.StoredSequentialId == level.LevelId)
             .Where(e => e.Timestamp > timestamp)
+            .OrderBy(e => e.Timestamp)
             .AsEnumerable()
             .Skip(skip)
             .Take(count);

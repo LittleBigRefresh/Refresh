@@ -6,6 +6,7 @@ namespace Refresh.GameServer.Types.Activity.SerializedEvents;
 [XmlRoot("event")]
 [XmlInclude(typeof(SerializedUserEvent))]
 [XmlInclude(typeof(SerializedLevelEvent))]
+[XmlInclude(typeof(SerializedLevelUploadEvent))]
 public abstract class SerializedEvent
 {
     [XmlAttribute("type")]

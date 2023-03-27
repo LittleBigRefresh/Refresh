@@ -21,7 +21,7 @@ public class RealmDatabaseProvider : IDatabaseProvider<RealmDatabaseContext>
     {
         this._configuration = new RealmConfiguration(Path.Join(Environment.CurrentDirectory, "refreshGameServer.realm"))
         {
-            SchemaVersion = 31,
+            SchemaVersion = 32,
             Schema = new[]
             {
                 typeof(GameUser),
@@ -126,6 +126,9 @@ public class RealmDatabaseProvider : IDatabaseProvider<RealmDatabaseContext>
 
                     // In version 30, events were given timestamps
                     if(oldVersion < 30) newEvent.Timestamp = timestamp;
+                    
+                    // Fixes events with broken timestamps
+                    if(oldVersion < 32 && newEvent.Timestamp == 0) newEvent.Timestamp = timestamp;
                 }
             },
         };
