@@ -143,13 +143,6 @@ public partial class RealmDatabaseContext
 
     public void Execute(GeneratorExecutionContext context)
     {
-        // while (!Debugger.IsAttached)
-        // {
-        //     Thread.Sleep(25);
-        // }
-        //
-        // Debugger.Break();
-        
         EnumNameReceiver syntaxReceiver = new();
         
         foreach (SyntaxTree tree in context.Compilation.SyntaxTrees)

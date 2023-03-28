@@ -105,8 +105,6 @@ public partial class RealmDatabaseContext // Relations
         {
             this._realm.Remove(relation);
         });
-        
-        // this.CreateUserUnfavouriteEvent(userFavouriting, userToFavourite);
 
         return true;
     }
