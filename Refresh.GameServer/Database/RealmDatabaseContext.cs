@@ -53,6 +53,4 @@ public partial class RealmDatabaseContext : IDatabaseContext
         => this.AddSequentialObject(obj, null, writtenCallback);
     
     private static long GetTimestampMilliseconds() => DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
-    
-    private static long GetTimestampSeconds() => DateTimeOffset.UtcNow.ToUnixTimeSeconds();
 }

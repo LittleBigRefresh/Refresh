@@ -45,7 +45,7 @@ public class ActivityPage
     {
         if (timestamp == 0) timestamp = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
         
-        this.Events = new List<Event>(database.GetRecentActivity(count, skip, timestamp / 1000, endTimestamp / 1000));
+        this.Events = new List<Event>(database.GetRecentActivity(count, skip, timestamp, endTimestamp));
         
         List<GameUser> users = this.Events
             .Select(e => e.User)
@@ -113,7 +113,7 @@ public class ActivityPage
                 Type = "user",
             };
 
-            long timestamp = @event.Timestamp * 1000;
+            long timestamp = @event.Timestamp;
 
             SerializedLevelEvent levelEvent = new()
             {
@@ -152,7 +152,7 @@ public class ActivityPage
     {
         foreach (Event @event in this.Events.Where(e => e.StoredDataType == EventDataType.User))
         {
-            long timestamp = @event.Timestamp * 1000;
+            long timestamp = @event.Timestamp;
 
             GameUser user = users.First(u => u.UserId == @event.StoredObjectId);
 

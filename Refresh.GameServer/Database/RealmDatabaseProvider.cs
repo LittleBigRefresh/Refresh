@@ -21,7 +21,7 @@ public class RealmDatabaseProvider : IDatabaseProvider<RealmDatabaseContext>
     {
         this._configuration = new RealmConfiguration(Path.Join(Environment.CurrentDirectory, "refreshGameServer.realm"))
         {
-            SchemaVersion = 32,
+            SchemaVersion = 33,
             Schema = new[]
             {
                 typeof(GameUser),
@@ -47,7 +47,12 @@ public class RealmDatabaseProvider : IDatabaseProvider<RealmDatabaseContext>
             MigrationCallback = (migration, oldVersion) =>
             {
                 // Get the current unix timestamp for when we add timestamps to objects
-                long timestamp = DateTimeOffset.UtcNow.ToUnixTimeSeconds();
+                long timestampMilliseconds = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
+                
+                // DO NOT USE FOR NEW MIGRATIONS! LBP almost never actually uses seconds for timestamps.
+                // This is from a mistake made early in development where this was not understood by me.
+                // Unless you are certain second timestamps are used, use the millisecond timestamps set above.
+                long timestampSeconds = timestampMilliseconds / 1000;
                 
                 // IQueryable<dynamic>? oldUsers = migration.OldRealm.DynamicApi.All("GameUser");
                 IQueryable<GameUser>? newUsers = migration.NewRealm.All<GameUser>();
@@ -101,8 +106,8 @@ public class RealmDatabaseProvider : IDatabaseProvider<RealmDatabaseContext>
                     if (oldVersion < 11)
                     {
                         // Since we dont have a reference point for when the level was actually uploaded, default to now
-                        newLevel.PublishDate = timestamp;
-                        newLevel.UpdateDate = timestamp;
+                        newLevel.PublishDate = timestampSeconds;
+                        newLevel.UpdateDate = timestampSeconds;
                     }
                     
                     // In version 14, level timestamps were fixed
@@ -125,10 +130,13 @@ public class RealmDatabaseProvider : IDatabaseProvider<RealmDatabaseContext>
                     Event newEvent = newEvents.ElementAt(i);
 
                     // In version 30, events were given timestamps
-                    if(oldVersion < 30) newEvent.Timestamp = timestamp;
+                    if(oldVersion < 30) newEvent.Timestamp = timestampSeconds;
                     
                     // Fixes events with broken timestamps
-                    if(oldVersion < 32 && newEvent.Timestamp == 0) newEvent.Timestamp = timestamp;
+                    if(oldVersion < 32 && newEvent.Timestamp == 0) newEvent.Timestamp = timestampSeconds;
+                    
+                    // Converts events to use millisecond timestamps
+                    if(oldVersion < 33 && newEvent.Timestamp < 1000000000000) newEvent.Timestamp *= 1000;
                 }
             },
         };

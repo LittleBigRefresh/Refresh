@@ -68,7 +68,7 @@ public class ActivityGenerator : ISourceGenerator
         Event @event = new();
         @event.EventType = EventType.{name};
         @event.StoredDataType = EventDataType.{type};
-        @event.Timestamp = GetTimestampSeconds();
+        @event.Timestamp = GetTimestampMilliseconds();
         @event.User = userFrom;
 
         @event.{idField} = {typeParam}.{type}Id;
