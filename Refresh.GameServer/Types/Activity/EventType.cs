@@ -1,7 +1,10 @@
 using System.Xml.Serialization;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Converters;
 
 namespace Refresh.GameServer.Types.Activity;
 
+[JsonConverter(typeof(StringEnumConverter))]
 public enum EventType
 {
     [XmlEnum("publish_level")]
