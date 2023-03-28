@@ -2,6 +2,7 @@ using System.Diagnostics;
 using System.Reflection;
 using JetBrains.Annotations;
 using Realms;
+using Refresh.GameServer.Types.Activity;
 using Refresh.GameServer.Types.Levels;
 using Refresh.GameServer.Types.UserData;
 
@@ -57,6 +58,10 @@ public partial class RealmDatabaseContext // Levels
     {
         this._realm.Write(() =>
         {
+            IQueryable<Event> events = this._realm.All<Event>()
+                .Where(e => e.StoredDataType == EventDataType.Level && e.StoredSequentialId == level.LevelId);
+            
+            this._realm.RemoveRange(events);
             this._realm.Remove(level);
         });
     }
@@ -82,7 +87,7 @@ public partial class RealmDatabaseContext // Levels
     {
         return this._realm.All<GameLevel>()
             .AsEnumerable()
-            .OrderBy(l => Random.Shared.Next())
+            .OrderBy(_ => Random.Shared.Next())
             .Skip(skip)
             .Take(count);
     }

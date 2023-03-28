@@ -46,4 +46,11 @@
       <PackageReference Include="Realm" Version="10.20.0" />
     </ItemGroup>
 
+    <ItemGroup>
+        <ProjectReference Include="..\Refresh.Analyzers\Refresh.Analyzers.csproj">
+            <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
+            <OutputItemType>Analyzer</OutputItemType>
+        </ProjectReference>
+    </ItemGroup>
+
 </Project>
