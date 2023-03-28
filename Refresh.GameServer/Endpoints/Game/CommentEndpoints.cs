@@ -17,10 +17,10 @@ public class CommentEndpoints : EndpointGroup
     public Response PostProfileComment(RequestContext context, RealmDatabaseContext database, string username, GameComment body, GameUser user)
     {
         GameUser? profile = database.GetUserByUsername(username);
-        if (profile == null) return new Response(HttpStatusCode.NotFound);
+        if (profile == null) return HttpStatusCode.NotFound;
         
         database.PostCommentToProfile(profile, user, body.Content);
-        return new Response(HttpStatusCode.OK);
+        return HttpStatusCode.OK;
     }
 
     [GameEndpoint("userComments/{username}", ContentType.Xml)]

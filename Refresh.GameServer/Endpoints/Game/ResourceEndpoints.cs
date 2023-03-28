@@ -18,22 +18,22 @@ public class ResourceEndpoints : EndpointGroup
     public Response UploadResource(RequestContext context, string hash, string type, byte[] body)
     {
         if (context.DataStore.ExistsInStore(hash))
-            return new Response(HttpStatusCode.Conflict);
+            return HttpStatusCode.Conflict;
 
         if (!context.DataStore.WriteToStore(hash, body))
-            return new Response(HttpStatusCode.InternalServerError);
+            return HttpStatusCode.InternalServerError;
 
-        return new Response(HttpStatusCode.OK);
+        return HttpStatusCode.OK;
     }
 
     [GameEndpoint("r/{hash}")]
     public Response GetResource(RequestContext context, string hash)
     {
         if (!context.DataStore.ExistsInStore(hash))
-            return new Response(HttpStatusCode.NotFound);
+            return HttpStatusCode.NotFound;
 
         if (!context.DataStore.TryGetDataFromStore(hash, out byte[]? data))
-            return new Response(HttpStatusCode.InternalServerError);
+            return HttpStatusCode.InternalServerError;
 
         Debug.Assert(data != null);
         return new Response(data, ContentType.BinaryData);
