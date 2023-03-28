@@ -41,16 +41,20 @@ public class ActivityPage
         this.Users = new GameUserList();
     }
 
-    public ActivityPage(RealmDatabaseContext database, int count = 20, int skip = 0, long timestamp = 0, bool generateGroups = true)
+    public ActivityPage(RealmDatabaseContext database, int count = 20, int skip = 0, long timestamp = 0, long endTimestamp = 0, bool generateGroups = true)
     {
         if (timestamp == 0) timestamp = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
         
-        this.Events = new List<Event>(database.GetRecentActivity(count, skip, timestamp / 1000));
+        this.Events = new List<Event>(database.GetRecentActivity(count, skip, timestamp / 1000, endTimestamp / 1000));
         
         List<GameUser> users = this.Events
             .Select(e => e.User)
             .DistinctBy(e => e.UserId)
             .ToList();
+
+        users.AddRange(this.Events.Where(e => e.StoredDataType == EventDataType.User)
+            .DistinctBy(e => e.StoredObjectId)
+            .Select(e => database.GetUserFromEvent(e)!));
 
         this.Users = new GameUserList
         {
@@ -68,79 +72,115 @@ public class ActivityPage
             Items = levels,
         };
 
-        this.Groups = generateGroups ? this.GenerateGroups(levels, users) : new ActivityGroups();
+        this.Groups = generateGroups ? this.GenerateGroups(users) : new ActivityGroups();
 
         if (this.Events.Count > 0)
         {
-            this.StartTimestamp = this.Events.First().Timestamp * 1000;
-            this.EndTimestamp = this.Events.Last().Timestamp * 1000;
+            this.StartTimestamp = timestamp;
+            this.EndTimestamp = endTimestamp;
         }
     }
 
-    private ActivityGroups GenerateGroups(List<GameLevel> levels, List<GameUser> users)
+    private ActivityGroups GenerateGroups(IReadOnlyCollection<GameUser> users)
     {
         ActivityGroups groups = new();
         
         foreach (EventDataType type in Enum.GetValues<EventDataType>())
         {
-            foreach (Event @event in this.Events.Where(e => e.StoredDataType == type))
+            switch (type)
             {
-                GameLevelId id = new()
-                {
-                    LevelId = @event.StoredSequentialId!.Value,
-                    Type = "user",
-                };
-
-                long timestamp = @event.Timestamp * 1000;
-
-                SerializedLevelEvent levelEvent;
-
-                // Level upload events have special properties
-                // TODO: cleanup somehow, lots of duplicated code
-                // cant put extra properties as nullable in base, nullables will still be serialized
-                if (@event.EventType == EventType.LevelUpload)
-                {
-                    levelEvent = new SerializedLevelUploadEvent
-                    {
-                        Type = @event.EventType,
-                        Timestamp = timestamp,
-                        LevelId = id,
-                        Actor = @event.User.Username,
-                        Republish = false,
-                        Count = 0,
-                    };
-                }
-                else
-                {
-                    levelEvent = new SerializedLevelEvent
-                    {
-                        Type = @event.EventType,
-                        Timestamp = timestamp,
-                        LevelId = id,
-                        Actor = @event.User.Username,
-                    };
-                }
-
-                groups.Groups.Add(new LevelActivityGroup
-                {
-                    LevelId = id,
-                    Timestamp = timestamp,
-                    Subgroups = new Subgroups(new List<ActivityGroup>
-                    {
-                        new UserActivityGroup
-                        {
-                            Username = @event.User.Username,
-                            Timestamp = timestamp,
-                            Events = new Events(new List<SerializedEvent>
-                            {
-                                levelEvent,
-                            }),
-                        },
-                    }),
-                });
+                case EventDataType.User:
+                    this.GenerateUserGroups(groups, users);
+                    break;
+                case EventDataType.Level:
+                    this.GenerateLevelGroups(groups);
+                    break;
+                default:
+                    throw new ArgumentOutOfRangeException();
             }
         }
 
         return groups;
+    }
+
+    private void GenerateLevelGroups(ActivityGroups groups)
+    {
+        foreach (Event @event in this.Events.Where(e => e.StoredDataType == EventDataType.Level))
+        {
+            GameLevelId id = new()
+            {
+                LevelId = @event.StoredSequentialId!.Value,
+                Type = "user",
+            };
+
+            long timestamp = @event.Timestamp * 1000;
+
+            SerializedLevelEvent levelEvent = new()
+            {
+                Type = @event.EventType,
+                Timestamp = timestamp,
+                LevelId = id,
+                Actor = @event.User.Username,
+            };
+
+            // Level upload events have special properties
+            // cant put extra properties as nullable in base, nullables will still be serialized
+            if (@event.EventType == EventType.LevelUpload)
+                levelEvent = SerializedLevelUploadEvent.FromSerializedLevelEvent(levelEvent);
+
+            groups.Groups.Add(new LevelActivityGroup
+            {
+                LevelId = id,
+                Timestamp = timestamp,
+                Subgroups = new Subgroups(new List<ActivityGroup>
+                {
+                    new UserActivityGroup
+                    {
+                        Username = @event.User.Username,
+                        Timestamp = timestamp,
+                        Events = new Events(new List<SerializedEvent>
+                        {
+                            levelEvent,
+                        }),
+                    },
+                }),
+            });
+        }
+    }
+    
+    private void GenerateUserGroups(ActivityGroups groups, IReadOnlyCollection<GameUser> users)
+    {
+        foreach (Event @event in this.Events.Where(e => e.StoredDataType == EventDataType.User))
+        {
+            long timestamp = @event.Timestamp * 1000;
+
+            GameUser user = users.First(u => u.UserId == @event.StoredObjectId);
+
+            SerializedUserEvent userEvent = new()
+            {
+                Type = @event.EventType,
+                Timestamp = timestamp,
+                Actor = @event.User.Username,
+                Username = user.Username,
+            };
+
+            groups.Groups.Add(new UserActivityGroup
+            {
+                Username = user.Username,
+                Timestamp = timestamp,
+                Subgroups = new Subgroups(new List<ActivityGroup>
+                {
+                    new UserActivityGroup
+                    {
+                        Username = @event.User.Username,
+                        Timestamp = timestamp,
+                        Events = new Events(new List<SerializedEvent>
+                        {
+                            userEvent,
+                        }),
+                    },
+                }),
+            });
+        }
     }
 }

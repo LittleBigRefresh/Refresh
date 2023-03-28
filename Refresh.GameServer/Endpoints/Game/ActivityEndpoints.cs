@@ -17,13 +17,16 @@ public class ActivityEndpoints : EndpointGroup
     public ActivityPage? GetRecentActivity(RequestContext context, RealmDatabaseContext database)
     {
         long timestamp = 0;
+        long endTimestamp = 0;
 
         string? tsStr = context.QueryString["timestamp"];
         string? tsEndStr = context.QueryString["endTimestamp"];
         if (tsStr != null && !long.TryParse(tsStr, out timestamp)) return null;
-        if (tsEndStr != null && !long.TryParse(tsEndStr, out timestamp)) return null; // tsEnd overrides ts
-        
-        ActivityPage page = new(database, timestamp: timestamp);
+        if (tsEndStr != null && !long.TryParse(tsEndStr, out endTimestamp)) return null;
+
+        if (endTimestamp == 0) endTimestamp = timestamp - 86400000 * 7; // 1 week
+
+        ActivityPage page = new(database, timestamp: timestamp, endTimestamp: endTimestamp);
         
         foreach (GameUser user in page.Users.Users) user.PrepareForSerialization();
         foreach (GameLevel level in page.Levels.Items) level.PrepareForSerialization();

@@ -30,6 +30,25 @@ public class ActivityGenerator : ISourceGenerator
         return input;
     }
 
+    private static (string, string) GetIdFieldFromName(string name)
+    {
+        string idField;
+        string idFieldValue;
+
+        if (name != "User")
+        {
+            idField = "StoredSequentialId";
+            idFieldValue = idField + ".Value";
+        }
+        else
+        {
+            idField = "StoredObjectId";
+            idFieldValue = idField;
+        }
+
+        return (idField, idFieldValue);
+    }
+
     private static void GenerateCreateEvents(GeneratorExecutionContext context, IEnumerable<string> names)
     {
         string code = string.Empty;
@@ -38,19 +57,21 @@ public class ActivityGenerator : ISourceGenerator
             string type = GetTypeFromName(name);
             string typeParam = type.ToLower();
             
+            (string idField, string _) = GetIdFieldFromName(type);
+            
             string method = $@"
     /// <summary>
     /// Creates a new {name} event from a Game{type}, and adds it to the event list.
     /// </summary>
-    public Event Create{name}Event(GameUser user, Game{type} {typeParam})
+    public Event Create{name}Event(GameUser userFrom, Game{type} {typeParam})
     {{
         Event @event = new();
         @event.EventType = EventType.{name};
         @event.StoredDataType = EventDataType.{type};
         @event.Timestamp = GetTimestampSeconds();
-        @event.User = user;
+        @event.User = userFrom;
 
-        @event.StoredSequentialId = {typeParam}.{type}Id;
+        @event.{idField} = {typeParam}.{type}Id;
 
         this._realm.Write(() => this._realm.Add(@event));
         return @event;
@@ -84,20 +105,8 @@ public partial class RealmDatabaseContext
         {
             string type = "Game" + name;
             
-            string idField;
-            string idFieldValue;
-
-            if (name != "User")
-            {
-                idField = "StoredSequentialId";
-                idFieldValue = idField + ".Value";
-            }
-            else
-            {
-                idField = "StoredObjectId";
-                idFieldValue = idField;
-            }
-
+            (string idField, string idFieldValue) = GetIdFieldFromName(name);
+            
             string method = $@"
     public {type}? Get{name}FromEvent(Event @event)
     {{

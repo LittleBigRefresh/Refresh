@@ -50,8 +50,6 @@ public partial class RealmDatabaseContext // Relations
         {
             this._realm.Remove(relation);
         });
-        
-        this.CreateLevelUnfavouriteEvent(user, level);
 
         return true;
     }
@@ -91,6 +89,8 @@ public partial class RealmDatabaseContext // Relations
             this._realm.Add(relation);
         });
 
+        this.CreateUserFavouriteEvent(userFavouriting, userToFavourite);
+
         return true;
     }
 
@@ -105,6 +105,8 @@ public partial class RealmDatabaseContext // Relations
         {
             this._realm.Remove(relation);
         });
+        
+        // this.CreateUserUnfavouriteEvent(userFavouriting, userToFavourite);
 
         return true;
     }
