@@ -75,18 +75,18 @@ public partial class AuthenticationApiEndpoints : EndpointGroup
     public Response ResetPassword(RequestContext context, RealmDatabaseContext database, ApiResetPasswordRequest body)
     {
         GameUser? user = database.GetUserFromTokenData(body.ResetToken, TokenType.PasswordReset);
-        if (user == null) return new Response(HttpStatusCode.Unauthorized);
+        if (user == null) return HttpStatusCode.Unauthorized;
 
         if (body.PasswordSha512.Length != 128 || !Sha512Regex().IsMatch(body.PasswordSha512))
             return new Response("Password is definitely not SHA512. Please hash the password - it'll work out better for both of us.",
                 ContentType.Plaintext, HttpStatusCode.BadRequest);
         
         string? passwordBcrypt = BC.HashPassword(body.PasswordSha512, WorkFactor);
-        if (passwordBcrypt == null) return new Response(HttpStatusCode.InternalServerError);
+        if (passwordBcrypt == null) return HttpStatusCode.InternalServerError;
 
         database.SetUserPassword(user, passwordBcrypt);
 
-        return new Response(HttpStatusCode.OK);
+        return HttpStatusCode.OK;
     }
 
     [ApiEndpoint("goodbye", Method.Post)]
@@ -95,8 +95,8 @@ public partial class AuthenticationApiEndpoints : EndpointGroup
     {
         bool success = database.RevokeTokenByTokenData(context.RequestHeaders["Authorization"], TokenType.Api);
 
-        if (success) return new Response(HttpStatusCode.OK);
-        return new Response(HttpStatusCode.Unauthorized);
+        if (success) return HttpStatusCode.OK;
+        return HttpStatusCode.Unauthorized;
     }
 }
 

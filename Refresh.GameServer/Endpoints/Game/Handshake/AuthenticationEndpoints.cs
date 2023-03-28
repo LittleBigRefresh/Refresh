@@ -56,9 +56,9 @@ public class AuthenticationEndpoints : EndpointGroup
         bool result = database.RevokeTokenByTokenData(token, TokenType.Game);
 
         if (!result)
-            return new Response(HttpStatusCode.Unauthorized);
+            return HttpStatusCode.Unauthorized;
 
-        return new Response(HttpStatusCode.OK);
+        return HttpStatusCode.OK;
     }
 }
 

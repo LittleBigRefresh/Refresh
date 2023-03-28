@@ -37,7 +37,7 @@
     </ItemGroup>
 
     <ItemGroup Condition="'$(Configuration)'!='DebugLocalBunkum'">
-        <PackageReference Include="Bunkum" Version="2.2.5" />
+        <PackageReference Include="Bunkum" Version="2.2.6" />
     </ItemGroup>
 
     <ItemGroup>
@@ -47,10 +47,10 @@
     </ItemGroup>
 
     <ItemGroup>
-      <ProjectReference Include="..\Refresh.Analyzers\Refresh.Analyzers.csproj">
-          <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
-          <OutputItemType>Analyzer</OutputItemType>
-      </ProjectReference>
+        <ProjectReference Include="..\Refresh.Analyzers\Refresh.Analyzers.csproj">
+            <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
+            <OutputItemType>Analyzer</OutputItemType>
+        </ProjectReference>
     </ItemGroup>
 
 </Project>
