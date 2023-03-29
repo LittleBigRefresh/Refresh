@@ -68,6 +68,7 @@ public class LevelEndpoints : EndpointGroup
     }
 
     [GameEndpoint("searches", ContentType.Xml)]
+    [GameEndpoint("genres", ContentType.Xml)]
     public GameCategoryList GetModernCategories(RequestContext context, RealmDatabaseContext database, GameUser user)
     {
         IEnumerable<GameCategory> categories = CategoryHandler.Categories
