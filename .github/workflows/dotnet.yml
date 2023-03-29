@@ -34,9 +34,9 @@ jobs:
       uses: dawidd6/action-download-artifact@v2
       with:
         github_token: ${{secrets.GITHUB_TOKEN}}
-        workflow: dotnet.yml
+        workflow: ng.yml
         workflow_conclusion: success
-        name: refresh-web
+        name: "Refresh Website"
         repo: LittleBigRefresh/refresh-web
         if_no_artifact_found: fail
         path: "Refresh.GameServer/bin/Release/net7.0/linux-x64/publish/web"
