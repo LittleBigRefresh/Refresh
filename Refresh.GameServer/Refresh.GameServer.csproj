@@ -37,7 +37,7 @@
     </ItemGroup>
 
     <ItemGroup Condition="'$(Configuration)'!='DebugLocalBunkum'">
-        <PackageReference Include="Bunkum" Version="2.2.6" />
+        <PackageReference Include="Bunkum" Version="2.2.8" />
     </ItemGroup>
 
     <ItemGroup>

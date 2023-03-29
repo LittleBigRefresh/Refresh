@@ -27,6 +27,7 @@ server.UseAuthenticationProvider(new GameAuthenticationProvider());
 server.UseDataStore(new FileSystemDataStore());
 server.UseJsonConfig<GameServerConfig>("refreshGameServer.json");
 
+server.AddMiddleware<WebsiteMiddleware>();
 server.AddMiddleware<NotFoundLogMiddleware>();
 server.AddMiddleware<DigestMiddleware>();
 server.AddMiddleware<CrossOriginMiddleware>();
