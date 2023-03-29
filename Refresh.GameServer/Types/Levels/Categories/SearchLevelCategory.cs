@@ -14,13 +14,13 @@ public class SearchLevelCategory : LevelCategory
         // no icon for now, too lazy to find
     }
 
-    public override IEnumerable<GameLevel>? Fetch(RequestContext context, RealmDatabaseContext database, GameUser? user, object[]? extraArgs = null)
+    public override IEnumerable<GameLevel>? Fetch(RequestContext context, int skip, int count, RealmDatabaseContext database, GameUser? user, object[]? extraArgs)
     {
         string? query = context.QueryString["query"];
         if (query == null) return null;
 
         extraArgs = new object[] { query };
         
-        return base.Fetch(context, database, user, extraArgs);
+        return base.Fetch(context, skip, count, database, user, extraArgs);
     }
 }

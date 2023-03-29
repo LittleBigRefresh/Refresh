@@ -39,12 +39,10 @@ public class LevelCategory
     private readonly MethodInfo _method;
 
     [Pure]
-    public virtual IEnumerable<GameLevel>? Fetch(RequestContext context, RealmDatabaseContext database, GameUser? user, object[]? extraArgs = null)
+    public virtual IEnumerable<GameLevel>? Fetch(RequestContext context, int skip, int count, RealmDatabaseContext database, GameUser? user, object[]? extraArgs = null)
     {
         if (this._requiresUser && user == null) return null;
-        
-        (int skip, int count) = context.GetPageData(context.Url.AbsolutePath.StartsWith("/api"));
-        
+
         IEnumerable<object> args;
 
         // ReSharper disable once ConvertIfStatementToConditionalTernaryExpression

@@ -2,6 +2,7 @@ using System.Xml.Serialization;
 using Bunkum.HttpServer;
 using Refresh.GameServer.Database;
 using Refresh.GameServer.Types.Lists;
+using Refresh.GameServer.Types.UserData;
 
 namespace Refresh.GameServer.Types.Levels.Categories;
 
@@ -24,7 +25,7 @@ public class GameCategory
     [XmlElement("results")]
     public GameMinimalLevelList Levels { get; set; }
 
-    public static GameCategory FromLevelCategory(LevelCategory levelCategory, RequestContext context, RealmDatabaseContext database, int skip = 0, int count = 20)
+    public static GameCategory FromLevelCategory(LevelCategory levelCategory, RequestContext context, RealmDatabaseContext database, GameUser user, int skip = 0, int count = 20)
     {
         GameCategory category = new()
         {
@@ -35,7 +36,7 @@ public class GameCategory
             IconHash = levelCategory.IconHash,
         };
         
-        IEnumerable<GameMinimalLevel> levels = levelCategory.Fetch(context, database, null)?
+        IEnumerable<GameMinimalLevel> levels = levelCategory.Fetch(context, skip, count, database, user)?
             .Select(GameMinimalLevel.FromGameLevel) ?? Array.Empty<GameMinimalLevel>();
 
         category.Levels = new GameMinimalLevelList(levels, 10);
