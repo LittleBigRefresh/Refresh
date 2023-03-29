@@ -3,6 +3,7 @@ using Bunkum.CustomHttpListener.Parsing;
 using Bunkum.HttpServer;
 using Bunkum.HttpServer.Endpoints;
 using Refresh.GameServer.Database;
+using Refresh.GameServer.Extensions;
 using Refresh.GameServer.Types.Levels;
 using Refresh.GameServer.Types.Levels.Categories;
 using Refresh.GameServer.Types.Lists;
@@ -59,6 +60,16 @@ public class LevelEndpoints : EndpointGroup
             Total = levels.Count,
             NextPageStart = 0,
         };
+    }
+
+    [GameEndpoint("searches", ContentType.Xml)]
+    public GameCategoryList GetModernCategories(RequestContext context, RealmDatabaseContext database)
+    {
+        IEnumerable<GameCategory> categories = CategoryHandler.Categories
+            .Take(5)
+            .Select(c => GameCategory.FromLevelCategory(c, context, database, 0, 1));
+        
+        return new GameCategoryList(categories);
     }
 
     #region Quirk workarounds

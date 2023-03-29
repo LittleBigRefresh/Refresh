@@ -1,3 +1,4 @@
+using System.Diagnostics.Contracts;
 using System.Reflection;
 using Bunkum.HttpServer;
 using Newtonsoft.Json;
@@ -37,6 +38,7 @@ public class LevelCategory
     [JsonProperty("RequiresUser")] private readonly bool _requiresUser;
     private readonly MethodInfo _method;
 
+    [Pure]
     public virtual IEnumerable<GameLevel>? Fetch(RequestContext context, RealmDatabaseContext database, GameUser? user, object[]? extraArgs = null)
     {
         if (this._requiresUser && user == null) return null;
