@@ -37,13 +37,13 @@
     </ItemGroup>
 
     <ItemGroup Condition="'$(Configuration)'!='DebugLocalBunkum'">
-        <PackageReference Include="Bunkum" Version="2.2.8" />
+        <PackageReference Include="Bunkum" Version="2.2.11" />
     </ItemGroup>
 
     <ItemGroup>
       <PackageReference Include="BCrypt.Net-Next" Version="4.0.3" />
       <PackageReference Include="NPTicket" Version="1.0.0" />
-      <PackageReference Include="Realm" Version="10.20.0" />
+      <PackageReference Include="Realm" Version="10.21.0" />
     </ItemGroup>
 
     <ItemGroup>
