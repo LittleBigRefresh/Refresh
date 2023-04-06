@@ -3,6 +3,8 @@ using Realms;
 
 namespace Refresh.GameServer.Types.Report;
 
+#nullable disable
+
 [XmlRoot("player")]
 public class Player : EmbeddedObject 
 { 

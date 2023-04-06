@@ -4,6 +4,8 @@ using Refresh.GameServer.Database;
 
 namespace Refresh.GameServer.Types.Report;
 
+#nullable disable
+
 [XmlRoot("griefReport")]
 public class GriefReport : RealmObject, ISequentialId 
 {
