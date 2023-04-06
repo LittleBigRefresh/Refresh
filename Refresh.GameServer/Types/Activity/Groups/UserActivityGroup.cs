@@ -2,6 +2,8 @@ using System.Xml.Serialization;
 
 namespace Refresh.GameServer.Types.Activity.Groups;
 
+#nullable disable
+
 public class UserActivityGroup : ActivityGroup
 {
     [XmlAttribute("type")]

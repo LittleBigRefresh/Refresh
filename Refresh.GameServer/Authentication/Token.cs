@@ -26,6 +26,20 @@ public class Token : RealmObject
         get => (TokenType)this._TokenType;
         set => this._TokenType = (int)value;
     }
+    
+    internal int _TokenPlatform { get; set; }
+    internal int _TokenGame { get; set; }
+    
+    public TokenPlatform TokenPlatform 
+    {
+        get => (TokenPlatform)this._TokenPlatform;
+        set => this._TokenPlatform = (int)value;
+    }
+    public TokenGame TokenGame 
+    {
+        get => (TokenGame)this._TokenGame;
+        set => this._TokenGame = (int)value;
+    }
 
     public DateTimeOffset ExpiresAt { get; set; }
 
