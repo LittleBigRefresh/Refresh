@@ -15,7 +15,7 @@ public class ByUserLevelCategory : LevelCategory
         this.FontAwesomeIcon = "user";
     }
 
-    public override IEnumerable<GameLevel>? Fetch(RequestContext context, RealmDatabaseContext database, GameUser? user, object[]? extraArgs = null)
+    public override IEnumerable<GameLevel>? Fetch(RequestContext context, int skip, int count, RealmDatabaseContext database, GameUser? user, object[]? extraArgs)
     {
         // Prefer username from query, but fallback to user passed into this category if it's missing
         string? username = context.QueryString["u"];
@@ -23,6 +23,6 @@ public class ByUserLevelCategory : LevelCategory
 
         if (user == null) return null;
         
-        return base.Fetch(context, database, user, extraArgs);
+        return base.Fetch(context, skip, count, database, user, extraArgs);
     }
 }

@@ -3,6 +3,7 @@ using Bunkum.CustomHttpListener.Parsing;
 using Bunkum.HttpServer;
 using Bunkum.HttpServer.Endpoints;
 using Refresh.GameServer.Database;
+using Refresh.GameServer.Extensions;
 using Refresh.GameServer.Types.Levels;
 using Refresh.GameServer.Types.Levels.Categories;
 using Refresh.GameServer.Types.Lists;
@@ -13,11 +14,16 @@ namespace Refresh.GameServer.Endpoints.Game.Levels;
 public class LevelEndpoints : EndpointGroup
 {
     [GameEndpoint("slots/{route}", ContentType.Xml)]
-    public GameMinimalLevelList GetLevels(RequestContext context, RealmDatabaseContext database, GameUser? user, string route) =>
-        new(CategoryHandler.Categories
+    public GameMinimalLevelList GetLevels(RequestContext context, RealmDatabaseContext database, GameUser? user, string route)
+    {
+        (int skip, int count) = context.GetPageData();
+        
+        return new GameMinimalLevelList(CategoryHandler.Categories
             .FirstOrDefault(c => c.GameRoute.StartsWith(route))?
-            .Fetch(context, database, user)?
-            .Select(GameMinimalLevel.FromGameLevel), database.GetTotalLevelCount()); // TODO: proper level count
+            .Fetch(context, skip, count, database, user)?
+            .Select(GameMinimalLevel.FromGameLevel), database.GetTotalLevelCount());
+        // TODO: proper level count
+    }
 
     [GameEndpoint("slots/{route}/{username}", ContentType.Xml)]
     public GameMinimalLevelList GetLevelsWithPlayer(RequestContext context, RealmDatabaseContext database, string route, string username)
@@ -59,6 +65,29 @@ public class LevelEndpoints : EndpointGroup
             Total = levels.Count,
             NextPageStart = 0,
         };
+    }
+
+    [GameEndpoint("searches", ContentType.Xml)]
+    [GameEndpoint("genres", ContentType.Xml)]
+    public GameCategoryList GetModernCategories(RequestContext context, RealmDatabaseContext database, GameUser user)
+    {
+        IEnumerable<GameCategory> categories = CategoryHandler.Categories
+            .Where(c => c is not SearchLevelCategory)
+            .Take(5)
+            .Select(c => GameCategory.FromLevelCategory(c, context, database, user, 0, 1));
+        
+        return new GameCategoryList(categories);
+    }
+
+    [GameEndpoint("searches/{apiRoute}", ContentType.Xml)]
+    public GameMinimalLevelList GetLevelsFromCategory(RequestContext context, RealmDatabaseContext database, GameUser? user, string apiRoute)
+    {
+        (int skip, int count) = context.GetPageData();
+        
+        return new GameMinimalLevelResultsList(CategoryHandler.Categories
+            .FirstOrDefault(c => c.ApiRoute.StartsWith(apiRoute))?
+            .Fetch(context, skip, count, database, user)?
+            .Select(GameMinimalLevel.FromGameLevel), database.GetTotalLevelCount());
     }
 
     #region Quirk workarounds

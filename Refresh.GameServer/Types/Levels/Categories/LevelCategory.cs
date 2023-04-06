@@ -1,3 +1,4 @@
+using System.Diagnostics.Contracts;
 using System.Reflection;
 using Bunkum.HttpServer;
 using Newtonsoft.Json;
@@ -37,12 +38,11 @@ public class LevelCategory
     [JsonProperty("RequiresUser")] private readonly bool _requiresUser;
     private readonly MethodInfo _method;
 
-    public virtual IEnumerable<GameLevel>? Fetch(RequestContext context, RealmDatabaseContext database, GameUser? user, object[]? extraArgs = null)
+    [Pure]
+    public virtual IEnumerable<GameLevel>? Fetch(RequestContext context, int skip, int count, RealmDatabaseContext database, GameUser? user, object[]? extraArgs = null)
     {
         if (this._requiresUser && user == null) return null;
-        
-        (int skip, int count) = context.GetPageData(context.Url.AbsolutePath.StartsWith("/api"));
-        
+
         IEnumerable<object> args;
 
         // ReSharper disable once ConvertIfStatementToConditionalTernaryExpression
