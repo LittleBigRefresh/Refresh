@@ -1,4 +1,5 @@
 using System.Diagnostics.CodeAnalysis;
+using Bunkum.HttpServer;
 using Realms;
 using Refresh.GameServer.Authentication;
 using Refresh.GameServer.Types;
@@ -19,7 +20,7 @@ public class RealmDatabaseProvider : IDatabaseProvider<RealmDatabaseContext>
     [SuppressMessage("ReSharper", "InvertIf")]
     public void Initialize()
     {
-        this._configuration = new RealmConfiguration(Path.Join(Environment.CurrentDirectory, "refreshGameServer.realm"))
+        this._configuration = new RealmConfiguration(Path.Join(BunkumFileSystem.DataDirectory, "refreshGameServer.realm"))
         {
             SchemaVersion = 35,
             Schema = new[]
