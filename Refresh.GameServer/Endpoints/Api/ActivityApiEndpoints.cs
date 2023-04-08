@@ -11,7 +11,7 @@ public class ActivityApiEndpoints : EndpointGroup
     [ApiEndpoint("activity")]
     [NullStatusCode(HttpStatusCode.BadRequest)]
     [Authentication(false)]
-    public ActivityPage? GetRecentActivity(RequestContext context, RealmDatabaseContext database)
+    public ActivityPage? GetRecentActivity(RequestContext context, GameDatabaseContext database)
     {
         long timestamp = 0;
 

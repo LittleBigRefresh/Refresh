@@ -14,7 +14,7 @@ namespace Refresh.GameServer.Endpoints.Game;
 public class CommentEndpoints : EndpointGroup
 {
     [GameEndpoint("postUserComment/{username}", ContentType.Xml, Method.Post)]
-    public Response PostProfileComment(RequestContext context, RealmDatabaseContext database, string username, GameComment body, GameUser user)
+    public Response PostProfileComment(RequestContext context, GameDatabaseContext database, string username, GameComment body, GameUser user)
     {
         GameUser? profile = database.GetUserByUsername(username);
         if (profile == null) return HttpStatusCode.NotFound;
@@ -25,7 +25,7 @@ public class CommentEndpoints : EndpointGroup
 
     [GameEndpoint("userComments/{username}", ContentType.Xml)]
     [NullStatusCode(HttpStatusCode.NotFound)]
-    public GameCommentList? GetProfileComments(RequestContext context, RealmDatabaseContext database, string username)
+    public GameCommentList? GetProfileComments(RequestContext context, GameDatabaseContext database, string username)
     {
         GameUser? profile = database.GetUserByUsername(username);
         if (profile == null) return null;

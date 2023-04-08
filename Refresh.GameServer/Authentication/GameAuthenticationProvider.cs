@@ -11,7 +11,7 @@ public class GameAuthenticationProvider : IAuthenticationProvider<GameUser>
 {
     public GameUser? AuthenticateUser(ListenerContext request, IDatabaseContext db)
     {
-        RealmDatabaseContext database = (RealmDatabaseContext)db;
+        GameDatabaseContext database = (GameDatabaseContext)db;
         Debug.Assert(database != null);
 
         // first try to grab token data from MM_AUTH

@@ -11,7 +11,7 @@ namespace Refresh.GameServer.Endpoints.Game;
 public class ReportingEndpoints : EndpointGroup 
 {
     [GameEndpoint("grief", Method.Post, ContentType.Xml)]
-    public Response UploadResource(RequestContext context, RealmDatabaseContext database, GriefReport body) 
+    public Response UploadResource(RequestContext context, GameDatabaseContext database, GriefReport body) 
     {
         database.AddGriefReport(body);
         

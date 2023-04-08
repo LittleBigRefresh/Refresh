@@ -6,7 +6,7 @@ namespace Refresh.GameServer.Types.Levels.Categories;
 
 public class SearchLevelCategory : LevelCategory
 {
-    internal SearchLevelCategory() : base("search", "search", false, nameof(RealmDatabaseContext.SearchForLevels))
+    internal SearchLevelCategory() : base("search", "search", false, nameof(GameDatabaseContext.SearchForLevels))
     {
         this.Name = "Search";
         this.Description = "Search for new levels";
@@ -14,7 +14,7 @@ public class SearchLevelCategory : LevelCategory
         // no icon for now, too lazy to find
     }
 
-    public override IEnumerable<GameLevel>? Fetch(RequestContext context, int skip, int count, RealmDatabaseContext database, GameUser? user, object[]? extraArgs)
+    public override IEnumerable<GameLevel>? Fetch(RequestContext context, int skip, int count, GameDatabaseContext database, GameUser? user, object[]? extraArgs)
     {
         string? query = context.QueryString["query"];
         if (query == null) return null;

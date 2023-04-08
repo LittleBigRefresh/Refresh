@@ -9,14 +9,14 @@ public static class CategoryHandler
     // ReSharper disable once InconsistentNaming
     private static readonly List<LevelCategory> _categories = new()
     {
-        new LevelCategory("newest", "newest", false, nameof(RealmDatabaseContext.GetNewestLevels))
+        new LevelCategory("newest", "newest", false, nameof(GameDatabaseContext.GetNewestLevels))
         {
             Name = "Newest Levels",
             Description = "Levels that were uploaded recently",
             IconHash = "g820623",
             FontAwesomeIcon = "calendar",
         },
-        new LevelCategory("random", "lbp2luckydip", false, nameof(RealmDatabaseContext.GetRandomLevels))
+        new LevelCategory("random", "lbp2luckydip", false, nameof(GameDatabaseContext.GetRandomLevels))
         {
             Name = "Lucky Dip",
             Description = "A random assortment of levels!",
@@ -25,14 +25,14 @@ public static class CategoryHandler
         },
         new ByUserLevelCategory(),
         new SearchLevelCategory(),
-        new LevelCategory("hearted", "favouriteSlots", true, nameof(RealmDatabaseContext.GetLevelsFavouritedByUser))
+        new LevelCategory("hearted", "favouriteSlots", true, nameof(GameDatabaseContext.GetLevelsFavouritedByUser))
         {
             Name = "My Hearted Levels",
             Description = "Levels you've hearted",
             IconHash = "g820611",
             FontAwesomeIcon = "heart",
         },
-        new LevelCategory("queued", "lolcatftw", true, nameof(RealmDatabaseContext.GetLevelsQueuedByUser))
+        new LevelCategory("queued", "lolcatftw", true, nameof(GameDatabaseContext.GetLevelsQueuedByUser))
         {
             Name = "My Queue",
             Description = "Levels you've queued",

@@ -1,25 +1,13 @@
 using System.Diagnostics.CodeAnalysis;
 using Realms;
 using Bunkum.HttpServer.Database;
+using Bunkum.RealmDatabase;
 
 namespace Refresh.GameServer.Database;
 
 [SuppressMessage("ReSharper", "InconsistentlySynchronizedField")]
-public partial class RealmDatabaseContext : IDatabaseContext
+public partial class GameDatabaseContext : RealmDatabaseContext
 {
-    private readonly Realm _realm;
-
-    internal RealmDatabaseContext(Realm realm)
-    {
-        this._realm = realm;
-    }
-
-    public void Dispose()
-    {
-        //NOTE: we dont dispose the realm here, because the same thread may use it again, so we just `Refresh()` it
-        this._realm.Refresh();
-    }
-    
     private static readonly object IdLock = new();
     // ReSharper disable once SuggestBaseTypeForParameter
     private void AddSequentialObject<T>(T obj, IList<T>? list = null, Action? writtenCallback = null) where T : IRealmObject, ISequentialId

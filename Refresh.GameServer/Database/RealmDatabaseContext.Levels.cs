@@ -8,7 +8,7 @@ using Refresh.GameServer.Types.UserData;
 
 namespace Refresh.GameServer.Database;
 
-public partial class RealmDatabaseContext // Levels
+public partial class GameDatabaseContext // Levels
 {
     public bool AddLevel(GameLevel level)
     {

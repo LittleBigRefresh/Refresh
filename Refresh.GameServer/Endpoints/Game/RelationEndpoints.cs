@@ -15,7 +15,7 @@ namespace Refresh.GameServer.Endpoints.Game;
 public class RelationEndpoints : EndpointGroup
 {
     [GameEndpoint("favourite/slot/user/{idStr}", Method.Post)]
-    public Response FavouriteLevel(RequestContext context, RealmDatabaseContext database, GameUser user, string idStr)
+    public Response FavouriteLevel(RequestContext context, GameDatabaseContext database, GameUser user, string idStr)
     {
         int.TryParse(idStr, out int id);
         if (id == default) return HttpStatusCode.BadRequest;
@@ -30,7 +30,7 @@ public class RelationEndpoints : EndpointGroup
     }
     
     [GameEndpoint("unfavourite/slot/user/{idStr}", Method.Post)]
-    public Response UnfavouriteLevel(RequestContext context, RealmDatabaseContext database, GameUser user, string idStr)
+    public Response UnfavouriteLevel(RequestContext context, GameDatabaseContext database, GameUser user, string idStr)
     {
         int.TryParse(idStr, out int id);
         if (id == default) return HttpStatusCode.BadRequest;
@@ -45,7 +45,7 @@ public class RelationEndpoints : EndpointGroup
     }
     
     [GameEndpoint("favourite/user/{username}", Method.Post)]
-    public Response FavouriteUser(RequestContext context, RealmDatabaseContext database, GameUser user, string username)
+    public Response FavouriteUser(RequestContext context, GameDatabaseContext database, GameUser user, string username)
     {
         GameUser? userToFavourite = database.GetUserByUsername(username);
         if (userToFavourite == null) return HttpStatusCode.NotFound;
@@ -57,7 +57,7 @@ public class RelationEndpoints : EndpointGroup
     }
     
     [GameEndpoint("unfavourite/user/{username}", Method.Post)]
-    public Response UnfavouriteUser(RequestContext context, RealmDatabaseContext database, GameUser user, string username)
+    public Response UnfavouriteUser(RequestContext context, GameDatabaseContext database, GameUser user, string username)
     {
         GameUser? userToFavourite = database.GetUserByUsername(username);
         if (userToFavourite == null) return HttpStatusCode.NotFound;
@@ -70,7 +70,7 @@ public class RelationEndpoints : EndpointGroup
 
     [GameEndpoint("favouriteUsers/{username}", ContentType.Xml)]
     [NullStatusCode(HttpStatusCode.NotFound)]
-    public GameFavouriteUserList? GetFavouriteUsers(RequestContext context, RealmDatabaseContext database, string username)
+    public GameFavouriteUserList? GetFavouriteUsers(RequestContext context, GameDatabaseContext database, string username)
     {
         GameUser? user = database.GetUserByUsername(username);
         if (user == null) return null;
@@ -85,7 +85,7 @@ public class RelationEndpoints : EndpointGroup
     }
 
     [GameEndpoint("lolcatftw/add/user/{idStr}", Method.Post)]
-    public Response QueueLevel(RequestContext context, RealmDatabaseContext database, GameUser user, string idStr)
+    public Response QueueLevel(RequestContext context, GameDatabaseContext database, GameUser user, string idStr)
     {
         int.TryParse(idStr, out int id);
         if (id == default) return HttpStatusCode.BadRequest;
@@ -100,7 +100,7 @@ public class RelationEndpoints : EndpointGroup
     }
     
     [GameEndpoint("lolcatftw/remove/user/{idStr}", Method.Post)]
-    public Response DequeueLevel(RequestContext context, RealmDatabaseContext database, GameUser user, string idStr)
+    public Response DequeueLevel(RequestContext context, GameDatabaseContext database, GameUser user, string idStr)
     {
         int.TryParse(idStr, out int id);
         if (id == default) return HttpStatusCode.BadRequest;

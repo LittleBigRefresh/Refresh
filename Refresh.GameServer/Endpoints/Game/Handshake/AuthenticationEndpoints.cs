@@ -16,7 +16,7 @@ public class AuthenticationEndpoints : EndpointGroup
     [GameEndpoint("login", Method.Post, ContentType.Xml)]
     [NullStatusCode(HttpStatusCode.Forbidden)]
     [Authentication(false)]
-    public LoginResponse? Authenticate(RequestContext context, RealmDatabaseContext database, Stream body)
+    public LoginResponse? Authenticate(RequestContext context, GameDatabaseContext database, Stream body)
     {
         Ticket ticket;
         try
@@ -45,7 +45,7 @@ public class AuthenticationEndpoints : EndpointGroup
     /// Called by the game when it exits cleanly.
     /// </summary>
     [GameEndpoint("goodbye", Method.Post, ContentType.Xml)]
-    public Response RevokeThisToken(RequestContext context, RealmDatabaseContext database, GameUser user)
+    public Response RevokeThisToken(RequestContext context, GameDatabaseContext database, GameUser user)
     {
         string? token = context.Cookies["MM_AUTH"];
         

@@ -14,7 +14,7 @@ public class LevelApiEndpoints : EndpointGroup
     [ApiEndpoint("levels/{route}")]
     [Authentication(false)]
     [NullStatusCode(HttpStatusCode.NotFound)]
-    public IEnumerable<GameLevel>? GetLevels(RequestContext context, RealmDatabaseContext database, GameUser? user, string route)
+    public IEnumerable<GameLevel>? GetLevels(RequestContext context, GameDatabaseContext database, GameUser? user, string route)
     {
         (int skip, int count) = context.GetPageData(true);
         
@@ -30,7 +30,7 @@ public class LevelApiEndpoints : EndpointGroup
 
     [ApiEndpoint("level/id/{idStr}")]
     [Authentication(false)]
-    public GameLevel? GetLevelById(RequestContext context, RealmDatabaseContext database, string idStr)
+    public GameLevel? GetLevelById(RequestContext context, GameDatabaseContext database, string idStr)
     {
         int.TryParse(idStr, out int id);
         if (id == default) return null;

@@ -3,7 +3,7 @@ using Refresh.GameServer.Types.UserData;
 
 namespace Refresh.GameServer.Database;
 
-public partial class RealmDatabaseContext // Comments
+public partial class GameDatabaseContext // Comments
 {
     public void PostCommentToProfile(GameUser profile, GameUser author, string content)
     {

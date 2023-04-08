@@ -12,7 +12,7 @@ namespace Refresh.GameServer.Endpoints.Game.Levels;
 public class PublishEndpoints : EndpointGroup
 {
     [GameEndpoint("startPublish", ContentType.Xml, Method.Post)]
-    public GameResourceLevel StartPublish(RequestContext context, RealmDatabaseContext database, GameLevel body)
+    public GameResourceLevel StartPublish(RequestContext context, GameDatabaseContext database, GameLevel body)
     {
         List<string> hashes = new();
         hashes.AddRange(body.XmlResources);
@@ -28,7 +28,7 @@ public class PublishEndpoints : EndpointGroup
     }
 
     [GameEndpoint("publish", ContentType.Xml, Method.Post)]
-    public Response PublishLevel(RequestContext context, GameUser user, RealmDatabaseContext database, GameLevel body)
+    public Response PublishLevel(RequestContext context, GameUser user, GameDatabaseContext database, GameLevel body)
     {
         if (body.LevelId != default) // Republish requests contain the id of the old level
         {
@@ -56,7 +56,7 @@ public class PublishEndpoints : EndpointGroup
     }
 
     [GameEndpoint("unpublish/{idStr}", ContentType.Xml, Method.Post)]
-    public Response DeleteLevel(RequestContext context, GameUser user, RealmDatabaseContext database, string idStr)
+    public Response DeleteLevel(RequestContext context, GameUser user, GameDatabaseContext database, string idStr)
     {
         int.TryParse(idStr, out int id);
         if (id == default) return HttpStatusCode.BadRequest;

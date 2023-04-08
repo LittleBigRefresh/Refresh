@@ -89,7 +89,7 @@ using Refresh.GameServer.Types.Levels;
 
 namespace Refresh.GameServer.Database;
 
-public partial class RealmDatabaseContext
+public partial class GameDatabaseContext
 {{
 {code}
 }}";
@@ -133,12 +133,12 @@ namespace Refresh.GameServer.Database;
 
 #nullable enable
 
-public partial class RealmDatabaseContext
+public partial class GameDatabaseContext
 {{
 {code}
 }}";
         
-        context.AddSource("RealmDatabaseContext.Activity.DataGetters.g.cs", SourceText.From(sourceCode, Encoding.UTF8));
+        context.AddSource("GameDatabaseContext.Activity.DataGetters.g.cs", SourceText.From(sourceCode, Encoding.UTF8));
     }
 
     public void Execute(GeneratorExecutionContext context)

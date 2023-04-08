@@ -41,7 +41,7 @@ public class ActivityPage
         this.Users = new GameUserList();
     }
 
-    public ActivityPage(RealmDatabaseContext database, int count = 20, int skip = 0, long timestamp = 0, long endTimestamp = 0, bool generateGroups = true)
+    public ActivityPage(GameDatabaseContext database, int count = 20, int skip = 0, long timestamp = 0, long endTimestamp = 0, bool generateGroups = true)
     {
         if (timestamp == 0) timestamp = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
         

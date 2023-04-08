@@ -25,7 +25,7 @@ public class GameCategory
     [XmlElement("results")]
     public GameMinimalLevelList Levels { get; set; }
 
-    public static GameCategory FromLevelCategory(LevelCategory levelCategory, RequestContext context, RealmDatabaseContext database, GameUser user, int skip = 0, int count = 20)
+    public static GameCategory FromLevelCategory(LevelCategory levelCategory, RequestContext context, GameDatabaseContext database, GameUser user, int skip = 0, int count = 20)
     {
         GameCategory category = new()
         {

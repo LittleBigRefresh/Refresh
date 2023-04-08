@@ -5,7 +5,7 @@ using Refresh.GameServer.Types.UserData;
 
 namespace Refresh.GameServer.Database;
 
-public partial class RealmDatabaseContext // Relations
+public partial class GameDatabaseContext // Relations
 {
     #region Favouriting Levels
     [Pure]

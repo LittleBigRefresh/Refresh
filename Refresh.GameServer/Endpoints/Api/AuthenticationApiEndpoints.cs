@@ -26,7 +26,7 @@ public partial class AuthenticationApiEndpoints : EndpointGroup
 
     [ApiEndpoint("auth", Method.Post)]
     [Authentication(false)]
-    public Response Authenticate(RequestContext context, RealmDatabaseContext database, ApiAuthenticationRequest body)
+    public Response Authenticate(RequestContext context, GameDatabaseContext database, ApiAuthenticationRequest body)
     {
         GameUser? user = database.GetUserByUsername(body.Username);
         if (user == null)
@@ -72,7 +72,7 @@ public partial class AuthenticationApiEndpoints : EndpointGroup
 
     [ApiEndpoint("resetPassword", Method.Post)]
     [Authentication(false)]
-    public Response ResetPassword(RequestContext context, RealmDatabaseContext database, ApiResetPasswordRequest body)
+    public Response ResetPassword(RequestContext context, GameDatabaseContext database, ApiResetPasswordRequest body)
     {
         GameUser? user = database.GetUserFromTokenData(body.ResetToken, TokenType.PasswordReset);
         if (user == null) return HttpStatusCode.Unauthorized;
@@ -91,7 +91,7 @@ public partial class AuthenticationApiEndpoints : EndpointGroup
 
     [ApiEndpoint("goodbye", Method.Post)]
     [Authentication(false)]
-    public Response RevokeThisToken(RequestContext context, RealmDatabaseContext database)
+    public Response RevokeThisToken(RequestContext context, GameDatabaseContext database)
     {
         bool success = database.RevokeTokenByTokenData(context.RequestHeaders["Authorization"], TokenType.Api);
 

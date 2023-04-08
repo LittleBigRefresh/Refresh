@@ -7,7 +7,7 @@ using Refresh.GameServer.Types.UserData;
 
 namespace Refresh.GameServer.Database;
 
-public partial class RealmDatabaseContext // Users
+public partial class GameDatabaseContext // Users
 {
     public GameUser CreateUser(string username)
     {

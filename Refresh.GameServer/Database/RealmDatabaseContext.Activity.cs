@@ -3,7 +3,7 @@ using Refresh.GameServer.Types.Levels;
 
 namespace Refresh.GameServer.Database;
 
-public partial class RealmDatabaseContext // Activity
+public partial class GameDatabaseContext // Activity
 {
     public IEnumerable<Event> GetRecentActivity(int count, int skip, long timestamp, long endTimestamp) => 
         this._realm.All<Event>()

@@ -13,7 +13,7 @@ public class ActivityEndpoints : EndpointGroup
 {
     [GameEndpoint("stream", ContentType.Xml)]
     [NullStatusCode(HttpStatusCode.BadRequest)]
-    public ActivityPage? GetRecentActivity(RequestContext context, RealmDatabaseContext database)
+    public ActivityPage? GetRecentActivity(RequestContext context, GameDatabaseContext database)
     {
         long timestamp = 0;
         long endTimestamp = 0;

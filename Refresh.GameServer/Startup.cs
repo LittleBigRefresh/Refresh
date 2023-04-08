@@ -20,7 +20,7 @@ BunkumHttpServer server = new()
     AssumeAuthenticationRequired = true,
 };
 
-using RealmDatabaseProvider databaseProvider = new();
+using GameDatabaseProvider databaseProvider = new();
 
 server.UseDatabaseProvider(databaseProvider);
 server.UseAuthenticationProvider(new GameAuthenticationProvider());

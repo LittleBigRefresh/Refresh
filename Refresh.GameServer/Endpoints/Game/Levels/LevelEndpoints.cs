@@ -14,7 +14,7 @@ namespace Refresh.GameServer.Endpoints.Game.Levels;
 public class LevelEndpoints : EndpointGroup
 {
     [GameEndpoint("slots/{route}", ContentType.Xml)]
-    public GameMinimalLevelList GetLevels(RequestContext context, RealmDatabaseContext database, GameUser? user, string route)
+    public GameMinimalLevelList GetLevels(RequestContext context, GameDatabaseContext database, GameUser? user, string route)
     {
         (int skip, int count) = context.GetPageData();
         
@@ -26,12 +26,12 @@ public class LevelEndpoints : EndpointGroup
     }
 
     [GameEndpoint("slots/{route}/{username}", ContentType.Xml)]
-    public GameMinimalLevelList GetLevelsWithPlayer(RequestContext context, RealmDatabaseContext database, string route, string username)
+    public GameMinimalLevelList GetLevelsWithPlayer(RequestContext context, GameDatabaseContext database, string route, string username)
         => this.GetLevels(context, database, database.GetUserByUsername(username), route);
 
     [GameEndpoint("s/user/{idStr}", ContentType.Xml)]
     [NullStatusCode(HttpStatusCode.NotFound)]
-    public GameLevel? LevelById(RequestContext context, RealmDatabaseContext database, string idStr)
+    public GameLevel? LevelById(RequestContext context, GameDatabaseContext database, string idStr)
     {
         int.TryParse(idStr, out int id);
         if (id == default) return null;
@@ -41,7 +41,7 @@ public class LevelEndpoints : EndpointGroup
 
     [GameEndpoint("slotList", ContentType.Xml)]
     [NullStatusCode(HttpStatusCode.BadRequest)]
-    public GameLevelList? GetMultipleLevels(RequestContext context, RealmDatabaseContext database)
+    public GameLevelList? GetMultipleLevels(RequestContext context, GameDatabaseContext database)
     {
         string[]? levelIds = context.QueryString.GetValues("s");
         if (levelIds == null) return null;
@@ -69,7 +69,7 @@ public class LevelEndpoints : EndpointGroup
 
     [GameEndpoint("searches", ContentType.Xml)]
     [GameEndpoint("genres", ContentType.Xml)]
-    public GameCategoryList GetModernCategories(RequestContext context, RealmDatabaseContext database, GameUser user)
+    public GameCategoryList GetModernCategories(RequestContext context, GameDatabaseContext database, GameUser user)
     {
         IEnumerable<GameCategory> categories = CategoryHandler.Categories
             .Where(c => c is not SearchLevelCategory)
@@ -80,7 +80,7 @@ public class LevelEndpoints : EndpointGroup
     }
 
     [GameEndpoint("searches/{apiRoute}", ContentType.Xml)]
-    public GameMinimalLevelList GetLevelsFromCategory(RequestContext context, RealmDatabaseContext database, GameUser? user, string apiRoute)
+    public GameMinimalLevelList GetLevelsFromCategory(RequestContext context, GameDatabaseContext database, GameUser? user, string apiRoute)
     {
         (int skip, int count) = context.GetPageData();
         
@@ -95,11 +95,11 @@ public class LevelEndpoints : EndpointGroup
     // This is a list of endpoints to work around these - capturing all routes would break things.
 
     [GameEndpoint("slots", ContentType.Xml)]
-    public GameMinimalLevelList NewestLevels(RequestContext context, RealmDatabaseContext database, GameUser? user) 
+    public GameMinimalLevelList NewestLevels(RequestContext context, GameDatabaseContext database, GameUser? user) 
         => this.GetLevels(context, database, user, "newest");
 
     [GameEndpoint("favouriteSlots/{username}", ContentType.Xml)]
-    public GameMinimalFavouriteLevelList FavouriteLevels(RequestContext context, RealmDatabaseContext database, string username)
+    public GameMinimalFavouriteLevelList FavouriteLevels(RequestContext context, GameDatabaseContext database, string username)
     {
         GameMinimalLevelList levels = this.GetLevels(context, database, database.GetUserByUsername(username), "favouriteSlots");
         return new GameMinimalFavouriteLevelList(levels);

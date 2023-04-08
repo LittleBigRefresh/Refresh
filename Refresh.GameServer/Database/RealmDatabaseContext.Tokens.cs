@@ -5,7 +5,7 @@ using Refresh.GameServer.Types.UserData;
 
 namespace Refresh.GameServer.Database;
 
-public partial class RealmDatabaseContext
+public partial class GameDatabaseContext
 {
     private const int DefaultCookieLength = 128;
     private const int MaxBase64Padding = 4;
@@ -15,7 +15,7 @@ public partial class RealmDatabaseContext
 
     private const int DefaultTokenExpirySeconds = 86400; // 1 day
     
-    static RealmDatabaseContext()
+    static GameDatabaseContext()
     {
         // LBP cannot store tokens if >127 chars, calculate max possible length here
         GameCookieLength = (int)Math.Floor((MaxGameCookieLength - GameCookieHeader.Length - MaxBase64Padding) * 3 / 4.0);

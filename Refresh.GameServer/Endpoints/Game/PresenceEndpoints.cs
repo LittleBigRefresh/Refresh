@@ -15,7 +15,7 @@ public class PresenceEndpoints : EndpointGroup
     public int TotalPlayers(RequestContext context) => 1;
 
     [GameEndpoint("planetStats", Method.Get, ContentType.Xml)]
-    public LevelStatistics GetLevelStatistics(RequestContext context, RealmDatabaseContext database) => new()
+    public LevelStatistics GetLevelStatistics(RequestContext context, GameDatabaseContext database) => new()
     {
         TotalLevels = database.GetTotalLevelCount(),
         TotalTeamPicks = 0,

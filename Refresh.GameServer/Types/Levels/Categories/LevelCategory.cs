@@ -11,7 +11,7 @@ namespace Refresh.GameServer.Types.Levels.Categories;
 [JsonObject(MemberSerialization.OptIn)]
 public class LevelCategory
 {
-    private static readonly Lazy<MethodInfo[]> Methods = new(() => typeof(RealmDatabaseContext).GetMethods());
+    private static readonly Lazy<MethodInfo[]> Methods = new(() => typeof(GameDatabaseContext).GetMethods());
     
     [JsonProperty] public string Name { get; set; } = "";
     [JsonProperty] public string Description { get; set; } = "";
@@ -27,7 +27,7 @@ public class LevelCategory
 
         MethodInfo? method = Methods.Value.FirstOrDefault(m => m.Name == funcName);
         if (method == null) throw new ArgumentNullException(nameof(funcName), 
-            $"{nameof(funcName)} must point to a method on {nameof(RealmDatabaseContext)}! Use nameof() to assist with this.");
+            $"{nameof(funcName)} must point to a method on {nameof(GameDatabaseContext)}! Use nameof() to assist with this.");
 
         this._method = method;
     }
@@ -39,7 +39,7 @@ public class LevelCategory
     private readonly MethodInfo _method;
 
     [Pure]
-    public virtual IEnumerable<GameLevel>? Fetch(RequestContext context, int skip, int count, RealmDatabaseContext database, GameUser? user, object[]? extraArgs = null)
+    public virtual IEnumerable<GameLevel>? Fetch(RequestContext context, int skip, int count, GameDatabaseContext database, GameUser? user, object[]? extraArgs = null)
     {
         if (this._requiresUser && user == null) return null;
 
