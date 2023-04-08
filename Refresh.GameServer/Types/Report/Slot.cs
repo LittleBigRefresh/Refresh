@@ -3,6 +3,8 @@ using Realms;
 
 namespace Refresh.GameServer.Types.Report;
 
+#nullable disable
+
 [XmlRoot("slot")]
 public class Slot : EmbeddedObject 
 { 

@@ -31,7 +31,7 @@ public partial class GameDatabaseContext
         return Convert.ToBase64String(tokenData);
     }
     
-    public Token GenerateTokenForUser(GameUser user, TokenType type, int? tokenExpirySeconds = null)
+    public Token GenerateTokenForUser(GameUser user, TokenType type, TokenGame game, TokenPlatform platform, int? tokenExpirySeconds = null)
     {
         // TODO: JWT (JSON Web Tokens) for TokenType.Api
         
@@ -42,6 +42,8 @@ public partial class GameDatabaseContext
             User = user,
             TokenData = GetTokenString(cookieLength),
             TokenType = type,
+            TokenGame = game,
+            TokenPlatform = platform,
             ExpiresAt = DateTimeOffset.Now.AddSeconds(tokenExpirySeconds ?? DefaultTokenExpirySeconds),
         };
 

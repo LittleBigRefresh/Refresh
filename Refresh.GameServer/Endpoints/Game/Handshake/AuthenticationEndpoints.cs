@@ -29,10 +29,35 @@ public class AuthenticationEndpoints : EndpointGroup
             return null;
         }
 
+        TokenPlatform? platform = ticket.IssuerId switch
+        {
+            0x100 => TokenPlatform.PS3,
+            0x33333333 => TokenPlatform.RPCS3,
+            _ => null,
+        };
+
+        TokenGame? game = TokenGameUtility.FromTitleId(ticket.TitleId);
+
+        if (platform == null)
+        {
+            context.Logger.LogWarning(BunkumContext.Authentication, $"Could not determine platform from ticket.\n" +
+                                                                    $"Platform: {ticket.IssuerId}");
+            return null;
+        }
+
+        if (game == null)
+        {
+            context.Logger.LogWarning(BunkumContext.Authentication, $"Could not determine game from ticket.\n" +
+                                                                    $"Platform: {ticket.TitleId}");
+            return null;
+        }
+
+        if (game == TokenGame.LittleBigPlanetVita && platform == TokenPlatform.PS3) platform = TokenPlatform.Vita;
+
         GameUser? user = database.GetUserByUsername(ticket.Username);
         user ??= database.CreateUser(ticket.Username);
 
-        Token token = database.GenerateTokenForUser(user, TokenType.Game, 14400); // 4 hours
+        Token token = database.GenerateTokenForUser(user, TokenType.Game, game.Value, platform.Value,14400); // 4 hours
         
         return new LoginResponse
         {

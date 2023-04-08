@@ -14,7 +14,7 @@ namespace Refresh.GameServer.Database;
 
 public class GameDatabaseProvider : RealmDatabaseProvider<GameDatabaseContext>
 {
-    protected override ulong SchemaVersion => 33;
+    protected override ulong SchemaVersion => 35;
 
     protected override string Filename => "refreshGameServer.realm";
     
@@ -113,6 +113,9 @@ public class GameDatabaseProvider : RealmDatabaseProvider<GameDatabaseContext>
 
         // In version 22, tokens added expiry and types so just wipe them all
         if (oldVersion < 22) migration.NewRealm.RemoveAll<Token>();
+                
+        // In version 35, tokens added platforms and games
+        if (oldVersion < 35) migration.NewRealm.RemoveAll<Token>();
 
         // IQueryable<dynamic>? oldEvents = migration.OldRealm.DynamicApi.All("Event");
         IQueryable<Event>? newEvents = migration.NewRealm.All<Event>();

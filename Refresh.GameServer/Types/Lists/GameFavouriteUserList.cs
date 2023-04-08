@@ -3,6 +3,8 @@ using Refresh.GameServer.Types.UserData;
 
 namespace Refresh.GameServer.Types.Lists;
 
+#nullable disable
+
 [XmlRoot("favouriteUsers")]
 [XmlType("favouriteUsers")]
 public class GameFavouriteUserList : GameList<GameUser>
