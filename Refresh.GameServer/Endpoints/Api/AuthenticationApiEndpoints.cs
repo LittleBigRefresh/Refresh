@@ -37,7 +37,7 @@ public partial class AuthenticationApiEndpoints : EndpointGroup
         // if this is a legacy user, have them create a password on login
         if (user.PasswordBcrypt == null)
         {
-            Token resetToken = database.GenerateTokenForUser(user, TokenType.PasswordReset);
+            Token resetToken = database.GenerateTokenForUser(user, TokenType.PasswordReset, TokenGame.Website, TokenPlatform.Website);
 
             ApiResetPasswordResponse resetResp = new()
             {
@@ -58,7 +58,7 @@ public partial class AuthenticationApiEndpoints : EndpointGroup
             return new Response(new ApiErrorResponse("The username or password was incorrect."), ContentType.Json, HttpStatusCode.Forbidden);
         }
 
-        Token token = database.GenerateTokenForUser(user, TokenType.Api);
+        Token token = database.GenerateTokenForUser(user, TokenType.Api, TokenGame.Website, TokenPlatform.Website);
 
         ApiAuthenticationResponse resp = new()
         {

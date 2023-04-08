@@ -1,4 +1,5 @@
 using System.Diagnostics.CodeAnalysis;
+using Bunkum.HttpServer;
 using Realms;
 using Refresh.GameServer.Authentication;
 using Refresh.GameServer.Types;
@@ -19,9 +20,9 @@ public class RealmDatabaseProvider : IDatabaseProvider<RealmDatabaseContext>
     [SuppressMessage("ReSharper", "InvertIf")]
     public void Initialize()
     {
-        this._configuration = new RealmConfiguration(Path.Join(Environment.CurrentDirectory, "refreshGameServer.realm"))
+        this._configuration = new RealmConfiguration(Path.Join(BunkumFileSystem.DataDirectory, "refreshGameServer.realm"))
         {
-            SchemaVersion = 33,
+            SchemaVersion = 35,
             Schema = new[]
             {
                 typeof(GameUser),
@@ -120,6 +121,9 @@ public class RealmDatabaseProvider : IDatabaseProvider<RealmDatabaseContext>
 
                 // In version 22, tokens added expiry and types so just wipe them all
                 if (oldVersion < 22) migration.NewRealm.RemoveAll<Token>();
+                
+                // In version 35, tokens added platforms and games
+                if (oldVersion < 35) migration.NewRealm.RemoveAll<Token>();
                 
                 // IQueryable<dynamic>? oldEvents = migration.OldRealm.DynamicApi.All("Event");
                 IQueryable<Event>? newEvents = migration.NewRealm.All<Event>();
