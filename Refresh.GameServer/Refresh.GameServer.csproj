@@ -29,6 +29,9 @@
         <Reference Include="Bunkum.CustomHttpListener">
             <HintPath>..\..\Bunkum\Bunkum.CustomHttpListener\bin\Debug\net7.0\Bunkum.CustomHttpListener.dll</HintPath>
         </Reference>
+        <Reference Include="Bunkum.RealmDatabase">
+            <HintPath>..\..\Bunkum.RealmDatabase\Bunkum.RealmDatabase\bin\Debug\net7.0\Bunkum.RealmDatabase.dll</HintPath>
+        </Reference>
         
         <!-- Package references must match Bunkum.HttpServer's csproj -->
         <PackageReference Include="JetBrains.Annotations" Version="2022.3.1" />
@@ -37,12 +40,12 @@
     </ItemGroup>
 
     <ItemGroup Condition="'$(Configuration)'!='DebugLocalBunkum'">
-        <PackageReference Include="Bunkum" Version="2.2.11" />
+        <PackageReference Include="Bunkum" Version="2.3.0" />
+        <PackageReference Include="Bunkum.RealmDatabase" Version="1.0.3" />
     </ItemGroup>
 
     <ItemGroup>
       <PackageReference Include="BCrypt.Net-Next" Version="4.0.3" />
-      <PackageReference Include="Bunkum.RealmDatabase" Version="1.0.3" />
       <PackageReference Include="NPTicket" Version="2.0.0" />
       <PackageReference Include="Realm" Version="10.21.0" />
     </ItemGroup>

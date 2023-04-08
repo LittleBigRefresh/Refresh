@@ -54,10 +54,10 @@ public partial class GameDatabaseContext
         
         return token;
     }
-
+    
     [Pure]
     [ContractAnnotation("=> canbenull")]
-    public GameUser? GetUserFromTokenData(string tokenData, TokenType type)
+    public Token? GetTokenFromTokenData(string tokenData, TokenType type)
     {
         Token? token = this._realm.All<Token>()
             .FirstOrDefault(t => t.TokenData == tokenData && t._TokenType == (int)type);
@@ -71,8 +71,13 @@ public partial class GameDatabaseContext
             return null;
         }
 
-        return token.User;
+        return token;
     }
+
+    [Pure]
+    [ContractAnnotation("=> canbenull")]
+    public GameUser? GetUserFromTokenData(string tokenData, TokenType type) => 
+        this.GetTokenFromTokenData(tokenData, type)?.User;
 
     public void SetUserPassword(GameUser user, string passwordBcrypt)
     {

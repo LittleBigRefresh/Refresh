@@ -7,27 +7,30 @@ using Bunkum.HttpServer.Database;
 
 namespace Refresh.GameServer.Authentication;
 
-public class GameAuthenticationProvider : IAuthenticationProvider<GameUser>
+public class GameAuthenticationProvider : IAuthenticationProvider<GameUser, Token>
 {
-    public GameUser? AuthenticateUser(ListenerContext request, IDatabaseContext db)
-    {
-        GameDatabaseContext database = (GameDatabaseContext)db;
-        Debug.Assert(database != null);
+    public GameUser? AuthenticateUser(ListenerContext request, Lazy<IDatabaseContext> database) 
+        => this.AuthenticateToken(request, database)?.User;
 
+    public Token? AuthenticateToken(ListenerContext request, Lazy<IDatabaseContext> db)
+    {
         // first try to grab token data from MM_AUTH
         string? tokenData = request.Cookies["MM_AUTH"];
-        TokenType type = TokenType.Game;
+        TokenType tokenType = TokenType.Game;
 
         // if this is null, this must be an API request so grab from authorization
         if (tokenData == null)
         {
-            type = TokenType.Api;
+            tokenType = TokenType.Api;
             tokenData = request.RequestHeaders["Authorization"];
         }
 
-        // if still null, then we dont have a token so bail 
+        // if still null we dont have a token so bail 
         if (tokenData == null) return null;
+        
+        GameDatabaseContext database = (GameDatabaseContext)db.Value;
+        Debug.Assert(database != null);
 
-        return database.GetUserFromTokenData(tokenData, type);
+        return database.GetTokenFromTokenData(tokenData, tokenType);
     }
 }

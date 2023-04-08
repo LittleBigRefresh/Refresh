@@ -1,4 +1,5 @@
 using System.Xml.Serialization;
+using Bunkum.HttpServer.Authentication;
 using MongoDB.Bson;
 using Newtonsoft.Json;
 using Realms;
@@ -9,7 +10,7 @@ namespace Refresh.GameServer.Authentication;
 #nullable disable
 
 [JsonObject(MemberSerialization.OptIn)]
-public class Token : RealmObject
+public class Token : RealmObject, IToken
 {
     [PrimaryKey]
     public ObjectId TokenId { get; set; } = ObjectId.GenerateNewId();
