@@ -14,7 +14,7 @@ namespace Refresh.GameServer.Database;
 
 public class GameDatabaseProvider : RealmDatabaseProvider<GameDatabaseContext>
 {
-    protected override ulong SchemaVersion => 35;
+    protected override ulong SchemaVersion => 36;
 
     protected override string Filename => "refreshGameServer.realm";
     
@@ -133,6 +133,17 @@ public class GameDatabaseProvider : RealmDatabaseProvider<GameDatabaseContext>
 
             // Converts events to use millisecond timestamps
             if (oldVersion < 33 && newEvent.Timestamp < 1000000000000) newEvent.Timestamp *= 1000;
+        }
+        
+        // IQueryable<dynamic>? oldTokens = migration.OldRealm.DynamicApi.All("Token");
+        IQueryable<Token>? newTokens = migration.NewRealm.All<Token>();
+
+        for (int i = 0; i < newTokens.Count(); i++)
+        {
+            // Token oldToken = oldTokens.ElementAt(i);
+            Token newToken = newTokens.ElementAt(i);
+
+            if (oldVersion < 36) newToken.LoginDate = DateTimeOffset.FromUnixTimeMilliseconds(timestampMilliseconds);
         }
     }
 }

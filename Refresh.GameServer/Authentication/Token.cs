@@ -43,6 +43,7 @@ public class Token : RealmObject, IToken
     }
 
     public DateTimeOffset ExpiresAt { get; set; }
+    public DateTimeOffset LoginDate { get; set; }
 
     public GameUser User { get; set; }
 }

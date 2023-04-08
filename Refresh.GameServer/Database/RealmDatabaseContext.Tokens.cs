@@ -31,7 +31,7 @@ public partial class GameDatabaseContext
         return Convert.ToBase64String(tokenData);
     }
     
-    public Token GenerateTokenForUser(GameUser user, TokenType type, TokenGame game, TokenPlatform platform, int? tokenExpirySeconds = null)
+    public Token GenerateTokenForUser(GameUser user, TokenType type, TokenGame game, TokenPlatform platform, int tokenExpirySeconds = DefaultTokenExpirySeconds)
     {
         // TODO: JWT (JSON Web Tokens) for TokenType.Api
         
@@ -44,7 +44,8 @@ public partial class GameDatabaseContext
             TokenType = type,
             TokenGame = game,
             TokenPlatform = platform,
-            ExpiresAt = DateTimeOffset.Now.AddSeconds(tokenExpirySeconds ?? DefaultTokenExpirySeconds),
+            ExpiresAt = DateTimeOffset.Now.AddSeconds(tokenExpirySeconds),
+            LoginDate = DateTimeOffset.Now,
         };
 
         this._realm.Write(() =>
