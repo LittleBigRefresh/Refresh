@@ -15,16 +15,15 @@ Console.WriteLine("Starting Refresh with NuGet Bunkum");
 
 BunkumConsole.AllocateConsole();
 
-BunkumHttpServer server = new()
-{
-    AssumeAuthenticationRequired = true,
-};
+BunkumHttpServer server = new();
 
 using GameDatabaseProvider databaseProvider = new();
 
 server.UseDatabaseProvider(databaseProvider);
-server.UseAuthenticationProvider(new GameAuthenticationProvider());
-server.UseDataStore(new FileSystemDataStore());
+
+server.AddAuthenticationService(new GameAuthenticationProvider(), true);
+server.AddStorageService<FileSystemDataStore>();
+
 server.UseJsonConfig<GameServerConfig>("refreshGameServer.json");
 
 server.AddMiddleware<WebsiteMiddleware>();
