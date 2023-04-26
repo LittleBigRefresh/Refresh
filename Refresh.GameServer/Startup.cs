@@ -1,9 +1,9 @@
-﻿using System.Diagnostics;
-using System.Reflection;
+﻿using System.Reflection;
 using Refresh.GameServer.Authentication;
 using Refresh.GameServer.Configuration;
 using Refresh.GameServer.Database;
 using Bunkum.HttpServer;
+using Bunkum.HttpServer.Services;
 using Bunkum.HttpServer.Storage;
 using Refresh.GameServer.Middlewares;
 
@@ -23,6 +23,7 @@ server.UseDatabaseProvider(databaseProvider);
 
 server.AddAuthenticationService(new GameAuthenticationProvider(), true);
 server.AddStorageService<FileSystemDataStore>();
+server.AddService<RateLimitService>();
 
 server.UseJsonConfig<GameServerConfig>("refreshGameServer.json");
 

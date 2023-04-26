@@ -2,7 +2,7 @@ using System.Xml.Serialization;
 using MongoDB.Bson;
 using Realms;
 using Refresh.GameServer.Types.Comments;
-using Bunkum.HttpServer.Authentication;
+using Bunkum.HttpServer.RateLimit;
 using Bunkum.HttpServer.Serialization;
 using Newtonsoft.Json;
 using Refresh.GameServer.Types.Levels;
@@ -12,7 +12,7 @@ namespace Refresh.GameServer.Types.UserData;
 
 [XmlRoot("user")]
 [JsonObject(MemberSerialization.OptIn)]
-public partial class GameUser : RealmObject, IUser, INeedsPreparationBeforeSerialization
+public partial class GameUser : RealmObject, IRateLimitUser, INeedsPreparationBeforeSerialization
 {
     [PrimaryKey] [Indexed] [XmlIgnore] [JsonProperty] public ObjectId UserId { get; set; } = ObjectId.GenerateNewId();
     [Indexed] [Required] [XmlIgnore] [JsonProperty] public string Username { get; set; } = string.Empty;
@@ -77,5 +77,15 @@ public partial class GameUser : RealmObject, IUser, INeedsPreparationBeforeSeria
         
         this.SerializeSlots();
     }
+    #endregion
+
+    #region Rate-limiting
+    public bool RateLimitUserIdIsEqual(object obj)
+    {
+        if (obj is not ObjectId id) return false;
+        return this.UserId.Equals(id);
+    }
+    
+    [Ignored] [XmlIgnore] [JsonIgnore] public object RateLimitUserId { get; internal set; }
     #endregion
 }

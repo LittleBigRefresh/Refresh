@@ -9,8 +9,14 @@ namespace Refresh.GameServer.Authentication;
 
 public class GameAuthenticationProvider : IAuthenticationProvider<GameUser, Token>
 {
-    public GameUser? AuthenticateUser(ListenerContext request, Lazy<IDatabaseContext> database) 
-        => this.AuthenticateToken(request, database)?.User;
+    public GameUser? AuthenticateUser(ListenerContext request, Lazy<IDatabaseContext> database)
+    {
+        GameUser? user = this.AuthenticateToken(request, database)?.User;
+        if (user == null) return null;
+
+        user.RateLimitUserId = user.UserId;
+        return user;
+    }
 
     public Token? AuthenticateToken(ListenerContext request, Lazy<IDatabaseContext> db)
     {
