@@ -85,7 +85,9 @@ public partial class GameUser : RealmObject, IRateLimitUser, INeedsPreparationBe
         if (obj is not ObjectId id) return false;
         return this.UserId.Equals(id);
     }
-    
-    [Ignored] [XmlIgnore] [JsonIgnore] public object RateLimitUserId { get; internal set; }
+
+    // Defined in authentication provider. Avoids Realm threading nonsense.
+    [Ignored] [XmlIgnore] [JsonIgnore] public object RateLimitUserId { get; internal set; } = null!;
+
     #endregion
 }
