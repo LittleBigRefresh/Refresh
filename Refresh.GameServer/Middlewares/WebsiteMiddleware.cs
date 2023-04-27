@@ -39,6 +39,7 @@ public class WebsiteMiddleware : IMiddleware
         context.ResponseStream.Position = 0;
         context.ResponseCode = HttpStatusCode.OK;
         context.ResponseHeaders["Content-Type"] = mime;
+        context.ResponseHeaders["Cache-Control"] = "max-age=43200";
         
         context.Write(File.ReadAllBytes(path));
         context.FlushResponseAndClose();
