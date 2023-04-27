@@ -23,7 +23,7 @@ public class WebsiteMiddleware : IMiddleware
 
         string uri = context.Uri.AbsolutePath;
 
-        if (uri.StartsWith("/lbp") || uri.StartsWith("/api")) return false;
+        if (uri.StartsWith("/lbp") || uri.StartsWith("/api") || uri.StartsWith("/autodiscover")) return false;
 
         if (uri == "/" || (context.RequestHeaders["Accept"] ?? "").Contains("text/html"))
             uri = "/index.html";
