@@ -11,9 +11,6 @@ public class LegacyRoom
 
 public class LegacyRoomSlot
 {
-    [JsonProperty("slotId")]
-    public int SlotId { get; set; }
-
-    [JsonProperty("slotType")]
-    public int SlotType { get; set; }
+    [JsonProperty("slotId")] public int SlotId { get; set; } = 0;
+    [JsonProperty("slotType")] public int SlotType { get; set; } = 5;
 }
