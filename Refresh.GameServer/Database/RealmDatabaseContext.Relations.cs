@@ -156,4 +156,37 @@ public partial class GameDatabaseContext // Relations
         return true;
     }
     #endregion
+
+    public bool PlayLevel(GameLevel level, GameUser user)
+    {
+        // Remove level from queue. This can be a fire and forget - the result is not important.
+        this.DequeueLevel(level, user);
+        
+        PlayLevelRelation relation = new()
+        {
+            Level = level,
+            User = user,
+            Timestamp = GetTimestampMilliseconds(),
+        };
+        
+        UniquePlayLevelRelation? uniqueRelation = this._realm.All<UniquePlayLevelRelation>()
+            .FirstOrDefault(r => r.Level == level && r.User == user);
+
+        this._realm.Write(() =>
+        {
+            this._realm.Add(relation);
+            
+            // If the user hasn't played the level before, then add a unique relation too
+            if (uniqueRelation == null) this._realm.Add(new UniquePlayLevelRelation 
+            {
+                Level = level,
+                User = user,
+                Timestamp = GetTimestampMilliseconds(),
+            });
+        });
+
+        this.CreateLevelPlayEvent(user, level);
+
+        return true;
+    }
 }

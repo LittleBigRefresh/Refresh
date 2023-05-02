@@ -29,6 +29,12 @@ public class GameLevel : RealmObject, INeedsPreparationBeforeSerialization, ISeq
     #nullable disable
     [Backlink(nameof(FavouriteLevelRelation.Level))]
     [XmlIgnore] public IQueryable<FavouriteLevelRelation> FavouriteRelations { get; }
+    
+    [Backlink(nameof(UniquePlayLevelRelation.Level))]
+    [XmlIgnore] public IQueryable<UniquePlayLevelRelation> UniquePlays { get; }
+    
+    [Backlink(nameof(PlayLevelRelation.Level))]
+    [XmlIgnore] public IQueryable<PlayLevelRelation> AllPlays { get; }
     #nullable restore
     
     public int SequentialId
@@ -44,6 +50,9 @@ public class GameLevel : RealmObject, INeedsPreparationBeforeSerialization, ISeq
     [Ignored] [XmlElement("npHandle")] public NameAndIcon? Handle { get; set; }
     
     [Ignored] [XmlElement("heartCount")] public int? HeartCount { get; set; }
+    
+    [Ignored] [XmlElement("playCount")] public int? TotalPlayCount { get; set; }
+    [Ignored] [XmlElement("uniquePlayCount")] public int? UniquePlayCount { get; set; }
 
     // Realm cant have IList types with setters? Fine, I'll play your game. ;p
     [Ignored]
@@ -63,7 +72,9 @@ public class GameLevel : RealmObject, INeedsPreparationBeforeSerialization, ISeq
     public void PrepareForSerialization()
     {
         this.HeartCount = this.FavouriteRelations.Count();
-        
+        this.TotalPlayCount = this.AllPlays.Count();
+        this.UniquePlayCount = this.UniquePlays.Count();
+
         if (this.Publisher != null)
         {
             this.Type = "user";

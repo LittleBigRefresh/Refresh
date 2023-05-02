@@ -29,6 +29,8 @@ public class GameDatabaseProvider : RealmDatabaseProvider<GameDatabaseContext>
         typeof(FavouriteLevelRelation),
         typeof(QueueLevelRelation),
         typeof(FavouriteUserRelation),
+        typeof(PlayLevelRelation),
+        typeof(UniquePlayLevelRelation),
         typeof(Event),
         //grief report items
         typeof(GriefReport),
