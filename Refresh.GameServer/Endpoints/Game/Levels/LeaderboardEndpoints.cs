@@ -7,6 +7,7 @@ using Bunkum.HttpServer.Responses;
 using Newtonsoft.Json;
 using Refresh.GameServer.Database;
 using Refresh.GameServer.Types.Levels;
+using Refresh.GameServer.Types.Lists;
 using Refresh.GameServer.Types.UserData;
 using Refresh.GameServer.Types.UserData.Leaderboard;
 
@@ -33,12 +34,21 @@ public class LeaderboardEndpoints : EndpointGroup
 
         GameLevel? level = database.GetLevelById(id.Value);
         if (level == null) return HttpStatusCode.NotFound;
-        
-        Console.WriteLine(JsonConvert.SerializeObject(body));
-        
+
         bool result = database.SubmitScore(body, user, level);
         
         if (result) return HttpStatusCode.OK;
         return HttpStatusCode.Unauthorized;
+    }
+
+    [GameEndpoint("topscores/user/{id}/{mode}", ContentType.Xml)]
+    public GameScoreList? GetTopScoresForLevel(RequestContext context, GameDatabaseContext database, int? id, int? mode)
+    {
+        if (id == null) return null;
+        
+        GameLevel? level = database.GetLevelById(id.Value);
+        if (level == null) return null;
+
+        return GameScoreList.FromSubmittedEnumerable(database.GetTopScoresForLevel(level));
     }
 }

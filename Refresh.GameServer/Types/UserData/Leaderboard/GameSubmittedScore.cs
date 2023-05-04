@@ -10,7 +10,7 @@ public class GameSubmittedScore : RealmObject
 {
     [PrimaryKey] [Indexed] public ObjectId ScoreId { get; set; } = ObjectId.GenerateNewId();
     public GameLevel Level { get; set; }
-    public IList<GameUser> Players { get; } = new List<GameUser>();
+    public IList<GameUser> Players { get; }
     public DateTimeOffset ScoreSubmitted { get; set; }
     
     [Indexed] public int Score { get; set; }
