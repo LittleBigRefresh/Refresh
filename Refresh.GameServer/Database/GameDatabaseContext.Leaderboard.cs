@@ -27,11 +27,14 @@ public partial class GameDatabaseContext // Leaderboard
         return true;
     }
 
-    public IEnumerable<GameSubmittedScore> GetTopScoresForLevel(GameLevel level)
+    public IEnumerable<GameSubmittedScore> GetTopScoresForLevel(GameLevel level, int count, int skip)
     {
         return this._realm.All<GameSubmittedScore>()
             .Where(s => s.Level == level)
-            .OrderByDescending(s => s.Score);
+            .OrderByDescending(s => s.Score)
+            .AsEnumerable()
+            .Skip(skip)
+            .Take(count);
     }
     
     [Pure]

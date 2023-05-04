@@ -6,6 +6,7 @@ using Bunkum.HttpServer.Endpoints;
 using Bunkum.HttpServer.Responses;
 using Newtonsoft.Json;
 using Refresh.GameServer.Database;
+using Refresh.GameServer.Extensions;
 using Refresh.GameServer.Types.Levels;
 using Refresh.GameServer.Types.Lists;
 using Refresh.GameServer.Types.UserData;
@@ -48,7 +49,8 @@ public class LeaderboardEndpoints : EndpointGroup
         
         GameLevel? level = database.GetLevelById(id.Value);
         if (level == null) return null;
-
-        return GameScoreList.FromSubmittedEnumerable(database.GetTopScoresForLevel(level));
+        
+        (int skip, int count) = context.GetPageData();
+        return GameScoreList.FromSubmittedEnumerable(database.GetTopScoresForLevel(level, count, skip));
     }
 }
