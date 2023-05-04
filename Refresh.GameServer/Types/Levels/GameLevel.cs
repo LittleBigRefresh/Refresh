@@ -5,6 +5,7 @@ using Refresh.GameServer.Types.UserData;
 using Bunkum.HttpServer.Serialization;
 using Newtonsoft.Json;
 using Refresh.GameServer.Types.Relations;
+using Refresh.GameServer.Types.UserData.Leaderboard;
 
 namespace Refresh.GameServer.Types.Levels;
 
@@ -35,6 +36,8 @@ public class GameLevel : RealmObject, INeedsPreparationBeforeSerialization, ISeq
     
     [Backlink(nameof(PlayLevelRelation.Level))]
     [XmlIgnore] public IQueryable<PlayLevelRelation> AllPlays { get; }
+    [Backlink(nameof(GameSubmittedScore.Level))]
+    [XmlIgnore] public IQueryable<GameSubmittedScore> Scores { get; }
     #nullable restore
     
     public int SequentialId
