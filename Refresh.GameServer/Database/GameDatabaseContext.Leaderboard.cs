@@ -1,3 +1,5 @@
+using JetBrains.Annotations;
+using MongoDB.Bson;
 using Refresh.GameServer.Types.Levels;
 using Refresh.GameServer.Types.UserData;
 using Refresh.GameServer.Types.UserData.Leaderboard;
@@ -30,5 +32,14 @@ public partial class GameDatabaseContext // Leaderboard
         return this._realm.All<GameSubmittedScore>()
             .Where(s => s.Level == level)
             .OrderByDescending(s => s.Score);
+    }
+    
+    [Pure]
+    [ContractAnnotation("null => null; notnull => canbenull")]
+    public GameSubmittedScore? GetScoreByUuid(string? uuid)
+    {
+        if (uuid == null) return null;
+        if(!ObjectId.TryParse(uuid, out ObjectId objectId)) return null;
+        return this._realm.All<GameSubmittedScore>().FirstOrDefault(u => u.ScoreId == objectId);
     }
 }

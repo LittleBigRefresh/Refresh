@@ -19,4 +19,8 @@ public class LeaderboardApiEndpoints : EndpointGroup
 
         return database.GetTopScoresForLevel(level).ToList();
     }
+
+    [ApiEndpoint("score/{uuid}")]
+    [Authentication(false)]
+    public GameSubmittedScore? GetScoreByUuid(RequestContext context, GameDatabaseContext database, string uuid) => database.GetScoreByUuid(uuid);
 }
