@@ -19,9 +19,17 @@ public class LeaderboardEndpoints : EndpointGroup
         GameLevel? level = database.GetLevelById(id.Value);
         if (level == null) return HttpStatusCode.NotFound;
 
-        bool result = database.PlayLevel(level, user);
-        if(result) return HttpStatusCode.OK;
+        database.PlayLevel(level, user);
+        return HttpStatusCode.OK;
+    }
 
-        return HttpStatusCode.Unauthorized;
+    public Response SubmitScore(RequestContext context, GameUser user, GameDatabaseContext database, int? id)
+    {
+        if (id == null) return HttpStatusCode.BadRequest;
+
+        GameLevel? level = database.GetLevelById(id.Value);
+        if (level == null) return HttpStatusCode.NotFound;
+
+        return HttpStatusCode.OK;
     }
 }

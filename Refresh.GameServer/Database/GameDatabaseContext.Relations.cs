@@ -157,7 +157,7 @@ public partial class GameDatabaseContext // Relations
     }
     #endregion
 
-    public bool PlayLevel(GameLevel level, GameUser user)
+    public void PlayLevel(GameLevel level, GameUser user)
     {
         PlayLevelRelation relation = new()
         {
@@ -183,7 +183,5 @@ public partial class GameDatabaseContext // Relations
         });
 
         this.CreateLevelPlayEvent(user, level);
-
-        return true;
     }
 }
