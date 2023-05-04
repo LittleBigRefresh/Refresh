@@ -159,9 +159,6 @@ public partial class GameDatabaseContext // Relations
 
     public bool PlayLevel(GameLevel level, GameUser user)
     {
-        // Remove level from queue. This can be a fire and forget - the result is not important.
-        this.DequeueLevel(level, user);
-        
         PlayLevelRelation relation = new()
         {
             Level = level,
