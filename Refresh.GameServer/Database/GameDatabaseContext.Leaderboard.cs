@@ -26,6 +26,8 @@ public partial class GameDatabaseContext // Leaderboard
 
         return true;
     }
+    
+    [UsedImplicitly] private record ScoreWithPlayer(GameLevel level, GameUser player);
 
     public IEnumerable<GameSubmittedScore> GetTopScoresForLevel(GameLevel level, int count, int skip)
     {
@@ -33,6 +35,7 @@ public partial class GameDatabaseContext // Leaderboard
             .Where(s => s.Level == level)
             .OrderByDescending(s => s.Score)
             .AsEnumerable()
+            .DistinctBy(s => new ScoreWithPlayer(s.Level, s.Players[0]))
             .Skip(skip)
             .Take(count);
     }
