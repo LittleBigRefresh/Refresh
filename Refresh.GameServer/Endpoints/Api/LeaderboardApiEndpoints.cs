@@ -20,7 +20,10 @@ public class LeaderboardApiEndpoints : EndpointGroup
         
         (int skip, int count) = context.GetPageData(true);
 
-        return database.GetTopScoresForLevel(level, count, skip).ToList();
+        bool result = bool.TryParse(context.QueryString.Get("showAll") ?? "false", out bool showAll);
+        if (!result) return null; // FIXME: Should return BadRequest.
+
+        return database.GetTopScoresForLevel(level, count, skip, !showAll).ToList();
     }
 
     [ApiEndpoint("score/{uuid}")]

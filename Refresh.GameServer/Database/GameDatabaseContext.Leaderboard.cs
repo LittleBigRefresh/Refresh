@@ -29,15 +29,17 @@ public partial class GameDatabaseContext // Leaderboard
     
     [UsedImplicitly] private record ScoreWithPlayer(GameLevel level, GameUser player);
 
-    public IEnumerable<GameSubmittedScore> GetTopScoresForLevel(GameLevel level, int count, int skip)
+    public IEnumerable<GameSubmittedScore> GetTopScoresForLevel(GameLevel level, int count, int skip, bool showDuplicates = false)
     {
-        return this._realm.All<GameSubmittedScore>()
+        IEnumerable<GameSubmittedScore> scores = this._realm.All<GameSubmittedScore>()
             .Where(s => s.Level == level)
             .OrderByDescending(s => s.Score)
-            .AsEnumerable()
-            .DistinctBy(s => new ScoreWithPlayer(s.Level, s.Players[0]))
-            .Skip(skip)
-            .Take(count);
+            .AsEnumerable();
+
+        if (showDuplicates)
+            scores = scores.DistinctBy(s => new ScoreWithPlayer(s.Level, s.Players[0]));
+
+        return scores.Skip(skip).Take(count);
     }
     
     [Pure]
