@@ -5,6 +5,7 @@ using Refresh.GameServer.Database;
 using Bunkum.HttpServer;
 using Bunkum.HttpServer.Storage;
 using Refresh.GameServer.Middlewares;
+using Refresh.GameServer.Types.Levels.Categories;
 
 #if DEBUGLOCALBUNKUM
 Console.WriteLine("Starting Refresh with LOCAL Bunkum!");
@@ -23,6 +24,7 @@ server.UseDatabaseProvider(databaseProvider);
 server.AddAuthenticationService(new GameAuthenticationProvider(), true);
 server.AddStorageService<FileSystemDataStore>();
 server.AddRateLimitService();
+server.AddService<CategoryService>();
 
 server.UseJsonConfig<GameServerConfig>("refreshGameServer.json");
 
