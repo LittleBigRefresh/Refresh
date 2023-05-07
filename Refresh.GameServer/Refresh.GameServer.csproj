@@ -41,16 +41,12 @@
 
     <ItemGroup Condition="'$(Configuration)'!='DebugLocalBunkum'">
         <PackageReference Include="Bunkum" Version="3.0.4" />
-        <PackageReference Include="Bunkum.RealmDatabase" Version="3.0.2">
-            <PrivateAssets>all</PrivateAssets>
-            <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
-        </PackageReference>
+        <PackageReference Include="Bunkum.RealmDatabase" Version="3.0.2"/>
     </ItemGroup>
 
     <ItemGroup>
       <PackageReference Include="BCrypt.Net-Next" Version="4.0.3" />
       <PackageReference Include="NPTicket" Version="2.0.0" />
-      <PackageReference Include="Realm.SourceGenerator" Version="10.21.1" />
       <PackageReference Include="Realm" Version="10.21.1" />
     </ItemGroup>
 
