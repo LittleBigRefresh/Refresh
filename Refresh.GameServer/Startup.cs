@@ -3,6 +3,7 @@ using Refresh.GameServer.Authentication;
 using Refresh.GameServer.Configuration;
 using Refresh.GameServer.Database;
 using Bunkum.HttpServer;
+using Bunkum.HttpServer.RateLimit;
 using Bunkum.HttpServer.Storage;
 using Refresh.GameServer.Middlewares;
 using Refresh.GameServer.Services;
@@ -24,7 +25,7 @@ server.UseDatabaseProvider(databaseProvider);
 
 server.AddAuthenticationService(new GameAuthenticationProvider(), true);
 server.AddStorageService<FileSystemDataStore>();
-server.AddRateLimitService();
+server.AddRateLimitService(new RateLimitSettings(60, 200, 30));
 server.AddService<CategoryService>();
 server.AddService<MatchService>();
 
