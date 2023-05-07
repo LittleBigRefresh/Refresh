@@ -1,14 +1,50 @@
+using System.Diagnostics;
 using Bunkum.HttpServer;
 using Bunkum.HttpServer.Services;
 using NotEnoughLogs;
 using System.Globalization;
+using System.Net;
+using System.Reflection;
+using Bunkum.HttpServer.Responses;
+using Refresh.GameServer.Types.Matching;
 
 namespace Refresh.GameServer.Services;
 
 public class MatchService : EndpointService
 {
+    private readonly Dictionary<string, IMatchMethod> _matchMethods = new();
+
     public MatchService(LoggerContainer<BunkumContext> logger) : base(logger)
     {}
+
+    public override void Initialize()
+    {
+        // TODO: discover match methods via source generation
+        List<Type> matchMethodTypes = Assembly.GetExecutingAssembly()
+            .GetTypes()
+            .Where(t => t.IsAssignableTo(typeof(IMatchMethod)) && t != typeof(IMatchMethod))
+            .ToList();
+        
+        this.Logger.LogTrace(BunkumContext.Service, $"Discovered {matchMethodTypes.Count} match method types");
+
+        foreach (Type type in matchMethodTypes)
+        {
+            string name = type.Name.Substring(0, type.Name.IndexOf("Method", StringComparison.Ordinal));
+            this.Logger.LogTrace(BunkumContext.Service, $"Adding {nameof(IMatchMethod)} {name}");
+            
+            this._matchMethods.Add(name, (IMatchMethod)Activator.CreateInstance(type)!);
+        }
+    }
+
+    public Response ExecuteMethod(string methodStr, string body)
+    {
+        if (!this._matchMethods.TryGetValue(methodStr, out IMatchMethod? method))
+            return HttpStatusCode.BadRequest;
+        
+        Debug.Assert(method != null);
+
+        return method.Execute(body);
+    }
 
     public static (string, string) ExtractMethodAndBodyFromJson(string body)
     {

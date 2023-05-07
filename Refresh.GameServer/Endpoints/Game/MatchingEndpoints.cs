@@ -15,8 +15,8 @@ public class MatchingEndpoints : EndpointGroup
     public Response Match(RequestContext context, GameUser user, MatchService service, string body)
     {
         (string method, string jsonBody) = MatchService.ExtractMethodAndBodyFromJson(body);
-        Console.WriteLine(jsonBody);
-
-        return HttpStatusCode.Gone;
+        context.Logger.LogDebug(BunkumContext.Game, $"Received {method} match request, data: {jsonBody}");
+        
+        return service.ExecuteMethod(method, jsonBody);
     }
 }
