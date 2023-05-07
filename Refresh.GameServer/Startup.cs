@@ -5,6 +5,7 @@ using Refresh.GameServer.Database;
 using Bunkum.HttpServer;
 using Bunkum.HttpServer.Storage;
 using Refresh.GameServer.Middlewares;
+using Refresh.GameServer.Services;
 using Refresh.GameServer.Types.Levels.Categories;
 
 #if DEBUGLOCALBUNKUM
@@ -25,6 +26,7 @@ server.AddAuthenticationService(new GameAuthenticationProvider(), true);
 server.AddStorageService<FileSystemDataStore>();
 server.AddRateLimitService();
 server.AddService<CategoryService>();
+server.AddService<MatchService>();
 
 server.UseJsonConfig<GameServerConfig>("refreshGameServer.json");
 
