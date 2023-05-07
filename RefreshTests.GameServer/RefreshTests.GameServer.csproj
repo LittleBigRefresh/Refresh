@@ -1,26 +1,27 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
     <PropertyGroup>
-        <OutputType>Exe</OutputType>
         <TargetFramework>net7.0</TargetFramework>
         <ImplicitUsings>enable</ImplicitUsings>
         <Nullable>enable</Nullable>
+
+        <IsPackable>false</IsPackable>
+        <IsTestProject>true</IsTestProject>
         <Configurations>Debug;Release;DebugLocalBunkum</Configurations>
         <Platforms>AnyCPU</Platforms>
     </PropertyGroup>
-    
-    <PropertyGroup Condition=" '$(Configuration)' == 'DebugLocalBunkum' ">
-      <DefineConstants>TRACE;DEBUG</DefineConstants>
-      <DebugSymbols>true</DebugSymbols>
-    </PropertyGroup>
 
     <ItemGroup>
-        <Using Include="BCrypt.Net.BCrypt" Alias="BC" />
+        <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.5.0" />
+        <PackageReference Include="NUnit" Version="3.13.3" />
+        <PackageReference Include="NUnit3TestAdapter" Version="4.4.2" />
+        <PackageReference Include="NUnit.Analyzers" Version="3.6.1" />
+        <PackageReference Include="coverlet.collector" Version="3.2.0" />
     </ItemGroup>
-    
-    <PropertyGroup Condition=" '$(Configuration)' == 'Release' ">
-        <PublishSingleFile>true</PublishSingleFile>
-    </PropertyGroup>
+
+    <ItemGroup>
+      <ProjectReference Include="..\Refresh.GameServer\Refresh.GameServer.csproj" />
+    </ItemGroup>
 
     <ItemGroup Condition="'$(Configuration)'=='DebugLocalBunkum'">
         <Reference Include="Bunkum.HttpServer">
@@ -32,29 +33,11 @@
         <Reference Include="Bunkum.RealmDatabase">
             <HintPath>..\..\Bunkum.RealmDatabase\Bunkum.RealmDatabase\bin\Debug\net7.0\Bunkum.RealmDatabase.dll</HintPath>
         </Reference>
-        
+
         <!-- Package references must match Bunkum.HttpServer's csproj -->
         <PackageReference Include="JetBrains.Annotations" Version="2022.3.1" />
         <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
         <PackageReference Include="NotEnoughLogs" Version="1.0.3" />
-    </ItemGroup>
-
-    <ItemGroup Condition="'$(Configuration)'!='DebugLocalBunkum'">
-        <PackageReference Include="Bunkum" Version="3.0.6" />
-        <PackageReference Include="Bunkum.RealmDatabase" Version="3.0.3" />
-    </ItemGroup>
-
-    <ItemGroup>
-      <PackageReference Include="BCrypt.Net-Next" Version="4.0.3" />
-      <PackageReference Include="NPTicket" Version="2.0.0" />
-      <PackageReference Include="Realm" Version="10.21.1" />
-    </ItemGroup>
-
-    <ItemGroup>
-        <ProjectReference Include="..\Refresh.Analyzers\Refresh.Analyzers.csproj">
-            <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
-            <OutputItemType>Analyzer</OutputItemType>
-        </ProjectReference>
     </ItemGroup>
 
 </Project>
