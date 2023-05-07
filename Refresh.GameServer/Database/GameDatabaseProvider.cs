@@ -129,12 +129,6 @@ public class GameDatabaseProvider : RealmDatabaseProvider<GameDatabaseContext>
                 newLevel.IconHash = oldLevel.IconHash;
                 newLevel.Description = oldLevel.Description;
                 newLevel.RootResource = oldLevel.RootResource;
-                newLevel.Resources.Clear();
-                
-                foreach (string r in oldLevel.Resources)
-                {
-                    newLevel.Resources.Add(r);
-                }
             }
         }
 
