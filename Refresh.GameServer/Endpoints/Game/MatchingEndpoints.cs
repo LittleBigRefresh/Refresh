@@ -14,10 +14,8 @@ public class MatchingEndpoints : EndpointGroup
     [GameEndpoint("match", Method.Post, ContentType.Json)]
     public Response Match(RequestContext context, GameUser user, MatchService service, string body)
     {
-        Console.WriteLine(body);
         (string method, string jsonBody) = MatchService.ExtractMethodAndBodyFromJson(body);
         Console.WriteLine(jsonBody);
-        Console.WriteLine(method);
 
         return HttpStatusCode.Gone;
     }

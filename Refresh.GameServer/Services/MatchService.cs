@@ -1,7 +1,7 @@
 using Bunkum.HttpServer;
 using Bunkum.HttpServer.Services;
 using NotEnoughLogs;
-using System;
+using System.Globalization;
 
 namespace Refresh.GameServer.Services;
 
@@ -46,7 +46,8 @@ public class MatchService : EndpointService
     public static string ConvertHexadecimalIpAddressToString(string hex)
     {
         // parse hex string as uint, stripping 0x header
-        uint ip = uint.Parse(hex.Substring(2), System.Globalization.NumberStyles.HexNumber);
+        uint ip = uint.Parse(hex.Substring(2), NumberStyles.HexNumber);
+        
         byte a = (byte)((ip >> 24) & 0xFF);
         byte b = (byte)((ip >> 16) & 0xFF);
         byte c = (byte)((ip >> 8) & 0xFF);
