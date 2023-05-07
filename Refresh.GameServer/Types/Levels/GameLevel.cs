@@ -15,10 +15,10 @@ namespace Refresh.GameServer.Types.Levels;
 public partial class GameLevel : IRealmObject, INeedsPreparationBeforeSerialization, ISequentialId
 {
     [PrimaryKey] [Indexed] [XmlElement("id")] [JsonProperty] public int LevelId { get; set; }
-    
-    [XmlElement("name")] [JsonProperty] public string Title { get; set; }
-    [XmlElement("icon")] [JsonProperty] public string IconHash { get; set; }
-    [XmlElement("description")] [JsonProperty] public string Description { get; set; }
+
+    [XmlElement("name")] [JsonProperty] public string Title { get; set; } = "";
+    [XmlElement("icon")] [JsonProperty] public string IconHash { get; set; } = "0";
+    [XmlElement("description")] [JsonProperty] public string Description { get; set; } = "";
     [XmlElement("location")] [JsonProperty] public GameLocation Location { get; set; } = GameLocation.Zero;
 
     [XmlElement("rootLevel")] public string RootResource { get; set; } = string.Empty;
