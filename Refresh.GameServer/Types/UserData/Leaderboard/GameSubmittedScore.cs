@@ -6,7 +6,7 @@ namespace Refresh.GameServer.Types.UserData.Leaderboard;
 
 #nullable disable
 
-public class GameSubmittedScore : RealmObject
+public partial class GameSubmittedScore : IRealmObject
 {
     [PrimaryKey] [Indexed] public ObjectId ScoreId { get; set; } = ObjectId.GenerateNewId();
     public GameLevel Level { get; set; }

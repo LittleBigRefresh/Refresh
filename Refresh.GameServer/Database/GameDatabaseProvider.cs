@@ -15,7 +15,7 @@ namespace Refresh.GameServer.Database;
 
 public class GameDatabaseProvider : RealmDatabaseProvider<GameDatabaseContext>
 {
-    protected override ulong SchemaVersion => 38;
+    protected override ulong SchemaVersion => 40;
 
     protected override string Filename => "refreshGameServer.realm";
     

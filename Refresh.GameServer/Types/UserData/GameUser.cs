@@ -12,10 +12,10 @@ namespace Refresh.GameServer.Types.UserData;
 
 [XmlRoot("user")]
 [JsonObject(MemberSerialization.OptIn)]
-public partial class GameUser : RealmObject, IRateLimitUser, INeedsPreparationBeforeSerialization
+public partial class GameUser : IRealmObject, IRateLimitUser, INeedsPreparationBeforeSerialization
 {
     [PrimaryKey] [Indexed] [XmlIgnore] [JsonProperty] public ObjectId UserId { get; set; } = ObjectId.GenerateNewId();
-    [Indexed] [Required] [XmlIgnore] [JsonProperty] public string Username { get; set; } = string.Empty;
+    [Indexed] [XmlIgnore] [JsonProperty] public string Username { get; set; } = string.Empty;
     [Indexed] [XmlIgnore] [JsonIgnore] public string? PasswordBcrypt { get; set; } = null;
     [XmlIgnore] [JsonProperty] public string IconHash { get; set; } = "0";
 

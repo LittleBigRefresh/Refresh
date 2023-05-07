@@ -6,7 +6,7 @@ namespace Refresh.GameServer.Types.Report;
 #nullable disable
 
 [XmlRoot("player")]
-public class Player : EmbeddedObject 
+public partial class Player : IEmbeddedObject 
 { 
     [XmlElement("id")] 
     public string Username { get; set; } 

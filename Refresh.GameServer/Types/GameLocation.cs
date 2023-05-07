@@ -6,7 +6,7 @@ namespace Refresh.GameServer.Types;
 
 [XmlType("location")]
 [JsonObject(MemberSerialization.OptIn)]
-public class GameLocation : EmbeddedObject
+public partial class GameLocation : IEmbeddedObject
 {
     public static readonly GameLocation Zero = new()
     {
