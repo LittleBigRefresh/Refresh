@@ -9,7 +9,12 @@ namespace RefreshTests.GameServer.GameServer;
 
 public class TestRefreshGameServer : RefreshGameServer
 {
-    public TestRefreshGameServer(BunkumHttpListener listener) : base(listener, new InMemoryGameDatabaseProvider(), null, new InMemoryDataStore())
+    public TestRefreshGameServer(BunkumHttpListener listener) : base(listener,
+        Environment.GetEnvironmentVariable("CI") == null
+            ? new InMemoryGameDatabaseProvider()
+            : new GameDatabaseProvider(Random.Shared.Next().ToString()),
+        null,
+        new InMemoryDataStore())
     {}
 
     public BunkumHttpServer BunkumServer => this._server;
