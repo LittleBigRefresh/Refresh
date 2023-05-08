@@ -14,13 +14,32 @@ public record TestContext(TestRefreshGameServer Server, GameDatabaseContext Data
 
     public HttpClient GetAuthenticatedClient(TokenType type,
         GameUser? user = null,
-        TokenGame game = TokenGame.Website,
-        TokenPlatform platform = TokenPlatform.Website,
+        int tokenExpirySeconds = GameDatabaseContext.DefaultTokenExpirySeconds)
+    {
+        return this.GetAuthenticatedClient(type, out _, user, tokenExpirySeconds);
+    }
+
+    public HttpClient GetAuthenticatedClient(TokenType type, out string tokenData,
+        GameUser? user = null,
         int tokenExpirySeconds = GameDatabaseContext.DefaultTokenExpirySeconds)
     {
         user ??= this.CreateUser();
 
+        TokenGame game = type switch
+        {
+            TokenType.Game => TokenGame.LittleBigPlanet2,
+            _ => TokenGame.Website,
+        };
+
+        TokenPlatform platform = type switch
+        {
+            TokenType.Game => TokenPlatform.PS3,
+            _ => TokenPlatform.Website,
+        };
+
         Token token = this.Database.GenerateTokenForUser(user, type, game, platform, tokenExpirySeconds);
+        tokenData = token.TokenData;
+        
         HttpClient client = this.Listener.GetClient();
 
         if (type == TokenType.Game)
