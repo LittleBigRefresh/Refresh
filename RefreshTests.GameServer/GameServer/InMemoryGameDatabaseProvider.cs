@@ -4,6 +4,6 @@ namespace RefreshTests.GameServer.GameServer;
 
 public class InMemoryGameDatabaseProvider : GameDatabaseProvider
 {
-    protected override string Filename => $"realm-inmemory-{Environment.CurrentManagedThreadId}";
+    protected override string Filename => Path.Combine(Path.GetTempPath(), $"realm-inmemory-{Environment.CurrentManagedThreadId}");
     protected override bool InMemory => true;
 }
