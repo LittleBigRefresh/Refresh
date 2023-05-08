@@ -13,6 +13,7 @@ public class AuthenticationTests : GameServerTest
         Assert.That(unauthedRequest.StatusCode, Is.EqualTo(Forbidden));
 
         HttpClient authedClient = context.GetAuthenticatedClient(TokenType.Game);
+        Thread.Sleep(200);
         
         HttpResponseMessage authedRequest = await authedClient.GetAsync("/lbp/playersInPodCount");
         Assert.That(authedRequest.StatusCode, Is.EqualTo(OK));
