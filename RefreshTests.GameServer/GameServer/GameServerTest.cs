@@ -1,12 +1,21 @@
+using Bunkum.CustomHttpListener.Listeners.Direct;
+
 namespace RefreshTests.GameServer.GameServer;
 
+[Parallelizable]
+[Timeout(2000)]
 public class GameServerTest
 {
-    private TestRefreshGameServer _gameServer;
-    
-    public GameServerTest()
+    // ReSharper disable once MemberCanBeMadeStatic.Global
+    protected TestContext GetServer(bool start = true, bool initialize = true)
     {
-        this._gameServer = new TestRefreshGameServer();
-        this._gameServer.Initialize();
+        DirectHttpListener listener = new();
+        HttpClient client = listener.GetClient();
+        
+        TestRefreshGameServer gameServer = new(listener);
+        if(initialize) gameServer.Initialize();
+        if(start) gameServer.Start();
+
+        return new TestContext(gameServer, gameServer.DatabaseProvider.GetContext(), client, listener);
     }
 }

@@ -13,7 +13,7 @@ public partial class GameDatabaseContext
     private const string GameCookieHeader = "MM_AUTH=";
     private static readonly int GameCookieLength;
 
-    private const int DefaultTokenExpirySeconds = 86400; // 1 day
+    public const int DefaultTokenExpirySeconds = 86400; // 1 day
     
     static GameDatabaseContext()
     {
