@@ -29,11 +29,12 @@ public class CrossOriginMiddleware : IMiddleware
         if (context.Uri.AbsolutePath.StartsWith(ApiEndpointAttribute.BaseRoute))
         {
             context.ResponseHeaders.Add("Access-Control-Allow-Origin", "*");
-            context.ResponseHeaders.Add("Access-Control-Allow-Headers", "Authorization, Content-Type");
-            context.ResponseHeaders.Add("Access-Control-Allow-Methods", string.Join(", ", AllowedMethods));
             
             if (context.Method == Method.Options)
             {
+                context.ResponseHeaders.Add("Access-Control-Allow-Headers", "Authorization, Content-Type");
+                context.ResponseHeaders.Add("Access-Control-Allow-Methods", string.Join(", ", AllowedMethods));
+                
                 context.ResponseCode = HttpStatusCode.OK;
                 return;
             }

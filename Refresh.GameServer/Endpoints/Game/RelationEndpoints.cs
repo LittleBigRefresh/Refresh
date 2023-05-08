@@ -15,62 +15,62 @@ namespace Refresh.GameServer.Endpoints.Game;
 public class RelationEndpoints : EndpointGroup
 {
     [GameEndpoint("favourite/slot/user/{idStr}", Method.Post)]
-    public Response FavouriteLevel(RequestContext context, RealmDatabaseContext database, GameUser user, string idStr)
+    public Response FavouriteLevel(RequestContext context, GameDatabaseContext database, GameUser user, string idStr)
     {
         int.TryParse(idStr, out int id);
-        if (id == default) return new Response(HttpStatusCode.BadRequest);
+        if (id == default) return HttpStatusCode.BadRequest;
         
         GameLevel? level = database.GetLevelById(id);
-        if (level == null) return new Response(HttpStatusCode.NotFound);
+        if (level == null) return HttpStatusCode.NotFound;
 
         if (database.FavouriteLevel(level, user))
-            return new Response(HttpStatusCode.OK);
+            return HttpStatusCode.OK;
         
-        return new Response(HttpStatusCode.Unauthorized);
+        return HttpStatusCode.Unauthorized;
     }
     
     [GameEndpoint("unfavourite/slot/user/{idStr}", Method.Post)]
-    public Response UnfavouriteLevel(RequestContext context, RealmDatabaseContext database, GameUser user, string idStr)
+    public Response UnfavouriteLevel(RequestContext context, GameDatabaseContext database, GameUser user, string idStr)
     {
         int.TryParse(idStr, out int id);
-        if (id == default) return new Response(HttpStatusCode.BadRequest);
+        if (id == default) return HttpStatusCode.BadRequest;
         
         GameLevel? level = database.GetLevelById(id);
-        if (level == null) return new Response(HttpStatusCode.NotFound);
+        if (level == null) return HttpStatusCode.NotFound;
 
         if (database.UnfavouriteLevel(level, user))
-            return new Response(HttpStatusCode.OK);
+            return HttpStatusCode.OK;
         
-        return new Response(HttpStatusCode.Unauthorized);
+        return HttpStatusCode.Unauthorized;
     }
     
     [GameEndpoint("favourite/user/{username}", Method.Post)]
-    public Response FavouriteUser(RequestContext context, RealmDatabaseContext database, GameUser user, string username)
+    public Response FavouriteUser(RequestContext context, GameDatabaseContext database, GameUser user, string username)
     {
         GameUser? userToFavourite = database.GetUserByUsername(username);
-        if (userToFavourite == null) return new Response(HttpStatusCode.NotFound);
+        if (userToFavourite == null) return HttpStatusCode.NotFound;
 
         if (database.FavouriteUser(userToFavourite, user))
-            return new Response(HttpStatusCode.OK);
+            return HttpStatusCode.OK;
         
-        return new Response(HttpStatusCode.Unauthorized);
+        return HttpStatusCode.Unauthorized;
     }
     
     [GameEndpoint("unfavourite/user/{username}", Method.Post)]
-    public Response UnfavouriteUser(RequestContext context, RealmDatabaseContext database, GameUser user, string username)
+    public Response UnfavouriteUser(RequestContext context, GameDatabaseContext database, GameUser user, string username)
     {
         GameUser? userToFavourite = database.GetUserByUsername(username);
-        if (userToFavourite == null) return new Response(HttpStatusCode.NotFound);
+        if (userToFavourite == null) return HttpStatusCode.NotFound;
 
         if (database.UnfavouriteUser(userToFavourite, user))
-            return new Response(HttpStatusCode.OK);
+            return HttpStatusCode.OK;
         
-        return new Response(HttpStatusCode.Unauthorized);
+        return HttpStatusCode.Unauthorized;
     }
 
     [GameEndpoint("favouriteUsers/{username}", ContentType.Xml)]
     [NullStatusCode(HttpStatusCode.NotFound)]
-    public GameFavouriteUserList? GetFavouriteUsers(RequestContext context, RealmDatabaseContext database, string username)
+    public GameFavouriteUserList? GetFavouriteUsers(RequestContext context, GameDatabaseContext database, string username)
     {
         GameUser? user = database.GetUserByUsername(username);
         if (user == null) return null;
@@ -85,32 +85,32 @@ public class RelationEndpoints : EndpointGroup
     }
 
     [GameEndpoint("lolcatftw/add/user/{idStr}", Method.Post)]
-    public Response QueueLevel(RequestContext context, RealmDatabaseContext database, GameUser user, string idStr)
+    public Response QueueLevel(RequestContext context, GameDatabaseContext database, GameUser user, string idStr)
     {
         int.TryParse(idStr, out int id);
-        if (id == default) return new Response(HttpStatusCode.BadRequest);
+        if (id == default) return HttpStatusCode.BadRequest;
         
         GameLevel? level = database.GetLevelById(id);
-        if (level == null) return new Response(HttpStatusCode.NotFound);
+        if (level == null) return HttpStatusCode.NotFound;
         
         if (database.QueueLevel(level, user))
-            return new Response(HttpStatusCode.OK);
+            return HttpStatusCode.OK;
         
-        return new Response(HttpStatusCode.Unauthorized);
+        return HttpStatusCode.Unauthorized;
     }
     
     [GameEndpoint("lolcatftw/remove/user/{idStr}", Method.Post)]
-    public Response DequeueLevel(RequestContext context, RealmDatabaseContext database, GameUser user, string idStr)
+    public Response DequeueLevel(RequestContext context, GameDatabaseContext database, GameUser user, string idStr)
     {
         int.TryParse(idStr, out int id);
-        if (id == default) return new Response(HttpStatusCode.BadRequest);
+        if (id == default) return HttpStatusCode.BadRequest;
         
         GameLevel? level = database.GetLevelById(id);
-        if (level == null) return new Response(HttpStatusCode.NotFound);
+        if (level == null) return HttpStatusCode.NotFound;
         
         if (database.DequeueLevel(level, user))
-            return new Response(HttpStatusCode.OK);
+            return HttpStatusCode.OK;
         
-        return new Response(HttpStatusCode.Unauthorized);
+        return HttpStatusCode.Unauthorized;
     }
 }

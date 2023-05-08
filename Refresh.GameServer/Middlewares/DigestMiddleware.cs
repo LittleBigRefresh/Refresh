@@ -68,6 +68,12 @@ public class DigestMiddleware : IMiddleware
 
     public void HandleRequest(ListenerContext context, Lazy<IDatabaseContext> database, Action next)
     {
+        if (!context.Uri.AbsolutePath.StartsWith("/lbp"))
+        {
+            next();
+            return;
+        }
+        
         this.VerifyDigestRequest(context);
         Debug.Assert(context.InputStream.Position == 0); // should be at position 0 before we pass down the pipeline
         

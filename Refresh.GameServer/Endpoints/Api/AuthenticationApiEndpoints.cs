@@ -26,7 +26,7 @@ public partial class AuthenticationApiEndpoints : EndpointGroup
 
     [ApiEndpoint("auth", Method.Post)]
     [Authentication(false)]
-    public Response Authenticate(RequestContext context, RealmDatabaseContext database, ApiAuthenticationRequest body)
+    public Response Authenticate(RequestContext context, GameDatabaseContext database, ApiAuthenticationRequest body)
     {
         GameUser? user = database.GetUserByUsername(body.Username);
         if (user == null)
@@ -37,7 +37,7 @@ public partial class AuthenticationApiEndpoints : EndpointGroup
         // if this is a legacy user, have them create a password on login
         if (user.PasswordBcrypt == null)
         {
-            Token resetToken = database.GenerateTokenForUser(user, TokenType.PasswordReset);
+            Token resetToken = database.GenerateTokenForUser(user, TokenType.PasswordReset, TokenGame.Website, TokenPlatform.Website);
 
             ApiResetPasswordResponse resetResp = new()
             {
@@ -58,7 +58,7 @@ public partial class AuthenticationApiEndpoints : EndpointGroup
             return new Response(new ApiErrorResponse("The username or password was incorrect."), ContentType.Json, HttpStatusCode.Forbidden);
         }
 
-        Token token = database.GenerateTokenForUser(user, TokenType.Api);
+        Token token = database.GenerateTokenForUser(user, TokenType.Api, TokenGame.Website, TokenPlatform.Website);
 
         ApiAuthenticationResponse resp = new()
         {
@@ -72,31 +72,31 @@ public partial class AuthenticationApiEndpoints : EndpointGroup
 
     [ApiEndpoint("resetPassword", Method.Post)]
     [Authentication(false)]
-    public Response ResetPassword(RequestContext context, RealmDatabaseContext database, ApiResetPasswordRequest body)
+    public Response ResetPassword(RequestContext context, GameDatabaseContext database, ApiResetPasswordRequest body)
     {
         GameUser? user = database.GetUserFromTokenData(body.ResetToken, TokenType.PasswordReset);
-        if (user == null) return new Response(HttpStatusCode.Unauthorized);
+        if (user == null) return HttpStatusCode.Unauthorized;
 
         if (body.PasswordSha512.Length != 128 || !Sha512Regex().IsMatch(body.PasswordSha512))
             return new Response("Password is definitely not SHA512. Please hash the password - it'll work out better for both of us.",
                 ContentType.Plaintext, HttpStatusCode.BadRequest);
         
         string? passwordBcrypt = BC.HashPassword(body.PasswordSha512, WorkFactor);
-        if (passwordBcrypt == null) return new Response(HttpStatusCode.InternalServerError);
+        if (passwordBcrypt == null) return HttpStatusCode.InternalServerError;
 
         database.SetUserPassword(user, passwordBcrypt);
 
-        return new Response(HttpStatusCode.OK);
+        return HttpStatusCode.OK;
     }
 
     [ApiEndpoint("goodbye", Method.Post)]
     [Authentication(false)]
-    public Response RevokeThisToken(RequestContext context, RealmDatabaseContext database)
+    public Response RevokeThisToken(RequestContext context, GameDatabaseContext database)
     {
         bool success = database.RevokeTokenByTokenData(context.RequestHeaders["Authorization"], TokenType.Api);
 
-        if (success) return new Response(HttpStatusCode.OK);
-        return new Response(HttpStatusCode.Unauthorized);
+        if (success) return HttpStatusCode.OK;
+        return HttpStatusCode.Unauthorized;
     }
 }
 

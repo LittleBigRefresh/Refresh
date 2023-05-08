@@ -6,7 +6,7 @@ namespace Refresh.GameServer.Types.Levels.Categories;
 
 public class ByUserLevelCategory : LevelCategory
 {
-    internal ByUserLevelCategory() : base("byUser", "by", true, nameof(RealmDatabaseContext.GetLevelsByUser))
+    internal ByUserLevelCategory() : base("byUser", "by", true, nameof(GameDatabaseContext.GetLevelsByUser))
     {
         // Technically this category can apply to any user, but since we fallback to the regular user this name & description still applies
         this.Name = "Levels by you";
@@ -15,7 +15,7 @@ public class ByUserLevelCategory : LevelCategory
         this.FontAwesomeIcon = "user";
     }
 
-    public override IEnumerable<GameLevel>? Fetch(RequestContext context, RealmDatabaseContext database, GameUser? user, object[]? extraArgs = null)
+    public override IEnumerable<GameLevel>? Fetch(RequestContext context, int skip, int count, GameDatabaseContext database, GameUser? user, object[]? extraArgs)
     {
         // Prefer username from query, but fallback to user passed into this category if it's missing
         string? username = context.QueryString["u"];
@@ -23,6 +23,6 @@ public class ByUserLevelCategory : LevelCategory
 
         if (user == null) return null;
         
-        return base.Fetch(context, database, user, extraArgs);
+        return base.Fetch(context, skip, count, database, user, extraArgs);
     }
 }

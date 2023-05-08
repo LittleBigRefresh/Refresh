@@ -1,0 +1,43 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <TargetFramework>net7.0</TargetFramework>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <Nullable>enable</Nullable>
+
+        <IsPackable>false</IsPackable>
+        <IsTestProject>true</IsTestProject>
+        <Configurations>Debug;Release;DebugLocalBunkum</Configurations>
+        <Platforms>AnyCPU</Platforms>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.5.0" />
+        <PackageReference Include="NUnit" Version="3.13.3" />
+        <PackageReference Include="NUnit3TestAdapter" Version="4.4.2" />
+        <PackageReference Include="NUnit.Analyzers" Version="3.6.1" />
+        <PackageReference Include="coverlet.collector" Version="3.2.0" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <ProjectReference Include="..\Refresh.GameServer\Refresh.GameServer.csproj" />
+    </ItemGroup>
+
+    <ItemGroup Condition="'$(Configuration)'=='DebugLocalBunkum'">
+        <Reference Include="Bunkum.HttpServer">
+            <HintPath>..\..\Bunkum\Bunkum.HttpServer\bin\Debug\net7.0\Bunkum.HttpServer.dll</HintPath>
+        </Reference>
+        <Reference Include="Bunkum.CustomHttpListener">
+            <HintPath>..\..\Bunkum\Bunkum.CustomHttpListener\bin\Debug\net7.0\Bunkum.CustomHttpListener.dll</HintPath>
+        </Reference>
+        <Reference Include="Bunkum.RealmDatabase">
+            <HintPath>..\..\Bunkum.RealmDatabase\Bunkum.RealmDatabase\bin\Debug\net7.0\Bunkum.RealmDatabase.dll</HintPath>
+        </Reference>
+
+        <!-- Package references must match Bunkum.HttpServer's csproj -->
+        <PackageReference Include="JetBrains.Annotations" Version="2022.3.1" />
+        <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
+        <PackageReference Include="NotEnoughLogs" Version="1.0.3" />
+    </ItemGroup>
+
+</Project>

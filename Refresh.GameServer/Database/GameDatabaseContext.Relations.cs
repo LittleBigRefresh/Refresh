@@ -5,7 +5,7 @@ using Refresh.GameServer.Types.UserData;
 
 namespace Refresh.GameServer.Database;
 
-public partial class RealmDatabaseContext // Relations
+public partial class GameDatabaseContext // Relations
 {
     #region Favouriting Levels
     [Pure]
@@ -33,6 +33,8 @@ public partial class RealmDatabaseContext // Relations
         {
             this._realm.Add(relation);
         });
+
+        this.CreateLevelFavouriteEvent(user, level);
 
         return true;
     }
@@ -86,6 +88,8 @@ public partial class RealmDatabaseContext // Relations
         {
             this._realm.Add(relation);
         });
+
+        this.CreateUserFavouriteEvent(userFavouriting, userToFavourite);
 
         return true;
     }
@@ -152,4 +156,32 @@ public partial class RealmDatabaseContext // Relations
         return true;
     }
     #endregion
+
+    public void PlayLevel(GameLevel level, GameUser user)
+    {
+        PlayLevelRelation relation = new()
+        {
+            Level = level,
+            User = user,
+            Timestamp = GetTimestampMilliseconds(),
+        };
+        
+        UniquePlayLevelRelation? uniqueRelation = this._realm.All<UniquePlayLevelRelation>()
+            .FirstOrDefault(r => r.Level == level && r.User == user);
+
+        this._realm.Write(() =>
+        {
+            this._realm.Add(relation);
+            
+            // If the user hasn't played the level before, then add a unique relation too
+            if (uniqueRelation == null) this._realm.Add(new UniquePlayLevelRelation 
+            {
+                Level = level,
+                User = user,
+                Timestamp = GetTimestampMilliseconds(),
+            });
+        });
+
+        this.CreateLevelPlayEvent(user, level);
+    }
 }

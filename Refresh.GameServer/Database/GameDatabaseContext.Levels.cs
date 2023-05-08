@@ -2,12 +2,13 @@ using System.Diagnostics;
 using System.Reflection;
 using JetBrains.Annotations;
 using Realms;
+using Refresh.GameServer.Types.Activity;
 using Refresh.GameServer.Types.Levels;
 using Refresh.GameServer.Types.UserData;
 
 namespace Refresh.GameServer.Database;
 
-public partial class RealmDatabaseContext // Levels
+public partial class GameDatabaseContext // Levels
 {
     public bool AddLevel(GameLevel level)
     {
@@ -57,6 +58,10 @@ public partial class RealmDatabaseContext // Levels
     {
         this._realm.Write(() =>
         {
+            IQueryable<Event> events = this._realm.All<Event>()
+                .Where(e => e.StoredDataType == EventDataType.Level && e.StoredSequentialId == level.LevelId);
+            
+            this._realm.RemoveRange(events);
             this._realm.Remove(level);
         });
     }
@@ -82,7 +87,7 @@ public partial class RealmDatabaseContext // Levels
     {
         return this._realm.All<GameLevel>()
             .AsEnumerable()
-            .OrderBy(l => Random.Shared.Next())
+            .OrderBy(_ => Random.Shared.Next())
             .Skip(skip)
             .Take(count);
     }
@@ -99,11 +104,11 @@ public partial class RealmDatabaseContext // Levels
         foreach (string keyword in keywords)
         {
             if(string.IsNullOrWhiteSpace(keyword)) continue;
-
+            
             levels = levels.Where(l =>
                 // l.LevelId.ToString() == keyword ||
-                l.Title.Like(keyword, false) ||
-                l.Description.Like(keyword, false)
+                QueryMethods.Like(l.Title, keyword, false) ||
+                QueryMethods.Like(l.Description, keyword, false)
             );
         }
 

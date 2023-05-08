@@ -9,12 +9,12 @@ public class UserApiEndpoints : EndpointGroup
 {
     [ApiEndpoint("user/name/{username}")]
     [Authentication(false)]
-    public GameUser? GetUserByName(RequestContext context, RealmDatabaseContext database, string username) 
+    public GameUser? GetUserByName(RequestContext context, GameDatabaseContext database, string username) 
         => database.GetUserByUsername(username);
 
     [ApiEndpoint("user/uuid/{uuid}")]
     [Authentication(false)]
-    public GameUser? GetUserByUuid(RequestContext context, RealmDatabaseContext database, string uuid) 
+    public GameUser? GetUserByUuid(RequestContext context, GameDatabaseContext database, string uuid) 
         => database.GetUserByUuid(uuid);
     
     [ApiEndpoint("user/me")]

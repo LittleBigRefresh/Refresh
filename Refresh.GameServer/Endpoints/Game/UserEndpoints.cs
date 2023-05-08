@@ -14,14 +14,14 @@ namespace Refresh.GameServer.Endpoints.Game;
 public class UserEndpoints : EndpointGroup
 {
     [GameEndpoint("user/{name}", Method.Get, ContentType.Xml)]
-    public GameUser? GetUser(RequestContext context, RealmDatabaseContext database, string name)
+    public GameUser? GetUser(RequestContext context, GameDatabaseContext database, string name)
     {
         GameUser? user = database.GetUserByUsername(name);
         return user;
     }
 
     [GameEndpoint("users", Method.Get, ContentType.Xml)]
-    public GameUserList GetMultipleUsers(RequestContext context, RealmDatabaseContext database)
+    public GameUserList GetMultipleUsers(RequestContext context, GameDatabaseContext database)
     {
         string[]? usernames = context.QueryString.GetValues("u");
         if (usernames == null) return new GameUserList();
@@ -45,7 +45,7 @@ public class UserEndpoints : EndpointGroup
 
     [GameEndpoint("updateUser", Method.Post, ContentType.Xml)]
     [NullStatusCode(HttpStatusCode.BadRequest)]
-    public string? UpdateUser(RequestContext context, RealmDatabaseContext database, GameUser user, string body)
+    public string? UpdateUser(RequestContext context, GameDatabaseContext database, GameUser user, string body)
     {
         UpdateUserData? data = null;
         
@@ -81,7 +81,7 @@ public class UserEndpoints : EndpointGroup
 
     [GameEndpoint("update_my_pins", Method.Post, ContentType.Json)]
     [NullStatusCode(HttpStatusCode.BadRequest)]
-    public string? UpdatePins(RequestContext context, RealmDatabaseContext database, GameUser user, Stream body)
+    public string? UpdatePins(RequestContext context, GameDatabaseContext database, GameUser user, Stream body)
     {
         JsonSerializer serializer = new();
 

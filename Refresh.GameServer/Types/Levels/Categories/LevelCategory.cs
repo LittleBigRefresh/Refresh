@@ -1,3 +1,4 @@
+using System.Diagnostics.Contracts;
 using System.Reflection;
 using Bunkum.HttpServer;
 using Newtonsoft.Json;
@@ -10,7 +11,7 @@ namespace Refresh.GameServer.Types.Levels.Categories;
 [JsonObject(MemberSerialization.OptIn)]
 public class LevelCategory
 {
-    private static readonly Lazy<MethodInfo[]> Methods = new(() => typeof(RealmDatabaseContext).GetMethods());
+    private static readonly Lazy<MethodInfo[]> Methods = new(() => typeof(GameDatabaseContext).GetMethods());
     
     [JsonProperty] public string Name { get; set; } = "";
     [JsonProperty] public string Description { get; set; } = "";
@@ -26,7 +27,7 @@ public class LevelCategory
 
         MethodInfo? method = Methods.Value.FirstOrDefault(m => m.Name == funcName);
         if (method == null) throw new ArgumentNullException(nameof(funcName), 
-            $"{nameof(funcName)} must point to a method on {nameof(RealmDatabaseContext)}! Use nameof() to assist with this.");
+            $"{nameof(funcName)} must point to a method on {nameof(GameDatabaseContext)}! Use nameof() to assist with this.");
 
         this._method = method;
     }
@@ -37,12 +38,11 @@ public class LevelCategory
     [JsonProperty("RequiresUser")] private readonly bool _requiresUser;
     private readonly MethodInfo _method;
 
-    public virtual IEnumerable<GameLevel>? Fetch(RequestContext context, RealmDatabaseContext database, GameUser? user, object[]? extraArgs = null)
+    [Pure]
+    public virtual IEnumerable<GameLevel>? Fetch(RequestContext context, int skip, int count, GameDatabaseContext database, GameUser? user, object[]? extraArgs = null)
     {
         if (this._requiresUser && user == null) return null;
-        
-        (int skip, int count) = context.GetPageData(context.Url.AbsolutePath.StartsWith("/api"));
-        
+
         IEnumerable<object> args;
 
         // ReSharper disable once ConvertIfStatementToConditionalTernaryExpression

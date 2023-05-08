@@ -5,39 +5,42 @@ using Bunkum.CustomHttpListener.Parsing;
 using Bunkum.HttpServer;
 using Bunkum.HttpServer.Endpoints;
 using Bunkum.HttpServer.Responses;
+using Bunkum.HttpServer.Storage;
 using Refresh.GameServer.Types.Lists;
 
 namespace Refresh.GameServer.Endpoints.Game;
 
 public class ResourceEndpoints : EndpointGroup
 {
+    //NOTE: type does nothing here, but it's sent by LBP so we have to accept it
+    [GameEndpoint("upload/{hash}/{type}", Method.Post)]
     [GameEndpoint("upload/{hash}", Method.Post)]
     [SuppressMessage("ReSharper", "ConvertIfStatementToReturnStatement")]
-    public Response UploadResource(RequestContext context, string hash, byte[] body)
+    public Response UploadResource(RequestContext context, string hash, string type, byte[] body, IDataStore dataStore)
     {
-        if (context.DataStore.ExistsInStore(hash))
-            return new Response(HttpStatusCode.Conflict);
+        if (dataStore.ExistsInStore(hash))
+            return HttpStatusCode.Conflict;
 
-        if (!context.DataStore.WriteToStore(hash, body))
-            return new Response(HttpStatusCode.InternalServerError);
+        if (!dataStore.WriteToStore(hash, body))
+            return HttpStatusCode.InternalServerError;
 
-        return new Response(HttpStatusCode.OK);
+        return HttpStatusCode.OK;
     }
 
     [GameEndpoint("r/{hash}")]
-    public Response GetResource(RequestContext context, string hash)
+    public Response GetResource(RequestContext context, string hash, IDataStore dataStore)
     {
-        if (!context.DataStore.ExistsInStore(hash))
-            return new Response(HttpStatusCode.NotFound);
+        if (!dataStore.ExistsInStore(hash))
+            return HttpStatusCode.NotFound;
 
-        if (!context.DataStore.TryGetDataFromStore(hash, out byte[]? data))
-            return new Response(HttpStatusCode.InternalServerError);
+        if (!dataStore.TryGetDataFromStore(hash, out byte[]? data))
+            return HttpStatusCode.InternalServerError;
 
         Debug.Assert(data != null);
         return new Response(data, ContentType.BinaryData);
     }
 
     [GameEndpoint("showNotUploaded", Method.Post, ContentType.Xml)]
-    public ResourceList ShowNotUploaded(RequestContext context, ResourceList body) 
-        => new(body.Items.Where(r => !context.DataStore.ExistsInStore(r)));
+    public ResourceList ShowNotUploaded(RequestContext context, ResourceList body, IDataStore dataStore) 
+        => new(body.Items.Where(r => !dataStore.ExistsInStore(r)));
 }

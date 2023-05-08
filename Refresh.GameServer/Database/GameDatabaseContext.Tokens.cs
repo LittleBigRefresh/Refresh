@@ -5,7 +5,7 @@ using Refresh.GameServer.Types.UserData;
 
 namespace Refresh.GameServer.Database;
 
-public partial class RealmDatabaseContext
+public partial class GameDatabaseContext
 {
     private const int DefaultCookieLength = 128;
     private const int MaxBase64Padding = 4;
@@ -13,9 +13,9 @@ public partial class RealmDatabaseContext
     private const string GameCookieHeader = "MM_AUTH=";
     private static readonly int GameCookieLength;
 
-    private const int DefaultTokenExpirySeconds = 86400; // 1 day
+    public const int DefaultTokenExpirySeconds = 86400; // 1 day
     
-    static RealmDatabaseContext()
+    static GameDatabaseContext()
     {
         // LBP cannot store tokens if >127 chars, calculate max possible length here
         GameCookieLength = (int)Math.Floor((MaxGameCookieLength - GameCookieHeader.Length - MaxBase64Padding) * 3 / 4.0);
@@ -31,7 +31,7 @@ public partial class RealmDatabaseContext
         return Convert.ToBase64String(tokenData);
     }
     
-    public Token GenerateTokenForUser(GameUser user, TokenType type, int? tokenExpirySeconds = null)
+    public Token GenerateTokenForUser(GameUser user, TokenType type, TokenGame game, TokenPlatform platform, int tokenExpirySeconds = DefaultTokenExpirySeconds)
     {
         // TODO: JWT (JSON Web Tokens) for TokenType.Api
         
@@ -42,7 +42,10 @@ public partial class RealmDatabaseContext
             User = user,
             TokenData = GetTokenString(cookieLength),
             TokenType = type,
-            ExpiresAt = DateTimeOffset.Now.AddSeconds(tokenExpirySeconds ?? DefaultTokenExpirySeconds),
+            TokenGame = game,
+            TokenPlatform = platform,
+            ExpiresAt = DateTimeOffset.Now.AddSeconds(tokenExpirySeconds),
+            LoginDate = DateTimeOffset.Now,
         };
 
         this._realm.Write(() =>
@@ -52,10 +55,10 @@ public partial class RealmDatabaseContext
         
         return token;
     }
-
+    
     [Pure]
     [ContractAnnotation("=> canbenull")]
-    public GameUser? GetUserFromTokenData(string tokenData, TokenType type)
+    public Token? GetTokenFromTokenData(string tokenData, TokenType type)
     {
         Token? token = this._realm.All<Token>()
             .FirstOrDefault(t => t.TokenData == tokenData && t._TokenType == (int)type);
@@ -69,8 +72,13 @@ public partial class RealmDatabaseContext
             return null;
         }
 
-        return token.User;
+        return token;
     }
+
+    [Pure]
+    [ContractAnnotation("=> canbenull")]
+    public GameUser? GetUserFromTokenData(string tokenData, TokenType type) => 
+        this.GetTokenFromTokenData(tokenData, type)?.User;
 
     public void SetUserPassword(GameUser user, string passwordBcrypt)
     {
