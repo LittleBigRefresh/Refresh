@@ -18,7 +18,11 @@ public class SerializedRoomData
     [JsonProperty("NAT")]
     public NatType? NatType { get; set; }
 
+    // LBP has two of the same thing sometimes, have both properties to handle both cases
     [JsonProperty("Slot")]
+    public List<int>? Slot { get; set; }
+    
+    [JsonProperty("Slots")]
     public List<int>? Slots { get; set; }
 
     [JsonProperty("RoomState")]

@@ -19,16 +19,19 @@ public class UpdateRoomDataMethod : IMatchMethod
         GameRoom room = service.GetOrCreateRoomByPlayer(database, user);
 
         if (body.RoomState != null) room.RoomState = body.RoomState.Value;
-        if (body.Slots != null)
+
+        // LBP likes to send both Slot and Slots interchangeably, handle that case here
+        List<int>? slot = body.Slot ?? body.Slots;
+        if (slot != null)
         {
-            if (body.Slots.Count != 2)
+            if (slot.Count != 2)
             {
                 logger.LogWarning(BunkumContext.Matching, "Received request with invalid amount of slots, rejecting.");
                 return HttpStatusCode.BadRequest;
             }
 
-            room.LevelType = (RoomSlotType)body.Slots[0];
-            room.LevelId = body.Slots[1];
+            room.LevelType = (RoomSlotType)slot[0];
+            room.LevelId = slot[1];
         }
 
         return HttpStatusCode.OK;
