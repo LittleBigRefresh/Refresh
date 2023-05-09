@@ -4,6 +4,7 @@ using Refresh.GameServer.Database;
 using Refresh.GameServer.Types;
 using Refresh.GameServer.Types.Levels;
 using Refresh.GameServer.Types.UserData;
+using Refresh.GameServer.Types.UserData.Leaderboard;
 
 namespace RefreshTests.GameServer;
 
@@ -71,5 +72,29 @@ public record TestContext(TestRefreshGameServer Server, GameDatabaseContext Data
 
         this.Database.AddLevel(level);
         return level;
+    }
+
+    public void FillLeaderboard(GameLevel level, int count)
+    {
+        for (byte i = 0; i < count; i++)
+        {
+            GameUser scoreUser = this.Database.CreateUser("score" + i);
+            this.SubmitScore(i, level, scoreUser);
+        }
+    }
+
+    public GameSubmittedScore SubmitScore(int score, GameLevel level, GameUser user)
+    {
+        GameScore scoreObject = new()
+        {
+            Host = true,
+            Score = score,
+            ScoreType = 1,
+        };
+        
+        GameSubmittedScore? submittedScore = this.Database.SubmitScore(scoreObject, user, level);
+        Assert.That(submittedScore, Is.Not.Null);
+
+        return submittedScore!;
     }
 }
