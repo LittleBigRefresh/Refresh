@@ -23,7 +23,7 @@ public class LeaderboardApiEndpoints : EndpointGroup
         bool result = bool.TryParse(context.QueryString.Get("showAll") ?? "false", out bool showAll);
         if (!result) return null; // FIXME: Should return BadRequest.
 
-        return database.GetTopScoresForLevel(level, count, skip, !showAll).ToList();
+        return database.GetTopScoresForLevel(level, count, skip, showAll).ToList();
     }
 
     [ApiEndpoint("score/{uuid}")]
