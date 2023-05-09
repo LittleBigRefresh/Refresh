@@ -1,19 +1,11 @@
 # Build stage
 FROM mcr.microsoft.com/dotnet/sdk:7.0-alpine AS build
 WORKDIR /app
-COPY *.sln ./
-COPY **/*.csproj ./
-
-RUN dotnet sln list | grep ".csproj" \
-    | while read -r line; do \
-    mkdir -p $(dirname $line); \
-    mv $(basename $line) $(dirname $line); \
-    done;
-
-RUN dotnet restore
 
 COPY . .
-RUN dotnet publish -c Release -o /app/publish --no-restore
+
+RUN --mount=type=cache,id=nuget,target=/root/.nuget/packages \
+dotnet publish -c Release --property:OutputPath=/app/publish
 
 # Final running container
 

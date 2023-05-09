@@ -10,7 +10,7 @@ services:
     environment:
       SERVER: GameServer
     healthcheck:
-      test: wget --spider -t1 -nv http://localhost:10061/LITTLEBIGPLANETPS3_XML/totalPlayerCount || exit 1
+      test: wget --spider -t1 -nv http://localhost:10061/lbp/totalPlayerCount || exit 1
       timeout: 10s
       retries: 5
     volumes:
