@@ -30,6 +30,9 @@ public class SerializedRoomData
 
     [JsonProperty("HostMood")]
     public byte? HostMood { get; set; }
+    
+    [JsonProperty("Mood")]
+    public byte? Mood { get; set; }
 
     [JsonProperty("PassedNoJoinPoint")]
     public bool? PassedNoJoinPoint { get; set; }

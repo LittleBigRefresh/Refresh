@@ -1,5 +1,4 @@
 using System.Net;
-using System.Text.RegularExpressions;
 using Bunkum.HttpServer;
 using Bunkum.HttpServer.Responses;
 using NotEnoughLogs;
@@ -17,6 +16,7 @@ public class UpdateRoomDataMethod : IMatchMethod
         GameDatabaseContext database, GameUser user, SerializedRoomData body)
     {
         GameRoom room = service.GetOrCreateRoomByPlayer(database, user);
+        if (room.HostId != user.UserId) return HttpStatusCode.Unauthorized;
 
         if (body.RoomState != null) room.RoomState = body.RoomState.Value;
 
@@ -32,6 +32,12 @@ public class UpdateRoomDataMethod : IMatchMethod
 
             room.LevelType = (RoomSlotType)slot[0];
             room.LevelId = slot[1];
+        }
+
+        byte? mood = body.HostMood ?? body.Mood;
+        if (mood != null)
+        {
+            room.RoomMood = (RoomMood)mood;
         }
 
         return HttpStatusCode.OK;

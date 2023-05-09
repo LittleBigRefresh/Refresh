@@ -11,25 +11,25 @@ public class GameRoom
 {
     public GameRoom(GameUser host)
     {
-        this._playerIds.Add(host.UserId);
+        this.PlayerIds.Add(host.UserId);
     }
     
-    [JsonProperty("PlayerIds")]
-    private readonly List<ObjectId> _playerIds = new(4);
-    // ReSharper disable once InconsistentNaming
-    [JsonProperty("HostId")]
-    private ObjectId _hostId => this._playerIds[0];
+    [JsonProperty] public readonly List<ObjectId> PlayerIds = new(4);
+    [JsonProperty] public ObjectId HostId => this.PlayerIds[0];
 
     public List<GameUser?> GetPlayers(GameDatabaseContext database) =>
-        this._playerIds.Select(i => database.GetUserByObjectId(i))
+        this.PlayerIds.Select(i => database.GetUserByObjectId(i))
             .ToList();
 
-    public GameUser? GetHost(GameDatabaseContext database) => database.GetUserByObjectId(this._playerIds[0]);
+    public GameUser? GetHost(GameDatabaseContext database) => database.GetUserByObjectId(this.PlayerIds[0]);
 
-    [JsonProperty, JsonConverter(typeof(StringEnumConverter))]
+    [JsonProperty("State"), JsonConverter(typeof(StringEnumConverter))]
     public RoomState RoomState;
+    [JsonProperty("Mood"), JsonConverter(typeof(StringEnumConverter))]
+    public RoomMood RoomMood;
     [JsonProperty, JsonConverter(typeof(StringEnumConverter))]
-    public RoomSlotType LevelType;
+    public RoomSlotType LevelType = RoomSlotType.Pod;
     
     [JsonProperty] public int LevelId;
+
 }
