@@ -14,7 +14,7 @@ namespace Refresh.GameServer.Types.Levels;
 [JsonObject(MemberSerialization.OptIn)]
 public partial class GameLevel : IRealmObject, INeedsPreparationBeforeSerialization, ISequentialId
 {
-    [PrimaryKey] [Indexed] [XmlElement("id")] [JsonProperty] public int LevelId { get; set; }
+    [PrimaryKey] [XmlElement("id")] [JsonProperty] public int LevelId { get; set; }
 
     [XmlElement("name")] [JsonProperty] public string Title { get; set; } = "";
     [XmlElement("icon")] [JsonProperty] public string IconHash { get; set; } = "0";

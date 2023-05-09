@@ -14,7 +14,7 @@ namespace Refresh.GameServer.Types.UserData;
 [JsonObject(MemberSerialization.OptIn)]
 public partial class GameUser : IRealmObject, IRateLimitUser, INeedsPreparationBeforeSerialization
 {
-    [PrimaryKey] [Indexed] [XmlIgnore] [JsonProperty] public ObjectId UserId { get; set; } = ObjectId.GenerateNewId();
+    [PrimaryKey] [XmlIgnore] [JsonProperty] public ObjectId UserId { get; set; } = ObjectId.GenerateNewId();
     [Indexed] [XmlIgnore] [JsonProperty] public string Username { get; set; } = string.Empty;
     [Indexed] [XmlIgnore] [JsonIgnore] public string? PasswordBcrypt { get; set; } = null;
     [XmlIgnore] [JsonProperty] public string IconHash { get; set; } = "0";
