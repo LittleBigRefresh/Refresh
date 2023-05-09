@@ -104,11 +104,11 @@ public partial class GameDatabaseContext // Levels
         foreach (string keyword in keywords)
         {
             if(string.IsNullOrWhiteSpace(keyword)) continue;
-
+            
             levels = levels.Where(l =>
                 // l.LevelId.ToString() == keyword ||
-                l.Title.Like(keyword, false) ||
-                l.Description.Like(keyword, false)
+                QueryMethods.Like(l.Title, keyword, false) ||
+                QueryMethods.Like(l.Description, keyword, false)
             );
         }
 

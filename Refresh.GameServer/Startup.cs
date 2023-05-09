@@ -1,13 +1,5 @@
-﻿using System.Reflection;
-using Refresh.GameServer.Authentication;
-using Refresh.GameServer.Configuration;
-using Refresh.GameServer.Database;
-using Bunkum.HttpServer;
-using Bunkum.HttpServer.RateLimit;
-using Bunkum.HttpServer.Storage;
-using Refresh.GameServer.Middlewares;
-using Refresh.GameServer.Services;
-using Refresh.GameServer.Types.Levels.Categories;
+﻿using Bunkum.HttpServer;
+using Refresh.GameServer;
 
 #if DEBUGLOCALBUNKUM
 Console.WriteLine("Starting Refresh with LOCAL Bunkum!");
@@ -17,25 +9,7 @@ Console.WriteLine("Starting Refresh with NuGet Bunkum");
 
 BunkumConsole.AllocateConsole();
 
-BunkumHttpServer server = new();
-
-using GameDatabaseProvider databaseProvider = new();
-
-server.UseDatabaseProvider(databaseProvider);
-
-server.AddAuthenticationService(new GameAuthenticationProvider(), true);
-server.AddStorageService<FileSystemDataStore>();
-server.AddRateLimitService(new RateLimitSettings(60, 200, 30));
-server.AddService<CategoryService>();
-server.AddService<MatchService>();
-
-server.UseJsonConfig<GameServerConfig>("refreshGameServer.json");
-
-server.AddMiddleware<WebsiteMiddleware>();
-server.AddMiddleware<NotFoundLogMiddleware>();
-server.AddMiddleware<DigestMiddleware>();
-server.AddMiddleware<CrossOriginMiddleware>();
-
-server.DiscoverEndpointsFromAssembly(Assembly.GetExecutingAssembly());
+RefreshGameServer server = new();
+server.Initialize();
 
 await server.StartAndBlockAsync();
