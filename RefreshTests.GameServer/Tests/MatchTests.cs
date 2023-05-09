@@ -1,6 +1,6 @@
 using Refresh.GameServer.Services;
 
-namespace RefreshTests.GameServer;
+namespace RefreshTests.GameServer.Tests;
 
 public class MatchTests
 {
