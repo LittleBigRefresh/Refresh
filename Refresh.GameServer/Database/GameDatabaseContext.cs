@@ -1,6 +1,5 @@
 using System.Diagnostics.CodeAnalysis;
 using Realms;
-using Bunkum.HttpServer.Database;
 using Bunkum.RealmDatabase;
 
 namespace Refresh.GameServer.Database;

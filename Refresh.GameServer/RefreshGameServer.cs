@@ -1,4 +1,8 @@
+using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
+using Bunkum.CustomHttpListener;
+using Bunkum.CustomHttpListener.Listeners;
+using Bunkum.CustomHttpListener.Request;
 using Bunkum.HttpServer;
 using Bunkum.HttpServer.Authentication;
 using Bunkum.HttpServer.RateLimit;
@@ -12,11 +16,14 @@ using Refresh.GameServer.Types.UserData;
 
 namespace Refresh.GameServer;
 
+[SuppressMessage("ReSharper", "InconsistentNaming")]
 public class RefreshGameServer
 {
-    protected readonly BunkumHttpServer Server = new();
+    protected readonly BunkumHttpServer _server;
+    protected readonly GameDatabaseProvider _databaseProvider;
 
     public RefreshGameServer(
+        BunkumHttpListener? listener = null,
         GameDatabaseProvider? databaseProvider = null,
         IAuthenticationProvider<GameUser, Token>? authProvider = null,
         IDataStore? dataStore = null
@@ -26,11 +33,15 @@ public class RefreshGameServer
         authProvider ??= new GameAuthenticationProvider();
         dataStore ??= new FileSystemDataStore();
 
-        this.Server.AddAuthenticationService(authProvider, true);
-        this.Server.UseDatabaseProvider(databaseProvider);
-        this.Server.AddStorageService(dataStore);
+        this._databaseProvider = databaseProvider;
+
+        this._server = listener == null ? new BunkumHttpServer() : new BunkumHttpServer(listener);
+
+        this._server.AddAuthenticationService(authProvider, true);
+        this._server.UseDatabaseProvider(databaseProvider);
+        this._server.AddStorageService(dataStore);
         
-        this.Server.DiscoverEndpointsFromAssembly(Assembly.GetExecutingAssembly());
+        this._server.DiscoverEndpointsFromAssembly(Assembly.GetExecutingAssembly());
     }
 
     public void Initialize()
@@ -42,25 +53,30 @@ public class RefreshGameServer
 
     protected virtual void SetupMiddlewares()
     {
-        this.Server.AddMiddleware<WebsiteMiddleware>();
-        this.Server.AddMiddleware<NotFoundLogMiddleware>();
-        this.Server.AddMiddleware<DigestMiddleware>();
-        this.Server.AddMiddleware<CrossOriginMiddleware>();
+        this._server.AddMiddleware<WebsiteMiddleware>();
+        this._server.AddMiddleware<NotFoundLogMiddleware>();
+        this._server.AddMiddleware<DigestMiddleware>();
+        this._server.AddMiddleware<CrossOriginMiddleware>();
     }
 
     protected virtual void SetupConfiguration()
     {
-        this.Server.UseJsonConfig<GameServerConfig>("refreshGameServer.json");
+        this._server.UseJsonConfig<GameServerConfig>("refreshGameServer.json");
     }
 
     protected virtual void SetupServices()
     {
-        this.Server.AddRateLimitService(new RateLimitSettings(60, 200, 30));
-        this.Server.AddService<CategoryService>();
+        this._server.AddRateLimitService(new RateLimitSettings(60, 200, 30));
+        this._server.AddService<CategoryService>();
     }
 
     public Task StartAndBlockAsync()
     {
-        return this.Server.StartAndBlockAsync();
+        return this._server.StartAndBlockAsync();
+    }
+
+    public void Start()
+    {
+        this._server.Start();
     }
 }
