@@ -48,7 +48,7 @@ public record TestContext(TestRefreshGameServer Server, GameDatabaseContext Data
         }
         else
         {
-            client.DefaultRequestHeaders.Add("Authorization", token.TokenData);
+            client.DefaultRequestHeaders.TryAddWithoutValidation("Authorization", token.TokenData);
         }
 
         return client;
