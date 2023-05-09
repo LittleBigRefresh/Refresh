@@ -6,7 +6,7 @@ namespace Refresh.GameServer.Types.Report;
 #nullable disable
 
 [XmlRoot("screenRect")]
-public class ScreenRect : EmbeddedObject 
+public partial class ScreenRect : IEmbeddedObject 
 { 
     [XmlElement("rect")] 
     public Rect Rect { get; set; } 

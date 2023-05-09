@@ -2,6 +2,8 @@ using System.Xml.Serialization;
 
 namespace Refresh.GameServer.Types.UserData.Leaderboard;
 
+#nullable disable
+
 public class GameLeaderboardScore
 {
     [XmlElement("mainPlayer")] public string Player { get; set; }
