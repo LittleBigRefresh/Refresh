@@ -20,8 +20,6 @@ jobs:
         dotnet-version: 7.0.x
     - name: Restore
       run: dotnet restore
-    - name: Setup tmate session
-      uses: mxschmitt/action-tmate@v3
     - name: Test
       run: dotnet test -c Release --verbosity normal
       
