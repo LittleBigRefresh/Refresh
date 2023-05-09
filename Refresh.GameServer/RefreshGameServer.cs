@@ -67,7 +67,7 @@ public class RefreshGameServer
 
     protected virtual void SetupServices()
     {
-        this._server.AddRateLimitService(new RateLimitSettings(60, 200, 30));
+        // this._server.AddRateLimitService(new RateLimitSettings(60, 200, 30));
         this._server.AddService<CategoryService>();
         this._server.AddService<MatchService>();
     }

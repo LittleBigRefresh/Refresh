@@ -18,7 +18,7 @@ public class SerializedRoomData
     [JsonProperty("NAT")]
     public NatType? NatType { get; set; }
 
-    [JsonProperty("Slots")]
+    [JsonProperty("Slot")]
     public List<int>? Slots { get; set; }
 
     [JsonProperty("RoomState")]

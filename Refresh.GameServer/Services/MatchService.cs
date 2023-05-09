@@ -6,16 +6,36 @@ using System.Net;
 using System.Reflection;
 using Bunkum.HttpServer.Responses;
 using Newtonsoft.Json;
+using Refresh.GameServer.Database;
 using Refresh.GameServer.Types.Matching;
+using Refresh.GameServer.Types.UserData;
 
 namespace Refresh.GameServer.Services;
 
 public partial class MatchService : EndpointService
 {
-    private readonly Dictionary<string, IMatchMethod> _matchMethods = new();
+    private readonly List<IMatchMethod> _matchMethods = new();
+
+    private readonly List<GameRoom> _rooms = new();
 
     public MatchService(LoggerContainer<BunkumContext> logger) : base(logger)
     {}
+
+    public GameRoom GetOrCreateRoomByPlayer(GameDatabaseContext database, GameUser player)
+    {
+        GameRoom? room = this.GetRoomByPlayer(database, player);
+
+        // ReSharper disable once InvertIf (happy path goes last)
+        if (room == null)
+        {
+            room = new GameRoom(player);
+            this._rooms.Add(room);
+        }
+
+        return room;
+    }
+
+    public GameRoom? GetRoomByPlayer(GameDatabaseContext database, GameUser player) => this._rooms.FirstOrDefault(r => r.GetPlayers(database).Contains(player));
 
     public override void Initialize()
     {
@@ -30,19 +50,20 @@ public partial class MatchService : EndpointService
             string name = type.Name.Substring(0, type.Name.IndexOf("Method", StringComparison.Ordinal));
             this.Logger.LogTrace(BunkumContext.Service, $"Found {nameof(IMatchMethod)} '{name}'");
             
-            this._matchMethods.Add(name, (IMatchMethod)Activator.CreateInstance(type)!);
+            this._matchMethods.Add((IMatchMethod)Activator.CreateInstance(type)!);
         }
         
         this.Logger.LogDebug(BunkumContext.Service, $"Discovered {matchMethodTypes.Count} match method types");
     }
 
-    public Response ExecuteMethod(string methodStr, string body)
+    private IMatchMethod? TryGetMatchMethod(string method) 
+        => this._matchMethods.FirstOrDefault(m => m.MethodNames.Contains(method));
+
+    public Response ExecuteMethod(string methodStr, string body, GameDatabaseContext database, GameUser user)
     {
-        if (!this._matchMethods.TryGetValue(methodStr, out IMatchMethod? method))
-            return HttpStatusCode.BadRequest;
-        
-        Debug.Assert(method != null);
-        
+        IMatchMethod? method = this.TryGetMatchMethod(methodStr);
+        if (method == null) return HttpStatusCode.BadRequest;
+
         JsonSerializer serializer = new();
         using StringReader reader = new(body);
         using JsonTextReader jsonReader = new(reader);
@@ -56,6 +77,6 @@ public partial class MatchService : EndpointService
             return HttpStatusCode.BadRequest;
         }
 
-        return method.Execute(this, this.Logger, roomData);
+        return method.Execute(this, this.Logger, database, user, roomData);
     }
 }

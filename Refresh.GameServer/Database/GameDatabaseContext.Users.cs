@@ -30,6 +30,14 @@ public partial class GameDatabaseContext // Users
         if (username == null) return null;
         return this._realm.All<GameUser>().FirstOrDefault(u => u.Username == username);
     }
+
+    [Pure]
+    [ContractAnnotation("null => null; notnull => canbenull")]
+    public GameUser? GetUserByObjectId(ObjectId? id)
+    {
+        if (id == null) return null;
+        return this._realm.All<GameUser>().FirstOrDefault(u => u.UserId == id);
+    }
     
     [Pure]
     [ContractAnnotation("null => null; notnull => canbenull")]
