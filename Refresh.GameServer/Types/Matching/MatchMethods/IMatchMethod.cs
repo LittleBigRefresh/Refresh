@@ -6,7 +6,7 @@ using Refresh.GameServer.Database;
 using Refresh.GameServer.Services;
 using Refresh.GameServer.Types.UserData;
 
-namespace Refresh.GameServer.Types.Matching;
+namespace Refresh.GameServer.Types.Matching.MatchMethods;
 
 [UsedImplicitly(ImplicitUseTargetFlags.WithInheritors)]
 public interface IMatchMethod

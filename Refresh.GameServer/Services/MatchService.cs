@@ -8,6 +8,7 @@ using Bunkum.HttpServer.Responses;
 using Newtonsoft.Json;
 using Refresh.GameServer.Database;
 using Refresh.GameServer.Types.Matching;
+using Refresh.GameServer.Types.Matching.MatchMethods;
 using Refresh.GameServer.Types.UserData;
 
 namespace Refresh.GameServer.Services;
@@ -17,6 +18,9 @@ public partial class MatchService : EndpointService
     private readonly List<IMatchMethod> _matchMethods = new();
 
     private readonly List<GameRoom> _rooms = new();
+
+    // unsure if this can be casted back into a list, prolly fine tho, we're not a library
+    public IReadOnlyCollection<GameRoom> Rooms => this._rooms.AsReadOnly();
 
     public MatchService(LoggerContainer<BunkumContext> logger) : base(logger)
     {}

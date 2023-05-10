@@ -13,6 +13,8 @@ public class GameRoom
     {
         this.PlayerIds.Add(host.UserId);
     }
+
+    [JsonProperty] public readonly ObjectId RoomId = ObjectId.GenerateNewId();
     
     [JsonProperty] public readonly List<ObjectId> PlayerIds = new(4);
     [JsonProperty] public ObjectId HostId => this.PlayerIds[0];
