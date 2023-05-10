@@ -6,9 +6,9 @@ namespace Refresh.GameServer.Types.UserData.Leaderboard;
 
 #nullable disable
 
-public class GameSubmittedScore : RealmObject
+public partial class GameSubmittedScore : IRealmObject
 {
-    [PrimaryKey] [Indexed] public ObjectId ScoreId { get; set; } = ObjectId.GenerateNewId();
+    [PrimaryKey] public ObjectId ScoreId { get; set; } = ObjectId.GenerateNewId();
     public GameLevel Level { get; set; }
     public IList<GameUser> Players { get; }
     public DateTimeOffset ScoreSubmitted { get; set; }

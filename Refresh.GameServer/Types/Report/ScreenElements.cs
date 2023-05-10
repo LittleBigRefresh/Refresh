@@ -6,7 +6,7 @@ namespace Refresh.GameServer.Types.Report;
 #nullable disable
 
 [XmlRoot("screenElements")]
-public class ScreenElements : EmbeddedObject 
+public partial class ScreenElements : IEmbeddedObject 
 { 
     [XmlIgnore]
     private IList<Slot> InternalSlot { get; }

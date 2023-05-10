@@ -6,7 +6,7 @@ namespace Refresh.GameServer.Types.Relations;
 
 #nullable disable
 
-public class PlayLevelRelation : RealmObject
+public partial class PlayLevelRelation : IRealmObject
 {
     public GameLevel Level { get; set; }
     public GameUser User { get; set; }

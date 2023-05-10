@@ -12,13 +12,13 @@ namespace Refresh.GameServer.Types.Levels;
 [XmlRoot("slot")]
 [XmlType("slot")]
 [JsonObject(MemberSerialization.OptIn)]
-public class GameLevel : RealmObject, INeedsPreparationBeforeSerialization, ISequentialId
+public partial class GameLevel : IRealmObject, INeedsPreparationBeforeSerialization, ISequentialId
 {
-    [PrimaryKey] [Indexed] [XmlElement("id")] [JsonProperty] public int LevelId { get; set; }
-    
-    [XmlElement("name")] [JsonProperty] public string Title { get; set; } = string.Empty;
-    [XmlElement("icon")] [JsonProperty] public string IconHash { get; set; } = string.Empty;
-    [XmlElement("description")] [JsonProperty] public string Description { get; set; } = string.Empty;
+    [PrimaryKey] [XmlElement("id")] [JsonProperty] public int LevelId { get; set; }
+
+    [XmlElement("name")] [JsonProperty] public string Title { get; set; } = "";
+    [XmlElement("icon")] [JsonProperty] public string IconHash { get; set; } = "0";
+    [XmlElement("description")] [JsonProperty] public string Description { get; set; } = "";
     [XmlElement("location")] [JsonProperty] public GameLocation Location { get; set; } = GameLocation.Zero;
 
     [XmlElement("rootLevel")] public string RootResource { get; set; } = string.Empty;
