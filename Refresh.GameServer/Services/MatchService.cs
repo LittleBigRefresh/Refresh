@@ -59,23 +59,10 @@ public partial class MatchService : EndpointService
     private IMatchMethod? TryGetMatchMethod(string method) 
         => this._matchMethods.FirstOrDefault(m => m.MethodNames.Contains(method));
 
-    public Response ExecuteMethod(string methodStr, string body, GameDatabaseContext database, GameUser user)
+    public Response ExecuteMethod(string methodStr, SerializedRoomData roomData, GameDatabaseContext database, GameUser user)
     {
         IMatchMethod? method = this.TryGetMatchMethod(methodStr);
         if (method == null) return HttpStatusCode.BadRequest;
-
-        JsonSerializer serializer = new();
-        using StringReader reader = new(body);
-        using JsonTextReader jsonReader = new(reader);
-
-        SerializedRoomData? roomData = serializer.Deserialize<SerializedRoomData>(jsonReader);
-        
-        // ReSharper disable once InvertIf (happy path goes last)
-        if (roomData == null)
-        {
-            this.Logger.LogWarning(BunkumContext.Matching, "Match data was bad and unserializable, rejecting."); // Already logged data
-            return HttpStatusCode.BadRequest;
-        }
 
         return method.Execute(this, this.Logger, database, user, roomData);
     }
