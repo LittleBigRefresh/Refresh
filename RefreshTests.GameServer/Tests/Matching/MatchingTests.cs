@@ -77,6 +77,7 @@ public class MatchingTests : GameServerTest
         
         // Tell user2 to try to find a room
         Response response = match.ExecuteMethod("FindBestRoom", new SerializedRoomData(), context.Database, user2);
+        // File.WriteAllBytes("/tmp/matchresp.json", response.Data);
         Assert.That(response.StatusCode, Is.EqualTo(OK));
     }
 }

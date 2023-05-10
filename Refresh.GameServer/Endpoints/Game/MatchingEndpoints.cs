@@ -21,7 +21,7 @@ public class MatchingEndpoints : EndpointGroup
         context.Logger.LogDebug(BunkumContext.Matching, $"Received {method} match request, data: {jsonBody}");
         
         JsonSerializer serializer = new();
-        using StringReader reader = new(body);
+        using StringReader reader = new(jsonBody);
         using JsonTextReader jsonReader = new(reader);
 
         SerializedRoomData? roomData = serializer.Deserialize<SerializedRoomData>(jsonReader);
