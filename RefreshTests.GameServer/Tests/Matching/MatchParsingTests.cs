@@ -1,8 +1,8 @@
 using Refresh.GameServer.Services;
 
-namespace RefreshTests.GameServer.Tests;
+namespace RefreshTests.GameServer.Tests.Matching;
 
-public class MatchTests
+public class MatchParsingTests
 {
     [Test]
     public void SerializesIpAddressFromHex() => 

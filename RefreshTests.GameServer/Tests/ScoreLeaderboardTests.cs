@@ -12,7 +12,7 @@ public class ScoreLeaderboardTests : GameServerTest
     [Test]
     public async Task SubmitsScore()
     {
-        TestContext context = this.GetServer();
+        using TestContext context = this.GetServer();
         GameUser user = context.CreateUser();
         GameLevel level = context.CreateLevel(user);
 
@@ -40,7 +40,7 @@ public class ScoreLeaderboardTests : GameServerTest
     /// <param name="submittedScore">The number of points the score has</param>
     private void ScoreSegmentTest(int count, int expectedIndex, int leaderboardCount, int submittedScore)
     {
-        TestContext context = this.GetServer();
+        using TestContext context = this.GetServer();
         GameUser user = context.CreateUser();
         GameLevel level = context.CreateLevel(user);
 

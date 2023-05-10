@@ -9,7 +9,7 @@ public class AuthenticationTests : GameServerTest
     [Test]
     public async Task GameAuthenticationWorks()
     {
-        TestContext context = this.GetServer();
+        using TestContext context = this.GetServer();
         
         HttpResponseMessage unauthedRequest = await context.Http.GetAsync("/lbp/playersInPodCount");
         Assert.That(unauthedRequest.StatusCode, Is.EqualTo(Forbidden));
@@ -27,7 +27,7 @@ public class AuthenticationTests : GameServerTest
     [Test]
     public async Task ApiAuthenticationWorks()
     {
-        TestContext context = this.GetServer();
+        using TestContext context = this.GetServer();
         
         HttpResponseMessage unauthedRequest = await context.Http.GetAsync("/api/v2/user/me");
         Assert.That(unauthedRequest.StatusCode, Is.EqualTo(Forbidden));
