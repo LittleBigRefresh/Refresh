@@ -22,6 +22,12 @@ public partial class MatchService : EndpointService
     // unsure if this can be casted back into a list, prolly fine tho, we're not a library
     public IReadOnlyCollection<GameRoom> Rooms => this._rooms.AsReadOnly();
 
+    public int TotalPlayers => this._rooms.SelectMany(r => r.PlayerIds).Count();
+    public int TotalPlayersInPod => this._rooms
+        .Where(r => r.LevelType == RoomSlotType.Pod)
+        .SelectMany(r => r.PlayerIds)
+        .Count();
+
     public MatchService(LoggerContainer<BunkumContext> logger) : base(logger)
     {}
 
