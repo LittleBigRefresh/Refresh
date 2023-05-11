@@ -44,6 +44,22 @@ public partial class MatchService : EndpointService
 
     public GameRoom? GetRoomByPlayer(GameUser player) 
         => this._rooms.FirstOrDefault(r => r.PlayerIds.Select(s => s.Id).Contains(player.UserId));
+    
+    public void AddPlayerToRoom(GameUser player, GameRoom targetRoom)
+    {
+        GameRoom? playersRoom = this.GetRoomByPlayer(player);
+        if (playersRoom == null) return; // TODO: error?
+        if (targetRoom == playersRoom) return;
+        
+        foreach (GameRoom room in this._rooms) room.PlayerIds.RemoveAll(i => i.Id == player.UserId);
+        targetRoom.PlayerIds.Add(new GameRoomPlayer(player.Username, player.UserId));
+    }
+
+    public void AddPlayerToRoom(string username, GameRoom targetRoom)
+    {
+        foreach (GameRoom room in this._rooms) room.PlayerIds.RemoveAll(i => i.Username == username);
+        targetRoom.PlayerIds.Add(new GameRoomPlayer(username, null));
+    }
 
     public override void Initialize()
     {
