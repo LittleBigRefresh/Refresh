@@ -5,7 +5,7 @@ namespace Refresh.GameServer.Types.Legacy;
 public class LegacyRoom
 {
     [JsonProperty("roomId")] public int RoomId { get; set; }
-    [JsonProperty("playerIds")] public int[]? PlayerIds { get; set; } = { 1676779928 };
+    [JsonProperty("playerIds")] public int[]? PlayerIds { get; set; } = Array.Empty<int>();
     [JsonProperty("slot")] public LegacyRoomSlot? Slot { get; set; } = new();
 }
 
