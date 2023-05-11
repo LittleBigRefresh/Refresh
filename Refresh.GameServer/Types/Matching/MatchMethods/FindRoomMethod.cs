@@ -17,7 +17,7 @@ public class FindRoomMethod : IMatchMethod
     public Response Execute(MatchService service, LoggerContainer<BunkumContext> logger, GameDatabaseContext database, GameUser user,
         SerializedRoomData body)
     {
-        GameRoom? usersRoom = service.GetRoomByPlayer(database, user);
+        GameRoom? usersRoom = service.GetRoomByPlayer(user);
         if (usersRoom == null) return HttpStatusCode.BadRequest; // user should already have a room.
 
         List<GameRoom> rooms = service.Rooms.Where(r => r.RoomId != usersRoom.RoomId)

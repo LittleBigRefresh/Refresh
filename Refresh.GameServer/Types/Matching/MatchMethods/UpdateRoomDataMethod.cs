@@ -15,7 +15,7 @@ public class UpdateRoomDataMethod : IMatchMethod
     public Response Execute(MatchService service, LoggerContainer<BunkumContext> logger,
         GameDatabaseContext database, GameUser user, SerializedRoomData body)
     {
-        GameRoom room = service.GetOrCreateRoomByPlayer(database, user);
+        GameRoom room = service.GetOrCreateRoomByPlayer(user);
         if (room.HostId.Id != user.UserId) return HttpStatusCode.Unauthorized;
 
         if (body.RoomState != null) room.RoomState = body.RoomState.Value;

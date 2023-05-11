@@ -19,6 +19,6 @@ public class MatchingApiEndpoints : EndpointGroup
         GameUser? user = database.GetUserByUsername(username);
         if (user == null) return null;
 
-        return service.GetRoomByPlayer(database, user);
+        return service.GetRoomByPlayer(user);
     }
 }

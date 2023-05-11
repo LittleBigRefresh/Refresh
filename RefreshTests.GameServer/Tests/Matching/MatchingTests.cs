@@ -28,8 +28,8 @@ public class MatchingTests : GameServerTest
             GameRoom? room1;
             GameRoom? room2;
             
-            Assert.That(room1 = match.GetRoomByPlayer(context.Database, user1), Is.Not.Null);
-            Assert.That(room2 = match.GetRoomByPlayer(context.Database, user2), Is.Not.Null);
+            Assert.That(room1 = match.GetRoomByPlayer(user1), Is.Not.Null);
+            Assert.That(room2 = match.GetRoomByPlayer(user2), Is.Not.Null);
             
             Debug.Assert(room1 != null);
             Debug.Assert(room2 != null);

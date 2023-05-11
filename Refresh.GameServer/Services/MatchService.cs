@@ -28,9 +28,9 @@ public partial class MatchService : EndpointService
     public MatchService(LoggerContainer<BunkumContext> logger) : base(logger)
     {}
 
-    public GameRoom GetOrCreateRoomByPlayer(GameDatabaseContext database, GameUser player)
+    public GameRoom GetOrCreateRoomByPlayer(GameUser player)
     {
-        GameRoom? room = this.GetRoomByPlayer(database, player);
+        GameRoom? room = this.GetRoomByPlayer(player);
 
         // ReSharper disable once InvertIf (happy path goes last)
         if (room == null)
@@ -42,8 +42,8 @@ public partial class MatchService : EndpointService
         return room;
     }
 
-    public GameRoom? GetRoomByPlayer(GameDatabaseContext database, GameUser player) 
-        => this._rooms.FirstOrDefault(r => r.GetPlayers(database).Contains(player));
+    public GameRoom? GetRoomByPlayer(GameUser player) 
+        => this._rooms.FirstOrDefault(r => r.PlayerIds.Select(s => s.Id).Contains(player.UserId));
 
     public override void Initialize()
     {
