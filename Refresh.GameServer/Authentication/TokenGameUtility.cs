@@ -51,6 +51,7 @@ public static class TokenGameUtility
         "BCES01346",
         "BCUS90260",
         "BCUS98372",
+        "NPUA80662",
     };
 
     private static readonly string[] LittleBigPlanet3Titles =

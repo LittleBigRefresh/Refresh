@@ -7,10 +7,10 @@ namespace Refresh.GameServer.Types.Lists;
 [XmlType("categories")]
 public class GameCategoryList : GameList<GameCategory>
 {
-    public GameCategoryList(IEnumerable<GameCategory> items)
+    public GameCategoryList(IEnumerable<GameCategory> items, CategoryService categories)
     {
         this.Items = items.ToList();
-        this.Total = CategoryHandler.Categories.Count();
+        this.Total = categories.Categories.Count();
     }
 
     public GameCategoryList() {}

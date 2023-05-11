@@ -8,9 +8,9 @@ namespace Refresh.GameServer.Types.Comments;
 
 [XmlRoot("comment")]
 [XmlType("comment")]
-public class GameComment : RealmObject, ISequentialId, INeedsPreparationBeforeSerialization
+public partial class GameComment : IRealmObject, ISequentialId, INeedsPreparationBeforeSerialization
 {
-    [PrimaryKey] [Indexed] [XmlElement("id")] public int SequentialId { get; set; }
+    [PrimaryKey] [XmlElement("id")] public int SequentialId { get; set; }
 
     [XmlIgnore] public GameUser Author { get; set; } = null!;
     [XmlElement("message")] public string Content { get; set; } = string.Empty;

@@ -17,7 +17,7 @@ namespace Refresh.GameServer.Types.Activity;
 [JsonObject(MemberSerialization.OptOut, ItemNullValueHandling = NullValueHandling.Ignore)]
 [XmlRoot("event")]
 [XmlType("event")]
-public class Event : RealmObject
+public partial class Event : IRealmObject
 {
     /// <summary>
     /// The ID of the event.

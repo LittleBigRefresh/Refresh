@@ -9,12 +9,13 @@ using Bunkum.RealmDatabase;
 using Refresh.GameServer.Types.Activity;
 using Refresh.GameServer.Types.Relations;
 using Refresh.GameServer.Types.Report;
+using Refresh.GameServer.Types.UserData.Leaderboard;
 
 namespace Refresh.GameServer.Database;
 
 public class GameDatabaseProvider : RealmDatabaseProvider<GameDatabaseContext>
 {
-    protected override ulong SchemaVersion => 36;
+    protected override ulong SchemaVersion => 41;
 
     protected override string Filename => "refreshGameServer.realm";
     
@@ -29,7 +30,10 @@ public class GameDatabaseProvider : RealmDatabaseProvider<GameDatabaseContext>
         typeof(FavouriteLevelRelation),
         typeof(QueueLevelRelation),
         typeof(FavouriteUserRelation),
+        typeof(PlayLevelRelation),
+        typeof(UniquePlayLevelRelation),
         typeof(Event),
+        typeof(GameSubmittedScore),
         //grief report items
         typeof(GriefReport),
         typeof(InfoBubble),
@@ -51,12 +55,12 @@ public class GameDatabaseProvider : RealmDatabaseProvider<GameDatabaseContext>
         // Unless you are certain second timestamps are used, use the millisecond timestamps set above.
         long timestampSeconds = timestampMilliseconds / 1000;
 
-        // IQueryable<dynamic>? oldUsers = migration.OldRealm.DynamicApi.All("GameUser");
+        IQueryable<dynamic>? oldUsers = migration.OldRealm.DynamicApi.All("GameUser");
         IQueryable<GameUser>? newUsers = migration.NewRealm.All<GameUser>();
 
         for (int i = 0; i < newUsers.Count(); i++)
         {
-            // dynamic oldUser = oldUsers.ElementAt(i);
+            dynamic oldUser = oldUsers.ElementAt(i);
             GameUser newUser = newUsers.ElementAt(i);
 
             if (oldVersion < 3)
@@ -79,6 +83,14 @@ public class GameDatabaseProvider : RealmDatabaseProvider<GameDatabaseContext>
 
             // In version 26, users were given join dates
             if (oldVersion < 26) newUser.JoinDate = 0;
+
+            // In version 40, we switched to Realm source generators which requires some values to be reset
+            if (oldVersion < 40)
+            {
+                newUser.IconHash = oldUser.IconHash;
+                newUser.Description = oldUser.Description;
+                newUser.PlanetsHash = oldUser.PlanetsHash;
+            }
         }
 
         IQueryable<dynamic>? oldLevels = migration.OldRealm.DynamicApi.All("GameLevel");
@@ -108,6 +120,15 @@ public class GameDatabaseProvider : RealmDatabaseProvider<GameDatabaseContext>
             {
                 newLevel.PublishDate = oldLevel.PublishDate * 1000;
                 newLevel.UpdateDate = oldLevel.UpdateDate * 1000;
+            }
+            
+            // In version 40, we switched to Realm source generators which requires some values to be reset
+            if (oldVersion < 40)
+            {
+                newLevel.Title = oldLevel.Title;
+                newLevel.IconHash = oldLevel.IconHash;
+                newLevel.Description = oldLevel.Description;
+                newLevel.RootResource = oldLevel.RootResource;
             }
         }
 
@@ -140,10 +161,25 @@ public class GameDatabaseProvider : RealmDatabaseProvider<GameDatabaseContext>
 
         for (int i = 0; i < newTokens.Count(); i++)
         {
-            // Token oldToken = oldTokens.ElementAt(i);
+            // dynamic oldToken = oldTokens.ElementAt(i);
             Token newToken = newTokens.ElementAt(i);
 
             if (oldVersion < 36) newToken.LoginDate = DateTimeOffset.FromUnixTimeMilliseconds(timestampMilliseconds);
+        }
+        
+        IQueryable<dynamic>? oldComments = migration.OldRealm.DynamicApi.All("GameComment");
+        IQueryable<GameComment>? newComments = migration.NewRealm.All<GameComment>();
+
+        for (int i = 0; i < newComments.Count(); i++)
+        {
+            dynamic oldComment = oldComments.ElementAt(i);
+            GameComment newComment = newComments.ElementAt(i);
+
+            // In version 40, we switched to Realm source generators which requires some values to be reset
+            if (oldVersion < 40)
+            {
+                newComment.Content = oldComment.Content;
+            }
         }
     }
 }

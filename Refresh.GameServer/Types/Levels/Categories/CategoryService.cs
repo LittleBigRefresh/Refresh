@@ -1,13 +1,16 @@
+using Bunkum.HttpServer;
+using Bunkum.HttpServer.Services;
+using NotEnoughLogs;
 using Refresh.GameServer.Database;
 
 namespace Refresh.GameServer.Types.Levels.Categories;
 
-public static class CategoryHandler
+public class CategoryService : EndpointService
 {
-    public static IEnumerable<LevelCategory> Categories => _categories.AsReadOnly();
+    public IEnumerable<LevelCategory> Categories => this._categories.AsReadOnly();
 
     // ReSharper disable once InconsistentNaming
-    private static readonly List<LevelCategory> _categories = new()
+    private readonly List<LevelCategory> _categories = new()
     {
         new LevelCategory("newest", "newest", false, nameof(GameDatabaseContext.GetNewestLevels))
         {
@@ -40,4 +43,8 @@ public static class CategoryHandler
             FontAwesomeIcon = "bell",
         },
     };
+
+    internal CategoryService(LoggerContainer<BunkumContext> logger) : base(logger)
+    {
+    }
 }

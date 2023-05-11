@@ -14,11 +14,11 @@ public class LevelApiEndpoints : EndpointGroup
     [ApiEndpoint("levels/{route}")]
     [Authentication(false)]
     [NullStatusCode(HttpStatusCode.NotFound)]
-    public IEnumerable<GameLevel>? GetLevels(RequestContext context, GameDatabaseContext database, GameUser? user, string route)
+    public IEnumerable<GameLevel>? GetLevels(RequestContext context, GameDatabaseContext database, CategoryService categories, GameUser? user, string route)
     {
         (int skip, int count) = context.GetPageData(true);
         
-        return CategoryHandler.Categories
+        return categories.Categories
             .FirstOrDefault(c => c.ApiRoute.StartsWith(route))?
             .Fetch(context, skip, count, database, user);
     }
@@ -26,7 +26,8 @@ public class LevelApiEndpoints : EndpointGroup
     [ApiEndpoint("levels")]
     [Authentication(false)]
     [ClientCacheResponse(86400 / 2)] // cache for half a day
-    public IEnumerable<LevelCategory> GetCategories(RequestContext context) => CategoryHandler.Categories;
+    public IEnumerable<LevelCategory> GetCategories(RequestContext context, CategoryService categories)
+        => categories.Categories;
 
     [ApiEndpoint("level/id/{idStr}")]
     [Authentication(false)]

@@ -7,6 +7,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Refresh.GameServer", "Refre
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Refresh.Analyzers", "Refresh.Analyzers\Refresh.Analyzers.csproj", "{4717B220-62C1-4CF9-9734-D9975C462159}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RefreshTests.GameServer", "RefreshTests.GameServer\RefreshTests.GameServer.csproj", "{8DC15128-D9C9-498B-AD3B-537C50966C91}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -29,6 +31,12 @@ Global
 		{4717B220-62C1-4CF9-9734-D9975C462159}.Release|Any CPU.Build.0 = Release|Any CPU
 		{4717B220-62C1-4CF9-9734-D9975C462159}.DebugLocalBunkum|Any CPU.ActiveCfg = Debug|Any CPU
 		{4717B220-62C1-4CF9-9734-D9975C462159}.DebugLocalBunkum|Any CPU.Build.0 = Debug|Any CPU
+		{8DC15128-D9C9-498B-AD3B-537C50966C91}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{8DC15128-D9C9-498B-AD3B-537C50966C91}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{8DC15128-D9C9-498B-AD3B-537C50966C91}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{8DC15128-D9C9-498B-AD3B-537C50966C91}.Release|Any CPU.Build.0 = Release|Any CPU
+		{8DC15128-D9C9-498B-AD3B-537C50966C91}.DebugLocalBunkum|Any CPU.ActiveCfg = DebugLocalBunkum|Any CPU
+		{8DC15128-D9C9-498B-AD3B-537C50966C91}.DebugLocalBunkum|Any CPU.Build.0 = DebugLocalBunkum|Any CPU
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
 	EndGlobalSection

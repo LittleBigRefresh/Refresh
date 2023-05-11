@@ -5,19 +5,20 @@ using Refresh.GameServer.Types.UserData;
 using Bunkum.HttpServer.Serialization;
 using Newtonsoft.Json;
 using Refresh.GameServer.Types.Relations;
+using Refresh.GameServer.Types.UserData.Leaderboard;
 
 namespace Refresh.GameServer.Types.Levels;
 
 [XmlRoot("slot")]
 [XmlType("slot")]
 [JsonObject(MemberSerialization.OptIn)]
-public class GameLevel : RealmObject, INeedsPreparationBeforeSerialization, ISequentialId
+public partial class GameLevel : IRealmObject, INeedsPreparationBeforeSerialization, ISequentialId
 {
-    [PrimaryKey] [Indexed] [XmlElement("id")] [JsonProperty] public int LevelId { get; set; }
-    
-    [XmlElement("name")] [JsonProperty] public string Title { get; set; } = string.Empty;
-    [XmlElement("icon")] [JsonProperty] public string IconHash { get; set; } = string.Empty;
-    [XmlElement("description")] [JsonProperty] public string Description { get; set; } = string.Empty;
+    [PrimaryKey] [XmlElement("id")] [JsonProperty] public int LevelId { get; set; }
+
+    [XmlElement("name")] [JsonProperty] public string Title { get; set; } = "";
+    [XmlElement("icon")] [JsonProperty] public string IconHash { get; set; } = "0";
+    [XmlElement("description")] [JsonProperty] public string Description { get; set; } = "";
     [XmlElement("location")] [JsonProperty] public GameLocation Location { get; set; } = GameLocation.Zero;
 
     [XmlElement("rootLevel")] public string RootResource { get; set; } = string.Empty;
@@ -29,6 +30,14 @@ public class GameLevel : RealmObject, INeedsPreparationBeforeSerialization, ISeq
     #nullable disable
     [Backlink(nameof(FavouriteLevelRelation.Level))]
     [XmlIgnore] public IQueryable<FavouriteLevelRelation> FavouriteRelations { get; }
+    
+    [Backlink(nameof(UniquePlayLevelRelation.Level))]
+    [XmlIgnore] public IQueryable<UniquePlayLevelRelation> UniquePlays { get; }
+    
+    [Backlink(nameof(PlayLevelRelation.Level))]
+    [XmlIgnore] public IQueryable<PlayLevelRelation> AllPlays { get; }
+    [Backlink(nameof(GameSubmittedScore.Level))]
+    [XmlIgnore] public IQueryable<GameSubmittedScore> Scores { get; }
     #nullable restore
     
     public int SequentialId
@@ -44,6 +53,9 @@ public class GameLevel : RealmObject, INeedsPreparationBeforeSerialization, ISeq
     [Ignored] [XmlElement("npHandle")] public NameAndIcon? Handle { get; set; }
     
     [Ignored] [XmlElement("heartCount")] public int? HeartCount { get; set; }
+    
+    [Ignored] [XmlElement("playCount")] public int? TotalPlayCount { get; set; }
+    [Ignored] [XmlElement("uniquePlayCount")] public int? UniquePlayCount { get; set; }
 
     // Realm cant have IList types with setters? Fine, I'll play your game. ;p
     [Ignored]
@@ -63,7 +75,9 @@ public class GameLevel : RealmObject, INeedsPreparationBeforeSerialization, ISeq
     public void PrepareForSerialization()
     {
         this.HeartCount = this.FavouriteRelations.Count();
-        
+        this.TotalPlayCount = this.AllPlays.Count();
+        this.UniquePlayCount = this.UniquePlays.Count();
+
         if (this.Publisher != null)
         {
             this.Type = "user";
