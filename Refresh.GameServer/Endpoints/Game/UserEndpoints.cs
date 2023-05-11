@@ -4,8 +4,10 @@ using System.Xml.Serialization;
 using Bunkum.CustomHttpListener.Parsing;
 using Bunkum.HttpServer;
 using Bunkum.HttpServer.Endpoints;
+using Bunkum.HttpServer.Responses;
 using Newtonsoft.Json;
 using Refresh.GameServer.Database;
+using Refresh.GameServer.Services;
 using Refresh.GameServer.Types.Lists;
 using Refresh.GameServer.Types.UserData;
 
@@ -41,6 +43,20 @@ public class UserEndpoints : EndpointGroup
         {
             Users = users,
         };
+    }
+
+    [GameEndpoint("myFriends", Method.Get, ContentType.Xml)]
+    [NullStatusCode(HttpStatusCode.NotFound)]
+    public GameFriendsList? GetFriends(RequestContext context, GameDatabaseContext database,
+        GameUser user, FriendStorageService friendService)
+    {
+        List<GameUser>? friends = friendService.GetUsersFriends(user, database)?.ToList();
+        if (friends == null) return null;
+        
+        foreach (GameUser friend in friends)
+            friend.PrepareForSerialization();
+        
+        return new GameFriendsList(friends);
     }
 
     [GameEndpoint("updateUser", Method.Post, ContentType.Xml)]
