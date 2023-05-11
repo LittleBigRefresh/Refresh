@@ -3,7 +3,7 @@ using Bunkum.HttpServer;
 using Bunkum.HttpServer.Configuration;
 using Bunkum.HttpServer.Endpoints;
 using Newtonsoft.Json;
-using Refresh.GameServer.Middlewares;
+using static Refresh.GameServer.Endpoints.GameEndpointAttribute;
 
 namespace Refresh.GameServer.Endpoints;
 
@@ -30,7 +30,7 @@ public class AutodiscoverEndpoints : EndpointGroup
     [Authentication(false)]
     public DiscoverResponse Autodiscover(RequestContext context, BunkumConfig config) => new()
     {
-        Url = config.ExternalUrl + GameEndpointAttribute.BaseRoute,
+        Url = string.Concat(config.ExternalUrl, BaseRoute.AsSpan(0, BaseRoute.Length - 1)),
     };
 
 }
