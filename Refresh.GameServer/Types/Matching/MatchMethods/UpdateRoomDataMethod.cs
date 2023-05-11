@@ -16,7 +16,7 @@ public class UpdateRoomDataMethod : IMatchMethod
         GameDatabaseContext database, GameUser user, SerializedRoomData body)
     {
         GameRoom room = service.GetOrCreateRoomByPlayer(database, user);
-        if (room.HostId != user.UserId) return HttpStatusCode.Unauthorized;
+        if (room.HostId.Id != user.UserId) return HttpStatusCode.Unauthorized;
 
         if (body.RoomState != null) room.RoomState = body.RoomState.Value;
 

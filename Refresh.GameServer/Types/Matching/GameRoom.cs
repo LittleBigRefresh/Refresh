@@ -11,19 +11,25 @@ public class GameRoom
 {
     public GameRoom(GameUser host)
     {
-        this.PlayerIds.Add(host.UserId);
+        this.PlayerIds.Add(new GameRoomPlayer(host.Username, host.UserId));
     }
 
     [JsonProperty] public readonly ObjectId RoomId = ObjectId.GenerateNewId();
     
-    [JsonProperty] public readonly List<ObjectId> PlayerIds = new(4);
-    [JsonProperty] public ObjectId HostId => this.PlayerIds[0];
+    [JsonProperty] public readonly List<GameRoomPlayer> PlayerIds = new(4);
+    [JsonProperty] public GameRoomPlayer HostId => this.PlayerIds[0];
 
     public List<GameUser?> GetPlayers(GameDatabaseContext database) =>
-        this.PlayerIds.Select(i => database.GetUserByObjectId(i))
+        this.PlayerIds
+            .Where(i => i.Id != null)
+            .Select(i => database.GetUserByObjectId(i.Id))
             .ToList();
 
-    public GameUser? GetHost(GameDatabaseContext database) => database.GetUserByObjectId(this.PlayerIds[0]);
+    public GameUser? GetHost(GameDatabaseContext database)
+    {
+        if (this.PlayerIds[0].Id == null) return null;
+        return database.GetUserByObjectId(this.PlayerIds[0].Id);
+    }
 
     [JsonProperty("State"), JsonConverter(typeof(StringEnumConverter))]
     public RoomState RoomState;

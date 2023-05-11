@@ -1,11 +1,9 @@
-using System.Diagnostics;
 using Bunkum.HttpServer;
 using Bunkum.HttpServer.Services;
 using NotEnoughLogs;
 using System.Net;
 using System.Reflection;
 using Bunkum.HttpServer.Responses;
-using Newtonsoft.Json;
 using Refresh.GameServer.Database;
 using Refresh.GameServer.Types.Matching;
 using Refresh.GameServer.Types.Matching.MatchMethods;
@@ -18,9 +16,8 @@ public partial class MatchService : EndpointService
     private readonly List<IMatchMethod> _matchMethods = new();
 
     private readonly List<GameRoom> _rooms = new();
-
-    // unsure if this can be casted back into a list, prolly fine tho, we're not a library
-    public IReadOnlyCollection<GameRoom> Rooms => this._rooms.AsReadOnly();
+    
+    public IEnumerable<GameRoom> Rooms => this._rooms.AsReadOnly();
 
     public int TotalPlayers => this._rooms.SelectMany(r => r.PlayerIds).Count();
     public int TotalPlayersInPod => this._rooms
@@ -45,7 +42,8 @@ public partial class MatchService : EndpointService
         return room;
     }
 
-    public GameRoom? GetRoomByPlayer(GameDatabaseContext database, GameUser player) => this._rooms.FirstOrDefault(r => r.GetPlayers(database).Contains(player));
+    public GameRoom? GetRoomByPlayer(GameDatabaseContext database, GameUser player) 
+        => this._rooms.FirstOrDefault(r => r.GetPlayers(database).Contains(player));
 
     public override void Initialize()
     {
