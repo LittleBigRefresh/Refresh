@@ -5,6 +5,7 @@ using MongoDB.Bson;
 using Refresh.GameServer.Database;
 using Refresh.GameServer.Services;
 using Refresh.GameServer.Types.Legacy;
+using Refresh.GameServer.Types.Levels;
 using Refresh.GameServer.Types.Matching;
 using Refresh.GameServer.Types.UserData;
 
@@ -33,6 +34,18 @@ public class LegacyApiEndpoints : EndpointGroup
         if (user == null) return null;
         
         return LegacyGameUser.FromGameUser(user);
+    }
+
+    [LegacyApiEndpoint("slot/{id}")]
+    [Authentication(false)]
+    public LegacyGameLevel? GetLegacyLevel(RequestContext context, GameDatabaseContext database, int? id)
+    {
+        if (id == null) return null;
+
+        GameLevel? level = database.GetLevelById(id.Value);
+        if (level == null) return null;
+        
+        return LegacyGameLevel.FromGameLevel(level);
     }
 
     [LegacyApiEndpoint("user/{idStr}/status")]
