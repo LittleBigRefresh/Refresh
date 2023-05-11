@@ -16,7 +16,7 @@ public class SerializedRoomData
     public List<int>? Reservations { get; set; }
 
     [JsonProperty("NAT")]
-    public NatType? NatType { get; set; }
+    public List<NatType>? NatType { get; set; }
 
     // LBP has two of the same thing sometimes, have both properties to handle both cases
     [JsonProperty("Slot")]

@@ -19,8 +19,6 @@ public partial class MatchService // Parsing
 
         body = ReplaceHexValuesInStringWithIpAddresses(body);
 
-        body = NatFieldRegex().Replace(body, "\"NAT\":$1");
-
         return (method, body);
     }
 
@@ -52,7 +50,4 @@ public partial class MatchService // Parsing
         
         return $"{a}.{b}.{c}.{d}"; // combine bytes into IP address string
     }
-
-    [GeneratedRegex("\\\"NAT\\\":\\[(\\d)\\]")]
-    private static partial Regex NatFieldRegex();
 }
