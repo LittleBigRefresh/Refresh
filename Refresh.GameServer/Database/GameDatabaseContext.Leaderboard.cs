@@ -29,10 +29,10 @@ public partial class GameDatabaseContext // Leaderboard
     
     [UsedImplicitly] private record ScoreLevelWithPlayer(GameLevel level, GameUser player);
 
-    public IEnumerable<GameSubmittedScore> GetTopScoresForLevel(GameLevel level, int count, int skip, bool showDuplicates = false)
+    public IEnumerable<GameSubmittedScore> GetTopScoresForLevel(GameLevel level, int count, int skip, byte type, bool showDuplicates = false)
     {
         IEnumerable<GameSubmittedScore> scores = this._realm.All<GameSubmittedScore>()
-            .Where(s => s.Level == level)
+            .Where(s => s.Level == level && s.ScoreType == type)
             .OrderByDescending(s => s.Score)
             .AsEnumerable();
 
@@ -50,7 +50,7 @@ public partial class GameDatabaseContext // Leaderboard
         // this is probably REALLY fucking slow, and i probably shouldn't be trusted with LINQ anymore
 
         List<GameSubmittedScore> scores = this._realm.All<GameSubmittedScore>()
-            .Where(s => s.Level == score.Level)
+            .Where(s => s.Level == score.Level && s.ScoreType == score.ScoreType)
             .OrderByDescending(s => s.Score)
             .AsEnumerable()
             .ToList();

@@ -9,11 +9,12 @@ namespace Refresh.GameServer.Endpoints.Api;
 
 public class LeaderboardApiEndpoints : EndpointGroup
 {
-    [ApiEndpoint("scores/{id}")]
+    [ApiEndpoint("scores/{id}/{type}")]
     [Authentication(false)]
-    public List<GameSubmittedScore>? GetTopScoresForLevel(RequestContext context, GameDatabaseContext database, int? id)
+    public List<GameSubmittedScore>? GetTopScoresForLevel(RequestContext context, GameDatabaseContext database, int? id, int? type)
     {
         if (id == null) return null;
+        if (type == null) return null;
         
         GameLevel? level = database.GetLevelById(id.Value);
         if (level == null) return null;
@@ -23,7 +24,7 @@ public class LeaderboardApiEndpoints : EndpointGroup
         bool result = bool.TryParse(context.QueryString.Get("showAll") ?? "false", out bool showAll);
         if (!result) return null; // FIXME: Should return BadRequest.
 
-        return database.GetTopScoresForLevel(level, count, skip, showAll).ToList();
+        return database.GetTopScoresForLevel(level, count, skip, (byte)type, showAll).ToList();
     }
 
     [ApiEndpoint("score/{uuid}")]

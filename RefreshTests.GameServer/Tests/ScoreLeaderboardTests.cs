@@ -30,7 +30,7 @@ public class ScoreLeaderboardTests : GameServerTest
 
         context.Database.Refresh();
 
-        List<GameSubmittedScore> scores = context.Database.GetTopScoresForLevel(level, 1, 0).ToList();
+        List<GameSubmittedScore> scores = context.Database.GetTopScoresForLevel(level, 1, 0, 1).ToList();
         Assert.That(scores, Has.Count.EqualTo(1));
     }
     
@@ -44,8 +44,8 @@ public class ScoreLeaderboardTests : GameServerTest
         GameUser user = context.CreateUser();
         GameLevel level = context.CreateLevel(user);
 
-        context.FillLeaderboard(level, leaderboardCount);
-        GameSubmittedScore score = context.SubmitScore(submittedScore, level, user);
+        context.FillLeaderboard(level, leaderboardCount, 1);
+        GameSubmittedScore score = context.SubmitScore(submittedScore, 1, level, user);
 
         List<ObjectId> scores = context.Database.GetRankedScoresAroundScore(score, count)!
             .Select(s => s.score.ScoreId)
@@ -72,5 +72,24 @@ public class ScoreLeaderboardTests : GameServerTest
     {
         this.ScoreSegmentTest(5, 0, 4, 6);
         this.ScoreSegmentTest(5, 2, 4, 1);
+    }
+
+    [Test]
+    public void SeparatesLeaderboardsByType()
+    {
+        using TestContext context = this.GetServer();
+
+        GameUser user1 = context.CreateUser();
+        GameUser user2 = context.CreateUser();
+        
+        GameLevel level = context.CreateLevel(user1);
+        
+        GameSubmittedScore score1 = context.SubmitScore(0, 1, level, user1);
+        GameSubmittedScore score2 = context.SubmitScore(0, 2, level, user2);
+        Assert.Multiple(() =>
+        {
+            Assert.That(context.Database.GetTopScoresForLevel(level, 1, 0, 1), Does.Not.Contain(score2));
+            Assert.That(context.Database.GetTopScoresForLevel(level, 1, 0, 2), Does.Not.Contain(score1));
+        });
     }
 }

@@ -44,15 +44,16 @@ public class LeaderboardEndpoints : EndpointGroup
         return new Response(GameScoreSegmentList.FromSubmittedEnumerable(scores), ContentType.Xml);
     }
 
-    [GameEndpoint("topscores/user/{id}/{mode}", ContentType.Xml)]
-    public GameScoreList? GetTopScoresForLevel(RequestContext context, GameDatabaseContext database, int? id, int? mode)
+    [GameEndpoint("topscores/user/{id}/{type}", ContentType.Xml)]
+    public GameScoreList? GetTopScoresForLevel(RequestContext context, GameDatabaseContext database, int? id, int? type)
     {
         if (id == null) return null;
+        if (type == null) return null;
         
         GameLevel? level = database.GetLevelById(id.Value);
         if (level == null) return null;
         
         (int skip, int count) = context.GetPageData();
-        return GameScoreList.FromSubmittedEnumerable(database.GetTopScoresForLevel(level, count, skip));
+        return GameScoreList.FromSubmittedEnumerable(database.GetTopScoresForLevel(level, count, skip, (byte)type));
     }
 }

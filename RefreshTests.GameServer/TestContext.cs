@@ -87,22 +87,22 @@ public class TestContext : IDisposable
         return level;
     }
 
-    public void FillLeaderboard(GameLevel level, int count)
+    public void FillLeaderboard(GameLevel level, int count, byte type)
     {
         for (byte i = 0; i < count; i++)
         {
             GameUser scoreUser = this.Database.CreateUser("score" + i);
-            this.SubmitScore(i, level, scoreUser);
+            this.SubmitScore(i, type, level, scoreUser);
         }
     }
 
-    public GameSubmittedScore SubmitScore(int score, GameLevel level, GameUser user)
+    public GameSubmittedScore SubmitScore(int score, byte type, GameLevel level, GameUser user)
     {
         GameScore scoreObject = new()
         {
             Host = true,
             Score = score,
-            ScoreType = 1,
+            ScoreType = type,
         };
         
         GameSubmittedScore? submittedScore = this.Database.SubmitScore(scoreObject, user, level);
