@@ -1,4 +1,3 @@
-using System.Diagnostics.CodeAnalysis;
 using Realms;
 using Refresh.GameServer.Authentication;
 using Refresh.GameServer.Types;
@@ -44,7 +43,14 @@ public class GameDatabaseProvider : RealmDatabaseProvider<GameDatabaseContext>
         typeof(ScreenRect),
         typeof(Slot),
     };
-    
+
+    protected override void Warmup()
+    {
+        using GameDatabaseContext context = this.GetContext();
+        _ = context.GetTotalLevelCount();
+        base.Warmup();
+    }
+
     protected override void Migrate(Migration migration, ulong oldVersion)
     {
         // Get the current unix timestamp for when we add timestamps to objects
