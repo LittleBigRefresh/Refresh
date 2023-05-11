@@ -34,8 +34,8 @@ public class MatchingTests : GameServerTest
             Debug.Assert(room1 != null);
             Debug.Assert(room2 != null);
             
-            Assert.That(room1.PlayerIds, Does.Not.Contain(user2.UserId));
-            Assert.That(room2.PlayerIds, Does.Not.Contain(user1.UserId));
+            Assert.That(room1.PlayerIds.Select(i => i.Id), Does.Not.Contain(user2.UserId));
+            Assert.That(room2.PlayerIds.Select(i => i.Id), Does.Not.Contain(user1.UserId));
         });
     }
     
