@@ -17,7 +17,7 @@ public class GameRoom
     [JsonProperty] public readonly ObjectId RoomId = ObjectId.GenerateNewId();
     
     [JsonProperty] public readonly List<GameRoomPlayer> PlayerIds = new(4);
-    [JsonProperty] public GameRoomPlayer HostId => this.PlayerIds[0];
+    public GameRoomPlayer HostId => this.PlayerIds[0];
 
     public List<GameUser?> GetPlayers(GameDatabaseContext database) =>
         this.PlayerIds
