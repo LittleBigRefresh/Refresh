@@ -46,7 +46,7 @@ public class UserEndpoints : EndpointGroup
     }
 
     [GameEndpoint("myFriends", Method.Get, ContentType.Xml)]
-    [NullStatusCode(HttpStatusCode.NotFound)]
+    [NullStatusCode(NotFound)]
     public GameFriendsList? GetFriends(RequestContext context, GameDatabaseContext database,
         GameUser user, FriendStorageService friendService)
     {
@@ -60,7 +60,7 @@ public class UserEndpoints : EndpointGroup
     }
 
     [GameEndpoint("updateUser", Method.Post, ContentType.Xml)]
-    [NullStatusCode(HttpStatusCode.BadRequest)]
+    [NullStatusCode(BadRequest)]
     public string? UpdateUser(RequestContext context, GameDatabaseContext database, GameUser user, string body)
     {
         UpdateUserData? data = null;
@@ -96,7 +96,7 @@ public class UserEndpoints : EndpointGroup
     }
 
     [GameEndpoint("update_my_pins", Method.Post, ContentType.Json)]
-    [NullStatusCode(HttpStatusCode.BadRequest)]
+    [NullStatusCode(BadRequest)]
     public string? UpdatePins(RequestContext context, GameDatabaseContext database, GameUser user, Stream body)
     {
         JsonSerializer serializer = new();

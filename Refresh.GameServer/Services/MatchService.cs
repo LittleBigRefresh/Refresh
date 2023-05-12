@@ -86,7 +86,7 @@ public partial class MatchService : EndpointService
     public Response ExecuteMethod(string methodStr, SerializedRoomData roomData, GameDatabaseContext database, GameUser user)
     {
         IMatchMethod? method = this.TryGetMatchMethod(methodStr);
-        if (method == null) return HttpStatusCode.BadRequest;
+        if (method == null) return BadRequest;
 
         return method.Execute(this, this.Logger, database, user, roomData);
     }

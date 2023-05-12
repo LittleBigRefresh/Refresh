@@ -24,7 +24,7 @@ public class NotFoundLogMiddleware : IMiddleware
     {
         next(); // Handle the request so we can get the ResponseCode
 
-        if (context.ResponseCode != HttpStatusCode.NotFound) return;
+        if (context.ResponseCode != NotFound) return;
         
         if(!File.Exists(EndpointFile)) File.WriteAllText(EndpointFile, string.Empty);
         if (this._unimplementedEndpoints.Any(e => e.Split('?')[0] == context.Uri.AbsolutePath)) return;

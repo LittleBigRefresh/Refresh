@@ -35,7 +35,7 @@ public class MetadataEndpoints : EndpointGroup
             .Where(u => u != null)!;
 
         friendService.SetUsersFriends(user, friends);
-        return HttpStatusCode.OK;
+        return OK;
     }
 
     [XmlType("privacySettings")]
@@ -80,7 +80,7 @@ public class MetadataEndpoints : EndpointGroup
         });
 
     [GameEndpoint("t_conf")]
-    [NullStatusCode(HttpStatusCode.Gone)]
+    [NullStatusCode(Gone)]
     public string? TelemetryConfig(RequestContext context) 
     {
         bool created = TelemetryConfigFile.IsValueCreated;
@@ -104,7 +104,7 @@ public class MetadataEndpoints : EndpointGroup
         });
 
     [GameEndpoint("promotions")]
-    [NullStatusCode(HttpStatusCode.OK)]
+    [NullStatusCode(OK)]
     public string? Promotions(RequestContext context) 
     {
         bool created = PromotionsFile.IsValueCreated;

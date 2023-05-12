@@ -1,4 +1,3 @@
-using System.Net;
 using Bunkum.CustomHttpListener.Parsing;
 using Bunkum.HttpServer;
 using Bunkum.HttpServer.Endpoints;
@@ -43,12 +42,12 @@ public class PublishEndpoints : EndpointGroup
                 return new Response(newBody, ContentType.Xml);
             }
 
-            return HttpStatusCode.BadRequest;
+            return BadRequest;
         }
 
         body.Publisher = user;
 
-        if (!database.AddLevel(body)) return HttpStatusCode.BadRequest;
+        if (!database.AddLevel(body)) return BadRequest;
 
         database.CreateLevelUploadEvent(user, body);
             
@@ -60,14 +59,14 @@ public class PublishEndpoints : EndpointGroup
     public Response DeleteLevel(RequestContext context, GameUser user, GameDatabaseContext database, string idStr)
     {
         int.TryParse(idStr, out int id);
-        if (id == default) return HttpStatusCode.BadRequest;
+        if (id == default) return BadRequest;
 
         GameLevel? level = database.GetLevelById(id);
-        if (level == null) return HttpStatusCode.NotFound;
+        if (level == null) return NotFound;
 
-        if (level.Publisher?.UserId != user.UserId) return HttpStatusCode.Unauthorized;
+        if (level.Publisher?.UserId != user.UserId) return Unauthorized;
 
         database.DeleteLevel(level);
-        return HttpStatusCode.OK;
+        return OK;
     }
 }

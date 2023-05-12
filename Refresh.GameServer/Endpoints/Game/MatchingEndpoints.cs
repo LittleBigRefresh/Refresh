@@ -30,7 +30,7 @@ public class MatchingEndpoints : EndpointGroup
         if (roomData == null)
         {
             context.Logger.LogWarning(BunkumContext.Matching, "Match data was bad and unserializable, rejecting."); // Already logged data
-            return HttpStatusCode.BadRequest;
+            return BadRequest;
         }
         
         return service.ExecuteMethod(method, roomData, database, user);

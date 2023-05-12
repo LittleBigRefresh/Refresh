@@ -12,7 +12,7 @@ namespace Refresh.GameServer.Endpoints.Game;
 public class ActivityEndpoints : EndpointGroup
 {
     [GameEndpoint("stream", ContentType.Xml)]
-    [NullStatusCode(HttpStatusCode.BadRequest)]
+    [NullStatusCode(BadRequest)]
     public ActivityPage? GetRecentActivity(RequestContext context, GameDatabaseContext database)
     {
         long timestamp = 0;

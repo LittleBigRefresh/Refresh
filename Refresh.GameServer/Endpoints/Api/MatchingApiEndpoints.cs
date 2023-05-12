@@ -14,7 +14,7 @@ public class MatchingApiEndpoints : EndpointGroup
 {
     [ApiEndpoint("room/username/{username}")]
     [Authentication(false)]
-    [NullStatusCode(HttpStatusCode.NotFound)]
+    [NullStatusCode(NotFound)]
     public GameRoom? GetRoomByUsername(RequestContext context, MatchService service, GameDatabaseContext database,
         string username)
     {
@@ -26,7 +26,7 @@ public class MatchingApiEndpoints : EndpointGroup
     
     [ApiEndpoint("room/uuid/{uuid}")]
     [Authentication(false)]
-    [NullStatusCode(HttpStatusCode.NotFound)]
+    [NullStatusCode(NotFound)]
     public GameRoom? GetRoomByUserUuid(RequestContext context, MatchService service, GameDatabaseContext database,
         string uuid)
     {
@@ -38,7 +38,7 @@ public class MatchingApiEndpoints : EndpointGroup
     
     [ApiEndpoint("room/{uuid}")]
     [Authentication(false)]
-    [NullStatusCode(HttpStatusCode.NotFound)]
+    [NullStatusCode(NotFound)]
     public GameRoom? GetRoomByUuid(RequestContext context, MatchService service, string uuid)
     {
         bool parsed = ObjectId.TryParse(uuid, out ObjectId objectId);

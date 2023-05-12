@@ -30,7 +30,7 @@ public class LevelEndpoints : EndpointGroup
         => this.GetLevels(context, database, categories, database.GetUserByUsername(username), route);
 
     [GameEndpoint("s/user/{idStr}", ContentType.Xml)]
-    [NullStatusCode(HttpStatusCode.NotFound)]
+    [NullStatusCode(NotFound)]
     public GameLevel? LevelById(RequestContext context, GameDatabaseContext database, string idStr)
     {
         int.TryParse(idStr, out int id);
@@ -40,7 +40,7 @@ public class LevelEndpoints : EndpointGroup
     }
 
     [GameEndpoint("slotList", ContentType.Xml)]
-    [NullStatusCode(HttpStatusCode.BadRequest)]
+    [NullStatusCode(BadRequest)]
     public GameLevelList? GetMultipleLevels(RequestContext context, GameDatabaseContext database)
     {
         string[]? levelIds = context.QueryString.GetValues("s");

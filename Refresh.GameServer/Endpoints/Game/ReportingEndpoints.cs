@@ -15,6 +15,6 @@ public class ReportingEndpoints : EndpointGroup
     {
         database.AddGriefReport(body);
         
-        return HttpStatusCode.OK;
+        return OK;
     }
 }

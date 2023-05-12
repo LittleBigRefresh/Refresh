@@ -16,7 +16,7 @@ public class UpdateRoomDataMethod : IMatchMethod
         GameDatabaseContext database, GameUser user, SerializedRoomData body)
     {
         GameRoom room = service.GetOrCreateRoomByPlayer(user);
-        if (room.HostId.Id != user.UserId) return HttpStatusCode.Unauthorized;
+        if (room.HostId.Id != user.UserId) return Unauthorized;
 
         if (body.RoomState != null) room.RoomState = body.RoomState.Value;
 
@@ -27,7 +27,7 @@ public class UpdateRoomDataMethod : IMatchMethod
             if (slot.Count != 2)
             {
                 logger.LogWarning(BunkumContext.Matching, "Received request with invalid amount of slots, rejecting.");
-                return HttpStatusCode.BadRequest;
+                return BadRequest;
             }
 
             room.LevelType = (RoomSlotType)slot[0];
@@ -40,6 +40,6 @@ public class UpdateRoomDataMethod : IMatchMethod
             room.RoomMood = (RoomMood)mood;
         }
 
-        return HttpStatusCode.OK;
+        return OK;
     }
 }

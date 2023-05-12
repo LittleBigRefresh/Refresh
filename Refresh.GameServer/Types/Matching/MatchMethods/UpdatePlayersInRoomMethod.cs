@@ -15,7 +15,7 @@ public class UpdatePlayersInRoomMethod : IMatchMethod
     public Response Execute(MatchService service, LoggerContainer<BunkumContext> logger, GameDatabaseContext database, GameUser user,
         SerializedRoomData body)
     {
-        if (body.Players == null) return HttpStatusCode.BadRequest;
+        if (body.Players == null) return BadRequest;
         GameRoom room = service.GetOrCreateRoomByPlayer(user);
 
         foreach (string playerUsername in body.Players)
@@ -28,6 +28,6 @@ public class UpdatePlayersInRoomMethod : IMatchMethod
                 service.AddPlayerToRoom(playerUsername, room);
         }
 
-        return HttpStatusCode.OK;
+        return OK;
     }
 }

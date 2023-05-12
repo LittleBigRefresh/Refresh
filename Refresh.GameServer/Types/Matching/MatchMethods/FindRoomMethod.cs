@@ -18,7 +18,7 @@ public class FindRoomMethod : IMatchMethod
         SerializedRoomData body)
     {
         GameRoom? usersRoom = service.GetRoomByPlayer(user);
-        if (usersRoom == null) return HttpStatusCode.BadRequest; // user should already have a room.
+        if (usersRoom == null) return BadRequest; // user should already have a room.
 
         List<GameRoom> rooms = service.Rooms.Where(r => r.RoomId != usersRoom.RoomId)
             .OrderByDescending(r => r.RoomMood)
@@ -26,7 +26,7 @@ public class FindRoomMethod : IMatchMethod
 
         if (rooms.Count <= 0)
         {
-            return HttpStatusCode.NotFound; // TODO: update this response, shouldn't be 404
+            return NotFound; // TODO: update this response, shouldn't be 404
         }
 
         GameRoom room = rooms[0];

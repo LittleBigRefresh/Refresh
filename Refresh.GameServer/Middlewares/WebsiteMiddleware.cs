@@ -37,7 +37,7 @@ public class WebsiteMiddleware : IMiddleware
         string mime = MimeMapping.GetValueOrDefault(ext, "application/octet-stream");
         
         context.ResponseStream.Position = 0;
-        context.ResponseCode = HttpStatusCode.OK;
+        context.ResponseCode = OK;
         context.ResponseHeaders["Content-Type"] = mime;
         context.ResponseHeaders["Cache-Control"] = "max-age=43200";
         
