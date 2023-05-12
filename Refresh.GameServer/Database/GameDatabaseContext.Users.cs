@@ -2,7 +2,6 @@ using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
 using JetBrains.Annotations;
 using MongoDB.Bson;
-using Refresh.GameServer.Authentication;
 using Refresh.GameServer.Types.UserData;
 
 namespace Refresh.GameServer.Database;

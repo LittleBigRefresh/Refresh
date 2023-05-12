@@ -1,8 +1,6 @@
 using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
 using Bunkum.CustomHttpListener;
-using Bunkum.CustomHttpListener.Listeners;
-using Bunkum.CustomHttpListener.Request;
 using Bunkum.HttpServer;
 using Bunkum.HttpServer.Authentication;
 using Bunkum.HttpServer.RateLimit;

@@ -1,4 +1,3 @@
-using System.Net;
 using System.Xml.Serialization;
 using Bunkum.CustomHttpListener.Parsing;
 using Bunkum.HttpServer;

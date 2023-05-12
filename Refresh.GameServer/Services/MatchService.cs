@@ -1,7 +1,6 @@
 using Bunkum.HttpServer;
 using Bunkum.HttpServer.Services;
 using NotEnoughLogs;
-using System.Net;
 using System.Reflection;
 using Bunkum.HttpServer.Responses;
 using Refresh.GameServer.Database;

@@ -1,4 +1,3 @@
-using System.Net;
 using Bunkum.CustomHttpListener.Request;
 using Bunkum.HttpServer;
 using Bunkum.HttpServer.Database;

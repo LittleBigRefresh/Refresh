@@ -1,7 +1,6 @@
 using System.Diagnostics;
 using System.Security.Cryptography;
 using Bunkum.CustomHttpListener.Request;
-using Bunkum.HttpServer;
 using Bunkum.HttpServer.Database;
 using Bunkum.HttpServer.Endpoints.Middlewares;
 using Refresh.GameServer.Extensions;

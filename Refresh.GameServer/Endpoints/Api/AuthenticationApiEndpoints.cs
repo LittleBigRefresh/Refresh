@@ -1,4 +1,3 @@
-using System.Net;
 using System.Text.RegularExpressions;
 using Bunkum.CustomHttpListener.Parsing;
 using Bunkum.HttpServer;

@@ -1,5 +1,4 @@
 using System.Xml.Serialization;
-using Refresh.GameServer.Types.Levels;
 using Refresh.GameServer.Types.Levels.Categories;
 
 namespace Refresh.GameServer.Types.Lists;

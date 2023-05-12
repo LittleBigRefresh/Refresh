@@ -1,4 +1,3 @@
-using System.Net;
 using Bunkum.HttpServer;
 using Bunkum.HttpServer.Responses;
 using NotEnoughLogs;
