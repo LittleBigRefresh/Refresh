@@ -78,6 +78,9 @@ public partial class GameDatabaseContext // Users
             }
         });
     }
+    
+    [Pure]
+    public int GetTotalUserCount() => this._realm.All<GameUser>().Count();
 
     public void UpdateUserPins(GameUser user, UserPins pinsUpdate) 
     {
