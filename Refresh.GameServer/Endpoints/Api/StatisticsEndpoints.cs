@@ -16,6 +16,7 @@ public class StatisticsApiEndpoints : EndpointGroup
             TotalLevels = database.GetTotalLevelCount(),
             TotalUsers = database.GetTotalUserCount(),
             CurrentRoomCount = match.Rooms.Count(),
+            CurrentIngamePlayersCount = match.TotalPlayers,
         };
 
     [JsonObject]
@@ -24,5 +25,6 @@ public class StatisticsApiEndpoints : EndpointGroup
         public int TotalLevels { get; set; }
         public int TotalUsers { get; set; }
         public int CurrentRoomCount { get; set; }
+        public int CurrentIngamePlayersCount { get; set; }
     }
 }
