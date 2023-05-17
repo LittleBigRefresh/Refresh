@@ -13,14 +13,19 @@ namespace Refresh.GameServer.Endpoints.Game.Levels;
 public class LevelEndpoints : EndpointGroup
 {
     [GameEndpoint("slots/{route}", ContentType.Xml)]
-    public GameMinimalLevelList GetLevels(RequestContext context, GameDatabaseContext database, CategoryService categories, GameUser? user, string route)
+    [Authentication(false)]
+    public GameMinimalLevelList? GetLevels(RequestContext context, GameDatabaseContext database, CategoryService categories, GameUser? user, string route)
     {
         (int skip, int count) = context.GetPageData();
-        
-        return new GameMinimalLevelList(categories.Categories
+
+        IEnumerable<GameMinimalLevel>? category = categories.Categories
             .FirstOrDefault(c => c.GameRoute.StartsWith(route))?
             .Fetch(context, skip, count, database, user)?
-            .Select(GameMinimalLevel.FromGameLevel), database.GetTotalLevelCount());
+            .Select(GameMinimalLevel.FromGameLevel);
+
+        if (category == null) return null;
+        
+        return new GameMinimalLevelList(category, database.GetTotalLevelCount());
         // TODO: proper level count
     }
 
