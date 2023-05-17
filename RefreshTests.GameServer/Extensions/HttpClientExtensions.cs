@@ -1,5 +1,4 @@
 using Newtonsoft.Json;
-using Refresh.GameServer.Types.Activity.SerializedEvents;
 
 namespace RefreshTests.GameServer.Extensions;
 

@@ -1,4 +1,3 @@
-using System.Net;
 using System.Xml.Serialization;
 using Bunkum.CustomHttpListener.Parsing;
 using Bunkum.HttpServer;
@@ -14,7 +13,7 @@ namespace Refresh.GameServer.Endpoints.Game.Handshake;
 public class AuthenticationEndpoints : EndpointGroup
 {
     [GameEndpoint("login", Method.Post, ContentType.Xml)]
-    [NullStatusCode(HttpStatusCode.Forbidden)]
+    [NullStatusCode(Forbidden)]
     [Authentication(false)]
     public LoginResponse? Authenticate(RequestContext context, GameDatabaseContext database, Stream body)
     {
@@ -76,14 +75,14 @@ public class AuthenticationEndpoints : EndpointGroup
         
         // we shouldn't ever hit this but handle it anyways
         if (token == null) 
-            return new Response("Token was somehow null", ContentType.Plaintext, HttpStatusCode.InternalServerError);
+            return new Response("Token was somehow null", ContentType.Plaintext, InternalServerError);
 
         bool result = database.RevokeTokenByTokenData(token, TokenType.Game);
 
         if (!result)
-            return HttpStatusCode.Unauthorized;
+            return Unauthorized;
 
-        return HttpStatusCode.OK;
+        return OK;
     }
 }
 

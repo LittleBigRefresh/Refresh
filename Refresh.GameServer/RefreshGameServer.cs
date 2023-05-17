@@ -1,8 +1,6 @@
 using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
 using Bunkum.CustomHttpListener;
-using Bunkum.CustomHttpListener.Listeners;
-using Bunkum.CustomHttpListener.Request;
 using Bunkum.HttpServer;
 using Bunkum.HttpServer.Authentication;
 using Bunkum.HttpServer.RateLimit;
@@ -11,6 +9,7 @@ using Refresh.GameServer.Authentication;
 using Refresh.GameServer.Configuration;
 using Refresh.GameServer.Database;
 using Refresh.GameServer.Middlewares;
+using Refresh.GameServer.Services;
 using Refresh.GameServer.Types.Levels.Categories;
 using Refresh.GameServer.Types.UserData;
 
@@ -68,6 +67,8 @@ public class RefreshGameServer
     {
         this._server.AddRateLimitService(new RateLimitSettings(60, 200, 30));
         this._server.AddService<CategoryService>();
+        this._server.AddService<FriendStorageService>();
+        this._server.AddService<MatchService>();
     }
 
     public Task StartAndBlockAsync()

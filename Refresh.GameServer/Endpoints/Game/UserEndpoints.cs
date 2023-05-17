@@ -1,11 +1,11 @@
 using System.Diagnostics;
-using System.Net;
 using System.Xml.Serialization;
 using Bunkum.CustomHttpListener.Parsing;
 using Bunkum.HttpServer;
 using Bunkum.HttpServer.Endpoints;
 using Newtonsoft.Json;
 using Refresh.GameServer.Database;
+using Refresh.GameServer.Services;
 using Refresh.GameServer.Types.Lists;
 using Refresh.GameServer.Types.UserData;
 
@@ -43,8 +43,22 @@ public class UserEndpoints : EndpointGroup
         };
     }
 
+    [GameEndpoint("myFriends", Method.Get, ContentType.Xml)]
+    [NullStatusCode(NotFound)]
+    public GameFriendsList? GetFriends(RequestContext context, GameDatabaseContext database,
+        GameUser user, FriendStorageService friendService)
+    {
+        List<GameUser>? friends = friendService.GetUsersFriends(user, database)?.ToList();
+        if (friends == null) return null;
+        
+        foreach (GameUser friend in friends)
+            friend.PrepareForSerialization();
+        
+        return new GameFriendsList(friends);
+    }
+
     [GameEndpoint("updateUser", Method.Post, ContentType.Xml)]
-    [NullStatusCode(HttpStatusCode.BadRequest)]
+    [NullStatusCode(BadRequest)]
     public string? UpdateUser(RequestContext context, GameDatabaseContext database, GameUser user, string body)
     {
         UpdateUserData? data = null;
@@ -80,7 +94,7 @@ public class UserEndpoints : EndpointGroup
     }
 
     [GameEndpoint("update_my_pins", Method.Post, ContentType.Json)]
-    [NullStatusCode(HttpStatusCode.BadRequest)]
+    [NullStatusCode(BadRequest)]
     public string? UpdatePins(RequestContext context, GameDatabaseContext database, GameUser user, Stream body)
     {
         JsonSerializer serializer = new();

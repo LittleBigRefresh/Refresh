@@ -5,7 +5,7 @@ using Refresh.GameServer.Types.UserData;
 namespace Refresh.GameServer.Types.Relations;
 #nullable disable
 
-public class FavouriteLevelRelation : RealmObject
+public partial class FavouriteLevelRelation : IRealmObject
 {
     public GameLevel Level { get; set; }
     public GameUser User { get; set; }

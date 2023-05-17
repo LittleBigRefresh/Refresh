@@ -1,4 +1,3 @@
-using System.Net;
 using Bunkum.CustomHttpListener.Parsing;
 using Bunkum.HttpServer;
 using Bunkum.HttpServer.Endpoints;
@@ -17,14 +16,14 @@ public class CommentEndpoints : EndpointGroup
     public Response PostProfileComment(RequestContext context, GameDatabaseContext database, string username, GameComment body, GameUser user)
     {
         GameUser? profile = database.GetUserByUsername(username);
-        if (profile == null) return HttpStatusCode.NotFound;
+        if (profile == null) return NotFound;
         
         database.PostCommentToProfile(profile, user, body.Content);
-        return HttpStatusCode.OK;
+        return OK;
     }
 
     [GameEndpoint("userComments/{username}", ContentType.Xml)]
-    [NullStatusCode(HttpStatusCode.NotFound)]
+    [NullStatusCode(NotFound)]
     public GameCommentList? GetProfileComments(RequestContext context, GameDatabaseContext database, string username)
     {
         GameUser? profile = database.GetUserByUsername(username);

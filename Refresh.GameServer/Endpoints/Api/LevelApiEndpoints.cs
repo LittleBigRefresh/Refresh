@@ -1,4 +1,3 @@
-using System.Net;
 using Bunkum.HttpServer;
 using Bunkum.HttpServer.Endpoints;
 using Refresh.GameServer.Database;
@@ -13,7 +12,7 @@ public class LevelApiEndpoints : EndpointGroup
 {
     [ApiEndpoint("levels/{route}")]
     [Authentication(false)]
-    [NullStatusCode(HttpStatusCode.NotFound)]
+    [NullStatusCode(NotFound)]
     public IEnumerable<GameLevel>? GetLevels(RequestContext context, GameDatabaseContext database, CategoryService categories, GameUser? user, string route)
     {
         (int skip, int count) = context.GetPageData(true);

@@ -8,8 +8,21 @@ using Refresh.GameServer.Types.UserData.Leaderboard;
 
 namespace RefreshTests.GameServer;
 
-public record TestContext(TestRefreshGameServer Server, GameDatabaseContext Database, HttpClient Http, DirectHttpListener Listener)
+public class TestContext : IDisposable
 {
+    public Lazy<TestRefreshGameServer> Server { get; }
+    public GameDatabaseContext Database { get; }
+    public HttpClient Http { get; }
+    private DirectHttpListener Listener { get; }
+    
+    public TestContext(Lazy<TestRefreshGameServer> server, GameDatabaseContext database, HttpClient http, DirectHttpListener listener)
+    {
+        this.Server = server;
+        this.Database = database;
+        this.Http = http;
+        this.Listener = listener;
+    }
+
     private int _users;
     private int UserIncrement => this._users++;
 
@@ -74,27 +87,36 @@ public record TestContext(TestRefreshGameServer Server, GameDatabaseContext Data
         return level;
     }
 
-    public void FillLeaderboard(GameLevel level, int count)
+    public void FillLeaderboard(GameLevel level, int count, byte type)
     {
         for (byte i = 0; i < count; i++)
         {
             GameUser scoreUser = this.Database.CreateUser("score" + i);
-            this.SubmitScore(i, level, scoreUser);
+            this.SubmitScore(i, type, level, scoreUser);
         }
     }
 
-    public GameSubmittedScore SubmitScore(int score, GameLevel level, GameUser user)
+    public GameSubmittedScore SubmitScore(int score, byte type, GameLevel level, GameUser user)
     {
         GameScore scoreObject = new()
         {
             Host = true,
             Score = score,
-            ScoreType = 1,
+            ScoreType = type,
         };
         
         GameSubmittedScore? submittedScore = this.Database.SubmitScore(scoreObject, user, level);
         Assert.That(submittedScore, Is.Not.Null);
 
         return submittedScore!;
+    }
+
+    public void Dispose()
+    {
+        this.Database.Dispose();
+        this.Http.Dispose();
+        this.Listener.Dispose();
+        
+        GC.SuppressFinalize(this);
     }
 }

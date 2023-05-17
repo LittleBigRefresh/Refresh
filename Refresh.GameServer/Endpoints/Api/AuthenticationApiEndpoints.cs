@@ -1,4 +1,3 @@
-using System.Net;
 using System.Text.RegularExpressions;
 using Bunkum.CustomHttpListener.Parsing;
 using Bunkum.HttpServer;
@@ -31,7 +30,7 @@ public partial class AuthenticationApiEndpoints : EndpointGroup
         GameUser? user = database.GetUserByUsername(body.Username);
         if (user == null)
         {
-            return new Response(new ApiErrorResponse("The username or password was incorrect."), ContentType.Json, HttpStatusCode.Forbidden);
+            return new Response(new ApiErrorResponse("The username or password was incorrect."), ContentType.Json, Forbidden);
         }
 
         // if this is a legacy user, have them create a password on login
@@ -45,7 +44,7 @@ public partial class AuthenticationApiEndpoints : EndpointGroup
                 ResetToken = resetToken.TokenData,
             };
 
-            return new Response(resetResp, ContentType.Json, HttpStatusCode.Unauthorized);
+            return new Response(resetResp, ContentType.Json, Unauthorized);
         }
 
         if (BC.PasswordNeedsRehash(user.PasswordBcrypt, WorkFactor))
@@ -55,7 +54,7 @@ public partial class AuthenticationApiEndpoints : EndpointGroup
 
         if (!BC.Verify(body.PasswordSha512, user.PasswordBcrypt))
         {
-            return new Response(new ApiErrorResponse("The username or password was incorrect."), ContentType.Json, HttpStatusCode.Forbidden);
+            return new Response(new ApiErrorResponse("The username or password was incorrect."), ContentType.Json, Forbidden);
         }
 
         Token token = database.GenerateTokenForUser(user, TokenType.Api, TokenGame.Website, TokenPlatform.Website);
@@ -75,18 +74,18 @@ public partial class AuthenticationApiEndpoints : EndpointGroup
     public Response ResetPassword(RequestContext context, GameDatabaseContext database, ApiResetPasswordRequest body)
     {
         GameUser? user = database.GetUserFromTokenData(body.ResetToken, TokenType.PasswordReset);
-        if (user == null) return HttpStatusCode.Unauthorized;
+        if (user == null) return Unauthorized;
 
         if (body.PasswordSha512.Length != 128 || !Sha512Regex().IsMatch(body.PasswordSha512))
             return new Response("Password is definitely not SHA512. Please hash the password - it'll work out better for both of us.",
-                ContentType.Plaintext, HttpStatusCode.BadRequest);
+                ContentType.Plaintext, BadRequest);
         
         string? passwordBcrypt = BC.HashPassword(body.PasswordSha512, WorkFactor);
-        if (passwordBcrypt == null) return HttpStatusCode.InternalServerError;
+        if (passwordBcrypt == null) return InternalServerError;
 
         database.SetUserPassword(user, passwordBcrypt);
 
-        return HttpStatusCode.OK;
+        return OK;
     }
 
     [ApiEndpoint("goodbye", Method.Post)]
@@ -95,8 +94,8 @@ public partial class AuthenticationApiEndpoints : EndpointGroup
     {
         bool success = database.RevokeTokenByTokenData(context.RequestHeaders["Authorization"], TokenType.Api);
 
-        if (success) return HttpStatusCode.OK;
-        return HttpStatusCode.Unauthorized;
+        if (success) return OK;
+        return Unauthorized;
     }
 }
 

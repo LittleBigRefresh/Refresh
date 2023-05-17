@@ -1,4 +1,3 @@
-using System.Net;
 using Bunkum.CustomHttpListener.Parsing;
 using Bunkum.HttpServer;
 using Bunkum.HttpServer.Endpoints;
@@ -15,6 +14,6 @@ public class ReportingEndpoints : EndpointGroup
     {
         database.AddGriefReport(body);
         
-        return HttpStatusCode.OK;
+        return OK;
     }
 }

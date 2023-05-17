@@ -2,7 +2,6 @@ using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
 using JetBrains.Annotations;
 using MongoDB.Bson;
-using Refresh.GameServer.Authentication;
 using Refresh.GameServer.Types.UserData;
 
 namespace Refresh.GameServer.Database;
@@ -30,6 +29,14 @@ public partial class GameDatabaseContext // Users
         if (username == null) return null;
         return this._realm.All<GameUser>().FirstOrDefault(u => u.Username == username);
     }
+
+    [Pure]
+    [ContractAnnotation("null => null; notnull => canbenull")]
+    public GameUser? GetUserByObjectId(ObjectId? id)
+    {
+        if (id == null) return null;
+        return this._realm.All<GameUser>().FirstOrDefault(u => u.UserId == id);
+    }
     
     [Pure]
     [ContractAnnotation("null => null; notnull => canbenull")]
@@ -38,6 +45,19 @@ public partial class GameDatabaseContext // Users
         if (uuid == null) return null;
         if(!ObjectId.TryParse(uuid, out ObjectId objectId)) return null;
         return this._realm.All<GameUser>().FirstOrDefault(u => u.UserId == objectId);
+    }
+    
+    /// <summary>
+    /// ID lookup for legacy API (v1). Do not use for any other purpose.
+    /// </summary>
+    [Pure]
+    [ContractAnnotation("null => null; notnull => canbenull")]
+    public GameUser? GetUserByLegacyId(int? legacyId)
+    {
+        if (legacyId == null) return null;
+        
+        // THIS SUCKS
+        return this._realm.All<GameUser>().ToList().FirstOrDefault(u => u.UserId.Timestamp == legacyId);
     }
 
     [SuppressMessage("ReSharper", "InvertIf")]
@@ -58,6 +78,9 @@ public partial class GameDatabaseContext // Users
             }
         });
     }
+    
+    [Pure]
+    public int GetTotalUserCount() => this._realm.All<GameUser>().Count();
 
     public void UpdateUserPins(GameUser user, UserPins pinsUpdate) 
     {

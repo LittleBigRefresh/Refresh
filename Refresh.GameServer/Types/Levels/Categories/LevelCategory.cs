@@ -3,7 +3,6 @@ using System.Reflection;
 using Bunkum.HttpServer;
 using Newtonsoft.Json;
 using Refresh.GameServer.Database;
-using Refresh.GameServer.Extensions;
 using Refresh.GameServer.Types.UserData;
 
 namespace Refresh.GameServer.Types.Levels.Categories;

@@ -12,18 +12,17 @@ namespace Refresh.GameServer.Types.Levels;
 [XmlRoot("slot")]
 [XmlType("slot")]
 [JsonObject(MemberSerialization.OptIn)]
-public class GameLevel : RealmObject, INeedsPreparationBeforeSerialization, ISequentialId
+public partial class GameLevel : IRealmObject, INeedsPreparationBeforeSerialization, ISequentialId
 {
-    [PrimaryKey] [Indexed] [XmlElement("id")] [JsonProperty] public int LevelId { get; set; }
-    
-    [XmlElement("name")] [JsonProperty] public string Title { get; set; } = string.Empty;
-    [XmlElement("icon")] [JsonProperty] public string IconHash { get; set; } = string.Empty;
-    [XmlElement("description")] [JsonProperty] public string Description { get; set; } = string.Empty;
+    [PrimaryKey] [XmlElement("id")] [JsonProperty] public int LevelId { get; set; }
+
+    [XmlElement("name")] [JsonProperty] public string Title { get; set; } = "";
+    [XmlElement("icon")] [JsonProperty] public string IconHash { get; set; } = "0";
+    [XmlElement("description")] [JsonProperty] public string Description { get; set; } = "";
     [XmlElement("location")] [JsonProperty] public GameLocation Location { get; set; } = GameLocation.Zero;
 
     [XmlElement("rootLevel")] public string RootResource { get; set; } = string.Empty;
-    [XmlIgnore] public IList<string> Resources { get; } = new List<string>();
-    
+
     [XmlElement("firstPublished")] [JsonProperty] public long PublishDate { get; set; } // unix seconds
     [XmlElement("lastUpdated")] [JsonProperty] public long UpdateDate { get; set; }
 
@@ -57,20 +56,7 @@ public class GameLevel : RealmObject, INeedsPreparationBeforeSerialization, ISeq
     [Ignored] [XmlElement("playCount")] public int? TotalPlayCount { get; set; }
     [Ignored] [XmlElement("uniquePlayCount")] public int? UniquePlayCount { get; set; }
 
-    // Realm cant have IList types with setters? Fine, I'll play your game. ;p
-    [Ignored]
-    [XmlElement("resource")]
-    public string[] XmlResources
-    {
-        get => this.Resources.ToArray();
-        set
-        {
-            this.Resources.Clear();
-            
-            foreach (string r in value) 
-                this.Resources.Add(r);
-        }
-    }
+    [Ignored] [XmlElement("resource")] public List<string> XmlResources { get; set; } = new();
 
     public void PrepareForSerialization()
     {

@@ -1,4 +1,3 @@
-using System.Net;
 using Bunkum.CustomHttpListener.Parsing;
 using Bunkum.CustomHttpListener.Request;
 using Bunkum.HttpServer.Database;
@@ -35,7 +34,7 @@ public class CrossOriginMiddleware : IMiddleware
                 context.ResponseHeaders.Add("Access-Control-Allow-Headers", "Authorization, Content-Type");
                 context.ResponseHeaders.Add("Access-Control-Allow-Methods", string.Join(", ", AllowedMethods));
                 
-                context.ResponseCode = HttpStatusCode.OK;
+                context.ResponseCode = OK;
                 return;
             }
         }

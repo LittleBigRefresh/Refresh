@@ -1,4 +1,3 @@
-using System.Net;
 using Bunkum.CustomHttpListener.Parsing;
 using Bunkum.HttpServer;
 using Bunkum.HttpServer.Endpoints;
@@ -14,23 +13,27 @@ namespace Refresh.GameServer.Endpoints.Game.Levels;
 public class LevelEndpoints : EndpointGroup
 {
     [GameEndpoint("slots/{route}", ContentType.Xml)]
-    public GameMinimalLevelList GetLevels(RequestContext context, GameDatabaseContext database, CategoryService categories, GameUser? user, string route)
+    public GameMinimalLevelList? GetLevels(RequestContext context, GameDatabaseContext database, CategoryService categories, GameUser? user, string route)
     {
         (int skip, int count) = context.GetPageData();
-        
-        return new GameMinimalLevelList(categories.Categories
+
+        IEnumerable<GameMinimalLevel>? category = categories.Categories
             .FirstOrDefault(c => c.GameRoute.StartsWith(route))?
             .Fetch(context, skip, count, database, user)?
-            .Select(GameMinimalLevel.FromGameLevel), database.GetTotalLevelCount());
+            .Select(GameMinimalLevel.FromGameLevel);
+
+        if (category == null) return null;
+        
+        return new GameMinimalLevelList(category, database.GetTotalLevelCount());
         // TODO: proper level count
     }
 
     [GameEndpoint("slots/{route}/{username}", ContentType.Xml)]
-    public GameMinimalLevelList GetLevelsWithPlayer(RequestContext context, GameDatabaseContext database, CategoryService categories, string route, string username)
+    public GameMinimalLevelList? GetLevelsWithPlayer(RequestContext context, GameDatabaseContext database, CategoryService categories, string route, string username)
         => this.GetLevels(context, database, categories, database.GetUserByUsername(username), route);
 
     [GameEndpoint("s/user/{idStr}", ContentType.Xml)]
-    [NullStatusCode(HttpStatusCode.NotFound)]
+    [NullStatusCode(NotFound)]
     public GameLevel? LevelById(RequestContext context, GameDatabaseContext database, string idStr)
     {
         int.TryParse(idStr, out int id);
@@ -40,7 +43,7 @@ public class LevelEndpoints : EndpointGroup
     }
 
     [GameEndpoint("slotList", ContentType.Xml)]
-    [NullStatusCode(HttpStatusCode.BadRequest)]
+    [NullStatusCode(BadRequest)]
     public GameLevelList? GetMultipleLevels(RequestContext context, GameDatabaseContext database)
     {
         string[]? levelIds = context.QueryString.GetValues("s");
@@ -95,13 +98,15 @@ public class LevelEndpoints : EndpointGroup
     // This is a list of endpoints to work around these - capturing all routes would break things.
 
     [GameEndpoint("slots", ContentType.Xml)]
-    public GameMinimalLevelList NewestLevels(RequestContext context, GameDatabaseContext database, CategoryService categories, GameUser? user) 
+    public GameMinimalLevelList? NewestLevels(RequestContext context, GameDatabaseContext database, CategoryService categories, GameUser? user) 
         => this.GetLevels(context, database, categories, user, "newest");
 
     [GameEndpoint("favouriteSlots/{username}", ContentType.Xml)]
-    public GameMinimalFavouriteLevelList FavouriteLevels(RequestContext context, GameDatabaseContext database, CategoryService categories, string username)
+    public GameMinimalFavouriteLevelList? FavouriteLevels(RequestContext context, GameDatabaseContext database, CategoryService categories, string username)
     {
-        GameMinimalLevelList levels = this.GetLevels(context, database, categories, database.GetUserByUsername(username), "favouriteSlots");
+        GameMinimalLevelList? levels = this.GetLevels(context, database, categories, database.GetUserByUsername(username), "favouriteSlots");
+        if (levels == null) return null;
+        
         return new GameMinimalFavouriteLevelList(levels);
     }
 

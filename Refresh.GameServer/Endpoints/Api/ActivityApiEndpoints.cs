@@ -1,4 +1,3 @@
-using System.Net;
 using Bunkum.HttpServer;
 using Bunkum.HttpServer.Endpoints;
 using Refresh.GameServer.Database;
@@ -9,7 +8,7 @@ namespace Refresh.GameServer.Endpoints.Api;
 public class ActivityApiEndpoints : EndpointGroup
 {
     [ApiEndpoint("activity")]
-    [NullStatusCode(HttpStatusCode.BadRequest)]
+    [NullStatusCode(BadRequest)]
     [Authentication(false)]
     public ActivityPage? GetRecentActivity(RequestContext context, GameDatabaseContext database)
     {

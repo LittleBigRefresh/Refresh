@@ -6,7 +6,7 @@ namespace Refresh.GameServer.Types.Report;
 #nullable disable
 
 [XmlRoot("slot")]
-public class Slot : EmbeddedObject 
+public partial class Slot : IEmbeddedObject 
 { 
     [XmlElement("id")] 
     public int Id { get; set; } 

@@ -1,10 +1,12 @@
-using System.Net;
 using System.Xml.Serialization;
 using Bunkum.CustomHttpListener.Parsing;
 using Bunkum.HttpServer;
 using Bunkum.HttpServer.Endpoints;
 using Bunkum.HttpServer.Responses;
+using Refresh.GameServer.Database;
+using Refresh.GameServer.Services;
 using Refresh.GameServer.Types;
+using Refresh.GameServer.Types.UserData;
 
 namespace Refresh.GameServer.Endpoints.Game.Handshake;
 
@@ -20,6 +22,19 @@ public class MetadataEndpoints : EndpointGroup
     public PrivacySettings SetPrivacySettings(RequestContext context)
     {
         return new PrivacySettings();
+    }
+
+    [GameEndpoint("npdata", ContentType.Xml, Method.Post)]
+    public Response SetFriendData(RequestContext context, GameUser user, GameDatabaseContext database,
+        FriendStorageService friendService, SerializedFriendData body)
+    {
+        IEnumerable<GameUser> friends = body.FriendsList.Names
+            .Take(128) // should be way more than enough - we'll see if this becomes a problem
+            .Select(database.GetUserByUsername)
+            .Where(u => u != null)!;
+
+        friendService.SetUsersFriends(user, friends);
+        return OK;
     }
 
     [XmlType("privacySettings")]
@@ -64,7 +79,7 @@ public class MetadataEndpoints : EndpointGroup
         });
 
     [GameEndpoint("t_conf")]
-    [NullStatusCode(HttpStatusCode.Gone)]
+    [NullStatusCode(Gone)]
     public string? TelemetryConfig(RequestContext context) 
     {
         bool created = TelemetryConfigFile.IsValueCreated;
@@ -88,7 +103,7 @@ public class MetadataEndpoints : EndpointGroup
         });
 
     [GameEndpoint("promotions")]
-    [NullStatusCode(HttpStatusCode.OK)]
+    [NullStatusCode(OK)]
     public string? Promotions(RequestContext context) 
     {
         bool created = PromotionsFile.IsValueCreated;

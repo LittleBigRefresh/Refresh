@@ -1,4 +1,3 @@
-using System.Net;
 using Bunkum.CustomHttpListener.Parsing;
 using Bunkum.HttpServer;
 using Bunkum.HttpServer.Endpoints;
@@ -12,7 +11,7 @@ namespace Refresh.GameServer.Endpoints.Game;
 public class ActivityEndpoints : EndpointGroup
 {
     [GameEndpoint("stream", ContentType.Xml)]
-    [NullStatusCode(HttpStatusCode.BadRequest)]
+    [NullStatusCode(BadRequest)]
     public ActivityPage? GetRecentActivity(RequestContext context, GameDatabaseContext database)
     {
         long timestamp = 0;
