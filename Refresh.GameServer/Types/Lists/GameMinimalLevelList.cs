@@ -12,7 +12,7 @@ public class GameMinimalLevelList : GameList<GameMinimalLevel>
 {
     public GameMinimalLevelList() {}
     
-    public GameMinimalLevelList([CanBeNull] IEnumerable<GameMinimalLevel> list, int total)
+    public GameMinimalLevelList(IEnumerable<GameMinimalLevel> list, int total)
     {
         this.Total = total;
         this.Items = list.ToList();
