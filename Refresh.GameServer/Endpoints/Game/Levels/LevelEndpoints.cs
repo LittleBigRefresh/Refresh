@@ -29,7 +29,7 @@ public class LevelEndpoints : EndpointGroup
     }
 
     [GameEndpoint("slots/{route}/{username}", ContentType.Xml)]
-    public GameMinimalLevelList GetLevelsWithPlayer(RequestContext context, GameDatabaseContext database, CategoryService categories, string route, string username)
+    public GameMinimalLevelList? GetLevelsWithPlayer(RequestContext context, GameDatabaseContext database, CategoryService categories, string route, string username)
         => this.GetLevels(context, database, categories, database.GetUserByUsername(username), route);
 
     [GameEndpoint("s/user/{idStr}", ContentType.Xml)]
@@ -98,13 +98,15 @@ public class LevelEndpoints : EndpointGroup
     // This is a list of endpoints to work around these - capturing all routes would break things.
 
     [GameEndpoint("slots", ContentType.Xml)]
-    public GameMinimalLevelList NewestLevels(RequestContext context, GameDatabaseContext database, CategoryService categories, GameUser? user) 
+    public GameMinimalLevelList? NewestLevels(RequestContext context, GameDatabaseContext database, CategoryService categories, GameUser? user) 
         => this.GetLevels(context, database, categories, user, "newest");
 
     [GameEndpoint("favouriteSlots/{username}", ContentType.Xml)]
-    public GameMinimalFavouriteLevelList FavouriteLevels(RequestContext context, GameDatabaseContext database, CategoryService categories, string username)
+    public GameMinimalFavouriteLevelList? FavouriteLevels(RequestContext context, GameDatabaseContext database, CategoryService categories, string username)
     {
-        GameMinimalLevelList levels = this.GetLevels(context, database, categories, database.GetUserByUsername(username), "favouriteSlots");
+        GameMinimalLevelList? levels = this.GetLevels(context, database, categories, database.GetUserByUsername(username), "favouriteSlots");
+        if (levels == null) return null;
+        
         return new GameMinimalFavouriteLevelList(levels);
     }
 
