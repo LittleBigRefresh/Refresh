@@ -10,9 +10,11 @@ public class WebsiteMiddleware : IMiddleware
     private static readonly string WebPath = Path.Join(BunkumFileSystem.DataDirectory, "web");
     private static readonly Dictionary<string, string> MimeMapping = new()
     {
-        {".html", "text/html"},
-        {".css", "text/css"},
-        {".js", "application/javascript"},
+        { ".html", "text/html" },
+        { ".css", "text/css" },
+        { ".js", "application/javascript" },
+        { ".svg", "image/svg+xml" },
+        { ".ico", "image/vnd.microsoft.icon" },
     };
 
     private static bool HandleWebsiteRequest(ListenerContext context)
