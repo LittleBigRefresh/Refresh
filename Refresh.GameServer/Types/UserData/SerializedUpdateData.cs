@@ -4,13 +4,13 @@ using Realms;
 namespace Refresh.GameServer.Types.UserData;
 
 [XmlRoot("updateUser")]
-public class UpdateUserDataProfile : UpdateUserData {}
+public class SerializedUpdateDataProfile : SerializedUpdateData {}
 
 [XmlRoot("user")]
-public class UpdateUserDataPlanets : UpdateUserData {}
+public class SerializedUpdateDataPlanets : SerializedUpdateData {}
 
 [Ignored]
-public class UpdateUserData
+public class SerializedUpdateData
 {
     [XmlElement("biography")]
     public string? Description { get; set; }

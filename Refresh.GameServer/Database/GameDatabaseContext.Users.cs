@@ -61,12 +61,12 @@ public partial class GameDatabaseContext // Users
     }
 
     [SuppressMessage("ReSharper", "InvertIf")]
-    public void UpdateUserData(GameUser user, UpdateUserData data)
+    public void UpdateUserData(GameUser user, SerializedUpdateData data)
     {
         this._realm.Write(() =>
         {
             PropertyInfo[] userProps = typeof(GameUser).GetProperties();
-            foreach (PropertyInfo prop in typeof(UpdateUserData).GetProperties())
+            foreach (PropertyInfo prop in typeof(SerializedUpdateData).GetProperties())
             {
                 object? value = prop.GetValue(data);
                 if(value == null) continue;

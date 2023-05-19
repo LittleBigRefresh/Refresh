@@ -21,10 +21,10 @@ public class UserEndpoints : EndpointGroup
     }
 
     [GameEndpoint("users", Method.Get, ContentType.Xml)]
-    public GameUserList GetMultipleUsers(RequestContext context, GameDatabaseContext database)
+    public SerializedUserList GetMultipleUsers(RequestContext context, GameDatabaseContext database)
     {
         string[]? usernames = context.QueryString.GetValues("u");
-        if (usernames == null) return new GameUserList();
+        if (usernames == null) return new SerializedUserList();
 
         List<GameUser> users = new(usernames.Length);
 
@@ -37,7 +37,7 @@ public class UserEndpoints : EndpointGroup
             users.Add(user);
         }
 
-        return new GameUserList
+        return new SerializedUserList
         {
             Users = users,
         };
@@ -45,7 +45,7 @@ public class UserEndpoints : EndpointGroup
 
     [GameEndpoint("myFriends", Method.Get, ContentType.Xml)]
     [NullStatusCode(NotFound)]
-    public GameFriendsList? GetFriends(RequestContext context, GameDatabaseContext database,
+    public SerializedFriendsList? GetFriends(RequestContext context, GameDatabaseContext database,
         GameUser user, FriendStorageService friendService)
     {
         List<GameUser>? friends = friendService.GetUsersFriends(user, database)?.ToList();
@@ -54,21 +54,21 @@ public class UserEndpoints : EndpointGroup
         foreach (GameUser friend in friends)
             friend.PrepareForSerialization();
         
-        return new GameFriendsList(friends);
+        return new SerializedFriendsList(friends);
     }
 
     [GameEndpoint("updateUser", Method.Post, ContentType.Xml)]
     [NullStatusCode(BadRequest)]
     public string? UpdateUser(RequestContext context, GameDatabaseContext database, GameUser user, string body)
     {
-        UpdateUserData? data = null;
+        SerializedUpdateData? data = null;
         
         // This stupid shit is caused by LBP sending two different root elements for this endpoint
         // LBP is just fantastic man
         try
         {
-            XmlSerializer serializer = new(typeof(UpdateUserDataProfile));
-            if (serializer.Deserialize(new StringReader(body)) is not UpdateUserDataProfile profileData) return null;
+            XmlSerializer serializer = new(typeof(SerializedUpdateDataProfile));
+            if (serializer.Deserialize(new StringReader(body)) is not SerializedUpdateDataProfile profileData) return null;
             data = profileData;
         }
         catch
@@ -78,8 +78,8 @@ public class UserEndpoints : EndpointGroup
         
         try
         {
-            XmlSerializer serializer = new(typeof(UpdateUserDataPlanets));
-            if (serializer.Deserialize(new StringReader(body)) is not UpdateUserDataPlanets planetsData) return null;
+            XmlSerializer serializer = new(typeof(SerializedUpdateDataPlanets));
+            if (serializer.Deserialize(new StringReader(body)) is not SerializedUpdateDataPlanets planetsData) return null;
             data = planetsData;
         }
         catch

@@ -68,7 +68,7 @@ public class RelationEndpoints : EndpointGroup
 
     [GameEndpoint("favouriteUsers/{username}", ContentType.Xml)]
     [NullStatusCode(NotFound)]
-    public GameFavouriteUserList? GetFavouriteUsers(RequestContext context, GameDatabaseContext database, string username)
+    public SerializedFavouriteUserList? GetFavouriteUsers(RequestContext context, GameDatabaseContext database, string username)
     {
         GameUser? user = database.GetUserByUsername(username);
         if (user == null) return null;
@@ -79,7 +79,7 @@ public class RelationEndpoints : EndpointGroup
         
         foreach (GameUser favouritedUser in users) favouritedUser.PrepareForSerialization();
 
-        return new GameFavouriteUserList(users, users.Count);
+        return new SerializedFavouriteUserList(users, users.Count);
     }
 
     [GameEndpoint("lolcatftw/add/user/{idStr}", Method.Post)]

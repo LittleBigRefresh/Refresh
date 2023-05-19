@@ -7,7 +7,7 @@ namespace Refresh.GameServer.Types.Lists;
 
 [XmlRoot("slots")]
 [XmlType("slots")]
-public class GameLevelList : GameList<GameLevel>
+public class SerializedLevelList : SerializedList<GameLevel>
 {
     [XmlElement("slot")]
     public override List<GameLevel> Items { get; set; }

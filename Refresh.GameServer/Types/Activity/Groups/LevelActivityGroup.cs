@@ -8,5 +8,5 @@ public class LevelActivityGroup : ActivityGroup
     [XmlAttribute("type")]
     public override string Type { get; set; } = "level";
 
-    [XmlElement("slot_id")] public GameLevelId LevelId { get; set; } = new();
+    [XmlElement("slot_id")] public SerializedLevelId LevelId { get; set; } = new();
 }

@@ -12,7 +12,7 @@ namespace Refresh.GameServer.Endpoints.Game.Levels;
 public class PublishEndpoints : EndpointGroup
 {
     [GameEndpoint("startPublish", ContentType.Xml, Method.Post)]
-    public GameResourceLevel StartPublish(RequestContext context, GameDatabaseContext database, GameLevel body, IDataStore dataStore)
+    public SerializedLevelResources StartPublish(RequestContext context, GameDatabaseContext database, GameLevel body, IDataStore dataStore)
     {
         List<string> hashes = new();
         hashes.AddRange(body.XmlResources);
@@ -21,7 +21,7 @@ public class PublishEndpoints : EndpointGroup
 
         hashes.RemoveAll(r => r == "0" || r.StartsWith('g') || string.IsNullOrWhiteSpace(r));
         
-        return new GameResourceLevel
+        return new SerializedLevelResources
         {
             Resources = hashes.Where(r => !dataStore.ExistsInStore(r)).ToArray(),
         };

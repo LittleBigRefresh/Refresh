@@ -7,14 +7,14 @@ namespace Refresh.GameServer.Types.Lists;
 
 [XmlRoot("myFriends")]
 [XmlType("myFriends")]
-public class GameFriendsList : GameList<GameUser>
+public class SerializedFriendsList : SerializedList<GameUser>
 {
-    public GameFriendsList(List<GameUser> items)
+    public SerializedFriendsList(List<GameUser> items)
     {
         this.Items = items;
     }
 
-    public GameFriendsList() {}
+    public SerializedFriendsList() {}
 
     [XmlElement("user")]
     public sealed override List<GameUser> Items { get; set; }

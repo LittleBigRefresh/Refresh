@@ -8,7 +8,7 @@ namespace Refresh.GameServer.Database;
 
 public partial class GameDatabaseContext // Leaderboard
 {
-    public GameSubmittedScore? SubmitScore(GameScore score, GameUser user, GameLevel level)
+    public GameSubmittedScore? SubmitScore(SerializedScore score, GameUser user, GameLevel level)
     {
         GameSubmittedScore newScore = new()
         {

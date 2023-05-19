@@ -6,7 +6,7 @@ namespace Refresh.GameServer.Types.UserData.Leaderboard;
 
 #nullable disable
 
-public partial class GameSubmittedScore : IRealmObject
+public partial class GameSubmittedScore : IRealmObject // TODO: Rename to GameScore
 {
     [PrimaryKey] public ObjectId ScoreId { get; set; } = ObjectId.GenerateNewId();
     public GameLevel Level { get; set; }

@@ -52,7 +52,7 @@ public partial class GameUser : IRealmObject, IRateLimitUser, INeedsPreparationB
     #region LBP Serialization Quirks
 
     [Ignored] [XmlAttribute("type")] public string? Type { get; set; }
-    [Ignored] [XmlElement("npHandle")] public NameAndIcon? Handle { get; set; }
+    [Ignored] [XmlElement("npHandle")] public SerializedUserHandle? Handle { get; set; }
     [Ignored] [XmlElement("commentCount")] public int? CommentCount { get; set; }
     [Ignored] [XmlElement("commentsEnabled")] public bool? CommentsEnabled { get; set; }
     [Ignored] [XmlElement("favouriteSlotCount")] public int? FavouriteLevelCount { get; set; }
@@ -65,7 +65,7 @@ public partial class GameUser : IRealmObject, IRateLimitUser, INeedsPreparationB
     public void PrepareForSerialization()
     {
         this.Type = "user";
-        this.Handle = NameAndIcon.FromUser(this);
+        this.Handle = SerializedUserHandle.FromUser(this);
         
         this.CommentCount = this.ProfileComments.Count;
         this.CommentsEnabled = true;

@@ -4,7 +4,7 @@ namespace Refresh.GameServer.Database;
 
 public partial class GameDatabaseContext 
 {
-    public void AddGriefReport(GriefReport report) 
+    public void AddGriefReport(GameReport report) 
     {
         this.AddSequentialObject(report, () => {});
     }    

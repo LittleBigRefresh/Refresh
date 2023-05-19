@@ -4,11 +4,11 @@ namespace Refresh.GameServer.Types.Lists;
 
 [XmlRoot("resources")]
 [XmlType("resources")]
-public class ResourceList
+public class SerializedResourceList
 {
-    public ResourceList() {}
+    public SerializedResourceList() {}
     
-    public ResourceList(IEnumerable<string> resources)
+    public SerializedResourceList(IEnumerable<string> resources)
     {
         this.Items = resources.ToList();
     }

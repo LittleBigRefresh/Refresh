@@ -9,7 +9,7 @@ namespace Refresh.GameServer.Types.Levels.Categories;
 #nullable disable
 
 [XmlType("category")]
-public class GameCategory
+public class SerializedCategory
 {
     [XmlElement("name")]
     public string Name { get; set; }
@@ -23,11 +23,11 @@ public class GameCategory
     public string IconHash { get; set; }
     
     [XmlElement("results")]
-    public GameMinimalLevelList Levels { get; set; }
+    public SerializedMinimalLevelList Levels { get; set; }
 
-    public static GameCategory FromLevelCategory(LevelCategory levelCategory, RequestContext context, GameDatabaseContext database, GameUser user, int skip = 0, int count = 20)
+    public static SerializedCategory FromLevelCategory(LevelCategory levelCategory, RequestContext context, GameDatabaseContext database, GameUser user, int skip = 0, int count = 20)
     {
-        GameCategory category = new()
+        SerializedCategory category = new()
         {
             Name = levelCategory.Name,
             Description = levelCategory.Description,
@@ -39,7 +39,7 @@ public class GameCategory
         IEnumerable<GameMinimalLevel> levels = levelCategory.Fetch(context, skip, count, database, user)?
             .Select(GameMinimalLevel.FromGameLevel) ?? Array.Empty<GameMinimalLevel>();
 
-        category.Levels = new GameMinimalLevelList(levels, 10);
+        category.Levels = new SerializedMinimalLevelList(levels, 10);
 
         return category;
     }

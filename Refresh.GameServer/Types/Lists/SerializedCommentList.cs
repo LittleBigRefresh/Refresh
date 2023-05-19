@@ -5,11 +5,11 @@ namespace Refresh.GameServer.Types.Lists;
 
 [XmlRoot("comments")]
 [XmlType("comments")]
-public class GameCommentList
+public class SerializedCommentList
 {
-    public GameCommentList() {}
+    public SerializedCommentList() {}
     
-    public GameCommentList(IEnumerable<GameComment> comments)
+    public SerializedCommentList(IEnumerable<GameComment> comments)
     {
         this.Items = comments.ToList();
     }

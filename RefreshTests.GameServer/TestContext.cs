@@ -98,7 +98,7 @@ public class TestContext : IDisposable
 
     public GameSubmittedScore SubmitScore(int score, byte type, GameLevel level, GameUser user)
     {
-        GameScore scoreObject = new()
+        SerializedScore scoreObject = new()
         {
             Host = true,
             Score = score,

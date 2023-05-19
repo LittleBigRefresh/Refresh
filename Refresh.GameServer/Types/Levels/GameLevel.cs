@@ -49,7 +49,7 @@ public partial class GameLevel : IRealmObject, INeedsPreparationBeforeSerializat
     #region LBP Serialization Quirks
     [Ignored] [XmlAttribute("type")] public string? Type { get; set; }
 
-    [Ignored] [XmlElement("npHandle")] public NameAndIcon? Handle { get; set; }
+    [Ignored] [XmlElement("npHandle")] public SerializedUserHandle? Handle { get; set; }
     
     [Ignored] [XmlElement("heartCount")] public int? HeartCount { get; set; }
     
@@ -67,7 +67,7 @@ public partial class GameLevel : IRealmObject, INeedsPreparationBeforeSerializat
         if (this.Publisher != null)
         {
             this.Type = "user";
-            this.Handle = NameAndIcon.FromUser(this.Publisher);
+            this.Handle = SerializedUserHandle.FromUser(this.Publisher);
         }
         else
         {

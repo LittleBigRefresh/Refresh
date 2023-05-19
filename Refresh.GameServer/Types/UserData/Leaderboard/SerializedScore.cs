@@ -4,7 +4,7 @@ namespace Refresh.GameServer.Types.UserData.Leaderboard;
 
 [XmlRoot("playRecord")]
 [XmlType("playRecord")]
-public class GameScore
+public class SerializedScore
 {
     [XmlElement("host")] public bool Host { get; set; }
     [XmlElement("type")] public byte ScoreType { get; set; } = 1; // Player count

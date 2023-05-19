@@ -2,7 +2,7 @@ using System.Xml.Serialization;
 
 namespace Refresh.GameServer.Types.Lists;
 
-public abstract class GameList<TItem>
+public abstract class SerializedList<TItem>
 {
     [XmlAttribute("total")]
     public int Total { get; set; }

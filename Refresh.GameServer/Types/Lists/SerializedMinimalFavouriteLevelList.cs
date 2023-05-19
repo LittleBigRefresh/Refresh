@@ -7,11 +7,11 @@ namespace Refresh.GameServer.Types.Lists;
 
 [XmlRoot("favouriteSlots")]
 [XmlType("favouriteSlots")]
-public class GameMinimalFavouriteLevelList : GameList<GameMinimalLevel>
+public class SerializedMinimalFavouriteLevelList : SerializedList<GameMinimalLevel>
 {
-    public GameMinimalFavouriteLevelList() {}
+    public SerializedMinimalFavouriteLevelList() {}
     
-    public GameMinimalFavouriteLevelList(GameMinimalLevelList list)
+    public SerializedMinimalFavouriteLevelList(SerializedMinimalLevelList list)
     {
         this.Total = list.Total;
         this.Items = list.Items;

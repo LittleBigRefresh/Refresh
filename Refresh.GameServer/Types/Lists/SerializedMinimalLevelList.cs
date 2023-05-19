@@ -8,11 +8,11 @@ namespace Refresh.GameServer.Types.Lists;
 
 [XmlRoot("slots")]
 [XmlType("slots")]
-public class GameMinimalLevelList : GameList<GameMinimalLevel>
+public class SerializedMinimalLevelList : SerializedList<GameMinimalLevel>
 {
-    public GameMinimalLevelList() {}
+    public SerializedMinimalLevelList() {}
     
-    public GameMinimalLevelList(IEnumerable<GameMinimalLevel> list, int total)
+    public SerializedMinimalLevelList(IEnumerable<GameMinimalLevel> list, int total)
     {
         this.Total = total;
         this.Items = list.ToList();

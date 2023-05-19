@@ -7,11 +7,11 @@ namespace Refresh.GameServer.Types.Lists;
 
 [XmlRoot("favouriteUsers")]
 [XmlType("favouriteUsers")]
-public class GameFavouriteUserList : GameList<GameUser>
+public class SerializedFavouriteUserList : SerializedList<GameUser>
 {
-    public GameFavouriteUserList() {}
+    public SerializedFavouriteUserList() {}
     
-    public GameFavouriteUserList(List<GameUser> list, int count)
+    public SerializedFavouriteUserList(List<GameUser> list, int count)
     {
         this.Total = count;
         this.Items = list;

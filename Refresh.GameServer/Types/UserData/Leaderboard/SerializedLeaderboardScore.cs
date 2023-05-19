@@ -4,7 +4,7 @@ namespace Refresh.GameServer.Types.UserData.Leaderboard;
 
 #nullable disable
 
-public class GameLeaderboardScore
+public class SerializedLeaderboardScore
 {
     [XmlElement("mainPlayer")] public string Player { get; set; }
     [XmlElement("score")] public int Score { get; set; }

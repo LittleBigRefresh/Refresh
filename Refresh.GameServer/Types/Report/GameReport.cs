@@ -7,7 +7,7 @@ namespace Refresh.GameServer.Types.Report;
 #nullable disable
 
 [XmlRoot("griefReport")]
-public partial class GriefReport : IRealmObject, ISequentialId 
+public partial class GameReport : IRealmObject, ISequentialId 
 {
     [XmlIgnore]
     private IList<InfoBubble> InternalInfoBubble { get; }

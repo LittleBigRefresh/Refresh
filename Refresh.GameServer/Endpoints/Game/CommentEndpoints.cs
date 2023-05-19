@@ -24,7 +24,7 @@ public class CommentEndpoints : EndpointGroup
 
     [GameEndpoint("userComments/{username}", ContentType.Xml)]
     [NullStatusCode(NotFound)]
-    public GameCommentList? GetProfileComments(RequestContext context, GameDatabaseContext database, string username)
+    public SerializedCommentList? GetProfileComments(RequestContext context, GameDatabaseContext database, string username)
     {
         GameUser? profile = database.GetUserByUsername(username);
         if (profile == null) return null;
@@ -34,6 +34,6 @@ public class CommentEndpoints : EndpointGroup
         List<GameComment> comments = database.GetProfileComments(profile, count, skip).ToList();
         foreach (GameComment comment in comments) comment.PrepareForSerialization();
 
-        return new GameCommentList(comments);
+        return new SerializedCommentList(comments);
     }
 }

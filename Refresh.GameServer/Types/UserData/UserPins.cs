@@ -5,7 +5,7 @@ namespace Refresh.GameServer.Types.UserData;
 
 #nullable disable
 
-public partial class UserPins : IEmbeddedObject {
+public partial class UserPins : IEmbeddedObject { // TODO: Rename to GamePins
 	[JsonProperty(PropertyName = "progress")]
 	public IList<long> Progress { get; }
 	[JsonProperty(PropertyName = "awards")]

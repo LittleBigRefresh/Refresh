@@ -28,17 +28,17 @@ public class ActivityPage
     public ActivityGroups Groups { get; set; }
 
     [XmlElement("users")]
-    public GameUserList Users { get; set; }
+    public SerializedUserList Users { get; set; }
     
     [XmlElement("slots")]
-    public GameLevelList Levels { get; set; }
+    public SerializedLevelList Levels { get; set; }
 
     public ActivityPage()
     {
         this.Events = new List<Event>();
         this.Groups = new ActivityGroups();
-        this.Levels = new GameLevelList();
-        this.Users = new GameUserList();
+        this.Levels = new SerializedLevelList();
+        this.Users = new SerializedUserList();
     }
 
     public ActivityPage(GameDatabaseContext database, int count = 20, int skip = 0, long timestamp = 0, long endTimestamp = 0, bool generateGroups = true)
@@ -56,7 +56,7 @@ public class ActivityPage
             .DistinctBy(e => e.StoredObjectId)
             .Select(e => database.GetUserFromEvent(e)!));
 
-        this.Users = new GameUserList
+        this.Users = new SerializedUserList
         {
             Users = users,
         };
@@ -67,7 +67,7 @@ public class ActivityPage
             .Select(e => database.GetLevelFromEvent(e)!) // probably pretty inefficient
             .ToList();
 
-        this.Levels = new GameLevelList
+        this.Levels = new SerializedLevelList
         {
             Items = levels,
         };
@@ -107,7 +107,7 @@ public class ActivityPage
     {
         foreach (Event @event in this.Events.Where(e => e.StoredDataType == EventDataType.Level))
         {
-            GameLevelId id = new()
+            SerializedLevelId id = new()
             {
                 LevelId = @event.StoredSequentialId!.Value,
                 Type = "user",

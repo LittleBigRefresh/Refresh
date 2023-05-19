@@ -5,11 +5,11 @@ namespace Refresh.GameServer.Types.Lists;
 
 [XmlRoot("results")]
 [XmlType("results")]
-public class GameMinimalLevelResultsList : GameMinimalLevelList
+public class SerializedMinimalLevelResultsList : SerializedMinimalLevelList
 {
-    public GameMinimalLevelResultsList() {}
+    public SerializedMinimalLevelResultsList() {}
     
-    public GameMinimalLevelResultsList(IEnumerable<GameMinimalLevel>? list, int total)
+    public SerializedMinimalLevelResultsList(IEnumerable<GameMinimalLevel>? list, int total)
     {
         this.Total = total;
         this.Items = list?.ToList() ?? new List<GameMinimalLevel>();

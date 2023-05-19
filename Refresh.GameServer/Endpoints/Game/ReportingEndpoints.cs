@@ -10,7 +10,7 @@ namespace Refresh.GameServer.Endpoints.Game;
 public class ReportingEndpoints : EndpointGroup 
 {
     [GameEndpoint("grief", Method.Post, ContentType.Xml)]
-    public Response UploadResource(RequestContext context, GameDatabaseContext database, GriefReport body) 
+    public Response UploadResource(RequestContext context, GameDatabaseContext database, GameReport body) 
     {
         database.AddGriefReport(body);
         

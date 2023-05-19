@@ -11,7 +11,7 @@ public class GameMinimalLevel
     [XmlElement("description")] public string Description { get; set; } = string.Empty;
     [XmlElement("location")] public GameLocation Location { get; set; } = GameLocation.Zero;
     [XmlElement("id")] public int LevelId { get; set; }
-    [XmlElement("npHandle")] public NameAndIcon? Handle { get; set; }
+    [XmlElement("npHandle")] public SerializedUserHandle? Handle { get; set; }
     [XmlAttribute("type")] public string? Type { get; set; }
     
     private GameMinimalLevel() {}

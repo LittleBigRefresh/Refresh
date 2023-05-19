@@ -4,18 +4,18 @@ using Refresh.GameServer.Types.Levels.Categories;
 namespace Refresh.GameServer.Types.Lists;
 [XmlRoot("categories")]
 [XmlType("categories")]
-public class GameCategoryList : GameList<GameCategory>
+public class SerializedCategoryList : SerializedList<SerializedCategory>
 {
-    public GameCategoryList(IEnumerable<GameCategory> items, CategoryService categories)
+    public SerializedCategoryList(IEnumerable<SerializedCategory> items, CategoryService categories)
     {
         this.Items = items.ToList();
         this.Total = categories.Categories.Count();
     }
 
-    public GameCategoryList() {}
+    public SerializedCategoryList() {}
 
     [XmlElement("category")]
-    public sealed override List<GameCategory> Items { get; set; } = null!;
+    public sealed override List<SerializedCategory> Items { get; set; } = null!;
 
     [XmlAttribute("hint")]
     public string Hint { get; set; } = string.Empty;
