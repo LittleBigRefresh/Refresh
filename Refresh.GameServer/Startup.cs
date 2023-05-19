@@ -12,4 +12,5 @@ BunkumConsole.AllocateConsole();
 RefreshGameServer server = new();
 server.Initialize();
 
-await server.StartAndBlockAsync();
+server.Start();
+await Task.Delay(-1);
