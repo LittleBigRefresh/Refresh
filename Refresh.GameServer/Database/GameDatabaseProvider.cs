@@ -46,11 +46,10 @@ public class GameDatabaseProvider : RealmDatabaseProvider<GameDatabaseContext>
         typeof(Slot),
     };
 
-    protected override void Warmup()
+    public override void Warmup()
     {
         using GameDatabaseContext context = this.GetContext();
         _ = context.GetTotalLevelCount();
-        base.Warmup();
     }
 
     protected override void Migrate(Migration migration, ulong oldVersion)
