@@ -23,12 +23,12 @@ public class ResourceEndpoints : EndpointGroup
         if (dataStore.ExistsInStore(hash))
             return Conflict;
 
-        if (!dataStore.WriteToStore(hash, body))
-            return InternalServerError;
-
         GameAsset? gameAsset = importer.ReadAndVerifyAsset(hash, body);
         if (gameAsset == null)
             return BadRequest;
+        
+        if (!dataStore.WriteToStore(hash, body))
+            return InternalServerError;
 
         gameAsset.OriginalUploader = user;
         database.AddAssetToDatabase(gameAsset);
