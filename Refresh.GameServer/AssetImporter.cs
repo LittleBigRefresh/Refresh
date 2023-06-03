@@ -64,6 +64,7 @@ public class AssetImporter
     {
         this._stopwatch.Start();
         
+        this._databaseProvider.Initialize();
         using GameDatabaseContext context = this._databaseProvider.GetContext();
         context.DeleteAllAssetMetadata();
         this.Info("Deleted all asset metadata");
