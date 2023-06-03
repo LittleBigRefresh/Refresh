@@ -1,5 +1,4 @@
 using Refresh.GameServer.Types.Assets;
-using Refresh.GameServer.Types.UserData;
 
 namespace Refresh.GameServer.Database;
 
@@ -10,16 +9,8 @@ public partial class GameDatabaseContext // Assets
         return this._realm.All<GameAsset>().FirstOrDefault(a => a.AssetHash == hash);
     }
 
-    public void AddAssetToDatabase(string hash, GameUser uploader)
+    public void AddAssetToDatabase(GameAsset asset)
     {
-        GameAsset asset = new()
-        {
-            AssetHash = hash,
-            AssetType = GameAssetType.Unknown,
-            OriginalUploader = uploader,
-            UploadDate = DateTimeOffset.Now,
-        };
-
         this._realm.Write(() =>
         {
             this._realm.Add(asset);

@@ -15,23 +15,22 @@ namespace Refresh.GameServer;
 
 public class AssetImporter
 {
-    private readonly GameDatabaseProvider _databaseProvider;
-    private readonly IDataStore _dataStore;
     private readonly LoggerContainer<BunkumContext> _logger;
     private readonly Stopwatch _stopwatch;
 
-    public AssetImporter(GameDatabaseProvider databaseProvider, IDataStore dataStore)
+    public AssetImporter(LoggerContainer<BunkumContext>? logger = null)
     {
-        this._databaseProvider = databaseProvider;
-        this._dataStore = dataStore;
+        if (logger == null)
+        {
+            logger = new LoggerContainer<BunkumContext>();
+            logger.RegisterLogger(new ConsoleLogger());
+        }
 
-        this._logger = new LoggerContainer<BunkumContext>();
-        this._logger.RegisterLogger(new ConsoleLogger());
-
+        this._logger = logger;
         this._stopwatch = new Stopwatch();
     }
 
-    public void ImportDataStoreFromCli()
+    public void ImportFromDataStoreCli(GameDatabaseContext context, IDataStore dataStore)
     {
         Console.WriteLine("This tool will scan and manually import existing assets into Refresh's database.");
         Console.WriteLine("This will wipe all existing asset metadata in the database. Are you sure you want to follow through with this operation?");
@@ -47,7 +46,7 @@ public class AssetImporter
             return;
         }
         
-        this.ImportDataStore();
+        this.ImportFromDataStore(context, dataStore);
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -62,12 +61,10 @@ public class AssetImporter
         this._logger.LogWarning(BunkumContext.UserContent, $"[{this._stopwatch.ElapsedMilliseconds}ms] {message}");
     }
 
-    public void ImportDataStore()
+    public void ImportFromDataStore(GameDatabaseContext context, IDataStore dataStore)
     {
         this._stopwatch.Start();
         
-        this._databaseProvider.Initialize();
-        using GameDatabaseContext context = this._databaseProvider.GetContext();
         context.DeleteAllAssetMetadata();
         this.Info("Deleted all asset metadata");
         
@@ -81,7 +78,7 @@ public class AssetImporter
         List<GameAsset> assets = new();
         foreach (string hash in assetHashes)
         {
-            byte[] data = this._dataStore.GetDataFromStore(hash);
+            byte[] data = dataStore.GetDataFromStore(hash);
             
             GameAsset? asset = this.ReadAndVerifyAsset(hash, data);
             if (asset == null) continue;
@@ -137,7 +134,7 @@ public class AssetImporter
     }
 
     [Pure]
-    private GameAsset? ReadAndVerifyAsset(string hash, byte[] data)
+    public GameAsset? ReadAndVerifyAsset(string hash, byte[] data)
     {
         string checkedHash = BitConverter.ToString(SHA1.HashData(data))
             .Replace("-", "")

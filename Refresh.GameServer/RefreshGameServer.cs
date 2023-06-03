@@ -70,6 +70,7 @@ public class RefreshGameServer
         this._server.AddService<CategoryService>();
         this._server.AddService<FriendStorageService>();
         this._server.AddService<MatchService>();
+        this._server.AddService<AssetImportService>();
         
         this._server.AddHealthCheckService(new []
         {

@@ -14,8 +14,11 @@ if (args.Length > 0 && args[0] == "--import_assets")
     using GameDatabaseProvider provider = new();
     FileSystemDataStore dataStore = new();
     
-    AssetImporter importer = new(provider, dataStore);
-    importer.ImportDataStoreFromCli();
+    provider.Initialize();
+    using GameDatabaseContext context = provider.GetContext();
+    
+    AssetImporter importer = new();
+    importer.ImportFromDataStoreCli(context, dataStore);
     return;
 }
 

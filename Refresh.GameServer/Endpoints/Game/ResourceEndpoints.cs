@@ -6,6 +6,7 @@ using Bunkum.HttpServer.Endpoints;
 using Bunkum.HttpServer.Responses;
 using Bunkum.HttpServer.Storage;
 using Refresh.GameServer.Database;
+using Refresh.GameServer.Types.Assets;
 using Refresh.GameServer.Types.Lists;
 using Refresh.GameServer.Types.UserData;
 
@@ -17,15 +18,20 @@ public class ResourceEndpoints : EndpointGroup
     [GameEndpoint("upload/{hash}/{type}", Method.Post)]
     [GameEndpoint("upload/{hash}", Method.Post)]
     [SuppressMessage("ReSharper", "ConvertIfStatementToReturnStatement")]
-    public Response UploadAsset(RequestContext context, string hash, string type, byte[] body, IDataStore dataStore, GameDatabaseContext database, GameUser user)
+    public Response UploadAsset(RequestContext context, string hash, string type, byte[] body, IDataStore dataStore, GameDatabaseContext database, GameUser user, AssetImporter importer)
     {
         if (dataStore.ExistsInStore(hash))
             return Conflict;
 
         if (!dataStore.WriteToStore(hash, body))
             return InternalServerError;
-        
-        database.AddAssetToDatabase(hash, user);
+
+        GameAsset? gameAsset = importer.ReadAndVerifyAsset(hash, body);
+        if (gameAsset == null)
+            return BadRequest;
+
+        gameAsset.OriginalUploader = user;
+        database.AddAssetToDatabase(gameAsset);
 
         return OK;
     }
