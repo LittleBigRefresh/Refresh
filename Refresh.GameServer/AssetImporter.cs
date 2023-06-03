@@ -1,6 +1,8 @@
+using System.Buffers.Binary;
 using System.Diagnostics;
 using System.Runtime.CompilerServices;
 using System.Security.Cryptography;
+using System.Text.RegularExpressions;
 using Bunkum.HttpServer;
 using Bunkum.HttpServer.Storage;
 using JetBrains.Annotations;
@@ -29,7 +31,7 @@ public class AssetImporter
         this._stopwatch = new Stopwatch();
     }
 
-    public void ImportFromCli()
+    public void ImportDataStoreFromCli()
     {
         Console.WriteLine("This tool will scan and manually import existing assets into Refresh's database.");
         Console.WriteLine("This will wipe all existing asset metadata in the database. Are you sure you want to follow through with this operation?");
@@ -45,7 +47,7 @@ public class AssetImporter
             return;
         }
         
-        this.Import();
+        this.ImportDataStore();
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -60,7 +62,7 @@ public class AssetImporter
         this._logger.LogWarning(BunkumContext.UserContent, $"[{this._stopwatch.ElapsedMilliseconds}ms] {message}");
     }
 
-    public void Import()
+    public void ImportDataStore()
     {
         this._stopwatch.Start();
         
@@ -97,6 +99,43 @@ public class AssetImporter
         }
     }
 
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    private static bool MatchesMagic(ReadOnlySpan<byte> data, ReadOnlySpan<byte> magic)
+    {
+        return data[..magic.Length].SequenceEqual(magic);
+    }
+    
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    private static bool MatchesMagic(ReadOnlySpan<byte> data, uint magic)
+    {
+        Span<byte> magicSpan = stackalloc byte[sizeof(uint)];
+        BitConverter.TryWriteBytes(magicSpan, BinaryPrimitives.ReverseEndianness(magic));
+        return MatchesMagic(data, magicSpan);
+    }
+    
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    private static bool MatchesMagic(ReadOnlySpan<byte> data, ulong magic)
+    {
+        Span<byte> magicSpan = stackalloc byte[sizeof(ulong)];
+        BitConverter.TryWriteBytes(magicSpan, BinaryPrimitives.ReverseEndianness(magic));
+        return MatchesMagic(data, magicSpan);
+    }
+
+    private static GameAssetType DetermineAssetType(ReadOnlySpan<byte> data)
+    {
+        // LBP assets
+        if (MatchesMagic(data, "TEX "u8)) return GameAssetType.Texture;
+        if (MatchesMagic(data, "PLNb"u8)) return GameAssetType.Plan;
+        if (MatchesMagic(data, "LVLb"u8)) return GameAssetType.Level;
+        
+        // Traditional files
+        // Good reference for magics: https://en.wikipedia.org/wiki/List_of_file_signatures
+        if (MatchesMagic(data, 0xFFD8FFE0)) return GameAssetType.Jpeg;
+        if (MatchesMagic(data, 0x89504E470D0A1A0A)) return GameAssetType.Png;
+
+        return GameAssetType.Unknown;
+    }
+
     [Pure]
     private GameAsset? ReadAndVerifyAsset(string hash, byte[] data)
     {
@@ -109,13 +148,13 @@ public class AssetImporter
             this.Warn($"{hash} is actually hashed as {checkedHash} - this asset is likely corrupt.");
             return null;
         }
-        
+
         GameAsset asset = new()
         {
             UploadDate = DateTimeOffset.Now,
             OriginalUploader = null,
-            AssetType = GameAssetType.Unknown,
             AssetHash = hash,
+            AssetType = DetermineAssetType(data),
         };
 
         return asset;

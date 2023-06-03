@@ -15,7 +15,7 @@ if (args.Length > 0 && args[0] == "--import_assets")
     FileSystemDataStore dataStore = new();
     
     AssetImporter importer = new(provider, dataStore);
-    importer.ImportFromCli();
+    importer.ImportDataStoreFromCli();
     return;
 }
 
