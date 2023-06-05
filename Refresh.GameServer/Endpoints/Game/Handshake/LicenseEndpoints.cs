@@ -1,5 +1,5 @@
-using System.Web;
 using Bunkum.HttpServer;
+using Bunkum.HttpServer.Configuration;
 using Bunkum.HttpServer.Endpoints;
 using Refresh.GameServer.Configuration;
 using Refresh.GameServer.Database;
@@ -34,14 +34,14 @@ public class LicenseEndpoints : EndpointGroup
     }
 
     [GameEndpoint("announce")]
-    public string Announce(RequestContext context, GameServerConfig config, GameUser user, GameDatabaseContext database)
+    public string Announce(RequestContext context, GameServerConfig config, BunkumConfig bunkumConfig, GameUser user, GameDatabaseContext database)
     {
         int count = database.GetNotificationCountByUser(user);
         List<GameNotification> notifications = database.GetNotificationsByUser(user, 5, 0).ToList();
 
         string s = count != 1 ? "s" : "";
 
-        string notificationText = $"Howdy, {user.Username}. You have {count} notification{s}.\n";
+        string notificationText = $"Howdy, {user.Username}. You have {count} notification{s}:\n\n";
         for (int i = 0; i < notifications.Count; i++)
         {
             GameNotification notification = notifications[i];
@@ -49,7 +49,7 @@ public class LicenseEndpoints : EndpointGroup
                                 $"    {notification.Text}\n\n";
         }
 
-        notificationText += "\n";
+        notificationText += $"To view more, or clear these notifications, you can visit the website at {bunkumConfig.ExternalUrl}!\n";
 
         return config.AnnounceText.TrimEnd() + "\n\n" + notificationText;
     }
