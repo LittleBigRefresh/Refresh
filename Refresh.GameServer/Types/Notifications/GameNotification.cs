@@ -1,4 +1,5 @@
 using MongoDB.Bson;
+using Newtonsoft.Json;
 using Realms;
 using Refresh.GameServer.Types.UserData;
 
@@ -6,6 +7,8 @@ namespace Refresh.GameServer.Types.Notifications;
 
 #nullable disable
 
+[JsonObject(MemberSerialization.OptOut)]
+[Serializable]
 public partial class GameNotification : IRealmObject
 {
     public ObjectId NotificationId { get; set; } = ObjectId.GenerateNewId();
@@ -13,7 +16,7 @@ public partial class GameNotification : IRealmObject
     public string Text { get; set; }
     
     public DateTimeOffset CreatedAt { get; set; }
-    public GameUser User { get; set; }
+    [JsonIgnore] public GameUser User { get; set; }
     
     public string FontAwesomeIcon { get; set; }
     public string ColorCode { get; set; }
