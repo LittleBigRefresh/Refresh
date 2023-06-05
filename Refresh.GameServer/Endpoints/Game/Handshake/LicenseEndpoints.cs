@@ -1,6 +1,10 @@
+using System.Web;
 using Bunkum.HttpServer;
 using Bunkum.HttpServer.Endpoints;
 using Refresh.GameServer.Configuration;
+using Refresh.GameServer.Database;
+using Refresh.GameServer.Types.Notifications;
+using Refresh.GameServer.Types.UserData;
 
 namespace Refresh.GameServer.Endpoints.Game.Handshake;
 
@@ -30,8 +34,23 @@ public class LicenseEndpoints : EndpointGroup
     }
 
     [GameEndpoint("announce")]
-    public string Announce(RequestContext context, GameServerConfig config)
+    public string Announce(RequestContext context, GameServerConfig config, GameUser user, GameDatabaseContext database)
     {
-        return config.AnnounceText;
+        int count = database.GetNotificationCountByUser(user);
+        List<GameNotification> notifications = database.GetNotificationsByUser(user, 5, 0).ToList();
+
+        string s = count != 1 ? "s" : "";
+
+        string notificationText = $"Howdy, {user.Username}. You have {count} notification{s}.\n";
+        for (int i = 0; i < notifications.Count; i++)
+        {
+            GameNotification notification = notifications[i];
+            notificationText += $"  {notification.Title} ({i + 1}/{count}):\n" +
+                                $"    {notification.Text}\n\n";
+        }
+
+        notificationText += "\n";
+
+        return config.AnnounceText.TrimEnd() + "\n\n" + notificationText;
     }
 }

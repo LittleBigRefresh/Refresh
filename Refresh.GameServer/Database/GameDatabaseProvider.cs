@@ -7,6 +7,7 @@ using Refresh.GameServer.Types.UserData;
 using Bunkum.RealmDatabase;
 using Refresh.GameServer.Types.Activity;
 using Refresh.GameServer.Types.Assets;
+using Refresh.GameServer.Types.Notifications;
 using Refresh.GameServer.Types.Relations;
 using Refresh.GameServer.Types.Report;
 using Refresh.GameServer.Types.UserData.Leaderboard;
@@ -15,7 +16,7 @@ namespace Refresh.GameServer.Database;
 
 public class GameDatabaseProvider : RealmDatabaseProvider<GameDatabaseContext>
 {
-    protected override ulong SchemaVersion => 44;
+    protected override ulong SchemaVersion => 45;
 
     protected override string Filename => "refreshGameServer.realm";
     
@@ -35,6 +36,7 @@ public class GameDatabaseProvider : RealmDatabaseProvider<GameDatabaseContext>
         typeof(Event),
         typeof(GameSubmittedScore),
         typeof(GameAsset),
+        typeof(GameNotification),
         //grief report items
         typeof(GameReport),
         typeof(InfoBubble),
