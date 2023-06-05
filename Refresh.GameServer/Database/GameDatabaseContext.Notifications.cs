@@ -1,4 +1,5 @@
 using JetBrains.Annotations;
+using MongoDB.Bson;
 using Refresh.GameServer.Types.Notifications;
 using Refresh.GameServer.Types.UserData;
 
@@ -28,7 +29,9 @@ public partial class GameDatabaseContext // Notifications
     }
 
     [Pure]
-    public int GetNotificationCountByUser(GameUser user) => this._realm.All<GameNotification>().Count();
+    public int GetNotificationCountByUser(GameUser user) => 
+        this._realm.All<GameNotification>()
+            .Count(n => n.User == user);
     
     [Pure]
     public IEnumerable<GameNotification> GetNotificationsByUser(GameUser user, int count, int skip) =>
@@ -37,4 +40,26 @@ public partial class GameDatabaseContext // Notifications
             .AsEnumerable()
             .Skip(skip)
             .Take(count);
+
+    [Pure]
+    public GameNotification? GetNotificationByUuid(GameUser user, ObjectId id) 
+        => this._realm
+            .All<GameNotification>()
+            .FirstOrDefault(n => n.User == user && n.NotificationId == id);
+    
+    public void DeleteNotificationsByUser(GameUser user)
+    {
+        this._realm.Write(() =>
+        {
+            this._realm.RemoveRange(this._realm.All<GameNotification>().Where(n => n.User == user));
+        });
+    }
+    
+    public void DeleteNotification(GameNotification notification)
+    {
+        this._realm.Write(() =>
+        {
+            this._realm.Remove(notification);
+        });
+    }
 }
