@@ -8,7 +8,7 @@ using Refresh.GameServer.Types.UserData;
 
 namespace Refresh.GameServer.Endpoints.Game.Handshake;
 
-public class LicenseEndpoints : EndpointGroup
+public class WelcomeEndpoints : EndpointGroup
 {
     private const string AGPLLicense = """
     Copyright (C) 2023 LittleBigRefresh
