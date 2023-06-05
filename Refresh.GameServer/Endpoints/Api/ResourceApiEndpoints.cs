@@ -10,7 +10,7 @@ namespace Refresh.GameServer.Endpoints.Api;
 
 public class ResourceApiEndpoints : EndpointGroup
 {
-    [ApiEndpoint("asset/{hash}")]
+    [ApiEndpoint("asset/{hash}/download")]
     [Authentication(false)]
     public Response DownloadGameAsset(RequestContext context, IDataStore dataStore, string hash)
     {
@@ -23,7 +23,7 @@ public class ResourceApiEndpoints : EndpointGroup
         return new Response(data, ContentType.BinaryData);
     }
     
-    [ApiEndpoint("asset/{hash}/info")]
+    [ApiEndpoint("asset/{hash}")]
     [Authentication(false)]
     public Response GetAssetInfo(RequestContext context, GameDatabaseContext database, string hash)
     {
