@@ -27,6 +27,13 @@ public static class AssetSafetyLevelExtensions
             GameAssetType.Texture => AssetSafetyLevel.Safe,
             GameAssetType.Jpeg => AssetSafetyLevel.Safe,
             GameAssetType.Png => AssetSafetyLevel.Safe,
+            
+            GameAssetType.Material => AssetSafetyLevel.PotentiallyUnwanted,
+            GameAssetType.Mesh => AssetSafetyLevel.PotentiallyUnwanted,
+            GameAssetType.AltTexture => AssetSafetyLevel.PotentiallyUnwanted,
+            GameAssetType.Palette => AssetSafetyLevel.PotentiallyUnwanted,
+            
+            GameAssetType.Script => AssetSafetyLevel.Dangerous,
             GameAssetType.Unknown => AssetSafetyLevel.Dangerous,
             _ => throw new ArgumentOutOfRangeException(nameof(type), type, null),
         };
