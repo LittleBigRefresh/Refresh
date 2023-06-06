@@ -46,6 +46,7 @@
 
     <ItemGroup>
       <PackageReference Include="BCrypt.Net-Next" Version="4.0.3" />
+      <PackageReference Include="Bunkum.AutoDiscover" Version="1.0.0" />
       <PackageReference Include="NPTicket" Version="2.0.0" />
       <PackageReference Include="Realm" Version="11.0.0" />
     </ItemGroup>

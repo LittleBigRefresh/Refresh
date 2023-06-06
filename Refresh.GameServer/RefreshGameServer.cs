@@ -1,6 +1,7 @@
 using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
 using Bunkum.CustomHttpListener;
+using Bunkum.AutoDiscover.Extensions;
 using Bunkum.HttpServer;
 using Bunkum.HttpServer.Authentication;
 using Bunkum.HttpServer.RateLimit;
@@ -9,6 +10,7 @@ using Bunkum.RealmDatabase;
 using Refresh.GameServer.Authentication;
 using Refresh.GameServer.Configuration;
 using Refresh.GameServer.Database;
+using Refresh.GameServer.Endpoints;
 using Refresh.GameServer.Middlewares;
 using Refresh.GameServer.Services;
 using Refresh.GameServer.Types.Levels.Categories;
@@ -71,6 +73,9 @@ public class RefreshGameServer
         this._server.AddService<FriendStorageService>();
         this._server.AddService<MatchService>();
         this._server.AddService<AssetImportService>();
+        this._server.AddAutoDiscover(serverBrand: "Refresh",
+            baseEndpoint: GameEndpointAttribute.BaseRoute.Substring(0, GameEndpointAttribute.BaseRoute.Length - 1),
+            usesCustomDigestKey: true);
         
         this._server.AddHealthCheckService(new []
         {
