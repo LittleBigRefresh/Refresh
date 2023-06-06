@@ -27,6 +27,9 @@ public class AuthenticationEndpoints : EndpointGroup
             context.Logger.LogWarning(BunkumContext.Authentication, "Could not read ticket: " + e);
             return null;
         }
+        
+        GameUser? user = database.GetUserByUsername(ticket.Username);
+        user ??= database.CreateUser(ticket.Username);
 
         TokenPlatform? platform = ticket.IssuerId switch
         {
@@ -39,6 +42,7 @@ public class AuthenticationEndpoints : EndpointGroup
 
         if (platform == null)
         {
+            database.AddLoginFailNotification("The server could not determine what platform you were trying to connect from.", user);
             context.Logger.LogWarning(BunkumContext.Authentication, $"Could not determine platform from ticket.\n" +
                                                                     $"Platform: {ticket.IssuerId}");
             return null;
@@ -46,6 +50,7 @@ public class AuthenticationEndpoints : EndpointGroup
 
         if (game == null)
         {
+            database.AddLoginFailNotification("The server could not determine what game you were trying to connect from.", user);
             context.Logger.LogWarning(BunkumContext.Authentication, $"Could not determine game from ticket.\n" +
                                                                     $"Platform: {ticket.TitleId}");
             return null;
@@ -53,11 +58,8 @@ public class AuthenticationEndpoints : EndpointGroup
 
         if (game == TokenGame.LittleBigPlanetVita && platform == TokenPlatform.PS3) platform = TokenPlatform.Vita;
 
-        GameUser? user = database.GetUserByUsername(ticket.Username);
-        user ??= database.CreateUser(ticket.Username);
-
         Token token = database.GenerateTokenForUser(user, TokenType.Game, game.Value, platform.Value,14400); // 4 hours
-        
+
         return new LoginResponse
         {
             TokenData = "MM_AUTH=" + token.TokenData,

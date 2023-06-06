@@ -91,6 +91,16 @@ public partial class GameDatabaseContext // Relations
 
         this.CreateUserFavouriteEvent(userFavouriting, userToFavourite);
 
+        if (this.AreUsersMutual(userFavouriting, userToFavourite))
+        {
+            this.AddNotification("New mutual", $"You are now mutuals with {userFavouriting.Username}!", userToFavourite);
+            this.AddNotification("New mutual", $"You are now mutuals with {userToFavourite.Username}!", userFavouriting);
+        }
+        else
+        {
+            this.AddNotification("New follower", $"{userFavouriting.Username} hearted you!", userToFavourite);
+        }
+
         return true;
     }
 

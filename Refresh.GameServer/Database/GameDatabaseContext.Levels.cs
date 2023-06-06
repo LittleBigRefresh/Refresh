@@ -10,7 +10,7 @@ namespace Refresh.GameServer.Database;
 
 public partial class GameDatabaseContext // Levels
 {
-    public bool AddLevel(GameLevel level)
+    public void AddLevel(GameLevel level)
     {
         if (level.Publisher == null) throw new ArgumentNullException(nameof(level.Publisher));
 
@@ -21,7 +21,7 @@ public partial class GameDatabaseContext // Levels
             level.UpdateDate = timestamp;
         });
 
-        return true;
+        return;
     }
 
     public GameLevel? UpdateLevel(GameLevel level, GameUser user)

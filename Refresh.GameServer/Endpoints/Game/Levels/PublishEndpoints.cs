@@ -41,14 +41,14 @@ public class PublishEndpoints : EndpointGroup
                 newBody.PrepareForSerialization();
                 return new Response(newBody, ContentType.Xml);
             }
-
+            
+            database.AddPublishFailNotification("You may not republish another user's level.", body, user);
             return BadRequest;
         }
 
         body.Publisher = user;
 
-        if (!database.AddLevel(body)) return BadRequest;
-
+        database.AddLevel(body);
         database.CreateLevelUploadEvent(user, body);
             
         body.PrepareForSerialization();

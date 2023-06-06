@@ -87,7 +87,11 @@ public class UserEndpoints : EndpointGroup
             // ignored
         }
 
-        if (data == null) return null;
+        if (data == null)
+        {
+            database.AddErrorNotification("Profile update failed", "Your profile failed to update because the data could not be read.", user);
+            return null;
+        }
         
         database.UpdateUserData(user, data);
         return string.Empty;
@@ -106,7 +110,10 @@ public class UserEndpoints : EndpointGroup
 
         //If the type is not correct, return null
         if (updateUserPins is null)
+        {
+            database.AddErrorNotification("Pin sync failed", "Your pins failed to update because the data could not be read.", user);
             return null;
+        }
 
         //NOTE: the returned value in the packet capture has a few higher values than the ones sent in the request,
         //      so im not sure what we are supposed to return here, so im just passing it through with `profile_pins` nulled out

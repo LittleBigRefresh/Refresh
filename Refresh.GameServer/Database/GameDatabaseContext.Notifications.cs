@@ -1,5 +1,7 @@
 using JetBrains.Annotations;
 using MongoDB.Bson;
+using Refresh.GameServer.Authentication;
+using Refresh.GameServer.Types.Levels;
 using Refresh.GameServer.Types.Notifications;
 using Refresh.GameServer.Types.UserData;
 
@@ -7,7 +9,7 @@ namespace Refresh.GameServer.Database;
 
 public partial class GameDatabaseContext // Notifications
 {
-    public void CreateNotification(string title, string text, GameUser user, string? icon = null, string? color = null)
+    public void AddNotification(string title, string text, GameUser user, string? icon = null, string? color = null)
     {
         icon ??= "bell";
         color ??= "#AA30F5";
@@ -26,6 +28,21 @@ public partial class GameDatabaseContext // Notifications
         {
             this._realm.Add(notification);
         });
+    }
+
+    public void AddErrorNotification(string title, string text, GameUser user, string? icon = null)
+    {
+        this.AddNotification(title, text, user, icon, color: "#E52E2E");
+    }
+
+    public void AddPublishFailNotification(string reason, GameLevel body, GameUser user)
+    {
+        this.AddErrorNotification("Publish failed", $"The level '{body.Title}' failed to publish. {reason}", user);
+    }
+    
+    public void AddLoginFailNotification(string reason, GameUser user)
+    {
+        this.AddErrorNotification("Authentication failure", $"There was a recent failed sign-in attempt. {reason}", user);
     }
 
     [Pure]
