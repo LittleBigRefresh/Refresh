@@ -11,12 +11,14 @@ using Refresh.GameServer.Types.Notifications;
 using Refresh.GameServer.Types.Relations;
 using Refresh.GameServer.Types.Report;
 using Refresh.GameServer.Types.UserData.Leaderboard;
+using GamePhoto = Refresh.GameServer.Types.UserData.Photos.GamePhoto;
+using GamePhotoSubject = Refresh.GameServer.Types.UserData.Photos.GamePhotoSubject;
 
 namespace Refresh.GameServer.Database;
 
 public class GameDatabaseProvider : RealmDatabaseProvider<GameDatabaseContext>
 {
-    protected override ulong SchemaVersion => 46;
+    protected override ulong SchemaVersion => 47;
 
     protected override string Filename => "refreshGameServer.realm";
     
@@ -37,6 +39,8 @@ public class GameDatabaseProvider : RealmDatabaseProvider<GameDatabaseContext>
         typeof(GameSubmittedScore),
         typeof(GameAsset),
         typeof(GameNotification),
+        typeof(GamePhoto),
+        typeof(GamePhotoSubject),
         //grief report items
         typeof(GameReport),
         typeof(InfoBubble),
