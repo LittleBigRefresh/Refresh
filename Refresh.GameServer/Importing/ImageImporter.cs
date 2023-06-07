@@ -31,7 +31,7 @@ public partial class ImageImporter : Importer
         }
     }
 
-    private static void ImportAsset(GameAsset asset, IDataStore dataStore)
+    public static void ImportAsset(GameAsset asset, IDataStore dataStore)
     {
         byte[] data = dataStore.GetDataFromStore(asset.AssetHash);
 
