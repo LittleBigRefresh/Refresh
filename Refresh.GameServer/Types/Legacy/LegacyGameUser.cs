@@ -16,7 +16,7 @@ public class LegacyGameUser
     [JsonProperty("yayHash")] public string YayHash { get; set; }
     [JsonProperty("mehHash")] public string MehHash { get; set; }
     [JsonProperty("booHash")] public string BooHash { get; set; }
-    [JsonProperty("lastLogin")] public int LastLogin { get; set; }
+    [JsonProperty("lastLogin")] public int LastLogin { get; set; } = 1;
     [JsonProperty("lastLogout")] public int LastLogout { get; set; }
     [JsonProperty("levelVisibility")] public short LevelVisibility { get; set; }
     [JsonProperty("profileVisibility")] public short ProfileVisibility { get; set; }
