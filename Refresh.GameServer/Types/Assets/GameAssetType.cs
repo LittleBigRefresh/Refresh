@@ -63,7 +63,7 @@ public enum GameAssetType
     /// <remarks>
     /// Magic: GTF(0x20)
     /// </remarks>
-    AltTexture = 7,
+    GameDataTexture = 7,
     /// <summary>
     /// A custom color palette, used for custom outfits.
     /// </summary>

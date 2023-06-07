@@ -63,7 +63,7 @@ public abstract class Importer
     {
         // LBP assets
         if (MatchesMagic(data, "TEX "u8)) return GameAssetType.Texture;
-        if (MatchesMagic(data, "GTF "u8)) return GameAssetType.AltTexture;
+        if (MatchesMagic(data, "GTF "u8)) return GameAssetType.GameDataTexture;
         if (MatchesMagic(data, "PLNb"u8)) return GameAssetType.Plan;
         if (MatchesMagic(data, "LVLb"u8)) return GameAssetType.Level;
         if (MatchesMagic(data, "GMTb"u8)) return GameAssetType.Material;

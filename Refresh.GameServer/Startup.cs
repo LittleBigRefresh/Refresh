@@ -1,4 +1,5 @@
-﻿using Bunkum.HttpServer;
+﻿using System.Net.Mime;
+using Bunkum.HttpServer;
 using Bunkum.HttpServer.Storage;
 using Refresh.GameServer;
 using Refresh.GameServer.Database;
@@ -18,8 +19,10 @@ if (args.Length > 0 && args[0] == "--import_assets")
     provider.Initialize();
     using GameDatabaseContext context = provider.GetContext();
     
-    AssetImporter importer = new();
-    importer.ImportFromDataStoreCli(context, dataStore);
+    // AssetImporter importer = new();
+    // importer.ImportFromDataStoreCli(context, dataStore);
+    ImageImporter importer = new();
+    importer.ImportFromDataStore(context, dataStore);
     return;
 }
 

@@ -30,7 +30,7 @@ public static class AssetSafetyLevelExtensions
             
             GameAssetType.Material => AssetSafetyLevel.PotentiallyUnwanted,
             GameAssetType.Mesh => AssetSafetyLevel.PotentiallyUnwanted,
-            GameAssetType.AltTexture => AssetSafetyLevel.PotentiallyUnwanted,
+            GameAssetType.GameDataTexture => AssetSafetyLevel.PotentiallyUnwanted,
             GameAssetType.Palette => AssetSafetyLevel.PotentiallyUnwanted,
             
             GameAssetType.Script => AssetSafetyLevel.Dangerous,

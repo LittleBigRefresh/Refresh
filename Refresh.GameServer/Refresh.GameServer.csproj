@@ -49,6 +49,8 @@
       <PackageReference Include="Bunkum.AutoDiscover" Version="1.0.0" />
       <PackageReference Include="NPTicket" Version="2.0.0" />
       <PackageReference Include="Realm" Version="11.0.0" />
+      <PackageReference Include="SharpZipLib" Version="1.4.2" />
+      <PackageReference Include="SixLabors.ImageSharp" Version="3.0.1" />
     </ItemGroup>
 
     <ItemGroup>
