@@ -39,7 +39,7 @@ public partial class ImageImporter : Importer
         byte[] newData = asset.AssetType switch
         {
             GameAssetType.Png => data, // TODO: use hard links instead of just replicating same data, or run 'optipng'?
-            GameAssetType.Texture => data,
+            GameAssetType.Texture => TextureToPng(data),
             GameAssetType.Jpeg => JpegToPng(data),
             _ => throw new InvalidOperationException($"Cannot convert a {asset.AssetType} to PNG"),
         };
