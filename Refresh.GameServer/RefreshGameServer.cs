@@ -72,7 +72,7 @@ public class RefreshGameServer
         this._server.AddService<CategoryService>();
         this._server.AddService<FriendStorageService>();
         this._server.AddService<MatchService>();
-        this._server.AddService<AssetImportService>();
+        this._server.AddService<ImportService>();
         this._server.AddAutoDiscover(serverBrand: "Refresh",
             baseEndpoint: GameEndpointAttribute.BaseRoute.Substring(0, GameEndpointAttribute.BaseRoute.Length - 1),
             usesCustomDigestKey: true);

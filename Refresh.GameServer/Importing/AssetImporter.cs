@@ -2,7 +2,6 @@ using System.Buffers.Binary;
 using System.Diagnostics;
 using System.Runtime.CompilerServices;
 using System.Security.Cryptography;
-using System.Text.RegularExpressions;
 using Bunkum.HttpServer;
 using Bunkum.HttpServer.Storage;
 using JetBrains.Annotations;
@@ -11,24 +10,12 @@ using NotEnoughLogs.Loggers;
 using Refresh.GameServer.Database;
 using Refresh.GameServer.Types.Assets;
 
-namespace Refresh.GameServer;
+namespace Refresh.GameServer.Importing;
 
-public class AssetImporter
+public class AssetImporter : Importer
 {
-    private readonly LoggerContainer<BunkumContext> _logger;
-    private readonly Stopwatch _stopwatch;
-
-    public AssetImporter(LoggerContainer<BunkumContext>? logger = null)
-    {
-        if (logger == null)
-        {
-            logger = new LoggerContainer<BunkumContext>();
-            logger.RegisterLogger(new ConsoleLogger());
-        }
-
-        this._logger = logger;
-        this._stopwatch = new Stopwatch();
-    }
+    public AssetImporter(LoggerContainer<BunkumContext>? logger = null) : base(logger)
+    {}
 
     public void ImportFromDataStoreCli(GameDatabaseContext context, IDataStore dataStore)
     {
@@ -49,21 +36,9 @@ public class AssetImporter
         this.ImportFromDataStore(context, dataStore);
     }
 
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    private void Info(string message)
+    private void ImportFromDataStore(GameDatabaseContext context, IDataStore dataStore)
     {
-        this._logger.LogInfo(BunkumContext.UserContent, $"[{this._stopwatch.ElapsedMilliseconds}ms] {message}");
-    }
-    
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    private void Warn(string message)
-    {
-        this._logger.LogWarning(BunkumContext.UserContent, $"[{this._stopwatch.ElapsedMilliseconds}ms] {message}");
-    }
-
-    public void ImportFromDataStore(GameDatabaseContext context, IDataStore dataStore)
-    {
-        this._stopwatch.Start();
+        this.Stopwatch.Start();
         
         context.DeleteAllAssetMetadata();
         this.Info("Deleted all asset metadata");
@@ -94,48 +69,6 @@ public class AssetImporter
         {
             this.Warn($"{assetHashes.Count - assets.Count} assets were not imported");
         }
-    }
-
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    private static bool MatchesMagic(ReadOnlySpan<byte> data, ReadOnlySpan<byte> magic)
-    {
-        return data[..magic.Length].SequenceEqual(magic);
-    }
-    
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    private static bool MatchesMagic(ReadOnlySpan<byte> data, uint magic)
-    {
-        Span<byte> magicSpan = stackalloc byte[sizeof(uint)];
-        BitConverter.TryWriteBytes(magicSpan, BinaryPrimitives.ReverseEndianness(magic));
-        return MatchesMagic(data, magicSpan);
-    }
-    
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    private static bool MatchesMagic(ReadOnlySpan<byte> data, ulong magic)
-    {
-        Span<byte> magicSpan = stackalloc byte[sizeof(ulong)];
-        BitConverter.TryWriteBytes(magicSpan, BinaryPrimitives.ReverseEndianness(magic));
-        return MatchesMagic(data, magicSpan);
-    }
-
-    private static GameAssetType DetermineAssetType(ReadOnlySpan<byte> data)
-    {
-        // LBP assets
-        if (MatchesMagic(data, "TEX "u8)) return GameAssetType.Texture;
-        if (MatchesMagic(data, "GTF "u8)) return GameAssetType.AltTexture;
-        if (MatchesMagic(data, "PLNb"u8)) return GameAssetType.Plan;
-        if (MatchesMagic(data, "LVLb"u8)) return GameAssetType.Level;
-        if (MatchesMagic(data, "GMTb"u8)) return GameAssetType.Material;
-        if (MatchesMagic(data, "MSHb"u8)) return GameAssetType.Mesh;
-        if (MatchesMagic(data, "PALb"u8)) return GameAssetType.Palette;
-        if (MatchesMagic(data, "FSHb"u8)) return GameAssetType.Script;
-        
-        // Traditional files
-        // Good reference for magics: https://en.wikipedia.org/wiki/List_of_file_signatures
-        if (MatchesMagic(data, 0xFFD8FFE0)) return GameAssetType.Jpeg;
-        if (MatchesMagic(data, 0x89504E470D0A1A0A)) return GameAssetType.Png;
-
-        return GameAssetType.Unknown;
     }
 
     [Pure]
