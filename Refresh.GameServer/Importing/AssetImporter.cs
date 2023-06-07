@@ -1,12 +1,8 @@
-using System.Buffers.Binary;
-using System.Diagnostics;
-using System.Runtime.CompilerServices;
 using System.Security.Cryptography;
 using Bunkum.HttpServer;
 using Bunkum.HttpServer.Storage;
 using JetBrains.Annotations;
 using NotEnoughLogs;
-using NotEnoughLogs.Loggers;
 using Refresh.GameServer.Database;
 using Refresh.GameServer.Types.Assets;
 
@@ -43,12 +39,9 @@ public class AssetImporter : Importer
         context.DeleteAllAssetMetadata();
         this.Info("Deleted all asset metadata");
         
-        // TODO: implement getting a list of keys from IDataStore in bunkum!
-        // this is a nasty hack! we will have to unit test this eventually, using a file store for tests is a huge no-no
-        // eww, manually getting dataStore directory >:(
-        List<string> assetHashes = Directory.GetFiles(Path.Join(BunkumFileSystem.DataDirectory, "dataStore"))
-            .Select(Path.GetFileName)
-            .ToList()!;
+        List<string> assetHashes = dataStore.GetKeysFromStore()
+            .Where(key => !key.Contains('/'))
+            .ToList();
 
         List<GameAsset> assets = new();
         foreach (string hash in assetHashes)
