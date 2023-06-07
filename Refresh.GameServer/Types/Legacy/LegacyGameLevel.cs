@@ -13,6 +13,7 @@ public class LegacyGameLevel
     [JsonProperty("type")] public byte Type { get; set; }
     [JsonProperty("name")] public string Name { get; set; }
     [JsonProperty("description")] public string Description { get; set; }
+    [JsonProperty("iconHash")] public string IconHash { get; set; }
     [JsonProperty("location")] public LegacyGameLocation Location { get; set; }
 
 
@@ -23,6 +24,7 @@ public class LegacyGameLevel
             InternalSlotId = original.LevelId,
             Name = original.Title,
             Description = original.Description,
+            IconHash = original.IconHash,
             Location = LegacyGameLocation.FromGameLocation(original.Location),
             Type = 1,
         };
