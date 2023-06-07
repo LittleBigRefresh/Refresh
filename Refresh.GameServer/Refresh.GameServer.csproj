@@ -40,7 +40,7 @@
     </ItemGroup>
 
     <ItemGroup Condition="'$(Configuration)'!='DebugLocalBunkum'">
-        <PackageReference Include="Bunkum" Version="3.3.3" />
+        <PackageReference Include="Bunkum" Version="3.3.4" />
         <PackageReference Include="Bunkum.RealmDatabase" Version="3.1.4" />
     </ItemGroup>
 
