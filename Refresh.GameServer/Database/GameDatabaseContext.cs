@@ -8,8 +8,9 @@ namespace Refresh.GameServer.Database;
 public partial class GameDatabaseContext : RealmDatabaseContext
 {
     private static readonly object IdLock = new();
+
     // ReSharper disable once SuggestBaseTypeForParameter
-    private void AddSequentialObject<T>(T obj, IList<T>? list = null, Action? writtenCallback = null) where T : IRealmObject, ISequentialId
+    private void AddSequentialObject<T>(T obj, IList<T>? list, Action? writtenCallback = null) where T : IRealmObject, ISequentialId
     {
         lock (IdLock)
         {
@@ -36,8 +37,11 @@ public partial class GameDatabaseContext : RealmDatabaseContext
         }
     }
 
-    private void AddSequentialObject<T>(T obj, Action? writtenCallback = null) where T : IRealmObject, ISequentialId 
+    private void AddSequentialObject<T>(T obj, Action? writtenCallback) where T : IRealmObject, ISequentialId 
         => this.AddSequentialObject(obj, null, writtenCallback);
     
+    private void AddSequentialObject<T>(T obj) where T : IRealmObject, ISequentialId 
+        => this.AddSequentialObject(obj, null, null);
+
     private static long GetTimestampMilliseconds() => DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
 }

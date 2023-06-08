@@ -8,7 +8,10 @@ namespace Refresh.GameServer.Types.UserData.Photos;
 public partial class GamePhoto : IRealmObject, ISequentialId
 {
     [PrimaryKey] public int PhotoId { get; set; }
-    public DateTimeOffset CreatedAt { get; set; }
+    public DateTimeOffset TakenAt { get; set; }
+    public DateTimeOffset PublishedAt { get; set; }
+    
+    public GameUser Publisher { get; set; }
     
     public string SmallHash { get; set; }
     public string MediumHash { get; set; }
