@@ -16,7 +16,7 @@ public partial class GameDatabaseContext // Photos
             
             Publisher = publisher,
 
-            TakenAt = DateTimeOffset.FromUnixTimeMilliseconds(photo.Timestamp),
+            TakenAt = DateTimeOffset.FromUnixTimeSeconds(photo.Timestamp),
             PublishedAt = DateTimeOffset.Now,
         };
         

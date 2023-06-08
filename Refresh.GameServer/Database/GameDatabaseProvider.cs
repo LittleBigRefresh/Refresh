@@ -18,7 +18,7 @@ namespace Refresh.GameServer.Database;
 
 public class GameDatabaseProvider : RealmDatabaseProvider<GameDatabaseContext>
 {
-    protected override ulong SchemaVersion => 48;
+    protected override ulong SchemaVersion => 52;
 
     protected override string Filename => "refreshGameServer.realm";
     
@@ -192,6 +192,21 @@ public class GameDatabaseProvider : RealmDatabaseProvider<GameDatabaseContext>
             if (oldVersion < 40)
             {
                 newComment.Content = oldComment.Content;
+            }
+        }
+        
+        IQueryable<dynamic>? oldPhotos = migration.OldRealm.DynamicApi.All("GamePhoto");
+        IQueryable<GamePhoto>? newPhotos = migration.NewRealm.All<GamePhoto>();
+
+        for (int i = 0; i < newComments.Count(); i++)
+        {
+            dynamic oldPhoto = oldPhotos.ElementAt(i);
+            GamePhoto newPhoto = newPhotos.ElementAt(i);
+
+            // In version 52, the timestamp on photos were corrected
+            if (oldVersion < 52)
+            {
+                newPhoto.TakenAt = DateTimeOffset.FromUnixTimeSeconds(oldPhoto.TakenAt.ToUnixTimeMilliseconds());
             }
         }
     }
