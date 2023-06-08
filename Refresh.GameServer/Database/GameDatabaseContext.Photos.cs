@@ -1,5 +1,9 @@
+using Newtonsoft.Json;
+using Refresh.GameServer.Types.Levels;
+using Refresh.GameServer.Types.Photos;
 using Refresh.GameServer.Types.UserData;
-using Refresh.GameServer.Types.UserData.Photos;
+using GamePhoto = Refresh.GameServer.Types.Photos.GamePhoto;
+using GamePhotoSubject = Refresh.GameServer.Types.Photos.GamePhotoSubject;
 
 namespace Refresh.GameServer.Database;
 
@@ -15,11 +19,17 @@ public partial class GameDatabaseContext // Photos
             PlanHash = photo.PlanHash,
             
             Publisher = publisher,
+            LevelName = photo.Level.Title,
+            LevelType = photo.Level.Type,
+            LevelId = photo.Level.LevelId,
 
             TakenAt = DateTimeOffset.FromUnixTimeSeconds(photo.Timestamp),
             PublishedAt = DateTimeOffset.Now,
         };
-        
+
+        if (photo.Level.Type == "user") 
+            newPhoto.Level = this.GetLevelById(photo.Level.LevelId);
+
         float[] bounds = new float[SerializedPhotoSubject.FloatCount];
         foreach (SerializedPhotoSubject subject in photo.PhotoSubjects)
         {

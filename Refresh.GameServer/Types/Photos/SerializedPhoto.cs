@@ -1,6 +1,6 @@
 using System.Xml.Serialization;
 
-namespace Refresh.GameServer.Types.UserData.Photos;
+namespace Refresh.GameServer.Types.Photos;
 
 #nullable disable
 
@@ -15,6 +15,8 @@ public class SerializedPhoto
     [XmlElement("medium")] public string MediumHash { get; set; }
     [XmlElement("large")] public string LargeHash { get; set; }
     [XmlElement("plan")] public string PlanHash { get; set; }
+    
+    [XmlElement("slot")] public SerializedPhotoLevel Level { get; set; }
     
     [XmlArray("subjects")] public List<SerializedPhotoSubject> PhotoSubjects { get; set; }
 }

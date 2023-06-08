@@ -11,14 +11,14 @@ using Refresh.GameServer.Types.Notifications;
 using Refresh.GameServer.Types.Relations;
 using Refresh.GameServer.Types.Report;
 using Refresh.GameServer.Types.UserData.Leaderboard;
-using GamePhoto = Refresh.GameServer.Types.UserData.Photos.GamePhoto;
-using GamePhotoSubject = Refresh.GameServer.Types.UserData.Photos.GamePhotoSubject;
+using GamePhoto = Refresh.GameServer.Types.Photos.GamePhoto;
+using GamePhotoSubject = Refresh.GameServer.Types.Photos.GamePhotoSubject;
 
 namespace Refresh.GameServer.Database;
 
 public class GameDatabaseProvider : RealmDatabaseProvider<GameDatabaseContext>
 {
-    protected override ulong SchemaVersion => 52;
+    protected override ulong SchemaVersion => 54;
 
     protected override string Filename => "refreshGameServer.realm";
     

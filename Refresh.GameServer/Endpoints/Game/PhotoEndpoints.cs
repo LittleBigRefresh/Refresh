@@ -4,8 +4,8 @@ using Bunkum.HttpServer.Endpoints;
 using Bunkum.HttpServer.Responses;
 using Bunkum.HttpServer.Storage;
 using Refresh.GameServer.Database;
+using Refresh.GameServer.Types.Photos;
 using Refresh.GameServer.Types.UserData;
-using Refresh.GameServer.Types.UserData.Photos;
 
 namespace Refresh.GameServer.Endpoints.Game;
 

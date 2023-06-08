@@ -1,6 +1,6 @@
 using System.Xml.Serialization;
 
-namespace Refresh.GameServer.Types.UserData.Photos;
+namespace Refresh.GameServer.Types.Photos;
 
 #nullable disable
 
