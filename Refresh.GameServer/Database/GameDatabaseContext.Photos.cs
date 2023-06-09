@@ -55,6 +55,7 @@ public partial class GameDatabaseContext // Photos
     public IEnumerable<GamePhoto> GetPhotosByUser(GameUser user, int count, int skip) =>
         this._realm.All<GamePhoto>()
             .Where(p => p.Publisher == user)
+            .OrderByDescending(p => p.TakenAt)
             .AsEnumerable()
             .Skip(skip)
             .Take(count);
@@ -65,6 +66,7 @@ public partial class GameDatabaseContext // Photos
             .AsEnumerable()
             // FIXME: client-side enumeration
             .Where(p => p.Subjects.FirstOrDefault(s => Equals(s.User, user)) != null)
+            .OrderByDescending(p => p.TakenAt)
             .Skip(skip)
             .Take(count);
 

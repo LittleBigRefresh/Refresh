@@ -6,6 +6,7 @@ using Bunkum.HttpServer.RateLimit;
 using Bunkum.HttpServer.Serialization;
 using Newtonsoft.Json;
 using Refresh.GameServer.Types.Levels;
+using Refresh.GameServer.Types.Photos;
 using Refresh.GameServer.Types.Relations;
 
 namespace Refresh.GameServer.Types.UserData;
@@ -43,6 +44,12 @@ public partial class GameUser : IRealmObject, IRateLimitUser, INeedsPreparationB
 
     [Backlink(nameof(GameLevel.Publisher))]
     [XmlIgnore] public IQueryable<GameLevel> PublishedLevels { get; }
+    
+    [Backlink(nameof(GamePhoto.Publisher))]
+    [XmlIgnore] public IQueryable<GamePhoto> PhotosByMe { get; }
+    
+    [Backlink(nameof(GamePhotoSubject.User))]
+    [XmlIgnore] public IQueryable<GamePhotoSubject> PhotosWithMe { get; }
     #nullable restore
 
     [XmlElement("planets")] public string PlanetsHash { get; set; } = "0";
@@ -59,6 +66,8 @@ public partial class GameUser : IRealmObject, IRateLimitUser, INeedsPreparationB
     [Ignored] [XmlElement("favouriteUserCount")] public int? FavouriteUserCount { get; set; }
     [Ignored] [XmlElement("lolcatftwCount")] public int? QueuedLevelCount { get; set; }
     [Ignored] [XmlElement("heartCount")] public int? HeartCount { get; set; }
+    [Ignored] [XmlElement("photosByMeCount")] public int? PhotosByMeCount { get; set; }
+    [Ignored] [XmlElement("photosWithMeCount")] public int? PhotosWithMeCount { get; set; }
 
     private partial void SerializeSlots();
 
@@ -74,6 +83,9 @@ public partial class GameUser : IRealmObject, IRateLimitUser, INeedsPreparationB
         this.FavouriteUserCount = this.UsersFavourited.Count();
         this.QueuedLevelCount = this.QueueLevelRelations.Count();
         this.HeartCount = this.UsersFavouritingMe.Count();
+
+        this.PhotosByMeCount = this.PhotosByMe.Count();
+        this.PhotosWithMeCount = this.PhotosWithMe.Count();
         
         this.SerializeSlots();
     }

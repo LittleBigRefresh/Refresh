@@ -33,7 +33,7 @@ public class SerializedPhoto
         {
             PhotoId = photo.PhotoId,
             AuthorName = photo.Publisher.Username,
-            Timestamp = photo.TakenAt.ToUnixTimeSeconds(),
+            Timestamp = photo.TakenAt.ToUnixTimeMilliseconds(),
             SmallHash = photo.SmallHash,
             MediumHash = photo.MediumHash,
             LargeHash = photo.LargeHash,
