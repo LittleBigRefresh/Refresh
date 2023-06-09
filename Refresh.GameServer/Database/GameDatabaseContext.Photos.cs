@@ -60,6 +60,11 @@ public partial class GameDatabaseContext // Photos
             .Take(count);
 
     [Pure]
+    public GamePhoto? GetPhotoById(int id) =>
+        this._realm.All<GamePhoto>()
+            .FirstOrDefault(p => p.PhotoId == id);
+
+    [Pure]
     public IEnumerable<GamePhoto> GetPhotosByUser(GameUser user, int count, int skip) =>
         this._realm.All<GamePhoto>()
             .Where(p => p.Publisher == user)

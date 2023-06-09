@@ -68,4 +68,10 @@ public class PhotoApiEndpoints : EndpointGroup
         (int skip, int count) = context.GetPageData(true);
         return database.GetRecentPhotos(count, skip);
     }
+    
+    [ApiEndpoint("photo/{id}")]
+    [Authentication(false)]
+    [NullStatusCode(NotFound)]
+    public GamePhoto? PhotoById(RequestContext context, GameDatabaseContext database, int id) 
+        => database.GetPhotoById(id);
 }
