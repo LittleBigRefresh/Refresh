@@ -45,7 +45,7 @@ public class SerializedPhoto
         {
             SerializedPhotoSubject newSubject = new()
             {
-                Username = subject.User?.Username ?? "",
+                Username = subject.User?.Username ?? subject.DisplayName,
                 DisplayName = subject.DisplayName,
                 BoundsList = string.Join(',', subject.Bounds),
             };
