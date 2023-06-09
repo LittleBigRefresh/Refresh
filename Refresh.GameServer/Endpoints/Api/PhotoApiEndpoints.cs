@@ -60,4 +60,12 @@ public class PhotoApiEndpoints : EndpointGroup
     [Authentication(false)]
     public IEnumerable<GamePhoto>? PhotosInLevelId(RequestContext context, GameDatabaseContext database, int id)
         => PhotosInLevel(context, database, database.GetLevelById(id));
+    
+    [ApiEndpoint("photos")]
+    [Authentication(false)]
+    public IEnumerable<GamePhoto> RecentPhotos(RequestContext context, GameDatabaseContext database)
+    {
+        (int skip, int count) = context.GetPageData(true);
+        return database.GetRecentPhotos(count, skip);
+    }
 }

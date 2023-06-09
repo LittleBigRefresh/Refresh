@@ -50,6 +50,14 @@ public partial class GameDatabaseContext // Photos
 
         this.AddSequentialObject(newPhoto);
     }
+    
+    [Pure]
+    public IEnumerable<GamePhoto> GetRecentPhotos(int count, int skip) =>
+        this._realm.All<GamePhoto>()
+            .OrderByDescending(p => p.PublishedAt)
+            .AsEnumerable()
+            .Skip(skip)
+            .Take(count);
 
     [Pure]
     public IEnumerable<GamePhoto> GetPhotosByUser(GameUser user, int count, int skip) =>
