@@ -75,4 +75,12 @@ public partial class GameDatabaseContext // Leaderboard
         if(!ObjectId.TryParse(uuid, out ObjectId objectId)) return null;
         return this._realm.All<GameSubmittedScore>().FirstOrDefault(u => u.ScoreId == objectId);
     }
+    
+    [Pure]
+    [ContractAnnotation("null => null; notnull => canbenull")]
+    public GameSubmittedScore? GetScoreByObjectId(ObjectId? id)
+    {
+        if (id == null) return null;
+        return this._realm.All<GameSubmittedScore>().FirstOrDefault(u => u.ScoreId == id);
+    }
 }

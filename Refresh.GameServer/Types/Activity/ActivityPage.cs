@@ -6,6 +6,7 @@ using Refresh.GameServer.Types.Activity.SerializedEvents;
 using Refresh.GameServer.Types.Levels;
 using Refresh.GameServer.Types.Lists;
 using Refresh.GameServer.Types.UserData;
+using Refresh.GameServer.Types.UserData.Leaderboard;
 
 namespace Refresh.GameServer.Types.Activity;
 
@@ -71,8 +72,18 @@ public class ActivityPage
         {
             Items = levels,
         };
+        
+        List<GameSubmittedScore> scores = this.Events
+            .Where(e => e.StoredDataType == EventDataType.SubmittedScore)
+            .DistinctBy(e => e.StoredObjectId)
+            .Select(e => database.GetScoreByObjectId(e.StoredObjectId))
+            .ToList()!;
 
-        this.Groups = generateGroups ? this.GenerateGroups(users) : new ActivityGroups();
+        this.Groups = generateGroups ? this.GenerateGroups(users, scores) : new ActivityGroups();
+
+        this.Groups.Groups = this.Groups.Groups
+            .OrderByDescending(g => g.Timestamp)
+            .ToList();
 
         if (this.Events.Count > 0)
         {
@@ -81,7 +92,7 @@ public class ActivityPage
         }
     }
 
-    private ActivityGroups GenerateGroups(IReadOnlyCollection<GameUser> users)
+    private ActivityGroups GenerateGroups(IReadOnlyCollection<GameUser> users, IReadOnlyCollection<GameSubmittedScore> scores)
     {
         ActivityGroups groups = new();
         
@@ -94,6 +105,9 @@ public class ActivityPage
                     break;
                 case EventDataType.Level:
                     this.GenerateLevelGroups(groups);
+                    break;
+                case EventDataType.SubmittedScore:
+                    this.GenerateScoreGroups(groups, scores);
                     break;
                 default:
                     throw new ArgumentOutOfRangeException();
@@ -148,6 +162,50 @@ public class ActivityPage
                         Events = new Events(new List<SerializedEvent>
                         {
                             levelEvent,
+                        }),
+                    },
+                }),
+            });
+        }
+    }
+    
+    private void GenerateScoreGroups(ActivityGroups groups, IReadOnlyCollection<GameSubmittedScore> scores)
+    {
+        foreach (Event @event in this.Events.Where(e => e.EventType == EventType.SubmittedScore))
+        {
+            GameSubmittedScore score = scores.First(u => u.ScoreId == @event.StoredObjectId);
+            
+            SerializedLevelId id = new()
+            {
+                LevelId = score.Level.LevelId,
+                Type = "user",
+            };
+
+            long timestamp = @event.Timestamp;
+
+            SerializedScoreSubmitEvent scoreEvent = new()
+            {
+                Type = @event.EventType,
+                Timestamp = timestamp,
+                LevelId = id,
+                Actor = @event.User.Username,
+                Score = score.Score,
+                ScoreType = score.ScoreType,
+            };
+
+            groups.Groups.Add(new LevelActivityGroup
+            {
+                LevelId = id,
+                Timestamp = timestamp,
+                Subgroups = new Subgroups(new List<ActivityGroup>
+                {
+                    new UserActivityGroup
+                    {
+                        Username = @event.User.Username,
+                        Timestamp = timestamp,
+                        Events = new Events(new List<SerializedEvent>
+                        {
+                            scoreEvent,
                         }),
                     },
                 }),
