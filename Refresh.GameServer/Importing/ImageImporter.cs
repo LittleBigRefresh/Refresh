@@ -32,21 +32,39 @@ public partial class ImageImporter : Importer
         
         this.Info("Cloned Realm objects");
 
-        for (int i = 0; i < Environment.ProcessorCount; i++)
+        int threadCount = Environment.ProcessorCount;
+
+        List<Thread> threads = new(threadCount);
+
+        for (int i = 0; i < threadCount; i++)
         {
             void Start() => this.ThreadTask(assetQueue, dataStore);
             Thread thread = new(Start);
             thread.Start();
+            threads.Add(thread);
         }
+
+        while (this._runningCount != 0)
+        {
+            Thread.Sleep(1);
+        }
+
+        this.Info($"Imported {assets.Count} images using {threadCount} threads in ~{this.Stopwatch.ElapsedMilliseconds}ms");
     }
+
+    private int _runningCount;
 
     private void ThreadTask(ConcurrentQueue<GameAsset> assetQueue, IDataStore dataStore)
     {
+        this._runningCount++;
+        
         while (assetQueue.TryDequeue(out GameAsset? asset))
         {
             ImportAsset(asset, dataStore);
             this.Info($"Imported {asset.AssetType} {asset.AssetHash}");   
         }
+
+        this._runningCount--;
     }
 
     public static void ImportAsset(GameAsset asset, IDataStore dataStore)
