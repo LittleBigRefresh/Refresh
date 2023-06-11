@@ -1,7 +1,9 @@
+using System.Collections.Concurrent;
 using Bunkum.HttpServer;
 using Bunkum.HttpServer.Storage;
 using NotEnoughLogs;
 using Refresh.GameServer.Database;
+using Refresh.GameServer.Extensions;
 using Refresh.GameServer.Types.Assets;
 
 namespace Refresh.GameServer.Importing;
@@ -16,18 +18,34 @@ public partial class ImageImporter : Importer
         this.Stopwatch.Start();
 
         List<GameAsset> assets = new();
-        
+
         assets.AddRange(context.GetAssetsByType(GameAssetType.Texture));
         // TODO: assets.AddRange(context.GetAssetsByType(GameAssetType.GameDataTexture));
         assets.AddRange(context.GetAssetsByType(GameAssetType.Jpeg));
         assets.AddRange(context.GetAssetsByType(GameAssetType.Png));
 
         this.Info("Acquired all other assets");
+
+        ConcurrentQueue<GameAsset> assetQueue = new();
+        foreach (GameAsset asset in assets) 
+            assetQueue.Enqueue((GameAsset)asset.Clone(false));
         
-        foreach (GameAsset asset in assets)
+        this.Info("Cloned Realm objects");
+
+        for (int i = 0; i < Environment.ProcessorCount; i++)
+        {
+            void Start() => this.ThreadTask(assetQueue, dataStore);
+            Thread thread = new(Start);
+            thread.Start();
+        }
+    }
+
+    private void ThreadTask(ConcurrentQueue<GameAsset> assetQueue, IDataStore dataStore)
+    {
+        while (assetQueue.TryDequeue(out GameAsset? asset))
         {
             ImportAsset(asset, dataStore);
-            this.Info($"Imported {asset.AssetType} {asset.AssetHash}");
+            this.Info($"Imported {asset.AssetType} {asset.AssetHash}");   
         }
     }
 
