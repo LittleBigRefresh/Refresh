@@ -11,8 +11,6 @@ Console.WriteLine("Starting Refresh with LOCAL Bunkum!");
 Console.WriteLine("Starting Refresh with NuGet Bunkum");
 #endif
 
-Console.ReadKey(true);
-
 if (args.Length > 0)
 {
     using GameDatabaseProvider provider = new();
