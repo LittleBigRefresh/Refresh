@@ -33,7 +33,11 @@ public class ResourceEndpoints : EndpointGroup
         // for example, if asset safety level is Dangerous (2) and maximum is configured as Safe (0), return 401
         // if asset safety is Safe (0), and maximum is configured as Safe (0), proceed 
         if (gameAsset.SafetyLevel > config.MaximumAssetSafetyLevel)
+        {
+            context.Logger.LogWarning(BunkumContext.UserContent, $"{gameAsset.AssetType} {hash} is above configured safety limit " +
+                                                                 $"({gameAsset.SafetyLevel} > {config.MaximumAssetSafetyLevel})");
             return Unauthorized;
+        }
 
         if (!dataStore.WriteToStore(hash, body))
             return InternalServerError;

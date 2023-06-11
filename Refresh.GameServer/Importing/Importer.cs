@@ -1,6 +1,7 @@
 using System.Buffers.Binary;
 using System.Diagnostics;
 using System.Runtime.CompilerServices;
+using System.Text;
 using Bunkum.HttpServer;
 using NotEnoughLogs;
 using NotEnoughLogs.Loggers;
@@ -59,7 +60,7 @@ public abstract class Importer
         return MatchesMagic(data, magicSpan);
     }
     
-    protected static GameAssetType DetermineAssetType(ReadOnlySpan<byte> data)
+    protected GameAssetType DetermineAssetType(ReadOnlySpan<byte> data)
     {
         // LBP assets
         if (MatchesMagic(data, "TEX "u8)) return GameAssetType.Texture;
@@ -75,6 +76,8 @@ public abstract class Importer
         // Good reference for magics: https://en.wikipedia.org/wiki/List_of_file_signatures
         if (MatchesMagic(data, 0xFFD8FFE0)) return GameAssetType.Jpeg;
         if (MatchesMagic(data, 0x89504E470D0A1A0A)) return GameAssetType.Png;
+        
+        this.Warn($"Unknown asset header [0x{Convert.ToHexString(data[..4])}] [str: {Encoding.ASCII.GetString(data[..4])}]");
 
         return GameAssetType.Unknown;
     }
