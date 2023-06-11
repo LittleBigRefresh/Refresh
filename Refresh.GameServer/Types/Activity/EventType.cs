@@ -47,4 +47,6 @@ public enum EventType
     // PlaylistFavourite = 18,
     // [XmlEnum("add_level_to_playlist")]
     // PlaylistAddLevel = 19,
+    [XmlEnum("score")]
+    SubmittedScore = 20, // FIXME: this name is shit
 }
