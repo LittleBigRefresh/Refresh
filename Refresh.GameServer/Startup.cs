@@ -11,16 +11,31 @@ Console.WriteLine("Starting Refresh with LOCAL Bunkum!");
 Console.WriteLine("Starting Refresh with NuGet Bunkum");
 #endif
 
-if (args.Length > 0 && args[0] == "--import_assets")
+Console.ReadKey(true);
+
+if (args.Length > 0)
 {
     using GameDatabaseProvider provider = new();
     FileSystemDataStore dataStore = new();
     
     provider.Initialize();
     using GameDatabaseContext context = provider.GetContext();
-    
-    AssetImporter importer = new();
-    importer.ImportFromDataStoreCli(context, dataStore);
+
+    if (args[0] == "--import_assets")
+    {
+        AssetImporter importer = new();
+        importer.ImportFromDataStoreCli(context, dataStore);
+    }
+    else if (args[0] == "--import_images")
+    {
+        ImageImporter importer = new();
+        importer.ImportFromDataStore(context, dataStore);
+    }
+    else
+    {
+        Console.WriteLine("Bad argument");
+        Environment.Exit(1);
+    }
     return;
 }
 

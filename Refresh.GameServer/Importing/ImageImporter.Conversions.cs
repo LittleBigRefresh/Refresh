@@ -16,7 +16,7 @@ public partial class ImageImporter // Conversions
         using MemoryStream ms = new();
         image.SaveAsPng(ms);
         
-        return ms.ToArray();
+        return ms.GetBuffer();
     }
 
     private static byte[] TextureToPng(byte[] data)
@@ -71,7 +71,9 @@ public partial class ImageImporter // Conversions
                 continue;
             }
 
-            Inflater inflater = new();
+            Inflater inflater = Inflater.Value!;
+            
+            inflater.Reset();
             inflater.SetInput(deflated);
             inflater.Inflate(inflated);
             
@@ -79,9 +81,12 @@ public partial class ImageImporter // Conversions
         }
     }
 
+    private static readonly PfimConfig Config = new();
+    private static readonly ThreadLocal<Inflater> Inflater = new(() => new Inflater());
+
     private static byte[] DdsToPng(Stream stream)
     {
-        Dds dds = Dds.Create(stream, new PfimConfig());
+        Dds dds = Dds.Create(stream, Config);
         if(dds.Compressed) dds.Decompress();
 
         // ReSharper disable once SwitchExpressionHandlesSomeKnownEnumValuesWithExceptionInDefault
@@ -94,6 +99,6 @@ public partial class ImageImporter // Conversions
         MemoryStream ms = new();
         image.SaveAsPng(ms);
         
-        return ms.ToArray();
+        return ms.GetBuffer();
     }
 }
