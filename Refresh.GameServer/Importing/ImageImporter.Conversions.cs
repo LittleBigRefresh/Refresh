@@ -5,32 +5,24 @@ namespace Refresh.GameServer.Importing;
 
 public partial class ImageImporter // Conversions
 {
-    // FIXME: this function is frankly slow, inefficient, and bad.
-    // this will almost certainly cause tons of memory allocations!
-    // tsk, tsk, tsk!
-    //
-    // maybe try refactoring IDataStore to support streams/spans?
-    private static byte[] JpegToPng(byte[] data)
+    private static void JpegToPng(Stream stream, Stream writeStream)
     {
-        using Image image = Image.Load(data);
-        using MemoryStream ms = new();
-        image.SaveAsPng(ms);
-        
-        return ms.GetBuffer();
+        using Image image = Image.Load(stream);
+        image.SaveAsPng(writeStream);
     }
 
-    private static byte[] TextureToPng(byte[] data)
+    private static void TextureToPng(Stream stream, Stream writeStream)
     {
         using MemoryStream ms = new();
         using BinaryWriter writer = new(ms);
-        
-        TextureToDds(writer, data);
+
+        TextureToDds(writer, stream);
         ms.Seek(0, SeekOrigin.Begin);
-        
-        return DdsToPng(ms);
+
+        DdsToPng(ms, writeStream);
     }
 
-    private static void TextureToDds(BinaryWriter writer, byte[] data)
+    private static void TextureToDds(BinaryWriter writer, Stream data)
     {
         // Shamelessly stolen from Project Lighthouse, which I shamelessly stole from toolkit.
         // Two layers of me stealing things! Hi me from the future when you inevitably come to steal this, too.
@@ -42,13 +34,12 @@ public partial class ImageImporter // Conversions
         // ok
         //
         // the homework:
+        
+        using BEBinaryReader reader = new(data);
 
-        using MemoryStream dataMs = new(data);
-        using BEBinaryReader reader = new(dataMs);
+        data.Position += 4; // Skip header, we've already determined this is a TEX
 
-        for (int i = 0; i < 4; i++) reader.ReadByte(); // Skip header, we've already determined this is a TEX
-
-        reader.ReadInt16();
+        data.Position += sizeof(short);
         short chunks = reader.ReadInt16();
 
         int[] compressed = new int[chunks];
@@ -84,11 +75,10 @@ public partial class ImageImporter // Conversions
     private static readonly PfimConfig Config = new();
     private static readonly ThreadLocal<Inflater> Inflater = new(() => new Inflater());
 
-    private static byte[] DdsToPng(Stream stream)
+    private static void DdsToPng(Stream stream, Stream writeStream)
     {
         Dds dds = Dds.Create(stream, Config);
-        if(dds.Compressed) dds.Decompress();
-
+        
         // ReSharper disable once SwitchExpressionHandlesSomeKnownEnumValuesWithExceptionInDefault
         Image image = dds.Format switch
         {
@@ -96,9 +86,7 @@ public partial class ImageImporter // Conversions
             _ => throw new InvalidOperationException($"Cannot convert DDS format {dds.Format} to PNG"),
         };
 
-        MemoryStream ms = new();
-        image.SaveAsPng(ms);
-        
-        return ms.GetBuffer();
+
+        image.SaveAsPng(writeStream);
     }
 }

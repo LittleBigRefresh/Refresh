@@ -69,17 +69,22 @@ public partial class ImageImporter : Importer
 
     public static void ImportAsset(GameAsset asset, IDataStore dataStore)
     {
-        byte[] data = dataStore.GetDataFromStore(asset.AssetHash);
+        Stream stream = dataStore.GetStreamFromStore(asset.AssetHash);
+        Stream writeStream = dataStore.OpenWriteStream("png/" + asset.AssetHash);
 
-        // ReSharper disable once SwitchExpressionHandlesSomeKnownEnumValuesWithExceptionInDefault
-        byte[] newData = asset.AssetType switch
+        switch (asset.AssetType)
         {
-            GameAssetType.Png => data, // TODO: use hard links instead of just replicating same data, or run 'optipng'?
-            GameAssetType.Texture => TextureToPng(data),
-            GameAssetType.Jpeg => JpegToPng(data),
-            _ => throw new InvalidOperationException($"Cannot convert a {asset.AssetType} to PNG"),
-        };
-
-        dataStore.WriteToStore("png/" + asset.AssetHash, newData);
+            case GameAssetType.Texture:
+                TextureToPng(stream, writeStream);
+                break;
+            case GameAssetType.Jpeg:
+                JpegToPng(stream, writeStream);
+                break;
+            case GameAssetType.Png:
+                stream.CopyTo(writeStream); // TODO: use hard links instead of just replicating same data, or run 'optipng'?
+                break;
+            default:
+                throw new InvalidOperationException($"Cannot convert a {asset.AssetType} to PNG");
+        }
     }
 }
