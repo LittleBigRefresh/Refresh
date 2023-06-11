@@ -78,4 +78,18 @@ public enum GameAssetType
     /// Magic: FSHb
     /// </remarks>
     Script = 9,
+    /// <summary>
+    /// A recording of movement captured with a PlayStation Move controller.
+    /// </summary>
+    /// <remarks>
+    /// Magic: RECb
+    /// </remarks>
+    MoveRecording = 10,
+    /// <summary>
+    /// A recording of audio, encoded using Speex.
+    /// </summary>
+    /// <remarks>
+    /// Magic: VOPb
+    /// </remarks>
+    VoiceRecording = 11,
 }
