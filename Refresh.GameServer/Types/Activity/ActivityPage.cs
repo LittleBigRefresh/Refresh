@@ -123,10 +123,17 @@ public class ActivityPage
                 Actor = @event.User.Username,
             };
 
-            // Level upload events have special properties
-            // cant put extra properties as nullable in base, nullables will still be serialized
-            if (@event.EventType == EventType.LevelUpload)
-                levelEvent = SerializedLevelUploadEvent.FromSerializedLevelEvent(levelEvent);
+            // Events can sometimes have special properties
+            // We can't put extra properties as nullable in the base class, as nullables will still be serialized
+            //
+            // AND HEY! Remember to add an [XmlInclude] in SerializedEvent when adding something here!
+            // You will waste 30 seconds of your time if you don't.
+            levelEvent = @event.EventType switch
+            {
+                EventType.LevelUpload => SerializedLevelUploadEvent.FromSerializedLevelEvent(levelEvent),
+                EventType.LevelPlay => SerializedLevelPlayEvent.FromSerializedLevelEvent(levelEvent),
+                _ => levelEvent,
+            };
 
             groups.Groups.Add(new LevelActivityGroup
             {

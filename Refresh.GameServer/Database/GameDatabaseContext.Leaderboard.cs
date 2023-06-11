@@ -8,7 +8,7 @@ namespace Refresh.GameServer.Database;
 
 public partial class GameDatabaseContext // Leaderboard
 {
-    public GameSubmittedScore? SubmitScore(SerializedScore score, GameUser user, GameLevel level)
+    public GameSubmittedScore SubmitScore(SerializedScore score, GameUser user, GameLevel level)
     {
         GameSubmittedScore newScore = new()
         {
@@ -45,7 +45,7 @@ public partial class GameDatabaseContext // Leaderboard
 
     public IEnumerable<ScoreWithRank>? GetRankedScoresAroundScore(GameSubmittedScore score, int count)
     {
-        if (count % 2 != 1) throw new InvalidOperationException("Count must be odd!");
+        if (count % 2 != 1) throw new InvalidOperationException("ScoreType must be odd!");
         
         // this is probably REALLY fucking slow, and i probably shouldn't be trusted with LINQ anymore
 

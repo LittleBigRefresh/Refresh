@@ -12,6 +12,7 @@ public class ActivityEndpoints : EndpointGroup
 {
     [GameEndpoint("stream", ContentType.Xml)]
     [NullStatusCode(BadRequest)]
+    [Authentication(false)]
     public ActivityPage? GetRecentActivity(RequestContext context, GameDatabaseContext database)
     {
         long timestamp = 0;
