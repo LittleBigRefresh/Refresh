@@ -12,6 +12,7 @@ namespace Refresh.GameServer.Endpoints.Api;
 public class ResourceApiEndpoints : EndpointGroup
 {
     [ApiEndpoint("asset/{hash}/download")]
+    [ClientCacheResponse(31556952)] // 1 year
     [Authentication(false)]
     public Response DownloadGameAsset(RequestContext context, IDataStore dataStore, string hash)
     {
@@ -26,6 +27,7 @@ public class ResourceApiEndpoints : EndpointGroup
     
     [ApiEndpoint("asset/{hash}/image", ContentType.Png)]
     [Endpoint("/gameAssets/{hash}", ContentType.Png)]
+    [ClientCacheResponse(31556952)] // 1 year
     [Authentication(false)]
     public Response DownloadGameAssetAsImage(RequestContext context, IDataStore dataStore, string hash, GameDatabaseContext database)
     {
