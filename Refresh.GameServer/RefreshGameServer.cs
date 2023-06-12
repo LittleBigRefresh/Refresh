@@ -55,6 +55,7 @@ public class RefreshGameServer
 
     protected virtual void SetupMiddlewares()
     {
+        this._server.AddMiddleware<LegacyAdapterMiddleware>();
         this._server.AddMiddleware<WebsiteMiddleware>();
         this._server.AddMiddleware<NotFoundLogMiddleware>();
         this._server.AddMiddleware<DigestMiddleware>();
