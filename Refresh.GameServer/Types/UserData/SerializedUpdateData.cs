@@ -20,4 +20,7 @@ public class SerializedUpdateData
     
     [XmlElement("planets")]
     public string? PlanetsHash { get; set; }
+    
+    [XmlElement("icon")]
+    public string? IconHash { get; set; }
 }

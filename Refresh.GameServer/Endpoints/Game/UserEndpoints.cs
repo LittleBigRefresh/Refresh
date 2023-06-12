@@ -3,6 +3,7 @@ using System.Xml.Serialization;
 using Bunkum.CustomHttpListener.Parsing;
 using Bunkum.HttpServer;
 using Bunkum.HttpServer.Endpoints;
+using Bunkum.HttpServer.Storage;
 using Newtonsoft.Json;
 using Refresh.GameServer.Database;
 using Refresh.GameServer.Services;
@@ -59,7 +60,7 @@ public class UserEndpoints : EndpointGroup
 
     [GameEndpoint("updateUser", Method.Post, ContentType.Xml)]
     [NullStatusCode(BadRequest)]
-    public string? UpdateUser(RequestContext context, GameDatabaseContext database, GameUser user, string body)
+    public string? UpdateUser(RequestContext context, GameDatabaseContext database, GameUser user, string body, IDataStore dataStore)
     {
         SerializedUpdateData? data = null;
         
@@ -90,6 +91,18 @@ public class UserEndpoints : EndpointGroup
         if (data == null)
         {
             database.AddErrorNotification("Profile update failed", "Your profile failed to update because the data could not be read.", user);
+            return null;
+        }
+
+        if (data.IconHash != null && !dataStore.ExistsInStore(data.IconHash))
+        {
+            database.AddErrorNotification("Profile update failed", "Your avatar failed to update because the asset was missing on the server.", user);
+            return null;
+        }
+        
+        if (data.PlanetsHash != null && !dataStore.ExistsInStore(data.PlanetsHash))
+        {
+            database.AddErrorNotification("Profile update failed", "Your planets failed to update because the asset was missing on the server.", user);
             return null;
         }
         

@@ -62,6 +62,7 @@ public class ResourceEndpoints : EndpointGroup
     }
 
     [GameEndpoint("showNotUploaded", Method.Post, ContentType.Xml)]
-    public SerializedResourceList ShowNotUploaded(RequestContext context, SerializedResourceList body, IDataStore dataStore) 
+    [GameEndpoint("filterResources", Method.Post, ContentType.Xml)]
+    public SerializedResourceList GetAssetsMissingFromStore(RequestContext context, SerializedResourceList body, IDataStore dataStore) 
         => new(body.Items.Where(r => !dataStore.ExistsInStore(r)));
 }
