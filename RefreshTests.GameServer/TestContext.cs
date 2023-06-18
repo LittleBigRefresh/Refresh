@@ -116,7 +116,10 @@ public class TestContext : IDisposable
         this.Database.Dispose();
         this.Http.Dispose();
         this.Listener.Dispose();
-        
+
+        if (this.Server.IsValueCreated)
+            this.Server.Value.Stop();
+
         GC.SuppressFinalize(this);
     }
 }

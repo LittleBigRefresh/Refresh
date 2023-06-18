@@ -94,4 +94,9 @@ public class RefreshGameServer
     {
         this._server.Start();
     }
+
+    public void Stop()
+    {
+        this._server.Stop();
+    }
 }
