@@ -90,7 +90,7 @@ public class RefreshGameServer
         return this._server.StartAndBlockAsync();
     }
 
-    public void Start()
+    public virtual void Start()
     {
         this._server.Start();
     }

@@ -19,4 +19,9 @@ public class TestRefreshGameServer : RefreshGameServer
     {
         this._server.UseConfig(new GameServerConfig());
     }
+
+    public override void Start()
+    {
+        this._server.Start(1);
+    }
 }
