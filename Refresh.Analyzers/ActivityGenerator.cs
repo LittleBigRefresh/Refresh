@@ -70,7 +70,7 @@ public class ActivityGenerator : ISourceGenerator
             
             string method = $@"
     /// <summary>
-    /// Creates a new {name} event from a <see cref='Game{type}'>, and adds it to the event list.
+    /// Creates a new {name} event from a <see cref='Game{type}'/>, and adds it to the event list.
     /// </summary>
     public Event Create{name}Event(GameUser userFrom, Game{type} {typeParam})
     {{
