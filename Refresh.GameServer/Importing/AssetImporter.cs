@@ -32,7 +32,7 @@ public class AssetImporter : Importer
         this.ImportFromDataStore(context, dataStore);
     }
 
-    private void ImportFromDataStore(GameDatabaseContext context, IDataStore dataStore)
+    public void ImportFromDataStore(GameDatabaseContext context, IDataStore dataStore)
     {
         this.Stopwatch.Start();
         

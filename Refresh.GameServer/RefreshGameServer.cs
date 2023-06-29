@@ -11,6 +11,7 @@ using Refresh.GameServer.Authentication;
 using Refresh.GameServer.Configuration;
 using Refresh.GameServer.Database;
 using Refresh.GameServer.Endpoints;
+using Refresh.GameServer.Importing;
 using Refresh.GameServer.Middlewares;
 using Refresh.GameServer.Services;
 using Refresh.GameServer.Types.Levels.Categories;
@@ -23,6 +24,7 @@ public class RefreshGameServer
 {
     protected readonly BunkumHttpServer _server;
     protected readonly GameDatabaseProvider _databaseProvider;
+    protected readonly IDataStore _dataStore;
 
     public RefreshGameServer(
         BunkumHttpListener? listener = null,
@@ -36,6 +38,7 @@ public class RefreshGameServer
         dataStore ??= new FileSystemDataStore();
 
         this._databaseProvider = databaseProvider;
+        this._dataStore = dataStore;
 
         this._server = listener == null ? new BunkumHttpServer() : new BunkumHttpServer(listener);
 
@@ -98,5 +101,34 @@ public class RefreshGameServer
     public void Stop()
     {
         this._server.Stop();
+    }
+
+    private GameDatabaseContext InitializeDatabase()
+    {
+        this._databaseProvider.Initialize();
+        return this._databaseProvider.GetContext();
+    }
+
+    public void ImportAssets(bool force = false)
+    {
+        using GameDatabaseContext context = this.InitializeDatabase();
+        
+        AssetImporter importer = new();
+        if (!force)
+        {
+            importer.ImportFromDataStoreCli(context, this._dataStore);
+        }
+        else
+        {
+            importer.ImportFromDataStore(context, this._dataStore);
+        }
+    }
+
+    public void ImportImages()
+    {
+        using GameDatabaseContext context = this.InitializeDatabase();
+        
+        ImageImporter importer = new();
+        importer.ImportFromDataStore(context, this._dataStore);
     }
 }
