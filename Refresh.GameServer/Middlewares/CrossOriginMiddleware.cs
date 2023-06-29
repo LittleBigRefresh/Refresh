@@ -19,16 +19,17 @@ public class CrossOriginMiddleware : IMiddleware
         }
     }
 
-    private static void AllowAnyOrigin(ListenerContext context)
+    private static bool AllowAnyOrigin(ListenerContext context)
     {
         context.ResponseHeaders.Add("Access-Control-Allow-Origin", "*");
 
-        if (context.Method != Method.Options) return;
+        if (context.Method != Method.Options) return false;
         
         context.ResponseHeaders.Add("Access-Control-Allow-Headers", "Authorization, Content-Type");
         context.ResponseHeaders.Add("Access-Control-Allow-Methods", string.Join(", ", AllowedMethods));
                 
         context.ResponseCode = OK;
+        return true;
     }
     
     public void HandleRequest(ListenerContext context, Lazy<IDatabaseContext> database, Action next)
@@ -40,8 +41,7 @@ public class CrossOriginMiddleware : IMiddleware
         if (context.Uri.AbsolutePath.StartsWith(ApiV2EndpointAttribute.BaseRoute) ||
             context.Uri.AbsolutePath.StartsWith(ApiV3EndpointAttribute.BaseRoute))
         {
-            AllowAnyOrigin(context);
-            return;
+            if (AllowAnyOrigin(context)) return;
         }
         
         next();
