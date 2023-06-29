@@ -5,11 +5,11 @@ using Refresh.GameServer.Extensions;
 using Refresh.GameServer.Types.Levels;
 using Refresh.GameServer.Types.UserData.Leaderboard;
 
-namespace Refresh.GameServer.Endpoints.Api;
+namespace Refresh.GameServer.Endpoints.ApiV2;
 
 public class LeaderboardApiEndpoints : EndpointGroup
 {
-    [ApiEndpoint("scores/{id}/{type}")]
+    [ApiV2Endpoint("scores/{id}/{type}")]
     [Authentication(false)]
     public List<GameSubmittedScore>? GetTopScoresForLevel(RequestContext context, GameDatabaseContext database, int? id, int? type)
     {
@@ -27,7 +27,7 @@ public class LeaderboardApiEndpoints : EndpointGroup
         return database.GetTopScoresForLevel(level, count, skip, (byte)type, showAll).ToList();
     }
 
-    [ApiEndpoint("score/{uuid}")]
+    [ApiV2Endpoint("score/{uuid}")]
     [Authentication(false)]
     public GameSubmittedScore? GetScoreByUuid(RequestContext context, GameDatabaseContext database, string uuid) => database.GetScoreByUuid(uuid);
 }

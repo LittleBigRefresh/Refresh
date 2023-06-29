@@ -8,18 +8,18 @@ using Refresh.GameServer.Extensions;
 using Refresh.GameServer.Types.Notifications;
 using Refresh.GameServer.Types.UserData;
 
-namespace Refresh.GameServer.Endpoints.Api;
+namespace Refresh.GameServer.Endpoints.ApiV2;
 
 public class NotificationApiEndpoints : EndpointGroup
 {
-    [ApiEndpoint("notifications")]
+    [ApiV2Endpoint("notifications")]
     public IEnumerable<GameNotification> GetNotifications(RequestContext context, GameUser user, GameDatabaseContext database)
     {
         (int skip, int count) = context.GetPageData(true);
         return database.GetNotificationsByUser(user, count, skip);
     }
 
-    [ApiEndpoint("notification/{uuid}")]
+    [ApiV2Endpoint("notification/{uuid}")]
     [NullStatusCode(NotFound)]
     public GameNotification? GetNotificationByUuid(RequestContext context, GameUser user, GameDatabaseContext database, string uuid)
     {
@@ -29,7 +29,7 @@ public class NotificationApiEndpoints : EndpointGroup
         return database.GetNotificationByUuid(user, objectId);
     }
     
-    [ApiEndpoint("notification/{uuid}", Method.Delete)]
+    [ApiV2Endpoint("notification/{uuid}", Method.Delete)]
     public Response ClearNotificationByUuid(RequestContext context, GameUser user, GameDatabaseContext database, string uuid)
     {
         bool parsed = ObjectId.TryParse(uuid, out ObjectId objectId);
@@ -42,7 +42,7 @@ public class NotificationApiEndpoints : EndpointGroup
         return OK;
     }
     
-    [ApiEndpoint("notifications", Method.Delete)]
+    [ApiV2Endpoint("notifications", Method.Delete)]
     public Response ClearAllNotifications(RequestContext context, GameUser user, GameDatabaseContext database)
     {
         database.DeleteNotificationsByUser(user);

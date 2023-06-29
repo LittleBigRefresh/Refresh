@@ -7,11 +7,11 @@ using Refresh.GameServer.Services;
 using Refresh.GameServer.Types.Matching;
 using Refresh.GameServer.Types.UserData;
 
-namespace Refresh.GameServer.Endpoints.Api;
+namespace Refresh.GameServer.Endpoints.ApiV2;
 
 public class MatchingApiEndpoints : EndpointGroup
 {
-    [ApiEndpoint("room/username/{username}")]
+    [ApiV2Endpoint("room/username/{username}")]
     [Authentication(false)]
     [NullStatusCode(NotFound)]
     public GameRoom? GetRoomByUsername(RequestContext context, MatchService service, GameDatabaseContext database,
@@ -23,7 +23,7 @@ public class MatchingApiEndpoints : EndpointGroup
         return service.GetRoomByPlayer(user);
     }
     
-    [ApiEndpoint("room/uuid/{uuid}")]
+    [ApiV2Endpoint("room/uuid/{uuid}")]
     [Authentication(false)]
     [NullStatusCode(NotFound)]
     public GameRoom? GetRoomByUserUuid(RequestContext context, MatchService service, GameDatabaseContext database,
@@ -35,7 +35,7 @@ public class MatchingApiEndpoints : EndpointGroup
         return service.GetRoomByPlayer(user);
     }
     
-    [ApiEndpoint("room/{uuid}")]
+    [ApiV2Endpoint("room/{uuid}")]
     [Authentication(false)]
     [NullStatusCode(NotFound)]
     public GameRoom? GetRoomByUuid(RequestContext context, MatchService service, string uuid)
@@ -46,7 +46,7 @@ public class MatchingApiEndpoints : EndpointGroup
         return service.Rooms.FirstOrDefault(r => r.RoomId == objectId);
     }
     
-    [ApiEndpoint("rooms")]
+    [ApiV2Endpoint("rooms")]
     [Authentication(false)]
     public IEnumerable<GameRoom> GetRooms(RequestContext context, MatchService service)
     {

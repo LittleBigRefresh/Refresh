@@ -7,7 +7,7 @@ using Refresh.GameServer.Authentication;
 using Refresh.GameServer.Database;
 using Refresh.GameServer.Types.UserData;
 
-namespace Refresh.GameServer.Endpoints.Api;
+namespace Refresh.GameServer.Endpoints.ApiV2;
 
 public partial class AuthenticationApiEndpoints : EndpointGroup
 {
@@ -23,7 +23,7 @@ public partial class AuthenticationApiEndpoints : EndpointGroup
     [GeneratedRegex("^[a-f0-9]{128}$")]
     private static partial Regex Sha512Regex();
 
-    [ApiEndpoint("auth", Method.Post)]
+    [ApiV2Endpoint("auth", Method.Post)]
     [Authentication(false)]
     public Response Authenticate(RequestContext context, GameDatabaseContext database, ApiAuthenticationRequest body)
     {
@@ -69,7 +69,7 @@ public partial class AuthenticationApiEndpoints : EndpointGroup
         return new Response(resp, ContentType.Json);
     }
 
-    [ApiEndpoint("resetPassword", Method.Post)]
+    [ApiV2Endpoint("resetPassword", Method.Post)]
     [Authentication(false)]
     public Response ResetPassword(RequestContext context, GameDatabaseContext database, ApiResetPasswordRequest body)
     {
@@ -88,7 +88,7 @@ public partial class AuthenticationApiEndpoints : EndpointGroup
         return OK;
     }
 
-    [ApiEndpoint("goodbye", Method.Post)]
+    [ApiV2Endpoint("goodbye", Method.Post)]
     [Authentication(false)]
     public Response RevokeThisToken(RequestContext context, GameDatabaseContext database)
     {

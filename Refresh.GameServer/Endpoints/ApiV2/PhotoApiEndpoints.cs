@@ -6,7 +6,7 @@ using Refresh.GameServer.Types.Levels;
 using Refresh.GameServer.Types.Photos;
 using Refresh.GameServer.Types.UserData;
 
-namespace Refresh.GameServer.Endpoints.Api;
+namespace Refresh.GameServer.Endpoints.ApiV2;
 
 public class PhotoApiEndpoints : EndpointGroup
 {
@@ -36,32 +36,32 @@ public class PhotoApiEndpoints : EndpointGroup
         return database.GetPhotosInLevel(level, count, skip);
     }
     
-    [ApiEndpoint("photos/by/username/{username}")]
+    [ApiV2Endpoint("photos/by/username/{username}")]
     [Authentication(false)]
     public IEnumerable<GamePhoto>? PhotosByUsername(RequestContext context, GameDatabaseContext database, string username) 
         => PhotosByUser(context, database, database.GetUserByUsername(username));
     
-    [ApiEndpoint("photos/with/username/{username}")]
+    [ApiV2Endpoint("photos/with/username/{username}")]
     [Authentication(false)]
     public IEnumerable<GamePhoto>? PhotosWithUsername(RequestContext context, GameDatabaseContext database, string username)
         => PhotosWithUser(context, database, database.GetUserByUsername(username));
 
-    [ApiEndpoint("photos/by/uuid/{uuid}")]
+    [ApiV2Endpoint("photos/by/uuid/{uuid}")]
     [Authentication(false)]
     public IEnumerable<GamePhoto>? PhotosByUserUuid(RequestContext context, GameDatabaseContext database, string uuid)
         => PhotosByUser(context, database, database.GetUserByUuid(uuid));
 
-    [ApiEndpoint("photos/with/uuid/{uuid}")]
+    [ApiV2Endpoint("photos/with/uuid/{uuid}")]
     [Authentication(false)]
     public IEnumerable<GamePhoto>? PhotosWithUserUuid(RequestContext context, GameDatabaseContext database, string uuid)
         => PhotosWithUser(context, database, database.GetUserByUuid(uuid));
 
-    [ApiEndpoint("photos/in/{id}")]
+    [ApiV2Endpoint("photos/in/{id}")]
     [Authentication(false)]
     public IEnumerable<GamePhoto>? PhotosInLevelId(RequestContext context, GameDatabaseContext database, int id)
         => PhotosInLevel(context, database, database.GetLevelById(id));
     
-    [ApiEndpoint("photos")]
+    [ApiV2Endpoint("photos")]
     [Authentication(false)]
     public IEnumerable<GamePhoto> RecentPhotos(RequestContext context, GameDatabaseContext database)
     {
@@ -69,7 +69,7 @@ public class PhotoApiEndpoints : EndpointGroup
         return database.GetRecentPhotos(count, skip);
     }
     
-    [ApiEndpoint("photo/{id}")]
+    [ApiV2Endpoint("photo/{id}")]
     [Authentication(false)]
     [NullStatusCode(NotFound)]
     public GamePhoto? PhotoById(RequestContext context, GameDatabaseContext database, int id) 

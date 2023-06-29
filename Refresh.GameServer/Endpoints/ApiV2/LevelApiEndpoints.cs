@@ -6,11 +6,11 @@ using Refresh.GameServer.Types.Levels;
 using Refresh.GameServer.Types.Levels.Categories;
 using Refresh.GameServer.Types.UserData;
 
-namespace Refresh.GameServer.Endpoints.Api;
+namespace Refresh.GameServer.Endpoints.ApiV2;
 
 public class LevelApiEndpoints : EndpointGroup
 {
-    [ApiEndpoint("levels/{route}")]
+    [ApiV2Endpoint("levels/{route}")]
     [Authentication(false)]
     [NullStatusCode(NotFound)]
     public IEnumerable<GameLevel>? GetLevels(RequestContext context, GameDatabaseContext database, CategoryService categories, GameUser? user, string route)
@@ -22,13 +22,13 @@ public class LevelApiEndpoints : EndpointGroup
             .Fetch(context, skip, count, database, user);
     }
 
-    [ApiEndpoint("levels")]
+    [ApiV2Endpoint("levels")]
     [Authentication(false)]
     [ClientCacheResponse(86400 / 2)] // cache for half a day
     public IEnumerable<LevelCategory> GetCategories(RequestContext context, CategoryService categories)
         => categories.Categories;
 
-    [ApiEndpoint("level/id/{idStr}")]
+    [ApiV2Endpoint("level/id/{idStr}")]
     [Authentication(false)]
     public GameLevel? GetLevelById(RequestContext context, GameDatabaseContext database, string idStr)
     {

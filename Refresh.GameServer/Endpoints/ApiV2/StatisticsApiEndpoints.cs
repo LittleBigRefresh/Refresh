@@ -4,11 +4,11 @@ using Newtonsoft.Json;
 using Refresh.GameServer.Database;
 using Refresh.GameServer.Services;
 
-namespace Refresh.GameServer.Endpoints.Api;
+namespace Refresh.GameServer.Endpoints.ApiV2;
 
 public class StatisticsApiEndpoints : EndpointGroup
 {
-    [ApiEndpoint("statistics")]
+    [ApiV2Endpoint("statistics")]
     [Authentication(false)]
     public StatisticsResponse GetStatistics(RequestContext context, MatchService match, GameDatabaseContext database) =>
         new()

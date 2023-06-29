@@ -7,11 +7,11 @@ using Refresh.GameServer.Database;
 using Refresh.GameServer.Importing;
 using Refresh.GameServer.Types.Assets;
 
-namespace Refresh.GameServer.Endpoints.Api;
+namespace Refresh.GameServer.Endpoints.ApiV2;
 
 public class ResourceApiEndpoints : EndpointGroup
 {
-    [ApiEndpoint("asset/{hash}/download")]
+    [ApiV2Endpoint("asset/{hash}/download")]
     [ClientCacheResponse(31556952)] // 1 year
     [Authentication(false)]
     public Response DownloadGameAsset(RequestContext context, IDataStore dataStore, string hash)
@@ -25,7 +25,7 @@ public class ResourceApiEndpoints : EndpointGroup
         return new Response(data, ContentType.BinaryData);
     }
     
-    [ApiEndpoint("asset/{hash}/image", ContentType.Png)]
+    [ApiV2Endpoint("asset/{hash}/image", ContentType.Png)]
     [Endpoint("/gameAssets/{hash}", ContentType.Png)]
     [ClientCacheResponse(31556952)] // 1 year
     [Authentication(false)]
@@ -49,7 +49,7 @@ public class ResourceApiEndpoints : EndpointGroup
     }
 
     
-    [ApiEndpoint("asset/{hash}")]
+    [ApiV2Endpoint("asset/{hash}")]
     [Authentication(false)]
     public Response GetAssetInfo(RequestContext context, GameDatabaseContext database, string hash)
     {

@@ -3,20 +3,20 @@ using Bunkum.HttpServer.Endpoints;
 using Refresh.GameServer.Database;
 using Refresh.GameServer.Types.UserData;
 
-namespace Refresh.GameServer.Endpoints.Api;
+namespace Refresh.GameServer.Endpoints.ApiV2;
 
 public class UserApiEndpoints : EndpointGroup
 {
-    [ApiEndpoint("user/name/{username}")]
+    [ApiV2Endpoint("user/name/{username}")]
     [Authentication(false)]
     public GameUser? GetUserByName(RequestContext context, GameDatabaseContext database, string username) 
         => database.GetUserByUsername(username);
 
-    [ApiEndpoint("user/uuid/{uuid}")]
+    [ApiV2Endpoint("user/uuid/{uuid}")]
     [Authentication(false)]
     public GameUser? GetUserByUuid(RequestContext context, GameDatabaseContext database, string uuid) 
         => database.GetUserByUuid(uuid);
     
-    [ApiEndpoint("user/me")]
+    [ApiV2Endpoint("user/me")]
     public GameUser GetMyUser(RequestContext context, GameUser user) => user;
 }
