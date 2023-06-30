@@ -7,9 +7,6 @@
         <Nullable>enable</Nullable>
         <Configurations>Debug;Release;DebugLocalBunkum</Configurations>
         <Platforms>AnyCPU</Platforms>
-
-        <DocumentationFile>bin\$(Configuration)\$(TargetFramework)\$(AssemblyName).xml</DocumentationFile>
-        <NoWarn>1591,1573</NoWarn>
     </PropertyGroup>
     
     <PropertyGroup Condition=" '$(Configuration)' == 'DebugLocalBunkum' ">
@@ -64,6 +61,7 @@
             <OutputItemType>Analyzer</OutputItemType>
         </ProjectReference>
     </ItemGroup>
+
 
 
 </Project>
