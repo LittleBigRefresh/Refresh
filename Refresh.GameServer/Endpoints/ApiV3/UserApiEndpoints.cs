@@ -15,7 +15,7 @@ public class UserApiEndpoints : EndpointGroup
     [DocSummary("Tries to find a user by the username")]
     [DocError(typeof(ApiNotFoundError), "The user cannot be found")]
     public ApiResponse<ApiGameUserResponse> GetUserByName(RequestContext context, GameDatabaseContext database, 
-        [DocSummary("The username of the user you would like to request")] string username)
+        [DocSummary("The username of the user")] string username)
     {
         GameUser? user = database.GetUserByUsername(username);
         if(user == null) return ApiNotFoundError.Instance;
@@ -27,7 +27,7 @@ public class UserApiEndpoints : EndpointGroup
     [DocSummary("Tries to find a user by the UUID")]
     [DocError(typeof(ApiNotFoundError), "The user cannot be found")]
     public ApiResponse<ApiGameUserResponse> GetUserByUuid(RequestContext context, GameDatabaseContext database,
-        [DocSummary("The UUID of the user you would like to request")] string uuid)
+        [DocSummary("The UUID of the user")] string uuid)
     {
         GameUser? user = database.GetUserByUuid(uuid);
         if(user == null) return ApiNotFoundError.Instance;

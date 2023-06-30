@@ -41,6 +41,6 @@ public class LevelApiEndpoints : EndpointGroup
     [DocSummary("Gets an individual level by a numerical ID")]
     [DocError(typeof(ApiNotFoundError), "The level cannot be found")]
     public GameLevel? GetLevelById(RequestContext context, GameDatabaseContext database,
-        [DocSummary("The ID of the level you would like to request")] int id)
+        [DocSummary("The ID of the level")] int id)
         => database.GetLevelById(id);
 }

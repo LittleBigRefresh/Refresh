@@ -47,7 +47,7 @@ public static class DocumentationHelper
 
             if (method.HasCustomAttribute<DocUsesPageDataAttribute>())
             {
-                route.Parameters.Add(new DocumentationParameter("skip", ParameterType.Query, "The index of the list to skip to"));
+                route.Parameters.Add(new DocumentationParameter("skip", ParameterType.Query, "The amount of items to skip over - where you are in the list"));
                 route.Parameters.Add(new DocumentationParameter("count", ParameterType.Query, "The amount of items to take from the list"));
             }
             
