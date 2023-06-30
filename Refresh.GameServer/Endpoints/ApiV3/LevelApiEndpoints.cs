@@ -13,12 +13,12 @@ namespace Refresh.GameServer.Endpoints.ApiV3;
 public class LevelApiEndpoints : EndpointGroup
 {
     [ApiV3Endpoint("levels/{route}"), Authentication(false)]
-    [DocSummary("Retrieves a list of levels from a category.")]
-    [DocError(typeof(ApiNotFoundError), "The level category cannot be found.")]
+    [DocSummary("Retrieves a list of levels from a category")]
+    [DocError(typeof(ApiNotFoundError), "The level category cannot be found")]
     [DocUsesPageData]
     public ApiListResponse<GameLevel> GetLevels(RequestContext context, GameDatabaseContext database, CategoryService categories, GameUser? user,
         [DocSummary("The name of the category you'd like to retrieve levels from. " +
-                    "Make a request to /levels to see a list of available categories.")] string route)
+                    "Make a request to /levels to see a list of available categories")] string route)
     {
         (int skip, int count) = context.GetPageData(true);
 
@@ -33,14 +33,14 @@ public class LevelApiEndpoints : EndpointGroup
 
     [ApiV3Endpoint("levels"), Authentication(false)]
     [ClientCacheResponse(86400 / 2)] // cache for half a day
-    [DocSummary("Retrieves a list of categories you can use to search levels.")]
+    [DocSummary("Retrieves a list of categories you can use to search levels")]
     public ApiListResponse<LevelCategory> GetCategories(RequestContext context, CategoryService categories)
         => new(categories.Categories);
 
     [ApiV3Endpoint("level/id/{id}"), Authentication(false)]
-    [DocSummary("Gets an individual level by a numerical ID.")]
-    [DocError(typeof(ApiNotFoundError), "The level cannot be found.")]
+    [DocSummary("Gets an individual level by a numerical ID")]
+    [DocError(typeof(ApiNotFoundError), "The level cannot be found")]
     public GameLevel? GetLevelById(RequestContext context, GameDatabaseContext database,
-        [DocSummary("The ID of the level you would like to request.")] int id)
+        [DocSummary("The ID of the level you would like to request")] int id)
         => database.GetLevelById(id);
 }

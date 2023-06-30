@@ -9,7 +9,7 @@ namespace Refresh.GameServer.Endpoints.ApiV3;
 public class DocumentationApiEndpoints : EndpointGroup
 {
     [ApiV3Endpoint("docs"), Authentication(false)]
-    [DocSummary("Retrieve a JSON object containing documentation about the API.")]
+    [DocSummary("Retrieve a JSON object containing documentation about the API")]
     public ApiListResponse<DocumentationRoute> GetDocumentation(RequestContext context)
     {
         return new ApiListResponse<DocumentationRoute>(DocumentationHelper.Documentation);
