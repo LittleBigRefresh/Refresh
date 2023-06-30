@@ -14,7 +14,7 @@ public class SearchLevelCategory : LevelCategory
         // no icon for now, too lazy to find
     }
 
-    public override IEnumerable<GameLevel>? Fetch(RequestContext context, int skip, int count, GameDatabaseContext database, GameUser? user, object[]? extraArgs)
+    public override DatabaseList<GameLevel>? Fetch(RequestContext context, int skip, int count, GameDatabaseContext database, GameUser? user, object[]? extraArgs)
     {
         string? query = context.QueryString["query"];
         if (query == null) return null;

@@ -35,11 +35,13 @@ public class SerializedCategory
             Tag = "",
             IconHash = levelCategory.IconHash,
         };
+
+        DatabaseList<GameLevel> categoryLevels = levelCategory.Fetch(context, skip, count, database, user);
         
-        IEnumerable<GameMinimalLevel> levels = levelCategory.Fetch(context, skip, count, database, user)?
+        IEnumerable<GameMinimalLevel> levels = categoryLevels?.Items
             .Select(GameMinimalLevel.FromGameLevel) ?? Array.Empty<GameMinimalLevel>();
 
-        category.Levels = new SerializedMinimalLevelList(levels, 10);
+        category.Levels = new SerializedMinimalLevelList(levels, categoryLevels?.TotalItems ?? 0);
 
         return category;
     }

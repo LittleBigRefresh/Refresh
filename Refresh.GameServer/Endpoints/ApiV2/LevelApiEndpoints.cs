@@ -19,7 +19,7 @@ public class LevelApiEndpoints : EndpointGroup
         
         return categories.Categories
             .FirstOrDefault(c => c.ApiRoute.StartsWith(route))?
-            .Fetch(context, skip, count, database, user);
+            .Fetch(context, skip, count, database, user)?.Items;
     }
 
     [ApiV2Endpoint("levels")]

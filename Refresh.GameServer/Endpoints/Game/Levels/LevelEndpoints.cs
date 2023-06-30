@@ -17,30 +17,25 @@ public class LevelEndpoints : EndpointGroup
     {
         (int skip, int count) = context.GetPageData();
 
-        IEnumerable<GameMinimalLevel>? category = categories.Categories
+        DatabaseList<GameLevel>? levels = categories.Categories
             .FirstOrDefault(c => c.GameRoute.StartsWith(route))?
-            .Fetch(context, skip, count, database, user)?
-            .Select(GameMinimalLevel.FromGameLevel);
+            .Fetch(context, skip, count, database, user);
 
-        if (category == null) return null;
+        if (levels == null) return null;
         
-        return new SerializedMinimalLevelList(category, database.GetTotalLevelCount());
-        // TODO: proper level count
+        IEnumerable<GameMinimalLevel> category = levels.Items
+            .Select(GameMinimalLevel.FromGameLevel);
+        
+        return new SerializedMinimalLevelList(category, levels.TotalItems);
     }
 
     [GameEndpoint("slots/{route}/{username}", ContentType.Xml)]
     public SerializedMinimalLevelList? GetLevelsWithPlayer(RequestContext context, GameDatabaseContext database, CategoryService categories, string route, string username)
         => this.GetLevels(context, database, categories, database.GetUserByUsername(username), route);
 
-    [GameEndpoint("s/user/{idStr}", ContentType.Xml)]
+    [GameEndpoint("s/user/{id}", ContentType.Xml)]
     [NullStatusCode(NotFound)]
-    public GameLevel? LevelById(RequestContext context, GameDatabaseContext database, string idStr)
-    {
-        int.TryParse(idStr, out int id);
-        if (id == default) return null;
-        
-        return database.GetLevelById(id);
-    }
+    public GameLevel? LevelById(RequestContext context, GameDatabaseContext database, int id) => database.GetLevelById(id);
 
     [GameEndpoint("slotList", ContentType.Xml)]
     [NullStatusCode(BadRequest)]
@@ -86,11 +81,13 @@ public class LevelEndpoints : EndpointGroup
     public SerializedMinimalLevelList GetLevelsFromCategory(RequestContext context, GameDatabaseContext database, CategoryService categories, GameUser? user, string apiRoute)
     {
         (int skip, int count) = context.GetPageData();
-        
-        return new SerializedMinimalLevelResultsList(categories.Categories
+
+        DatabaseList<GameLevel>? levels = categories.Categories
             .FirstOrDefault(c => c.ApiRoute.StartsWith(apiRoute))?
-            .Fetch(context, skip, count, database, user)?
-            .Select(GameMinimalLevel.FromGameLevel), database.GetTotalLevelCount());
+            .Fetch(context, skip, count, database, user);
+        
+        return new SerializedMinimalLevelResultsList(levels?.Items
+            .Select(GameMinimalLevel.FromGameLevel), levels?.TotalItems ?? 0);
     }
 
     #region Quirk workarounds

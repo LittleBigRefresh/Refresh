@@ -38,7 +38,7 @@ public class LevelCategory
     private readonly MethodInfo _method;
 
     [Pure]
-    public virtual IEnumerable<GameLevel>? Fetch(RequestContext context, int skip, int count, GameDatabaseContext database, GameUser? user, object[]? extraArgs = null)
+    public virtual DatabaseList<GameLevel>? Fetch(RequestContext context, int skip, int count, GameDatabaseContext database, GameUser? user, object[]? extraArgs = null)
     {
         if (this._requiresUser && user == null) return null;
 
@@ -54,6 +54,6 @@ public class LevelCategory
 
         if (extraArgs != null) args = args.Concat(extraArgs);
 
-        return (IEnumerable<GameLevel>)this._method.Invoke(database, args.ToArray())!;
+        return (DatabaseList<GameLevel>)this._method.Invoke(database, args.ToArray())!;
     }
 }

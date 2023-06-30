@@ -1,3 +1,5 @@
+using Refresh.GameServer.Database;
+
 namespace Refresh.GameServer.Endpoints.ApiV3.DataTypes.Response;
 
 /// <summary>
@@ -26,6 +28,15 @@ public class ApiListResponse<TData> : ApiResponse<List<TData>> where TData : cla
     {
         this.ListInfo = null;
     }
+
+    public static implicit operator ApiListResponse<TData>(DatabaseList<TData> list) =>
+        new(list.Items, new ApiListInformation
+        {
+            EntryCount = list.TotalItems,
+            NextPageIndex = list.TotalItems + 1,
+        });
     
+    public static implicit operator ApiListResponse<TData>(ApiError error) => new(error);
+
     [JsonProperty("listInfo")] public ApiListInformation? ListInfo { get; set; }
 }

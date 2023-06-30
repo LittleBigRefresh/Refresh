@@ -12,19 +12,23 @@ namespace Refresh.GameServer.Endpoints.ApiV3;
 
 public class LevelApiEndpoints : EndpointGroup
 {
-    [ApiV3Endpoint("levels/{route}"), Authentication(false), NullStatusCode(NotFound)]
+    [ApiV3Endpoint("levels/{route}"), Authentication(false)]
     [DocSummary("Retrieves a list of levels from a category.")]
     [DocError(typeof(ApiNotFoundError), "The level category cannot be found.")]
     [DocUsesPageData]
-    public IEnumerable<GameLevel>? GetLevels(RequestContext context, GameDatabaseContext database, CategoryService categories, GameUser? user,
+    public ApiListResponse<GameLevel> GetLevels(RequestContext context, GameDatabaseContext database, CategoryService categories, GameUser? user,
         [DocSummary("The name of the category you'd like to retrieve levels from. " +
                     "Make a request to /levels to see a list of available categories.")] string route)
     {
         (int skip, int count) = context.GetPageData(true);
-        
-        return categories.Categories
+
+        DatabaseList<GameLevel>? list = categories.Categories
             .FirstOrDefault(c => c.ApiRoute.StartsWith(route))?
             .Fetch(context, skip, count, database, user);
+
+        if (list == null) return ApiNotFoundError.Instance;
+        
+        return list;
     }
 
     [ApiV3Endpoint("levels"), Authentication(false)]

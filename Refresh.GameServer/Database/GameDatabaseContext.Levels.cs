@@ -67,37 +67,26 @@ public partial class GameDatabaseContext // Levels
     }
 
     [Pure]
-    public IEnumerable<GameLevel> GetLevelsByUser(GameUser user, int count, int skip) =>
-        this._realm.All<GameLevel>()
-            .Where(l => l.Publisher == user)
-            .AsEnumerable()
-            .Skip(skip)
-            .Take(count);
+    public DatabaseList<GameLevel> GetLevelsByUser(GameUser user, int count, int skip) =>
+        new(this._realm.All<GameLevel>().Where(l => l.Publisher == user), skip, count);
     
     [Pure]
-    public IEnumerable<GameLevel> GetNewestLevels(int count, int skip) =>
-        this._realm.All<GameLevel>()
-            .OrderByDescending(l => l.PublishDate)
-            .AsEnumerable()
-            .Skip(skip)
-            .Take(count);
+    public DatabaseList<GameLevel> GetNewestLevels(int count, int skip) =>
+        new(this._realm.All<GameLevel>().OrderByDescending(l => l.PublishDate), skip, count);
     
     [Pure]
-    public IEnumerable<GameLevel> GetRandomLevels(int count, int skip)
-    {
-        return this._realm.All<GameLevel>()
+    public DatabaseList<GameLevel> GetRandomLevels(int count, int skip) =>
+        new(this._realm.All<GameLevel>()
             .AsEnumerable()
             .OrderBy(_ => Random.Shared.Next())
             .Skip(skip)
-            .Take(count);
-    }
-
-    // FIXME: to get this to work with new categories I removed the total number of results, this is terrible
+            .Take(count)); // TODO: implement totals for this
+    
     [Pure]
-    public IEnumerable<GameLevel> SearchForLevels(int count, int skip, string query)
+    public DatabaseList<GameLevel> SearchForLevels(int count, int skip, string query)
     {
         string[] keywords = query.Split(' ');
-        if (keywords.Length == 0) return Array.Empty<GameLevel>();
+        if (keywords.Length == 0) return DatabaseList<GameLevel>.Empty();
         
         IQueryable<GameLevel> levels = this._realm.All<GameLevel>();
         
@@ -112,7 +101,7 @@ public partial class GameDatabaseContext // Levels
             );
         }
 
-        return levels.AsEnumerable().Skip(skip).Take(count);
+        return new DatabaseList<GameLevel>(levels, skip, count);
     }
 
     [Pure]
