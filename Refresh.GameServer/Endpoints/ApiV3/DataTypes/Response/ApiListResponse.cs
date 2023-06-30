@@ -17,8 +17,8 @@ public class ApiListResponse<TData> : ApiResponse<List<TData>> where TData : cla
     {
         ApiListInformation info = new()
         {
-            EntryCount = this.Data!.Count,
-            NextPageIndex = this.Data.Count + 1,
+            TotalItems = this.Data!.Count,
+            NextPageIndex = -1, // Probably doesn't support pagination
         };
 
         this.ListInfo = info;
@@ -32,8 +32,8 @@ public class ApiListResponse<TData> : ApiResponse<List<TData>> where TData : cla
     public static implicit operator ApiListResponse<TData>(DatabaseList<TData> list) =>
         new(list.Items, new ApiListInformation
         {
-            EntryCount = list.TotalItems,
-            NextPageIndex = list.TotalItems + 1,
+            TotalItems = list.TotalItems,
+            NextPageIndex = list.NextPageIndex,
         });
     
     public static implicit operator ApiListResponse<TData>(ApiError error) => new(error);

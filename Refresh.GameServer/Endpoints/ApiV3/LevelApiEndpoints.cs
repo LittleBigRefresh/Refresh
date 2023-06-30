@@ -34,8 +34,8 @@ public class LevelApiEndpoints : EndpointGroup
     [ApiV3Endpoint("levels"), Authentication(false)]
     [ClientCacheResponse(86400 / 2)] // cache for half a day
     [DocSummary("Retrieves a list of categories you can use to search levels.")]
-    public IEnumerable<LevelCategory> GetCategories(RequestContext context, CategoryService categories)
-        => categories.Categories;
+    public ApiListResponse<LevelCategory> GetCategories(RequestContext context, CategoryService categories)
+        => new(categories.Categories);
 
     [ApiV3Endpoint("level/id/{id}"), Authentication(false)]
     [DocSummary("Gets an individual level by a numerical ID.")]
