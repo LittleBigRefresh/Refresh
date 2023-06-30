@@ -2,12 +2,6 @@ namespace Refresh.GameServer.Database;
 
 public class DatabaseList<TObject> where TObject : class
 {
-    public DatabaseList(IQueryable<TObject> items)
-    {
-        this.Items = items.AsEnumerable();
-        this.TotalItems = items.Count();
-    }
-    
     // ReSharper disable once ParameterTypeCanBeEnumerable.Local
     public DatabaseList(IQueryable<TObject> items, int skip, int count)
     {
@@ -31,6 +25,6 @@ public class DatabaseList<TObject> where TObject : class
     public static DatabaseList<TObject> Empty() => new(Array.Empty<TObject>());
 
     public IEnumerable<TObject> Items { get; private init; }
-    public int TotalItems { get; private init; }
-    public int NextPageIndex { get; private init; }
+    public int TotalItems { get; }
+    public int NextPageIndex { get; }
 }
