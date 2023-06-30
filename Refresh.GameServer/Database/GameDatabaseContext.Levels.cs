@@ -76,12 +76,9 @@ public partial class GameDatabaseContext // Levels
     
     [Pure]
     public DatabaseList<GameLevel> GetRandomLevels(int count, int skip) =>
-        new(this._realm.All<GameLevel>()
-            .AsEnumerable()
-            .OrderBy(_ => Random.Shared.Next())
-            .Skip(skip)
-            .Take(count)); // TODO: implement totals for this
-    
+        new(this._realm.All<GameLevel>().AsEnumerable()
+            .OrderBy(_ => Random.Shared.Next()), skip, count);
+
     [Pure]
     public DatabaseList<GameLevel> SearchForLevels(int count, int skip, string query)
     {

@@ -13,12 +13,24 @@ public class DatabaseList<TObject> where TObject : class
             this.NextPageIndex = 0;
     }
     
+    public DatabaseList(IEnumerable<TObject> items, int skip, int count)
+    {
+        List<TObject> itemsList = items.ToList();
+        
+        this.Items = itemsList.Skip(skip).Take(count);
+        this.TotalItems = itemsList.Count;
+        this.NextPageIndex = skip + count + 1;
+
+        if (this.NextPageIndex > this.TotalItems)
+            this.NextPageIndex = 0;
+    }
+    
     public DatabaseList(IEnumerable<TObject> items)
     {
-        IEnumerable<TObject> itemsList = items.ToList();
+        List<TObject> itemsList = items.ToList();
         
         this.Items = itemsList;
-        this.TotalItems = itemsList.Count();
+        this.TotalItems = itemsList.Count;
         this.NextPageIndex = -1;
     }
 
