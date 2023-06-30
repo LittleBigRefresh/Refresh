@@ -15,7 +15,7 @@ public class PhotoApiEndpoints : EndpointGroup
         if (user == null) return null;
         (int skip, int count) = context.GetPageData(true);
 
-        return database.GetPhotosByUser(user, count, skip);
+        return database.GetPhotosByUser(user, count, skip).Items;
     }
     
     private static IEnumerable<GamePhoto>? PhotosWithUser(RequestContext context, GameDatabaseContext database, GameUser? user)
@@ -24,7 +24,7 @@ public class PhotoApiEndpoints : EndpointGroup
         
         (int skip, int count) = context.GetPageData(true);
 
-        return database.GetPhotosWithUser(user, count, skip);
+        return database.GetPhotosWithUser(user, count, skip).Items;
     }
     
     private static IEnumerable<GamePhoto>? PhotosInLevel(RequestContext context, GameDatabaseContext database, GameLevel? level)
@@ -33,7 +33,7 @@ public class PhotoApiEndpoints : EndpointGroup
         
         (int skip, int count) = context.GetPageData(true);
 
-        return database.GetPhotosInLevel(level, count, skip);
+        return database.GetPhotosInLevel(level, count, skip).Items;
     }
     
     [ApiV2Endpoint("photos/by/username/{username}")]
@@ -66,7 +66,7 @@ public class PhotoApiEndpoints : EndpointGroup
     public IEnumerable<GamePhoto> RecentPhotos(RequestContext context, GameDatabaseContext database)
     {
         (int skip, int count) = context.GetPageData(true);
-        return database.GetRecentPhotos(count, skip);
+        return database.GetRecentPhotos(count, skip).Items;
     }
     
     [ApiV2Endpoint("photo/{id}")]

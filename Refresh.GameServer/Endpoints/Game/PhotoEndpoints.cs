@@ -30,7 +30,7 @@ public class PhotoEndpoints : EndpointGroup
         return OK;
     }
 
-    private static SerializedPhotoList? GetPhotos(RequestContext context, GameDatabaseContext database, Func<GameUser, int, int, IEnumerable<GamePhoto>> photoGetter)
+    private static SerializedPhotoList? GetPhotos(RequestContext context, GameDatabaseContext database, Func<GameUser, int, int, DatabaseList<GamePhoto>> photoGetter)
     {
         string? username = context.QueryString.Get("user");
         if (username == null) return null;
@@ -40,7 +40,8 @@ public class PhotoEndpoints : EndpointGroup
         
         (int skip, int count) = context.GetPageData();
 
-        IEnumerable<SerializedPhoto> photos = photoGetter.Invoke(user, count, skip)
+        // count not used ingame
+        IEnumerable<SerializedPhoto> photos = photoGetter.Invoke(user, count, skip).Items
             .Select(SerializedPhoto.FromGamePhoto);
 
         return new SerializedPhotoList(photos);

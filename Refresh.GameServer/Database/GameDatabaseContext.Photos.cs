@@ -52,42 +52,30 @@ public partial class GameDatabaseContext // Photos
     }
     
     [Pure]
-    public IEnumerable<GamePhoto> GetRecentPhotos(int count, int skip) =>
-        this._realm.All<GamePhoto>()
-            .OrderByDescending(p => p.PublishedAt)
-            .AsEnumerable()
-            .Skip(skip)
-            .Take(count);
+    public DatabaseList<GamePhoto> GetRecentPhotos(int count, int skip) =>
+        new(this._realm.All<GamePhoto>()
+            .OrderByDescending(p => p.PublishedAt), skip, count);
 
     [Pure]
     public GamePhoto? GetPhotoById(int id) =>
-        this._realm.All<GamePhoto>()
-            .FirstOrDefault(p => p.PhotoId == id);
+        this._realm.All<GamePhoto>().FirstOrDefault(p => p.PhotoId == id);
 
     [Pure]
-    public IEnumerable<GamePhoto> GetPhotosByUser(GameUser user, int count, int skip) =>
-        this._realm.All<GamePhoto>()
-            .Where(p => p.Publisher == user)
-            .OrderByDescending(p => p.TakenAt)
-            .AsEnumerable()
-            .Skip(skip)
-            .Take(count);
-    
+    public DatabaseList<GamePhoto> GetPhotosByUser(GameUser user, int count, int skip) =>
+        new(this._realm.All<GamePhoto>().Where(p => p.Publisher == user)
+            .OrderByDescending(p => p.TakenAt), skip, count);
+
     [Pure]
-    public IEnumerable<GamePhoto> GetPhotosWithUser(GameUser user, int count, int skip) =>
-        this._realm.All<GamePhoto>()
+    public DatabaseList<GamePhoto> GetPhotosWithUser(GameUser user, int count, int skip) =>
+        new(this._realm.All<GamePhoto>()
             .AsEnumerable()
             // FIXME: client-side enumeration
             .Where(p => p.Subjects.FirstOrDefault(s => Equals(s.User, user)) != null)
             .OrderByDescending(p => p.TakenAt)
             .Skip(skip)
-            .Take(count);
+            .Take(count));
 
     [Pure]
-    public IEnumerable<GamePhoto> GetPhotosInLevel(GameLevel level, int count, int skip) =>
-        this._realm.All<GamePhoto>()
-            .Where(p => p.LevelId == level.LevelId)
-            .AsEnumerable()
-            .Skip(skip)
-            .Take(count);
+    public DatabaseList<GamePhoto> GetPhotosInLevel(GameLevel level, int count, int skip) =>
+        new(this._realm.All<GamePhoto>().Where(p => p.LevelId == level.LevelId), skip, count);
 }
