@@ -60,7 +60,10 @@
             <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
             <OutputItemType>Analyzer</OutputItemType>
         </ProjectReference>
+
+
     </ItemGroup>
+
 
 
 

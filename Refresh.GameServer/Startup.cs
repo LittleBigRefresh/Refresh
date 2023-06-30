@@ -14,7 +14,7 @@ server.Initialize();
 
 if (args.Length > 0)
 {
-    CliHelper cli = new(server);
+    CommandLineManager cli = new(server);
     cli.StartWithArgs(args);
     return;
 }
