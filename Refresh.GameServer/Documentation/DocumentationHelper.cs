@@ -1,4 +1,5 @@
 using System.Reflection;
+using System.Runtime.CompilerServices;
 using Bunkum.HttpServer.Endpoints;
 using Bunkum.HttpServer.Extensions;
 using Refresh.GameServer.Documentation.Attributes;
@@ -36,9 +37,12 @@ public static class DocumentationHelper
                 DocParamAttribute? parameterAttribute = parameter.GetCustomAttribute<DocParamAttribute>();
                 if(parameterAttribute == null) continue;
 
-                DocumentationParameter docParameter = new(parameter.Name!, parameterAttribute.Summary);
+                DocumentationParameter docParameter = new(parameter.Name!, ParameterType.Route, parameterAttribute.Summary);
                 route.Parameters.Add(docParameter);
             }
+
+            AuthenticationAttribute? authentication = method.GetCustomAttribute<AuthenticationAttribute>();
+            route.AuthenticationRequired = authentication == null || authentication.Required;
             
             _docs.Add(route);
         }

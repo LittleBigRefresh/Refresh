@@ -11,6 +11,8 @@ public class DocumentationRoute
 
     public string Route { get; set; }
     public string Summary { get; set; }
+    
+    public bool AuthenticationRequired { get; set; }
 
     public List<DocumentationParameter> Parameters { get; set; } = new();
     public List<DocumentationError> PotentialErrors { get; set; } = new();
