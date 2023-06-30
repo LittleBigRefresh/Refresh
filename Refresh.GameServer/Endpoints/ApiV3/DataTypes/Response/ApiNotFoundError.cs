@@ -5,6 +5,8 @@ namespace Refresh.GameServer.Endpoints.ApiV3.DataTypes.Response;
 /// </summary>
 public class ApiNotFoundError : ApiError
 {
-    public ApiNotFoundError() : base("This requested resource was not found.", NotFound)
+    public static readonly ApiNotFoundError Instance = new();
+    
+    private ApiNotFoundError() : base("The requested resource was not found.", NotFound)
     {}
 }

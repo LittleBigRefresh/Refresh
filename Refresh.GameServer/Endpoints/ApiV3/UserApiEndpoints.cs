@@ -19,7 +19,7 @@ public class UserApiEndpoints : EndpointGroup
     public ApiResponse<ApiGameUserResponse> GetUserByName(RequestContext context, GameDatabaseContext database, string username)
     {
         GameUser? user = database.GetUserByUsername(username);
-        if(user == null) return new ApiNotFoundError();
+        if(user == null) return ApiNotFoundError.Instance;
         
         return ApiGameUserResponse.FromGameUser(user);
     }
@@ -34,7 +34,7 @@ public class UserApiEndpoints : EndpointGroup
     public ApiResponse<ApiGameUserResponse> GetUserByUuid(RequestContext context, GameDatabaseContext database, string uuid)
     {
         GameUser? user = database.GetUserByUuid(uuid);
-        if(user == null) return new ApiNotFoundError();
+        if(user == null) return ApiNotFoundError.Instance;
         
         return ApiGameUserResponse.FromGameUser(user);
     }
