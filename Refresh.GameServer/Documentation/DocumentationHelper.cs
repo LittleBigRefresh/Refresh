@@ -10,6 +10,7 @@ namespace Refresh.GameServer.Documentation;
 public static class DocumentationHelper
 {
     private static readonly List<DocumentationRoute> _docs = new();
+    public static IEnumerable<DocumentationRoute> Documentation => _docs.AsReadOnly(); 
     
     static DocumentationHelper()
     {
@@ -24,7 +25,7 @@ public static class DocumentationHelper
             ApiV3EndpointAttribute endpoint = method.GetCustomAttribute<ApiV3EndpointAttribute>()!;
             string summary = method.GetCustomAttribute<DocSummaryAttribute>()?.Summary ?? "No summary provided.";
             
-            DocumentationRoute route = new(endpoint.FullRoute, summary);
+            DocumentationRoute route = new(endpoint.RouteWithParameters, summary);
 
             foreach (DocErrorAttribute error in method.GetCustomAttributes<DocErrorAttribute>())
             {
@@ -34,15 +35,21 @@ public static class DocumentationHelper
             
             foreach (ParameterInfo parameter in method.GetParameters())
             {
-                DocParamAttribute? parameterAttribute = parameter.GetCustomAttribute<DocParamAttribute>();
-                if(parameterAttribute == null) continue;
+                DocSummaryAttribute? paramSummary = parameter.GetCustomAttribute<DocSummaryAttribute>();
+                if(paramSummary == null) continue;
 
-                DocumentationParameter docParameter = new(parameter.Name!, ParameterType.Route, parameterAttribute.Summary);
+                DocumentationParameter docParameter = new(parameter.Name!, ParameterType.Route, paramSummary.Summary);
                 route.Parameters.Add(docParameter);
             }
 
             AuthenticationAttribute? authentication = method.GetCustomAttribute<AuthenticationAttribute>();
             route.AuthenticationRequired = authentication == null || authentication.Required;
+
+            if (method.HasCustomAttribute<DocUsesPageDataAttribute>())
+            {
+                route.Parameters.Add(new DocumentationParameter("skip", ParameterType.Query, "The index of the list to skip to."));
+                route.Parameters.Add(new DocumentationParameter("count", ParameterType.Query, "The amount of items to take from the list."));
+            }
             
             _docs.Add(route);
         }

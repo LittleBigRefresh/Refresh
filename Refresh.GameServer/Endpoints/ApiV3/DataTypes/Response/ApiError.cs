@@ -10,9 +10,15 @@ public class ApiError
 {
     public ApiError(string message, HttpStatusCode code = BadRequest)
     {
+        this.Name = this.GetType().Name;
         this.Message = message;
         this.StatusCode = code;
     }
+    
+    /// <summary>
+    /// The name of the error.
+    /// </summary>
+    public string Name { get; set; }
 
     /// <summary>
     /// A description of the error.
