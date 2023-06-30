@@ -51,6 +51,6 @@ public static class DocumentationHelper
     public static void WriteDocumentationAsJson(string path = ".")
     {
         string json = JsonConvert.SerializeObject(_docs, Formatting.Indented);
-        File.WriteAllText(Path.Combine(path, "docs.json"), json);
+        File.WriteAllText(Path.Combine(path, "apiDocumentation.json"), json);
     }
 }

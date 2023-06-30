@@ -35,3 +35,4 @@ jobs:
           draft: true
           files: |
             *.zip
+            apiDocumentation.json

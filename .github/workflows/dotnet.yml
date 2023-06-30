@@ -59,3 +59,14 @@ jobs:
           path: "Refresh.GameServer/bin/Release/net7.0/win-x64/publish/"
           if-no-files-found: error
           retention-days: 30
+          
+    - name: Generate API Documentation
+      run: dotnet run -c Release --no-build --project Refresh.GameServer -- --generate_docs
+      
+    - name: Upload API Documentation
+      uses: actions/upload-artifact@v3.1.1
+      with:
+        name: "API Documentation"
+        path: "apiDocumentation.json"
+        if-no-files-found: error
+        retention-days: 30
