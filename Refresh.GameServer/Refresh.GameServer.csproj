@@ -9,7 +9,7 @@
         <Platforms>AnyCPU</Platforms>
 
         <DocumentationFile>bin\$(Configuration)\$(TargetFramework)\$(AssemblyName).xml</DocumentationFile>
-        <NoWarn>1591</NoWarn>
+        <NoWarn>1591,1573</NoWarn>
     </PropertyGroup>
     
     <PropertyGroup Condition=" '$(Configuration)' == 'DebugLocalBunkum' ">
@@ -43,7 +43,7 @@
     </ItemGroup>
 
     <ItemGroup Condition="'$(Configuration)'!='DebugLocalBunkum'">
-        <PackageReference Include="Bunkum" Version="3.3.10" />
+        <PackageReference Include="Bunkum" Version="3.3.11" />
         <PackageReference Include="Bunkum.RealmDatabase" Version="3.1.4" />
     </ItemGroup>
 
@@ -64,5 +64,6 @@
             <OutputItemType>Analyzer</OutputItemType>
         </ProjectReference>
     </ItemGroup>
+
 
 </Project>
