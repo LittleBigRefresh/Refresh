@@ -1,3 +1,6 @@
+using Refresh.GameServer.Endpoints.ApiV3.DataTypes;
+using Refresh.GameServer.Endpoints.ApiV3.DataTypes.Response;
+
 namespace Refresh.GameServer.Database;
 
 public class DatabaseList<TObject> where TObject : class
@@ -32,6 +35,32 @@ public class DatabaseList<TObject> where TObject : class
         this.Items = itemsList;
         this.TotalItems = itemsList.Count;
         this.NextPageIndex = -1;
+    }
+
+    private DatabaseList(int oldTotalItems, int oldNextPageIndex, IEnumerable<TObject> items)
+    {
+        this.Items = items.ToList();
+        this.TotalItems = oldTotalItems;
+        this.NextPageIndex = oldNextPageIndex;
+    }
+
+    // public static DatabaseList<TObject> FromOldList<TObjectOld>(DatabaseList<TObjectOld> oldList, Func<TObjectOld, TObject> selector) where TObjectOld : class
+    // {
+    //     List<TObjectOld> oldItems = oldList.Items.ToList();
+    //     
+    //     List<TObject> items = new(oldItems.Count);
+    //     items.AddRange(oldItems.Select(selector.Invoke));
+    //
+    //     DatabaseList<TObject> newList = new(oldList.TotalItems, oldList.NextPageIndex, items);
+    //     return newList;
+    // }
+    
+    public static DatabaseList<TNewObject> FromOldList<TNewObject, TOldObject>(DatabaseList<TOldObject> oldList)
+        where TNewObject : class, IDataConvertableFrom<TNewObject, TOldObject>
+        where TOldObject : class
+    {
+        DatabaseList<TNewObject> newList = new(oldList.TotalItems, oldList.NextPageIndex, TNewObject.FromOldList(oldList.Items));
+        return newList;
     }
 
     public static DatabaseList<TObject> Empty() => new(Array.Empty<TObject>());

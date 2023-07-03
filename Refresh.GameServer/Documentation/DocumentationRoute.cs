@@ -1,7 +1,9 @@
+using Refresh.GameServer.Endpoints.ApiV3.DataTypes;
+
 namespace Refresh.GameServer.Documentation;
 
 [JsonObject(NamingStrategyType = typeof(CamelCaseNamingStrategy))]
-public class DocumentationRoute
+public class DocumentationRoute : IApiResponse
 {
     public DocumentationRoute(string route, string summary)
     {

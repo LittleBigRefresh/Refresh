@@ -4,6 +4,7 @@ using Bunkum.HttpServer.Endpoints;
 using Bunkum.HttpServer.Responses;
 using Bunkum.HttpServer.Storage;
 using Refresh.GameServer.Database;
+using Refresh.GameServer.Endpoints.ApiV3.DataTypes;
 using Refresh.GameServer.Endpoints.ApiV3.DataTypes.Response;
 using Refresh.GameServer.Endpoints.ApiV3.DataTypes.Response.Errors;
 using Refresh.GameServer.Importing;
@@ -56,13 +57,13 @@ public class ResourceApiEndpoints
 
     
     [ApiV3Endpoint("asset/{hash}"), Authentication(false)]
-    public ApiResponse<GameAsset> GetAssetInfo(RequestContext context, GameDatabaseContext database, string hash)
+    public ApiResponse<ApiGameAssetResponse> GetAssetInfo(RequestContext context, GameDatabaseContext database, string hash)
     {
         if (string.IsNullOrWhiteSpace(hash)) return HashMissingError;
 
         GameAsset? asset = database.GetAssetFromHash(hash);
         if (asset == null) return ApiNotFoundError.Instance;
 
-        return asset;
+        return ApiGameAssetResponse.FromOld(asset);
     }
 }

@@ -21,7 +21,7 @@ public class UserApiEndpoints : EndpointGroup
         GameUser? user = database.GetUserByUsername(username);
         if(user == null) return ApiNotFoundError.Instance;
         
-        return ApiGameUserResponse.FromGameUser(user);
+        return ApiGameUserResponse.FromOld(user);
     }
     
     [ApiV3Endpoint("user/uuid/{uuid}"), Authentication(false)]
@@ -33,11 +33,11 @@ public class UserApiEndpoints : EndpointGroup
         GameUser? user = database.GetUserByUuid(uuid);
         if(user == null) return ApiNotFoundError.Instance;
         
-        return ApiGameUserResponse.FromGameUser(user);
+        return ApiGameUserResponse.FromOld(user);
     }
     
     [ApiV3Endpoint("user/me")]
     [DocSummary("Returns your own user, provided you are authenticated")]
     public ApiResponse<ApiGameUserResponse> GetMyUser(RequestContext context, GameUser user)
-        => ApiGameUserResponse.FromGameUser(user);
+        => ApiGameUserResponse.FromOld(user);
 }
