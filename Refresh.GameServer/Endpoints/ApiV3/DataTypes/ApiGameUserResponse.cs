@@ -4,7 +4,7 @@ using Refresh.GameServer.Types.UserData;
 namespace Refresh.GameServer.Endpoints.ApiV3.DataTypes;
 
 [JsonObject(NamingStrategyType = typeof(CamelCaseNamingStrategy))]
-public class ApiGameUserResponse
+public class ApiGameUserResponse : IApiResponse
 {
     public required string UserId { get; set; }
     public required string Username { get; set; }

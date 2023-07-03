@@ -3,6 +3,7 @@ using Bunkum.HttpServer.Endpoints;
 using Refresh.GameServer.Database;
 using Refresh.GameServer.Documentation.Attributes;
 using Refresh.GameServer.Endpoints.ApiV3.DataTypes.Response;
+using Refresh.GameServer.Endpoints.ApiV3.DataTypes.Response.Errors;
 using Refresh.GameServer.Extensions;
 using Refresh.GameServer.Types.Levels;
 using Refresh.GameServer.Types.Photos;

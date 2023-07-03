@@ -4,7 +4,7 @@ using Refresh.GameServer.Types;
 namespace Refresh.GameServer.Endpoints.ApiV3.DataTypes;
 
 [JsonObject(NamingStrategyType = typeof(CamelCaseNamingStrategy))]
-public partial class ApiGameLocationResponse
+public class ApiGameLocationResponse : IApiResponse
 {
     public required int X { get; set; }
     public required int Y { get; set; }

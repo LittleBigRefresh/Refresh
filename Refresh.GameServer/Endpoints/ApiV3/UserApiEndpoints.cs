@@ -5,6 +5,7 @@ using Refresh.GameServer.Documentation;
 using Refresh.GameServer.Documentation.Attributes;
 using Refresh.GameServer.Endpoints.ApiV3.DataTypes;
 using Refresh.GameServer.Endpoints.ApiV3.DataTypes.Response;
+using Refresh.GameServer.Endpoints.ApiV3.DataTypes.Response.Errors;
 using Refresh.GameServer.Types.UserData;
 
 namespace Refresh.GameServer.Endpoints.ApiV3;
