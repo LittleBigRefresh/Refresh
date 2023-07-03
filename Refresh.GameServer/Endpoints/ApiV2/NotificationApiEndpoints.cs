@@ -16,7 +16,7 @@ public class NotificationApiEndpoints : EndpointGroup
     public IEnumerable<GameNotification> GetNotifications(RequestContext context, GameUser user, GameDatabaseContext database)
     {
         (int skip, int count) = context.GetPageData(true);
-        return database.GetNotificationsByUser(user, count, skip);
+        return database.GetNotificationsByUser(user, count, skip).Items;
     }
 
     [ApiV2Endpoint("notification/{uuid}")]

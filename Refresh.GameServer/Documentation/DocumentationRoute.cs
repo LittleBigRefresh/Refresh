@@ -5,12 +5,14 @@ namespace Refresh.GameServer.Documentation;
 [JsonObject(NamingStrategyType = typeof(CamelCaseNamingStrategy))]
 public class DocumentationRoute : IApiResponse
 {
-    public DocumentationRoute(string route, string summary)
+    public DocumentationRoute(string method, string route, string summary)
     {
+        this.Method = method;
         this.Route = route;
         this.Summary = summary;
     }
 
+    public string Method { get; set; }
     public string Route { get; set; }
     public string Summary { get; set; }
     

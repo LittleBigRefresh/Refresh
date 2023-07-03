@@ -36,8 +36,8 @@ public class WelcomeEndpoints : EndpointGroup
     [GameEndpoint("announce")]
     public string Announce(RequestContext context, GameServerConfig config, BunkumConfig bunkumConfig, GameUser user, GameDatabaseContext database)
     {
+        List<GameNotification> notifications = database.GetNotificationsByUser(user, 5, 0).Items.ToList();
         int count = database.GetNotificationCountByUser(user);
-        List<GameNotification> notifications = database.GetNotificationsByUser(user, 5, 0).ToList();
 
         string s = count != 1 ? "s" : "";
 

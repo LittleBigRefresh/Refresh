@@ -25,7 +25,7 @@ public static class DocumentationHelper
             ApiV3EndpointAttribute endpoint = method.GetCustomAttribute<ApiV3EndpointAttribute>()!;
             string summary = method.GetCustomAttribute<DocSummaryAttribute>()?.Summary ?? "No summary provided.";
             
-            DocumentationRoute route = new(endpoint.RouteWithParameters, summary);
+            DocumentationRoute route = new(endpoint.Method.ToString().ToUpper(), endpoint.RouteWithParameters, summary);
 
             foreach (DocErrorAttribute error in method.GetCustomAttributes<DocErrorAttribute>())
             {

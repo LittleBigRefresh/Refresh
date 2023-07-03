@@ -51,12 +51,8 @@ public partial class GameDatabaseContext // Notifications
             .Count(n => n.User == user);
     
     [Pure]
-    public IEnumerable<GameNotification> GetNotificationsByUser(GameUser user, int count, int skip) =>
-        this._realm.All<GameNotification>()
-            .Where(n => n.User == user)
-            .AsEnumerable()
-            .Skip(skip)
-            .Take(count);
+    public DatabaseList<GameNotification> GetNotificationsByUser(GameUser user, int count, int skip) =>
+        new(this._realm.All<GameNotification>().Where(n => n.User == user), skip, count);
 
     [Pure]
     public GameNotification? GetNotificationByUuid(GameUser user, ObjectId id) 
