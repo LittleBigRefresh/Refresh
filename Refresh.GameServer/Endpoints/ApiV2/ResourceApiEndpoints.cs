@@ -26,6 +26,7 @@ public class ResourceApiEndpoints : EndpointGroup
     }
     
     [ApiV2Endpoint("asset/{hash}/image", ContentType.Png)]
+    [Endpoint("/gameAssets/{hash}", ContentType.Png)]
     [ClientCacheResponse(31556952)] // 1 year
     [Authentication(false)]
     public Response DownloadGameAssetAsImage(RequestContext context, IDataStore dataStore, string hash, GameDatabaseContext database)

@@ -4,6 +4,7 @@ using Bunkum.HttpServer.Endpoints;
 using Bunkum.HttpServer.Responses;
 using Bunkum.HttpServer.Storage;
 using Refresh.GameServer.Database;
+using Refresh.GameServer.Documentation.Attributes;
 using Refresh.GameServer.Endpoints.ApiV3.DataTypes;
 using Refresh.GameServer.Endpoints.ApiV3.DataTypes.Response;
 using Refresh.GameServer.Endpoints.ApiV3.DataTypes.Response.Errors;
@@ -12,16 +13,22 @@ using Refresh.GameServer.Types.Assets;
 
 namespace Refresh.GameServer.Endpoints.ApiV3;
 
-public class ResourceApiEndpoints
+public class ResourceApiEndpoints : EndpointGroup
 {
-    private static readonly ApiValidationError HashMissingError = new("The hash is missing or null.");
+    private const string HashMissingErrorWhen = "The hash is missing or null";
+    private static readonly ApiValidationError HashMissingError = new(HashMissingErrorWhen);
     private static readonly Response HashMissingErrorResponse = HashMissingError;
 
-    private static readonly ApiInternalError CouldNotGetAssetError = new("An error occurred while retrieving the asset from the data store.");
+    private const string CouldNotGetAssetErrorWhen = "An error occurred while retrieving the asset from the data store";
+    private static readonly ApiInternalError CouldNotGetAssetError = new(CouldNotGetAssetErrorWhen);
     private static readonly Response CouldNotGetAssetErrorResponse = CouldNotGetAssetError;
     
     [ApiV3Endpoint("asset/{hash}/download"), Authentication(false)]
     [ClientCacheResponse(31556952)] // 1 year, we don't expect the data to change
+    [DocSummary("Downloads the raw data for an asset hash. Sent as application/octet-stream")]
+    [DocError(typeof(ApiNotFoundError), "The asset could not be found")]
+    [DocError(typeof(ApiInternalError), CouldNotGetAssetErrorWhen)]
+    [DocError(typeof(ApiValidationError), HashMissingErrorWhen)]
     public Response DownloadGameAsset(RequestContext context, IDataStore dataStore, string hash)
     {
         if (string.IsNullOrWhiteSpace(hash)) return HashMissingErrorResponse;
@@ -34,8 +41,11 @@ public class ResourceApiEndpoints
     }
     
     [ApiV3Endpoint("asset/{hash}/image", ContentType.Png), Authentication(false)]
-    [Endpoint("/gameAssets/{hash}", ContentType.Png)]
     [ClientCacheResponse(9204111)] // 1 week, data may or may not change
+    [DocSummary("Downloads any game texture (if it can be converted) as a PNG. Sent as image/png")]
+    [DocError(typeof(ApiNotFoundError), "The asset could not be found")]
+    [DocError(typeof(ApiInternalError), CouldNotGetAssetErrorWhen)]
+    [DocError(typeof(ApiValidationError), HashMissingErrorWhen)]
     public Response DownloadGameAssetAsImage(RequestContext context, IDataStore dataStore, string hash, GameDatabaseContext database)
     {
         if (string.IsNullOrWhiteSpace(hash)) return HashMissingErrorResponse;
@@ -44,7 +54,7 @@ public class ResourceApiEndpoints
         if (!dataStore.ExistsInStore("png/" + hash))
         {
             GameAsset? asset = database.GetAssetFromHash(hash);
-            if (asset == null) return ApiNotFoundError.Instance;
+            if (asset == null) return CouldNotGetAssetErrorResponse;
             
             ImageImporter.ImportAsset(asset, dataStore);
         }
@@ -57,6 +67,9 @@ public class ResourceApiEndpoints
 
     
     [ApiV3Endpoint("asset/{hash}"), Authentication(false)]
+    [DocSummary("Gets information from the database about a particular hash. Includes user who uploaded, dependencies, timestamps, etc.")]
+    [DocError(typeof(ApiValidationError), HashMissingErrorWhen)]
+    [DocError(typeof(ApiNotFoundError), "The asset could not be found")]
     public ApiResponse<ApiGameAssetResponse> GetAssetInfo(RequestContext context, GameDatabaseContext database, string hash)
     {
         if (string.IsNullOrWhiteSpace(hash)) return HashMissingError;
