@@ -27,8 +27,5 @@ public class ApiGameScoreResponse : IApiResponse, IDataConvertableFrom<ApiGameSc
         };
     }
 
-    public static IEnumerable<ApiGameScoreResponse> FromOldList(IEnumerable<GameSubmittedScore> oldList)
-    {
-        throw new NotImplementedException();
-    }
+    public static IEnumerable<ApiGameScoreResponse> FromOldList(IEnumerable<GameSubmittedScore> oldList) => oldList.Select(FromOld)!;
 }
