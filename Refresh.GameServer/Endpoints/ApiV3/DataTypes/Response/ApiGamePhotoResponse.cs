@@ -1,6 +1,6 @@
 using Refresh.GameServer.Types.Photos;
 
-namespace Refresh.GameServer.Endpoints.ApiV3.DataTypes;
+namespace Refresh.GameServer.Endpoints.ApiV3.DataTypes.Response;
 
 [JsonObject(NamingStrategyType = typeof(CamelCaseNamingStrategy))]
 public class ApiGamePhotoResponse : IApiResponse, IDataConvertableFrom<ApiGamePhotoResponse, GamePhoto>

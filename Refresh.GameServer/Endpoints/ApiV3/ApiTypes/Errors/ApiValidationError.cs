@@ -1,4 +1,4 @@
-namespace Refresh.GameServer.Endpoints.ApiV3.DataTypes.Response.Errors;
+namespace Refresh.GameServer.Endpoints.ApiV3.ApiTypes.Errors;
 
 public class ApiValidationError : ApiError
 {

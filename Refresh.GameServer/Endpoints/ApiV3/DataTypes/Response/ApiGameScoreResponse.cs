@@ -1,6 +1,6 @@
 using Refresh.GameServer.Types.UserData.Leaderboard;
 
-namespace Refresh.GameServer.Endpoints.ApiV3.DataTypes;
+namespace Refresh.GameServer.Endpoints.ApiV3.DataTypes.Response;
 
 [JsonObject(NamingStrategyType = typeof(CamelCaseNamingStrategy))]
 public class ApiGameScoreResponse : IApiResponse, IDataConvertableFrom<ApiGameScoreResponse, GameSubmittedScore>

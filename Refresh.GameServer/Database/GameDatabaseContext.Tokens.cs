@@ -102,4 +102,12 @@ public partial class GameDatabaseContext
 
         return true;
     }
+
+    public void RevokeToken(Token token)
+    {
+        this._realm.Write(() =>
+        {
+            this._realm.Remove(token);
+        });
+    }
 }

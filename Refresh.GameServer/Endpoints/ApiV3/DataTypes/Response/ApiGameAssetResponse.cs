@@ -1,6 +1,6 @@
 using Refresh.GameServer.Types.Assets;
 
-namespace Refresh.GameServer.Endpoints.ApiV3.DataTypes;
+namespace Refresh.GameServer.Endpoints.ApiV3.DataTypes.Response;
 
 [JsonObject(NamingStrategyType = typeof(CamelCaseNamingStrategy))]
 public class ApiGameAssetResponse : IApiResponse, IDataConvertableFrom<ApiGameAssetResponse, GameAsset>

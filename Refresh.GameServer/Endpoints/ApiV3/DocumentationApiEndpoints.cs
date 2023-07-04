@@ -2,7 +2,7 @@ using Bunkum.HttpServer;
 using Bunkum.HttpServer.Endpoints;
 using Refresh.GameServer.Documentation;
 using Refresh.GameServer.Documentation.Attributes;
-using Refresh.GameServer.Endpoints.ApiV3.DataTypes.Response;
+using Refresh.GameServer.Endpoints.ApiV3.ApiTypes;
 
 namespace Refresh.GameServer.Endpoints.ApiV3;
 

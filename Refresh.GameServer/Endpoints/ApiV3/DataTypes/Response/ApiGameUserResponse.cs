@@ -1,7 +1,7 @@
 using JetBrains.Annotations;
 using Refresh.GameServer.Types.UserData;
 
-namespace Refresh.GameServer.Endpoints.ApiV3.DataTypes;
+namespace Refresh.GameServer.Endpoints.ApiV3.DataTypes.Response;
 
 [JsonObject(NamingStrategyType = typeof(CamelCaseNamingStrategy))]
 public class ApiGameUserResponse : IApiResponse, IDataConvertableFrom<ApiGameUserResponse, GameUser>

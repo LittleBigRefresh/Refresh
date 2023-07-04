@@ -5,9 +5,10 @@ using Bunkum.HttpServer.Responses;
 using Bunkum.HttpServer.Storage;
 using Refresh.GameServer.Database;
 using Refresh.GameServer.Documentation.Attributes;
+using Refresh.GameServer.Endpoints.ApiV3.ApiTypes;
+using Refresh.GameServer.Endpoints.ApiV3.ApiTypes.Errors;
 using Refresh.GameServer.Endpoints.ApiV3.DataTypes;
 using Refresh.GameServer.Endpoints.ApiV3.DataTypes.Response;
-using Refresh.GameServer.Endpoints.ApiV3.DataTypes.Response.Errors;
 using Refresh.GameServer.Importing;
 using Refresh.GameServer.Types.Assets;
 

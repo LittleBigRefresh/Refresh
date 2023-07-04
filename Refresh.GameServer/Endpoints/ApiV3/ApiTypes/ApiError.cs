@@ -1,7 +1,7 @@
 using System.Net;
 using Bunkum.CustomHttpListener.Parsing;
 
-namespace Refresh.GameServer.Endpoints.ApiV3.DataTypes.Response;
+namespace Refresh.GameServer.Endpoints.ApiV3.ApiTypes;
 
 /// <summary>
 /// An error indicating a problem with the server, your query, or anything else.

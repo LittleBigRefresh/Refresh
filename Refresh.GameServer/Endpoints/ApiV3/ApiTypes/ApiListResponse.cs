@@ -1,6 +1,7 @@
 using Refresh.GameServer.Database;
+using Refresh.GameServer.Endpoints.ApiV3.DataTypes;
 
-namespace Refresh.GameServer.Endpoints.ApiV3.DataTypes.Response;
+namespace Refresh.GameServer.Endpoints.ApiV3.ApiTypes;
 
 /// <summary>
 /// A response from the API containing information about a list and part of it's contents.

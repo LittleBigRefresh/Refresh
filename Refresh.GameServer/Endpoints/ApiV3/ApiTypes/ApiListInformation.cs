@@ -1,4 +1,4 @@
-namespace Refresh.GameServer.Endpoints.ApiV3.DataTypes.Response;
+namespace Refresh.GameServer.Endpoints.ApiV3.ApiTypes;
 
 [JsonObject(NamingStrategyType = typeof(CamelCaseNamingStrategy))]
 public class ApiListInformation
