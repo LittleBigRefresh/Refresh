@@ -12,7 +12,7 @@ namespace Refresh.GameServer.Endpoints.ApiV3;
 
 public class UserApiEndpoints : EndpointGroup
 {
-    [ApiV3Endpoint("user/name/{username}"), Authentication(false)]
+    [ApiV3Endpoint("users/name/{username}"), Authentication(false)]
     [DocSummary("Tries to find a user by the username")]
     [DocError(typeof(ApiNotFoundError), "The user cannot be found")]
     public ApiResponse<ApiGameUserResponse> GetUserByName(RequestContext context, GameDatabaseContext database, 
@@ -24,7 +24,7 @@ public class UserApiEndpoints : EndpointGroup
         return ApiGameUserResponse.FromOld(user);
     }
     
-    [ApiV3Endpoint("user/uuid/{uuid}"), Authentication(false)]
+    [ApiV3Endpoint("users/uuid/{uuid}"), Authentication(false)]
     [DocSummary("Tries to find a user by the UUID")]
     [DocError(typeof(ApiNotFoundError), "The user cannot be found")]
     public ApiResponse<ApiGameUserResponse> GetUserByUuid(RequestContext context, GameDatabaseContext database,
@@ -36,7 +36,7 @@ public class UserApiEndpoints : EndpointGroup
         return ApiGameUserResponse.FromOld(user);
     }
     
-    [ApiV3Endpoint("user/me")]
+    [ApiV3Endpoint("users/me")]
     [DocSummary("Returns your own user, provided you are authenticated")]
     public ApiResponse<ApiGameUserResponse> GetMyUser(RequestContext context, GameUser user)
         => ApiGameUserResponse.FromOld(user);

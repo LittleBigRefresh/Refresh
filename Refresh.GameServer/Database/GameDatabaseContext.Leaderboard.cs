@@ -31,7 +31,7 @@ public partial class GameDatabaseContext // Leaderboard
     
     [UsedImplicitly] private record ScoreLevelWithPlayer(GameLevel level, GameUser player);
 
-    public IEnumerable<GameSubmittedScore> GetTopScoresForLevel(GameLevel level, int count, int skip, byte type, bool showDuplicates = false)
+    public DatabaseList<GameSubmittedScore> GetTopScoresForLevel(GameLevel level, int count, int skip, byte type, bool showDuplicates = false)
     {
         IEnumerable<GameSubmittedScore> scores = this._realm.All<GameSubmittedScore>()
             .Where(s => s.Level == level && s.ScoreType == type)
@@ -41,7 +41,7 @@ public partial class GameDatabaseContext // Leaderboard
         if (!showDuplicates)
             scores = scores.DistinctBy(s => new ScoreLevelWithPlayer(s.Level, s.Players[0]));
 
-        return scores.Skip(skip).Take(count);
+        return new DatabaseList<GameSubmittedScore>(scores, skip, count);
     }
     
 

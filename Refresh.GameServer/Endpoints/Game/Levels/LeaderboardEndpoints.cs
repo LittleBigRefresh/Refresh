@@ -53,6 +53,6 @@ public class LeaderboardEndpoints : EndpointGroup
         if (level == null) return null;
         
         (int skip, int count) = context.GetPageData();
-        return SerializedScoreList.FromSubmittedEnumerable(database.GetTopScoresForLevel(level, count, skip, (byte)type));
+        return SerializedScoreList.FromSubmittedEnumerable(database.GetTopScoresForLevel(level, count, skip, (byte)type).Items);
     }
 }

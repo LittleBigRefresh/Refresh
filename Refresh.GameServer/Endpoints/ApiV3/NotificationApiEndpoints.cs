@@ -24,7 +24,7 @@ public class NotificationApiEndpoints : EndpointGroup
         return DatabaseList<ApiGameNotificationResponse>.FromOldList<ApiGameNotificationResponse, GameNotification>(notifications);
     }
 
-    [ApiV3Endpoint("notification/{uuid}")]
+    [ApiV3Endpoint("notifications/{uuid}")]
     [DocSummary("Gets a specific notification for a user")]
     [DocError(typeof(ApiValidationError), ApiValidationError.ObjectIdParseErrorWhen)]
     [DocError(typeof(ApiNotFoundError), "The notification cannot be found")]
@@ -40,7 +40,7 @@ public class NotificationApiEndpoints : EndpointGroup
         return ApiGameNotificationResponse.FromOld(notification);
     }
     
-    [ApiV3Endpoint("notification/{uuid}", Method.Delete)]
+    [ApiV3Endpoint("notifications/{uuid}", Method.Delete)]
     [DocSummary("Clears an individual notification for a user")]
     [DocError(typeof(ApiValidationError), ApiValidationError.ObjectIdParseErrorWhen)]
     [DocError(typeof(ApiNotFoundError), "The notification cannot be found")]

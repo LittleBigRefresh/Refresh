@@ -50,6 +50,11 @@ public static class DocumentationHelper
                 route.Parameters.Add(new DocumentationParameter("skip", ParameterType.Query, "The amount of items to skip over - where you are in the list"));
                 route.Parameters.Add(new DocumentationParameter("count", ParameterType.Query, "The amount of items to take from the list"));
             }
+
+            foreach (DocQueryParamAttribute queryParam in method.GetCustomAttributes<DocQueryParamAttribute>())
+            {
+                route.Parameters.Add(new DocumentationParameter(queryParam.Name, ParameterType.Query, queryParam.Summary));
+            }
             
             _docs.Add(route);
         }

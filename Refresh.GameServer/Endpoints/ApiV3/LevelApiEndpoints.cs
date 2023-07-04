@@ -39,7 +39,7 @@ public class LevelApiEndpoints : EndpointGroup
     public ApiListResponse<ApiLevelCategoryResponse> GetCategories(RequestContext context, CategoryService categories)
         => new(ApiLevelCategoryResponse.FromOldList(categories.Categories));
 
-    [ApiV3Endpoint("level/id/{id}"), Authentication(false)]
+    [ApiV3Endpoint("levels/id/{id}"), Authentication(false)]
     [DocSummary("Gets an individual level by a numerical ID")]
     [DocError(typeof(ApiNotFoundError), "The level cannot be found")]
     public ApiResponse<ApiGameLevelResponse> GetLevelById(RequestContext context, GameDatabaseContext database,
