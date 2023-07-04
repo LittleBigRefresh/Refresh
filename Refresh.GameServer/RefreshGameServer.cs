@@ -10,6 +10,7 @@ using Bunkum.RealmDatabase;
 using Refresh.GameServer.Authentication;
 using Refresh.GameServer.Configuration;
 using Refresh.GameServer.Database;
+using Refresh.GameServer.Documentation;
 using Refresh.GameServer.Endpoints;
 using Refresh.GameServer.Importing;
 using Refresh.GameServer.Middlewares;
@@ -77,6 +78,7 @@ public class RefreshGameServer
         this._server.AddService<FriendStorageService>();
         this._server.AddService<MatchService>();
         this._server.AddService<ImportService>();
+        this._server.AddService<DocumentationService>();
         this._server.AddAutoDiscover(serverBrand: "Refresh",
             baseEndpoint: GameEndpointAttribute.BaseRoute.Substring(0, GameEndpointAttribute.BaseRoute.Length - 1),
             usesCustomDigestKey: true);

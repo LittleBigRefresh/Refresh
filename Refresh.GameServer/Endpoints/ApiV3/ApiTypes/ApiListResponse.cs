@@ -39,5 +39,5 @@ public class ApiListResponse<TData> : ApiResponse<List<TData>> where TData : cla
     
     public static implicit operator ApiListResponse<TData>(ApiError error) => new(error);
 
-    [JsonProperty("listInfo")] public ApiListInformation? ListInfo { get; set; }
+    [JsonProperty] public ApiListInformation? ListInfo { get; set; }
 }

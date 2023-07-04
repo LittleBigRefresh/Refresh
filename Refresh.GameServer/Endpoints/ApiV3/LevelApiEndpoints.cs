@@ -1,10 +1,10 @@
+using AttribDoc.Attributes;
 using Bunkum.HttpServer;
 using Bunkum.HttpServer.Endpoints;
 using Refresh.GameServer.Database;
 using Refresh.GameServer.Documentation.Attributes;
 using Refresh.GameServer.Endpoints.ApiV3.ApiTypes;
 using Refresh.GameServer.Endpoints.ApiV3.ApiTypes.Errors;
-using Refresh.GameServer.Endpoints.ApiV3.DataTypes;
 using Refresh.GameServer.Endpoints.ApiV3.DataTypes.Response;
 using Refresh.GameServer.Extensions;
 using Refresh.GameServer.Types.Levels;
@@ -15,6 +15,12 @@ namespace Refresh.GameServer.Endpoints.ApiV3;
 
 public class LevelApiEndpoints : EndpointGroup
 {
+    [ApiV3Endpoint("levels"), Authentication(false)]
+    [ClientCacheResponse(86400 / 2)] // cache for half a day
+    [DocSummary("Retrieves a list of categories you can use to search levels")]
+    public ApiListResponse<ApiLevelCategoryResponse> GetCategories(RequestContext context, CategoryService categories)
+        => new(ApiLevelCategoryResponse.FromOldList(categories.Categories));
+    
     [ApiV3Endpoint("levels/{route}"), Authentication(false)]
     [DocSummary("Retrieves a list of levels from a category")]
     [DocError(typeof(ApiNotFoundError), "The level category cannot be found")]
@@ -33,12 +39,6 @@ public class LevelApiEndpoints : EndpointGroup
 
         return DatabaseList<ApiGameLevelResponse>.FromOldList<ApiGameLevelResponse, GameLevel>(list);
     }
-
-    [ApiV3Endpoint("levels"), Authentication(false)]
-    [ClientCacheResponse(86400 / 2)] // cache for half a day
-    [DocSummary("Retrieves a list of categories you can use to search levels")]
-    public ApiListResponse<ApiLevelCategoryResponse> GetCategories(RequestContext context, CategoryService categories)
-        => new(ApiLevelCategoryResponse.FromOldList(categories.Categories));
 
     [ApiV3Endpoint("levels/id/{id}"), Authentication(false)]
     [DocSummary("Gets an individual level by a numerical ID")]

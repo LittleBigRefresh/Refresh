@@ -1,5 +1,8 @@
+using System.Diagnostics.CodeAnalysis;
+using Bunkum.HttpServer;
 using CommandLine;
 using CommandLine.Text;
+using NotEnoughLogs;
 using Refresh.GameServer.Documentation;
 
 namespace Refresh.GameServer;
@@ -36,6 +39,7 @@ internal class CommandLineManager
             .WithParsed(this.StartWithOptions);
     }
 
+    [SuppressMessage("ReSharper", "InvertIf")]
     private void StartWithOptions(Options options)
     {
         if (options.ImportAssets)
@@ -52,7 +56,11 @@ internal class CommandLineManager
 
         if (options.GenerateDocumentation)
         {
-            DocumentationHelper.WriteDocumentationAsJson(Environment.CurrentDirectory);
+            DocumentationService service = new(new LoggerContainer<BunkumContext>());
+            service.Initialize();
+            
+            string json = JsonConvert.SerializeObject(service.Documentation, Formatting.Indented);
+            File.WriteAllText(Path.Combine(Environment.CurrentDirectory, "apiDocumentation.json"), json);
         }
     }
 }

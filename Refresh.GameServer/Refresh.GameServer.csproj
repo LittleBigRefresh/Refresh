@@ -45,6 +45,7 @@
     </ItemGroup>
 
     <ItemGroup>
+      <PackageReference Include="AttribDoc" Version="1.0.1" />
       <PackageReference Include="BCrypt.Net-Next" Version="4.0.3" />
       <PackageReference Include="Bunkum.AutoDiscover" Version="1.0.0" />
       <PackageReference Include="CommandLineParser" Version="2.9.1" />
