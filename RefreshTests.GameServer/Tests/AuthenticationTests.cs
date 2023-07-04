@@ -27,7 +27,7 @@ public class AuthenticationTests : GameServerTest
     {
         using TestContext context = this.GetServer();
         
-        HttpResponseMessage unauthedRequest = await context.Http.GetAsync("/api/v2/user/me");
+        HttpResponseMessage unauthedRequest = await context.Http.GetAsync("/api/v3/users/me");
         Assert.That(unauthedRequest.StatusCode, Is.EqualTo(Forbidden));
 
         HttpClient authedClient = context.GetAuthenticatedClient(TokenType.Api, out string tokenData);
@@ -37,8 +37,8 @@ public class AuthenticationTests : GameServerTest
         Assert.That(token?.User, Is.Not.Null);
 
         // TODO: Fix serialization of ObjectId
-        HttpResponseMessage response = await authedClient.GetAsync("/api/v2/user/me");
-        // (GameUser? user, HttpResponseMessage response) = await authedClient.GetJsonObjectAsync<GameUser>("/api/v2/user/me");
+        HttpResponseMessage response = await authedClient.GetAsync("/api/v3/users/me");
+        // (GameUser? user, HttpResponseMessage response) = await authedClient.GetJsonObjectAsync<GameUser>("/api/v3/user/me");
         Assert.Multiple(async () =>
         {
             // Assert.That(user, Is.Not.Null);
