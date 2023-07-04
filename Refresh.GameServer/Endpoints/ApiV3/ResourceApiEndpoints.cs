@@ -29,7 +29,8 @@ public class ResourceApiEndpoints : EndpointGroup
     [DocError(typeof(ApiNotFoundError), "The asset could not be found")]
     [DocError(typeof(ApiInternalError), CouldNotGetAssetErrorWhen)]
     [DocError(typeof(ApiValidationError), HashMissingErrorWhen)]
-    public Response DownloadGameAsset(RequestContext context, IDataStore dataStore, string hash)
+    public Response DownloadGameAsset(RequestContext context, IDataStore dataStore,
+        [DocSummary("The SHA1 hash of the asset")] string hash)
     {
         if (string.IsNullOrWhiteSpace(hash)) return HashMissingErrorResponse;
         if (!dataStore.ExistsInStore(hash)) return ApiNotFoundError.Instance;
@@ -46,7 +47,8 @@ public class ResourceApiEndpoints : EndpointGroup
     [DocError(typeof(ApiNotFoundError), "The asset could not be found")]
     [DocError(typeof(ApiInternalError), CouldNotGetAssetErrorWhen)]
     [DocError(typeof(ApiValidationError), HashMissingErrorWhen)]
-    public Response DownloadGameAssetAsImage(RequestContext context, IDataStore dataStore, string hash, GameDatabaseContext database)
+    public Response DownloadGameAssetAsImage(RequestContext context, IDataStore dataStore, GameDatabaseContext database,
+        [DocSummary("The SHA1 hash of the asset")] string hash)
     {
         if (string.IsNullOrWhiteSpace(hash)) return HashMissingErrorResponse;
         if (!dataStore.ExistsInStore(hash)) return ApiNotFoundError.Instance;
@@ -70,7 +72,8 @@ public class ResourceApiEndpoints : EndpointGroup
     [DocSummary("Gets information from the database about a particular hash. Includes user who uploaded, dependencies, timestamps, etc.")]
     [DocError(typeof(ApiValidationError), HashMissingErrorWhen)]
     [DocError(typeof(ApiNotFoundError), "The asset could not be found")]
-    public ApiResponse<ApiGameAssetResponse> GetAssetInfo(RequestContext context, GameDatabaseContext database, string hash)
+    public ApiResponse<ApiGameAssetResponse> GetAssetInfo(RequestContext context, GameDatabaseContext database,
+        [DocSummary("The SHA1 hash of the asset")] string hash)
     {
         if (string.IsNullOrWhiteSpace(hash)) return HashMissingError;
 

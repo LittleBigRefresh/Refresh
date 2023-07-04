@@ -28,7 +28,8 @@ public class NotificationApiEndpoints : EndpointGroup
     [DocSummary("Gets a specific notification for a user")]
     [DocError(typeof(ApiValidationError), ApiValidationError.ObjectIdParseErrorWhen)]
     [DocError(typeof(ApiNotFoundError), "The notification cannot be found")]
-    public ApiResponse<ApiGameNotificationResponse> GetNotificationByUuid(RequestContext context, GameUser user, GameDatabaseContext database, string uuid)
+    public ApiResponse<ApiGameNotificationResponse> GetNotificationByUuid(RequestContext context, GameUser user, GameDatabaseContext database,
+        [DocSummary("The UUID of the notification")] string uuid)
     {
         bool parsed = ObjectId.TryParse(uuid, out ObjectId objectId);
         if (!parsed) return ApiValidationError.ObjectIdParseError;
@@ -43,7 +44,8 @@ public class NotificationApiEndpoints : EndpointGroup
     [DocSummary("Clears an individual notification for a user")]
     [DocError(typeof(ApiValidationError), ApiValidationError.ObjectIdParseErrorWhen)]
     [DocError(typeof(ApiNotFoundError), "The notification cannot be found")]
-    public ApiOkResponse ClearNotificationByUuid(RequestContext context, GameUser user, GameDatabaseContext database, string uuid)
+    public ApiOkResponse ClearNotificationByUuid(RequestContext context, GameUser user, GameDatabaseContext database,
+        [DocSummary("The UUID of the notification")] string uuid)
     {
         bool parsed = ObjectId.TryParse(uuid, out ObjectId objectId);
         if (!parsed) return ApiValidationError.ObjectIdParseError;
