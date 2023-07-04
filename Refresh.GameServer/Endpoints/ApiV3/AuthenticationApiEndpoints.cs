@@ -28,7 +28,7 @@ public partial class AuthenticationApiEndpoints : EndpointGroup
     [GeneratedRegex("^[a-f0-9]{128}$")]
     private static partial Regex Sha512Regex();
 
-    [ApiV3Endpoint("auth", Method.Post), Authentication(false)]
+    [ApiV3Endpoint("login", Method.Post), Authentication(false)]
     public ApiResponse<IApiAuthenticationResponse> Authenticate(RequestContext context, GameDatabaseContext database, ApiAuthenticationRequest body)
     {
         GameUser? user = database.GetUserByUsername(body.Username);
@@ -83,7 +83,7 @@ public partial class AuthenticationApiEndpoints : EndpointGroup
         return new ApiOkResponse();
     }
 
-    [ApiV3Endpoint("goodbye", Method.Post)]
+    [ApiV3Endpoint("logout", Method.Post)]
     [DocSummary("Tells the server to revoke the token used to make this request. Useful for logout behavior.")]
     public ApiOkResponse RevokeThisToken(RequestContext context, GameDatabaseContext database, Token token)
     {
