@@ -16,7 +16,4 @@ public class UserApiEndpoints : EndpointGroup
     [Authentication(false)]
     public GameUser? GetUserByUuid(RequestContext context, GameDatabaseContext database, string uuid) 
         => database.GetUserByUuid(uuid);
-    
-    [ApiV2Endpoint("user/me")]
-    public GameUser GetMyUser(RequestContext context, GameUser user) => user;
 }
