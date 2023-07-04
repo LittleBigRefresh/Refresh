@@ -1,5 +1,4 @@
 using System.Reflection;
-using System.Runtime.CompilerServices;
 using Bunkum.HttpServer.Endpoints;
 using Bunkum.HttpServer.Extensions;
 using Refresh.GameServer.Documentation.Attributes;
@@ -58,6 +57,8 @@ public static class DocumentationHelper
             
             _docs.Add(route);
         }
+
+        _docs = _docs.OrderBy(d => d.Route).ToList();
     }
     
     public static void WriteDocumentationAsJson(string path = ".")
