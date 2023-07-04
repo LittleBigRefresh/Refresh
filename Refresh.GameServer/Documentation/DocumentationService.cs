@@ -1,5 +1,4 @@
 using System.Reflection;
-using AttribDoc;
 using Bunkum.HttpServer;
 using Bunkum.HttpServer.Services;
 using NotEnoughLogs;
@@ -15,7 +14,7 @@ public class DocumentationService : EndpointService
     public override void Initialize()
     {
         AttribDoc.Documentation documentation = this._generator.Document(Assembly.GetExecutingAssembly());
-        this._docs.AddRange(ApiRouteResponse.FromOldList(documentation.Routes));
+        this._docs.AddRange(ApiRouteResponse.FromOldList(documentation.Routes.OrderBy(r => r.RouteUri)));
     }
 
     private readonly RefreshDocumentationGenerator _generator = new();
