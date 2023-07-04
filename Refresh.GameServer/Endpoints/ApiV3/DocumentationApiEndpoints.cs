@@ -12,8 +12,9 @@ public class DocumentationApiEndpoints : EndpointGroup
 {
     [ApiV3Endpoint("documentation"), Authentication(false)]
     [DocSummary("Retrieve a JSON object containing documentation about the API")]
+    [ClientCacheResponse(3600)] // 1 hour
     public ApiListResponse<ApiRouteResponse> GetDocumentation(RequestContext context, DocumentationService service)
     {
-        return new ApiListResponse<ApiRouteResponse>(ApiRouteResponse.FromOldList(service.Documentation));
+        return new ApiListResponse<ApiRouteResponse>(service.Documentation);
     }
 }

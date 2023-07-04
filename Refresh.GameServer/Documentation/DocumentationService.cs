@@ -3,6 +3,7 @@ using AttribDoc;
 using Bunkum.HttpServer;
 using Bunkum.HttpServer.Services;
 using NotEnoughLogs;
+using Refresh.GameServer.Endpoints.ApiV3.DataTypes.Response;
 
 namespace Refresh.GameServer.Documentation;
 
@@ -14,11 +15,11 @@ public class DocumentationService : EndpointService
     public override void Initialize()
     {
         AttribDoc.Documentation documentation = this._generator.Document(Assembly.GetExecutingAssembly());
-        this._docs.AddRange(documentation.Routes);
+        this._docs.AddRange(ApiRouteResponse.FromOldList(documentation.Routes));
     }
 
     private readonly RefreshDocumentationGenerator _generator = new();
     
-    private readonly List<Route> _docs = new();
-    public IEnumerable<Route> Documentation => this._docs.AsReadOnly();
+    private readonly List<ApiRouteResponse> _docs = new();
+    public IEnumerable<ApiRouteResponse> Documentation => this._docs.AsReadOnly();
 }
