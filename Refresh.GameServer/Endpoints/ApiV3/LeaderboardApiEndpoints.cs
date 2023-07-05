@@ -18,9 +18,9 @@ public class LeaderboardApiEndpoints : EndpointGroup
     [ApiV3Endpoint("scores/{id}/{mode}"), Authentication(false)]
     [DocUsesPageData, DocSummary("Gets a list of the top scores on a level.")]
     [DocQueryParam("showAll", "Whether or not to show all scores. If false, only users' best scores will be shown." +
-                              "If true, all scores will be shown no matter what.")]
+                              "If true, all scores will be shown no matter what. False by default.")]
     [DocError(typeof(ApiValidationError), ApiValidationError.LevelMissingErrorWhen)]
-    [DocError(typeof(ApiValidationError), ApiValidationError.ObjectIdParseErrorWhen)]
+    [DocError(typeof(ApiValidationError), "The boolean 'showAll' could not be parsed by the server.")]
     public ApiListResponse<ApiGameScoreResponse> GetTopScoresForLevel(RequestContext context, GameDatabaseContext database,
         [DocSummary("The ID of the level")] int id,
         [DocSummary("The leaderboard more (aka the number of players, e.g. 2 for 2-player mode)")] int mode)
@@ -31,7 +31,7 @@ public class LeaderboardApiEndpoints : EndpointGroup
         (int skip, int count) = context.GetPageData(true);
 
         bool result = bool.TryParse(context.QueryString.Get("showAll") ?? "false", out bool showAll);
-        if (!result) return ApiValidationError.ObjectIdParseError;
+        if (!result) return ApiValidationError.BooleanParseError;
 
         DatabaseList<GameSubmittedScore> scores = database.GetTopScoresForLevel(level, count, skip, (byte)mode, showAll);
         return DatabaseList<ApiGameScoreResponse>.FromOldList<ApiGameScoreResponse, GameSubmittedScore>(scores);

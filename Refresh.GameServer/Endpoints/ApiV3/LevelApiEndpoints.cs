@@ -18,9 +18,22 @@ public class LevelApiEndpoints : EndpointGroup
     [ApiV3Endpoint("levels"), Authentication(false)]
     [ClientCacheResponse(86400 / 2)] // cache for half a day
     [DocSummary("Retrieves a list of categories you can use to search levels")]
-    public ApiListResponse<ApiLevelCategoryResponse> GetCategories(RequestContext context, CategoryService categories)
-        => new(ApiLevelCategoryResponse.FromOldList(categories.Categories));
-    
+    [DocQueryParam("includePreviews", "If true, a single level will be added to each category representing a level from that category. False by default.")]
+    [DocError(typeof(ApiValidationError), "The boolean 'includePreviews' could not be parsed by the server.")]
+    public ApiListResponse<ApiLevelCategoryResponse> GetCategories(RequestContext context, CategoryService categories, GameDatabaseContext database, GameUser? user)
+    {
+        bool result = bool.TryParse(context.QueryString.Get("includePreviews") ?? "false", out bool includePreviews);
+        if (!result) return ApiValidationError.BooleanParseError;
+
+        IEnumerable<ApiLevelCategoryResponse> resp;
+
+        // ReSharper disable once ConvertIfStatementToConditionalTernaryExpression
+        if (includePreviews)resp = ApiLevelCategoryResponse.FromOldList(categories.Categories, context, database, user);
+        else resp = ApiLevelCategoryResponse.FromOldList(categories.Categories);
+        
+        return new ApiListResponse<ApiLevelCategoryResponse>(resp);
+    }
+
     [ApiV3Endpoint("levels/{route}"), Authentication(false)]
     [DocSummary("Retrieves a list of levels from a category")]
     [DocError(typeof(ApiNotFoundError), "The level category cannot be found")]
