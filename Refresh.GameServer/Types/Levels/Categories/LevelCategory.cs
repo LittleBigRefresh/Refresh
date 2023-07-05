@@ -54,6 +54,14 @@ public class LevelCategory
 
         if (extraArgs != null) args = args.Concat(extraArgs);
 
-        return (DatabaseList<GameLevel>)this._method.Invoke(database, args.ToArray())!;
+        try
+        {
+            return (DatabaseList<GameLevel>)this._method.Invoke(database, args.ToArray())!;
+        }
+        catch
+        {
+            Console.WriteLine(this.ApiRoute);
+            throw;
+        }
     }
 }

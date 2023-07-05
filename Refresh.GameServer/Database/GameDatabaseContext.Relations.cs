@@ -13,12 +13,11 @@ public partial class GameDatabaseContext // Relations
         .FirstOrDefault(r => r.Level == level && r.User == user) != null;
 
     [Pure]
-    public IEnumerable<GameLevel> GetLevelsFavouritedByUser(GameUser user, int count, int skip) => this._realm.All<FavouriteLevelRelation>()
+    public DatabaseList<GameLevel> GetLevelsFavouritedByUser(GameUser user, int count, int skip) 
+        => new(this._realm.All<FavouriteLevelRelation>()
         .Where(r => r.User == user)
         .AsEnumerable()
-        .Select(r => r.Level)
-        .Skip(skip)
-        .Take(count);
+        .Select(r => r.Level), skip, count);
     
     public bool FavouriteLevel(GameLevel level, GameUser user)
     {
@@ -127,12 +126,11 @@ public partial class GameDatabaseContext // Relations
         .FirstOrDefault(r => r.Level == level && r.User == user) != null;
 
     [Pure]
-    public IEnumerable<GameLevel> GetLevelsQueuedByUser(GameUser user, int count, int skip) => this._realm.All<QueueLevelRelation>()
+    public DatabaseList<GameLevel> GetLevelsQueuedByUser(GameUser user, int count, int skip)
+        => new(this._realm.All<QueueLevelRelation>()
         .Where(r => r.User == user)
         .AsEnumerable()
-        .Select(r => r.Level)
-        .Skip(skip)
-        .Take(count);
+        .Select(r => r.Level), skip, count);
     
     public bool QueueLevel(GameLevel level, GameUser user)
     {
