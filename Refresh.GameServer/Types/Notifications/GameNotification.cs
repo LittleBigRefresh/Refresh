@@ -19,5 +19,4 @@ public partial class GameNotification : IRealmObject
     [JsonIgnore] public GameUser User { get; set; }
     
     public string FontAwesomeIcon { get; set; }
-    public string ColorCode { get; set; }
 }

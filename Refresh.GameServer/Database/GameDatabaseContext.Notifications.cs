@@ -9,17 +9,15 @@ namespace Refresh.GameServer.Database;
 
 public partial class GameDatabaseContext // Notifications
 {
-    public void AddNotification(string title, string text, GameUser user, string? icon = null, string? color = null)
+    public void AddNotification(string title, string text, GameUser user, string? icon = null)
     {
         icon ??= "bell";
-        color ??= "#AA30F5";
 
         GameNotification notification = new()
         {
             Title = title,
             Text = text,
             User = user,
-            ColorCode = color,
             FontAwesomeIcon = icon,
             CreatedAt = DateTimeOffset.Now,
         };
@@ -30,9 +28,9 @@ public partial class GameDatabaseContext // Notifications
         });
     }
 
-    public void AddErrorNotification(string title, string text, GameUser user, string? icon = null)
+    public void AddErrorNotification(string title, string text, GameUser user)
     {
-        this.AddNotification(title, text, user, icon, color: "#E52E2E");
+        this.AddNotification(title, text, user, "exclamation-circle");
     }
 
     public void AddPublishFailNotification(string reason, GameLevel body, GameUser user)
