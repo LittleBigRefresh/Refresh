@@ -6,8 +6,8 @@ namespace Refresh.GameServer.Endpoints.ApiV3.DataTypes.Response;
 public class ApiEventResponse : IApiResponse, IDataConvertableFrom<ApiEventResponse, Event>
 {
     public required string EventId { get; set; }
-    public required EventType EventType { get; set; }
-    public required DateTimeOffset OccuredAt { get; set; }
+    public required int EventType { get; set; }
+    public required DateTimeOffset OccurredAt { get; set; }
     public required EventDataType StoredDataType { get; set; }
     public required int? StoredSequentialId { get; set; }
     public required string? StoredObjectId { get; set; }
@@ -19,8 +19,8 @@ public class ApiEventResponse : IApiResponse, IDataConvertableFrom<ApiEventRespo
         return new ApiEventResponse
         {
             EventId = old.EventId.ToString()!,
-            EventType = old.EventType,
-            OccuredAt = DateTimeOffset.FromUnixTimeMilliseconds(old.Timestamp),
+            EventType = (int)old.EventType,
+            OccurredAt = DateTimeOffset.FromUnixTimeMilliseconds(old.Timestamp),
             StoredDataType = old.StoredDataType,
             StoredSequentialId = old.StoredSequentialId,
             StoredObjectId = old.StoredObjectId?.ToString(),
