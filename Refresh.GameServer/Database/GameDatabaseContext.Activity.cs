@@ -10,12 +10,12 @@ public partial class GameDatabaseContext // Activity
     public DatabaseList<Event> GetRecentActivity(int count, int skip, long timestamp, long endTimestamp) => 
         new(this._realm.All<Event>()
             .Where(e => e.Timestamp < timestamp && e.Timestamp >= endTimestamp)
-            .OrderBy(e => e.Timestamp), skip, count);
+            .OrderByDescending(e => e.Timestamp), skip, count);
     
     [Pure]
     public DatabaseList<Event> GetRecentActivityForLevel(GameLevel level, int count, int skip, long timestamp, long endTimestamp) => 
         new(this._realm.All<Event>()
             .Where(e => e._StoredDataType == 1 && e.StoredSequentialId == level.LevelId)
             .Where(e => e.Timestamp < timestamp && e.Timestamp >= endTimestamp)
-            .OrderBy(e => e.Timestamp), skip, count);
+            .OrderByDescending(e => e.Timestamp), skip, count);
 }
