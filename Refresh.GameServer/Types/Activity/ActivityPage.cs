@@ -42,11 +42,19 @@ public class ActivityPage
         this.Users = new SerializedUserList();
     }
 
-    public ActivityPage(GameDatabaseContext database, int count = 20, int skip = 0, long timestamp = 0, long endTimestamp = 0, bool generateGroups = true)
+    public ActivityPage(GameDatabaseContext database, int count = 20, int skip = 0, long timestamp = 0, long endTimestamp = 0, bool generateGroups = true, GameLevel? level = null)
     {
         if (timestamp == 0) timestamp = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
+
+        DatabaseList<Event> events;
         
-        this.Events = new List<Event>(database.GetRecentActivity(count, skip, timestamp, endTimestamp).Items);
+        // ReSharper disable once ConvertIfStatementToConditionalTernaryExpression
+        if (level != null)
+            events = database.GetRecentActivityForLevel(level, count, skip, timestamp, endTimestamp);
+        else
+            events = database.GetRecentActivity(count, skip, timestamp, endTimestamp);
+
+        this.Events = new List<Event>(events.Items);
         
         List<GameUser> users = this.Events
             .Select(e => e.User)

@@ -7,8 +7,7 @@ public class ApiEventResponse : IApiResponse, IDataConvertableFrom<ApiEventRespo
 {
     public required string EventId { get; set; }
     public required EventType EventType { get; set; }
-    public required bool IsPrivate { get; set; }
-    public required long Timestamp { get; set; }
+    public required DateTimeOffset OccuredAt { get; set; }
     public required EventDataType StoredDataType { get; set; }
     public required int? StoredSequentialId { get; set; }
     public required string? StoredObjectId { get; set; }
@@ -21,8 +20,7 @@ public class ApiEventResponse : IApiResponse, IDataConvertableFrom<ApiEventRespo
         {
             EventId = old.EventId.ToString()!,
             EventType = old.EventType,
-            IsPrivate = old.IsPrivate,
-            Timestamp = old.Timestamp,
+            OccuredAt = DateTimeOffset.FromUnixTimeMilliseconds(old.Timestamp),
             StoredDataType = old.StoredDataType,
             StoredSequentialId = old.StoredSequentialId,
             StoredObjectId = old.StoredObjectId?.ToString(),

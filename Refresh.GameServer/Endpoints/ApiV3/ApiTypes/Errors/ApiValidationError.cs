@@ -8,6 +8,9 @@ public class ApiValidationError : ApiError
     public const string BooleanParseErrorWhen = "The boolean could not be parsed by the server";
     public static readonly ApiValidationError BooleanParseError = new(BooleanParseErrorWhen);
     
+    public const string NumberParseErrorWhen = "The number could not be parsed by the server";
+    public static readonly ApiValidationError NumberParseError = new(NumberParseErrorWhen);
+    
     public const string UserMissingErrorWhen = "The user could not be found";
     public static readonly ApiValidationError UserMissingError = new(UserMissingErrorWhen);
 
