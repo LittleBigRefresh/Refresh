@@ -1,12 +1,11 @@
 using AttribDoc.Attributes;
+using Bunkum.CustomHttpListener.Parsing;
 using Bunkum.HttpServer;
 using Bunkum.HttpServer.Endpoints;
 using Refresh.GameServer.Database;
-using Refresh.GameServer.Documentation;
-using Refresh.GameServer.Documentation.Attributes;
 using Refresh.GameServer.Endpoints.ApiV3.ApiTypes;
 using Refresh.GameServer.Endpoints.ApiV3.ApiTypes.Errors;
-using Refresh.GameServer.Endpoints.ApiV3.DataTypes;
+using Refresh.GameServer.Endpoints.ApiV3.DataTypes.Request;
 using Refresh.GameServer.Endpoints.ApiV3.DataTypes.Response;
 using Refresh.GameServer.Types.UserData;
 
@@ -42,4 +41,12 @@ public class UserApiEndpoints : EndpointGroup
     [DocSummary("Returns your own user, provided you are authenticated")]
     public ApiResponse<ApiGameUserResponse> GetMyUser(RequestContext context, GameUser user)
         => ApiGameUserResponse.FromOld(user);
+    
+    [ApiV3Endpoint("users/me", Method.Patch)]
+    [DocSummary("Updates your profile with the given data")]
+    public ApiResponse<ApiGameUserResponse> UpdateUser(RequestContext context, GameDatabaseContext database, GameUser user, ApiUpdateUserRequest body)
+    {
+        database.UpdateUserData(user, body);
+        return ApiGameUserResponse.FromOld(user);
+    }
 }

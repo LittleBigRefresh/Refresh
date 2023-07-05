@@ -1,7 +1,7 @@
-using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
 using JetBrains.Annotations;
 using MongoDB.Bson;
+using Refresh.GameServer.Endpoints.ApiV3.DataTypes.Request;
 using Refresh.GameServer.Types.UserData;
 
 namespace Refresh.GameServer.Database;
@@ -60,14 +60,13 @@ public partial class GameDatabaseContext // Users
         // THIS SUCKS
         return this._realm.All<GameUser>().ToList().FirstOrDefault(u => u.UserId.Timestamp == legacyId);
     }
-
-    [SuppressMessage("ReSharper", "InvertIf")]
-    public void UpdateUserData(GameUser user, SerializedUpdateData data)
+    
+    private void UpdateUserData<TUpdateData>(GameUser user, TUpdateData data)
     {
         this._realm.Write(() =>
         {
             PropertyInfo[] userProps = typeof(GameUser).GetProperties();
-            foreach (PropertyInfo prop in typeof(SerializedUpdateData).GetProperties())
+            foreach (PropertyInfo prop in typeof(TUpdateData).GetProperties())
             {
                 object? value = prop.GetValue(data);
                 if(value == null) continue;
@@ -80,6 +79,12 @@ public partial class GameDatabaseContext // Users
         });
     }
     
+    public void UpdateUserData(GameUser user, SerializedUpdateData data) 
+        => this.UpdateUserData<SerializedUpdateData>(user, data);
+    
+    public void UpdateUserData(GameUser user, ApiUpdateUserRequest data) 
+        => this.UpdateUserData<ApiUpdateUserRequest>(user, data);
+
     [Pure]
     public int GetTotalUserCount() => this._realm.All<GameUser>().Count();
 
