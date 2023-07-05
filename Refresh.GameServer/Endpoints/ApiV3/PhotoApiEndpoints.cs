@@ -71,7 +71,7 @@ public class PhotoApiEndpoints : EndpointGroup
         [DocSummary("The UUID of the user")] string uuid)
         => PhotosWithUser(context, database, database.GetUserByUuid(uuid));
 
-    [ApiV3Endpoint("level/id/{id}/photos"), Authentication(false)]
+    [ApiV3Endpoint("levels/id/{id}/photos"), Authentication(false)]
     [DocUsesPageData, DocSummary("Gets photos taken in a level by its id")]
     [DocError(typeof(ApiNotFoundError), "The level cannot be found")]
     public ApiListResponse<ApiGamePhotoResponse> PhotosInLevelById(RequestContext context, GameDatabaseContext database,
