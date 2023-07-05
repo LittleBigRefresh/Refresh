@@ -1,7 +1,7 @@
 #nullable disable
 namespace Refresh.GameServer.Endpoints.ApiV3.DataTypes.Response;
 
-[Serializable]
+[JsonObject(NamingStrategyType = typeof(CamelCaseNamingStrategy))]
 public class ApiResetPasswordResponse : IApiAuthenticationResponse
 {
     public string Reason { get; set; }
