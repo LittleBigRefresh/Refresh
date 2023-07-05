@@ -46,7 +46,7 @@ public class ActivityPage
     {
         if (timestamp == 0) timestamp = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
         
-        this.Events = new List<Event>(database.GetRecentActivity(count, skip, timestamp, endTimestamp));
+        this.Events = new List<Event>(database.GetRecentActivity(count, skip, timestamp, endTimestamp).Items);
         
         List<GameUser> users = this.Events
             .Select(e => e.User)

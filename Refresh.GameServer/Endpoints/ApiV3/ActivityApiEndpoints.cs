@@ -2,8 +2,8 @@ using AttribDoc.Attributes;
 using Bunkum.HttpServer;
 using Bunkum.HttpServer.Endpoints;
 using Refresh.GameServer.Database;
-using Refresh.GameServer.Documentation.Attributes;
 using Refresh.GameServer.Endpoints.ApiV3.ApiTypes;
+using Refresh.GameServer.Endpoints.ApiV3.DataTypes.Response;
 using Refresh.GameServer.Types.Activity;
 
 namespace Refresh.GameServer.Endpoints.ApiV3;
@@ -15,7 +15,7 @@ public class ActivityApiEndpoints : EndpointGroup
     [ApiV3Endpoint("activity"), Authentication(false)]
     [DocSummary("Fetch a list of recent happenings on the server.")]
     [DocQueryParam("timestamp", "A timestamp in unix seconds, used to search backwards.")]
-    public ApiResponse<ActivityPage> GetRecentActivity(RequestContext context, GameDatabaseContext database)
+    public ApiResponse<ApiActivityPageResponse> GetRecentActivity(RequestContext context, GameDatabaseContext database)
     {
         long timestamp = 0;
 
@@ -23,6 +23,6 @@ public class ActivityApiEndpoints : EndpointGroup
         if (tsStr != null && !long.TryParse(tsStr, out timestamp)) return null;
 
         ActivityPage page = new(database, generateGroups: false, timestamp: timestamp);
-        return page;
+        return ApiActivityPageResponse.FromOld(page);
     }
 }
