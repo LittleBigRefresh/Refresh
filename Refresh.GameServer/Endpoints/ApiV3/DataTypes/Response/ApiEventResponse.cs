@@ -7,6 +7,7 @@ public class ApiEventResponse : IApiResponse, IDataConvertableFrom<ApiEventRespo
 {
     public required string EventId { get; set; }
     public required int EventType { get; set; }
+    public required string UserId { get; set; }
     public required DateTimeOffset OccurredAt { get; set; }
     public required EventDataType StoredDataType { get; set; }
     public required int? StoredSequentialId { get; set; }
@@ -20,6 +21,7 @@ public class ApiEventResponse : IApiResponse, IDataConvertableFrom<ApiEventRespo
         {
             EventId = old.EventId.ToString()!,
             EventType = (int)old.EventType,
+            UserId = old.User.UserId.ToString()!,
             OccurredAt = DateTimeOffset.FromUnixTimeMilliseconds(old.Timestamp),
             StoredDataType = old.StoredDataType,
             StoredSequentialId = old.StoredSequentialId,
