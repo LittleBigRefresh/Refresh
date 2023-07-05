@@ -5,7 +5,6 @@ using Bunkum.HttpServer;
 using Bunkum.HttpServer.Endpoints;
 using Refresh.GameServer.Authentication;
 using Refresh.GameServer.Database;
-using Refresh.GameServer.Documentation.Attributes;
 using Refresh.GameServer.Endpoints.ApiV3.ApiTypes;
 using Refresh.GameServer.Endpoints.ApiV3.ApiTypes.Errors;
 using Refresh.GameServer.Endpoints.ApiV3.DataTypes;
@@ -67,7 +66,7 @@ public partial class AuthenticationApiEndpoints : EndpointGroup
         };
     }
 
-    [ApiV3Endpoint("resetPassword", Method.Post), Authentication(false)]
+    [ApiV3Endpoint("resetPassword", Method.Put), Authentication(false)]
     public ApiResponse<ApiOkResponse> ResetPassword(RequestContext context, GameDatabaseContext database, ApiResetPasswordRequest body)
     {
         GameUser? user = database.GetUserFromTokenData(body.ResetToken, TokenType.PasswordReset);
@@ -80,11 +79,12 @@ public partial class AuthenticationApiEndpoints : EndpointGroup
         if (passwordBcrypt == null) return new ApiInternalError("Could not hash the given password.");
 
         database.SetUserPassword(user, passwordBcrypt);
+        database.RevokeTokenByTokenData(body.ResetToken, TokenType.PasswordReset);
 
         return new ApiOkResponse();
     }
 
-    [ApiV3Endpoint("logout", Method.Post)]
+    [ApiV3Endpoint("logout", Method.Put)]
     [DocSummary("Tells the server to revoke the token used to make this request. Useful for logout behavior.")]
     public ApiOkResponse RevokeThisToken(RequestContext context, GameDatabaseContext database, Token token)
     {
