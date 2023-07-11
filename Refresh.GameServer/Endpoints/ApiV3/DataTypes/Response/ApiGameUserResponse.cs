@@ -11,6 +11,7 @@ public class ApiGameUserResponse : IApiResponse, IDataConvertableFrom<ApiGameUse
     public required string IconHash { get; set; }
     public required string Description { get; set; }
     public required ApiGameLocationResponse Location { get; set; }
+    public required DateTimeOffset JoinDate { get; set; }
 
     [ContractAnnotation("null => null; notnull => notnull")]
     public static ApiGameUserResponse? FromOld(GameUser? user)
@@ -24,6 +25,7 @@ public class ApiGameUserResponse : IApiResponse, IDataConvertableFrom<ApiGameUse
             IconHash = user.IconHash,
             Description = user.Description,
             Location = ApiGameLocationResponse.FromGameLocation(user.Location)!,
+            JoinDate = DateTimeOffset.FromUnixTimeSeconds(user.JoinDate),
         };
     }
 
