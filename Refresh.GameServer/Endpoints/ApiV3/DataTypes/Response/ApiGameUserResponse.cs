@@ -25,7 +25,7 @@ public class ApiGameUserResponse : IApiResponse, IDataConvertableFrom<ApiGameUse
             IconHash = user.IconHash,
             Description = user.Description,
             Location = ApiGameLocationResponse.FromGameLocation(user.Location)!,
-            JoinDate = DateTimeOffset.FromUnixTimeSeconds(user.JoinDate),
+            JoinDate = DateTimeOffset.FromUnixTimeMilliseconds(user.JoinDate),
         };
     }
 

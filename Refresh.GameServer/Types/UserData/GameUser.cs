@@ -23,7 +23,7 @@ public partial class GameUser : IRealmObject, IRateLimitUser, INeedsPreparationB
     [XmlElement("biography")] [JsonProperty] public string Description { get; set; } = "";
     [XmlElement("location")] [JsonProperty] public GameLocation Location { get; set; } = GameLocation.Zero;
     
-    [XmlIgnore] [JsonProperty] public long JoinDate { get; set; } // unix seconds
+    [XmlIgnore] [JsonProperty] public long JoinDate { get; set; } // unix milliseconds
     
     [XmlIgnore] public UserPins Pins { get; set; } = new();
     
