@@ -8,6 +8,7 @@ public class ApiActivityPageResponse : IApiResponse, IDataConvertableFrom<ApiAct
     public required IEnumerable<ApiEventResponse> Events { get; set; }
     public required IEnumerable<ApiGameUserResponse> Users { get; set; }
     public required IEnumerable<ApiGameLevelResponse> Levels { get; set; }
+    public required IEnumerable<ApiGameScoreResponse> Scores { get; set; }
     
     public static ApiActivityPageResponse? FromOld(ActivityPage? old)
     {
@@ -18,6 +19,7 @@ public class ApiActivityPageResponse : IApiResponse, IDataConvertableFrom<ApiAct
             Events = ApiEventResponse.FromOldList(old.Events),
             Users = ApiGameUserResponse.FromOldList(old.Users.Users),
             Levels = ApiGameLevelResponse.FromOldList(old.Levels.Items),
+            Scores = ApiGameScoreResponse.FromOldList(old.Scores),
         };
     }
 

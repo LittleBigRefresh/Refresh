@@ -33,6 +33,9 @@ public class ActivityPage
     
     [XmlElement("slots")]
     public SerializedLevelList Levels { get; set; }
+    
+    [XmlIgnore, JsonIgnore]
+    public List<GameSubmittedScore> Scores { get; set; }
 
     public ActivityPage()
     {
@@ -40,6 +43,7 @@ public class ActivityPage
         this.Groups = new ActivityGroups();
         this.Levels = new SerializedLevelList();
         this.Users = new SerializedUserList();
+        this.Scores = new List<GameSubmittedScore>();
     }
 
     public ActivityPage(GameDatabaseContext database, int count = 20, int skip = 0, long timestamp = 0, long endTimestamp = 0, bool generateGroups = true, GameLevel? level = null)
@@ -86,6 +90,8 @@ public class ActivityPage
             .DistinctBy(e => e.StoredObjectId)
             .Select(e => database.GetScoreByObjectId(e.StoredObjectId))
             .ToList()!;
+
+        this.Scores = scores;
 
         this.Groups = generateGroups ? this.GenerateGroups(users, scores) : new ActivityGroups();
 
