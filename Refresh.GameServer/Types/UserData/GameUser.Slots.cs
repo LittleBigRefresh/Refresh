@@ -19,9 +19,9 @@ public partial class GameUser
 
     private partial void SerializeSlots()
     {
-        this.EntitledSlots = 20;
-        this.EntitledSlotsLBP2 = 20;
-        this.EntitledSlotsLBP3 = 20;
+        this.EntitledSlots = 100;
+        this.EntitledSlotsLBP2 = 100;
+        this.EntitledSlotsLBP3 = 100;
         
         this.UsedSlots = 0;
         this.UsedSlotsLBP2 = this.PublishedLevels.Count();
@@ -30,8 +30,8 @@ public partial class GameUser
         this.PurchasedSlotsLBP2 = 0;
         this.PurchasedSlotsLBP3 = 0;
         
-        this.FreeSlots = 20;
-        this.FreeSlotsLBP2 = 20 - this.UsedSlotsLBP2;
-        this.FreeSlotsLBP3 = 20;
+        this.FreeSlots = 100;
+        this.FreeSlotsLBP2 = 100 - this.UsedSlotsLBP2;
+        this.FreeSlotsLBP3 = 100;
     }
 }
