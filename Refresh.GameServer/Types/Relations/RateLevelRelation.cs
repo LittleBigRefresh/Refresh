@@ -1,3 +1,4 @@
+using MongoDB.Bson;
 using Realms;
 using Refresh.GameServer.Types.Levels;
 using Refresh.GameServer.Types.Reviews;
@@ -9,6 +10,8 @@ namespace Refresh.GameServer.Types.Relations;
 
 public partial class RateLevelRelation : IRealmObject
 {
+    public ObjectId RateLevelRelationId { get; set; } = ObjectId.GenerateNewId();
+    
     [Ignored]
     public RatingType RatingType
     {

@@ -86,7 +86,7 @@ public class ActivityPage
         };
         
         List<GameSubmittedScore> scores = this.Events
-            .Where(e => e.StoredDataType == EventDataType.SubmittedScore)
+            .Where(e => e.StoredDataType == EventDataType.Score)
             .DistinctBy(e => e.StoredObjectId)
             .Select(e => database.GetScoreByObjectId(e.StoredObjectId))
             .ToList()!;
@@ -120,7 +120,7 @@ public class ActivityPage
                 case EventDataType.Level:
                     this.GenerateLevelGroups(groups);
                     break;
-                case EventDataType.SubmittedScore:
+                case EventDataType.Score:
                     this.GenerateScoreGroups(groups, scores);
                     break;
                 default:
@@ -158,8 +158,8 @@ public class ActivityPage
             // You will waste 30 seconds of your time if you don't.
             levelEvent = @event.EventType switch
             {
-                EventType.LevelUpload => SerializedLevelUploadEvent.FromSerializedLevelEvent(levelEvent),
-                EventType.LevelPlay => SerializedLevelPlayEvent.FromSerializedLevelEvent(levelEvent),
+                EventType.Level_Upload => SerializedLevelUploadEvent.FromSerializedLevelEvent(levelEvent),
+                EventType.Level_Play => SerializedLevelPlayEvent.FromSerializedLevelEvent(levelEvent),
                 _ => levelEvent,
             };
 
@@ -185,7 +185,7 @@ public class ActivityPage
     
     private void GenerateScoreGroups(ActivityGroups groups, IReadOnlyCollection<GameSubmittedScore> scores)
     {
-        foreach (Event @event in this.Events.Where(e => e.EventType == EventType.SubmittedScore))
+        foreach (Event @event in this.Events.Where(e => e.EventType == EventType.SubmittedScore_Create))
         {
             GameSubmittedScore score = scores.First(u => u.ScoreId == @event.StoredObjectId);
             

@@ -5,6 +5,7 @@ using Refresh.GameServer.Types.UserData;
 using Bunkum.HttpServer.Serialization;
 using Newtonsoft.Json;
 using Refresh.GameServer.Types.Relations;
+using Refresh.GameServer.Types.Reviews;
 using Refresh.GameServer.Types.UserData.Leaderboard;
 
 namespace Refresh.GameServer.Types.Levels;
@@ -37,6 +38,9 @@ public partial class GameLevel : IRealmObject, INeedsPreparationBeforeSerializat
     [XmlIgnore] public IQueryable<PlayLevelRelation> AllPlays { get; }
     [Backlink(nameof(GameSubmittedScore.Level))]
     [XmlIgnore] public IQueryable<GameSubmittedScore> Scores { get; }
+    
+    [Backlink(nameof(RateLevelRelation.Level))]
+    [XmlIgnore] public IQueryable<RateLevelRelation> Ratings { get; }
     #nullable restore
     
     public int SequentialId
@@ -55,6 +59,8 @@ public partial class GameLevel : IRealmObject, INeedsPreparationBeforeSerializat
     
     [Ignored] [XmlElement("playCount")] public int? TotalPlayCount { get; set; }
     [Ignored] [XmlElement("uniquePlayCount")] public int? UniquePlayCount { get; set; }
+    [Ignored] [XmlElement("thumbsup")] public int? YayCount { get; set; }
+    [Ignored] [XmlElement("thumbsdown")] public int? BooCount { get; set; }
 
     [Ignored] [XmlElement("resource")] public List<string> XmlResources { get; set; } = new();
 
@@ -63,6 +69,9 @@ public partial class GameLevel : IRealmObject, INeedsPreparationBeforeSerializat
         this.HeartCount = this.FavouriteRelations.Count();
         this.TotalPlayCount = this.AllPlays.Count();
         this.UniquePlayCount = this.UniquePlays.Count();
+
+        this.YayCount = this.Ratings.Count(r => r._RatingType == (int)RatingType.Yay);
+        this.BooCount = this.Ratings.Count(r => r._RatingType == (int)RatingType.Boo);
 
         if (this.Publisher != null)
         {

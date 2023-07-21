@@ -203,12 +203,6 @@ public partial class GameDatabaseContext // Relations
             return true;
         }
 
-        if (type == RatingType.Neutral)
-        {
-            this._realm.Write(() => this._realm.Remove(rating));
-            return true;
-        }
-
         this._realm.Write(() =>
         {
             rating.RatingType = type;
