@@ -111,4 +111,11 @@ public class RelationEndpoints : EndpointGroup
         
         return Unauthorized;
     }
+
+    [GameEndpoint("lolcatftw/clear", Method.Post)]
+    public Response ClearQueue(RequestContext context, GameDatabaseContext database, GameUser user)
+    {
+        database.ClearQueue(user);
+        return OK;
+    }
 }
