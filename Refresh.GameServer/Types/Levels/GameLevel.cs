@@ -25,6 +25,10 @@ public partial class GameLevel : IRealmObject, INeedsPreparationBeforeSerializat
 
     [XmlElement("firstPublished")] [JsonProperty] public long PublishDate { get; set; } // unix seconds
     [XmlElement("lastUpdated")] [JsonProperty] public long UpdateDate { get; set; }
+    
+    [XmlElement("minPlayers")] [JsonProperty] public int MinPlayers { get; set; }
+    [XmlElement("maxPlayers")] [JsonProperty] public int MaxPlayers { get; set; }
+    [XmlElement("enforceMinMaxPlayers")] [JsonProperty] public bool EnforceMinMaxPlayers { get; set; }
 
 #nullable disable
     [Backlink(nameof(FavouriteLevelRelation.Level))]

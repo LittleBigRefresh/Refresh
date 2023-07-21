@@ -19,7 +19,7 @@ namespace Refresh.GameServer.Database;
 
 public class GameDatabaseProvider : RealmDatabaseProvider<GameDatabaseContext>
 {
-    protected override ulong SchemaVersion => 56;
+    protected override ulong SchemaVersion => 57;
 
     protected override string Filename => "refreshGameServer.realm";
     
@@ -144,6 +144,13 @@ public class GameDatabaseProvider : RealmDatabaseProvider<GameDatabaseContext>
                 newLevel.IconHash = oldLevel.IconHash;
                 newLevel.Description = oldLevel.Description;
                 newLevel.RootResource = oldLevel.RootResource;
+            }
+
+            // In version 57, we implemented minimum and maximum players which are 1 and 4 by default
+            if (oldVersion < 57)
+            {
+                newLevel.MinPlayers = 1;
+                newLevel.MaxPlayers = 4;
             }
         }
 
