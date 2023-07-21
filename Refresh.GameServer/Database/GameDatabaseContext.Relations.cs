@@ -163,6 +163,14 @@ public partial class GameDatabaseContext // Relations
 
         return true;
     }
+
+    public void ClearQueue(GameUser user)
+    {
+        this._realm.Write(() =>
+        {
+            this._realm.RemoveRange(user.QueueLevelRelations);
+        });
+    }
     #endregion
 
     public void PlayLevel(GameLevel level, GameUser user)
