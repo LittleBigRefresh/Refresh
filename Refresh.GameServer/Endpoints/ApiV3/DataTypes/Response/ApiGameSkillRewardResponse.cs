@@ -2,6 +2,7 @@
 
 namespace Refresh.GameServer.Endpoints.ApiV3.DataTypes.Response;
 
+[JsonObject(NamingStrategyType = typeof(CamelCaseNamingStrategy))]
 public class ApiGameSkillRewardResponse : IApiResponse, IDataConvertableFrom<ApiGameSkillRewardResponse, GameSkillReward>
 {
     public int Id { get; set; }
