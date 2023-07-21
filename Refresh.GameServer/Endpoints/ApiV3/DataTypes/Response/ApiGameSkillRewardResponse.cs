@@ -2,7 +2,7 @@
 
 namespace Refresh.GameServer.Endpoints.ApiV3.DataTypes.Response;
 
-public class ApiGameSkillRewardResponse
+public class ApiGameSkillRewardResponse : IApiResponse, IDataConvertableFrom<ApiGameSkillRewardResponse, GameSkillReward>
 {
     public int Id { get; set; }
     public bool Enabled { get; set; }
@@ -10,15 +10,19 @@ public class ApiGameSkillRewardResponse
     public float RequiredAmount { get; set; }
     public GameSkillRewardCondition ConditionType { get; set; }
 
-    public static ApiGameSkillRewardResponse FromNonResponse(GameSkillReward reward)
+    public static ApiGameSkillRewardResponse? FromOld(GameSkillReward? old)
     {
+        if (old == null) return null;
+        
         return new ApiGameSkillRewardResponse
         {
-            Id = reward.Id,
-            Enabled = reward.Enabled,
-            Title = reward.Title,
-            RequiredAmount = reward.RequiredAmount,
-            ConditionType = reward.ConditionType,
+            Id = old.Id,
+            Enabled = old.Enabled,
+            Title = old.Title,
+            RequiredAmount = old.RequiredAmount,
+            ConditionType = old.ConditionType,
         };
     }
+
+    public static IEnumerable<ApiGameSkillRewardResponse> FromOldList(IEnumerable<GameSkillReward> oldList) => oldList.Select(FromOld)!;
 }

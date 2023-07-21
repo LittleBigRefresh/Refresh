@@ -53,7 +53,7 @@ public partial class GameLevel : IRealmObject, INeedsPreparationBeforeSerializat
     
     [XmlArray("customRewards")]
     [XmlArrayItem("customReward")]
-    public GameSkillReward[] CustomRewards
+    public GameSkillReward[] SkillRewards
     {
         get => this._SkillRewards.ToArray();
         set

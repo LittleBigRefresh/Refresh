@@ -22,7 +22,7 @@ public class ApiGameLevelResponse : IApiResponse, IDataConvertableFrom<ApiGameLe
     
     [JsonProperty] public bool SameScreenGame { get; set; }
     
-    [JsonProperty] public ApiGameSkillRewardResponse[]? SkillRewards { get; set; }
+    [JsonProperty] public IEnumerable<ApiGameSkillRewardResponse>? SkillRewards { get; set; }
 
     public static ApiGameLevelResponse? FromOld(GameLevel? level)
     {
@@ -42,7 +42,7 @@ public class ApiGameLevelResponse : IApiResponse, IDataConvertableFrom<ApiGameLe
             MaxPlayers = level.MaxPlayers,
             EnforceMinMaxPlayers = level.EnforceMinMaxPlayers,
             SameScreenGame = level.SameScreenGame,
-            SkillRewards = level.CustomRewards.Select(ApiGameSkillRewardResponse.FromNonResponse).ToArray(),
+            SkillRewards = ApiGameSkillRewardResponse.FromOldList(level.SkillRewards),
         };
     }
 
