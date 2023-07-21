@@ -1,6 +1,7 @@
 using System.Diagnostics.Contracts;
 using Refresh.GameServer.Types.Levels;
 using Refresh.GameServer.Types.Relations;
+using Refresh.GameServer.Types.Reviews;
 using Refresh.GameServer.Types.UserData;
 
 namespace Refresh.GameServer.Database;
@@ -165,6 +166,61 @@ public partial class GameDatabaseContext // Relations
     }
     #endregion
 
+    #region Rating and Reviewing
+
+    private RateLevelRelation? GetRateRelationByUser(GameLevel level, GameUser user)
+        => this._realm.All<RateLevelRelation>().FirstOrDefault(r => r.User == user && r.Level == level);
+
+    [Pure]
+    public RatingType GetRatingByUser(GameLevel level, GameUser user)
+    {
+        RateLevelRelation? rating = this.GetRateRelationByUser(level, user);
+        if(rating == null) return RatingType.Neutral;
+            
+        return rating.RatingType;
+    }
+
+    public bool RateLevel(GameLevel level, GameUser user, RatingType type)
+    {
+        if (level.Publisher?.UserId == user.UserId) return false;
+        if (!this.HasUserPlayedLevel(level, user)) return false;
+        
+        RateLevelRelation? rating = this.GetRateRelationByUser(level, user);
+        
+        if (rating == null)
+        {
+            if (type == RatingType.Neutral) return true;
+            
+            rating = new RateLevelRelation
+            {
+                Level = level,
+                User = user,
+                RatingType = type,
+                Timestamp = DateTimeOffset.Now,
+            };
+
+            this._realm.Write(() => this._realm.Add(rating));
+            return true;
+        }
+
+        if (type == RatingType.Neutral)
+        {
+            this._realm.Write(() => this._realm.Remove(rating));
+            return true;
+        }
+
+        this._realm.Write(() =>
+        {
+            rating.RatingType = type;
+            rating.Timestamp = DateTimeOffset.Now;
+        });
+        return true;
+    }
+
+    #endregion
+
+    #region Playing
+    
     public void PlayLevel(GameLevel level, GameUser user)
     {
         PlayLevelRelation relation = new()
@@ -192,4 +248,10 @@ public partial class GameDatabaseContext // Relations
 
         this.CreateLevelPlayEvent(user, level);
     }
+
+    public bool HasUserPlayedLevel(GameLevel level, GameUser user) =>
+        this._realm.All<UniquePlayLevelRelation>()
+            .FirstOrDefault(r => r.Level == level && r.User == user) != null;
+
+    #endregion
 }
