@@ -10,7 +10,6 @@ Console.WriteLine("Starting Refresh with NuGet Bunkum");
 #endif
 
 RefreshGameServer server = new();
-server.Initialize();
 
 if (args.Length > 0)
 {

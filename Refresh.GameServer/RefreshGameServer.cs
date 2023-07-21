@@ -29,38 +29,25 @@ public class RefreshGameServer
 
     public RefreshGameServer(
         BunkumHttpListener? listener = null,
-        GameDatabaseProvider? databaseProvider = null,
+        Func<GameDatabaseProvider>? databaseProvider = null,
         IAuthenticationProvider<GameUser, Token>? authProvider = null,
         IDataStore? dataStore = null
     )
     {
-        databaseProvider ??= new GameDatabaseProvider();
+        databaseProvider ??= () => new GameDatabaseProvider();
         authProvider ??= new GameAuthenticationProvider();
         dataStore ??= new FileSystemDataStore();
 
-        this._databaseProvider = databaseProvider;
+        this._databaseProvider = databaseProvider.Invoke();
         this._dataStore = dataStore;
 
         this._server = listener == null ? new BunkumHttpServer() : new BunkumHttpServer(listener);
-
-        InjectServices();
+        
         this._server.Initialize = () =>
         {
-            InjectServices(new GameDatabaseProvider()); // HACK: GameDatabaseContext is disposed
+            this.InjectBaseServices(databaseProvider.Invoke(), authProvider, dataStore);
             this.Initialize();
         };
-        
-        return;
-
-        void InjectServices(GameDatabaseProvider? provider = null)
-        {
-            if (provider != null)
-            {
-                this._databaseProvider = provider;
-                this._databaseProvider.Initialize();
-            }
-            this.InjectBaseServices(provider ?? databaseProvider, authProvider, dataStore);
-        }
     }
 
     private void InjectBaseServices(GameDatabaseProvider databaseProvider, IAuthenticationProvider<GameUser, Token> authProvider, IDataStore dataStore)
@@ -70,7 +57,7 @@ public class RefreshGameServer
         this._server.AddStorageService(dataStore);
     }
 
-    public void Initialize()
+    private void Initialize()
     {
         this.SetupServices();
         this.SetupConfiguration();
