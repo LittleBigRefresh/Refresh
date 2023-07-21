@@ -3,7 +3,7 @@ using Realms;
 using Refresh.GameServer.Database;
 using Refresh.GameServer.Types.UserData;
 using Bunkum.HttpServer.Serialization;
-using Newtonsoft.Json;
+using Refresh.GameServer.Types.Levels.CustomRewards;
 using Refresh.GameServer.Types.Relations;
 using Refresh.GameServer.Types.UserData.Leaderboard;
 
@@ -26,7 +26,7 @@ public partial class GameLevel : IRealmObject, INeedsPreparationBeforeSerializat
     [XmlElement("firstPublished")] [JsonProperty] public long PublishDate { get; set; } // unix seconds
     [XmlElement("lastUpdated")] [JsonProperty] public long UpdateDate { get; set; }
 
-    #nullable disable
+#nullable disable
     [Backlink(nameof(FavouriteLevelRelation.Level))]
     [XmlIgnore] public IQueryable<FavouriteLevelRelation> FavouriteRelations { get; }
     
@@ -37,7 +37,34 @@ public partial class GameLevel : IRealmObject, INeedsPreparationBeforeSerializat
     [XmlIgnore] public IQueryable<PlayLevelRelation> AllPlays { get; }
     [Backlink(nameof(GameSubmittedScore.Level))]
     [XmlIgnore] public IQueryable<GameSubmittedScore> Scores { get; }
-    #nullable restore
+    
+    // ILists can't be serialized to XML, and Lists/Arrays cannot be stored in realm,
+    // hence _CustomRewards and CustomRewards both existing
+    // ReSharper disable once InconsistentNaming
+    public IList<CustomReward> _CustomRewards { get; }
+    
+#nullable restore
+    
+    [JsonProperty]
+    [XmlArray("customRewards")]
+    [XmlArrayItem("customReward")]
+    public CustomReward[] CustomRewards
+    {
+        get => this._CustomRewards.ToArray();
+        set
+        {
+            this._CustomRewards.Clear();
+            value = value.OrderBy(r=>r.Id).ToArray();
+            
+            // There should never be more than 3 skill rewards
+            for (int i = 0; i < Math.Min(value.Length, 3); i++)
+            {
+                CustomReward reward = value[i];
+                reward.Id = i;
+                this._CustomRewards.Add(reward);
+            }
+        }
+    }
     
     public int SequentialId
     {
