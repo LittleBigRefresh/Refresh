@@ -29,6 +29,8 @@ public partial class GameLevel : IRealmObject, INeedsPreparationBeforeSerializat
     [XmlElement("minPlayers")] [JsonProperty] public int MinPlayers { get; set; }
     [XmlElement("maxPlayers")] [JsonProperty] public int MaxPlayers { get; set; }
     [XmlElement("enforceMinMaxPlayers")] [JsonProperty] public bool EnforceMinMaxPlayers { get; set; }
+    
+    [XmlElement("sameScreenGame")] [JsonProperty] public bool SameScreenGame { get; set; }
 
 #nullable disable
     [Backlink(nameof(FavouriteLevelRelation.Level))]
