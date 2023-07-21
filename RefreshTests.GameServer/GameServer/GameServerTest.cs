@@ -25,8 +25,7 @@ public class GameServerTest
 
         Lazy<TestRefreshGameServer> gameServer = new(() =>
         {
-            TestRefreshGameServer gameServer = new(listener, provider);
-            gameServer.Initialize();
+            TestRefreshGameServer gameServer = new(listener, () => provider);
             gameServer.Start();
 
             return gameServer;
