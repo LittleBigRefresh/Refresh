@@ -24,7 +24,7 @@ namespace Refresh.GameServer;
 public class RefreshGameServer
 {
     protected readonly BunkumHttpServer _server;
-    protected readonly GameDatabaseProvider _databaseProvider;
+    protected GameDatabaseProvider _databaseProvider;
     protected readonly IDataStore _dataStore;
 
     public RefreshGameServer(
@@ -43,11 +43,31 @@ public class RefreshGameServer
 
         this._server = listener == null ? new BunkumHttpServer() : new BunkumHttpServer(listener);
 
+        InjectServices();
+        this._server.Initialize = () =>
+        {
+            InjectServices(new GameDatabaseProvider()); // HACK: GameDatabaseContext is disposed
+            this.Initialize();
+        };
+        
+        return;
+
+        void InjectServices(GameDatabaseProvider? provider = null)
+        {
+            if (provider != null)
+            {
+                this._databaseProvider = provider;
+                this._databaseProvider.Initialize();
+            }
+            this.InjectBaseServices(provider ?? databaseProvider, authProvider, dataStore);
+        }
+    }
+
+    private void InjectBaseServices(GameDatabaseProvider databaseProvider, IAuthenticationProvider<GameUser, Token> authProvider, IDataStore dataStore)
+    {
         this._server.AddAuthenticationService(authProvider, true);
         this._server.UseDatabaseProvider(databaseProvider);
         this._server.AddStorageService(dataStore);
-        
-        this._server.DiscoverEndpointsFromAssembly(Assembly.GetExecutingAssembly());
     }
 
     public void Initialize()
@@ -55,6 +75,8 @@ public class RefreshGameServer
         this.SetupServices();
         this.SetupConfiguration();
         this.SetupMiddlewares();
+        
+        this._server.DiscoverEndpointsFromAssembly(Assembly.GetExecutingAssembly());
     }
 
     protected virtual void SetupMiddlewares()
