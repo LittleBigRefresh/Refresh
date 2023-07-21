@@ -12,7 +12,7 @@ public partial class GameSkillReward : IEmbeddedObject
     [XmlElement("amountNeeded")] public float RequiredAmount { get; set; }
 
     // Realm can't store enums, use recommended workaround
-    // ReSharper disable once InconsistentNaming (can't fix due to conflict with Condition)
+    // ReSharper disable once InconsistentNaming (can't fix due to conflict with ConditionType)
     // ReSharper disable once MemberCanBePrivate.Global
     internal int _ConditionType { get; set; }
     [Ignored] [XmlElement("condition")]
