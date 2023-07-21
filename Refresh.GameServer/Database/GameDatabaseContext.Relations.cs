@@ -166,10 +166,9 @@ public partial class GameDatabaseContext // Relations
 
     public void ClearQueue(GameUser user)
     {
-        IQueryable<QueueLevelRelation> relations = this._realm.All<QueueLevelRelation>().Where(r => r.User == user);
         this._realm.Write(() =>
         {
-            this._realm.RemoveRange(relations);
+            this._realm.RemoveRange(user.QueueLevelRelations);
         });
     }
     #endregion
