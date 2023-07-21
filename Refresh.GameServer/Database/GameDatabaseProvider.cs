@@ -7,7 +7,7 @@ using Refresh.GameServer.Types.UserData;
 using Bunkum.RealmDatabase;
 using Refresh.GameServer.Types.Activity;
 using Refresh.GameServer.Types.Assets;
-using Refresh.GameServer.Types.Levels.CustomRewards;
+using Refresh.GameServer.Types.Levels.SkillRewards;
 using Refresh.GameServer.Types.Notifications;
 using Refresh.GameServer.Types.Relations;
 using Refresh.GameServer.Types.Report;
@@ -19,7 +19,7 @@ namespace Refresh.GameServer.Database;
 
 public class GameDatabaseProvider : RealmDatabaseProvider<GameDatabaseContext>
 {
-    protected override ulong SchemaVersion => 57;
+    protected override ulong SchemaVersion => 59;
 
     protected override string Filename => "refreshGameServer.realm";
     
@@ -30,7 +30,7 @@ public class GameDatabaseProvider : RealmDatabaseProvider<GameDatabaseContext>
         typeof(UserPins),
         typeof(Token),
         typeof(GameLevel),
-        typeof(CustomReward),
+        typeof(GameSkillReward),
         typeof(GameComment),
         typeof(FavouriteLevelRelation),
         typeof(QueueLevelRelation),

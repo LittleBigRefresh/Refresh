@@ -3,7 +3,7 @@ using Realms;
 using Refresh.GameServer.Database;
 using Refresh.GameServer.Types.UserData;
 using Bunkum.HttpServer.Serialization;
-using Refresh.GameServer.Types.Levels.CustomRewards;
+using Refresh.GameServer.Types.Levels.SkillRewards;
 using Refresh.GameServer.Types.Relations;
 using Refresh.GameServer.Types.UserData.Leaderboard;
 
@@ -26,11 +26,11 @@ public partial class GameLevel : IRealmObject, INeedsPreparationBeforeSerializat
     [XmlElement("firstPublished")] [JsonProperty] public long PublishDate { get; set; } // unix seconds
     [XmlElement("lastUpdated")] [JsonProperty] public long UpdateDate { get; set; }
     
-    [XmlElement("minPlayers")] [JsonProperty] public int MinPlayers { get; set; }
-    [XmlElement("maxPlayers")] [JsonProperty] public int MaxPlayers { get; set; }
-    [XmlElement("enforceMinMaxPlayers")] [JsonProperty] public bool EnforceMinMaxPlayers { get; set; }
+    [XmlElement("minPlayers")] public int MinPlayers { get; set; }
+    [XmlElement("maxPlayers")] public int MaxPlayers { get; set; }
+    [XmlElement("enforceMinMaxPlayers")] public bool EnforceMinMaxPlayers { get; set; }
     
-    [XmlElement("sameScreenGame")] [JsonProperty] public bool SameScreenGame { get; set; }
+    [XmlElement("sameScreenGame")] public bool SameScreenGame { get; set; }
 
 #nullable disable
     [Backlink(nameof(FavouriteLevelRelation.Level))]
@@ -45,29 +45,28 @@ public partial class GameLevel : IRealmObject, INeedsPreparationBeforeSerializat
     [XmlIgnore] public IQueryable<GameSubmittedScore> Scores { get; }
     
     // ILists can't be serialized to XML, and Lists/Arrays cannot be stored in realm,
-    // hence _CustomRewards and CustomRewards both existing
+    // hence _SkillRewards and SkillRewards both existing
     // ReSharper disable once InconsistentNaming
-    public IList<CustomReward> _CustomRewards { get; }
+    public IList<GameSkillReward> _SkillRewards { get; }
     
 #nullable restore
     
-    [JsonProperty]
     [XmlArray("customRewards")]
     [XmlArrayItem("customReward")]
-    public CustomReward[] CustomRewards
+    public GameSkillReward[] CustomRewards
     {
-        get => this._CustomRewards.ToArray();
+        get => this._SkillRewards.ToArray();
         set
         {
-            this._CustomRewards.Clear();
+            this._SkillRewards.Clear();
             value = value.OrderBy(r=>r.Id).ToArray();
             
             // There should never be more than 3 skill rewards
             for (int i = 0; i < Math.Min(value.Length, 3); i++)
             {
-                CustomReward reward = value[i];
+                GameSkillReward reward = value[i];
                 reward.Id = i;
-                this._CustomRewards.Add(reward);
+                this._SkillRewards.Add(reward);
             }
         }
     }

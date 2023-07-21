@@ -1,8 +1,8 @@
 ﻿using System.Xml.Serialization;
 
-namespace Refresh.GameServer.Types.Levels.CustomRewards;
+namespace Refresh.GameServer.Types.Levels.SkillRewards;
 
-public enum CustomRewardCondition
+public enum GameSkillRewardCondition
 {
     [XmlEnum("score")]
     Score = 0,

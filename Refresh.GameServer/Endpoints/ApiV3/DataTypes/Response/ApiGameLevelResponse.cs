@@ -15,6 +15,14 @@ public class ApiGameLevelResponse : IApiResponse, IDataConvertableFrom<ApiGameLe
     
     [JsonProperty] public required DateTimeOffset PublishDate { get; set; }
     [JsonProperty] public required DateTimeOffset UpdateDate { get; set; }
+    
+    [JsonProperty] public int MinPlayers { get; set; }
+    [JsonProperty] public int MaxPlayers { get; set; }
+    [JsonProperty] public bool EnforceMinMaxPlayers { get; set; }
+    
+    [JsonProperty] public bool SameScreenGame { get; set; }
+    
+    [JsonProperty] public ApiGameSkillRewardResponse[]? SkillRewards { get; set; }
 
     public static ApiGameLevelResponse? FromOld(GameLevel? level)
     {
@@ -30,6 +38,11 @@ public class ApiGameLevelResponse : IApiResponse, IDataConvertableFrom<ApiGameLe
             Location = ApiGameLocationResponse.FromGameLocation(level.Location)!,
             PublishDate = DateTimeOffset.FromUnixTimeMilliseconds(level.PublishDate),
             UpdateDate = DateTimeOffset.FromUnixTimeMilliseconds(level.UpdateDate),
+            MinPlayers = level.MinPlayers,
+            MaxPlayers = level.MaxPlayers,
+            EnforceMinMaxPlayers = level.EnforceMinMaxPlayers,
+            SameScreenGame = level.SameScreenGame,
+            SkillRewards = level.CustomRewards.Select(ApiGameSkillRewardResponse.FromNonResponse).ToArray(),
         };
     }
 
