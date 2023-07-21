@@ -59,7 +59,7 @@ public partial class GameDatabaseContext // Levels
         this._realm.Write(() =>
         {
             IQueryable<Event> events = this._realm.All<Event>()
-                .Where(e => e.StoredDataType == EventDataType.Level && e.StoredSequentialId == level.LevelId);
+                .Where(e => e._StoredDataType == (int)EventDataType.Level && e.StoredSequentialId == level.LevelId);
             
             this._realm.RemoveRange(events);
             this._realm.Remove(level);
