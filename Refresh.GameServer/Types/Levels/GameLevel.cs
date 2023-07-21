@@ -3,7 +3,7 @@ using Realms;
 using Refresh.GameServer.Database;
 using Refresh.GameServer.Types.UserData;
 using Bunkum.HttpServer.Serialization;
-using Newtonsoft.Json;
+using Refresh.GameServer.Types.Levels.SkillRewards;
 using Refresh.GameServer.Types.Relations;
 using Refresh.GameServer.Types.UserData.Leaderboard;
 
@@ -25,8 +25,14 @@ public partial class GameLevel : IRealmObject, INeedsPreparationBeforeSerializat
 
     [XmlElement("firstPublished")] [JsonProperty] public long PublishDate { get; set; } // unix seconds
     [XmlElement("lastUpdated")] [JsonProperty] public long UpdateDate { get; set; }
+    
+    [XmlElement("minPlayers")] public int MinPlayers { get; set; }
+    [XmlElement("maxPlayers")] public int MaxPlayers { get; set; }
+    [XmlElement("enforceMinMaxPlayers")] public bool EnforceMinMaxPlayers { get; set; }
+    
+    [XmlElement("sameScreenGame")] public bool SameScreenGame { get; set; }
 
-    #nullable disable
+#nullable disable
     [Backlink(nameof(FavouriteLevelRelation.Level))]
     [XmlIgnore] public IQueryable<FavouriteLevelRelation> FavouriteRelations { get; }
     
@@ -37,7 +43,33 @@ public partial class GameLevel : IRealmObject, INeedsPreparationBeforeSerializat
     [XmlIgnore] public IQueryable<PlayLevelRelation> AllPlays { get; }
     [Backlink(nameof(GameSubmittedScore.Level))]
     [XmlIgnore] public IQueryable<GameSubmittedScore> Scores { get; }
-    #nullable restore
+    
+    // ILists can't be serialized to XML, and Lists/Arrays cannot be stored in realm,
+    // hence _SkillRewards and SkillRewards both existing
+    // ReSharper disable once InconsistentNaming
+    public IList<GameSkillReward> _SkillRewards { get; }
+    
+#nullable restore
+    
+    [XmlArray("customRewards")]
+    [XmlArrayItem("customReward")]
+    public GameSkillReward[] SkillRewards
+    {
+        get => this._SkillRewards.ToArray();
+        set
+        {
+            this._SkillRewards.Clear();
+            value = value.OrderBy(r=>r.Id).ToArray();
+            
+            // There should never be more than 3 skill rewards
+            for (int i = 0; i < Math.Min(value.Length, 3); i++)
+            {
+                GameSkillReward reward = value[i];
+                reward.Id = i;
+                this._SkillRewards.Add(reward);
+            }
+        }
+    }
     
     public int SequentialId
     {

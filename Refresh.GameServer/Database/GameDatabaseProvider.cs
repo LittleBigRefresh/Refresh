@@ -7,6 +7,7 @@ using Refresh.GameServer.Types.UserData;
 using Bunkum.RealmDatabase;
 using Refresh.GameServer.Types.Activity;
 using Refresh.GameServer.Types.Assets;
+using Refresh.GameServer.Types.Levels.SkillRewards;
 using Refresh.GameServer.Types.Notifications;
 using Refresh.GameServer.Types.Relations;
 using Refresh.GameServer.Types.Report;
@@ -18,7 +19,7 @@ namespace Refresh.GameServer.Database;
 
 public class GameDatabaseProvider : RealmDatabaseProvider<GameDatabaseContext>
 {
-    protected override ulong SchemaVersion => 55;
+    protected override ulong SchemaVersion => 59;
 
     protected override string Filename => "refreshGameServer.realm";
     
@@ -29,6 +30,7 @@ public class GameDatabaseProvider : RealmDatabaseProvider<GameDatabaseContext>
         typeof(UserPins),
         typeof(Token),
         typeof(GameLevel),
+        typeof(GameSkillReward),
         typeof(GameComment),
         typeof(FavouriteLevelRelation),
         typeof(QueueLevelRelation),
@@ -142,6 +144,13 @@ public class GameDatabaseProvider : RealmDatabaseProvider<GameDatabaseContext>
                 newLevel.IconHash = oldLevel.IconHash;
                 newLevel.Description = oldLevel.Description;
                 newLevel.RootResource = oldLevel.RootResource;
+            }
+
+            // In version 57, we implemented minimum and maximum players which are 1 and 4 by default
+            if (oldVersion < 57)
+            {
+                newLevel.MinPlayers = 1;
+                newLevel.MaxPlayers = 4;
             }
         }
 
