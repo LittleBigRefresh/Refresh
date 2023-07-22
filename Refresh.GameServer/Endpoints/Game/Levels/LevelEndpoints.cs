@@ -26,7 +26,7 @@ public class LevelEndpoints : EndpointGroup
         
         IEnumerable<GameMinimalLevel> category = levels.Items
             .Select(GameLevelResponse.FromOld)
-            .Select(GameMinimalLevel.FromGameLevel!);
+            .Select(GameMinimalLevel.FromGameLevel)!;
         
         return new SerializedMinimalLevelList(category, levels.TotalItems);
     }
@@ -37,12 +37,12 @@ public class LevelEndpoints : EndpointGroup
 
     [GameEndpoint("s/user/{id}", ContentType.Xml)]
     [NullStatusCode(NotFound)]
-    public GameLevelResponse? LevelById(RequestContext context, GameDatabaseContext database, int id) 
-        => GameLevelResponse.FromOld(database.GetLevelById(id));
+    public GameLevelResponse? LevelById(RequestContext context, GameDatabaseContext database, GameUser user, int id)
+        => GameLevelResponse.FromOldWithUser(database.GetLevelById(id), database, user);
 
     [GameEndpoint("slotList", ContentType.Xml)]
     [NullStatusCode(BadRequest)]
-    public SerializedLevelList? GetMultipleLevels(RequestContext context, GameDatabaseContext database)
+    public SerializedLevelList? GetMultipleLevels(RequestContext context, GameDatabaseContext database, GameUser user)
     {
         string[]? levelIds = context.QueryString.GetValues("s");
         if (levelIds == null) return null;
@@ -56,7 +56,7 @@ public class LevelEndpoints : EndpointGroup
 
             if (level == null) continue;
             
-            levels.Add(GameLevelResponse.FromOld(level)!);
+            levels.Add(GameLevelResponse.FromOldWithUser(level, database, user)!);
         }
 
         return new SerializedLevelList

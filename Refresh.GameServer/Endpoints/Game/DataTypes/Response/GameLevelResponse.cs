@@ -1,4 +1,5 @@
 using System.Xml.Serialization;
+using Refresh.GameServer.Database;
 using Refresh.GameServer.Endpoints.ApiV3.DataTypes;
 using Refresh.GameServer.Types;
 using Refresh.GameServer.Types.Levels;
@@ -44,6 +45,16 @@ public class GameLevelResponse : IDataConvertableFrom<GameLevelResponse, GameLev
 
     [XmlElement("resource")] public List<string> XmlResources { get; set; } = new();
 
+    public static GameLevelResponse? FromOldWithUser(GameLevel? old, GameDatabaseContext database, GameUser user)
+    {
+        if (old == null) return null;
+
+        GameLevelResponse response = FromOld(old)!;
+        response.FillInUserData(database, user);
+
+        return response;
+    }
+
     public static GameLevelResponse? FromOld(GameLevel? old)
     {
         if (old == null) return null;
@@ -83,4 +94,12 @@ public class GameLevelResponse : IDataConvertableFrom<GameLevelResponse, GameLev
     }
 
     public static IEnumerable<GameLevelResponse> FromOldList(IEnumerable<GameLevel> oldList) => oldList.Select(FromOld)!;
+
+    public void FillInUserData(GameDatabaseContext database, GameUser user)
+    {
+        GameLevel? level = database.GetLevelById(this.LevelId);
+        if (level == null) throw new InvalidOperationException("Cannot fill in level data for a level that does not exist.");
+        
+        this.YourRating = (int)database.GetRatingByUser(level, user);
+    }
 }
