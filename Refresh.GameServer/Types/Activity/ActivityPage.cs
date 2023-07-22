@@ -134,6 +134,9 @@ public class ActivityPage
                 case EventDataType.Score:
                     this.GenerateScoreGroups(groups, scores);
                     break;
+                case EventDataType.RateLevelRelation:
+                    // TODO
+                    break;
                 default:
                     throw new ArgumentOutOfRangeException();
             }
