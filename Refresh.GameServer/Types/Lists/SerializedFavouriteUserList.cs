@@ -1,4 +1,5 @@
 using System.Xml.Serialization;
+using Refresh.GameServer.Endpoints.Game.DataTypes.Response;
 using Refresh.GameServer.Types.UserData;
 
 namespace Refresh.GameServer.Types.Lists;
@@ -7,16 +8,16 @@ namespace Refresh.GameServer.Types.Lists;
 
 [XmlRoot("favouriteUsers")]
 [XmlType("favouriteUsers")]
-public class SerializedFavouriteUserList : SerializedList<GameUser>
+public class SerializedFavouriteUserList : SerializedList<GameUserResponse>
 {
     public SerializedFavouriteUserList() {}
     
-    public SerializedFavouriteUserList(List<GameUser> list, int count)
+    public SerializedFavouriteUserList(List<GameUserResponse> list, int count)
     {
         this.Total = count;
         this.Items = list;
     }
     
     [XmlElement("user")]
-    public override List<GameUser> Items { get; set; }
+    public override List<GameUserResponse> Items { get; set; }
 }

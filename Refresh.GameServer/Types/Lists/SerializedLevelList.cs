@@ -1,4 +1,5 @@
 using System.Xml.Serialization;
+using Refresh.GameServer.Endpoints.Game.DataTypes.Response;
 using Refresh.GameServer.Types.Levels;
 
 namespace Refresh.GameServer.Types.Lists;
@@ -7,8 +8,8 @@ namespace Refresh.GameServer.Types.Lists;
 
 [XmlRoot("slots")]
 [XmlType("slots")]
-public class SerializedLevelList : SerializedList<GameLevel>
+public class SerializedLevelList : SerializedList<GameLevelResponse>
 {
     [XmlElement("slot")]
-    public override List<GameLevel> Items { get; set; }
+    public override List<GameLevelResponse> Items { get; set; }
 }

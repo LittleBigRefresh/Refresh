@@ -2,6 +2,7 @@ using Bunkum.CustomHttpListener.Parsing;
 using Bunkum.HttpServer;
 using Bunkum.HttpServer.Endpoints;
 using Refresh.GameServer.Database;
+using Refresh.GameServer.Endpoints.Game.DataTypes.Response;
 using Refresh.GameServer.Extensions;
 using Refresh.GameServer.Types.Levels;
 using Refresh.GameServer.Types.Levels.Categories;
@@ -24,7 +25,8 @@ public class LevelEndpoints : EndpointGroup
         if (levels == null) return null;
         
         IEnumerable<GameMinimalLevel> category = levels.Items
-            .Select(GameMinimalLevel.FromGameLevel);
+            .Select(GameLevelResponse.FromOld)
+            .Select(GameMinimalLevel.FromGameLevel)!;
         
         return new SerializedMinimalLevelList(category, levels.TotalItems);
     }
@@ -35,16 +37,17 @@ public class LevelEndpoints : EndpointGroup
 
     [GameEndpoint("s/user/{id}", ContentType.Xml)]
     [NullStatusCode(NotFound)]
-    public GameLevel? LevelById(RequestContext context, GameDatabaseContext database, int id) => database.GetLevelById(id);
+    public GameLevelResponse? LevelById(RequestContext context, GameDatabaseContext database, GameUser user, int id)
+        => GameLevelResponse.FromOldWithUser(database.GetLevelById(id), database, user);
 
     [GameEndpoint("slotList", ContentType.Xml)]
     [NullStatusCode(BadRequest)]
-    public SerializedLevelList? GetMultipleLevels(RequestContext context, GameDatabaseContext database)
+    public SerializedLevelList? GetMultipleLevels(RequestContext context, GameDatabaseContext database, GameUser user)
     {
         string[]? levelIds = context.QueryString.GetValues("s");
         if (levelIds == null) return null;
 
-        List<GameLevel> levels = new();
+        List<GameLevelResponse> levels = new();
         
         foreach (string levelIdStr in levelIds)
         {
@@ -53,8 +56,7 @@ public class LevelEndpoints : EndpointGroup
 
             if (level == null) continue;
             
-            level.PrepareForSerialization();
-            levels.Add(level);
+            levels.Add(GameLevelResponse.FromOldWithUser(level, database, user)!);
         }
 
         return new SerializedLevelList

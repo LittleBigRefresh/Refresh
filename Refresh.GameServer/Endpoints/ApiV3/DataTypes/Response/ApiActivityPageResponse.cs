@@ -17,8 +17,8 @@ public class ApiActivityPageResponse : IApiResponse, IDataConvertableFrom<ApiAct
         return new ApiActivityPageResponse
         {
             Events = ApiEventResponse.FromOldList(old.Events),
-            Users = ApiGameUserResponse.FromOldList(old.Users.Users),
-            Levels = ApiGameLevelResponse.FromOldList(old.Levels.Items),
+            Users = ApiGameUserResponse.FromOldList(old.Users),
+            Levels = ApiGameLevelResponse.FromOldList(old.Levels),
             Scores = ApiGameScoreResponse.FromOldList(old.Scores),
         };
     }

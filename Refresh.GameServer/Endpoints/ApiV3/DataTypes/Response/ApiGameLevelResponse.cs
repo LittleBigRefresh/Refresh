@@ -1,28 +1,32 @@
 using Refresh.GameServer.Types.Levels;
+using Refresh.GameServer.Types.Reviews;
 
 namespace Refresh.GameServer.Endpoints.ApiV3.DataTypes.Response;
 
 [JsonObject(NamingStrategyType = typeof(CamelCaseNamingStrategy))]
 public class ApiGameLevelResponse : IApiResponse, IDataConvertableFrom<ApiGameLevelResponse, GameLevel>
 {
-    [JsonProperty] public required int LevelId { get; set; }
-    [JsonProperty] public required ApiGameUserResponse? Publisher { get; set; }
+    public required int LevelId { get; set; }
+    public required ApiGameUserResponse? Publisher { get; set; }
 
-    [JsonProperty] public required string Title { get; set; }
-    [JsonProperty] public required string IconHash { get; set; }
-    [JsonProperty] public required string Description { get; set; }
-    [JsonProperty] public required ApiGameLocationResponse Location { get; set; }
+    public required string Title { get; set; }
+    public required string IconHash { get; set; }
+    public required string Description { get; set; }
+    public required ApiGameLocationResponse Location { get; set; }
     
-    [JsonProperty] public required DateTimeOffset PublishDate { get; set; }
-    [JsonProperty] public required DateTimeOffset UpdateDate { get; set; }
+    public required DateTimeOffset PublishDate { get; set; }
+    public required DateTimeOffset UpdateDate { get; set; }
     
-    [JsonProperty] public int MinPlayers { get; set; }
-    [JsonProperty] public int MaxPlayers { get; set; }
-    [JsonProperty] public bool EnforceMinMaxPlayers { get; set; }
+    public required int MinPlayers { get; set; }
+    public required int MaxPlayers { get; set; }
+    public required bool EnforceMinMaxPlayers { get; set; }
     
-    [JsonProperty] public bool SameScreenGame { get; set; }
+    public required bool SameScreenGame { get; set; }
     
-    [JsonProperty] public IEnumerable<ApiGameSkillRewardResponse>? SkillRewards { get; set; }
+    public required IEnumerable<ApiGameSkillRewardResponse>? SkillRewards { get; set; }
+    
+    public required int YayRatings { get; set; }
+    public required int BooRatings { get; set; }
 
     public static ApiGameLevelResponse? FromOld(GameLevel? level)
     {
@@ -43,6 +47,8 @@ public class ApiGameLevelResponse : IApiResponse, IDataConvertableFrom<ApiGameLe
             EnforceMinMaxPlayers = level.EnforceMinMaxPlayers,
             SameScreenGame = level.SameScreenGame,
             SkillRewards = ApiGameSkillRewardResponse.FromOldList(level.SkillRewards),
+            YayRatings = level.Ratings.Count(r => r._RatingType == (int)RatingType.Yay),
+            BooRatings = level.Ratings.Count(r => r._RatingType == (int)RatingType.Boo),
         };
     }
 

@@ -24,7 +24,7 @@ public partial class GameDatabaseContext // Leaderboard
             this._realm.Add(newScore);
         });
 
-        this.CreateSubmittedScoreEvent(user, newScore);
+        this.CreateSubmittedScoreCreateEvent(user, newScore);
 
         return newScore;
     }

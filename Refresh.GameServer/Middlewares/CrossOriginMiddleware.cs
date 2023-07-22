@@ -38,8 +38,7 @@ public class CrossOriginMiddleware : IMiddleware
         // Mozilla says this is okay:
         //   "You can also configure a site to allow any site to access it by using the * wildcard. You should only use this for public APIs."
         // https://developer.mozilla.org/en-US/docs/Web/HTTP/CORS/Errors/CORSMissingAllowOrigin#what_went_wrong
-        if (context.Uri.AbsolutePath.StartsWith(ApiV2EndpointAttribute.BaseRoute) ||
-            context.Uri.AbsolutePath.StartsWith(ApiV3EndpointAttribute.BaseRoute))
+        if (context.Uri.AbsolutePath.StartsWith(ApiV3EndpointAttribute.BaseRoute))
         {
             if (AllowAnyOrigin(context)) return;
         }

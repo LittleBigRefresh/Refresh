@@ -3,6 +3,7 @@ using Bunkum.HttpServer;
 using Bunkum.HttpServer.Endpoints;
 using Bunkum.HttpServer.Responses;
 using Refresh.GameServer.Database;
+using Refresh.GameServer.Endpoints.Game.DataTypes.Response;
 using Refresh.GameServer.Extensions;
 using Refresh.GameServer.Types.Levels;
 using Refresh.GameServer.Types.Lists;
@@ -76,10 +77,8 @@ public class RelationEndpoints : EndpointGroup
         (int skip, int count) = context.GetPageData();
         List<GameUser> users = database.GetUsersFavouritedByUser(user, count, skip)
             .ToList();
-        
-        foreach (GameUser favouritedUser in users) favouritedUser.PrepareForSerialization();
 
-        return new SerializedFavouriteUserList(users, users.Count);
+        return new SerializedFavouriteUserList(GameUserResponse.FromOldList(users).ToList(), users.Count);
     }
 
     [GameEndpoint("lolcatftw/add/user/{idStr}", Method.Post)]

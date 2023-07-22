@@ -6,6 +6,7 @@ using Bunkum.HttpServer.Endpoints;
 using Bunkum.HttpServer.Storage;
 using Newtonsoft.Json;
 using Refresh.GameServer.Database;
+using Refresh.GameServer.Endpoints.Game.DataTypes.Response;
 using Refresh.GameServer.Services;
 using Refresh.GameServer.Types.Lists;
 using Refresh.GameServer.Types.UserData;
@@ -15,11 +16,8 @@ namespace Refresh.GameServer.Endpoints.Game;
 public class UserEndpoints : EndpointGroup
 {
     [GameEndpoint("user/{name}", Method.Get, ContentType.Xml)]
-    public GameUser? GetUser(RequestContext context, GameDatabaseContext database, string name)
-    {
-        GameUser? user = database.GetUserByUsername(name);
-        return user;
-    }
+    public GameUserResponse? GetUser(RequestContext context, GameDatabaseContext database, string name) 
+        => GameUserResponse.FromOld(database.GetUserByUsername(name));
 
     [GameEndpoint("users", Method.Get, ContentType.Xml)]
     public SerializedUserList GetMultipleUsers(RequestContext context, GameDatabaseContext database)
@@ -27,15 +25,14 @@ public class UserEndpoints : EndpointGroup
         string[]? usernames = context.QueryString.GetValues("u");
         if (usernames == null) return new SerializedUserList();
 
-        List<GameUser> users = new(usernames.Length);
+        List<GameUserResponse> users = new(usernames.Length);
 
         foreach (string username in usernames)
         {
             GameUser? user = database.GetUserByUsername(username);
             if (user == null) continue;
-
-            user.PrepareForSerialization();
-            users.Add(user);
+            
+            users.Add(GameUserResponse.FromOld(user)!);
         }
 
         return new SerializedUserList
@@ -52,10 +49,7 @@ public class UserEndpoints : EndpointGroup
         List<GameUser>? friends = friendService.GetUsersFriends(user, database)?.ToList();
         if (friends == null) return null;
         
-        foreach (GameUser friend in friends)
-            friend.PrepareForSerialization();
-        
-        return new SerializedFriendsList(friends);
+        return new SerializedFriendsList(GameUserResponse.FromOldList(friends).ToList());
     }
 
     [GameEndpoint("updateUser", Method.Post, ContentType.Xml)]
