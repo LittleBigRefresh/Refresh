@@ -30,10 +30,10 @@ public class PhotoEndpoints : EndpointGroup
         return OK;
     }
 
-    [GameEndpoint("deletePhoto/{photoId}", Method.Post)]
-    public Response DeletePhoto(RequestContext context, GameDatabaseContext database, GameUser user, int photoId)
+    [GameEndpoint("deletePhoto/{id}", Method.Post)]
+    public Response DeletePhoto(RequestContext context, GameDatabaseContext database, GameUser user, int id)
     {
-        GamePhoto? photo = database.GetPhotoById(photoId);
+        GamePhoto? photo = database.GetPhotoById(id);
         if (photo == null) return NotFound;
 
         if (photo.Publisher.UserId != user.UserId)
