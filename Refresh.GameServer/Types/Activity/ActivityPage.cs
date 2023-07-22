@@ -1,6 +1,7 @@
 using System.Xml.Serialization;
 using Newtonsoft.Json;
 using Refresh.GameServer.Database;
+using Refresh.GameServer.Endpoints.Game.DataTypes.Response;
 using Refresh.GameServer.Types.Activity.Groups;
 using Refresh.GameServer.Types.Activity.SerializedEvents;
 using Refresh.GameServer.Types.Levels;
@@ -23,16 +24,22 @@ public class ActivityPage
     
     [XmlIgnore]
     public List<Event> Events { get; set; }
+    
+    [XmlIgnore]
+    public List<GameUser> Users { get; set; }
+    
+    [XmlIgnore]
+    public List<GameLevel> Levels { get; set; }
 
     [JsonIgnore]
     [XmlElement("groups")]
     public ActivityGroups Groups { get; set; }
 
     [XmlElement("users")]
-    public SerializedUserList Users { get; set; }
+    public SerializedUserList SerializedUsers { get; set; }
     
     [XmlElement("slots")]
-    public SerializedLevelList Levels { get; set; }
+    public SerializedLevelList SerializedLevels { get; set; }
     
     [XmlIgnore, JsonIgnore]
     public List<GameSubmittedScore> Scores { get; set; }
@@ -41,8 +48,8 @@ public class ActivityPage
     {
         this.Events = new List<Event>();
         this.Groups = new ActivityGroups();
-        this.Levels = new SerializedLevelList();
-        this.Users = new SerializedUserList();
+        this.SerializedLevels = new SerializedLevelList();
+        this.SerializedUsers = new SerializedUserList();
         this.Scores = new List<GameSubmittedScore>();
     }
 
@@ -69,10 +76,12 @@ public class ActivityPage
             .DistinctBy(e => e.StoredObjectId)
             .Select(e => database.GetUserFromEvent(e)!));
 
-        this.Users = new SerializedUserList
+        this.SerializedUsers = new SerializedUserList
         {
-            Users = users,
+            Users = GameUserResponse.FromOldList(users).ToList(),
         };
+
+        this.Users = users;
 
         List<GameLevel> levels = this.Events
             .Where(e => e.StoredDataType == EventDataType.Level)
@@ -80,10 +89,12 @@ public class ActivityPage
             .Select(e => database.GetLevelFromEvent(e)!) // probably pretty inefficient
             .ToList();
 
-        this.Levels = new SerializedLevelList
+        this.SerializedLevels = new SerializedLevelList
         {
-            Items = levels,
+            Items = GameLevelResponse.FromOldList(levels).ToList(),
         };
+
+        this.Levels = levels;
         
         List<GameSubmittedScore> scores = this.Events
             .Where(e => e.StoredDataType == EventDataType.Score)

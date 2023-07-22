@@ -1,4 +1,6 @@
 using System.Xml.Serialization;
+using Refresh.GameServer.Endpoints.Game.DataTypes.Response;
+using Refresh.GameServer.Types.Report;
 using Refresh.GameServer.Types.UserData;
 
 namespace Refresh.GameServer.Types.Levels;
@@ -15,10 +17,13 @@ public class GameMinimalLevel
     [XmlAttribute("type")] public string? Type { get; set; }
     
     private GameMinimalLevel() {}
+    
+    public static GameMinimalLevel? FromGameLevel(GameLevel? level) => FromGameLevel(GameLevelResponse.FromOld(level));
 
-    public static GameMinimalLevel FromGameLevel(GameLevel level)
+    public static GameMinimalLevel? FromGameLevel(GameLevelResponse? level)
     {
-        level.PrepareForSerialization();
+        if (level == null) return null;
+        
         return new GameMinimalLevel
         {
             Title = level.Title,

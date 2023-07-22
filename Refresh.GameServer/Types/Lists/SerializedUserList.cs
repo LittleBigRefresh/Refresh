@@ -1,4 +1,5 @@
 using System.Xml.Serialization;
+using Refresh.GameServer.Endpoints.Game.DataTypes.Response;
 using Refresh.GameServer.Types.UserData;
 
 namespace Refresh.GameServer.Types.Lists;
@@ -7,5 +8,5 @@ namespace Refresh.GameServer.Types.Lists;
 public class SerializedUserList
 {
     [XmlElement("user")]
-    public List<GameUser> Users { get; set; } = new();
+    public List<GameUserResponse> Users { get; set; } = new();
 }

@@ -3,93 +3,54 @@ using MongoDB.Bson;
 using Realms;
 using Refresh.GameServer.Types.Comments;
 using Bunkum.HttpServer.RateLimit;
-using Bunkum.HttpServer.Serialization;
-using Newtonsoft.Json;
 using Refresh.GameServer.Types.Levels;
 using Refresh.GameServer.Types.Photos;
 using Refresh.GameServer.Types.Relations;
 
 namespace Refresh.GameServer.Types.UserData;
 
-[XmlRoot("user")]
 [JsonObject(MemberSerialization.OptIn)]
-public partial class GameUser : IRealmObject, IRateLimitUser, INeedsPreparationBeforeSerialization
+public partial class GameUser : IRealmObject, IRateLimitUser
 {
-    [PrimaryKey] [XmlIgnore] [JsonProperty] public ObjectId UserId { get; set; } = ObjectId.GenerateNewId();
-    [Indexed] [XmlIgnore] [JsonProperty] public string Username { get; set; } = string.Empty;
-    [Indexed] [XmlIgnore] [JsonIgnore] public string? PasswordBcrypt { get; set; } = null;
-    [XmlIgnore] [JsonProperty] public string IconHash { get; set; } = "0";
+    [PrimaryKey] public ObjectId UserId { get; set; } = ObjectId.GenerateNewId();
+    [Indexed] public string Username { get; set; } = string.Empty;
+    [Indexed] public string? PasswordBcrypt { get; set; } = null;
+    public string IconHash { get; set; } = "0";
 
-    [XmlElement("biography")] [JsonProperty] public string Description { get; set; } = "";
-    [XmlElement("location")] [JsonProperty] public GameLocation Location { get; set; } = GameLocation.Zero;
+    public string Description { get; set; } = "";
+    public GameLocation Location { get; set; } = GameLocation.Zero;
     
-    [XmlIgnore] [JsonProperty] public long JoinDate { get; set; } // unix milliseconds
-    
-    [XmlIgnore] public UserPins Pins { get; set; } = new();
+    public long JoinDate { get; set; } // unix milliseconds
+    public UserPins Pins { get; set; } = new();
     
     #nullable disable
-    [XmlIgnore] public IList<GameComment> ProfileComments { get; }
+    public IList<GameComment> ProfileComments { get; }
     
     [Backlink(nameof(FavouriteLevelRelation.User))]
-    [XmlIgnore] public IQueryable<FavouriteLevelRelation> FavouriteLevelRelations { get; }
+    public IQueryable<FavouriteLevelRelation> FavouriteLevelRelations { get; }
     
     [Backlink(nameof(QueueLevelRelation.User))]
-    [XmlIgnore] public IQueryable<QueueLevelRelation> QueueLevelRelations { get; }
+    public IQueryable<QueueLevelRelation> QueueLevelRelations { get; }
     
     [Backlink(nameof(FavouriteUserRelation.UserToFavourite))]
-    [XmlIgnore] public IQueryable<FavouriteUserRelation> UsersFavouritingMe { get; }
+    public IQueryable<FavouriteUserRelation> UsersFavouritingMe { get; }
     
     [Backlink(nameof(FavouriteUserRelation.UserFavouriting))]
-    [XmlIgnore] public IQueryable<FavouriteUserRelation> UsersFavourited { get; }
+    public IQueryable<FavouriteUserRelation> UsersFavourited { get; }
 
     [Backlink(nameof(GameLevel.Publisher))]
-    [XmlIgnore] public IQueryable<GameLevel> PublishedLevels { get; }
+    public IQueryable<GameLevel> PublishedLevels { get; }
     
     [Backlink(nameof(GamePhoto.Publisher))]
-    [XmlIgnore] public IQueryable<GamePhoto> PhotosByMe { get; }
+    public IQueryable<GamePhoto> PhotosByMe { get; }
     
     [Backlink(nameof(GamePhotoSubject.User))]
-    [XmlIgnore] public IQueryable<GamePhotoSubject> PhotosWithMe { get; }
+    public IQueryable<GamePhotoSubject> PhotosWithMe { get; }
     #nullable restore
 
-    [XmlElement("planets")] public string PlanetsHash { get; set; } = "0";
+    public string PlanetsHash { get; set; } = "0";
 
     public override string ToString() => $"{this.Username} ({this.UserId})";
-
-    #region LBP Serialization Quirks
-
-    [Ignored] [XmlAttribute("type")] public string? Type { get; set; }
-    [Ignored] [XmlElement("npHandle")] public SerializedUserHandle? Handle { get; set; }
-    [Ignored] [XmlElement("commentCount")] public int? CommentCount { get; set; }
-    [Ignored] [XmlElement("commentsEnabled")] public bool? CommentsEnabled { get; set; }
-    [Ignored] [XmlElement("favouriteSlotCount")] public int? FavouriteLevelCount { get; set; }
-    [Ignored] [XmlElement("favouriteUserCount")] public int? FavouriteUserCount { get; set; }
-    [Ignored] [XmlElement("lolcatftwCount")] public int? QueuedLevelCount { get; set; }
-    [Ignored] [XmlElement("heartCount")] public int? HeartCount { get; set; }
-    [Ignored] [XmlElement("photosByMeCount")] public int? PhotosByMeCount { get; set; }
-    [Ignored] [XmlElement("photosWithMeCount")] public int? PhotosWithMeCount { get; set; }
-
-    private partial void SerializeSlots();
-
-    public void PrepareForSerialization()
-    {
-        this.Type = "user";
-        this.Handle = SerializedUserHandle.FromUser(this);
-        
-        this.CommentCount = this.ProfileComments.Count;
-        this.CommentsEnabled = true;
-
-        this.FavouriteLevelCount = this.FavouriteLevelRelations.Count();
-        this.FavouriteUserCount = this.UsersFavourited.Count();
-        this.QueuedLevelCount = this.QueueLevelRelations.Count();
-        this.HeartCount = this.UsersFavouritingMe.Count();
-
-        this.PhotosByMeCount = this.PhotosByMe.Count();
-        this.PhotosWithMeCount = this.PhotosWithMe.Count();
-        
-        this.SerializeSlots();
-    }
-    #endregion
 
     #region Rate-limiting
     public bool RateLimitUserIdIsEqual(object obj)
@@ -99,7 +60,7 @@ public partial class GameUser : IRealmObject, IRateLimitUser, INeedsPreparationB
     }
 
     // Defined in authentication provider. Avoids Realm threading nonsense.
-    [Ignored] [XmlIgnore] [JsonIgnore] public object RateLimitUserId { get; internal set; } = null!;
+    [Ignored] [XmlIgnore] public object RateLimitUserId { get; internal set; } = null!;
 
     #endregion
 }
