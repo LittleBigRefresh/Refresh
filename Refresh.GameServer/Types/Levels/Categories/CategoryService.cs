@@ -49,6 +49,13 @@ public class CategoryService : EndpointService
             IconHash = "g820607",
             FontAwesomeIcon = "heart",
         },
+        new LevelCategory("mostLiked", "thumbs", false, nameof(GameDatabaseContext.GetHighestRatedLevels))
+        {
+            Name = "Liked Levels",
+            Description = "The most liked levels of all time",
+            IconHash = "g820603",
+            FontAwesomeIcon = "thumbs-up",
+        },
     };
 
     internal CategoryService(LoggerContainer<BunkumContext> logger) : base(logger)
