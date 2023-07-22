@@ -80,6 +80,7 @@ public partial class GameDatabaseContext // Levels
         new(this._realm.All<GameLevel>().AsEnumerable()
             .OrderBy(_ => Random.Shared.Next()), skip, count);
     
+    // TODO: reduce code duplication for getting most of x
     [Pure]
     public DatabaseList<GameLevel> GetMostHeartedLevels(int count, int skip)
     {
@@ -93,6 +94,21 @@ public partial class GameDatabaseContext // Levels
             .Select(x => x.Level);
 
         return new DatabaseList<GameLevel>(mostHeartedLevels, skip, count);
+    }
+    
+    [Pure]
+    public DatabaseList<GameLevel> GetMostUniquelyPlayedLevels(int count, int skip)
+    {
+        IQueryable<UniquePlayLevelRelation> uniquePlays = this._realm.All<UniquePlayLevelRelation>();
+        
+        IEnumerable<GameLevel> mostPlayed = uniquePlays
+            .AsEnumerable()
+            .GroupBy(r => r.Level)
+            .Select(g => new { Level = g.Key, Count = g.Count() })
+            .OrderByDescending(x => x.Count)
+            .Select(x => x.Level);
+
+        return new DatabaseList<GameLevel>(mostPlayed, skip, count);
     }
     
     [Pure]

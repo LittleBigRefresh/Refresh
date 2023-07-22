@@ -28,6 +28,7 @@ public class ApiGameLevelResponse : IApiResponse, IDataConvertableFrom<ApiGameLe
     public required int YayRatings { get; set; }
     public required int BooRatings { get; set; }
     public required int Hearts { get; set; }
+    public required int UniquePlays { get; set; }
 
     public static ApiGameLevelResponse? FromOld(GameLevel? level)
     {
@@ -51,6 +52,7 @@ public class ApiGameLevelResponse : IApiResponse, IDataConvertableFrom<ApiGameLe
             YayRatings = level.Ratings.Count(r => r._RatingType == (int)RatingType.Yay),
             BooRatings = level.Ratings.Count(r => r._RatingType == (int)RatingType.Boo),
             Hearts = level.FavouriteRelations.Count(),
+            UniquePlays = level.UniquePlays.Count(),
         };
     }
 
