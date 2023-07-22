@@ -1,3 +1,4 @@
+using System.Globalization;
 using System.Xml.Serialization;
 
 namespace Refresh.GameServer.Types.Photos;
@@ -29,7 +30,7 @@ public class SerializedPhotoSubject
             if(floatIndex == FloatCount - 1) break; // won't catch the last float - not worth reading
             if (input[i] != ',') continue;
             
-            if (!float.TryParse(input.Slice(start, i - start), out float f))
+            if (!float.TryParse(input.Slice(start, i - start), NumberFormatInfo.InvariantInfo, out float f))
                 throw new FormatException("Invalid format");
                 
             floats[floatIndex] = f;
@@ -38,7 +39,7 @@ public class SerializedPhotoSubject
         }
         
         // parse the last float value - bounds does not end with comma
-        if (!float.TryParse(input[start..], out float lastFloat))
+        if (!float.TryParse(input[start..], NumberFormatInfo.InvariantInfo, out float lastFloat))
             throw new FormatException("Invalid format");
 
         floats[FloatCount - 1] = lastFloat;
