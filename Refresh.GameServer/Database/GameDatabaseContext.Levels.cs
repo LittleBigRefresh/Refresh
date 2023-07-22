@@ -4,6 +4,7 @@ using JetBrains.Annotations;
 using Realms;
 using Refresh.GameServer.Types.Activity;
 using Refresh.GameServer.Types.Levels;
+using Refresh.GameServer.Types.Relations;
 using Refresh.GameServer.Types.UserData;
 
 namespace Refresh.GameServer.Database;
@@ -78,6 +79,21 @@ public partial class GameDatabaseContext // Levels
     public DatabaseList<GameLevel> GetRandomLevels(int count, int skip) =>
         new(this._realm.All<GameLevel>().AsEnumerable()
             .OrderBy(_ => Random.Shared.Next()), skip, count);
+    
+    [Pure]
+    public DatabaseList<GameLevel> GetMostHeartedLevels(int count, int skip)
+    {
+        IQueryable<FavouriteLevelRelation> favourites = this._realm.All<FavouriteLevelRelation>();
+        
+        IEnumerable<GameLevel> mostHeartedLevels = favourites
+            .AsEnumerable()
+            .GroupBy(fl => fl.Level)
+            .Select(group => new { Level = group.Key, Count = group.Count() })
+            .OrderByDescending(x => x.Count)
+            .Select(x => x.Level);
+
+        return new DatabaseList<GameLevel>(mostHeartedLevels, skip, count);
+    }
 
     [Pure]
     public DatabaseList<GameLevel> SearchForLevels(int count, int skip, string query)
