@@ -20,5 +20,11 @@ public class ApiValidationError : ApiError
     public const string ScoreMissingErrorWhen = "The score could not be found";
     public static readonly ApiValidationError ScoreMissingError = new(ScoreMissingErrorWhen);
     
+    public const string PhotoMissingErrorWhen = "The photo could not be found";
+    public static readonly ApiValidationError PhotoMissingError = new(PhotoMissingErrorWhen);
+
+    public const string NoPhotoDeletionPermissionErrorWhen = "You do not have permission to delete someone else's photo";
+    public static readonly ApiValidationError NoPhotoDeletionPermissionError = new(NoPhotoDeletionPermissionErrorWhen);
+    
     public ApiValidationError(string message) : base(message) {}
 }

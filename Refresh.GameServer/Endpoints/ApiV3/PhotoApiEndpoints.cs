@@ -1,11 +1,12 @@
 using AttribDoc.Attributes;
+using Bunkum.CustomHttpListener.Parsing;
 using Bunkum.HttpServer;
 using Bunkum.HttpServer.Endpoints;
+using Bunkum.HttpServer.Responses;
 using Refresh.GameServer.Database;
 using Refresh.GameServer.Documentation.Attributes;
 using Refresh.GameServer.Endpoints.ApiV3.ApiTypes;
 using Refresh.GameServer.Endpoints.ApiV3.ApiTypes.Errors;
-using Refresh.GameServer.Endpoints.ApiV3.DataTypes;
 using Refresh.GameServer.Endpoints.ApiV3.DataTypes.Response;
 using Refresh.GameServer.Extensions;
 using Refresh.GameServer.Types.Levels;
@@ -16,6 +17,22 @@ namespace Refresh.GameServer.Endpoints.ApiV3;
 
 public class PhotoApiEndpoints : EndpointGroup
 {
+    [ApiV3Endpoint("photos/{id}", Method.Delete)]
+    [DocSummary("Deletes an uploaded photo")]
+    [DocError(typeof(ApiValidationError), ApiValidationError.PhotoMissingErrorWhen)]
+    [DocError(typeof(ApiValidationError), ApiValidationError.NoPhotoDeletionPermissionErrorWhen)]
+    public ApiResponse<ApiEmptyResponse> DeletePhoto(RequestContext context, GameDatabaseContext database, GameUser user, int id)
+    {
+        GamePhoto? photo = database.GetPhotoById(id);
+        if (photo == null) return ApiValidationError.PhotoMissingError;
+
+        if (photo.Publisher.UserId != user.UserId)
+            return ApiValidationError.NoPhotoDeletionPermissionError;
+
+        database.RemovePhoto(photo);
+        return new ApiOkResponse();
+    }
+    
     private static ApiListResponse<ApiGamePhotoResponse> PhotosByUser(RequestContext context, GameDatabaseContext database, GameUser? user)
     {
         if (user == null) return ApiNotFoundError.Instance;

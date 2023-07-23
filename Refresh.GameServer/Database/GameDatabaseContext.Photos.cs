@@ -50,6 +50,14 @@ public partial class GameDatabaseContext // Photos
 
         this.AddSequentialObject(newPhoto);
     }
+
+    public void RemovePhoto(GamePhoto photo)
+    {
+        this._realm.Write(() =>
+        {
+            this._realm.Remove(photo);
+        });
+    }
     
     [Pure]
     public DatabaseList<GamePhoto> GetRecentPhotos(int count, int skip) =>

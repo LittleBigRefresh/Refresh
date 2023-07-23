@@ -30,6 +30,19 @@ public class PhotoEndpoints : EndpointGroup
         return OK;
     }
 
+    [GameEndpoint("deletePhoto/{id}", Method.Post)]
+    public Response DeletePhoto(RequestContext context, GameDatabaseContext database, GameUser user, int id)
+    {
+        GamePhoto? photo = database.GetPhotoById(id);
+        if (photo == null) return NotFound;
+
+        if (photo.Publisher.UserId != user.UserId)
+            return Unauthorized;
+        
+        database.RemovePhoto(photo);
+        return OK;
+    }
+    
     private static SerializedPhotoList? GetPhotos(RequestContext context, GameDatabaseContext database, Func<GameUser, int, int, DatabaseList<GamePhoto>> photoGetter)
     {
         string? username = context.QueryString.Get("user");
