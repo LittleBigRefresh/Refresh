@@ -37,7 +37,7 @@ public class PhotoEndpoints : EndpointGroup
         if (photo == null) return NotFound;
 
         if (photo.Publisher.UserId != user.UserId)
-            return Forbidden;
+            return Unauthorized;
         
         database.RemovePhoto(photo);
         return OK;

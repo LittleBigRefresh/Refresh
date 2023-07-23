@@ -19,19 +19,18 @@ public class PhotoApiEndpoints : EndpointGroup
 {
     [ApiV3Endpoint("photos/{id}", Method.Delete)]
     [DocSummary("Deletes an uploaded photo")]
-    [DocError(typeof(ApiNotFoundError), "The photo cannot be found")]
-    [DocError(typeof(ApiValidationError), "The photo was not uploaded by you")]
-    // i dont know what type this response should be so im just gonna let you figure that out
-    public Response DeletePhoto(RequestContext context, GameDatabaseContext database, GameUser user, int id)
+    [DocError(typeof(ApiValidationError), ApiValidationError.PhotoMissingErrorWhen)]
+    [DocError(typeof(ApiValidationError), ApiValidationError.NoPhotoDeletionPermissionErrorWhen)]
+    public ApiResponse<ApiEmptyResponse> DeletePhoto(RequestContext context, GameDatabaseContext database, GameUser user, int id)
     {
         GamePhoto? photo = database.GetPhotoById(id);
-        if (photo == null) return NotFound;
+        if (photo == null) return ApiValidationError.PhotoMissingError;
 
         if (photo.Publisher.UserId != user.UserId)
-            return Forbidden;
-        
+            return ApiValidationError.NoPhotoDeletionPermissionError;
+
         database.RemovePhoto(photo);
-        return OK;
+        return new ApiOkResponse();
     }
     
     private static ApiListResponse<ApiGamePhotoResponse> PhotosByUser(RequestContext context, GameDatabaseContext database, GameUser? user)
