@@ -4,6 +4,7 @@ using JetBrains.Annotations;
 using Realms;
 using Refresh.GameServer.Types.Activity;
 using Refresh.GameServer.Types.Levels;
+using Refresh.GameServer.Types.Relations;
 using Refresh.GameServer.Types.UserData;
 
 namespace Refresh.GameServer.Database;
@@ -78,6 +79,52 @@ public partial class GameDatabaseContext // Levels
     public DatabaseList<GameLevel> GetRandomLevels(int count, int skip) =>
         new(this._realm.All<GameLevel>().AsEnumerable()
             .OrderBy(_ => Random.Shared.Next()), skip, count);
+    
+    // TODO: reduce code duplication for getting most of x
+    [Pure]
+    public DatabaseList<GameLevel> GetMostHeartedLevels(int count, int skip)
+    {
+        IQueryable<FavouriteLevelRelation> favourites = this._realm.All<FavouriteLevelRelation>();
+        
+        IEnumerable<GameLevel> mostHeartedLevels = favourites
+            .AsEnumerable()
+            .GroupBy(r => r.Level)
+            .Select(g => new { Level = g.Key, Count = g.Count() })
+            .OrderByDescending(x => x.Count)
+            .Select(x => x.Level);
+
+        return new DatabaseList<GameLevel>(mostHeartedLevels, skip, count);
+    }
+    
+    [Pure]
+    public DatabaseList<GameLevel> GetMostUniquelyPlayedLevels(int count, int skip)
+    {
+        IQueryable<UniquePlayLevelRelation> uniquePlays = this._realm.All<UniquePlayLevelRelation>();
+        
+        IEnumerable<GameLevel> mostPlayed = uniquePlays
+            .AsEnumerable()
+            .GroupBy(r => r.Level)
+            .Select(g => new { Level = g.Key, Count = g.Count() })
+            .OrderByDescending(x => x.Count)
+            .Select(x => x.Level);
+
+        return new DatabaseList<GameLevel>(mostPlayed, skip, count);
+    }
+    
+    [Pure]
+    public DatabaseList<GameLevel> GetHighestRatedLevels(int count, int skip)
+    {
+        IQueryable<RateLevelRelation> ratings = this._realm.All<RateLevelRelation>();
+        
+        IEnumerable<GameLevel> highestRated = ratings
+            .AsEnumerable()
+            .GroupBy(r => r.Level)
+            .Select(g => new { Level = g.Key, Karma = g.Sum(r => r._RatingType) })
+            .OrderByDescending(x => x.Karma) // reddit moment
+            .Select(x => x.Level);
+
+        return new DatabaseList<GameLevel>(highestRated, skip, count);
+    }
 
     [Pure]
     public DatabaseList<GameLevel> SearchForLevels(int count, int skip, string query)
