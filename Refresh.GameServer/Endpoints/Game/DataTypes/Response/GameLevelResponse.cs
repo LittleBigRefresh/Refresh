@@ -3,6 +3,7 @@ using Refresh.GameServer.Database;
 using Refresh.GameServer.Endpoints.ApiV3.DataTypes;
 using Refresh.GameServer.Types;
 using Refresh.GameServer.Types.Levels;
+using Refresh.GameServer.Types.Levels.SkillRewards;
 using Refresh.GameServer.Types.Reviews;
 using Refresh.GameServer.Types.UserData;
 
@@ -42,6 +43,10 @@ public class GameLevelResponse : IDataConvertableFrom<GameLevelResponse, GameLev
     [XmlElement("yourDPadRating")] public int YourRating { get; set; }
     [XmlElement("thumbsup")] public required int YayCount { get; set; }
     [XmlElement("thumbsdown")] public required int BooCount { get; set; }
+    
+    [XmlArray("customRewards")]
+    [XmlArrayItem("customReward")]
+    public required List<GameSkillReward> SkillRewards { get; set; }
 
     [XmlElement("resource")] public List<string> XmlResources { get; set; } = new();
 
@@ -78,6 +83,7 @@ public class GameLevelResponse : IDataConvertableFrom<GameLevelResponse, GameLev
             UniquePlayCount = old.UniquePlays.Count(),
             YayCount = old.Ratings.Count(r => r._RatingType == (int)RatingType.Yay),
             BooCount = old.Ratings.Count(r => r._RatingType == (int)RatingType.Boo),
+            SkillRewards = old.SkillRewards.ToList(),
         };
 
         if (old.Publisher == null)
@@ -92,6 +98,25 @@ public class GameLevelResponse : IDataConvertableFrom<GameLevelResponse, GameLev
 
         return response;
     }
+
+    public GameLevel ToGameLevel(GameUser publisher) =>
+        new()
+        {
+            LevelId = this.LevelId,
+            Title = this.Title,
+            IconHash = this.IconHash,
+            Description = this.Description,
+            Location = this.Location,
+            RootResource = this.RootResource,
+            PublishDate = this.PublishDate,
+            UpdateDate = this.UpdateDate,
+            MinPlayers = this.MinPlayers,
+            MaxPlayers = this.MaxPlayers,
+            EnforceMinMaxPlayers = this.EnforceMinMaxPlayers,
+            SameScreenGame = this.SameScreenGame,
+            SkillRewards = this.SkillRewards.ToArray(),
+            Publisher = publisher,
+        };
 
     public static IEnumerable<GameLevelResponse> FromOldList(IEnumerable<GameLevel> oldList) => oldList.Select(FromOld)!;
 
