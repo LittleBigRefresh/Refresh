@@ -20,7 +20,7 @@ public class AuthenticationEndpoints : EndpointGroup
         Ticket ticket;
         try
         {
-            ticket = Ticket.ReadFromStream(body);
+            ticket = Ticket.FromStream(body);
         }
         catch(Exception e)
         {
