@@ -19,13 +19,13 @@ public class MatchingApiEndpoints : EndpointGroup
 {
     [ApiV3Endpoint("rooms/username/{username}"), Authentication(false)]
     [DocSummary("Finds a room by a player's username")]
-    [DocError(typeof(ApiValidationError), ApiValidationError.UserMissingErrorWhen)]
+    [DocError(typeof(ApiNotFoundError), ApiNotFoundError.UserMissingErrorWhen)]
     [DocError(typeof(ApiNotFoundError), "The room could not be found")]
     public ApiResponse<ApiGameRoomResponse> GetRoomByUsername(RequestContext context, MatchService service, GameDatabaseContext database,
         [DocSummary("The username of the player")] string username)
     {
         GameUser? user = database.GetUserByUsername(username);
-        if (user == null) return ApiValidationError.UserMissingError;
+        if (user == null) return ApiNotFoundError.UserMissingError;
 
         GameRoom? room = service.GetRoomByPlayer(user);
         if(room == null) return ApiNotFoundError.Instance;
@@ -35,13 +35,13 @@ public class MatchingApiEndpoints : EndpointGroup
     
     [ApiV3Endpoint("rooms/uuid/{uuid}"), Authentication(false)]
     [DocSummary("Finds a room by a player's UUID")]
-    [DocError(typeof(ApiValidationError), ApiValidationError.UserMissingErrorWhen)]
+    [DocError(typeof(ApiNotFoundError), ApiNotFoundError.UserMissingErrorWhen)]
     [DocError(typeof(ApiNotFoundError), "The room could not be found")]
     public ApiResponse<ApiGameRoomResponse> GetRoomByUserUuid(RequestContext context, MatchService service, GameDatabaseContext database,
         [DocSummary("The UUID of the player")] string uuid)
     {
         GameUser? user = database.GetUserByUuid(uuid);
-        if (user == null) return ApiValidationError.UserMissingError;
+        if (user == null) return ApiNotFoundError.UserMissingError;
 
         GameRoom? room = service.GetRoomByPlayer(user);
         if(room == null) return ApiNotFoundError.Instance;

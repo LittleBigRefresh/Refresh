@@ -13,18 +13,6 @@ public class ApiValidationError : ApiError
     
     public const string IpAddressParseErrorWhen = "The IP address could not be parsed by the server";
     public static readonly ApiValidationError IpAddressParseError = new(IpAddressParseErrorWhen);
-    
-    public const string UserMissingErrorWhen = "The user could not be found";
-    public static readonly ApiValidationError UserMissingError = new(UserMissingErrorWhen);
-
-    public const string LevelMissingErrorWhen = "The level could not be found";
-    public static readonly ApiValidationError LevelMissingError = new(LevelMissingErrorWhen);
-    
-    public const string ScoreMissingErrorWhen = "The score could not be found";
-    public static readonly ApiValidationError ScoreMissingError = new(ScoreMissingErrorWhen);
-    
-    public const string PhotoMissingErrorWhen = "The photo could not be found";
-    public static readonly ApiValidationError PhotoMissingError = new(PhotoMissingErrorWhen);
 
     public const string NoPhotoDeletionPermissionErrorWhen = "You do not have permission to delete someone else's photo";
     public static readonly ApiValidationError NoPhotoDeletionPermissionError = new(NoPhotoDeletionPermissionErrorWhen);

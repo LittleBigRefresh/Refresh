@@ -8,7 +8,7 @@ namespace Refresh.GameServer.Configuration;
 [SuppressMessage("ReSharper", "RedundantDefaultMemberInitializer")]
 public class GameServerConfig : Config
 {
-    public override int CurrentConfigVersion => 3;
+    public override int CurrentConfigVersion => 4;
     public override int Version { get; set; } = 0;
 
     protected override void Migrate(int oldVer, dynamic oldConfig)
@@ -23,4 +23,5 @@ public class GameServerConfig : Config
     public AssetSafetyLevel MaximumAssetSafetyLevel { get; set; } = AssetSafetyLevel.Safe;
     public bool AllowUsersToUseIpAuthentication { get; set; } = false;
     public bool UseTicketVerification { get; set; } = true;
+    public bool RegistrationEnabled { get; set; } = true;
 }

@@ -5,6 +5,7 @@ using Bunkum.CustomHttpListener.Parsing;
 using Bunkum.HttpServer;
 using Bunkum.HttpServer.Endpoints;
 using Refresh.GameServer.Authentication;
+using Refresh.GameServer.Configuration;
 using Refresh.GameServer.Database;
 using Refresh.GameServer.Endpoints.ApiV3.ApiTypes;
 using Refresh.GameServer.Endpoints.ApiV3.ApiTypes.Errors;
@@ -75,10 +76,10 @@ public partial class AuthenticationApiEndpoints : EndpointGroup
         if (user == null) return new ApiAuthenticationError("The reset token is invalid");
 
         if (body.PasswordSha512.Length != 128 || !Sha512Regex().IsMatch(body.PasswordSha512))
-            return new ApiValidationError("Password is definitely not SHA512. Please hash the password - it'll work out better for both of us.");
+            return new ApiValidationError("Password is definitely not SHA512. Please hash the password.");
         
         string? passwordBcrypt = BC.HashPassword(body.PasswordSha512, WorkFactor);
-        if (passwordBcrypt == null) return new ApiInternalError("Could not hash the given password.");
+        if (passwordBcrypt == null) return new ApiInternalError("Could not BCrypt the given password.");
 
         database.SetUserPassword(user, passwordBcrypt);
         database.RevokeTokenByTokenData(body.ResetToken, TokenType.PasswordReset);
@@ -131,5 +132,32 @@ public partial class AuthenticationApiEndpoints : EndpointGroup
         database.DenyIpVerificationRequest(user, body.Trim());
         
         return new ApiOkResponse();
+    }
+
+    [ApiV3Endpoint("register", Method.Post)]
+    [DocSummary("Registers a new user.")]
+    [DocRequestBody(typeof(ApiRegisterRequest))]
+    public ApiResponse<IApiAuthenticationResponse> Register(RequestContext context, GameDatabaseContext database, ApiRegisterRequest body, GameServerConfig config)
+    {
+        if (!config.RegistrationEnabled)
+            return new ApiAuthenticationError("Registration is not enabled on this server.");
+            
+        if (body.PasswordSha512.Length != 128 || !Sha512Regex().IsMatch(body.PasswordSha512))
+            return new ApiValidationError("Password is definitely not SHA512. Please hash the password.");
+        
+        string? passwordBcrypt = BC.HashPassword(body.PasswordSha512, WorkFactor);
+        if (passwordBcrypt == null) return new ApiInternalError("Could not BCrypt the given password.");
+
+        GameUser user = database.CreateUser(body.Username);
+        database.SetUserPassword(user, passwordBcrypt);
+        
+        Token token = database.GenerateTokenForUser(user, TokenType.Api, TokenGame.Website, TokenPlatform.Website);
+
+        return new ApiAuthenticationResponse
+        {
+            TokenData = token.TokenData,
+            UserId = user.UserId.ToString(),
+            ExpiresAt = token.ExpiresAt,
+        };
     }
 }

@@ -19,14 +19,14 @@ public class LeaderboardApiEndpoints : EndpointGroup
     [DocUsesPageData, DocSummary("Gets a list of the top scores on a level.")]
     [DocQueryParam("showAll", "Whether or not to show all scores. If false, only users' best scores will be shown." +
                               "If true, all scores will be shown no matter what. False by default.")]
-    [DocError(typeof(ApiValidationError), ApiValidationError.LevelMissingErrorWhen)]
+    [DocError(typeof(ApiNotFoundError), ApiNotFoundError.LevelMissingErrorWhen)]
     [DocError(typeof(ApiValidationError), "The boolean 'showAll' could not be parsed by the server.")]
     public ApiListResponse<ApiGameScoreResponse> GetTopScoresForLevel(RequestContext context, GameDatabaseContext database,
         [DocSummary("The ID of the level")] int id,
         [DocSummary("The leaderboard more (aka the number of players, e.g. 2 for 2-player mode)")] int mode)
     {
         GameLevel? level = database.GetLevelById(id);
-        if (level == null) return ApiValidationError.LevelMissingError;
+        if (level == null) return ApiNotFoundError.LevelMissingError;
         
         (int skip, int count) = context.GetPageData(true);
 

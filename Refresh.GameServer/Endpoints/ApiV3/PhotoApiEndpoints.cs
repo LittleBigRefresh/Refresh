@@ -19,12 +19,12 @@ public class PhotoApiEndpoints : EndpointGroup
 {
     [ApiV3Endpoint("photos/{id}", Method.Delete)]
     [DocSummary("Deletes an uploaded photo")]
-    [DocError(typeof(ApiValidationError), ApiValidationError.PhotoMissingErrorWhen)]
+    [DocError(typeof(ApiNotFoundError), ApiNotFoundError.PhotoMissingErrorWhen)]
     [DocError(typeof(ApiValidationError), ApiValidationError.NoPhotoDeletionPermissionErrorWhen)]
     public ApiResponse<ApiEmptyResponse> DeletePhoto(RequestContext context, GameDatabaseContext database, GameUser user, int id)
     {
         GamePhoto? photo = database.GetPhotoById(id);
-        if (photo == null) return ApiValidationError.PhotoMissingError;
+        if (photo == null) return ApiNotFoundError.PhotoMissingError;
 
         if (photo.Publisher.UserId != user.UserId)
             return ApiValidationError.NoPhotoDeletionPermissionError;
