@@ -5,10 +5,11 @@ using Refresh.GameServer.Types.Assets;
 namespace Refresh.GameServer.Configuration;
 
 [SuppressMessage("ReSharper", "AutoPropertyCanBeMadeGetOnly.Global")]
+[SuppressMessage("ReSharper", "RedundantDefaultMemberInitializer")]
 public class GameServerConfig : Config
 {
-    public override int CurrentConfigVersion => 2;
-    public override int Version { get; set; }
+    public override int CurrentConfigVersion => 3;
+    public override int Version { get; set; } = 0;
 
     protected override void Migrate(int oldVer, dynamic oldConfig)
     {
@@ -20,4 +21,6 @@ public class GameServerConfig : Config
     public string LicenseText { get; set; } = "Welcome to Refresh!";
 
     public AssetSafetyLevel MaximumAssetSafetyLevel { get; set; } = AssetSafetyLevel.Safe;
+    public bool AllowUsersToUseIpAuthentication { get; set; } = false;
+    public bool UseTicketVerification { get; set; } = true;
 }

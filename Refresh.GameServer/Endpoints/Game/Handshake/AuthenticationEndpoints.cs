@@ -4,9 +4,13 @@ using Bunkum.HttpServer;
 using Bunkum.HttpServer.Endpoints;
 using Bunkum.HttpServer.Responses;
 using NPTicket;
+using NPTicket.Verification;
+using NPTicket.Verification.Keys;
 using Refresh.GameServer.Authentication;
+using Refresh.GameServer.Configuration;
 using Refresh.GameServer.Database;
 using Refresh.GameServer.Types.UserData;
+using Refresh.GameServer.Verification;
 
 namespace Refresh.GameServer.Endpoints.Game.Handshake;
 
@@ -15,7 +19,7 @@ public class AuthenticationEndpoints : EndpointGroup
     [GameEndpoint("login", Method.Post, ContentType.Xml)]
     [NullStatusCode(Forbidden)]
     [Authentication(false)]
-    public LoginResponse? Authenticate(RequestContext context, GameDatabaseContext database, Stream body)
+    public LoginResponse? Authenticate(RequestContext context, GameDatabaseContext database, Stream body, GameServerConfig config)
     {
         Ticket ticket;
         try
@@ -28,15 +32,25 @@ public class AuthenticationEndpoints : EndpointGroup
             return null;
         }
         
-        GameUser? user = database.GetUserByUsername(ticket.Username);
-        user ??= database.CreateUser(ticket.Username);
-
         TokenPlatform? platform = ticket.IssuerId switch
         {
             0x100 => TokenPlatform.PS3,
             0x33333333 => TokenPlatform.RPCS3,
             _ => null,
         };
+        
+        GameUser? user = database.GetUserByUsername(ticket.Username);
+
+        if (config.UseTicketVerification)
+        {
+            if (!VerifyTicket(context, (MemoryStream)body, ticket))
+            {
+                if (user != null) SendVerificationFailureNotification(database, user, config);
+                return null;
+            }
+        }
+        
+        user ??= database.CreateUser(ticket.Username);
 
         TokenGame? game = TokenGameUtility.FromTitleId(ticket.TitleId);
 
@@ -65,6 +79,49 @@ public class AuthenticationEndpoints : EndpointGroup
             TokenData = "MM_AUTH=" + token.TokenData,
             ServerBrand = "Refresh",
         };
+    }
+
+    private static bool VerifyTicket(RequestContext context, MemoryStream body, Ticket ticket)
+    {
+        ITicketSigningKey signingKey;
+
+        // Determine the correct key to use
+        if (ticket.IssuerId == 0x33333333)
+        {
+            context.Logger.LogDebug(BunkumContext.Authentication, "Using RPCN ticket key");
+            signingKey = RpcnSigningKey.Instance;
+        }
+        else
+        {
+            context.Logger.LogDebug(BunkumContext.Authentication, "Using PSN LBP ticket key");
+            signingKey = LbpSigningKey.Instance;
+        }
+            
+        // Pass this information into a new ticket verifier
+        // TODO: make this into a service?
+        TicketVerifier verifier = new(body.ToArray(), ticket, signingKey);
+        return verifier.IsTicketValid();
+    }
+
+    private static void SendVerificationFailureNotification(GameDatabaseContext database, GameUser user, GameServerConfig config)
+    {
+        const string failHeader = "The ticket could not be verified.";
+        string failReason = failHeader + '\n';
+
+        if (config.AllowUsersToUseIpAuthentication)
+        {
+            failReason +=
+                "This server allows IP authentication to be enabled, but your account doesn't have this enabled." +
+                "If this was you, enable IP authentication in settings.";
+        }
+        else
+        {
+            failReason += "This server does not allow IP authentication to be enabled, " +
+                          "so please make sure you are using a supported ticket server (e.g. PSN or RPCN.)\n" +
+                          "For more information, contact the server owner.";
+        }
+                    
+        database.AddLoginFailNotification(failReason, user);
     }
 
     /// <summary>
