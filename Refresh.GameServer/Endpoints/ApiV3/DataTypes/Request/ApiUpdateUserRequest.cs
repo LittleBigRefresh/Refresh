@@ -4,4 +4,5 @@ namespace Refresh.GameServer.Endpoints.ApiV3.DataTypes.Request;
 public class ApiUpdateUserRequest
 {
     public string? Description { get; set; }
+    public bool? AllowIpAuthentication { get; set; }
 }
