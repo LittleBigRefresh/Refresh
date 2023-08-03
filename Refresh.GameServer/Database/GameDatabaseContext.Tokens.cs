@@ -5,7 +5,7 @@ using Refresh.GameServer.Types.UserData;
 
 namespace Refresh.GameServer.Database;
 
-public partial class GameDatabaseContext
+public partial class GameDatabaseContext // Tokens
 {
     private const int DefaultCookieLength = 128;
     private const int MaxBase64Padding = 4;
@@ -110,4 +110,42 @@ public partial class GameDatabaseContext
             this._realm.Remove(token);
         });
     }
+
+    public void AddIpVerificationRequest(GameUser user, string ipAddress)
+    {
+        GameIpVerificationRequest request = new()
+        {
+            IpAddress = ipAddress,
+            CreatedAt = DateTimeOffset.Now,
+        };
+
+        this._realm.Write(() =>
+        {
+            user.IpVerificationRequests.Add(request);
+        });
+    }
+
+    public void SetApprovedIp(GameUser user, string ipAddress)
+    {
+        this._realm.Write(() =>
+        {
+            user.CurrentVerifiedIp = ipAddress;
+            user.IpVerificationRequests.Clear();
+        });
+    }
+
+    public void DenyIpVerificationRequest(GameUser user, string ipAddress)
+    {
+        IEnumerable<GameIpVerificationRequest> requests = user.IpVerificationRequests.Where(r => r.IpAddress == ipAddress);
+        this._realm.Write(() =>
+        {
+            foreach (GameIpVerificationRequest request in requests)
+            {
+                user.IpVerificationRequests.Remove(request);
+            }
+        });
+    }
+
+    public DatabaseList<GameIpVerificationRequest> GetIpVerificationRequestsForUser(GameUser user, int count, int skip) 
+        => new(user.IpVerificationRequests, skip, count);
 }

@@ -1,3 +1,4 @@
+using System.Net;
 using System.Text.RegularExpressions;
 using AttribDoc.Attributes;
 using Bunkum.CustomHttpListener.Parsing;
@@ -10,6 +11,7 @@ using Refresh.GameServer.Endpoints.ApiV3.ApiTypes.Errors;
 using Refresh.GameServer.Endpoints.ApiV3.DataTypes;
 using Refresh.GameServer.Endpoints.ApiV3.DataTypes.Request;
 using Refresh.GameServer.Endpoints.ApiV3.DataTypes.Response;
+using Refresh.GameServer.Extensions;
 using Refresh.GameServer.Types.UserData;
 
 namespace Refresh.GameServer.Endpoints.ApiV3;
@@ -89,6 +91,45 @@ public partial class AuthenticationApiEndpoints : EndpointGroup
     public ApiOkResponse RevokeThisToken(RequestContext context, GameDatabaseContext database, Token token)
     {
         database.RevokeToken(token);
+        return new ApiOkResponse();
+    }
+    
+    // IP Verification
+    [ApiV3Endpoint("verificationRequests")]
+    [DocSummary("Retrieves a list of IP addresses that have attempted to connect.")]
+    public ApiListResponse<ApiGameIpVerificationRequestResponse> GetVerificationRequests(RequestContext context, GameDatabaseContext database, GameUser user)
+    {
+        (int skip, int count) = context.GetPageData(true);
+
+        return DatabaseList<ApiGameIpVerificationRequestResponse>.FromOldList<ApiGameIpVerificationRequestResponse, GameIpVerificationRequest>
+                (database.GetIpVerificationRequestsForUser(user, count, skip));
+    }
+
+    [ApiV3Endpoint("verificationRequests/approve", Method.Put)]
+    [DocSummary("Approves a given IP, and clears all remaining verification requests. Send the IP in the body.")]
+    [DocError(typeof(ApiValidationError), ApiValidationError.IpAddressParseErrorWhen)]
+    [DocRequestBody("127.0.0.1")]
+    public ApiOkResponse ApproveVerificationRequest(RequestContext context, GameDatabaseContext database, GameUser user, string body)
+    {
+        bool parsed = IPAddress.TryParse(body, out _);
+        if (!parsed) return ApiValidationError.IpAddressParseError;
+
+        database.SetApprovedIp(user, body.Trim());
+        
+        return new ApiOkResponse();
+    }
+    
+    [ApiV3Endpoint("verificationRequests/deny", Method.Put)]
+    [DocSummary("Denies all verification requests matching a given IP. Send the IP in the body.")]
+    [DocError(typeof(ApiValidationError), ApiValidationError.IpAddressParseErrorWhen)]
+    [DocRequestBody("127.0.0.1")]
+    public ApiOkResponse DenyVerificationRequest(RequestContext context, GameDatabaseContext database, GameUser user, string body)
+    {
+        bool parsed = IPAddress.TryParse(body, out _);
+        if (!parsed) return ApiValidationError.IpAddressParseError;
+
+        database.SetApprovedIp(user, body.Trim());
+        
         return new ApiOkResponse();
     }
 }

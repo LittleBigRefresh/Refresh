@@ -46,9 +46,15 @@ public partial class GameUser : IRealmObject, IRateLimitUser
     
     [Backlink(nameof(GamePhotoSubject.User))]
     public IQueryable<GamePhotoSubject> PhotosWithMe { get; }
+    
+    public IList<GameIpVerificationRequest> IpVerificationRequests { get; }
     #nullable restore
 
     public string PlanetsHash { get; set; } = "0";
+
+    public bool AllowIpAuthentication { get; set; }
+    public string? CurrentVerifiedIp { get; set; }
+    
 
     public override string ToString() => $"{this.Username} ({this.UserId})";
 

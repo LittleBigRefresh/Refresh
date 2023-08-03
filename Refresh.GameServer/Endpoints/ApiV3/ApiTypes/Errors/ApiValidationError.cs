@@ -11,6 +11,9 @@ public class ApiValidationError : ApiError
     public const string NumberParseErrorWhen = "The number could not be parsed by the server";
     public static readonly ApiValidationError NumberParseError = new(NumberParseErrorWhen);
     
+    public const string IpAddressParseErrorWhen = "The IP address could not be parsed by the server";
+    public static readonly ApiValidationError IpAddressParseError = new(IpAddressParseErrorWhen);
+    
     public const string UserMissingErrorWhen = "The user could not be found";
     public static readonly ApiValidationError UserMissingError = new(UserMissingErrorWhen);
 

@@ -1,3 +1,4 @@
+using System.Net;
 using System.Xml.Serialization;
 using Bunkum.CustomHttpListener.Parsing;
 using Bunkum.HttpServer;
@@ -40,17 +41,29 @@ public class AuthenticationEndpoints : EndpointGroup
         };
         
         GameUser? user = database.GetUserByUsername(ticket.Username);
+        if (user == null)
+        {
+            if (config is { UseTicketVerification: false, AllowUsersToUseIpAuthentication: false })
+            {
+                // if no authentication methods are enabled, then just create a new user
+                user ??= database.CreateUser(ticket.Username);
+            }
+            else return null;
+        }
 
         if (config.UseTicketVerification)
         {
             if (!VerifyTicket(context, (MemoryStream)body, ticket))
             {
-                if (user != null) SendVerificationFailureNotification(database, user, config);
-                return null;
+                SendVerificationFailureNotification(database, user, config);
+                if(!config.AllowUsersToUseIpAuthentication) return null;
             }
         }
-        
-        user ??= database.CreateUser(ticket.Username);
+
+        if (config.AllowUsersToUseIpAuthentication)
+        {
+            if (!HandleIpAuthentication(context, user, database, !config.UseTicketVerification)) return null;
+        }
 
         TokenGame? game = TokenGameUtility.FromTitleId(ticket.TitleId);
 
@@ -103,6 +116,26 @@ public class AuthenticationEndpoints : EndpointGroup
         return verifier.IsTicketValid();
     }
 
+    private static bool HandleIpAuthentication(RequestContext context, GameUser user, GameDatabaseContext database, bool notify)
+    {
+        if (user.AllowIpAuthentication == false)
+        {
+            if (notify)
+            {
+                database.AddLoginFailNotification(
+                    "This server requires IP authentication to be enabled, but your account doesn't have this enabled. " +
+                    "If this was you, enable IP authentication in settings.", user);
+            }
+            return false;
+        }
+        
+        string address = ((IPEndPoint)context.RemoteEndpoint).Address.ToString();
+        if (address == user.CurrentVerifiedIp) return true;
+
+        database.AddIpVerificationRequest(user, address);
+        return false;
+    }
+
     private static void SendVerificationFailureNotification(GameDatabaseContext database, GameUser user, GameServerConfig config)
     {
         const string failHeader = "The ticket could not be verified.";
@@ -110,9 +143,12 @@ public class AuthenticationEndpoints : EndpointGroup
 
         if (config.AllowUsersToUseIpAuthentication)
         {
-            failReason +=
-                "This server allows IP authentication to be enabled, but your account doesn't have this enabled." +
-                "If this was you, enable IP authentication in settings.";
+            if (!user.AllowIpAuthentication)
+            {
+                failReason +=
+                    "This server allows IP authentication to be enabled, but your account doesn't have this enabled ." +
+                    "If this was you, enable IP authentication in settings.";
+            }
         }
         else
         {
