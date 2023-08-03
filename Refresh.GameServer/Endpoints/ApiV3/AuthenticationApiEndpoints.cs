@@ -134,7 +134,7 @@ public partial class AuthenticationApiEndpoints : EndpointGroup
         return new ApiOkResponse();
     }
 
-    [ApiV3Endpoint("register", Method.Post)]
+    [ApiV3Endpoint("register", Method.Post), Authentication(false)]
     [DocSummary("Registers a new user.")]
     [DocRequestBody(typeof(ApiRegisterRequest))]
     public ApiResponse<IApiAuthenticationResponse> Register(RequestContext context, GameDatabaseContext database, ApiRegisterRequest body, GameServerConfig config)
