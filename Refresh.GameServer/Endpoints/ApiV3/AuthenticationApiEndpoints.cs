@@ -128,7 +128,7 @@ public partial class AuthenticationApiEndpoints : EndpointGroup
         bool parsed = IPAddress.TryParse(body, out _);
         if (!parsed) return ApiValidationError.IpAddressParseError;
 
-        database.SetApprovedIp(user, body.Trim());
+        database.DenyIpVerificationRequest(user, body.Trim());
         
         return new ApiOkResponse();
     }
