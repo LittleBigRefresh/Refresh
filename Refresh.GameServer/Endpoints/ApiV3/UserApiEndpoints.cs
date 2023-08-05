@@ -45,9 +45,9 @@ public class UserApiEndpoints : EndpointGroup
     
     [ApiV3Endpoint("users/me", Method.Patch)]
     [DocSummary("Updates your profile with the given data")]
-    public ApiResponse<ApiGameUserResponse> UpdateUser(RequestContext context, GameDatabaseContext database, GameUser user, ApiUpdateUserRequest body)
+    public ApiResponse<ApiOwnGameUserResponse> UpdateUser(RequestContext context, GameDatabaseContext database, GameUser user, ApiUpdateUserRequest body)
     {
         database.UpdateUserData(user, body);
-        return ApiGameUserResponse.FromOld(user);
+        return ApiOwnGameUserResponse.FromOld(user);
     }
 }
