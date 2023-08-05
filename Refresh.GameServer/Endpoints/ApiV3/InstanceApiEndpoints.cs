@@ -24,7 +24,7 @@ public class InstanceApiEndpoints : EndpointGroup
     
     [ApiV3Endpoint("instance"), Authentication(false)]
     [DocSummary("Retrieves various information and metadata about the Refresh instance.")]
-    public ApiResponse<ApiInstanceResponse> GetInstanceInformation(RequestContext context, GameServerConfig config) 
+    public ApiResponse<ApiInstanceResponse> GetInstanceInformation(RequestContext context, GameServerConfig config, GameDatabaseContext database) 
         => new ApiInstanceResponse
         {
             InstanceName = config.InstanceName,
@@ -33,10 +33,12 @@ public class InstanceApiEndpoints : EndpointGroup
             SoftwareName = "Refresh",
             SoftwareVersion = "0.0.0", // TODO: Implement software version
             MaximumAssetSafetyLevel = config.MaximumAssetSafetyLevel,
-            #if DEBUG
+            Announcements = ApiGameAnnouncementResponse.FromOldList(database.GetAnnouncements()),
+
+#if DEBUG
             SoftwareType = "Debug",
-            #else
+#else
             SoftwareType = "Release",
-            #endif
+#endif
         };
 }

@@ -13,4 +13,6 @@ public class ApiInstanceResponse : IApiResponse
     
     public required bool RegistrationEnabled { get; set; }
     public required AssetSafetyLevel MaximumAssetSafetyLevel { get; set; }
+    
+    public required IEnumerable<ApiGameAnnouncementResponse> Announcements { get; set; }
 }

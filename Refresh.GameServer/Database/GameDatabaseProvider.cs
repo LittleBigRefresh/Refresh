@@ -19,7 +19,7 @@ namespace Refresh.GameServer.Database;
 
 public class GameDatabaseProvider : RealmDatabaseProvider<GameDatabaseContext>
 {
-    protected override ulong SchemaVersion => 61;
+    protected override ulong SchemaVersion => 62;
 
     protected override string Filename => "refreshGameServer.realm";
     
@@ -45,6 +45,7 @@ public class GameDatabaseProvider : RealmDatabaseProvider<GameDatabaseContext>
         typeof(GamePhoto),
         typeof(GamePhotoSubject),
         typeof(GameIpVerificationRequest),
+        typeof(GameAnnouncement),
         //grief report items
         typeof(GameReport),
         typeof(InfoBubble),

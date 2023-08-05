@@ -73,4 +73,22 @@ public partial class GameDatabaseContext // Notifications
             this._realm.Remove(notification);
         });
     }
+
+    public IEnumerable<GameAnnouncement> GetAnnouncements() => this._realm.All<GameAnnouncement>(); 
+    
+    public void AddAnnouncement(GameAnnouncement announcement)
+    {
+        this._realm.Write(() =>
+        {
+            this._realm.Add(announcement);
+        });
+    }
+    
+    public void DeleteAnnouncement(GameAnnouncement announcement)
+    {
+        this._realm.Write(() =>
+        {
+            this._realm.Remove(announcement);
+        });
+    }
 }
