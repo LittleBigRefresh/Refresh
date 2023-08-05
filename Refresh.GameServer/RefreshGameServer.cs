@@ -99,6 +99,7 @@ public class RefreshGameServer
             typeof(RealmDatabaseHealthCheck),
         });
         
+        this._server.AddService<RoleService>();
     }
 
     public Task StartAndBlockAsync()
