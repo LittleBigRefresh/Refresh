@@ -13,7 +13,7 @@ public partial class GameDatabaseContext // Levels
 {
     public void AddLevel(GameLevel level)
     {
-        if (level.Publisher == null) throw new ArgumentNullException(nameof(level.Publisher));
+        if (level.Publisher == null) throw new InvalidOperationException("Cannot create a level without a publisher");
 
         long timestamp = GetTimestampMilliseconds();
         this.AddSequentialObject(level, () =>
@@ -21,8 +21,6 @@ public partial class GameDatabaseContext // Levels
             level.PublishDate = timestamp;
             level.UpdateDate = timestamp;
         });
-
-        return;
     }
 
     public GameLevel? UpdateLevel(GameLevel level, GameUser user)
