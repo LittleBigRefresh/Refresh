@@ -87,12 +87,12 @@ public class GameDatabaseProvider : RealmDatabaseProvider<GameDatabaseContext>
     protected override void Migrate(Migration migration, ulong oldVersion)
     {
         // Get the current unix timestamp for when we add timestamps to objects
-        long timestampMilliseconds = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
+        long timestampMilliseconds = this._time.TimestampMilliseconds;
 
         // DO NOT USE FOR NEW MIGRATIONS! LBP almost never actually uses seconds for timestamps.
         // This is from a mistake made early in development where this was not understood by me.
         // Unless you are certain second timestamps are used, use the millisecond timestamps set above.
-        long timestampSeconds = timestampMilliseconds / 1000;
+        long timestampSeconds = this._time.TimestampSeconds;
 
         IQueryable<dynamic>? oldUsers = migration.OldRealm.DynamicApi.All("GameUser");
         IQueryable<GameUser>? newUsers = migration.NewRealm.All<GameUser>();
