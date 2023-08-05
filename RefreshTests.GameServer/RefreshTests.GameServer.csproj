@@ -40,4 +40,8 @@
         <PackageReference Include="NotEnoughLogs" Version="1.0.5" />
     </ItemGroup>
 
+    <ItemGroup>
+      <Folder Include="Extensions\" />
+    </ItemGroup>
+
 </Project>

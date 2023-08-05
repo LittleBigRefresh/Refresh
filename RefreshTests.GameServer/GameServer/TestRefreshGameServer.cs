@@ -12,9 +12,6 @@ public class TestRefreshGameServer : RefreshGameServer
     public TestRefreshGameServer(BunkumHttpListener listener, Func<GameDatabaseProvider> provider) : base(listener, provider, null, new InMemoryDataStore())
     {}
 
-    public BunkumHttpServer BunkumServer => this._server;
-    public GameDatabaseProvider DatabaseProvider => this._databaseProvider;
-
     protected override void SetupConfiguration()
     {
         this._server.UseConfig(new GameServerConfig());
@@ -23,5 +20,15 @@ public class TestRefreshGameServer : RefreshGameServer
     public override void Start()
     {
         this._server.Start(1);
+    }
+
+    protected override void SetupMiddlewares()
+    {
+        
+    }
+
+    protected override void SetupServices()
+    {
+        
     }
 }

@@ -9,7 +9,7 @@ public class AuthenticationTests : GameServerTest
     {
         using TestContext context = this.GetServer();
         
-        HttpResponseMessage unauthedRequest = await context.Http.GetAsync("/lbp/playersInPodCount");
+        HttpResponseMessage unauthedRequest = await context.Http.GetAsync("/lbp/eula");
         Assert.That(unauthedRequest.StatusCode, Is.EqualTo(Forbidden));
 
         HttpClient authedClient = context.GetAuthenticatedClient(TokenType.Game, out string tokenData);
@@ -18,7 +18,7 @@ public class AuthenticationTests : GameServerTest
         Assert.That(token, Is.Not.Null);
         Assert.That(token?.User, Is.Not.Null);
 
-        HttpResponseMessage authedRequest = await authedClient.GetAsync("/lbp/playersInPodCount");
+        HttpResponseMessage authedRequest = await authedClient.GetAsync("/lbp/eula");
         Assert.That(authedRequest.StatusCode, Is.EqualTo(OK));
     }
     
