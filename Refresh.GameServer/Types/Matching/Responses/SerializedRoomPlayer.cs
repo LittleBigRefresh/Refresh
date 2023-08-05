@@ -1,3 +1,4 @@
+using System.Diagnostics.CodeAnalysis;
 using Newtonsoft.Json;
 
 namespace Refresh.GameServer.Types.Matching.Responses;
@@ -16,6 +17,7 @@ namespace Refresh.GameServer.Types.Matching.Responses;
 [JsonObject(MemberSerialization.OptIn)]
 public class SerializedRoomPlayer
 {
+    [ExcludeFromCodeCoverage]
     public SerializedRoomPlayer() {}
 
     public SerializedRoomPlayer(string username, byte matchingRes)

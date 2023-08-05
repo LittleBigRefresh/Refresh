@@ -1,4 +1,5 @@
 using Bunkum.CustomHttpListener;
+using Bunkum.HttpServer;
 using Bunkum.HttpServer.Storage;
 using Refresh.GameServer;
 using Refresh.GameServer.Configuration;
@@ -10,6 +11,8 @@ public class TestRefreshGameServer : RefreshGameServer
 {
     public TestRefreshGameServer(BunkumHttpListener listener, Func<GameDatabaseProvider> provider) : base(listener, provider, null, new InMemoryDataStore())
     {}
+
+    public BunkumHttpServer Server => this._server;
 
     protected override void SetupConfiguration()
     {
