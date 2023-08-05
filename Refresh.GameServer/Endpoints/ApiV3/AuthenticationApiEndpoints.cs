@@ -13,6 +13,7 @@ using Refresh.GameServer.Endpoints.ApiV3.DataTypes;
 using Refresh.GameServer.Endpoints.ApiV3.DataTypes.Request;
 using Refresh.GameServer.Endpoints.ApiV3.DataTypes.Response;
 using Refresh.GameServer.Extensions;
+using Refresh.GameServer.Types.Roles;
 using Refresh.GameServer.Types.UserData;
 
 namespace Refresh.GameServer.Endpoints.ApiV3;
@@ -36,6 +37,12 @@ public partial class AuthenticationApiEndpoints : EndpointGroup
     {
         GameUser? user = database.GetUserByUsername(body.Username);
         if (user == null) return new ApiAuthenticationError("The username or password was incorrect.");
+
+        if (user.Role == GameUserRole.Banned)
+        {
+            // TODO: ban information
+            return new ApiAuthenticationError("You are banned. Please contact the server administrator for more information.");
+        }
 
         // if this is a legacy user, have them create a password on login
         if (user.PasswordBcrypt == null)

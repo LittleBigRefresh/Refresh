@@ -10,6 +10,7 @@ using NPTicket.Verification.Keys;
 using Refresh.GameServer.Authentication;
 using Refresh.GameServer.Configuration;
 using Refresh.GameServer.Database;
+using Refresh.GameServer.Types.Roles;
 using Refresh.GameServer.Types.UserData;
 using Refresh.GameServer.Verification;
 
@@ -49,6 +50,10 @@ public class AuthenticationEndpoints : EndpointGroup
                 user ??= database.CreateUser(ticket.Username);
             }
             else return null;
+        }
+        else if(user.Role == GameUserRole.Banned)
+        {
+            return null;
         }
 
         if (config.UseTicketVerification)

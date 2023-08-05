@@ -74,14 +74,26 @@ public partial class GameDatabaseContext // Notifications
         });
     }
 
-    public IEnumerable<GameAnnouncement> GetAnnouncements() => this._realm.All<GameAnnouncement>(); 
+    public IEnumerable<GameAnnouncement> GetAnnouncements() => this._realm.All<GameAnnouncement>();
     
-    public void AddAnnouncement(GameAnnouncement announcement)
+    public GameAnnouncement? GetAnnouncementById(ObjectId id) => this._realm.All<GameAnnouncement>().FirstOrDefault(a => a.AnnouncementId == id);
+    
+    public GameAnnouncement AddAnnouncement(string title, string text)
     {
+        GameAnnouncement announcement = new()
+        {
+            AnnouncementId = ObjectId.GenerateNewId(),
+            Title = title,
+            Text = text,
+            CreatedAt = DateTimeOffset.Now,
+        };
+        
         this._realm.Write(() =>
         {
             this._realm.Add(announcement);
         });
+
+        return announcement;
     }
     
     public void DeleteAnnouncement(GameAnnouncement announcement)
