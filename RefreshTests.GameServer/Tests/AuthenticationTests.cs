@@ -1,4 +1,6 @@
 using Refresh.GameServer.Authentication;
+using Refresh.GameServer.Database;
+using Refresh.GameServer.Types.UserData;
 
 namespace RefreshTests.GameServer.Tests;
 
@@ -45,5 +47,21 @@ public class AuthenticationTests : GameServerTest
             Assert.That(await response.Content.ReadAsStringAsync(), Contains.Substring(token!.User.UserId.ToString()));
             Assert.That(response.StatusCode, Is.EqualTo(OK));
         });
+    }
+
+    [Test]
+    public void TokensExpire()
+    {
+        using TestContext context = this.GetServer(false);
+        GameUser user = context.CreateUser();
+
+        const int expirySeconds = GameDatabaseContext.DefaultTokenExpirySeconds;
+        Token token = context.Database.GenerateTokenForUser(user, TokenType.Api, TokenGame.Website, TokenPlatform.Website, expirySeconds);
+        
+        Assert.That(context.Database.GetTokenFromTokenData(token.TokenData, TokenType.Api), Is.Not.Null);
+        context.Time.TimestampMilliseconds = expirySeconds * 1000;
+        Assert.That(context.Database.GetTokenFromTokenData(token.TokenData, TokenType.Api), Is.Not.Null);
+        context.Time.TimestampMilliseconds++;
+        Assert.That(context.Database.GetTokenFromTokenData(token.TokenData, TokenType.Api), Is.Null);
     }
 }
