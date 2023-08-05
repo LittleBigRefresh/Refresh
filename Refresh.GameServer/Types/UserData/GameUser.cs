@@ -6,6 +6,7 @@ using Bunkum.HttpServer.RateLimit;
 using Refresh.GameServer.Types.Levels;
 using Refresh.GameServer.Types.Photos;
 using Refresh.GameServer.Types.Relations;
+using Refresh.GameServer.Types.Roles;
 
 namespace Refresh.GameServer.Types.UserData;
 
@@ -55,6 +56,14 @@ public partial class GameUser : IRealmObject, IRateLimitUser
     public bool AllowIpAuthentication { get; set; }
     public string? CurrentVerifiedIp { get; set; }
     
+    [Ignored] public GameUserRole Role
+    {
+        get => (GameUserRole)this._Role;
+        set => this._Role = (byte)value;
+    }
+
+    // ReSharper disable once InconsistentNaming
+    internal byte _Role { get; set; }
 
     public override string ToString() => $"{this.Username} ({this.UserId})";
 

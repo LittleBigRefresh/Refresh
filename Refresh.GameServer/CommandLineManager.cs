@@ -29,6 +29,9 @@ internal class CommandLineManager
         [Option('d', "generate_docs", Required = false, HelpText = "Generate API V3 Documentation")]
         public bool GenerateDocumentation { get; set; }
         
+        [Option('a', "set_admin", Required = false, HelpText = "Give the user with the given username the Admin role")]
+        public string? SetAdmin { get; set; }
+        
         [Option('f', "force", Required = false, HelpText = "Force all operations to happen, skipping user consent")]
         public bool Force { get; set; }
     }
@@ -61,6 +64,11 @@ internal class CommandLineManager
             
             string json = JsonConvert.SerializeObject(service.Documentation, Formatting.Indented);
             File.WriteAllText(Path.Combine(Environment.CurrentDirectory, "apiDocumentation.json"), json);
+        }
+
+        if (options.SetAdmin != null)
+        {
+            this._server.SetAdminFromUsername(options.SetAdmin);
         }
     }
 }

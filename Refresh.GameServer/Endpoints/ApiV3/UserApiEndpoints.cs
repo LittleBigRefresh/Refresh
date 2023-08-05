@@ -39,8 +39,8 @@ public class UserApiEndpoints : EndpointGroup
     
     [ApiV3Endpoint("users/me")]
     [DocSummary("Returns your own user, provided you are authenticated")]
-    public ApiResponse<ApiGameUserResponse> GetMyUser(RequestContext context, GameUser user)
-        => ApiGameUserResponse.FromOld(user);
+    public ApiResponse<ApiOwnGameUserResponse> GetMyUser(RequestContext context, GameUser user)
+        => ApiOwnGameUserResponse.FromOld(user);
     
     [ApiV3Endpoint("users/me", Method.Patch)]
     [DocSummary("Updates your profile with the given data")]

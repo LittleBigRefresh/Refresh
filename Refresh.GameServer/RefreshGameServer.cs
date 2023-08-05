@@ -16,6 +16,7 @@ using Refresh.GameServer.Importing;
 using Refresh.GameServer.Middlewares;
 using Refresh.GameServer.Services;
 using Refresh.GameServer.Types.Levels.Categories;
+using Refresh.GameServer.Types.Roles;
 using Refresh.GameServer.Types.UserData;
 
 namespace Refresh.GameServer;
@@ -142,5 +143,15 @@ public class RefreshGameServer
         
         ImageImporter importer = new();
         importer.ImportFromDataStore(context, this._dataStore);
+    }
+
+    public void SetAdminFromUsername(string username)
+    {
+        using GameDatabaseContext context = this.InitializeDatabase();
+
+        GameUser? user = context.GetUserByUsername(username);
+        if (user == null) throw new InvalidOperationException("Cannot find the user " + username);
+
+        context.SetUserRole(user, GameUserRole.Admin);
     }
 }

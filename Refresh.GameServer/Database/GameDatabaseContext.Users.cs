@@ -2,6 +2,7 @@ using System.Reflection;
 using JetBrains.Annotations;
 using MongoDB.Bson;
 using Refresh.GameServer.Endpoints.ApiV3.DataTypes.Request;
+using Refresh.GameServer.Types.Roles;
 using Refresh.GameServer.Types.UserData;
 
 namespace Refresh.GameServer.Database;
@@ -96,6 +97,14 @@ public partial class GameDatabaseContext // Users
             foreach (long pinsAward in pinsUpdate.Awards) user.Pins.Awards.Add(pinsAward);
             foreach (long pinsAward in pinsUpdate.Progress) user.Pins.Progress.Add(pinsAward);
             foreach (long profilePins in pinsUpdate.ProfilePins) user.Pins.ProfilePins.Add(profilePins);
+        });
+    }
+
+    public void SetUserRole(GameUser user, GameUserRole role)
+    {
+        this._realm.Write(() =>
+        {
+            user.Role = role;
         });
     }
 }
