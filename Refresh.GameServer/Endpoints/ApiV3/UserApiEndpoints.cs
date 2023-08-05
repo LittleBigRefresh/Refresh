@@ -38,7 +38,7 @@ public class UserApiEndpoints : EndpointGroup
         return ApiGameUserResponse.FromOld(user);
     }
     
-    [ApiV3Endpoint("users/me")]
+    [ApiV3Endpoint("users/me"), MinimumRole(GameUserRole.Restricted)]
     [DocSummary("Returns your own user, provided you are authenticated")]
     public ApiResponse<ApiOwnGameUserResponse> GetMyUser(RequestContext context, GameUser user)
         => ApiOwnGameUserResponse.FromOld(user);

@@ -19,7 +19,7 @@ namespace Refresh.GameServer.Endpoints.ApiV3;
 
 public class NotificationApiEndpoints : EndpointGroup
 {
-    [ApiV3Endpoint("notifications")]
+    [ApiV3Endpoint("notifications"), MinimumRole(GameUserRole.Restricted)]
     [DocUsesPageData, DocSummary("Gets a list of notifications stored for the user")]
     public ApiListResponse<ApiGameNotificationResponse> GetNotifications(RequestContext context, GameUser user, GameDatabaseContext database)
     {
@@ -28,7 +28,7 @@ public class NotificationApiEndpoints : EndpointGroup
         return DatabaseList<ApiGameNotificationResponse>.FromOldList<ApiGameNotificationResponse, GameNotification>(notifications);
     }
 
-    [ApiV3Endpoint("notifications/{uuid}")]
+    [ApiV3Endpoint("notifications/{uuid}"), MinimumRole(GameUserRole.Restricted)]
     [DocSummary("Gets a specific notification for a user")]
     [DocError(typeof(ApiValidationError), ApiValidationError.ObjectIdParseErrorWhen)]
     [DocError(typeof(ApiNotFoundError), "The notification cannot be found")]
@@ -44,7 +44,7 @@ public class NotificationApiEndpoints : EndpointGroup
         return ApiGameNotificationResponse.FromOld(notification);
     }
     
-    [ApiV3Endpoint("notifications/{uuid}", Method.Delete)]
+    [ApiV3Endpoint("notifications/{uuid}", Method.Delete), MinimumRole(GameUserRole.Restricted)]
     [DocSummary("Clears an individual notification for a user")]
     [DocError(typeof(ApiValidationError), ApiValidationError.ObjectIdParseErrorWhen)]
     [DocError(typeof(ApiNotFoundError), "The notification cannot be found")]
@@ -61,7 +61,7 @@ public class NotificationApiEndpoints : EndpointGroup
         return new ApiOkResponse();
     }
     
-    [ApiV3Endpoint("notifications", Method.Delete)]
+    [ApiV3Endpoint("notifications", Method.Delete), MinimumRole(GameUserRole.Restricted)]
     [DocSummary("Clears all notifications stored for the user")]
     public ApiOkResponse ClearAllNotifications(RequestContext context, GameUser user, GameDatabaseContext database)
     {

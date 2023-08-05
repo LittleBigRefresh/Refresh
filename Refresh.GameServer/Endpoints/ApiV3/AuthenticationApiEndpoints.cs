@@ -94,7 +94,7 @@ public partial class AuthenticationApiEndpoints : EndpointGroup
         return new ApiOkResponse();
     }
 
-    [ApiV3Endpoint("logout", Method.Put)]
+    [ApiV3Endpoint("logout", Method.Put), MinimumRole(GameUserRole.Restricted)]
     [DocSummary("Tells the server to revoke the token used to make this request. Useful for logout behavior.")]
     public ApiOkResponse RevokeThisToken(RequestContext context, GameDatabaseContext database, Token token)
     {
@@ -103,7 +103,7 @@ public partial class AuthenticationApiEndpoints : EndpointGroup
     }
     
     // IP Verification
-    [ApiV3Endpoint("verificationRequests")]
+    [ApiV3Endpoint("verificationRequests"), MinimumRole(GameUserRole.Restricted)]
     [DocSummary("Retrieves a list of IP addresses that have attempted to connect.")]
     public ApiListResponse<ApiGameIpVerificationRequestResponse> GetVerificationRequests(RequestContext context, GameDatabaseContext database, GameUser user)
     {
