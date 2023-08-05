@@ -58,6 +58,8 @@ public partial class GameDatabaseContext // Photos
             this._realm.Remove(photo);
         });
     }
+
+    public int GetTotalPhotoCount() => this._realm.All<GamePhoto>().Count();
     
     [Pure]
     public DatabaseList<GamePhoto> GetRecentPhotos(int count, int skip) =>

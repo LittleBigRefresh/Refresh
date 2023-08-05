@@ -3,8 +3,9 @@ namespace Refresh.GameServer.Endpoints.ApiV3.DataTypes.Response;
 [JsonObject(NamingStrategyType = typeof(CamelCaseNamingStrategy))]
 public class ApiStatisticsResponse : IApiResponse
 {
-    public int TotalLevels { get; set; }
-    public int TotalUsers { get; set; }
-    public int CurrentRoomCount { get; set; }
-    public int CurrentIngamePlayersCount { get; set; }
+    public required int TotalLevels { get; set; }
+    public required int TotalUsers { get; set; }
+    public required int TotalPhotos { get; set; }
+    public required int CurrentRoomCount { get; set; }
+    public required int CurrentIngamePlayersCount { get; set; }
 }
