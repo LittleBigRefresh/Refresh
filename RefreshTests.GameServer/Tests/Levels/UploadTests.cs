@@ -111,4 +111,18 @@ public class UploadTests : GameServerTest
         
         Assert.That(updatedLevel, Is.Null);
     }
+
+    [Test]
+    public void CanDeleteLevel()
+    {
+        using TestContext context = this.GetServer(false);
+
+        GameLevel level = context.CreateLevel(context.CreateUser());
+        int id = level.LevelId;
+        
+        Assert.That(context.Database.GetLevelById(id), Is.Not.Null);
+        context.Database.DeleteLevel(level);
+        Assert.That(context.Database.GetLevelById(id), Is.Null);
+        
+    }
 }

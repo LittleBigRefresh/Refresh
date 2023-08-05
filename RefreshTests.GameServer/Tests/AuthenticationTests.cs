@@ -64,4 +64,22 @@ public class AuthenticationTests : GameServerTest
         context.Time.TimestampMilliseconds++;
         Assert.That(context.Database.GetTokenFromTokenData(token.TokenData, TokenType.Api), Is.Null);
     }
+
+    [Test]
+    public void DoesntGetTokenWithBadTokenData()
+    {
+        using TestContext context = this.GetServer(false);
+        
+        // make a token so that the test doesnt pass cause we have no tokens
+        context.Database.GenerateTokenForUser(context.CreateUser(), TokenType.Api, TokenGame.Website, TokenPlatform.Website);
+
+        Token? token = context.Database.GetTokenFromTokenData("bad token data", TokenType.Api);
+        GameUser? user = context.Database.GetUserFromTokenData("bad token data", TokenType.Api);
+        
+        Assert.Multiple(() =>
+        {
+            Assert.That(token, Is.Null);
+            Assert.That(user, Is.Null);
+        });
+    }
 }

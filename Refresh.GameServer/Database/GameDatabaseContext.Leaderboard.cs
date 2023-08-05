@@ -45,9 +45,9 @@ public partial class GameDatabaseContext // Leaderboard
     }
     
 
-    public IEnumerable<ScoreWithRank>? GetRankedScoresAroundScore(GameSubmittedScore score, int count)
+    public IEnumerable<ScoreWithRank> GetRankedScoresAroundScore(GameSubmittedScore score, int count)
     {
-        if (count % 2 != 1) throw new InvalidOperationException("ScoreType must be odd!");
+        if (count % 2 != 1) throw new ArgumentException("The number of scores must be odd.", nameof(count));
         
         // this is probably REALLY fucking slow, and i probably shouldn't be trusted with LINQ anymore
 
@@ -56,8 +56,6 @@ public partial class GameDatabaseContext // Leaderboard
             .OrderByDescending(s => s.Score)
             .AsEnumerable()
             .ToList();
-
-        if (!scores.Contains(score)) return null;
 
         scores = scores.DistinctBy(s => new ScoreLevelWithPlayer(s.Level, s.Players[0]))
             .ToList();

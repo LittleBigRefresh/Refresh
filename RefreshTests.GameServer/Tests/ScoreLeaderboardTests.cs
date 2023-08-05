@@ -37,7 +37,7 @@ public class ScoreLeaderboardTests : GameServerTest
     /// <param name="expectedIndex">The expected index of the submitted score</param>
     /// <param name="leaderboardCount">How many scores should be filled into the database</param>
     /// <param name="submittedScore">The number of points the score has</param>
-    private void ScoreSegmentTest(int count, int expectedIndex, int leaderboardCount, int submittedScore)
+    private void ScoreSegmentTest(int count, int expectedIndex, int leaderboardCount, int submittedScore, int expectedCount)
     {
         using TestContext context = this.GetServer();
         GameUser user = context.CreateUser();
@@ -52,6 +52,7 @@ public class ScoreLeaderboardTests : GameServerTest
         
         Assert.Multiple(() =>
         {
+            Assert.That(scores, Has.Count.EqualTo(expectedCount));
             Assert.That(scores.IndexOf(score.ScoreId), Is.EqualTo(expectedIndex));
             Assert.That(scores[expectedIndex], Is.EqualTo(score.ScoreId));
         });
@@ -63,14 +64,14 @@ public class ScoreLeaderboardTests : GameServerTest
         const int count = 5;
         const int expectedIndex = count / 2;
 
-        this.ScoreSegmentTest(count, expectedIndex, 25, 8);
+        this.ScoreSegmentTest(count, expectedIndex, 25, 8, 5);
     }
     
     [Test]
     public void SegmentsIfLessThanCountScore()
     {
-        this.ScoreSegmentTest(5, 0, 4, 6);
-        this.ScoreSegmentTest(5, 2, 4, 1);
+        this.ScoreSegmentTest(5, 0, 3, 6, 4);
+        this.ScoreSegmentTest(5, 2, 3, 1, 4);
     }
 
     [Test]
@@ -91,5 +92,15 @@ public class ScoreLeaderboardTests : GameServerTest
             Assert.That(context.Database.GetTopScoresForLevel(level, 1, 0, 1).Items, Does.Not.Contain(score2));
             Assert.That(context.Database.GetTopScoresForLevel(level, 1, 0, 2).Items, Does.Not.Contain(score1));
         });
+    }
+
+    [Test]
+    public void FailsWithInvalidNumber()
+    {
+        using TestContext context = this.GetServer(false);
+        GameUser user = context.CreateUser();
+        GameSubmittedScore score = context.SubmitScore(0, 1, context.CreateLevel(user), user);
+        
+        Assert.That(() => context.Database.GetRankedScoresAroundScore(score, 2), Throws.ArgumentException);
     }
 }
