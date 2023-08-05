@@ -1,6 +1,7 @@
 using System.Diagnostics.CodeAnalysis;
 using Realms;
 using Bunkum.RealmDatabase;
+using Refresh.GameServer.Time;
 
 namespace Refresh.GameServer.Database;
 
@@ -8,6 +9,18 @@ namespace Refresh.GameServer.Database;
 public partial class GameDatabaseContext : RealmDatabaseContext
 {
     private static readonly object IdLock = new();
+
+    private readonly IDateTimeProvider _time;
+
+    public GameDatabaseContext()
+    {
+        this._time = new SystemDateTimeProvider();
+    }
+
+    public GameDatabaseContext(IDateTimeProvider time)
+    {
+        this._time = time;
+    }
 
     // ReSharper disable once SuggestBaseTypeForParameter
     private void AddSequentialObject<T>(T obj, IList<T>? list, Action? writtenCallback = null) where T : IRealmObject, ISequentialId
@@ -42,6 +55,4 @@ public partial class GameDatabaseContext : RealmDatabaseContext
     
     private void AddSequentialObject<T>(T obj) where T : IRealmObject, ISequentialId 
         => this.AddSequentialObject(obj, null, null);
-
-    private static long GetTimestampMilliseconds() => DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
 }

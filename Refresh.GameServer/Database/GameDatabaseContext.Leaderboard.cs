@@ -16,7 +16,7 @@ public partial class GameDatabaseContext // Leaderboard
             ScoreType = score.ScoreType,
             Level = level,
             Players = { user },
-            ScoreSubmitted = DateTimeOffset.Now,
+            ScoreSubmitted = this._time.Now,
         };
 
         this._realm.Write(() =>

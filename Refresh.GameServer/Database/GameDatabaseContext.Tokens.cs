@@ -45,8 +45,8 @@ public partial class GameDatabaseContext // Tokens
             TokenType = type,
             TokenGame = game,
             TokenPlatform = platform,
-            ExpiresAt = DateTimeOffset.Now.AddSeconds(tokenExpirySeconds),
-            LoginDate = DateTimeOffset.Now,
+            ExpiresAt = this._time.Now.AddSeconds(tokenExpirySeconds),
+            LoginDate = this._time.Now,
         };
 
         this._realm.Write(() =>
@@ -67,7 +67,7 @@ public partial class GameDatabaseContext // Tokens
         if (token == null) return null;
 
         // ReSharper disable once InvertIf
-        if (token.ExpiresAt < DateTimeOffset.Now)
+        if (token.ExpiresAt < this._time.Now)
         {
             this.RevokeToken(token);
             return null;
@@ -122,7 +122,7 @@ public partial class GameDatabaseContext // Tokens
         GameIpVerificationRequest request = new()
         {
             IpAddress = ipAddress,
-            CreatedAt = DateTimeOffset.Now,
+            CreatedAt = this._time.Now,
         };
 
         this._realm.Write(() =>

@@ -15,7 +15,7 @@ public partial class GameDatabaseContext // Levels
     {
         if (level.Publisher == null) throw new InvalidOperationException("Cannot create a level without a publisher");
 
-        long timestamp = GetTimestampMilliseconds();
+        long timestamp = this._time.TimestampMilliseconds;
         this.AddSequentialObject(level, () =>
         {
             level.PublishDate = timestamp;
@@ -47,7 +47,7 @@ public partial class GameDatabaseContext // Levels
             oldSlot.Publisher = user;
             
             oldSlot.PublishDate = oldDate;
-            oldSlot.UpdateDate = GetTimestampMilliseconds();
+            oldSlot.UpdateDate = this._time.TimestampMilliseconds;
         });
 
         return oldSlot;

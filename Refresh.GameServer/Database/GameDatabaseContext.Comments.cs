@@ -11,7 +11,7 @@ public partial class GameDatabaseContext // Comments
         {
             Author = author,
             Content = content,
-            Timestamp = GetTimestampMilliseconds(),
+            Timestamp = this._time.TimestampMilliseconds,
         };
         
         this.AddSequentialObject(comment, profile.ProfileComments);

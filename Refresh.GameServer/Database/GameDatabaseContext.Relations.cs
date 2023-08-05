@@ -204,7 +204,7 @@ public partial class GameDatabaseContext // Relations
                 Level = level,
                 User = user,
                 RatingType = type,
-                Timestamp = DateTimeOffset.Now,
+                Timestamp = this._time.Now,
             };
 
             this._realm.Write(() => this._realm.Add(rating));
@@ -214,7 +214,7 @@ public partial class GameDatabaseContext // Relations
         this._realm.Write(() =>
         {
             rating.RatingType = type;
-            rating.Timestamp = DateTimeOffset.Now;
+            rating.Timestamp = this._time.Now;
         });
         return true;
     }
@@ -229,7 +229,7 @@ public partial class GameDatabaseContext // Relations
         {
             Level = level,
             User = user,
-            Timestamp = GetTimestampMilliseconds(),
+            Timestamp = this._time.TimestampMilliseconds,
         };
         
         UniquePlayLevelRelation? uniqueRelation = this._realm.All<UniquePlayLevelRelation>()
@@ -244,7 +244,7 @@ public partial class GameDatabaseContext // Relations
             {
                 Level = level,
                 User = user,
-                Timestamp = GetTimestampMilliseconds(),
+                Timestamp = this._time.TimestampMilliseconds,
             });
         });
 

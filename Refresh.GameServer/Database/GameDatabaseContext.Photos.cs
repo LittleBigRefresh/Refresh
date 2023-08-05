@@ -24,7 +24,7 @@ public partial class GameDatabaseContext // Photos
             LevelId = photo.Level.LevelId,
 
             TakenAt = DateTimeOffset.FromUnixTimeSeconds(photo.Timestamp),
-            PublishedAt = DateTimeOffset.Now,
+            PublishedAt = this._time.Now,
         };
 
         if (photo.Level.Type == "user") 
