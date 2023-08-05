@@ -1,10 +1,12 @@
 using Bunkum.CustomHttpListener.Listeners.Direct;
 using Refresh.GameServer.Authentication;
 using Refresh.GameServer.Database;
+using Refresh.GameServer.Time;
 using Refresh.GameServer.Types;
 using Refresh.GameServer.Types.Levels;
 using Refresh.GameServer.Types.UserData;
 using Refresh.GameServer.Types.UserData.Leaderboard;
+using RefreshTests.GameServer.Time;
 
 namespace RefreshTests.GameServer;
 
@@ -13,14 +15,16 @@ public class TestContext : IDisposable
     public Lazy<TestRefreshGameServer> Server { get; }
     public GameDatabaseContext Database { get; }
     public HttpClient Http { get; }
+    public MockDateTimeProvider Time { get; }
     private DirectHttpListener Listener { get; }
     
-    public TestContext(Lazy<TestRefreshGameServer> server, GameDatabaseContext database, HttpClient http, DirectHttpListener listener)
+    public TestContext(Lazy<TestRefreshGameServer> server, GameDatabaseContext database, HttpClient http, DirectHttpListener listener, MockDateTimeProvider time)
     {
         this.Server = server;
         this.Database = database;
         this.Http = http;
         this.Listener = listener;
+        this.Time = time;
     }
 
     private int _users;

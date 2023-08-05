@@ -5,6 +5,8 @@ using Refresh.GameServer.Types.Comments;
 using Refresh.GameServer.Types.Levels;
 using Refresh.GameServer.Types.UserData;
 using Bunkum.RealmDatabase;
+using JetBrains.Annotations;
+using Refresh.GameServer.Time;
 using Refresh.GameServer.Types.Activity;
 using Refresh.GameServer.Types.Assets;
 using Refresh.GameServer.Types.Levels.SkillRewards;
@@ -20,6 +22,19 @@ namespace Refresh.GameServer.Database;
 
 public class GameDatabaseProvider : RealmDatabaseProvider<GameDatabaseContext>
 {
+    private readonly IDateTimeProvider _time;
+
+    [UsedImplicitly]
+    public GameDatabaseProvider()
+    {
+        this._time = new SystemDateTimeProvider();
+    }
+
+    protected GameDatabaseProvider(IDateTimeProvider time)
+    {
+        this._time = time;
+    }
+
     protected override ulong SchemaVersion => 63;
 
     protected override string Filename => "refreshGameServer.realm";
@@ -62,6 +77,11 @@ public class GameDatabaseProvider : RealmDatabaseProvider<GameDatabaseContext>
     {
         using GameDatabaseContext context = this.GetContext();
         _ = context.GetTotalLevelCount();
+    }
+
+    protected override GameDatabaseContext CreateContext()
+    {
+        return new GameDatabaseContext(this._time);
     }
 
     protected override void Migrate(Migration migration, ulong oldVersion)
