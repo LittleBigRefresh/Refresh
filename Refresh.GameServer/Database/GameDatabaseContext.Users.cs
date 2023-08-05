@@ -106,5 +106,7 @@ public partial class GameDatabaseContext // Users
         {
             user.Role = role;
         });
+
+        if (role == GameUserRole.Banned) this.RevokeAllTokensForUser(user);
     }
 }

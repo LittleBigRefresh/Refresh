@@ -1,6 +1,7 @@
 using System.Security.Cryptography;
 using JetBrains.Annotations;
 using Refresh.GameServer.Authentication;
+using Refresh.GameServer.Types.Roles;
 using Refresh.GameServer.Types.UserData;
 
 namespace Refresh.GameServer.Database;
@@ -68,7 +69,7 @@ public partial class GameDatabaseContext // Tokens
         // ReSharper disable once InvertIf
         if (token.ExpiresAt < DateTimeOffset.Now)
         {
-            this._realm.Write(() => this._realm.Remove(token));
+            this.RevokeToken(token);
             return null;
         }
 
@@ -95,10 +96,7 @@ public partial class GameDatabaseContext // Tokens
         Token? token = this._realm.All<Token>().FirstOrDefault(t => t.TokenData == tokenData && t._TokenType == (int)type);
         if (token == null) return false;
 
-        this._realm.Write(() =>
-        {
-            this._realm.Remove(token);
-        });
+        this.RevokeToken(token);
 
         return true;
     }
@@ -108,6 +106,14 @@ public partial class GameDatabaseContext // Tokens
         this._realm.Write(() =>
         {
             this._realm.Remove(token);
+        });
+    }
+
+    public void RevokeAllTokensForUser(GameUser user)
+    {
+        this._realm.Write(() =>
+        {
+            this._realm.RemoveRange(this._realm.All<Token>().Where(t => t.User == user));
         });
     }
 
