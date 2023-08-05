@@ -72,7 +72,6 @@ public class RefreshGameServer
         this._server.AddMiddleware<ApiV2GoneMiddleware>();
         this._server.AddMiddleware<LegacyAdapterMiddleware>();
         this._server.AddMiddleware<WebsiteMiddleware>();
-        this._server.AddMiddleware<NotFoundLogMiddleware>();
         this._server.AddMiddleware<DigestMiddleware>();
         this._server.AddMiddleware<CrossOriginMiddleware>();
     }
