@@ -4,7 +4,7 @@ using Refresh.GameServer.Types.Levels;
 using Refresh.GameServer.Types.UserData;
 using Refresh.GameServer.Types.UserData.Leaderboard;
 
-namespace RefreshTests.GameServer.Tests;
+namespace RefreshTests.GameServer.Tests.Levels;
 
 public class ScoreLeaderboardTests : GameServerTest
 {

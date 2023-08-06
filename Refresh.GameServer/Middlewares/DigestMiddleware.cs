@@ -13,7 +13,7 @@ public class DigestMiddleware : IMiddleware
     // Length was taken from PS3 and PS4 digest keys
     private const string DigestKey = "CustomServerDigest";
 
-    private string CalculateDigest(string url, Stream body, string auth)
+    public static string CalculateDigest(string url, Stream body, string auth)
     {
         using MemoryStream ms = new();
         
@@ -41,9 +41,9 @@ public class DigestMiddleware : IMiddleware
     private bool VerifyDigestRequest(ListenerContext context)
     {
         string url = context.Uri.AbsolutePath;
-        string auth = $"{context.Cookies["MM_AUTH"] ?? string.Empty}";
+        string auth = context.Cookies["MM_AUTH"] ?? string.Empty;
     
-        string digestResponse = this.CalculateDigest(url, context.InputStream, auth);
+        string digestResponse = CalculateDigest(url, context.InputStream, auth);
     
         string digestHeader = !url.StartsWith("/lbp/upload/") ? "X-Digest-A" : "X-Digest-B";
         string clientDigest = context.RequestHeaders[digestHeader] ?? string.Empty;
@@ -58,9 +58,9 @@ public class DigestMiddleware : IMiddleware
     private void SetDigestResponse(ListenerContext context)
     {
         string url = context.Uri.AbsolutePath;
-        string auth = $"{context.Cookies["MM_AUTH"] ?? string.Empty}";
+        string auth = context.Cookies["MM_AUTH"] ?? string.Empty;
     
-        string digestResponse = this.CalculateDigest(url, context.ResponseStream, auth);
+        string digestResponse = CalculateDigest(url, context.ResponseStream, auth);
         
         context.ResponseHeaders["X-Digest-A"] = digestResponse;
     }
