@@ -9,7 +9,7 @@ public class ApiV3EndpointAttribute : EndpointAttribute
 {
     public const string BaseRoute = "/api/v3/";
     
-    public string RouteWithParameters { get; set; }
+    public string RouteWithParameters { get; }
 
     public ApiV3EndpointAttribute(string route, Method method = Method.Get, ContentType contentType = ContentType.Json)
         : base(BaseRoute + route, method, contentType)

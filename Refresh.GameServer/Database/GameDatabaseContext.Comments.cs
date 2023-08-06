@@ -5,7 +5,7 @@ namespace Refresh.GameServer.Database;
 
 public partial class GameDatabaseContext // Comments
 {
-    public void PostCommentToProfile(GameUser profile, GameUser author, string content)
+    public GameComment PostCommentToProfile(GameUser profile, GameUser author, string content)
     {
         GameComment comment = new()
         {
@@ -15,6 +15,7 @@ public partial class GameDatabaseContext // Comments
         };
         
         this.AddSequentialObject(comment, profile.ProfileComments);
+        return comment;
     }
 
     public IEnumerable<GameComment> GetProfileComments(GameUser profile, int count, int skip) =>
