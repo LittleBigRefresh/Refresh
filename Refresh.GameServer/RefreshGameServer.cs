@@ -7,6 +7,9 @@ using Bunkum.HttpServer.Authentication;
 using Bunkum.HttpServer.RateLimit;
 using Bunkum.HttpServer.Storage;
 using Bunkum.RealmDatabase;
+using NotEnoughLogs;
+using NotEnoughLogs.Loggers;
+using Realms.Logging;
 using Refresh.GameServer.Authentication;
 using Refresh.GameServer.Configuration;
 using Refresh.GameServer.Database;
@@ -18,14 +21,18 @@ using Refresh.GameServer.Services;
 using Refresh.GameServer.Types.Levels.Categories;
 using Refresh.GameServer.Types.Roles;
 using Refresh.GameServer.Types.UserData;
+using Refresh.GameServer.Workers;
 
 namespace Refresh.GameServer;
 
 [SuppressMessage("ReSharper", "InconsistentNaming")]
 public class RefreshGameServer
 {
+    protected readonly LoggerContainer<RefreshContext> _logger;
     protected readonly BunkumHttpServer _server;
-    protected GameDatabaseProvider _databaseProvider;
+    protected readonly WorkerManager _workerManager;
+    
+    protected readonly GameDatabaseProvider _databaseProvider;
     protected readonly IDataStore _dataStore;
 
     public RefreshGameServer(
@@ -39,9 +46,15 @@ public class RefreshGameServer
         authProvider ??= new GameAuthenticationProvider();
         dataStore ??= new FileSystemDataStore();
 
+        this._logger = new LoggerContainer<RefreshContext>();
+        this._logger.RegisterLogger(new ConsoleLogger());
+        this._logger.LogDebug(RefreshContext.Startup, "Successfully initialized " + this.GetType().Name);
+        
         this._databaseProvider = databaseProvider.Invoke();
         this._dataStore = dataStore;
 
+        this._workerManager = new WorkerManager(this._logger, this._dataStore, this._databaseProvider);
+        
         this._server = listener == null ? new BunkumHttpServer() : new BunkumHttpServer(listener);
         
         this._server.Initialize = () =>
@@ -101,19 +114,16 @@ public class RefreshGameServer
         this._server.AddService<RoleService>();
     }
 
-    public Task StartAndBlockAsync()
-    {
-        return this._server.StartAndBlockAsync();
-    }
-
     public virtual void Start()
     {
         this._server.Start();
+        this._workerManager.Start();
     }
 
     public void Stop()
     {
         this._server.Stop();
+        this._workerManager.Stop();
     }
 
     private GameDatabaseContext InitializeDatabase()
