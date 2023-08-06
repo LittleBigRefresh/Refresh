@@ -1,6 +1,6 @@
 using Refresh.GameServer.Types.Photos;
 
-namespace RefreshTests.GameServer.Tests;
+namespace RefreshTests.GameServer.Tests.Parsing;
 
 public class PhotoBoundsTests
 {
