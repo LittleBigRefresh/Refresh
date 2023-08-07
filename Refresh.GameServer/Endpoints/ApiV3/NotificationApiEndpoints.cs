@@ -68,28 +68,4 @@ public class NotificationApiEndpoints : EndpointGroup
         database.DeleteNotificationsByUser(user);
         return new ApiOkResponse();
     }
-
-    [ApiV3Endpoint("admin/announcements", Method.Post), MinimumRole(GameUserRole.Admin)]
-    [DocSummary("Creates an announcement that shows up in the Instance API endpoint")]
-    public ApiResponse<ApiGameAnnouncementResponse> CreateAnnouncement(RequestContext context, GameDatabaseContext database, ApiGameAnnouncementRequest body)
-    {
-        GameAnnouncement announcement = database.AddAnnouncement(body.Title, body.Text);
-        return ApiGameAnnouncementResponse.FromOld(announcement);
-    }
-
-    [ApiV3Endpoint("admin/announcements/{idStr}", Method.Delete), MinimumRole(GameUserRole.Admin)]
-    [DocError(typeof(ApiValidationError), ApiValidationError.ObjectIdParseErrorWhen)]
-    [DocError(typeof(ApiNotFoundError), "The announcement could not be found")]
-    [DocSummary("Removes an announcement")]
-    public ApiOkResponse RemoveAnnouncement(RequestContext context, GameDatabaseContext database, string idStr)
-    {
-        bool parsed = ObjectId.TryParse(idStr, out ObjectId id);
-        if (!parsed) return ApiValidationError.ObjectIdParseError;
-
-        GameAnnouncement? announcement = database.GetAnnouncementById(id);
-        if (announcement == null) return ApiNotFoundError.Instance;
-
-        database.DeleteAnnouncement(announcement);
-        return new ApiOkResponse();
-    }
 }

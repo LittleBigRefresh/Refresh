@@ -102,10 +102,10 @@ public partial class GameDatabaseContext // Users
 
     public void SetUserRole(GameUser user, GameUserRole role)
     {
-        if(role == GameUserRole.Banned) throw new InvalidOperationException("Cannot ban a user with this method. Please use {nameof(BanUser)}().");
+        if(role == GameUserRole.Banned) throw new InvalidOperationException($"Cannot ban a user with this method. Please use {nameof(this.BanUser)}().");
         this._realm.Write(() =>
         {
-            if (user.Role == GameUserRole.Banned)
+            if (user.Role is GameUserRole.Banned or GameUserRole.Restricted)
             {
                 user.BanReason = null;
                 user.BanExpiryDate = null;
@@ -113,7 +113,6 @@ public partial class GameDatabaseContext // Users
             
             user.Role = role;
         });
-
     }
 
     private void PunishUser(GameUser user, string reason, DateTimeOffset expiryDate, GameUserRole role)
