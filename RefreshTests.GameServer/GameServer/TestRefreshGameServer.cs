@@ -1,6 +1,7 @@
 using Bunkum.CustomHttpListener;
 using Bunkum.HttpServer;
 using Bunkum.HttpServer.Storage;
+using NotEnoughLogs;
 using Refresh.GameServer;
 using Refresh.GameServer.Configuration;
 using Refresh.GameServer.Database;
@@ -13,6 +14,7 @@ public class TestRefreshGameServer : RefreshGameServer
     {}
 
     public BunkumHttpServer Server => this._server;
+    public LoggerContainer<RefreshContext> Logger => this._logger;
 
     protected override void SetupConfiguration()
     {

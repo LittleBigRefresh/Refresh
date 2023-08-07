@@ -116,16 +116,24 @@ public partial class GameDatabaseContext // Users
 
     }
 
-    public void BanUser(GameUser user, string reason, DateTimeOffset expiryDate)
+    private void PunishUser(GameUser user, string reason, DateTimeOffset expiryDate, GameUserRole role)
     {
         this._realm.Write(() =>
         {
-            user.Role = GameUserRole.Banned;
+            user.Role = role;
             user.BanReason = reason;
             user.BanExpiryDate = expiryDate;
         });
+    }
+
+    public void BanUser(GameUser user, string reason, DateTimeOffset expiryDate)
+    {
+        this.PunishUser(user, reason, expiryDate, GameUserRole.Banned);
         this.RevokeAllTokensForUser(user);
     }
+
+    public void RestrictUser(GameUser user, string reason, DateTimeOffset expiryDate) 
+        => this.PunishUser(user, reason, expiryDate, GameUserRole.Restricted);
 
     private bool IsUserPunished(GameUser user, GameUserRole role)
     {
@@ -138,6 +146,11 @@ public partial class GameDatabaseContext // Users
     public bool IsUserBanned(GameUser user) => this.IsUserPunished(user, GameUserRole.Banned);
     public bool IsUserRestricted(GameUser user) => this.IsUserPunished(user, GameUserRole.Restricted);
 
-    public DatabaseList<GameUser> GetAllUsersWithRole(GameUserRole role) 
-        => new(this._realm.All<GameUser>().Where(u => u._Role == (byte)role));
+    public DatabaseList<GameUser> GetAllUsersWithRole(GameUserRole role)
+    {
+        // for some stupid reason, we have to do the byte conversion here or realm won't work correctly.
+        byte roleByte = (byte)role;
+        
+        return new DatabaseList<GameUser>(this._realm.All<GameUser>().Where(u => u._Role == roleByte));
+    }
 }
