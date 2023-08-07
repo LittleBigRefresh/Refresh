@@ -3,6 +3,7 @@ using System.Text.RegularExpressions;
 using AttribDoc.Attributes;
 using Bunkum.CustomHttpListener.Parsing;
 using Bunkum.HttpServer;
+using Bunkum.HttpServer.Configuration;
 using Bunkum.HttpServer.Endpoints;
 using Refresh.GameServer.Authentication;
 using Refresh.GameServer.Configuration;
@@ -32,8 +33,8 @@ public partial class AuthenticationApiEndpoints : EndpointGroup
     [GeneratedRegex("^[a-f0-9]{128}$")]
     private static partial Regex Sha512Regex();
 
-    [ApiV3Endpoint("login", Method.Post), Authentication(false)]
-    public ApiResponse<IApiAuthenticationResponse> Authenticate(RequestContext context, GameDatabaseContext database, ApiAuthenticationRequest body)
+    [ApiV3Endpoint("login", Method.Post), Authentication(false), AllowDuringMaintenance]
+    public ApiResponse<IApiAuthenticationResponse> Authenticate(RequestContext context, GameDatabaseContext database, ApiAuthenticationRequest body, GameServerConfig config)
     {
         GameUser? user = database.GetUserByUsername(body.Username);
         if (user == null) return new ApiAuthenticationError("The username or password was incorrect.");
@@ -43,6 +44,11 @@ public partial class AuthenticationApiEndpoints : EndpointGroup
             return new ApiAuthenticationError($"You are banned until {user.BanExpiryDate.ToString()}. " +
                                               $"Please contact the server administrator for more information.\n" +
                                               $"Reason: {user.BanReason}");
+        }
+
+        if (config.MaintenanceMode && user.Role != GameUserRole.Admin)
+        {
+            return new ApiAuthenticationError("The server is currently in maintenance mode, so it is only accessible for administrators. Check back later.");
         }
 
         // if this is a legacy user, have them create a password on login

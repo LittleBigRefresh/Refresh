@@ -1,16 +1,15 @@
 using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
-using System.Runtime.CompilerServices;
 using Bunkum.CustomHttpListener;
 using Bunkum.AutoDiscover.Extensions;
 using Bunkum.HttpServer;
 using Bunkum.HttpServer.Authentication;
+using Bunkum.HttpServer.Configuration;
 using Bunkum.HttpServer.RateLimit;
 using Bunkum.HttpServer.Storage;
 using Bunkum.RealmDatabase;
 using NotEnoughLogs;
 using NotEnoughLogs.Loggers;
-using Realms.Logging;
 using Refresh.GameServer.Authentication;
 using Refresh.GameServer.Configuration;
 using Refresh.GameServer.Database;
@@ -36,6 +35,7 @@ public class RefreshGameServer
     
     protected readonly GameDatabaseProvider _databaseProvider;
     protected readonly IDataStore _dataStore;
+    protected GameServerConfig? _config;
 
     public RefreshGameServer(
         BunkumHttpListener? listener = null,
@@ -45,7 +45,6 @@ public class RefreshGameServer
     )
     {
         databaseProvider ??= () => new GameDatabaseProvider();
-        authProvider ??= new GameAuthenticationProvider();
         dataStore ??= new FileSystemDataStore();
 
         this._logger = new LoggerContainer<RefreshContext>();
@@ -64,6 +63,9 @@ public class RefreshGameServer
             this._workerManager?.Stop();
             this._workerManager = new WorkerManager(this._logger, this._dataStore, provider);
             
+            this.SetupConfiguration();
+            authProvider ??= new GameAuthenticationProvider(this._config!);
+            
             this.InjectBaseServices(provider, authProvider, dataStore);
             this.Initialize();
         };
@@ -71,15 +73,14 @@ public class RefreshGameServer
 
     private void InjectBaseServices(GameDatabaseProvider databaseProvider, IAuthenticationProvider<GameUser, Token> authProvider, IDataStore dataStore)
     {
-        this._server.AddAuthenticationService(authProvider, true);
         this._server.UseDatabaseProvider(databaseProvider);
+        this._server.AddAuthenticationService(authProvider, true);
         this._server.AddStorageService(dataStore);
     }
 
     private void Initialize()
     {
         this.SetupServices();
-        this.SetupConfiguration();
         this.SetupMiddlewares();
         this.SetupWorkers();
         
@@ -97,7 +98,10 @@ public class RefreshGameServer
 
     protected virtual void SetupConfiguration()
     {
-        this._server.UseJsonConfig<GameServerConfig>("refreshGameServer.json");
+        GameServerConfig config = Config.LoadFromFile<GameServerConfig>("refreshGameServer.json", this._server.Logger);
+        this._config = config;
+        
+        this._server.UseConfig(config);
     }
 
     protected virtual void SetupServices()
@@ -122,19 +126,25 @@ public class RefreshGameServer
 
     protected virtual void SetupWorkers()
     {
-        this._workerManager.AddWorker<PunishmentExpiryWorker>();
+        this._workerManager?.AddWorker<PunishmentExpiryWorker>();
     }
 
     public virtual void Start()
     {
         this._server.Start();
-        this._workerManager.Start();
+        this._workerManager?.Start();
+
+        if (this._config!.MaintenanceMode)
+        {
+            this._logger.LogWarning(RefreshContext.Startup, "The server is currently in maintenance mode! " +
+                                                            "Only administrators will be able to log in and interact with the server.");
+        }
     }
 
     public void Stop()
     {
         this._server.Stop();
-        this._workerManager.Stop();
+        this._workerManager?.Stop();
     }
 
     private GameDatabaseContext InitializeDatabase()

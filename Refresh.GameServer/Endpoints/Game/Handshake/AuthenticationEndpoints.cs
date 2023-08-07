@@ -18,7 +18,7 @@ namespace Refresh.GameServer.Endpoints.Game.Handshake;
 
 public class AuthenticationEndpoints : EndpointGroup
 {
-    [GameEndpoint("login", Method.Post, ContentType.Xml)]
+    [GameEndpoint("login", Method.Post, ContentType.Xml), AllowDuringMaintenance]
     [NullStatusCode(Forbidden)]
     [Authentication(false)]
     public LoginResponse? Authenticate(RequestContext context, GameDatabaseContext database, Stream body, GameServerConfig config)
@@ -52,9 +52,10 @@ public class AuthenticationEndpoints : EndpointGroup
             else return null;
         }
         else if(user.Role == GameUserRole.Banned)
-        {
             return null;
-        }
+
+        if (config.MaintenanceMode && user.Role != GameUserRole.Admin)
+            return null;
 
         if (config.UseTicketVerification)
         {

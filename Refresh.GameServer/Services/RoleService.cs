@@ -6,6 +6,7 @@ using Bunkum.HttpServer.Endpoints;
 using Bunkum.HttpServer.Responses;
 using Bunkum.HttpServer.Services;
 using NotEnoughLogs;
+using Refresh.GameServer.Configuration;
 using Refresh.GameServer.Endpoints;
 using Refresh.GameServer.Types.Roles;
 using Refresh.GameServer.Types.UserData;
@@ -18,13 +19,15 @@ namespace Refresh.GameServer.Services;
 public class RoleService : Service
 {
     private readonly AuthenticationService _authService;
+    private readonly GameServerConfig _config;
     
-    internal RoleService(AuthenticationService authService, LoggerContainer<BunkumContext> logger) : base(logger)
+    internal RoleService(AuthenticationService authService, GameServerConfig config, LoggerContainer<BunkumContext> logger) : base(logger)
     {
         this._authService = authService;
+        this._config = config;
     }
 
-    public override Response? OnRequestHandled(ListenerContext context, MethodInfo method, Lazy<IDatabaseContext> database)
+    private Response? OnNormalRequestHandled(ListenerContext context, MemberInfo method, Lazy<IDatabaseContext> database)
     {
         AuthenticationAttribute? authAttrib = method.GetCustomAttribute<AuthenticationAttribute>();
         if (!(authAttrib?.Required ?? true)) return null;
@@ -40,5 +43,28 @@ public class RoleService : Service
             return Unauthorized;
 
         return null;
+    }
+
+    private Response? OnMaintenanceModeRequestHandled(ListenerContext context, MemberInfo method, Lazy<IDatabaseContext> database)
+    {
+        if (method.GetCustomAttribute<AllowDuringMaintenanceAttribute>() != null)
+            return this.OnNormalRequestHandled(context, method, database);
+
+        GameUser? user = (GameUser?)this._authService.AuthenticateUser(context, database);
+        if (user == null) return Forbidden;
+
+        // If user isn't an admin, then stop the request here, ignoring all
+        if (user.Role != GameUserRole.Admin)
+            return Forbidden;
+
+        return null;
+    }
+
+    public override Response? OnRequestHandled(ListenerContext context, MethodInfo method, Lazy<IDatabaseContext> database)
+    {
+        if (this._config.MaintenanceMode)
+            return this.OnMaintenanceModeRequestHandled(context, method, database);
+        
+        return this.OnNormalRequestHandled(context, method, database);
     }
 }

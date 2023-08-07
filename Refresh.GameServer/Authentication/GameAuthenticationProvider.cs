@@ -4,17 +4,33 @@ using Refresh.GameServer.Database;
 using Refresh.GameServer.Types.UserData;
 using Bunkum.HttpServer.Authentication;
 using Bunkum.HttpServer.Database;
+using Refresh.GameServer.Configuration;
+using Refresh.GameServer.Types.Roles;
 
 namespace Refresh.GameServer.Authentication;
 
 public class GameAuthenticationProvider : IAuthenticationProvider<GameUser, Token>
 {
+    private readonly GameServerConfig _config;
+
+    public GameAuthenticationProvider(GameServerConfig config)
+    {
+        this._config = config;
+    }
+
     public GameUser? AuthenticateUser(ListenerContext request, Lazy<IDatabaseContext> database)
     {
         GameUser? user = this.AuthenticateToken(request, database)?.User;
         if (user == null) return null;
 
         user.RateLimitUserId = user.UserId;
+        
+        // don't allow non-admins to authenticate during maintenance mode.
+        // technically, this check isn't here for token but this is okay since
+        // we don't actually receive tokens in endpoints (except during logout, aka token revocation)
+        if (this._config.MaintenanceMode && user.Role != GameUserRole.Admin)
+            return null;
+        
         return user;
     }
 

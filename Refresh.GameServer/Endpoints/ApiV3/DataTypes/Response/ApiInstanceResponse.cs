@@ -15,4 +15,6 @@ public class ApiInstanceResponse : IApiResponse
     public required AssetSafetyLevel MaximumAssetSafetyLevel { get; set; }
     
     public required IEnumerable<ApiGameAnnouncementResponse> Announcements { get; set; }
+    
+    public required bool MaintenanceModeEnabled { get; set; }
 }

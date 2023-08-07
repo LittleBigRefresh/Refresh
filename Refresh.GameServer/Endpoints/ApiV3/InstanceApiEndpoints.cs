@@ -23,7 +23,7 @@ public class InstanceApiEndpoints : EndpointGroup
             CurrentIngamePlayersCount = match.TotalPlayers,
         };
     
-    [ApiV3Endpoint("instance"), Authentication(false)]
+    [ApiV3Endpoint("instance"), Authentication(false), AllowDuringMaintenance]
     [DocSummary("Retrieves various information and metadata about the Refresh instance.")]
     public ApiResponse<ApiInstanceResponse> GetInstanceInformation(RequestContext context, GameServerConfig config, GameDatabaseContext database) 
         => new ApiInstanceResponse
@@ -35,6 +35,7 @@ public class InstanceApiEndpoints : EndpointGroup
             SoftwareVersion = "0.0.0", // TODO: Implement software version
             MaximumAssetSafetyLevel = config.MaximumAssetSafetyLevel,
             Announcements = ApiGameAnnouncementResponse.FromOldList(database.GetAnnouncements()),
+            MaintenanceModeEnabled = config.MaintenanceMode,
 
 #if DEBUG
             SoftwareType = "Debug",
