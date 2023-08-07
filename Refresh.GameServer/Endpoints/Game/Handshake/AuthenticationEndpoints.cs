@@ -57,16 +57,18 @@ public class AuthenticationEndpoints : EndpointGroup
         if (config.MaintenanceMode && user.Role != GameUserRole.Admin)
             return null;
 
+        bool ticketVerified = false;
         if (config.UseTicketVerification)
         {
-            if (!VerifyTicket(context, (MemoryStream)body, ticket))
+            ticketVerified = VerifyTicket(context, (MemoryStream)body, ticket);
+            if (!ticketVerified)
             {
                 SendVerificationFailureNotification(database, user, config);
                 if(!config.AllowUsersToUseIpAuthentication) return null;
             }
         }
-
-        if (config.AllowUsersToUseIpAuthentication)
+        
+        if (config.AllowUsersToUseIpAuthentication && !ticketVerified)
         {
             if (!HandleIpAuthentication(context, user, database, !config.UseTicketVerification)) return null;
         }
