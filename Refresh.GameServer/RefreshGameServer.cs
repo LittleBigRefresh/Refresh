@@ -1,5 +1,6 @@
 using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
+using System.Runtime.CompilerServices;
 using Bunkum.CustomHttpListener;
 using Bunkum.AutoDiscover.Extensions;
 using Bunkum.HttpServer;
@@ -29,8 +30,9 @@ namespace Refresh.GameServer;
 public class RefreshGameServer
 {
     protected readonly LoggerContainer<RefreshContext> _logger;
+    
     protected readonly BunkumHttpServer _server;
-    protected readonly WorkerManager _workerManager;
+    protected WorkerManager? _workerManager;
     
     protected readonly GameDatabaseProvider _databaseProvider;
     protected readonly IDataStore _dataStore;
@@ -52,14 +54,17 @@ public class RefreshGameServer
         
         this._databaseProvider = databaseProvider.Invoke();
         this._dataStore = dataStore;
-
-        this._workerManager = new WorkerManager(this._logger, this._dataStore, this._databaseProvider);
         
         this._server = listener == null ? new BunkumHttpServer() : new BunkumHttpServer(listener);
         
         this._server.Initialize = () =>
         {
-            this.InjectBaseServices(databaseProvider.Invoke(), authProvider, dataStore);
+            GameDatabaseProvider provider = databaseProvider.Invoke();
+            
+            this._workerManager?.Stop();
+            this._workerManager = new WorkerManager(this._logger, this._dataStore, provider);
+            
+            this.InjectBaseServices(provider, authProvider, dataStore);
             this.Initialize();
         };
     }
@@ -76,6 +81,7 @@ public class RefreshGameServer
         this.SetupServices();
         this.SetupConfiguration();
         this.SetupMiddlewares();
+        this.SetupWorkers();
         
         this._server.DiscoverEndpointsFromAssembly(Assembly.GetExecutingAssembly());
     }
@@ -112,6 +118,11 @@ public class RefreshGameServer
         });
         
         this._server.AddService<RoleService>();
+    }
+
+    protected virtual void SetupWorkers()
+    {
+        this._workerManager.AddWorker<BanExpiryWorker>();
     }
 
     public virtual void Start()

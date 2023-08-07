@@ -102,11 +102,39 @@ public partial class GameDatabaseContext // Users
 
     public void SetUserRole(GameUser user, GameUserRole role)
     {
+        if(role == GameUserRole.Banned) throw new InvalidOperationException("Cannot ban a user with this method. Please use {nameof(BanUser)}().");
         this._realm.Write(() =>
         {
+            if (user.Role == GameUserRole.Banned)
+            {
+                user.BanReason = null;
+                user.BanExpiryDate = null;
+            };
+            
             user.Role = role;
         });
 
-        if (role == GameUserRole.Banned) this.RevokeAllTokensForUser(user);
     }
+
+    public void BanUser(GameUser user, string reason, DateTimeOffset expiryDate)
+    {
+        this._realm.Write(() =>
+        {
+            user.Role = GameUserRole.Banned;
+            user.BanReason = reason;
+            user.BanExpiryDate = expiryDate;
+        });
+        this.RevokeAllTokensForUser(user);
+    }
+
+    public bool IsUserBanned(GameUser user)
+    {
+        if (user.Role != GameUserRole.Banned) return false;
+        if (user.BanExpiryDate == null) return false;
+        
+        return user.BanExpiryDate >= this._time.Now;
+    }
+
+    public DatabaseList<GameUser> GetAllUsersWithRole(GameUserRole role) 
+        => new(this._realm.All<GameUser>().Where(u => u._Role == (byte)role));
 }

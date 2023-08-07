@@ -7,6 +7,11 @@ namespace Refresh.GameServer.Workers;
 public interface IWorker
 {
     /// <summary>
+    /// How often to perform work, in milliseconds
+    /// </summary>
+    public int WorkInterval { get; }
+    
+    /// <summary>
     /// Instructs the worker to do work.
     /// </summary>
     /// <param name="logger">A Refresh logger, able to be operated by the worker.</param>

@@ -40,8 +40,9 @@ public partial class AuthenticationApiEndpoints : EndpointGroup
 
         if (user.Role == GameUserRole.Banned)
         {
-            // TODO: ban information
-            return new ApiAuthenticationError("You are banned. Please contact the server administrator for more information.");
+            return new ApiAuthenticationError($"You are banned until {user.BanExpiryDate.ToString()}. " +
+                                              $"Please contact the server administrator for more information.\n" +
+                                              $"Reason: {user.BanReason}");
         }
 
         // if this is a legacy user, have them create a password on login

@@ -18,9 +18,11 @@ public class WorkerManager
         this._logger = logger;
     }
 
-    private readonly List<IWorker> _workers = new();
-    private bool _threadShouldRun = false;
     private Thread? _thread = null;
+    private bool _threadShouldRun = false;
+
+    private readonly List<IWorker> _workers = new();
+    private readonly Dictionary<IWorker, long> _lastWorkTimestamps = new();
 
     public void AddWorker<TWorker>() where TWorker : IWorker, new()
     {
@@ -33,6 +35,18 @@ public class WorkerManager
         bool didWork = false;
         foreach (IWorker worker in this._workers)
         {
+            if (this._lastWorkTimestamps.TryGetValue(worker, out long lastWork))
+            {
+                long now = DateTimeOffset.Now.ToUnixTimeMilliseconds();
+                if(now - lastWork < worker.WorkInterval) continue;
+                
+                this._lastWorkTimestamps[worker] = now;
+            }
+            else
+            {
+                this._lastWorkTimestamps.Add(worker, 0);
+            }
+            
             bool workerDidWork = worker.DoWork(this._logger, this._dataStore, this._databaseProvider.GetContext());
             if (workerDidWork) didWork = true;
         }

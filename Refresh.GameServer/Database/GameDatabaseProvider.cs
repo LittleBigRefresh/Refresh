@@ -5,7 +5,6 @@ using Refresh.GameServer.Types.Comments;
 using Refresh.GameServer.Types.Levels;
 using Refresh.GameServer.Types.UserData;
 using Bunkum.RealmDatabase;
-using JetBrains.Annotations;
 using Refresh.GameServer.Time;
 using Refresh.GameServer.Types.Activity;
 using Refresh.GameServer.Types.Assets;
@@ -13,7 +12,6 @@ using Refresh.GameServer.Types.Levels.SkillRewards;
 using Refresh.GameServer.Types.Notifications;
 using Refresh.GameServer.Types.Relations;
 using Refresh.GameServer.Types.Report;
-using Refresh.GameServer.Types.Roles;
 using Refresh.GameServer.Types.UserData.Leaderboard;
 using GamePhoto = Refresh.GameServer.Types.Photos.GamePhoto;
 using GamePhotoSubject = Refresh.GameServer.Types.Photos.GamePhotoSubject;
@@ -23,8 +21,7 @@ namespace Refresh.GameServer.Database;
 public class GameDatabaseProvider : RealmDatabaseProvider<GameDatabaseContext>
 {
     private readonly IDateTimeProvider _time;
-
-    [UsedImplicitly]
+    
     public GameDatabaseProvider()
     {
         this._time = new SystemDateTimeProvider();
@@ -35,7 +32,7 @@ public class GameDatabaseProvider : RealmDatabaseProvider<GameDatabaseContext>
         this._time = time;
     }
 
-    protected override ulong SchemaVersion => 63;
+    protected override ulong SchemaVersion => 66;
 
     protected override string Filename => "refreshGameServer.realm";
     
