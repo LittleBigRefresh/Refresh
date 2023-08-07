@@ -44,7 +44,7 @@ public class AdminUserApiEndpoints : EndpointGroup
     public ApiOkResponse BanByUsername(RequestContext context, GameDatabaseContext database, string username, ApiPunishUserRequest body) 
         => BanUser(database.GetUserByUsername(username), database, body);
     
-    [ApiV3Endpoint("admin/users/name/{uuid}/ban", Method.Post), MinimumRole(GameUserRole.Admin)]
+    [ApiV3Endpoint("admin/users/uuid/{uuid}/ban", Method.Post), MinimumRole(GameUserRole.Admin)]
     [DocSummary("Bans a user for the specified reason until the given date.")]
     [DocError(typeof(ApiNotFoundError), ApiNotFoundError.UserMissingErrorWhen)]
     [DocRequestBody(typeof(ApiPunishUserRequest))]
@@ -58,7 +58,7 @@ public class AdminUserApiEndpoints : EndpointGroup
     public ApiOkResponse RestrictByUsername(RequestContext context, GameDatabaseContext database, string username, ApiPunishUserRequest body) 
         => RestrictUser(database.GetUserByUsername(username), database, body);
     
-    [ApiV3Endpoint("admin/users/name/{uuid}/restrict", Method.Post), MinimumRole(GameUserRole.Admin)]
+    [ApiV3Endpoint("admin/users/uuid/{uuid}/restrict", Method.Post), MinimumRole(GameUserRole.Admin)]
     [DocSummary("Restricts a user for the specified reason until the given date.")]
     [DocError(typeof(ApiNotFoundError), ApiNotFoundError.UserMissingErrorWhen)]
     [DocRequestBody(typeof(ApiPunishUserRequest))]
@@ -71,7 +71,7 @@ public class AdminUserApiEndpoints : EndpointGroup
     public ApiOkResponse PardonByUsername(RequestContext context, GameDatabaseContext database, string username) 
         => PardonUser(database.GetUserByUsername(username), database);
     
-    [ApiV3Endpoint("admin/users/name/{uuid}/pardon", Method.Post), MinimumRole(GameUserRole.Admin)]
+    [ApiV3Endpoint("admin/users/uuid/{uuid}/pardon", Method.Post), MinimumRole(GameUserRole.Admin)]
     [DocSummary("Pardons all punishments for the given user.")]
     [DocError(typeof(ApiNotFoundError), ApiNotFoundError.UserMissingErrorWhen)]
     public ApiOkResponse PardonByUuid(RequestContext context, GameDatabaseContext database, string uuid) 
