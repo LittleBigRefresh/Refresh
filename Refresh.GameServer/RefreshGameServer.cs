@@ -122,7 +122,7 @@ public class RefreshGameServer
 
     protected virtual void SetupWorkers()
     {
-        this._workerManager.AddWorker<BanExpiryWorker>();
+        this._workerManager.AddWorker<PunishmentExpiryWorker>();
     }
 
     public virtual void Start()

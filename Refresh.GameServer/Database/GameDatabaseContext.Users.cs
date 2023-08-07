@@ -127,13 +127,16 @@ public partial class GameDatabaseContext // Users
         this.RevokeAllTokensForUser(user);
     }
 
-    public bool IsUserBanned(GameUser user)
+    private bool IsUserPunished(GameUser user, GameUserRole role)
     {
-        if (user.Role != GameUserRole.Banned) return false;
+        if (user.Role != role) return false;
         if (user.BanExpiryDate == null) return false;
         
         return user.BanExpiryDate >= this._time.Now;
     }
+
+    public bool IsUserBanned(GameUser user) => this.IsUserPunished(user, GameUserRole.Banned);
+    public bool IsUserRestricted(GameUser user) => this.IsUserPunished(user, GameUserRole.Restricted);
 
     public DatabaseList<GameUser> GetAllUsersWithRole(GameUserRole role) 
         => new(this._realm.All<GameUser>().Where(u => u._Role == (byte)role));
