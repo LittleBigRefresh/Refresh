@@ -72,6 +72,8 @@ public class LegacyApiEndpoints : EndpointGroup
             },
             CurrentPlatform = 1,
             CurrentVersion = 1,
+            LastLogin = user.LastLoginDate.ToUnixTimeMilliseconds(),
+            LastLogout = user.LastLoginDate.ToUnixTimeMilliseconds() + 1,
         };
     }
 }

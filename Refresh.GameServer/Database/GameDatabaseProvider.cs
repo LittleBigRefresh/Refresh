@@ -33,7 +33,7 @@ public class GameDatabaseProvider : RealmDatabaseProvider<GameDatabaseContext>
         this._time = time;
     }
 
-    protected override ulong SchemaVersion => 68;
+    protected override ulong SchemaVersion => 69;
 
     protected override string Filename => "refreshGameServer.realm";
     
@@ -131,6 +131,9 @@ public class GameDatabaseProvider : RealmDatabaseProvider<GameDatabaseContext>
             
             // In version 67, users switched to dates to store their join date
             if (oldVersion < 67) newUser.JoinDate = DateTimeOffset.FromUnixTimeMilliseconds(oldUser.JoinDate);
+            
+            // In version 69 (nice), users were given last login dates. For now, we'll set that to now.
+            if(oldVersion < 69 /*nice*/) newUser.LastLoginDate = DateTimeOffset.Now;
         }
 
         IQueryable<dynamic>? oldLevels = migration.OldRealm.DynamicApi.All("GameLevel");
