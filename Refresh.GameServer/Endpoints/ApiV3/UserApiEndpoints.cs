@@ -40,14 +40,14 @@ public class UserApiEndpoints : EndpointGroup
     
     [ApiV3Endpoint("users/me"), MinimumRole(GameUserRole.Restricted)]
     [DocSummary("Returns your own user, provided you are authenticated")]
-    public ApiResponse<ApiOwnGameUserResponse> GetMyUser(RequestContext context, GameUser user)
-        => ApiOwnGameUserResponse.FromOld(user);
+    public ApiResponse<ApiExtendedGameUserResponse> GetMyUser(RequestContext context, GameUser user)
+        => ApiExtendedGameUserResponse.FromOld(user);
     
     [ApiV3Endpoint("users/me", Method.Patch)]
     [DocSummary("Updates your profile with the given data")]
-    public ApiResponse<ApiOwnGameUserResponse> UpdateUser(RequestContext context, GameDatabaseContext database, GameUser user, ApiUpdateUserRequest body)
+    public ApiResponse<ApiExtendedGameUserResponse> UpdateUser(RequestContext context, GameDatabaseContext database, GameUser user, ApiUpdateUserRequest body)
     {
         database.UpdateUserData(user, body);
-        return ApiOwnGameUserResponse.FromOld(user);
+        return ApiExtendedGameUserResponse.FromOld(user);
     }
 }

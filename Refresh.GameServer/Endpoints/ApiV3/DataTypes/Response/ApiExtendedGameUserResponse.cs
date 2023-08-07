@@ -4,8 +4,11 @@ using Refresh.GameServer.Types.UserData;
 
 namespace Refresh.GameServer.Endpoints.ApiV3.DataTypes.Response;
 
+/// <summary>
+/// A user with full information, like current role, ban status, etc.
+/// </summary>
 [JsonObject(NamingStrategyType = typeof(CamelCaseNamingStrategy))]
-public class ApiOwnGameUserResponse : IApiResponse, IDataConvertableFrom<ApiOwnGameUserResponse, GameUser>
+public class ApiExtendedGameUserResponse : IApiResponse, IDataConvertableFrom<ApiExtendedGameUserResponse, GameUser>
 {
     public required string UserId { get; set; }
     public required string Username { get; set; }
@@ -17,12 +20,15 @@ public class ApiOwnGameUserResponse : IApiResponse, IDataConvertableFrom<ApiOwnG
     public required bool AllowIpAuthentication { get; set; }
     public required GameUserRole Role { get; set; }
     
+    public required string? BanReason { get; set; }
+    public required DateTimeOffset? BanExpiryDate { get; set; }
+    
     [ContractAnnotation("null => null; notnull => notnull")]
-    public static ApiOwnGameUserResponse? FromOld(GameUser? user)
+    public static ApiExtendedGameUserResponse? FromOld(GameUser? user)
     {
         if (user == null) return null;
         
-        return new ApiOwnGameUserResponse
+        return new ApiExtendedGameUserResponse
         {
             UserId = user.UserId.ToString()!,
             Username = user.Username,
@@ -32,8 +38,10 @@ public class ApiOwnGameUserResponse : IApiResponse, IDataConvertableFrom<ApiOwnG
             JoinDate = DateTimeOffset.FromUnixTimeMilliseconds(user.JoinDate),
             AllowIpAuthentication = user.AllowIpAuthentication,
             Role = user.Role,
+            BanReason = user.BanReason,
+            BanExpiryDate = user.BanExpiryDate,
         };
     }
 
-    public static IEnumerable<ApiOwnGameUserResponse> FromOldList(IEnumerable<GameUser> oldList) => oldList.Select(FromOld)!;
+    public static IEnumerable<ApiExtendedGameUserResponse> FromOldList(IEnumerable<GameUser> oldList) => oldList.Select(FromOld)!;
 }
