@@ -14,7 +14,7 @@ public partial class GameDatabaseContext // Users
         GameUser user = new()
         {
             Username = username,
-            JoinDate = this._time.TimestampMilliseconds,
+            JoinDate = this._time.Now,
         };
 
         this._realm.Write(() =>

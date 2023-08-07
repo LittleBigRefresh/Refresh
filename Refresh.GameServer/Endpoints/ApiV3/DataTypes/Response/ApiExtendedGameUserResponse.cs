@@ -35,7 +35,7 @@ public class ApiExtendedGameUserResponse : IApiResponse, IDataConvertableFrom<Ap
             IconHash = user.IconHash,
             Description = user.Description,
             Location = ApiGameLocationResponse.FromGameLocation(user.Location)!,
-            JoinDate = DateTimeOffset.FromUnixTimeMilliseconds(user.JoinDate),
+            JoinDate = user.JoinDate,
             AllowIpAuthentication = user.AllowIpAuthentication,
             Role = user.Role,
             BanReason = user.BanReason,

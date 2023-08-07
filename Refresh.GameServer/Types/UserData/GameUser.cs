@@ -21,7 +21,7 @@ public partial class GameUser : IRealmObject, IRateLimitUser
     public string Description { get; set; } = "";
     public GameLocation Location { get; set; } = GameLocation.Zero;
     
-    public long JoinDate { get; set; } // unix milliseconds
+    public DateTimeOffset JoinDate { get; set; }
     public UserPins Pins { get; set; } = new();
     
     #nullable disable

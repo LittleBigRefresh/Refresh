@@ -33,7 +33,7 @@ public class GameDatabaseProvider : RealmDatabaseProvider<GameDatabaseContext>
         this._time = time;
     }
 
-    protected override ulong SchemaVersion => 66;
+    protected override ulong SchemaVersion => 68;
 
     protected override string Filename => "refreshGameServer.realm";
     
@@ -119,7 +119,7 @@ public class GameDatabaseProvider : RealmDatabaseProvider<GameDatabaseContext>
             if (oldVersion < 23) newUser.PasswordBcrypt = null;
 
             // In version 26, users were given join dates
-            if (oldVersion < 26) newUser.JoinDate = 0;
+            if (oldVersion < 26) newUser.JoinDate = DateTimeOffset.MinValue;
 
             // In version 40, we switched to Realm source generators which requires some values to be reset
             if (oldVersion < 40)
@@ -128,6 +128,9 @@ public class GameDatabaseProvider : RealmDatabaseProvider<GameDatabaseContext>
                 newUser.Description = oldUser.Description;
                 newUser.PlanetsHash = oldUser.PlanetsHash;
             }
+            
+            // In version 67, users switched to dates to store their join date
+            if (oldVersion < 67) newUser.JoinDate = DateTimeOffset.FromUnixTimeMilliseconds(oldUser.JoinDate);
         }
 
         IQueryable<dynamic>? oldLevels = migration.OldRealm.DynamicApi.All("GameLevel");
