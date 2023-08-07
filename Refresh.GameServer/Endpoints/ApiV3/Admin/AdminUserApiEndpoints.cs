@@ -25,7 +25,7 @@ public class AdminUserApiEndpoints : EndpointGroup
     {
         if (user == null) return ApiNotFoundError.UserMissingError;
         
-        database.BanUser(user, body.Reason, body.ExpiryDate);
+        database.RestrictUser(user, body.Reason, body.ExpiryDate);
         return new ApiOkResponse();
     }
     
