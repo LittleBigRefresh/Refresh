@@ -11,9 +11,9 @@ namespace Refresh.GameServer.Authentication;
 
 public class GameAuthenticationProvider : IAuthenticationProvider<GameUser, Token>
 {
-    private readonly GameServerConfig _config;
+    private readonly GameServerConfig? _config;
 
-    public GameAuthenticationProvider(GameServerConfig config)
+    public GameAuthenticationProvider(GameServerConfig? config)
     {
         this._config = config;
     }
@@ -28,7 +28,7 @@ public class GameAuthenticationProvider : IAuthenticationProvider<GameUser, Toke
         // don't allow non-admins to authenticate during maintenance mode.
         // technically, this check isn't here for token but this is okay since
         // we don't actually receive tokens in endpoints (except during logout, aka token revocation)
-        if (this._config.MaintenanceMode && user.Role != GameUserRole.Admin)
+        if ((this._config?.MaintenanceMode ?? false) && user.Role != GameUserRole.Admin)
             return null;
         
         return user;
