@@ -19,7 +19,7 @@ public class PresenceEndpoints : EndpointGroup
     public SerializedLevelStatisticsResponse GetLevelStatistics(RequestContext context, GameDatabaseContext database) => new()
     {
         TotalLevels = database.GetTotalLevelCount(),
-        TotalTeamPicks = 0,
+        TotalTeamPicks = database.GetTotalTeamPickCount(),
     };
 
     [XmlRoot("planetStats")]
