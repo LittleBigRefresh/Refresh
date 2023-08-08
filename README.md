@@ -10,7 +10,7 @@ A work-in-progress second-generation custom server for LittleBigPlanet that focu
 
 # Running
 
-> **Warning**:
+> [!WARNING]
 > Refresh is a work-in-progress. Expect things to break, and things to be unsupported. What does work is fairly stable, though.
 
 1. [View the latest releases](https://github.com/LittleBigRefresh/Refresh/releases)
