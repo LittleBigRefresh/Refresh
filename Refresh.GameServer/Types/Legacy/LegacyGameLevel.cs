@@ -59,7 +59,7 @@ public class LegacyGameLevel : IDataConvertableFrom<LegacyGameLevel, GameLevel>
         MoveRequired = false,
         FirstUploaded = old.PublishDate,
         LastUpdated = old.UpdateDate,
-        TeamPick = false,
+        TeamPick = old.TeamPicked,
         GameVersion = 1,
         Plays = old.AllPlays.Count(),
         PlaysUnique = old.UniquePlays.Count(),

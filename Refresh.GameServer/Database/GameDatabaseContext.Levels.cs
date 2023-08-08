@@ -151,4 +151,15 @@ public partial class GameDatabaseContext // Levels
 
     [Pure]
     public GameLevel? GetLevelById(int id) => this._realm.All<GameLevel>().FirstOrDefault(l => l.LevelId == id);
+
+    private void SetLevelPickStatus(GameLevel level, bool status)
+    {
+        this._realm.Write(() =>
+        {
+            level.TeamPicked = status;
+        });
+    }
+
+    public void AddTeamPickToLevel(GameLevel level) => this.SetLevelPickStatus(level, true);
+    public void RemoveTeamPickFromLevel(GameLevel level) => this.SetLevelPickStatus(level, false);
 }

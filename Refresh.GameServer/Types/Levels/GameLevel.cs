@@ -28,6 +28,7 @@ public partial class GameLevel : IRealmObject, ISequentialId
     public bool EnforceMinMaxPlayers { get; set; }
     
     public bool SameScreenGame { get; set; }
+    public bool TeamPicked { get; set; }
 
 #nullable disable
     [Backlink(nameof(FavouriteLevelRelation.Level))]

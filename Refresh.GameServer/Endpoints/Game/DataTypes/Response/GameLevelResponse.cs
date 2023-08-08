@@ -48,6 +48,7 @@ public class GameLevelResponse : IDataConvertableFrom<GameLevelResponse, GameLev
     [XmlArrayItem("customReward")]
     public required List<GameSkillReward> SkillRewards { get; set; }
 
+    [XmlElement("mmpick")] public required bool TeamPicked { get; set; }
     [XmlElement("resource")] public List<string> XmlResources { get; set; } = new();
 
     public static GameLevelResponse? FromOldWithUser(GameLevel? old, GameDatabaseContext database, GameUser user)
@@ -84,6 +85,7 @@ public class GameLevelResponse : IDataConvertableFrom<GameLevelResponse, GameLev
             YayCount = old.Ratings.Count(r => r._RatingType == (int)RatingType.Yay),
             BooCount = old.Ratings.Count(r => r._RatingType == (int)RatingType.Boo),
             SkillRewards = old.SkillRewards.ToList(),
+            TeamPicked = old.TeamPicked,
         };
 
         if (old.Publisher == null)
