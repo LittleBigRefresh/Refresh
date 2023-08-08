@@ -36,7 +36,7 @@ Wherever you choose to post, be sure to include details about how to trigger the
 When dealing with authentication problems, it can be particularly helpful to check your user's notifications (the bell on the web interface will take you there) as authentication errors are logged here.
 
 ## Building & Contributing
-To contribute to Refesh, it may be helpful to refer to our [contributing guide](CONTRIBUTING.md) to get a basic development environment set up. If you're a pro, feel free to skip this as it's just your bog-standard setting up C# guide.
+To contribute to Refresh, it may be helpful to refer to our [contributing guide](CONTRIBUTING.md) to get a basic development environment set up. If you're a pro, feel free to skip this as it's just your bog-standard setting up C# guide.
 
 However, something important for all those involved: we also serve additional documentation relating to Refresh, Bunkum, and LittleBigPlanet in general in our [Docs repo](https://littlebigrefresh.github.io/Docs/).
 
