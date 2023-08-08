@@ -9,21 +9,6 @@ namespace Refresh.GameServer.Database;
 
 public partial class GameDatabaseContext // Users
 {
-    public GameUser CreateUser(string username)
-    {
-        GameUser user = new()
-        {
-            Username = username,
-            JoinDate = this._time.Now,
-        };
-
-        this._realm.Write(() =>
-        {
-            this._realm.Add(user);
-        });
-        return user;
-    }
-    
     [Pure]
     [ContractAnnotation("null => null; notnull => canbenull")]
     public GameUser? GetUserByUsername(string? username)

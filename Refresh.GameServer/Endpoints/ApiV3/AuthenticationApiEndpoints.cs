@@ -162,6 +162,13 @@ public partial class AuthenticationApiEndpoints : EndpointGroup
         string? passwordBcrypt = BC.HashPassword(body.PasswordSha512, WorkFactor);
         if (passwordBcrypt == null) return new ApiInternalError("Could not BCrypt the given password.");
 
+        if (config.RequireGameLoginToRegister)
+        {
+            database.AddRegistrationToQueue(body.Username, passwordBcrypt);
+            return new ApiAuthenticationError("This server requires an in-game login to complete registration. " +
+                                              "To complete sign-up, simply log in from LBP and your account will be activated.");
+        }
+
         GameUser user = database.CreateUser(body.Username);
         database.SetUserPassword(user, passwordBcrypt);
         

@@ -8,7 +8,7 @@ namespace Refresh.GameServer.Configuration;
 [SuppressMessage("ReSharper", "RedundantDefaultMemberInitializer")]
 public class GameServerConfig : Config
 {
-    public override int CurrentConfigVersion => 6;
+    public override int CurrentConfigVersion => 7;
     public override int Version { get; set; } = 0;
 
     protected override void Migrate(int oldVer, dynamic oldConfig) {}
@@ -24,4 +24,5 @@ public class GameServerConfig : Config
     public string InstanceName { get; set; } = "Refresh";
     public string InstanceDescription { get; set; } = "A server running Refresh!";
     public bool MaintenanceMode { get; set; } = false;
+    public bool RequireGameLoginToRegister { get; set; } = false;
 }

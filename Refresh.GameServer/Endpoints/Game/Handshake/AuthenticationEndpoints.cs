@@ -44,7 +44,15 @@ public class AuthenticationEndpoints : EndpointGroup
         GameUser? user = database.GetUserByUsername(ticket.Username);
         if (user == null)
         {
-            if (config is { UseTicketVerification: false, AllowUsersToUseIpAuthentication: false })
+            if (config.RequireGameLoginToRegister)
+            {
+                // look for a registration, then use that to create a user
+                QueuedRegistration? registration = database.GetQueuedRegistration(ticket.Username);
+                if (registration == null) return null;
+
+                user = database.CreateUserFromQueuedRegistration(registration);
+            }
+            else if (config is { UseTicketVerification: false, AllowUsersToUseIpAuthentication: false })
             {
                 // if no authentication methods are enabled, then just create a new user
                 user ??= database.CreateUser(ticket.Username);

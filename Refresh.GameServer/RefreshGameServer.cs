@@ -126,7 +126,10 @@ public class RefreshGameServer
 
     protected virtual void SetupWorkers()
     {
-        this._workerManager?.AddWorker<PunishmentExpiryWorker>();
+        if (this._workerManager == null) return;
+        
+        this._workerManager.AddWorker<PunishmentExpiryWorker>();
+        this._workerManager.AddWorker<QueuedRegistrationExpiryWorker>();
     }
 
     public virtual void Start()
