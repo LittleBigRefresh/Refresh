@@ -63,6 +63,13 @@ public class CategoryService : EndpointService
             IconHash = "g820608",
             FontAwesomeIcon = "play",
         },
+        new LevelCategory("teamPicks", "mmpicks", false, nameof(GameDatabaseContext.GetTeamPickedLevels))
+        {
+            Name = "Team Picks",
+            Description = "The best of the best",
+            IconHash = "g820626",
+            FontAwesomeIcon = "certificate",
+        },
     };
 
     internal CategoryService(LoggerContainer<BunkumContext> logger) : base(logger)

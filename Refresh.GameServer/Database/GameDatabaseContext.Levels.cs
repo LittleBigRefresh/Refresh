@@ -123,6 +123,12 @@ public partial class GameDatabaseContext // Levels
 
         return new DatabaseList<GameLevel>(highestRated, skip, count);
     }
+    
+    [Pure]
+    public DatabaseList<GameLevel> GetTeamPickedLevels(int count, int skip) =>
+        new(this._realm.All<GameLevel>()
+            .Where(l => l.TeamPicked)
+            .OrderByDescending(l => l.PublishDate), skip, count);
 
     [Pure]
     public DatabaseList<GameLevel> SearchForLevels(int count, int skip, string query)
