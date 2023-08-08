@@ -1,3 +1,4 @@
+using Refresh.GameServer.Authentication;
 using Refresh.GameServer.Extensions;
 using Refresh.GameServer.Types.UserData;
 
@@ -23,7 +24,7 @@ public partial class GameDatabaseContext // Registration
         return user;
     }
 
-    public GameUser CreateUserFromQueuedRegistration(QueuedRegistration registration)
+    public GameUser CreateUserFromQueuedRegistration(QueuedRegistration registration, TokenPlatform? platform = null)
     {
         QueuedRegistration cloned = (QueuedRegistration)registration.Clone();
 
@@ -34,6 +35,24 @@ public partial class GameDatabaseContext // Registration
 
         GameUser user = this.CreateUser(cloned.Username);
         this.SetUserPassword(user, cloned.PasswordBcrypt);
+
+        if (platform != null)
+        {
+            this._realm.Write(() =>
+            {
+                // ReSharper disable once SwitchStatementHandlesSomeKnownEnumValuesWithDefault
+                switch (platform)
+                {
+                    case TokenPlatform.PS3:
+                    case TokenPlatform.Vita:
+                        user.PsnAuthenticationAllowed = true;
+                        break;
+                    case TokenPlatform.RPCS3:
+                        user.RpcnAuthenticationAllowed = true;
+                        break;
+                }
+            });
+        }
 
         return user;
     }

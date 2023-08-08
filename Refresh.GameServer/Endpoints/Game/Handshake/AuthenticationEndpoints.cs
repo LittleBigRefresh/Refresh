@@ -49,8 +49,8 @@ public class AuthenticationEndpoints : EndpointGroup
                 // look for a registration, then use that to create a user
                 QueuedRegistration? registration = database.GetQueuedRegistration(ticket.Username);
                 if (registration == null) return null;
-
-                user = database.CreateUserFromQueuedRegistration(registration);
+                
+                user = database.CreateUserFromQueuedRegistration(registration, platform);
             }
             else if (config is { UseTicketVerification: false, AllowUsersToUseIpAuthentication: false })
             {
@@ -68,6 +68,13 @@ public class AuthenticationEndpoints : EndpointGroup
         bool ticketVerified = false;
         if (config.UseTicketVerification)
         {
+            if ((platform is TokenPlatform.PS3 or TokenPlatform.Vita && !user.PsnAuthenticationAllowed) ||
+                (platform is TokenPlatform.RPCS3 && !user.RpcnAuthenticationAllowed))
+            {
+                SendPlatformNotAllowedNotification(database, user, platform.Value);
+                return null;
+            }
+            
             ticketVerified = VerifyTicket(context, (MemoryStream)body, ticket);
             if (!ticketVerified)
             {
@@ -174,6 +181,13 @@ public class AuthenticationEndpoints : EndpointGroup
         }
                     
         database.AddLoginFailNotification(failReason, user);
+    }
+
+    private static void SendPlatformNotAllowedNotification(GameDatabaseContext database, GameUser user, TokenPlatform platform)
+    {
+        database.AddLoginFailNotification($"An authentication attempt was attempted to be made from {platform}, " +
+                                          $"but the respective option for it was disabled. To allow authentication from " +
+                                          $"{platform}, enable '{platform} Authentication' in settings.", user);
     }
 
     /// <summary>

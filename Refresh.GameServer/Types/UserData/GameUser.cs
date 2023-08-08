@@ -61,6 +61,9 @@ public partial class GameUser : IRealmObject, IRateLimitUser
     
     public DateTimeOffset LastLoginDate { get; set; }
     
+    public bool RpcnAuthenticationAllowed { get; set; }
+    public bool PsnAuthenticationAllowed { get; set; }
+    
     [Ignored] public GameUserRole Role
     {
         get => (GameUserRole)this._Role;

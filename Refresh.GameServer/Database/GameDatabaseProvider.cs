@@ -33,7 +33,7 @@ public class GameDatabaseProvider : RealmDatabaseProvider<GameDatabaseContext>
         this._time = time;
     }
 
-    protected override ulong SchemaVersion => 71;
+    protected override ulong SchemaVersion => 72;
 
     protected override string Filename => "refreshGameServer.realm";
     
@@ -135,6 +135,14 @@ public class GameDatabaseProvider : RealmDatabaseProvider<GameDatabaseContext>
             
             // In version 69 (nice), users were given last login dates. For now, we'll set that to now.
             if(oldVersion < 69 /*nice*/) newUser.LastLoginDate = DateTimeOffset.Now;
+            
+            // In version 72, users got settings for permissions regarding certain platforms.
+            // To avoid breakage, we set them to true for existing users.
+            if (oldVersion < 72)
+            {
+                newUser.PsnAuthenticationAllowed = true;
+                newUser.RpcnAuthenticationAllowed = true;
+            }
         }
 
         IQueryable<dynamic>? oldLevels = migration.OldRealm.DynamicApi.All("GameLevel");

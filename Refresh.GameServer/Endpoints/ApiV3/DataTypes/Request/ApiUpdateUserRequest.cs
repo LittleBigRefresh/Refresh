@@ -5,4 +5,7 @@ public class ApiUpdateUserRequest
 {
     public string? Description { get; set; }
     public bool? AllowIpAuthentication { get; set; }
+    
+    public bool? PsnAuthenticationAllowed { get; set; }
+    public bool? RpcnAuthenticationAllowed { get; set; }
 }
