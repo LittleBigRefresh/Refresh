@@ -94,7 +94,7 @@ public class AuthenticationEndpoints : EndpointGroup
         {
             database.AddLoginFailNotification("The server could not determine what platform you were trying to connect from.", user);
             context.Logger.LogWarning(BunkumContext.Authentication, $"Could not determine platform from ticket.\n" +
-                                                                    $"Platform: {ticket.IssuerId}");
+                                                                    $"Missing IssuerID: {ticket.IssuerId}");
             return null;
         }
 
@@ -102,7 +102,7 @@ public class AuthenticationEndpoints : EndpointGroup
         {
             database.AddLoginFailNotification("The server could not determine what game you were trying to connect from.", user);
             context.Logger.LogWarning(BunkumContext.Authentication, $"Could not determine game from ticket.\n" +
-                                                                    $"Platform: {ticket.TitleId}");
+                                                                    $"Missing TitleID: {ticket.TitleId}");
             return null;
         }
 
