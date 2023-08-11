@@ -26,6 +26,9 @@ public class ApiExtendedGameUserResponse : IApiResponse, IDataConvertableFrom<Ap
     public required bool RpcnAuthenticationAllowed { get; set; }
     public required bool PsnAuthenticationAllowed { get; set; }
     
+    public required string? EmailAddress { get; set; }
+    public required bool EmailAddressVerified { get; set; }
+    
     [ContractAnnotation("null => null; notnull => notnull")]
     public static ApiExtendedGameUserResponse? FromOld(GameUser? user)
     {
@@ -45,6 +48,8 @@ public class ApiExtendedGameUserResponse : IApiResponse, IDataConvertableFrom<Ap
             BanExpiryDate = user.BanExpiryDate,
             RpcnAuthenticationAllowed = user.RpcnAuthenticationAllowed,
             PsnAuthenticationAllowed = user.PsnAuthenticationAllowed,
+            EmailAddress = user.EmailAddress,
+            EmailAddressVerified = user.EmailAddressVerified,
         };
     }
 
