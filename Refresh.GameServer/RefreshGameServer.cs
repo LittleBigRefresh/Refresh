@@ -102,6 +102,7 @@ public class RefreshGameServer
         this._config = config;
         
         this._server.UseConfig(config);
+        this._server.UseJsonConfig<RichPresenceConfig>("rpc.json");
     }
 
     protected virtual void SetupServices()

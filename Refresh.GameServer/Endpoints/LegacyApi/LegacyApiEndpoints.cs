@@ -1,17 +1,23 @@
 using Bunkum.HttpServer;
 using Bunkum.HttpServer.Endpoints;
 using MongoDB.Bson;
+using Refresh.GameServer.Configuration;
 using Refresh.GameServer.Database;
 using Refresh.GameServer.Services;
 using Refresh.GameServer.Types.Legacy;
 using Refresh.GameServer.Types.Levels;
 using Refresh.GameServer.Types.Matching;
+using Refresh.GameServer.Types.RichPresence;
 using Refresh.GameServer.Types.UserData;
 
 namespace Refresh.GameServer.Endpoints.LegacyApi;
 
 public class LegacyApiEndpoints : EndpointGroup
 {
+    [LegacyApiEndpoint("rpc"), Authentication(false)]
+    public RichPresenceConfiguration GetRichPresenceConfiguration(RequestContext context, GameServerConfig gameConfig, RichPresenceConfig richConfig)
+        => RichPresenceConfiguration.Create(gameConfig, richConfig, true);
+
     [LegacyApiEndpoint("username/{username}")]
     [Authentication(false)]
     public LegacyGameUser? GetLegacyUserByUsername(RequestContext context, GameDatabaseContext database, string username)

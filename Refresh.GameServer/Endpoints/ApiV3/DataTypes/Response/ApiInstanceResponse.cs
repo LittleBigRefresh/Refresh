@@ -1,4 +1,5 @@
 using Refresh.GameServer.Types.Assets;
+using Refresh.GameServer.Types.RichPresence;
 
 namespace Refresh.GameServer.Endpoints.ApiV3.DataTypes.Response;
 
@@ -15,6 +16,7 @@ public class ApiInstanceResponse : IApiResponse
     public required AssetSafetyLevel MaximumAssetSafetyLevel { get; set; }
     
     public required IEnumerable<ApiGameAnnouncementResponse> Announcements { get; set; }
+    public required RichPresenceConfiguration RichPresenceConfiguration { get; set; }
     
     public required bool MaintenanceModeEnabled { get; set; }
 }
