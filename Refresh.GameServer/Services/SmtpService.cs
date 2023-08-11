@@ -56,9 +56,12 @@ public class SmtpService : EndpointService
         return true;
     }
 
-    public bool EmailVerificationRequest(GameUser user, string recipient, string code)
+    public bool SendEmailVerificationRequest(GameUser user, string code)
     {
-        return this.SendEmail(recipient, $"E-mail Verification Code for {this._gameConfig.InstanceName}: {code}",
+        if (user.EmailAddress == null)
+            throw new InvalidOperationException("Cannot send verification request for user with no email");
+        
+        return this.SendEmail(user.EmailAddress, $"E-mail Verification Code for {this._gameConfig.InstanceName}: {code}",
             $"""
             Hi {user.Username} (id: {user.UserId.ToString()}),
             

@@ -16,6 +16,14 @@ public partial class GameDatabaseContext // Users
         if (username == null) return null;
         return this._realm.All<GameUser>().FirstOrDefault(u => u.Username == username);
     }
+    
+    [Pure]
+    [ContractAnnotation("null => null; notnull => canbenull")]
+    public GameUser? GetUserByEmailAddress(string? emailAddress)
+    {
+        if (emailAddress == null) return null;
+        return this._realm.All<GameUser>().FirstOrDefault(u => u.EmailAddress == emailAddress);
+    }
 
     [Pure]
     [ContractAnnotation("null => null; notnull => canbenull")]

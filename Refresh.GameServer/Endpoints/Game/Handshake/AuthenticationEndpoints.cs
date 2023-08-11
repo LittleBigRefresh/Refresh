@@ -52,11 +52,6 @@ public class AuthenticationEndpoints : EndpointGroup
                 
                 user = database.CreateUserFromQueuedRegistration(registration, platform);
             }
-            else if (config is { UseTicketVerification: false, AllowUsersToUseIpAuthentication: false })
-            {
-                // if no authentication methods are enabled, then just create a new user
-                user ??= database.CreateUser(ticket.Username);
-            }
             else return null;
         }
         else if(user.Role == GameUserRole.Banned)

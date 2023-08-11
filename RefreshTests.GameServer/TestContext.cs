@@ -75,7 +75,7 @@ public class TestContext : IDisposable
     public GameUser CreateUser(string? username = null)
     {
         username ??= this.UserIncrement.ToString();
-        return this.Database.CreateUser(username);
+        return this.Database.CreateUser(username, $"{username}@{username}.local");
     }
     
     public GameLevel CreateLevel(GameUser author, string title = "Level")
@@ -95,7 +95,7 @@ public class TestContext : IDisposable
     {
         for (byte i = 0; i < count; i++)
         {
-            GameUser scoreUser = this.Database.CreateUser("score" + i);
+            GameUser scoreUser = this.CreateUser("score" + i);
             this.SubmitScore(i, type, level, scoreUser);
         }
     }

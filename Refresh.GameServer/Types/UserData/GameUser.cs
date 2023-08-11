@@ -15,6 +15,8 @@ public partial class GameUser : IRealmObject, IRateLimitUser
 {
     [PrimaryKey] public ObjectId UserId { get; set; } = ObjectId.GenerateNewId();
     [Indexed] public string Username { get; set; } = string.Empty;
+    [Indexed] public string? EmailAddress { get; set; }
+    public bool EmailAddressVerified { get; set; }
     [Indexed] public string? PasswordBcrypt { get; set; } = null;
     public string IconHash { get; set; } = "0";
 

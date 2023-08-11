@@ -24,8 +24,8 @@ public partial class AuthenticationApiEndpoints : EndpointGroup
 {
     // How many rounds to do for password hashing (BCrypt)
     // 14 is ~1 second for logins and reset, which is fair because logins are a one-time thing
-    // 200 OK on POST '/api/V3/resetPassword' (1058ms)
-    // 200 OK on POST '/api/V3/auth' (1087ms)
+    // 200 OK on POST '/api/v3/resetPassword' (1058ms)
+    // 200 OK on POST '/api/v3/auth' (1087ms)
     //
     // If increased, passwords will automatically be rehashed at login time to use the new WorkFactor
     // If decreased, passwords will stay at higher WorkFactor until reset
@@ -33,12 +33,15 @@ public partial class AuthenticationApiEndpoints : EndpointGroup
 
     [GeneratedRegex("^[a-f0-9]{128}$")]
     private static partial Regex Sha512Regex();
+    
+    [GeneratedRegex("^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+[.][a-zA-Z]{2,}$")]
+    private static partial Regex EmailAddressRegex();
 
     [ApiV3Endpoint("login", Method.Post), Authentication(false), AllowDuringMaintenance]
     public ApiResponse<IApiAuthenticationResponse> Authenticate(RequestContext context, GameDatabaseContext database, ApiAuthenticationRequest body, GameServerConfig config)
     {
-        GameUser? user = database.GetUserByUsername(body.Username);
-        if (user == null) return new ApiAuthenticationError("The username or password was incorrect.");
+        GameUser? user = database.GetUserByEmailAddress(body.EmailAddress);
+        if (user == null) return new ApiAuthenticationError("The email or password was incorrect.");
 
         if (user.Role == GameUserRole.Banned)
         {
@@ -71,7 +74,7 @@ public partial class AuthenticationApiEndpoints : EndpointGroup
 
         if (!BC.Verify(body.PasswordSha512, user.PasswordBcrypt))
         {
-            return new ApiAuthenticationError("The username or password was incorrect.");
+            return new ApiAuthenticationError("The email or password was incorrect.");
         }
 
         Token token = database.GenerateTokenForUser(user, TokenType.Api, TokenGame.Website, TokenPlatform.Website);
@@ -163,23 +166,26 @@ public partial class AuthenticationApiEndpoints : EndpointGroup
             
         if (body.PasswordSha512.Length != 128 || !Sha512Regex().IsMatch(body.PasswordSha512))
             return new ApiValidationError("Password is definitely not SHA512. Please hash the password.");
-        
+
+        if (!EmailAddressRegex().IsMatch(body.EmailAddress))
+            return new ApiValidationError("The email address given is invalid.");
+
         string? passwordBcrypt = BC.HashPassword(body.PasswordSha512, WorkFactor);
         if (passwordBcrypt == null) return new ApiInternalError("Could not BCrypt the given password.");
 
         if (config.RequireGameLoginToRegister)
         {
-            database.AddRegistrationToQueue(body.Username, passwordBcrypt);
+            database.AddRegistrationToQueue(body.Username, body.EmailAddress, passwordBcrypt);
             return new ApiAuthenticationError("This server requires an in-game login to complete registration. " +
-                                              "To complete sign-up, simply log in from LBP and your account will be activated.");
+                                              "To complete sign-up, simply log in from LBP and your new account will be activated.");
         }
 
-        GameUser user = database.CreateUser(body.Username);
+        GameUser user = database.CreateUser(body.Username, body.EmailAddress);
         database.SetUserPassword(user, passwordBcrypt);
+
+        smtpService.SendEmailVerificationRequest(user, "512678");
         
         Token token = database.GenerateTokenForUser(user, TokenType.Api, TokenGame.Website, TokenPlatform.Website);
-
-        smtpService.EmailVerificationRequest(user, "jvyden@jvyden.xyz", "9f845d1");
 
         return new ApiAuthenticationResponse
         {

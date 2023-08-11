@@ -6,7 +6,7 @@ namespace Refresh.GameServer.Database;
 
 public partial class GameDatabaseContext // Registration
 {
-    public GameUser CreateUser(string username)
+    public GameUser CreateUser(string username, string emailAddress)
     {
         if (this.IsUsernameTaken(username))
             throw new InvalidOperationException("Cannot create a user with an existing username");
@@ -14,6 +14,7 @@ public partial class GameDatabaseContext // Registration
         GameUser user = new()
         {
             Username = username,
+            EmailAddress = emailAddress,
             JoinDate = this._time.Now,
         };
 
@@ -33,7 +34,7 @@ public partial class GameDatabaseContext // Registration
             this._realm.Remove(registration);
         });
 
-        GameUser user = this.CreateUser(cloned.Username);
+        GameUser user = this.CreateUser(cloned.Username, cloned.EmailAddress);
         this.SetUserPassword(user, cloned.PasswordBcrypt);
 
         if (platform != null)
@@ -63,7 +64,7 @@ public partial class GameDatabaseContext // Registration
                this._realm.All<QueuedRegistration>().Any(r => r.Username == username);
     }
 
-    public void AddRegistrationToQueue(string username, string passwordBcrypt)
+    public void AddRegistrationToQueue(string username, string emailAddress, string passwordBcrypt)
     {
         if (this.IsUsernameTaken(username))
             throw new InvalidOperationException("Cannot create a registration with an existing username");
@@ -71,6 +72,7 @@ public partial class GameDatabaseContext // Registration
         QueuedRegistration registration = new()
         {
             Username = username,
+            EmailAddress = emailAddress,
             PasswordBcrypt = passwordBcrypt,
             ExpiryDate = this._time.Now + TimeSpan.FromDays(1), // This registration expires in 1 day
         };
