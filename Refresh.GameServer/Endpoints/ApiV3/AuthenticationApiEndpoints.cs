@@ -14,6 +14,7 @@ using Refresh.GameServer.Endpoints.ApiV3.DataTypes;
 using Refresh.GameServer.Endpoints.ApiV3.DataTypes.Request;
 using Refresh.GameServer.Endpoints.ApiV3.DataTypes.Response;
 using Refresh.GameServer.Extensions;
+using Refresh.GameServer.Services;
 using Refresh.GameServer.Types.Roles;
 using Refresh.GameServer.Types.UserData;
 
@@ -151,7 +152,11 @@ public partial class AuthenticationApiEndpoints : EndpointGroup
     [ApiV3Endpoint("register", Method.Post), Authentication(false)]
     [DocSummary("Registers a new user.")]
     [DocRequestBody(typeof(ApiRegisterRequest))]
-    public ApiResponse<IApiAuthenticationResponse> Register(RequestContext context, GameDatabaseContext database, ApiRegisterRequest body, GameServerConfig config)
+    public ApiResponse<IApiAuthenticationResponse> Register(RequestContext context,
+        GameDatabaseContext database,
+        ApiRegisterRequest body,
+        GameServerConfig config,
+        SmtpService smtpService)
     {
         if (!config.RegistrationEnabled)
             return new ApiAuthenticationError("Registration is not enabled on this server.");
@@ -173,6 +178,8 @@ public partial class AuthenticationApiEndpoints : EndpointGroup
         database.SetUserPassword(user, passwordBcrypt);
         
         Token token = database.GenerateTokenForUser(user, TokenType.Api, TokenGame.Website, TokenPlatform.Website);
+
+        smtpService.EmailVerificationRequest(user, "jvyden@jvyden.xyz", "9f845d1");
 
         return new ApiAuthenticationResponse
         {

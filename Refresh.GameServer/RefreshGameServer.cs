@@ -103,6 +103,7 @@ public class RefreshGameServer
         
         this._server.UseConfig(config);
         this._server.UseJsonConfig<RichPresenceConfig>("rpc.json");
+        this._server.UseJsonConfig<IntegrationConfig>("integrations.json");
     }
 
     protected virtual void SetupServices()
@@ -123,6 +124,7 @@ public class RefreshGameServer
         });
         
         this._server.AddService<RoleService>();
+        this._server.AddService<SmtpService>();
     }
 
     protected virtual void SetupWorkers()
