@@ -6,7 +6,7 @@ namespace Refresh.GameServer.Types.RichPresence;
 [JsonObject(NamingStrategyType = typeof(CamelCaseNamingStrategy))]
 public class RichPresenceConfiguration
 {
-    public required long ApplicationId { get; set; }
+    public required string ApplicationId { get; set; }
     public required string PartyIdPrefix { get; set; }
     public required RichPresenceUsernameResponseType UsernameType { get; set; }
     public required RichPresenceAssetConfiguration Assets { get; set; }
@@ -15,7 +15,7 @@ public class RichPresenceConfiguration
     {
         return new RichPresenceConfiguration
         {
-            ApplicationId = richConfig.ApplicationId,
+            ApplicationId = richConfig.ApplicationId.ToString(),
             Assets = new RichPresenceAssetConfiguration
             {
                 PodAsset = richConfig.PodAsset,

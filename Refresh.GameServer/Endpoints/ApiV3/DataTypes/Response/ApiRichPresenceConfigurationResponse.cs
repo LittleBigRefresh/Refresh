@@ -16,7 +16,7 @@ public class ApiRichPresenceConfigurationResponse : IApiResponse, IDataConvertab
 
         return new ApiRichPresenceConfigurationResponse
         {
-            ApplicationId = old.ApplicationId.ToString(),
+            ApplicationId = old.ApplicationId,
             AssetConfiguration = old.Assets,
             PartyIdPrefix = old.PartyIdPrefix,
         };
