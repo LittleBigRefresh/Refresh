@@ -29,8 +29,17 @@ internal class CommandLineManager
         [Option('d', "generate_docs", Required = false, HelpText = "Generate API V3 Documentation")]
         public bool GenerateDocumentation { get; set; }
         
-        [Option('a', "set_admin", Required = false, HelpText = "Give the user with the given username the Admin role")]
-        public string? SetAdmin { get; set; }
+        [Option('a', "set_admin", Required = false, HelpText = "Give the user the Admin role.  Username or Email option is required if this is set.")]
+        public bool SetAdmin { get; set; }
+        
+        [Option('n', "create_user", Required = false, HelpText = "Creates a user. Username and Email option is required if this is set.")]
+        public bool CreateUser { get; set; }
+        
+        [Option('u', "username", Required = false, HelpText = "The user to operate on/create.")]
+        public string? Username { get; set; }
+        
+        [Option('e', "email", Required = false, HelpText = "The user's email to operate on/create.")]
+        public string? EmailAddress { get; set; }
         
         [Option('f', "force", Required = false, HelpText = "Force all operations to happen, skipping user consent")]
         public bool Force { get; set; }
@@ -66,9 +75,31 @@ internal class CommandLineManager
             File.WriteAllText(Path.Combine(Environment.CurrentDirectory, "apiDocumentation.json"), json);
         }
 
-        if (options.SetAdmin != null)
+        if (options.CreateUser)
         {
-            this._server.SetAdminFromUsername(options.SetAdmin);
+            if (options.Username == null || options.EmailAddress == null)
+            {
+                Console.WriteLine("Both the email and username are required to create a user, cannot continue.");
+                Environment.Exit(1);
+            }
+            
+            this._server.CreateUser(options.Username, options.EmailAddress);
+        }
+
+        if (options.SetAdmin)
+        {
+            if (options.Username != null)
+            {
+                this._server.SetAdminFromUsername(options.Username);
+            } else if (options.EmailAddress != null)
+            {
+                this._server.SetAdminFromEmailAddress(options.EmailAddress);
+            }
+            else
+            {
+                Console.WriteLine("No user/email was provided, cannot continue.");
+                Environment.Exit(1);
+            }
         }
     }
 }

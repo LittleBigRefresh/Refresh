@@ -182,12 +182,29 @@ public class RefreshGameServer
         importer.ImportFromDataStore(context, this._dataStore);
     }
 
+    public void CreateUser(string username, string emailAddress)
+    {
+        using GameDatabaseContext context = this.InitializeDatabase();
+        GameUser user = context.CreateUser(username, emailAddress);
+        context.VerifyUserEmail(user);
+    }
+    
     public void SetAdminFromUsername(string username)
     {
         using GameDatabaseContext context = this.InitializeDatabase();
 
         GameUser? user = context.GetUserByUsername(username);
         if (user == null) throw new InvalidOperationException("Cannot find the user " + username);
+
+        context.SetUserRole(user, GameUserRole.Admin);
+    }
+    
+    public void SetAdminFromEmailAddress(string emailAddress)
+    {
+        using GameDatabaseContext context = this.InitializeDatabase();
+
+        GameUser? user = context.GetUserByEmailAddress(emailAddress);
+        if (user == null) throw new InvalidOperationException("Cannot find a user by emailAddress " + emailAddress);
 
         context.SetUserRole(user, GameUserRole.Admin);
     }
