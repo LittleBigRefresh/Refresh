@@ -6,7 +6,7 @@ namespace Refresh.GameServer.Endpoints.ApiV3.DataTypes.Response;
 public class ApiGameRoomResponse : IApiResponse, IDataConvertableFrom<ApiGameRoomResponse, GameRoom>
 {
     public required string RoomId { get; set; }
-    public required List<GameRoomPlayer> PlayerIds { get; set; }
+    public required IEnumerable<ApiGameRoomPlayerResponse> PlayerIds { get; set; }
     public required RoomState RoomState { get; set; }
     public required RoomMood RoomMood { get; set; }
     public required RoomSlotType LevelType { get; set; }
@@ -19,7 +19,7 @@ public class ApiGameRoomResponse : IApiResponse, IDataConvertableFrom<ApiGameRoo
         return new ApiGameRoomResponse
         {
             RoomId = old.RoomId.ToString()!,
-            PlayerIds = old.PlayerIds,
+            PlayerIds = ApiGameRoomPlayerResponse.FromOldList(old.PlayerIds),
             RoomState = old.RoomState,
             RoomMood = old.RoomMood,
             LevelType = old.LevelType,
