@@ -204,4 +204,26 @@ public partial class AuthenticationApiEndpoints : EndpointGroup
             ExpiresAt = token.ExpiresAt,
         };
     }
+    [ApiV3Endpoint("verify", Method.Post)]
+    [DocSummary("Verifies an email address using the given code")]
+    public ApiOkResponse VerifyEmail(RequestContext context, GameUser user, GameDatabaseContext database)
+    {
+        string? code = context.QueryString.Get("code");
+        if (code == null) return new ApiValidationError("The code parameter was not found or invalid");
+
+        if (!database.VerificationCodeMatches(user, code.Trim())) return ApiNotFoundError.Instance;
+        database.VerifyUserEmail(user);
+
+        return new ApiOkResponse();
+    }
+
+    [ApiV3Endpoint("verify/resend", Method.Post)]
+    [DocSummary("Instructs the server to resend the verification email with a new code")]
+    public ApiOkResponse ResendVerificationCode(RequestContext context, GameUser user, GameDatabaseContext database, SmtpService smtpService)
+    {
+        EmailVerificationCode code = database.CreateEmailVerificationCode(user);
+        smtpService.SendEmailVerificationRequest(user, code.Code);
+
+        return new ApiOkResponse();
+    }
 }

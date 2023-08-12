@@ -121,8 +121,13 @@ public partial class GameDatabaseContext // Registration
         this._realm.Write(() =>
         {
             user.EmailAddressVerified = true;
+            this._realm.RemoveRange(this._realm.All<EmailVerificationCode>()
+                .Where(c => c.User == user));
         });
     }
+
+    public bool VerificationCodeMatches(GameUser user, string code) => 
+        this._realm.All<EmailVerificationCode>().Any(c => c.User == user && c.Code == code);
 
     private static string GenerateDigitCode()
     {
