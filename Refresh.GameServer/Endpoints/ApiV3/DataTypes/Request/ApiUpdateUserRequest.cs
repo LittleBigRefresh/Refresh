@@ -8,4 +8,6 @@ public class ApiUpdateUserRequest
     
     public bool? PsnAuthenticationAllowed { get; set; }
     public bool? RpcnAuthenticationAllowed { get; set; }
+    
+    public string? EmailAddress { get; set; }
 }

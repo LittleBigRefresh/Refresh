@@ -76,8 +76,18 @@ public partial class GameDatabaseContext // Users
     public void UpdateUserData(GameUser user, SerializedUpdateData data) 
         => this.UpdateUserData<SerializedUpdateData>(user, data);
     
-    public void UpdateUserData(GameUser user, ApiUpdateUserRequest data) 
-        => this.UpdateUserData<ApiUpdateUserRequest>(user, data);
+    public void UpdateUserData(GameUser user, ApiUpdateUserRequest data)
+    {
+        if (data.EmailAddress != null)
+        {
+            // TODO: batch this in with the other realm write somehow
+            this._realm.Write(() =>
+            {
+                user.EmailAddressVerified = false;
+            });
+        }
+        this.UpdateUserData<ApiUpdateUserRequest>(user, data);
+    }
 
     [Pure]
     public int GetTotalUserCount() => this._realm.All<GameUser>().Count();
