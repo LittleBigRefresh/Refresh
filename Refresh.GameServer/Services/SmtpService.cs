@@ -1,6 +1,7 @@
 using System.Net;
 using System.Net.Mail;
 using Bunkum.HttpServer;
+using Bunkum.HttpServer.Configuration;
 using Bunkum.HttpServer.Services;
 using NotEnoughLogs;
 using Refresh.GameServer.Configuration;
@@ -11,32 +12,37 @@ namespace Refresh.GameServer.Services;
 public class SmtpService : EndpointService
 {
     private readonly SmtpClient? _smtpClient;
-    private readonly IntegrationConfig _config;
+    private readonly BunkumConfig _bunkumConfig;
+    private readonly IntegrationConfig _integrationConfig;
     private readonly GameServerConfig _gameConfig;
 
-    internal SmtpService(IntegrationConfig config, GameServerConfig gameConfig, LoggerContainer<BunkumContext> logger) : base(logger)
+    internal SmtpService(BunkumConfig bunkumConfig,
+        IntegrationConfig integrationConfig,
+        GameServerConfig gameConfig,
+        LoggerContainer<BunkumContext> logger) : base(logger)
     {
-        this._config = config;
+        this._integrationConfig = integrationConfig;
         this._gameConfig = gameConfig;
+        this._bunkumConfig = bunkumConfig;
 
-        if (!this._config.SmtpEnabled) return;
+        if (!this._integrationConfig.SmtpEnabled) return;
         
-        this._smtpClient = new SmtpClient(this._config.SmtpHost)
+        this._smtpClient = new SmtpClient(this._integrationConfig.SmtpHost)
         {
-            Port = this._config.SmtpPort,
-            EnableSsl = this._config.SmtpTlsEnabled,
-            Credentials = new NetworkCredential(this._config.SmtpUsername, this._config.SmtpPassword),
+            Port = this._integrationConfig.SmtpPort,
+            EnableSsl = this._integrationConfig.SmtpTlsEnabled,
+            Credentials = new NetworkCredential(this._integrationConfig.SmtpUsername, this._integrationConfig.SmtpPassword),
             DeliveryMethod = SmtpDeliveryMethod.Network,
         };
     }
 
     private bool SendEmail(string recipient, string subject, string body)
     {
-        if (!this._config.SmtpEnabled || this._smtpClient == null) return false;
+        if (!this._integrationConfig.SmtpEnabled || this._smtpClient == null) return false;
         
         MailMessage message = new()
         {
-            From = new MailAddress(this._config.SmtpUsername),
+            From = new MailAddress(this._integrationConfig.SmtpUsername),
             To = { new MailAddress(recipient) },
             Subject = subject,
             Body = body,
@@ -66,6 +72,8 @@ public class SmtpService : EndpointService
             Hi {user.Username} (id: {user.UserId.ToString()}),
             
             We've received a request to verify your email address for {this._gameConfig.InstanceName}. Your verification code is: '{code}'.
+            
+            You can also verify your email if signed in via your browser by clicking the following link: {this._bunkumConfig.ExternalUrl}/verify?code={code}
             
             If you didn't initiate this request, please disregard this message.
             
