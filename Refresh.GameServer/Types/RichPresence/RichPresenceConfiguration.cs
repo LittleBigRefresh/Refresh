@@ -19,12 +19,12 @@ public class RichPresenceConfiguration : IApiResponse
             Assets = new RichPresenceAssetConfiguration
             {
                 PodAsset = richConfig.PodAsset,
-                MoonAsset = richConfig.PodAsset,
-                RemoteMoonAsset = richConfig.PodAsset,
-                DeveloperAsset = richConfig.PodAsset,
-                DeveloperAdventureAsset = richConfig.PodAsset,
-                DlcAsset = richConfig.PodAsset,
-                FallbackAsset = richConfig.PodAsset,
+                MoonAsset = richConfig.MoonAsset,
+                RemoteMoonAsset = richConfig.RemoteMoonAsset,
+                DeveloperAsset = richConfig.DeveloperAsset,
+                DeveloperAdventureAsset = richConfig.DeveloperAdventureAsset,
+                DlcAsset = richConfig.DlcAsset,
+                FallbackAsset = richConfig.FallbackAsset,
             },
             UsernameType = legacy ? RichPresenceUsernameResponseType.Username : RichPresenceUsernameResponseType.UserId,
             PartyIdPrefix = gameConfig.InstanceName.Replace(' ', '_'),
