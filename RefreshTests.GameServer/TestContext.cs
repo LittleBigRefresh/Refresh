@@ -77,6 +77,11 @@ public class TestContext : IDisposable
         username ??= this.UserIncrement.ToString();
         return this.Database.CreateUser(username, $"{username}@{username}.local");
     }
+
+    public Token CreateToken(GameUser user)
+    {
+        return this.Database.GenerateTokenForUser(user, TokenType.Game, TokenGame.LittleBigPlanet2, TokenPlatform.PS3);
+    }
     
     public GameLevel CreateLevel(GameUser author, string title = "Level")
     {

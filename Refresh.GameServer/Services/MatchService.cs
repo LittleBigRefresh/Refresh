@@ -3,6 +3,7 @@ using Bunkum.HttpServer.Services;
 using NotEnoughLogs;
 using System.Reflection;
 using Bunkum.HttpServer.Responses;
+using Refresh.GameServer.Authentication;
 using Refresh.GameServer.Database;
 using Refresh.GameServer.Types.Matching;
 using Refresh.GameServer.Types.Matching.MatchMethods;
@@ -27,26 +28,31 @@ public partial class MatchService : EndpointService
     public MatchService(LoggerContainer<BunkumContext> logger) : base(logger)
     {}
 
-    public GameRoom GetOrCreateRoomByPlayer(GameUser player)
+    public GameRoom GetOrCreateRoomByPlayer(GameUser player, TokenPlatform platform, TokenGame game)
     {
-        GameRoom? room = this.GetRoomByPlayer(player);
+        GameRoom? room = this.GetRoomByPlayer(player, platform, game);
 
         // ReSharper disable once InvertIf (happy path goes last)
         if (room == null)
         {
-            room = new GameRoom(player);
+            room = new GameRoom(player, platform, game);
             this._rooms.Add(room);
         }
 
         return room;
     }
-
+    
     public GameRoom? GetRoomByPlayer(GameUser player) 
         => this._rooms.FirstOrDefault(r => r.PlayerIds.Select(s => s.Id).Contains(player.UserId));
+
+    public GameRoom? GetRoomByPlayer(GameUser player, TokenPlatform platform, TokenGame game) 
+        => this._rooms.FirstOrDefault(r => r.PlayerIds.Select(s => s.Id).Contains(player.UserId) &&
+                                           r.Platform == platform &&
+                                           r.Game == game);
     
-    public void AddPlayerToRoom(GameUser player, GameRoom targetRoom)
+    public void AddPlayerToRoom(GameUser player, GameRoom targetRoom, TokenPlatform platform, TokenGame game)
     {
-        GameRoom? playersRoom = this.GetRoomByPlayer(player);
+        GameRoom? playersRoom = this.GetRoomByPlayer(player, platform, game);
         if (playersRoom == null) return; // TODO: error?
         if (targetRoom == playersRoom) return;
         
@@ -82,11 +88,11 @@ public partial class MatchService : EndpointService
     private IMatchMethod? TryGetMatchMethod(string method) 
         => this._matchMethods.FirstOrDefault(m => m.MethodNames.Contains(method));
 
-    public Response ExecuteMethod(string methodStr, SerializedRoomData roomData, GameDatabaseContext database, GameUser user)
+    public Response ExecuteMethod(string methodStr, SerializedRoomData roomData, GameDatabaseContext database, GameUser user, Token token)
     {
         IMatchMethod? method = this.TryGetMatchMethod(methodStr);
         if (method == null) return BadRequest;
 
-        return method.Execute(this, this.Logger, database, user, roomData);
+        return method.Execute(this, this.Logger, database, user, token, roomData);
     }
 }

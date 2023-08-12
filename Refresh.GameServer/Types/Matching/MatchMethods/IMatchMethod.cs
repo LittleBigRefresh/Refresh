@@ -2,6 +2,7 @@ using Bunkum.HttpServer;
 using Bunkum.HttpServer.Responses;
 using JetBrains.Annotations;
 using NotEnoughLogs;
+using Refresh.GameServer.Authentication;
 using Refresh.GameServer.Database;
 using Refresh.GameServer.Services;
 using Refresh.GameServer.Types.UserData;
@@ -14,5 +15,5 @@ public interface IMatchMethod
     IEnumerable<string> MethodNames { get; }
 
     Response Execute(MatchService service, LoggerContainer<BunkumContext> logger,
-        GameDatabaseContext database, GameUser user, SerializedRoomData body);
+        GameDatabaseContext database, GameUser user, Token token, SerializedRoomData body);
 }
