@@ -1,3 +1,4 @@
+using Refresh.GameServer.Authentication;
 using Refresh.GameServer.Types.Matching;
 
 namespace Refresh.GameServer.Endpoints.ApiV3.DataTypes.Response;
@@ -12,6 +13,9 @@ public class ApiGameRoomResponse : IApiResponse, IDataConvertableFrom<ApiGameRoo
     public required RoomSlotType LevelType { get; set; }
     public required int LevelId { get; set; }
     
+    public required TokenPlatform Platform { get; set; }
+    public required TokenGame Game { get; set; }
+    
     public static ApiGameRoomResponse? FromOld(GameRoom? old)
     {
         if (old == null) return null;
@@ -24,6 +28,8 @@ public class ApiGameRoomResponse : IApiResponse, IDataConvertableFrom<ApiGameRoo
             RoomMood = old.RoomMood,
             LevelType = old.LevelType,
             LevelId = old.LevelId,
+            Platform = old.Platform,
+            Game = old.Game,
         };
     }
 
