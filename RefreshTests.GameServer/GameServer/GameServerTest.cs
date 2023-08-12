@@ -2,6 +2,7 @@ using Bunkum.CustomHttpListener.Listeners.Direct;
 using Bunkum.HttpServer;
 using NotEnoughLogs;
 using NotEnoughLogs.Loggers;
+using RefreshTests.GameServer.Time;
 
 namespace RefreshTests.GameServer.GameServer;
 
@@ -20,20 +21,21 @@ public class GameServerTest
     {
         DirectHttpListener listener = new();
         HttpClient client = listener.GetClient();
+        MockDateTimeProvider time = new();
 
-        InMemoryGameDatabaseProvider provider = new();
+        TestGameDatabaseProvider provider = new(time);
 
         Lazy<TestRefreshGameServer> gameServer = new(() =>
         {
-            TestRefreshGameServer gameServer = new(listener, provider);
-            gameServer.Initialize();
+            TestRefreshGameServer gameServer = new(listener, () => provider);
             gameServer.Start();
 
             return gameServer;
         });
 
         if (startServer) _ = gameServer.Value;
+        else provider.Initialize();
 
-        return new TestContext(gameServer, provider.GetContext(), client, listener);
+        return new TestContext(gameServer, provider.GetContext(), client, listener, time);
     }
 }

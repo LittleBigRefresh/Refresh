@@ -12,6 +12,7 @@ public class ActivityEndpoints : EndpointGroup
 {
     [GameEndpoint("stream", ContentType.Xml)]
     [NullStatusCode(BadRequest)]
+    [Authentication(false)]
     public ActivityPage? GetRecentActivity(RequestContext context, GameDatabaseContext database)
     {
         long timestamp = 0;
@@ -25,10 +26,6 @@ public class ActivityEndpoints : EndpointGroup
         if (endTimestamp == 0) endTimestamp = timestamp - 86400000 * 7; // 1 week
 
         ActivityPage page = new(database, timestamp: timestamp, endTimestamp: endTimestamp);
-        
-        foreach (GameUser user in page.Users.Users) user.PrepareForSerialization();
-        foreach (GameLevel level in page.Levels.Items) level.PrepareForSerialization();
-
         return page;
     }
 }

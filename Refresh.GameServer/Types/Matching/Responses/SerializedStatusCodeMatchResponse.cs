@@ -1,10 +1,11 @@
-using Newtonsoft.Json;
+using System.Diagnostics.CodeAnalysis;
 
 namespace Refresh.GameServer.Types.Matching.Responses;
 
 [JsonObject(MemberSerialization.OptIn)]
 public class SerializedStatusCodeMatchResponse
 {
+    [ExcludeFromCodeCoverage]
     public SerializedStatusCodeMatchResponse() {}
 
     public SerializedStatusCodeMatchResponse(int statusCode)

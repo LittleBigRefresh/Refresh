@@ -56,7 +56,7 @@ public class MetadataEndpoints : EndpointGroup
         });
     
     [GameEndpoint("network_settings.nws")]
-    public string? NetworkSettings(RequestContext context)
+    public string NetworkSettings(RequestContext context)
     {
         bool created = NetworkSettingsFile.IsValueCreated;
         
@@ -66,6 +66,8 @@ public class MetadataEndpoints : EndpointGroup
         if(!created && networkSettings == null)
             context.Logger.LogWarning(BunkumContext.Request, "network_settings.nws file is missing! " +
                                                               "LBP will work without it, but it may be relevant to you if you are an advanced user.");
+
+        networkSettings ??= "ShowLevelBoos true\nAllowOnlineCreate true";
         
         return networkSettings;
     }

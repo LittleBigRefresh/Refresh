@@ -1,17 +1,23 @@
 using Bunkum.HttpServer;
 using Bunkum.HttpServer.Endpoints;
 using MongoDB.Bson;
+using Refresh.GameServer.Configuration;
 using Refresh.GameServer.Database;
 using Refresh.GameServer.Services;
 using Refresh.GameServer.Types.Legacy;
 using Refresh.GameServer.Types.Levels;
 using Refresh.GameServer.Types.Matching;
+using Refresh.GameServer.Types.RichPresence;
 using Refresh.GameServer.Types.UserData;
 
 namespace Refresh.GameServer.Endpoints.LegacyApi;
 
 public class LegacyApiEndpoints : EndpointGroup
 {
+    [LegacyApiEndpoint("rpc"), Authentication(false)]
+    public RichPresenceConfiguration GetRichPresenceConfiguration(RequestContext context, GameServerConfig gameConfig, RichPresenceConfig richConfig)
+        => RichPresenceConfiguration.Create(gameConfig, richConfig, true);
+
     [LegacyApiEndpoint("username/{username}")]
     [Authentication(false)]
     public LegacyGameUser? GetLegacyUserByUsername(RequestContext context, GameDatabaseContext database, string username)
@@ -19,41 +25,33 @@ public class LegacyApiEndpoints : EndpointGroup
         GameUser? user = database.GetUserByUsername(username);
         if (user == null) return null;
         
-        return LegacyGameUser.FromGameUser(user);
+        return LegacyGameUser.FromOld(user);
     }
     
-    [LegacyApiEndpoint("user/{idStr}")]
+    [LegacyApiEndpoint("user/{id}")]
     [Authentication(false)]
-    public LegacyGameUser? GetLegacyUserByLegacyId(RequestContext context, GameDatabaseContext database, string idStr)
+    public LegacyGameUser? GetLegacyUserByLegacyId(RequestContext context, GameDatabaseContext database, int id)
     {
-        int.TryParse(idStr, out int id);
-        if (id == default) return null;
-        
         GameUser? user = database.GetUserByLegacyId(id);
         if (user == null) return null;
         
-        return LegacyGameUser.FromGameUser(user);
+        return LegacyGameUser.FromOld(user);
     }
 
     [LegacyApiEndpoint("slot/{id}")]
     [Authentication(false)]
-    public LegacyGameLevel? GetLegacyLevel(RequestContext context, GameDatabaseContext database, int? id)
+    public LegacyGameLevel? GetLegacyLevel(RequestContext context, GameDatabaseContext database, int id)
     {
-        if (id == null) return null;
-
-        GameLevel? level = database.GetLevelById(id.Value);
+        GameLevel? level = database.GetLevelById(id);
         if (level == null) return null;
         
-        return LegacyGameLevel.FromGameLevel(level);
+        return LegacyGameLevel.FromOld(level);
     }
 
-    [LegacyApiEndpoint("user/{idStr}/status")]
+    [LegacyApiEndpoint("user/{id}/status")]
     [Authentication(false)]
-    public LegacyStatus? GetLegacyUserStatus(RequestContext context, MatchService match, GameDatabaseContext database, string idStr)
+    public LegacyStatus? GetLegacyUserStatus(RequestContext context, MatchService match, GameDatabaseContext database, int id)
     {
-        _ = int.TryParse(idStr, out int id);
-        if (id == default) return null;
-
         GameUser? user = database.GetUserByLegacyId(id);
         if (user == null) return null;
 
@@ -80,6 +78,8 @@ public class LegacyApiEndpoints : EndpointGroup
             },
             CurrentPlatform = 1,
             CurrentVersion = 1,
+            LastLogin = user.LastLoginDate.ToUnixTimeMilliseconds(),
+            LastLogout = user.LastLoginDate.ToUnixTimeMilliseconds() + 1,
         };
     }
 }

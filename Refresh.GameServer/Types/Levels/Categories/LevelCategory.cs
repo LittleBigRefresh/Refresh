@@ -22,7 +22,7 @@ public class LevelCategory
         this.ApiRoute = apiRoute;
         this.GameRoute = gameRoute;
         
-        this._requiresUser = requiresUser;
+        this.RequiresUser = requiresUser;
 
         MethodInfo? method = Methods.Value.FirstOrDefault(m => m.Name == funcName);
         if (method == null) throw new ArgumentNullException(nameof(funcName), 
@@ -34,18 +34,18 @@ public class LevelCategory
     [JsonProperty] public readonly string ApiRoute;
     public readonly string GameRoute;
     
-    [JsonProperty("RequiresUser")] private readonly bool _requiresUser;
+    [JsonProperty] public readonly bool RequiresUser;
     private readonly MethodInfo _method;
 
     [Pure]
-    public virtual IEnumerable<GameLevel>? Fetch(RequestContext context, int skip, int count, GameDatabaseContext database, GameUser? user, object[]? extraArgs = null)
+    public virtual DatabaseList<GameLevel>? Fetch(RequestContext context, int skip, int count, GameDatabaseContext database, GameUser? user, object[]? extraArgs = null)
     {
-        if (this._requiresUser && user == null) return null;
+        if (this.RequiresUser && user == null) return null;
 
         IEnumerable<object> args;
 
         // ReSharper disable once ConvertIfStatementToConditionalTernaryExpression
-        if (this._requiresUser)
+        if (this.RequiresUser)
 #pragma warning disable CS8601
             args = new object[] { user, count, skip };
 #pragma warning restore CS8601
@@ -54,6 +54,14 @@ public class LevelCategory
 
         if (extraArgs != null) args = args.Concat(extraArgs);
 
-        return (IEnumerable<GameLevel>)this._method.Invoke(database, args.ToArray())!;
+        try
+        {
+            return (DatabaseList<GameLevel>)this._method.Invoke(database, args.ToArray())!;
+        }
+        catch
+        {
+            Console.WriteLine(this.ApiRoute);
+            throw;
+        }
     }
 }

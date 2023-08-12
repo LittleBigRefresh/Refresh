@@ -5,16 +5,35 @@ using Refresh.GameServer.Types.Comments;
 using Refresh.GameServer.Types.Levels;
 using Refresh.GameServer.Types.UserData;
 using Bunkum.RealmDatabase;
+using Refresh.GameServer.Configuration;
+using Refresh.GameServer.Time;
 using Refresh.GameServer.Types.Activity;
+using Refresh.GameServer.Types.Assets;
+using Refresh.GameServer.Types.Levels.SkillRewards;
+using Refresh.GameServer.Types.Notifications;
 using Refresh.GameServer.Types.Relations;
 using Refresh.GameServer.Types.Report;
 using Refresh.GameServer.Types.UserData.Leaderboard;
+using GamePhoto = Refresh.GameServer.Types.Photos.GamePhoto;
+using GamePhotoSubject = Refresh.GameServer.Types.Photos.GamePhotoSubject;
 
 namespace Refresh.GameServer.Database;
 
 public class GameDatabaseProvider : RealmDatabaseProvider<GameDatabaseContext>
 {
-    protected override ulong SchemaVersion => 42;
+    private readonly IDateTimeProvider _time;
+    
+    public GameDatabaseProvider()
+    {
+        this._time = new SystemDateTimeProvider();
+    }
+
+    protected GameDatabaseProvider(IDateTimeProvider time)
+    {
+        this._time = time;
+    }
+
+    protected override ulong SchemaVersion => 74;
 
     protected override string Filename => "refreshGameServer.realm";
     
@@ -25,16 +44,26 @@ public class GameDatabaseProvider : RealmDatabaseProvider<GameDatabaseContext>
         typeof(UserPins),
         typeof(Token),
         typeof(GameLevel),
+        typeof(GameSkillReward),
         typeof(GameComment),
         typeof(FavouriteLevelRelation),
         typeof(QueueLevelRelation),
         typeof(FavouriteUserRelation),
         typeof(PlayLevelRelation),
         typeof(UniquePlayLevelRelation),
+        typeof(RateLevelRelation),
         typeof(Event),
         typeof(GameSubmittedScore),
+        typeof(GameAsset),
+        typeof(GameNotification),
+        typeof(GamePhoto),
+        typeof(GamePhotoSubject),
+        typeof(GameIpVerificationRequest),
+        typeof(GameAnnouncement),
+        typeof(QueuedRegistration),
+        typeof(EmailVerificationCode),
         //grief report items
-        typeof(GriefReport),
+        typeof(GameReport),
         typeof(InfoBubble),
         typeof(Marqee),
         typeof(Player),
@@ -44,22 +73,26 @@ public class GameDatabaseProvider : RealmDatabaseProvider<GameDatabaseContext>
         typeof(Slot),
     };
 
-    protected override void Warmup()
+    public override void Warmup()
     {
         using GameDatabaseContext context = this.GetContext();
         _ = context.GetTotalLevelCount();
-        base.Warmup();
+    }
+
+    protected override GameDatabaseContext CreateContext()
+    {
+        return new GameDatabaseContext(this._time);
     }
 
     protected override void Migrate(Migration migration, ulong oldVersion)
     {
         // Get the current unix timestamp for when we add timestamps to objects
-        long timestampMilliseconds = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
+        long timestampMilliseconds = this._time.TimestampMilliseconds;
 
         // DO NOT USE FOR NEW MIGRATIONS! LBP almost never actually uses seconds for timestamps.
         // This is from a mistake made early in development where this was not understood by me.
         // Unless you are certain second timestamps are used, use the millisecond timestamps set above.
-        long timestampSeconds = timestampMilliseconds / 1000;
+        long timestampSeconds = this._time.TimestampSeconds;
 
         IQueryable<dynamic>? oldUsers = migration.OldRealm.DynamicApi.All("GameUser");
         IQueryable<GameUser>? newUsers = migration.NewRealm.All<GameUser>();
@@ -88,7 +121,7 @@ public class GameDatabaseProvider : RealmDatabaseProvider<GameDatabaseContext>
             if (oldVersion < 23) newUser.PasswordBcrypt = null;
 
             // In version 26, users were given join dates
-            if (oldVersion < 26) newUser.JoinDate = 0;
+            if (oldVersion < 26) newUser.JoinDate = DateTimeOffset.MinValue;
 
             // In version 40, we switched to Realm source generators which requires some values to be reset
             if (oldVersion < 40)
@@ -96,6 +129,20 @@ public class GameDatabaseProvider : RealmDatabaseProvider<GameDatabaseContext>
                 newUser.IconHash = oldUser.IconHash;
                 newUser.Description = oldUser.Description;
                 newUser.PlanetsHash = oldUser.PlanetsHash;
+            }
+            
+            // In version 67, users switched to dates to store their join date
+            if (oldVersion < 67) newUser.JoinDate = DateTimeOffset.FromUnixTimeMilliseconds(oldUser.JoinDate);
+            
+            // In version 69 (nice), users were given last login dates. For now, we'll set that to now.
+            if(oldVersion < 69 /*nice*/) newUser.LastLoginDate = DateTimeOffset.Now;
+            
+            // In version 72, users got settings for permissions regarding certain platforms.
+            // To avoid breakage, we set them to true for existing users.
+            if (oldVersion < 72)
+            {
+                newUser.PsnAuthenticationAllowed = true;
+                newUser.RpcnAuthenticationAllowed = true;
             }
         }
 
@@ -135,6 +182,13 @@ public class GameDatabaseProvider : RealmDatabaseProvider<GameDatabaseContext>
                 newLevel.IconHash = oldLevel.IconHash;
                 newLevel.Description = oldLevel.Description;
                 newLevel.RootResource = oldLevel.RootResource;
+            }
+
+            // In version 57, we implemented minimum and maximum players which are 1 and 4 by default
+            if (oldVersion < 57)
+            {
+                newLevel.MinPlayers = 1;
+                newLevel.MaxPlayers = 4;
             }
         }
 
@@ -185,6 +239,21 @@ public class GameDatabaseProvider : RealmDatabaseProvider<GameDatabaseContext>
             if (oldVersion < 40)
             {
                 newComment.Content = oldComment.Content;
+            }
+        }
+        
+        IQueryable<dynamic>? oldPhotos = migration.OldRealm.DynamicApi.All("GamePhoto");
+        IQueryable<GamePhoto>? newPhotos = migration.NewRealm.All<GamePhoto>();
+
+        for (int i = 0; i < newComments.Count(); i++)
+        {
+            dynamic oldPhoto = oldPhotos.ElementAt(i);
+            GamePhoto newPhoto = newPhotos.ElementAt(i);
+
+            // In version 52, the timestamp on photos were corrected
+            if (oldVersion < 52)
+            {
+                newPhoto.TakenAt = DateTimeOffset.FromUnixTimeSeconds(oldPhoto.TakenAt.ToUnixTimeMilliseconds());
             }
         }
     }

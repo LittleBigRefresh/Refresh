@@ -1,11 +1,13 @@
 using System.Xml.Serialization;
 using Newtonsoft.Json;
 using Refresh.GameServer.Database;
+using Refresh.GameServer.Endpoints.Game.DataTypes.Response;
 using Refresh.GameServer.Types.Activity.Groups;
 using Refresh.GameServer.Types.Activity.SerializedEvents;
 using Refresh.GameServer.Types.Levels;
 using Refresh.GameServer.Types.Lists;
 using Refresh.GameServer.Types.UserData;
+using Refresh.GameServer.Types.UserData.Leaderboard;
 
 namespace Refresh.GameServer.Types.Activity;
 
@@ -22,30 +24,48 @@ public class ActivityPage
     
     [XmlIgnore]
     public List<Event> Events { get; set; }
+    
+    [XmlIgnore]
+    public List<GameUser> Users { get; set; }
+    
+    [XmlIgnore]
+    public List<GameLevel> Levels { get; set; }
 
     [JsonIgnore]
     [XmlElement("groups")]
     public ActivityGroups Groups { get; set; }
 
     [XmlElement("users")]
-    public GameUserList Users { get; set; }
+    public SerializedUserList SerializedUsers { get; set; }
     
     [XmlElement("slots")]
-    public GameLevelList Levels { get; set; }
+    public SerializedLevelList SerializedLevels { get; set; }
+    
+    [XmlIgnore, JsonIgnore]
+    public List<GameSubmittedScore> Scores { get; set; }
 
     public ActivityPage()
     {
         this.Events = new List<Event>();
         this.Groups = new ActivityGroups();
-        this.Levels = new GameLevelList();
-        this.Users = new GameUserList();
+        this.SerializedLevels = new SerializedLevelList();
+        this.SerializedUsers = new SerializedUserList();
+        this.Scores = new List<GameSubmittedScore>();
     }
 
-    public ActivityPage(GameDatabaseContext database, int count = 20, int skip = 0, long timestamp = 0, long endTimestamp = 0, bool generateGroups = true)
+    public ActivityPage(GameDatabaseContext database, int count = 20, int skip = 0, long timestamp = 0, long endTimestamp = 0, bool generateGroups = true, GameLevel? level = null)
     {
         if (timestamp == 0) timestamp = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
+
+        DatabaseList<Event> events;
         
-        this.Events = new List<Event>(database.GetRecentActivity(count, skip, timestamp, endTimestamp));
+        // ReSharper disable once ConvertIfStatementToConditionalTernaryExpression
+        if (level != null)
+            events = database.GetRecentActivityForLevel(level, count, skip, timestamp, endTimestamp);
+        else
+            events = database.GetRecentActivity(count, skip, timestamp, endTimestamp);
+
+        this.Events = new List<Event>(events.Items);
         
         List<GameUser> users = this.Events
             .Select(e => e.User)
@@ -56,10 +76,12 @@ public class ActivityPage
             .DistinctBy(e => e.StoredObjectId)
             .Select(e => database.GetUserFromEvent(e)!));
 
-        this.Users = new GameUserList
+        this.SerializedUsers = new SerializedUserList
         {
-            Users = users,
+            Users = GameUserResponse.FromOldList(users).ToList(),
         };
+
+        this.Users = users;
 
         List<GameLevel> levels = this.Events
             .Where(e => e.StoredDataType == EventDataType.Level)
@@ -67,12 +89,26 @@ public class ActivityPage
             .Select(e => database.GetLevelFromEvent(e)!) // probably pretty inefficient
             .ToList();
 
-        this.Levels = new GameLevelList
+        this.SerializedLevels = new SerializedLevelList
         {
-            Items = levels,
+            Items = GameLevelResponse.FromOldList(levels).ToList(),
         };
 
-        this.Groups = generateGroups ? this.GenerateGroups(users) : new ActivityGroups();
+        this.Levels = levels;
+        
+        List<GameSubmittedScore> scores = this.Events
+            .Where(e => e.StoredDataType == EventDataType.Score)
+            .DistinctBy(e => e.StoredObjectId)
+            .Select(e => database.GetScoreByObjectId(e.StoredObjectId))
+            .ToList()!;
+
+        this.Scores = scores;
+
+        this.Groups = generateGroups ? this.GenerateGroups(users, scores) : new ActivityGroups();
+
+        this.Groups.Groups = this.Groups.Groups
+            .OrderByDescending(g => g.Timestamp)
+            .ToList();
 
         if (this.Events.Count > 0)
         {
@@ -81,7 +117,7 @@ public class ActivityPage
         }
     }
 
-    private ActivityGroups GenerateGroups(IReadOnlyCollection<GameUser> users)
+    private ActivityGroups GenerateGroups(IReadOnlyCollection<GameUser> users, IReadOnlyCollection<GameSubmittedScore> scores)
     {
         ActivityGroups groups = new();
         
@@ -95,6 +131,12 @@ public class ActivityPage
                 case EventDataType.Level:
                     this.GenerateLevelGroups(groups);
                     break;
+                case EventDataType.Score:
+                    this.GenerateScoreGroups(groups, scores);
+                    break;
+                case EventDataType.RateLevelRelation:
+                    // TODO
+                    break;
                 default:
                     throw new ArgumentOutOfRangeException();
             }
@@ -107,7 +149,7 @@ public class ActivityPage
     {
         foreach (Event @event in this.Events.Where(e => e.StoredDataType == EventDataType.Level))
         {
-            GameLevelId id = new()
+            SerializedLevelId id = new()
             {
                 LevelId = @event.StoredSequentialId!.Value,
                 Type = "user",
@@ -123,10 +165,17 @@ public class ActivityPage
                 Actor = @event.User.Username,
             };
 
-            // Level upload events have special properties
-            // cant put extra properties as nullable in base, nullables will still be serialized
-            if (@event.EventType == EventType.LevelUpload)
-                levelEvent = SerializedLevelUploadEvent.FromSerializedLevelEvent(levelEvent);
+            // Events can sometimes have special properties
+            // We can't put extra properties as nullable in the base class, as nullables will still be serialized
+            //
+            // AND HEY! Remember to add an [XmlInclude] in SerializedEvent when adding something here!
+            // You will waste 30 seconds of your time if you don't.
+            levelEvent = @event.EventType switch
+            {
+                EventType.Level_Upload => SerializedLevelUploadEvent.FromSerializedLevelEvent(levelEvent),
+                EventType.Level_Play => SerializedLevelPlayEvent.FromSerializedLevelEvent(levelEvent),
+                _ => levelEvent,
+            };
 
             groups.Groups.Add(new LevelActivityGroup
             {
@@ -141,6 +190,50 @@ public class ActivityPage
                         Events = new Events(new List<SerializedEvent>
                         {
                             levelEvent,
+                        }),
+                    },
+                }),
+            });
+        }
+    }
+    
+    private void GenerateScoreGroups(ActivityGroups groups, IReadOnlyCollection<GameSubmittedScore> scores)
+    {
+        foreach (Event @event in this.Events.Where(e => e.EventType == EventType.SubmittedScore_Create))
+        {
+            GameSubmittedScore score = scores.First(u => u.ScoreId == @event.StoredObjectId);
+            
+            SerializedLevelId id = new()
+            {
+                LevelId = score.Level.LevelId,
+                Type = "user",
+            };
+
+            long timestamp = @event.Timestamp;
+
+            SerializedScoreSubmitEvent scoreEvent = new()
+            {
+                Type = @event.EventType,
+                Timestamp = timestamp,
+                LevelId = id,
+                Actor = @event.User.Username,
+                Score = score.Score,
+                ScoreType = score.ScoreType,
+            };
+
+            groups.Groups.Add(new LevelActivityGroup
+            {
+                LevelId = id,
+                Timestamp = timestamp,
+                Subgroups = new Subgroups(new List<ActivityGroup>
+                {
+                    new UserActivityGroup
+                    {
+                        Username = @event.User.Username,
+                        Timestamp = timestamp,
+                        Events = new Events(new List<SerializedEvent>
+                        {
+                            scoreEvent,
                         }),
                     },
                 }),

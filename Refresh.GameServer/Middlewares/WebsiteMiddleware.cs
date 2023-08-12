@@ -10,9 +10,11 @@ public class WebsiteMiddleware : IMiddleware
     private static readonly string WebPath = Path.Join(BunkumFileSystem.DataDirectory, "web");
     private static readonly Dictionary<string, string> MimeMapping = new()
     {
-        {".html", "text/html"},
-        {".css", "text/css"},
-        {".js", "application/javascript"},
+        { ".html", "text/html" },
+        { ".css", "text/css" },
+        { ".js", "application/javascript" },
+        { ".svg", "image/svg+xml" },
+        { ".ico", "image/vnd.microsoft.icon" },
     };
 
     private static bool HandleWebsiteRequest(ListenerContext context)
@@ -22,7 +24,7 @@ public class WebsiteMiddleware : IMiddleware
 
         string uri = context.Uri.AbsolutePath;
 
-        if (uri.StartsWith("/lbp") || uri.StartsWith("/api") || uri.StartsWith("/autodiscover")) return false;
+        if (uri.StartsWith("/lbp") || uri.StartsWith("/api") || uri == "/autodiscover" || uri == "/_health" || uri.StartsWith("/gameAssets")) return false;
 
         if (uri == "/" || (context.RequestHeaders["Accept"] ?? "").Contains("text/html"))
             uri = "/index.html";

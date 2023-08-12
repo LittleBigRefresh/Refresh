@@ -42,6 +42,34 @@ public class CategoryService : EndpointService
             IconHash = "g820614",
             FontAwesomeIcon = "bell",
         },
+        new LevelCategory("mostHearted", "mostHearted", false, nameof(GameDatabaseContext.GetMostHeartedLevels))
+        {
+            Name = "Most Loved",
+            Description = "The most hearted levels of all time",
+            IconHash = "g820607",
+            FontAwesomeIcon = "heart",
+        },
+        new LevelCategory("mostLiked", "thumbs", false, nameof(GameDatabaseContext.GetHighestRatedLevels))
+        {
+            Name = "Liked Levels",
+            Description = "The most liked levels of all time",
+            IconHash = "g820603",
+            FontAwesomeIcon = "thumbs-up",
+        },
+        new LevelCategory("mostPlayed", "mostUniquePlays", false, nameof(GameDatabaseContext.GetMostUniquelyPlayedLevels))
+        {
+            Name = "Most Played",
+            Description = "The most played content",
+            IconHash = "g820608",
+            FontAwesomeIcon = "play",
+        },
+        new LevelCategory("teamPicks", "mmpicks", false, nameof(GameDatabaseContext.GetTeamPickedLevels))
+        {
+            Name = "Team Picks",
+            Description = "The best of the best",
+            IconHash = "g820626",
+            FontAwesomeIcon = "certificate",
+        },
     };
 
     internal CategoryService(LoggerContainer<BunkumContext> logger) : base(logger)

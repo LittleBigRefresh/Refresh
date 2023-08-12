@@ -4,7 +4,7 @@ name: Create new release from pushed tag
 on:
   push:
     tags:
-      - "v[0-9]+.[0-9]+.[0-9]+"
+      - "*"
 
 jobs:
   release:
@@ -31,7 +31,8 @@ jobs:
       - uses: "marvinpinto/action-automatic-releases@latest"
         with:
           repo_token: "${{ secrets.GITHUB_TOKEN }}"
-          prerelease: true
+          prerelease: false
           draft: true
           files: |
             *.zip
+            apiDocumentation.json

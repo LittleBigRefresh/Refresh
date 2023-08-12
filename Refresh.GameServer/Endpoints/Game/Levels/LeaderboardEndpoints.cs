@@ -27,7 +27,7 @@ public class LeaderboardEndpoints : EndpointGroup
     }
 
     [GameEndpoint("scoreboard/user/{id}", ContentType.Xml, Method.Post)]
-    public Response SubmitScore(RequestContext context, GameUser user, GameDatabaseContext database, int? id, GameScore body)
+    public Response SubmitScore(RequestContext context, GameUser user, GameDatabaseContext database, int? id, SerializedScore body)
     {
         if (id == null) return BadRequest;
 
@@ -40,11 +40,11 @@ public class LeaderboardEndpoints : EndpointGroup
         IEnumerable<ScoreWithRank>? scores = database.GetRankedScoresAroundScore(score, 5);
         Debug.Assert(scores != null);
         
-        return new Response(GameScoreSegmentList.FromSubmittedEnumerable(scores), ContentType.Xml);
+        return new Response(SerializedScoreLeaderboardList.FromSubmittedEnumerable(scores), ContentType.Xml);
     }
 
     [GameEndpoint("topscores/user/{id}/{type}", ContentType.Xml)]
-    public GameScoreList? GetTopScoresForLevel(RequestContext context, GameDatabaseContext database, int? id, int? type)
+    public SerializedScoreList? GetTopScoresForLevel(RequestContext context, GameDatabaseContext database, int? id, int? type)
     {
         if (id == null) return null;
         if (type == null) return null;
@@ -53,6 +53,6 @@ public class LeaderboardEndpoints : EndpointGroup
         if (level == null) return null;
         
         (int skip, int count) = context.GetPageData();
-        return GameScoreList.FromSubmittedEnumerable(database.GetTopScoresForLevel(level, count, skip, (byte)type));
+        return SerializedScoreList.FromSubmittedEnumerable(database.GetTopScoresForLevel(level, count, skip, (byte)type).Items);
     }
 }

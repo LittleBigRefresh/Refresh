@@ -8,7 +8,7 @@ namespace Refresh.GameServer.Database;
 
 public partial class GameDatabaseContext // Leaderboard
 {
-    public GameSubmittedScore? SubmitScore(GameScore score, GameUser user, GameLevel level)
+    public GameSubmittedScore SubmitScore(SerializedScore score, GameUser user, GameLevel level)
     {
         GameSubmittedScore newScore = new()
         {
@@ -16,7 +16,7 @@ public partial class GameDatabaseContext // Leaderboard
             ScoreType = score.ScoreType,
             Level = level,
             Players = { user },
-            ScoreSubmitted = DateTimeOffset.Now,
+            ScoreSubmitted = this._time.Now,
         };
 
         this._realm.Write(() =>
@@ -24,12 +24,14 @@ public partial class GameDatabaseContext // Leaderboard
             this._realm.Add(newScore);
         });
 
+        this.CreateSubmittedScoreCreateEvent(user, newScore);
+
         return newScore;
     }
     
     [UsedImplicitly] private record ScoreLevelWithPlayer(GameLevel level, GameUser player);
 
-    public IEnumerable<GameSubmittedScore> GetTopScoresForLevel(GameLevel level, int count, int skip, byte type, bool showDuplicates = false)
+    public DatabaseList<GameSubmittedScore> GetTopScoresForLevel(GameLevel level, int count, int skip, byte type, bool showDuplicates = false)
     {
         IEnumerable<GameSubmittedScore> scores = this._realm.All<GameSubmittedScore>()
             .Where(s => s.Level == level && s.ScoreType == type)
@@ -39,13 +41,13 @@ public partial class GameDatabaseContext // Leaderboard
         if (!showDuplicates)
             scores = scores.DistinctBy(s => new ScoreLevelWithPlayer(s.Level, s.Players[0]));
 
-        return scores.Skip(skip).Take(count);
+        return new DatabaseList<GameSubmittedScore>(scores, skip, count);
     }
     
 
-    public IEnumerable<ScoreWithRank>? GetRankedScoresAroundScore(GameSubmittedScore score, int count)
+    public IEnumerable<ScoreWithRank> GetRankedScoresAroundScore(GameSubmittedScore score, int count)
     {
-        if (count % 2 != 1) throw new InvalidOperationException("Count must be odd!");
+        if (count % 2 != 1) throw new ArgumentException("The number of scores must be odd.", nameof(count));
         
         // this is probably REALLY fucking slow, and i probably shouldn't be trusted with LINQ anymore
 
@@ -54,8 +56,6 @@ public partial class GameDatabaseContext // Leaderboard
             .OrderByDescending(s => s.Score)
             .AsEnumerable()
             .ToList();
-
-        if (!scores.Contains(score)) return null;
 
         scores = scores.DistinctBy(s => new ScoreLevelWithPlayer(s.Level, s.Players[0]))
             .ToList();
@@ -72,5 +72,13 @@ public partial class GameDatabaseContext // Leaderboard
         if (uuid == null) return null;
         if(!ObjectId.TryParse(uuid, out ObjectId objectId)) return null;
         return this._realm.All<GameSubmittedScore>().FirstOrDefault(u => u.ScoreId == objectId);
+    }
+    
+    [Pure]
+    [ContractAnnotation("null => null; notnull => canbenull")]
+    public GameSubmittedScore? GetScoreByObjectId(ObjectId? id)
+    {
+        if (id == null) return null;
+        return this._realm.All<GameSubmittedScore>().FirstOrDefault(u => u.ScoreId == id);
     }
 }

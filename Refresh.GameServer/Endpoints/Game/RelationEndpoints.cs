@@ -3,6 +3,7 @@ using Bunkum.HttpServer;
 using Bunkum.HttpServer.Endpoints;
 using Bunkum.HttpServer.Responses;
 using Refresh.GameServer.Database;
+using Refresh.GameServer.Endpoints.Game.DataTypes.Response;
 using Refresh.GameServer.Extensions;
 using Refresh.GameServer.Types.Levels;
 using Refresh.GameServer.Types.Lists;
@@ -68,7 +69,7 @@ public class RelationEndpoints : EndpointGroup
 
     [GameEndpoint("favouriteUsers/{username}", ContentType.Xml)]
     [NullStatusCode(NotFound)]
-    public GameFavouriteUserList? GetFavouriteUsers(RequestContext context, GameDatabaseContext database, string username)
+    public SerializedFavouriteUserList? GetFavouriteUsers(RequestContext context, GameDatabaseContext database, string username)
     {
         GameUser? user = database.GetUserByUsername(username);
         if (user == null) return null;
@@ -76,10 +77,8 @@ public class RelationEndpoints : EndpointGroup
         (int skip, int count) = context.GetPageData();
         List<GameUser> users = database.GetUsersFavouritedByUser(user, count, skip)
             .ToList();
-        
-        foreach (GameUser favouritedUser in users) favouritedUser.PrepareForSerialization();
 
-        return new GameFavouriteUserList(users, users.Count);
+        return new SerializedFavouriteUserList(GameUserResponse.FromOldList(users).ToList(), users.Count);
     }
 
     [GameEndpoint("lolcatftw/add/user/{idStr}", Method.Post)]
@@ -110,5 +109,12 @@ public class RelationEndpoints : EndpointGroup
             return OK;
         
         return Unauthorized;
+    }
+
+    [GameEndpoint("lolcatftw/clear", Method.Post)]
+    public Response ClearQueue(RequestContext context, GameDatabaseContext database, GameUser user)
+    {
+        database.ClearQueue(user);
+        return OK;
     }
 }

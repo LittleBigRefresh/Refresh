@@ -1,11 +1,12 @@
 using System.Security.Cryptography;
 using JetBrains.Annotations;
 using Refresh.GameServer.Authentication;
+using Refresh.GameServer.Types.Roles;
 using Refresh.GameServer.Types.UserData;
 
 namespace Refresh.GameServer.Database;
 
-public partial class GameDatabaseContext
+public partial class GameDatabaseContext // Tokens
 {
     private const int DefaultCookieLength = 128;
     private const int MaxBase64Padding = 4;
@@ -44,12 +45,13 @@ public partial class GameDatabaseContext
             TokenType = type,
             TokenGame = game,
             TokenPlatform = platform,
-            ExpiresAt = DateTimeOffset.Now.AddSeconds(tokenExpirySeconds),
-            LoginDate = DateTimeOffset.Now,
+            ExpiresAt = this._time.Now.AddSeconds(tokenExpirySeconds),
+            LoginDate = this._time.Now,
         };
 
         this._realm.Write(() =>
         {
+            user.LastLoginDate = this._time.Now;
             this._realm.Add(token);
         });
         
@@ -66,9 +68,9 @@ public partial class GameDatabaseContext
         if (token == null) return null;
 
         // ReSharper disable once InvertIf
-        if (token.ExpiresAt < DateTimeOffset.Now)
+        if (token.ExpiresAt < this._time.Now)
         {
-            this._realm.Write(() => this._realm.Remove(token));
+            this.RevokeToken(token);
             return null;
         }
 
@@ -95,11 +97,62 @@ public partial class GameDatabaseContext
         Token? token = this._realm.All<Token>().FirstOrDefault(t => t.TokenData == tokenData && t._TokenType == (int)type);
         if (token == null) return false;
 
+        this.RevokeToken(token);
+
+        return true;
+    }
+
+    public void RevokeToken(Token token)
+    {
         this._realm.Write(() =>
         {
             this._realm.Remove(token);
         });
-
-        return true;
     }
+
+    public void RevokeAllTokensForUser(GameUser user)
+    {
+        this._realm.Write(() =>
+        {
+            this._realm.RemoveRange(this._realm.All<Token>().Where(t => t.User == user));
+        });
+    }
+
+    public void AddIpVerificationRequest(GameUser user, string ipAddress)
+    {
+        GameIpVerificationRequest request = new()
+        {
+            IpAddress = ipAddress,
+            CreatedAt = this._time.Now,
+        };
+
+        this._realm.Write(() =>
+        {
+            user.IpVerificationRequests.Add(request);
+        });
+    }
+
+    public void SetApprovedIp(GameUser user, string ipAddress)
+    {
+        this._realm.Write(() =>
+        {
+            user.CurrentVerifiedIp = ipAddress;
+            user.IpVerificationRequests.Clear();
+        });
+    }
+
+    public void DenyIpVerificationRequest(GameUser user, string ipAddress)
+    {
+        IEnumerable<GameIpVerificationRequest> requests = user.IpVerificationRequests.Where(r => r.IpAddress == ipAddress);
+        this._realm.Write(() =>
+        {
+            foreach (GameIpVerificationRequest request in requests)
+            {
+                user.IpVerificationRequests.Remove(request);
+            }
+        });
+    }
+
+    public DatabaseList<GameIpVerificationRequest> GetIpVerificationRequestsForUser(GameUser user, int count, int skip) 
+        => new(user.IpVerificationRequests, skip, count);
 }

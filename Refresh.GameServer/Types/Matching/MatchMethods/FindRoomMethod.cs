@@ -2,6 +2,7 @@ using Bunkum.CustomHttpListener.Parsing;
 using Bunkum.HttpServer;
 using Bunkum.HttpServer.Responses;
 using NotEnoughLogs;
+using Refresh.GameServer.Authentication;
 using Refresh.GameServer.Database;
 using Refresh.GameServer.Services;
 using Refresh.GameServer.Types.Matching.Responses;
@@ -13,10 +14,12 @@ public class FindRoomMethod : IMatchMethod
 {
     public IEnumerable<string> MethodNames => new[] { "FindBestRoom" };
 
-    public Response Execute(MatchService service, LoggerContainer<BunkumContext> logger, GameDatabaseContext database, GameUser user,
+    public Response Execute(MatchService service, LoggerContainer<BunkumContext> logger, GameDatabaseContext database,
+        GameUser user,
+        Token token,
         SerializedRoomData body)
     {
-        GameRoom? usersRoom = service.GetRoomByPlayer(user);
+        GameRoom? usersRoom = service.GetRoomByPlayer(user, token.TokenPlatform, token.TokenGame);
         if (usersRoom == null) return BadRequest; // user should already have a room.
 
         List<GameRoom> rooms = service.Rooms.Where(r => r.RoomId != usersRoom.RoomId)

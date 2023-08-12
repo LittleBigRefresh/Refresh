@@ -3,8 +3,10 @@ using System.Xml.Serialization;
 using Bunkum.CustomHttpListener.Parsing;
 using Bunkum.HttpServer;
 using Bunkum.HttpServer.Endpoints;
+using Bunkum.HttpServer.Storage;
 using Newtonsoft.Json;
 using Refresh.GameServer.Database;
+using Refresh.GameServer.Endpoints.Game.DataTypes.Response;
 using Refresh.GameServer.Services;
 using Refresh.GameServer.Types.Lists;
 using Refresh.GameServer.Types.UserData;
@@ -14,30 +16,26 @@ namespace Refresh.GameServer.Endpoints.Game;
 public class UserEndpoints : EndpointGroup
 {
     [GameEndpoint("user/{name}", Method.Get, ContentType.Xml)]
-    public GameUser? GetUser(RequestContext context, GameDatabaseContext database, string name)
-    {
-        GameUser? user = database.GetUserByUsername(name);
-        return user;
-    }
+    public GameUserResponse? GetUser(RequestContext context, GameDatabaseContext database, string name) 
+        => GameUserResponse.FromOld(database.GetUserByUsername(name));
 
     [GameEndpoint("users", Method.Get, ContentType.Xml)]
-    public GameUserList GetMultipleUsers(RequestContext context, GameDatabaseContext database)
+    public SerializedUserList GetMultipleUsers(RequestContext context, GameDatabaseContext database)
     {
         string[]? usernames = context.QueryString.GetValues("u");
-        if (usernames == null) return new GameUserList();
+        if (usernames == null) return new SerializedUserList();
 
-        List<GameUser> users = new(usernames.Length);
+        List<GameUserResponse> users = new(usernames.Length);
 
         foreach (string username in usernames)
         {
             GameUser? user = database.GetUserByUsername(username);
             if (user == null) continue;
-
-            user.PrepareForSerialization();
-            users.Add(user);
+            
+            users.Add(GameUserResponse.FromOld(user)!);
         }
 
-        return new GameUserList
+        return new SerializedUserList
         {
             Users = users,
         };
@@ -45,30 +43,27 @@ public class UserEndpoints : EndpointGroup
 
     [GameEndpoint("myFriends", Method.Get, ContentType.Xml)]
     [NullStatusCode(NotFound)]
-    public GameFriendsList? GetFriends(RequestContext context, GameDatabaseContext database,
+    public SerializedFriendsList? GetFriends(RequestContext context, GameDatabaseContext database,
         GameUser user, FriendStorageService friendService)
     {
         List<GameUser>? friends = friendService.GetUsersFriends(user, database)?.ToList();
         if (friends == null) return null;
         
-        foreach (GameUser friend in friends)
-            friend.PrepareForSerialization();
-        
-        return new GameFriendsList(friends);
+        return new SerializedFriendsList(GameUserResponse.FromOldList(friends).ToList());
     }
 
     [GameEndpoint("updateUser", Method.Post, ContentType.Xml)]
     [NullStatusCode(BadRequest)]
-    public string? UpdateUser(RequestContext context, GameDatabaseContext database, GameUser user, string body)
+    public string? UpdateUser(RequestContext context, GameDatabaseContext database, GameUser user, string body, IDataStore dataStore)
     {
-        UpdateUserData? data = null;
+        SerializedUpdateData? data = null;
         
         // This stupid shit is caused by LBP sending two different root elements for this endpoint
         // LBP is just fantastic man
         try
         {
-            XmlSerializer serializer = new(typeof(UpdateUserDataProfile));
-            if (serializer.Deserialize(new StringReader(body)) is not UpdateUserDataProfile profileData) return null;
+            XmlSerializer serializer = new(typeof(SerializedUpdateDataProfile));
+            if (serializer.Deserialize(new StringReader(body)) is not SerializedUpdateDataProfile profileData) return null;
             data = profileData;
         }
         catch
@@ -78,8 +73,8 @@ public class UserEndpoints : EndpointGroup
         
         try
         {
-            XmlSerializer serializer = new(typeof(UpdateUserDataPlanets));
-            if (serializer.Deserialize(new StringReader(body)) is not UpdateUserDataPlanets planetsData) return null;
+            XmlSerializer serializer = new(typeof(SerializedUpdateDataPlanets));
+            if (serializer.Deserialize(new StringReader(body)) is not SerializedUpdateDataPlanets planetsData) return null;
             data = planetsData;
         }
         catch
@@ -87,7 +82,23 @@ public class UserEndpoints : EndpointGroup
             // ignored
         }
 
-        if (data == null) return null;
+        if (data == null)
+        {
+            database.AddErrorNotification("Profile update failed", "Your profile failed to update because the data could not be read.", user);
+            return null;
+        }
+
+        if (data.IconHash != null && !dataStore.ExistsInStore(data.IconHash))
+        {
+            database.AddErrorNotification("Profile update failed", "Your avatar failed to update because the asset was missing on the server.", user);
+            return null;
+        }
+        
+        if (data.PlanetsHash != null && !dataStore.ExistsInStore(data.PlanetsHash))
+        {
+            database.AddErrorNotification("Profile update failed", "Your planets failed to update because the asset was missing on the server.", user);
+            return null;
+        }
         
         database.UpdateUserData(user, data);
         return string.Empty;
@@ -106,7 +117,10 @@ public class UserEndpoints : EndpointGroup
 
         //If the type is not correct, return null
         if (updateUserPins is null)
+        {
+            database.AddErrorNotification("Pin sync failed", "Your pins failed to update because the data could not be read.", user);
             return null;
+        }
 
         //NOTE: the returned value in the packet capture has a few higher values than the ones sent in the request,
         //      so im not sure what we are supposed to return here, so im just passing it through with `profile_pins` nulled out

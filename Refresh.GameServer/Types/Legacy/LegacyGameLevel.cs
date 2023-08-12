@@ -1,30 +1,73 @@
-using Newtonsoft.Json;
+using Refresh.GameServer.Endpoints.ApiV3.DataTypes;
 using Refresh.GameServer.Types.Levels;
 
 namespace Refresh.GameServer.Types.Legacy;
 
 #nullable disable
 
-[JsonObject(MemberSerialization.OptIn)]
-public class LegacyGameLevel
+[JsonObject(MemberSerialization.OptOut, NamingStrategyType = typeof(CamelCaseNamingStrategy))]
+public class LegacyGameLevel : IDataConvertableFrom<LegacyGameLevel, GameLevel>
 {
-    [JsonProperty("slotId")] public int SlotId { get; set; }
-    [JsonProperty("internalSlotId")] public int InternalSlotId { get; set; }
-    [JsonProperty("type")] public byte Type { get; set; }
-    [JsonProperty("name")] public string Name { get; set; }
-    [JsonProperty("description")] public string Description { get; set; }
-    [JsonProperty("location")] public LegacyGameLocation Location { get; set; }
+    public required int SlotId { get; set; }
+    public required int InternalSlotId { get; set; }
+    public required byte Type { get; set; }
+    public required string Name { get; set; }
+    public required string Description { get; set; }
+    public required string IconHash { get; set; }
+    public required bool IsAdventure { get; set; }
+    public required int CreatorId { get; set; }
+    public required bool InitiallyLocked { get; set; }
+    public required bool SubLevel { get; set; }
+    public required bool Lbp1Only { get; set; }
+    public required byte Shareable { get; set; }
+    public required string AuthorLabels { get; set; }
+    public required string[] LevelTags { get; set; }
+    public required int MinimumPlayers { get; set; }
+    public required int MaximumPlayers { get; set; }
+    public required bool MoveRequired { get; set; }
+    public required long FirstUploaded { get; set; }
+    public required long LastUpdated { get; set; }
+    public required bool TeamPick { get; set; }
+    public required LegacyGameLocation Location { get; set; }
+    public required int GameVersion { get; set; }
+    public required int Plays { get; set; }
+    public required int PlaysUnique { get; set; }
+    public required int PlaysComplete { get; set; }
+    public required bool CommentsEnabled { get;set; }
+    public required int AverageRating { get; set; }
+    public required string LevelType { get; set; }
+    
+    public static LegacyGameLevel FromOld(GameLevel old) => new()
+    {
+        SlotId = old.LevelId,
+        InternalSlotId = old.LevelId,
+        Name = old.Title,
+        Description = old.Description,
+        IconHash = old.IconHash,
+        Location = LegacyGameLocation.FromGameLocation(old.Location),
+        Type = 1,
+        IsAdventure = false,
+        CreatorId = old.Publisher?.UserId.Timestamp ?? 0,
+        InitiallyLocked = false,
+        SubLevel = false,
+        Lbp1Only = false,
+        Shareable = 0,
+        AuthorLabels = "",
+        LevelTags = Array.Empty<string>(),
+        MinimumPlayers = old.MinPlayers,
+        MaximumPlayers = old.MaxPlayers,
+        MoveRequired = false,
+        FirstUploaded = old.PublishDate,
+        LastUpdated = old.UpdateDate,
+        TeamPick = old.TeamPicked,
+        GameVersion = 1,
+        Plays = old.AllPlays.Count(),
+        PlaysUnique = old.UniquePlays.Count(),
+        PlaysComplete = old.Scores.Count(),
+        CommentsEnabled = true,
+        AverageRating = 0,
+        LevelType = "",
+    };
 
-
-    public static LegacyGameLevel FromGameLevel(GameLevel original) =>
-        new()
-        {
-            SlotId = original.LevelId,
-            InternalSlotId = original.LevelId,
-            Name = original.Title,
-            Description = original.Description,
-            Location = LegacyGameLocation.FromGameLocation(original.Location),
-            Type = 1,
-        };
-
+    public static IEnumerable<LegacyGameLevel> FromOldList(IEnumerable<GameLevel> oldList) => oldList.Select(FromOld)!;
 }

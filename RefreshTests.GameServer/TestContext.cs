@@ -1,10 +1,12 @@
 using Bunkum.CustomHttpListener.Listeners.Direct;
 using Refresh.GameServer.Authentication;
 using Refresh.GameServer.Database;
+using Refresh.GameServer.Time;
 using Refresh.GameServer.Types;
 using Refresh.GameServer.Types.Levels;
 using Refresh.GameServer.Types.UserData;
 using Refresh.GameServer.Types.UserData.Leaderboard;
+using RefreshTests.GameServer.Time;
 
 namespace RefreshTests.GameServer;
 
@@ -13,14 +15,16 @@ public class TestContext : IDisposable
     public Lazy<TestRefreshGameServer> Server { get; }
     public GameDatabaseContext Database { get; }
     public HttpClient Http { get; }
+    public MockDateTimeProvider Time { get; }
     private DirectHttpListener Listener { get; }
     
-    public TestContext(Lazy<TestRefreshGameServer> server, GameDatabaseContext database, HttpClient http, DirectHttpListener listener)
+    public TestContext(Lazy<TestRefreshGameServer> server, GameDatabaseContext database, HttpClient http, DirectHttpListener listener, MockDateTimeProvider time)
     {
         this.Server = server;
         this.Database = database;
         this.Http = http;
         this.Listener = listener;
+        this.Time = time;
     }
 
     private int _users;
@@ -71,7 +75,12 @@ public class TestContext : IDisposable
     public GameUser CreateUser(string? username = null)
     {
         username ??= this.UserIncrement.ToString();
-        return this.Database.CreateUser(username);
+        return this.Database.CreateUser(username, $"{username}@{username}.local");
+    }
+
+    public Token CreateToken(GameUser user)
+    {
+        return this.Database.GenerateTokenForUser(user, TokenType.Game, TokenGame.LittleBigPlanet2, TokenPlatform.PS3);
     }
     
     public GameLevel CreateLevel(GameUser author, string title = "Level")
@@ -91,14 +100,14 @@ public class TestContext : IDisposable
     {
         for (byte i = 0; i < count; i++)
         {
-            GameUser scoreUser = this.Database.CreateUser("score" + i);
+            GameUser scoreUser = this.CreateUser("score" + i);
             this.SubmitScore(i, type, level, scoreUser);
         }
     }
 
     public GameSubmittedScore SubmitScore(int score, byte type, GameLevel level, GameUser user)
     {
-        GameScore scoreObject = new()
+        SerializedScore scoreObject = new()
         {
             Host = true,
             Score = score,
@@ -116,7 +125,10 @@ public class TestContext : IDisposable
         this.Database.Dispose();
         this.Http.Dispose();
         this.Listener.Dispose();
-        
+
+        if (this.Server.IsValueCreated)
+            this.Server.Value.Stop();
+
         GC.SuppressFinalize(this);
     }
 }

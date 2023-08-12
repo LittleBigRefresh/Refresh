@@ -1,5 +1,6 @@
 using System.Diagnostics;
 using Bunkum.HttpServer.Responses;
+using Refresh.GameServer.Authentication;
 using Refresh.GameServer.Services;
 using Refresh.GameServer.Types.Matching;
 using Refresh.GameServer.Types.UserData;
@@ -20,8 +21,11 @@ public class MatchingTests : GameServerTest
         GameUser user1 = context.CreateUser();
         GameUser user2 = context.CreateUser();
 
-        match.ExecuteMethod("UpdateMyPlayerData", roomData, context.Database, user1);
-        match.ExecuteMethod("UpdateMyPlayerData", roomData, context.Database, user2);
+        Token token1 = context.CreateToken(user1);
+        Token token2 = context.CreateToken(user2);
+
+        match.ExecuteMethod("UpdateMyPlayerData", roomData, context.Database, user1, token1);
+        match.ExecuteMethod("UpdateMyPlayerData", roomData, context.Database, user2, token2);
         
         Assert.Multiple(() =>
         {
@@ -30,6 +34,9 @@ public class MatchingTests : GameServerTest
             
             Assert.That(room1 = match.GetRoomByPlayer(user1), Is.Not.Null);
             Assert.That(room2 = match.GetRoomByPlayer(user2), Is.Not.Null);
+            
+            Assert.That(match.GetRoomByPlayer(user1, token1.TokenPlatform, token1.TokenGame), Is.Not.Null);
+            Assert.That(match.GetRoomByPlayer(user2, token2.TokenPlatform, token2.TokenGame), Is.Not.Null);
             
             Debug.Assert(room1 != null);
             Debug.Assert(room2 != null);
@@ -50,10 +57,11 @@ public class MatchingTests : GameServerTest
         
         // Setup room
         GameUser user1 = context.CreateUser();
-        match.ExecuteMethod("UpdateMyPlayerData", roomData, context.Database, user1);
+        Token token1 = context.CreateToken(user1);
+        match.ExecuteMethod("UpdateMyPlayerData", roomData, context.Database, user1, token1);
 
         // Tell user1 to try to find a room
-        Response response = match.ExecuteMethod("FindBestRoom", new SerializedRoomData(), context.Database, user1);
+        Response response = match.ExecuteMethod("FindBestRoom", new SerializedRoomData(), context.Database, user1, token1);
         Assert.That(response.StatusCode, Is.EqualTo(NotFound));
     }
 
@@ -72,11 +80,15 @@ public class MatchingTests : GameServerTest
         // Setup rooms
         GameUser user1 = context.CreateUser();
         GameUser user2 = context.CreateUser();
-        match.ExecuteMethod("UpdateMyPlayerData", roomData, context.Database, user1);
-        match.ExecuteMethod("UpdateMyPlayerData", roomData, context.Database, user2);
+        
+        Token token1 = context.CreateToken(user1);
+        Token token2 = context.CreateToken(user2);
+        
+        match.ExecuteMethod("UpdateMyPlayerData", roomData, context.Database, user1, token1);
+        match.ExecuteMethod("UpdateMyPlayerData", roomData, context.Database, user2, token2);
         
         // Tell user2 to try to find a room
-        Response response = match.ExecuteMethod("FindBestRoom", new SerializedRoomData(), context.Database, user2);
+        Response response = match.ExecuteMethod("FindBestRoom", new SerializedRoomData(), context.Database, user2, token2);
         // File.WriteAllBytes("/tmp/matchresp.json", response.Data);
         Assert.That(response.StatusCode, Is.EqualTo(OK));
     }

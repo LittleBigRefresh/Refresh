@@ -1,6 +1,7 @@
 using System.Diagnostics.Contracts;
 using Refresh.GameServer.Types.Levels;
 using Refresh.GameServer.Types.Relations;
+using Refresh.GameServer.Types.Reviews;
 using Refresh.GameServer.Types.UserData;
 
 namespace Refresh.GameServer.Database;
@@ -13,12 +14,11 @@ public partial class GameDatabaseContext // Relations
         .FirstOrDefault(r => r.Level == level && r.User == user) != null;
 
     [Pure]
-    public IEnumerable<GameLevel> GetLevelsFavouritedByUser(GameUser user, int count, int skip) => this._realm.All<FavouriteLevelRelation>()
+    public DatabaseList<GameLevel> GetLevelsFavouritedByUser(GameUser user, int count, int skip) 
+        => new(this._realm.All<FavouriteLevelRelation>()
         .Where(r => r.User == user)
         .AsEnumerable()
-        .Select(r => r.Level)
-        .Skip(skip)
-        .Take(count);
+        .Select(r => r.Level), skip, count);
     
     public bool FavouriteLevel(GameLevel level, GameUser user)
     {
@@ -91,6 +91,16 @@ public partial class GameDatabaseContext // Relations
 
         this.CreateUserFavouriteEvent(userFavouriting, userToFavourite);
 
+        if (this.AreUsersMutual(userFavouriting, userToFavourite))
+        {
+            this.AddNotification("New mutual", $"You are now mutuals with {userFavouriting.Username}!", userToFavourite);
+            this.AddNotification("New mutual", $"You are now mutuals with {userToFavourite.Username}!", userFavouriting);
+        }
+        else
+        {
+            this.AddNotification("New follower", $"{userFavouriting.Username} hearted you!", userToFavourite);
+        }
+
         return true;
     }
 
@@ -117,12 +127,11 @@ public partial class GameDatabaseContext // Relations
         .FirstOrDefault(r => r.Level == level && r.User == user) != null;
 
     [Pure]
-    public IEnumerable<GameLevel> GetLevelsQueuedByUser(GameUser user, int count, int skip) => this._realm.All<QueueLevelRelation>()
+    public DatabaseList<GameLevel> GetLevelsQueuedByUser(GameUser user, int count, int skip)
+        => new(this._realm.All<QueueLevelRelation>()
         .Where(r => r.User == user)
         .AsEnumerable()
-        .Select(r => r.Level)
-        .Skip(skip)
-        .Take(count);
+        .Select(r => r.Level), skip, count);
     
     public bool QueueLevel(GameLevel level, GameUser user)
     {
@@ -155,15 +164,72 @@ public partial class GameDatabaseContext // Relations
 
         return true;
     }
+
+    public void ClearQueue(GameUser user)
+    {
+        this._realm.Write(() =>
+        {
+            this._realm.RemoveRange(user.QueueLevelRelations);
+        });
+    }
     #endregion
 
+    #region Rating and Reviewing
+
+    private RateLevelRelation? GetRateRelationByUser(GameLevel level, GameUser user)
+        => this._realm.All<RateLevelRelation>().FirstOrDefault(r => r.User == user && r.Level == level);
+
+    [Pure]
+    public RatingType GetRatingByUser(GameLevel level, GameUser user)
+    {
+        RateLevelRelation? rating = this.GetRateRelationByUser(level, user);
+        if(rating == null) return RatingType.Neutral;
+            
+        return rating.RatingType;
+    }
+
+    public bool RateLevel(GameLevel level, GameUser user, RatingType type)
+    {
+        if (level.Publisher?.UserId == user.UserId) return false;
+        if (!this.HasUserPlayedLevel(level, user)) return false;
+        
+        RateLevelRelation? rating = this.GetRateRelationByUser(level, user);
+        
+        if (rating == null)
+        {
+            if (type == RatingType.Neutral) return true;
+            
+            rating = new RateLevelRelation
+            {
+                Level = level,
+                User = user,
+                RatingType = type,
+                Timestamp = this._time.Now,
+            };
+
+            this._realm.Write(() => this._realm.Add(rating));
+            return true;
+        }
+
+        this._realm.Write(() =>
+        {
+            rating.RatingType = type;
+            rating.Timestamp = this._time.Now;
+        });
+        return true;
+    }
+
+    #endregion
+
+    #region Playing
+    
     public void PlayLevel(GameLevel level, GameUser user)
     {
         PlayLevelRelation relation = new()
         {
             Level = level,
             User = user,
-            Timestamp = GetTimestampMilliseconds(),
+            Timestamp = this._time.TimestampMilliseconds,
         };
         
         UniquePlayLevelRelation? uniqueRelation = this._realm.All<UniquePlayLevelRelation>()
@@ -178,10 +244,16 @@ public partial class GameDatabaseContext // Relations
             {
                 Level = level,
                 User = user,
-                Timestamp = GetTimestampMilliseconds(),
+                Timestamp = this._time.TimestampMilliseconds,
             });
         });
 
         this.CreateLevelPlayEvent(user, level);
     }
+
+    public bool HasUserPlayedLevel(GameLevel level, GameUser user) =>
+        this._realm.All<UniquePlayLevelRelation>()
+            .FirstOrDefault(r => r.Level == level && r.User == user) != null;
+
+    #endregion
 }

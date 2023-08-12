@@ -4,6 +4,7 @@ using Bunkum.HttpServer.Endpoints;
 using Bunkum.HttpServer.Responses;
 using Bunkum.HttpServer.Storage;
 using Refresh.GameServer.Database;
+using Refresh.GameServer.Endpoints.Game.DataTypes.Response;
 using Refresh.GameServer.Types.Levels;
 using Refresh.GameServer.Types.UserData;
 
@@ -12,7 +13,7 @@ namespace Refresh.GameServer.Endpoints.Game.Levels;
 public class PublishEndpoints : EndpointGroup
 {
     [GameEndpoint("startPublish", ContentType.Xml, Method.Post)]
-    public GameResourceLevel StartPublish(RequestContext context, GameDatabaseContext database, GameLevel body, IDataStore dataStore)
+    public SerializedLevelResources StartPublish(RequestContext context, GameDatabaseContext database, GameLevelResponse body, IDataStore dataStore)
     {
         List<string> hashes = new();
         hashes.AddRange(body.XmlResources);
@@ -21,38 +22,37 @@ public class PublishEndpoints : EndpointGroup
 
         hashes.RemoveAll(r => r == "0" || r.StartsWith('g') || string.IsNullOrWhiteSpace(r));
         
-        return new GameResourceLevel
+        return new SerializedLevelResources
         {
             Resources = hashes.Where(r => !dataStore.ExistsInStore(r)).ToArray(),
         };
     }
 
     [GameEndpoint("publish", ContentType.Xml, Method.Post)]
-    public Response PublishLevel(RequestContext context, GameUser user, GameDatabaseContext database, GameLevel body)
+    public Response PublishLevel(RequestContext context, GameUser user, GameDatabaseContext database, GameLevelResponse body)
     {
-        if (body.LevelId != default) // Republish requests contain the id of the old level
+        GameLevel level = body.ToGameLevel(user);
+        if (level.LevelId != default) // Republish requests contain the id of the old level
         {
-            context.Logger.LogInfo(BunkumContext.UserContent, "Republishing level id " + body.LevelId);
+            context.Logger.LogInfo(BunkumContext.UserContent, "Republishing level id " + level.LevelId);
 
             GameLevel? newBody;
             // ReSharper disable once InvertIf
-            if ((newBody = database.UpdateLevel(body, user)) != null)
+            if ((newBody = database.UpdateLevel(level, user)) != null)
             {
-                newBody.PrepareForSerialization();
-                return new Response(newBody, ContentType.Xml);
+                return new Response(GameLevelResponse.FromOld(newBody)!, ContentType.Xml);
             }
-
+            
+            database.AddPublishFailNotification("You may not republish another user's level.", level, user);
             return BadRequest;
         }
 
-        body.Publisher = user;
+        level.Publisher = user;
 
-        if (!database.AddLevel(body)) return BadRequest;
-
-        database.CreateLevelUploadEvent(user, body);
-            
-        body.PrepareForSerialization();
-        return new Response(body, ContentType.Xml);
+        database.AddLevel(level);
+        database.CreateLevelUploadEvent(user, level);
+        
+        return new Response(GameLevelResponse.FromOld(level)!, ContentType.Xml);
     }
 
     [GameEndpoint("unpublish/{idStr}", ContentType.Xml, Method.Post)]

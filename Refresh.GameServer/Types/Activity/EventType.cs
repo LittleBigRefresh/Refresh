@@ -8,43 +8,45 @@ namespace Refresh.GameServer.Types.Activity;
 public enum EventType
 {
     [XmlEnum("publish_level")]
-    LevelUpload = 0,
+    Level_Upload = 0,
     [XmlEnum("heart_level")]
-    LevelFavourite = 1,
+    Level_Favourite = 1,
     [XmlEnum("unheart_level")]
-    LevelUnfavourite = 2,
+    Level_Unfavourite = 2,
     [XmlEnum("heart_user")]
-    UserFavourite = 3,
+    User_Favourite = 3,
     [XmlEnum("unheart_user")]
-    UserUnfavourite = 4,
+    User_Unfavourite = 4,
     [XmlEnum("play_level")]
-    LevelPlay = 5,
-    [XmlEnum("rate_level")]
-    LevelRate = 6,
+    Level_Play = 5,
+    // [XmlEnum("rate_level")]
+    // Level_Rate = 6,
     [XmlEnum("tag_level")]
-    LevelTag = 7,
+    Level_Tag = 7,
     // [XmlEnum("comment_on_level")]
     // PostLevelComment = 8,
     // [XmlEnum("delete_level_comment")]
     // DeleteLevelComment = 9,
     // [XmlEnum("upload_photo")]
-    // PhotoUpload = 10,
+    // Photo_Upload = 10,
     // [XmlEnum("unpublish_level")]
-    // LevelUnpublish = 11,
+    // Level_Unpublish = 11,
     // [XmlEnum("news_post")]
-    // NewsPost = 12,
+    // News_Post = 12,
     [XmlEnum("mm_pick_level")]
-    LevelTeamPick = 13,
+    Level_TeamPick = 13,
     [XmlEnum("dpad_rate_level")]
-    LevelDpadRate = 14,
+    RateLevelRelation_Create = 14,
     [XmlEnum("review_level")]
-    LevelReview = 15,
+    Level_Review = 15,
     // [XmlEnum("comment_on_user")]
     // PostUserComment = 16,
     // [XmlEnum("create_playlist")]
-    // PlaylistCreate = 17,
+    // Playlist_Create = 17,
     // [XmlEnum("heart_playlist")]
-    // PlaylistFavourite = 18,
+    // Playlist_Favourite = 18,
     // [XmlEnum("add_level_to_playlist")]
-    // PlaylistAddLevel = 19,
+    // Playlist_AddLevel = 19,
+    [XmlEnum("score")]
+    SubmittedScore_Create = 20, // FIXME: this name is shit
 }
