@@ -4,7 +4,7 @@ using Refresh.GameServer.Endpoints.ApiV3.DataTypes;
 namespace Refresh.GameServer.Types.RichPresence;
 
 [JsonObject(NamingStrategyType = typeof(CamelCaseNamingStrategy))]
-public class RichPresenceConfiguration : IApiResponse
+public class RichPresenceConfiguration
 {
     public required long ApplicationId { get; set; }
     public required string PartyIdPrefix { get; set; }

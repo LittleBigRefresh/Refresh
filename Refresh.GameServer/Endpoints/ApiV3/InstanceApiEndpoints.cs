@@ -40,7 +40,7 @@ public class InstanceApiEndpoints : EndpointGroup
             MaximumAssetSafetyLevel = gameConfig.MaximumAssetSafetyLevel,
             Announcements = ApiGameAnnouncementResponse.FromOldList(database.GetAnnouncements()),
             MaintenanceModeEnabled = gameConfig.MaintenanceMode,
-            RichPresenceConfiguration = RichPresenceConfiguration.Create(gameConfig, richConfig),
+            RichPresenceConfiguration = ApiRichPresenceConfigurationResponse.FromOld(RichPresenceConfiguration.Create(gameConfig, richConfig))!,
 
 #if DEBUG
             SoftwareType = "Debug",
