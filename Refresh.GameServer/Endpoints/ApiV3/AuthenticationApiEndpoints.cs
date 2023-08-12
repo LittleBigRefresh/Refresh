@@ -159,6 +159,7 @@ public partial class AuthenticationApiEndpoints : EndpointGroup
         GameDatabaseContext database,
         ApiRegisterRequest body,
         GameServerConfig config,
+        IntegrationConfig integrationConfig,
         SmtpService smtpService)
     {
         if (!config.RegistrationEnabled)
@@ -183,7 +184,16 @@ public partial class AuthenticationApiEndpoints : EndpointGroup
         GameUser user = database.CreateUser(body.Username, body.EmailAddress);
         database.SetUserPassword(user, passwordBcrypt);
 
-        smtpService.SendEmailVerificationRequest(user, "512678");
+        if (integrationConfig.SmtpEnabled)
+        {
+            EmailVerificationCode code = database.CreateEmailVerificationCode(user);
+            smtpService.SendEmailVerificationRequest(user, code.Code);
+        }
+        else
+        {
+            // if smtp isn't enabled just mark the user's email as verified
+            database.VerifyUserEmail(user);
+        }
         
         Token token = database.GenerateTokenForUser(user, TokenType.Api, TokenGame.Website, TokenPlatform.Website);
 

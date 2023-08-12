@@ -10,6 +10,7 @@ using NPTicket.Verification.Keys;
 using Refresh.GameServer.Authentication;
 using Refresh.GameServer.Configuration;
 using Refresh.GameServer.Database;
+using Refresh.GameServer.Services;
 using Refresh.GameServer.Types.Roles;
 using Refresh.GameServer.Types.UserData;
 using Refresh.GameServer.Verification;
@@ -21,7 +22,12 @@ public class AuthenticationEndpoints : EndpointGroup
     [GameEndpoint("login", Method.Post, ContentType.Xml), AllowDuringMaintenance]
     [NullStatusCode(Forbidden)]
     [Authentication(false)]
-    public LoginResponse? Authenticate(RequestContext context, GameDatabaseContext database, Stream body, GameServerConfig config)
+    public LoginResponse? Authenticate(RequestContext context,
+        GameDatabaseContext database,
+        Stream body,
+        GameServerConfig config,
+        IntegrationConfig integrationConfig,
+        SmtpService smtpService)
     {
         Ticket ticket;
         try
@@ -51,6 +57,23 @@ public class AuthenticationEndpoints : EndpointGroup
                 if (registration == null) return null;
                 
                 user = database.CreateUserFromQueuedRegistration(registration, platform);
+                
+                if (integrationConfig.SmtpEnabled)
+                {
+                    EmailVerificationCode code = database.CreateEmailVerificationCode(user);
+                    smtpService.SendEmailVerificationRequest(user, code.Code);
+                    
+                    database.AddNotification("Verify your email",
+                        "Your account has been created, but you still need to verify your e-mail." +
+                           "Please check your email for a verification code, and verify it in settings." +
+                           "If you do not see an email verification code, try resending the email or checking your spam folder.",
+                        user, "envelope");
+                }
+                else
+                {
+                    // if smtp isn't enabled just mark the user's email as verified
+                    database.VerifyUserEmail(user);
+                }
             }
             else return null;
         }

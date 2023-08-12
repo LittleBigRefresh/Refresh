@@ -1,3 +1,6 @@
+using System.Security.Cryptography;
+using System.Text;
+using Org.BouncyCastle.X509.Extension;
 using Refresh.GameServer.Authentication;
 using Refresh.GameServer.Extensions;
 using Refresh.GameServer.Types.UserData;
@@ -11,10 +14,14 @@ public partial class GameDatabaseContext // Registration
         if (this.IsUsernameTaken(username))
             throw new InvalidOperationException("Cannot create a user with an existing username");
         
+        if (this.IsEmailTaken(emailAddress))
+            throw new InvalidOperationException("Cannot create a user with an existing email address");
+        
         GameUser user = new()
         {
             Username = username,
             EmailAddress = emailAddress,
+            EmailAddressVerified = false,
             JoinDate = this._time.Now,
         };
 
@@ -63,11 +70,20 @@ public partial class GameDatabaseContext // Registration
         return this._realm.All<GameUser>().Any(u => u.Username == username) ||
                this._realm.All<QueuedRegistration>().Any(r => r.Username == username);
     }
+    
+    public bool IsEmailTaken(string emailAddress)
+    {
+        return this._realm.All<GameUser>().Any(u => u.EmailAddress == emailAddress) ||
+               this._realm.All<QueuedRegistration>().Any(r => r.EmailAddress == emailAddress);
+    }
 
     public void AddRegistrationToQueue(string username, string emailAddress, string passwordBcrypt)
     {
         if (this.IsUsernameTaken(username))
             throw new InvalidOperationException("Cannot create a registration with an existing username");
+        
+        if (this.IsEmailTaken(emailAddress))
+            throw new InvalidOperationException("Cannot create a user with an existing email address");
         
         QueuedRegistration registration = new()
         {
@@ -99,4 +115,47 @@ public partial class GameDatabaseContext // Registration
 
     public DatabaseList<QueuedRegistration> GetAllQueuedRegistrations()
         => new(this._realm.All<QueuedRegistration>());
+    
+    public void VerifyUserEmail(GameUser user)
+    {
+        this._realm.Write(() =>
+        {
+            user.EmailAddressVerified = true;
+        });
+    }
+
+    private static string GenerateDigitCode()
+    {
+        ReadOnlySpan<byte> validChars = "0123456789"u8;
+        Span<char> result = stackalloc char[6];
+        Span<byte> randomBytes = stackalloc byte[6];
+
+        using RandomNumberGenerator rng = RandomNumberGenerator.Create();
+        rng.GetBytes(randomBytes);
+            
+        for (int i = 0; i < randomBytes.Length; i++)
+        {
+            int index = randomBytes[i] % validChars.Length;
+            result[i] = (char)validChars[index];
+        }
+
+        return new string(result);
+    }
+
+    public EmailVerificationCode CreateEmailVerificationCode(GameUser user)
+    {
+        EmailVerificationCode verificationCode = new()
+        {
+            User = user,
+            Code = GenerateDigitCode(),
+            ExpiryDate = this._time.Now + TimeSpan.FromDays(1),
+        };
+
+        this._realm.Write(() =>
+        {
+            this._realm.Add(verificationCode);
+        });
+
+        return verificationCode;
+    }
 }
