@@ -19,14 +19,28 @@ A second-generation custom server for LittleBigPlanet that focuses on ease of us
 > [!NOTE]
 > Refresh is free software: you can redistribute it and/or modify it under the terms of the [GNU Affero General Public License](https://github.com/LittleBigRefresh/Refresh/blob/main/LICENSE) as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later version.
 
-Anyways, with the legal disclaimers out of the way...
+Anyway, with the legal disclaimers out of the way...
 
 ### Instructions
+
+#### From Release
 1. [Find the latest release](https://github.com/LittleBigRefresh/Refresh/releases/latest)
 1. Download the artifact for your OS, extract it somewhere most convenient to you, and run it!
 1. Optionally, run through configuring `bunkum.json` and `refreshGameServer.json` to your liking. These files contain settings like instance name, announce text, whether or not registration is enabled, and more.
 
 To update, you can simply repeat this process, overwriting the previous files.
+
+#### Using Docker (compose)
+1. [Find the latest release](https://github.com/LittleBigRefresh/Refresh/releases/latest) or checkout the source code
+1. Install Docker if not already installed
+1. Verify that the container works with your shell attached: `docker compose up`
+1. If Refresh starts successfully, start the docker container in the background: `docker compose up --detach`
+
+To update, you simply run a `git pull` to pull the latest changes,
+and then run `docker compose up --build` to rebuild the image.
+
+If you would like refresh-web, head to [here](https://github.com/LittleBigRefresh/refresh-web/actions) to view the latest artifacts, then grab them.
+Once you've downloaded the artifact, browse to your data folder and create a folder called 'web' and extract the zip you've just downloaded to that folder.
 
 ## It's on fire! What do I do?
 Refresh isn't perfect, so it's not exactly uncommon to run into bugs. If you'd like, you can [create an issue](https://github.com/LittleBigRefresh/Refresh/issues/new/choose) here on GitHub or join our [Discord](https://discord.gg/xN5yKdxmWG) for support.
