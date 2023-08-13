@@ -39,6 +39,9 @@ To update, you can simply repeat this process, overwriting the previous files.
 To update, you simply run a `git pull` to pull the latest changes,
 and then run `docker compose up --build` to rebuild the image.
 
+If you would like refresh-web, head to [here](https://github.com/LittleBigRefresh/refresh-web/actions) to view the latest artifacts, then grab them.
+Once you've downloaded the artifact, browse to your data folder and create a folder called 'web' and extract the zip you've just downloaded to that folder.
+
 ## It's on fire! What do I do?
 Refresh isn't perfect, so it's not exactly uncommon to run into bugs. If you'd like, you can [create an issue](https://github.com/LittleBigRefresh/Refresh/issues/new/choose) here on GitHub or join our [Discord](https://discord.gg/xN5yKdxmWG) for support.
 
