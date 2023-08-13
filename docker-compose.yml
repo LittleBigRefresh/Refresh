@@ -6,12 +6,14 @@ services:
     build: .
     restart: unless-stopped
     ports:
-      - "10064:10061"
+      - "10061:10061"
     environment:
-      SERVER: GameServer
+        BUNKUM_DATA_FOLDER: /refresh/data
     healthcheck:
-      test: wget --spider -t1 -nv http://localhost:10061/lbp/totalPlayerCount || exit 1
-      timeout: 10s
+      # Fails if the /_health endpoint contains 'Unhealthy'
+      test: ["CMD", "bash", "-c", "exec 5<>/dev/tcp/127.0.0.1/10061 && echo -e 'GET /_health HTTP/1.1\nHost: localhost\n\n' >&5 && cat <&5 | grep -q Unhealthy && exit 1"]
+      timeout: 3s
+      interval: 5s
       retries: 5
     volumes:
       - "./data:/refresh/data:z"
