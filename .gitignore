@@ -351,3 +351,6 @@ MigrationBackup/
 
 # VS Code user configurations
 .vscode/
+
+# Docker data
+/data/
