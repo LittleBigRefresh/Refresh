@@ -1,16 +1,11 @@
 #!/bin/sh
 
+# Docker volume mapping messes with folder ownership
+# so it must be changed again during the entrypoint
 chown -R refresh:refresh /refresh/data
-
-if [ -d "/refresh/temp" ]; then
-  cp -rf /refresh/temp/* /refresh/data
-  rm -rf /refresh/temp
-fi
-
-# run from cmd
 
 cd /refresh/data
 
-exec su-exec refresh:refresh /refresh/app/Refresh."$SERVER"
+exec gosu refresh /refresh/app/Refresh.GameServer
 
 exit $? # Expose error code

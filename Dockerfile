@@ -1,29 +1,39 @@
 # Build stage
-FROM mcr.microsoft.com/dotnet/sdk:7.0-alpine AS build
-WORKDIR /app
+FROM mcr.microsoft.com/dotnet/sdk:7.0.400-bookworm-slim AS build
+WORKDIR /build
+
+COPY *.sln ./
+COPY **/*.csproj ./
+
+RUN dotnet sln list | grep ".csproj" \
+    | while read -r line; do \
+    mkdir -p $(dirname $line); \
+    mv $(basename $line) $(dirname $line); \
+    done;
+
+RUN dotnet restore --use-current-runtime
 
 COPY . .
 
-RUN --mount=type=cache,id=nuget,target=/root/.nuget/packages \
-dotnet publish -c Release --property:OutputPath=/app/publish
+RUN dotnet publish Refresh.GameServer -c Release --property:OutputPath=/build/publish/ --no-restore --use-current-runtime --self-contained
 
 # Final running container
 
-FROM mcr.microsoft.com/dotnet/sdk:7.0-alpine AS final
+FROM mcr.microsoft.com/dotnet/runtime:7.0.10-bookworm-slim AS final
 
 # Add non-root user
-RUN addgroup -S refresh --gid 1001 && \
-adduser -S refresh -G refresh -h /refresh --uid 1001 && \
+RUN set -eux && \
+apt update && \
+apt install -y gosu && \
+rm -rf /var/lib/apt/lists/* && \
+gosu nobody true && \
+groupadd -g 1001 refresh && \
+useradd -m --home /refresh -u 1001 -g refresh refresh &&\
 mkdir -p /refresh/data && \
-mkdir -p /refresh/app && \
-mkdir -p /refresh/temp && \
-apk add --no-cache icu-libs su-exec
+mkdir -p /refresh/app
 
-ENV DOTNET_SYSTEM_GLOBALIZATION_INVARIANT=false
-
-# Copy build files
-COPY --from=build /app/publish /refresh/app
-COPY --from=build /app/scripts/docker-entrypoint.sh /refresh
+COPY --from=build /build/publish/publish /refresh/app
+COPY --from=build /build/scripts/docker-entrypoint.sh /refresh
 
 RUN chown -R refresh:refresh /refresh && \
 chmod +x /refresh/docker-entrypoint.sh
