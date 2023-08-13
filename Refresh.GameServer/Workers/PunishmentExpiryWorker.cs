@@ -11,7 +11,7 @@ namespace Refresh.GameServer.Workers;
 /// </summary>
 public class PunishmentExpiryWorker : IWorker
 {
-    public int WorkInterval => 60_000; // 1 mniute
+    public int WorkInterval => 60_000; // 1 minute
 
     public bool DoWork(LoggerContainer<RefreshContext> logger, IDataStore dataStore, GameDatabaseContext database)
     {

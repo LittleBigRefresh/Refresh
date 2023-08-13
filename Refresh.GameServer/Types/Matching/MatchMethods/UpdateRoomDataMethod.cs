@@ -18,6 +18,7 @@ public class UpdateRoomDataMethod : IMatchMethod
         GameRoom room = service.GetOrCreateRoomByPlayer(user, token.TokenPlatform, token.TokenGame);
         if (room.HostId.Id != user.UserId) return Unauthorized;
 
+        room.LastContact = DateTimeOffset.Now;
         if (body.RoomState != null) room.RoomState = body.RoomState.Value;
 
         // LBP likes to send both Slot and Slots interchangeably, handle that case here

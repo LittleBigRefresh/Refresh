@@ -7,7 +7,6 @@ using Refresh.GameServer.Types.UserData;
 
 namespace Refresh.GameServer.Types.Matching;
 
-[JsonObject(MemberSerialization.OptIn)]
 public class GameRoom
 {
     public GameRoom(GameUser host, TokenPlatform platform, TokenGame game)
@@ -25,6 +24,8 @@ public class GameRoom
     public readonly TokenPlatform Platform;
     public readonly TokenGame Game;
 
+    public DateTimeOffset LastContact;
+
     public List<GameUser?> GetPlayers(GameDatabaseContext database) =>
         this.PlayerIds
             .Where(i => i.Id != null)
@@ -36,6 +37,8 @@ public class GameRoom
         if (this.PlayerIds[0].Id == null) return null;
         return database.GetUserByObjectId(this.PlayerIds[0].Id);
     }
+
+    public bool IsExpired => DateTimeOffset.Now > this.LastContact + TimeSpan.FromMinutes(5);
 
     [JsonProperty("State"), JsonConverter(typeof(StringEnumConverter))]
     public RoomState RoomState;

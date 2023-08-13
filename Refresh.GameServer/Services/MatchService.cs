@@ -42,14 +42,20 @@ public partial class MatchService : EndpointService
         return room;
     }
     
-    public GameRoom? GetRoomByPlayer(GameUser player) 
-        => this._rooms.FirstOrDefault(r => r.PlayerIds.Select(s => s.Id).Contains(player.UserId));
+    public GameRoom? GetRoomByPlayer(GameUser player)
+    {
+        this.RemoveExpiredRooms();
+        return this._rooms.FirstOrDefault(r => r.PlayerIds.Select(s => s.Id).Contains(player.UserId));
+    }
 
-    public GameRoom? GetRoomByPlayer(GameUser player, TokenPlatform platform, TokenGame game) 
-        => this._rooms.FirstOrDefault(r => r.PlayerIds.Select(s => s.Id).Contains(player.UserId) &&
-                                           r.Platform == platform &&
-                                           r.Game == game);
-    
+    public GameRoom? GetRoomByPlayer(GameUser player, TokenPlatform platform, TokenGame game)
+    {
+        this.RemoveExpiredRooms();
+        return this._rooms.FirstOrDefault(r => r.PlayerIds.Select(s => s.Id).Contains(player.UserId) &&
+                                               r.Platform == platform &&
+                                               r.Game == game);
+    }
+
     public void AddPlayerToRoom(GameUser player, GameRoom targetRoom, TokenPlatform platform, TokenGame game)
     {
         GameRoom? playersRoom = this.GetRoomByPlayer(player, platform, game);
@@ -64,6 +70,14 @@ public partial class MatchService : EndpointService
     {
         foreach (GameRoom room in this._rooms) room.PlayerIds.RemoveAll(i => i.Username == username);
         targetRoom.PlayerIds.Add(new GameRoomPlayer(username, null));
+    }
+
+    public void RemoveExpiredRooms()
+    {
+        int removed = this._rooms.RemoveAll(r => r.IsExpired);
+        if (removed == 0) return;
+        
+        this.Logger.LogDebug(BunkumContext.Matching, $"Removed {removed} expired rooms");
     }
 
     public override void Initialize()

@@ -19,6 +19,8 @@ public class UpdatePlayersInRoomMethod : IMatchMethod
     {
         if (body.Players == null) return BadRequest;
         GameRoom room = service.GetOrCreateRoomByPlayer(user, token.TokenPlatform, token.TokenGame);
+        
+        room.LastContact = DateTimeOffset.Now;
 
         foreach (string playerUsername in body.Players)
         {
