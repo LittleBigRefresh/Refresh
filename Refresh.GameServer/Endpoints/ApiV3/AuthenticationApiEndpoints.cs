@@ -88,9 +88,9 @@ public partial class AuthenticationApiEndpoints : EndpointGroup
     }
 
     [ApiV3Endpoint("resetPassword", Method.Put), Authentication(false)]
-    public ApiResponse<ApiOkResponse> ResetPassword(RequestContext context, GameDatabaseContext database, ApiResetPasswordRequest body)
+    public ApiOkResponse ResetPassword(RequestContext context, GameDatabaseContext database, ApiResetPasswordRequest body, GameUser? user)
     {
-        GameUser? user = database.GetUserFromTokenData(body.ResetToken, TokenType.PasswordReset);
+        user ??= database.GetUserFromTokenData(body.ResetToken, TokenType.PasswordReset);
         if (user == null) return new ApiAuthenticationError("The reset token is invalid");
 
         if (body.PasswordSha512.Length != 128 || !Sha512Regex().IsMatch(body.PasswordSha512))
