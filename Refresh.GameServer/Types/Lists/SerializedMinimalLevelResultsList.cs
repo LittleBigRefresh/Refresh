@@ -9,9 +9,9 @@ public class SerializedMinimalLevelResultsList : SerializedMinimalLevelList
 {
     public SerializedMinimalLevelResultsList() {}
     
-    public SerializedMinimalLevelResultsList(IEnumerable<GameMinimalLevel>? list, int total)
+    public SerializedMinimalLevelResultsList(IEnumerable<GameMinimalLevelResponse>? list, int total)
     {
         this.Total = total;
-        this.Items = list?.ToList() ?? new List<GameMinimalLevel>();
+        this.Items = list?.ToList() ?? new List<GameMinimalLevelResponse>();
     }
 }

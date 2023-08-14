@@ -7,7 +7,7 @@ namespace Refresh.GameServer.Types.Lists;
 
 [XmlRoot("favouriteSlots")]
 [XmlType("favouriteSlots")]
-public class SerializedMinimalFavouriteLevelList : SerializedList<GameMinimalLevel>
+public class SerializedMinimalFavouriteLevelList : SerializedList<GameMinimalLevelResponse>
 {
     public SerializedMinimalFavouriteLevelList() {}
     
@@ -18,5 +18,5 @@ public class SerializedMinimalFavouriteLevelList : SerializedList<GameMinimalLev
     }
     
     [XmlElement("slot")]
-    public override List<GameMinimalLevel> Items { get; set; }
+    public override List<GameMinimalLevelResponse> Items { get; set; }
 }

@@ -1,9 +1,11 @@
 using System.Xml.Serialization;
 using Refresh.GameServer.Database;
 using Refresh.GameServer.Endpoints.ApiV3.DataTypes;
+using Refresh.GameServer.Services;
 using Refresh.GameServer.Types;
 using Refresh.GameServer.Types.Levels;
 using Refresh.GameServer.Types.Levels.SkillRewards;
+using Refresh.GameServer.Types.Matching;
 using Refresh.GameServer.Types.Reviews;
 using Refresh.GameServer.Types.UserData;
 
@@ -50,13 +52,14 @@ public class GameLevelResponse : IDataConvertableFrom<GameLevelResponse, GameLev
 
     [XmlElement("mmpick")] public required bool TeamPicked { get; set; }
     [XmlElement("resource")] public List<string> XmlResources { get; set; } = new();
+    [XmlElement("playerCount")] public int PlayerCount { get; set; }
 
-    public static GameLevelResponse? FromOldWithUser(GameLevel? old, GameDatabaseContext database, GameUser user)
+    public static GameLevelResponse? FromOldWithExtraData(GameLevel? old, GameDatabaseContext database, MatchService matchService, GameUser user)
     {
         if (old == null) return null;
 
         GameLevelResponse response = FromOld(old)!;
-        response.FillInUserData(database, user);
+        response.FillInExtraData(database, matchService, user);
 
         return response;
     }
@@ -122,11 +125,12 @@ public class GameLevelResponse : IDataConvertableFrom<GameLevelResponse, GameLev
 
     public static IEnumerable<GameLevelResponse> FromOldList(IEnumerable<GameLevel> oldList) => oldList.Select(FromOld)!;
 
-    public void FillInUserData(GameDatabaseContext database, GameUser user)
+    private void FillInExtraData(GameDatabaseContext database, MatchService matchService, GameUser user)
     {
         GameLevel? level = database.GetLevelById(this.LevelId);
         if (level == null) throw new InvalidOperationException("Cannot fill in level data for a level that does not exist.");
         
         this.YourRating = (int)database.GetRatingByUser(level, user);
+        this.PlayerCount = matchService.GetPlayerCountForLevel(RoomSlotType.Online, this.LevelId);
     }
 }

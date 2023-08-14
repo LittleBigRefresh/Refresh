@@ -1,6 +1,7 @@
 using System.Xml.Serialization;
 using Bunkum.HttpServer;
 using Refresh.GameServer.Database;
+using Refresh.GameServer.Services;
 using Refresh.GameServer.Types.Lists;
 using Refresh.GameServer.Types.UserData;
 
@@ -25,7 +26,13 @@ public class SerializedCategory
     [XmlElement("results")]
     public SerializedMinimalLevelList Levels { get; set; }
 
-    public static SerializedCategory FromLevelCategory(LevelCategory levelCategory, RequestContext context, GameDatabaseContext database, GameUser user, int skip = 0, int count = 20)
+    public static SerializedCategory FromLevelCategory(LevelCategory levelCategory,
+        RequestContext context,
+        GameDatabaseContext database,
+        GameUser user,
+        MatchService matchService,
+        int skip = 0,
+        int count = 20)
     {
         SerializedCategory category = new()
         {
@@ -38,8 +45,8 @@ public class SerializedCategory
 
         DatabaseList<GameLevel> categoryLevels = levelCategory.Fetch(context, skip, count, database, user);
         
-        IEnumerable<GameMinimalLevel> levels = categoryLevels?.Items
-            .Select(GameMinimalLevel.FromGameLevel) ?? Array.Empty<GameMinimalLevel>();
+        IEnumerable<GameMinimalLevelResponse> levels = categoryLevels?.Items
+            .Select(l => GameMinimalLevelResponse.FromOldWithExtraData(l, matchService)) ?? Array.Empty<GameMinimalLevelResponse>();
 
         category.Levels = new SerializedMinimalLevelList(levels, categoryLevels?.TotalItems ?? 0);
 

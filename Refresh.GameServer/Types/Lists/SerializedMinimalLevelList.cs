@@ -8,16 +8,16 @@ namespace Refresh.GameServer.Types.Lists;
 
 [XmlRoot("slots")]
 [XmlType("slots")]
-public class SerializedMinimalLevelList : SerializedList<GameMinimalLevel>
+public class SerializedMinimalLevelList : SerializedList<GameMinimalLevelResponse>
 {
     public SerializedMinimalLevelList() {}
     
-    public SerializedMinimalLevelList(IEnumerable<GameMinimalLevel> list, int total)
+    public SerializedMinimalLevelList(IEnumerable<GameMinimalLevelResponse> list, int total)
     {
         this.Total = total;
         this.Items = list.ToList();
     }
 
     [XmlElement("slot")]
-    public override List<GameMinimalLevel> Items { get; set; }
+    public override List<GameMinimalLevelResponse> Items { get; set; }
 }

@@ -4,6 +4,7 @@ using Bunkum.HttpServer.Endpoints;
 using Refresh.GameServer.Database;
 using Refresh.GameServer.Endpoints.Game.DataTypes.Response;
 using Refresh.GameServer.Extensions;
+using Refresh.GameServer.Services;
 using Refresh.GameServer.Types.Levels;
 using Refresh.GameServer.Types.Levels.Categories;
 using Refresh.GameServer.Types.Lists;
@@ -14,35 +15,34 @@ namespace Refresh.GameServer.Endpoints.Game.Levels;
 public class LevelEndpoints : EndpointGroup
 {
     [GameEndpoint("slots/{route}", ContentType.Xml)]
-    public SerializedMinimalLevelList? GetLevels(RequestContext context, GameDatabaseContext database, CategoryService categories, GameUser? user, string route)
+    public SerializedMinimalLevelList? GetLevels(RequestContext context, GameDatabaseContext database, CategoryService categoryService, MatchService matchService, GameUser? user, string route)
     {
         (int skip, int count) = context.GetPageData();
 
-        DatabaseList<GameLevel>? levels = categories.Categories
+        DatabaseList<GameLevel>? levels = categoryService.Categories
             .FirstOrDefault(c => c.GameRoute.StartsWith(route))?
             .Fetch(context, skip, count, database, user);
 
         if (levels == null) return null;
         
-        IEnumerable<GameMinimalLevel> category = levels.Items
-            .Select(GameLevelResponse.FromOld)
-            .Select(GameMinimalLevel.FromGameLevel)!;
+        IEnumerable<GameMinimalLevelResponse> category = levels.Items
+            .Select(l => GameMinimalLevelResponse.FromOldWithExtraData(l, matchService))!;
         
         return new SerializedMinimalLevelList(category, levels.TotalItems);
     }
 
     [GameEndpoint("slots/{route}/{username}", ContentType.Xml)]
-    public SerializedMinimalLevelList? GetLevelsWithPlayer(RequestContext context, GameDatabaseContext database, CategoryService categories, string route, string username)
-        => this.GetLevels(context, database, categories, database.GetUserByUsername(username), route);
+    public SerializedMinimalLevelList? GetLevelsWithPlayer(RequestContext context, GameDatabaseContext database, CategoryService categories, MatchService matchService, string route, string username)
+        => this.GetLevels(context, database, categories, matchService, database.GetUserByUsername(username), route);
 
     [GameEndpoint("s/user/{id}", ContentType.Xml)]
     [NullStatusCode(NotFound)]
-    public GameLevelResponse? LevelById(RequestContext context, GameDatabaseContext database, GameUser user, int id)
-        => GameLevelResponse.FromOldWithUser(database.GetLevelById(id), database, user);
+    public GameLevelResponse? LevelById(RequestContext context, GameDatabaseContext database, MatchService matchService, GameUser user, int id)
+        => GameLevelResponse.FromOldWithExtraData(database.GetLevelById(id), database, matchService, user);
 
     [GameEndpoint("slotList", ContentType.Xml)]
     [NullStatusCode(BadRequest)]
-    public SerializedLevelList? GetMultipleLevels(RequestContext context, GameDatabaseContext database, GameUser user)
+    public SerializedLevelList? GetMultipleLevels(RequestContext context, GameDatabaseContext database, MatchService matchService, GameUser user)
     {
         string[]? levelIds = context.QueryString.GetValues("s");
         if (levelIds == null) return null;
@@ -56,7 +56,7 @@ public class LevelEndpoints : EndpointGroup
 
             if (level == null) continue;
             
-            levels.Add(GameLevelResponse.FromOldWithUser(level, database, user)!);
+            levels.Add(GameLevelResponse.FromOldWithExtraData(level, database, matchService, user)!);
         }
 
         return new SerializedLevelList
@@ -69,18 +69,18 @@ public class LevelEndpoints : EndpointGroup
 
     [GameEndpoint("searches", ContentType.Xml)]
     [GameEndpoint("genres", ContentType.Xml)]
-    public SerializedCategoryList GetModernCategories(RequestContext context, GameDatabaseContext database, CategoryService categoryService, GameUser user)
+    public SerializedCategoryList GetModernCategories(RequestContext context, GameDatabaseContext database, CategoryService categoryService, MatchService matchService, GameUser user)
     {
         IEnumerable<SerializedCategory> categories = categoryService.Categories
             .Where(c => c is not SearchLevelCategory)
             .Take(5)
-            .Select(c => SerializedCategory.FromLevelCategory(c, context, database, user, 0, 1));
+            .Select(c => SerializedCategory.FromLevelCategory(c, context, database, user, matchService, 0, 1));
         
         return new SerializedCategoryList(categories, categoryService);
     }
 
     [GameEndpoint("searches/{apiRoute}", ContentType.Xml)]
-    public SerializedMinimalLevelList GetLevelsFromCategory(RequestContext context, GameDatabaseContext database, CategoryService categories, GameUser? user, string apiRoute)
+    public SerializedMinimalLevelList GetLevelsFromCategory(RequestContext context, GameDatabaseContext database, CategoryService categories, MatchService matchService, GameUser? user, string apiRoute)
     {
         (int skip, int count) = context.GetPageData();
 
@@ -89,7 +89,7 @@ public class LevelEndpoints : EndpointGroup
             .Fetch(context, skip, count, database, user);
         
         return new SerializedMinimalLevelResultsList(levels?.Items
-            .Select(GameMinimalLevel.FromGameLevel), levels?.TotalItems ?? 0);
+            .Select(l => GameMinimalLevelResponse.FromOldWithExtraData(l, matchService)), levels?.TotalItems ?? 0);
     }
 
     #region Quirk workarounds
@@ -97,13 +97,13 @@ public class LevelEndpoints : EndpointGroup
     // This is a list of endpoints to work around these - capturing all routes would break things.
 
     [GameEndpoint("slots", ContentType.Xml)]
-    public SerializedMinimalLevelList? NewestLevels(RequestContext context, GameDatabaseContext database, CategoryService categories, GameUser? user) 
-        => this.GetLevels(context, database, categories, user, "newest");
+    public SerializedMinimalLevelList? NewestLevels(RequestContext context, GameDatabaseContext database, CategoryService categories, MatchService matchService, GameUser? user) 
+        => this.GetLevels(context, database, categories, matchService, user, "newest");
 
     [GameEndpoint("favouriteSlots/{username}", ContentType.Xml)]
-    public SerializedMinimalFavouriteLevelList? FavouriteLevels(RequestContext context, GameDatabaseContext database, CategoryService categories, string username)
+    public SerializedMinimalFavouriteLevelList? FavouriteLevels(RequestContext context, GameDatabaseContext database, CategoryService categories, MatchService matchService, string username)
     {
-        SerializedMinimalLevelList? levels = this.GetLevels(context, database, categories, database.GetUserByUsername(username), "favouriteSlots");
+        SerializedMinimalLevelList? levels = this.GetLevels(context, database, categories, matchService, database.GetUserByUsername(username), "favouriteSlots");
         if (levels == null) return null;
         
         return new SerializedMinimalFavouriteLevelList(levels);

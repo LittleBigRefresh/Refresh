@@ -56,6 +56,12 @@ public partial class MatchService : EndpointService
                                                r.Game == game);
     }
 
+    public int GetPlayerCountForLevel(RoomSlotType type, int id)
+    {
+        return this._rooms.Where(r => r.LevelType == type && r.LevelId == id)
+            .Sum(r => r.PlayerIds.Count);
+    }
+
     public void AddPlayerToRoom(GameUser player, GameRoom targetRoom, TokenPlatform platform, TokenGame game)
     {
         GameRoom? playersRoom = this.GetRoomByPlayer(player, platform, game);
