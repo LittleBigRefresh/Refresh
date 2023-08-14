@@ -22,12 +22,15 @@ jobs:
       run: dotnet restore
     - name: Test
       run: dotnet test -c Release --verbosity normal
+
+    - name: Set VERSION variable from tag
+      run: echo "VERSION=${GITHUB_REF/refs\/tags\/v/}" >> $GITHUB_ENV
       
     - name: Publish for Linux x64
-      run: dotnet publish -c Release -r linux-x64 --self-contained Refresh.GameServer
+      run: dotnet publish -c Release -r linux-x64 --self-contained Refresh.GameServer /p:Version=${VERSION}
       
     - name: Publish for Windows x64
-      run: dotnet publish -c Release -r win-x64 --self-contained Refresh.GameServer
+      run: dotnet publish -c Release -r win-x64 --self-contained Refresh.GameServer /p:Version=${VERSION}
 
     - name: Download Refresh Website artifact
       id: download-artifact
