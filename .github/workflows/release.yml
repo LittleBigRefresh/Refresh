@@ -24,6 +24,7 @@ jobs:
         with:
           github_token: ${{secrets.GITHUB_TOKEN}}
           branch: main
+          commit: ${{ github.sha }}
           workflow: dotnet.yml
           workflow_conclusion: success
           if_no_artifact_found: fail
