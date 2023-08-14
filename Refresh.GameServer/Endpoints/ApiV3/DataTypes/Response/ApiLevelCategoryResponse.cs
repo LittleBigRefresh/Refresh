@@ -1,5 +1,6 @@
 using Bunkum.HttpServer;
 using Refresh.GameServer.Database;
+using Refresh.GameServer.Services;
 using Refresh.GameServer.Types.Levels;
 using Refresh.GameServer.Types.Levels.Categories;
 using Refresh.GameServer.Types.UserData;
@@ -38,12 +39,13 @@ public class ApiLevelCategoryResponse : IApiResponse, IDataConvertableFrom<ApiLe
     public static IEnumerable<ApiLevelCategoryResponse> FromOldList(IEnumerable<LevelCategory> oldList) => oldList.Select(FromOld)!;
     public static IEnumerable<ApiLevelCategoryResponse> FromOldList(IEnumerable<LevelCategory> oldList,
         RequestContext context,
+        MatchService matchService,
         GameDatabaseContext database,
         GameUser? user)
     {
         return oldList.Select(category =>
         {
-            DatabaseList<GameLevel>? list = category.Fetch(context, 0, 1, database, user);
+            DatabaseList<GameLevel>? list = category.Fetch(context, 0, 1, matchService, database, user);
             GameLevel? level = list?.Items.FirstOrDefault();
             
             return FromOld(category, level);

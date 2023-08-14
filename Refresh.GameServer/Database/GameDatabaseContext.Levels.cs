@@ -2,8 +2,10 @@ using System.Diagnostics;
 using System.Reflection;
 using JetBrains.Annotations;
 using Realms;
+using Refresh.GameServer.Services;
 using Refresh.GameServer.Types.Activity;
 using Refresh.GameServer.Types.Levels;
+using Refresh.GameServer.Types.Matching;
 using Refresh.GameServer.Types.Relations;
 using Refresh.GameServer.Types.UserData;
 
@@ -129,6 +131,18 @@ public partial class GameDatabaseContext // Levels
         new(this._realm.All<GameLevel>()
             .Where(l => l.TeamPicked)
             .OrderByDescending(l => l.PublishDate), skip, count);
+
+    [Pure]
+    public DatabaseList<GameLevel> GetBusiestLevels(int count, int skip, MatchService service)
+    {
+        IOrderedEnumerable<IGrouping<GameLevel?,GameRoom>> rooms = service.Rooms
+            .Where(r => r.LevelType == RoomSlotType.Online && r.HostId.Id != null) // if playing online level and host exists on server
+            .GroupBy(r => this.GetLevelById(r.LevelId))
+            .OrderBy(r => r.Sum(room => room.PlayerIds.Count));
+
+        return new DatabaseList<GameLevel>(rooms.Select(r => r.Key)
+            .Where(l => l != null)!, skip, count);
+    }
 
     [Pure]
     public DatabaseList<GameLevel> SearchForLevels(int count, int skip, string query)

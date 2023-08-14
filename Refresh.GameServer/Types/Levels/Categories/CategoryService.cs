@@ -70,6 +70,7 @@ public class CategoryService : EndpointService
             IconHash = "g820626",
             FontAwesomeIcon = "certificate",
         },
+        new CurrentlyPlayingCategory(),
     };
 
     internal CategoryService(LoggerContainer<BunkumContext> logger) : base(logger)

@@ -3,6 +3,7 @@ using System.Reflection;
 using Bunkum.HttpServer;
 using Newtonsoft.Json;
 using Refresh.GameServer.Database;
+using Refresh.GameServer.Services;
 using Refresh.GameServer.Types.UserData;
 
 namespace Refresh.GameServer.Types.Levels.Categories;
@@ -38,7 +39,7 @@ public class LevelCategory
     private readonly MethodInfo _method;
 
     [Pure]
-    public virtual DatabaseList<GameLevel>? Fetch(RequestContext context, int skip, int count, GameDatabaseContext database, GameUser? user, object[]? extraArgs = null)
+    public virtual DatabaseList<GameLevel>? Fetch(RequestContext context, int skip, int count, MatchService matchService, GameDatabaseContext database, GameUser? user, object[]? extraArgs = null)
     {
         if (this.RequiresUser && user == null) return null;
 
