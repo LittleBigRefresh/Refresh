@@ -20,11 +20,11 @@ jobs:
         dotnet-version: 7.0.x
         
     - name: Set VERSION variable from tag (for tag pushes)
-      if: contains(github.ref, 'refs/heads')
+      if: ${{ contains(github.ref, 'refs/heads') }}
       run: echo "VERSION=${GITHUB_REF/refs\/tags\/v/}" >> $GITHUB_ENV
 
     - name: Set VERSION variable from tag (for normal commits)
-      if: !contains(github.ref, 'refs/heads')
+      if: ${{ !contains(github.ref, 'refs/heads') }}
       run: echo "VERSION=0.0.0" >> $GITHUB_ENV
       
     - name: Print VERSION variable for debugging
