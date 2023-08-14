@@ -36,7 +36,7 @@ public class InstanceApiEndpoints : EndpointGroup
             InstanceDescription = gameConfig.InstanceDescription,
             RegistrationEnabled = gameConfig.RegistrationEnabled,
             SoftwareName = "Refresh",
-            SoftwareVersion = "0.0.0", // TODO: Implement software version
+            SoftwareVersion = VersionInformation.Version,
             MaximumAssetSafetyLevel = gameConfig.MaximumAssetSafetyLevel,
             Announcements = ApiGameAnnouncementResponse.FromOldList(database.GetAnnouncements()),
             MaintenanceModeEnabled = gameConfig.MaintenanceMode,
