@@ -29,10 +29,10 @@ public partial class AuthenticationApiEndpoints : EndpointGroup
     //
     // If increased, passwords will automatically be rehashed at login time to use the new WorkFactor
     // If decreased, passwords will stay at higher WorkFactor until reset
-    private const int WorkFactor = 14;
+    public const int WorkFactor = 14;
 
     [GeneratedRegex("^[a-f0-9]{128}$")]
-    private static partial Regex Sha512Regex();
+    public static partial Regex Sha512Regex();
     
     [GeneratedRegex("^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+[.][a-zA-Z]{2,}$")]
     private static partial Regex EmailAddressRegex();

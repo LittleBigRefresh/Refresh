@@ -82,11 +82,12 @@ public partial class GameDatabaseContext // Tokens
     public GameUser? GetUserFromTokenData(string tokenData, TokenType type) => 
         this.GetTokenFromTokenData(tokenData, type)?.User;
 
-    public void SetUserPassword(GameUser user, string passwordBcrypt)
+    public void SetUserPassword(GameUser user, string? passwordBcrypt, bool shouldReset = false)
     {
         this._realm.Write(() =>
         {
             user.PasswordBcrypt = passwordBcrypt;
+            user.ShouldResetPassword = shouldReset;
         });
     }
 

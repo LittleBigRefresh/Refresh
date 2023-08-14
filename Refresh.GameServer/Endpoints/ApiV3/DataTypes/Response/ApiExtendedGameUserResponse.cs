@@ -28,6 +28,7 @@ public class ApiExtendedGameUserResponse : IApiResponse, IDataConvertableFrom<Ap
     
     public required string? EmailAddress { get; set; }
     public required bool EmailAddressVerified { get; set; }
+    public required bool ShouldResetPassword { get; set; }
     
     [ContractAnnotation("null => null; notnull => notnull")]
     public static ApiExtendedGameUserResponse? FromOld(GameUser? user)
@@ -50,6 +51,7 @@ public class ApiExtendedGameUserResponse : IApiResponse, IDataConvertableFrom<Ap
             PsnAuthenticationAllowed = user.PsnAuthenticationAllowed,
             EmailAddress = user.EmailAddress,
             EmailAddressVerified = user.EmailAddressVerified,
+            ShouldResetPassword = user.ShouldResetPassword,
         };
     }
 
