@@ -17,6 +17,15 @@ public class GameMinimalLevelResponse : IDataConvertableFrom<GameMinimalLevelRes
     [XmlElement("id")] public required int LevelId { get; set; }
     [XmlElement("npHandle")] public required SerializedUserHandle? Handle { get; set; }
     [XmlAttribute("type")] public required string? Type { get; set; }
+    [XmlElement("mmpick")] public required bool TeamPicked { get; set; }
+    [XmlElement("minPlayers")] public required int MinPlayers { get; set; }
+    [XmlElement("maxPlayers")] public required int MaxPlayers { get; set; }
+    [XmlElement("heartCount")] public required int HeartCount { get; set; }
+    
+    [XmlElement("playCount")] public required int TotalPlayCount { get; set; }
+    [XmlElement("uniquePlayCount")] public required int UniquePlayCount { get; set; }
+    [XmlElement("thumbsup")] public required int YayCount { get; set; }
+    [XmlElement("thumbsdown")] public required int BooCount { get; set; }
     
     [XmlElement("playerCount")] public int PlayerCount { get; set; }
     
@@ -63,6 +72,14 @@ public class GameMinimalLevelResponse : IDataConvertableFrom<GameMinimalLevelRes
             LevelId = level.LevelId,
             Handle = level.Handle,
             Type = level.Type,
+            TeamPicked = level.TeamPicked,
+            YayCount = level.YayCount,
+            BooCount = level.BooCount,
+            HeartCount = level.HeartCount,
+            MaxPlayers = level.MaxPlayers,
+            MinPlayers = level.MinPlayers,
+            TotalPlayCount = level.TotalPlayCount,
+            UniquePlayCount = level.UniquePlayCount,
         };
     }
 
