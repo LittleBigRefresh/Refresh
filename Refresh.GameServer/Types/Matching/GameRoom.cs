@@ -38,7 +38,7 @@ public class GameRoom
         return database.GetUserByObjectId(this.PlayerIds[0].Id);
     }
 
-    public bool IsExpired => DateTimeOffset.Now > this.LastContact + TimeSpan.FromMinutes(5);
+    public bool IsExpired => DateTimeOffset.Now > this.LastContact + TimeSpan.FromMinutes(1);
 
     [JsonProperty("State"), JsonConverter(typeof(StringEnumConverter))]
     public RoomState RoomState;
