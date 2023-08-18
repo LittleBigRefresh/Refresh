@@ -19,4 +19,5 @@ public class ApiInstanceResponse : IApiResponse
     public required ApiRichPresenceConfigurationResponse RichPresenceConfiguration { get; set; }
     
     public required bool MaintenanceModeEnabled { get; set; }
+    public required string? GrafanaDashboardUrl { get; set; }
 }

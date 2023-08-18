@@ -7,7 +7,7 @@ namespace Refresh.GameServer.Configuration;
 /// </summary>
 public class IntegrationConfig : Config
 {
-    public override int CurrentConfigVersion => 1;
+    public override int CurrentConfigVersion => 2;
     public override int Version { get; set; }
     protected override void Migrate(int oldVer, dynamic oldConfig)
     {
@@ -25,4 +25,6 @@ public class IntegrationConfig : Config
     public string SmtpPassword { get; set; } = "P4$$w0rd";
 
     #endregion
+    
+    public string? GrafanaDashboardUrl { get; set; }
 }

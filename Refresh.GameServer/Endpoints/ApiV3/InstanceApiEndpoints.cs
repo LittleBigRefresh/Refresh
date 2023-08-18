@@ -29,6 +29,7 @@ public class InstanceApiEndpoints : EndpointGroup
     public ApiResponse<ApiInstanceResponse> GetInstanceInformation(RequestContext context,
         GameServerConfig gameConfig,
         RichPresenceConfig richConfig,
+        IntegrationConfig integrationConfig,
         GameDatabaseContext database) 
         => new ApiInstanceResponse
         {
@@ -41,6 +42,7 @@ public class InstanceApiEndpoints : EndpointGroup
             Announcements = ApiGameAnnouncementResponse.FromOldList(database.GetAnnouncements()),
             MaintenanceModeEnabled = gameConfig.MaintenanceMode,
             RichPresenceConfiguration = ApiRichPresenceConfigurationResponse.FromOld(RichPresenceConfiguration.Create(gameConfig, richConfig))!,
+            GrafanaDashboardUrl = integrationConfig.GrafanaDashboardUrl,
 
 #if DEBUG
             SoftwareType = "Debug",
