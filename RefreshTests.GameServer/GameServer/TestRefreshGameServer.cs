@@ -20,6 +20,7 @@ public class TestRefreshGameServer : RefreshGameServer
     {
         this._server.UseConfig(new GameServerConfig());
         this._server.UseConfig(new RichPresenceConfig());
+        this._server.UseConfig(new IntegrationConfig());
     }
 
     public override void Start()
