@@ -3,6 +3,7 @@ using System.Xml.Serialization;
 using Bunkum.CustomHttpListener.Parsing;
 using Bunkum.HttpServer;
 using Bunkum.HttpServer.Endpoints;
+using Bunkum.HttpServer.RateLimit;
 using Bunkum.HttpServer.Responses;
 using NPTicket;
 using NPTicket.Verification;
@@ -19,9 +20,9 @@ namespace Refresh.GameServer.Endpoints.Game.Handshake;
 
 public class AuthenticationEndpoints : EndpointGroup
 {
-    [GameEndpoint("login", Method.Post, ContentType.Xml), AllowDuringMaintenance]
+    [GameEndpoint("login", Method.Post, ContentType.Xml), Authentication(false), AllowDuringMaintenance]
     [NullStatusCode(Forbidden)]
-    [Authentication(false)]
+    [RateLimitSettings(300, 10, 300)]
     public LoginResponse? Authenticate(RequestContext context,
         GameDatabaseContext database,
         Stream body,

@@ -6,6 +6,7 @@ using Bunkum.CustomHttpListener.Request;
 using Bunkum.HttpServer;
 using Bunkum.HttpServer.Configuration;
 using Bunkum.HttpServer.Endpoints;
+using Bunkum.HttpServer.RateLimit;
 using Refresh.GameServer.Authentication;
 using Refresh.GameServer.Configuration;
 using Refresh.GameServer.Database;
@@ -41,6 +42,7 @@ public partial class AuthenticationApiEndpoints : EndpointGroup
 
     [ApiV3Endpoint("login", Method.Post), Authentication(false), AllowDuringMaintenance]
     [DocRequestBody(typeof(ApiAuthenticationRequest))]
+    [RateLimitSettings(300, 10, 300)]
     public ApiResponse<IApiAuthenticationResponse> Authenticate(RequestContext context, GameDatabaseContext database, ApiAuthenticationRequest body, GameServerConfig config)
     {
         GameUser? user = database.GetUserByEmailAddress(body.EmailAddress);
@@ -92,6 +94,7 @@ public partial class AuthenticationApiEndpoints : EndpointGroup
 
     [ApiV3Endpoint("refreshToken", Method.Post), Authentication(false), AllowDuringMaintenance]
     [DocRequestBody(typeof(ApiRefreshRequest))]
+    [RateLimitSettings(300, 10, 300)]
     public ApiResponse<IApiAuthenticationResponse> RefreshToken(RequestContext context, GameDatabaseContext database, ApiRefreshRequest body)
     {
         Token? refreshToken = database.GetTokenFromTokenData(body.TokenData, TokenType.ApiRefresh);
@@ -111,6 +114,7 @@ public partial class AuthenticationApiEndpoints : EndpointGroup
     }
 
     [ApiV3Endpoint("resetPassword", Method.Put), Authentication(false)]
+    [RateLimitSettings(300, 10, 300)]
     public ApiOkResponse ResetPassword(RequestContext context, GameDatabaseContext database, ApiResetPasswordRequest body, GameUser? user)
     {
         user ??= database.GetUserFromTokenData(body.ResetToken, TokenType.PasswordReset);
@@ -178,6 +182,9 @@ public partial class AuthenticationApiEndpoints : EndpointGroup
     [ApiV3Endpoint("register", Method.Post), Authentication(false)]
     [DocSummary("Registers a new user.")]
     [DocRequestBody(typeof(ApiRegisterRequest))]
+    #if !DEBUG
+    [RateLimitSettings(86400, 1, 86400 / 2)]
+    #endif
     public ApiResponse<IApiAuthenticationResponse> Register(RequestContext context,
         GameDatabaseContext database,
         ApiRegisterRequest body,
