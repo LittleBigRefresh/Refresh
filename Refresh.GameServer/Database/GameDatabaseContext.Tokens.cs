@@ -1,7 +1,6 @@
 using System.Security.Cryptography;
 using JetBrains.Annotations;
 using Refresh.GameServer.Authentication;
-using Refresh.GameServer.Types.Roles;
 using Refresh.GameServer.Types.UserData;
 
 namespace Refresh.GameServer.Database;

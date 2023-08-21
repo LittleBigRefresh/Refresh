@@ -1,4 +1,3 @@
-using Refresh.GameServer.Configuration;
 using Refresh.GameServer.Types.RichPresence;
 
 namespace Refresh.GameServer.Endpoints.ApiV3.DataTypes.Response;

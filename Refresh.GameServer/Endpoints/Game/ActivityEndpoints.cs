@@ -3,8 +3,6 @@ using Bunkum.HttpServer;
 using Bunkum.HttpServer.Endpoints;
 using Refresh.GameServer.Database;
 using Refresh.GameServer.Types.Activity;
-using Refresh.GameServer.Types.Levels;
-using Refresh.GameServer.Types.UserData;
 
 namespace Refresh.GameServer.Endpoints.Game;
 

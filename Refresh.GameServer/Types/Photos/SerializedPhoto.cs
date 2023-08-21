@@ -1,4 +1,3 @@
-using System.Globalization;
 using System.Xml.Serialization;
 
 namespace Refresh.GameServer.Types.Photos;

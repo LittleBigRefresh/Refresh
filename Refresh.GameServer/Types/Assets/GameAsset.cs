@@ -1,4 +1,3 @@
-using Newtonsoft.Json;
 using Realms;
 using Refresh.GameServer.Types.UserData;
 

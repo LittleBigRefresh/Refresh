@@ -1,4 +1,3 @@
-using System.Text;
 using Refresh.GameServer.Middlewares;
 
 namespace RefreshTests.GameServer.Tests.Middlewares;

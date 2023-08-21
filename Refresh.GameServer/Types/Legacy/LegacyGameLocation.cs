@@ -1,5 +1,3 @@
-using Newtonsoft.Json;
-
 namespace Refresh.GameServer.Types.Legacy;
 
 public class LegacyGameLocation

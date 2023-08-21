@@ -1,5 +1,4 @@
 using MongoDB.Bson;
-using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
 using Refresh.GameServer.Authentication;
 using Refresh.GameServer.Database;

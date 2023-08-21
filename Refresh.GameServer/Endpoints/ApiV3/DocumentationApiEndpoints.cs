@@ -1,4 +1,3 @@
-using AttribDoc;
 using AttribDoc.Attributes;
 using Bunkum.HttpServer;
 using Bunkum.HttpServer.Endpoints;

@@ -1,7 +1,6 @@
 using System.Xml.Serialization;
 using Bunkum.HttpServer.Authentication;
 using MongoDB.Bson;
-using Newtonsoft.Json;
 using Realms;
 using Refresh.GameServer.Types.UserData;
 

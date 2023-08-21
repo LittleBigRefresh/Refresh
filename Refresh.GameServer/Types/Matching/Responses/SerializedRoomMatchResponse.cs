@@ -1,5 +1,3 @@
-using Newtonsoft.Json;
-
 namespace Refresh.GameServer.Types.Matching.Responses;
 
 [JsonObject(MemberSerialization.OptIn)]

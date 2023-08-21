@@ -1,5 +1,4 @@
 using System.Diagnostics.CodeAnalysis;
-using Newtonsoft.Json;
 
 namespace Refresh.GameServer.Types.Matching.Responses;
 

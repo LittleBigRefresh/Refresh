@@ -1,5 +1,4 @@
 using Refresh.GameServer.Types.Assets;
-using Refresh.GameServer.Types.RichPresence;
 
 namespace Refresh.GameServer.Endpoints.ApiV3.DataTypes.Response;
 

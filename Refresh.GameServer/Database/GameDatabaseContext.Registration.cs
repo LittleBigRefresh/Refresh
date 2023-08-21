@@ -1,6 +1,4 @@
 using System.Security.Cryptography;
-using System.Text;
-using Org.BouncyCastle.X509.Extension;
 using Refresh.GameServer.Authentication;
 using Refresh.GameServer.Extensions;
 using Refresh.GameServer.Types.UserData;

@@ -1,5 +1,4 @@
 using System.Xml.Serialization;
-using Newtonsoft.Json;
 using Refresh.GameServer.Database;
 using Refresh.GameServer.Endpoints.Game.DataTypes.Response;
 using Refresh.GameServer.Types.Activity.Groups;

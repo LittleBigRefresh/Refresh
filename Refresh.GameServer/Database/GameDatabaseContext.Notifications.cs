@@ -1,6 +1,5 @@
 using JetBrains.Annotations;
 using MongoDB.Bson;
-using Refresh.GameServer.Authentication;
 using Refresh.GameServer.Types.Levels;
 using Refresh.GameServer.Types.Notifications;
 using Refresh.GameServer.Types.UserData;
