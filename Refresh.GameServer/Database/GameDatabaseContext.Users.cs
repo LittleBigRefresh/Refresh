@@ -2,6 +2,9 @@ using System.Reflection;
 using JetBrains.Annotations;
 using MongoDB.Bson;
 using Refresh.GameServer.Endpoints.ApiV3.DataTypes.Request;
+using Refresh.GameServer.Types;
+using Refresh.GameServer.Types.Levels;
+using Refresh.GameServer.Types.Photos;
 using Refresh.GameServer.Types.Roles;
 using Refresh.GameServer.Types.UserData;
 
@@ -154,5 +157,46 @@ public partial class GameDatabaseContext // Users
         byte roleByte = (byte)role;
         
         return new DatabaseList<GameUser>(this._realm.All<GameUser>().Where(u => u._Role == roleByte));
+    }
+
+    public void DeleteUser(GameUser user)
+    {
+        const string deletedReason = "This user's account has been deleted.";
+        
+        this.BanUser(user, deletedReason, DateTimeOffset.MaxValue);
+        this.RevokeAllTokensForUser(user);
+        this.DeleteNotificationsByUser(user);
+        
+        this._realm.Write(() =>
+        {
+            user.Pins = new UserPins();
+            user.Location = new GameLocation();
+            user.Description = deletedReason;
+            user.EmailAddress = null;
+            user.PasswordBcrypt = "deleted";
+            user.JoinDate = DateTimeOffset.MinValue;
+            user.LastLoginDate = DateTimeOffset.MinValue;
+            user.PlanetsHash = "0";
+            user.IconHash = "0";
+            user.AllowIpAuthentication = false;
+            user.EmailAddressVerified = false;
+            user.CurrentVerifiedIp = null;
+            user.PsnAuthenticationAllowed = false;
+            user.RpcnAuthenticationAllowed = false;
+
+            foreach (GamePhotoSubject subject in user.PhotosWithMe)
+                subject.User = null;
+            
+            this._realm.RemoveRange(user.FavouriteLevelRelations);
+            this._realm.RemoveRange(user.UsersFavourited);
+            this._realm.RemoveRange(user.UsersFavouritingMe);
+            this._realm.RemoveRange(user.QueueLevelRelations);
+            this._realm.RemoveRange(user.PhotosByMe);
+
+            foreach (GameLevel level in this._realm.All<GameLevel>().Where(l => l.Publisher == user))
+            {
+                level.Publisher = null;
+            }
+        });
     }
 }

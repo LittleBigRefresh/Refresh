@@ -47,7 +47,7 @@ public partial class AuthenticationApiEndpoints : EndpointGroup
 
         if (user.Role == GameUserRole.Banned)
             return new ApiAuthenticationError($"You are banned until {user.BanExpiryDate.ToString()}. " +
-                                              $"Please contact the server administrator for more information.\n" +
+                                              $"For more information or to request account deletion, please contact the server administrator.\n" +
                                               $"Reason: {user.BanReason}");
 
         if (config.MaintenanceMode && user.Role != GameUserRole.Admin)
@@ -251,6 +251,14 @@ public partial class AuthenticationApiEndpoints : EndpointGroup
         EmailVerificationCode code = database.CreateEmailVerificationCode(user);
         smtpService.SendEmailVerificationRequest(user, code.Code);
 
+        return new ApiOkResponse();
+    }
+
+    [ApiV3Endpoint("users/me", Method.Delete), MinimumRole(GameUserRole.Restricted)]
+    [DocSummary("Deletes your own account. This action is non-reversible.")]
+    public ApiOkResponse DeleteMyAccount(RequestContext context, GameUser user, GameDatabaseContext database)
+    {
+        database.DeleteUser(user);
         return new ApiOkResponse();
     }
 }
