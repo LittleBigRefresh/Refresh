@@ -2,6 +2,7 @@ using System.Net;
 using System.Text.RegularExpressions;
 using AttribDoc.Attributes;
 using Bunkum.CustomHttpListener.Parsing;
+using Bunkum.CustomHttpListener.Request;
 using Bunkum.HttpServer;
 using Bunkum.HttpServer.Configuration;
 using Bunkum.HttpServer.Endpoints;
@@ -12,6 +13,7 @@ using Refresh.GameServer.Endpoints.ApiV3.ApiTypes;
 using Refresh.GameServer.Endpoints.ApiV3.ApiTypes.Errors;
 using Refresh.GameServer.Endpoints.ApiV3.DataTypes;
 using Refresh.GameServer.Endpoints.ApiV3.DataTypes.Request;
+using Refresh.GameServer.Endpoints.ApiV3.DataTypes.Request.Authentication;
 using Refresh.GameServer.Endpoints.ApiV3.DataTypes.Response;
 using Refresh.GameServer.Extensions;
 using Refresh.GameServer.Services;
@@ -38,22 +40,21 @@ public partial class AuthenticationApiEndpoints : EndpointGroup
     private static partial Regex EmailAddressRegex();
 
     [ApiV3Endpoint("login", Method.Post), Authentication(false), AllowDuringMaintenance]
+    [DocRequestBody(typeof(ApiAuthenticationRequest))]
     public ApiResponse<IApiAuthenticationResponse> Authenticate(RequestContext context, GameDatabaseContext database, ApiAuthenticationRequest body, GameServerConfig config)
     {
         GameUser? user = database.GetUserByEmailAddress(body.EmailAddress);
         if (user == null) return new ApiAuthenticationError("The email or password was incorrect.");
 
         if (user.Role == GameUserRole.Banned)
-        {
             return new ApiAuthenticationError($"You are banned until {user.BanExpiryDate.ToString()}. " +
                                               $"Please contact the server administrator for more information.\n" +
                                               $"Reason: {user.BanReason}");
-        }
 
         if (config.MaintenanceMode && user.Role != GameUserRole.Admin)
-        {
-            return new ApiAuthenticationError("The server is currently in maintenance mode, so it is only accessible for administrators. Check back later.");
-        }
+            return new ApiAuthenticationError(
+                "The server is currently in maintenance mode, so it is only accessible for administrators." +
+                "Check back later.");
 
         // if this is a legacy user, have them create a password on login
         if (user.PasswordBcrypt == null)
@@ -78,9 +79,31 @@ public partial class AuthenticationApiEndpoints : EndpointGroup
         }
 
         Token token = database.GenerateTokenForUser(user, TokenType.Api, TokenGame.Website, TokenPlatform.Website);
+        Token refreshToken = database.GenerateTokenForUser(user, TokenType.ApiRefresh, TokenGame.Website, TokenPlatform.Website, GameDatabaseContext.RefreshTokenExpirySeconds);
 
         return new ApiAuthenticationResponse
         {
+            RefreshTokenData = refreshToken.TokenData,
+            TokenData = token.TokenData,
+            UserId = user.UserId.ToString(),
+            ExpiresAt = token.ExpiresAt,
+        };
+    }
+
+    [ApiV3Endpoint("refreshToken", Method.Post), Authentication(false), AllowDuringMaintenance]
+    [DocRequestBody(typeof(ApiRefreshRequest))]
+    public ApiResponse<IApiAuthenticationResponse> RefreshToken(RequestContext context, GameDatabaseContext database, ApiRefreshRequest body)
+    {
+        Token? refreshToken = database.GetTokenFromTokenData(body.TokenData, TokenType.ApiRefresh);
+        if (refreshToken == null) return new ApiAuthenticationError("Your session has expired, please sign in again.");
+
+        GameUser user = refreshToken.User;
+
+        Token token = database.GenerateTokenForUser(user, TokenType.Api, TokenGame.Website, TokenPlatform.Website);
+
+        return new ApiAuthenticationResponse
+        {
+            RefreshTokenData = null,
             TokenData = token.TokenData,
             UserId = user.UserId.ToString(),
             ExpiresAt = token.ExpiresAt,

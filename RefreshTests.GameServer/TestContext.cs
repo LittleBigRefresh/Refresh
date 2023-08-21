@@ -78,9 +78,9 @@ public class TestContext : IDisposable
         return this.Database.CreateUser(username, $"{username}@{username}.local");
     }
 
-    public Token CreateToken(GameUser user)
+    public Token CreateToken(GameUser user, TokenType type = TokenType.Game, TokenGame game = TokenGame.LittleBigPlanet2, TokenPlatform platform = TokenPlatform.PS3)
     {
-        return this.Database.GenerateTokenForUser(user, TokenType.Game, TokenGame.LittleBigPlanet2, TokenPlatform.PS3);
+        return this.Database.GenerateTokenForUser(user, type, game, platform);
     }
     
     public GameLevel CreateLevel(GameUser author, string title = "Level")

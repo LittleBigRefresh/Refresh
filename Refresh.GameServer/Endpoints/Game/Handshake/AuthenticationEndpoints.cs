@@ -126,7 +126,7 @@ public class AuthenticationEndpoints : EndpointGroup
 
         if (game == TokenGame.LittleBigPlanetVita && platform == TokenPlatform.PS3) platform = TokenPlatform.Vita;
 
-        Token token = database.GenerateTokenForUser(user, TokenType.Game, game.Value, platform.Value,14400); // 4 hours
+        Token token = database.GenerateTokenForUser(user, TokenType.Game, game.Value, platform.Value, GameDatabaseContext.GameTokenExpirySeconds); // 4 hours
 
         return new LoginResponse
         {

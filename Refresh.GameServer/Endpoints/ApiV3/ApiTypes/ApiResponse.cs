@@ -9,6 +9,15 @@ namespace Refresh.GameServer.Endpoints.ApiV3.ApiTypes;
 [JsonObject(MemberSerialization.OptIn, ItemNullValueHandling = NullValueHandling.Ignore, NamingStrategyType = typeof(CamelCaseNamingStrategy))]
 public class ApiResponse<TData> : IHasResponseCode where TData : class
 {
+    /// <summary>
+    /// Empty constructor for serialization. Do not use.
+    /// </summary>
+    [Obsolete("Empty constructor for serialization.", true)]
+    public ApiResponse()
+    {
+        
+    }
+    
     public ApiResponse(TData data)
     {
         this.Success = true;

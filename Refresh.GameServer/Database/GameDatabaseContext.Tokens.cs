@@ -15,6 +15,8 @@ public partial class GameDatabaseContext // Tokens
     private static readonly int GameCookieLength;
 
     public const int DefaultTokenExpirySeconds = 86400; // 1 day
+    public const int RefreshTokenExpirySeconds = 2678400; // 1 month
+    public const int GameTokenExpirySeconds = 14400; // 4 hours
     
     static GameDatabaseContext()
     {
