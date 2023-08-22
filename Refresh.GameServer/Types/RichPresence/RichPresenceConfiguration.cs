@@ -17,6 +17,7 @@ public class RichPresenceConfiguration
             ApplicationId = richConfig.ApplicationId.ToString(),
             Assets = new RichPresenceAssetConfiguration
             {
+                UseApplicationAssets = true,
                 PodAsset = richConfig.PodAsset,
                 MoonAsset = richConfig.MoonAsset,
                 RemoteMoonAsset = richConfig.RemoteMoonAsset,
