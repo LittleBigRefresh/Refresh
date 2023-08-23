@@ -14,16 +14,36 @@ public class InstanceApiEndpoints : EndpointGroup
 {
     [ApiV3Endpoint("statistics"), Authentication(false)]
     [DocSummary("Retrieves various statistics about the Refresh instance.")]
-    public ApiResponse<ApiStatisticsResponse> GetStatistics(RequestContext context, GameDatabaseContext database, MatchService match) 
-        => new ApiStatisticsResponse
+    public ApiResponse<ApiStatisticsResponse> GetStatistics(RequestContext context, GameDatabaseContext database, MatchService match, GameServerConfig config)
+    {
+        ApiRequestStatisticsResponse requestStatistics;
+        if (!config.TrackRequestStatistics)
+        {
+            requestStatistics = new ApiRequestStatisticsResponse
+            {
+                TotalRequests = -1,
+                ApiRequests = -1,
+                LegacyApiRequests = -1,
+                GameRequests = -1,
+            };
+        }
+        else
+        {
+            requestStatistics = ApiRequestStatisticsResponse.FromOld(database.GetRequestStatistics())!;
+        }
+        
+        return new ApiStatisticsResponse
         {
             TotalLevels = database.GetTotalLevelCount(),
             TotalUsers = database.GetTotalUserCount(),
             TotalPhotos = database.GetTotalPhotoCount(),
+            TotalEvents = database.GetTotalEventCount(),
             CurrentRoomCount = match.Rooms.Count(),
             CurrentIngamePlayersCount = match.TotalPlayers,
+            RequestStatistics = requestStatistics,
         };
-    
+    }
+
     [ApiV3Endpoint("instance"), Authentication(false), AllowDuringMaintenance]
     [DocSummary("Retrieves various information and metadata about the Refresh instance.")]
     public ApiResponse<ApiInstanceResponse> GetInstanceInformation(RequestContext context,

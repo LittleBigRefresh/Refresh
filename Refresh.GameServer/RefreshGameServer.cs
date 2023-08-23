@@ -125,6 +125,9 @@ public class RefreshGameServer
         
         this._server.AddService<RoleService>();
         this._server.AddService<SmtpService>();
+
+        if (this._config!.TrackRequestStatistics)
+            this._server.AddService<RequestStatisticTrackingService>();
     }
 
     protected virtual void SetupWorkers()

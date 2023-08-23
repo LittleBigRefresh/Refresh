@@ -18,4 +18,6 @@ public partial class GameDatabaseContext // Activity
             .Where(e => e._StoredDataType == 1 && e.StoredSequentialId == level.LevelId)
             .Where(e => e.Timestamp < timestamp && e.Timestamp >= endTimestamp)
             .OrderByDescending(e => e.Timestamp), skip, count);
+
+    public int GetTotalEventCount() => this._realm.All<Event>().Count();
 }
