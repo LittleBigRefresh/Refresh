@@ -81,7 +81,7 @@ public partial class GameDatabaseContext // Users
     
     public void UpdateUserData(GameUser user, ApiUpdateUserRequest data)
     {
-        if (data.EmailAddress != null)
+        if (data.EmailAddress != null && data.EmailAddress != user.EmailAddress)
         {
             // TODO: batch this in with the other realm write somehow
             this._realm.Write(() =>
