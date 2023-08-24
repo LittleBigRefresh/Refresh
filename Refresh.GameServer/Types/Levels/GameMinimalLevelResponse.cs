@@ -11,6 +11,7 @@ public class GameMinimalLevelResponse : IDataConvertableFrom<GameMinimalLevelRes
 {
     [XmlElement("name")] public required string Title { get; set; } = string.Empty;
     [XmlElement("icon")] public required string IconHash { get; set; } = string.Empty;
+    [XmlElement("game")] public required int GameVersion { get; set; }
     [XmlElement("rootLevel")] public required string RootResource { get; set; } = string.Empty;
     [XmlElement("description")] public required string Description { get; set; } = string.Empty;
     [XmlElement("location")] public required GameLocation Location { get; set; } = GameLocation.Zero;
@@ -66,6 +67,7 @@ public class GameMinimalLevelResponse : IDataConvertableFrom<GameMinimalLevelRes
         {
             Title = level.Title,
             IconHash = level.IconHash,
+            GameVersion = level.GameVersion,
             RootResource = level.RootResource,
             Description = level.Description,
             Location = level.Location,

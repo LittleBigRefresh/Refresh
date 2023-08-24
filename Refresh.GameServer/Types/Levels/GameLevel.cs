@@ -1,5 +1,6 @@
 using System.Xml.Serialization;
 using Realms;
+using Refresh.GameServer.Authentication;
 using Refresh.GameServer.Database;
 using Refresh.GameServer.Types.UserData;
 using Refresh.GameServer.Types.Levels.SkillRewards;
@@ -29,6 +30,15 @@ public partial class GameLevel : IRealmObject, ISequentialId
     
     public bool SameScreenGame { get; set; }
     public bool TeamPicked { get; set; }
+    
+    public TokenGame GameVersion 
+    {
+        get => (TokenGame)this._GameVersion;
+        set => this._GameVersion = (int)value;
+    }
+    
+    // ReSharper disable once InconsistentNaming
+    internal int _GameVersion { get; set; }
 
 #nullable disable
     [Backlink(nameof(FavouriteLevelRelation.Level))]

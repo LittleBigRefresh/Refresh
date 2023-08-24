@@ -1,4 +1,5 @@
 using System.Xml.Serialization;
+using Refresh.GameServer.Authentication;
 using Refresh.GameServer.Database;
 using Refresh.GameServer.Endpoints.ApiV3.DataTypes;
 using Refresh.GameServer.Services;
@@ -22,6 +23,7 @@ public class GameLevelResponse : IDataConvertableFrom<GameLevelResponse, GameLev
     [XmlElement("description")] public required string Description { get; set; }
     [XmlElement("location")] public required GameLocation Location { get; set; }
 
+    [XmlElement("game")] public required int GameVersion { get; set; }
     [XmlElement("rootLevel")] public required string RootResource { get; set; }
 
     [XmlElement("firstPublished")] public required long PublishDate { get; set; } // unix seconds
@@ -75,6 +77,7 @@ public class GameLevelResponse : IDataConvertableFrom<GameLevelResponse, GameLev
             IconHash = old.IconHash,
             Description = old.Description,
             Location = old.Location,
+            GameVersion = old.GameVersion.ToSerializedGame(),
             RootResource = old.RootResource,
             PublishDate = old.PublishDate,
             UpdateDate = old.UpdateDate,

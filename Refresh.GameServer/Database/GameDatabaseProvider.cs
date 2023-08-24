@@ -32,7 +32,7 @@ public class GameDatabaseProvider : RealmDatabaseProvider<GameDatabaseContext>
         this._time = time;
     }
 
-    protected override ulong SchemaVersion => 76;
+    protected override ulong SchemaVersion => 79;
 
     protected override string Filename => "refreshGameServer.realm";
     
@@ -189,6 +189,13 @@ public class GameDatabaseProvider : RealmDatabaseProvider<GameDatabaseContext>
             {
                 newLevel.MinPlayers = 1;
                 newLevel.MaxPlayers = 4;
+            }
+            
+            // In version 79, we started tracking the version in which the level was uploaded from
+            // Set all levels to LBP2 by default, since that's the version we've supported up until now.
+            if (oldVersion < 79)
+            {
+                newLevel._GameVersion = (int)TokenGame.LittleBigPlanet2;
             }
         }
 

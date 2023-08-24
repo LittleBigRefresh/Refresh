@@ -1,3 +1,4 @@
+using Refresh.GameServer.Authentication;
 using Refresh.GameServer.Types.Levels;
 using Refresh.GameServer.Types.Reviews;
 
@@ -13,6 +14,9 @@ public class ApiGameLevelResponse : IApiResponse, IDataConvertableFrom<ApiGameLe
     public required string IconHash { get; set; }
     public required string Description { get; set; }
     public required ApiGameLocationResponse Location { get; set; }
+    
+    public required string RootLevelHash { get; set; }
+    public TokenGame GameVersion { get; set; }
     
     public required DateTimeOffset PublishDate { get; set; }
     public required DateTimeOffset UpdateDate { get; set; }
@@ -55,6 +59,8 @@ public class ApiGameLevelResponse : IApiResponse, IDataConvertableFrom<ApiGameLe
             Hearts = level.FavouriteRelations.Count(),
             UniquePlays = level.UniquePlays.Count(),
             TeamPicked = level.TeamPicked,
+            RootLevelHash = level.RootResource,
+            GameVersion = level.GameVersion,
         };
     }
 

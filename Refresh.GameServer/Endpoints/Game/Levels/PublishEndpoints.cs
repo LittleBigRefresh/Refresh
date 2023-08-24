@@ -3,6 +3,7 @@ using Bunkum.HttpServer;
 using Bunkum.HttpServer.Endpoints;
 using Bunkum.HttpServer.Responses;
 using Bunkum.HttpServer.Storage;
+using Refresh.GameServer.Authentication;
 using Refresh.GameServer.Database;
 using Refresh.GameServer.Endpoints.Game.DataTypes.Response;
 using Refresh.GameServer.Types.Levels;
@@ -29,7 +30,7 @@ public class PublishEndpoints : EndpointGroup
     }
 
     [GameEndpoint("publish", ContentType.Xml, Method.Post)]
-    public Response PublishLevel(RequestContext context, GameUser user, GameDatabaseContext database, GameLevelResponse body)
+    public Response PublishLevel(RequestContext context, GameUser user, Token token, GameDatabaseContext database, GameLevelResponse body)
     {
         GameLevel level = body.ToGameLevel(user);
         if (level.LevelId != default) // Republish requests contain the id of the old level
@@ -48,6 +49,7 @@ public class PublishEndpoints : EndpointGroup
         }
 
         level.Publisher = user;
+        level.GameVersion = token.TokenGame;
 
         database.AddLevel(level);
         database.CreateLevelUploadEvent(user, level);
