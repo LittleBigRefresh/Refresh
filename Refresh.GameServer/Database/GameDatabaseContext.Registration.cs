@@ -114,6 +114,9 @@ public partial class GameDatabaseContext // Registration
     public DatabaseList<QueuedRegistration> GetAllQueuedRegistrations()
         => new(this._realm.All<QueuedRegistration>());
     
+    public DatabaseList<EmailVerificationCode> GetAllVerificationCodes()
+        => new(this._realm.All<EmailVerificationCode>());
+    
     public void VerifyUserEmail(GameUser user)
     {
         this._realm.Write(() =>
@@ -126,6 +129,8 @@ public partial class GameDatabaseContext // Registration
 
     public bool VerificationCodeMatches(GameUser user, string code) => 
         this._realm.All<EmailVerificationCode>().Any(c => c.User == user && c.Code == code);
+    
+    public bool IsVerificationCodeExpired(EmailVerificationCode code) => code.ExpiryDate >= this._time.Now;
 
     private static string GenerateDigitCode()
     {
@@ -160,5 +165,13 @@ public partial class GameDatabaseContext // Registration
         });
 
         return verificationCode;
+    }
+
+    public void RemoveEmailVerificationCode(EmailVerificationCode code)
+    {
+        this._realm.Write(() =>
+        {
+            this._realm.Remove(code);
+        });
     }
 }

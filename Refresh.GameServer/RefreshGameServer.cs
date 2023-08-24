@@ -135,7 +135,7 @@ public class RefreshGameServer
         if (this._workerManager == null) return;
         
         this._workerManager.AddWorker<PunishmentExpiryWorker>();
-        this._workerManager.AddWorker<QueuedRegistrationExpiryWorker>();
+        this._workerManager.AddWorker<ExpiredObjectWorker>();
     }
 
     public virtual void Start()
