@@ -15,8 +15,8 @@ public class ExpiredObjectWorker : IWorker
         {
             if (!database.IsRegistrationExpired(registration)) continue;
             
-            database.RemoveRegistrationFromQueue(registration);
             logger.LogInfo(RefreshContext.Worker, $"Removed {registration.Username}'s queued registration since it has expired");
+            database.RemoveRegistrationFromQueue(registration);
             removed = true;
         }
         
@@ -24,8 +24,8 @@ public class ExpiredObjectWorker : IWorker
         {
             if (!database.IsVerificationCodeExpired(code)) continue;
             
-            database.RemoveEmailVerificationCode(code);
             logger.LogInfo(RefreshContext.Worker, $"Removed {code.User}'s verification code since it has expired");
+            database.RemoveEmailVerificationCode(code);
             removed = true;
         }
 

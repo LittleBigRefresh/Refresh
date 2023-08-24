@@ -46,6 +46,7 @@ public class WorkerManager
                 this._lastWorkTimestamps.Add(worker, 0);
             }
             
+            this._logger.LogTrace(RefreshContext.Worker, "Running work cycle for " + worker.GetType().Name);
             bool workerDidWork = worker.DoWork(this._logger, this._dataStore, this._databaseProvider.GetContext());
             if (workerDidWork) didWork = true;
         }

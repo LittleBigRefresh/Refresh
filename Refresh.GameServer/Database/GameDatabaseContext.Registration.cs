@@ -105,7 +105,7 @@ public partial class GameDatabaseContext // Registration
         });
     }
     
-    public bool IsRegistrationExpired(QueuedRegistration registration) => registration.ExpiryDate >= this._time.Now;
+    public bool IsRegistrationExpired(QueuedRegistration registration) => registration.ExpiryDate < this._time.Now;
 
     public QueuedRegistration? GetQueuedRegistration(string username) 
         => this._realm.All<QueuedRegistration>().FirstOrDefault(q => q.Username == username);
@@ -130,7 +130,7 @@ public partial class GameDatabaseContext // Registration
     public bool VerificationCodeMatches(GameUser user, string code) => 
         this._realm.All<EmailVerificationCode>().Any(c => c.User == user && c.Code == code);
     
-    public bool IsVerificationCodeExpired(EmailVerificationCode code) => code.ExpiryDate >= this._time.Now;
+    public bool IsVerificationCodeExpired(EmailVerificationCode code) => code.ExpiryDate < this._time.Now;
 
     private static string GenerateDigitCode()
     {
