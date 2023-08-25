@@ -38,12 +38,14 @@ public class LevelCategory
         if (method == null) throw new ArgumentNullException(nameof(funcName), 
             $"{nameof(funcName)} must point to a method on {nameof(GameDatabaseContext)}! Use nameof() to assist with this.");
 
+        #if DEBUG
         List<string> parameters = method.GetParameters().Select(p => p.Name).ToList()!;
         foreach (string expectedParameter in ExpectedParameters)
         {
             if (parameters.Contains(expectedParameter)) continue;
             throw new InvalidOperationException($"Cannot bind to {funcName}() when it is missing a {expectedParameter} parameter");
         }
+        #endif
 
         this._method = method;
     }
