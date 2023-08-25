@@ -156,20 +156,24 @@ public partial class GameDatabaseContext // Levels
     [Pure]
     public DatabaseList<GameLevel> SearchForLevels(int count, int skip, TokenGame gameVersion, string query)
     {
-        string[] keywords = query.Split(' ');
-        if (keywords.Length == 0) return DatabaseList<GameLevel>.Empty();
+        IQueryable<GameLevel> validLevels = this.GetLevelsByGameVersion(gameVersion);
+
+        List<GameLevel> levels = validLevels.Where(l =>
+                                                       QueryMethods.FullTextSearch(l.Title, query) ||
+                                                       QueryMethods.FullTextSearch(l.Description, query)
+        ).ToList();
         
-        IQueryable<GameLevel> levels = this.GetLevelsByGameVersion(gameVersion);
-        
-        foreach (string keyword in keywords)
+        // If the search is just an int, then we should also look for levels which match that ID
+        if (int.TryParse(query, out int id))
         {
-            if(string.IsNullOrWhiteSpace(keyword)) continue;
-            
-            levels = levels.Where(l =>
-                // l.LevelId.ToString() == keyword ||
-                QueryMethods.Like(l.Title, keyword, false) ||
-                QueryMethods.Like(l.Description, keyword, false)
-            );
+            // Try to find a level with the ID
+            GameLevel? idLevel = validLevels.FirstOrDefault(l => l.LevelId == id);
+
+            // If we found it, and it does not duplicate, add it
+            if (idLevel != null && !levels.Contains(idLevel))
+            {
+                levels.Add(idLevel);
+            }
         }
 
         return new DatabaseList<GameLevel>(levels, skip, count);
