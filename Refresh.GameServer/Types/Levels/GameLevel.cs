@@ -14,8 +14,10 @@ public partial class GameLevel : IRealmObject, ISequentialId
 {
     [PrimaryKey] public int LevelId { get; set; }
 
+    [Indexed(IndexType.FullText)]
     public string Title { get; set; } = "";
     public string IconHash { get; set; } = "0";
+    [Indexed(IndexType.FullText)]
     public string Description { get; set; } = "";
     public GameLocation Location { get; set; } = GameLocation.Zero;
 
