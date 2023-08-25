@@ -1,4 +1,5 @@
 using Bunkum.HttpServer;
+using Refresh.GameServer.Authentication;
 using Refresh.GameServer.Database;
 using Refresh.GameServer.Services;
 using Refresh.GameServer.Types.UserData;
@@ -16,13 +17,14 @@ public class SearchLevelCategory : LevelCategory
     }
 
     public override DatabaseList<GameLevel>? Fetch(RequestContext context, int skip, int count,
-        MatchService matchService, GameDatabaseContext database, GameUser? user, object[]? extraArgs)
+        MatchService matchService, GameDatabaseContext database, GameUser? user, TokenGame gameVersion,
+        object[]? extraArgs)
     {
         string? query = context.QueryString["query"];
         if (query == null) return null;
 
         extraArgs = new object[] { query };
         
-        return base.Fetch(context, skip, count, matchService, database, user, extraArgs);
+        return base.Fetch(context, skip, count, matchService, database, user, gameVersion, extraArgs);
     }
 }

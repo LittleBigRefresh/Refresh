@@ -2,6 +2,8 @@ using System.Diagnostics;
 using System.Reflection;
 using JetBrains.Annotations;
 using Realms;
+using Refresh.GameServer.Authentication;
+using Refresh.GameServer.Extensions;
 using Refresh.GameServer.Services;
 using Refresh.GameServer.Types.Activity;
 using Refresh.GameServer.Types.Levels;
@@ -66,23 +68,27 @@ public partial class GameDatabaseContext // Levels
             this._realm.Remove(level);
         });
     }
+    
+
+    private IQueryable<GameLevel> GetLevelsByGameVersion(TokenGame gameVersion) 
+        => this._realm.All<GameLevel>().FilterByGameVersion(gameVersion);
 
     [Pure]
-    public DatabaseList<GameLevel> GetLevelsByUser(GameUser user, int count, int skip) =>
-        new(this._realm.All<GameLevel>().Where(l => l.Publisher == user), skip, count);
+    public DatabaseList<GameLevel> GetLevelsByUser(GameUser user, int count, int skip, TokenGame gameVersion) =>
+        new(this.GetLevelsByGameVersion(gameVersion).Where(l => l.Publisher == user), skip, count);
     
     [Pure]
-    public DatabaseList<GameLevel> GetNewestLevels(int count, int skip) =>
-        new(this._realm.All<GameLevel>().OrderByDescending(l => l.PublishDate), skip, count);
+    public DatabaseList<GameLevel> GetNewestLevels(int count, int skip, TokenGame gameVersion) =>
+        new(this.GetLevelsByGameVersion(gameVersion).OrderByDescending(l => l.PublishDate), skip, count);
     
     [Pure]
-    public DatabaseList<GameLevel> GetRandomLevels(int count, int skip) =>
-        new(this._realm.All<GameLevel>().AsEnumerable()
+    public DatabaseList<GameLevel> GetRandomLevels(int count, int skip, TokenGame gameVersion) =>
+        new(this.GetLevelsByGameVersion(gameVersion).AsEnumerable()
             .OrderBy(_ => Random.Shared.Next()), skip, count);
     
     // TODO: reduce code duplication for getting most of x
     [Pure]
-    public DatabaseList<GameLevel> GetMostHeartedLevels(int count, int skip)
+    public DatabaseList<GameLevel> GetMostHeartedLevels(int count, int skip, TokenGame gameVersion)
     {
         IQueryable<FavouriteLevelRelation> favourites = this._realm.All<FavouriteLevelRelation>();
         
@@ -91,13 +97,14 @@ public partial class GameDatabaseContext // Levels
             .GroupBy(r => r.Level)
             .Select(g => new { Level = g.Key, Count = g.Count() })
             .OrderByDescending(x => x.Count)
-            .Select(x => x.Level);
+            .Select(x => x.Level)
+            .FilterByGameVersion(gameVersion);
 
         return new DatabaseList<GameLevel>(mostHeartedLevels, skip, count);
     }
     
     [Pure]
-    public DatabaseList<GameLevel> GetMostUniquelyPlayedLevels(int count, int skip)
+    public DatabaseList<GameLevel> GetMostUniquelyPlayedLevels(int count, int skip, TokenGame gameVersion)
     {
         IQueryable<UniquePlayLevelRelation> uniquePlays = this._realm.All<UniquePlayLevelRelation>();
         
@@ -106,13 +113,14 @@ public partial class GameDatabaseContext // Levels
             .GroupBy(r => r.Level)
             .Select(g => new { Level = g.Key, Count = g.Count() })
             .OrderByDescending(x => x.Count)
-            .Select(x => x.Level);
+            .Select(x => x.Level)
+            .FilterByGameVersion(gameVersion);
 
         return new DatabaseList<GameLevel>(mostPlayed, skip, count);
     }
     
     [Pure]
-    public DatabaseList<GameLevel> GetHighestRatedLevels(int count, int skip)
+    public DatabaseList<GameLevel> GetHighestRatedLevels(int count, int skip, TokenGame gameVersion)
     {
         IQueryable<RateLevelRelation> ratings = this._realm.All<RateLevelRelation>();
         
@@ -121,19 +129,20 @@ public partial class GameDatabaseContext // Levels
             .GroupBy(r => r.Level)
             .Select(g => new { Level = g.Key, Karma = g.Sum(r => r._RatingType) })
             .OrderByDescending(x => x.Karma) // reddit moment
-            .Select(x => x.Level);
+            .Select(x => x.Level)
+            .FilterByGameVersion(gameVersion);
 
         return new DatabaseList<GameLevel>(highestRated, skip, count);
     }
     
     [Pure]
-    public DatabaseList<GameLevel> GetTeamPickedLevels(int count, int skip) =>
-        new(this._realm.All<GameLevel>()
+    public DatabaseList<GameLevel> GetTeamPickedLevels(int count, int skip, TokenGame gameVersion) =>
+        new(this.GetLevelsByGameVersion(gameVersion)
             .Where(l => l.TeamPicked)
             .OrderByDescending(l => l.PublishDate), skip, count);
 
     [Pure]
-    public DatabaseList<GameLevel> GetBusiestLevels(int count, int skip, MatchService service)
+    public DatabaseList<GameLevel> GetBusiestLevels(int count, int skip, TokenGame gameVersion, MatchService service)
     {
         IOrderedEnumerable<IGrouping<GameLevel?,GameRoom>> rooms = service.Rooms
             .Where(r => r.LevelType == RoomSlotType.Online && r.HostId.Id != null) // if playing online level and host exists on server
@@ -141,16 +150,16 @@ public partial class GameDatabaseContext // Levels
             .OrderBy(r => r.Sum(room => room.PlayerIds.Count));
 
         return new DatabaseList<GameLevel>(rooms.Select(r => r.Key)
-            .Where(l => l != null)!, skip, count);
+            .Where(l => l != null)!.FilterByGameVersion(gameVersion), skip, count);
     }
 
     [Pure]
-    public DatabaseList<GameLevel> SearchForLevels(int count, int skip, string query)
+    public DatabaseList<GameLevel> SearchForLevels(int count, int skip, TokenGame gameVersion, string query)
     {
         string[] keywords = query.Split(' ');
         if (keywords.Length == 0) return DatabaseList<GameLevel>.Empty();
         
-        IQueryable<GameLevel> levels = this._realm.All<GameLevel>();
+        IQueryable<GameLevel> levels = this.GetLevelsByGameVersion(gameVersion);
         
         foreach (string keyword in keywords)
         {

@@ -1,6 +1,7 @@
 using AttribDoc.Attributes;
 using Bunkum.HttpServer;
 using Bunkum.HttpServer.Endpoints;
+using Refresh.GameServer.Authentication;
 using Refresh.GameServer.Database;
 using Refresh.GameServer.Documentation.Attributes;
 using Refresh.GameServer.Endpoints.ApiV3.ApiTypes;
@@ -47,7 +48,7 @@ public class LevelApiEndpoints : EndpointGroup
 
         DatabaseList<GameLevel>? list = categories.Categories
             .FirstOrDefault(c => c.ApiRoute.StartsWith(route))?
-            .Fetch(context, skip, count, matchService, database, user);
+            .Fetch(context, skip, count, matchService, database, user, TokenGame.Website);
 
         if (list == null) return ApiNotFoundError.Instance;
 
