@@ -42,16 +42,18 @@ public class DigestMiddleware : IMiddleware
     {
         string url = context.Uri.AbsolutePath;
         string auth = context.Cookies["MM_AUTH"] ?? string.Empty;
-    
-        string digestResponse = CalculateDigest(url, context.InputStream, auth);
-    
-        string digestHeader = !url.StartsWith("/lbp/upload/") ? "X-Digest-A" : "X-Digest-B";
+
+        bool isUpload = url.StartsWith("/lbp/upload/");
+
+        MemoryStream body = isUpload ? new MemoryStream(0) : context.InputStream;
+        string digestHeader = !isUpload ? "X-Digest-A" : "X-Digest-B";
         string clientDigest = context.RequestHeaders[digestHeader] ?? string.Empty;
+    
+        string expectedDigest = CalculateDigest(url, body, auth);
         
-        context.ResponseHeaders["X-Digest-B"] = digestResponse;
-        if (clientDigest == digestResponse) return true;
+        context.ResponseHeaders["X-Digest-B"] = expectedDigest;
+        if (clientDigest == expectedDigest) return true;
         
-        // this._logger.LogWarning(BunkumContext.Digest, $"Digest failed: {clientDigest} != {digestResponse}");
         return false;
     }
     
@@ -77,7 +79,9 @@ public class DigestMiddleware : IMiddleware
         Debug.Assert(context.InputStream.Position == 0); // should be at position 0 before we pass down the pipeline
         
         next();
-        
+
+        // should be at position 0 before we try to set digest
+        context.ResponseStream.Seek(0, SeekOrigin.Begin);
         this.SetDigestResponse(context);
     }
 }
