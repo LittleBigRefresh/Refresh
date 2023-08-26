@@ -10,7 +10,7 @@ A second-generation custom server for LittleBigPlanet that focuses on ease of us
 
 ## Running :computer:
 
-### Legalties :scroll:
+### Legalities :scroll:
 > [!WARNING]
 > While Refresh is stable and mostly secure in our testing, we cannot make any guarantees about anything. You use Refresh at YOUR OWN RISK.
 > Refresh is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
