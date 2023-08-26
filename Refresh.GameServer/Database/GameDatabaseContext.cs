@@ -25,7 +25,7 @@ public partial class GameDatabaseContext : RealmDatabaseContext
         SequentialIdStorage? storage = this._realm.All<SequentialIdStorage>()
             .FirstOrDefault(s => s.TypeName == name);
         
-        if (storage != null) return storage.SequentialId;
+        if (storage != null) return storage.SequentialId++;
         
         storage = new SequentialIdStorage
         {
