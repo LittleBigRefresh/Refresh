@@ -28,6 +28,10 @@ public class WorkerManager
         TWorker worker = new();
         this._workers.Add(worker);
     }
+    public void AddWorker(IWorker worker)
+    {
+        this._workers.Add(worker);
+    }
 
     private bool RunWorkCycle()
     {

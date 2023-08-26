@@ -7,7 +7,7 @@ namespace Refresh.GameServer.Configuration;
 /// </summary>
 public class IntegrationConfig : Config
 {
-    public override int CurrentConfigVersion => 2;
+    public override int CurrentConfigVersion => 3;
     public override int Version { get; set; }
     protected override void Migrate(int oldVer, dynamic oldConfig)
     {
@@ -23,6 +23,16 @@ public class IntegrationConfig : Config
     public bool SmtpTlsEnabled { get; set; } = true;
     public string SmtpUsername { get; set; } = "username@example.com";
     public string SmtpPassword { get; set; } = "P4$$w0rd";
+
+    #endregion
+
+    #region Discord
+
+    public bool DiscordWebhookEnabled { get; set; }
+    public string DiscordWebhookUrl { get; set; } = "https://discord.com/api/webhooks/id/key";
+    public int DiscordWorkerFrequencySeconds { get; set; } = 60;
+    public string DiscordNickname { get; set; } = "Refresh";
+    public string DiscordAvatarUrl { get; set; } = "https://raw.githubusercontent.com/LittleBigRefresh/Branding/main/icons/refresh_512x.png";
 
     #endregion
     

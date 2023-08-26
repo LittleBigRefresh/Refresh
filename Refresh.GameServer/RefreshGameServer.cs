@@ -35,7 +35,9 @@ public class RefreshGameServer
     
     protected readonly GameDatabaseProvider _databaseProvider;
     protected readonly IDataStore _dataStore;
+    
     protected GameServerConfig? _config;
+    protected IntegrationConfig _integrationConfig;
 
     public RefreshGameServer(
         BunkumHttpListener? listener = null,
@@ -100,10 +102,13 @@ public class RefreshGameServer
     {
         GameServerConfig config = Config.LoadFromFile<GameServerConfig>("refreshGameServer.json", this._server.Logger);
         this._config = config;
+
+        IntegrationConfig integrationConfig = Config.LoadFromFile<IntegrationConfig>("integrations.json", this._server.Logger);
+        this._integrationConfig = integrationConfig;
         
         this._server.UseConfig(config);
+        this._server.UseConfig(integrationConfig);
         this._server.UseJsonConfig<RichPresenceConfig>("rpc.json");
-        this._server.UseJsonConfig<IntegrationConfig>("integrations.json");
     }
 
     protected virtual void SetupServices()
@@ -136,6 +141,14 @@ public class RefreshGameServer
         
         this._workerManager.AddWorker<PunishmentExpiryWorker>();
         this._workerManager.AddWorker<ExpiredObjectWorker>();
+        
+        if (this._integrationConfig.DiscordWebhookEnabled)
+        {
+            // this is stupid and beyond moronic. we really shouldn't do this, especially if hot reloading becomes a thing
+            // TODO: don't load the fucking bunkum config here, expose it from BunkumHttpServer instead
+            BunkumConfig bunkumConfig = Config.LoadFromFile<BunkumConfig>("bunkum.json", this._server.Logger);
+            this._workerManager.AddWorker(new DiscordIntegrationWorker(this._integrationConfig, bunkumConfig));
+        }
     }
 
     public virtual void Start()
