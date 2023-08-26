@@ -54,36 +54,6 @@ public class ResourceEndpoints : EndpointGroup
     {
         if (!dataStore.ExistsInStore(hash))
             return NotFound;
-        
-        // Vita only accepts PNG
-        if (token.TokenGame == TokenGame.LittleBigPlanetVita)
-        {
-            GameAsset? asset = database.GetAssetFromHash(hash);
-            if (asset == null)
-            {
-                context.Logger.LogWarning(BunkumContext.UserContent, "Failed to convert to PNG because asset was missing in database");
-                return InternalServerError;
-            }
-
-            if (asset.AssetType is GameAssetType.Jpeg or GameAssetType.Texture)
-            {
-                if (!dataStore.ExistsInStore("png/" + hash))
-                {
-                    ImageImporter.ImportAsset(asset, dataStore);
-                }
-            
-                bool gotData = dataStore.TryGetDataFromStore("png/" + hash, out byte[]? pngData);
-                
-                // ReSharper disable once InvertIf
-                if (!gotData || pngData == null)
-                {
-                    context.Logger.LogWarning(BunkumContext.UserContent, $"Couldn't get data: gotData: {gotData}, pngData: {pngData}");
-                    return InternalServerError;
-                }
-
-                return new Response(pngData, ContentType.Png);
-            }
-        }
 
         if (!dataStore.TryGetDataFromStore(hash, out byte[]? data))
             return InternalServerError;
