@@ -33,6 +33,7 @@ public class PublishEndpoints : EndpointGroup
     public Response PublishLevel(RequestContext context, GameUser user, Token token, GameDatabaseContext database, GameLevelResponse body)
     {
         GameLevel level = body.ToGameLevel(user);
+        level.GameVersion = token.TokenGame;
         if (level.LevelId != default) // Republish requests contain the id of the old level
         {
             context.Logger.LogInfo(BunkumContext.UserContent, "Republishing level id " + level.LevelId);
@@ -49,7 +50,6 @@ public class PublishEndpoints : EndpointGroup
         }
 
         level.Publisher = user;
-        level.GameVersion = token.TokenGame;
 
         database.AddLevel(level);
         database.CreateLevelUploadEvent(user, level);
