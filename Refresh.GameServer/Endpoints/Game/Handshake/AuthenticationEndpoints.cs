@@ -55,7 +55,11 @@ public class AuthenticationEndpoints : EndpointGroup
             {
                 // look for a registration, then use that to create a user
                 QueuedRegistration? registration = database.GetQueuedRegistration(ticket.Username);
-                if (registration == null) return null;
+                if (registration == null)
+                {
+                    context.Logger.LogWarning(BunkumContext.Authentication, $"Rejecting {ticket.Username}'s login because there was no matching queued registration");
+                    return null;
+                }
                 
                 user = database.CreateUserFromQueuedRegistration(registration, platform);
                 
@@ -63,7 +67,8 @@ public class AuthenticationEndpoints : EndpointGroup
                 {
                     EmailVerificationCode code = database.CreateEmailVerificationCode(user);
                     smtpService.SendEmailVerificationRequest(user, code.Code);
-                    
+
+                    context.Logger.LogInfo(BunkumContext.Authentication, $"Telling user {user.Username} to verify their email");
                     database.AddNotification("Verify your email",
                         "Your account has been created, but you still need to verify your e-mail." +
                            "Please check your email for a verification code, and verify it in settings." +
@@ -76,13 +81,23 @@ public class AuthenticationEndpoints : EndpointGroup
                     database.VerifyUserEmail(user);
                 }
             }
-            else return null;
+            else
+            {
+                context.Logger.LogWarning(BunkumContext.Authentication, $"Rejecting {ticket.Username}'s login because there was no matching username");
+                return null;
+            }
         }
-        else if(user.Role == GameUserRole.Banned)
+        else if (user.Role == GameUserRole.Banned)
+        {
+            context.Logger.LogWarning(BunkumContext.Authentication, $"Rejecting {user}'s login because they are banned");
             return null;
+        }
 
         if (config.MaintenanceMode && user.Role != GameUserRole.Admin)
+        {
+            context.Logger.LogWarning(BunkumContext.Authentication, $"Rejecting {user}'s login because server is in maintenance mode");
             return null;
+        }
 
         bool ticketVerified = false;
         if (config.UseTicketVerification)
@@ -90,6 +105,7 @@ public class AuthenticationEndpoints : EndpointGroup
             if ((platform is TokenPlatform.PS3 or TokenPlatform.Vita && !user.PsnAuthenticationAllowed) ||
                 (platform is TokenPlatform.RPCS3 && !user.RpcnAuthenticationAllowed))
             {
+                context.Logger.LogWarning(BunkumContext.Authentication, $"Rejecting {user}'s login because their platform ({platform}) is not allowed");
                 SendPlatformNotAllowedNotification(database, user, platform.Value);
                 return null;
             }
@@ -98,13 +114,21 @@ public class AuthenticationEndpoints : EndpointGroup
             if (!ticketVerified)
             {
                 SendVerificationFailureNotification(database, user, config);
-                if(!config.AllowUsersToUseIpAuthentication) return null;
+                if (!config.AllowUsersToUseIpAuthentication)
+                {
+                    context.Logger.LogWarning(BunkumContext.Authentication, $"Rejecting {user}'s login because their ticket could not be verified");
+                    return null;
+                }
             }
         }
         
         if (config.AllowUsersToUseIpAuthentication && !ticketVerified)
         {
-            if (!HandleIpAuthentication(context, user, database, !config.UseTicketVerification)) return null;
+            if (!HandleIpAuthentication(context, user, database, !config.UseTicketVerification))
+            {
+                context.Logger.LogWarning(BunkumContext.Authentication, $"Rejecting {user}'s login because their IP was not whitelisted");
+                return null;
+            }
         }
 
         TokenGame? game = TokenGameUtility.FromTitleId(ticket.TitleId);
