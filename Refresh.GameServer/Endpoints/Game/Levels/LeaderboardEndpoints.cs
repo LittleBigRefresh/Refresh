@@ -34,6 +34,12 @@ public class LeaderboardEndpoints : EndpointGroup
         GameLevel? level = database.GetLevelById(id.Value);
         if (level == null) return NotFound;
 
+        //Validate the score is a non-negative amount
+        if (body.Score < 0)
+        {
+            return BadRequest;
+        }
+
         GameSubmittedScore? score = database.SubmitScore(body, user, level);
         if (score == null) return Unauthorized;
 
