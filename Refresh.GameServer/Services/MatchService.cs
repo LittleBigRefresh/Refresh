@@ -17,7 +17,14 @@ public partial class MatchService : EndpointService
 
     private readonly List<GameRoom> _rooms = new();
     
-    public IEnumerable<GameRoom> Rooms => this._rooms.AsReadOnly();
+    public IEnumerable<GameRoom> Rooms
+    {
+        get
+        {
+            this.RemoveExpiredRooms();
+            return this._rooms.AsReadOnly();
+        }
+    }
 
     public int TotalPlayers => this._rooms.SelectMany(r => r.PlayerIds).Count();
     public int TotalPlayersInPod => this._rooms
