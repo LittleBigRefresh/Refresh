@@ -49,6 +49,11 @@ public partial class GameDatabaseContext // Tokens
             ExpiresAt = this._time.Now.AddSeconds(tokenExpirySeconds),
             LoginDate = this._time.Now,
         };
+        
+        if (user.LastLoginDate == DateTimeOffset.MinValue)
+        {
+            this.CreateUserFirstLoginEvent(user, user);
+        }
 
         this._realm.Write(() =>
         {
