@@ -142,7 +142,8 @@ public class RefreshGameServer
         this._workerManager.AddWorker<PunishmentExpiryWorker>();
         this._workerManager.AddWorker<ExpiredObjectWorker>();
         
-        if (this._integrationConfig.DiscordWebhookEnabled)
+        // ReSharper disable once ConditionalAccessQualifierIsNonNullableAccordingToAPIContract
+        if (this._integrationConfig?.DiscordWebhookEnabled ?? false)
         {
             // this is stupid and beyond moronic. we really shouldn't do this, especially if hot reloading becomes a thing
             // TODO: don't load the fucking bunkum config here, expose it from BunkumHttpServer instead
