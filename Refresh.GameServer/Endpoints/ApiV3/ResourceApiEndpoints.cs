@@ -23,6 +23,10 @@ public class ResourceApiEndpoints : EndpointGroup
     private static readonly ApiInternalError CouldNotGetAssetError = new(CouldNotGetAssetErrorWhen);
     private static readonly Response CouldNotGetAssetErrorResponse = CouldNotGetAssetError;
     
+    private const string CouldNotGetAssetDatabaseErrorWhen = "An error occurred while retrieving the asset from the database";
+    private static readonly ApiInternalError CouldNotGetAssetDatabaseError = new(CouldNotGetAssetDatabaseErrorWhen);
+    private static readonly Response CouldNotGetAssetDatabaseErrorResponse = CouldNotGetAssetDatabaseError;
+    
     [ApiV3Endpoint("assets/{hash}/download"), Authentication(false)]
     [ClientCacheResponse(31556952)] // 1 year, we don't expect the data to change
     [DocSummary("Downloads the raw data for an asset hash. Sent as application/octet-stream")]
@@ -56,7 +60,7 @@ public class ResourceApiEndpoints : EndpointGroup
         if (!dataStore.ExistsInStore("png/" + hash))
         {
             GameAsset? asset = database.GetAssetFromHash(hash);
-            if (asset == null) return CouldNotGetAssetErrorResponse;
+            if (asset == null) return CouldNotGetAssetDatabaseErrorResponse;
             
             ImageImporter.ImportAsset(asset, dataStore);
         }
