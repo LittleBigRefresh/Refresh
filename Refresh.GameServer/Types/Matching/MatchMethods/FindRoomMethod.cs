@@ -22,7 +22,8 @@ public class FindRoomMethod : IMatchMethod
         GameRoom? usersRoom = service.GetRoomByPlayer(user, token.TokenPlatform, token.TokenGame);
         if (usersRoom == null) return BadRequest; // user should already have a room.
 
-        List<GameRoom> rooms = service.Rooms.Where(r => r.RoomId != usersRoom.RoomId)
+        List<GameRoom> rooms = service.Rooms.Where(r => r.RoomId != usersRoom.RoomId && 
+                                                        r.Platform == usersRoom.Platform)
             .OrderByDescending(r => r.RoomMood)
             .ToList();
 
@@ -30,8 +31,8 @@ public class FindRoomMethod : IMatchMethod
         {
             return NotFound; // TODO: update this response, shouldn't be 404
         }
-
-        GameRoom room = rooms[0];
+        
+        GameRoom room = rooms[Random.Shared.Next(0, rooms.Count)];
 
         SerializedRoomMatchResponse roomMatch = new()
         {
