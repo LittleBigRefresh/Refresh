@@ -5,6 +5,7 @@ using Bunkum.HttpServer;
 using Bunkum.HttpServer.Endpoints;
 using Bunkum.HttpServer.Responses;
 using Bunkum.HttpServer.Storage;
+using Refresh.GameServer.Authentication;
 using Refresh.GameServer.Configuration;
 using Refresh.GameServer.Database;
 using Refresh.GameServer.Importing;
@@ -49,10 +50,27 @@ public class ResourceEndpoints : EndpointGroup
     }
 
     [GameEndpoint("r/{hash}")]
-    public Response GetResource(RequestContext context, string hash, IDataStore dataStore)
+    public Response GetResource(RequestContext context, string hash, IDataStore dataStore, GameDatabaseContext database, Token token)
     {
         if (!dataStore.ExistsInStore(hash))
             return NotFound;
+        
+        // Vita only accepts PNG
+        if (token.TokenGame == TokenGame.LittleBigPlanetVita)
+        {
+            if (!dataStore.ExistsInStore("png/" + hash))
+            {
+                GameAsset? asset = database.GetAssetFromHash(hash);
+                if (asset == null) return InternalServerError;
+                
+                ImageImporter.ImportAsset(asset, dataStore);
+            }
+            
+            bool gotData = dataStore.TryGetDataFromStore("png/" + hash, out byte[]? pngData);
+            if (!gotData || pngData == null) return InternalServerError;
+
+            return new Response(pngData, ContentType.Png);
+        }
 
         if (!dataStore.TryGetDataFromStore(hash, out byte[]? data))
             return InternalServerError;
