@@ -24,10 +24,10 @@ public class DiscordIntegrationWorker : IWorker
     private static long Now => DateTimeOffset.Now.ToUnixTimeMilliseconds();
     public int WorkInterval => this._config.DiscordWorkerFrequencySeconds * 1000; // 60 seconds by default
 
-    public DiscordIntegrationWorker(IntegrationConfig config, BunkumConfig bunkumConfig)
+    public DiscordIntegrationWorker(IntegrationConfig config, GameServerConfig gameConfig)
     {
         this._config = config;
-        this._externalUrl = bunkumConfig.ExternalUrl;
+        this._externalUrl = gameConfig.WebExternalUrl;
 
         this._client = new DiscordWebhookClient(config.DiscordWebhookUrl);
     }
@@ -106,7 +106,7 @@ public class DiscordIntegrationWorker : IWorker
 
         IEnumerable<Embed> embeds = activity.Items
             .Reverse() // events are descending
-            .Select(e => this.GenerateEmbedFromEvent(e, database));
+            .Select(e => this.GenerateEmbedFromEvent(e, database))!;
         
         ulong id = this._client.SendMessageAsync(embeds: embeds, 
             username: this._config.DiscordNickname, avatarUrl: this._config.DiscordAvatarUrl).Result;

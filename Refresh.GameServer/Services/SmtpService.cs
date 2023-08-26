@@ -12,18 +12,15 @@ namespace Refresh.GameServer.Services;
 public class SmtpService : EndpointService
 {
     private readonly SmtpClient? _smtpClient;
-    private readonly BunkumConfig _bunkumConfig;
     private readonly IntegrationConfig _integrationConfig;
     private readonly GameServerConfig _gameConfig;
 
-    internal SmtpService(BunkumConfig bunkumConfig,
-        IntegrationConfig integrationConfig,
+    internal SmtpService(IntegrationConfig integrationConfig,
         GameServerConfig gameConfig,
         LoggerContainer<BunkumContext> logger) : base(logger)
     {
         this._integrationConfig = integrationConfig;
         this._gameConfig = gameConfig;
-        this._bunkumConfig = bunkumConfig;
 
         if (!this._integrationConfig.SmtpEnabled) return;
         
@@ -73,7 +70,7 @@ public class SmtpService : EndpointService
             
             We've received a request to verify your email address for {this._gameConfig.InstanceName}. Your verification code is: '{code}'.
             
-            You can also verify your email if signed in via your browser by clicking the following link: {this._bunkumConfig.ExternalUrl}/verify?code={code}
+            You can also verify your email if signed in via your browser by clicking the following link: {this._gameConfig.WebExternalUrl}/verify?code={code}
             
             If you didn't initiate this request, please disregard this message.
             

@@ -34,7 +34,7 @@ public class WelcomeEndpoints : EndpointGroup
     }
 
     [GameEndpoint("announce")]
-    public string Announce(RequestContext context, GameServerConfig config, BunkumConfig bunkumConfig, GameUser user, GameDatabaseContext database)
+    public string Announce(RequestContext context, GameServerConfig config, GameUser user, GameDatabaseContext database)
     {
         List<GameNotification> notifications = database.GetNotificationsByUser(user, 5, 0).Items.ToList();
         int count = database.GetNotificationCountByUser(user);
@@ -49,7 +49,7 @@ public class WelcomeEndpoints : EndpointGroup
                                 $"    {notification.Text}\n\n";
         }
 
-        notificationText += $"To view more, or clear these notifications, you can visit the website at {bunkumConfig.ExternalUrl}!\n";
+        notificationText += $"To view more, or clear these notifications, you can visit the website at {config.WebExternalUrl}!\n";
 
         return config.AnnounceText.TrimEnd() + "\n\n" + notificationText;
     }
