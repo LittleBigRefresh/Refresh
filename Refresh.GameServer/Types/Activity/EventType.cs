@@ -1,9 +1,11 @@
+using System.Diagnostics.CodeAnalysis;
 using System.Xml.Serialization;
 using Newtonsoft.Json.Converters;
 
 namespace Refresh.GameServer.Types.Activity;
 
 [JsonConverter(typeof(StringEnumConverter))]
+[SuppressMessage("ReSharper", "InconsistentNaming")]
 public enum EventType
 {
     [XmlEnum("publish_level")]
@@ -48,4 +50,8 @@ public enum EventType
     // Playlist_AddLevel = 19,
     [XmlEnum("score")]
     SubmittedScore_Create = 20, // FIXME: this name is shit
+    
+    // Custom events
+    [XmlEnum("firstlogin")]
+    User_FirstLogin = 127,
 }

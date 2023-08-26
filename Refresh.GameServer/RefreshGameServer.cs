@@ -37,7 +37,7 @@ public class RefreshGameServer
     protected readonly IDataStore _dataStore;
     
     protected GameServerConfig? _config;
-    protected IntegrationConfig _integrationConfig;
+    protected IntegrationConfig? _integrationConfig;
 
     public RefreshGameServer(
         BunkumHttpListener? listener = null,
@@ -142,13 +142,9 @@ public class RefreshGameServer
         this._workerManager.AddWorker<PunishmentExpiryWorker>();
         this._workerManager.AddWorker<ExpiredObjectWorker>();
         
-        // ReSharper disable once ConditionalAccessQualifierIsNonNullableAccordingToAPIContract
-        if (this._integrationConfig?.DiscordWebhookEnabled ?? false)
+        if ((this._integrationConfig?.DiscordWebhookEnabled ?? false) && this._config != null)
         {
-            // this is stupid and beyond moronic. we really shouldn't do this, especially if hot reloading becomes a thing
-            // TODO: don't load the fucking bunkum config here, expose it from BunkumHttpServer instead
-            BunkumConfig bunkumConfig = Config.LoadFromFile<BunkumConfig>("bunkum.json", this._server.Logger);
-            this._workerManager.AddWorker(new DiscordIntegrationWorker(this._integrationConfig, bunkumConfig));
+            this._workerManager.AddWorker(new DiscordIntegrationWorker(this._integrationConfig, this._config));
         }
     }
 
