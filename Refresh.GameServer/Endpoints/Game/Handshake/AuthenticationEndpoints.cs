@@ -22,7 +22,7 @@ public class AuthenticationEndpoints : EndpointGroup
 {
     [GameEndpoint("login", Method.Post, ContentType.Xml), Authentication(false), AllowDuringMaintenance]
     [NullStatusCode(Forbidden)]
-    [RateLimitSettings(300, 10, 300)]
+    [RateLimitSettings(300, 10, 300, "auth")]
     public LoginResponse? Authenticate(RequestContext context,
         GameDatabaseContext database,
         Stream body,
