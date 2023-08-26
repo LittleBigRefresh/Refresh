@@ -91,4 +91,11 @@ public enum GameAssetType
     /// Magic: VOPb
     /// </remarks>
     VoiceRecording = 11,
+    /// <summary>
+    /// A painting created with the move DLC
+    /// </summary>
+    /// <remarks>
+    /// Magic: PTGb
+    /// </remarks>
+    Painting = 12,
 }

@@ -29,6 +29,7 @@ public static class AssetSafetyLevelExtensions
             GameAssetType.Png => AssetSafetyLevel.Safe,
             GameAssetType.MoveRecording => AssetSafetyLevel.Safe,
             GameAssetType.VoiceRecording => AssetSafetyLevel.Safe,
+            GameAssetType.Painting => AssetSafetyLevel.Safe,
             
             GameAssetType.Material => AssetSafetyLevel.PotentiallyUnwanted,
             GameAssetType.Mesh => AssetSafetyLevel.PotentiallyUnwanted,

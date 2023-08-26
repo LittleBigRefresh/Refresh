@@ -73,6 +73,7 @@ public abstract class Importer
         if (MatchesMagic(data, "FSHb"u8)) return GameAssetType.Script;
         if (MatchesMagic(data, "RECb"u8)) return GameAssetType.MoveRecording;
         if (MatchesMagic(data, "VOPb"u8)) return GameAssetType.VoiceRecording;
+        if (MatchesMagic(data, "PTGb"u8)) return GameAssetType.Painting;
         
         // Traditional files
         // Good reference for magics: https://en.wikipedia.org/wiki/List_of_file_signatures
