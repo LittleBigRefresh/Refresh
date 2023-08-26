@@ -24,17 +24,17 @@ Anyway, with the legal disclaimers out of the way...
 ### Instructions :book:
 
 #### From Release :package:
-1. [Find the latest release](https://github.com/LittleBigRefresh/Refresh/releases/latest) :compass:
-1. Download the artifact for your OS, extract it somewhere most convenient to you, and run it! :rocket:
-1. Optionally, run through configuring `bunkum.json` and `refreshGameServer.json` to your liking. These files contain settings like instance name, announce text, whether or not registration is enabled, and more. :wrench:
+1. [Find the latest release](https://github.com/LittleBigRefresh/Refresh/releases/latest) 
+1. Download the artifact for your OS, extract it somewhere most convenient to you, and run it! 
+1. Optionally, run through configuring `bunkum.json` and `refreshGameServer.json` to your liking. These files contain settings like instance name, announce text, whether or not registration is enabled, and more. 
 
-To update, you can simply repeat this process, overwriting the previous files. :arrow_up:
+To update, you can simply repeat this process, overwriting the previous files.
 
 #### Using Docker (compose) :whale:
-1. [Find the latest release](https://github.com/LittleBigRefresh/Refresh/releases/latest) or checkout the source code :package:
-1. Install Docker if not already installed :wrench:
-1. Verify that the container works with your shell attached: `docker compose up` :arrows_counterclockwise:
-1. If Refresh starts successfully, start the docker container in the background: `docker compose up --detach` :globe_with_meridians:
+1. [Find the latest release](https://github.com/LittleBigRefresh/Refresh/releases/latest) or checkout the source code 
+1. Install Docker if not already installed 
+1. Verify that the container works with your shell attached: `docker compose up` 
+1. If Refresh starts successfully, start the docker container in the background: `docker compose up --detach` 
 
 To update, you simply run a `git pull` to pull the latest changes,
 and then run `docker compose up --build` to rebuild the image.
@@ -43,14 +43,14 @@ If you would like refresh-web, head to [here](https://github.com/LittleBigRefres
 Once you've downloaded the artifact, browse to your data folder and create a folder called 'web' and extract the zip you've just downloaded to that folder.
 
 ## It's on fire! What do I do? :fire:
-Refresh isn't perfect, so it's not exactly uncommon to run into bugs. If you'd like, you can [create an issue](https://github.com/LittleBigRefresh/Refresh/issues/new/choose) here on GitHub or join our [Discord](https://discord.gg/xN5yKdxmWG) for support. :snake:
+Refresh isn't perfect, so it's not exactly uncommon to run into bugs. If you'd like, you can [create an issue](https://github.com/LittleBigRefresh/Refresh/issues/new/choose) here on GitHub or join our [Discord](https://discord.gg/xN5yKdxmWG) for support. 
 
-Wherever you choose to post, be sure to include details about how to trigger the bug, text logs (not screenshots!), your environment, the bug's symptoms, and anything else you might find relevant to the bug. :bulb:
+Wherever you choose to post, be sure to include details about how to trigger the bug, text logs (not screenshots!), your environment, the bug's symptoms, and anything else you might find relevant to the bug. 
 
-When dealing with authentication problems, it can be particularly helpful to check your user's notifications (the bell on the web interface will take you there) as authentication errors are logged here. :bell:
+When dealing with authentication problems, it can be particularly helpful to check your user's notifications (the bell on the web interface will take you there) as authentication errors are logged here. 
 
 ## Building & Contributing :wrench::hammer_and_wrench:
-To contribute to Refresh, it may be helpful to refer to our [contributing guide](CONTRIBUTING.md) to get a basic development environment set up. If you're a pro, feel free to skip this as it's just your bog-standard setting up C# guide. :rocket:
+To contribute to Refresh, it may be helpful to refer to our [contributing guide](CONTRIBUTING.md) to get a basic development environment set up. If you're a pro, feel free to skip this as it's just your bog-standard setting up C# guide. 
 
 However, something important for all those involved: we also serve additional documentation relating to Refresh, Bunkum, and LittleBigPlanet in general in our [Docs repo](https://littlebigrefresh.github.io/Docs/).
 
