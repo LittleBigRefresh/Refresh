@@ -32,7 +32,7 @@ public class GameDatabaseProvider : RealmDatabaseProvider<GameDatabaseContext>
         this._time = time;
     }
 
-    protected override ulong SchemaVersion => 79;
+    protected override ulong SchemaVersion => 80;
 
     protected override string Filename => "refreshGameServer.realm";
     
@@ -62,6 +62,7 @@ public class GameDatabaseProvider : RealmDatabaseProvider<GameDatabaseContext>
         typeof(QueuedRegistration),
         typeof(EmailVerificationCode),
         typeof(RequestStatistics),
+        typeof(SequentialIdStorage),
         //grief report items
         typeof(GameReport),
         typeof(InfoBubble),

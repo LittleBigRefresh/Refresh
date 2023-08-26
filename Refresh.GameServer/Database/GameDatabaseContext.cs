@@ -2,6 +2,7 @@ using System.Diagnostics.CodeAnalysis;
 using Realms;
 using Bunkum.RealmDatabase;
 using Refresh.GameServer.Time;
+using Refresh.GameServer.Types;
 
 namespace Refresh.GameServer.Database;
 
@@ -17,6 +18,27 @@ public partial class GameDatabaseContext : RealmDatabaseContext
         this._time = time;
     }
 
+    private int GetOrCreateSequentialId<T>() where T : IRealmObject, ISequentialId
+    {
+        string name = typeof(T).Name;
+
+        SequentialIdStorage? storage = this._realm.All<SequentialIdStorage>()
+            .FirstOrDefault(s => s.TypeName == name);
+        
+        if (storage != null) return storage.SequentialId;
+        
+        storage = new SequentialIdStorage
+        {
+            TypeName = name,
+            SequentialId = this._realm.All<T>().Count() * 2, // skip over a bunch of ids incase table is broken
+        };
+
+        // no need to do write block, this should only be called in a write transaction
+        this._realm.Add(storage);
+
+        return storage.SequentialId;
+    }
+
     // ReSharper disable once SuggestBaseTypeForParameter
     private void AddSequentialObject<T>(T obj, IList<T>? list, Action? writtenCallback = null) where T : IRealmObject, ISequentialId
     {
@@ -24,7 +46,7 @@ public partial class GameDatabaseContext : RealmDatabaseContext
         {
             this._realm.Write(() =>
             {
-                int newId = this._realm.All<T>().Count() + 1;
+                int newId = this.GetOrCreateSequentialId<T>() + 1;
 
                 obj.SequentialId = newId;
 
