@@ -11,6 +11,8 @@ public partial class GameDatabaseContext // Photos
 {
     public void UploadPhoto(SerializedPhoto photo, GameUser publisher)
     {
+        long firstValidTime = new DateTimeOffset(2007, 1, 1, 0, 0, 0, TimeSpan.Zero).ToUnixTimeSeconds();
+        
         GamePhoto newPhoto = new()
         {
             SmallHash = photo.SmallHash,
@@ -23,7 +25,7 @@ public partial class GameDatabaseContext // Photos
             LevelType = photo.Level.Type,
             LevelId = photo.Level.LevelId,
 
-            TakenAt = DateTimeOffset.FromUnixTimeSeconds(photo.Timestamp),
+            TakenAt = DateTimeOffset.FromUnixTimeSeconds(Math.Clamp(photo.Timestamp, firstValidTime, this._time.TimestampSeconds)),
             PublishedAt = this._time.Now,
         };
 
