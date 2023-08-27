@@ -25,6 +25,12 @@ public class PhotoEndpoints : EndpointGroup
             return BadRequest;
         }
 
+        if (body.PhotoSubjects.Count > 4)
+        {
+            context.Logger.LogWarning(BunkumContext.UserContent, $"Too many subjects in photo, rejecting photo upload. Uploader: {user.UserId}");
+            return BadRequest;
+        }
+
         database.UploadPhoto(body, user);
 
         return OK;
