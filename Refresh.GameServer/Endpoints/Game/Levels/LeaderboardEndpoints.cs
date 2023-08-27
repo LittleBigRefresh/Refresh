@@ -7,6 +7,7 @@ using Refresh.GameServer.Database;
 using Refresh.GameServer.Extensions;
 using Refresh.GameServer.Types.Levels;
 using Refresh.GameServer.Types.Lists;
+using Refresh.GameServer.Types.Roles;
 using Refresh.GameServer.Types.UserData;
 using Refresh.GameServer.Types.UserData.Leaderboard;
 
@@ -50,6 +51,7 @@ public class LeaderboardEndpoints : EndpointGroup
     }
 
     [GameEndpoint("topscores/user/{id}/{type}", ContentType.Xml)]
+    [MinimumRole(GameUserRole.Restricted)]
     public SerializedScoreList? GetTopScoresForLevel(RequestContext context, GameDatabaseContext database, int? id, int? type)
     {
         if (id == null) return null;
