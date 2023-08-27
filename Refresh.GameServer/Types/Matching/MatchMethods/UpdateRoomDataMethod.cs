@@ -22,17 +22,16 @@ public class UpdateRoomDataMethod : IMatchMethod
         if (body.RoomState != null) room.RoomState = body.RoomState.Value;
 
         // LBP likes to send both Slot and Slots interchangeably, handle that case here
-        List<int>? slot = body.Slot ?? body.Slots;
-        if (slot != null)
+        if (body.Slots != null)
         {
-            if (slot.Count != 2)
+            if (body.Slots.Count != 2)
             {
                 logger.LogWarning(BunkumContext.Matching, "Received request with invalid amount of slots, rejecting.");
                 return BadRequest;
             }
 
-            room.LevelType = (RoomSlotType)slot[0];
-            room.LevelId = slot[1];
+            room.LevelType = (RoomSlotType)body.Slots[0];
+            room.LevelId = body.Slots[1];
         }
 
         byte? mood = body.HostMood ?? body.Mood;
