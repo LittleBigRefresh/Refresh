@@ -7,13 +7,16 @@ namespace Refresh.GameServer.Database;
 
 public partial class GameDatabaseContext // Registration
 {
-    public GameUser CreateUser(string username, string emailAddress)
+    public GameUser CreateUser(string username, string emailAddress, bool skipChecks = false)
     {
-        if (this.IsUsernameTaken(username))
-            throw new InvalidOperationException("Cannot create a user with an existing username");
+        if (!skipChecks)
+        {
+            if (this.IsUsernameTaken(username))
+                throw new InvalidOperationException("Cannot create a user with an existing username");
         
-        if (this.IsEmailTaken(emailAddress))
-            throw new InvalidOperationException("Cannot create a user with an existing email address");
+            if (this.IsEmailTaken(emailAddress))
+                throw new InvalidOperationException("Cannot create a user with an existing email address");
+        }
         
         GameUser user = new()
         {

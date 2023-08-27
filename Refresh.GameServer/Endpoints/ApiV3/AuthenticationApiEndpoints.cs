@@ -197,6 +197,13 @@ public partial class AuthenticationApiEndpoints : EndpointGroup
 
         if (!EmailAddressRegex().IsMatch(body.EmailAddress))
             return new ApiValidationError("The email address given is invalid.");
+        
+        if (database.IsUsernameTaken(body.Username) || database.IsEmailTaken(body.EmailAddress))
+        {
+            return new ApiAuthenticationError(
+                "The account could not be registered because username or email was already taken. " +
+                (config.RequireGameLoginToRegister ? "If you have already registered, try signing in via the game to activate your account." : ""));
+        }
 
         string? passwordBcrypt = BC.HashPassword(body.PasswordSha512, WorkFactor);
         if (passwordBcrypt == null) return new ApiInternalError("Could not BCrypt the given password.");
@@ -204,11 +211,12 @@ public partial class AuthenticationApiEndpoints : EndpointGroup
         if (config.RequireGameLoginToRegister)
         {
             database.AddRegistrationToQueue(body.Username, body.EmailAddress, passwordBcrypt);
-            return new ApiAuthenticationError("Your account has been created, but it is not yet activated. " +
-                                              "To complete registration, simply log in from LBP and your new account will be activated.", true);
+            return new ApiAuthenticationError(
+                "Your account has been created, but it is not yet activated. " +
+                "To complete registration, simply log in from LBP and your new account will be activated.", true);
         }
 
-        GameUser user = database.CreateUser(body.Username, body.EmailAddress);
+        GameUser user = database.CreateUser(body.Username, body.EmailAddress, true);
         database.SetUserPassword(user, passwordBcrypt);
 
         if (integrationConfig.SmtpEnabled)
