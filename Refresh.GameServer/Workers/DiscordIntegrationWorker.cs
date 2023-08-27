@@ -63,7 +63,7 @@ public class DiscordIntegrationWorker : IWorker
             EventType.Level_Unfavourite => null,
             EventType.User_Favourite => $"hearted {userLink}",
             EventType.User_Unfavourite => null,
-            EventType.Level_Play => $"played {levelLink}",
+            EventType.Level_Play => null,
             EventType.Level_Tag => null,
             EventType.Level_TeamPick => $"team picked {levelLink}",
             EventType.RateLevelRelation_Create => null,
