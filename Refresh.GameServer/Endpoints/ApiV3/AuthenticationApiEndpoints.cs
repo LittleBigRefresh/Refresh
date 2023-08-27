@@ -204,8 +204,8 @@ public partial class AuthenticationApiEndpoints : EndpointGroup
         if (config.RequireGameLoginToRegister)
         {
             database.AddRegistrationToQueue(body.Username, body.EmailAddress, passwordBcrypt);
-            return new ApiAuthenticationError("This server requires an in-game login to complete registration. " +
-                                              "To complete sign-up, simply log in from LBP and your new account will be activated.");
+            return new ApiAuthenticationError("Your account has been created, but it is not yet activated. " +
+                                              "To complete registration, simply log in from LBP and your new account will be activated.", true);
         }
 
         GameUser user = database.CreateUser(body.Username, body.EmailAddress);
