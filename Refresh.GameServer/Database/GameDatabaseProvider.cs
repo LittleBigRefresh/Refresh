@@ -32,7 +32,7 @@ public class GameDatabaseProvider : RealmDatabaseProvider<GameDatabaseContext>
         this._time = time;
     }
 
-    protected override ulong SchemaVersion => 80;
+    protected override ulong SchemaVersion => 82;
 
     protected override string Filename => "refreshGameServer.realm";
     
@@ -116,7 +116,7 @@ public class GameDatabaseProvider : RealmDatabaseProvider<GameDatabaseContext>
             if (oldVersion < 12) newUser.IconHash = "0";
 
             // In version 13, users were given PlanetsHashes
-            if (oldVersion < 13) newUser.PlanetsHash = "0";
+            if (oldVersion < 13) newUser.Lbp2PlanetsHash = "0";
 
             // In version 23, users were given bcrypt passwords
             if (oldVersion < 23) newUser.PasswordBcrypt = null;
@@ -129,7 +129,7 @@ public class GameDatabaseProvider : RealmDatabaseProvider<GameDatabaseContext>
             {
                 newUser.IconHash = oldUser.IconHash;
                 newUser.Description = oldUser.Description;
-                newUser.PlanetsHash = oldUser.PlanetsHash;
+                newUser.Lbp2PlanetsHash = oldUser.PlanetsHash;
             }
             
             // In version 67, users switched to dates to store their join date
@@ -144,6 +144,20 @@ public class GameDatabaseProvider : RealmDatabaseProvider<GameDatabaseContext>
             {
                 newUser.PsnAuthenticationAllowed = true;
                 newUser.RpcnAuthenticationAllowed = true;
+            }
+            
+            // In version 81, we split out planet hashes for LBP2, LBP Vita, and LBP3
+            // Since we've supported LBP2 as the primary game so far, set LBP2's hash to the old hash
+            if (oldVersion < 81)
+            {
+                newUser.Lbp2PlanetsHash = oldUser.PlanetsHash;
+                newUser.Lbp3PlanetsHash = oldUser.PlanetsHash; // Planets are forwards compatible
+            }
+            
+            // Fix vita
+            if (oldVersion < 82)
+            {
+                newUser.VitaPlanetsHash = "0";
             }
         }
 

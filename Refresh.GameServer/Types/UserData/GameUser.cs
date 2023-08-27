@@ -56,7 +56,9 @@ public partial class GameUser : IRealmObject, IRateLimitUser
     public IList<GameIpVerificationRequest> IpVerificationRequests { get; }
     #nullable restore
 
-    public string PlanetsHash { get; set; } = "0";
+    public string Lbp2PlanetsHash { get; set; } = "0";
+    public string Lbp3PlanetsHash { get; set; } = "0";
+    public string VitaPlanetsHash { get; set; } = "0";
 
     public bool AllowIpAuthentication { get; set; }
     public string? CurrentVerifiedIp { get; set; }

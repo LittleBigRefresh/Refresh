@@ -1,4 +1,6 @@
 using System.Xml.Serialization;
+using Refresh.GameServer.Authentication;
+using Refresh.GameServer.Database;
 using Refresh.GameServer.Endpoints.ApiV3.DataTypes;
 using Refresh.GameServer.Types;
 using Refresh.GameServer.Types.UserData;
@@ -36,6 +38,16 @@ public class GameUserResponse : IDataConvertableFrom<GameUserResponse, GameUser>
     [XmlElement("lbp2PurchasedSlots")] public int PurchasedSlotsLBP2 { get; set; }
     [XmlElement("lbp3PurchasedSlots")] public int PurchasedSlotsLBP3 { get; set; }
     
+    public static GameUserResponse? FromOldWithExtraData(GameUser? old, TokenGame gameVersion)
+    {
+        if (old == null) return null;
+
+        GameUserResponse response = FromOld(old)!;
+        response.FillInExtraData(old, gameVersion);
+
+        return response;
+    }
+    
     public static GameUserResponse? FromOld(GameUser? old)
     {
         if (old == null) return null;
@@ -45,7 +57,7 @@ public class GameUserResponse : IDataConvertableFrom<GameUserResponse, GameUser>
             IconHash = old.IconHash,
             Description = old.Description,
             Location = old.Location,
-            PlanetsHash = old.PlanetsHash,
+            PlanetsHash = "0",
             
             Handle = SerializedUserHandle.FromUser(old),
             CommentCount = old.ProfileComments.Count,
@@ -75,4 +87,21 @@ public class GameUserResponse : IDataConvertableFrom<GameUserResponse, GameUser>
     }
 
     public static IEnumerable<GameUserResponse> FromOldList(IEnumerable<GameUser> oldList) => oldList.Select(FromOld)!;
+    
+    public static IEnumerable<GameUserResponse> FromOldListWithExtraData(IEnumerable<GameUser> oldList, TokenGame gameVersion) 
+        => oldList.Select(old => FromOldWithExtraData(old, gameVersion))!;
+
+    private void FillInExtraData(GameUser old, TokenGame gameVersion)
+    {
+        this.PlanetsHash = gameVersion switch
+        {
+            TokenGame.LittleBigPlanet1 => "0",
+            TokenGame.LittleBigPlanet2 => old.Lbp2PlanetsHash,
+            TokenGame.LittleBigPlanet3 => old.Lbp3PlanetsHash,
+            TokenGame.LittleBigPlanetVita => old.VitaPlanetsHash,
+            TokenGame.LittleBigPlanetPSP => "0",
+            TokenGame.Website => "0",
+            _ => throw new ArgumentOutOfRangeException(nameof(gameVersion), gameVersion, null),
+        };
+    }
 }

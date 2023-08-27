@@ -65,6 +65,8 @@ public partial class GameDatabaseContext // Users
             PropertyInfo[] userProps = typeof(GameUser).GetProperties();
             foreach (PropertyInfo prop in typeof(TUpdateData).GetProperties())
             {
+                if(prop.Name == "PlanetsHash") continue;
+                
                 object? value = prop.GetValue(data);
                 if(value == null) continue;
 
@@ -176,7 +178,7 @@ public partial class GameDatabaseContext // Users
             user.PasswordBcrypt = "deleted";
             user.JoinDate = DateTimeOffset.MinValue;
             user.LastLoginDate = DateTimeOffset.MinValue;
-            user.PlanetsHash = "0";
+            user.Lbp2PlanetsHash = "0";
             user.IconHash = "0";
             user.AllowIpAuthentication = false;
             user.EmailAddressVerified = false;

@@ -4,6 +4,7 @@ using Bunkum.CustomHttpListener.Parsing;
 using Bunkum.HttpServer;
 using Bunkum.HttpServer.Endpoints;
 using Bunkum.HttpServer.Storage;
+using Refresh.GameServer.Authentication;
 using Refresh.GameServer.Database;
 using Refresh.GameServer.Endpoints.Game.DataTypes.Response;
 using Refresh.GameServer.Services;
@@ -17,12 +18,12 @@ public class UserEndpoints : EndpointGroup
 {
     [GameEndpoint("user/{name}", Method.Get, ContentType.Xml)]
     [MinimumRole(GameUserRole.Restricted)]
-    public GameUserResponse? GetUser(RequestContext context, GameDatabaseContext database, string name) 
-        => GameUserResponse.FromOld(database.GetUserByUsername(name));
+    public GameUserResponse? GetUser(RequestContext context, GameDatabaseContext database, string name, Token token) 
+        => GameUserResponse.FromOldWithExtraData(database.GetUserByUsername(name), token.TokenGame);
 
     [GameEndpoint("users", Method.Get, ContentType.Xml)]
     [MinimumRole(GameUserRole.Restricted)]
-    public SerializedUserList GetMultipleUsers(RequestContext context, GameDatabaseContext database)
+    public SerializedUserList GetMultipleUsers(RequestContext context, GameDatabaseContext database, Token token)
     {
         string[]? usernames = context.QueryString.GetValues("u");
         if (usernames == null) return new SerializedUserList();
@@ -34,7 +35,7 @@ public class UserEndpoints : EndpointGroup
             GameUser? user = database.GetUserByUsername(username);
             if (user == null) continue;
             
-            users.Add(GameUserResponse.FromOld(user)!);
+            users.Add(GameUserResponse.FromOldWithExtraData(user, token.TokenGame)!);
         }
 
         return new SerializedUserList
@@ -47,17 +48,17 @@ public class UserEndpoints : EndpointGroup
     [NullStatusCode(NotFound)]
     [MinimumRole(GameUserRole.Restricted)]
     public SerializedFriendsList? GetFriends(RequestContext context, GameDatabaseContext database,
-        GameUser user, FriendStorageService friendService)
+        GameUser user, FriendStorageService friendService, Token token)
     {
         List<GameUser>? friends = friendService.GetUsersFriends(user, database)?.ToList();
         if (friends == null) return null;
         
-        return new SerializedFriendsList(GameUserResponse.FromOldList(friends).ToList());
+        return new SerializedFriendsList(GameUserResponse.FromOldListWithExtraData(friends, token.TokenGame).ToList());
     }
 
     [GameEndpoint("updateUser", Method.Post, ContentType.Xml)]
     [NullStatusCode(BadRequest)]
-    public string? UpdateUser(RequestContext context, GameDatabaseContext database, GameUser user, string body, IDataStore dataStore)
+    public string? UpdateUser(RequestContext context, GameDatabaseContext database, GameUser user, string body, IDataStore dataStore, Token token)
     {
         SerializedUpdateData? data = null;
         
@@ -101,6 +102,21 @@ public class UserEndpoints : EndpointGroup
         {
             database.AddErrorNotification("Profile update failed", "Your planets failed to update because the asset was missing on the server.", user);
             return null;
+        }
+
+        // ReSharper disable once SwitchStatementMissingSomeEnumCasesNoDefault
+        switch (token.TokenGame)
+        {
+            case TokenGame.LittleBigPlanet2:
+                data.Lbp2PlanetsHash = data.PlanetsHash;
+                data.Lbp3PlanetsHash = data.PlanetsHash;
+                break;
+            case TokenGame.LittleBigPlanetVita:
+                data.VitaPlanetsHash = data.PlanetsHash;
+                break;
+            case TokenGame.LittleBigPlanet3:
+                data.Lbp3PlanetsHash = data.PlanetsHash;
+                break;
         }
         
         database.UpdateUserData(user, data);

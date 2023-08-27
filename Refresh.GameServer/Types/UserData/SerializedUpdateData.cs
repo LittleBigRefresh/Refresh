@@ -21,6 +21,10 @@ public class SerializedUpdateData
     [XmlElement("planets")]
     public string? PlanetsHash { get; set; }
     
+    [XmlIgnore] public string? Lbp2PlanetsHash { get; set; }
+    [XmlIgnore] public string? Lbp3PlanetsHash { get; set; }
+    [XmlIgnore] public string? VitaPlanetsHash { get; set; }
+    
     [XmlElement("icon")]
     public string? IconHash { get; set; }
 }
