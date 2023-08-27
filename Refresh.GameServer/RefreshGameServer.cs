@@ -1,4 +1,5 @@
 using System.Diagnostics.CodeAnalysis;
+using System.Globalization;
 using System.Reflection;
 using Bunkum.CustomHttpListener;
 using Bunkum.AutoDiscover.Extensions;
@@ -71,6 +72,8 @@ public class RefreshGameServer
             this.InjectBaseServices(provider, authProvider, dataStore);
             this.Initialize();
         };
+        
+        CultureInfo.CurrentCulture = CultureInfo.InvariantCulture;
     }
 
     private void InjectBaseServices(GameDatabaseProvider databaseProvider, IAuthenticationProvider<GameUser, Token> authProvider, IDataStore dataStore)
