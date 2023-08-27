@@ -26,6 +26,7 @@ public class SerializedRoomData
     private List<int>? _Slots { get; set; }
     // ReSharper restore InconsistentNaming
 
+    [JsonIgnore]
     public List<int>? Slots => this._Slot ?? this._Slots;
     
     [JsonProperty("RoomState")]
