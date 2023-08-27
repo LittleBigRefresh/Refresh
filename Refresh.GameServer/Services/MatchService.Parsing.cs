@@ -39,14 +39,15 @@ public partial class MatchService // Parsing
     // should serialize "0x17257bc9" into "23.39.123.201"
     public static string ConvertHexadecimalIpAddressToString(string hex)
     {
-        // parse hex string as uint, stripping 0x header
-        uint ip = uint.Parse(hex.Substring(2), NumberStyles.HexNumber);
+        // parse hex string as uint, stripping 0x header, if it fails, return 0.0.0.0
+        if (!uint.TryParse(hex[2..], NumberStyles.HexNumber, null, out uint ip)) return "0.0.0.0";
         
         byte a = (byte)(ip >> 24 & 0xFF);
         byte b = (byte)(ip >> 16 & 0xFF);
         byte c = (byte)(ip >> 8 & 0xFF);
         byte d = (byte)(ip & 0xFF);
-        
+
         return $"{a}.{b}.{c}.{d}"; // combine bytes into IP address string
+
     }
 }
