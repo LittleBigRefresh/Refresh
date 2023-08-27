@@ -14,7 +14,8 @@ namespace Refresh.GameServer.Endpoints.Game.Levels;
 public class PublishEndpoints : EndpointGroup
 {
     [GameEndpoint("startPublish", ContentType.Xml, Method.Post)]
-    public SerializedLevelResources StartPublish(RequestContext context, GameDatabaseContext database, GameLevelResponse body, IDataStore dataStore)
+    [NullStatusCode(BadRequest)]
+    public SerializedLevelResources? StartPublish(RequestContext context, GameDatabaseContext database, GameLevelResponse body, IDataStore dataStore)
     {
         List<string> hashes = new();
         hashes.AddRange(body.XmlResources);
@@ -23,6 +24,8 @@ public class PublishEndpoints : EndpointGroup
 
         hashes.RemoveAll(r => r == "0" || r.StartsWith('g') || string.IsNullOrWhiteSpace(r));
         
+        if (hashes.Any(hash => hash.Length != 40)) return null;
+
         return new SerializedLevelResources
         {
             Resources = hashes.Where(r => !dataStore.ExistsInStore(r)).ToArray(),
@@ -30,10 +33,17 @@ public class PublishEndpoints : EndpointGroup
     }
 
     [GameEndpoint("publish", ContentType.Xml, Method.Post)]
-    public Response PublishLevel(RequestContext context, GameUser user, Token token, GameDatabaseContext database, GameLevelResponse body)
+    public Response PublishLevel(RequestContext context, GameUser user, Token token, GameDatabaseContext database, GameLevelResponse body, IDataStore dataStore)
     {
         GameLevel level = body.ToGameLevel(user);
         level.GameVersion = token.TokenGame;
+
+        level.MinPlayers = Math.Clamp(level.MinPlayers, 1, 4);
+        level.MaxPlayers = Math.Clamp(level.MaxPlayers, 1, 4);
+
+        if (level.RootResource.Length != 40) return BadRequest;
+        if (!dataStore.ExistsInStore(level.RootResource)) return NotFound;
+
         if (level.LevelId != default) // Republish requests contain the id of the old level
         {
             context.Logger.LogInfo(BunkumContext.UserContent, "Republishing level id " + level.LevelId);
