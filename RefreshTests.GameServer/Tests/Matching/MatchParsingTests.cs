@@ -13,6 +13,7 @@ public class MatchParsingTests
             Assert.That(MatchService.ConvertHexadecimalIpAddressToString("0x04020202"), Is.EqualTo("4.2.2.2"));
             Assert.That(MatchService.ConvertHexadecimalIpAddressToString("0xffffffff"), Is.EqualTo("255.255.255.255"));
             Assert.That(MatchService.ConvertHexadecimalIpAddressToString("0x00000000"), Is.EqualTo("0.0.0.0"));
+            Assert.That(MatchService.ConvertHexadecimalIpAddressToString("0x215f208,"), Is.EqualTo("0.0.0.0"));
         });
 
     [Test]
