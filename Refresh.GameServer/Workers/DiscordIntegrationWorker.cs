@@ -53,7 +53,9 @@ public class DiscordIntegrationWorker : IWorker
 
         if (score != null) level = score.Level;
 
-        string? levelLink = level == null ? null : $"[{level.Title}]({this._externalUrl}/level/{level.LevelId})";
+        string levelTitle = string.IsNullOrWhiteSpace(level?.Title) ? "Unnamed Level" : level.Title;
+
+        string? levelLink = level == null ? null : $"[{levelTitle}]({this._externalUrl}/level/{level.LevelId})";
         string? userLink = user == null ? null : $"[{user.Username}]({this._externalUrl}/u/{user.UserId})";
 
         string? description = @event.EventType switch
