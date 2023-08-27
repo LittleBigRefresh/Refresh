@@ -28,6 +28,7 @@ public class FindRoomMethod : IMatchMethod
         {
             if (body.Slots.Count != 2)
             {
+                logger.LogWarning(BunkumContext.Matching, "Received request with invalid amount of slots, rejecting.");
                 return BadRequest;
             }
             
