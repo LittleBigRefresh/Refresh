@@ -8,6 +8,7 @@ using Refresh.GameServer.Database;
 using Refresh.GameServer.Endpoints.Game.DataTypes.Response;
 using Refresh.GameServer.Services;
 using Refresh.GameServer.Types.Lists;
+using Refresh.GameServer.Types.Roles;
 using Refresh.GameServer.Types.UserData;
 
 namespace Refresh.GameServer.Endpoints.Game;
@@ -15,10 +16,12 @@ namespace Refresh.GameServer.Endpoints.Game;
 public class UserEndpoints : EndpointGroup
 {
     [GameEndpoint("user/{name}", Method.Get, ContentType.Xml)]
+    [MinimumRole(GameUserRole.Restricted)]
     public GameUserResponse? GetUser(RequestContext context, GameDatabaseContext database, string name) 
         => GameUserResponse.FromOld(database.GetUserByUsername(name));
 
     [GameEndpoint("users", Method.Get, ContentType.Xml)]
+    [MinimumRole(GameUserRole.Restricted)]
     public SerializedUserList GetMultipleUsers(RequestContext context, GameDatabaseContext database)
     {
         string[]? usernames = context.QueryString.GetValues("u");
@@ -42,6 +45,7 @@ public class UserEndpoints : EndpointGroup
 
     [GameEndpoint("myFriends", Method.Get, ContentType.Xml)]
     [NullStatusCode(NotFound)]
+    [MinimumRole(GameUserRole.Restricted)]
     public SerializedFriendsList? GetFriends(RequestContext context, GameDatabaseContext database,
         GameUser user, FriendStorageService friendService)
     {
@@ -136,6 +140,7 @@ public class UserEndpoints : EndpointGroup
     }
 
     [GameEndpoint("get_my_pins", Method.Get, ContentType.Json)]
+    [MinimumRole(GameUserRole.Restricted)]
     public UserPins GetPins(RequestContext context, GameUser user) => user.Pins;
 
     /// <summary>

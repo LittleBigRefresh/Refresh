@@ -23,6 +23,7 @@ public class AuthenticationEndpoints : EndpointGroup
     [GameEndpoint("login", Method.Post, ContentType.Xml), Authentication(false), AllowDuringMaintenance]
     [NullStatusCode(Forbidden)]
     [RateLimitSettings(300, 10, 300, "auth")]
+    [MinimumRole(GameUserRole.Restricted)]
     public LoginResponse? Authenticate(RequestContext context,
         GameDatabaseContext database,
         Stream body,
@@ -237,6 +238,7 @@ public class AuthenticationEndpoints : EndpointGroup
     /// Called by the game when it exits cleanly.
     /// </summary>
     [GameEndpoint("goodbye", Method.Post, ContentType.Xml)]
+    [MinimumRole(GameUserRole.Restricted)]
     public Response RevokeThisToken(RequestContext context, GameDatabaseContext database, GameUser user)
     {
         string? token = context.Cookies["MM_AUTH"];

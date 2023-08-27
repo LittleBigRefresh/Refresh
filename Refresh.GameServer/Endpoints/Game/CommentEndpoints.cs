@@ -6,6 +6,7 @@ using Refresh.GameServer.Database;
 using Refresh.GameServer.Extensions;
 using Refresh.GameServer.Types.Comments;
 using Refresh.GameServer.Types.Lists;
+using Refresh.GameServer.Types.Roles;
 using Refresh.GameServer.Types.UserData;
 
 namespace Refresh.GameServer.Endpoints.Game;
@@ -24,6 +25,7 @@ public class CommentEndpoints : EndpointGroup
 
     [GameEndpoint("userComments/{username}", ContentType.Xml)]
     [NullStatusCode(NotFound)]
+    [MinimumRole(GameUserRole.Restricted)]
     public SerializedCommentList? GetProfileComments(RequestContext context, GameDatabaseContext database, string username)
     {
         GameUser? profile = database.GetUserByUsername(username);

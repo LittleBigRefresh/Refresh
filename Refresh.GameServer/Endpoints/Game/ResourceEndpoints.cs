@@ -11,6 +11,7 @@ using Refresh.GameServer.Database;
 using Refresh.GameServer.Importing;
 using Refresh.GameServer.Types.Assets;
 using Refresh.GameServer.Types.Lists;
+using Refresh.GameServer.Types.Roles;
 using Refresh.GameServer.Types.UserData;
 
 namespace Refresh.GameServer.Endpoints.Game;
@@ -50,6 +51,7 @@ public class ResourceEndpoints : EndpointGroup
     }
 
     [GameEndpoint("r/{hash}")]
+    [MinimumRole(GameUserRole.Restricted)]
     public Response GetResource(RequestContext context, string hash, IDataStore dataStore, GameDatabaseContext database, Token token)
     {
         if (!dataStore.ExistsInStore(hash))
@@ -64,6 +66,7 @@ public class ResourceEndpoints : EndpointGroup
 
     [GameEndpoint("showNotUploaded", Method.Post, ContentType.Xml)]
     [GameEndpoint("filterResources", Method.Post, ContentType.Xml)]
+    [MinimumRole(GameUserRole.Restricted)]
     public SerializedResourceList GetAssetsMissingFromStore(RequestContext context, SerializedResourceList body, IDataStore dataStore) 
         => new(body.Items.Where(r => !dataStore.ExistsInStore(r)));
 }

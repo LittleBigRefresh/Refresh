@@ -4,6 +4,7 @@ using Bunkum.HttpServer.Endpoints;
 using Refresh.GameServer.Configuration;
 using Refresh.GameServer.Database;
 using Refresh.GameServer.Types.Notifications;
+using Refresh.GameServer.Types.Roles;
 using Refresh.GameServer.Types.UserData;
 
 namespace Refresh.GameServer.Endpoints.Game.Handshake;
@@ -28,12 +29,14 @@ public class WelcomeEndpoints : EndpointGroup
     """;
     
     [GameEndpoint("eula")]
+    [MinimumRole(GameUserRole.Restricted)]
     public string License(RequestContext context, GameServerConfig config)
     {
         return config.LicenseText + "\n\n" + AGPLLicense + "\n";
     }
 
     [GameEndpoint("announce")]
+    [MinimumRole(GameUserRole.Restricted)]
     public string Announce(RequestContext context, GameServerConfig config, GameUser user, GameDatabaseContext database)
     {
         List<GameNotification> notifications = database.GetNotificationsByUser(user, 5, 0).Items.ToList();

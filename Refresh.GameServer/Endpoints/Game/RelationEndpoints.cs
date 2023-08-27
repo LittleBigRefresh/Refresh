@@ -7,6 +7,7 @@ using Refresh.GameServer.Endpoints.Game.DataTypes.Response;
 using Refresh.GameServer.Extensions;
 using Refresh.GameServer.Types.Levels;
 using Refresh.GameServer.Types.Lists;
+using Refresh.GameServer.Types.Roles;
 using Refresh.GameServer.Types.UserData;
 
 namespace Refresh.GameServer.Endpoints.Game;
@@ -69,6 +70,7 @@ public class RelationEndpoints : EndpointGroup
 
     [GameEndpoint("favouriteUsers/{username}", ContentType.Xml)]
     [NullStatusCode(NotFound)]
+    [MinimumRole(GameUserRole.Restricted)]
     public SerializedFavouriteUserList? GetFavouriteUsers(RequestContext context, GameDatabaseContext database, string username)
     {
         GameUser? user = database.GetUserByUsername(username);

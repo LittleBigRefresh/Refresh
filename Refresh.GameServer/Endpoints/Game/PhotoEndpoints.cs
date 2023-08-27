@@ -7,6 +7,7 @@ using Refresh.GameServer.Database;
 using Refresh.GameServer.Extensions;
 using Refresh.GameServer.Types.Lists;
 using Refresh.GameServer.Types.Photos;
+using Refresh.GameServer.Types.Roles;
 using Refresh.GameServer.Types.UserData;
 
 namespace Refresh.GameServer.Endpoints.Game;
@@ -62,11 +63,13 @@ public class PhotoEndpoints : EndpointGroup
 
     [GameEndpoint("photos/with", ContentType.Xml)]
     [Authentication(false)]
+    [MinimumRole(GameUserRole.Restricted)]
     public SerializedPhotoList? PhotosWithUser(RequestContext context, GameDatabaseContext database) 
         => GetPhotos(context, database, database.GetPhotosWithUser);
     
     [GameEndpoint("photos/by", ContentType.Xml)]
     [Authentication(false)]
+    [MinimumRole(GameUserRole.Restricted)]
     public SerializedPhotoList? PhotosByUser(RequestContext context, GameDatabaseContext database) 
         => GetPhotos(context, database, database.GetPhotosByUser);
 }

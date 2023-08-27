@@ -3,6 +3,7 @@ using Bunkum.HttpServer;
 using Bunkum.HttpServer.Endpoints;
 using Refresh.GameServer.Database;
 using Refresh.GameServer.Types.Activity;
+using Refresh.GameServer.Types.Roles;
 
 namespace Refresh.GameServer.Endpoints.Game;
 
@@ -11,6 +12,7 @@ public class ActivityEndpoints : EndpointGroup
     [GameEndpoint("stream", ContentType.Xml)]
     [NullStatusCode(BadRequest)]
     [Authentication(false)]
+    [MinimumRole(GameUserRole.Restricted)]
     public ActivityPage? GetRecentActivity(RequestContext context, GameDatabaseContext database)
     {
         long timestamp = 0;

@@ -6,6 +6,7 @@ using Bunkum.HttpServer.Responses;
 using Refresh.GameServer.Database;
 using Refresh.GameServer.Services;
 using Refresh.GameServer.Types;
+using Refresh.GameServer.Types.Roles;
 using Refresh.GameServer.Types.UserData;
 
 namespace Refresh.GameServer.Endpoints.Game.Handshake;
@@ -13,6 +14,7 @@ namespace Refresh.GameServer.Endpoints.Game.Handshake;
 public class MetadataEndpoints : EndpointGroup
 {
     [GameEndpoint("privacySettings", ContentType.Xml)]
+    [MinimumRole(GameUserRole.Restricted)]
     public PrivacySettings GetPrivacySettings(RequestContext context)
     {
         return new PrivacySettings();
@@ -56,6 +58,7 @@ public class MetadataEndpoints : EndpointGroup
         });
     
     [GameEndpoint("network_settings.nws")]
+    [MinimumRole(GameUserRole.Restricted)]
     public string NetworkSettings(RequestContext context)
     {
         bool created = NetworkSettingsFile.IsValueCreated;
@@ -82,6 +85,7 @@ public class MetadataEndpoints : EndpointGroup
 
     [GameEndpoint("t_conf")]
     [NullStatusCode(Gone)]
+    [MinimumRole(GameUserRole.Restricted)]
     public string? TelemetryConfig(RequestContext context) 
     {
         bool created = TelemetryConfigFile.IsValueCreated;
@@ -106,6 +110,7 @@ public class MetadataEndpoints : EndpointGroup
 
     [GameEndpoint("promotions")]
     [NullStatusCode(OK)]
+    [MinimumRole(GameUserRole.Restricted)]
     public string? Promotions(RequestContext context) 
     {
         bool created = PromotionsFile.IsValueCreated;
