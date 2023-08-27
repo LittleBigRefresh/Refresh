@@ -17,13 +17,17 @@ public class SerializedRoomData
     [JsonProperty("NAT")]
     public List<NatType>? NatType { get; set; }
 
+    // ReSharper disable InconsistentNaming
     // LBP has two of the same thing sometimes, have both properties to handle both cases
     [JsonProperty("Slot")]
-    public List<int>? Slot { get; set; }
+    private List<int>? _Slot { get; set; }
     
     [JsonProperty("Slots")]
-    public List<int>? Slots { get; set; }
+    private List<int>? _Slots { get; set; }
+    // ReSharper restore InconsistentNaming
 
+    public List<int>? Slots => this._Slot ?? this._Slots;
+    
     [JsonProperty("RoomState")]
     public RoomState? RoomState { get; set; }
 

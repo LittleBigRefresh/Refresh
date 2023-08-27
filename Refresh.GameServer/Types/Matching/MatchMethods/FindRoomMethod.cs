@@ -5,6 +5,7 @@ using NotEnoughLogs;
 using Refresh.GameServer.Authentication;
 using Refresh.GameServer.Database;
 using Refresh.GameServer.Services;
+using Refresh.GameServer.Types.Levels;
 using Refresh.GameServer.Types.Matching.Responses;
 using Refresh.GameServer.Types.UserData;
 
@@ -22,8 +23,21 @@ public class FindRoomMethod : IMatchMethod
         GameRoom? usersRoom = service.GetRoomByPlayer(user, token.TokenPlatform, token.TokenGame);
         if (usersRoom == null) return BadRequest; // user should already have a room.
 
+        int? levelId = null;
+        if (body.Slots != null)
+        {
+            if (body.Slots.Count != 2)
+            {
+                logger.LogWarning(BunkumContext.Matching, "Received request with invalid amount of slots, rejecting.");
+                return BadRequest;
+            }
+            
+            levelId = body.Slots[1];
+        } 
+        
         List<GameRoom> rooms = service.Rooms.Where(r => r.RoomId != usersRoom.RoomId && 
-                                                        r.Platform == usersRoom.Platform)
+                                                        r.Platform == usersRoom.Platform && 
+                                                        (levelId == null || r.LevelId == levelId))
             .OrderByDescending(r => r.RoomMood)
             .ToList();
 
