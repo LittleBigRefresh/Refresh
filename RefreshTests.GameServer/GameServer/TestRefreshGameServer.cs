@@ -31,7 +31,9 @@ public class TestRefreshGameServer : RefreshGameServer
         // this._workerManager.Start();
     }
 
-    protected override IDateTimeProvider GetTimeProvider() => new MockDateTimeProvider();
+    public IDateTimeProvider DateTimeProvider { get; set; } = new MockDateTimeProvider();
+    
+    protected override IDateTimeProvider GetTimeProvider() => this.DateTimeProvider;
 
     protected override void SetupMiddlewares()
     {
