@@ -33,8 +33,7 @@ public class ResourceEndpoints : EndpointGroup
         if (gameAsset == null)
             return BadRequest;
 
-        long earliestTime = new DateTimeOffset(2007, 1, 1, 0, 0, 0, TimeSpan.Zero).ToUnixTimeSeconds();
-        gameAsset.UploadDate = DateTimeOffset.FromUnixTimeSeconds(Math.Clamp(gameAsset.UploadDate.ToUnixTimeSeconds(), earliestTime, timeProvider.TimestampSeconds));
+        gameAsset.UploadDate = DateTimeOffset.FromUnixTimeSeconds(Math.Clamp(gameAsset.UploadDate.ToUnixTimeSeconds(), timeProvider.EarliestDate, timeProvider.TimestampSeconds));
 
         // for example, if asset safety level is Dangerous (2) and maximum is configured as Safe (0), return 401
         // if asset safety is Safe (0), and maximum is configured as Safe (0), proceed 
