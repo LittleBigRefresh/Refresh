@@ -3,8 +3,10 @@ using Bunkum.HttpServer;
 using Bunkum.HttpServer.Endpoints;
 using Bunkum.HttpServer.Responses;
 using Bunkum.HttpServer.Storage;
+using NotEnoughLogs;
 using Refresh.GameServer.Authentication;
 using Refresh.GameServer.Database;
+using Refresh.GameServer.Endpoints.Game.DataTypes.Request;
 using Refresh.GameServer.Endpoints.Game.DataTypes.Response;
 using Refresh.GameServer.Types.Levels;
 using Refresh.GameServer.Types.UserData;
@@ -13,10 +15,57 @@ namespace Refresh.GameServer.Endpoints.Game.Levels;
 
 public class PublishEndpoints : EndpointGroup
 {
+    /// <summary>
+    /// Does basic verification on a level
+    /// </summary>
+    /// <param name="body">The level to verify</param>
+    /// <param name="user">The user that is attempting to upload</param>
+    /// <param name="logger">A logger instance</param>
+    /// <returns>Whether or not validation succeeded</returns>
+    private static bool VerifyLevel(GameLevelRequest body, GameUser user, LoggerContainer<BunkumContext> logger)
+    {
+        if (body.Title.Length > 256)
+        {
+            return false;
+        }
+
+        if (body.Description.Length > 4096)
+        {
+            return false;
+        }
+
+        if (body.MaxPlayers > 4 || body.MinPlayers > 4)
+        {
+            return false;
+        }
+
+        if (body.TeamPicked)
+        {
+            logger.LogWarning(BunkumContext.UserContent, $"User {user.Username} attempted to force their level to be team picked! This is very likely a forged request.");
+            return false;
+        }
+
+        if (body.BooCount != 0 || body.YayCount != 0 || body.HeartCount != 0)
+        {
+            logger.LogWarning(BunkumContext.UserContent, $"User {user.Username} attempted to force non-0 boo/yay/heart counts! This is very likely a forged request.");
+            return false;
+        }
+
+        if (body.PlayerCount > 4)
+        {
+            return false;
+        }
+        
+        return true;
+    }
+    
     [GameEndpoint("startPublish", ContentType.Xml, Method.Post)]
     [NullStatusCode(BadRequest)]
-    public SerializedLevelResources? StartPublish(RequestContext context, GameDatabaseContext database, GameLevelResponse body, IDataStore dataStore)
+    public SerializedLevelResources? StartPublish(RequestContext context, GameUser user, GameDatabaseContext database, GameLevelRequest body, IDataStore dataStore, LoggerContainer<BunkumContext> logger)
     {
+        //If verifying the request fails, return null
+        if (!VerifyLevel(body, user, logger)) return null;
+        
         List<string> hashes = new();
         hashes.AddRange(body.XmlResources);
         hashes.Add(body.RootResource);
@@ -33,8 +82,11 @@ public class PublishEndpoints : EndpointGroup
     }
 
     [GameEndpoint("publish", ContentType.Xml, Method.Post)]
-    public Response PublishLevel(RequestContext context, GameUser user, Token token, GameDatabaseContext database, GameLevelResponse body, IDataStore dataStore)
+    public Response PublishLevel(RequestContext context, GameUser user, Token token, GameDatabaseContext database, GameLevelRequest body, IDataStore dataStore, LoggerContainer<BunkumContext> logger)
     {
+        //If verifying the request fails, return null
+        if (!VerifyLevel(body, user, logger)) return BadRequest;
+                
         GameLevel level = body.ToGameLevel(user);
         level.GameVersion = token.TokenGame;
 
@@ -67,12 +119,9 @@ public class PublishEndpoints : EndpointGroup
         return new Response(GameLevelResponse.FromOld(level)!, ContentType.Xml);
     }
 
-    [GameEndpoint("unpublish/{idStr}", ContentType.Xml, Method.Post)]
-    public Response DeleteLevel(RequestContext context, GameUser user, GameDatabaseContext database, string idStr)
+    [GameEndpoint("unpublish/{id}", ContentType.Xml, Method.Post)]
+    public Response DeleteLevel(RequestContext context, GameUser user, GameDatabaseContext database, int id)
     {
-        int.TryParse(idStr, out int id);
-        if (id == default) return BadRequest;
-
         GameLevel? level = database.GetLevelById(id);
         if (level == null) return NotFound;
 
