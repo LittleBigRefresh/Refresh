@@ -4,4 +4,5 @@ public enum RefreshContext
 {
     Startup,
     Worker,
+    Discord,
 }
