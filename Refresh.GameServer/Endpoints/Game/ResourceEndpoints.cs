@@ -9,6 +9,7 @@ using Refresh.GameServer.Authentication;
 using Refresh.GameServer.Configuration;
 using Refresh.GameServer.Database;
 using Refresh.GameServer.Importing;
+using Refresh.GameServer.Time;
 using Refresh.GameServer.Types.Assets;
 using Refresh.GameServer.Types.Lists;
 using Refresh.GameServer.Types.Roles;
@@ -23,7 +24,7 @@ public class ResourceEndpoints : EndpointGroup
     [GameEndpoint("upload/{hash}", Method.Post)]
     [SuppressMessage("ReSharper", "ConvertIfStatementToReturnStatement")]
     public Response UploadAsset(RequestContext context, string hash, string type, byte[] body, IDataStore dataStore,
-        GameDatabaseContext database, GameUser user, AssetImporter importer, GameServerConfig config)
+        GameDatabaseContext database, GameUser user, AssetImporter importer, GameServerConfig config, IDateTimeProvider timeProvider)
     {
         if (dataStore.ExistsInStore(hash))
             return Conflict;
@@ -31,6 +32,9 @@ public class ResourceEndpoints : EndpointGroup
         GameAsset? gameAsset = importer.ReadAndVerifyAsset(hash, body);
         if (gameAsset == null)
             return BadRequest;
+
+        long earliestTime = new DateTimeOffset(2007, 0, 0, 0, 0, 0, TimeSpan.Zero).ToUnixTimeSeconds();
+        gameAsset.UploadDate = DateTimeOffset.FromUnixTimeSeconds(Math.Clamp(gameAsset.UploadDate.ToUnixTimeSeconds(), earliestTime, timeProvider.TimestampSeconds));
 
         // for example, if asset safety level is Dangerous (2) and maximum is configured as Safe (0), return 401
         // if asset safety is Safe (0), and maximum is configured as Safe (0), proceed 
