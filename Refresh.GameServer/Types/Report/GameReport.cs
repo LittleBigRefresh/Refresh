@@ -20,6 +20,11 @@ public partial class GameReport : IRealmObject, ISequentialId
         set 
         {
             this.InternalInfoBubble.Clear();
+
+            if (value == null)
+            {
+                return;
+            }
             
             foreach (InfoBubble infoBubble in value)
                 this.InternalInfoBubble.Add(infoBubble);
@@ -64,6 +69,11 @@ public partial class GameReport : IRealmObject, ISequentialId
         set 
         {
             this.InternalPlayers.Clear();
+
+            if (value == null)
+            {
+                return;
+            }
             
             foreach (Player player in value)
                 this.InternalPlayers.Add(player);

@@ -12,7 +12,7 @@ public class ReportingEndpoints : EndpointGroup
     [GameEndpoint("grief", Method.Post, ContentType.Xml)]
     public Response UploadReport(RequestContext context, GameDatabaseContext database, GameReport body)
     {
-        if (database.GetLevelById(body.LevelId) == null || body.Players.Length > 4 || body.ScreenElements.Player.Length > 4)
+        if ((body.LevelId != 0 && database.GetLevelById(body.LevelId) == null) || body.Players.Length > 4 || body.ScreenElements.Player.Length > 4)
         {
             return BadRequest;
         }
