@@ -2,6 +2,7 @@ using System.Xml.Serialization;
 using Realms;
 using Refresh.GameServer.Authentication;
 using Refresh.GameServer.Database;
+using Refresh.GameServer.Types.Comments;
 using Refresh.GameServer.Types.UserData;
 using Refresh.GameServer.Types.Levels.SkillRewards;
 using Refresh.GameServer.Types.Relations;
@@ -43,6 +44,8 @@ public partial class GameLevel : IRealmObject, ISequentialId
     internal int _GameVersion { get; set; }
 
 #nullable disable
+    public IList<GameComment> LevelComments { get; }
+    
     [Backlink(nameof(FavouriteLevelRelation.Level))]
     public IQueryable<FavouriteLevelRelation> FavouriteRelations { get; }
     
