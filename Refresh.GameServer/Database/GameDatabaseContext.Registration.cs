@@ -1,4 +1,5 @@
 using System.Security.Cryptography;
+using MongoDB.Bson;
 using Refresh.GameServer.Authentication;
 using Refresh.GameServer.Extensions;
 using Refresh.GameServer.Types.UserData;
@@ -108,10 +109,21 @@ public partial class GameDatabaseContext // Registration
         });
     }
     
+    public void RemoveAllRegistrationsFromQueue()
+    {
+        this._realm.Write(() =>
+        {
+            this._realm.RemoveAll<QueuedRegistration>();
+        });
+    }
+    
     public bool IsRegistrationExpired(QueuedRegistration registration) => registration.ExpiryDate < this._time.Now;
 
-    public QueuedRegistration? GetQueuedRegistration(string username) 
+    public QueuedRegistration? GetQueuedRegistrationByUsername(string username) 
         => this._realm.All<QueuedRegistration>().FirstOrDefault(q => q.Username == username);
+    
+    public QueuedRegistration? GetQueuedRegistrationByObjectId(ObjectId id) 
+        => this._realm.All<QueuedRegistration>().FirstOrDefault(q => q.RegistrationId == id);
     
 
     public DatabaseList<QueuedRegistration> GetAllQueuedRegistrations()
