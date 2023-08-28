@@ -35,14 +35,14 @@ public partial class MatchService : EndpointService
     public MatchService(LoggerContainer<BunkumContext> logger) : base(logger)
     {}
 
-    public GameRoom GetOrCreateRoomByPlayer(GameUser player, TokenPlatform platform, TokenGame game)
+    public GameRoom GetOrCreateRoomByPlayer(GameUser player, TokenPlatform platform, TokenGame game, NatType natType)
     {
         GameRoom? room = this.GetRoomByPlayer(player, platform, game);
 
         // ReSharper disable once InvertIf (happy path goes last)
         if (room == null)
         {
-            room = new GameRoom(player, platform, game);
+            room = new GameRoom(player, platform, game, natType);
             this._rooms.Add(room);
         }
 

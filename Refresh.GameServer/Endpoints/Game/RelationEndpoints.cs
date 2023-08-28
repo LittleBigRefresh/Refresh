@@ -15,12 +15,9 @@ namespace Refresh.GameServer.Endpoints.Game;
 
 public class RelationEndpoints : EndpointGroup
 {
-    [GameEndpoint("favourite/slot/user/{idStr}", Method.Post)]
-    public Response FavouriteLevel(RequestContext context, GameDatabaseContext database, GameUser user, string idStr)
+    [GameEndpoint("favourite/slot/user/{id}", Method.Post)]
+    public Response FavouriteLevel(RequestContext context, GameDatabaseContext database, GameUser user, int id)
     {
-        int.TryParse(idStr, out int id);
-        if (id == default) return BadRequest;
-        
         GameLevel? level = database.GetLevelById(id);
         if (level == null) return NotFound;
 
@@ -30,12 +27,9 @@ public class RelationEndpoints : EndpointGroup
         return Unauthorized;
     }
     
-    [GameEndpoint("unfavourite/slot/user/{idStr}", Method.Post)]
-    public Response UnfavouriteLevel(RequestContext context, GameDatabaseContext database, GameUser user, string idStr)
+    [GameEndpoint("unfavourite/slot/user/{id}", Method.Post)]
+    public Response UnfavouriteLevel(RequestContext context, GameDatabaseContext database, GameUser user, int id)
     {
-        int.TryParse(idStr, out int id);
-        if (id == default) return BadRequest;
-        
         GameLevel? level = database.GetLevelById(id);
         if (level == null) return NotFound;
 
@@ -84,12 +78,9 @@ public class RelationEndpoints : EndpointGroup
         return new SerializedFavouriteUserList(GameUserResponse.FromOldListWithExtraData(users, token.TokenGame).ToList(), users.Count);
     }
 
-    [GameEndpoint("lolcatftw/add/user/{idStr}", Method.Post)]
-    public Response QueueLevel(RequestContext context, GameDatabaseContext database, GameUser user, string idStr)
+    [GameEndpoint("lolcatftw/add/user/{id}", Method.Post)]
+    public Response QueueLevel(RequestContext context, GameDatabaseContext database, GameUser user, int id)
     {
-        int.TryParse(idStr, out int id);
-        if (id == default) return BadRequest;
-        
         GameLevel? level = database.GetLevelById(id);
         if (level == null) return NotFound;
         
@@ -99,12 +90,9 @@ public class RelationEndpoints : EndpointGroup
         return Unauthorized;
     }
     
-    [GameEndpoint("lolcatftw/remove/user/{idStr}", Method.Post)]
-    public Response DequeueLevel(RequestContext context, GameDatabaseContext database, GameUser user, string idStr)
+    [GameEndpoint("lolcatftw/remove/user/{id}", Method.Post)]
+    public Response DequeueLevel(RequestContext context, GameDatabaseContext database, GameUser user, int id)
     {
-        int.TryParse(idStr, out int id);
-        if (id == default) return BadRequest;
-        
         GameLevel? level = database.GetLevelById(id);
         if (level == null) return NotFound;
         
