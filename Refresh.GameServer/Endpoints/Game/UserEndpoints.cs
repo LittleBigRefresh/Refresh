@@ -97,9 +97,10 @@ public class UserEndpoints : EndpointGroup
             return null;
         }
 
-        if (data.Description is { Length: > 4096 })
+        const int maxDescriptionLength = 4096;
+        if (data.Description is { Length: > maxDescriptionLength })
         {
-            database.AddErrorNotification("Profile update failed", "Your profile failed to update because the description was too long. (Max 4096)", user);
+            database.AddErrorNotification("Profile update failed", $"Your profile failed to update because the description was too long. The max length is {maxDescriptionLength}.", user);
             return null;
         }
 
