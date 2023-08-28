@@ -57,21 +57,11 @@ public class GameLevelRequest : IDataConvertableFrom<GameLevelRequest, GameLevel
     [XmlElement("resource")] public List<string> XmlResources { get; set; } = new();
     [XmlElement("playerCount")] public int PlayerCount { get; set; }
 
-    public static GameLevelRequest? FromOldWithExtraData(GameLevel? old, GameDatabaseContext database, MatchService matchService, GameUser user)
-    {
-        if (old == null) return null;
-
-        GameLevelRequest response = FromOld(old)!;
-        response.FillInExtraData(database, matchService, user);
-
-        return response;
-    }
-
     public static GameLevelRequest? FromOld(GameLevel? old)
     {
         if (old == null) return null;
 
-        GameLevelRequest response = new()
+        GameLevelRequest request = new()
         {
             LevelId = old.LevelId,
             Title = old.Title,
@@ -95,17 +85,7 @@ public class GameLevelRequest : IDataConvertableFrom<GameLevelRequest, GameLevel
             TeamPicked = old.TeamPicked,
         };
 
-        if (old.Publisher == null)
-        {
-            response.Type = "developer";
-        }
-        else
-        {
-            response.Type = "user";
-            response.Handle = SerializedUserHandle.FromUser(old.Publisher);
-        }
-
-        return response;
+        return request;
     }
 
     public GameLevel ToGameLevel(GameUser publisher) =>
@@ -128,13 +108,4 @@ public class GameLevelRequest : IDataConvertableFrom<GameLevelRequest, GameLevel
         };
 
     public static IEnumerable<GameLevelRequest> FromOldList(IEnumerable<GameLevel> oldList) => oldList.Select(FromOld)!;
-
-    private void FillInExtraData(GameDatabaseContext database, MatchService matchService, GameUser user)
-    {
-        GameLevel? level = database.GetLevelById(this.LevelId);
-        if (level == null) throw new InvalidOperationException("Cannot fill in level data for a level that does not exist.");
-        
-        this.YourRating = (int)database.GetRatingByUser(level, user);
-        this.PlayerCount = matchService.GetPlayerCountForLevel(RoomSlotType.Online, this.LevelId);
-    }
 }
