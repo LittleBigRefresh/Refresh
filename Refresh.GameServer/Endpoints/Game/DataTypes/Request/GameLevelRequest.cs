@@ -40,22 +40,11 @@ public class GameLevelRequest : IDataConvertableFrom<GameLevelRequest, GameLevel
 
     [XmlElement("npHandle")] public SerializedUserHandle Handle { get; set; } = null!;
     
-    [XmlElement("heartCount")] public required int HeartCount { get; set; }
-    
-    [XmlElement("playCount")] public required int TotalPlayCount { get; set; }
-    [XmlElement("uniquePlayCount")] public required int UniquePlayCount { get; set; }
-
-    [XmlElement("yourDPadRating")] public int YourRating { get; set; }
-    [XmlElement("thumbsup")] public required int YayCount { get; set; }
-    [XmlElement("thumbsdown")] public required int BooCount { get; set; }
-    
     [XmlArray("customRewards")]
     [XmlArrayItem("customReward")]
     public required List<GameSkillReward> SkillRewards { get; set; }
 
-    [XmlElement("mmpick")] public required bool TeamPicked { get; set; }
     [XmlElement("resource")] public List<string> XmlResources { get; set; } = new();
-    [XmlElement("playerCount")] public int PlayerCount { get; set; }
 
     public static GameLevelRequest? FromOld(GameLevel? old)
     {
@@ -76,13 +65,7 @@ public class GameLevelRequest : IDataConvertableFrom<GameLevelRequest, GameLevel
             MaxPlayers = old.MaxPlayers,
             EnforceMinMaxPlayers = old.EnforceMinMaxPlayers,
             SameScreenGame = old.SameScreenGame,
-            HeartCount = old.FavouriteRelations.Count(),
-            TotalPlayCount = old.AllPlays.Count(),
-            UniquePlayCount = old.UniquePlays.Count(),
-            YayCount = old.Ratings.Count(r => r._RatingType == (int)RatingType.Yay),
-            BooCount = old.Ratings.Count(r => r._RatingType == (int)RatingType.Boo),
             SkillRewards = old.SkillRewards.ToList(),
-            TeamPicked = old.TeamPicked,
         };
 
         return request;

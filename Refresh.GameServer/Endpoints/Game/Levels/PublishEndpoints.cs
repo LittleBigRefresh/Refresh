@@ -39,23 +39,6 @@ public class PublishEndpoints : EndpointGroup
             return false;
         }
 
-        if (body.TeamPicked)
-        {
-            logger.LogWarning(BunkumContext.UserContent, $"User {user.Username} attempted to force their level to be team picked! This is very likely a forged request.");
-            return false;
-        }
-
-        if (body.BooCount != 0 || body.YayCount != 0 || body.HeartCount != 0)
-        {
-            logger.LogWarning(BunkumContext.UserContent, $"User {user.Username} attempted to force non-0 boo/yay/heart counts! This is very likely a forged request.");
-            return false;
-        }
-
-        if (body.PlayerCount > 4)
-        {
-            return false;
-        }
-        
         return true;
     }
     
