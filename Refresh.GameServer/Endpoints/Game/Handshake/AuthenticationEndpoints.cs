@@ -55,7 +55,7 @@ public class AuthenticationEndpoints : EndpointGroup
             if (config.RequireGameLoginToRegister)
             {
                 // look for a registration, then use that to create a user
-                QueuedRegistration? registration = database.GetQueuedRegistration(ticket.Username);
+                QueuedRegistration? registration = database.GetQueuedRegistrationByUsername(ticket.Username);
                 if (registration == null)
                 {
                     context.Logger.LogWarning(BunkumContext.Authentication, $"Rejecting {ticket.Username}'s login because there was no matching queued registration");

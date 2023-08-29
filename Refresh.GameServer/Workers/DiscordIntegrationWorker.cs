@@ -109,7 +109,11 @@ public class DiscordIntegrationWorker : IWorker
 
         IEnumerable<Embed> embeds = activity.Items
             .Reverse() // events are descending
-            .Select(e => this.GenerateEmbedFromEvent(e, database))!;
+            .Select(e => this.GenerateEmbedFromEvent(e, database))
+            .Where(e => e != null)
+            .ToList()!;
+
+        if (!embeds.Any()) return false;
         
         ulong id = this._client.SendMessageAsync(embeds: embeds, 
             username: this._config.DiscordNickname, avatarUrl: this._config.DiscordAvatarUrl).Result;
