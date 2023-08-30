@@ -7,6 +7,7 @@ using Refresh.GameServer.Endpoints.ApiV3.ApiTypes;
 using Refresh.GameServer.Endpoints.ApiV3.ApiTypes.Errors;
 using Refresh.GameServer.Endpoints.ApiV3.DataTypes.Request;
 using Refresh.GameServer.Endpoints.ApiV3.DataTypes.Response;
+using Refresh.GameServer.Endpoints.ApiV3.DataTypes.Response.Admin;
 using Refresh.GameServer.Types.Roles;
 using Refresh.GameServer.Types.UserData;
 
@@ -70,5 +71,85 @@ public class AdminUserApiEndpoints : EndpointGroup
         if (user == null) return ApiNotFoundError.UserMissingError;
 
         return ResetUserPassword(database, body, user);
+    }
+    
+    [ApiV3Endpoint("admin/users/uuid/{uuid}/planets"), MinimumRole(GameUserRole.Admin)]
+    [DocSummary("Retrieves the hashes of a user's planets. Gets user by their UUID.")]
+    [DocError(typeof(ApiNotFoundError), ApiNotFoundError.UserMissingErrorWhen)]
+    public ApiResponse<ApiAdminUserPlanetsResponse> GetUserPlanetsByUuid(RequestContext context, GameDatabaseContext database, string uuid)
+    {
+        GameUser? user = database.GetUserByUuid(uuid);
+        if (user == null) return ApiNotFoundError.UserMissingError;
+
+        return new ApiAdminUserPlanetsResponse
+        {
+            Lbp2PlanetsHash = user.Lbp2PlanetsHash,
+            Lbp3PlanetsHash = user.Lbp3PlanetsHash,
+            VitaPlanetsHash = user.VitaPlanetsHash,
+        };
+    }
+    
+    [ApiV3Endpoint("admin/users/name/{username}/planets"), MinimumRole(GameUserRole.Admin)]
+    [DocSummary("Retrieves the hashes of a user's planets. Gets user by their username.")]
+    [DocError(typeof(ApiNotFoundError), ApiNotFoundError.UserMissingErrorWhen)]
+    public ApiResponse<ApiAdminUserPlanetsResponse> GetUserPlanetsByUsername(RequestContext context, GameDatabaseContext database, string username)
+    {
+        GameUser? user = database.GetUserByUsername(username);
+        if (user == null) return ApiNotFoundError.UserMissingError;
+
+        return new ApiAdminUserPlanetsResponse
+        {
+            Lbp2PlanetsHash = user.Lbp2PlanetsHash,
+            Lbp3PlanetsHash = user.Lbp3PlanetsHash,
+            VitaPlanetsHash = user.VitaPlanetsHash,
+        };
+    }
+    
+    [ApiV3Endpoint("admin/users/uuid/{uuid}/planets", Method.Delete), MinimumRole(GameUserRole.Admin)]
+    [DocSummary("Resets a user's planets. Gets user by their UUID.")]
+    [DocError(typeof(ApiNotFoundError), ApiNotFoundError.UserMissingErrorWhen)]
+    public ApiOkResponse ResetUserPlanetsByUuid(RequestContext context, GameDatabaseContext database, string uuid)
+    {
+        GameUser? user = database.GetUserByUuid(uuid);
+        if (user == null) return ApiNotFoundError.UserMissingError;
+
+        database.ResetUserPlanets(user);
+        return new ApiOkResponse();
+    }
+    
+    [ApiV3Endpoint("admin/users/name/{username}/planets", Method.Delete), MinimumRole(GameUserRole.Admin)]
+    [DocSummary("Resets a user's planets. Gets user by their username.")]
+    [DocError(typeof(ApiNotFoundError), ApiNotFoundError.UserMissingErrorWhen)]
+    public ApiOkResponse ResetUserPlanetsByUsername(RequestContext context, GameDatabaseContext database, string username)
+    {
+        GameUser? user = database.GetUserByUsername(username);
+        if (user == null) return ApiNotFoundError.UserMissingError;
+
+        database.ResetUserPlanets(user);
+        return new ApiOkResponse();
+    }
+    
+    [ApiV3Endpoint("admin/users/uuid/{uuid}", Method.Delete), MinimumRole(GameUserRole.Admin)]
+    [DocSummary("Deletes a user user by their UUID.")]
+    [DocError(typeof(ApiNotFoundError), ApiNotFoundError.UserMissingErrorWhen)]
+    public ApiOkResponse DeleteUserByUuid(RequestContext context, GameDatabaseContext database, string uuid)
+    {
+        GameUser? user = database.GetUserByUuid(uuid);
+        if (user == null) return ApiNotFoundError.UserMissingError;
+
+        database.DeleteUser(user);
+        return new ApiOkResponse();
+    }
+    
+    [ApiV3Endpoint("admin/users/name/{username}", Method.Delete), MinimumRole(GameUserRole.Admin)]
+    [DocSummary("Deletes a user user by their UUID.")]
+    [DocError(typeof(ApiNotFoundError), ApiNotFoundError.UserMissingErrorWhen)]
+    public ApiOkResponse DeleteUserByUsername(RequestContext context, GameDatabaseContext database, string username)
+    {
+        GameUser? user = database.GetUserByUsername(username);
+        if (user == null) return ApiNotFoundError.UserMissingError;
+
+        database.DeleteUser(user);
+        return new ApiOkResponse();
     }
 }

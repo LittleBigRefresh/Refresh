@@ -179,6 +179,8 @@ public partial class GameDatabaseContext // Users
             user.JoinDate = DateTimeOffset.MinValue;
             user.LastLoginDate = DateTimeOffset.MinValue;
             user.Lbp2PlanetsHash = "0";
+            user.Lbp3PlanetsHash = "0";
+            user.VitaPlanetsHash = "0";
             user.IconHash = "0";
             user.AllowIpAuthentication = false;
             user.EmailAddressVerified = false;
@@ -199,6 +201,16 @@ public partial class GameDatabaseContext // Users
             {
                 level.Publisher = null;
             }
+        });
+    }
+
+    public void ResetUserPlanets(GameUser user)
+    {
+        this._realm.Write(() =>
+        {
+            user.Lbp2PlanetsHash = "0";
+            user.Lbp3PlanetsHash = "0";
+            user.VitaPlanetsHash = "0";
         });
     }
 }
