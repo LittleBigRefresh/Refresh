@@ -5,6 +5,8 @@ using NotEnoughLogs;
 using Refresh.GameServer;
 using Refresh.GameServer.Configuration;
 using Refresh.GameServer.Database;
+using Refresh.GameServer.Time;
+using RefreshTests.GameServer.Time;
 
 namespace RefreshTests.GameServer.GameServer;
 
@@ -28,6 +30,10 @@ public class TestRefreshGameServer : RefreshGameServer
         this._server.Start(1);
         // this._workerManager.Start();
     }
+
+    public IDateTimeProvider DateTimeProvider { get; set; } = new MockDateTimeProvider();
+    
+    protected override IDateTimeProvider GetTimeProvider() => this.DateTimeProvider;
 
     protected override void SetupMiddlewares()
     {

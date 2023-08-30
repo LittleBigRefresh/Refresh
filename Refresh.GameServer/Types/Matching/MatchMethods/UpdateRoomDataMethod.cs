@@ -15,7 +15,12 @@ public class UpdateRoomDataMethod : IMatchMethod
     public Response Execute(MatchService service, LoggerContainer<BunkumContext> logger,
         GameDatabaseContext database, GameUser user, Token token, SerializedRoomData body)
     {
-        GameRoom room = service.GetOrCreateRoomByPlayer(user, token.TokenPlatform, token.TokenGame);
+        if (body.NatType is not { Count: 1 })
+        {
+            return BadRequest;
+        }
+        
+        GameRoom room = service.GetOrCreateRoomByPlayer(user, token.TokenPlatform, token.TokenGame, body.NatType[0]);
         if (room.HostId.Id != user.UserId) return Unauthorized;
 
         room.LastContact = DateTimeOffset.Now;

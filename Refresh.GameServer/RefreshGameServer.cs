@@ -19,6 +19,7 @@ using Refresh.GameServer.Endpoints;
 using Refresh.GameServer.Importing;
 using Refresh.GameServer.Middlewares;
 using Refresh.GameServer.Services;
+using Refresh.GameServer.Time;
 using Refresh.GameServer.Types.Levels.Categories;
 using Refresh.GameServer.Types.Roles;
 using Refresh.GameServer.Types.UserData;
@@ -113,7 +114,7 @@ public class RefreshGameServer
         this._server.UseConfig(integrationConfig);
         this._server.UseJsonConfig<RichPresenceConfig>("rpc.json");
     }
-
+    
     protected virtual void SetupServices()
     {
         this._server.AddRateLimitService(new RateLimitSettings(60, 400, 30, "global"));
@@ -133,6 +134,7 @@ public class RefreshGameServer
         
         this._server.AddService<RoleService>();
         this._server.AddService<SmtpService>();
+        this._server.AddService<TimeProviderService>(this.GetTimeProvider());
 
         if (this._config!.TrackRequestStatistics)
             this._server.AddService<RequestStatisticTrackingService>();
@@ -173,6 +175,11 @@ public class RefreshGameServer
     {
         this._databaseProvider.Initialize();
         return this._databaseProvider.GetContext();
+    }
+    
+    protected virtual IDateTimeProvider GetTimeProvider()
+    {
+        return new SystemDateTimeProvider();
     }
 
     public void ImportAssets(bool force = false)

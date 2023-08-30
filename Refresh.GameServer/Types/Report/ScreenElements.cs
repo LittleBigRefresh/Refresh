@@ -19,6 +19,11 @@ public partial class ScreenElements : IEmbeddedObject
         {
             this.InternalSlot.Clear();
 
+            if (value == null)
+            {
+                return;
+            }
+
             foreach (Slot slot in value)
                 this.InternalSlot.Add(slot);
         }
@@ -35,6 +40,11 @@ public partial class ScreenElements : IEmbeddedObject
         {
             this.InternalPlayer.Clear();
 
+            if (value == null)
+            {
+                return;
+            }
+            
             foreach (Player player in value)
                 this.InternalPlayer.Add(player);
         }

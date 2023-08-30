@@ -14,7 +14,10 @@ public partial class GameComment : IRealmObject, ISequentialId, INeedsPreparatio
 
     [XmlIgnore] public GameUser Author { get; set; } = null!;
     [XmlElement("message")] public string Content { get; set; } = string.Empty;
-    [XmlElement("timestamp")] public long Timestamp { get; set; } // Unix Milliseconds
+    /// <summary>
+    /// Timestamp in Unix miliseconds
+    /// </summary>
+    [XmlElement("timestamp")] public long Timestamp { get; set; } 
 
     #region LBP Serialization Quirks
     

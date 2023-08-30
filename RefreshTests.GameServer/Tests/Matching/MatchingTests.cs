@@ -16,7 +16,13 @@ public class MatchingTests : GameServerTest
         MatchService match = new(Logger);
         match.Initialize();
 
-        SerializedRoomData roomData = new();
+        SerializedRoomData roomData = new()
+        {
+            NatType = new List<NatType>
+            {
+                NatType.Open,
+            },
+        };
 
         GameUser user1 = context.CreateUser();
         GameUser user2 = context.CreateUser();
@@ -53,20 +59,32 @@ public class MatchingTests : GameServerTest
         MatchService match = new(Logger);
         match.Initialize();
         
-        SerializedRoomData roomData = new();
+        SerializedRoomData roomData = new()
+        {
+            NatType = new List<NatType>
+            {
+                NatType.Open,
+            },
+        };
         
         // Setup room
         GameUser user1 = context.CreateUser();
         Token token1 = context.CreateToken(user1);
         match.ExecuteMethod("UpdateMyPlayerData", roomData, context.Database, user1, token1);
-
+        
         // Tell user1 to try to find a room
-        Response response = match.ExecuteMethod("FindBestRoom", new SerializedRoomData(), context.Database, user1, token1);
+        Response response = match.ExecuteMethod("FindBestRoom", new SerializedRoomData
+        {
+            NatType = new List<NatType>
+            {
+                NatType.Open,
+            },
+        }, context.Database, user1, token1);
         Assert.That(response.StatusCode, Is.EqualTo(NotFound));
     }
 
     [Test]
-    public void MatchesPlayersTogether()
+    public void StrictNatCantJoinStrict()
     {
         using TestContext context = this.GetServer(false);
         MatchService match = new(Logger);
@@ -75,6 +93,10 @@ public class MatchingTests : GameServerTest
         SerializedRoomData roomData = new()
         {
             Mood = (byte)RoomMood.AllowingAll, // Tells their rooms that they can be matched with each other
+            NatType = new List<NatType>
+            {
+                NatType.Strict,
+            },
         };
         
         // Setup rooms
@@ -88,7 +110,95 @@ public class MatchingTests : GameServerTest
         match.ExecuteMethod("UpdateMyPlayerData", roomData, context.Database, user2, token2);
         
         // Tell user2 to try to find a room
-        Response response = match.ExecuteMethod("FindBestRoom", new SerializedRoomData(), context.Database, user2, token2);
+        Response response = match.ExecuteMethod("FindBestRoom", new SerializedRoomData
+        {
+            NatType = new List<NatType> {
+                NatType.Strict,
+            },
+        }, context.Database, user2, token2);
+        // File.WriteAllBytes("/tmp/matchresp.json", response.Data);
+        Assert.That(response.StatusCode, Is.EqualTo(NotFound));
+    }
+    
+    [Test]
+    public void StrictNatCanJoinOpen()
+    {
+        using TestContext context = this.GetServer(false);
+        MatchService match = new(Logger);
+        match.Initialize();
+        
+        SerializedRoomData roomData = new()
+        {
+            Mood = (byte)RoomMood.AllowingAll, // Tells their rooms that they can be matched with each other
+            NatType = new List<NatType>
+            {
+                NatType.Open,
+            },
+        };
+        
+        SerializedRoomData roomData2 = new()
+        {
+            Mood = (byte)RoomMood.AllowingAll, // Tells their rooms that they can be matched with each other
+            NatType = new List<NatType>
+            {
+                NatType.Strict,
+            },
+        };
+        
+        // Setup rooms
+        GameUser user1 = context.CreateUser();
+        GameUser user2 = context.CreateUser();
+        
+        Token token1 = context.CreateToken(user1);
+        Token token2 = context.CreateToken(user2);
+        
+        match.ExecuteMethod("UpdateMyPlayerData", roomData, context.Database, user1, token1);
+        match.ExecuteMethod("UpdateMyPlayerData", roomData2, context.Database, user2, token2);
+        
+        // Tell user2 to try to find a room
+        Response response = match.ExecuteMethod("FindBestRoom", new SerializedRoomData
+        {
+            NatType = new List<NatType> {
+                NatType.Strict,
+            },
+        }, context.Database, user2, token2);
+        // File.WriteAllBytes("/tmp/matchresp.json", response.Data);
+        Assert.That(response.StatusCode, Is.EqualTo(OK));
+    }
+
+    [Test]
+    public void MatchesPlayersTogether()
+    {
+        using TestContext context = this.GetServer(false);
+        MatchService match = new(Logger);
+        match.Initialize();
+        
+        SerializedRoomData roomData = new()
+        {
+            Mood = (byte)RoomMood.AllowingAll, // Tells their rooms that they can be matched with each other
+            NatType = new List<NatType>
+            {
+                NatType.Open,
+            },
+        };
+        
+        // Setup rooms
+        GameUser user1 = context.CreateUser();
+        GameUser user2 = context.CreateUser();
+        
+        Token token1 = context.CreateToken(user1);
+        Token token2 = context.CreateToken(user2);
+        
+        match.ExecuteMethod("UpdateMyPlayerData", roomData, context.Database, user1, token1);
+        match.ExecuteMethod("UpdateMyPlayerData", roomData, context.Database, user2, token2);
+        
+        // Tell user2 to try to find a room
+        Response response = match.ExecuteMethod("FindBestRoom", new SerializedRoomData
+        {
+            NatType = new List<NatType> {
+                NatType.Open,
+            },
+        }, context.Database, user2, token2);
         // File.WriteAllBytes("/tmp/matchresp.json", response.Data);
         Assert.That(response.StatusCode, Is.EqualTo(OK));
     }

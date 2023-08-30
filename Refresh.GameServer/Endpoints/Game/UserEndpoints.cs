@@ -66,26 +66,19 @@ public class UserEndpoints : EndpointGroup
         // LBP is just fantastic man
         try
         {
-            XmlSerializer serializer = new(typeof(SerializedUpdateDataProfile));
-            if (serializer.Deserialize(new StringReader(body)) is not SerializedUpdateDataProfile profileData) return null;
+            XmlSerializer profileSerializer = new(typeof(SerializedUpdateDataProfile));
+            if (profileSerializer.Deserialize(new StringReader(body)) is not SerializedUpdateDataProfile profileData) return null;
             data = profileData;
-        }
-        catch
-        {
-            // ignored
-        }
-        
-        try
-        {
-            XmlSerializer serializer = new(typeof(SerializedUpdateDataPlanets));
-            if (serializer.Deserialize(new StringReader(body)) is not SerializedUpdateDataPlanets planetsData) return null;
+            
+            XmlSerializer planetSerializer = new(typeof(SerializedUpdateDataPlanets));
+            if (planetSerializer.Deserialize(new StringReader(body)) is not SerializedUpdateDataPlanets planetsData) return null;
             data = planetsData;
         }
         catch
         {
             // ignored
         }
-
+        
         if (data == null)
         {
             database.AddErrorNotification("Profile update failed", "Your profile failed to update because the data could not be read.", user);
@@ -101,6 +94,13 @@ public class UserEndpoints : EndpointGroup
         if (data.PlanetsHash != null && !dataStore.ExistsInStore(data.PlanetsHash))
         {
             database.AddErrorNotification("Profile update failed", "Your planets failed to update because the asset was missing on the server.", user);
+            return null;
+        }
+
+        const int maxDescriptionLength = 4096;
+        if (data.Description is { Length: > maxDescriptionLength })
+        {
+            database.AddErrorNotification("Profile update failed", $"Your profile failed to update because the description was too long. The max length is {maxDescriptionLength}.", user);
             return null;
         }
 
@@ -140,7 +140,7 @@ public class UserEndpoints : EndpointGroup
             database.AddErrorNotification("Pin sync failed", "Your pins failed to update because the data could not be read.", user);
             return null;
         }
-
+        
         //NOTE: the returned value in the packet capture has a few higher values than the ones sent in the request,
         //      so im not sure what we are supposed to return here, so im just passing it through with `profile_pins` nulled out
         database.UpdateUserPins(user, updateUserPins);
@@ -173,28 +173,10 @@ public class UserEndpoints : EndpointGroup
         Debug.Assert(user != null);
         Debug.Assert(body != null);
         
-        string msg = $"<{user}>: {body}"; // For some reason, the logger breaks if we put this directly into the call
-        try
-        {
-            context.Logger.LogInfo(BunkumContext.Filter, msg);
-        }
-        catch(Exception e)
-        {
-            // FIXME: workaround heisenbug
-            // this shouldn't crash but does somehow
-            /*
-[02/24/23 10:40:42] [Request:Trace] <AsyncMethodBuilderCore:Start> Handling request with UserEndpoints.Filter
-[02/24/23 10:40:42] [Request:Error] <<HandleRequest>d__19:MoveNext> System.Reflection.TargetInvocationException: Exception has been thrown by the target of an invocation.
- ---> System.NullReferenceException: Object reference not set to an instance of an object.
-   at NotEnoughLogs.TraceHelper.GetTrace(Int32 depth, Int32 extraTraceLines)
-   at NotEnoughLogs.LoggerContainer`1.LogInfo(TContext context, String message)
-   at Refresh.GameServer.Endpoints.Game.UserEndpoints.Filter(RequestContext context, String body, GameUser user) in /home/jvyden/Documents/Refresh/Refresh.GameServer/Endpoints/Game/UserEndpoints.cs:line 128
-   at InvokeStub_UserEndpoints.Filter(Object, Object, IntPtr*)
-   at System.Reflection.MethodInvoker.Invoke(Object obj, IntPtr* args, BindingFlags invokeAttr)
-             */
-            Console.WriteLine("HIT FILTER BUG: " + e);
-            if(Debugger.IsAttached) Debugger.Break();
-        }
+        context.Logger.LogInfo(BunkumContext.Filter, $"<{user}>: {body}");
+
+        //TODO: Add filtering
+        
         return body;
     }
 }

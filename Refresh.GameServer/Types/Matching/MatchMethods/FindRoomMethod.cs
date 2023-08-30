@@ -20,6 +20,11 @@ public class FindRoomMethod : IMatchMethod
         Token token,
         SerializedRoomData body)
     {
+        if (body.NatType is not { Count: 1 })
+        {
+            return BadRequest;
+        }
+        
         GameRoom? usersRoom = service.GetRoomByPlayer(user, token.TokenPlatform, token.TokenGame);
         if (usersRoom == null) return BadRequest; // user should already have a room.
 
@@ -35,12 +40,20 @@ public class FindRoomMethod : IMatchMethod
             levelId = body.Slots[1];
         } 
         
+        //TODO: add user option to filter rooms by language
+        
         List<GameRoom> rooms = service.Rooms.Where(r => r.RoomId != usersRoom.RoomId && 
                                                         r.Platform == usersRoom.Platform && 
                                                         (levelId == null || r.LevelId == levelId))
             .OrderByDescending(r => r.RoomMood)
             .ToList();
 
+        //When a user is behind a Strict NAT layer, we can only connect them to players with Open NAT types
+        if (body.NatType[0] == NatType.Strict)
+        {
+            rooms = rooms.Where(r => r.NatType == NatType.Open).ToList();
+        }
+        
         if (rooms.Count <= 0)
         {
             return NotFound; // TODO: update this response, shouldn't be 404

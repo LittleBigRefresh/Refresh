@@ -16,11 +16,9 @@ namespace Refresh.GameServer.Endpoints.Game.Levels;
 public class LeaderboardEndpoints : EndpointGroup
 {
     [GameEndpoint("play/user/{id}", ContentType.Xml, Method.Post)]
-    public Response PlayLevel(RequestContext context, GameUser user, GameDatabaseContext database, int? id)
+    public Response PlayLevel(RequestContext context, GameUser user, GameDatabaseContext database, int id)
     {
-        if (id == null) return BadRequest;
-
-        GameLevel? level = database.GetLevelById(id.Value);
+        GameLevel? level = database.GetLevelById(id);
         if (level == null) return NotFound;
 
         database.PlayLevel(level, user);
@@ -28,11 +26,9 @@ public class LeaderboardEndpoints : EndpointGroup
     }
 
     [GameEndpoint("scoreboard/user/{id}", ContentType.Xml, Method.Post)]
-    public Response SubmitScore(RequestContext context, GameUser user, GameDatabaseContext database, int? id, SerializedScore body)
+    public Response SubmitScore(RequestContext context, GameUser user, GameDatabaseContext database, int id, SerializedScore body)
     {
-        if (id == null) return BadRequest;
-
-        GameLevel? level = database.GetLevelById(id.Value);
+        GameLevel? level = database.GetLevelById(id);
         if (level == null) return NotFound;
 
         //Validate the score is a non-negative amount
@@ -41,8 +37,7 @@ public class LeaderboardEndpoints : EndpointGroup
             return BadRequest;
         }
 
-        GameSubmittedScore? score = database.SubmitScore(body, user, level);
-        if (score == null) return Unauthorized;
+        GameSubmittedScore score = database.SubmitScore(body, user, level);
 
         IEnumerable<ScoreWithRank>? scores = database.GetRankedScoresAroundScore(score, 5);
         Debug.Assert(scores != null);
@@ -52,12 +47,9 @@ public class LeaderboardEndpoints : EndpointGroup
 
     [GameEndpoint("topscores/user/{id}/{type}", ContentType.Xml)]
     [MinimumRole(GameUserRole.Restricted)]
-    public SerializedScoreList? GetTopScoresForLevel(RequestContext context, GameDatabaseContext database, int? id, int? type)
+    public SerializedScoreList? GetTopScoresForLevel(RequestContext context, GameDatabaseContext database, int id, int type)
     {
-        if (id == null) return null;
-        if (type == null) return null;
-        
-        GameLevel? level = database.GetLevelById(id.Value);
+        GameLevel? level = database.GetLevelById(id);
         if (level == null) return null;
         
         (int skip, int count) = context.GetPageData();

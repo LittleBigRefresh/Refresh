@@ -8,11 +8,12 @@ namespace Refresh.GameServer.Types.Matching;
 
 public class GameRoom
 {
-    public GameRoom(GameUser host, TokenPlatform platform, TokenGame game)
+    public GameRoom(GameUser host, TokenPlatform platform, TokenGame game, NatType natType)
     {
         this.PlayerIds.Add(new GameRoomPlayer(host.Username, host.UserId));
         this.Platform = platform;
         this.Game = game;
+        this.NatType = natType;
     }
 
     public readonly ObjectId RoomId = ObjectId.GenerateNewId();
@@ -22,6 +23,8 @@ public class GameRoom
 
     public readonly TokenPlatform Platform;
     public readonly TokenGame Game;
+
+    public readonly NatType NatType;
 
     public DateTimeOffset LastContact;
 
