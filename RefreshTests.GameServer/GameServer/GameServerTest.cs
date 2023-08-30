@@ -6,6 +6,7 @@ using RefreshTests.GameServer.Time;
 
 namespace RefreshTests.GameServer.GameServer;
 
+[Parallelizable]
 [Timeout(2000)]
 public class GameServerTest
 {

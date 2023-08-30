@@ -27,7 +27,7 @@ public class TestRefreshGameServer : RefreshGameServer
 
     public override void Start()
     {
-        this._server.Start(1);
+        this._server.Start(0);
         // this._workerManager.Start();
     }
 
