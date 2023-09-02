@@ -8,6 +8,7 @@ using Refresh.GameServer.Authentication;
 using Refresh.GameServer.Database;
 using Refresh.GameServer.Endpoints.Game.DataTypes.Response;
 using Refresh.GameServer.Services;
+using Refresh.GameServer.Types.Commands;
 using Refresh.GameServer.Types.Lists;
 using Refresh.GameServer.Types.Roles;
 using Refresh.GameServer.Types.UserData;
@@ -168,14 +169,32 @@ public class UserEndpoints : EndpointGroup
     /// <returns>The string shown in-game.</returns>
     [GameEndpoint("filter", Method.Post)]
     [AllowEmptyBody]
-    public string Filter(RequestContext context, string body, GameUser user)
+    public string Filter(RequestContext context, CommandService command, string body, GameUser user)
     {
         Debug.Assert(user != null);
         Debug.Assert(body != null);
-        
-        context.Logger.LogInfo(BunkumContext.Filter, $"<{user}>: {body}");
 
         //TODO: Add filtering
+        
+        if (command.IsPublishing(user.UserId))
+        {
+            context.Logger.LogInfo(BunkumContext.Filter, $"Publish filter {body}");
+        }
+        else
+        {
+            context.Logger.LogInfo(BunkumContext.Filter, $"<{user}>: {body}");
+
+            try
+            {
+                Command parsedCommand = command.ParseCommand(body);
+                
+                context.Logger.LogInfo(BunkumContext.Commands, $"User used command \"{parsedCommand.Name}\" with args \"{parsedCommand.Arguments}\"");
+            }
+            catch
+            {
+                //do nothing
+            } 
+        }
         
         return body;
     }

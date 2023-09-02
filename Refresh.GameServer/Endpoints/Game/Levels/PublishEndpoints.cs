@@ -45,7 +45,7 @@ public class PublishEndpoints : EndpointGroup
     
     [GameEndpoint("startPublish", ContentType.Xml, Method.Post)]
     [NullStatusCode(BadRequest)]
-    public SerializedLevelResources? StartPublish(RequestContext context, GameUser user, GameDatabaseContext database, GameLevelRequest body, PublishTrackingService publishTracking, IDataStore dataStore, LoggerContainer<BunkumContext> logger)
+    public SerializedLevelResources? StartPublish(RequestContext context, GameUser user, GameDatabaseContext database, GameLevelRequest body, CommandService command, IDataStore dataStore, LoggerContainer<BunkumContext> logger)
     {
         //If verifying the request fails, return null
         if (!VerifyLevel(body, user, logger)) return null;
@@ -60,7 +60,7 @@ public class PublishEndpoints : EndpointGroup
         if (hashes.Any(hash => hash.Length != 40)) return null;
 
         //Mark the user as publishing
-        publishTracking.StartTracking(user.UserId);
+        command.StartPublishing(user.UserId);
             
         return new SerializedLevelResources
         {
@@ -69,7 +69,7 @@ public class PublishEndpoints : EndpointGroup
     }
 
     [GameEndpoint("publish", ContentType.Xml, Method.Post)]
-    public Response PublishLevel(RequestContext context, GameUser user, Token token, GameDatabaseContext database, GameLevelRequest body, PublishTrackingService publishTracking, IDataStore dataStore, LoggerContainer<BunkumContext> logger)
+    public Response PublishLevel(RequestContext context, GameUser user, Token token, GameDatabaseContext database, GameLevelRequest body, CommandService command, IDataStore dataStore, LoggerContainer<BunkumContext> logger)
     {
         //If verifying the request fails, return null
         if (!VerifyLevel(body, user, logger)) return BadRequest;
@@ -99,7 +99,7 @@ public class PublishEndpoints : EndpointGroup
         }
         
         //Mark the user as no longer publishing
-        publishTracking.StopTracking(user.UserId);
+        command.StopPublishing(user.UserId);
 
         level.Publisher = user;
 
