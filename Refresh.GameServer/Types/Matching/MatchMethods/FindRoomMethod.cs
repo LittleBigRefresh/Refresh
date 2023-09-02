@@ -20,11 +20,6 @@ public class FindRoomMethod : IMatchMethod
         Token token,
         SerializedRoomData body)
     {
-        if (body.NatType is not { Count: 1 })
-        {
-            return BadRequest;
-        }
-        
         GameRoom? usersRoom = service.GetRoomByPlayer(user, token.TokenPlatform, token.TokenGame);
         if (usersRoom == null) return BadRequest; // user should already have a room.
 
