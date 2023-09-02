@@ -49,7 +49,7 @@ public class CommandService : EndpointService
     /// <returns>Parsed command</returns>
     /// <exception cref="FormatException">When the command is in an invalid format</exception>
     [Pure]
-    public Command ParseCommand(ReadOnlySpan<char> input)
+    public CommandInvocation ParseCommand(ReadOnlySpan<char> input)
     {
         // Ensure the command string starts with a slash
         if (input[0] != '/')
@@ -69,13 +69,13 @@ public class CommandService : EndpointService
         //If theres no space after, or if the space is the last character, then there are no arguments
         if (index == -1 || index == input.Length - 1)
         {
-            return new Command(index == input.Length - 1 ? input[1..index] : input[1..], null);
+            return new CommandInvocation(index == input.Length - 1 ? input[1..index] : input[1..], null);
         }
         
-        return new Command(input[1..index], input[(index + 1)..]);
+        return new CommandInvocation(input[1..index], input[(index + 1)..]);
     }
 
-    public void HandleCommand(Command command, GameDatabaseContext database, GameUser user)
+    public void HandleCommand(CommandInvocation command, GameDatabaseContext database, GameUser user)
     {
         switch (command.Name)
         {

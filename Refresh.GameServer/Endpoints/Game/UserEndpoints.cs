@@ -186,7 +186,7 @@ public class UserEndpoints : EndpointGroup
 
             try
             {
-                Command command = commandService.ParseCommand(body);
+                CommandInvocation command = commandService.ParseCommand(body);
                 
                 context.Logger.LogInfo(BunkumContext.Commands, $"User used command '{command.Name}' with args '{command.Arguments}'");
 

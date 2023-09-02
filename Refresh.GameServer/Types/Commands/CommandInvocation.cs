@@ -1,8 +1,8 @@
 namespace Refresh.GameServer.Types.Commands;
 
-public ref struct Command
+public ref struct CommandInvocation
 {
-    public Command(ReadOnlySpan<char> name, ReadOnlySpan<char> arguments)
+    public CommandInvocation(ReadOnlySpan<char> name, ReadOnlySpan<char> arguments)
     {
         this.Name = name;
         this.Arguments = arguments;
