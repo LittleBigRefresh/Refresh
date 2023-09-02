@@ -103,7 +103,7 @@ public class AuthenticationEndpoints : EndpointGroup
         bool ticketVerified = false;
         if (config.UseTicketVerification)
         {
-            if ((platform is TokenPlatform.PS3 or TokenPlatform.Vita && !user.PsnAuthenticationAllowed) ||
+            if ((platform is TokenPlatform.PS3 or TokenPlatform.Vita or TokenPlatform.Psp && !user.PsnAuthenticationAllowed) ||
                 (platform is TokenPlatform.RPCS3 && !user.RpcnAuthenticationAllowed))
             {
                 context.Logger.LogWarning(BunkumContext.Authentication, $"Rejecting {user}'s login because their platform ({platform}) is not allowed");
