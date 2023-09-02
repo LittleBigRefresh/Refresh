@@ -9,7 +9,6 @@ public static class TokenGameUtility
     {
         "BCES00141",
         "NPEW00047",
-        "UCAS40262",
         "NPEA00147",
         "NPHG00035",
         "BCET70011",
@@ -20,7 +19,6 @@ public static class TokenGameUtility
         "BCET70002",
         "BCJS70009",
         "NPHA80092",
-        "UCUS98744",
         "BCJB95003",
         "BCUS70030",
         "NPEG90019",
@@ -29,13 +27,11 @@ public static class TokenGameUtility
         "BCAS20058",
         "BCJS30018",
         "NPHG00033",
-        "UCES01264",
         "BCKS10059",
         "BCAS20078",
         "BCUS98208",
         "BCES00611",
         "NPJG00073",
-        "UCJS10107",
         "NPUA80472",
         "NPJA00052",
     };
@@ -85,6 +81,9 @@ public static class TokenGameUtility
     private static readonly string[] LittleBigPlanetPSPTitles =
     {
         "UCUS98744",
+        "UCES01264",
+        "UCJS10107",
+        "UCAS40262",
     };
 
     private static readonly string[] LittleBigPlanetVitaTitles =
