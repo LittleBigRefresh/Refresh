@@ -3,11 +3,13 @@ using Bunkum.CustomHttpListener.Parsing;
 using Bunkum.HttpServer;
 using Bunkum.HttpServer.Endpoints;
 using Refresh.GameServer.Database;
+using Refresh.GameServer.Documentation.Attributes;
 using Refresh.GameServer.Endpoints.ApiV3.ApiTypes;
 using Refresh.GameServer.Endpoints.ApiV3.ApiTypes.Errors;
 using Refresh.GameServer.Endpoints.ApiV3.DataTypes.Request;
 using Refresh.GameServer.Endpoints.ApiV3.DataTypes.Response;
 using Refresh.GameServer.Endpoints.ApiV3.DataTypes.Response.Admin;
+using Refresh.GameServer.Extensions;
 using Refresh.GameServer.Types.Roles;
 using Refresh.GameServer.Types.UserData;
 
@@ -35,6 +37,15 @@ public class AdminUserApiEndpoints : EndpointGroup
         if (user == null) return ApiNotFoundError.UserMissingError;
 
         return ApiExtendedGameUserResponse.FromOld(user);
+    }
+
+    [ApiV3Endpoint("admin/users"), MinimumRole(GameUserRole.Admin)]
+    [DocSummary("Gets all users with extended information.")]
+    [DocUsesPageData]
+    public ApiListResponse<ApiExtendedGameUserResponse> GetExtendedUsers(RequestContext context, GameDatabaseContext database)
+    {
+        (int skip, int count) = context.GetPageData(true);
+        return DatabaseList<ApiExtendedGameUserResponse>.FromOldList<ApiExtendedGameUserResponse, GameUser>(database.GetUsers(count, skip));
     }
 
     private static ApiOkResponse ResetUserPassword(GameDatabaseContext database, ApiResetUserPasswordRequest body, GameUser user)

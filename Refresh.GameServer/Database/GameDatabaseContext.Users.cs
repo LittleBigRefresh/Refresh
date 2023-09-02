@@ -57,6 +57,9 @@ public partial class GameDatabaseContext // Users
         // THIS SUCKS
         return this._realm.All<GameUser>().ToList().FirstOrDefault(u => u.UserId.Timestamp == legacyId);
     }
+
+    public DatabaseList<GameUser> GetUsers(int count, int skip)
+        => new(this._realm.All<GameUser>().OrderByDescending(u => u.JoinDate), skip, count);
     
     private void UpdateUserData<TUpdateData>(GameUser user, TUpdateData data)
     {
