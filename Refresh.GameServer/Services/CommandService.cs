@@ -1,3 +1,4 @@
+using System.Text;
 using Bunkum.HttpServer;
 using Bunkum.HttpServer.Services;
 using JetBrains.Annotations;
@@ -44,34 +45,34 @@ public class CommandService : EndpointService
     /// <summary>
     /// Parse a command string into a command object
     /// </summary>
-    /// <param name="str">Command string</param>
+    /// <param name="input">Command string</param>
     /// <returns>Parsed command</returns>
     /// <exception cref="FormatException">When the command is in an invalid format</exception>
     [Pure]
-    public Command ParseCommand(string str)
+    public Command ParseCommand(ReadOnlySpan<char> input)
     {
-        //Ensure the command string starts with a slash
-        if (str[0] != '/')
+        // Ensure the command string starts with a slash
+        if (input[0] != '/')
         {
             throw new FormatException("Commands must start with `/`");
         }
 
-        int idx = str.IndexOf(" ", StringComparison.Ordinal);
+        int index = input.IndexOf(' ');
 
-        //If idx is 1, the command name is blank
+        // If index is 1, the command name is blank
         // ReSharper disable once ConvertIfStatementToSwitchStatement
-        if (idx == 1)
+        if (index == 1)
         {
             throw new FormatException("Blank command name");
         }
 
         //If theres no space after, or if the space is the last character, then there are no arguments
-        if (idx == -1 || idx == str.Length - 1)
+        if (index == -1 || index == input.Length - 1)
         {
-            return new Command(idx == str.Length - 1 ? str[1..idx] : str[1..], null);
+            return new Command(index == input.Length - 1 ? input[1..index] : input[1..], null);
         }
         
-        return new Command(str[1..idx], str[(idx + 1)..]);
+        return new Command(input[1..index], input[(index + 1)..]);
     }
 
     public void HandleCommand(Command command, GameDatabaseContext database, GameUser user)
@@ -84,7 +85,7 @@ public class CommandService : EndpointService
                     throw new Exception("User not provided for force match command");
                 }
                 
-                GameUser? target = database.GetUserByUsername(command.Arguments);
+                GameUser? target = database.GetUserByUsername(command.Arguments.ToString());
 
                 if (target != null)
                 {

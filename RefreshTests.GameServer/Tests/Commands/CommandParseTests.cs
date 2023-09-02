@@ -1,5 +1,7 @@
+using System.Buffers;
 using Bunkum.HttpServer;
 using NotEnoughLogs;
+using NotEnoughLogs.Loggers;
 using Refresh.GameServer.Services;
 using Refresh.GameServer.Types.Commands;
 
@@ -7,32 +9,44 @@ namespace RefreshTests.GameServer.Tests.Commands;
 
 public class CommandParseTests : GameServerTest
 {
+#pragma warning disable NUnit2045
+	private void ParseTest(CommandService service, ReadOnlySpan<char> input, ReadOnlySpan<char> expectedName, ReadOnlySpan<char> expectedArguments)
+	{
+		Command command = service.ParseCommand(input);
+		Assert.That(command.Name.SequenceEqual(expectedName), Is.True, $"Expected '{command.Name}' to equal '{expectedName}'");
+		Assert.That(command.Arguments.SequenceEqual(expectedArguments), Is.True, $"Expected '{command.Arguments}' to equal '{expectedArguments}'");
+	}
+#pragma warning restore NUnit2045
+	
 	[Test]
 	public void ParsingTest()
 	{
-		LoggerContainer<BunkumContext> logger = new();
+		using LoggerContainer<BunkumContext> logger = new();
+		logger.RegisterLogger(new ConsoleLogger());
 		CommandService service = new(logger, new MatchService(logger));
-
-		Assert.That(service.ParseCommand("/parse test"), Is.EqualTo(new Command("parse", "test")));
-		Assert.That(service.ParseCommand("/noargs"), Is.EqualTo(new Command("noargs", null)));
-		Assert.That(service.ParseCommand("/noargs "), Is.EqualTo(new Command("noargs", null)));
+        
+		ParseTest(service, "/parse test", "parse", "test");
+		ParseTest(service, "/noargs", "noargs", "");
+		ParseTest(service, "/noargs ", "noargs", "");
 	}
 
 	[Test]
 	public void NoSlashThrows()
 	{
-		LoggerContainer<BunkumContext> logger = new();
+		using LoggerContainer<BunkumContext> logger = new();
+		logger.RegisterLogger(new ConsoleLogger());
 		CommandService service = new(logger, new MatchService(logger));
 
-		Assert.That(() => service.ParseCommand("parse test"), Throws.Exception);
+		Assert.That(() => _ = service.ParseCommand("parse test"), Throws.InstanceOf<FormatException>());
 	}
 
 	[Test]
 	public void BlankCommandThrows()
 	{
-		LoggerContainer<BunkumContext> logger = new();
+		using LoggerContainer<BunkumContext> logger = new();
+		logger.RegisterLogger(new ConsoleLogger());
 		CommandService service = new(logger, new MatchService(logger));
 
-		Assert.That(() => service.ParseCommand("/ test"), Throws.Exception);
+		Assert.That(() => _ = service.ParseCommand("/ test"), Throws.InstanceOf<FormatException>());
 	}
 }
