@@ -44,7 +44,7 @@ public class FindRoomMethod : IMatchMethod
             .ToList();
 
         //When a user is behind a Strict NAT layer, we can only connect them to players with Open NAT types
-        if (body.NatType[0] == NatType.Strict)
+        if (body.NatType != null && body.NatType[0] == NatType.Strict)
         {
             rooms = rooms.Where(r => r.NatType == NatType.Open).ToList();
         }
