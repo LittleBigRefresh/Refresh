@@ -120,6 +120,7 @@ public class RefreshGameServer
         this._server.AddRateLimitService(new RateLimitSettings(60, 400, 30, "global"));
         this._server.AddService<CategoryService>();
         this._server.AddService<FriendStorageService>();
+        this._server.AddService<PublishTrackingService>();
         this._server.AddService<MatchService>();
         this._server.AddService<ImportService>();
         this._server.AddService<DocumentationService>();
