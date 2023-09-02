@@ -178,7 +178,7 @@ public class UserEndpoints : EndpointGroup
         
         if (commandService.IsPublishing(user.UserId))
         {
-            context.Logger.LogInfo(BunkumContext.Filter, $"Publish filter {body}");
+            context.Logger.LogInfo(BunkumContext.UserLevels, $"Publish filter: '{body}'");
         }
         else
         {
@@ -188,7 +188,7 @@ public class UserEndpoints : EndpointGroup
             {
                 Command command = commandService.ParseCommand(body);
                 
-                context.Logger.LogInfo(BunkumContext.Commands, $"User used command \"{command.Name}\" with args \"{command.Arguments}\"");
+                context.Logger.LogInfo(BunkumContext.Commands, $"User used command '{command.Name}' with args '{command.Arguments}'");
 
                 commandService.HandleCommand(command, database, user);
             }
