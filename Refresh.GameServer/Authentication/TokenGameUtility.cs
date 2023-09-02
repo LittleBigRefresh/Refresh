@@ -82,6 +82,11 @@ public static class TokenGameUtility
         "CUSA00693",
     };
 
+    private static readonly string[] LittleBigPlanetPSPTitles =
+    {
+        "UCUS98744",
+    };
+
     private static readonly string[] LittleBigPlanetVitaTitles =
     {
         "PCSC00013",
@@ -104,6 +109,7 @@ public static class TokenGameUtility
         if (LittleBigPlanet1Titles.Contains(titleId)) return TokenGame.LittleBigPlanet1;
         if (LittleBigPlanet2Titles.Contains(titleId)) return TokenGame.LittleBigPlanet2;
         if (LittleBigPlanet3Titles.Contains(titleId)) return TokenGame.LittleBigPlanet3;
+        if (LittleBigPlanetPSPTitles.Contains(titleId)) return TokenGame.LittleBigPlanetPSP;
         if (LittleBigPlanetVitaTitles.Contains(titleId)) return TokenGame.LittleBigPlanetVita;
         
         return null;
