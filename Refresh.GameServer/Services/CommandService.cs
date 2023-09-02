@@ -3,13 +3,19 @@ using Bunkum.HttpServer.Services;
 using JetBrains.Annotations;
 using MongoDB.Bson;
 using NotEnoughLogs;
+using Refresh.GameServer.Database;
 using Refresh.GameServer.Types.Commands;
+using Refresh.GameServer.Types.UserData;
 
 namespace Refresh.GameServer.Services;
 
 public class CommandService : EndpointService
 {
-    public CommandService(LoggerContainer<BunkumContext> logger) : base(logger) {}
+    private readonly MatchService _match;
+    
+    public CommandService(LoggerContainer<BunkumContext> logger, MatchService match) : base(logger) {
+        this._match = match;
+    }
 
     private readonly HashSet<ObjectId> _usersPublishing = new();
 
@@ -66,5 +72,32 @@ public class CommandService : EndpointService
         }
         
         return new Command(str[1..idx], str[(idx + 1)..]);
+    }
+
+    public void HandleCommand(Command command, GameDatabaseContext database, GameUser user)
+    {
+        switch (command.Name)
+        {
+            case "forcematch": {
+                if (command.Arguments == null)
+                {
+                    throw new Exception("User not provided for force match command");
+                }
+                
+                GameUser? target = database.GetUserByUsername(command.Arguments);
+
+                if (target != null)
+                {
+                    this._match.SetForceMatch(user.UserId, target.UserId);
+                }
+                
+                break;
+            }
+            case "clearforcematch": {
+                this._match.ClearForceMatch(user.UserId);
+                
+                break;
+            }
+        }
     }
 }

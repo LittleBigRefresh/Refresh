@@ -10,8 +10,9 @@ public class CommandParseTests : GameServerTest
 	[Test]
 	public void ParsingTest()
 	{
-		CommandService service = new(new LoggerContainer<BunkumContext>());
-		
+		LoggerContainer<BunkumContext> logger = new();
+		CommandService service = new(logger, new MatchService(logger));
+
 		Assert.That(service.ParseCommand("/parse test"), Is.EqualTo(new Command("parse", "test")));
 		Assert.That(service.ParseCommand("/noargs"), Is.EqualTo(new Command("noargs", null)));
 		Assert.That(service.ParseCommand("/noargs "), Is.EqualTo(new Command("noargs", null)));
@@ -20,16 +21,18 @@ public class CommandParseTests : GameServerTest
 	[Test]
 	public void NoSlashThrows()
 	{
-		CommandService service = new(new LoggerContainer<BunkumContext>());
-		
+		LoggerContainer<BunkumContext> logger = new();
+		CommandService service = new(logger, new MatchService(logger));
+
 		Assert.That(() => service.ParseCommand("parse test"), Throws.Exception);
 	}
 
 	[Test]
 	public void BlankCommandThrows()
 	{
-		CommandService service = new(new LoggerContainer<BunkumContext>());
-		
+		LoggerContainer<BunkumContext> logger = new();
+		CommandService service = new(logger, new MatchService(logger));
+
 		Assert.That(() => service.ParseCommand("/ test"), Throws.Exception);
 	}
 }

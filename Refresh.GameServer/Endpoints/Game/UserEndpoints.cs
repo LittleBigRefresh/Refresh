@@ -169,14 +169,14 @@ public class UserEndpoints : EndpointGroup
     /// <returns>The string shown in-game.</returns>
     [GameEndpoint("filter", Method.Post)]
     [AllowEmptyBody]
-    public string Filter(RequestContext context, CommandService command, string body, GameUser user)
+    public string Filter(RequestContext context, CommandService commandService, string body, GameUser user, GameDatabaseContext database)
     {
         Debug.Assert(user != null);
         Debug.Assert(body != null);
 
         //TODO: Add filtering
         
-        if (command.IsPublishing(user.UserId))
+        if (commandService.IsPublishing(user.UserId))
         {
             context.Logger.LogInfo(BunkumContext.Filter, $"Publish filter {body}");
         }
@@ -186,9 +186,11 @@ public class UserEndpoints : EndpointGroup
 
             try
             {
-                Command parsedCommand = command.ParseCommand(body);
+                Command command = commandService.ParseCommand(body);
                 
-                context.Logger.LogInfo(BunkumContext.Commands, $"User used command \"{parsedCommand.Name}\" with args \"{parsedCommand.Arguments}\"");
+                context.Logger.LogInfo(BunkumContext.Commands, $"User used command \"{command.Name}\" with args \"{command.Arguments}\"");
+
+                commandService.HandleCommand(command, database, user);
             }
             catch
             {

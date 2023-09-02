@@ -1,6 +1,7 @@
 using Bunkum.CustomHttpListener.Parsing;
 using Bunkum.HttpServer;
 using Bunkum.HttpServer.Responses;
+using MongoDB.Bson;
 using NotEnoughLogs;
 using Refresh.GameServer.Authentication;
 using Refresh.GameServer.Database;
@@ -42,16 +43,32 @@ public class FindRoomMethod : IMatchMethod
                                                         (levelId == null || r.LevelId == levelId))
             .OrderByDescending(r => r.RoomMood)
             .ToList();
-
+        
         //When a user is behind a Strict NAT layer, we can only connect them to players with Open NAT types
         if (body.NatType != null && body.NatType[0] == NatType.Strict)
         {
             rooms = rooms.Where(r => r.NatType == NatType.Open).ToList();
         }
+
+        ObjectId? forceMatch = service.GetForceMatch(user.UserId);
+
+        //If the user has a forced match
+        if (forceMatch != null)
+        {
+            //Filter the rooms to only the rooms that contain the player we are wanting to force match to
+            rooms = rooms.Where(r => r.PlayerIds.Any(player => player.Id != null && player.Id == forceMatch.Value)).ToList();
+        }
         
         if (rooms.Count <= 0)
         {
             return NotFound; // TODO: update this response, shouldn't be 404
+        }
+
+        //If the user has a forced match and we found a room
+        if (forceMatch != null)
+        {
+            //Clear the user's force match
+            service.ClearForceMatch(user.UserId);
         }
         
         GameRoom room = rooms[Random.Shared.Next(0, rooms.Count)];
