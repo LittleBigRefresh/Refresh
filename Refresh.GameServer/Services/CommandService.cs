@@ -26,7 +26,7 @@ public class CommandService : EndpointService
     public void StartPublishing(ObjectId id)
     {
         //Unconditionally add the user to the set
-        _ = this._usersPublishing.Add(id);
+        this._usersPublishing.Add(id);
     }
 
     /// <summary>
@@ -36,7 +36,7 @@ public class CommandService : EndpointService
     public void StopPublishing(ObjectId id)
     {
         //Unconditionally remove the user from the set
-        _ = this._usersPublishing.Remove(id);
+        this._usersPublishing.Remove(id);
     }
 
     public bool IsPublishing(ObjectId id) => this._usersPublishing.Contains(id);
