@@ -67,6 +67,8 @@ public class AssetImporter : Importer
     [Pure]
     public GameAsset? ReadAndVerifyAsset(string hash, byte[] data)
     {
+        File.WriteAllBytes(hash + ".asset", data);
+        
         string checkedHash = BitConverter.ToString(SHA1.HashData(data))
             .Replace("-", "")
             .ToLower();
