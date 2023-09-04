@@ -121,6 +121,7 @@ public class RefreshGameServer
         this._server.AddService<CategoryService>();
         this._server.AddService<FriendStorageService>();
         this._server.AddService<MatchService>();
+        this._server.AddService<CommandService>();
         this._server.AddService<ImportService>();
         this._server.AddService<DocumentationService>();
         this._server.AddAutoDiscover(serverBrand: "Refresh",

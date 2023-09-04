@@ -1,0 +1,104 @@
+using System.Text;
+using Bunkum.HttpServer;
+using Bunkum.HttpServer.Services;
+using JetBrains.Annotations;
+using MongoDB.Bson;
+using NotEnoughLogs;
+using Refresh.GameServer.Database;
+using Refresh.GameServer.Types.Commands;
+using Refresh.GameServer.Types.UserData;
+
+namespace Refresh.GameServer.Services;
+
+public class CommandService : EndpointService
+{
+    private readonly MatchService _match;
+    
+    public CommandService(LoggerContainer<BunkumContext> logger, MatchService match) : base(logger) {
+        this._match = match;
+    }
+
+    private readonly HashSet<ObjectId> _usersPublishing = new();
+
+    /// <summary>
+    /// Start tracking the user, eg. they started publishing
+    /// </summary>
+    /// <param name="id">The user ID</param>
+    public void StartPublishing(ObjectId id)
+    {
+        //Unconditionally add the user to the set
+        this._usersPublishing.Add(id);
+    }
+
+    /// <summary>
+    /// Stop tracking the user, eg. they stopped publishing
+    /// </summary>
+    /// <param name="id">The user ID</param>
+    public void StopPublishing(ObjectId id)
+    {
+        //Unconditionally remove the user from the set
+        this._usersPublishing.Remove(id);
+    }
+
+    public bool IsPublishing(ObjectId id) => this._usersPublishing.Contains(id);
+
+    /// <summary>
+    /// Parse a command string into a command object
+    /// </summary>
+    /// <param name="input">Command string</param>
+    /// <returns>Parsed command</returns>
+    /// <exception cref="FormatException">When the command is in an invalid format</exception>
+    [Pure]
+    public CommandInvocation ParseCommand(ReadOnlySpan<char> input)
+    {
+        // Ensure the command string starts with a slash
+        if (input[0] != '/')
+        {
+            throw new FormatException("Commands must start with `/`");
+        }
+
+        int index = input.IndexOf(' ');
+
+        // If index is 1, the command name is blank
+        // ReSharper disable once ConvertIfStatementToSwitchStatement
+        if (index == 1)
+        {
+            throw new FormatException("Blank command name");
+        }
+
+        //If theres no space after, or if the space is the last character, then there are no arguments
+        if (index == -1 || index == input.Length - 1)
+        {
+            return new CommandInvocation(index == input.Length - 1 ? input[1..index] : input[1..], null);
+        }
+        
+        return new CommandInvocation(input[1..index], input[(index + 1)..]);
+    }
+
+    public void HandleCommand(CommandInvocation command, GameDatabaseContext database, GameUser user)
+    {
+        switch (command.Name)
+        {
+            case "forcematch": {
+                if (command.Arguments == null)
+                {
+                    throw new Exception("User not provided for force match command");
+                }
+                
+                GameUser? target = database.GetUserByUsername(command.Arguments.ToString());
+
+                if (target != null)
+                {
+                    this._match.SetForceMatch(user.UserId, target.UserId);
+                }
+                
+                break;
+            }
+            case "clearforcematch": {
+                this._match.ClearForceMatch(user.UserId);
+                
+                break;
+            }
+        }
+    }
+}

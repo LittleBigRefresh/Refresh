@@ -17,13 +17,8 @@ public class UpdatePlayersInRoomMethod : IMatchMethod
         Token token,
         SerializedRoomData body)
     {
-        if (body.NatType is not { Count: 1 })
-        {
-            return BadRequest;
-        }
-        
         if (body.Players == null) return BadRequest;
-        GameRoom room = service.GetOrCreateRoomByPlayer(user, token.TokenPlatform, token.TokenGame, body.NatType[0]);
+        GameRoom room = service.GetOrCreateRoomByPlayer(user, token.TokenPlatform, token.TokenGame, body.NatType == null ? NatType.Open : body.NatType[0]);
         
         room.LastContact = DateTimeOffset.Now;
 
