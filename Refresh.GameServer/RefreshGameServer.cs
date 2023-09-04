@@ -100,6 +100,7 @@ public class RefreshGameServer
         this._server.AddMiddleware<WebsiteMiddleware>();
         this._server.AddMiddleware<DigestMiddleware>();
         this._server.AddMiddleware<CrossOriginMiddleware>();
+        this._server.AddMiddleware<PspVersionMiddleware>();
     }
 
     protected virtual void SetupConfiguration()
