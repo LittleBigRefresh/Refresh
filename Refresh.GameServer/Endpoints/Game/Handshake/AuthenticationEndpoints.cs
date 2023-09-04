@@ -24,7 +24,7 @@ public class AuthenticationEndpoints : EndpointGroup
     [NullStatusCode(Forbidden)]
     [RateLimitSettings(300, 10, 300, "auth")]
     [MinimumRole(GameUserRole.Restricted)]
-    public LoginResponse? Authenticate(RequestContext context,
+    public object? Authenticate(RequestContext context,
         GameDatabaseContext database,
         Stream body,
         GameServerConfig config,
@@ -103,7 +103,7 @@ public class AuthenticationEndpoints : EndpointGroup
         bool ticketVerified = false;
         if (config.UseTicketVerification)
         {
-            if ((platform is TokenPlatform.PS3 or TokenPlatform.Vita && !user.PsnAuthenticationAllowed) ||
+            if ((platform is TokenPlatform.PS3 or TokenPlatform.Vita or TokenPlatform.Psp && !user.PsnAuthenticationAllowed) ||
                 (platform is TokenPlatform.RPCS3 && !user.RpcnAuthenticationAllowed))
             {
                 context.Logger.LogWarning(BunkumContext.Authentication, $"Rejecting {user}'s login because their platform ({platform}) is not allowed");
@@ -151,10 +151,19 @@ public class AuthenticationEndpoints : EndpointGroup
         }
 
         if (game == TokenGame.LittleBigPlanetVita && platform == TokenPlatform.PS3) platform = TokenPlatform.Vita;
+        else if (game == TokenGame.LittleBigPlanetPSP && platform == TokenPlatform.Psp) platform = TokenPlatform.Psp;
 
         Token token = database.GenerateTokenForUser(user, TokenType.Game, game.Value, platform.Value, GameDatabaseContext.GameTokenExpirySeconds); // 4 hours
 
-        return new LoginResponse
+        if (game == TokenGame.LittleBigPlanetPSP)
+        {
+            return new TicketLoginResponse
+            {
+                TokenData = "MM_AUTH=" + token.TokenData,
+            };
+        }
+
+        return new FullLoginResponse
         {
             TokenData = "MM_AUTH=" + token.TokenData,
             ServerBrand = "Refresh",
@@ -257,11 +266,18 @@ public class AuthenticationEndpoints : EndpointGroup
 }
 
 [XmlRoot("loginResult")]
-public struct LoginResponse
+public struct FullLoginResponse
 {
     [XmlElement("authTicket")]
     public string TokenData { get; set; }
     
     [XmlElement("lbpEnvVer")]
     public string ServerBrand { get; set; }
+}
+
+[XmlRoot("authTicket")]
+public struct TicketLoginResponse
+{
+    [XmlText]
+    public string TokenData { get; set; }
 }
