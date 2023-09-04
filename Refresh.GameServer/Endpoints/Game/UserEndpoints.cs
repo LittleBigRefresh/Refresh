@@ -12,6 +12,7 @@ using Refresh.GameServer.Types.Commands;
 using Refresh.GameServer.Types.Lists;
 using Refresh.GameServer.Types.Roles;
 using Refresh.GameServer.Types.UserData;
+using Refresh.GameServer.Types.UserData.Filtering;
 
 namespace Refresh.GameServer.Endpoints.Game;
 
@@ -171,10 +172,7 @@ public class UserEndpoints : EndpointGroup
     [AllowEmptyBody]
     public string Filter(RequestContext context, CommandService commandService, string body, GameUser user, GameDatabaseContext database)
     {
-        Debug.Assert(user != null);
-        Debug.Assert(body != null);
-
-        //TODO: Add filtering
+        // TODO: Add actual filtering/censoring
         
         if (commandService.IsPublishing(user.UserId))
         {
@@ -198,6 +196,12 @@ public class UserEndpoints : EndpointGroup
             } 
         }
         
+        return body;
+    }
+
+    [GameEndpoint("filter/batch", Method.Post, ContentType.Xml)]
+    public SerializedTextList BatchFilter(RequestContext context, SerializedTextList body)
+    {
         return body;
     }
 }
