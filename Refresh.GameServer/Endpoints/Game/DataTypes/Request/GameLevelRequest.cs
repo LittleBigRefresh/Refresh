@@ -1,21 +1,14 @@
 using System.Xml.Serialization;
-using Refresh.GameServer.Authentication;
-using Refresh.GameServer.Database;
-using Refresh.GameServer.Endpoints.ApiV3.DataTypes;
-using Refresh.GameServer.Endpoints.Game.DataTypes.Response;
-using Refresh.GameServer.Services;
 using Refresh.GameServer.Types;
 using Refresh.GameServer.Types.Levels;
 using Refresh.GameServer.Types.Levels.SkillRewards;
-using Refresh.GameServer.Types.Matching;
-using Refresh.GameServer.Types.Reviews;
 using Refresh.GameServer.Types.UserData;
 
 namespace Refresh.GameServer.Endpoints.Game.DataTypes.Request;
 
 [XmlRoot("slot")]
 [XmlType("slot")]
-public class GameLevelRequest : IDataConvertableFrom<GameLevelRequest, GameLevel>
+public class GameLevelRequest
 {
     [XmlElement("id")] public required int LevelId { get; set; }
 
@@ -45,31 +38,7 @@ public class GameLevelRequest : IDataConvertableFrom<GameLevelRequest, GameLevel
     public required List<GameSkillReward> SkillRewards { get; set; }
 
     [XmlElement("resource")] public List<string> XmlResources { get; set; } = new();
-
-    public static GameLevelRequest? FromOld(GameLevel? old)
-    {
-        if (old == null) return null;
-
-        GameLevelRequest request = new()
-        {
-            LevelId = old.LevelId,
-            Title = old.Title,
-            IconHash = old.IconHash,
-            Description = old.Description,
-            Location = old.Location,
-            GameVersion = old.GameVersion.ToSerializedGame(),
-            RootResource = old.RootResource,
-            PublishDate = old.PublishDate,
-            UpdateDate = old.UpdateDate,
-            MinPlayers = old.MinPlayers,
-            MaxPlayers = old.MaxPlayers,
-            EnforceMinMaxPlayers = old.EnforceMinMaxPlayers,
-            SameScreenGame = old.SameScreenGame,
-            SkillRewards = old.SkillRewards.ToList(),
-        };
-
-        return request;
-    }
+    [XmlElement("leveltype")] public string? LevelType { get; set; } = "";
 
     public GameLevel ToGameLevel(GameUser publisher) =>
         new()
@@ -88,7 +57,6 @@ public class GameLevelRequest : IDataConvertableFrom<GameLevelRequest, GameLevel
             SameScreenGame = this.SameScreenGame,
             SkillRewards = this.SkillRewards.ToArray(),
             Publisher = publisher,
+            LevelType = GameLevelTypeExtensions.FromGameString(this.LevelType),
         };
-
-    public static IEnumerable<GameLevelRequest> FromOldList(IEnumerable<GameLevel> oldList) => oldList.Select(FromOld)!;
 }

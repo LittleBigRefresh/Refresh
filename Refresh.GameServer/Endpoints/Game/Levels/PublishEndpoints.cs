@@ -45,10 +45,10 @@ public class PublishEndpoints : EndpointGroup
     
     [GameEndpoint("startPublish", ContentType.Xml, Method.Post)]
     [NullStatusCode(BadRequest)]
-    public SerializedLevelResources? StartPublish(RequestContext context, GameUser user, GameDatabaseContext database, GameLevelRequest body, CommandService command, IDataStore dataStore, LoggerContainer<BunkumContext> logger)
+    public SerializedLevelResources? StartPublish(RequestContext context, GameUser user, GameDatabaseContext database, GameLevelRequest body, CommandService command, IDataStore dataStore)
     {
         //If verifying the request fails, return null
-        if (!VerifyLevel(body, user, logger)) return null;
+        if (!VerifyLevel(body, user, context.Logger)) return null;
         
         List<string> hashes = new();
         hashes.AddRange(body.XmlResources);
@@ -69,11 +69,11 @@ public class PublishEndpoints : EndpointGroup
     }
 
     [GameEndpoint("publish", ContentType.Xml, Method.Post)]
-    public Response PublishLevel(RequestContext context, GameUser user, Token token, GameDatabaseContext database, GameLevelRequest body, CommandService command, IDataStore dataStore, LoggerContainer<BunkumContext> logger)
+    public Response PublishLevel(RequestContext context, GameUser user, Token token, GameDatabaseContext database, GameLevelRequest body, CommandService command, IDataStore dataStore)
     {
         //If verifying the request fails, return null
-        if (!VerifyLevel(body, user, logger)) return BadRequest;
-                
+        if (!VerifyLevel(body, user, context.Logger)) return BadRequest;
+
         GameLevel level = body.ToGameLevel(user);
         level.GameVersion = token.TokenGame;
 

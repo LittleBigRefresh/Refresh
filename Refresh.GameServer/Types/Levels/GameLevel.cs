@@ -42,6 +42,15 @@ public partial class GameLevel : IRealmObject, ISequentialId
     
     // ReSharper disable once InconsistentNaming
     internal int _GameVersion { get; set; }
+    
+    public GameLevelType LevelType
+    {
+        get => (GameLevelType)this._LevelType;
+        set => this._LevelType = (int)value;
+    }
+
+    // ReSharper disable once InconsistentNaming
+    internal int _LevelType { get; set; }
 
 #nullable disable
     public IList<GameComment> LevelComments { get; }

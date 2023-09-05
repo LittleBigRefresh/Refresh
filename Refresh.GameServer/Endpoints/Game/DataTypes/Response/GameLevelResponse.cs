@@ -55,6 +55,8 @@ public class GameLevelResponse : IDataConvertableFrom<GameLevelResponse, GameLev
     [XmlElement("mmpick")] public required bool TeamPicked { get; set; }
     [XmlElement("resource")] public List<string> XmlResources { get; set; } = new();
     [XmlElement("playerCount")] public int PlayerCount { get; set; }
+    
+    [XmlElement("leveltype")] public required string LevelType { get; set; }
 
     public static GameLevelResponse? FromOldWithExtraData(GameLevel? old, GameDatabaseContext database, MatchService matchService, GameUser user)
     {
@@ -92,6 +94,7 @@ public class GameLevelResponse : IDataConvertableFrom<GameLevelResponse, GameLev
             BooCount = old.Ratings.Count(r => r._RatingType == (int)RatingType.Boo),
             SkillRewards = old.SkillRewards.ToList(),
             TeamPicked = old.TeamPicked,
+            LevelType = old.LevelType.ToGameString(),
         };
 
         if (old.Publisher == null)
@@ -106,25 +109,6 @@ public class GameLevelResponse : IDataConvertableFrom<GameLevelResponse, GameLev
 
         return response;
     }
-
-    public GameLevel ToGameLevel(GameUser publisher) =>
-        new()
-        {
-            LevelId = this.LevelId,
-            Title = this.Title,
-            IconHash = this.IconHash,
-            Description = this.Description,
-            Location = this.Location,
-            RootResource = this.RootResource,
-            PublishDate = this.PublishDate,
-            UpdateDate = this.UpdateDate,
-            MinPlayers = this.MinPlayers,
-            MaxPlayers = this.MaxPlayers,
-            EnforceMinMaxPlayers = this.EnforceMinMaxPlayers,
-            SameScreenGame = this.SameScreenGame,
-            SkillRewards = this.SkillRewards.ToArray(),
-            Publisher = publisher,
-        };
 
     public static IEnumerable<GameLevelResponse> FromOldList(IEnumerable<GameLevel> oldList) => oldList.Select(FromOld)!;
 
