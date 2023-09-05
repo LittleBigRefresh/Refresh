@@ -1,6 +1,7 @@
 using System.Reflection;
 using JetBrains.Annotations;
 using MongoDB.Bson;
+using Refresh.GameServer.Authentication;
 using Refresh.GameServer.Endpoints.ApiV3.DataTypes.Request;
 using Refresh.GameServer.Types;
 using Refresh.GameServer.Types.Levels;
@@ -216,4 +217,22 @@ public partial class GameDatabaseContext // Users
             user.VitaPlanetsHash = "0";
         });
     }
+    
+    #if DEBUG
+    public void ForceUserTokenGame(Token token, TokenGame game)
+    {
+        this._realm.Write(() =>
+        {
+            token.TokenGame = game;
+        });
+    }
+    
+    public void ForceUserTokenPlatform(Token token, TokenPlatform platform)
+    {
+        this._realm.Write(() =>
+        {
+            token.TokenPlatform = platform;
+        });
+    }
+    #endif
 }

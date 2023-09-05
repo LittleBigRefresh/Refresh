@@ -1,6 +1,7 @@
 using Bunkum.CustomHttpListener.Parsing;
 using Bunkum.HttpServer;
 using Bunkum.HttpServer.Endpoints;
+using Refresh.GameServer.Authentication;
 using Refresh.GameServer.Database;
 using Refresh.GameServer.Services;
 using Refresh.GameServer.Types.Commands;
@@ -19,17 +20,20 @@ public class ModerationEndpoints : EndpointGroup
             Ids = new List<int>(),
         };
     }
-    
+
     /// <summary>
     /// Censor ("filter") strings sent by the client. Used for chat messages, speech bubble contents, etc.
     /// </summary>
     /// <param name="context">The request context.</param>
+    /// <param name="commandService">The command service.</param>
     /// <param name="body">The string to censor.</param>
-    /// <param name="user">The user saying the string. Used for logging</param>
+    /// <param name="user">The user saying the string. Used for logging and commands</param>
+    /// <param name="token">The token of the user saying the string.</param>
+    /// <param name="database">The database. Used for commands</param>
     /// <returns>The string shown in-game.</returns>
     [GameEndpoint("filter", Method.Post)]
     [AllowEmptyBody]
-    public string Filter(RequestContext context, CommandService commandService, string body, GameUser user, GameDatabaseContext database)
+    public string Filter(RequestContext context, CommandService commandService, string body, GameUser user, Token token, GameDatabaseContext database)
     {
         // TODO: Add actual filtering/censoring
         
@@ -47,7 +51,7 @@ public class ModerationEndpoints : EndpointGroup
                 
                 context.Logger.LogInfo(BunkumContext.Commands, $"User used command '{command.Name}' with args '{command.Arguments}'");
 
-                commandService.HandleCommand(command, database, user);
+                commandService.HandleCommand(command, database, user, token);
             }
             catch
             {

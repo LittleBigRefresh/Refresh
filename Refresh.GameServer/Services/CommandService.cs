@@ -1,9 +1,11 @@
+using System.Diagnostics.CodeAnalysis;
 using System.Text;
 using Bunkum.HttpServer;
 using Bunkum.HttpServer.Services;
 using JetBrains.Annotations;
 using MongoDB.Bson;
 using NotEnoughLogs;
+using Refresh.GameServer.Authentication;
 using Refresh.GameServer.Database;
 using Refresh.GameServer.Types.Commands;
 using Refresh.GameServer.Types.UserData;
@@ -75,7 +77,8 @@ public class CommandService : EndpointService
         return new CommandInvocation(input[1..index], input[(index + 1)..]);
     }
 
-    public void HandleCommand(CommandInvocation command, GameDatabaseContext database, GameUser user)
+    [SuppressMessage("ReSharper", "StringLiteralTypo")]
+    public void HandleCommand(CommandInvocation command, GameDatabaseContext database, GameUser user, Token token)
     {
         switch (command.Name)
         {
@@ -99,6 +102,18 @@ public class CommandService : EndpointService
                 
                 break;
             }
+            #if DEBUG
+            case "tokengame":
+            {
+                database.ForceUserTokenGame(token, (TokenGame)int.Parse(command.Arguments));
+                break;
+            }
+            case "tokenplatform":
+            {
+                database.ForceUserTokenPlatform(token, (TokenPlatform)int.Parse(command.Arguments));
+                break;
+            }
+            #endif
         }
     }
 }
