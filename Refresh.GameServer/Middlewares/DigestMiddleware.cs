@@ -69,7 +69,8 @@ public class DigestMiddleware : IMiddleware
 
     public void HandleRequest(ListenerContext context, Lazy<IDatabaseContext> database, Action next)
     {
-        if (!context.Uri.AbsolutePath.StartsWith("/lbp"))
+        //If this isnt an LBP endpoint, or it is a PSP client, dont do digest
+        if (!context.Uri.AbsolutePath.StartsWith("/lbp") || context.RequestHeaders.Get("X-data-v") != null || context.RequestHeaders.Get("X-exe-v") != null)
         {
             next();
             return;
