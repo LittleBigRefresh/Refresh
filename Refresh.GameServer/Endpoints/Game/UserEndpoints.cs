@@ -61,6 +61,9 @@ public class UserEndpoints : EndpointGroup
     {
         SerializedUpdateData? data = null;
         
+        //HACK
+        body = body[..body.IndexOf('\0')];
+        
         // This stupid shit is caused by LBP sending two different root elements for this endpoint
         // LBP is just fantastic man
         try
