@@ -23,4 +23,51 @@ public class ReviewEndpoints : EndpointGroup
         bool rated = database.RateLevel(level, user, (RatingType)rating);
         return rated ? OK : Unauthorized;
     }
+    
+    [GameEndpoint("rate/user/{id}", ContentType.Xml, Method.Post)]
+    public Response RateUserLevel(RequestContext context, GameDatabaseContext database, GameUser user, int id)
+    {
+        string? ratingString = context.QueryString.Get("rating");
+        
+        if (ratingString == null)
+        {
+            return BadRequest;
+        }
+        
+        if (int.TryParse(ratingString, out int ratingInt))
+        {
+            RatingType rating;
+            switch (ratingInt)
+            {
+                case 1:
+                case 2:
+                    rating = RatingType.Boo;
+                    break;
+                case 3:
+                    rating = RatingType.Neutral;
+                    break;
+                case 4:
+                case 5:
+                    rating = RatingType.Yay;
+                    break;
+                default:
+                    return BadRequest;
+            }
+
+            GameLevel? level = database.GetLevelById(id);
+
+            if (level == null)
+            {
+                return NotFound;
+            }
+            
+            database.RateLevel(level, user, rating);
+        }
+        else
+        {
+            return BadRequest;
+        }
+        
+        return NotFound;
+    } 
 }

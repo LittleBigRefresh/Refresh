@@ -25,6 +25,30 @@ public class LeaderboardEndpoints : EndpointGroup
         return OK;
     }
 
+    [GameEndpoint("scoreboard/developer/{id}", Method.Get, ContentType.Xml)]
+    public string GetDeveloperScores(RequestContext context, GameUser user, GameDatabaseContext database, int id)
+    {
+        //TODO
+        return "";
+    }
+
+    [GameEndpoint("scoreboard/user/{id}", Method.Get, ContentType.Xml)]
+    public string GetUserScores(RequestContext context, GameUser user, GameDatabaseContext database, int id)
+    {
+        //TODO
+        return "";
+    }
+
+    [GameEndpoint("scoreboard/developer/{id}")]
+    public Response SubmitDeveloperScore(RequestContext context, GameUser user, GameDatabaseContext database, int id, SerializedScore body)
+    {
+        Console.WriteLine(body.Score);
+        Console.WriteLine(body.ScoreType);
+        
+        //TODO
+        return OK;
+    }
+
     [GameEndpoint("scoreboard/user/{id}", ContentType.Xml, Method.Post)]
     public Response SubmitScore(RequestContext context, GameUser user, GameDatabaseContext database, int id, SerializedScore body)
     {
