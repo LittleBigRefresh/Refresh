@@ -66,12 +66,23 @@ public class UserEndpoints : EndpointGroup
         try
         {
             XmlSerializer profileSerializer = new(typeof(SerializedUpdateDataProfile));
-            if (profileSerializer.Deserialize(new StringReader(body)) is not SerializedUpdateDataProfile profileData) return null;
-            data = profileData;
+            if (profileSerializer.Deserialize(new StringReader(body)) is not SerializedUpdateDataProfile profileData)
+                return null;
             
+            data ??= profileData;
+        }
+        catch
+        {
+            // ignored
+        }
+
+        try
+        {
             XmlSerializer planetSerializer = new(typeof(SerializedUpdateDataPlanets));
-            if (planetSerializer.Deserialize(new StringReader(body)) is not SerializedUpdateDataPlanets planetsData) return null;
-            data = planetsData;
+            if (planetSerializer.Deserialize(new StringReader(body)) is not SerializedUpdateDataPlanets planetsData)
+                return null;
+            
+            data ??= planetsData;
         }
         catch
         {
