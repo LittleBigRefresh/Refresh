@@ -51,6 +51,10 @@ public partial class GameLevel : IRealmObject, ISequentialId
 
     // ReSharper disable once InconsistentNaming
     internal int _LevelType { get; set; }
+    
+    public bool IsLocked { get; set; }
+    public bool IsSubLevel { get; set; }
+    public bool IsCopyable { get; set; }
 
 #nullable disable
     public IList<GameComment> LevelComments { get; }

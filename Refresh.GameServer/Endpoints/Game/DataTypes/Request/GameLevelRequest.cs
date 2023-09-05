@@ -40,6 +40,10 @@ public class GameLevelRequest
     [XmlElement("resource")] public List<string> XmlResources { get; set; } = new();
     [XmlElement("leveltype")] public string? LevelType { get; set; } = "";
 
+    [XmlElement("initiallyLocked")] public bool IsLocked { get; set; }
+    [XmlElement("isSubLevel")] public bool IsSubLevel { get; set; }
+    [XmlElement("shareable")] public int IsCopyable { get; set; }
+
     public GameLevel ToGameLevel(GameUser publisher) =>
         new()
         {
@@ -58,5 +62,8 @@ public class GameLevelRequest
             SkillRewards = this.SkillRewards.ToArray(),
             Publisher = publisher,
             LevelType = GameLevelTypeExtensions.FromGameString(this.LevelType),
+            IsLocked = this.IsLocked,
+            IsSubLevel = this.IsSubLevel,
+            IsCopyable = this.IsCopyable == 1,
         };
 }

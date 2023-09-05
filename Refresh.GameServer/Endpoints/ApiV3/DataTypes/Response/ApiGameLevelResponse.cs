@@ -34,6 +34,10 @@ public class ApiGameLevelResponse : IApiResponse, IDataConvertableFrom<ApiGameLe
     public required int Hearts { get; set; }
     public required int UniquePlays { get; set; }
     public required bool TeamPicked { get; set; }
+    public required GameLevelType LevelType { get; set; }
+    public required bool IsLocked { get; set; }
+    public required bool IsSubLevel { get; set; }
+    public required bool IsCopyable { get; set; }
 
     public static ApiGameLevelResponse? FromOld(GameLevel? level)
     {
@@ -61,6 +65,10 @@ public class ApiGameLevelResponse : IApiResponse, IDataConvertableFrom<ApiGameLe
             TeamPicked = level.TeamPicked,
             RootLevelHash = level.RootResource,
             GameVersion = level.GameVersion,
+            LevelType = level.LevelType,
+            IsCopyable = level.IsCopyable,
+            IsLocked = level.IsLocked,
+            IsSubLevel = level.IsSubLevel,
         };
     }
 

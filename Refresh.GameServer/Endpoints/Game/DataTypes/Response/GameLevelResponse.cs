@@ -57,6 +57,10 @@ public class GameLevelResponse : IDataConvertableFrom<GameLevelResponse, GameLev
     [XmlElement("playerCount")] public int PlayerCount { get; set; }
     
     [XmlElement("leveltype")] public required string LevelType { get; set; }
+    
+    [XmlElement("initiallyLocked")] public bool IsLocked { get; set; }
+    [XmlElement("isSubLevel")] public bool IsSubLevel { get; set; }
+    [XmlElement("shareable")] public int IsCopyable { get; set; }
 
     public static GameLevelResponse? FromOldWithExtraData(GameLevel? old, GameDatabaseContext database, MatchService matchService, GameUser user)
     {
@@ -95,6 +99,9 @@ public class GameLevelResponse : IDataConvertableFrom<GameLevelResponse, GameLev
             SkillRewards = old.SkillRewards.ToList(),
             TeamPicked = old.TeamPicked,
             LevelType = old.LevelType.ToGameString(),
+            IsCopyable = old.IsCopyable ? 1 : 0,
+            IsLocked = old.IsLocked,
+            IsSubLevel = old.IsSubLevel,
         };
 
         if (old.Publisher == null)
