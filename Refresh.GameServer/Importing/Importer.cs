@@ -59,6 +59,41 @@ public abstract class Importer
         BitConverter.TryWriteBytes(magicSpan, BinaryPrimitives.ReverseEndianness(magic));
         return MatchesMagic(data, magicSpan);
     }
+
+    /// <summary>
+    /// Tries to detect TGA files sent from the PSP
+    /// </summary>
+    /// <param name="data"></param>
+    /// <returns></returns>
+    private static bool IsPspTga(ReadOnlySpan<byte> data)
+    {
+        byte imageIdLength = data[0];
+        byte colorMapType = data[1];
+        byte imageType = data[2];
+        ReadOnlySpan<byte> colorMapSpecification = data[3..8];
+        ReadOnlySpan<byte> imageSpecification = data[8..18];
+        short xOrigin = BinaryPrimitives.ReadInt16LittleEndian(imageSpecification[..2]);
+        short yOrigin = BinaryPrimitives.ReadInt16LittleEndian(imageSpecification[2..4]);
+        ushort width = BinaryPrimitives.ReadUInt16LittleEndian(imageSpecification[4..6]);
+        ushort height = BinaryPrimitives.ReadUInt16LittleEndian(imageSpecification[6..8]);
+        byte depth = imageSpecification[8];
+        byte descriptor = imageSpecification[9];
+
+        //PSP does not seem to fill out this information
+        if (imageIdLength != 0) return false;
+        if (xOrigin != 0) return false;
+        if (yOrigin != 0) return false;
+        //These are the fields set by PSP, that shouldn't change from image to image
+        if (colorMapType != 1) return false;
+        if (descriptor != 0) return false;
+        if (imageType != 1) return false;
+        if (depth != 8) return false;
+        //Reasonable validation checks (PSP seems to only send images of max size 480x272)
+        if (width > 500) return false;
+        if (height > 300) return false;
+        
+        return true;
+    }
     
     protected GameAssetType DetermineAssetType(ReadOnlySpan<byte> data)
     {
@@ -79,6 +114,9 @@ public abstract class Importer
         // Good reference for magics: https://en.wikipedia.org/wiki/List_of_file_signatures
         if (MatchesMagic(data, 0xFFD8FFE0)) return GameAssetType.Jpeg;
         if (MatchesMagic(data, 0x89504E470D0A1A0A)) return GameAssetType.Png;
+        if (MatchesMagic(data, 0x358377A1)) return GameAssetType.WeirdPspFileTodoFigureMeOutBeforeMergingMeIn;
+
+        if (IsPspTga(data)) return GameAssetType.Tga;
         
         this.Warn($"Unknown asset header [0x{Convert.ToHexString(data[..4])}] [str: {Encoding.ASCII.GetString(data[..4])}]");
 

@@ -98,4 +98,12 @@ public enum GameAssetType
     /// Magic: PTGb
     /// </remarks>
     Painting = 12,
+    /// <summary>
+    /// An image, stored in a TGA container.
+    /// </summary>
+    Tga = 13,
+    /// <summary>
+    /// Some form of file, unknown contents
+    /// </summary>
+    WeirdPspFileTodoFigureMeOutBeforeMergingMeIn = 14,
 }
