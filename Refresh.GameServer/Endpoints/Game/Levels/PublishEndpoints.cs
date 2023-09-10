@@ -80,8 +80,12 @@ public class PublishEndpoints : EndpointGroup
         level.MinPlayers = Math.Clamp(level.MinPlayers, 1, 4);
         level.MaxPlayers = Math.Clamp(level.MaxPlayers, 1, 4);
 
+        bool pspConnection = context.RequestHeaders.Get("User-Agent") == "LBPPSP CLIENT";
+
+        string rootResourcePath = pspConnection ? $"psp/{level.RootResource}" : level.RootResource;
+        
         if (level.RootResource.Length != 40) return BadRequest;
-        if (!dataStore.ExistsInStore(level.RootResource)) return NotFound;
+        if (!dataStore.ExistsInStore(rootResourcePath)) return NotFound;
 
         if (level.LevelId != default) // Republish requests contain the id of the old level
         {
