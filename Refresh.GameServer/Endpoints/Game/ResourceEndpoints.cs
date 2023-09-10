@@ -8,6 +8,7 @@ using Bunkum.HttpServer.Storage;
 using Refresh.GameServer.Authentication;
 using Refresh.GameServer.Configuration;
 using Refresh.GameServer.Database;
+using Refresh.GameServer.Extensions;
 using Refresh.GameServer.Importing;
 using Refresh.GameServer.Time;
 using Refresh.GameServer.Types.Assets;
@@ -27,11 +28,11 @@ public class ResourceEndpoints : EndpointGroup
         GameDatabaseContext database, GameUser user, AssetImporter importer, GameServerConfig config, IDateTimeProvider timeProvider)
     {
         //Check whether the request comes from a PSP or not
-        bool pspConnection = context.RequestHeaders.Get("User-Agent") == "LBPPSP CLIENT";
+        bool pspConnection = context.IsPSP();
 
-        string path = pspConnection ? $"psp/{hash}" : hash;
+        string assetPath = pspConnection ? $"psp/{hash}" : hash;
         
-        if (dataStore.ExistsInStore(path))
+        if (dataStore.ExistsInStore(assetPath))
             return Conflict;
 
         GameAsset? gameAsset = importer.ReadAndVerifyAsset(hash, body);
@@ -50,7 +51,7 @@ public class ResourceEndpoints : EndpointGroup
             return Unauthorized;
         }
 
-        if (!dataStore.WriteToStore(path, body))
+        if (!dataStore.WriteToStore(assetPath, body))
             return InternalServerError;
 
         gameAsset.OriginalUploader = user;
@@ -64,7 +65,7 @@ public class ResourceEndpoints : EndpointGroup
     public Response GetResource(RequestContext context, string hash, IDataStore dataStore, GameDatabaseContext database, Token token)
     {
         //If the request comes from a PSP client,
-        if (context.RequestHeaders.Get("User-Agent") == "LBPPSP CLIENT")
+        if (context.IsPSP())
         {
             //Point the hash into the `psp` folder
             hash = $"psp/{hash}";
@@ -85,8 +86,7 @@ public class ResourceEndpoints : EndpointGroup
     [MinimumRole(GameUserRole.Restricted)]
     public SerializedResourceList GetAssetsMissingFromStore(RequestContext context, SerializedResourceList body, IDataStore dataStore)
     {
-        //If we are on PSP
-        if (context.RequestHeaders.Get("User-Agent") == "LBPPSP CLIENT")
+        if (context.IsPSP())
         {
             //Iterate over all the items
             for (int i = 0; i < body.Items.Count; i++)
