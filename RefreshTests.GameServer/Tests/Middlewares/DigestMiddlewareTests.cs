@@ -49,8 +49,8 @@ public class DigestMiddlewareTests : GameServerTest
         using MemoryStream blankMs = new();
         using MemoryStream expectedResultMs = new(Encoding.ASCII.GetBytes(expectedResultStr));
         
-        string serverDigest = DigestMiddleware.CalculateDigest(endpoint, expectedResultMs, "");
-        string clientDigest = DigestMiddleware.CalculateDigest(endpoint, blankMs, "");
+        string serverDigest = DigestMiddleware.CalculateDigest(endpoint, expectedResultMs, "", null, null);
+        string clientDigest = DigestMiddleware.CalculateDigest(endpoint, blankMs, "", null, null);
 
         context.Http.DefaultRequestHeaders.Add("X-Digest-A", clientDigest);
         HttpResponseMessage response = await context.Http.GetAsync(endpoint);
