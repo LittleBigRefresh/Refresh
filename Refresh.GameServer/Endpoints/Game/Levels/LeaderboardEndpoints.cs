@@ -26,27 +26,27 @@ public class LeaderboardEndpoints : EndpointGroup
     }
 
     [GameEndpoint("scoreboard/developer/{id}", Method.Get, ContentType.Xml)]
-    public SerializedLeaderboardResponse GetDeveloperScores(RequestContext context, GameUser user, GameDatabaseContext database, int id)
+    public string GetDeveloperScores(RequestContext context, GameUser user, GameDatabaseContext database, int id)
     {
         //TODO
-        return new SerializedLeaderboardResponse(new List<SerializedPlayerLeaderboardResponse>());
+        return "";
     }
 
     [GameEndpoint("scoreboard/user/{id}", Method.Get, ContentType.Xml)]
-    public SerializedLeaderboardResponse GetUserScores(RequestContext context, GameUser user, GameDatabaseContext database, int id)
+    public string GetUserScores(RequestContext context, GameUser user, GameDatabaseContext database, int id)
     {
         //TODO
-        return new SerializedLeaderboardResponse(new List<SerializedPlayerLeaderboardResponse>());
+        return "";
     }
 
-    [GameEndpoint("scoreboard/developer/{id}", ContentType.Xml, Method.Post)]
+    [GameEndpoint("scoreboard/developer/{id}")]
     public Response SubmitDeveloperScore(RequestContext context, GameUser user, GameDatabaseContext database, int id, SerializedScore body)
     {
         Console.WriteLine(body.Score);
         Console.WriteLine(body.ScoreType);
         
         //TODO
-        return new Response(SerializedScoreLeaderboardList.FromSubmittedEnumerable(new List<ScoreWithRank>()), ContentType.Xml);
+        return OK;
     }
 
     [GameEndpoint("scoreboard/user/{id}", ContentType.Xml, Method.Post)]
