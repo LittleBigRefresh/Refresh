@@ -61,6 +61,8 @@ public class GameLevelResponse : IDataConvertableFrom<GameLevelResponse, GameLev
     [XmlElement("initiallyLocked")] public bool IsLocked { get; set; }
     [XmlElement("isSubLevel")] public bool IsSubLevel { get; set; }
     [XmlElement("shareable")] public int IsCopyable { get; set; }
+    [XmlElement("backgroundGUID")] public string? BackgroundGuid { get; set; }
+    [XmlElement("links")] public string? Links { get; set; }
 
     public static GameLevelResponse? FromOldWithExtraData(GameLevel? old, GameDatabaseContext database, MatchService matchService, GameUser user)
     {
@@ -102,6 +104,8 @@ public class GameLevelResponse : IDataConvertableFrom<GameLevelResponse, GameLev
             IsCopyable = old.IsCopyable ? 1 : 0,
             IsLocked = old.IsLocked,
             IsSubLevel = old.IsSubLevel,
+            BackgroundGuid = old.BackgroundGuid,
+            Links = "",
         };
 
         if (old.Publisher == null)

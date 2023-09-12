@@ -34,6 +34,11 @@ public partial class GameLevel : IRealmObject, ISequentialId
     public bool SameScreenGame { get; set; }
     public bool TeamPicked { get; set; }
     
+    /// <summary>
+    /// The GUID of the background, this seems to only be used by LBP PSP
+    /// </summary>
+    public string? BackgroundGuid { get; set; }
+    
     public TokenGame GameVersion 
     {
         get => (TokenGame)this._GameVersion;
