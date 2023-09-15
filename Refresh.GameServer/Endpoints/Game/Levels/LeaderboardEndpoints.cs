@@ -42,9 +42,6 @@ public class LeaderboardEndpoints : EndpointGroup
     [GameEndpoint("scoreboard/developer/{id}", ContentType.Xml, Method.Post)]
     public Response SubmitDeveloperScore(RequestContext context, GameUser user, GameDatabaseContext database, int id, SerializedScore body)
     {
-        Console.WriteLine(body.Score);
-        Console.WriteLine(body.ScoreType);
-        
         //TODO
         return new Response(SerializedScoreLeaderboardList.FromSubmittedEnumerable(new List<ScoreWithRank>()), ContentType.Xml);
     }
