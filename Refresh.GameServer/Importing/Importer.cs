@@ -114,7 +114,6 @@ public abstract class Importer
         // Good reference for magics: https://en.wikipedia.org/wiki/List_of_file_signatures
         if (MatchesMagic(data, 0xFFD8FFE0)) return GameAssetType.Jpeg;
         if (MatchesMagic(data, 0x89504E470D0A1A0A)) return GameAssetType.Png;
-        if (MatchesMagic(data, 0x358377A1)) return GameAssetType.WeirdPspFileTodoFigureMeOutBeforeMergingMeIn;
 
         if (IsPspTga(data)) return GameAssetType.Tga;
         

@@ -102,8 +102,4 @@ public enum GameAssetType
     /// An image, stored in a TGA container.
     /// </summary>
     Tga = 13,
-    /// <summary>
-    /// Some form of file, unknown contents
-    /// </summary>
-    WeirdPspFileTodoFigureMeOutBeforeMergingMeIn = 14,
 }

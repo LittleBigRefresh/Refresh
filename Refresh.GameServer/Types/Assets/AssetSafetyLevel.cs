@@ -31,7 +31,6 @@ public static class AssetSafetyLevelExtensions
             GameAssetType.MoveRecording => AssetSafetyLevel.Safe,
             GameAssetType.VoiceRecording => AssetSafetyLevel.Safe,
             GameAssetType.Painting => AssetSafetyLevel.Safe,
-            GameAssetType.WeirdPspFileTodoFigureMeOutBeforeMergingMeIn => AssetSafetyLevel.Safe,
             
             GameAssetType.Material => AssetSafetyLevel.PotentiallyUnwanted,
             GameAssetType.Mesh => AssetSafetyLevel.PotentiallyUnwanted,
