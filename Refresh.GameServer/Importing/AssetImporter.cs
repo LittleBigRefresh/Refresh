@@ -3,6 +3,7 @@ using Bunkum.HttpServer;
 using Bunkum.HttpServer.Storage;
 using JetBrains.Annotations;
 using NotEnoughLogs;
+using Refresh.GameServer.Authentication;
 using Refresh.GameServer.Database;
 using Refresh.GameServer.Types.Assets;
 
@@ -48,7 +49,7 @@ public class AssetImporter : Importer
         {
             byte[] data = dataStore.GetDataFromStore(hash);
             
-            GameAsset? asset = this.ReadAndVerifyAsset(hash, data);
+            GameAsset? asset = this.ReadAndVerifyAsset(hash, data, null);
             if (asset == null) continue;
 
             assets.Add(asset);
@@ -65,7 +66,7 @@ public class AssetImporter : Importer
     }
 
     [Pure]
-    public GameAsset? ReadAndVerifyAsset(string hash, byte[] data)
+    public GameAsset? ReadAndVerifyAsset(string hash, byte[] data, TokenPlatform? platform)
     {
         string checkedHash = BitConverter.ToString(SHA1.HashData(data))
             .Replace("-", "")
@@ -82,7 +83,7 @@ public class AssetImporter : Importer
             UploadDate = DateTimeOffset.Now,
             OriginalUploader = null,
             AssetHash = hash,
-            AssetType = DetermineAssetType(data),
+            AssetType = DetermineAssetType(data, platform),
         };
 
         return asset;

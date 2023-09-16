@@ -99,7 +99,8 @@ public enum GameAssetType
     /// </remarks>
     Painting = 12,
     /// <summary>
-    /// An image, stored in a TGA container.
+    /// An image, stored in a TGA container. While this file type has no magic, we do some heuristics on the file to detect it.
     /// </summary>
+    /// <seealso cref="Refresh.GameServer.Importing.Importer.IsPspTga"/>
     Tga = 13,
 }
