@@ -25,7 +25,7 @@ public class ResourceEndpoints : EndpointGroup
     [GameEndpoint("upload/{hash}", Method.Post)]
     [SuppressMessage("ReSharper", "ConvertIfStatementToReturnStatement")]
     public Response UploadAsset(RequestContext context, string hash, string type, byte[] body, IDataStore dataStore,
-        GameDatabaseContext database, GameUser user, AssetImporter importer, GameServerConfig config, IDateTimeProvider timeProvider, TokenPlatform platform)
+        GameDatabaseContext database, GameUser user, AssetImporter importer, GameServerConfig config, IDateTimeProvider timeProvider, Token token)
     {
         bool isPSP = context.IsPSP();
 
@@ -34,7 +34,7 @@ public class ResourceEndpoints : EndpointGroup
         if (dataStore.ExistsInStore(assetPath))
             return Conflict;
         
-        GameAsset? gameAsset = importer.ReadAndVerifyAsset(hash, body, platform);
+        GameAsset? gameAsset = importer.ReadAndVerifyAsset(hash, body, token.TokenPlatform);
         if (gameAsset == null)
             return BadRequest;
 
