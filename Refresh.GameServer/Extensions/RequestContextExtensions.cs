@@ -20,8 +20,5 @@ public static class RequestContextExtensions
     }
 
     [Pure]
-    public static bool IsPSP(this RequestContext context)
-    {
-        return context.RequestHeaders.Get("User-Agent") == "LBPPSP CLIENT";
-    }
+    public static bool IsPSP(this RequestContext context) => context.RequestHeaders.Get("User-Agent") == "LBPPSP CLIENT";
 }

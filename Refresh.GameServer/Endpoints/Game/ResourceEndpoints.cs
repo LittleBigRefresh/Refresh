@@ -27,10 +27,9 @@ public class ResourceEndpoints : EndpointGroup
     public Response UploadAsset(RequestContext context, string hash, string type, byte[] body, IDataStore dataStore,
         GameDatabaseContext database, GameUser user, AssetImporter importer, GameServerConfig config, IDateTimeProvider timeProvider)
     {
-        //Check whether the request comes from a PSP or not
-        bool pspConnection = context.IsPSP();
+        bool isPSP = context.IsPSP();
 
-        string assetPath = pspConnection ? $"psp/{hash}" : hash;
+        string assetPath = isPSP ? $"psp/{hash}" : hash;
         
         if (dataStore.ExistsInStore(assetPath))
             return Conflict;
@@ -44,7 +43,7 @@ public class ResourceEndpoints : EndpointGroup
         // Dont block any assets uploaded from PSP, and block any unwanted assets,
         // for example, if asset safety level is Dangerous (2) and maximum is configured as Safe (0), return 401
         // if asset safety is Safe (0), and maximum is configured as Safe (0), proceed
-        if (gameAsset.SafetyLevel > config.MaximumAssetSafetyLevel && !pspConnection)
+        if (gameAsset.SafetyLevel > config.MaximumAssetSafetyLevel && !isPSP)
         {
             context.Logger.LogWarning(BunkumContext.UserContent, $"{gameAsset.AssetType} {hash} is above configured safety limit " +
                                                                  $"({gameAsset.SafetyLevel} > {config.MaximumAssetSafetyLevel})");
