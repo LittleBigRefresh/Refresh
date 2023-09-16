@@ -8,12 +8,10 @@ namespace Refresh.GameServer.Configuration;
 [SuppressMessage("ReSharper", "RedundantDefaultMemberInitializer")]
 public class GameServerConfig : Config
 {
-    public override int CurrentConfigVersion => 9;
+    public override int CurrentConfigVersion => 10;
     public override int Version { get; set; } = 0;
 
     protected override void Migrate(int oldVer, dynamic oldConfig) {}
-
-    public string AnnounceText { get; set; } = "This is the announce text. You can change the value in the configuration file!";
 
     public string LicenseText { get; set; } = "Welcome to Refresh!";
 
