@@ -26,17 +26,10 @@ public class LeaderboardEndpoints : EndpointGroup
     }
 
     [GameEndpoint("scoreboard/developer/{id}", Method.Get, ContentType.Xml)]
-    public SerializedLeaderboardResponse GetDeveloperScores(RequestContext context, GameUser user, GameDatabaseContext database, int id)
+    public SerializedMultiLeaderboardResponse GetDeveloperScores(RequestContext context, GameUser user, GameDatabaseContext database, int id)
     {
         //TODO
-        return new SerializedLeaderboardResponse(new List<SerializedPlayerLeaderboardResponse>());
-    }
-
-    [GameEndpoint("scoreboard/user/{id}", Method.Get, ContentType.Xml)]
-    public SerializedLeaderboardResponse GetUserScores(RequestContext context, GameUser user, GameDatabaseContext database, int id)
-    {
-        //TODO
-        return new SerializedLeaderboardResponse(new List<SerializedPlayerLeaderboardResponse>());
+        return new SerializedMultiLeaderboardResponse(new List<SerializedPlayerLeaderboardResponse>());
     }
 
     [GameEndpoint("scoreboard/developer/{id}", ContentType.Xml, Method.Post)]
@@ -45,7 +38,19 @@ public class LeaderboardEndpoints : EndpointGroup
         //TODO
         return new Response(SerializedScoreLeaderboardList.FromSubmittedEnumerable(new List<ScoreWithRank>()), ContentType.Xml);
     }
-
+    
+    [GameEndpoint("scoreboard/user/{id}", Method.Get, ContentType.Xml)]
+    public Response GetUserScores(RequestContext context, GameUser user, GameDatabaseContext database, int id)
+    {
+        GameLevel? level = database.GetLevelById(id);
+        if (level == null) return NotFound;
+        
+        //Get the scores from the database
+        DatabaseList<GameSubmittedScore> scores = database.GetTopScoresForLevel(level, 10, 0, 1);
+        
+        return new Response(SerializedMultiLeaderboardResponse.FromOldList(scores), ContentType.Xml);
+    }
+    
     [GameEndpoint("scoreboard/user/{id}", ContentType.Xml, Method.Post)]
     public Response SubmitScore(RequestContext context, GameUser user, GameDatabaseContext database, int id, SerializedScore body)
     {
