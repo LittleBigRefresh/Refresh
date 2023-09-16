@@ -66,6 +66,39 @@ public class DigestMiddlewareTests : GameServerTest
             Assert.That(response.Headers.GetValues("X-Digest-B").First(), Is.EqualTo(clientDigest));
         });
     }
+    
+    [Test]
+    public async Task PspDigestIsCorrect()
+    {
+        using TestContext context = this.GetServer();
+        context.Server.Value.Server.AddEndpointGroup<TestEndpoints>();
+        context.Server.Value.Server.AddMiddleware<DigestMiddleware>();
+
+        const string endpoint = "/lbp/test";
+        const string expectedResultStr = "test";
+        
+        using MemoryStream blankMs = new();
+        using MemoryStream expectedResultMs = new(Encoding.ASCII.GetBytes(expectedResultStr));
+        
+        string serverDigest = DigestMiddleware.CalculateDigest(endpoint, expectedResultMs, "", null, null);
+        string clientDigest = DigestMiddleware.CalculateDigest(endpoint, blankMs, "", 205, 5);
+
+        context.Http.DefaultRequestHeaders.Add("X-Digest-A", clientDigest);
+        context.Http.DefaultRequestHeaders.Add("X-data-v", "5");
+        context.Http.DefaultRequestHeaders.Add("X-exe-v", "205");
+        HttpResponseMessage response = await context.Http.GetAsync(endpoint);
+        
+        Assert.Multiple(() =>
+        {
+            Assert.That(response.StatusCode, Is.EqualTo(OK));
+            
+            Assert.That(response.Headers.Contains("X-Digest-A"), Is.True);
+            Assert.That(response.Headers.Contains("X-Digest-B"), Is.True);
+            
+            Assert.That(response.Headers.GetValues("X-Digest-A").First(), Is.EqualTo(serverDigest));
+            Assert.That(response.Headers.GetValues("X-Digest-B").First(), Is.EqualTo(clientDigest));
+        });
+    }
 
     [Test]
     public async Task FailsWhenDigestIsBad()
