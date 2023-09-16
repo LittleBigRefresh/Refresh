@@ -35,12 +35,11 @@ public class WelcomeEndpoints : EndpointGroup
         return config.LicenseText + "\n\n" + AGPLLicense + "\n";
     }
 
-    [GameEndpoint("announce")]
-    [MinimumRole(GameUserRole.Restricted)]
-    public string Announce(RequestContext context, GameServerConfig config, GameUser user, GameDatabaseContext database)
+    private static string AnnounceGetNotifications(GameDatabaseContext database, GameUser user, GameServerConfig config)
     {
         List<GameNotification> notifications = database.GetNotificationsByUser(user, 5, 0).Items.ToList();
         int count = database.GetNotificationCountByUser(user);
+        if (count == 0) return "";
 
         string s = count != 1 ? "s" : "";
 
@@ -54,6 +53,33 @@ public class WelcomeEndpoints : EndpointGroup
 
         notificationText += $"To view more, or clear these notifications, you can visit the website at {config.WebExternalUrl}!\n";
 
-        return config.AnnounceText.TrimEnd() + "\n\n" + notificationText;
+        return notificationText;
+    }
+
+    private static string AnnounceGetAnnouncements(GameDatabaseContext database)
+    {
+        IEnumerable<GameAnnouncement> announcements = database.GetAnnouncements();
+        // it's time to allocate
+        return announcements.Aggregate("", (current, announcement) => current + $"{announcement.Title}: {announcement.Text}\n");
+    }
+
+    [GameEndpoint("announce")]
+    [MinimumRole(GameUserRole.Restricted)]
+    public string Announce(RequestContext context, GameServerConfig config, GameUser user, GameDatabaseContext database)
+    {
+        if (user.Role == GameUserRole.Restricted)
+        {
+            return "Your account is currently in restricted mode.\n\n" +
+                   "You can still play, but you won't be able to publish levels, post comments," +
+                   "or otherwise interact with the community." +
+                   "For more information, please contact an administrator.";
+        }
+        
+        string announcements = AnnounceGetAnnouncements(database);
+        string notifications = AnnounceGetNotifications(database, user, config);
+
+        if (announcements.Length == 0) return notifications;
+        if (notifications.Length == 0) return announcements;
+        return announcements + "\n" + notifications; // I HATE IT WHYYYYYYYYYYYY
     }
 }
