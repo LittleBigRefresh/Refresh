@@ -30,10 +30,7 @@ public class ReviewEndpoints : EndpointGroup
     {
         string? ratingString = context.QueryString.Get("rating");
         
-        if (ratingString == null)
-        {
-            return BadRequest;
-        }
+        if (ratingString == null) return BadRequest;
 
         if (!int.TryParse(ratingString, out int ratingInt)) return BadRequest;
         
