@@ -86,7 +86,7 @@ public class GameMinimalLevelResponse : IDataConvertableFrom<GameMinimalLevelRes
             MinPlayers = level.MinPlayers,
             TotalPlayCount = level.TotalPlayCount,
             UniquePlayCount = level.UniquePlayCount,
-            AverageRating = 3, //TODO
+            AverageRating = 0, //TODO
         };
     }
 
