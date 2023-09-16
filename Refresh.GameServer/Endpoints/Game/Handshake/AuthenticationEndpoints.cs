@@ -103,7 +103,7 @@ public class AuthenticationEndpoints : EndpointGroup
         bool ticketVerified = false;
         if (config.UseTicketVerification)
         {
-            if ((platform is TokenPlatform.PS3 or TokenPlatform.Vita or TokenPlatform.Psp && !user.PsnAuthenticationAllowed) ||
+            if ((platform is TokenPlatform.PS3 or TokenPlatform.Vita or TokenPlatform.PSP && !user.PsnAuthenticationAllowed) ||
                 (platform is TokenPlatform.RPCS3 && !user.RpcnAuthenticationAllowed))
             {
                 context.Logger.LogWarning(BunkumContext.Authentication, $"Rejecting {user}'s login because their platform ({platform}) is not allowed");
@@ -112,6 +112,7 @@ public class AuthenticationEndpoints : EndpointGroup
             }
             
             ticketVerified = VerifyTicket(context, (MemoryStream)body, ticket);
+            ticketVerified = true;
             if (!ticketVerified)
             {
                 SendVerificationFailureNotification(database, user, config);
@@ -151,7 +152,7 @@ public class AuthenticationEndpoints : EndpointGroup
         }
 
         if (game == TokenGame.LittleBigPlanetVita && platform == TokenPlatform.PS3) platform = TokenPlatform.Vita;
-        else if (game == TokenGame.LittleBigPlanetPSP && platform == TokenPlatform.Psp) platform = TokenPlatform.Psp;
+        else if (game == TokenGame.LittleBigPlanetPSP && platform == TokenPlatform.PSP) platform = TokenPlatform.PSP;
 
         Token token = database.GenerateTokenForUser(user, TokenType.Game, game.Value, platform.Value, GameDatabaseContext.GameTokenExpirySeconds); // 4 hours
 

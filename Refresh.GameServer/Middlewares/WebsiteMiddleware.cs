@@ -2,6 +2,7 @@ using Bunkum.CustomHttpListener.Request;
 using Bunkum.HttpServer;
 using Bunkum.HttpServer.Database;
 using Bunkum.HttpServer.Endpoints.Middlewares;
+using Refresh.GameServer.Endpoints;
 
 namespace Refresh.GameServer.Middlewares;
 
@@ -24,7 +25,7 @@ public class WebsiteMiddleware : IMiddleware
 
         string uri = context.Uri.AbsolutePath;
 
-        if (uri.StartsWith("/lbp") || uri.StartsWith("/api") || uri == "/autodiscover" || uri == "/_health" || uri.StartsWith("/gameAssets")) return false;
+        if (uri.StartsWith(GameEndpointAttribute.BaseRoute) || uri.StartsWith("/api") || uri == "/autodiscover" || uri == "/_health" || uri.StartsWith("/gameAssets")) return false;
 
         if (uri == "/" || (context.RequestHeaders["Accept"] ?? "").Contains("text/html"))
             uri = "/index.html";

@@ -9,13 +9,15 @@ namespace Refresh.GameServer.Types.Levels;
 
 public class GameMinimalLevelResponse : IDataConvertableFrom<GameMinimalLevelResponse, GameLevel>, IDataConvertableFrom<GameMinimalLevelResponse, GameLevelResponse>
 {
+    //NOTE: THIS MUST BE AT THE TOP OF THE XML RESPONSE OR ELSE LBP PSP WILL CRASH
+    [XmlElement("id")] public required int LevelId { get; set; }
+    
     [XmlElement("name")] public required string Title { get; set; } = string.Empty;
     [XmlElement("icon")] public required string IconHash { get; set; } = string.Empty;
     [XmlElement("game")] public required int GameVersion { get; set; }
     [XmlElement("rootLevel")] public required string RootResource { get; set; } = string.Empty;
     [XmlElement("description")] public required string Description { get; set; } = string.Empty;
     [XmlElement("location")] public required GameLocation Location { get; set; } = GameLocation.Zero;
-    [XmlElement("id")] public required int LevelId { get; set; }
     [XmlElement("npHandle")] public required SerializedUserHandle? Handle { get; set; }
     [XmlAttribute("type")] public required string? Type { get; set; }
     [XmlElement("mmpick")] public required bool TeamPicked { get; set; }
@@ -29,6 +31,8 @@ public class GameMinimalLevelResponse : IDataConvertableFrom<GameMinimalLevelRes
     [XmlElement("thumbsdown")] public required int BooCount { get; set; }
     
     [XmlElement("playerCount")] public int PlayerCount { get; set; }
+    
+    [XmlElement("averageRating")] public int AverageRating { get; set; }
     
     private GameMinimalLevelResponse() {}
     
@@ -82,6 +86,7 @@ public class GameMinimalLevelResponse : IDataConvertableFrom<GameMinimalLevelRes
             MinPlayers = level.MinPlayers,
             TotalPlayCount = level.TotalPlayCount,
             UniquePlayCount = level.UniquePlayCount,
+            AverageRating = 0, //TODO
         };
     }
 

@@ -6,5 +6,5 @@ public enum TokenPlatform
     RPCS3 = 1,
     Vita = 2,
     Website = 3,
-    Psp = 4,
+    PSP = 4,
 }

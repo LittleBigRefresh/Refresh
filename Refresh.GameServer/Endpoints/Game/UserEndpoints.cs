@@ -95,7 +95,7 @@ public class UserEndpoints : EndpointGroup
             return null;
         }
 
-        if (data.IconHash != null && !dataStore.ExistsInStore(data.IconHash))
+        if (data.IconHash != null && !data.IconHash.StartsWith("g") && !dataStore.ExistsInStore(data.IconHash))
         {
             database.AddErrorNotification("Profile update failed", "Your avatar failed to update because the asset was missing on the server.", user);
             return null;

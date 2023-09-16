@@ -31,6 +31,9 @@
         <Reference Include="Bunkum.RealmDatabase">
             <HintPath>..\..\Bunkum.RealmDatabase\Bunkum.RealmDatabase\bin\Debug\net7.0\Bunkum.RealmDatabase.dll</HintPath>
         </Reference>
+        <Reference Include="Bunkum.AutoDiscover">
+            <HintPath>..\..\Bunkum.AutoDiscover\Bunkum.AutoDiscover\bin\Debug\net7.0\Bunkum.AutoDiscover.dll</HintPath>
+        </Reference>
         
         <!-- Package references must match Bunkum.HttpServer's csproj -->
         <PackageReference Include="JetBrains.Annotations" Version="2023.2.0" />
@@ -41,12 +44,12 @@
     <ItemGroup Condition="'$(Configuration)'!='DebugLocalBunkum'">
         <PackageReference Include="Bunkum" Version="3.4.4" />
         <PackageReference Include="Bunkum.RealmDatabase" Version="3.1.5" />
+        <PackageReference Include="Bunkum.AutoDiscover" Version="1.0.0" />
     </ItemGroup>
 
     <ItemGroup>
       <PackageReference Include="AttribDoc" Version="1.1.0" />
       <PackageReference Include="BCrypt.Net-Next" Version="4.0.3" />
-      <PackageReference Include="Bunkum.AutoDiscover" Version="1.0.0" />
       <PackageReference Include="CommandLineParser" Version="2.9.1" />
       <PackageReference Include="Discord.Net.Webhook" Version="3.12.0" />
       <PackageReference Include="NPTicket" Version="3.1.0" />
