@@ -48,7 +48,7 @@ public class RelationEndpoints : EndpointGroup
         if (database.FavouriteUser(userToFavourite, user))
             return OK;
         
-        return Unauthorized;
+        return context.IsPSP() ? OK : Unauthorized;
     }
     
     [GameEndpoint("unfavourite/user/{username}", Method.Post)]
@@ -60,7 +60,7 @@ public class RelationEndpoints : EndpointGroup
         if (database.UnfavouriteUser(userToFavourite, user))
             return OK;
         
-        return Unauthorized;
+        return context.IsPSP() ? OK : Unauthorized;
     }
 
     [GameEndpoint("favouriteUsers/{username}", ContentType.Xml)]
