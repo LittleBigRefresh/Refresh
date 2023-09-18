@@ -47,7 +47,9 @@ public class RelationEndpoints : EndpointGroup
 
         if (database.FavouriteUser(userToFavourite, user))
             return OK;
-        
+
+        // On PSP, we have to lie or else the client will begin spamming the server
+        // https://discord.com/channels/1049223665243389953/1049225857350254632/1153468991675838474
         return context.IsPSP() ? OK : Unauthorized;
     }
     
@@ -59,7 +61,9 @@ public class RelationEndpoints : EndpointGroup
 
         if (database.UnfavouriteUser(userToFavourite, user))
             return OK;
-        
+
+        // On PSP, we have to lie or else the client will begin spamming the server
+        // https://discord.com/channels/1049223665243389953/1049225857350254632/1153468991675838474
         return context.IsPSP() ? OK : Unauthorized;
     }
 
