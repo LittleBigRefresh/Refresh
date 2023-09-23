@@ -65,6 +65,9 @@ public class ModerationEndpoints : EndpointGroup
     [GameEndpoint("filter/batch", Method.Post, ContentType.Xml)]
     public SerializedTextList BatchFilter(RequestContext context, SerializedTextList body)
     {
-        return body;
+        return new SerializedTextList
+        {
+            AllOk = true,
+        };
     }
 }
