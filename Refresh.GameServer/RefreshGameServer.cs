@@ -118,6 +118,7 @@ public class RefreshGameServer
     
     protected virtual void SetupServices()
     {
+        this._server.AddService<TimeProviderService>(this.GetTimeProvider());
         this._server.AddRateLimitService(new RateLimitSettings(60, 400, 30, "global"));
         this._server.AddService<CategoryService>();
         this._server.AddService<FriendStorageService>();
@@ -136,7 +137,6 @@ public class RefreshGameServer
         
         this._server.AddService<RoleService>();
         this._server.AddService<SmtpService>();
-        this._server.AddService<TimeProviderService>(this.GetTimeProvider());
 
         if (this._config!.TrackRequestStatistics)
             this._server.AddService<RequestStatisticTrackingService>();
