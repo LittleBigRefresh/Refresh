@@ -21,6 +21,15 @@ public class ModerationEndpoints : EndpointGroup
         };
     }
 
+    [GameEndpoint("showModerated", Method.Post, ContentType.Xml)]
+    public SerializedModeratedResourceList ModerateResources(RequestContext context, SerializedModeratedResourceList body)
+    {
+        return new SerializedModeratedResourceList
+        {
+            Resources = new List<string>(),
+        };
+    }
+
     /// <summary>
     /// Censor ("filter") strings sent by the client. Used for chat messages, speech bubble contents, etc.
     /// </summary>
