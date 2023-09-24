@@ -12,6 +12,7 @@ using Refresh.GameServer.Endpoints.ApiV3.DataTypes.Response.Admin;
 using Refresh.GameServer.Extensions;
 using Refresh.GameServer.Types.Roles;
 using Refresh.GameServer.Types.UserData;
+using Refresh.GameServer.Verification;
 
 namespace Refresh.GameServer.Endpoints.ApiV3.Admin;
 
@@ -50,7 +51,7 @@ public class AdminUserApiEndpoints : EndpointGroup
 
     private static ApiOkResponse ResetUserPassword(GameDatabaseContext database, ApiResetUserPasswordRequest body, GameUser user)
     {
-        if (body.PasswordSha512.Length != 128 || !AuthenticationApiEndpoints.Sha512Regex().IsMatch(body.PasswordSha512))
+        if (body.PasswordSha512.Length != 128 || !CommonPatterns.Sha512Regex().IsMatch(body.PasswordSha512))
             return new ApiValidationError("Password is definitely not SHA512. Please hash the password.");
         
         string? passwordBcrypt = BC.HashPassword(body.PasswordSha512, AuthenticationApiEndpoints.WorkFactor);

@@ -1,5 +1,4 @@
 using System.Net;
-using System.Text.RegularExpressions;
 using AttribDoc.Attributes;
 using Bunkum.CustomHttpListener.Parsing;
 using Bunkum.HttpServer;
@@ -17,10 +16,11 @@ using Refresh.GameServer.Extensions;
 using Refresh.GameServer.Services;
 using Refresh.GameServer.Types.Roles;
 using Refresh.GameServer.Types.UserData;
+using Refresh.GameServer.Verification;
 
 namespace Refresh.GameServer.Endpoints.ApiV3;
 
-public partial class AuthenticationApiEndpoints : EndpointGroup
+public class AuthenticationApiEndpoints : EndpointGroup
 {
     // How many rounds to do for password hashing (BCrypt)
     // 14 is ~1 second for logins and reset, which is fair because logins are a one-time thing
@@ -30,12 +30,6 @@ public partial class AuthenticationApiEndpoints : EndpointGroup
     // If increased, passwords will automatically be rehashed at login time to use the new WorkFactor
     // If decreased, passwords will stay at higher WorkFactor until reset
     public const int WorkFactor = 14;
-
-    [GeneratedRegex("^[a-f0-9]{128}$")]
-    public static partial Regex Sha512Regex();
-    
-    [GeneratedRegex("^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+[.][a-zA-Z]{2,}$")]
-    private static partial Regex EmailAddressRegex();
 
     [ApiV3Endpoint("login", Method.Post), Authentication(false), AllowDuringMaintenance]
     [DocRequestBody(typeof(ApiAuthenticationRequest))]
@@ -117,7 +111,7 @@ public partial class AuthenticationApiEndpoints : EndpointGroup
         user ??= database.GetUserFromTokenData(body.ResetToken, TokenType.PasswordReset);
         if (user == null) return new ApiAuthenticationError("The reset token is invalid");
 
-        if (body.PasswordSha512.Length != 128 || !Sha512Regex().IsMatch(body.PasswordSha512))
+        if (body.PasswordSha512.Length != 128 || !CommonPatterns.Sha512Regex().IsMatch(body.PasswordSha512))
             return new ApiValidationError("Password is definitely not SHA512. Please hash the password.");
         
         string? passwordBcrypt = BC.HashPassword(body.PasswordSha512, WorkFactor);
@@ -192,10 +186,10 @@ public partial class AuthenticationApiEndpoints : EndpointGroup
         if (!config.RegistrationEnabled)
             return new ApiAuthenticationError("Registration is not enabled on this server.");
             
-        if (body.PasswordSha512.Length != 128 || !Sha512Regex().IsMatch(body.PasswordSha512))
+        if (body.PasswordSha512.Length != 128 || !CommonPatterns.Sha512Regex().IsMatch(body.PasswordSha512))
             return new ApiValidationError("Password is definitely not SHA512. Please hash the password.");
 
-        if (!EmailAddressRegex().IsMatch(body.EmailAddress))
+        if (!CommonPatterns.EmailAddressRegex().IsMatch(body.EmailAddress))
             return new ApiValidationError("The email address given is invalid.");
         
         if (database.IsUsernameTaken(body.Username) || database.IsEmailTaken(body.EmailAddress))

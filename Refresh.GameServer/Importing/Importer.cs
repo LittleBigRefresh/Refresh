@@ -42,6 +42,7 @@ public abstract class Importer
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     private static bool MatchesMagic(ReadOnlySpan<byte> data, ReadOnlySpan<byte> magic)
     {
+        if (magic.Length > data.Length) return false;
         return data[..magic.Length].SequenceEqual(magic);
     }
     

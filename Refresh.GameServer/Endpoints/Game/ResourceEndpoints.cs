@@ -1,5 +1,6 @@
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
+using System.Text.RegularExpressions;
 using Bunkum.CustomHttpListener.Parsing;
 using Bunkum.HttpServer;
 using Bunkum.HttpServer.Endpoints;
@@ -15,6 +16,7 @@ using Refresh.GameServer.Types.Assets;
 using Refresh.GameServer.Types.Lists;
 using Refresh.GameServer.Types.Roles;
 using Refresh.GameServer.Types.UserData;
+using Refresh.GameServer.Verification;
 
 namespace Refresh.GameServer.Endpoints.Game;
 
@@ -27,8 +29,9 @@ public class ResourceEndpoints : EndpointGroup
     public Response UploadAsset(RequestContext context, string hash, string type, byte[] body, IDataStore dataStore,
         GameDatabaseContext database, GameUser user, AssetImporter importer, GameServerConfig config, IDateTimeProvider timeProvider, Token token)
     {
+        if (!CommonPatterns.Sha1Regex().IsMatch(hash)) return BadRequest;
+        
         bool isPSP = context.IsPSP();
-
         string assetPath = isPSP ? $"psp/{hash}" : hash;
         
         if (dataStore.ExistsInStore(assetPath))
@@ -63,6 +66,8 @@ public class ResourceEndpoints : EndpointGroup
     [MinimumRole(GameUserRole.Restricted)]
     public Response GetResource(RequestContext context, string hash, IDataStore dataStore, GameDatabaseContext database, Token token)
     {
+        if (!CommonPatterns.Sha1Regex().IsMatch(hash)) return BadRequest;
+        
         //If the request comes from a PSP client,
         if (context.IsPSP())
         {
@@ -83,7 +88,8 @@ public class ResourceEndpoints : EndpointGroup
     [GameEndpoint("showNotUploaded", Method.Post, ContentType.Xml)]
     [GameEndpoint("filterResources", Method.Post, ContentType.Xml)]
     [MinimumRole(GameUserRole.Restricted)]
-    public SerializedResourceList GetAssetsMissingFromStore(RequestContext context, SerializedResourceList body, IDataStore dataStore)
+    [NullStatusCode(BadRequest)]
+    public SerializedResourceList? GetAssetsMissingFromStore(RequestContext context, SerializedResourceList body, IDataStore dataStore)
     {
         if (context.IsPSP())
         {
@@ -95,6 +101,9 @@ public class ResourceEndpoints : EndpointGroup
                 body.Items[i] = $"psp/{item}";
             }
         }
+        
+        if(body.Items.Any(hash => !CommonPatterns.Sha1Regex().IsMatch(hash)))
+            return null;
         
         return new SerializedResourceList(body.Items.Where(r => !dataStore.ExistsInStore(r)));
     }

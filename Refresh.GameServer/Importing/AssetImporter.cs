@@ -5,14 +5,20 @@ using JetBrains.Annotations;
 using NotEnoughLogs;
 using Refresh.GameServer.Authentication;
 using Refresh.GameServer.Database;
+using Refresh.GameServer.Time;
 using Refresh.GameServer.Types.Assets;
 
 namespace Refresh.GameServer.Importing;
 
 public class AssetImporter : Importer
 {
-    public AssetImporter(LoggerContainer<BunkumContext>? logger = null) : base(logger)
-    {}
+    private readonly IDateTimeProvider _timeProvider;
+    
+    public AssetImporter(LoggerContainer<BunkumContext>? logger = null, IDateTimeProvider? timeProvider = null) : base(logger)
+    {
+        timeProvider ??= new SystemDateTimeProvider();
+        this._timeProvider = timeProvider;
+    }
 
     public void ImportFromDataStoreCli(GameDatabaseContext context, IDataStore dataStore)
     {
@@ -80,7 +86,7 @@ public class AssetImporter : Importer
 
         GameAsset asset = new()
         {
-            UploadDate = DateTimeOffset.Now,
+            UploadDate = this._timeProvider.Now,
             OriginalUploader = null,
             AssetHash = hash,
             AssetType = DetermineAssetType(data, platform),

@@ -10,19 +10,18 @@ namespace Refresh.GameServer.Services;
 
 public class TimeProviderService : Service
 {
-    private readonly IDateTimeProvider _timeProvider;
+    public IDateTimeProvider TimeProvider { get; }
 
     internal TimeProviderService(LoggerContainer<BunkumContext> logger, IDateTimeProvider timeProvider) : base(logger)
     {
-        this._timeProvider = timeProvider;
-
+        this.TimeProvider = timeProvider;
     }
 
     public override object? AddParameterToEndpoint(ListenerContext context, ParameterInfo paramInfo, Lazy<IDatabaseContext> database)
     {
         if (paramInfo.ParameterType == typeof(IDateTimeProvider))
         {
-            return this._timeProvider;
+            return this.TimeProvider;
         }
 
         return null;

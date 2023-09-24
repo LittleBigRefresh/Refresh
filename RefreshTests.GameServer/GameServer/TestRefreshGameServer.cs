@@ -5,7 +5,10 @@ using NotEnoughLogs;
 using Refresh.GameServer;
 using Refresh.GameServer.Configuration;
 using Refresh.GameServer.Database;
+using Refresh.GameServer.Importing;
+using Refresh.GameServer.Services;
 using Refresh.GameServer.Time;
+using Refresh.GameServer.Types.Assets;
 using RefreshTests.GameServer.Time;
 
 namespace RefreshTests.GameServer.GameServer;
@@ -42,6 +45,6 @@ public class TestRefreshGameServer : RefreshGameServer
 
     protected override void SetupServices()
     {
-        
+        this._server.AddService<TimeProviderService>(this.DateTimeProvider);
     }
 }

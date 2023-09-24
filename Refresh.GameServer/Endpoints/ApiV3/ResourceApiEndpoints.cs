@@ -10,6 +10,7 @@ using Refresh.GameServer.Endpoints.ApiV3.ApiTypes.Errors;
 using Refresh.GameServer.Endpoints.ApiV3.DataTypes.Response;
 using Refresh.GameServer.Importing;
 using Refresh.GameServer.Types.Assets;
+using Refresh.GameServer.Verification;
 
 namespace Refresh.GameServer.Endpoints.ApiV3;
 
@@ -18,6 +19,10 @@ public class ResourceApiEndpoints : EndpointGroup
     private const string HashMissingErrorWhen = "The hash is missing or null";
     private static readonly ApiValidationError HashMissingError = new(HashMissingErrorWhen);
     private static readonly Response HashMissingErrorResponse = HashMissingError;
+    
+    private const string HashInvalidErrorWhen = "The hash is invalid (should be SHA1 hash)";
+    private static readonly ApiValidationError HashInvalidError = new(HashInvalidErrorWhen);
+    private static readonly Response HashInvalidErrorResponse = HashInvalidError;
 
     private const string CouldNotGetAssetErrorWhen = "An error occurred while retrieving the asset from the data store";
     private static readonly ApiInternalError CouldNotGetAssetError = new(CouldNotGetAssetErrorWhen);
@@ -36,6 +41,7 @@ public class ResourceApiEndpoints : EndpointGroup
     public Response DownloadGameAsset(RequestContext context, IDataStore dataStore,
         [DocSummary("The SHA1 hash of the asset")] string hash)
     {
+        if (!CommonPatterns.Sha1Regex().IsMatch(hash)) return HashInvalidError;
         if (string.IsNullOrWhiteSpace(hash)) return HashMissingErrorResponse;
         if (!dataStore.ExistsInStore(hash)) return ApiNotFoundError.Instance;
 
@@ -54,6 +60,7 @@ public class ResourceApiEndpoints : EndpointGroup
     public Response DownloadGameAssetAsImage(RequestContext context, IDataStore dataStore, GameDatabaseContext database,
         [DocSummary("The SHA1 hash of the asset")] string hash)
     {
+        if (!CommonPatterns.Sha1Regex().IsMatch(hash)) return HashInvalidError;
         if (string.IsNullOrWhiteSpace(hash)) return HashMissingErrorResponse;
         if (!dataStore.ExistsInStore(hash)) return ApiNotFoundError.Instance;
 
@@ -79,6 +86,7 @@ public class ResourceApiEndpoints : EndpointGroup
     public ApiResponse<ApiGameAssetResponse> GetAssetInfo(RequestContext context, GameDatabaseContext database,
         [DocSummary("The SHA1 hash of the asset")] string hash)
     {
+        if (!CommonPatterns.Sha1Regex().IsMatch(hash)) return HashInvalidError;
         if (string.IsNullOrWhiteSpace(hash)) return HashMissingError;
 
         GameAsset? asset = database.GetAssetFromHash(hash);
