@@ -24,7 +24,7 @@ public class SerializedMultiLeaderboardResponse
         SerializedPlayerLeaderboardResponse scoreboard = new()
         {
             FirstRank = 1,
-            PlayerCount = scores.TotalItems,
+            PlayerCount = 1,
         };
 
         int i = 0;
@@ -46,7 +46,7 @@ public class SerializedPlayerLeaderboardResponse
     public SerializedPlayerLeaderboardResponse()
     {
         this.FirstRank = 1;
-        this.PlayerCount = 0;
+        this.PlayerCount = 1;
         this.Scores = new List<SerializedLeaderboardScore>();
     }
 
@@ -57,12 +57,12 @@ public class SerializedPlayerLeaderboardResponse
         this.FirstRank = firstRank;
     }
     
+    [XmlAttribute("firstRank")]
+    public int FirstRank { get; set; }
+    
     [XmlElement("playRecord")]
     public List<SerializedLeaderboardScore> Scores { get; set; }
 
     [XmlAttribute("players")]
     public int PlayerCount { get; set; }
-
-    [XmlAttribute("firstRank")]
-    public int FirstRank { get; set; }
 }
