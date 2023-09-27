@@ -17,6 +17,13 @@ public class UserRetrievalTests : GameServerTest
         this._db = this._context.Database;
     }
 
+    [OneTimeTearDown]
+    public void TearDown()
+    {
+        this._context.Dispose();
+        this._db.Dispose();
+    }
+
     [Test]
     public void GetByObjectId()
     {
