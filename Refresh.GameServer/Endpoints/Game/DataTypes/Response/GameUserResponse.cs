@@ -72,16 +72,16 @@ public class GameUserResponse : IDataConvertableFrom<GameUserResponse, GameUser>
             EntitledSlots = 100,
             EntitledSlotsLBP2 = 100,
             EntitledSlotsLBP3 = 100,
-            UsedSlots = 0,
+            UsedSlots = old.PublishedLevels.Count(),
             UsedSlotsLBP2 = old.PublishedLevels.Count(),
-            UsedSlotsLBP3 = 0,
+            UsedSlotsLBP3 = old.PublishedLevels.Count(),
             PurchasedSlotsLBP2 = 0,
             PurchasedSlotsLBP3 = 0,
-            FreeSlots = 100,
-            FreeSlotsLBP3 = 100,
         };
 
+        response.FreeSlots = 100 - response.UsedSlots;
         response.FreeSlotsLBP2 = 100 - response.UsedSlotsLBP2;
+        response.FreeSlotsLBP3 = 100 - response.UsedSlotsLBP3;
 
         return response;
     }
