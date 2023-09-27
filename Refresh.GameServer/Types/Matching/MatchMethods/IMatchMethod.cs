@@ -14,6 +14,6 @@ public interface IMatchMethod
 {
     IEnumerable<string> MethodNames { get; }
 
-    Response Execute(MatchService service, LoggerContainer<BunkumContext> logger,
+    Response Execute(MatchService service, Logger logger,
         GameDatabaseContext database, GameUser user, Token token, SerializedRoomData body);
 }

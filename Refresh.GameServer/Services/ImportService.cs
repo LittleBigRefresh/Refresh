@@ -11,7 +11,7 @@ namespace Refresh.GameServer.Services;
 
 public class ImportService : Service
 {
-    internal ImportService(LoggerContainer<BunkumContext> logger, TimeProviderService timeProvider) : base(logger)
+    internal ImportService(Logger logger, TimeProviderService timeProvider) : base(logger)
     {
         this._assetImporter = new AssetImporter(logger, timeProvider.TimeProvider);
         this._imageImporter = new ImageImporter(logger);

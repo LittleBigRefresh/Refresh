@@ -12,7 +12,7 @@ namespace Refresh.GameServer.Services;
 
 public class RequestStatisticTrackingService : Service
 {
-    internal RequestStatisticTrackingService(LoggerContainer<BunkumContext> logger) : base(logger)
+    internal RequestStatisticTrackingService(Logger logger) : base(logger)
     {}
 
     public override Response? OnRequestHandled(ListenerContext context, MethodInfo method, Lazy<IDatabaseContext> database)

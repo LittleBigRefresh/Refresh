@@ -48,7 +48,7 @@ public class ResourceEndpoints : EndpointGroup
         // if asset safety is Safe (0), and maximum is configured as Safe (0), proceed
         if (gameAsset.SafetyLevel > config.MaximumAssetSafetyLevel && !isPSP)
         {
-            context.Logger.LogWarning(BunkumContext.UserContent, $"{gameAsset.AssetType} {hash} is above configured safety limit " +
+            context.Logger.LogWarning(BunkumCategory.UserContent, $"{gameAsset.AssetType} {hash} is above configured safety limit " +
                                                                  $"({gameAsset.SafetyLevel} > {config.MaximumAssetSafetyLevel})");
             return Unauthorized;
         }

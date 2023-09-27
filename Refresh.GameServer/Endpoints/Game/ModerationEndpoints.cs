@@ -48,17 +48,17 @@ public class ModerationEndpoints : EndpointGroup
         
         if (commandService.IsPublishing(user.UserId))
         {
-            context.Logger.LogInfo(BunkumContext.UserLevels, $"Publish filter: '{body}'");
+            context.Logger.LogInfo(BunkumCategory.UserLevels, $"Publish filter: '{body}'");
         }
         else
         {
-            context.Logger.LogInfo(BunkumContext.Filter, $"<{user}>: {body}");
+            context.Logger.LogInfo(BunkumCategory.Filter, $"<{user}>: {body}");
 
             try
             {
                 CommandInvocation command = commandService.ParseCommand(body);
                 
-                context.Logger.LogInfo(BunkumContext.Commands, $"User used command '{command.Name}' with args '{command.Arguments}'");
+                context.Logger.LogInfo(BunkumCategory.Commands, $"User used command '{command.Name.ToString()}' with args '{command.Arguments.ToString()}'");
 
                 commandService.HandleCommand(command, database, user, token);
             }

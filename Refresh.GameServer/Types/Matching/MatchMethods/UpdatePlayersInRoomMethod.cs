@@ -12,7 +12,7 @@ public class UpdatePlayersInRoomMethod : IMatchMethod
 {
     public IEnumerable<string> MethodNames => new[] { "UpdatePlayersInRoom" };
 
-    public Response Execute(MatchService service, LoggerContainer<BunkumContext> logger, GameDatabaseContext database,
+    public Response Execute(MatchService service, Logger logger, GameDatabaseContext database,
         GameUser user,
         Token token,
         SerializedRoomData body)

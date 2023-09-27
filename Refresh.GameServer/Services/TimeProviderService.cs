@@ -12,7 +12,7 @@ public class TimeProviderService : Service
 {
     public IDateTimeProvider TimeProvider { get; }
 
-    internal TimeProviderService(LoggerContainer<BunkumContext> logger, IDateTimeProvider timeProvider) : base(logger)
+    internal TimeProviderService(Logger logger, IDateTimeProvider timeProvider) : base(logger)
     {
         this.TimeProvider = timeProvider;
     }

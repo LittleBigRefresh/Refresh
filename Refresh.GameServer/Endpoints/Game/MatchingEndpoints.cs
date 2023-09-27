@@ -17,7 +17,7 @@ public class MatchingEndpoints : EndpointGroup
     public Response Match(RequestContext context, GameDatabaseContext database, GameUser user, Token token, MatchService service, string body)
     {
         (string method, string jsonBody) = MatchService.ExtractMethodAndBodyFromJson(body);
-        context.Logger.LogDebug(BunkumContext.Matching, $"Received {method} match request, data: {jsonBody}");
+        context.Logger.LogDebug(BunkumCategory.Matching, $"Received {method} match request, data: {jsonBody}");
         
         JsonSerializer serializer = new();
         using StringReader reader = new(jsonBody);
@@ -28,7 +28,7 @@ public class MatchingEndpoints : EndpointGroup
         // ReSharper disable once InvertIf (happy path goes last)
         if (roomData == null)
         {
-            context.Logger.LogWarning(BunkumContext.Matching, "Match data was bad and unserializable, rejecting."); // Already logged data
+            context.Logger.LogWarning(BunkumCategory.Matching, "Match data was bad and unserializable, rejecting."); // Already logged data
             return BadRequest;
         }
         

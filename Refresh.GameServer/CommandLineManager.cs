@@ -67,7 +67,7 @@ internal class CommandLineManager
 
         if (options.GenerateDocumentation)
         {
-            DocumentationService service = new(new LoggerContainer<BunkumContext>());
+            DocumentationService service = new(new Logger());
             service.Initialize();
             
             string json = JsonConvert.SerializeObject(service.Documentation, Formatting.Indented);

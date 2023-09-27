@@ -18,7 +18,7 @@ namespace Refresh.GameServer.Services;
 /// </remarks>
 public class FriendStorageService : EndpointService
 {
-    public FriendStorageService(LoggerContainer<BunkumContext> logger) : base(logger) {}
+    public FriendStorageService(Logger logger) : base(logger) {}
 
     /// <summary>
     /// A dictionary with a list of friends, by the player who friended them.

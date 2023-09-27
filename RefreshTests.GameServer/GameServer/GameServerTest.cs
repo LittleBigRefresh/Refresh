@@ -1,7 +1,6 @@
 using Bunkum.CustomHttpListener.Listeners.Direct;
 using Bunkum.HttpServer;
 using NotEnoughLogs;
-using NotEnoughLogs.Loggers;
 using RefreshTests.GameServer.Time;
 
 namespace RefreshTests.GameServer.GameServer;
@@ -10,17 +9,12 @@ namespace RefreshTests.GameServer.GameServer;
 [Timeout(2000)]
 public class GameServerTest
 {
-    protected static readonly LoggerContainer<BunkumContext> Logger = new();
-
-    static GameServerTest()
-    {
-        Logger.RegisterLogger(new ConsoleLogger());
-    }
+    protected static readonly Logger Logger = new();
     
     // ReSharper disable once MemberCanBeMadeStatic.Global
     protected TestContext GetServer(bool startServer = true)
     {
-        DirectHttpListener listener = new();
+        DirectHttpListener listener = new(Logger);
         HttpClient client = listener.GetClient();
         MockDateTimeProvider time = new();
 

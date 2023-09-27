@@ -9,7 +9,7 @@ using Refresh.GameServer.Types.Roles;
 
 namespace Refresh.GameServer.Authentication;
 
-public class GameAuthenticationProvider : IAuthenticationProvider<GameUser, Token>
+public class GameAuthenticationProvider : IAuthenticationProvider<Token>
 {
     private readonly GameServerConfig? _config;
 

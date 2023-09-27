@@ -61,7 +61,7 @@ public class CommentEndpoints : EndpointGroup
         //Validate someone doesnt try to delete someone elses comment
         if (comment.Author.UserId != user.UserId)
         {
-            context.Logger.LogWarning(BunkumContext.Game, $"User {user.Username} attempted to delete someone elses comment! This is likely a forged request");
+            context.Logger.LogWarning(BunkumCategory.Game, $"User {user.Username} attempted to delete someone elses comment! This is likely a forged request");
             return Unauthorized;
         }
 
@@ -115,7 +115,7 @@ public class CommentEndpoints : EndpointGroup
         //Validate someone doesnt try to delete someone elses comment
         if (comment.Author.UserId != user.UserId)
         {
-            context.Logger.LogWarning(BunkumContext.Game, $"User {user.Username} attempted to delete someone elses comment! This is likely a forged request");
+            context.Logger.LogWarning(BunkumCategory.Game, $"User {user.Username} attempted to delete someone elses comment! This is likely a forged request");
             return Unauthorized;
         }
         

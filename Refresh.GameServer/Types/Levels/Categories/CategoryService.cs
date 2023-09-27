@@ -73,7 +73,7 @@ public class CategoryService : EndpointService
         new CurrentlyPlayingCategory(),
     };
 
-    internal CategoryService(LoggerContainer<BunkumContext> logger) : base(logger)
+    internal CategoryService(Logger logger) : base(logger)
     {
     }
 }

@@ -9,7 +9,7 @@ namespace Refresh.GameServer.Authentication;
 #nullable disable
 
 [JsonObject(MemberSerialization.OptIn)]
-public partial class Token : IRealmObject, IToken
+public partial class Token : IRealmObject, IToken<GameUser>
 {
     [PrimaryKey]
     public ObjectId TokenId { get; set; } = ObjectId.GenerateNewId();

@@ -14,7 +14,7 @@ public class AssetImporter : Importer
 {
     private readonly IDateTimeProvider _timeProvider;
     
-    public AssetImporter(LoggerContainer<BunkumContext>? logger = null, IDateTimeProvider? timeProvider = null) : base(logger)
+    public AssetImporter(Logger? logger = null, IDateTimeProvider? timeProvider = null) : base(logger)
     {
         timeProvider ??= new SystemDateTimeProvider();
         this._timeProvider = timeProvider;

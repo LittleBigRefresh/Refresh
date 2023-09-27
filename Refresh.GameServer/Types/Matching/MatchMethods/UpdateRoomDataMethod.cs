@@ -12,7 +12,7 @@ public class UpdateRoomDataMethod : IMatchMethod
 {
     public IEnumerable<string> MethodNames => new[] { "UpdateMyPlayerData", "CreateRoom" };
 
-    public Response Execute(MatchService service, LoggerContainer<BunkumContext> logger,
+    public Response Execute(MatchService service, Logger logger,
         GameDatabaseContext database, GameUser user, Token token, SerializedRoomData body)
     {
         GameRoom room = service.GetOrCreateRoomByPlayer(user, token.TokenPlatform, token.TokenGame, body.NatType == null ? NatType.Open : body.NatType[0]);
@@ -26,7 +26,7 @@ public class UpdateRoomDataMethod : IMatchMethod
         {
             if (body.Slots.Count != 2)
             {
-                logger.LogWarning(BunkumContext.Matching, "Received request with invalid amount of slots, rejecting.");
+                logger.LogWarning(BunkumCategory.Matching, "Received request with invalid amount of slots, rejecting.");
                 return BadRequest;
             }
 

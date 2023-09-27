@@ -29,10 +29,10 @@
             <HintPath>..\..\Bunkum\Bunkum.CustomHttpListener\bin\Debug\net7.0\Bunkum.CustomHttpListener.dll</HintPath>
         </Reference>
         <Reference Include="Bunkum.RealmDatabase">
-            <HintPath>..\..\Bunkum.RealmDatabase\Bunkum.RealmDatabase\bin\Debug\net7.0\Bunkum.RealmDatabase.dll</HintPath>
+            <HintPath>..\..\Bunkum\Bunkum.RealmDatabase\bin\Debug\net7.0\Bunkum.RealmDatabase.dll</HintPath>
         </Reference>
         <Reference Include="Bunkum.AutoDiscover">
-            <HintPath>..\..\Bunkum.AutoDiscover\Bunkum.AutoDiscover\bin\Debug\net7.0\Bunkum.AutoDiscover.dll</HintPath>
+            <HintPath>..\..\Bunkum\Bunkum.AutoDiscover\bin\Debug\net7.0\Bunkum.AutoDiscover.dll</HintPath>
         </Reference>
         
         <!-- Package references must match Bunkum.HttpServer's csproj -->

@@ -10,7 +10,6 @@ using Bunkum.HttpServer.RateLimit;
 using Bunkum.HttpServer.Storage;
 using Bunkum.RealmDatabase;
 using NotEnoughLogs;
-using NotEnoughLogs.Loggers;
 using Refresh.GameServer.Authentication;
 using Refresh.GameServer.Configuration;
 using Refresh.GameServer.Database;
@@ -30,7 +29,7 @@ namespace Refresh.GameServer;
 [SuppressMessage("ReSharper", "InconsistentNaming")]
 public class RefreshGameServer
 {
-    protected readonly LoggerContainer<RefreshContext> _logger;
+    protected readonly Logger _logger;
     
     protected readonly BunkumHttpServer _server;
     protected WorkerManager? _workerManager;
@@ -44,15 +43,14 @@ public class RefreshGameServer
     public RefreshGameServer(
         BunkumHttpListener? listener = null,
         Func<GameDatabaseProvider>? databaseProvider = null,
-        IAuthenticationProvider<GameUser, Token>? authProvider = null,
+        IAuthenticationProvider<Token>? authProvider = null,
         IDataStore? dataStore = null
     )
     {
         databaseProvider ??= () => new GameDatabaseProvider();
         dataStore ??= new FileSystemDataStore();
 
-        this._logger = new LoggerContainer<RefreshContext>();
-        this._logger.RegisterLogger(new ConsoleLogger());
+        this._logger = new Logger();
         this._logger.LogDebug(RefreshContext.Startup, "Successfully initialized " + this.GetType().Name);
         
         this._databaseProvider = databaseProvider.Invoke();
@@ -60,7 +58,7 @@ public class RefreshGameServer
         
         this._server = listener == null ? new BunkumHttpServer() : new BunkumHttpServer(listener);
         
-        this._server.Initialize = () =>
+        this._server.Initialize = _ =>
         {
             GameDatabaseProvider provider = databaseProvider.Invoke();
             
@@ -77,7 +75,7 @@ public class RefreshGameServer
         CultureInfo.CurrentCulture = CultureInfo.InvariantCulture;
     }
 
-    private void InjectBaseServices(GameDatabaseProvider databaseProvider, IAuthenticationProvider<GameUser, Token> authProvider, IDataStore dataStore)
+    private void InjectBaseServices(GameDatabaseProvider databaseProvider, IAuthenticationProvider<Token> authProvider, IDataStore dataStore)
     {
         this._server.UseDatabaseProvider(databaseProvider);
         this._server.AddAuthenticationService(authProvider, true);

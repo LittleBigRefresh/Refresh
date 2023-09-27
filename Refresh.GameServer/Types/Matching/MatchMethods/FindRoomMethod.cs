@@ -16,7 +16,7 @@ public class FindRoomMethod : IMatchMethod
 {
     public IEnumerable<string> MethodNames => new[] { "FindBestRoom" };
 
-    public Response Execute(MatchService service, LoggerContainer<BunkumContext> logger, GameDatabaseContext database,
+    public Response Execute(MatchService service, Logger logger, GameDatabaseContext database,
         GameUser user,
         Token token,
         SerializedRoomData body)
@@ -29,7 +29,7 @@ public class FindRoomMethod : IMatchMethod
         {
             if (body.Slots.Count != 2)
             {
-                logger.LogWarning(BunkumContext.Matching, "Received request with invalid amount of slots, rejecting.");
+                logger.LogWarning(BunkumCategory.Matching, "Received request with invalid amount of slots, rejecting.");
                 return BadRequest;
             }
             

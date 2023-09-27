@@ -1,7 +1,6 @@
 using System.Buffers;
 using Bunkum.HttpServer;
 using NotEnoughLogs;
-using NotEnoughLogs.Loggers;
 using Refresh.GameServer.Services;
 using Refresh.GameServer.Types.Commands;
 
@@ -21,8 +20,7 @@ public class CommandParseTests : GameServerTest
 	[Test]
 	public void ParsingTest()
 	{
-		using LoggerContainer<BunkumContext> logger = new();
-		logger.RegisterLogger(new ConsoleLogger());
+		using Logger logger = new();
 		CommandService service = new(logger, new MatchService(logger));
         
 		ParseTest(service, "/parse test", "parse", "test");
@@ -33,8 +31,7 @@ public class CommandParseTests : GameServerTest
 	[Test]
 	public void NoSlashThrows()
 	{
-		using LoggerContainer<BunkumContext> logger = new();
-		logger.RegisterLogger(new ConsoleLogger());
+		using Logger logger = new();
 		CommandService service = new(logger, new MatchService(logger));
 
 		Assert.That(() => _ = service.ParseCommand("parse test"), Throws.InstanceOf<FormatException>());
@@ -43,8 +40,7 @@ public class CommandParseTests : GameServerTest
 	[Test]
 	public void BlankCommandThrows()
 	{
-		using LoggerContainer<BunkumContext> logger = new();
-		logger.RegisterLogger(new ConsoleLogger());
+		using Logger logger = new();
 		CommandService service = new(logger, new MatchService(logger));
 
 		Assert.That(() => _ = service.ParseCommand("/ test"), Throws.InstanceOf<FormatException>());

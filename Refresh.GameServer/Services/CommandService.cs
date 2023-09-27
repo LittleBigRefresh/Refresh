@@ -16,7 +16,7 @@ public class CommandService : EndpointService
 {
     private readonly MatchService _match;
     
-    public CommandService(LoggerContainer<BunkumContext> logger, MatchService match) : base(logger) {
+    public CommandService(Logger logger, MatchService match) : base(logger) {
         this._match = match;
     }
 

@@ -10,7 +10,7 @@ namespace Refresh.GameServer.Importing;
 
 public partial class ImageImporter : Importer
 {
-    public ImageImporter(LoggerContainer<BunkumContext>? logger = null) : base(logger)
+    public ImageImporter(Logger? logger = null) : base(logger)
     {}
 
     public void ImportFromDataStore(GameDatabaseContext context, IDataStore dataStore)

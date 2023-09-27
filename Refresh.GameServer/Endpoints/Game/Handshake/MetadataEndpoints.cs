@@ -67,7 +67,7 @@ public class MetadataEndpoints : EndpointGroup
         
         // Only log this warning once
         if(!created && networkSettings == null)
-            context.Logger.LogWarning(BunkumContext.Request, "network_settings.nws file is missing! " +
+            context.Logger.LogWarning(BunkumCategory.Request, "network_settings.nws file is missing! " +
                                                               "LBP will work without it, but it may be relevant to you if you are an advanced user.");
 
         networkSettings ??= "ShowLevelBoos true\nAllowOnlineCreate true";
@@ -94,7 +94,7 @@ public class MetadataEndpoints : EndpointGroup
         
         // Only log this warning once
         if (!created && telemetryConfig == null)
-            context.Logger.LogWarning(BunkumContext.Request, "telemetry.xml file is missing! " +
+            context.Logger.LogWarning(BunkumCategory.Request, "telemetry.xml file is missing! " +
                                                              "LBP will work without it, but it may be relevant to you if you are an advanced user.");
 
         return telemetryConfig;
@@ -119,7 +119,7 @@ public class MetadataEndpoints : EndpointGroup
         
         // Only log this warning once
         if(!created && promotions == null)
-            context.Logger.LogWarning(BunkumContext.Request, "promotions.xml file is missing! " +
+            context.Logger.LogWarning(BunkumCategory.Request, "promotions.xml file is missing! " +
                                                              "LBP will work without it, but it may be relevant to you if you are an advanced user.");
         
         return promotions;

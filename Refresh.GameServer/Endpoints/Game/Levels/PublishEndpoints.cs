@@ -24,7 +24,7 @@ public class PublishEndpoints : EndpointGroup
     /// <param name="user">The user that is attempting to upload</param>
     /// <param name="logger">A logger instance</param>
     /// <returns>Whether or not validation succeeded</returns>
-    private static bool VerifyLevel(GameLevelRequest body, GameUser user, LoggerContainer<BunkumContext> logger)
+    private static bool VerifyLevel(GameLevelRequest body, GameUser user, Logger logger)
     {
         if (body.Title.Length > 256)
         {
@@ -88,7 +88,7 @@ public class PublishEndpoints : EndpointGroup
 
         if (level.LevelId != default) // Republish requests contain the id of the old level
         {
-            context.Logger.LogInfo(BunkumContext.UserContent, "Republishing level id " + level.LevelId);
+            context.Logger.LogInfo(BunkumCategory.UserContent, "Republishing level id " + level.LevelId);
 
             GameLevel? newBody;
             // ReSharper disable once InvertIf

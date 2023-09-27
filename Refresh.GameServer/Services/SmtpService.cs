@@ -17,7 +17,7 @@ public class SmtpService : EndpointService
 
     internal SmtpService(IntegrationConfig integrationConfig,
         GameServerConfig gameConfig,
-        LoggerContainer<BunkumContext> logger) : base(logger)
+        Logger logger) : base(logger)
     {
         this._integrationConfig = integrationConfig;
         this._gameConfig = gameConfig;
@@ -51,11 +51,11 @@ public class SmtpService : EndpointService
         }
         catch (Exception e)
         {
-            this.Logger.LogWarning(BunkumContext.Service, $"Failed to send '{subject}' to '{recipient}':\n{e}");
+            this.Logger.LogWarning(BunkumCategory.Service, $"Failed to send '{subject}' to '{recipient}':\n{e}");
             return false;
         }
         
-        this.Logger.LogDebug(BunkumContext.Service, $"Successfully sent '{subject}' to '{recipient}'");
+        this.Logger.LogDebug(BunkumCategory.Service, $"Successfully sent '{subject}' to '{recipient}'");
         return true;
     }
 

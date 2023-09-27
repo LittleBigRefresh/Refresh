@@ -4,7 +4,6 @@ using System.Runtime.CompilerServices;
 using System.Text;
 using Bunkum.HttpServer;
 using NotEnoughLogs;
-using NotEnoughLogs.Loggers;
 using Refresh.GameServer.Authentication;
 using Refresh.GameServer.Types.Assets;
 
@@ -12,15 +11,14 @@ namespace Refresh.GameServer.Importing;
 
 public abstract class Importer
 {
-    private readonly LoggerContainer<BunkumContext> _logger;
+    private readonly Logger _logger;
     protected readonly Stopwatch Stopwatch;
 
-    protected Importer(LoggerContainer<BunkumContext>? logger = null)
+    protected Importer(Logger? logger = null)
     {
         if (logger == null)
         {
-            logger = new LoggerContainer<BunkumContext>();
-            logger.RegisterLogger(new ConsoleLogger());
+            logger = new Logger();
         }
 
         this._logger = logger;
@@ -30,13 +28,13 @@ public abstract class Importer
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     protected void Info(string message)
     {
-        this._logger.LogInfo(BunkumContext.UserContent, $"[{this.Stopwatch.ElapsedMilliseconds}ms] {message}");
+        this._logger.LogInfo(BunkumCategory.UserContent, $"[{this.Stopwatch.ElapsedMilliseconds}ms] {message}");
     }
     
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     protected void Warn(string message)
     {
-        this._logger.LogWarning(BunkumContext.UserContent, $"[{this.Stopwatch.ElapsedMilliseconds}ms] {message}");
+        this._logger.LogWarning(BunkumCategory.UserContent, $"[{this.Stopwatch.ElapsedMilliseconds}ms] {message}");
     }
     
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
