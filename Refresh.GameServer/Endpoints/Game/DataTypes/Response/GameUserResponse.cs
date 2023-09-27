@@ -73,15 +73,11 @@ public class GameUserResponse : IDataConvertableFrom<GameUserResponse, GameUser>
             EntitledSlotsLBP2 = 100,
             EntitledSlotsLBP3 = 100,
             UsedSlots = 0,
-            UsedSlotsLBP2 = old.PublishedLevels.Count(),
+            UsedSlotsLBP2 = 0,
             UsedSlotsLBP3 = 0,
             PurchasedSlotsLBP2 = 0,
             PurchasedSlotsLBP3 = 0,
-            FreeSlots = 100,
-            FreeSlotsLBP3 = 100,
         };
-
-        response.FreeSlotsLBP2 = 100 - response.UsedSlotsLBP2;
 
         return response;
     }
@@ -103,5 +99,45 @@ public class GameUserResponse : IDataConvertableFrom<GameUserResponse, GameUser>
             TokenGame.Website => "0",
             _ => throw new ArgumentOutOfRangeException(nameof(gameVersion), gameVersion, null),
         };
+
+        //Fill out the used slots
+        switch (gameVersion)
+        {
+            case TokenGame.LittleBigPlanet3: {
+                //Match all LBP3 levels
+                this.UsedSlotsLBP3 = old.PublishedLevels.Count(x => x._GameVersion == (int)TokenGame.LittleBigPlanet3);
+                this.FreeSlotsLBP3 = 100 - this.UsedSlotsLBP3;
+                //Fill out LBP2/LBP1 levels
+                goto case TokenGame.LittleBigPlanet2;
+            }
+            case TokenGame.LittleBigPlanet2: {
+                //Match all LBP2 levels
+                this.UsedSlotsLBP2 = old.PublishedLevels.Count(x => x._GameVersion == (int)TokenGame.LittleBigPlanet2);
+                this.FreeSlotsLBP2 = 100 - this.UsedSlotsLBP2;
+                //Fill out LBP1 levels
+                goto case TokenGame.LittleBigPlanet1;
+            }
+            case TokenGame.LittleBigPlanetVita: { 
+                //Match all LBP Vita levels
+                this.UsedSlotsLBP2 = old.PublishedLevels.Count(x => x._GameVersion == (int)TokenGame.LittleBigPlanetVita);
+                this.FreeSlotsLBP2 = 100 - this.UsedSlotsLBP2;
+                break;
+            }
+            case TokenGame.LittleBigPlanet1: {
+                //Match all LBP1 levels
+                this.UsedSlots = old.PublishedLevels.Count(x => x._GameVersion == (int)TokenGame.LittleBigPlanet1);
+                this.FreeSlots = 100 - this.UsedSlots;
+                break;
+            }
+            case TokenGame.LittleBigPlanetPSP: {
+                //Match all LBP PSP levels
+                this.UsedSlots = old.PublishedLevels.Count(x => x._GameVersion == (int)TokenGame.LittleBigPlanetPSP);
+                this.FreeSlots = 100 - this.UsedSlots;
+                break;
+            }
+            case TokenGame.Website: break;
+            default:
+                throw new ArgumentOutOfRangeException(nameof(gameVersion), gameVersion, null);
+        }
     }
 }
