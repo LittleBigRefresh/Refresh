@@ -114,15 +114,15 @@ public class RefreshGameServer
 
     protected virtual void SetupConfiguration()
     {
-        GameServerConfig config = Config.LoadFromFile<GameServerConfig>("refreshGameServer.json", this._server.Logger);
+        GameServerConfig config = Config.LoadFromJsonFile<GameServerConfig>("refreshGameServer.json", this._server.Logger);
         this._config = config;
 
-        IntegrationConfig integrationConfig = Config.LoadFromFile<IntegrationConfig>("integrations.json", this._server.Logger);
+        IntegrationConfig integrationConfig = Config.LoadFromJsonFile<IntegrationConfig>("integrations.json", this._server.Logger);
         this._integrationConfig = integrationConfig;
         
-        this._server.UseConfig(config);
-        this._server.UseConfig(integrationConfig);
-        this._server.UseJsonConfig<RichPresenceConfig>("rpc.json");
+        this._server.AddConfig(config);
+        this._server.AddConfig(integrationConfig);
+        this._server.AddConfigFromJsonFile<RichPresenceConfig>("rpc.json");
     }
     
     protected virtual void SetupServices()

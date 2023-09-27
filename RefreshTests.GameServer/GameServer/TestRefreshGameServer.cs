@@ -23,9 +23,9 @@ public class TestRefreshGameServer : RefreshGameServer
 
     protected override void SetupConfiguration()
     {
-        this._server.UseConfig(new GameServerConfig());
-        this._server.UseConfig(new RichPresenceConfig());
-        this._server.UseConfig(new IntegrationConfig());
+        this._server.AddConfig(new GameServerConfig());
+        this._server.AddConfig(new RichPresenceConfig());
+        this._server.AddConfig(new IntegrationConfig());
     }
 
     public override void Start()
