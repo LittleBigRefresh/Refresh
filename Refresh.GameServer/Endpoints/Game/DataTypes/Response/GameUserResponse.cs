@@ -121,8 +121,7 @@ public class GameUserResponse : IDataConvertableFrom<GameUserResponse, GameUser>
                 //Match all LBP Vita levels
                 this.UsedSlotsLBP2 = old.PublishedLevels.Count(x => x._GameVersion == (int)TokenGame.LittleBigPlanetVita);
                 this.FreeSlotsLBP2 = 100 - this.UsedSlotsLBP2;
-                //Fill out LBP1 levels
-                goto case TokenGame.LittleBigPlanet1;
+                break;
             }
             case TokenGame.LittleBigPlanet1: {
                 //Match all LBP1 levels
