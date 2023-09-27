@@ -10,6 +10,7 @@ using Bunkum.HttpServer.RateLimit;
 using Bunkum.HttpServer.Storage;
 using Bunkum.RealmDatabase;
 using NotEnoughLogs;
+using NotEnoughLogs.Behaviour;
 using Refresh.GameServer.Authentication;
 using Refresh.GameServer.Configuration;
 using Refresh.GameServer.Database;
@@ -50,13 +51,23 @@ public class RefreshGameServer
         databaseProvider ??= () => new GameDatabaseProvider();
         dataStore ??= new FileSystemDataStore();
 
-        this._logger = new Logger();
+        LoggerConfiguration logConfig = new()
+        {
+            Behaviour = new QueueLoggingBehaviour(),
+            #if DEBUG
+            MaxLevel = LogLevel.Trace,
+            #else
+            MaxLevel = LogLevel.Info,
+            #endif
+        };
+
+        this._logger = new Logger(logConfig);
         this._logger.LogDebug(RefreshContext.Startup, "Successfully initialized " + this.GetType().Name);
         
         this._databaseProvider = databaseProvider.Invoke();
         this._dataStore = dataStore;
         
-        this._server = listener == null ? new BunkumHttpServer() : new BunkumHttpServer(listener);
+        this._server = listener == null ? new BunkumHttpServer(logConfig) : new BunkumHttpServer(listener, configuration: logConfig);
         
         this._server.Initialize = _ =>
         {
