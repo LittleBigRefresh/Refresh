@@ -44,7 +44,7 @@ public class GameLevelResponse : IDataConvertableFrom<GameLevelResponse, GameLev
     [XmlElement("playCount")] public required int TotalPlayCount { get; set; }
     [XmlElement("uniquePlayCount")] public required int UniquePlayCount { get; set; }
 
-    [XmlElement("yourDPadRating")] public int YourRating { get; set; }
+    [XmlElement("yourDPadRating")] public int YourDPadRating { get; set; }
     [XmlElement("thumbsup")] public required int YayCount { get; set; }
     [XmlElement("thumbsdown")] public required int BooCount { get; set; }
     
@@ -128,7 +128,7 @@ public class GameLevelResponse : IDataConvertableFrom<GameLevelResponse, GameLev
         GameLevel? level = database.GetLevelById(this.LevelId);
         if (level == null) throw new InvalidOperationException("Cannot fill in level data for a level that does not exist.");
         
-        this.YourRating = (int)database.GetRatingByUser(level, user);
+        this.YourDPadRating = (int)database.GetRatingByUser(level, user);
         this.PlayerCount = matchService.GetPlayerCountForLevel(RoomSlotType.Online, this.LevelId);
     }
 }

@@ -27,10 +27,12 @@ public class LevelCategory
     };
     #endif
     
-    internal LevelCategory(string apiRoute, string gameRoute, bool requiresUser, string funcName)
+    internal LevelCategory(string apiRoute, string gameRoute, bool requiresUser, string funcName) : this(apiRoute, new []{gameRoute}, requiresUser, funcName) {}
+    
+    internal LevelCategory(string apiRoute, string[] gameRoutes, bool requiresUser, string funcName)
     {
         this.ApiRoute = apiRoute;
-        this.GameRoute = gameRoute;
+        this.GameRoutes = gameRoutes;
         
         this.RequiresUser = requiresUser;
 
@@ -51,7 +53,7 @@ public class LevelCategory
     }
 
     [JsonProperty] public readonly string ApiRoute;
-    public readonly string GameRoute;
+    public readonly string[] GameRoutes;
     
     [JsonProperty] public readonly bool RequiresUser;
     private readonly MethodInfo _method;
