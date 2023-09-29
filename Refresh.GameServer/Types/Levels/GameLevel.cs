@@ -117,12 +117,12 @@ public partial class GameLevel : IRealmObject, ISequentialId
     /// Calculates the average rating of a level, based on the ratings it has, returns a number 1-5
     /// </summary>
     /// <returns>The level's average ratings</returns>
-    public float CalculateAverageRating()
+    public double CalculateAverageRating()
     {
         int yayCount = this.Ratings.Count(x => x._RatingType == (int)RatingType.Yay);
         int booCount = this.Ratings.Count(x => x._RatingType == (int)RatingType.Boo);
         int neutralCount = this.Ratings.Count(x => x._RatingType == (int)RatingType.Neutral);
         
-        return (float)((5 * yayCount) + (1 * booCount) + (3 * neutralCount)) / (yayCount + booCount + neutralCount);
+        return (double)((5 * yayCount) + (1 * booCount) + (3 * neutralCount)) / (yayCount + booCount + neutralCount);
     }
 }

@@ -32,10 +32,7 @@ public partial class GameDatabaseContext // Relations
             Level = level,
             User = user,
         };
-        this._realm.Write(() =>
-        {
-            this._realm.Add(relation);
-        });
+        this._realm.Write(() => this._realm.Add(relation));
 
         this.CreateLevelFavouriteEvent(user, level);
 
@@ -49,10 +46,7 @@ public partial class GameDatabaseContext // Relations
 
         if (relation == null) return false;
 
-        this._realm.Write(() =>
-        {
-            this._realm.Remove(relation);
-        });
+        this._realm.Write(() => this._realm.Remove(relation));
 
         return true;
     }
@@ -87,10 +81,7 @@ public partial class GameDatabaseContext // Relations
             UserFavouriting = userFavouriting,
         };
         
-        this._realm.Write(() =>
-        {
-            this._realm.Add(relation);
-        });
+        this._realm.Write(() => this._realm.Add(relation));
 
         this.CreateUserFavouriteEvent(userFavouriting, userToFavourite);
 
@@ -114,10 +105,7 @@ public partial class GameDatabaseContext // Relations
 
         if (relation == null) return false;
 
-        this._realm.Write(() =>
-        {
-            this._realm.Remove(relation);
-        });
+        this._realm.Write(() => this._realm.Remove(relation));
 
         return true;
     }
@@ -146,10 +134,7 @@ public partial class GameDatabaseContext // Relations
             Level = level,
             User = user,
         };
-        this._realm.Write(() =>
-        {
-            this._realm.Add(relation);
-        });
+        this._realm.Write(() => this._realm.Add(relation));
 
         return true;
     }
@@ -161,21 +146,13 @@ public partial class GameDatabaseContext // Relations
 
         if (relation == null) return false;
 
-        this._realm.Write(() =>
-        {
-            this._realm.Remove(relation);
-        });
+        this._realm.Write(() => this._realm.Remove(relation));
 
         return true;
     }
 
-    public void ClearQueue(GameUser user)
-    {
-        this._realm.Write(() =>
-        {
-            this._realm.RemoveRange(user.QueueLevelRelations);
-        });
-    }
+    public void ClearQueue(GameUser user) => this._realm.Write(() => this._realm.RemoveRange(user.QueueLevelRelations));
+
     #endregion
 
     #region Rating and Reviewing
@@ -184,13 +161,7 @@ public partial class GameDatabaseContext // Relations
         => this._realm.All<RateLevelRelation>().FirstOrDefault(r => r.User == user && r.Level == level);
 
     [Pure]
-    public RatingType GetRatingByUser(GameLevel level, GameUser user)
-    {
-        RateLevelRelation? rating = this.GetRateRelationByUser(level, user);
-        if(rating == null) return RatingType.Neutral;
-            
-        return rating.RatingType;
-    }
+    public RatingType? GetRatingByUser(GameLevel level, GameUser user) => this.GetRateRelationByUser(level, user)?.RatingType;
 
     public bool RateLevel(GameLevel level, GameUser user, RatingType type)
     {
