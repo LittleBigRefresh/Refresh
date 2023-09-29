@@ -122,6 +122,9 @@ public partial class GameLevel : IRealmObject, ISequentialId
         int yayCount = this.Ratings.Count(x => x._RatingType == (int)RatingType.Yay);
         int booCount = this.Ratings.Count(x => x._RatingType == (int)RatingType.Boo);
         int neutralCount = this.Ratings.Count(x => x._RatingType == (int)RatingType.Neutral);
+
+        // Return 0 if all the counts are 0, we dont want a div by 0 error!
+        if (yayCount + booCount + neutralCount == 0) return 0;
         
         return (double)((5 * yayCount) + (1 * booCount) + (3 * neutralCount)) / (yayCount + booCount + neutralCount);
     }
