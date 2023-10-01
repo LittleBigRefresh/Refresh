@@ -114,9 +114,9 @@ public partial class GameLevel : IRealmObject, ISequentialId
     public GameUser? Publisher { get; set; }
 
     /// <summary>
-    /// Calculates the average rating of a level, based on the ratings it has, returns a number 1-5
+    /// Calculates the average rating of a level based on the ratings it has.
     /// </summary>
-    /// <returns>The level's average ratings</returns>
+    /// <returns>A double between 1 and 5, indicating the level's average ratings.</returns>
     public double CalculateAverageRating()
     {
         int yayCount = this.Ratings.Count(x => x._RatingType == (int)RatingType.Yay);
