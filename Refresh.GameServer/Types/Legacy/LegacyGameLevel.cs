@@ -34,7 +34,7 @@ public class LegacyGameLevel : IDataConvertableFrom<LegacyGameLevel, GameLevel>
     public required int PlaysUnique { get; set; }
     public required int PlaysComplete { get; set; }
     public required bool CommentsEnabled { get;set; }
-    public required int AverageRating { get; set; }
+    public required int AverageStarRating { get; set; }
     public required string LevelType { get; set; }
     
     public static LegacyGameLevel FromOld(GameLevel old) => new()
@@ -65,7 +65,7 @@ public class LegacyGameLevel : IDataConvertableFrom<LegacyGameLevel, GameLevel>
         PlaysUnique = old.UniquePlays.Count(),
         PlaysComplete = old.Scores.Count(),
         CommentsEnabled = true,
-        AverageRating = 0,
+        AverageStarRating = 0,
         LevelType = "",
     };
 

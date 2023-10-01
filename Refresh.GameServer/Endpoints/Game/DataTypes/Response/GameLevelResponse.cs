@@ -64,7 +64,7 @@ public class GameLevelResponse : IDataConvertableFrom<GameLevelResponse, GameLev
     [XmlElement("shareable")] public int IsCopyable { get; set; }
     [XmlElement("backgroundGUID")] public string? BackgroundGuid { get; set; }
     [XmlElement("links")] public string? Links { get; set; }
-    [XmlElement("averageRating")] public double AverageRating { get; set; }
+    [XmlElement("averageRating")] public double AverageStarRating { get; set; }
 
     public static GameLevelResponse? FromOldWithExtraData(GameLevel? old, GameDatabaseContext database, MatchService matchService, GameUser user)
     {
@@ -108,7 +108,7 @@ public class GameLevelResponse : IDataConvertableFrom<GameLevelResponse, GameLev
             IsSubLevel = old.IsSubLevel,
             BackgroundGuid = old.BackgroundGuid,
             Links = "",
-            AverageRating = old.CalculateAverageRating(),
+            AverageStarRating = old.CalculateAverageStarRating(),
         };
 
         if (old.Publisher == null)
