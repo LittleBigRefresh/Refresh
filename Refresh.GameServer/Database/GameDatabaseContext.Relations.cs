@@ -32,10 +32,7 @@ public partial class GameDatabaseContext // Relations
             Level = level,
             User = user,
         };
-        this._realm.Write(() =>
-        {
-            this._realm.Add(relation);
-        });
+        this._realm.Write(() => this._realm.Add(relation));
 
         this.CreateLevelFavouriteEvent(user, level);
 
@@ -49,10 +46,7 @@ public partial class GameDatabaseContext // Relations
 
         if (relation == null) return false;
 
-        this._realm.Write(() =>
-        {
-            this._realm.Remove(relation);
-        });
+        this._realm.Write(() => this._realm.Remove(relation));
 
         return true;
     }
@@ -87,10 +81,7 @@ public partial class GameDatabaseContext // Relations
             UserFavouriting = userFavouriting,
         };
         
-        this._realm.Write(() =>
-        {
-            this._realm.Add(relation);
-        });
+        this._realm.Write(() => this._realm.Add(relation));
 
         this.CreateUserFavouriteEvent(userFavouriting, userToFavourite);
 
@@ -114,10 +105,7 @@ public partial class GameDatabaseContext // Relations
 
         if (relation == null) return false;
 
-        this._realm.Write(() =>
-        {
-            this._realm.Remove(relation);
-        });
+        this._realm.Write(() => this._realm.Remove(relation));
 
         return true;
     }
@@ -146,10 +134,7 @@ public partial class GameDatabaseContext // Relations
             Level = level,
             User = user,
         };
-        this._realm.Write(() =>
-        {
-            this._realm.Add(relation);
-        });
+        this._realm.Write(() => this._realm.Add(relation));
 
         return true;
     }
@@ -161,21 +146,16 @@ public partial class GameDatabaseContext // Relations
 
         if (relation == null) return false;
 
-        this._realm.Write(() =>
-        {
-            this._realm.Remove(relation);
-        });
+        this._realm.Write(() => this._realm.Remove(relation));
 
         return true;
     }
 
     public void ClearQueue(GameUser user)
     {
-        this._realm.Write(() =>
-        {
-            this._realm.RemoveRange(user.QueueLevelRelations);
-        });
+        this._realm.Write(() => this._realm.RemoveRange(user.QueueLevelRelations));
     }
+
     #endregion
 
     #region Rating and Reviewing
@@ -183,14 +163,17 @@ public partial class GameDatabaseContext // Relations
     private RateLevelRelation? GetRateRelationByUser(GameLevel level, GameUser user)
         => this._realm.All<RateLevelRelation>().FirstOrDefault(r => r.User == user && r.Level == level);
 
+    /// <summary>
+    /// Get a user's rating on a particular level.
+    /// A null return value means a user has not set a rating.
+    /// On LBP1/PSP, a missing rating is a separate condition that should be sent
+    /// while on LBP2 and newer you should return a Neutral rating.
+    /// </summary>
+    /// <param name="level">The level to check</param>
+    /// <param name="user">The user to check</param>
+    /// <returns>The rating if found</returns>
     [Pure]
-    public RatingType GetRatingByUser(GameLevel level, GameUser user)
-    {
-        RateLevelRelation? rating = this.GetRateRelationByUser(level, user);
-        if(rating == null) return RatingType.Neutral;
-            
-        return rating.RatingType;
-    }
+    public RatingType? GetRatingByUser(GameLevel level, GameUser user) => this.GetRateRelationByUser(level, user)?.RatingType;
 
     public bool RateLevel(GameLevel level, GameUser user, RatingType type)
     {

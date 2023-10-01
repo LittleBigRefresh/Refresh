@@ -47,6 +47,7 @@ public class GameLevelResponse : IDataConvertableFrom<GameLevelResponse, GameLev
     [XmlElement("yourDPadRating")] public int YourRating { get; set; }
     [XmlElement("thumbsup")] public required int YayCount { get; set; }
     [XmlElement("thumbsdown")] public required int BooCount { get; set; }
+    [XmlElement("yourRating")] public int YourStarRating { get; set; }
     
     [XmlArray("customRewards")]
     [XmlArrayItem("customReward")]
@@ -63,6 +64,7 @@ public class GameLevelResponse : IDataConvertableFrom<GameLevelResponse, GameLev
     [XmlElement("shareable")] public int IsCopyable { get; set; }
     [XmlElement("backgroundGUID")] public string? BackgroundGuid { get; set; }
     [XmlElement("links")] public string? Links { get; set; }
+    [XmlElement("averageRating")] public double AverageStarRating { get; set; }
 
     public static GameLevelResponse? FromOldWithExtraData(GameLevel? old, GameDatabaseContext database, MatchService matchService, GameUser user)
     {
@@ -106,6 +108,7 @@ public class GameLevelResponse : IDataConvertableFrom<GameLevelResponse, GameLev
             IsSubLevel = old.IsSubLevel,
             BackgroundGuid = old.BackgroundGuid,
             Links = "",
+            AverageStarRating = old.CalculateAverageStarRating(),
         };
 
         if (old.Publisher == null)
@@ -127,8 +130,11 @@ public class GameLevelResponse : IDataConvertableFrom<GameLevelResponse, GameLev
     {
         GameLevel? level = database.GetLevelById(this.LevelId);
         if (level == null) throw new InvalidOperationException("Cannot fill in level data for a level that does not exist.");
+
+        RatingType? rating = database.GetRatingByUser(level, user);
         
-        this.YourRating = (int)database.GetRatingByUser(level, user);
+        this.YourRating = rating?.ToDPad() ?? (int)RatingType.Neutral;
+        this.YourStarRating = rating?.ToLBP1() ?? 0;
         this.PlayerCount = matchService.GetPlayerCountForLevel(RoomSlotType.Online, this.LevelId);
     }
 }

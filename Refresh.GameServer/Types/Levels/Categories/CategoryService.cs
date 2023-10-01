@@ -48,7 +48,7 @@ public class CategoryService : EndpointService
             IconHash = "g820607",
             FontAwesomeIcon = "heart",
         },
-        new LevelCategory("mostLiked", "thumbs", false, nameof(GameDatabaseContext.GetHighestRatedLevels))
+        new LevelCategory("mostLiked", new[] { "thumbs", "highestRated" }, false, nameof(GameDatabaseContext.GetHighestRatedLevels))
         {
             Name = "Liked Levels",
             Description = "The most liked levels of all time",

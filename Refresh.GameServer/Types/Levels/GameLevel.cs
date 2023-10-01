@@ -6,6 +6,7 @@ using Refresh.GameServer.Types.Comments;
 using Refresh.GameServer.Types.UserData;
 using Refresh.GameServer.Types.Levels.SkillRewards;
 using Refresh.GameServer.Types.Relations;
+using Refresh.GameServer.Types.Reviews;
 using Refresh.GameServer.Types.UserData.Leaderboard;
 
 namespace Refresh.GameServer.Types.Levels;
@@ -111,4 +112,20 @@ public partial class GameLevel : IRealmObject, ISequentialId
     }
 
     public GameUser? Publisher { get; set; }
+
+    /// <summary>
+    /// Calculates the average rating of a level based on the ratings it has.
+    /// </summary>
+    /// <returns>A double between 1 and 5, indicating the level's average ratings.</returns>
+    public double CalculateAverageStarRating()
+    {
+        int yayCount = this.Ratings.Count(x => x._RatingType == (int)RatingType.Yay);
+        int booCount = this.Ratings.Count(x => x._RatingType == (int)RatingType.Boo);
+        int neutralCount = this.Ratings.Count(x => x._RatingType == (int)RatingType.Neutral);
+
+        // Return 0 if all the counts are 0, we dont want a div by 0 error!
+        if (yayCount + booCount + neutralCount == 0) return 0;
+        
+        return (double)((5 * yayCount) + (1 * booCount) + (3 * neutralCount)) / (yayCount + booCount + neutralCount);
+    }
 }
