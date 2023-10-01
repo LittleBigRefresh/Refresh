@@ -15,8 +15,7 @@ if (args.Length > 0)
 {
     CommandLineManager cli = new(server);
     cli.StartWithArgs(args);
-
-    server.Dispose();
+    
     return;
 }
 
