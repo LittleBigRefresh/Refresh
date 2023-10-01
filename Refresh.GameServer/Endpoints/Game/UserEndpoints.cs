@@ -1,8 +1,9 @@
 using System.Xml.Serialization;
-using Bunkum.CustomHttpListener.Parsing;
-using Bunkum.HttpServer;
-using Bunkum.HttpServer.Endpoints;
-using Bunkum.HttpServer.Storage;
+using Bunkum.Core;
+using Bunkum.Core.Endpoints;
+using Bunkum.Core.Storage;
+using Bunkum.Listener.Protocol;
+using Bunkum.Protocols.Http;
 using Refresh.GameServer.Authentication;
 using Refresh.GameServer.Database;
 using Refresh.GameServer.Endpoints.Game.DataTypes.Response;
@@ -15,12 +16,12 @@ namespace Refresh.GameServer.Endpoints.Game;
 
 public class UserEndpoints : EndpointGroup
 {
-    [GameEndpoint("user/{name}", Method.Get, ContentType.Xml)]
+    [GameEndpoint("user/{name}", HttpMethods.Get, ContentType.Xml)]
     [MinimumRole(GameUserRole.Restricted)]
     public GameUserResponse? GetUser(RequestContext context, GameDatabaseContext database, string name, Token token) 
         => GameUserResponse.FromOldWithExtraData(database.GetUserByUsername(name), token.TokenGame);
 
-    [GameEndpoint("users", Method.Get, ContentType.Xml)]
+    [GameEndpoint("users", HttpMethods.Get, ContentType.Xml)]
     [MinimumRole(GameUserRole.Restricted)]
     public SerializedUserList GetMultipleUsers(RequestContext context, GameDatabaseContext database, Token token)
     {
@@ -43,7 +44,7 @@ public class UserEndpoints : EndpointGroup
         };
     }
 
-    [GameEndpoint("myFriends", Method.Get, ContentType.Xml)]
+    [GameEndpoint("myFriends", HttpMethods.Get, ContentType.Xml)]
     [NullStatusCode(NotFound)]
     [MinimumRole(GameUserRole.Restricted)]
     public SerializedFriendsList? GetFriends(RequestContext context, GameDatabaseContext database,
@@ -55,7 +56,7 @@ public class UserEndpoints : EndpointGroup
         return new SerializedFriendsList(GameUserResponse.FromOldListWithExtraData(friends, token.TokenGame).ToList());
     }
 
-    [GameEndpoint("updateUser", Method.Post, ContentType.Xml)]
+    [GameEndpoint("updateUser", HttpMethods.Post, ContentType.Xml)]
     [NullStatusCode(BadRequest)]
     public string? UpdateUser(RequestContext context, GameDatabaseContext database, GameUser user, string body, IDataStore dataStore, Token token)
     {
@@ -133,7 +134,7 @@ public class UserEndpoints : EndpointGroup
         return string.Empty;
     }
 
-    [GameEndpoint("update_my_pins", Method.Post, ContentType.Json)]
+    [GameEndpoint("update_my_pins", HttpMethods.Post, ContentType.Json)]
     [NullStatusCode(BadRequest)]
     public string? UpdatePins(RequestContext context, GameDatabaseContext database, GameUser user, Stream body)
     {
@@ -165,7 +166,7 @@ public class UserEndpoints : EndpointGroup
         });
     }
 
-    [GameEndpoint("get_my_pins", Method.Get, ContentType.Json)]
+    [GameEndpoint("get_my_pins", HttpMethods.Get, ContentType.Json)]
     [MinimumRole(GameUserRole.Restricted)]
     public UserPins GetPins(RequestContext context, GameUser user) => user.Pins;
 }

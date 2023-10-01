@@ -1,10 +1,10 @@
 using System.Reflection;
-using Bunkum.CustomHttpListener.Request;
-using Bunkum.HttpServer;
-using Bunkum.HttpServer.Database;
-using Bunkum.HttpServer.Endpoints;
-using Bunkum.HttpServer.Responses;
-using Bunkum.HttpServer.Services;
+using Bunkum.Listener.Request;
+using Bunkum.Core.Database;
+using Bunkum.Core.Endpoints;
+using Bunkum.Core.Responses;
+using Bunkum.Core.Services;
+using Bunkum.Protocols.Http;
 using NotEnoughLogs;
 using Refresh.GameServer.Configuration;
 using Refresh.GameServer.Endpoints;
@@ -21,7 +21,7 @@ public class RoleService : Service
     private readonly AuthenticationService _authService;
     private readonly GameServerConfig _config;
     
-    internal RoleService(AuthenticationService authService, GameServerConfig config, LoggerContainer<BunkumContext> logger) : base(logger)
+    internal RoleService(AuthenticationService authService, GameServerConfig config, Logger logger) : base(logger)
     {
         this._authService = authService;
         this._config = config;
@@ -35,7 +35,7 @@ public class RoleService : Service
         MinimumRoleAttribute? roleAttrib = method.GetCustomAttribute<MinimumRoleAttribute>();
         GameUserRole minimumRole = roleAttrib?.MinimumRole ?? GameUserRole.User;
 
-        GameUser? user = (GameUser?)this._authService.AuthenticateUser(context, database);
+        GameUser? user = (GameUser?)this._authService.AuthenticateToken(context, database)?.User;
         if (user == null) return null; // Let AuthenticationProvider handle 401
         
         // if the user's role is lower than the minimum role for this endpoint, then return unauthorized
@@ -50,7 +50,7 @@ public class RoleService : Service
         if (method.GetCustomAttribute<AllowDuringMaintenanceAttribute>() != null)
             return this.OnNormalRequestHandled(context, method, database);
 
-        GameUser? user = (GameUser?)this._authService.AuthenticateUser(context, database);
+        GameUser? user = (GameUser?)this._authService.AuthenticateToken(context, database)?.User;
         if (user == null) return Forbidden;
 
         // If user isn't an admin, then stop the request here, ignoring all

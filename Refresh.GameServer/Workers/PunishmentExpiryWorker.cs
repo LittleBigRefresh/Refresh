@@ -1,4 +1,4 @@
-using Bunkum.HttpServer.Storage;
+using Bunkum.Core.Storage;
 using NotEnoughLogs;
 using Refresh.GameServer.Database;
 using Refresh.GameServer.Types.Roles;
@@ -13,7 +13,7 @@ public class PunishmentExpiryWorker : IWorker
 {
     public int WorkInterval => 60_000; // 1 minute
 
-    public bool DoWork(LoggerContainer<RefreshContext> logger, IDataStore dataStore, GameDatabaseContext database)
+    public bool DoWork(Logger logger, IDataStore dataStore, GameDatabaseContext database)
     {
         DatabaseList<GameUser> bannedUsers = database.GetAllUsersWithRole(GameUserRole.Banned);
         DatabaseList<GameUser> restrictedUsers = database.GetAllUsersWithRole(GameUserRole.Restricted);

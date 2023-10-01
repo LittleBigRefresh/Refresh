@@ -1,8 +1,8 @@
 using System.Diagnostics;
 using System.Security.Cryptography;
-using Bunkum.CustomHttpListener.Request;
-using Bunkum.HttpServer.Database;
-using Bunkum.HttpServer.Endpoints.Middlewares;
+using Bunkum.Listener.Request;
+using Bunkum.Core.Database;
+using Bunkum.Core.Endpoints.Middlewares;
 using Refresh.GameServer.Endpoints;
 using Refresh.GameServer.Extensions;
 

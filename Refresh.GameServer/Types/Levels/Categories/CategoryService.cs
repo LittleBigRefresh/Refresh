@@ -1,5 +1,4 @@
-using Bunkum.HttpServer;
-using Bunkum.HttpServer.Services;
+using Bunkum.Core.Services;
 using NotEnoughLogs;
 using Refresh.GameServer.Database;
 
@@ -73,7 +72,7 @@ public class CategoryService : EndpointService
         new CurrentlyPlayingCategory(),
     };
 
-    internal CategoryService(LoggerContainer<BunkumContext> logger) : base(logger)
+    internal CategoryService(Logger logger) : base(logger)
     {
     }
 }

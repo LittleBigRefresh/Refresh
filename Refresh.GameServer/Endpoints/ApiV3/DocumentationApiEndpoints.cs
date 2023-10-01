@@ -1,6 +1,6 @@
 using AttribDoc.Attributes;
-using Bunkum.HttpServer;
-using Bunkum.HttpServer.Endpoints;
+using Bunkum.Core;
+using Bunkum.Core.Endpoints;
 using Refresh.GameServer.Documentation;
 using Refresh.GameServer.Endpoints.ApiV3.ApiTypes;
 using Refresh.GameServer.Endpoints.ApiV3.DataTypes.Response;

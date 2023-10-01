@@ -2,7 +2,7 @@ using System.Xml.Serialization;
 using MongoDB.Bson;
 using Realms;
 using Refresh.GameServer.Types.Comments;
-using Bunkum.HttpServer.RateLimit;
+using Bunkum.Core.RateLimit;
 using Refresh.GameServer.Types.Levels;
 using Refresh.GameServer.Types.Photos;
 using Refresh.GameServer.Types.Relations;

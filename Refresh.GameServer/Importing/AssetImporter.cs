@@ -1,6 +1,5 @@
 using System.Security.Cryptography;
-using Bunkum.HttpServer;
-using Bunkum.HttpServer.Storage;
+using Bunkum.Core.Storage;
 using JetBrains.Annotations;
 using NotEnoughLogs;
 using Refresh.GameServer.Authentication;
@@ -14,7 +13,7 @@ public class AssetImporter : Importer
 {
     private readonly IDateTimeProvider _timeProvider;
     
-    public AssetImporter(LoggerContainer<BunkumContext>? logger = null, IDateTimeProvider? timeProvider = null) : base(logger)
+    public AssetImporter(Logger? logger = null, IDateTimeProvider? timeProvider = null) : base(logger)
     {
         timeProvider ??= new SystemDateTimeProvider();
         this._timeProvider = timeProvider;

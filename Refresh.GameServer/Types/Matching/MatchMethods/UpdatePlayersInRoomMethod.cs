@@ -1,5 +1,4 @@
-using Bunkum.HttpServer;
-using Bunkum.HttpServer.Responses;
+using Bunkum.Core.Responses;
 using NotEnoughLogs;
 using Refresh.GameServer.Authentication;
 using Refresh.GameServer.Database;
@@ -12,7 +11,7 @@ public class UpdatePlayersInRoomMethod : IMatchMethod
 {
     public IEnumerable<string> MethodNames => new[] { "UpdatePlayersInRoom" };
 
-    public Response Execute(MatchService service, LoggerContainer<BunkumContext> logger, GameDatabaseContext database,
+    public Response Execute(MatchService service, Logger logger, GameDatabaseContext database,
         GameUser user,
         Token token,
         SerializedRoomData body)

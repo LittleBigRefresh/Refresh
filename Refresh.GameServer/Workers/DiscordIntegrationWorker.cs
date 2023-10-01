@@ -1,5 +1,4 @@
-using Bunkum.HttpServer.Configuration;
-using Bunkum.HttpServer.Storage;
+using Bunkum.Core.Storage;
 using Discord;
 using Discord.Webhook;
 using NotEnoughLogs;
@@ -92,7 +91,7 @@ public class DiscordIntegrationWorker : IWorker
         return embed.Build();
     }
 
-    public bool DoWork(LoggerContainer<RefreshContext> logger, IDataStore dataStore, GameDatabaseContext database)
+    public bool DoWork(Logger logger, IDataStore dataStore, GameDatabaseContext database)
     {
         if (this._firstCycle)
         {

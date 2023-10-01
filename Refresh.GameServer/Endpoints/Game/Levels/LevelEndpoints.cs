@@ -1,6 +1,6 @@
-using Bunkum.CustomHttpListener.Parsing;
-using Bunkum.HttpServer;
-using Bunkum.HttpServer.Endpoints;
+using Bunkum.Core;
+using Bunkum.Core.Endpoints;
+using Bunkum.Listener.Protocol;
 using Refresh.GameServer.Authentication;
 using Refresh.GameServer.Database;
 using Refresh.GameServer.Endpoints.Game.DataTypes.Response;

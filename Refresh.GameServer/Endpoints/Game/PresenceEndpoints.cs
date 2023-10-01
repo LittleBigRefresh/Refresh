@@ -1,7 +1,8 @@
 using System.Xml.Serialization;
-using Bunkum.CustomHttpListener.Parsing;
-using Bunkum.HttpServer;
-using Bunkum.HttpServer.Endpoints;
+using Bunkum.Core;
+using Bunkum.Core.Endpoints;
+using Bunkum.Listener.Protocol;
+using Bunkum.Protocols.Http;
 using Refresh.GameServer.Database;
 using Refresh.GameServer.Services;
 using Refresh.GameServer.Types.Roles;
@@ -18,7 +19,7 @@ public class PresenceEndpoints : EndpointGroup
     [MinimumRole(GameUserRole.Restricted)]
     public int TotalPlayers(RequestContext context, MatchService match) => match.TotalPlayers;
 
-    [GameEndpoint("planetStats", Method.Get, ContentType.Xml)]
+    [GameEndpoint("planetStats", HttpMethods.Get, ContentType.Xml)]
     [MinimumRole(GameUserRole.Restricted)]
     public SerializedLevelStatisticsResponse GetLevelStatistics(RequestContext context, GameDatabaseContext database) => new()
     {

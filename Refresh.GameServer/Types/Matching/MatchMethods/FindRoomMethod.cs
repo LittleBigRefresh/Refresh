@@ -1,12 +1,11 @@
-using Bunkum.CustomHttpListener.Parsing;
-using Bunkum.HttpServer;
-using Bunkum.HttpServer.Responses;
+using Bunkum.Core;
+using Bunkum.Core.Responses;
+using Bunkum.Listener.Protocol;
 using MongoDB.Bson;
 using NotEnoughLogs;
 using Refresh.GameServer.Authentication;
 using Refresh.GameServer.Database;
 using Refresh.GameServer.Services;
-using Refresh.GameServer.Types.Levels;
 using Refresh.GameServer.Types.Matching.Responses;
 using Refresh.GameServer.Types.UserData;
 
@@ -16,7 +15,7 @@ public class FindRoomMethod : IMatchMethod
 {
     public IEnumerable<string> MethodNames => new[] { "FindBestRoom" };
 
-    public Response Execute(MatchService service, LoggerContainer<BunkumContext> logger, GameDatabaseContext database,
+    public Response Execute(MatchService service, Logger logger, GameDatabaseContext database,
         GameUser user,
         Token token,
         SerializedRoomData body)
@@ -29,7 +28,7 @@ public class FindRoomMethod : IMatchMethod
         {
             if (body.Slots.Count != 2)
             {
-                logger.LogWarning(BunkumContext.Matching, "Received request with invalid amount of slots, rejecting.");
+                logger.LogWarning(BunkumCategory.Matching, "Received request with invalid amount of slots, rejecting.");
                 return BadRequest;
             }
             

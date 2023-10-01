@@ -1,6 +1,5 @@
 using System.Collections.Concurrent;
-using Bunkum.HttpServer;
-using Bunkum.HttpServer.Storage;
+using Bunkum.Core.Storage;
 using NotEnoughLogs;
 using Refresh.GameServer.Database;
 using Refresh.GameServer.Extensions;
@@ -10,7 +9,7 @@ namespace Refresh.GameServer.Importing;
 
 public partial class ImageImporter : Importer
 {
-    public ImageImporter(LoggerContainer<BunkumContext>? logger = null) : base(logger)
+    public ImageImporter(Logger? logger = null) : base(logger)
     {}
 
     public void ImportFromDataStore(GameDatabaseContext context, IDataStore dataStore)

@@ -1,8 +1,7 @@
 using System.Reflection;
-using Bunkum.CustomHttpListener.Request;
-using Bunkum.HttpServer;
-using Bunkum.HttpServer.Database;
-using Bunkum.HttpServer.Services;
+using Bunkum.Listener.Request;
+using Bunkum.Core.Database;
+using Bunkum.Core.Services;
 using NotEnoughLogs;
 using Refresh.GameServer.Time;
 
@@ -12,7 +11,7 @@ public class TimeProviderService : Service
 {
     public IDateTimeProvider TimeProvider { get; }
 
-    internal TimeProviderService(LoggerContainer<BunkumContext> logger, IDateTimeProvider timeProvider) : base(logger)
+    internal TimeProviderService(Logger logger, IDateTimeProvider timeProvider) : base(logger)
     {
         this.TimeProvider = timeProvider;
     }

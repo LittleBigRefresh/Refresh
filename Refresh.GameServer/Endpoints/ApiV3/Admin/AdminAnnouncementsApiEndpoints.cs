@@ -1,7 +1,8 @@
 using AttribDoc.Attributes;
-using Bunkum.CustomHttpListener.Parsing;
-using Bunkum.HttpServer;
-using Bunkum.HttpServer.Endpoints;
+using Bunkum.Core;
+using Bunkum.Core.Endpoints;
+using Bunkum.Listener.Protocol;
+using Bunkum.Protocols.Http;
 using MongoDB.Bson;
 using Refresh.GameServer.Database;
 using Refresh.GameServer.Endpoints.ApiV3.ApiTypes;
@@ -15,7 +16,7 @@ namespace Refresh.GameServer.Endpoints.ApiV3.Admin;
 
 public class AdminAnnouncementsApiEndpoints : EndpointGroup
 {
-    [ApiV3Endpoint("admin/announcements", Method.Post), MinimumRole(GameUserRole.Admin)]
+    [ApiV3Endpoint("admin/announcements", HttpMethods.Post), MinimumRole(GameUserRole.Admin)]
     [DocSummary("Creates an announcement that shows up in the Instance API endpoint")]
     public ApiResponse<ApiGameAnnouncementResponse> CreateAnnouncement(RequestContext context, GameDatabaseContext database, ApiGameAnnouncementRequest body)
     {
@@ -23,7 +24,7 @@ public class AdminAnnouncementsApiEndpoints : EndpointGroup
         return ApiGameAnnouncementResponse.FromOld(announcement);
     }
 
-    [ApiV3Endpoint("admin/announcements/{idStr}", Method.Delete), MinimumRole(GameUserRole.Admin)]
+    [ApiV3Endpoint("admin/announcements/{idStr}", HttpMethods.Delete), MinimumRole(GameUserRole.Admin)]
     [DocError(typeof(ApiValidationError), ApiValidationError.ObjectIdParseErrorWhen)]
     [DocError(typeof(ApiNotFoundError), "The announcement could not be found")]
     [DocSummary("Removes an announcement")]

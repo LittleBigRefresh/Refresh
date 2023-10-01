@@ -1,10 +1,11 @@
 using System.Net;
 using System.Xml.Serialization;
-using Bunkum.CustomHttpListener.Parsing;
-using Bunkum.HttpServer;
-using Bunkum.HttpServer.Endpoints;
-using Bunkum.HttpServer.RateLimit;
-using Bunkum.HttpServer.Responses;
+using Bunkum.Core;
+using Bunkum.Core.Endpoints;
+using Bunkum.Core.RateLimit;
+using Bunkum.Core.Responses;
+using Bunkum.Listener.Protocol;
+using Bunkum.Protocols.Http;
 using NPTicket;
 using NPTicket.Verification;
 using NPTicket.Verification.Keys;
@@ -20,7 +21,7 @@ namespace Refresh.GameServer.Endpoints.Game.Handshake;
 
 public class AuthenticationEndpoints : EndpointGroup
 {
-    [GameEndpoint("login", Method.Post, ContentType.Xml), Authentication(false), AllowDuringMaintenance]
+    [GameEndpoint("login", HttpMethods.Post, ContentType.Xml), Authentication(false), AllowDuringMaintenance]
     [NullStatusCode(Forbidden)]
     [RateLimitSettings(300, 10, 300, "auth")]
     [MinimumRole(GameUserRole.Restricted)]
@@ -38,7 +39,7 @@ public class AuthenticationEndpoints : EndpointGroup
         }
         catch(Exception e)
         {
-            context.Logger.LogWarning(BunkumContext.Authentication, "Could not read ticket: " + e);
+            context.Logger.LogWarning(BunkumCategory.Authentication, "Could not read ticket: " + e);
             return null;
         }
         
@@ -58,7 +59,7 @@ public class AuthenticationEndpoints : EndpointGroup
                 QueuedRegistration? registration = database.GetQueuedRegistrationByUsername(ticket.Username);
                 if (registration == null)
                 {
-                    context.Logger.LogWarning(BunkumContext.Authentication, $"Rejecting {ticket.Username}'s login because there was no matching queued registration");
+                    context.Logger.LogWarning(BunkumCategory.Authentication, $"Rejecting {ticket.Username}'s login because there was no matching queued registration");
                     return null;
                 }
                 
@@ -69,7 +70,7 @@ public class AuthenticationEndpoints : EndpointGroup
                     EmailVerificationCode code = database.CreateEmailVerificationCode(user);
                     smtpService.SendEmailVerificationRequest(user, code.Code);
 
-                    context.Logger.LogInfo(BunkumContext.Authentication, $"Telling user {user.Username} to verify their email");
+                    context.Logger.LogInfo(BunkumCategory.Authentication, $"Telling user {user.Username} to verify their email");
                     database.AddNotification("Verify your email",
                         "Your account has been created, but you still need to verify your e-mail." +
                            "Please check your email for a verification code, and verify it in settings." +
@@ -84,19 +85,19 @@ public class AuthenticationEndpoints : EndpointGroup
             }
             else
             {
-                context.Logger.LogWarning(BunkumContext.Authentication, $"Rejecting {ticket.Username}'s login because there was no matching username");
+                context.Logger.LogWarning(BunkumCategory.Authentication, $"Rejecting {ticket.Username}'s login because there was no matching username");
                 return null;
             }
         }
         else if (user.Role == GameUserRole.Banned)
         {
-            context.Logger.LogWarning(BunkumContext.Authentication, $"Rejecting {user}'s login because they are banned");
+            context.Logger.LogWarning(BunkumCategory.Authentication, $"Rejecting {user}'s login because they are banned");
             return null;
         }
 
         if (config.MaintenanceMode && user.Role != GameUserRole.Admin)
         {
-            context.Logger.LogWarning(BunkumContext.Authentication, $"Rejecting {user}'s login because server is in maintenance mode");
+            context.Logger.LogWarning(BunkumCategory.Authentication, $"Rejecting {user}'s login because server is in maintenance mode");
             return null;
         }
 
@@ -106,7 +107,7 @@ public class AuthenticationEndpoints : EndpointGroup
             if ((platform is TokenPlatform.PS3 or TokenPlatform.Vita or TokenPlatform.PSP && !user.PsnAuthenticationAllowed) ||
                 (platform is TokenPlatform.RPCS3 && !user.RpcnAuthenticationAllowed))
             {
-                context.Logger.LogWarning(BunkumContext.Authentication, $"Rejecting {user}'s login because their platform ({platform}) is not allowed");
+                context.Logger.LogWarning(BunkumCategory.Authentication, $"Rejecting {user}'s login because their platform ({platform}) is not allowed");
                 SendPlatformNotAllowedNotification(database, user, platform.Value);
                 return null;
             }
@@ -118,7 +119,7 @@ public class AuthenticationEndpoints : EndpointGroup
                 SendVerificationFailureNotification(database, user, config);
                 if (!config.AllowUsersToUseIpAuthentication)
                 {
-                    context.Logger.LogWarning(BunkumContext.Authentication, $"Rejecting {user}'s login because their ticket could not be verified");
+                    context.Logger.LogWarning(BunkumCategory.Authentication, $"Rejecting {user}'s login because their ticket could not be verified");
                     return null;
                 }
             }
@@ -128,7 +129,7 @@ public class AuthenticationEndpoints : EndpointGroup
         {
             if (!HandleIpAuthentication(context, user, database, !config.UseTicketVerification))
             {
-                context.Logger.LogWarning(BunkumContext.Authentication, $"Rejecting {user}'s login because their IP was not whitelisted");
+                context.Logger.LogWarning(BunkumCategory.Authentication, $"Rejecting {user}'s login because their IP was not whitelisted");
                 return null;
             }
         }
@@ -138,7 +139,7 @@ public class AuthenticationEndpoints : EndpointGroup
         if (platform == null)
         {
             database.AddLoginFailNotification("The server could not determine what platform you were trying to connect from.", user);
-            context.Logger.LogWarning(BunkumContext.Authentication, $"Could not determine platform from ticket.\n" +
+            context.Logger.LogWarning(BunkumCategory.Authentication, $"Could not determine platform from ticket.\n" +
                                                                     $"Missing IssuerID: {ticket.IssuerId}");
             return null;
         }
@@ -146,7 +147,7 @@ public class AuthenticationEndpoints : EndpointGroup
         if (game == null)
         {
             database.AddLoginFailNotification("The server could not determine what game you were trying to connect from.", user);
-            context.Logger.LogWarning(BunkumContext.Authentication, $"Could not determine game from ticket.\n" +
+            context.Logger.LogWarning(BunkumCategory.Authentication, $"Could not determine game from ticket.\n" +
                                                                     $"Missing TitleID: {ticket.TitleId}");
             return null;
         }
@@ -178,12 +179,12 @@ public class AuthenticationEndpoints : EndpointGroup
         // Determine the correct key to use
         if (ticket.IssuerId == 0x33333333)
         {
-            context.Logger.LogDebug(BunkumContext.Authentication, "Using RPCN ticket key");
+            context.Logger.LogDebug(BunkumCategory.Authentication, "Using RPCN ticket key");
             signingKey = RpcnSigningKey.Instance;
         }
         else
         {
-            context.Logger.LogDebug(BunkumContext.Authentication, "Using PSN LBP ticket key");
+            context.Logger.LogDebug(BunkumCategory.Authentication, "Using PSN LBP ticket key");
             signingKey = LbpSigningKey.Instance;
         }
             
@@ -247,7 +248,7 @@ public class AuthenticationEndpoints : EndpointGroup
     /// <summary>
     /// Called by the game when it exits cleanly.
     /// </summary>
-    [GameEndpoint("goodbye", Method.Post, ContentType.Xml)]
+    [GameEndpoint("goodbye", HttpMethods.Post, ContentType.Xml)]
     [MinimumRole(GameUserRole.Restricted)]
     public Response RevokeThisToken(RequestContext context, GameDatabaseContext database, GameUser user)
     {

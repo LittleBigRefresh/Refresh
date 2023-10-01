@@ -1,4 +1,4 @@
-using Bunkum.HttpServer.Configuration;
+using Bunkum.Core.Configuration;
 
 namespace Refresh.GameServer.Configuration;
 

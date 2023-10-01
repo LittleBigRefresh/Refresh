@@ -1,4 +1,4 @@
-using Bunkum.HttpServer.Storage;
+using Bunkum.Core.Storage;
 using NotEnoughLogs;
 using Refresh.GameServer.Database;
 
@@ -6,11 +6,11 @@ namespace Refresh.GameServer.Workers;
 
 public class WorkerManager
 {
-    private readonly LoggerContainer<RefreshContext> _logger;
+    private readonly Logger _logger;
     private readonly IDataStore _dataStore;
     private readonly GameDatabaseProvider _databaseProvider;
 
-    public WorkerManager(LoggerContainer<RefreshContext> logger, IDataStore dataStore, GameDatabaseProvider databaseProvider)
+    public WorkerManager(Logger logger, IDataStore dataStore, GameDatabaseProvider databaseProvider)
     {
         this._dataStore = dataStore;
         this._databaseProvider = databaseProvider;

@@ -1,8 +1,8 @@
-using Bunkum.HttpServer;
-using Bunkum.HttpServer.Services;
+using Bunkum.Core;
+using Bunkum.Core.Services;
 using NotEnoughLogs;
 using System.Reflection;
-using Bunkum.HttpServer.Responses;
+using Bunkum.Core.Responses;
 using MongoDB.Bson;
 using Refresh.GameServer.Authentication;
 using Refresh.GameServer.Database;
@@ -35,7 +35,7 @@ public partial class MatchService : EndpointService
         .SelectMany(r => r.PlayerIds)
         .Count();
 
-    public MatchService(LoggerContainer<BunkumContext> logger) : base(logger)
+    public MatchService(Logger logger) : base(logger)
     {}
 
     public GameRoom GetOrCreateRoomByPlayer(GameUser player, TokenPlatform platform, TokenGame game, NatType natType)
@@ -93,7 +93,7 @@ public partial class MatchService : EndpointService
         int removed = this._rooms.RemoveAll(r => r.IsExpired);
         if (removed == 0) return;
         
-        this.Logger.LogDebug(BunkumContext.Matching, $"Removed {removed} expired rooms");
+        this.Logger.LogDebug(BunkumCategory.Matching, $"Removed {removed} expired rooms");
     }
 
     public override void Initialize()
@@ -107,12 +107,12 @@ public partial class MatchService : EndpointService
         foreach (Type type in matchMethodTypes)
         {
             string name = type.Name.Substring(0, type.Name.IndexOf("Method", StringComparison.Ordinal));
-            this.Logger.LogTrace(BunkumContext.Service, $"Found {nameof(IMatchMethod)} '{name}'");
+            this.Logger.LogTrace(BunkumCategory.Service, $"Found {nameof(IMatchMethod)} '{name}'");
             
             this._matchMethods.Add((IMatchMethod)Activator.CreateInstance(type)!);
         }
         
-        this.Logger.LogDebug(BunkumContext.Service, $"Discovered {matchMethodTypes.Count} match method types");
+        this.Logger.LogDebug(BunkumCategory.Service, $"Discovered {matchMethodTypes.Count} match method types");
     }
 
     private IMatchMethod? TryGetMatchMethod(string method) 

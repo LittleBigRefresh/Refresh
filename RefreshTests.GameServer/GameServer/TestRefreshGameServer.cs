@@ -1,14 +1,11 @@
-using Bunkum.CustomHttpListener;
-using Bunkum.HttpServer;
-using Bunkum.HttpServer.Storage;
+using Bunkum.Core.Storage;
+using Bunkum.Protocols.Http;
 using NotEnoughLogs;
 using Refresh.GameServer;
 using Refresh.GameServer.Configuration;
 using Refresh.GameServer.Database;
-using Refresh.GameServer.Importing;
 using Refresh.GameServer.Services;
 using Refresh.GameServer.Time;
-using Refresh.GameServer.Types.Assets;
 using RefreshTests.GameServer.Time;
 
 namespace RefreshTests.GameServer.GameServer;
@@ -19,13 +16,13 @@ public class TestRefreshGameServer : RefreshGameServer
     {}
 
     public BunkumHttpServer Server => this._server;
-    public LoggerContainer<RefreshContext> Logger => this._logger;
+    public Logger Logger => this._logger;
 
     protected override void SetupConfiguration()
     {
-        this._server.UseConfig(new GameServerConfig());
-        this._server.UseConfig(new RichPresenceConfig());
-        this._server.UseConfig(new IntegrationConfig());
+        this._server.AddConfig(new GameServerConfig());
+        this._server.AddConfig(new RichPresenceConfig());
+        this._server.AddConfig(new IntegrationConfig());
     }
 
     public override void Start()

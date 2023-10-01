@@ -1,6 +1,5 @@
 using System.Reflection;
-using Bunkum.HttpServer;
-using Bunkum.HttpServer.Services;
+using Bunkum.Core.Services;
 using NotEnoughLogs;
 using Refresh.GameServer.Endpoints.ApiV3.DataTypes.Response;
 
@@ -8,7 +7,7 @@ namespace Refresh.GameServer.Documentation;
 
 public class DocumentationService : EndpointService
 {
-    internal DocumentationService(LoggerContainer<BunkumContext> logger) : base(logger)
+    internal DocumentationService(Logger logger) : base(logger)
     {}
 
     public override void Initialize()

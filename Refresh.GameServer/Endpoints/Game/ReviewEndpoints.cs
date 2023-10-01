@@ -1,7 +1,8 @@
-using Bunkum.CustomHttpListener.Parsing;
-using Bunkum.HttpServer;
-using Bunkum.HttpServer.Endpoints;
-using Bunkum.HttpServer.Responses;
+using Bunkum.Core;
+using Bunkum.Core.Endpoints;
+using Bunkum.Core.Responses;
+using Bunkum.Listener.Protocol;
+using Bunkum.Protocols.Http;
 using Refresh.GameServer.Database;
 using Refresh.GameServer.Types.Levels;
 using Refresh.GameServer.Types.Reviews;
@@ -11,7 +12,7 @@ namespace Refresh.GameServer.Endpoints.Game;
 
 public class ReviewEndpoints : EndpointGroup
 {
-    [GameEndpoint("dpadrate/{type}/{levelId}", Method.Post)]
+    [GameEndpoint("dpadrate/{type}/{levelId}", HttpMethods.Post)]
     public Response SubmitRating(RequestContext context, GameDatabaseContext database, GameUser user, int levelId)
     {
         GameLevel? level = database.GetLevelById(levelId);
@@ -24,7 +25,7 @@ public class ReviewEndpoints : EndpointGroup
         return rated ? OK : Unauthorized;
     }
     
-    [GameEndpoint("rate/user/{id}", ContentType.Xml, Method.Post)]
+    [GameEndpoint("rate/user/{id}", ContentType.Xml, HttpMethods.Post)]
     [AllowEmptyBody]
     public Response RateUserLevel(RequestContext context, GameDatabaseContext database, GameUser user, int id)
     {

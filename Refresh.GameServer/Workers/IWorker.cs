@@ -1,4 +1,4 @@
-using Bunkum.HttpServer.Storage;
+using Bunkum.Core.Storage;
 using NotEnoughLogs;
 using Refresh.GameServer.Database;
 
@@ -18,5 +18,5 @@ public interface IWorker
     /// <param name="dataStore">The server's data store, for workers to use.</param>
     /// <param name="database">A database context, for workers to use.</param>
     /// <returns>True if the worker did work, false if it did not.</returns>
-    public bool DoWork(LoggerContainer<RefreshContext> logger, IDataStore dataStore, GameDatabaseContext database);
+    public bool DoWork(Logger logger, IDataStore dataStore, GameDatabaseContext database);
 }

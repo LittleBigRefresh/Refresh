@@ -1,7 +1,8 @@
 using AttribDoc.Attributes;
-using Bunkum.CustomHttpListener.Parsing;
-using Bunkum.HttpServer;
-using Bunkum.HttpServer.Endpoints;
+using Bunkum.Core;
+using Bunkum.Core.Endpoints;
+using Bunkum.Listener.Protocol;
+using Bunkum.Protocols.Http;
 using Refresh.GameServer.Database;
 using Refresh.GameServer.Endpoints.ApiV3.ApiTypes;
 using Refresh.GameServer.Endpoints.ApiV3.ApiTypes.Errors;
@@ -43,7 +44,7 @@ public class UserApiEndpoints : EndpointGroup
     public ApiResponse<ApiExtendedGameUserResponse> GetMyUser(RequestContext context, GameUser user)
         => ApiExtendedGameUserResponse.FromOld(user);
     
-    [ApiV3Endpoint("users/me", Method.Patch)]
+    [ApiV3Endpoint("users/me", HttpMethods.Patch)]
     [DocSummary("Updates your profile with the given data")]
     public ApiResponse<ApiExtendedGameUserResponse> UpdateUser(RequestContext context, GameDatabaseContext database, GameUser user, ApiUpdateUserRequest body)
     {

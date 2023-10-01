@@ -1,16 +1,16 @@
 using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.Reflection;
-using Bunkum.CustomHttpListener;
 using Bunkum.AutoDiscover.Extensions;
-using Bunkum.HttpServer;
-using Bunkum.HttpServer.Authentication;
-using Bunkum.HttpServer.Configuration;
-using Bunkum.HttpServer.RateLimit;
-using Bunkum.HttpServer.Storage;
+using Bunkum.Core.Authentication;
+using Bunkum.Core.Configuration;
+using Bunkum.Core.RateLimit;
+using Bunkum.Core.Storage;
+using Bunkum.HealthChecks;
+using Bunkum.Protocols.Http;
 using Bunkum.RealmDatabase;
 using NotEnoughLogs;
-using NotEnoughLogs.Loggers;
+using NotEnoughLogs.Behaviour;
 using Refresh.GameServer.Authentication;
 using Refresh.GameServer.Configuration;
 using Refresh.GameServer.Database;
@@ -30,7 +30,7 @@ namespace Refresh.GameServer;
 [SuppressMessage("ReSharper", "InconsistentNaming")]
 public class RefreshGameServer
 {
-    protected readonly LoggerContainer<RefreshContext> _logger;
+    protected readonly Logger _logger;
     
     protected readonly BunkumHttpServer _server;
     protected WorkerManager? _workerManager;
@@ -44,23 +44,32 @@ public class RefreshGameServer
     public RefreshGameServer(
         BunkumHttpListener? listener = null,
         Func<GameDatabaseProvider>? databaseProvider = null,
-        IAuthenticationProvider<GameUser, Token>? authProvider = null,
+        IAuthenticationProvider<Token>? authProvider = null,
         IDataStore? dataStore = null
     )
     {
         databaseProvider ??= () => new GameDatabaseProvider();
         dataStore ??= new FileSystemDataStore();
 
-        this._logger = new LoggerContainer<RefreshContext>();
-        this._logger.RegisterLogger(new ConsoleLogger());
+        LoggerConfiguration logConfig = new()
+        {
+            Behaviour = new QueueLoggingBehaviour(),
+            #if DEBUG
+            MaxLevel = LogLevel.Trace,
+            #else
+            MaxLevel = LogLevel.Info,
+            #endif
+        };
+
+        this._logger = new Logger(logConfig);
         this._logger.LogDebug(RefreshContext.Startup, "Successfully initialized " + this.GetType().Name);
         
         this._databaseProvider = databaseProvider.Invoke();
         this._dataStore = dataStore;
         
-        this._server = listener == null ? new BunkumHttpServer() : new BunkumHttpServer(listener);
+        this._server = listener == null ? new BunkumHttpServer(logConfig) : new BunkumHttpServer(listener, configuration: logConfig);
         
-        this._server.Initialize = () =>
+        this._server.Initialize = _ =>
         {
             GameDatabaseProvider provider = databaseProvider.Invoke();
             
@@ -77,7 +86,7 @@ public class RefreshGameServer
         CultureInfo.CurrentCulture = CultureInfo.InvariantCulture;
     }
 
-    private void InjectBaseServices(GameDatabaseProvider databaseProvider, IAuthenticationProvider<GameUser, Token> authProvider, IDataStore dataStore)
+    private void InjectBaseServices(GameDatabaseProvider databaseProvider, IAuthenticationProvider<Token> authProvider, IDataStore dataStore)
     {
         this._server.UseDatabaseProvider(databaseProvider);
         this._server.AddAuthenticationService(authProvider, true);
@@ -105,15 +114,15 @@ public class RefreshGameServer
 
     protected virtual void SetupConfiguration()
     {
-        GameServerConfig config = Config.LoadFromFile<GameServerConfig>("refreshGameServer.json", this._server.Logger);
+        GameServerConfig config = Config.LoadFromJsonFile<GameServerConfig>("refreshGameServer.json", this._server.Logger);
         this._config = config;
 
-        IntegrationConfig integrationConfig = Config.LoadFromFile<IntegrationConfig>("integrations.json", this._server.Logger);
+        IntegrationConfig integrationConfig = Config.LoadFromJsonFile<IntegrationConfig>("integrations.json", this._server.Logger);
         this._integrationConfig = integrationConfig;
         
-        this._server.UseConfig(config);
-        this._server.UseConfig(integrationConfig);
-        this._server.UseJsonConfig<RichPresenceConfig>("rpc.json");
+        this._server.AddConfig(config);
+        this._server.AddConfig(integrationConfig);
+        this._server.AddConfigFromJsonFile<RichPresenceConfig>("rpc.json");
     }
     
     protected virtual void SetupServices()
@@ -130,7 +139,7 @@ public class RefreshGameServer
             baseEndpoint: GameEndpointAttribute.BaseRoute.Substring(0, GameEndpointAttribute.BaseRoute.Length - 1),
             usesCustomDigestKey: true);
         
-        this._server.AddHealthCheckService(new []
+        this._server.AddHealthCheckService(this._databaseProvider, new []
         {
             typeof(RealmDatabaseHealthCheck),
         });

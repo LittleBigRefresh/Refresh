@@ -1,17 +1,17 @@
-using Bunkum.CustomHttpListener.Parsing;
-using Bunkum.HttpServer.Endpoints;
+using Bunkum.Listener.Protocol;
+using Bunkum.Protocols.Http;
 
 namespace Refresh.GameServer.Endpoints;
 
-public class LegacyApiEndpointAttribute : EndpointAttribute
+public class LegacyApiEndpointAttribute : HttpEndpointAttribute
 {
     public const string BaseRoute = "/api/v1/";
 
-    public LegacyApiEndpointAttribute(string route, Method method = Method.Get, ContentType contentType = ContentType.Json)
+    public LegacyApiEndpointAttribute(string route, HttpMethods method = HttpMethods.Get, ContentType contentType = ContentType.Json)
         : base(BaseRoute + route, method, contentType)
     {}
 
-    public LegacyApiEndpointAttribute(string route, ContentType contentType, Method method = Method.Get)
+    public LegacyApiEndpointAttribute(string route, ContentType contentType, HttpMethods method = HttpMethods.Get)
         : base(BaseRoute + route, contentType, method)
     {}
 }

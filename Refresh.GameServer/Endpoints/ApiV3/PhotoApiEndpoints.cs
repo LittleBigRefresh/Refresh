@@ -1,7 +1,8 @@
 using AttribDoc.Attributes;
-using Bunkum.CustomHttpListener.Parsing;
-using Bunkum.HttpServer;
-using Bunkum.HttpServer.Endpoints;
+using Bunkum.Core;
+using Bunkum.Core.Endpoints;
+using Bunkum.Listener.Protocol;
+using Bunkum.Protocols.Http;
 using Refresh.GameServer.Database;
 using Refresh.GameServer.Documentation.Attributes;
 using Refresh.GameServer.Endpoints.ApiV3.ApiTypes;
@@ -16,7 +17,7 @@ namespace Refresh.GameServer.Endpoints.ApiV3;
 
 public class PhotoApiEndpoints : EndpointGroup
 {
-    [ApiV3Endpoint("photos/{id}", Method.Delete)]
+    [ApiV3Endpoint("photos/{id}", HttpMethods.Delete)]
     [DocSummary("Deletes an uploaded photo")]
     [DocError(typeof(ApiNotFoundError), ApiNotFoundError.PhotoMissingErrorWhen)]
     [DocError(typeof(ApiValidationError), ApiValidationError.NoPhotoDeletionPermissionErrorWhen)]

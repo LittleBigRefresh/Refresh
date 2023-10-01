@@ -1,5 +1,4 @@
 using System.Diagnostics.CodeAnalysis;
-using Bunkum.HttpServer;
 using CommandLine;
 using NotEnoughLogs;
 using Refresh.GameServer.Documentation;
@@ -67,7 +66,7 @@ internal class CommandLineManager
 
         if (options.GenerateDocumentation)
         {
-            DocumentationService service = new(new LoggerContainer<BunkumContext>());
+            DocumentationService service = new(new Logger());
             service.Initialize();
             
             string json = JsonConvert.SerializeObject(service.Documentation, Formatting.Indented);

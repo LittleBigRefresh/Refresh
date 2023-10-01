@@ -1,6 +1,5 @@
-using Bunkum.HttpServer;
-using Bunkum.HttpServer.Configuration;
-using Bunkum.HttpServer.Endpoints;
+using Bunkum.Core;
+using Bunkum.Core.Endpoints;
 using Refresh.GameServer.Configuration;
 using Refresh.GameServer.Database;
 using Refresh.GameServer.Types.Notifications;

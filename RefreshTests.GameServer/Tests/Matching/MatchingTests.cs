@@ -1,5 +1,5 @@
 using System.Diagnostics;
-using Bunkum.HttpServer.Responses;
+using Bunkum.Core.Responses;
 using Refresh.GameServer.Authentication;
 using Refresh.GameServer.Services;
 using Refresh.GameServer.Types.Matching;

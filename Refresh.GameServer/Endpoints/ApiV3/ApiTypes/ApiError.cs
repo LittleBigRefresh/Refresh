@@ -1,5 +1,6 @@
 using System.Net;
-using Bunkum.CustomHttpListener.Parsing;
+using Bunkum.Core.Responses;
+using Bunkum.Listener.Protocol;
 
 namespace Refresh.GameServer.Endpoints.ApiV3.ApiTypes;
 
@@ -31,6 +32,6 @@ public class ApiError
     /// </summary>
     public HttpStatusCode StatusCode { get; set; }
 
-    public static implicit operator Bunkum.HttpServer.Responses.Response(ApiError error) 
+    public static implicit operator Response(ApiError error) 
         => new(error, ContentType.Json, error.StatusCode);
 }

@@ -1,8 +1,9 @@
-using Bunkum.CustomHttpListener.Parsing;
-using Bunkum.HttpServer;
-using Bunkum.HttpServer.Endpoints;
-using Bunkum.HttpServer.Responses;
-using Bunkum.HttpServer.Storage;
+using Bunkum.Core;
+using Bunkum.Core.Endpoints;
+using Bunkum.Core.Responses;
+using Bunkum.Core.Storage;
+using Bunkum.Listener.Protocol;
+using Bunkum.Protocols.Http;
 using Refresh.GameServer.Database;
 using Refresh.GameServer.Extensions;
 using Refresh.GameServer.Types.Lists;
@@ -14,7 +15,7 @@ namespace Refresh.GameServer.Endpoints.Game;
 
 public class PhotoEndpoints : EndpointGroup
 {
-    [GameEndpoint("uploadPhoto", Method.Post, ContentType.Xml)]
+    [GameEndpoint("uploadPhoto", HttpMethods.Post, ContentType.Xml)]
     public Response UploadPhoto(RequestContext context, SerializedPhoto body, GameDatabaseContext database, GameUser user, IDataStore dataStore)
     {
         if (!dataStore.ExistsInStore(body.SmallHash) ||
@@ -28,7 +29,7 @@ public class PhotoEndpoints : EndpointGroup
 
         if (body.PhotoSubjects.Count > 4)
         {
-            context.Logger.LogWarning(BunkumContext.UserContent, $"Too many subjects in photo, rejecting photo upload. Uploader: {user.UserId}");
+            context.Logger.LogWarning(BunkumCategory.UserContent, $"Too many subjects in photo, rejecting photo upload. Uploader: {user.UserId}");
             return BadRequest;
         }
 
@@ -37,7 +38,7 @@ public class PhotoEndpoints : EndpointGroup
         return OK;
     }
 
-    [GameEndpoint("deletePhoto/{id}", Method.Post)]
+    [GameEndpoint("deletePhoto/{id}", HttpMethods.Post)]
     public Response DeletePhoto(RequestContext context, GameDatabaseContext database, GameUser user, int id)
     {
         GamePhoto? photo = database.GetPhotoById(id);

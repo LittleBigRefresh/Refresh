@@ -1,4 +1,4 @@
-using Bunkum.HttpServer.Storage;
+using Bunkum.Core.Storage;
 using NotEnoughLogs;
 using Refresh.GameServer.Database;
 using Refresh.GameServer.Types.UserData;
@@ -8,7 +8,7 @@ namespace Refresh.GameServer.Workers;
 public class ExpiredObjectWorker : IWorker
 {
     public int WorkInterval => 300_000; // 5 minutes
-    public bool DoWork(LoggerContainer<RefreshContext> logger, IDataStore dataStore, GameDatabaseContext database)
+    public bool DoWork(Logger logger, IDataStore dataStore, GameDatabaseContext database)
     {
         bool removed = false;
         foreach (QueuedRegistration registration in database.GetAllQueuedRegistrations().Items)

@@ -1,5 +1,5 @@
 using System.Net;
-using Bunkum.HttpServer.Responses;
+using Bunkum.Core.Responses;
 
 namespace Refresh.GameServer.Endpoints.ApiV3.ApiTypes;
 

@@ -1,4 +1,4 @@
-using Bunkum.CustomHttpListener.Listeners.Direct;
+using Bunkum.Protocols.Http.Direct;
 using Refresh.GameServer.Authentication;
 using Refresh.GameServer.Database;
 using Refresh.GameServer.Types;

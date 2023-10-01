@@ -1,8 +1,9 @@
 using System.Diagnostics;
-using Bunkum.CustomHttpListener.Parsing;
-using Bunkum.HttpServer;
-using Bunkum.HttpServer.Endpoints;
-using Bunkum.HttpServer.Responses;
+using Bunkum.Core;
+using Bunkum.Core.Endpoints;
+using Bunkum.Core.Responses;
+using Bunkum.Listener.Protocol;
+using Bunkum.Protocols.Http;
 using Refresh.GameServer.Database;
 using Refresh.GameServer.Extensions;
 using Refresh.GameServer.Types.Levels;
@@ -15,7 +16,7 @@ namespace Refresh.GameServer.Endpoints.Game.Levels;
 
 public class LeaderboardEndpoints : EndpointGroup
 {
-    [GameEndpoint("play/user/{id}", ContentType.Xml, Method.Post)]
+    [GameEndpoint("play/user/{id}", ContentType.Xml, HttpMethods.Post)]
     public Response PlayLevel(RequestContext context, GameUser user, GameDatabaseContext database, int id)
     {
         GameLevel? level = database.GetLevelById(id);
@@ -25,21 +26,21 @@ public class LeaderboardEndpoints : EndpointGroup
         return OK;
     }
 
-    [GameEndpoint("scoreboard/developer/{id}", Method.Get, ContentType.Xml)]
+    [GameEndpoint("scoreboard/developer/{id}", HttpMethods.Get, ContentType.Xml)]
     public SerializedMultiLeaderboardResponse GetDeveloperScores(RequestContext context, GameUser user, GameDatabaseContext database, int id)
     {
         //TODO
         return new SerializedMultiLeaderboardResponse(new List<SerializedPlayerLeaderboardResponse>());
     }
 
-    [GameEndpoint("scoreboard/developer/{id}", ContentType.Xml, Method.Post)]
+    [GameEndpoint("scoreboard/developer/{id}", ContentType.Xml, HttpMethods.Post)]
     public Response SubmitDeveloperScore(RequestContext context, GameUser user, GameDatabaseContext database, int id, SerializedScore body)
     {
         //TODO
         return new Response(SerializedScoreLeaderboardList.FromSubmittedEnumerable(new List<ScoreWithRank>()), ContentType.Xml);
     }
     
-    [GameEndpoint("scoreboard/user/{id}", Method.Get, ContentType.Xml)]
+    [GameEndpoint("scoreboard/user/{id}", HttpMethods.Get, ContentType.Xml)]
     public Response GetUserScores(RequestContext context, GameUser user, GameDatabaseContext database, int id)
     {
         GameLevel? level = database.GetLevelById(id);
@@ -51,7 +52,7 @@ public class LeaderboardEndpoints : EndpointGroup
         return new Response(SerializedMultiLeaderboardResponse.FromOldList(scores), ContentType.Xml);
     }
     
-    [GameEndpoint("scoreboard/user/{id}", ContentType.Xml, Method.Post)]
+    [GameEndpoint("scoreboard/user/{id}", ContentType.Xml, HttpMethods.Post)]
     public Response SubmitScore(RequestContext context, GameUser user, GameDatabaseContext database, int id, SerializedScore body)
     {
         GameLevel? level = database.GetLevelById(id);

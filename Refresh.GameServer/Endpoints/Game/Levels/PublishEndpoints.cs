@@ -1,8 +1,9 @@
-using Bunkum.CustomHttpListener.Parsing;
-using Bunkum.HttpServer;
-using Bunkum.HttpServer.Endpoints;
-using Bunkum.HttpServer.Responses;
-using Bunkum.HttpServer.Storage;
+using Bunkum.Core;
+using Bunkum.Core.Endpoints;
+using Bunkum.Core.Responses;
+using Bunkum.Core.Storage;
+using Bunkum.Listener.Protocol;
+using Bunkum.Protocols.Http;
 using NotEnoughLogs;
 using Refresh.GameServer.Authentication;
 using Refresh.GameServer.Database;
@@ -24,7 +25,7 @@ public class PublishEndpoints : EndpointGroup
     /// <param name="user">The user that is attempting to upload</param>
     /// <param name="logger">A logger instance</param>
     /// <returns>Whether or not validation succeeded</returns>
-    private static bool VerifyLevel(GameLevelRequest body, GameUser user, LoggerContainer<BunkumContext> logger)
+    private static bool VerifyLevel(GameLevelRequest body, GameUser user, Logger logger)
     {
         if (body.Title.Length > 256)
         {
@@ -44,7 +45,7 @@ public class PublishEndpoints : EndpointGroup
         return true;
     }
     
-    [GameEndpoint("startPublish", ContentType.Xml, Method.Post)]
+    [GameEndpoint("startPublish", ContentType.Xml, HttpMethods.Post)]
     [NullStatusCode(BadRequest)]
     public SerializedLevelResources? StartPublish(RequestContext context, GameUser user, GameDatabaseContext database, GameLevelRequest body, CommandService command, IDataStore dataStore)
     {
@@ -69,7 +70,7 @@ public class PublishEndpoints : EndpointGroup
         };
     }
 
-    [GameEndpoint("publish", ContentType.Xml, Method.Post)]
+    [GameEndpoint("publish", ContentType.Xml, HttpMethods.Post)]
     public Response PublishLevel(RequestContext context, GameUser user, Token token, GameDatabaseContext database, GameLevelRequest body, CommandService command, IDataStore dataStore)
     {
         //If verifying the request fails, return null
@@ -88,7 +89,7 @@ public class PublishEndpoints : EndpointGroup
 
         if (level.LevelId != default) // Republish requests contain the id of the old level
         {
-            context.Logger.LogInfo(BunkumContext.UserContent, "Republishing level id " + level.LevelId);
+            context.Logger.LogInfo(BunkumCategory.UserContent, "Republishing level id " + level.LevelId);
 
             GameLevel? newBody;
             // ReSharper disable once InvertIf
@@ -112,7 +113,7 @@ public class PublishEndpoints : EndpointGroup
         return new Response(GameLevelResponse.FromOld(level)!, ContentType.Xml);
     }
 
-    [GameEndpoint("unpublish/{id}", ContentType.Xml, Method.Post)]
+    [GameEndpoint("unpublish/{id}", ContentType.Xml, HttpMethods.Post)]
     public Response DeleteLevel(RequestContext context, GameUser user, GameDatabaseContext database, int id)
     {
         GameLevel? level = database.GetLevelById(id);

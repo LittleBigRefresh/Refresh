@@ -22,19 +22,25 @@
     </PropertyGroup>
 
     <ItemGroup Condition="'$(Configuration)'=='DebugLocalBunkum'">
-        <Reference Include="Bunkum.HttpServer">
-            <HintPath>..\..\Bunkum\Bunkum.HttpServer\bin\Debug\net7.0\Bunkum.HttpServer.dll</HintPath>
+        <Reference Include="Bunkum.Core">
+            <HintPath>..\..\Bunkum\Bunkum.Core\bin\Debug\net7.0\Bunkum.Core.dll</HintPath>
         </Reference>
-        <Reference Include="Bunkum.CustomHttpListener">
-            <HintPath>..\..\Bunkum\Bunkum.CustomHttpListener\bin\Debug\net7.0\Bunkum.CustomHttpListener.dll</HintPath>
+        <Reference Include="Bunkum.Listener">
+            <HintPath>..\..\Bunkum\Bunkum.Listener\bin\Debug\net7.0\Bunkum.Listener.dll</HintPath>
+        </Reference>
+        <Reference Include="Bunkum.Protocols.Http">
+            <HintPath>..\..\Bunkum\Bunkum.Protocols.Http\bin\Debug\net7.0\Bunkum.Protocols.Http.dll</HintPath>
         </Reference>
         <Reference Include="Bunkum.RealmDatabase">
-            <HintPath>..\..\Bunkum.RealmDatabase\Bunkum.RealmDatabase\bin\Debug\net7.0\Bunkum.RealmDatabase.dll</HintPath>
+            <HintPath>..\..\Bunkum\Bunkum.RealmDatabase\bin\Debug\net7.0\Bunkum.RealmDatabase.dll</HintPath>
         </Reference>
         <Reference Include="Bunkum.AutoDiscover">
-            <HintPath>..\..\Bunkum.AutoDiscover\Bunkum.AutoDiscover\bin\Debug\net7.0\Bunkum.AutoDiscover.dll</HintPath>
+            <HintPath>..\..\Bunkum\Bunkum.AutoDiscover\bin\Debug\net7.0\Bunkum.AutoDiscover.dll</HintPath>
         </Reference>
-        
+        <Reference Include="Bunkum.HealthChecks">
+            <HintPath>..\..\Bunkum\Bunkum.HealthChecks\bin\Debug\net7.0\Bunkum.HealthChecks.dll</HintPath>
+        </Reference>
+
         <!-- Package references must match Bunkum.HttpServer's csproj -->
         <PackageReference Include="JetBrains.Annotations" Version="2023.2.0" />
         <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
@@ -42,14 +48,16 @@
     </ItemGroup>
 
     <ItemGroup Condition="'$(Configuration)'!='DebugLocalBunkum'">
-        <PackageReference Include="Bunkum" Version="3.5.0" />
-        <PackageReference Include="Bunkum.RealmDatabase" Version="3.5.0" />
-        <PackageReference Include="Bunkum.AutoDiscover" Version="3.5.0" />
+        <PackageReference Include="Bunkum" Version="4.0.1" />
+        <PackageReference Include="Bunkum.RealmDatabase" Version="4.0.1" />
+        <PackageReference Include="Bunkum.AutoDiscover" Version="4.0.1" />
     </ItemGroup>
 
     <ItemGroup>
       <PackageReference Include="AttribDoc" Version="1.1.0" />
       <PackageReference Include="BCrypt.Net-Next" Version="4.0.3" />
+      <PackageReference Include="Bunkum.HealthChecks" Version="4.0.1" />
+      <PackageReference Include="Bunkum.Protocols.Http" Version="4.0.1" />
       <PackageReference Include="CommandLineParser" Version="2.9.1" />
       <PackageReference Include="Discord.Net.Webhook" Version="3.12.0" />
       <PackageReference Include="NPTicket" Version="3.1.0" />
@@ -57,6 +65,7 @@
       <PackageReference Include="Realm" Version="11.5.0" />
       <PackageReference Include="SharpZipLib" Version="1.4.2" />
       <PackageReference Include="SixLabors.ImageSharp" Version="3.0.2" />
+      <PackageReference Include="EasyHotReload" Version="1.0.0" />
     </ItemGroup>
 
     <ItemGroup>
