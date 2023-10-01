@@ -1,9 +1,9 @@
 using System.Diagnostics;
-using Bunkum.CustomHttpListener.Request;
+using Bunkum.Listener.Request;
 using Refresh.GameServer.Database;
 using Refresh.GameServer.Types.UserData;
-using Bunkum.HttpServer.Authentication;
-using Bunkum.HttpServer.Database;
+using Bunkum.Core.Authentication;
+using Bunkum.Core.Database;
 using Refresh.GameServer.Configuration;
 using Refresh.GameServer.Types.Roles;
 

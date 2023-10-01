@@ -1,6 +1,6 @@
 using System.Diagnostics.Contracts;
 using System.Reflection;
-using Bunkum.HttpServer;
+using Bunkum.Core;
 using Refresh.GameServer.Authentication;
 using Refresh.GameServer.Database;
 using Refresh.GameServer.Services;

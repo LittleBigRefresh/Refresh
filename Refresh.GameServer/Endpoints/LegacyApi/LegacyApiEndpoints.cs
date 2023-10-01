@@ -1,5 +1,5 @@
-using Bunkum.HttpServer;
-using Bunkum.HttpServer.Endpoints;
+using Bunkum.Core;
+using Bunkum.Core.Endpoints;
 using MongoDB.Bson;
 using Refresh.GameServer.Configuration;
 using Refresh.GameServer.Database;

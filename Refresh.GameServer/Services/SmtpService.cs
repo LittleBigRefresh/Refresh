@@ -1,8 +1,7 @@
 using System.Net;
 using System.Net.Mail;
-using Bunkum.HttpServer;
-using Bunkum.HttpServer.Configuration;
-using Bunkum.HttpServer.Services;
+using Bunkum.Core;
+using Bunkum.Core.Services;
 using NotEnoughLogs;
 using Refresh.GameServer.Configuration;
 using Refresh.GameServer.Types.UserData;

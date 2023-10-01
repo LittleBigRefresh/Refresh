@@ -1,7 +1,8 @@
-using Bunkum.CustomHttpListener.Parsing;
-using Bunkum.HttpServer;
-using Bunkum.HttpServer.Endpoints;
-using Bunkum.HttpServer.Responses;
+using Bunkum.Core;
+using Bunkum.Core.Endpoints;
+using Bunkum.Core.Responses;
+using Bunkum.Listener.Protocol;
+using Bunkum.Protocols.Http;
 using Refresh.GameServer.Authentication;
 using Refresh.GameServer.Database;
 using Refresh.GameServer.Endpoints.Game.DataTypes.Response;
@@ -15,7 +16,7 @@ namespace Refresh.GameServer.Endpoints.Game;
 
 public class RelationEndpoints : EndpointGroup
 {
-    [GameEndpoint("favourite/slot/user/{id}", Method.Post)]
+    [GameEndpoint("favourite/slot/user/{id}", HttpMethods.Post)]
     public Response FavouriteLevel(RequestContext context, GameDatabaseContext database, GameUser user, int id)
     {
         GameLevel? level = database.GetLevelById(id);
@@ -29,7 +30,7 @@ public class RelationEndpoints : EndpointGroup
         return context.IsPSP() ? OK : Unauthorized;
     }
     
-    [GameEndpoint("unfavourite/slot/user/{id}", Method.Post)]
+    [GameEndpoint("unfavourite/slot/user/{id}", HttpMethods.Post)]
     public Response UnfavouriteLevel(RequestContext context, GameDatabaseContext database, GameUser user, int id)
     {
         GameLevel? level = database.GetLevelById(id);
@@ -43,7 +44,7 @@ public class RelationEndpoints : EndpointGroup
         return context.IsPSP() ? OK : Unauthorized;
     }
     
-    [GameEndpoint("favourite/user/{username}", Method.Post)]
+    [GameEndpoint("favourite/user/{username}", HttpMethods.Post)]
     public Response FavouriteUser(RequestContext context, GameDatabaseContext database, GameUser user, string username)
     {
         GameUser? userToFavourite = database.GetUserByUsername(username);
@@ -57,7 +58,7 @@ public class RelationEndpoints : EndpointGroup
         return context.IsPSP() ? OK : Unauthorized;
     }
     
-    [GameEndpoint("unfavourite/user/{username}", Method.Post)]
+    [GameEndpoint("unfavourite/user/{username}", HttpMethods.Post)]
     public Response UnfavouriteUser(RequestContext context, GameDatabaseContext database, GameUser user, string username)
     {
         GameUser? userToFavourite = database.GetUserByUsername(username);
@@ -86,7 +87,7 @@ public class RelationEndpoints : EndpointGroup
         return new SerializedFavouriteUserList(GameUserResponse.FromOldListWithExtraData(users, token.TokenGame).ToList(), users.Count);
     }
 
-    [GameEndpoint("lolcatftw/add/user/{id}", Method.Post)]
+    [GameEndpoint("lolcatftw/add/user/{id}", HttpMethods.Post)]
     public Response QueueLevel(RequestContext context, GameDatabaseContext database, GameUser user, int id)
     {
         GameLevel? level = database.GetLevelById(id);
@@ -98,7 +99,7 @@ public class RelationEndpoints : EndpointGroup
         return Unauthorized;
     }
     
-    [GameEndpoint("lolcatftw/remove/user/{id}", Method.Post)]
+    [GameEndpoint("lolcatftw/remove/user/{id}", HttpMethods.Post)]
     public Response DequeueLevel(RequestContext context, GameDatabaseContext database, GameUser user, int id)
     {
         GameLevel? level = database.GetLevelById(id);
@@ -110,7 +111,7 @@ public class RelationEndpoints : EndpointGroup
         return Unauthorized;
     }
 
-    [GameEndpoint("lolcatftw/clear", Method.Post)]
+    [GameEndpoint("lolcatftw/clear", HttpMethods.Post)]
     public Response ClearQueue(RequestContext context, GameDatabaseContext database, GameUser user)
     {
         database.ClearQueue(user);

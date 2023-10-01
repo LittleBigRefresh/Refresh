@@ -1,8 +1,8 @@
-using Bunkum.HttpServer;
-using Bunkum.HttpServer.Services;
+using Bunkum.Core;
+using Bunkum.Core.Services;
 using NotEnoughLogs;
 using System.Reflection;
-using Bunkum.HttpServer.Responses;
+using Bunkum.Core.Responses;
 using MongoDB.Bson;
 using Refresh.GameServer.Authentication;
 using Refresh.GameServer.Database;

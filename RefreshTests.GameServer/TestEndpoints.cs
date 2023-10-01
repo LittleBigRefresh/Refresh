@@ -1,5 +1,5 @@
-using Bunkum.HttpServer;
-using Bunkum.HttpServer.Endpoints;
+using Bunkum.Core;
+using Bunkum.Core.Endpoints;
 using Refresh.GameServer.Endpoints;
 using Refresh.GameServer.Endpoints.ApiV3.ApiTypes;
 

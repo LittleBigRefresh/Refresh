@@ -1,10 +1,11 @@
 using System.Net;
 using System.Xml.Serialization;
-using Bunkum.CustomHttpListener.Parsing;
-using Bunkum.HttpServer;
-using Bunkum.HttpServer.Endpoints;
-using Bunkum.HttpServer.RateLimit;
-using Bunkum.HttpServer.Responses;
+using Bunkum.Core;
+using Bunkum.Core.Endpoints;
+using Bunkum.Core.RateLimit;
+using Bunkum.Core.Responses;
+using Bunkum.Listener.Protocol;
+using Bunkum.Protocols.Http;
 using NPTicket;
 using NPTicket.Verification;
 using NPTicket.Verification.Keys;
@@ -20,7 +21,7 @@ namespace Refresh.GameServer.Endpoints.Game.Handshake;
 
 public class AuthenticationEndpoints : EndpointGroup
 {
-    [GameEndpoint("login", Method.Post, ContentType.Xml), Authentication(false), AllowDuringMaintenance]
+    [GameEndpoint("login", HttpMethods.Post, ContentType.Xml), Authentication(false), AllowDuringMaintenance]
     [NullStatusCode(Forbidden)]
     [RateLimitSettings(300, 10, 300, "auth")]
     [MinimumRole(GameUserRole.Restricted)]
@@ -247,7 +248,7 @@ public class AuthenticationEndpoints : EndpointGroup
     /// <summary>
     /// Called by the game when it exits cleanly.
     /// </summary>
-    [GameEndpoint("goodbye", Method.Post, ContentType.Xml)]
+    [GameEndpoint("goodbye", HttpMethods.Post, ContentType.Xml)]
     [MinimumRole(GameUserRole.Restricted)]
     public Response RevokeThisToken(RequestContext context, GameDatabaseContext database, GameUser user)
     {

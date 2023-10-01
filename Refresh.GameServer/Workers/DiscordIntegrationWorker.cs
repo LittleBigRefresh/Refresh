@@ -1,5 +1,4 @@
-using Bunkum.HttpServer.Configuration;
-using Bunkum.HttpServer.Storage;
+using Bunkum.Core.Storage;
 using Discord;
 using Discord.Webhook;
 using NotEnoughLogs;

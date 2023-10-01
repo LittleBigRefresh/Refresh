@@ -1,11 +1,11 @@
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
-using System.Text.RegularExpressions;
-using Bunkum.CustomHttpListener.Parsing;
-using Bunkum.HttpServer;
-using Bunkum.HttpServer.Endpoints;
-using Bunkum.HttpServer.Responses;
-using Bunkum.HttpServer.Storage;
+using Bunkum.Core;
+using Bunkum.Core.Endpoints;
+using Bunkum.Core.Responses;
+using Bunkum.Core.Storage;
+using Bunkum.Listener.Protocol;
+using Bunkum.Protocols.Http;
 using Refresh.GameServer.Authentication;
 using Refresh.GameServer.Configuration;
 using Refresh.GameServer.Database;
@@ -23,8 +23,8 @@ namespace Refresh.GameServer.Endpoints.Game;
 public class ResourceEndpoints : EndpointGroup
 {
     //NOTE: type does nothing here, but it's sent by LBP so we have to accept it
-    [GameEndpoint("upload/{hash}/{type}", Method.Post)]
-    [GameEndpoint("upload/{hash}", Method.Post)]
+    [GameEndpoint("upload/{hash}/{type}", HttpMethods.Post)]
+    [GameEndpoint("upload/{hash}", HttpMethods.Post)]
     [SuppressMessage("ReSharper", "ConvertIfStatementToReturnStatement")]
     public Response UploadAsset(RequestContext context, string hash, string type, byte[] body, IDataStore dataStore,
         GameDatabaseContext database, GameUser user, AssetImporter importer, GameServerConfig config, IDateTimeProvider timeProvider, Token token)
@@ -85,8 +85,8 @@ public class ResourceEndpoints : EndpointGroup
         return new Response(data, ContentType.BinaryData);
     }
 
-    [GameEndpoint("showNotUploaded", Method.Post, ContentType.Xml)]
-    [GameEndpoint("filterResources", Method.Post, ContentType.Xml)]
+    [GameEndpoint("showNotUploaded", HttpMethods.Post, ContentType.Xml)]
+    [GameEndpoint("filterResources", HttpMethods.Post, ContentType.Xml)]
     [MinimumRole(GameUserRole.Restricted)]
     [NullStatusCode(BadRequest)]
     public SerializedResourceList? GetAssetsMissingFromStore(RequestContext context, SerializedResourceList body, IDataStore dataStore)

@@ -1,8 +1,8 @@
-using Bunkum.CustomHttpListener.Parsing;
-using Bunkum.HttpServer;
-using Bunkum.HttpServer.Endpoints;
-using Bunkum.HttpServer.Responses;
-using NotEnoughLogs;
+using Bunkum.Core;
+using Bunkum.Core.Endpoints;
+using Bunkum.Core.Responses;
+using Bunkum.Listener.Protocol;
+using Bunkum.Protocols.Http;
 using Refresh.GameServer.Database;
 using Refresh.GameServer.Extensions;
 using Refresh.GameServer.Time;
@@ -16,7 +16,7 @@ namespace Refresh.GameServer.Endpoints.Game;
 
 public class CommentEndpoints : EndpointGroup
 {
-    [GameEndpoint("postUserComment/{username}", ContentType.Xml, Method.Post)]
+    [GameEndpoint("postUserComment/{username}", ContentType.Xml, HttpMethods.Post)]
     public Response PostProfileComment(RequestContext context, GameDatabaseContext database, string username, GameComment body, GameUser user, IDateTimeProvider timeProvider)
     {
         if (body.Content.Length > 4096)
@@ -47,7 +47,7 @@ public class CommentEndpoints : EndpointGroup
         return new SerializedCommentList(comments);
     }
 
-    [GameEndpoint("deleteUserComment/{username}", Method.Post)]
+    [GameEndpoint("deleteUserComment/{username}", HttpMethods.Post)]
     public Response DeleteProfileComment(RequestContext context, GameDatabaseContext database, string username, GameUser user)
     {
         if (!int.TryParse(context.QueryString["commentId"], out int commentId)) return BadRequest;
@@ -70,7 +70,7 @@ public class CommentEndpoints : EndpointGroup
         return OK;
     }
 
-    [GameEndpoint("postComment/user/{levelId}", ContentType.Xml, Method.Post)]
+    [GameEndpoint("postComment/user/{levelId}", ContentType.Xml, HttpMethods.Post)]
     public Response PostLevelComment(RequestContext context, GameDatabaseContext database, int levelId, GameComment body, GameUser user)
     {
         if (body.Content.Length > 4096)
@@ -101,7 +101,7 @@ public class CommentEndpoints : EndpointGroup
         return new SerializedCommentList(comments);
     }
 
-    [GameEndpoint("deleteComment/user/{levelId}", Method.Post)]
+    [GameEndpoint("deleteComment/user/{levelId}", HttpMethods.Post)]
     public Response DeleteLevelComment(RequestContext context, GameDatabaseContext database, int levelId, GameUser user)
     {
         if (!int.TryParse(context.QueryString["commentId"], out int commentId)) return BadRequest;

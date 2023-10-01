@@ -1,6 +1,6 @@
-using Bunkum.CustomHttpListener.Request;
-using Bunkum.HttpServer.Database;
-using Bunkum.HttpServer.Endpoints.Middlewares;
+using Bunkum.Listener.Request;
+using Bunkum.Core.Database;
+using Bunkum.Core.Endpoints.Middlewares;
 
 namespace Refresh.GameServer.Middlewares;
 

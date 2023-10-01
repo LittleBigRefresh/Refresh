@@ -1,5 +1,4 @@
-using Bunkum.HttpServer;
-using Bunkum.HttpServer.Responses;
+using Bunkum.Core.Responses;
 using JetBrains.Annotations;
 using NotEnoughLogs;
 using Refresh.GameServer.Authentication;

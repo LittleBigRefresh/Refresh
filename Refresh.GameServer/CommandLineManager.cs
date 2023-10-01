@@ -1,5 +1,4 @@
 using System.Diagnostics.CodeAnalysis;
-using Bunkum.HttpServer;
 using CommandLine;
 using NotEnoughLogs;
 using Refresh.GameServer.Documentation;

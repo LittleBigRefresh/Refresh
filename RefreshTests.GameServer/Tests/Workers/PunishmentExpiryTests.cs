@@ -1,5 +1,4 @@
 using NotEnoughLogs;
-using Refresh.GameServer;
 using Refresh.GameServer.Types.UserData;
 using Refresh.GameServer.Workers;
 using static Refresh.GameServer.Types.Roles.GameUserRole;

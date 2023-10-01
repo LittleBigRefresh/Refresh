@@ -1,5 +1,4 @@
-using Bunkum.CustomHttpListener.Listeners.Direct;
-using Bunkum.HttpServer;
+using Bunkum.Protocols.Http.Direct;
 using NotEnoughLogs;
 using RefreshTests.GameServer.Time;
 

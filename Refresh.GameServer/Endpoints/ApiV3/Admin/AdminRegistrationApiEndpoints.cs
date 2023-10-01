@@ -1,7 +1,8 @@
 using AttribDoc.Attributes;
-using Bunkum.CustomHttpListener.Parsing;
-using Bunkum.HttpServer;
-using Bunkum.HttpServer.Endpoints;
+using Bunkum.Core;
+using Bunkum.Core.Endpoints;
+using Bunkum.Listener.Protocol;
+using Bunkum.Protocols.Http;
 using MongoDB.Bson;
 using Refresh.GameServer.Database;
 using Refresh.GameServer.Endpoints.ApiV3.ApiTypes;
@@ -35,7 +36,7 @@ public class AdminRegistrationApiEndpoints : EndpointGroup
         return ApiAdminQueuedRegistrationResponse.FromOld(registration);
     }
 
-    [ApiV3Endpoint("admin/registrations/{uuid}", Method.Delete), MinimumRole(GameUserRole.Admin)]
+    [ApiV3Endpoint("admin/registrations/{uuid}", HttpMethods.Delete), MinimumRole(GameUserRole.Admin)]
     [DocSummary("Deletes a registration by its UUID.")]
     [DocError(typeof(ApiValidationError), ApiValidationError.ObjectIdParseErrorWhen)]
     [DocError(typeof(ApiNotFoundError), "The registration could not be found")]
@@ -51,7 +52,7 @@ public class AdminRegistrationApiEndpoints : EndpointGroup
         return new ApiOkResponse();
     }
     
-    [ApiV3Endpoint("admin/registrations", Method.Delete), MinimumRole(GameUserRole.Admin)]
+    [ApiV3Endpoint("admin/registrations", HttpMethods.Delete), MinimumRole(GameUserRole.Admin)]
     [DocSummary("Clears all queued registrations from the server.")]
     public ApiOkResponse DeleteAllQueuedRegistrations(RequestContext context, GameDatabaseContext database)
     {

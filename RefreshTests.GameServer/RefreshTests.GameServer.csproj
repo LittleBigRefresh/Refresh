@@ -23,14 +23,20 @@
     </ItemGroup>
 
     <ItemGroup Condition="'$(Configuration)'=='DebugLocalBunkum'">
-        <Reference Include="Bunkum.HttpServer">
-            <HintPath>..\..\Bunkum\Bunkum.HttpServer\bin\Debug\net7.0\Bunkum.HttpServer.dll</HintPath>
+        <Reference Include="Bunkum.Core">
+            <HintPath>..\..\Bunkum\Bunkum.Core\bin\Debug\net7.0\Bunkum.Core.dll</HintPath>
         </Reference>
-        <Reference Include="Bunkum.CustomHttpListener">
-            <HintPath>..\..\Bunkum\Bunkum.CustomHttpListener\bin\Debug\net7.0\Bunkum.CustomHttpListener.dll</HintPath>
+        <Reference Include="Bunkum.Listener">
+            <HintPath>..\..\Bunkum\Bunkum.Listener\bin\Debug\net7.0\Bunkum.Listener.dll</HintPath>
+        </Reference>
+        <Reference Include="Bunkum.Protocols.Http">
+            <HintPath>..\..\Bunkum\Bunkum.Protocols.Http\bin\Debug\net7.0\Bunkum.Protocols.Http.dll</HintPath>
         </Reference>
         <Reference Include="Bunkum.RealmDatabase">
-            <HintPath>..\..\Bunkum.RealmDatabase\Bunkum.RealmDatabase\bin\Debug\net7.0\Bunkum.RealmDatabase.dll</HintPath>
+            <HintPath>..\..\Bunkum\Bunkum.RealmDatabase\bin\Debug\net7.0\Bunkum.RealmDatabase.dll</HintPath>
+        </Reference>
+        <Reference Include="Bunkum.AutoDiscover">
+            <HintPath>..\..\Bunkum\Bunkum.AutoDiscover\bin\Debug\net7.0\Bunkum.AutoDiscover.dll</HintPath>
         </Reference>
 
         <!-- Package references must match Bunkum.HttpServer's csproj -->

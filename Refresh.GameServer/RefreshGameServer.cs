@@ -1,13 +1,13 @@
 using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.Reflection;
-using Bunkum.CustomHttpListener;
 using Bunkum.AutoDiscover.Extensions;
-using Bunkum.HttpServer;
-using Bunkum.HttpServer.Authentication;
-using Bunkum.HttpServer.Configuration;
-using Bunkum.HttpServer.RateLimit;
-using Bunkum.HttpServer.Storage;
+using Bunkum.Core.Authentication;
+using Bunkum.Core.Configuration;
+using Bunkum.Core.RateLimit;
+using Bunkum.Core.Storage;
+using Bunkum.HealthChecks;
+using Bunkum.Protocols.Http;
 using Bunkum.RealmDatabase;
 using NotEnoughLogs;
 using NotEnoughLogs.Behaviour;
@@ -139,7 +139,7 @@ public class RefreshGameServer
             baseEndpoint: GameEndpointAttribute.BaseRoute.Substring(0, GameEndpointAttribute.BaseRoute.Length - 1),
             usesCustomDigestKey: true);
         
-        this._server.AddHealthCheckService(new []
+        this._server.AddHealthCheckService(this._databaseProvider, new []
         {
             typeof(RealmDatabaseHealthCheck),
         });

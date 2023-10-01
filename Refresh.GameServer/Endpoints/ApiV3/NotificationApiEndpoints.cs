@@ -1,7 +1,8 @@
 using AttribDoc.Attributes;
-using Bunkum.CustomHttpListener.Parsing;
-using Bunkum.HttpServer;
-using Bunkum.HttpServer.Endpoints;
+using Bunkum.Core;
+using Bunkum.Core.Endpoints;
+using Bunkum.Listener.Protocol;
+using Bunkum.Protocols.Http;
 using MongoDB.Bson;
 using Refresh.GameServer.Database;
 using Refresh.GameServer.Documentation.Attributes;
@@ -42,7 +43,7 @@ public class NotificationApiEndpoints : EndpointGroup
         return ApiGameNotificationResponse.FromOld(notification);
     }
     
-    [ApiV3Endpoint("notifications/{uuid}", Method.Delete), MinimumRole(GameUserRole.Restricted)]
+    [ApiV3Endpoint("notifications/{uuid}", HttpMethods.Delete), MinimumRole(GameUserRole.Restricted)]
     [DocSummary("Clears an individual notification for a user")]
     [DocError(typeof(ApiValidationError), ApiValidationError.ObjectIdParseErrorWhen)]
     [DocError(typeof(ApiNotFoundError), "The notification cannot be found")]
@@ -59,7 +60,7 @@ public class NotificationApiEndpoints : EndpointGroup
         return new ApiOkResponse();
     }
     
-    [ApiV3Endpoint("notifications", Method.Delete), MinimumRole(GameUserRole.Restricted)]
+    [ApiV3Endpoint("notifications", HttpMethods.Delete), MinimumRole(GameUserRole.Restricted)]
     [DocSummary("Clears all notifications stored for the user")]
     public ApiOkResponse ClearAllNotifications(RequestContext context, GameUser user, GameDatabaseContext database)
     {

@@ -1,7 +1,8 @@
 using AttribDoc.Attributes;
-using Bunkum.CustomHttpListener.Parsing;
-using Bunkum.HttpServer;
-using Bunkum.HttpServer.Endpoints;
+using Bunkum.Core;
+using Bunkum.Core.Endpoints;
+using Bunkum.Listener.Protocol;
+using Bunkum.Protocols.Http;
 using Refresh.GameServer.Database;
 using Refresh.GameServer.Documentation.Attributes;
 using Refresh.GameServer.Endpoints.ApiV3.ApiTypes;
@@ -61,7 +62,7 @@ public class AdminUserApiEndpoints : EndpointGroup
         return new ApiOkResponse();
     }
 
-    [ApiV3Endpoint("admin/users/uuid/{uuid}/resetPassword", Method.Put), MinimumRole(GameUserRole.Admin)]
+    [ApiV3Endpoint("admin/users/uuid/{uuid}/resetPassword", HttpMethods.Put), MinimumRole(GameUserRole.Admin)]
     [DocSummary("Reset's a user password by their UUID.")]
     [DocError(typeof(ApiNotFoundError), ApiNotFoundError.UserMissingErrorWhen)]
     [DocRequestBody(typeof(ApiResetUserPasswordRequest))]
@@ -73,7 +74,7 @@ public class AdminUserApiEndpoints : EndpointGroup
         return ResetUserPassword(database, body, user);
     }
     
-    [ApiV3Endpoint("admin/users/name/{username}/resetPassword", Method.Put), MinimumRole(GameUserRole.Admin)]
+    [ApiV3Endpoint("admin/users/name/{username}/resetPassword", HttpMethods.Put), MinimumRole(GameUserRole.Admin)]
     [DocSummary("Reset's a user password by their username.")]
     [DocError(typeof(ApiNotFoundError), ApiNotFoundError.UserMissingErrorWhen)]
     [DocRequestBody(typeof(ApiResetUserPasswordRequest))]
@@ -117,7 +118,7 @@ public class AdminUserApiEndpoints : EndpointGroup
         };
     }
     
-    [ApiV3Endpoint("admin/users/uuid/{uuid}/planets", Method.Delete), MinimumRole(GameUserRole.Admin)]
+    [ApiV3Endpoint("admin/users/uuid/{uuid}/planets", HttpMethods.Delete), MinimumRole(GameUserRole.Admin)]
     [DocSummary("Resets a user's planets. Gets user by their UUID.")]
     [DocError(typeof(ApiNotFoundError), ApiNotFoundError.UserMissingErrorWhen)]
     public ApiOkResponse ResetUserPlanetsByUuid(RequestContext context, GameDatabaseContext database, string uuid)
@@ -129,7 +130,7 @@ public class AdminUserApiEndpoints : EndpointGroup
         return new ApiOkResponse();
     }
     
-    [ApiV3Endpoint("admin/users/name/{username}/planets", Method.Delete), MinimumRole(GameUserRole.Admin)]
+    [ApiV3Endpoint("admin/users/name/{username}/planets", HttpMethods.Delete), MinimumRole(GameUserRole.Admin)]
     [DocSummary("Resets a user's planets. Gets user by their username.")]
     [DocError(typeof(ApiNotFoundError), ApiNotFoundError.UserMissingErrorWhen)]
     public ApiOkResponse ResetUserPlanetsByUsername(RequestContext context, GameDatabaseContext database, string username)
@@ -141,7 +142,7 @@ public class AdminUserApiEndpoints : EndpointGroup
         return new ApiOkResponse();
     }
     
-    [ApiV3Endpoint("admin/users/uuid/{uuid}", Method.Delete), MinimumRole(GameUserRole.Admin)]
+    [ApiV3Endpoint("admin/users/uuid/{uuid}", HttpMethods.Delete), MinimumRole(GameUserRole.Admin)]
     [DocSummary("Deletes a user user by their UUID.")]
     [DocError(typeof(ApiNotFoundError), ApiNotFoundError.UserMissingErrorWhen)]
     public ApiOkResponse DeleteUserByUuid(RequestContext context, GameDatabaseContext database, string uuid)
@@ -153,7 +154,7 @@ public class AdminUserApiEndpoints : EndpointGroup
         return new ApiOkResponse();
     }
     
-    [ApiV3Endpoint("admin/users/name/{username}", Method.Delete), MinimumRole(GameUserRole.Admin)]
+    [ApiV3Endpoint("admin/users/name/{username}", HttpMethods.Delete), MinimumRole(GameUserRole.Admin)]
     [DocSummary("Deletes a user user by their UUID.")]
     [DocError(typeof(ApiNotFoundError), ApiNotFoundError.UserMissingErrorWhen)]
     public ApiOkResponse DeleteUserByUsername(RequestContext context, GameDatabaseContext database, string username)

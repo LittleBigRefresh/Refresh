@@ -22,11 +22,14 @@
     </PropertyGroup>
 
     <ItemGroup Condition="'$(Configuration)'=='DebugLocalBunkum'">
-        <Reference Include="Bunkum.HttpServer">
-            <HintPath>..\..\Bunkum\Bunkum.HttpServer\bin\Debug\net7.0\Bunkum.HttpServer.dll</HintPath>
+        <Reference Include="Bunkum.Core">
+            <HintPath>..\..\Bunkum\Bunkum.Core\bin\Debug\net7.0\Bunkum.Core.dll</HintPath>
         </Reference>
-        <Reference Include="Bunkum.CustomHttpListener">
-            <HintPath>..\..\Bunkum\Bunkum.CustomHttpListener\bin\Debug\net7.0\Bunkum.CustomHttpListener.dll</HintPath>
+        <Reference Include="Bunkum.Listener">
+            <HintPath>..\..\Bunkum\Bunkum.Listener\bin\Debug\net7.0\Bunkum.Listener.dll</HintPath>
+        </Reference>
+        <Reference Include="Bunkum.Protocols.Http">
+            <HintPath>..\..\Bunkum\Bunkum.Protocols.Http\bin\Debug\net7.0\Bunkum.Protocols.Http.dll</HintPath>
         </Reference>
         <Reference Include="Bunkum.RealmDatabase">
             <HintPath>..\..\Bunkum\Bunkum.RealmDatabase\bin\Debug\net7.0\Bunkum.RealmDatabase.dll</HintPath>
@@ -34,12 +37,14 @@
         <Reference Include="Bunkum.AutoDiscover">
             <HintPath>..\..\Bunkum\Bunkum.AutoDiscover\bin\Debug\net7.0\Bunkum.AutoDiscover.dll</HintPath>
         </Reference>
-        
+        <Reference Include="Bunkum.HealthChecks">
+            <HintPath>..\..\Bunkum\Bunkum.HealthChecks\bin\Debug\net7.0\Bunkum.HealthChecks.dll</HintPath>
+        </Reference>
+
         <!-- Package references must match Bunkum.HttpServer's csproj -->
         <PackageReference Include="JetBrains.Annotations" Version="2023.2.0" />
         <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
         <PackageReference Include="NotEnoughLogs" Version="2.0.2" />
-        <PackageReference Include="EasyHotReload" Version="1.0.0" />
     </ItemGroup>
 
     <ItemGroup Condition="'$(Configuration)'!='DebugLocalBunkum'">
@@ -58,6 +63,7 @@
       <PackageReference Include="Realm" Version="11.5.0" />
       <PackageReference Include="SharpZipLib" Version="1.4.2" />
       <PackageReference Include="SixLabors.ImageSharp" Version="3.0.2" />
+      <PackageReference Include="EasyHotReload" Version="1.0.0" />
     </ItemGroup>
 
     <ItemGroup>

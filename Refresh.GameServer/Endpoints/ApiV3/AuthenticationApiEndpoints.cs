@@ -1,9 +1,10 @@
 using System.Net;
 using AttribDoc.Attributes;
-using Bunkum.CustomHttpListener.Parsing;
-using Bunkum.HttpServer;
-using Bunkum.HttpServer.Endpoints;
-using Bunkum.HttpServer.RateLimit;
+using Bunkum.Core;
+using Bunkum.Core.Endpoints;
+using Bunkum.Core.RateLimit;
+using Bunkum.Listener.Protocol;
+using Bunkum.Protocols.Http;
 using Refresh.GameServer.Authentication;
 using Refresh.GameServer.Configuration;
 using Refresh.GameServer.Database;
@@ -31,7 +32,7 @@ public class AuthenticationApiEndpoints : EndpointGroup
     // If decreased, passwords will stay at higher WorkFactor until reset
     public const int WorkFactor = 14;
 
-    [ApiV3Endpoint("login", Method.Post), Authentication(false), AllowDuringMaintenance]
+    [ApiV3Endpoint("login", HttpMethods.Post), Authentication(false), AllowDuringMaintenance]
     [DocRequestBody(typeof(ApiAuthenticationRequest))]
     [RateLimitSettings(300, 10, 300, "auth")]
     public ApiResponse<IApiAuthenticationResponse> Authenticate(RequestContext context, GameDatabaseContext database, ApiAuthenticationRequest body, GameServerConfig config)
@@ -83,7 +84,7 @@ public class AuthenticationApiEndpoints : EndpointGroup
         };
     }
 
-    [ApiV3Endpoint("refreshToken", Method.Post), Authentication(false), AllowDuringMaintenance]
+    [ApiV3Endpoint("refreshToken", HttpMethods.Post), Authentication(false), AllowDuringMaintenance]
     [DocRequestBody(typeof(ApiRefreshRequest))]
     [RateLimitSettings(300, 10, 300, "auth")]
     public ApiResponse<IApiAuthenticationResponse> RefreshToken(RequestContext context, GameDatabaseContext database, ApiRefreshRequest body)
@@ -104,7 +105,7 @@ public class AuthenticationApiEndpoints : EndpointGroup
         };
     }
 
-    [ApiV3Endpoint("resetPassword", Method.Put), Authentication(false)]
+    [ApiV3Endpoint("resetPassword", HttpMethods.Put), Authentication(false)]
     [RateLimitSettings(300, 10, 300, "auth")]
     public ApiOkResponse ResetPassword(RequestContext context, GameDatabaseContext database, ApiResetPasswordRequest body, GameUser? user)
     {
@@ -123,7 +124,7 @@ public class AuthenticationApiEndpoints : EndpointGroup
         return new ApiOkResponse();
     }
 
-    [ApiV3Endpoint("logout", Method.Put), MinimumRole(GameUserRole.Restricted)]
+    [ApiV3Endpoint("logout", HttpMethods.Put), MinimumRole(GameUserRole.Restricted)]
     [DocSummary("Tells the server to revoke the token used to make this request. Useful for logout behavior.")]
     public ApiOkResponse RevokeThisToken(RequestContext context, GameDatabaseContext database, Token token)
     {
@@ -142,7 +143,7 @@ public class AuthenticationApiEndpoints : EndpointGroup
                 (database.GetIpVerificationRequestsForUser(user, count, skip));
     }
 
-    [ApiV3Endpoint("verificationRequests/approve", Method.Put)]
+    [ApiV3Endpoint("verificationRequests/approve", HttpMethods.Put)]
     [DocSummary("Approves a given IP, and clears all remaining verification requests. Send the IP in the body.")]
     [DocError(typeof(ApiValidationError), ApiValidationError.IpAddressParseErrorWhen)]
     [DocRequestBody("127.0.0.1")]
@@ -156,7 +157,7 @@ public class AuthenticationApiEndpoints : EndpointGroup
         return new ApiOkResponse();
     }
     
-    [ApiV3Endpoint("verificationRequests/deny", Method.Put)]
+    [ApiV3Endpoint("verificationRequests/deny", HttpMethods.Put)]
     [DocSummary("Denies all verification requests matching a given IP. Send the IP in the body.")]
     [DocError(typeof(ApiValidationError), ApiValidationError.IpAddressParseErrorWhen)]
     [DocRequestBody("127.0.0.1")]
@@ -170,7 +171,7 @@ public class AuthenticationApiEndpoints : EndpointGroup
         return new ApiOkResponse();
     }
 
-    [ApiV3Endpoint("register", Method.Post), Authentication(false)]
+    [ApiV3Endpoint("register", HttpMethods.Post), Authentication(false)]
     [DocSummary("Registers a new user.")]
     [DocRequestBody(typeof(ApiRegisterRequest))]
     #if !DEBUG
@@ -233,7 +234,7 @@ public class AuthenticationApiEndpoints : EndpointGroup
             ExpiresAt = token.ExpiresAt,
         };
     }
-    [ApiV3Endpoint("verify", Method.Post)]
+    [ApiV3Endpoint("verify", HttpMethods.Post)]
     [DocSummary("Verifies an email address using the given code")]
     public ApiOkResponse VerifyEmail(RequestContext context, GameUser user, GameDatabaseContext database)
     {
@@ -246,7 +247,7 @@ public class AuthenticationApiEndpoints : EndpointGroup
         return new ApiOkResponse();
     }
 
-    [ApiV3Endpoint("verify/resend", Method.Post)]
+    [ApiV3Endpoint("verify/resend", HttpMethods.Post)]
     [DocSummary("Instructs the server to resend the verification email with a new code")]
     public ApiOkResponse ResendVerificationCode(RequestContext context, GameUser user, GameDatabaseContext database, SmtpService smtpService)
     {
@@ -256,7 +257,7 @@ public class AuthenticationApiEndpoints : EndpointGroup
         return new ApiOkResponse();
     }
 
-    [ApiV3Endpoint("users/me", Method.Delete), MinimumRole(GameUserRole.Restricted)]
+    [ApiV3Endpoint("users/me", HttpMethods.Delete), MinimumRole(GameUserRole.Restricted)]
     [DocSummary("Deletes your own account. This action is non-reversible.")]
     public ApiOkResponse DeleteMyAccount(RequestContext context, GameUser user, GameDatabaseContext database)
     {

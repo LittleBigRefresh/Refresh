@@ -1,5 +1,5 @@
 using System.Xml.Serialization;
-using Bunkum.HttpServer.Authentication;
+using Bunkum.Core.Authentication;
 using MongoDB.Bson;
 using Realms;
 using Refresh.GameServer.Types.UserData;

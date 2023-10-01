@@ -1,8 +1,9 @@
 using System.Xml.Serialization;
-using Bunkum.CustomHttpListener.Parsing;
-using Bunkum.HttpServer;
-using Bunkum.HttpServer.Endpoints;
-using Bunkum.HttpServer.Responses;
+using Bunkum.Core;
+using Bunkum.Core.Endpoints;
+using Bunkum.Core.Responses;
+using Bunkum.Listener.Protocol;
+using Bunkum.Protocols.Http;
 using Refresh.GameServer.Database;
 using Refresh.GameServer.Services;
 using Refresh.GameServer.Types;
@@ -20,13 +21,13 @@ public class MetadataEndpoints : EndpointGroup
         return new PrivacySettings();
     }
     
-    [GameEndpoint("privacySettings", ContentType.Xml, Method.Post)]
+    [GameEndpoint("privacySettings", ContentType.Xml, HttpMethods.Post)]
     public PrivacySettings SetPrivacySettings(RequestContext context)
     {
         return new PrivacySettings();
     }
 
-    [GameEndpoint("npdata", ContentType.Xml, Method.Post)]
+    [GameEndpoint("npdata", ContentType.Xml, HttpMethods.Post)]
     public Response SetFriendData(RequestContext context, GameUser user, GameDatabaseContext database,
         FriendStorageService friendService, SerializedFriendData body)
     {
