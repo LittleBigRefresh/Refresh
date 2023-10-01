@@ -16,7 +16,7 @@ public class TestRefreshGameServer : RefreshGameServer
     {}
 
     public BunkumHttpServer Server => this._server;
-    public Logger Logger => this._logger;
+    public Logger Logger => base.Logger;
 
     protected override void SetupConfiguration()
     {

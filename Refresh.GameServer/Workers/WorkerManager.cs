@@ -55,7 +55,7 @@ public class WorkerManager
             if (workerDidWork) didWork = true;
         }
 
-        // this._logger.LogTrace(RefreshContext.Worker, "Ran work cycle, didWork: " + didWork);
+        // this.Logger.LogTrace(RefreshContext.Worker, "Ran work cycle, didWork: " + didWork);
         return didWork;
     }
 

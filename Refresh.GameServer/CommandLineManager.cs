@@ -66,7 +66,7 @@ internal class CommandLineManager
 
         if (options.GenerateDocumentation)
         {
-            DocumentationService service = new(new Logger());
+            DocumentationService service = new(this._server.Logger);
             service.Initialize();
             
             string json = JsonConvert.SerializeObject(service.Documentation, Formatting.Indented);

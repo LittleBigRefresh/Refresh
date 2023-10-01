@@ -9,12 +9,14 @@ Console.WriteLine("Starting Refresh with LOCAL Bunkum!");
 Console.WriteLine("Starting Refresh with NuGet Bunkum");
 #endif
 
-RefreshGameServer server = new();
+using RefreshGameServer server = new();
 
 if (args.Length > 0)
 {
     CommandLineManager cli = new(server);
     cli.StartWithArgs(args);
+
+    server.Dispose();
     return;
 }
 

@@ -28,9 +28,9 @@ using Refresh.GameServer.Workers;
 namespace Refresh.GameServer;
 
 [SuppressMessage("ReSharper", "InconsistentNaming")]
-public class RefreshGameServer
+public class RefreshGameServer : IDisposable
 {
-    protected readonly Logger _logger;
+    public readonly Logger Logger;
     
     protected readonly BunkumHttpServer _server;
     protected WorkerManager? _workerManager;
@@ -61,8 +61,8 @@ public class RefreshGameServer
             #endif
         };
 
-        this._logger = new Logger(logConfig);
-        this._logger.LogDebug(RefreshContext.Startup, "Successfully initialized " + this.GetType().Name);
+        this.Logger = new Logger(logConfig);
+        this.Logger.LogDebug(RefreshContext.Startup, "Successfully initialized " + this.GetType().Name);
         
         this._databaseProvider = databaseProvider.Invoke();
         this._dataStore = dataStore;
@@ -74,7 +74,7 @@ public class RefreshGameServer
             GameDatabaseProvider provider = databaseProvider.Invoke();
             
             this._workerManager?.Stop();
-            this._workerManager = new WorkerManager(this._logger, this._dataStore, provider);
+            this._workerManager = new WorkerManager(this.Logger, this._dataStore, provider);
             
             this.SetupConfiguration();
             authProvider ??= new GameAuthenticationProvider(this._config!);
@@ -171,7 +171,7 @@ public class RefreshGameServer
 
         if (this._config!.MaintenanceMode)
         {
-            this._logger.LogWarning(RefreshContext.Startup, "The server is currently in maintenance mode! " +
+            this.Logger.LogWarning(RefreshContext.Startup, "The server is currently in maintenance mode! " +
                                                             "Only administrators will be able to log in and interact with the server.");
         }
     }
@@ -241,5 +241,12 @@ public class RefreshGameServer
         if (user == null) throw new InvalidOperationException("Cannot find a user by emailAddress " + emailAddress);
 
         context.SetUserRole(user, GameUserRole.Admin);
+    }
+
+    public void Dispose()
+    {
+        this.Logger.Dispose();
+        this._databaseProvider.Dispose();
+        GC.SuppressFinalize(this);
     }
 }
