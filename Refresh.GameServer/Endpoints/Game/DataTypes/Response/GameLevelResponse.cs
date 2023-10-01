@@ -44,10 +44,10 @@ public class GameLevelResponse : IDataConvertableFrom<GameLevelResponse, GameLev
     [XmlElement("playCount")] public required int TotalPlayCount { get; set; }
     [XmlElement("uniquePlayCount")] public required int UniquePlayCount { get; set; }
 
-    [XmlElement("yourDPadRating")] public int YourDPadRating { get; set; }
+    [XmlElement("yourDPadRating")] public int YourRating { get; set; }
     [XmlElement("thumbsup")] public required int YayCount { get; set; }
     [XmlElement("thumbsdown")] public required int BooCount { get; set; }
-    [XmlElement("yourRating")] public int YourRatingLBP1 { get; set; }
+    [XmlElement("yourRating")] public int YourStarRating { get; set; }
     
     [XmlArray("customRewards")]
     [XmlArrayItem("customReward")]
@@ -133,8 +133,8 @@ public class GameLevelResponse : IDataConvertableFrom<GameLevelResponse, GameLev
 
         RatingType? rating = database.GetRatingByUser(level, user);
         
-        this.YourDPadRating = rating?.ToDPad() ?? (int)RatingType.Neutral;
-        this.YourRatingLBP1 = rating?.ToLBP1() ?? 0;
+        this.YourRating = rating?.ToDPad() ?? (int)RatingType.Neutral;
+        this.YourStarRating = rating?.ToLBP1() ?? 0;
         this.PlayerCount = matchService.GetPlayerCountForLevel(RoomSlotType.Online, this.LevelId);
     }
 }

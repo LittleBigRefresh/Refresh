@@ -29,7 +29,7 @@ public class LevelEndpoints : EndpointGroup
         (int skip, int count) = context.GetPageData();
 
         DatabaseList<GameLevel>? levels = categoryService.Categories
-            .FirstOrDefault(c => c.GameRoutes.Any(x => x.StartsWith(route)))?
+            .FirstOrDefault(c => c.GameRoutes.Any(r => r.StartsWith(route)))?
             .Fetch(context, skip, count, matchService, database, user, token.TokenGame);
 
         if (levels == null) return null;

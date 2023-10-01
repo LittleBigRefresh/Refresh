@@ -30,8 +30,8 @@ public class GameMinimalLevelResponse : IDataConvertableFrom<GameMinimalLevelRes
     [XmlElement("thumbsup")] public required int YayCount { get; set; }
     [XmlElement("thumbsdown")] public required int BooCount { get; set; }
     [XmlElement("averageRating")] public double AverageRating { get; set; }
-    [XmlElement("yourRating")] public int YourRatingLBP1 { get; set; }
-    [XmlElement("yourDPadRating")] public int YourDPadRating { get; set; }
+    [XmlElement("yourRating")] public int YourStarRating { get; set; }
+    [XmlElement("yourDPadRating")] public int YourRating { get; set; }
 
     [XmlElement("playerCount")] public int PlayerCount { get; set; }
     
@@ -88,8 +88,8 @@ public class GameMinimalLevelResponse : IDataConvertableFrom<GameMinimalLevelRes
             MinPlayers = level.MinPlayers,
             TotalPlayCount = level.TotalPlayCount,
             UniquePlayCount = level.UniquePlayCount,
-            YourRatingLBP1 = level.YourRatingLBP1,
-            YourDPadRating = level.YourDPadRating,
+            YourStarRating = level.YourStarRating,
+            YourRating = level.YourRating,
             AverageRating = level.AverageRating,
         };
     }

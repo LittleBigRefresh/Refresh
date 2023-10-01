@@ -160,6 +160,15 @@ public partial class GameDatabaseContext // Relations
     private RateLevelRelation? GetRateRelationByUser(GameLevel level, GameUser user)
         => this._realm.All<RateLevelRelation>().FirstOrDefault(r => r.User == user && r.Level == level);
 
+    /// <summary>
+    /// Get a user's rating on a particular level.
+    /// A null return value means a user has not set a rating.
+    /// On LBP1/PSP, a missing rating is a separate condition that should be sent
+    /// while on LBP2 and newer you should return a Neutral rating.
+    /// </summary>
+    /// <param name="level">The level to check</param>
+    /// <param name="user">The user to check</param>
+    /// <returns>The rating if found</returns>
     [Pure]
     public RatingType? GetRatingByUser(GameLevel level, GameUser user) => this.GetRateRelationByUser(level, user)?.RatingType;
 
