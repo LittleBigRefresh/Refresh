@@ -101,7 +101,7 @@ public class GameUserResponse : IDataConvertableFrom<GameUserResponse, GameUser>
             _ => throw new ArgumentOutOfRangeException(nameof(gameVersion), gameVersion, null),
         };
 
-        //Fill out the used slots
+        // Fill out slot usage information
         switch (gameVersion)
         {
             case TokenGame.LittleBigPlanet3: {
@@ -139,6 +139,12 @@ public class GameUserResponse : IDataConvertableFrom<GameUserResponse, GameUser>
             case TokenGame.Website: break;
             default:
                 throw new ArgumentOutOfRangeException(nameof(gameVersion), gameVersion, null);
+        }
+
+        // Apply PSP-specific icon hashes
+        if (gameVersion == TokenGame.LittleBigPlanetPSP)
+        {
+            this.IconHash = old.PspIconHash;
         }
     }
 }

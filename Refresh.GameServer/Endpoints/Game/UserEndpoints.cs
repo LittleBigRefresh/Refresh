@@ -128,6 +128,9 @@ public class UserEndpoints : EndpointGroup
             case TokenGame.LittleBigPlanet3:
                 data.Lbp3PlanetsHash = data.PlanetsHash;
                 break;
+            case TokenGame.LittleBigPlanetPSP:
+                data.PspIconHash = data.IconHash;
+                break;
         }
         
         database.UpdateUserData(user, data);
