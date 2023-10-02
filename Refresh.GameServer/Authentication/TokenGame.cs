@@ -19,7 +19,7 @@ public static class TokenGameExtensions
             TokenGame.LittleBigPlanet2 => 1,
             TokenGame.LittleBigPlanet3 => 2,
             TokenGame.LittleBigPlanetVita => 1,
-            TokenGame.LittleBigPlanetPSP => 2,
+            TokenGame.LittleBigPlanetPSP => 0,
             TokenGame.Website => throw new InvalidOperationException("https://osuhow.com/"),
             _ => throw new ArgumentOutOfRangeException(),
         };
