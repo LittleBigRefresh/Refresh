@@ -1,6 +1,7 @@
 using System.Diagnostics;
 using Bunkum.Core;
 using Bunkum.Core.Endpoints;
+using Bunkum.Core.RateLimit;
 using Bunkum.Core.Responses;
 using Bunkum.Listener.Protocol;
 using Bunkum.Protocols.Http;
@@ -16,6 +17,11 @@ namespace Refresh.GameServer.Endpoints.Game.Levels;
 
 public class LeaderboardEndpoints : EndpointGroup
 {
+    private const int RequestTimeoutDuration = 300;
+    private const int MaxRequestAmount = 250;
+    private const int RequestBlockDuration = 300;
+    private const string BucketName = "score";
+    
     [GameEndpoint("play/user/{id}", ContentType.Xml, HttpMethods.Post)]
     public Response PlayLevel(RequestContext context, GameUser user, GameDatabaseContext database, int id)
     {
@@ -27,6 +33,7 @@ public class LeaderboardEndpoints : EndpointGroup
     }
 
     [GameEndpoint("scoreboard/developer/{id}", HttpMethods.Get, ContentType.Xml)]
+    [RateLimitSettings(RequestTimeoutDuration, MaxRequestAmount, RequestBlockDuration, BucketName)]
     public SerializedMultiLeaderboardResponse GetDeveloperScores(RequestContext context, GameUser user, GameDatabaseContext database, int id)
     {
         //TODO
@@ -34,6 +41,7 @@ public class LeaderboardEndpoints : EndpointGroup
     }
 
     [GameEndpoint("scoreboard/developer/{id}", ContentType.Xml, HttpMethods.Post)]
+    [RateLimitSettings(RequestTimeoutDuration, MaxRequestAmount, RequestBlockDuration, BucketName)]
     public Response SubmitDeveloperScore(RequestContext context, GameUser user, GameDatabaseContext database, int id, SerializedScore body)
     {
         //TODO
@@ -41,6 +49,7 @@ public class LeaderboardEndpoints : EndpointGroup
     }
     
     [GameEndpoint("scoreboard/user/{id}", HttpMethods.Get, ContentType.Xml)]
+    [RateLimitSettings(RequestTimeoutDuration, MaxRequestAmount, RequestBlockDuration, BucketName)]
     public Response GetUserScores(RequestContext context, GameUser user, GameDatabaseContext database, int id)
     {
         GameLevel? level = database.GetLevelById(id);
@@ -53,6 +62,7 @@ public class LeaderboardEndpoints : EndpointGroup
     }
     
     [GameEndpoint("scoreboard/user/{id}", ContentType.Xml, HttpMethods.Post)]
+    [RateLimitSettings(RequestTimeoutDuration, MaxRequestAmount, RequestBlockDuration, BucketName)]
     public Response SubmitScore(RequestContext context, GameUser user, GameDatabaseContext database, int id, SerializedScore body)
     {
         GameLevel? level = database.GetLevelById(id);
@@ -74,6 +84,7 @@ public class LeaderboardEndpoints : EndpointGroup
 
     [GameEndpoint("topscores/user/{id}/{type}", ContentType.Xml)]
     [MinimumRole(GameUserRole.Restricted)]
+    [RateLimitSettings(RequestTimeoutDuration, MaxRequestAmount, RequestBlockDuration, BucketName)]
     public SerializedScoreList? GetTopScoresForLevel(RequestContext context, GameDatabaseContext database, int id, int type)
     {
         GameLevel? level = database.GetLevelById(id);
