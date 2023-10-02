@@ -18,22 +18,6 @@ public class GameAuthenticationProvider : IAuthenticationProvider<Token>
         this._config = config;
     }
 
-    public GameUser? AuthenticateUser(ListenerContext request, Lazy<IDatabaseContext> database)
-    {
-        GameUser? user = this.AuthenticateToken(request, database)?.User;
-        if (user == null) return null;
-
-        user.RateLimitUserId = user.UserId;
-        
-        // don't allow non-admins to authenticate during maintenance mode.
-        // technically, this check isn't here for token but this is okay since
-        // we don't actually receive tokens in endpoints (except during logout, aka token revocation)
-        if ((this._config?.MaintenanceMode ?? false) && user.Role != GameUserRole.Admin)
-            return null;
-        
-        return user;
-    }
-
     public Token? AuthenticateToken(ListenerContext request, Lazy<IDatabaseContext> db)
     {
         // first try to grab token data from MM_AUTH
@@ -53,6 +37,18 @@ public class GameAuthenticationProvider : IAuthenticationProvider<Token>
         GameDatabaseContext database = (GameDatabaseContext)db.Value;
         Debug.Assert(database != null);
 
-        return database.GetTokenFromTokenData(tokenData, tokenType);
+        Token? token = database.GetTokenFromTokenData(tokenData, tokenType);
+        if (token == null) return null;
+
+        GameUser user = token.User;
+        user.RateLimitUserId = user.UserId;
+        
+        // don't allow non-admins to authenticate during maintenance mode.
+        // technically, this check isn't here for token but this is okay since
+        // we don't actually receive tokens in endpoints (except during logout, aka token revocation)
+        if ((this._config?.MaintenanceMode ?? false) && user.Role != GameUserRole.Admin)
+            return null;
+
+        return token;
     }
 }
