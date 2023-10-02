@@ -9,6 +9,8 @@ namespace Refresh.GameServer.Endpoints.Game.DataTypes.Response;
 [XmlRoot("user")]
 public class GameUserResponse : IDataConvertableFrom<GameUserResponse, GameUser>
 {
+    public const int MaximumLevels = 9_999;
+    
     [XmlAttribute("type")] public string Type { get; set; } = "user";
     [XmlIgnore] public required string IconHash { get; set; }
     [XmlElement("biography")] public required string Description { get; set; }
@@ -68,9 +70,9 @@ public class GameUserResponse : IDataConvertableFrom<GameUserResponse, GameUser>
             PhotosByMeCount = old.PhotosByMe.Count(),
             PhotosWithMeCount = old.PhotosWithMe.Count(),
             
-            EntitledSlots = 100,
-            EntitledSlotsLBP2 = 100,
-            EntitledSlotsLBP3 = 100,
+            EntitledSlots = MaximumLevels,
+            EntitledSlotsLBP2 = MaximumLevels,
+            EntitledSlotsLBP3 = MaximumLevels,
             UsedSlots = 0,
             UsedSlotsLBP2 = 0,
             UsedSlotsLBP3 = 0,
@@ -105,33 +107,33 @@ public class GameUserResponse : IDataConvertableFrom<GameUserResponse, GameUser>
             case TokenGame.LittleBigPlanet3: {
                 //Match all LBP3 levels
                 this.UsedSlotsLBP3 = old.PublishedLevels.Count(x => x._GameVersion == (int)TokenGame.LittleBigPlanet3);
-                this.FreeSlotsLBP3 = 100 - this.UsedSlotsLBP3;
+                this.FreeSlotsLBP3 = MaximumLevels - this.UsedSlotsLBP3;
                 //Fill out LBP2/LBP1 levels
                 goto case TokenGame.LittleBigPlanet2;
             }
             case TokenGame.LittleBigPlanet2: {
                 //Match all LBP2 levels
                 this.UsedSlotsLBP2 = old.PublishedLevels.Count(x => x._GameVersion == (int)TokenGame.LittleBigPlanet2);
-                this.FreeSlotsLBP2 = 100 - this.UsedSlotsLBP2;
+                this.FreeSlotsLBP2 = MaximumLevels - this.UsedSlotsLBP2;
                 //Fill out LBP1 levels
                 goto case TokenGame.LittleBigPlanet1;
             }
             case TokenGame.LittleBigPlanetVita: { 
                 //Match all LBP Vita levels
                 this.UsedSlotsLBP2 = old.PublishedLevels.Count(x => x._GameVersion == (int)TokenGame.LittleBigPlanetVita);
-                this.FreeSlotsLBP2 = 100 - this.UsedSlotsLBP2;
+                this.FreeSlotsLBP2 = MaximumLevels - this.UsedSlotsLBP2;
                 break;
             }
             case TokenGame.LittleBigPlanet1: {
                 //Match all LBP1 levels
                 this.UsedSlots = old.PublishedLevels.Count(x => x._GameVersion == (int)TokenGame.LittleBigPlanet1);
-                this.FreeSlots = 100 - this.UsedSlots;
+                this.FreeSlots = MaximumLevels - this.UsedSlots;
                 break;
             }
             case TokenGame.LittleBigPlanetPSP: {
                 //Match all LBP PSP levels
                 this.UsedSlots = old.PublishedLevels.Count(x => x._GameVersion == (int)TokenGame.LittleBigPlanetPSP);
-                this.FreeSlots = 100 - this.UsedSlots;
+                this.FreeSlots = MaximumLevels - this.UsedSlots;
                 break;
             }
             case TokenGame.Website: break;
