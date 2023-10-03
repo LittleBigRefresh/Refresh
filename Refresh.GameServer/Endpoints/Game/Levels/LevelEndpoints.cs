@@ -116,10 +116,14 @@ public class LevelEndpoints : EndpointGroup
         => this.GetLevels(context, database, categories, matchService, user, token, "newest");
 
     [GameEndpoint("favouriteSlots/{username}", ContentType.Xml)]
+    [NullStatusCode(NotFound)]
     [MinimumRole(GameUserRole.Restricted)]
     public SerializedMinimalFavouriteLevelList? FavouriteLevels(RequestContext context, GameDatabaseContext database, CategoryService categories, MatchService matchService, Token token, string username)
     {
-        SerializedMinimalLevelList? levels = this.GetLevels(context, database, categories, matchService, database.GetUserByUsername(username), token, "favouriteSlots");
+        GameUser? user = database.GetUserByUsername(username);
+        if (user == null) return null;
+        
+        SerializedMinimalLevelList? levels = this.GetLevels(context, database, categories, matchService, user, token, "favouriteSlots");
         if (levels == null) return null;
         
         return new SerializedMinimalFavouriteLevelList(levels);

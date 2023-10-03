@@ -1,7 +1,10 @@
 using System.Xml.Serialization;
 using Refresh.GameServer.Authentication;
+using Refresh.GameServer.Database;
 using Refresh.GameServer.Endpoints.ApiV3.DataTypes;
 using Refresh.GameServer.Types;
+using Refresh.GameServer.Types.Levels;
+using Refresh.GameServer.Types.Lists;
 using Refresh.GameServer.Types.UserData;
 
 namespace Refresh.GameServer.Endpoints.Game.DataTypes.Response;
@@ -39,12 +42,21 @@ public class GameUserResponse : IDataConvertableFrom<GameUserResponse, GameUser>
     [XmlElement("lbp2PurchasedSlots")] public int PurchasedSlotsLBP2 { get; set; }
     [XmlElement("lbp3PurchasedSlots")] public int PurchasedSlotsLBP3 { get; set; }
     
-    public static GameUserResponse? FromOldWithExtraData(GameUser? old, TokenGame gameVersion)
+    /// <summary>
+    /// The levels the user has favourited, only used by LBP PSP
+    /// </summary>
+    [XmlElement("favouriteSlots")] public SerializedMinimalFavouriteLevelList? FavouriteLevels { get; set; }
+    /// <summary>
+    /// The users the user has favourited, only used by LBP PSP
+    /// </summary>
+    [XmlElement("favouriteUsers")] public SerializedMinimalFavouriteUserList? FavouriteUsers { get; set; }
+    
+    public static GameUserResponse? FromOldWithExtraData(GameUser? old, TokenGame gameVersion, GameDatabaseContext database)
     {
         if (old == null) return null;
 
         GameUserResponse response = FromOld(old)!;
-        response.FillInExtraData(old, gameVersion);
+        response.FillInExtraData(old, gameVersion, database);
 
         return response;
     }
@@ -85,10 +97,10 @@ public class GameUserResponse : IDataConvertableFrom<GameUserResponse, GameUser>
 
     public static IEnumerable<GameUserResponse> FromOldList(IEnumerable<GameUser> oldList) => oldList.Select(FromOld)!;
     
-    public static IEnumerable<GameUserResponse> FromOldListWithExtraData(IEnumerable<GameUser> oldList, TokenGame gameVersion) 
-        => oldList.Select(old => FromOldWithExtraData(old, gameVersion))!;
+    public static IEnumerable<GameUserResponse> FromOldListWithExtraData(IEnumerable<GameUser> oldList, TokenGame gameVersion, GameDatabaseContext database) 
+        => oldList.Select(old => FromOldWithExtraData(old, gameVersion, database))!;
 
-    private void FillInExtraData(GameUser old, TokenGame gameVersion)
+    private void FillInExtraData(GameUser old, TokenGame gameVersion, GameDatabaseContext database)
     {
         this.PlanetsHash = gameVersion switch
         {
@@ -141,10 +153,18 @@ public class GameUserResponse : IDataConvertableFrom<GameUserResponse, GameUser>
                 throw new ArgumentOutOfRangeException(nameof(gameVersion), gameVersion, null);
         }
 
-        // Apply PSP-specific icon hashes
         if (gameVersion == TokenGame.LittleBigPlanetPSP)
         {
+            // Apply PSP-specific icon hashes
             this.IconHash = old.PspIconHash;
+
+            //Fill out PSP favourite users
+            List<GameUser> users = database.GetUsersFavouritedByUser(old, 20, 0).ToList();
+            this.FavouriteUsers = new SerializedMinimalFavouriteUserList(users.Select(SerializedUserHandle.FromUser).ToList(), users.Count);
+
+            //Fill out PSP favourite levels
+            List<GameMinimalLevelResponse> favouriteLevels = old.FavouriteLevelRelations.Select(f => GameMinimalLevelResponse.FromOld(f.Level)).ToList()!;
+            this.FavouriteLevels = new SerializedMinimalFavouriteLevelList(new SerializedMinimalLevelList(favouriteLevels, favouriteLevels.Count));
         }
     }
 }

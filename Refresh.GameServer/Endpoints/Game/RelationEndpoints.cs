@@ -20,13 +20,14 @@ public class RelationEndpoints : EndpointGroup
     public Response FavouriteLevel(RequestContext context, GameDatabaseContext database, GameUser user, int id)
     {
         GameLevel? level = database.GetLevelById(id);
-        if (level == null) return NotFound;
+        // On PSP, we have to lie or else the client will begin spamming the server
+        // https://discord.com/channels/1049223665243389953/1049225857350254632/1153468991675838474 
+        if (level == null) return context.IsPSP() ? OK : NotFound;
 
         if (database.FavouriteLevel(level, user))
             return OK;
         
-        // On PSP, we have to lie or else the client will begin spamming the server
-        // https://discord.com/channels/1049223665243389953/1049225857350254632/1153468991675838474 
+        // See above comment about PSP
         return context.IsPSP() ? OK : Unauthorized;
     }
     
@@ -34,13 +35,14 @@ public class RelationEndpoints : EndpointGroup
     public Response UnfavouriteLevel(RequestContext context, GameDatabaseContext database, GameUser user, int id)
     {
         GameLevel? level = database.GetLevelById(id);
-        if (level == null) return NotFound;
+        // On PSP, we have to lie or else the client will begin spamming the server
+        // https://discord.com/channels/1049223665243389953/1049225857350254632/1153468991675838474 
+        if (level == null) return context.IsPSP() ? OK : NotFound;
 
         if (database.UnfavouriteLevel(level, user))
             return OK;
         
-        // On PSP, we have to lie or else the client will begin spamming the server
-        // https://discord.com/channels/1049223665243389953/1049225857350254632/1153468991675838474 
+        // See above comment about PSP
         return context.IsPSP() ? OK : Unauthorized;
     }
     
@@ -48,13 +50,14 @@ public class RelationEndpoints : EndpointGroup
     public Response FavouriteUser(RequestContext context, GameDatabaseContext database, GameUser user, string username)
     {
         GameUser? userToFavourite = database.GetUserByUsername(username);
-        if (userToFavourite == null) return NotFound;
+        // On PSP, we have to lie or else the client will begin spamming the server
+        // https://discord.com/channels/1049223665243389953/1049225857350254632/1153468991675838474
+        if (userToFavourite == null) return context.IsPSP() ? OK : NotFound;
 
         if (database.FavouriteUser(userToFavourite, user))
             return OK;
 
-        // On PSP, we have to lie or else the client will begin spamming the server
-        // https://discord.com/channels/1049223665243389953/1049225857350254632/1153468991675838474
+        // See above comment about PSP
         return context.IsPSP() ? OK : Unauthorized;
     }
     
@@ -62,13 +65,14 @@ public class RelationEndpoints : EndpointGroup
     public Response UnfavouriteUser(RequestContext context, GameDatabaseContext database, GameUser user, string username)
     {
         GameUser? userToFavourite = database.GetUserByUsername(username);
-        if (userToFavourite == null) return NotFound;
+        // On PSP, we have to lie or else the client will begin spamming the server
+        // https://discord.com/channels/1049223665243389953/1049225857350254632/1153468991675838474
+        if (userToFavourite == null) return context.IsPSP() ? OK : NotFound;
 
         if (database.UnfavouriteUser(userToFavourite, user))
             return OK;
 
-        // On PSP, we have to lie or else the client will begin spamming the server
-        // https://discord.com/channels/1049223665243389953/1049225857350254632/1153468991675838474
+        // See above comment about PSP
         return context.IsPSP() ? OK : Unauthorized;
     }
 
@@ -84,7 +88,7 @@ public class RelationEndpoints : EndpointGroup
         List<GameUser> users = database.GetUsersFavouritedByUser(user, count, skip)
             .ToList();
 
-        return new SerializedFavouriteUserList(GameUserResponse.FromOldListWithExtraData(users, token.TokenGame).ToList(), users.Count);
+        return new SerializedFavouriteUserList(GameUserResponse.FromOldListWithExtraData(users, token.TokenGame, database).ToList(), users.Count);
     }
 
     [GameEndpoint("lolcatftw/add/user/{id}", HttpMethods.Post)]

@@ -19,7 +19,7 @@ public class UserEndpoints : EndpointGroup
     [GameEndpoint("user/{name}", HttpMethods.Get, ContentType.Xml)]
     [MinimumRole(GameUserRole.Restricted)]
     public GameUserResponse? GetUser(RequestContext context, GameDatabaseContext database, string name, Token token) 
-        => GameUserResponse.FromOldWithExtraData(database.GetUserByUsername(name), token.TokenGame);
+        => GameUserResponse.FromOldWithExtraData(database.GetUserByUsername(name), token.TokenGame, database);
 
     [GameEndpoint("users", HttpMethods.Get, ContentType.Xml)]
     [MinimumRole(GameUserRole.Restricted)]
@@ -35,7 +35,7 @@ public class UserEndpoints : EndpointGroup
             GameUser? user = database.GetUserByUsername(username);
             if (user == null) continue;
             
-            users.Add(GameUserResponse.FromOldWithExtraData(user, token.TokenGame)!);
+            users.Add(GameUserResponse.FromOldWithExtraData(user, token.TokenGame, database)!);
         }
 
         return new SerializedUserList
@@ -53,7 +53,7 @@ public class UserEndpoints : EndpointGroup
         List<GameUser>? friends = friendService.GetUsersFriends(user, database)?.ToList();
         if (friends == null) return null;
         
-        return new SerializedFriendsList(GameUserResponse.FromOldListWithExtraData(friends, token.TokenGame).ToList());
+        return new SerializedFriendsList(GameUserResponse.FromOldListWithExtraData(friends, token.TokenGame, database).ToList());
     }
 
     [GameEndpoint("updateUser", HttpMethods.Post, ContentType.Xml)]
