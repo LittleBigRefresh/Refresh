@@ -5,6 +5,7 @@ using Bunkum.AutoDiscover.Extensions;
 using Bunkum.Core.Authentication;
 using Bunkum.Core.Configuration;
 using Bunkum.Core.RateLimit;
+using Bunkum.Core.Services;
 using Bunkum.Core.Storage;
 using Bunkum.HealthChecks;
 using Bunkum.Protocols.Http;
@@ -149,6 +150,10 @@ public class RefreshGameServer : IDisposable
 
         if (this._config!.TrackRequestStatistics)
             this._server.AddService<RequestStatisticTrackingService>();
+        
+        #if DEBUG
+        this._server.AddService<DebugService>();
+        #endif
     }
 
     protected virtual void SetupWorkers()
