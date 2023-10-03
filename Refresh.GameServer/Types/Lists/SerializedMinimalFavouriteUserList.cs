@@ -10,7 +10,7 @@ namespace Refresh.GameServer.Types.Lists;
 /// Minimal favourite user list, used only by LBP PSP, since it structures things a bit differently
 /// </summary>
 [XmlRoot("favouriteUsers")]
-[XmlType("favouriteUsers")]
+[XmlType("minimalFavouriteUsers")]
 public class SerializedMinimalFavouriteUserList : SerializedList<SerializedUserHandle>
 {
     public SerializedMinimalFavouriteUserList() {}
