@@ -68,15 +68,15 @@ public class ActivityEndpoints : EndpointGroup
                             Item = new GameNewsFrameItem
                             {
                                 Width = 100,
-                                Content = "Team Pick",
+                                Content = $"{level.Title} has been team picked!",
                                 Background = "Frame item background",
                                 Level = new GameNewsFrameItemSlot
                                 {
                                     Id = level.LevelId,
                                     Type = "user",
-                                }
-                            }
-                        }
+                                },
+                            },
+                        },
                     });
                 }
 
@@ -85,6 +85,7 @@ public class ActivityEndpoints : EndpointGroup
                     Id = i,
                     Subject = "Team Pick",
                     Content = doc.DocumentElement!.InnerXml,
+                    Timestamp = time.TimestampSeconds,
                 });
 
                 i++;
