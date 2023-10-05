@@ -68,8 +68,8 @@ public partial class ImageImporter : Importer
 
     public static void ImportAsset(GameAsset asset, IDataStore dataStore)
     {
-        Stream stream = dataStore.GetStreamFromStore(asset.AssetHash);
-        Stream writeStream = dataStore.OpenWriteStream("png/" + asset.AssetHash);
+        using Stream stream = dataStore.GetStreamFromStore(asset.AssetHash);
+        using Stream writeStream = dataStore.OpenWriteStream("png/" + asset.AssetHash);
 
         switch (asset.AssetType)
         {
