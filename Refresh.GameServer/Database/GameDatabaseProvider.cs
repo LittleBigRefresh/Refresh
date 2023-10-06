@@ -32,7 +32,7 @@ public class GameDatabaseProvider : RealmDatabaseProvider<GameDatabaseContext>
         this._time = time;
     }
 
-    protected override ulong SchemaVersion => 87;
+    protected override ulong SchemaVersion => 88;
 
     protected override string Filename => "refreshGameServer.realm";
     
@@ -276,6 +276,23 @@ public class GameDatabaseProvider : RealmDatabaseProvider<GameDatabaseContext>
             if (oldVersion < 52)
             {
                 newPhoto.TakenAt = DateTimeOffset.FromUnixTimeSeconds(oldPhoto.TakenAt.ToUnixTimeMilliseconds());
+            }
+        }
+        
+        IQueryable<dynamic>? oldAssets = migration.OldRealm.DynamicApi.All("GameAsset");
+        IQueryable<GameAsset>? newAssets = migration.NewRealm.All<GameAsset>();
+
+        for (int i = 0; i < newAssets.Count(); i++)
+        {
+            dynamic oldAsset = oldAssets.ElementAt(i);
+            GameAsset newAsset = newAssets.ElementAt(i);
+            
+            if (oldVersion < 88)
+            {
+                //We dont have any more advanced heuristics here,
+                //but TGA files are the only asset currently effected by the tracking of `IsPSP`,
+                //and PSP is the only game to upload TGA files
+                newAsset.IsPSP = newAsset.AssetType == GameAssetType.Tga;
             }
         }
     }

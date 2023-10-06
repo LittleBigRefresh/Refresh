@@ -9,6 +9,7 @@ public partial class GameAsset : IRealmObject
     [PrimaryKey] [JsonProperty] public string AssetHash { get; set; } = string.Empty;
     [JsonProperty] public GameUser? OriginalUploader { get; set; }
     [JsonProperty] public DateTimeOffset UploadDate { get; set; }
+    [JsonProperty] public bool IsPSP { get; set; }
     [JsonProperty] [Ignored] public GameAssetType AssetType
     {
         get => (GameAssetType)this._AssetType;

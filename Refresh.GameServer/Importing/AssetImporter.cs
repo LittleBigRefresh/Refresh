@@ -88,7 +88,8 @@ public class AssetImporter : Importer
             UploadDate = this._timeProvider.Now,
             OriginalUploader = null,
             AssetHash = hash,
-            AssetType = DetermineAssetType(data, platform),
+            AssetType = this.DetermineAssetType(data, platform),
+            IsPSP = platform == TokenPlatform.PSP,
         };
 
         return asset;
