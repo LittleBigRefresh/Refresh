@@ -60,19 +60,23 @@ public class ResourceApiEndpoints : EndpointGroup
     public Response DownloadGameAssetAsImage(RequestContext context, IDataStore dataStore, GameDatabaseContext database,
         [DocSummary("The SHA1 hash of the asset")] string hash)
     {
-        if (!CommonPatterns.Sha1Regex().IsMatch(hash)) return HashInvalidError;
-        if (string.IsNullOrWhiteSpace(hash)) return HashMissingErrorResponse;
+        bool isPspAsset = hash.StartsWith("psp/");
+
+        string realHash = isPspAsset ? hash[4..] : hash;
+        
+        if (!CommonPatterns.Sha1Regex().IsMatch(realHash)) return HashInvalidError;
+        if (string.IsNullOrWhiteSpace(realHash)) return HashMissingErrorResponse;
         if (!dataStore.ExistsInStore(hash)) return ApiNotFoundError.Instance;
 
-        if (!dataStore.ExistsInStore("png/" + hash))
+        if (!dataStore.ExistsInStore("png/" + realHash))
         {
-            GameAsset? asset = database.GetAssetFromHash(hash);
+            GameAsset? asset = database.GetAssetFromHash(realHash);
             if (asset == null) return CouldNotGetAssetDatabaseErrorResponse;
             
             ImageImporter.ImportAsset(asset, dataStore);
         }
 
-        bool gotData = dataStore.TryGetDataFromStore("png/" + hash, out byte[]? data);
+        bool gotData = dataStore.TryGetDataFromStore("png/" + realHash, out byte[]? data);
         if (data == null || !gotData) return CouldNotGetAssetErrorResponse;
 
         return new Response(data, ContentType.Png);

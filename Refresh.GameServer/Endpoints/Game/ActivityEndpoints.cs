@@ -41,7 +41,6 @@ public class ActivityEndpoints : EndpointGroup
     [GameEndpoint("news", ContentType.Xml)]
     [Authentication(false)]
     [MinimumRole(GameUserRole.Restricted)]
-    [DebugResponseBody]
     public Response GetNews(RequestContext context, GameDatabaseContext database, IDateTimeProvider time, Token? token)
     {
         List<GameNewsItem> items = new();

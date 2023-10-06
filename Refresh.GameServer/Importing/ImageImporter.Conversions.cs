@@ -5,7 +5,12 @@ namespace Refresh.GameServer.Importing;
 
 public partial class ImageImporter // Conversions
 {
-    private static void JpegToPng(Stream stream, Stream writeStream)
+    /// <summary>
+    /// Converts an image of any supported ImageSharp format to PNG
+    /// </summary>
+    /// <param name="stream">A stream representing some image file</param>
+    /// <param name="writeStream">The output stream to write the PNG to</param>
+    private static void ImageToPng(Stream stream, Stream writeStream)
     {
         using Image image = Image.Load(stream);
         image.SaveAsPng(writeStream);

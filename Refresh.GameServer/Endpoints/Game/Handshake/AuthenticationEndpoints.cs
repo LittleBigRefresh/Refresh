@@ -153,7 +153,7 @@ public class AuthenticationEndpoints : EndpointGroup
         }
 
         if (game == TokenGame.LittleBigPlanetVita && platform == TokenPlatform.PS3) platform = TokenPlatform.Vita;
-        else if (game == TokenGame.LittleBigPlanetPSP && platform == TokenPlatform.PSP) platform = TokenPlatform.PSP;
+        else if (game == TokenGame.LittleBigPlanetPSP && platform == TokenPlatform.PS3) platform = TokenPlatform.PSP;
 
         Token token = database.GenerateTokenForUser(user, TokenType.Game, game.Value, platform.Value, GameDatabaseContext.GameTokenExpirySeconds); // 4 hours
 
