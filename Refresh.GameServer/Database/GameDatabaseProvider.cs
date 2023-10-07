@@ -32,7 +32,7 @@ public class GameDatabaseProvider : RealmDatabaseProvider<GameDatabaseContext>
         this._time = time;
     }
 
-    protected override ulong SchemaVersion => 89;
+    protected override ulong SchemaVersion => 91;
 
     protected override string Filename => "refreshGameServer.realm";
     
@@ -309,7 +309,22 @@ public class GameDatabaseProvider : RealmDatabaseProvider<GameDatabaseContext>
                 //In version 89, we started tracking the level type of scores.
                 //Before this story level scores were not stored.
                 newScore.LevelType = GameSubmittedScoreLevelType.User;
-                newScore.DeveloperId = null;
+                newScore.DeveloperId = -1;
+            }
+
+            if (oldVersion < 90)
+            {
+                //In version 90, we started tracking the game the score was submitted on.
+                //Since we dont have info for previous scores, set the value to null
+                newScore.Game = null;
+            }
+
+            if (oldVersion < 91)
+            {
+                if (oldScore.DeveloperId == null)
+                {
+                    newScore.DeveloperId = -1;
+                }
             }
         }
     }

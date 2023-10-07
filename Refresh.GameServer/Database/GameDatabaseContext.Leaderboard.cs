@@ -1,6 +1,6 @@
-using System.Diagnostics;
 using JetBrains.Annotations;
 using MongoDB.Bson;
+using Refresh.GameServer.Authentication;
 using Refresh.GameServer.Types.Levels;
 using Refresh.GameServer.Types.UserData;
 using Refresh.GameServer.Types.UserData.Leaderboard;
@@ -9,7 +9,7 @@ namespace Refresh.GameServer.Database;
 
 public partial class GameDatabaseContext // Leaderboard
 {
-    public GameSubmittedScore SubmitUserLevelScore(SerializedScore score, GameUser user, GameLevel level)
+    public GameSubmittedScore SubmitUserLevelScore(SerializedScore score, GameUser user, GameLevel level, TokenGame game)
     {
         GameSubmittedScore newScore = new()
         {
@@ -18,8 +18,33 @@ public partial class GameDatabaseContext // Leaderboard
             Level = level,
             Players = { user },
             ScoreSubmitted = this._time.Now,
-            DeveloperId = null,
+            DeveloperId = -1,
             LevelType = GameSubmittedScoreLevelType.User,
+            Game = game,
+        };
+
+        this._realm.Write(() =>
+        {
+            this._realm.Add(newScore);
+        });
+
+        this.CreateSubmittedScoreCreateEvent(user, newScore);
+
+        return newScore;
+    }
+    
+    public GameSubmittedScore SubmitDeveloperLevelScore(SerializedScore score, GameUser user, int developerId, TokenGame game)
+    {
+        GameSubmittedScore newScore = new()
+        {
+            Score = score.Score,
+            ScoreType = score.ScoreType,
+            Level = null,
+            Players = { user },
+            ScoreSubmitted = this._time.Now,
+            DeveloperId = developerId,
+            LevelType = GameSubmittedScoreLevelType.Developer,
+            Game = game,
         };
 
         this._realm.Write(() =>
@@ -34,17 +59,15 @@ public partial class GameDatabaseContext // Leaderboard
     
     [UsedImplicitly] private record ScoreLevelWithPlayer(GameLevel? Level, int? DeveloperId, GameUser Player);
 
-    public DatabaseList<GameSubmittedScore> GetTopScoresForLevel(GameLevel? level, int? developerId, int count, int skip, byte type, bool showDuplicates = false)
+    public DatabaseList<GameSubmittedScore> GetTopScoresForLevel(GameLevel? level, int? developerId, TokenGame game, int count, int skip, byte type, bool showDuplicates = false)
     {
         //Asset that exactly one of the fields are set
         if (!(level != null ^ developerId != null))
             throw new ArgumentException($"Only {nameof(level)} *or* {nameof(developerId)} can be set at once!");
 
-        //NOTE: the reason we check both developer ID and user level in this case
-        //      is due to the fact that the other field will always be null if one is set, so they will equal
-        IEnumerable<GameSubmittedScore> scores = this._realm.All<GameSubmittedScore>()
-            .Where(s => s.Level == level && s.ScoreType == type && s.DeveloperId == developerId)
-            .OrderByDescending(s => s.Score)
+        IEnumerable<GameSubmittedScore> scores = (developerId.HasValue
+                ? this._realm.All<GameSubmittedScore>().Where(s => s.ScoreType == type && s._Game == (int)game && s.DeveloperId == developerId.Value)
+                : this._realm.All<GameSubmittedScore>().Where(s => s.ScoreType == type && s.Level == level))
             .AsEnumerable();
 
         if (!showDuplicates)
@@ -58,9 +81,19 @@ public partial class GameDatabaseContext // Leaderboard
         if (count % 2 != 1) throw new ArgumentException("The number of scores must be odd.", nameof(count));
         
         // this is probably REALLY fucking slow, and i probably shouldn't be trusted with LINQ anymore
+        
+        // List<GameSubmittedScore> scores = this._realm.All<GameSubmittedScore>()
+        //     .Where(s => s.ScoreType == score.ScoreType
+        //              && score._LevelType == (int)GameSubmittedScoreLevelType.User
+        //         ? (s.Level == score.Level)
+        //         : (s._Game == score._Game && s.DeveloperId == score.DeveloperId))
+        //     .OrderByDescending(s => s.Score)
+        //     .AsEnumerable()
+        //     .ToList();
 
-        List<GameSubmittedScore> scores = this._realm.All<GameSubmittedScore>()
-            .Where(s => s.Level == score.Level && s.ScoreType == score.ScoreType && s.DeveloperId == score.DeveloperId)
+        List<GameSubmittedScore> scores = (score.LevelType == GameSubmittedScoreLevelType.User
+            ? this._realm.All<GameSubmittedScore>().Where(s => s.ScoreType == score.ScoreType && s.Level == score.Level)
+            : this._realm.All<GameSubmittedScore>().Where(s => s.ScoreType == score.ScoreType && s._Game == score._Game && s.DeveloperId == score.DeveloperId))
             .OrderByDescending(s => s.Score)
             .AsEnumerable()
             .ToList();

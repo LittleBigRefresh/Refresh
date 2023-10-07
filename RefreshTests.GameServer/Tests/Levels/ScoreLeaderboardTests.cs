@@ -29,7 +29,7 @@ public class ScoreLeaderboardTests : GameServerTest
 
         context.Database.Refresh();
 
-        List<GameSubmittedScore> scores = context.Database.GetTopScoresForLevel(level, null, 1, 0, 1).Items.ToList();
+        List<GameSubmittedScore> scores = context.Database.GetTopScoresForLevel(level, null, TokenGame.LittleBigPlanet2, 1, 0, 1).Items.ToList();
         Assert.That(scores, Has.Count.EqualTo(1));
     }
     
@@ -44,7 +44,7 @@ public class ScoreLeaderboardTests : GameServerTest
         GameLevel level = context.CreateLevel(user);
 
         context.FillLeaderboard(level, leaderboardCount, 1);
-        GameSubmittedScore score = context.SubmitScore(submittedScore, 1, level, user);
+        GameSubmittedScore score = context.SubmitScore(submittedScore, 1, level, user, TokenGame.LittleBigPlanet2);
 
         List<ObjectId> scores = context.Database.GetRankedScoresAroundScore(score, count)!
             .Select(s => s.score.ScoreId)
@@ -84,13 +84,13 @@ public class ScoreLeaderboardTests : GameServerTest
         
         GameLevel level = context.CreateLevel(user1);
         
-        GameSubmittedScore score1 = context.SubmitScore(0, 1, level, user1);
-        GameSubmittedScore score2 = context.SubmitScore(0, 2, level, user2);
+        GameSubmittedScore score1 = context.SubmitScore(0, 1, level, user1, TokenGame.LittleBigPlanet2);
+        GameSubmittedScore score2 = context.SubmitScore(0, 2, level, user2, TokenGame.LittleBigPlanet2);
         
         Assert.Multiple(() =>
         {
-            Assert.That(context.Database.GetTopScoresForLevel(level, null, 1, 0, 1).Items, Does.Not.Contain(score2));
-            Assert.That(context.Database.GetTopScoresForLevel(level, null, 1, 0, 2).Items, Does.Not.Contain(score1));
+            Assert.That(context.Database.GetTopScoresForLevel(level, null, TokenGame.LittleBigPlanet2, 1, 0, 1).Items, Does.Not.Contain(score2));
+            Assert.That(context.Database.GetTopScoresForLevel(level, null, TokenGame.LittleBigPlanet2, 1, 0, 2).Items, Does.Not.Contain(score1));
         });
     }
 
@@ -99,7 +99,7 @@ public class ScoreLeaderboardTests : GameServerTest
     {
         using TestContext context = this.GetServer(false);
         GameUser user = context.CreateUser();
-        GameSubmittedScore score = context.SubmitScore(0, 1, context.CreateLevel(user), user);
+        GameSubmittedScore score = context.SubmitScore(0, 1, context.CreateLevel(user), user, TokenGame.LittleBigPlanet2);
         
         Assert.That(() => context.Database.GetRankedScoresAroundScore(score, 2), Throws.ArgumentException);
     }

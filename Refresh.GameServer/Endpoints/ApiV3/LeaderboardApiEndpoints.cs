@@ -1,6 +1,7 @@
 using AttribDoc.Attributes;
 using Bunkum.Core;
 using Bunkum.Core.Endpoints;
+using Refresh.GameServer.Authentication;
 using Refresh.GameServer.Database;
 using Refresh.GameServer.Documentation.Attributes;
 using Refresh.GameServer.Endpoints.ApiV3.ApiTypes;
@@ -32,7 +33,7 @@ public class LeaderboardApiEndpoints : EndpointGroup
         bool result = bool.TryParse(context.QueryString.Get("showAll") ?? "false", out bool showAll);
         if (!result) return ApiValidationError.BooleanParseError;
 
-        DatabaseList<GameSubmittedScore> scores = database.GetTopScoresForLevel(level, null, count, skip, (byte)mode, showAll);
+        DatabaseList<GameSubmittedScore> scores = database.GetTopScoresForLevel(level, null, TokenGame.LittleBigPlanet2, count, skip, (byte)mode, showAll);
         return DatabaseList<ApiGameScoreResponse>.FromOldList<ApiGameScoreResponse, GameSubmittedScore>(scores);
     }
 

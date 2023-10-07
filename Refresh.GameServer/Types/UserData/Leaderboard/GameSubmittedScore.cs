@@ -2,6 +2,7 @@ using System.Runtime.CompilerServices;
 using JetBrains.Annotations;
 using MongoDB.Bson;
 using Realms;
+using Refresh.GameServer.Authentication;
 using Refresh.GameServer.Types.Levels;
 
 namespace Refresh.GameServer.Types.UserData.Leaderboard;
@@ -25,8 +26,16 @@ public partial class GameSubmittedScore : IRealmObject // TODO: Rename to GameSc
         get => (GameSubmittedScoreLevelType)this._LevelType;
         set => this._LevelType = (int)value;
     }
-    
-    public int? DeveloperId { get; set; }
+
+    // ReSharper disable once InconsistentNaming
+    [Indexed] public int? _Game { get; set; }
+    [Ignored] public TokenGame? Game
+    {
+        get => (TokenGame?)this._Game;
+        set => this._Game = (int?)value;
+    }
+
+    public int DeveloperId { get; set; }
     [CanBeNull] public GameLevel Level { get; set; }
     public IList<GameUser> Players { get; }
     public DateTimeOffset ScoreSubmitted { get; set; }

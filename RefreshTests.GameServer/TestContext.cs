@@ -100,11 +100,11 @@ public class TestContext : IDisposable
         for (byte i = 0; i < count; i++)
         {
             GameUser scoreUser = this.CreateUser("score" + i);
-            this.SubmitScore(i, type, level, scoreUser);
+            this.SubmitScore(i, type, level, scoreUser, TokenGame.LittleBigPlanet2);
         }
     }
 
-    public GameSubmittedScore SubmitScore(int score, byte type, GameLevel level, GameUser user)
+    public GameSubmittedScore SubmitScore(int score, byte type, GameLevel level, GameUser user, TokenGame game)
     {
         SerializedScore scoreObject = new()
         {
@@ -113,7 +113,7 @@ public class TestContext : IDisposable
             ScoreType = type,
         };
         
-        GameSubmittedScore submittedScore = this.Database.SubmitUserLevelScore(scoreObject, user, level);
+        GameSubmittedScore submittedScore = this.Database.SubmitUserLevelScore(scoreObject, user, level, game);
         Assert.That(submittedScore, Is.Not.Null);
 
         return submittedScore;
