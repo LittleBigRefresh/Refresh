@@ -82,15 +82,6 @@ public partial class GameDatabaseContext // Leaderboard
         
         // this is probably REALLY fucking slow, and i probably shouldn't be trusted with LINQ anymore
         
-        // List<GameSubmittedScore> scores = this._realm.All<GameSubmittedScore>()
-        //     .Where(s => s.ScoreType == score.ScoreType
-        //              && score._LevelType == (int)GameSubmittedScoreLevelType.User
-        //         ? (s.Level == score.Level)
-        //         : (s._Game == score._Game && s.DeveloperId == score.DeveloperId))
-        //     .OrderByDescending(s => s.Score)
-        //     .AsEnumerable()
-        //     .ToList();
-
         List<GameSubmittedScore> scores = (score.LevelType == GameSubmittedScoreLevelType.User
             ? this._realm.All<GameSubmittedScore>().Where(s => s.ScoreType == score.ScoreType && s.Level == score.Level)
             : this._realm.All<GameSubmittedScore>().Where(s => s.ScoreType == score.ScoreType && s._Game == score._Game && s.DeveloperId == score.DeveloperId))
