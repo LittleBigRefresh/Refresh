@@ -321,6 +321,7 @@ public class GameDatabaseProvider : RealmDatabaseProvider<GameDatabaseContext>
 
             if (oldVersion < 91)
             {
+                //In version 91, we made this field required
                 if (oldScore.DeveloperId == null)
                 {
                     newScore.DeveloperId = -1;
