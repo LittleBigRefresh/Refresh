@@ -43,7 +43,6 @@ public partial class GameDatabaseContext // Leaderboard
 
         return new DatabaseList<GameSubmittedScore>(scores, skip, count);
     }
-    
 
     public IEnumerable<ScoreWithRank> GetRankedScoresAroundScore(GameSubmittedScore score, int count)
     {

@@ -5,6 +5,7 @@ using Bunkum.Core.RateLimit;
 using Bunkum.Core.Responses;
 using Bunkum.Listener.Protocol;
 using Bunkum.Protocols.Http;
+using Refresh.GameServer.Authentication;
 using Refresh.GameServer.Database;
 using Refresh.GameServer.Extensions;
 using Refresh.GameServer.Types.Levels;
@@ -50,15 +51,15 @@ public class LeaderboardEndpoints : EndpointGroup
     
     [GameEndpoint("scoreboard/user/{id}", HttpMethods.Get, ContentType.Xml)]
     [RateLimitSettings(RequestTimeoutDuration, MaxRequestAmount, RequestBlockDuration, BucketName)]
-    public Response GetUserScores(RequestContext context, GameUser user, GameDatabaseContext database, int id)
+    public Response GetUserScores(RequestContext context, GameUser user, GameDatabaseContext database, int id, Token token)
     {
         GameLevel? level = database.GetLevelById(id);
         if (level == null) return NotFound;
         
         //Get the scores from the database
-        DatabaseList<GameSubmittedScore> scores = database.GetTopScoresForLevel(level, 10, 0, 1);
+        MultiLeaderboard multiLeaderboard = new(database, level, token.TokenPlatform);
         
-        return new Response(SerializedMultiLeaderboardResponse.FromOldList(scores), ContentType.Xml);
+        return new Response(SerializedMultiLeaderboardResponse.FromOld(multiLeaderboard), ContentType.Xml);
     }
     
     [GameEndpoint("scoreboard/user/{id}", ContentType.Xml, HttpMethods.Post)]
