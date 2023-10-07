@@ -68,16 +68,17 @@ public partial class ImageImporter : Importer
 
     public static void ImportAsset(GameAsset asset, IDataStore dataStore)
     {
-        Stream stream = dataStore.GetStreamFromStore(asset.AssetHash);
-        Stream writeStream = dataStore.OpenWriteStream("png/" + asset.AssetHash);
+        using Stream stream = dataStore.GetStreamFromStore(asset.IsPSP ? "psp/" + asset.AssetHash : asset.AssetHash);
+        using Stream writeStream = dataStore.OpenWriteStream("png/" + asset.AssetHash);
 
         switch (asset.AssetType)
         {
             case GameAssetType.Texture:
                 TextureToPng(stream, writeStream);
                 break;
+            case GameAssetType.Tga:
             case GameAssetType.Jpeg:
-                JpegToPng(stream, writeStream);
+                ImageToPng(stream, writeStream);
                 break;
             case GameAssetType.Png:
                 stream.CopyTo(writeStream); // TODO: use hard links instead of just replicating same data, or run 'optipng'?
