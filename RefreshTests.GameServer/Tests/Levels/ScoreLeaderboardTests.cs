@@ -29,7 +29,7 @@ public class ScoreLeaderboardTests : GameServerTest
 
         context.Database.Refresh();
 
-        List<GameSubmittedScore> scores = context.Database.GetTopScoresForLevel(level, 1, 0, 1).Items.ToList();
+        List<GameSubmittedScore> scores = context.Database.GetTopScoresForLevel(level, null, 1, 0, 1).Items.ToList();
         Assert.That(scores, Has.Count.EqualTo(1));
     }
     
@@ -89,8 +89,8 @@ public class ScoreLeaderboardTests : GameServerTest
         
         Assert.Multiple(() =>
         {
-            Assert.That(context.Database.GetTopScoresForLevel(level, 1, 0, 1).Items, Does.Not.Contain(score2));
-            Assert.That(context.Database.GetTopScoresForLevel(level, 1, 0, 2).Items, Does.Not.Contain(score1));
+            Assert.That(context.Database.GetTopScoresForLevel(level, null, 1, 0, 1).Items, Does.Not.Contain(score2));
+            Assert.That(context.Database.GetTopScoresForLevel(level, null, 1, 0, 2).Items, Does.Not.Contain(score1));
         });
     }
 

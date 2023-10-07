@@ -32,7 +32,7 @@ public class GameDatabaseProvider : RealmDatabaseProvider<GameDatabaseContext>
         this._time = time;
     }
 
-    protected override ulong SchemaVersion => 88;
+    protected override ulong SchemaVersion => 89;
 
     protected override string Filename => "refreshGameServer.realm";
     
@@ -293,6 +293,23 @@ public class GameDatabaseProvider : RealmDatabaseProvider<GameDatabaseContext>
                 // but TGA files are the only asset currently affected by the tracking of `IsPSP`,
                 // and PSP is the only game to upload TGA files.
                 newAsset.IsPSP = newAsset.AssetType == GameAssetType.Tga;
+            }
+        }
+        
+        IQueryable<dynamic>? oldScores = migration.OldRealm.DynamicApi.All("GameSubmittedScore");
+        IQueryable<GameSubmittedScore>? newScores = migration.NewRealm.All<GameSubmittedScore>();
+
+        for (int i = 0; i < newScores.Count(); i++)
+        {
+            dynamic oldScore = oldScores.ElementAt(i);
+            GameSubmittedScore newScore = newScores.ElementAt(i);
+            
+            if (oldVersion < 89)
+            {
+                //In version 89, we started tracking the level type of scores.
+                //Before this story level scores were not stored.
+                newScore.LevelType = GameSubmittedScoreLevelType.User;
+                newScore.DeveloperId = null;
             }
         }
     }

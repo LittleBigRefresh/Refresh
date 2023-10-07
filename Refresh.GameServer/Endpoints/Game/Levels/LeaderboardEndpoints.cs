@@ -57,7 +57,7 @@ public class LeaderboardEndpoints : EndpointGroup
         if (level == null) return NotFound;
         
         //Get the scores from the database
-        MultiLeaderboard multiLeaderboard = new(database, level, token.TokenPlatform);
+        MultiLeaderboard multiLeaderboard = new(database, level, null, token.TokenPlatform);
         
         return new Response(SerializedMultiLeaderboardResponse.FromOld(multiLeaderboard), ContentType.Xml);
     }
@@ -75,7 +75,7 @@ public class LeaderboardEndpoints : EndpointGroup
             return BadRequest;
         }
 
-        GameSubmittedScore score = database.SubmitScore(body, user, level);
+        GameSubmittedScore score = database.SubmitUserLevelScore(body, user, level);
 
         IEnumerable<ScoreWithRank>? scores = database.GetRankedScoresAroundScore(score, 5);
         Debug.Assert(scores != null);
@@ -92,6 +92,6 @@ public class LeaderboardEndpoints : EndpointGroup
         if (level == null) return null;
         
         (int skip, int count) = context.GetPageData();
-        return SerializedScoreList.FromSubmittedEnumerable(database.GetTopScoresForLevel(level, count, skip, (byte)type).Items);
+        return SerializedScoreList.FromSubmittedEnumerable(database.GetTopScoresForLevel(level, null, count, skip, (byte)type).Items);
     }
 }

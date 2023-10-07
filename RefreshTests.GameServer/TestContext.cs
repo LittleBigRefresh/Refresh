@@ -113,7 +113,7 @@ public class TestContext : IDisposable
             ScoreType = type,
         };
         
-        GameSubmittedScore submittedScore = this.Database.SubmitScore(scoreObject, user, level);
+        GameSubmittedScore submittedScore = this.Database.SubmitUserLevelScore(scoreObject, user, level);
         Assert.That(submittedScore, Is.Not.Null);
 
         return submittedScore;

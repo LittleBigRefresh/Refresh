@@ -32,7 +32,7 @@ public class LeaderboardApiEndpoints : EndpointGroup
         bool result = bool.TryParse(context.QueryString.Get("showAll") ?? "false", out bool showAll);
         if (!result) return ApiValidationError.BooleanParseError;
 
-        DatabaseList<GameSubmittedScore> scores = database.GetTopScoresForLevel(level, count, skip, (byte)mode, showAll);
+        DatabaseList<GameSubmittedScore> scores = database.GetTopScoresForLevel(level, null, count, skip, (byte)mode, showAll);
         return DatabaseList<ApiGameScoreResponse>.FromOldList<ApiGameScoreResponse, GameSubmittedScore>(scores);
     }
 
