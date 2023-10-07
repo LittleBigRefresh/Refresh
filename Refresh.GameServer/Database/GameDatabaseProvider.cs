@@ -289,9 +289,9 @@ public class GameDatabaseProvider : RealmDatabaseProvider<GameDatabaseContext>
             
             if (oldVersion < 88)
             {
-                //We dont have any more advanced heuristics here,
-                //but TGA files are the only asset currently effected by the tracking of `IsPSP`,
-                //and PSP is the only game to upload TGA files
+                // We don't have any more advanced heuristics here,
+                // but TGA files are the only asset currently affected by the tracking of `IsPSP`,
+                // and PSP is the only game to upload TGA files.
                 newAsset.IsPSP = newAsset.AssetType == GameAssetType.Tga;
             }
         }
