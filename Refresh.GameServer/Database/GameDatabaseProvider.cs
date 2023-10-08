@@ -32,7 +32,7 @@ public class GameDatabaseProvider : RealmDatabaseProvider<GameDatabaseContext>
         this._time = time;
     }
 
-    protected override ulong SchemaVersion => 91;
+    protected override ulong SchemaVersion => 92;
 
     protected override string Filename => "refreshGameServer.realm";
     
@@ -212,6 +212,13 @@ public class GameDatabaseProvider : RealmDatabaseProvider<GameDatabaseContext>
             {
                 newLevel._GameVersion = (int)TokenGame.LittleBigPlanet2;
             }
+
+            // In version 92, we started storing both user and story levels.
+            // Set all existing levels to user levels, since that's what has existed up until now.
+            if (oldVersion < 92)
+            {
+                newLevel._Source = (int)GameLevelSource.User;
+            }
         }
 
         // In version 22, tokens added expiry and types so just wipe them all
@@ -296,35 +303,25 @@ public class GameDatabaseProvider : RealmDatabaseProvider<GameDatabaseContext>
             }
         }
         
+        //Remove all scores with a null level, as in version 92 we started tracking story leaderboards differently
+        if (oldVersion < 92) migration.NewRealm.RemoveRange(migration.NewRealm.All<GameSubmittedScore>().Where(s => s.Level == null));
+        
         IQueryable<dynamic>? oldScores = migration.OldRealm.DynamicApi.All("GameSubmittedScore");
         IQueryable<GameSubmittedScore>? newScores = migration.NewRealm.All<GameSubmittedScore>();
 
+        
         for (int i = 0; i < newScores.Count(); i++)
         {
             dynamic oldScore = oldScores.ElementAt(i);
             GameSubmittedScore newScore = newScores.ElementAt(i);
-            
-            if (oldVersion < 89)
-            {
-                //In version 89, we started tracking the level type of scores.
-                //Before this story level scores were not stored.
-                newScore.LevelType = GameSubmittedScoreLevelType.User;
-                newScore.DeveloperId = -1;
-            }
 
-            if (oldVersion < 90)
+            if (oldVersion < 92)
             {
-                //In version 90, we started tracking the game the score was submitted on.
-                //Since we dont have info for previous scores, set the value to null
-                newScore.Game = null;
-            }
+                newScore.Game = newScore.Level.GameVersion;
 
-            if (oldVersion < 91)
-            {
-                //In version 91, we made this field required
-                if (oldScore.DeveloperId == null)
+                if (oldScore._Game != null)
                 {
-                    newScore.DeveloperId = -1;
+                    newScore._Game = oldScore._Game;
                 }
             }
         }

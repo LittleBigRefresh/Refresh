@@ -37,8 +37,9 @@ public class LeaderboardEndpoints : EndpointGroup
     [RateLimitSettings(RequestTimeoutDuration, MaxRequestAmount, RequestBlockDuration, BucketName)]
     public Response GetDeveloperScores(RequestContext context, GameUser user, GameDatabaseContext database, int id, Token token)
     {
-        //Get the scores from the database
-        MultiLeaderboard multiLeaderboard = new(database, null, id, token.TokenGame);
+        GameLevel level = database.GetStoryLevelById(id, token.TokenGame);
+
+        MultiLeaderboard multiLeaderboard = new(database, level, token.TokenGame);
         
         return new Response(SerializedMultiLeaderboardResponse.FromOld(multiLeaderboard), ContentType.Xml);
     }
@@ -47,19 +48,21 @@ public class LeaderboardEndpoints : EndpointGroup
     [RateLimitSettings(RequestTimeoutDuration, MaxRequestAmount, RequestBlockDuration, BucketName)]
     public Response SubmitDeveloperScore(RequestContext context, GameUser user, GameDatabaseContext database, int id, SerializedScore body, Token token)
     {
-        //No developer levels have IDs less than 0
+        //No story levels have an ID < 0
         if (id < 0)
         {
             return BadRequest;
         }
         
+        GameLevel level = database.GetStoryLevelById(id, token.TokenGame);
+
         //Validate the score is a non-negative amount
         if (body.Score < 0)
         {
             return BadRequest;
         }
 
-        GameSubmittedScore score = database.SubmitDeveloperLevelScore(body, user, id, token.TokenGame);
+        GameSubmittedScore score = database.SubmitScore(body, user, level, token.TokenGame);
 
         IEnumerable<ScoreWithRank>? scores = database.GetRankedScoresAroundScore(score, 5);
         Debug.Assert(scores != null);
@@ -75,7 +78,7 @@ public class LeaderboardEndpoints : EndpointGroup
         if (level == null) return NotFound;
         
         //Get the scores from the database
-        MultiLeaderboard multiLeaderboard = new(database, level, null, token.TokenGame);
+        MultiLeaderboard multiLeaderboard = new(database, level, token.TokenGame);
         
         return new Response(SerializedMultiLeaderboardResponse.FromOld(multiLeaderboard), ContentType.Xml);
     }
@@ -93,7 +96,7 @@ public class LeaderboardEndpoints : EndpointGroup
             return BadRequest;
         }
 
-        GameSubmittedScore score = database.SubmitUserLevelScore(body, user, level, token.TokenGame);
+        GameSubmittedScore score = database.SubmitScore(body, user, level, token.TokenGame);
 
         IEnumerable<ScoreWithRank>? scores = database.GetRankedScoresAroundScore(score, 5);
         Debug.Assert(scores != null);
@@ -110,6 +113,6 @@ public class LeaderboardEndpoints : EndpointGroup
         if (level == null) return null;
         
         (int skip, int count) = context.GetPageData();
-        return SerializedScoreList.FromSubmittedEnumerable(database.GetTopScoresForLevel(level, null, TokenGame.LittleBigPlanet2, count, skip, (byte)type).Items);
+        return SerializedScoreList.FromSubmittedEnumerable(database.GetTopScoresForLevel(level, count, skip, (byte)type).Items);
     }
 }

@@ -9,7 +9,7 @@ namespace Refresh.GameServer.Database;
 
 public partial class GameDatabaseContext // Leaderboard
 {
-    public GameSubmittedScore SubmitUserLevelScore(SerializedScore score, GameUser user, GameLevel level, TokenGame game)
+    public GameSubmittedScore SubmitScore(SerializedScore score, GameUser user, GameLevel level, TokenGame game)
     {
         GameSubmittedScore newScore = new()
         {
@@ -18,8 +18,6 @@ public partial class GameDatabaseContext // Leaderboard
             Level = level,
             Players = { user },
             ScoreSubmitted = this._time.Now,
-            DeveloperId = -1,
-            LevelType = GameSubmittedScoreLevelType.User,
             Game = game,
         };
 
@@ -33,45 +31,15 @@ public partial class GameDatabaseContext // Leaderboard
         return newScore;
     }
     
-    public GameSubmittedScore SubmitDeveloperLevelScore(SerializedScore score, GameUser user, int developerId, TokenGame game)
+    [UsedImplicitly] private record ScoreLevelWithPlayer(GameLevel Level, GameUser Player);
+
+    public DatabaseList<GameSubmittedScore> GetTopScoresForLevel(GameLevel level, int count, int skip, byte type, bool showDuplicates = false)
     {
-        GameSubmittedScore newScore = new()
-        {
-            Score = score.Score,
-            ScoreType = score.ScoreType,
-            Level = null,
-            Players = { user },
-            ScoreSubmitted = this._time.Now,
-            DeveloperId = developerId,
-            LevelType = GameSubmittedScoreLevelType.Developer,
-            Game = game,
-        };
-
-        this._realm.Write(() =>
-        {
-            this._realm.Add(newScore);
-        });
-
-        this.CreateSubmittedScoreCreateEvent(user, newScore);
-
-        return newScore;
-    }
-    
-    [UsedImplicitly] private record ScoreLevelWithPlayer(GameLevel? Level, int? DeveloperId, GameUser Player);
-
-    public DatabaseList<GameSubmittedScore> GetTopScoresForLevel(GameLevel? level, int? developerId, TokenGame game, int count, int skip, byte type, bool showDuplicates = false)
-    {
-        //Asset that exactly one of the fields are set
-        if (!(level != null ^ developerId != null))
-            throw new ArgumentException($"Only {nameof(level)} *or* {nameof(developerId)} can be set at once!");
-
-        IEnumerable<GameSubmittedScore> scores = (developerId.HasValue
-                ? this._realm.All<GameSubmittedScore>().Where(s => s.ScoreType == type && s._Game == (int)game && s.DeveloperId == developerId.Value)
-                : this._realm.All<GameSubmittedScore>().Where(s => s.ScoreType == type && s.Level == level))
+        IEnumerable<GameSubmittedScore> scores = this._realm.All<GameSubmittedScore>().Where(s => s.ScoreType == type && s.Level == level)
             .AsEnumerable();
 
         if (!showDuplicates)
-            scores = scores.DistinctBy(s => new ScoreLevelWithPlayer(s.Level, s.DeveloperId, s.Players[0]));
+            scores = scores.DistinctBy(s => new ScoreLevelWithPlayer(s.Level, s.Players[0]));
 
         return new DatabaseList<GameSubmittedScore>(scores, skip, count);
     }
@@ -81,15 +49,13 @@ public partial class GameDatabaseContext // Leaderboard
         if (count % 2 != 1) throw new ArgumentException("The number of scores must be odd.", nameof(count));
         
         // this is probably REALLY fucking slow, and i probably shouldn't be trusted with LINQ anymore
-        
-        List<GameSubmittedScore> scores = (score.LevelType == GameSubmittedScoreLevelType.User
-            ? this._realm.All<GameSubmittedScore>().Where(s => s.ScoreType == score.ScoreType && s.Level == score.Level)
-            : this._realm.All<GameSubmittedScore>().Where(s => s.ScoreType == score.ScoreType && s._Game == score._Game && s.DeveloperId == score.DeveloperId))
+
+        List<GameSubmittedScore> scores = this._realm.All<GameSubmittedScore>().Where(s => s.ScoreType == score.ScoreType && s.Level == score.Level)
             .OrderByDescending(s => s.Score)
             .AsEnumerable()
             .ToList();
 
-        scores = scores.DistinctBy(s => new ScoreLevelWithPlayer(s.Level, s.DeveloperId, s.Players[0]))
+        scores = scores.DistinctBy(s => new ScoreLevelWithPlayer(s.Level, s.Players[0]))
             .ToList();
 
         return scores.Select((s, i) => new ScoreWithRank(s, i))

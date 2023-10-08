@@ -89,6 +89,7 @@ public class TestContext : IDisposable
             Title = title,
             Publisher = author,
             Location = GameLocation.Zero,
+            Source = GameLevelSource.User,
         };
 
         this.Database.AddLevel(level);
@@ -113,7 +114,7 @@ public class TestContext : IDisposable
             ScoreType = type,
         };
         
-        GameSubmittedScore submittedScore = this.Database.SubmitUserLevelScore(scoreObject, user, level, game);
+        GameSubmittedScore submittedScore = this.Database.SubmitScore(scoreObject, user, level, game);
         Assert.That(submittedScore, Is.Not.Null);
 
         return submittedScore;

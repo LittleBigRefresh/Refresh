@@ -57,6 +57,20 @@ public partial class GameLevel : IRealmObject, ISequentialId
 
     // ReSharper disable once InconsistentNaming
     internal int _LevelType { get; set; }
+
+    [Ignored] public GameLevelSource Source
+    {
+        get => (GameLevelSource)this._Source;
+        set => this._Source = (int)value;
+    }
+
+    // ReSharper disable once InconsistentNaming
+    internal int _Source { get; set; }
+    
+    /// <summary>
+    /// The associated ID for the developer level, this is only relevant if Source == Story
+    /// </summary>
+    [Indexed] public int StoryId { get; set; }
     
     public bool IsLocked { get; set; }
     public bool IsSubLevel { get; set; }
