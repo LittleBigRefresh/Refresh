@@ -35,7 +35,9 @@ public partial class GameDatabaseContext // Leaderboard
 
     public DatabaseList<GameSubmittedScore> GetTopScoresForLevel(GameLevel level, int count, int skip, byte type, bool showDuplicates = false)
     {
-        IEnumerable<GameSubmittedScore> scores = this._realm.All<GameSubmittedScore>().Where(s => s.ScoreType == type && s.Level == level)
+        IEnumerable<GameSubmittedScore> scores = this._realm.All<GameSubmittedScore>()
+            .Where(s => s.ScoreType == type && s.Level == level)
+            .OrderByDescending(s => s.Score)
             .AsEnumerable();
 
         if (!showDuplicates)
