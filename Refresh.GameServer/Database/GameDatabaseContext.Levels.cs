@@ -28,9 +28,9 @@ public partial class GameDatabaseContext // Levels
         });
     }
 
-    public GameLevel GetStoryLevelById(int id, TokenGame game)
+    public GameLevel GetStoryLevelById(int id)
     {
-        GameLevel? level = this._realm.All<GameLevel>().FirstOrDefault(l => l.StoryId == id && l._GameVersion == (int)game);
+        GameLevel? level = this._realm.All<GameLevel>().FirstOrDefault(l => l.StoryId == id);
 
         if (level != null) return level;
         

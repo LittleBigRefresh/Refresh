@@ -37,7 +37,7 @@ public class LeaderboardEndpoints : EndpointGroup
     [RateLimitSettings(RequestTimeoutDuration, MaxRequestAmount, RequestBlockDuration, BucketName)]
     public Response GetDeveloperScores(RequestContext context, GameUser user, GameDatabaseContext database, int id, Token token)
     {
-        GameLevel level = database.GetStoryLevelById(id, token.TokenGame);
+        GameLevel level = database.GetStoryLevelById(id);
 
         MultiLeaderboard multiLeaderboard = new(database, level, token.TokenGame);
         
@@ -54,7 +54,7 @@ public class LeaderboardEndpoints : EndpointGroup
             return BadRequest;
         }
         
-        GameLevel level = database.GetStoryLevelById(id, token.TokenGame);
+        GameLevel level = database.GetStoryLevelById(id);
 
         //Validate the score is a non-negative amount
         if (body.Score < 0)
