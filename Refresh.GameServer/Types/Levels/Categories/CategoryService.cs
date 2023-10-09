@@ -69,6 +69,13 @@ public class CategoryService : EndpointService
             IconHash = "g820626",
             FontAwesomeIcon = "certificate",
         },
+        new LevelCategory("developerLevels", Array.Empty<string>(), false, nameof(GameDatabaseContext.GetDeveloperLevels))
+        {
+            Name = "Developer Levels",
+            Description = "Levels made by the developers of LBP",
+            IconHash = "g820626",
+            FontAwesomeIcon = "terminal",
+        },
         new CurrentlyPlayingCategory(),
     };
 

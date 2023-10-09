@@ -171,6 +171,12 @@ public partial class GameDatabaseContext // Levels
             .OrderByDescending(l => l.PublishDate), skip, count);
 
     [Pure]
+    public DatabaseList<GameLevel> GetDeveloperLevels(int count, int skip, TokenGame gameVersion) =>
+        new(this._realm.All<GameLevel>()
+            .Where(l => l._Source == (int)GameLevelSource.Story)
+            .OrderByDescending(l => l.Title), skip, count);
+
+    [Pure]
     public DatabaseList<GameLevel> GetBusiestLevels(int count, int skip, TokenGame gameVersion, MatchService service)
     {
         IOrderedEnumerable<IGrouping<GameLevel?,GameRoom>> rooms = service.Rooms
