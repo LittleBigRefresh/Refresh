@@ -69,12 +69,12 @@ public class CategoryService : EndpointService
             IconHash = "g820626",
             FontAwesomeIcon = "certificate",
         },
-        new LevelCategory("developerLevels", Array.Empty<string>(), false, nameof(GameDatabaseContext.GetDeveloperLevels))
+        new LevelCategory("developer", Array.Empty<string>(), false, nameof(GameDatabaseContext.GetDeveloperLevels))
         {
-            Name = "Developer Levels",
-            Description = "Levels made by the developers of LBP",
-            IconHash = "g820626",
-            FontAwesomeIcon = "terminal",
+            Name = "Story Levels",
+            Description = "Levels bundled with LittleBigPlanet",
+            IconHash = "g820604",
+            FontAwesomeIcon = "certificate",
         },
         new CurrentlyPlayingCategory(),
     };
