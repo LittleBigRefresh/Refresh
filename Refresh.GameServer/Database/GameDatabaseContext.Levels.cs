@@ -5,6 +5,7 @@ using Realms;
 using Refresh.GameServer.Authentication;
 using Refresh.GameServer.Extensions;
 using Refresh.GameServer.Services;
+using Refresh.GameServer.Types;
 using Refresh.GameServer.Types.Activity;
 using Refresh.GameServer.Types.Levels;
 using Refresh.GameServer.Types.Matching;
@@ -25,6 +26,32 @@ public partial class GameDatabaseContext // Levels
             level.PublishDate = timestamp;
             level.UpdateDate = timestamp;
         });
+    }
+
+    public GameLevel GetStoryLevelById(int id)
+    {
+        GameLevel? level = this._realm.All<GameLevel>().FirstOrDefault(l => l.StoryId == id);
+
+        if (level != null) return level;
+        
+        //Create a new level for the story level
+        level = new()
+        {
+            Title = $"Story level #{id}",
+            Publisher = null,
+            Location = GameLocation.Zero,
+            Source = GameLevelSource.Story,
+        };
+            
+        //Add the new story level to the database
+        long timestamp = this._time.TimestampMilliseconds;
+        this.AddSequentialObject(level, () =>
+        {
+            level.PublishDate = timestamp;
+            level.UpdateDate = timestamp;
+        });
+        
+        return level;
     }
 
     public GameLevel? UpdateLevel(GameLevel level, GameUser user)
@@ -68,10 +95,9 @@ public partial class GameDatabaseContext // Levels
             this._realm.Remove(level);
         });
     }
-    
 
     private IQueryable<GameLevel> GetLevelsByGameVersion(TokenGame gameVersion) 
-        => this._realm.All<GameLevel>().FilterByGameVersion(gameVersion);
+        => this._realm.All<GameLevel>().Where(l => l._Source == (int)GameLevelSource.User).FilterByGameVersion(gameVersion);
 
     [Pure]
     public DatabaseList<GameLevel> GetLevelsByUser(GameUser user, int count, int skip, TokenGame gameVersion) =>
@@ -98,6 +124,7 @@ public partial class GameDatabaseContext // Levels
             .Select(g => new { Level = g.Key, Count = g.Count() })
             .OrderByDescending(x => x.Count)
             .Select(x => x.Level)
+            .Where(l => l._Source == (int)GameLevelSource.User)
             .FilterByGameVersion(gameVersion);
 
         return new DatabaseList<GameLevel>(mostHeartedLevels, skip, count);
@@ -114,6 +141,7 @@ public partial class GameDatabaseContext // Levels
             .Select(g => new { Level = g.Key, Count = g.Count() })
             .OrderByDescending(x => x.Count)
             .Select(x => x.Level)
+            .Where(l => l._Source == (int)GameLevelSource.User)
             .FilterByGameVersion(gameVersion);
 
         return new DatabaseList<GameLevel>(mostPlayed, skip, count);
@@ -146,6 +174,7 @@ public partial class GameDatabaseContext // Levels
             .Select(g => new { Level = g.Key, Karma = g.Sum(r => r._RatingType) })
             .OrderByDescending(x => x.Karma) // reddit moment
             .Select(x => x.Level)
+            .Where(l => l._Source == (int)GameLevelSource.User)
             .FilterByGameVersion(gameVersion);
 
         return new DatabaseList<GameLevel>(highestRated, skip, count);
@@ -158,6 +187,12 @@ public partial class GameDatabaseContext // Levels
             .OrderByDescending(l => l.PublishDate), skip, count);
 
     [Pure]
+    public DatabaseList<GameLevel> GetDeveloperLevels(int count, int skip, TokenGame gameVersion) =>
+        new(this._realm.All<GameLevel>()
+            .Where(l => l._Source == (int)GameLevelSource.Story)
+            .OrderByDescending(l => l.Title), skip, count);
+
+    [Pure]
     public DatabaseList<GameLevel> GetBusiestLevels(int count, int skip, TokenGame gameVersion, MatchService service)
     {
         IOrderedEnumerable<IGrouping<GameLevel?,GameRoom>> rooms = service.Rooms
@@ -166,7 +201,8 @@ public partial class GameDatabaseContext // Levels
             .OrderBy(r => r.Sum(room => room.PlayerIds.Count));
 
         return new DatabaseList<GameLevel>(rooms.Select(r => r.Key)
-            .Where(l => l != null)!.FilterByGameVersion(gameVersion), skip, count);
+            .Where(l => l != null && l._Source == (int)GameLevelSource.User)!
+            .FilterByGameVersion(gameVersion), skip, count);
     }
 
     [Pure]
@@ -196,7 +232,7 @@ public partial class GameDatabaseContext // Levels
     }
 
     [Pure]
-    public int GetTotalLevelCount() => this._realm.All<GameLevel>().Count();
+    public int GetTotalLevelCount() => this._realm.All<GameLevel>().Count(l => l._Source == (int)GameLevelSource.User);
     
     [Pure]
     public int GetTotalTeamPickCount() => this._realm.All<GameLevel>().Count(l => l.TeamPicked);
