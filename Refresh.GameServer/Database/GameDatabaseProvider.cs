@@ -318,11 +318,6 @@ public class GameDatabaseProvider : RealmDatabaseProvider<GameDatabaseContext>
             if (oldVersion < 92)
             {
                 newScore.Game = newScore.Level.GameVersion;
-
-                if (oldScore._Game != null)
-                {
-                    newScore._Game = oldScore._Game;
-                }
             }
         }
     }
