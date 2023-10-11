@@ -5,6 +5,7 @@ using Bunkum.Core.RateLimit;
 using Bunkum.Core.Responses;
 using Bunkum.Listener.Protocol;
 using Bunkum.Protocols.Http;
+using Refresh.GameServer.Authentication;
 using Refresh.GameServer.Database;
 using Refresh.GameServer.Extensions;
 using Refresh.GameServer.Types.Levels;
@@ -34,36 +35,57 @@ public class LeaderboardEndpoints : EndpointGroup
 
     [GameEndpoint("scoreboard/developer/{id}", HttpMethods.Get, ContentType.Xml)]
     [RateLimitSettings(RequestTimeoutDuration, MaxRequestAmount, RequestBlockDuration, BucketName)]
-    public SerializedMultiLeaderboardResponse GetDeveloperScores(RequestContext context, GameUser user, GameDatabaseContext database, int id)
+    public Response GetDeveloperScores(RequestContext context, GameUser user, GameDatabaseContext database, int id, Token token)
     {
-        //TODO
-        return new SerializedMultiLeaderboardResponse(new List<SerializedPlayerLeaderboardResponse>());
+        GameLevel level = database.GetStoryLevelById(id);
+
+        MultiLeaderboard multiLeaderboard = new(database, level, token.TokenGame);
+        
+        return new Response(SerializedMultiLeaderboardResponse.FromOld(multiLeaderboard), ContentType.Xml);
     }
 
     [GameEndpoint("scoreboard/developer/{id}", ContentType.Xml, HttpMethods.Post)]
     [RateLimitSettings(RequestTimeoutDuration, MaxRequestAmount, RequestBlockDuration, BucketName)]
-    public Response SubmitDeveloperScore(RequestContext context, GameUser user, GameDatabaseContext database, int id, SerializedScore body)
+    public Response SubmitDeveloperScore(RequestContext context, GameUser user, GameDatabaseContext database, int id, SerializedScore body, Token token)
     {
-        //TODO
-        return new Response(SerializedScoreLeaderboardList.FromSubmittedEnumerable(new List<ScoreWithRank>()), ContentType.Xml);
+        //No story levels have an ID < 0
+        if (id < 0)
+        {
+            return BadRequest;
+        }
+        
+        GameLevel level = database.GetStoryLevelById(id);
+
+        //Validate the score is a non-negative amount
+        if (body.Score < 0)
+        {
+            return BadRequest;
+        }
+
+        GameSubmittedScore score = database.SubmitScore(body, user, level, token.TokenGame);
+
+        IEnumerable<ScoreWithRank>? scores = database.GetRankedScoresAroundScore(score, 5);
+        Debug.Assert(scores != null);
+        
+        return new Response(SerializedScoreLeaderboardList.FromSubmittedEnumerable(scores), ContentType.Xml);
     }
     
     [GameEndpoint("scoreboard/user/{id}", HttpMethods.Get, ContentType.Xml)]
     [RateLimitSettings(RequestTimeoutDuration, MaxRequestAmount, RequestBlockDuration, BucketName)]
-    public Response GetUserScores(RequestContext context, GameUser user, GameDatabaseContext database, int id)
+    public Response GetUserScores(RequestContext context, GameUser user, GameDatabaseContext database, int id, Token token)
     {
         GameLevel? level = database.GetLevelById(id);
         if (level == null) return NotFound;
         
         //Get the scores from the database
-        DatabaseList<GameSubmittedScore> scores = database.GetTopScoresForLevel(level, 10, 0, 1);
+        MultiLeaderboard multiLeaderboard = new(database, level, token.TokenGame);
         
-        return new Response(SerializedMultiLeaderboardResponse.FromOldList(scores), ContentType.Xml);
+        return new Response(SerializedMultiLeaderboardResponse.FromOld(multiLeaderboard), ContentType.Xml);
     }
     
     [GameEndpoint("scoreboard/user/{id}", ContentType.Xml, HttpMethods.Post)]
     [RateLimitSettings(RequestTimeoutDuration, MaxRequestAmount, RequestBlockDuration, BucketName)]
-    public Response SubmitScore(RequestContext context, GameUser user, GameDatabaseContext database, int id, SerializedScore body)
+    public Response SubmitScore(RequestContext context, GameUser user, GameDatabaseContext database, int id, SerializedScore body, Token token)
     {
         GameLevel? level = database.GetLevelById(id);
         if (level == null) return NotFound;
@@ -74,7 +96,7 @@ public class LeaderboardEndpoints : EndpointGroup
             return BadRequest;
         }
 
-        GameSubmittedScore score = database.SubmitScore(body, user, level);
+        GameSubmittedScore score = database.SubmitScore(body, user, level, token.TokenGame);
 
         IEnumerable<ScoreWithRank>? scores = database.GetRankedScoresAroundScore(score, 5);
         Debug.Assert(scores != null);

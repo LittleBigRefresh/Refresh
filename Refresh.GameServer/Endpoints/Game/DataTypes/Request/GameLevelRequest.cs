@@ -68,5 +68,6 @@ public class GameLevelRequest
             IsSubLevel = this.IsSubLevel,
             IsCopyable = this.IsCopyable == 1,
             BackgroundGuid = this.BackgroundGuid,
+            Source = GameLevelSource.User,
         };
 }

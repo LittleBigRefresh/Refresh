@@ -19,25 +19,30 @@ public class SerializedMultiLeaderboardResponse
     [XmlElement("topScores")]
     public List<SerializedPlayerLeaderboardResponse> Scoreboards;
 
-    public static SerializedMultiLeaderboardResponse FromOldList(DatabaseList<GameSubmittedScore> scores)
+    public static SerializedMultiLeaderboardResponse FromOld(MultiLeaderboard multiLeaderboard)
     {
-        SerializedPlayerLeaderboardResponse scoreboard = new()
-        {
-            FirstRank = 1,
-            PlayerCount = 1,
-        };
+        List<SerializedPlayerLeaderboardResponse> leaderboards = new();
 
-        int i = 0;
-        foreach (GameSubmittedScore score in scores.Items)
+        //Iterate over all leaderboards in the list
+        foreach ((byte type, DatabaseList<GameSubmittedScore> scores) in multiLeaderboard.Leaderboards)
         {
-            scoreboard.Scores.Add(SerializedLeaderboardScore.FromOld(score, i));
-            i += 1;
+            SerializedPlayerLeaderboardResponse leaderboard = new()
+            {
+                FirstRank = 1,
+                PlayerCount = type,
+            };
+
+            int i = 0;
+            foreach (GameSubmittedScore score in scores.Items)
+            {
+                leaderboard.Scores.Add(SerializedLeaderboardScore.FromOld(score, i));
+                i += 1;
+            }
+            
+            leaderboards.Add(leaderboard);
         }
         
-        return new SerializedMultiLeaderboardResponse(new List<SerializedPlayerLeaderboardResponse>
-        {
-            scoreboard,
-        });
+        return new SerializedMultiLeaderboardResponse(leaderboards);
     }
 }
 

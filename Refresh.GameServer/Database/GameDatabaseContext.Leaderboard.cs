@@ -1,5 +1,6 @@
 using JetBrains.Annotations;
 using MongoDB.Bson;
+using Refresh.GameServer.Authentication;
 using Refresh.GameServer.Types.Levels;
 using Refresh.GameServer.Types.UserData;
 using Refresh.GameServer.Types.UserData.Leaderboard;
@@ -8,7 +9,7 @@ namespace Refresh.GameServer.Database;
 
 public partial class GameDatabaseContext // Leaderboard
 {
-    public GameSubmittedScore SubmitScore(SerializedScore score, GameUser user, GameLevel level)
+    public GameSubmittedScore SubmitScore(SerializedScore score, GameUser user, GameLevel level, TokenGame game)
     {
         GameSubmittedScore newScore = new()
         {
@@ -17,6 +18,7 @@ public partial class GameDatabaseContext // Leaderboard
             Level = level,
             Players = { user },
             ScoreSubmitted = this._time.Now,
+            Game = game,
         };
 
         this._realm.Write(() =>
@@ -29,12 +31,12 @@ public partial class GameDatabaseContext // Leaderboard
         return newScore;
     }
     
-    [UsedImplicitly] private record ScoreLevelWithPlayer(GameLevel level, GameUser player);
+    [UsedImplicitly] private record ScoreLevelWithPlayer(GameLevel Level, GameUser Player);
 
     public DatabaseList<GameSubmittedScore> GetTopScoresForLevel(GameLevel level, int count, int skip, byte type, bool showDuplicates = false)
     {
         IEnumerable<GameSubmittedScore> scores = this._realm.All<GameSubmittedScore>()
-            .Where(s => s.Level == level && s.ScoreType == type)
+            .Where(s => s.ScoreType == type && s.Level == level)
             .OrderByDescending(s => s.Score)
             .AsEnumerable();
 
@@ -43,7 +45,6 @@ public partial class GameDatabaseContext // Leaderboard
 
         return new DatabaseList<GameSubmittedScore>(scores, skip, count);
     }
-    
 
     public IEnumerable<ScoreWithRank> GetRankedScoresAroundScore(GameSubmittedScore score, int count)
     {
@@ -51,8 +52,7 @@ public partial class GameDatabaseContext // Leaderboard
         
         // this is probably REALLY fucking slow, and i probably shouldn't be trusted with LINQ anymore
 
-        List<GameSubmittedScore> scores = this._realm.All<GameSubmittedScore>()
-            .Where(s => s.Level == score.Level && s.ScoreType == score.ScoreType)
+        List<GameSubmittedScore> scores = this._realm.All<GameSubmittedScore>().Where(s => s.ScoreType == score.ScoreType && s.Level == score.Level)
             .OrderByDescending(s => s.Score)
             .AsEnumerable()
             .ToList();

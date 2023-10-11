@@ -32,7 +32,7 @@ public class GameDatabaseProvider : RealmDatabaseProvider<GameDatabaseContext>
         this._time = time;
     }
 
-    protected override ulong SchemaVersion => 88;
+    protected override ulong SchemaVersion => 92;
 
     protected override string Filename => "refreshGameServer.realm";
     
@@ -212,6 +212,13 @@ public class GameDatabaseProvider : RealmDatabaseProvider<GameDatabaseContext>
             {
                 newLevel._GameVersion = (int)TokenGame.LittleBigPlanet2;
             }
+
+            // In version 92, we started storing both user and story levels.
+            // Set all existing levels to user levels, since that's what has existed up until now.
+            if (oldVersion < 92)
+            {
+                newLevel._Source = (int)GameLevelSource.User;
+            }
         }
 
         // In version 22, tokens added expiry and types so just wipe them all
@@ -293,6 +300,29 @@ public class GameDatabaseProvider : RealmDatabaseProvider<GameDatabaseContext>
                 // but TGA files are the only asset currently affected by the tracking of `IsPSP`,
                 // and PSP is the only game to upload TGA files.
                 newAsset.IsPSP = newAsset.AssetType == GameAssetType.Tga;
+            }
+        }
+        
+        //Remove all scores with a null level, as in version 92 we started tracking story leaderboards differently
+        if (oldVersion < 92) migration.NewRealm.RemoveRange(migration.NewRealm.All<GameSubmittedScore>().Where(s => s.Level == null));
+        
+        IQueryable<dynamic>? oldScores = migration.OldRealm.DynamicApi.All("GameSubmittedScore");
+        IQueryable<GameSubmittedScore>? newScores = migration.NewRealm.All<GameSubmittedScore>();
+
+        
+        for (int i = 0; i < newScores.Count(); i++)
+        {
+            dynamic oldScore = oldScores.ElementAt(i);
+            GameSubmittedScore newScore = newScores.ElementAt(i);
+
+            if (oldVersion < 92)
+            {
+                newScore.Game = newScore.Level.GameVersion;
+
+                if (oldScore._Game != null)
+                {
+                    newScore._Game = oldScore._Game;
+                }
             }
         }
     }
