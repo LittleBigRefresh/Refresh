@@ -12,7 +12,7 @@ public class CurrentlyPlayingCategory : LevelCategory
         nameof(GameDatabaseContext.GetBusiestLevels))
     {
         this.Name = "Busiest Levels";
-        this.Description = "Levels being played right now!";
+        this.Description = "Levels people are playing right now!";
         this.IconHash = "g820602";
         this.FontAwesomeIcon = "users";
     }

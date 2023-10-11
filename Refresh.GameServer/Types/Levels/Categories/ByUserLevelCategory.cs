@@ -11,8 +11,8 @@ public class ByUserLevelCategory : LevelCategory
     internal ByUserLevelCategory() : base("byUser", "by", true, nameof(GameDatabaseContext.GetLevelsByUser))
     {
         // Technically this category can apply to any user, but since we fallback to the regular user this name & description still applies
-        this.Name = "Levels by you";
-        this.Description = "A list of levels created by you!";
+        this.Name = "My Published Levels";
+        this.Description = "Levels you've shared with the community!";
         this.IconHash = "g820625";
         this.FontAwesomeIcon = "user";
     }

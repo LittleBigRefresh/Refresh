@@ -120,6 +120,22 @@ public partial class GameDatabaseContext // Levels
     }
     
     [Pure]
+    public DatabaseList<GameLevel> GetMostReplayedLevels(int count, int skip, TokenGame gameVersion)
+    {
+        IQueryable<PlayLevelRelation> plays = this._realm.All<PlayLevelRelation>();
+        
+        IEnumerable<GameLevel> mostPlayed = plays
+            .AsEnumerable()
+            .GroupBy(r => r.Level)
+            .Select(g => new { Level = g.Key, Count = g.Count() })
+            .OrderByDescending(x => x.Count)
+            .Select(x => x.Level)
+            .FilterByGameVersion(gameVersion);
+
+        return new DatabaseList<GameLevel>(mostPlayed, skip, count);
+    }
+    
+    [Pure]
     public DatabaseList<GameLevel> GetHighestRatedLevels(int count, int skip, TokenGame gameVersion)
     {
         IQueryable<RateLevelRelation> ratings = this._realm.All<RateLevelRelation>();

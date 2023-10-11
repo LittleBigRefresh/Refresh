@@ -14,7 +14,7 @@ public class CategoryService : EndpointService
         new LevelCategory("newest", "newest", false, nameof(GameDatabaseContext.GetNewestLevels))
         {
             Name = "Newest Levels",
-            Description = "Levels that were uploaded recently",
+            Description = "Levels that were most recently uploaded",
             IconHash = "g820623",
             FontAwesomeIcon = "calendar",
         },
@@ -29,43 +29,50 @@ public class CategoryService : EndpointService
         new SearchLevelCategory(),
         new LevelCategory("hearted", "favouriteSlots", true, nameof(GameDatabaseContext.GetLevelsFavouritedByUser))
         {
-            Name = "My Hearted Levels",
-            Description = "Levels you've hearted",
+            Name = "My Favorites",
+            Description = "Your personal list filled with your favourite levels!",
             IconHash = "g820611",
             FontAwesomeIcon = "heart",
         },
         new LevelCategory("queued", "lolcatftw", true, nameof(GameDatabaseContext.GetLevelsQueuedByUser))
         {
             Name = "My Queue",
-            Description = "Levels you've queued",
+            Description = "Levels you'd like to play!",
             IconHash = "g820614",
             FontAwesomeIcon = "bell",
         },
         new LevelCategory("mostHearted", "mostHearted", false, nameof(GameDatabaseContext.GetMostHeartedLevels))
         {
-            Name = "Most Loved",
-            Description = "The most hearted levels of all time",
+            Name = "Community's Favorites",
+            Description = "The all-time most hearted levels!",
             IconHash = "g820607",
             FontAwesomeIcon = "heart",
         },
         new LevelCategory("mostLiked", new[] { "thumbs", "highestRated" }, false, nameof(GameDatabaseContext.GetHighestRatedLevels))
         {
             Name = "Liked Levels",
-            Description = "The most liked levels of all time",
+            Description = "The all-time most liked levels!",
             IconHash = "g820603",
             FontAwesomeIcon = "thumbs-up",
         },
         new LevelCategory("mostPlayed", "mostUniquePlays", false, nameof(GameDatabaseContext.GetMostUniquelyPlayedLevels))
         {
-            Name = "Most Played",
-            Description = "The most played content",
+            Name = "Starter Pack",
+            Description = "Levels that many people have played!",
             IconHash = "g820608",
             FontAwesomeIcon = "play",
+        },
+        new LevelCategory("mostReplayed", "mostUniquePlays", false, nameof(GameDatabaseContext.GetMostReplayedLevels))
+        {
+            Name = "Replayable Levels",
+            Description = "Levels people love to play over and over!",
+            IconHash = "g820608",
+            FontAwesomeIcon = "forward",
         },
         new LevelCategory("teamPicks", "mmpicks", false, nameof(GameDatabaseContext.GetTeamPickedLevels))
         {
             Name = "Team Picks",
-            Description = "The best of the best",
+            Description = "Handpicked quality levels",
             IconHash = "g820626",
             FontAwesomeIcon = "certificate",
         },
