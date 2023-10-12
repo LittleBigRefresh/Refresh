@@ -27,7 +27,6 @@ public partial class ImageImporter // Conversions
     }
 
     private static readonly PfimConfig Config = new();
-    private static readonly ThreadLocal<Inflater> Inflater = new(() => new Inflater());
 
     private static void DdsToPng(Stream stream, Stream writeStream)
     {
