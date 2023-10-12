@@ -168,7 +168,7 @@ public class AuthenticationEndpoints : EndpointGroup
         return new FullLoginResponse
         {
             TokenData = "MM_AUTH=" + token.TokenData,
-            ServerBrand = "Refresh",
+            ServerBrand = $"{config.InstanceName} (Refresh {VersionInformation.Version})",
         };
     }
 
