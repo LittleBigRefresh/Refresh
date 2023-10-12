@@ -13,11 +13,20 @@ namespace Refresh.GameServer.Database;
 
 public partial class GameDatabaseContext // Users
 {
+    private static readonly GameUser DeletedUser = new()
+    {
+        Location = GameLocation.Zero,
+        Username = "!DeletedUser",
+        Description = "I'm a fake user that represents deleted users for levels.",
+    };
+    
     [Pure]
     [ContractAnnotation("null => null; notnull => canbenull")]
     public GameUser? GetUserByUsername(string? username)
     {
         if (username == null) return null;
+        if (username == "!DeletedUser") return DeletedUser;
+
         return this._realm.All<GameUser>().FirstOrDefault(u => u.Username == username);
     }
     

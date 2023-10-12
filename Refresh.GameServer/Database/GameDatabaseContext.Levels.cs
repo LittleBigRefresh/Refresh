@@ -124,9 +124,16 @@ public partial class GameDatabaseContext // Levels
         => this._realm.All<GameLevel>().Where(l => l._Source == (int)GameLevelSource.User).FilterByGameVersion(gameVersion);
 
     [Pure]
-    public DatabaseList<GameLevel> GetLevelsByUser(GameUser user, int count, int skip, TokenGame gameVersion) =>
-        new(this.GetLevelsByGameVersion(gameVersion).Where(l => l.Publisher == user), skip, count);
-    
+    public DatabaseList<GameLevel> GetLevelsByUser(GameUser user, int count, int skip, TokenGame gameVersion)
+    {
+        if (user.Username == DeletedUser.Username)
+        {
+            return new DatabaseList<GameLevel>(this.GetLevelsByGameVersion(gameVersion).Where(l => l.Publisher == null), skip, count);
+        }
+        
+        return new DatabaseList<GameLevel>(this.GetLevelsByGameVersion(gameVersion).Where(l => l.Publisher == user), skip, count);
+    }
+
     [Pure]
     public DatabaseList<GameLevel> GetNewestLevels(int count, int skip, TokenGame gameVersion) =>
         new(this.GetLevelsByGameVersion(gameVersion).OrderByDescending(l => l.PublishDate), skip, count);

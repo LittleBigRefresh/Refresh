@@ -111,16 +111,20 @@ public class GameLevelResponse : IDataConvertableFrom<GameLevelResponse, GameLev
             AverageStarRating = old.CalculateAverageStarRating(),
         };
 
-        if (old.Publisher == null)
+        response.Type = "user";
+        if (old.Publisher != null)
         {
-            response.Type = "developer";
+            response.Handle = SerializedUserHandle.FromUser(old.Publisher);
         }
         else
         {
-            response.Type = "user";
-            response.Handle = SerializedUserHandle.FromUser(old.Publisher);
+            response.Handle = new SerializedUserHandle
+            {
+                IconHash = "0",
+                Username = "!DeletedUser",
+            };
         }
-
+        
         return response;
     }
 
