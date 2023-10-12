@@ -92,6 +92,26 @@ public partial class GameDatabaseContext // Levels
                 .Where(e => e._StoredDataType == (int)EventDataType.Level && e.StoredSequentialId == level.LevelId);
             
             this._realm.RemoveRange(events);
+
+            #region This is so terrible it needs to be hidden away
+
+            IQueryable<FavouriteLevelRelation> favouriteLevelRelations = this._realm.All<FavouriteLevelRelation>().Where(r => r.Level == level);
+            this._realm.RemoveRange(favouriteLevelRelations);
+            
+            IQueryable<PlayLevelRelation> playLevelRelations = this._realm.All<PlayLevelRelation>().Where(r => r.Level == level);
+            this._realm.RemoveRange(playLevelRelations);
+            
+            IQueryable<QueueLevelRelation> queueLevelRelations = this._realm.All<QueueLevelRelation>().Where(r => r.Level == level);
+            this._realm.RemoveRange(queueLevelRelations);
+            
+            IQueryable<RateLevelRelation> rateLevelRelations = this._realm.All<RateLevelRelation>().Where(r => r.Level == level);
+            this._realm.RemoveRange(rateLevelRelations);
+            
+            IQueryable<UniquePlayLevelRelation> uniquePlayLevelRelations = this._realm.All<UniquePlayLevelRelation>().Where(r => r.Level == level);
+            this._realm.RemoveRange(uniquePlayLevelRelations);
+
+            #endregion
+            
             this._realm.Remove(level);
         });
     }
