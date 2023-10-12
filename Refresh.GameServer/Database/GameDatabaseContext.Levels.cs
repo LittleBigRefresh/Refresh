@@ -11,6 +11,7 @@ using Refresh.GameServer.Types.Levels;
 using Refresh.GameServer.Types.Matching;
 using Refresh.GameServer.Types.Relations;
 using Refresh.GameServer.Types.UserData;
+using Refresh.GameServer.Types.UserData.Leaderboard;
 
 namespace Refresh.GameServer.Database;
 
@@ -109,6 +110,9 @@ public partial class GameDatabaseContext // Levels
             
             IQueryable<UniquePlayLevelRelation> uniquePlayLevelRelations = this._realm.All<UniquePlayLevelRelation>().Where(r => r.Level == level);
             this._realm.RemoveRange(uniquePlayLevelRelations);
+            
+            IQueryable<GameSubmittedScore> scores = this._realm.All<GameSubmittedScore>().Where(r => r.Level == level);
+            this._realm.RemoveRange(scores);
 
             #endregion
             
