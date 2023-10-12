@@ -51,16 +51,17 @@
     </ItemGroup>
 
     <ItemGroup Condition="'$(Configuration)'!='DebugLocalBunkum'">
-        <PackageReference Include="Bunkum" Version="4.0.1" />
-        <PackageReference Include="Bunkum.RealmDatabase" Version="4.0.1" />
-        <PackageReference Include="Bunkum.AutoDiscover" Version="4.0.1" />
+        <PackageReference Include="Bunkum" Version="4.1.0" />
+        <PackageReference Include="Bunkum.RealmDatabase" Version="4.1.0" />
+        <PackageReference Include="Bunkum.AutoDiscover" Version="4.1.0" />
     </ItemGroup>
 
     <ItemGroup>
       <PackageReference Include="AttribDoc" Version="1.1.0" />
       <PackageReference Include="BCrypt.Net-Next" Version="4.0.3" />
-      <PackageReference Include="Bunkum.HealthChecks" Version="4.0.1" />
-      <PackageReference Include="Bunkum.Protocols.Http" Version="4.0.1" />
+      <PackageReference Include="Bunkum.HealthChecks" Version="4.1.0" />
+      <PackageReference Include="Bunkum.HealthChecks.RealmDatabase" Version="4.1.0" />
+      <PackageReference Include="Bunkum.Protocols.Http" Version="4.1.0" />
       <PackageReference Include="CommandLineParser" Version="2.9.1" />
       <PackageReference Include="Discord.Net.Webhook" Version="3.12.0" />
       <PackageReference Include="NPTicket" Version="3.1.0" />
