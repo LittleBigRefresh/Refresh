@@ -40,6 +40,9 @@
         <Reference Include="Bunkum.HealthChecks">
             <HintPath>..\..\Bunkum\Bunkum.HealthChecks\bin\Debug\net7.0\Bunkum.HealthChecks.dll</HintPath>
         </Reference>
+        <Reference Include="Bunkum.HealthChecks.RealmDatabase">
+            <HintPath>..\..\Bunkum\Bunkum.HealthChecks.RealmDatabase\bin\Debug\net7.0\Bunkum.HealthChecks.RealmDatabase.dll</HintPath>
+        </Reference>
 
         <!-- Package references must match Bunkum.HttpServer's csproj -->
         <PackageReference Include="JetBrains.Annotations" Version="2023.2.0" />
