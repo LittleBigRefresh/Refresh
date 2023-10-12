@@ -88,22 +88,32 @@ public class TexStream : Stream
     {
         //Return 0 (EOF) if we are out of chunks
         if (this._currentChunk == this._compressedChunkSizes.Length) return 0;
+     
+        int currentChunkCompressedSize = this._compressedChunkSizes[this._currentChunk];
+        int currentChunkDecompressedSize = this._decompressedChunkSizes[this._currentChunk];
         
         //If we need to read the next chunk
         if (this._readNextChunk)
         {
             //Read the compressed data into its scratch buffer
-            this._stream.ReadAtLeast(this._scratchBufferCompressed.AsSpan()[..this._compressedChunkSizes[this._currentChunk]], this._compressedChunkSizes[this._currentChunk]);
+            this._stream.ReadAtLeast(this._scratchBufferCompressed.AsSpan()[..currentChunkCompressedSize], currentChunkCompressedSize);
 
-            this._inflater.Reset();
-        
-            //Set the input stream to the slice of compressed scratch buffer
-            this._inflater.SetInput(this._scratchBufferCompressed, 0, this._compressedChunkSizes[this._currentChunk]);
-            //Inflate the first chunk into the decompressed scratch buffer
-            this._inflater.Inflate(this._scratchBufferDecompressed, 0, this._decompressedChunkSizes[this._currentChunk]);
+            if (currentChunkCompressedSize == currentChunkDecompressedSize)
+            {
+                this._scratchBufferCompressed.AsSpan(0, currentChunkCompressedSize).CopyTo(this._scratchBufferDecompressed.AsSpan(0, currentChunkDecompressedSize));
+            }
+            else
+            {
+                this._inflater.Reset();
+
+                //Set the input stream to the slice of compressed scratch buffer
+                this._inflater.SetInput(this._scratchBufferCompressed, 0, currentChunkCompressedSize);
+                //Inflate the first chunk into the decompressed scratch buffer
+                this._inflater.Inflate(this._scratchBufferDecompressed, 0, currentChunkDecompressedSize);
+            }
 
             this._readNextChunk = false;
-            this._chunkLeft = this._decompressedChunkSizes[this._currentChunk];
+            this._chunkLeft = currentChunkDecompressedSize;
             this._chunkRead = 0;
         }
         
