@@ -93,7 +93,7 @@ public class TexStream : Stream
         if (this._readNextChunk)
         {
             //Read the compressed data into its scratch buffer
-            this._stream.ReadAtLeast(this._scratchBufferCompressed, this._compressedChunkSizes[this._currentChunk]);
+            this._stream.ReadAtLeast(this._scratchBufferCompressed.AsSpan()[..this._compressedChunkSizes[this._currentChunk]], this._compressedChunkSizes[this._currentChunk]);
 
             this._inflater.Reset();
         
@@ -110,9 +110,9 @@ public class TexStream : Stream
         Debug.Assert(this._chunkLeft > 0);
 
         //Special case perfect or over-reads
-        if (buffer.Length >= this._chunkLeft)
+        if (count >= this._chunkLeft)
         {
-            this._scratchBufferDecompressed.AsSpan().Slice(this._chunkRead, this._chunkLeft).CopyTo(buffer);
+            this._scratchBufferDecompressed.AsSpan().Slice(this._chunkRead, this._chunkLeft).CopyTo(buffer.AsSpan().Slice(offset, count));
 
             this._readNextChunk = true;
             this._currentChunk += 1;
@@ -120,13 +120,14 @@ public class TexStream : Stream
         }
         
         //Copy the data it wants into the output buffer
-        this._scratchBufferDecompressed.AsSpan().Slice(this._chunkRead, buffer.Length).CopyTo(buffer);
+        this._scratchBufferDecompressed.AsSpan().Slice(this._chunkRead, count).CopyTo(buffer.AsSpan().Slice(offset, count));
         
-        this._chunkRead += buffer.Length;
-        this._chunkLeft -= buffer.Length;
+        this._chunkRead += count;
+        this._chunkLeft -= count;
         
-        return buffer.Length;
+        return count;
     }
+    
     public override long Seek(long offset, SeekOrigin origin) => throw new InvalidOperationException();
     public override void SetLength(long value) => throw new InvalidOperationException();
     public override void Write(byte[] buffer, int offset, int count) => throw new InvalidOperationException();
