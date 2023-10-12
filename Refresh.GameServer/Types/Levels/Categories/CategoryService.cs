@@ -62,7 +62,7 @@ public class CategoryService : EndpointService
             IconHash = "g820608",
             FontAwesomeIcon = "play",
         },
-        new LevelCategory("mostReplayed", "mostUniquePlays", false, nameof(GameDatabaseContext.GetMostReplayedLevels))
+        new LevelCategory("mostReplayed", "mostPlays", false, nameof(GameDatabaseContext.GetMostReplayedLevels))
         {
             Name = "Replayable Levels",
             Description = "Levels people love to play over and over!",
