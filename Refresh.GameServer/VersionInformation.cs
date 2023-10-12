@@ -12,7 +12,7 @@ internal static class VersionInformation
         
         AssemblyInformationalVersionAttribute? versionAttribute = assembly.GetCustomAttribute<AssemblyInformationalVersionAttribute>();
         string? version = versionAttribute?.InformationalVersion;
-        if(version is null or "1.0.0") version = "unknown";
+        if(version is null or "0.0.0" or "1.0.0") version = "unknown";
 
         Version = version;
     }
