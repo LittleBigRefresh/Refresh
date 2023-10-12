@@ -11,7 +11,7 @@ public class CurrentlyPlayingCategory : LevelCategory
     internal CurrentlyPlayingCategory() : base("currentlyPlaying", "busiest", false,
         nameof(GameDatabaseContext.GetBusiestLevels))
     {
-        this.Name = "Busiest Levels";
+        this.Name = "Popular Now";
         this.Description = "Levels people are playing right now!";
         this.IconHash = "g820602";
         this.FontAwesomeIcon = "users";
