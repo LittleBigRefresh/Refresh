@@ -8,6 +8,7 @@ using Bunkum.Core.RateLimit;
 using Bunkum.Core.Services;
 using Bunkum.Core.Storage;
 using Bunkum.HealthChecks;
+using Bunkum.HealthChecks.RealmDatabase;
 using Bunkum.Protocols.Http;
 using Bunkum.RealmDatabase;
 using NotEnoughLogs;
@@ -136,9 +137,11 @@ public class RefreshGameServer : IDisposable
         this._server.AddService<CommandService>();
         this._server.AddService<ImportService>();
         this._server.AddService<DocumentationService>();
-        this._server.AddAutoDiscover(serverBrand: "Refresh",
+        this._server.AddAutoDiscover(serverBrand: $"{this._config!.InstanceName} (Refresh)",
             baseEndpoint: GameEndpointAttribute.BaseRoute.Substring(0, GameEndpointAttribute.BaseRoute.Length - 1),
-            usesCustomDigestKey: true);
+            usesCustomDigestKey: true,
+            serverDescription: this._config.InstanceDescription,
+            bannerImageUrl: "https://github.com/LittleBigRefresh/Branding/blob/main/logos/refresh_type.png?raw=true");
         
         this._server.AddHealthCheckService(this._databaseProvider, new []
         {
