@@ -2,20 +2,20 @@ using System.Xml.Serialization;
 using Realms;
 using Refresh.GameServer.Database;
 using Refresh.GameServer.Types.UserData;
-using Bunkum.Core.Serialization;
 
 namespace Refresh.GameServer.Types.Comments;
 
 [XmlRoot("comment")]
 [XmlType("comment")]
-public partial class GameComment : IRealmObject, ISequentialId, INeedsPreparationBeforeSerialization
+public partial class GameComment : IRealmObject, ISequentialId
 {
     [PrimaryKey] [XmlElement("id")] public int SequentialId { get; set; }
 
     [XmlIgnore] public GameUser Author { get; set; } = null!;
     [XmlElement("message")] public string Content { get; set; } = string.Empty;
+    
     /// <summary>
-    /// Timestamp in Unix miliseconds
+    /// Timestamp in Unix milliseconds
     /// </summary>
     [XmlElement("timestamp")] public long Timestamp { get; set; } 
 

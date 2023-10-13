@@ -2,7 +2,7 @@ using System.Xml.Serialization;
 using Bunkum.Core;
 using Bunkum.Core.Endpoints;
 using Bunkum.Core.Endpoints.Debugging;
-using Bunkum.Core.Serialization;
+using Bunkum.Core.Responses.Serialization;
 using Bunkum.Listener.Protocol;
 using Refresh.GameServer.Authentication;
 using Refresh.GameServer.Configuration;
