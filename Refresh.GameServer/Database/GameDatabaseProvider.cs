@@ -328,6 +328,7 @@ public class GameDatabaseProvider : RealmDatabaseProvider<GameDatabaseContext>
             dynamic oldPlayLevelRelation = oldPlayLevelRelations.ElementAt(i);
             PlayLevelRelation newPlayLevelRelation = newPlayLevelRelations.ElementAt(i);
 
+            //In version 93, we added a count to PlayLevelRelation
             if (oldVersion < 93)
             {
                 newPlayLevelRelation.Count = 1;
