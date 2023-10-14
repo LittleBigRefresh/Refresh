@@ -210,13 +210,14 @@ public partial class GameDatabaseContext // Relations
 
     #region Playing
     
-    public void PlayLevel(GameLevel level, GameUser user)
+    public void PlayLevel(GameLevel level, GameUser user, int count)
     {
         PlayLevelRelation relation = new()
         {
             Level = level,
             User = user,
             Timestamp = this._time.TimestampMilliseconds,
+            Count = count,
         };
         
         UniquePlayLevelRelation? uniqueRelation = this._realm.All<UniquePlayLevelRelation>()

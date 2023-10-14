@@ -186,7 +186,7 @@ public partial class GameDatabaseContext // Levels
         IEnumerable<GameLevel> mostPlayed = plays
             .AsEnumerable()
             .GroupBy(r => r.Level)
-            .Select(g => new { Level = g.Key, Count = g.Count() })
+            .Select(g => new { Level = g.Key, Count = g.Sum(p => p.Count) })
             .OrderByDescending(x => x.Count)
             .Select(x => x.Level)
             .FilterByGameVersion(gameVersion);

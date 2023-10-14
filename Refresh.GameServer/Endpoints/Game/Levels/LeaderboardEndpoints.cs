@@ -29,7 +29,19 @@ public class LeaderboardEndpoints : EndpointGroup
         GameLevel? level = database.GetLevelById(id);
         if (level == null) return NotFound;
 
-        database.PlayLevel(level, user);
+        int count = 1;
+        //If we are on PSP and it has sent a `count` parameter...
+        if (context.IsPSP() && context.QueryString.Get("count") != null)
+        {
+            //Parse the count
+            if (!int.TryParse(context.QueryString["count"], out count))
+            {
+                //If it fails, send a bad request back to the client
+                return BadRequest;
+            }
+        }
+        
+        database.PlayLevel(level, user, count);
         return OK;
     }
 
