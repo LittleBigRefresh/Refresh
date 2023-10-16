@@ -22,9 +22,6 @@ public class SerializedPhotoSubject
     
     public static void ParseBoundsList(ReadOnlySpan<char> input, float[] floats)
     {
-        //Dont parse out empty inputs
-        if (input.IsEmpty) return;
-        
         byte start = 0;
         byte floatIndex = 0;
 
