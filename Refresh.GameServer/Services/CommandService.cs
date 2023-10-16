@@ -100,8 +100,13 @@ public class CommandService : EndpointService
                 
                 break;
             }
-            case "togglegriefphotos": {
-                user.RedirectGriefReportsToPhotos = !user.RedirectGriefReportsToPhotos;
+            case "griefphotoson": {
+                user.RedirectGriefReportsToPhotos = true;
+                
+                break;
+            }
+            case "griefphotosoff": {
+                user.RedirectGriefReportsToPhotos = false;
                 
                 break;
             }
