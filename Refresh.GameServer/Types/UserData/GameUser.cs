@@ -80,6 +80,11 @@ public partial class GameUser : IRealmObject, IRateLimitUser
     public bool RpcnAuthenticationAllowed { get; set; }
     public bool PsnAuthenticationAllowed { get; set; }
     
+    /// <summary>
+    /// If `true`, turn all grief reports into photo uploads
+    /// </summary>
+    public bool RedirectGriefReportsToPhotos { get; set; }
+    
     [Ignored] public GameUserRole Role
     {
         get => (GameUserRole)this._Role;

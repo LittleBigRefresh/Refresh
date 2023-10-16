@@ -100,6 +100,11 @@ public class CommandService : EndpointService
                 
                 break;
             }
+            case "togglegriefphotos": {
+                user.RedirectGriefReportsToPhotos = !user.RedirectGriefReportsToPhotos;
+                
+                break;
+            }
             #if DEBUG
             case "tokengame":
             {
