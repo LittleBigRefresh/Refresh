@@ -4,6 +4,7 @@ using Bunkum.Core.Responses;
 using Bunkum.Listener.Protocol;
 using Bunkum.Protocols.Http;
 using Refresh.GameServer.Database;
+using Refresh.GameServer.Extensions;
 using Refresh.GameServer.Time;
 using Refresh.GameServer.Types.Levels;
 using Refresh.GameServer.Types.Photos;
@@ -35,14 +36,16 @@ public class ReportingEndpoints : EndpointGroup
                     //      but im not sure how to get that from a Rect
                     BoundsList = "", 
                 }));
+
+            string hash = context.IsPSP() ? "psp/" + body.JpegHash : body.JpegHash;
             
             database.UploadPhoto(new SerializedPhoto
             {
                 Timestamp = time.TimestampSeconds,
                 AuthorName = user.Username,
-                SmallHash = body.JpegHash,
-                MediumHash = body.JpegHash,
-                LargeHash = body.JpegHash,
+                SmallHash = hash,
+                MediumHash = hash,
+                LargeHash = hash,
                 PlanHash = "0",
                 //If the level id is 0 or we couldn't find the level null, dont fill out the `Level` field
                 Level = body.LevelId == 0 || level == null ? null : new SerializedPhotoLevel
