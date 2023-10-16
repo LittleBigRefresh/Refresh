@@ -7,6 +7,7 @@ using Refresh.GameServer.Types;
 using Refresh.GameServer.Types.Levels;
 using Refresh.GameServer.Types.Levels.SkillRewards;
 using Refresh.GameServer.Types.Matching;
+using Refresh.GameServer.Types.Relations;
 using Refresh.GameServer.Types.Reviews;
 using Refresh.GameServer.Types.UserData;
 
@@ -80,6 +81,12 @@ public class GameLevelResponse : IDataConvertableFrom<GameLevelResponse, GameLev
     {
         if (old == null) return null;
 
+        int totalPlayCount = 0;
+        foreach (PlayLevelRelation playLevelRelation in old.AllPlays)
+        {
+            totalPlayCount += playLevelRelation.Count;
+        }
+        
         GameLevelResponse response = new()
         {
             LevelId = old.LevelId,
@@ -96,7 +103,7 @@ public class GameLevelResponse : IDataConvertableFrom<GameLevelResponse, GameLev
             EnforceMinMaxPlayers = old.EnforceMinMaxPlayers,
             SameScreenGame = old.SameScreenGame,
             HeartCount = old.FavouriteRelations.Count(),
-            TotalPlayCount = old.AllPlays.Sum(p => p.Count),
+            TotalPlayCount = totalPlayCount,
             UniquePlayCount = old.UniquePlays.Count(),
             YayCount = old.Ratings.Count(r => r._RatingType == (int)RatingType.Yay),
             BooCount = old.Ratings.Count(r => r._RatingType == (int)RatingType.Boo),
