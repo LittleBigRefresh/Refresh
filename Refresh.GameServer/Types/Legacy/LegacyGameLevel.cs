@@ -61,7 +61,7 @@ public class LegacyGameLevel : IDataConvertableFrom<LegacyGameLevel, GameLevel>
         LastUpdated = old.UpdateDate,
         TeamPick = old.TeamPicked,
         GameVersion = 1,
-        Plays = old.AllPlays.Count(),
+        Plays = old.AllPlays.Sum(p => p.Count),
         PlaysUnique = old.UniquePlays.Count(),
         PlaysComplete = old.Scores.Count(),
         CommentsEnabled = true,

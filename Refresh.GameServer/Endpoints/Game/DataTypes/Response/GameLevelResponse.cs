@@ -96,7 +96,7 @@ public class GameLevelResponse : IDataConvertableFrom<GameLevelResponse, GameLev
             EnforceMinMaxPlayers = old.EnforceMinMaxPlayers,
             SameScreenGame = old.SameScreenGame,
             HeartCount = old.FavouriteRelations.Count(),
-            TotalPlayCount = old.AllPlays.Count(),
+            TotalPlayCount = old.AllPlays.Sum(p => p.Count),
             UniquePlayCount = old.UniquePlays.Count(),
             YayCount = old.Ratings.Count(r => r._RatingType == (int)RatingType.Yay),
             BooCount = old.Ratings.Count(r => r._RatingType == (int)RatingType.Boo),

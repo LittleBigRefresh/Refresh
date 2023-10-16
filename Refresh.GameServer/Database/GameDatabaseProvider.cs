@@ -32,7 +32,7 @@ public class GameDatabaseProvider : RealmDatabaseProvider<GameDatabaseContext>
         this._time = time;
     }
 
-    protected override ulong SchemaVersion => 92;
+    protected override ulong SchemaVersion => 93;
 
     protected override string Filename => "refreshGameServer.realm";
     
@@ -309,7 +309,6 @@ public class GameDatabaseProvider : RealmDatabaseProvider<GameDatabaseContext>
         IQueryable<dynamic>? oldScores = migration.OldRealm.DynamicApi.All("GameSubmittedScore");
         IQueryable<GameSubmittedScore>? newScores = migration.NewRealm.All<GameSubmittedScore>();
 
-        
         for (int i = 0; i < newScores.Count(); i++)
         {
             dynamic oldScore = oldScores.ElementAt(i);
@@ -318,6 +317,21 @@ public class GameDatabaseProvider : RealmDatabaseProvider<GameDatabaseContext>
             if (oldVersion < 92)
             {
                 newScore.Game = newScore.Level.GameVersion;
+            }
+        }
+        
+        IQueryable<dynamic>? oldPlayLevelRelations = migration.OldRealm.DynamicApi.All("PlayLevelRelation");
+        IQueryable<PlayLevelRelation>? newPlayLevelRelations = migration.NewRealm.All<PlayLevelRelation>();
+
+        for (int i = 0; i < newPlayLevelRelations.Count(); i++)
+        {
+            dynamic oldPlayLevelRelation = oldPlayLevelRelations.ElementAt(i);
+            PlayLevelRelation newPlayLevelRelation = newPlayLevelRelations.ElementAt(i);
+
+            //In version 93, we added a count to PlayLevelRelation
+            if (oldVersion < 93)
+            {
+                newPlayLevelRelation.Count = 1;
             }
         }
     }
