@@ -27,6 +27,8 @@ public class ApiExtendedGameUserResponse : IApiResponse, IDataConvertableFrom<Ap
     public required bool RpcnAuthenticationAllowed { get; set; }
     public required bool PsnAuthenticationAllowed { get; set; }
     
+    public bool RedirectGriefReportsToPhotos { get; set; } 
+    
     public required string? EmailAddress { get; set; }
     public required bool EmailAddressVerified { get; set; }
     public required bool ShouldResetPassword { get; set; }
@@ -54,6 +56,7 @@ public class ApiExtendedGameUserResponse : IApiResponse, IDataConvertableFrom<Ap
             EmailAddress = user.EmailAddress,
             EmailAddressVerified = user.EmailAddressVerified,
             ShouldResetPassword = user.ShouldResetPassword,
+            RedirectGriefReportsToPhotos = user.RedirectGriefReportsToPhotos,
         };
     }
 

@@ -19,15 +19,16 @@ public partial class GameDatabaseContext // Photos
             PlanHash = photo.PlanHash,
             
             Publisher = publisher,
-            LevelName = photo.Level.Title,
-            LevelType = photo.Level.Type,
-            LevelId = photo.Level.LevelId,
+            LevelName = photo.Level?.Title ?? "",
+            LevelType = photo.Level?.Type ?? "",
+            //If level is null, default to level ID 0
+            LevelId = photo.Level?.LevelId ?? 0,
 
             TakenAt = DateTimeOffset.FromUnixTimeSeconds(Math.Clamp(photo.Timestamp, this._time.EarliestDate, this._time.TimestampSeconds)),
             PublishedAt = this._time.Now,
         };
 
-        if (photo.Level.Type == "user") 
+        if (photo.Level?.Type == "user") 
             newPhoto.Level = this.GetLevelById(photo.Level.LevelId);
 
         float[] bounds = new float[SerializedPhotoSubject.FloatCount];

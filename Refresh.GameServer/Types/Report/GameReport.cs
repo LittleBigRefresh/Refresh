@@ -51,7 +51,10 @@ public partial class GameReport : IRealmObject, ISequentialId
 
     [XmlElement("levelId")]
     public int LevelId { get; set; }
-
+    
+    [XmlElement("description")]
+    public string Description { get; set; }
+    
     [XmlElement("griefStateHash")]
     public string GriefStateHash { get; set; }
 

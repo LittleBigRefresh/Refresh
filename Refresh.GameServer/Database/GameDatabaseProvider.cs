@@ -32,7 +32,7 @@ public class GameDatabaseProvider : RealmDatabaseProvider<GameDatabaseContext>
         this._time = time;
     }
 
-    protected override ulong SchemaVersion => 93;
+    protected override ulong SchemaVersion => 95;
 
     protected override string Filename => "refreshGameServer.realm";
     
@@ -159,6 +159,9 @@ public class GameDatabaseProvider : RealmDatabaseProvider<GameDatabaseContext>
             {
                 newUser.VitaPlanetsHash = "0";
             }
+
+            // In version 94, we added an option to redirect grief reports to photos
+            if (oldVersion < 94) newUser.RedirectGriefReportsToPhotos = false;
         }
 
         IQueryable<dynamic>? oldLevels = migration.OldRealm.DynamicApi.All("GameLevel");

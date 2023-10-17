@@ -100,6 +100,16 @@ public class CommandService : EndpointService
                 
                 break;
             }
+            case "griefphotoson": {
+                user.RedirectGriefReportsToPhotos = true;
+                
+                break;
+            }
+            case "griefphotosoff": {
+                user.RedirectGriefReportsToPhotos = false;
+                
+                break;
+            }
             #if DEBUG
             case "tokengame":
             {
