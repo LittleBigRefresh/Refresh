@@ -16,6 +16,7 @@ public class ApiExtendedGameUserResponse : IApiResponse, IDataConvertableFrom<Ap
     public required string Description { get; set; }
     public required ApiGameLocationResponse Location { get; set; }
     public required DateTimeOffset JoinDate { get; set; }
+    public required DateTimeOffset LastLoginDate { get; set; }
     
     public required bool AllowIpAuthentication { get; set; }
     public required GameUserRole Role { get; set; }
@@ -45,6 +46,7 @@ public class ApiExtendedGameUserResponse : IApiResponse, IDataConvertableFrom<Ap
             Description = user.Description,
             Location = ApiGameLocationResponse.FromGameLocation(user.Location)!,
             JoinDate = user.JoinDate,
+            LastLoginDate = user.LastLoginDate,
             AllowIpAuthentication = user.AllowIpAuthentication,
             Role = user.Role,
             BanReason = user.BanReason,
