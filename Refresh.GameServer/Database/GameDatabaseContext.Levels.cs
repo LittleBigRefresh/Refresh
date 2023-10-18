@@ -42,6 +42,7 @@ public partial class GameDatabaseContext // Levels
             Publisher = null,
             Location = GameLocation.Zero,
             Source = GameLevelSource.Story,
+            StoryId = id,
         };
             
         //Add the new story level to the database
