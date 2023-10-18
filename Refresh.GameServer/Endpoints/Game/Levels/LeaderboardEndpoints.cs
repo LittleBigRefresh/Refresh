@@ -142,4 +142,21 @@ public class LeaderboardEndpoints : EndpointGroup
         (int skip, int count) = context.GetPageData();
         return new Response(SerializedScoreList.FromSubmittedEnumerable(database.GetTopScoresForLevel(level, count, skip, (byte)type).Items), ContentType.Xml);
     }
+    
+    [GameEndpoint("topscores/developer/{id}/{type}", ContentType.Xml)]
+    [MinimumRole(GameUserRole.Restricted)]
+    [RateLimitSettings(RequestTimeoutDuration, MaxRequestAmount, RequestBlockDuration, BucketName)]
+    public Response GetTopScoresForDeveloperLevel(RequestContext context, GameDatabaseContext database, int id, int type)
+    {
+        //No story levels have an ID < 0
+        if (id < 0)
+        {
+            return BadRequest;
+        }
+        
+        GameLevel level = database.GetStoryLevelById(id);
+        
+        (int skip, int count) = context.GetPageData();
+        return new Response(SerializedScoreList.FromSubmittedEnumerable(database.GetTopScoresForLevel(level, count, skip, (byte)type).Items), ContentType.Xml);
+    }
 }
