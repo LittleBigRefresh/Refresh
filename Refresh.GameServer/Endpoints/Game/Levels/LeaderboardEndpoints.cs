@@ -58,6 +58,12 @@ public class LeaderboardEndpoints : EndpointGroup
     [RateLimitSettings(RequestTimeoutDuration, MaxRequestAmount, RequestBlockDuration, BucketName)]
     public Response GetDeveloperScores(RequestContext context, GameUser user, GameDatabaseContext database, int id, Token token)
     {
+        //No story levels have an ID < 0
+        if (id < 0)
+        {
+            return BadRequest;
+        }
+        
         GameLevel level = database.GetStoryLevelById(id);
 
         MultiLeaderboard multiLeaderboard = new(database, level, token.TokenGame);
