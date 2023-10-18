@@ -31,12 +31,21 @@ public class LeaderboardEndpoints : EndpointGroup
 
         int count = 1;
         //If we are on PSP and it has sent a `count` parameter...
-        if (context.IsPSP() && context.QueryString.Get("count") != null)
+        if (context.QueryString.Get("count") != null)
         {
+            //Count parameters are invalid on non-PSP clients
+            if (!context.IsPSP()) return BadRequest;
+            
             //Parse the count
             if (!int.TryParse(context.QueryString["count"], out count))
             {
                 //If it fails, send a bad request back to the client
+                return BadRequest;
+            }
+
+            //Sanitize against invalid values
+            if (count < 1)
+            {
                 return BadRequest;
             }
         }
@@ -119,12 +128,12 @@ public class LeaderboardEndpoints : EndpointGroup
     [GameEndpoint("topscores/user/{id}/{type}", ContentType.Xml)]
     [MinimumRole(GameUserRole.Restricted)]
     [RateLimitSettings(RequestTimeoutDuration, MaxRequestAmount, RequestBlockDuration, BucketName)]
-    public SerializedScoreList? GetTopScoresForLevel(RequestContext context, GameDatabaseContext database, int id, int type)
+    public Response GetTopScoresForLevel(RequestContext context, GameDatabaseContext database, int id, int type)
     {
         GameLevel? level = database.GetLevelById(id);
-        if (level == null) return null;
+        if (level == null) return NotFound;
         
         (int skip, int count) = context.GetPageData();
-        return SerializedScoreList.FromSubmittedEnumerable(database.GetTopScoresForLevel(level, count, skip, (byte)type).Items);
+        return new Response(SerializedScoreList.FromSubmittedEnumerable(database.GetTopScoresForLevel(level, count, skip, (byte)type).Items), ContentType.Xml);
     }
 }
