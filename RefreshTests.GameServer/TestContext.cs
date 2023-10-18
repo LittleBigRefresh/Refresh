@@ -70,6 +70,11 @@ public class TestContext : IDisposable
 
         return client;
     }
+
+    public HttpClient GetUnauthenticatedClient()
+    {
+        return this.Listener.GetClient();
+    }
     
     public GameUser CreateUser(string? username = null)
     {
