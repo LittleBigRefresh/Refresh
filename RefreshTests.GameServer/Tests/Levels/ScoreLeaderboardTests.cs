@@ -1,6 +1,7 @@
 using MongoDB.Bson;
 using Refresh.GameServer.Authentication;
 using Refresh.GameServer.Types.Levels;
+using Refresh.GameServer.Types.Lists;
 using Refresh.GameServer.Types.UserData;
 using Refresh.GameServer.Types.UserData.Leaderboard;
 
@@ -17,20 +18,201 @@ public class ScoreLeaderboardTests : GameServerTest
 
         using HttpClient client = context.GetAuthenticatedClient(TokenType.Game, user);
 
-        string scorePayload = $@"<playRecord>
-<host>true</host>
-<type>1</type>
-<playerIds>{user.Username}</playerIds>
-<score>0</score>
-</playRecord>";
+        SerializedScore score = new()
+        {
+            Host = true,
+            ScoreType = 1,
+            Score = 5,
+        }; 
         
-        HttpResponseMessage message = await client.PostAsync($"/lbp/scoreboard/user/{level.LevelId}", new StringContent(scorePayload));
+        HttpResponseMessage message = await client.PostAsync($"/lbp/scoreboard/user/{level.LevelId}", new StringContent(score.AsXML()));
         Assert.That(message.StatusCode, Is.EqualTo(OK));
+        
+        message = await client.GetAsync($"/lbp/topscores/user/{level.LevelId}/1");
+        Assert.That(message.StatusCode, Is.EqualTo(OK));
+        
+        SerializedScoreList scores = await message.Content.ReadAsXML<SerializedScoreList>();
+        Assert.That(scores.Scores, Has.Count.EqualTo(1));
+        Assert.That(scores.Scores[0].Player, Is.EqualTo(user.Username));
+        Assert.That(scores.Scores[0].Score, Is.EqualTo(5));
+        
+        message = await client.GetAsync($"/lbp/scoreboard/user/{level.LevelId}");
+        Assert.That(message.StatusCode, Is.EqualTo(OK));
+        
+        SerializedMultiLeaderboardResponse scoresMulti = await message.Content.ReadAsXML<SerializedMultiLeaderboardResponse>();
+        SerializedPlayerLeaderboardResponse singleplayerScores = scoresMulti.Scoreboards.First(s => s.PlayerCount == 1);
+        Assert.That(singleplayerScores.Scores, Has.Count.EqualTo(1));
+        Assert.That(singleplayerScores.Scores[0].Player, Is.EqualTo(user.Username));
+        Assert.That(singleplayerScores.Scores[0].Score, Is.EqualTo(5));
+    }
+    
+    [Test]
+    public async Task SubmitsDeveloperScore()
+    {
+        using TestContext context = this.GetServer();
+        GameUser user = context.CreateUser();
+
+        using HttpClient client = context.GetAuthenticatedClient(TokenType.Game, user);
+
+        SerializedScore score = new()
+        {
+            Host = true,
+            ScoreType = 1,
+            Score = 5,
+        }; 
+        
+        HttpResponseMessage message = await client.PostAsync($"/lbp/scoreboard/developer/1", new StringContent(score.AsXML()));
+        Assert.That(message.StatusCode, Is.EqualTo(OK));
+        
+        context.Database.Refresh();
+        
+        // message = await client.GetAsync($"/lbp/topscores/developer/{level.LevelId}/1");
+        // Assert.That(message.StatusCode, Is.EqualTo(OK));
+        //
+        // SerializedScoreList scores = await message.Content.ReadAsXML<SerializedScoreList>();
+        // Assert.That(scores.Scores, Has.Count.EqualTo(1));
+        // Assert.That(scores.Scores[0].Player, Is.EqualTo(user.Username));
+        // Assert.That(scores.Scores[0].Score, Is.EqualTo(5));
+        
+        message = await client.GetAsync($"/lbp/scoreboard/developer/1");
+        Assert.That(message.StatusCode, Is.EqualTo(OK));
+        
+        SerializedMultiLeaderboardResponse scoresMulti = await message.Content.ReadAsXML<SerializedMultiLeaderboardResponse>();
+        SerializedPlayerLeaderboardResponse singleplayerScores = scoresMulti.Scoreboards.First(s => s.PlayerCount == 1);
+        Assert.That(singleplayerScores.Scores, Has.Count.EqualTo(1));
+        Assert.That(singleplayerScores.Scores[0].Player, Is.EqualTo(user.Username));
+        Assert.That(singleplayerScores.Scores[0].Score, Is.EqualTo(5));
+    }
+    
+    [Test]
+    public async Task DosentGetLeaderboardForInvalidLevel()
+    {
+        using TestContext context = this.GetServer();
+        GameUser user = context.CreateUser();
+
+        using HttpClient client = context.GetAuthenticatedClient(TokenType.Game, user);
+
+        HttpResponseMessage message2 = await client.GetAsync($"/lbp/topscores/user/{int.MaxValue}/1");
+        Assert.That(message2.StatusCode, Is.EqualTo(NotFound));
+    }
+    
+    [Test]
+    public async Task DosentGetMultiLeaderboardForInvalidLevel()
+    {
+        using TestContext context = this.GetServer();
+        GameUser user = context.CreateUser();
+
+        using HttpClient client = context.GetAuthenticatedClient(TokenType.Game, user);
+
+        HttpResponseMessage message = await client.GetAsync($"/lbp/scoreboard/user/{int.MaxValue}");
+        Assert.That(message.StatusCode, Is.EqualTo(NotFound));
+    }
+    
+    [Test]
+    public async Task DoesntSubmitInvalidScore()
+    {
+        using TestContext context = this.GetServer();
+        GameUser user = context.CreateUser();
+        GameLevel level = context.CreateLevel(user);
+
+        using HttpClient client = context.GetAuthenticatedClient(TokenType.Game, user);
+
+        SerializedScore score = new()
+        {
+            Host = true,
+            ScoreType = 1,
+            Score = -1,
+        }; 
+        
+        HttpResponseMessage message = await client.PostAsync($"/lbp/scoreboard/user/{level.LevelId}", new StringContent(score.AsXML()));
+        Assert.That(message.StatusCode, Is.EqualTo(BadRequest));
 
         context.Database.Refresh();
 
         List<GameSubmittedScore> scores = context.Database.GetTopScoresForLevel(level, 1, 0, 1).Items.ToList();
-        Assert.That(scores, Has.Count.EqualTo(1));
+        Assert.That(scores, Has.Count.EqualTo(0));
+    }
+    
+    [Test]
+    public async Task DoesntSubmitDeveloperInvalidScore()
+    {
+        using TestContext context = this.GetServer();
+        GameUser user = context.CreateUser();
+        GameLevel level = context.CreateLevel(user);
+
+        using HttpClient client = context.GetAuthenticatedClient(TokenType.Game, user);
+
+        SerializedScore score = new()
+        {
+            Host = true,
+            ScoreType = 1,
+            Score = -1,
+        }; 
+        
+        HttpResponseMessage message = await client.PostAsync($"/lbp/scoreboard/developer/{level.LevelId}", new StringContent(score.AsXML()));
+        Assert.That(message.StatusCode, Is.EqualTo(BadRequest));
+
+        context.Database.Refresh();
+
+        List<GameSubmittedScore> scores = context.Database.GetTopScoresForLevel(level, 1, 0, 1).Items.ToList();
+        Assert.That(scores, Has.Count.EqualTo(0));
+    }
+    
+    [Test]
+    public async Task DoesntSubmitsScoreToInvalidLevel()
+    {
+        using TestContext context = this.GetServer();
+        GameUser user = context.CreateUser();
+
+        using HttpClient client = context.GetAuthenticatedClient(TokenType.Game, user);
+
+        SerializedScore score = new()
+        {
+            Host = true,
+            ScoreType = 1,
+            Score = 0,
+        }; 
+        
+        HttpResponseMessage message = await client.PostAsync($"/lbp/scoreboard/user/{int.MaxValue}", new StringContent(score.AsXML()));
+        Assert.That(message.StatusCode, Is.EqualTo(NotFound));
+    }
+    
+    [Test]
+    public async Task DoesntSubmitDeveloperScoreToInvalidLevel()
+    {
+        using TestContext context = this.GetServer();
+        GameUser user = context.CreateUser();
+
+        using HttpClient client = context.GetAuthenticatedClient(TokenType.Game, user);
+
+        SerializedScore score = new()
+        {
+            Host = true,
+            ScoreType = 1,
+            Score = 0,
+        }; 
+        
+        HttpResponseMessage message = await client.PostAsync($"/lbp/scoreboard/developer/-1", new StringContent(score.AsXML()));
+        Assert.That(message.StatusCode, Is.EqualTo(BadRequest));
+    }
+    
+    [Test]
+    public async Task DoesntGetDeveloperScoresForInvalidLevel()
+    {
+        using TestContext context = this.GetServer();
+        GameUser user = context.CreateUser();
+
+        using HttpClient client = context.GetAuthenticatedClient(TokenType.Game, user);
+
+        SerializedScore score = new()
+        {
+            Host = true,
+            ScoreType = 1,
+            Score = 0,
+        }; 
+        
+        HttpResponseMessage message = await client.GetAsync($"/lbp/scoreboard/developer/-1");
+        Assert.That(message.StatusCode, Is.EqualTo(BadRequest));
     }
     
     /// <param name="count">The number of scores to try to fetch from the database</param>
@@ -102,5 +284,82 @@ public class ScoreLeaderboardTests : GameServerTest
         GameSubmittedScore score = context.SubmitScore(0, 1, context.CreateLevel(user), user, TokenGame.LittleBigPlanet2);
         
         Assert.That(() => context.Database.GetRankedScoresAroundScore(score, 2), Throws.ArgumentException);
+    }
+    
+    [Test]
+    public async Task PlayLevel()
+    {
+        using TestContext context = this.GetServer();
+        GameUser user = context.CreateUser();
+        GameLevel level = context.CreateLevel(user);
+
+        using HttpClient client = context.GetAuthenticatedClient(TokenType.Game, user);
+
+        HttpResponseMessage message = await client.PostAsync($"/lbp/play/user/{level.LevelId}", new ReadOnlyMemoryContent(Array.Empty<byte>()));
+        Assert.That(message.StatusCode, Is.EqualTo(OK));
+
+        context.Database.Refresh();
+
+        Assert.That(level.AllPlays.Count(), Is.EqualTo(1));
+    }
+    
+    [Test]
+    public async Task DoesntPlayInvalidLevel()
+    {
+        using TestContext context = this.GetServer();
+        GameUser user = context.CreateUser();
+
+        using HttpClient client = context.GetAuthenticatedClient(TokenType.Game, user);
+
+        HttpResponseMessage message = await client.PostAsync($"/lbp/play/user/{int.MaxValue}", new ReadOnlyMemoryContent(Array.Empty<byte>()));
+        Assert.That(message.StatusCode, Is.EqualTo(NotFound));
+    }
+    
+    [Test]
+    public async Task PlayLevelWithCount()
+    {
+        using TestContext context = this.GetServer();
+        GameUser user = context.CreateUser();
+        GameLevel level = context.CreateLevel(user);
+
+        using HttpClient client = context.GetAuthenticatedClient(TokenType.Game, user);
+        client.DefaultRequestHeaders.UserAgent.TryParseAdd("LBPPSP CLIENT");
+
+        HttpResponseMessage message = await client.PostAsync($"/lbp/play/user/{level.LevelId}?count=2", new ReadOnlyMemoryContent(Array.Empty<byte>()));
+        Assert.That(message.StatusCode, Is.EqualTo(OK));
+        
+        context.Database.Refresh();
+
+        Assert.That(level.AllPlays.AsEnumerable().Sum(p => p.Count), Is.EqualTo(2));
+    }
+    
+    [Test]
+    public async Task DoesntPlayLevelWithInvalidCount()
+    {
+        using TestContext context = this.GetServer();
+        GameUser user = context.CreateUser();
+        GameLevel level = context.CreateLevel(user);
+
+        using HttpClient client = context.GetAuthenticatedClient(TokenType.Game, user);
+        client.DefaultRequestHeaders.UserAgent.TryParseAdd("LBPPSP CLIENT");
+
+        HttpResponseMessage message = await client.PostAsync($"/lbp/play/user/{level.LevelId}?count=gtgnyegth", new ReadOnlyMemoryContent(Array.Empty<byte>()));
+        Assert.That(message.StatusCode, Is.EqualTo(BadRequest));
+        
+        HttpResponseMessage message2 = await client.PostAsync($"/lbp/play/user/{level.LevelId}?count=-5", new ReadOnlyMemoryContent(Array.Empty<byte>()));
+        Assert.That(message2.StatusCode, Is.EqualTo(BadRequest));
+    }
+    
+    [Test]
+    public async Task DoesntPlayLevelWithCountOnMainline()
+    {
+        using TestContext context = this.GetServer();
+        GameUser user = context.CreateUser();
+        GameLevel level = context.CreateLevel(user);
+
+        using HttpClient client = context.GetAuthenticatedClient(TokenType.Game, user);
+
+        HttpResponseMessage message = await client.PostAsync($"/lbp/play/user/{level.LevelId}?count=3", new ReadOnlyMemoryContent(Array.Empty<byte>()));
+        Assert.That(message.StatusCode, Is.EqualTo(BadRequest));
     }
 }
