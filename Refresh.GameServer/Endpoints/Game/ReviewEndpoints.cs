@@ -21,19 +21,21 @@ public class ReviewEndpoints : EndpointGroup
         bool parsed = sbyte.TryParse(context.QueryString.Get("rating"), out sbyte rating);
         if (!parsed) return BadRequest;
 
+        //dpad ratings can only be -1 0 1
+        if (rating is > 1 or < -1) return BadRequest;
+        
         bool rated = database.RateLevel(level, user, (RatingType)rating);
         return rated ? OK : Unauthorized;
     }
     
-    [GameEndpoint("rate/user/{id}", ContentType.Xml, HttpMethods.Post)]
+    [GameEndpoint("rate/user/{levelId}", ContentType.Xml, HttpMethods.Post)]
     [AllowEmptyBody]
-    public Response RateUserLevel(RequestContext context, GameDatabaseContext database, GameUser user, int id)
+    public Response RateUserLevel(RequestContext context, GameDatabaseContext database, GameUser user, int levelId)
     {
-        string? ratingString = context.QueryString.Get("rating");
-        
-        if (ratingString == null) return BadRequest;
+        GameLevel? level = database.GetLevelById(levelId);
+        if (level == null) return NotFound;
 
-        if (!int.TryParse(ratingString, out int ratingInt)) return BadRequest;
+        if (!int.TryParse(context.QueryString.Get("rating"), out int ratingInt)) return BadRequest;
         
         RatingType rating;
         switch (ratingInt)
@@ -53,13 +55,6 @@ public class ReviewEndpoints : EndpointGroup
                 return BadRequest;
         }
 
-        GameLevel? level = database.GetLevelById(id);
-
-        if (level == null)
-        {
-            return NotFound;
-        }
-            
         return database.RateLevel(level, user, rating) ? OK : Unauthorized;
 
     } 
