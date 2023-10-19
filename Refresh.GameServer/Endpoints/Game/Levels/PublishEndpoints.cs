@@ -13,6 +13,7 @@ using Refresh.GameServer.Extensions;
 using Refresh.GameServer.Services;
 using Refresh.GameServer.Types.Levels;
 using Refresh.GameServer.Types.UserData;
+using Refresh.GameServer.Verification;
 
 namespace Refresh.GameServer.Endpoints.Game.Levels;
 
@@ -55,11 +56,12 @@ public class PublishEndpoints : EndpointGroup
         List<string> hashes = new();
         hashes.AddRange(body.XmlResources);
         hashes.Add(body.RootResource);
-        hashes.Add(body.IconHash);
 
+        //Remove all invalid or GUID assets
         hashes.RemoveAll(r => r == "0" || r.StartsWith('g') || string.IsNullOrWhiteSpace(r));
         
-        if (hashes.Any(hash => hash.Length != 40)) return null;
+        //Verify all hashes are valid SHA1 hashes
+        if (hashes.Any(hash => !CommonPatterns.Sha1Regex().IsMatch(hash))) return null;
 
         //Mark the user as publishing
         command.StartPublishing(user.UserId);
@@ -84,7 +86,9 @@ public class PublishEndpoints : EndpointGroup
 
         string rootResourcePath = context.IsPSP() ? $"psp/{level.RootResource}" : level.RootResource;
         
-        if (level.RootResource.Length != 40) return BadRequest;
+        //Check if the root resource is a SHA1 hash
+        if (!CommonPatterns.Sha1Regex().IsMatch(level.RootResource)) return BadRequest;
+        //Make sure the root resource exists in the data store
         if (!dataStore.ExistsInStore(rootResourcePath)) return NotFound;
 
         if (level.LevelId != default) // Republish requests contain the id of the old level
