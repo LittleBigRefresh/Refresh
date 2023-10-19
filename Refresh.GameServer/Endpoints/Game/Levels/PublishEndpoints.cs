@@ -37,7 +37,7 @@ public class PublishEndpoints : EndpointGroup
             return false;
         }
 
-        if (body.MaxPlayers > 4 || body.MinPlayers > 4)
+        if (body.MaxPlayers is > 4 or < 0 || body.MinPlayers is > 4 or < 0)
         {
             return false;
         }
