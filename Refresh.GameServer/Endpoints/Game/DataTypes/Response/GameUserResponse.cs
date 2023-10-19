@@ -75,12 +75,12 @@ public class GameUserResponse : IDataConvertableFrom<GameUserResponse, GameUser>
             Handle = SerializedUserHandle.FromUser(old),
             CommentCount = old.ProfileComments.Count,
             CommentsEnabled = true,
-            FavouriteLevelCount = old.FavouriteLevelRelations.Count(),
-            FavouriteUserCount = old.UsersFavourited.Count(),
-            QueuedLevelCount = old.QueueLevelRelations.Count(),
-            HeartCount = old.UsersFavouritingMe.Count(),
-            PhotosByMeCount = old.PhotosByMe.Count(),
-            PhotosWithMeCount = old.PhotosWithMe.Count(),
+            FavouriteLevelCount = old.IsManaged ? old.FavouriteLevelRelations.Count() : 0,
+            FavouriteUserCount = old.IsManaged ? old.UsersFavourited.Count() : 0,
+            QueuedLevelCount = old.IsManaged ? old.QueueLevelRelations.Count() : 0,
+            HeartCount = old.IsManaged ? old.UsersFavouritingMe.Count() : 0,
+            PhotosByMeCount = old.IsManaged ? old.PhotosByMe.Count() : 0,
+            PhotosWithMeCount = old.IsManaged ? old.PhotosWithMe.Count() : 0,
             
             EntitledSlots = MaximumLevels,
             EntitledSlotsLBP2 = MaximumLevels,
@@ -102,6 +102,14 @@ public class GameUserResponse : IDataConvertableFrom<GameUserResponse, GameUser>
 
     private void FillInExtraData(GameUser old, TokenGame gameVersion, GameDatabaseContext database)
     {
+        if (!old.IsManaged)
+        {
+            this.PlanetsHash = "0";
+            this.IconHash = "0";
+            
+            return;
+        }
+        
         this.PlanetsHash = gameVersion switch
         {
             TokenGame.LittleBigPlanet1 => "0",
