@@ -17,9 +17,15 @@ public static class HttpClientExtensions
         return ReadData<TData>(response.Content);
     }
     
-    public static ApiResponse<TData>? PostData<TData>(this HttpClient client, string endpoint, HttpContent data) where TData : class, IApiResponse
+    public static ApiResponse<TData>? PostData<TData>(this HttpClient client, string endpoint, object data) where TData : class, IApiResponse
     {
-        HttpResponseMessage response = client.PostAsync(endpoint, data).Result;
+        HttpResponseMessage response = client.PostAsync(endpoint, new StringContent(data.AsJson())).Result;
+        return ReadData<TData>(response.Content);
+    }
+    
+    public static ApiResponse<TData>? PatchData<TData>(this HttpClient client, string endpoint, object data) where TData : class, IApiResponse
+    {
+        HttpResponseMessage response = client.PatchAsync(endpoint, new StringContent(data.AsJson())).Result;
         return ReadData<TData>(response.Content);
     }
 }

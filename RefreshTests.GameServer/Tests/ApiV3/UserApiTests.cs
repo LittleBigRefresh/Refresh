@@ -73,4 +73,25 @@ public class UserApiTests : GameServerTest
         Assert.That(response, Is.Not.Null);
         Assert.That(response!.Data!.Username, Is.EqualTo(user.Username));
     }
+
+    [Test]
+    public void CanPatchOwnUser()
+    {
+        using TestContext context = this.GetServer();
+        GameUser user = context.CreateUser();
+        const string description = "yeah";
+
+        using HttpClient client = context.GetAuthenticatedClient(TokenType.Api, user);
+        
+        Assert.That(user.Description, Is.EqualTo(string.Empty));
+
+        object payload = new { description };
+        ApiResponse<ApiGameUserResponse>? response = client.PatchData<ApiGameUserResponse>("/api/v3/users/me", payload);
+        Assert.That(response, Is.Not.Null);
+        Assert.That(response!.Data!.Description, Is.EqualTo(description));
+        
+        context.Database.Refresh();
+        
+        Assert.That(user.Description, Is.EqualTo(description));
+    }
 }
