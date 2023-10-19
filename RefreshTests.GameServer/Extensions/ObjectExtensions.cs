@@ -1,7 +1,7 @@
 using System.Xml.Serialization;
 using Newtonsoft.Json;
 
-namespace RefreshTests.GameServer;
+namespace RefreshTests.GameServer.Extensions;
 
 public static class ObjectExtensions
 {

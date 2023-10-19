@@ -4,6 +4,7 @@ using Refresh.GameServer.Types.Levels;
 using Refresh.GameServer.Types.Lists;
 using Refresh.GameServer.Types.Reviews;
 using Refresh.GameServer.Types.UserData;
+using RefreshTests.GameServer.Extensions;
 
 namespace RefreshTests.GameServer.Tests.Levels;
 

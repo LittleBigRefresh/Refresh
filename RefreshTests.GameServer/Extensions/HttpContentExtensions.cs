@@ -1,8 +1,7 @@
 using System.Xml;
 using System.Xml.Serialization;
-using Refresh.GameServer.Endpoints.ApiV3.ApiTypes;
 
-namespace RefreshTests.GameServer;
+namespace RefreshTests.GameServer.Extensions;
 
 public static class HttpContentExtensions
 {

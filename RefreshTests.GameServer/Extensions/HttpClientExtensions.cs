@@ -3,7 +3,7 @@ using Newtonsoft.Json;
 using Refresh.GameServer.Endpoints.ApiV3.ApiTypes;
 using Refresh.GameServer.Endpoints.ApiV3.DataTypes;
 
-namespace RefreshTests.GameServer;
+namespace RefreshTests.GameServer.Extensions;
 
 public static class HttpClientExtensions
 {

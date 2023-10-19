@@ -3,6 +3,7 @@ using Refresh.GameServer.Endpoints.ApiV3.ApiTypes;
 using Refresh.GameServer.Endpoints.ApiV3.ApiTypes.Errors;
 using Refresh.GameServer.Endpoints.ApiV3.DataTypes.Response;
 using Refresh.GameServer.Types.UserData;
+using RefreshTests.GameServer.Extensions;
 
 namespace RefreshTests.GameServer.Tests.ApiV3;
 

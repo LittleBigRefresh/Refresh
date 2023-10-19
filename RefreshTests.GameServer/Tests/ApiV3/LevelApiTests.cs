@@ -4,6 +4,7 @@ using Refresh.GameServer.Endpoints.ApiV3.DataTypes.Response;
 using Refresh.GameServer.Types.Levels;
 using Refresh.GameServer.Types.Levels.Categories;
 using Refresh.GameServer.Types.UserData;
+using RefreshTests.GameServer.Extensions;
 
 namespace RefreshTests.GameServer.Tests.ApiV3;
 
