@@ -1,3 +1,4 @@
+using System.Text;
 using NotEnoughLogs;
 using NotEnoughLogs.Sinks;
 
@@ -17,21 +18,21 @@ public class NUnitSink : ILoggerSink
             LogLevel.Trace => NUnit.Framework.TestContext.Progress,
             _ => throw new ArgumentOutOfRangeException(nameof(level), level, null),
         };
+        
+        StringBuilder iHateMicrosoftApis = new();
+        iHateMicrosoftApis.Append('[');
+        iHateMicrosoftApis.Append(level.ToString());
+        iHateMicrosoftApis.Append(']');
+        iHateMicrosoftApis.Append(' ');
+            
+        iHateMicrosoftApis.Append('[');
+        iHateMicrosoftApis.Append(category);
+        iHateMicrosoftApis.Append(']');
+        iHateMicrosoftApis.Append(' ');
+            
+        iHateMicrosoftApis.Append(content);
 
-        lock (stream)
-        {
-            stream.Write('[');
-            stream.Write(level.ToString());
-            stream.Write(']');
-            stream.Write(' ');
-            
-            stream.Write('[');
-            stream.Write(category);
-            stream.Write(']');
-            stream.Write(' ');
-            
-            stream.WriteLine(content);
-        }
+        stream.WriteLine(iHateMicrosoftApis.ToString());
     }
 
     public void Log(LogLevel level, ReadOnlySpan<char> category, ReadOnlySpan<char> format, params object[] args)
