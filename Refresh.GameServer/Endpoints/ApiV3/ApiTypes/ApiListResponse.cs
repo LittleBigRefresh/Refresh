@@ -9,6 +9,15 @@ namespace Refresh.GameServer.Endpoints.ApiV3.ApiTypes;
 [JsonObject(MemberSerialization.OptIn, ItemNullValueHandling = NullValueHandling.Ignore, NamingStrategyType = typeof(CamelCaseNamingStrategy))]
 public class ApiListResponse<TData> : ApiResponse<List<TData>> where TData : class, IApiResponse
 {
+    /// <summary>
+    /// Empty constructor for serialization. Do not use.
+    /// </summary>
+    [Obsolete("Empty constructor for serialization.", true)]
+    public ApiListResponse()
+    {
+        
+    }
+    
     public ApiListResponse(IEnumerable<TData> data, ApiListInformation info) : base(data.ToList())
     {
         this.ListInfo = info;

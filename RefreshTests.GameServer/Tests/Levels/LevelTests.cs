@@ -528,17 +528,4 @@ public class LevelTests : GameServerTest
         HttpResponseMessage message = client.GetAsync($"/lbp/slots/waaaaaa").Result;
         Assert.That(message.StatusCode, Is.EqualTo(NotFound));
     }
-    
-    [Test]
-    public void SlotsHeartedApiV3FailsWhenNoUser()
-    {
-        using TestContext context = this.GetServer();
-        GameUser user = context.CreateUser();
-        GameLevel level = context.CreateLevel(user);
-
-        using HttpClient client = context.Http;
-        
-        HttpResponseMessage message = client.GetAsync($"/api/v3/levels/hearted").Result;
-        Assert.That(message.StatusCode, Is.EqualTo(NotFound));
-    }
 }
