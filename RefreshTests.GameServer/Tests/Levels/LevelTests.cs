@@ -189,13 +189,13 @@ public class LevelTests : GameServerTest
     public void SlotsMostHearted()
     {
         using TestContext context = this.GetServer();
-        GameUser user = context.CreateUser();
+        GameUser user1 = context.CreateUser();
         GameUser user2 = context.CreateUser();
         GameUser user3 = context.CreateUser();
-        GameLevel level = context.CreateLevel(user);
-        GameLevel level2 = context.CreateLevel(user);
+        GameLevel level = context.CreateLevel(user1);
+        GameLevel level2 = context.CreateLevel(user1);
 
-        using HttpClient client = context.GetAuthenticatedClient(TokenType.Game, user);
+        using HttpClient client = context.GetAuthenticatedClient(TokenType.Game, user1);
         
         HttpResponseMessage message = client.GetAsync($"/lbp/slots/mostHearted").Result;
         Assert.That(message.StatusCode, Is.EqualTo(OK));
@@ -203,7 +203,7 @@ public class LevelTests : GameServerTest
         SerializedMinimalLevelList result = message.Content.ReadAsXML<SerializedMinimalLevelList>();
         Assert.That(result.Items, Has.Count.EqualTo(0));
 
-        context.Database.FavouriteLevel(level, user);
+        context.Database.FavouriteLevel(level, user1);
         context.Database.FavouriteLevel(level, user2);
         context.Database.FavouriteLevel(level2, user2);
         
@@ -215,7 +215,7 @@ public class LevelTests : GameServerTest
         Assert.That(result.Items[0].LevelId, Is.EqualTo(level.LevelId));
         Assert.That(result.Items[1].LevelId, Is.EqualTo(level2.LevelId));
 
-        context.Database.FavouriteLevel(level2, user);
+        context.Database.FavouriteLevel(level2, user1);
         context.Database.FavouriteLevel(level2, user3);
         
         message = client.GetAsync($"/lbp/slots/mostHearted").Result;
@@ -536,7 +536,7 @@ public class LevelTests : GameServerTest
         GameUser user = context.CreateUser();
         GameLevel level = context.CreateLevel(user);
 
-        using HttpClient client = context.GetUnauthenticatedClient();
+        using HttpClient client = context.Http;
         
         HttpResponseMessage message = client.GetAsync($"/api/v3/levels/hearted").Result;
         Assert.That(message.StatusCode, Is.EqualTo(NotFound));
