@@ -5,10 +5,10 @@ namespace RefreshTests.GameServer;
 
 public static class HttpContentExtensions
 {
-    public async static Task<T> ReadAsXML<T>(this HttpContent content)
+    public static T ReadAsXML<T>(this HttpContent content)
     {
         XmlSerializer serializer = new(typeof(T));
 
-        return (T)serializer.Deserialize(new XmlTextReader(await content.ReadAsStreamAsync()))!;
+        return (T)serializer.Deserialize(new XmlTextReader(content.ReadAsStream()))!;
     }
 }

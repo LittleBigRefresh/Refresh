@@ -7,13 +7,13 @@ namespace RefreshTests.GameServer.Tests.Middlewares;
 public class LegacyAdapterMiddlewareTests : GameServerTest
 {
     [Test]
-    public async Task DoesntAdaptForOtherUrls()
+    public void DoesntAdaptForOtherUrls()
     {
         using TestContext context = this.GetServer();
         context.Server.Value.Server.AddMiddleware<LegacyAdapterMiddleware>();
         context.Server.Value.Server.AddEndpointGroup<TestEndpoints>();
 
-        ApiOkResponse? response = await context.Http.GetFromJsonAsync<ApiOkResponse>("/api/v3/test");
+        ApiOkResponse? response = context.Http.GetFromJsonAsync<ApiOkResponse>("/api/v3/test").WaitResult();
         
         Assert.That(response, Is.Not.Null);
         Assert.Multiple(() =>
@@ -24,18 +24,18 @@ public class LegacyAdapterMiddlewareTests : GameServerTest
     }
 
     [Test]
-    public async Task AdaptsForLegacyGameUrl()
+    public void AdaptsForLegacyGameUrl()
     {
         using TestContext context = this.GetServer();
         context.Server.Value.Server.AddMiddleware<LegacyAdapterMiddleware>();
         context.Server.Value.Server.AddEndpointGroup<TestEndpoints>();
-        
-        HttpResponseMessage response = await context.Http.GetAsync("/LITTLEBIGPLANETPS3_XML/test");
+
+        HttpResponseMessage response = context.Http.GetAsync("/LITTLEBIGPLANETPS3_XML/test").WaitResult();
         
         Assert.Multiple(async () =>
         {
             Assert.That(response.StatusCode, Is.EqualTo(OK));
-            Assert.That(await response.Content.ReadAsStringAsync(), Is.EqualTo("test"));
+            Assert.That(response.Content.ReadAsStringAsync().WaitResult(), Is.EqualTo("test"));
         });
     }
 }

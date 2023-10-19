@@ -6,12 +6,12 @@ namespace RefreshTests.GameServer.Tests.Middlewares;
 public class DigestMiddlewareTests : GameServerTest
 {
     [Test]
-    public async Task DoesntIncludeDigestWhenOutsideOfGame()
+    public void DoesntIncludeDigestWhenOutsideOfGame()
     {
         using TestContext context = this.GetServer();
         context.Server.Value.Server.AddMiddleware<DigestMiddleware>();
 
-        HttpResponseMessage response = await context.Http.GetAsync("/api/v3/instance");
+        HttpResponseMessage response =  context.Http.GetAsync("/api/v3/instance").WaitResult();
         
         Assert.Multiple(() =>
         {
@@ -21,13 +21,13 @@ public class DigestMiddlewareTests : GameServerTest
     }
     
     [Test]
-    public async Task IncludesDigestInGame()
+    public void IncludesDigestInGame()
     {
         using TestContext context = this.GetServer();
         context.Server.Value.Server.AddEndpointGroup<TestEndpoints>();
         context.Server.Value.Server.AddMiddleware<DigestMiddleware>();
 
-        HttpResponseMessage response = await context.Http.GetAsync("/lbp/eula");
+        HttpResponseMessage response =  context.Http.GetAsync("/lbp/eula").WaitResult();
         
         Assert.Multiple(() =>
         {
@@ -37,7 +37,7 @@ public class DigestMiddlewareTests : GameServerTest
     }
     
     [Test]
-    public async Task DigestIsCorrect()
+    public void DigestIsCorrect()
     {
         using TestContext context = this.GetServer();
         context.Server.Value.Server.AddEndpointGroup<TestEndpoints>();
@@ -53,7 +53,7 @@ public class DigestMiddlewareTests : GameServerTest
         string clientDigest = DigestMiddleware.CalculateDigest(endpoint, blankMs, "", null, null);
 
         context.Http.DefaultRequestHeaders.Add("X-Digest-A", clientDigest);
-        HttpResponseMessage response = await context.Http.GetAsync(endpoint);
+        HttpResponseMessage response =  context.Http.GetAsync(endpoint).WaitResult();
         
         Assert.Multiple(() =>
         {
@@ -68,7 +68,7 @@ public class DigestMiddlewareTests : GameServerTest
     }
     
     [Test]
-    public async Task PspDigestIsCorrect()
+    public void PspDigestIsCorrect()
     {
         using TestContext context = this.GetServer();
         context.Server.Value.Server.AddEndpointGroup<TestEndpoints>();
@@ -86,7 +86,7 @@ public class DigestMiddlewareTests : GameServerTest
         context.Http.DefaultRequestHeaders.Add("X-Digest-A", clientDigest);
         context.Http.DefaultRequestHeaders.Add("X-data-v", "5");
         context.Http.DefaultRequestHeaders.Add("X-exe-v", "205");
-        HttpResponseMessage response = await context.Http.GetAsync(endpoint);
+        HttpResponseMessage response =  context.Http.GetAsync(endpoint).WaitResult();
         
         Assert.Multiple(() =>
         {
@@ -101,14 +101,14 @@ public class DigestMiddlewareTests : GameServerTest
     }
 
     [Test]
-    public async Task FailsWhenDigestIsBad()
+    public void FailsWhenDigestIsBad()
     {
         using TestContext context = this.GetServer();
         context.Server.Value.Server.AddEndpointGroup<TestEndpoints>();
         context.Server.Value.Server.AddMiddleware<DigestMiddleware>();
         
         context.Http.DefaultRequestHeaders.Add("X-Digest-A", "asdf");
-        HttpResponseMessage response = await context.Http.GetAsync("/lbp/eula");
+        HttpResponseMessage response =  context.Http.GetAsync("/lbp/eula").WaitResult();
         
         Assert.Pass(); // TODO: we have no way of detecting a failed digest check
     }
