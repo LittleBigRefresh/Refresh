@@ -51,13 +51,13 @@ public class PhotoEndpoints : EndpointGroup
         return OK;
     }
     
-    private static SerializedPhotoList? GetPhotos(RequestContext context, GameDatabaseContext database, Func<GameUser, int, int, DatabaseList<GamePhoto>> photoGetter)
+    private static Response GetPhotos(RequestContext context, GameDatabaseContext database, Func<GameUser, int, int, DatabaseList<GamePhoto>> photoGetter)
     {
         string? username = context.QueryString.Get("user");
-        if (username == null) return null;
+        if (username == null) return BadRequest;
 
         GameUser? user = database.GetUserByUsername(username);
-        if (user == null) return null;
+        if (user == null) return NotFound;
         
         (int skip, int count) = context.GetPageData();
 
@@ -65,18 +65,18 @@ public class PhotoEndpoints : EndpointGroup
         IEnumerable<SerializedPhoto> photos = photoGetter.Invoke(user, count, skip).Items
             .Select(SerializedPhoto.FromGamePhoto);
 
-        return new SerializedPhotoList(photos);
+        return new Response(new SerializedPhotoList(photos), ContentType.Xml);
     }
 
     [GameEndpoint("photos/with", ContentType.Xml)]
     [Authentication(false)]
     [MinimumRole(GameUserRole.Restricted)]
-    public SerializedPhotoList? PhotosWithUser(RequestContext context, GameDatabaseContext database) 
+    public Response PhotosWithUser(RequestContext context, GameDatabaseContext database) 
         => GetPhotos(context, database, database.GetPhotosWithUser);
     
     [GameEndpoint("photos/by", ContentType.Xml)]
     [Authentication(false)]
     [MinimumRole(GameUserRole.Restricted)]
-    public SerializedPhotoList? PhotosByUser(RequestContext context, GameDatabaseContext database) 
+    public Response PhotosByUser(RequestContext context, GameDatabaseContext database) 
         => GetPhotos(context, database, database.GetPhotosByUser);
 }
