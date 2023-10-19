@@ -70,7 +70,7 @@ public class TestContext : IDisposable
 
         return client;
     }
-    
+
     public GameUser CreateUser(string? username = null)
     {
         username ??= this.UserIncrement.ToString();

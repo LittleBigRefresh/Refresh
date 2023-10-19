@@ -5,12 +5,12 @@ namespace RefreshTests.GameServer.Tests.Middlewares;
 public class CrossOriginMiddlewareTests : GameServerTest
 {
     [Test]
-    public async Task PutsCorrectHeadersWhenGoingToV3()
+    public void PutsCorrectHeadersWhenGoingToV3()
     {
         using TestContext context = this.GetServer();
         context.Server.Value.Server.AddMiddleware<CrossOriginMiddleware>();
 
-        HttpResponseMessage response = await context.Http.GetAsync("/api/v3/instance");
+        HttpResponseMessage response = context.Http.GetAsync("/api/v3/instance").Result;
         Assert.Multiple(() =>
         {
             Assert.That(response.StatusCode, Is.EqualTo(OK));
@@ -20,12 +20,12 @@ public class CrossOriginMiddlewareTests : GameServerTest
     }
 
     [Test]
-    public async Task PutsCorrectHeadersWhenOptionsV3()
+    public void PutsCorrectHeadersWhenOptionsV3()
     {
         using TestContext context = this.GetServer();
         context.Server.Value.Server.AddMiddleware<CrossOriginMiddleware>();
 
-        HttpResponseMessage response = await context.Http.SendAsync(new HttpRequestMessage(HttpMethod.Options, "/api/v3/instance"));
+        HttpResponseMessage response = context.Http.SendAsync(new HttpRequestMessage(HttpMethod.Options, "/api/v3/instance")).Result;
         Assert.Multiple(() =>
         {
             Assert.That(response.StatusCode, Is.EqualTo(OK));
@@ -35,12 +35,12 @@ public class CrossOriginMiddlewareTests : GameServerTest
     }
     
     [Test]
-    public async Task PutsNoHeadersWhenAvoidingV3()
+    public void PutsNoHeadersWhenAvoidingV3()
     {
         using TestContext context = this.GetServer();
         context.Server.Value.Server.AddMiddleware<CrossOriginMiddleware>();
 
-        HttpResponseMessage response = await context.Http.SendAsync(new HttpRequestMessage(HttpMethod.Get, "/lbp/eula"));
+        HttpResponseMessage response = context.Http.SendAsync(new HttpRequestMessage(HttpMethod.Get, "/lbp/eula")).Result;
         Assert.Multiple(() =>
         {
             Assert.That(response.StatusCode, Is.EqualTo(Forbidden));

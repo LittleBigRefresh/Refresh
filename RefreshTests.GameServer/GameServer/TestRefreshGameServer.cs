@@ -6,6 +6,7 @@ using Refresh.GameServer.Configuration;
 using Refresh.GameServer.Database;
 using Refresh.GameServer.Services;
 using Refresh.GameServer.Time;
+using Refresh.GameServer.Types.Levels.Categories;
 using RefreshTests.GameServer.Time;
 
 namespace RefreshTests.GameServer.GameServer;
@@ -43,5 +44,7 @@ public class TestRefreshGameServer : RefreshGameServer
     protected override void SetupServices()
     {
         this._server.AddService<TimeProviderService>(this.DateTimeProvider);
+        this._server.AddService<CategoryService>();
+        this._server.AddService<MatchService>();
     }
 }
