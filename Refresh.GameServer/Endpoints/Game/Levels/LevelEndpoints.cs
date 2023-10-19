@@ -100,7 +100,7 @@ public class LevelEndpoints : EndpointGroup
 
     [GameEndpoint("searches/{apiRoute}", ContentType.Xml)]
     [MinimumRole(GameUserRole.Restricted)]
-    public SerializedMinimalLevelList GetLevelsFromCategory(RequestContext context, GameDatabaseContext database, CategoryService categories, MatchService matchService, GameUser user, Token token, string apiRoute)
+    public SerializedMinimalLevelResultsList GetLevelsFromCategory(RequestContext context, GameDatabaseContext database, CategoryService categories, MatchService matchService, GameUser user, Token token, string apiRoute)
     {
         (int skip, int count) = context.GetPageData();
 
@@ -130,7 +130,6 @@ public class LevelEndpoints : EndpointGroup
         if (user == null) return null;
         
         SerializedMinimalLevelList? levels = this.GetLevels(context, database, categories, matchService, user, token, "favouriteSlots");
-        if (levels == null) return null;
         
         return new SerializedMinimalFavouriteLevelList(levels);
     }
