@@ -10,7 +10,6 @@ using Bunkum.Core.Storage;
 using Bunkum.HealthChecks;
 using Bunkum.HealthChecks.RealmDatabase;
 using Bunkum.Protocols.Http;
-using Bunkum.RealmDatabase;
 using NotEnoughLogs;
 using NotEnoughLogs.Behaviour;
 using NotEnoughLogs.Sinks;
@@ -145,6 +144,8 @@ public class RefreshGameServer : IDisposable
 
         if (this._config!.TrackRequestStatistics)
             this._server.AddService<RequestStatisticTrackingService>();
+        
+        this._server.AddService<LevelListOverrideService>();
         
         #if DEBUG
         this._server.AddService<DebugService>();

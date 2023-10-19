@@ -66,5 +66,6 @@ public class TestRefreshGameServer : RefreshGameServer
         this._server.AddService<MatchService>();
         this._server.AddService<CommandService>();
         this._server.AddService<ImportService>();
+        this._server.AddService<LevelListOverrideService>();
     }
 }
