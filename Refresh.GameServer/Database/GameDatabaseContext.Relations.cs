@@ -184,8 +184,6 @@ public partial class GameDatabaseContext // Relations
         
         if (rating == null)
         {
-            if (type == RatingType.Neutral) return true;
-            
             rating = new RateLevelRelation
             {
                 Level = level,
