@@ -21,6 +21,9 @@ public class ReviewEndpoints : EndpointGroup
         bool parsed = sbyte.TryParse(context.QueryString.Get("rating"), out sbyte rating);
         if (!parsed) return BadRequest;
 
+        //dpad ratings can only be -1 0 1
+        if (rating is > 1 or < -1) return BadRequest;
+        
         bool rated = database.RateLevel(level, user, (RatingType)rating);
         return rated ? OK : Unauthorized;
     }
