@@ -62,7 +62,7 @@ public class LevelApiEndpoints : EndpointGroup
         [DocSummary("The ID of the level")] int id)
     {
         GameLevel? level = database.GetLevelById(id);
-        if (level == null) return ApiNotFoundError.Instance;
+        if (level == null) return ApiNotFoundError.LevelMissingError;
         
         return ApiGameLevelResponse.FromOld(level);
     }
