@@ -13,6 +13,7 @@ using Bunkum.Protocols.Http;
 using Bunkum.RealmDatabase;
 using NotEnoughLogs;
 using NotEnoughLogs.Behaviour;
+using NotEnoughLogs.Sinks;
 using Refresh.GameServer.Authentication;
 using Refresh.GameServer.Configuration;
 using Refresh.GameServer.Database;
@@ -32,7 +33,7 @@ namespace Refresh.GameServer;
 [SuppressMessage("ReSharper", "InconsistentNaming")]
 public class RefreshGameServer : IDisposable
 {
-    public readonly Logger Logger;
+    public Logger Logger => this._server.Logger;
     
     protected readonly BunkumHttpServer _server;
     protected WorkerManager? _workerManager;
@@ -53,23 +54,14 @@ public class RefreshGameServer : IDisposable
         databaseProvider ??= () => new GameDatabaseProvider();
         dataStore ??= new FileSystemDataStore();
 
-        LoggerConfiguration logConfig = new()
-        {
-            Behaviour = new QueueLoggingBehaviour(),
-            #if DEBUG
-            MaxLevel = LogLevel.Trace,
-            #else
-            MaxLevel = LogLevel.Info,
-            #endif
-        };
-
-        this.Logger = new Logger(logConfig);
-        this.Logger.LogDebug(RefreshContext.Startup, "Successfully initialized " + this.GetType().Name);
+        // ReSharper disable once VirtualMemberCallInConstructor
+        (LoggerConfiguration logConfig, List<ILoggerSink>? sinks) = this.GetLoggerConfiguration();
         
         this._databaseProvider = databaseProvider.Invoke();
         this._dataStore = dataStore;
         
-        this._server = listener == null ? new BunkumHttpServer(logConfig) : new BunkumHttpServer(listener, configuration: logConfig);
+        this._server = listener == null ? new BunkumHttpServer(logConfig, sinks) : new BunkumHttpServer(listener, configuration: logConfig, sinks);
+        this.Logger.LogDebug(RefreshContext.Startup, "Successfully initialized " + this.GetType().Name);
         
         this._server.Initialize = _ =>
         {
@@ -199,6 +191,21 @@ public class RefreshGameServer : IDisposable
     protected virtual IDateTimeProvider GetTimeProvider()
     {
         return new SystemDateTimeProvider();
+    }
+    
+    protected virtual (LoggerConfiguration logConfig, List<ILoggerSink>? sinks) GetLoggerConfiguration()
+    {
+        LoggerConfiguration logConfig = new()
+        {
+            Behaviour = new QueueLoggingBehaviour(),
+            #if DEBUG
+            MaxLevel = LogLevel.Trace,
+            #else
+            MaxLevel = LogLevel.Info,
+            #endif
+        };
+        
+        return (logConfig, null);
     }
 
     public void ImportAssets(bool force = false)

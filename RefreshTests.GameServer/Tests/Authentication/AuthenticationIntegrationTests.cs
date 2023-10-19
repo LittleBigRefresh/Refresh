@@ -74,10 +74,9 @@ public class AuthenticationIntegrationTests : GameServerTest
 
         HttpResponseMessage response = context.Http.PostAsync("/api/v3/login", new StringContent(JsonConvert.SerializeObject(payload))).Result;
         Assert.That(response.StatusCode, Is.EqualTo(OK));
-        
 
         string respString = response.Content.ReadAsStringAsync().Result;
-        Console.WriteLine(respString);
+        context.Server.Value.Logger.LogTrace("Tests", respString);
         ApiResponse<ApiAuthenticationResponse>? authResponse = JsonConvert.DeserializeObject<ApiResponse<ApiAuthenticationResponse>>(respString);
         Assert.Multiple(() =>
         {
@@ -121,7 +120,7 @@ public class AuthenticationIntegrationTests : GameServerTest
         Assert.That(response.StatusCode, Is.EqualTo(OK));
         
         respString = response.Content.ReadAsStringAsync().Result;
-        Console.WriteLine(respString);
+        context.Server.Value.Logger.LogTrace("Tests", respString);
         authResponse = JsonConvert.DeserializeObject<ApiResponse<ApiAuthenticationResponse>>(respString);
 
         context.Http.DefaultRequestHeaders.Remove("Authorization");

@@ -1,6 +1,7 @@
 using NotEnoughLogs;
 using Refresh.GameServer.Types.UserData;
 using Refresh.GameServer.Workers;
+using RefreshTests.GameServer.Logging;
 using static Refresh.GameServer.Types.Roles.GameUserRole;
 
 namespace RefreshTests.GameServer.Tests.Workers;
@@ -11,7 +12,7 @@ public class PunishmentExpiryTests : GameServerTest
     public void BannedUsersExpire()
     {
         using TestContext context = this.GetServer(false);
-        Logger logger = new Logger();
+        using Logger logger = new(new []{ new NUnitSink() });
         
         PunishmentExpiryWorker worker = new();
         GameUser user = context.CreateUser();
@@ -50,7 +51,7 @@ public class PunishmentExpiryTests : GameServerTest
     public void RestrictedUsersExpire()
     {
         using TestContext context = this.GetServer(false);
-        Logger logger = new();
+        using Logger logger = new(new []{ new NUnitSink() });
         
         PunishmentExpiryWorker worker = new();
         

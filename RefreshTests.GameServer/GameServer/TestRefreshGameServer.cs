@@ -1,12 +1,15 @@
 using Bunkum.Core.Storage;
 using Bunkum.Protocols.Http;
 using NotEnoughLogs;
+using NotEnoughLogs.Behaviour;
+using NotEnoughLogs.Sinks;
 using Refresh.GameServer;
 using Refresh.GameServer.Configuration;
 using Refresh.GameServer.Database;
 using Refresh.GameServer.Services;
 using Refresh.GameServer.Time;
 using Refresh.GameServer.Types.Levels.Categories;
+using RefreshTests.GameServer.Logging;
 using RefreshTests.GameServer.Time;
 
 namespace RefreshTests.GameServer.GameServer;
@@ -17,7 +20,6 @@ public class TestRefreshGameServer : RefreshGameServer
     {}
 
     public BunkumHttpServer Server => this._server;
-    public Logger Logger => base.Logger;
 
     protected override void SetupConfiguration()
     {
@@ -35,6 +37,22 @@ public class TestRefreshGameServer : RefreshGameServer
     public IDateTimeProvider DateTimeProvider { get; set; } = new MockDateTimeProvider();
     
     protected override IDateTimeProvider GetTimeProvider() => this.DateTimeProvider;
+
+    protected override (LoggerConfiguration logConfig, List<ILoggerSink>? sinks) GetLoggerConfiguration()
+    {
+        LoggerConfiguration logConfig = new()
+        {
+            Behaviour = new DirectLoggingBehaviour(),
+            MaxLevel = LogLevel.Trace,
+        };
+
+        List<ILoggerSink> sinks = new(1)
+        {
+            new NUnitSink(),
+        };
+        
+        return (logConfig, sinks);
+    }
 
     protected override void SetupMiddlewares()
     {
