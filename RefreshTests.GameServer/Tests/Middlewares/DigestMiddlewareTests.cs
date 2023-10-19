@@ -11,7 +11,7 @@ public class DigestMiddlewareTests : GameServerTest
         using TestContext context = this.GetServer();
         context.Server.Value.Server.AddMiddleware<DigestMiddleware>();
 
-        HttpResponseMessage response =  context.Http.GetAsync("/api/v3/instance").WaitResult();
+        HttpResponseMessage response =  context.Http.GetAsync("/api/v3/instance").Result;
         
         Assert.Multiple(() =>
         {
@@ -27,7 +27,7 @@ public class DigestMiddlewareTests : GameServerTest
         context.Server.Value.Server.AddEndpointGroup<TestEndpoints>();
         context.Server.Value.Server.AddMiddleware<DigestMiddleware>();
 
-        HttpResponseMessage response =  context.Http.GetAsync("/lbp/eula").WaitResult();
+        HttpResponseMessage response =  context.Http.GetAsync("/lbp/eula").Result;
         
         Assert.Multiple(() =>
         {
@@ -53,7 +53,7 @@ public class DigestMiddlewareTests : GameServerTest
         string clientDigest = DigestMiddleware.CalculateDigest(endpoint, blankMs, "", null, null);
 
         context.Http.DefaultRequestHeaders.Add("X-Digest-A", clientDigest);
-        HttpResponseMessage response =  context.Http.GetAsync(endpoint).WaitResult();
+        HttpResponseMessage response =  context.Http.GetAsync(endpoint).Result;
         
         Assert.Multiple(() =>
         {
@@ -86,7 +86,7 @@ public class DigestMiddlewareTests : GameServerTest
         context.Http.DefaultRequestHeaders.Add("X-Digest-A", clientDigest);
         context.Http.DefaultRequestHeaders.Add("X-data-v", "5");
         context.Http.DefaultRequestHeaders.Add("X-exe-v", "205");
-        HttpResponseMessage response =  context.Http.GetAsync(endpoint).WaitResult();
+        HttpResponseMessage response =  context.Http.GetAsync(endpoint).Result;
         
         Assert.Multiple(() =>
         {
@@ -108,7 +108,7 @@ public class DigestMiddlewareTests : GameServerTest
         context.Server.Value.Server.AddMiddleware<DigestMiddleware>();
         
         context.Http.DefaultRequestHeaders.Add("X-Digest-A", "asdf");
-        HttpResponseMessage response =  context.Http.GetAsync("/lbp/eula").WaitResult();
+        HttpResponseMessage response =  context.Http.GetAsync("/lbp/eula").Result;
         
         Assert.Pass(); // TODO: we have no way of detecting a failed digest check
     }

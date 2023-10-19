@@ -13,7 +13,7 @@ public class LegacyAdapterMiddlewareTests : GameServerTest
         context.Server.Value.Server.AddMiddleware<LegacyAdapterMiddleware>();
         context.Server.Value.Server.AddEndpointGroup<TestEndpoints>();
 
-        ApiOkResponse? response = context.Http.GetFromJsonAsync<ApiOkResponse>("/api/v3/test").WaitResult();
+        ApiOkResponse? response = context.Http.GetFromJsonAsync<ApiOkResponse>("/api/v3/test").Result;
         
         Assert.That(response, Is.Not.Null);
         Assert.Multiple(() =>
@@ -30,12 +30,12 @@ public class LegacyAdapterMiddlewareTests : GameServerTest
         context.Server.Value.Server.AddMiddleware<LegacyAdapterMiddleware>();
         context.Server.Value.Server.AddEndpointGroup<TestEndpoints>();
 
-        HttpResponseMessage response = context.Http.GetAsync("/LITTLEBIGPLANETPS3_XML/test").WaitResult();
+        HttpResponseMessage response = context.Http.GetAsync("/LITTLEBIGPLANETPS3_XML/test").Result;
         
         Assert.Multiple(async () =>
         {
             Assert.That(response.StatusCode, Is.EqualTo(OK));
-            Assert.That(response.Content.ReadAsStringAsync().WaitResult(), Is.EqualTo("test"));
+            Assert.That(response.Content.ReadAsStringAsync().Result, Is.EqualTo("test"));
         });
     }
 }

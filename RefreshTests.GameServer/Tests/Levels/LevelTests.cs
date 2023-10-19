@@ -18,7 +18,7 @@ public class LevelTests : GameServerTest
 
         using HttpClient client = context.GetAuthenticatedClient(TokenType.Game, user);
         
-        HttpResponseMessage message = client.GetAsync($"/lbp/slots/newest").WaitResult();
+        HttpResponseMessage message = client.GetAsync($"/lbp/slots/newest").Result;
         Assert.That(message.StatusCode, Is.EqualTo(OK));
 
         SerializedMinimalLevelList result = message.Content.ReadAsXML<SerializedMinimalLevelList>();
@@ -26,7 +26,7 @@ public class LevelTests : GameServerTest
         Assert.That(result.Items.First().LevelId, Is.EqualTo(level.LevelId));
         
         //slots without a route is equivalent to newest
-        message = client.GetAsync($"/lbp/slots").WaitResult();
+        message = client.GetAsync($"/lbp/slots").Result;
         Assert.That(message.StatusCode, Is.EqualTo(OK));
 
         result = message.Content.ReadAsXML<SerializedMinimalLevelList>();
@@ -43,7 +43,7 @@ public class LevelTests : GameServerTest
 
         using HttpClient client = context.GetAuthenticatedClient(TokenType.Game, user);
         
-        HttpResponseMessage message = client.GetAsync($"/lbp/slots/lbp2luckydip").WaitResult();
+        HttpResponseMessage message = client.GetAsync($"/lbp/slots/lbp2luckydip").Result;
         Assert.That(message.StatusCode, Is.EqualTo(OK));
 
         SerializedMinimalLevelList result = message.Content.ReadAsXML<SerializedMinimalLevelList>();
@@ -61,18 +61,18 @@ public class LevelTests : GameServerTest
         using HttpClient client = context.GetAuthenticatedClient(TokenType.Game, user);
 
         //Get the queued slots
-        HttpResponseMessage message = client.GetAsync($"/lbp/slots/lolcatftw").WaitResult();
+        HttpResponseMessage message = client.GetAsync($"/lbp/slots/lolcatftw").Result;
         Assert.That(message.StatusCode, Is.EqualTo(OK));
 
         SerializedMinimalLevelList result = message.Content.ReadAsXML<SerializedMinimalLevelList>();
         Assert.That(result.Items, Has.Count.EqualTo(0));
         
         //Add the level to the queue
-        message = client.PostAsync($"/lbp/lolcatftw/add/user/{level.LevelId}", new ReadOnlyMemoryContent(Array.Empty<byte>())).WaitResult();
+        message = client.PostAsync($"/lbp/lolcatftw/add/user/{level.LevelId}", new ReadOnlyMemoryContent(Array.Empty<byte>())).Result;
         Assert.That(message.StatusCode, Is.EqualTo(OK));
         
         //Get the queued slots now
-        message = client.GetAsync($"/lbp/slots/lolcatftw").WaitResult();
+        message = client.GetAsync($"/lbp/slots/lolcatftw").Result;
         Assert.That(message.StatusCode, Is.EqualTo(OK));
 
         result = message.Content.ReadAsXML<SerializedMinimalLevelList>();
@@ -80,11 +80,11 @@ public class LevelTests : GameServerTest
         Assert.That(result.Items.First().LevelId, Is.EqualTo(level.LevelId));
         
         //Remove the level from the queue
-        message = client.PostAsync($"/lbp/lolcatftw/remove/user/{level.LevelId}", new ReadOnlyMemoryContent(Array.Empty<byte>())).WaitResult();
+        message = client.PostAsync($"/lbp/lolcatftw/remove/user/{level.LevelId}", new ReadOnlyMemoryContent(Array.Empty<byte>())).Result;
         Assert.That(message.StatusCode, Is.EqualTo(OK));
         
         //Get the queued slots
-        message = client.GetAsync($"/lbp/slots/lolcatftw").WaitResult();
+        message = client.GetAsync($"/lbp/slots/lolcatftw").Result;
         Assert.That(message.StatusCode, Is.EqualTo(OK));
 
         result = message.Content.ReadAsXML<SerializedMinimalLevelList>();
@@ -101,18 +101,18 @@ public class LevelTests : GameServerTest
         using HttpClient client = context.GetAuthenticatedClient(TokenType.Game, user);
         
         //Get the favourite slots
-        HttpResponseMessage message = client.GetAsync($"/lbp/slots/favouriteSlots").WaitResult();
+        HttpResponseMessage message = client.GetAsync($"/lbp/slots/favouriteSlots").Result;
         Assert.That(message.StatusCode, Is.EqualTo(OK));
         //Make sure its empty
         SerializedMinimalLevelList result = message.Content.ReadAsXML<SerializedMinimalLevelList>();
         Assert.That(result.Items, Has.Count.EqualTo(0));
 
         //Favourite the level
-        message = client.PostAsync($"/lbp/favourite/slot/user/{level.LevelId}", new ReadOnlyMemoryContent(Array.Empty<byte>())).WaitResult();
+        message = client.PostAsync($"/lbp/favourite/slot/user/{level.LevelId}", new ReadOnlyMemoryContent(Array.Empty<byte>())).Result;
         Assert.That(message.StatusCode, Is.EqualTo(OK));
         
         //Get the favourite slots now
-        message = client.GetAsync($"/lbp/slots/favouriteSlots").WaitResult();
+        message = client.GetAsync($"/lbp/slots/favouriteSlots").Result;
         Assert.That(message.StatusCode, Is.EqualTo(OK));
         //Make sure the only entry is the level
         result = message.Content.ReadAsXML<SerializedMinimalLevelList>();
@@ -120,11 +120,11 @@ public class LevelTests : GameServerTest
         Assert.That(result.Items.First().LevelId, Is.EqualTo(level.LevelId));
 
         //Unfavourite the level
-        message = client.PostAsync($"/lbp/unfavourite/slot/user/{level.LevelId}", new ReadOnlyMemoryContent(Array.Empty<byte>())).WaitResult();
+        message = client.PostAsync($"/lbp/unfavourite/slot/user/{level.LevelId}", new ReadOnlyMemoryContent(Array.Empty<byte>())).Result;
         Assert.That(message.StatusCode, Is.EqualTo(OK));
         
         //Get the favourite slots
-        message = client.GetAsync($"/lbp/slots/favouriteSlots").WaitResult();
+        message = client.GetAsync($"/lbp/slots/favouriteSlots").Result;
         Assert.That(message.StatusCode, Is.EqualTo(OK));
         //Make sure its now empty
         result = message.Content.ReadAsXML<SerializedMinimalLevelList>();
@@ -141,18 +141,18 @@ public class LevelTests : GameServerTest
         using HttpClient client = context.GetAuthenticatedClient(TokenType.Game, user);
 
         //Get the favourite slots
-        HttpResponseMessage message = client.GetAsync($"/lbp/favouriteSlots/{user.Username}").WaitResult();
+        HttpResponseMessage message = client.GetAsync($"/lbp/favouriteSlots/{user.Username}").Result;
         Assert.That(message.StatusCode, Is.EqualTo(OK));
         //Make sure its empty
         SerializedMinimalFavouriteLevelList result = message.Content.ReadAsXML<SerializedMinimalFavouriteLevelList>();
         Assert.That(result.Items, Has.Count.EqualTo(0));
 
         //Favourite the level
-        message = client.PostAsync($"/lbp/favourite/slot/user/{level.LevelId}", new ReadOnlyMemoryContent(Array.Empty<byte>())).WaitResult();
+        message = client.PostAsync($"/lbp/favourite/slot/user/{level.LevelId}", new ReadOnlyMemoryContent(Array.Empty<byte>())).Result;
         Assert.That(message.StatusCode, Is.EqualTo(OK));
         
         //Get the favourite slots now
-        message = client.GetAsync($"/lbp/favouriteSlots/{user.Username}").WaitResult();
+        message = client.GetAsync($"/lbp/favouriteSlots/{user.Username}").Result;
         Assert.That(message.StatusCode, Is.EqualTo(OK));
         //Make sure the only entry is the level
         result = message.Content.ReadAsXML<SerializedMinimalFavouriteLevelList>();
@@ -160,11 +160,11 @@ public class LevelTests : GameServerTest
         Assert.That(result.Items.First().LevelId, Is.EqualTo(level.LevelId));
 
         //Unfavourite the level
-        message = client.PostAsync($"/lbp/unfavourite/slot/user/{level.LevelId}", new ReadOnlyMemoryContent(Array.Empty<byte>())).WaitResult();
+        message = client.PostAsync($"/lbp/unfavourite/slot/user/{level.LevelId}", new ReadOnlyMemoryContent(Array.Empty<byte>())).Result;
         Assert.That(message.StatusCode, Is.EqualTo(OK));
         
         //Get the favourite slots
-        message = client.GetAsync($"/lbp/favouriteSlots/{user.Username}").WaitResult();
+        message = client.GetAsync($"/lbp/favouriteSlots/{user.Username}").Result;
         Assert.That(message.StatusCode, Is.EqualTo(OK));
         //Make sure its now empty
         result = message.Content.ReadAsXML<SerializedMinimalFavouriteLevelList>();
@@ -181,7 +181,7 @@ public class LevelTests : GameServerTest
         using HttpClient client = context.GetAuthenticatedClient(TokenType.Game, user);
         
         //Get the favourite slots
-        HttpResponseMessage message = client.GetAsync($"/lbp/favouriteSlots/I_AM_NOT_A_REAL_USER").WaitResult();
+        HttpResponseMessage message = client.GetAsync($"/lbp/favouriteSlots/I_AM_NOT_A_REAL_USER").Result;
         Assert.That(message.StatusCode, Is.EqualTo(NotFound));
     }
     
@@ -197,7 +197,7 @@ public class LevelTests : GameServerTest
 
         using HttpClient client = context.GetAuthenticatedClient(TokenType.Game, user);
         
-        HttpResponseMessage message = client.GetAsync($"/lbp/slots/mostHearted").WaitResult();
+        HttpResponseMessage message = client.GetAsync($"/lbp/slots/mostHearted").Result;
         Assert.That(message.StatusCode, Is.EqualTo(OK));
 
         SerializedMinimalLevelList result = message.Content.ReadAsXML<SerializedMinimalLevelList>();
@@ -207,7 +207,7 @@ public class LevelTests : GameServerTest
         context.Database.FavouriteLevel(level, user2);
         context.Database.FavouriteLevel(level2, user2);
         
-        message = client.GetAsync($"/lbp/slots/mostHearted").WaitResult();
+        message = client.GetAsync($"/lbp/slots/mostHearted").Result;
         Assert.That(message.StatusCode, Is.EqualTo(OK));
 
         result = message.Content.ReadAsXML<SerializedMinimalLevelList>();
@@ -218,7 +218,7 @@ public class LevelTests : GameServerTest
         context.Database.FavouriteLevel(level2, user);
         context.Database.FavouriteLevel(level2, user3);
         
-        message = client.GetAsync($"/lbp/slots/mostHearted").WaitResult();
+        message = client.GetAsync($"/lbp/slots/mostHearted").Result;
         Assert.That(message.StatusCode, Is.EqualTo(OK));
 
         result = message.Content.ReadAsXML<SerializedMinimalLevelList>();
@@ -248,7 +248,7 @@ public class LevelTests : GameServerTest
 
         using HttpClient client = context.GetAuthenticatedClient(TokenType.Game, user);
         
-        HttpResponseMessage message = client.GetAsync($"/lbp/slots/highestRated").WaitResult();
+        HttpResponseMessage message = client.GetAsync($"/lbp/slots/highestRated").Result;
         Assert.That(message.StatusCode, Is.EqualTo(OK));
 
         SerializedMinimalLevelList result = message.Content.ReadAsXML<SerializedMinimalLevelList>();
@@ -258,7 +258,7 @@ public class LevelTests : GameServerTest
         context.Database.RateLevel(level, user2, RatingType.Yay);
         context.Database.RateLevel(level2, user3, RatingType.Yay);
 
-        message = client.GetAsync($"/lbp/slots/highestRated").WaitResult();
+        message = client.GetAsync($"/lbp/slots/highestRated").Result;
         Assert.That(message.StatusCode, Is.EqualTo(OK));
 
         result = message.Content.ReadAsXML<SerializedMinimalLevelList>();
@@ -269,7 +269,7 @@ public class LevelTests : GameServerTest
         context.Database.RateLevel(level2, user, RatingType.Yay);
         context.Database.RateLevel(level, user3, RatingType.Boo);
  
-        message = client.GetAsync($"/lbp/slots/highestRated").WaitResult();
+        message = client.GetAsync($"/lbp/slots/highestRated").Result;
         Assert.That(message.StatusCode, Is.EqualTo(OK));
 
         result = message.Content.ReadAsXML<SerializedMinimalLevelList>();
@@ -292,7 +292,7 @@ public class LevelTests : GameServerTest
         
         using HttpClient client = context.GetAuthenticatedClient(TokenType.Game, user);
         
-        HttpResponseMessage message = client.GetAsync($"/lbp/slots/mostUniquePlays").WaitResult();
+        HttpResponseMessage message = client.GetAsync($"/lbp/slots/mostUniquePlays").Result;
         Assert.That(message.StatusCode, Is.EqualTo(OK));
 
         SerializedMinimalLevelList result = message.Content.ReadAsXML<SerializedMinimalLevelList>();
@@ -304,7 +304,7 @@ public class LevelTests : GameServerTest
         context.Database.PlayLevel(level, user3, 1);
         context.Database.PlayLevel(level2, user3, 1);
         
-        message = client.GetAsync($"/lbp/slots/mostUniquePlays").WaitResult();
+        message = client.GetAsync($"/lbp/slots/mostUniquePlays").Result;
         Assert.That(message.StatusCode, Is.EqualTo(OK));
 
         result = message.Content.ReadAsXML<SerializedMinimalLevelList>();
@@ -327,7 +327,7 @@ public class LevelTests : GameServerTest
         
         using HttpClient client = context.GetAuthenticatedClient(TokenType.Game, user);
         
-        HttpResponseMessage message = client.GetAsync($"/lbp/slots/mostPlays").WaitResult();
+        HttpResponseMessage message = client.GetAsync($"/lbp/slots/mostPlays").Result;
         Assert.That(message.StatusCode, Is.EqualTo(OK));
 
         SerializedMinimalLevelList result = message.Content.ReadAsXML<SerializedMinimalLevelList>();
@@ -339,7 +339,7 @@ public class LevelTests : GameServerTest
         context.Database.PlayLevel(level, user3, 1);
         context.Database.PlayLevel(level2, user3, 1);
         
-        message = client.GetAsync($"/lbp/slots/mostPlays").WaitResult();
+        message = client.GetAsync($"/lbp/slots/mostPlays").Result;
         Assert.That(message.StatusCode, Is.EqualTo(OK));
 
         result = message.Content.ReadAsXML<SerializedMinimalLevelList>();
@@ -357,7 +357,7 @@ public class LevelTests : GameServerTest
         
         using HttpClient client = context.GetAuthenticatedClient(TokenType.Game, publisher);
         
-        HttpResponseMessage message = client.GetAsync($"/lbp/slots/mmpicks").WaitResult();
+        HttpResponseMessage message = client.GetAsync($"/lbp/slots/mmpicks").Result;
         Assert.That(message.StatusCode, Is.EqualTo(OK));
 
         SerializedMinimalLevelList result = message.Content.ReadAsXML<SerializedMinimalLevelList>();
@@ -365,7 +365,7 @@ public class LevelTests : GameServerTest
         
         context.Database.AddTeamPickToLevel(level);
         
-        message = client.GetAsync($"/lbp/slots/mmpicks").WaitResult();
+        message = client.GetAsync($"/lbp/slots/mmpicks").Result;
         Assert.That(message.StatusCode, Is.EqualTo(OK));
 
         result = message.Content.ReadAsXML<SerializedMinimalLevelList>();
@@ -381,7 +381,7 @@ public class LevelTests : GameServerTest
         
         using HttpClient client = context.GetAuthenticatedClient(TokenType.Game, publisher);
         
-        HttpResponseMessage message = client.GetAsync($"/lbp/slots/by/{publisher.Username}").WaitResult();
+        HttpResponseMessage message = client.GetAsync($"/lbp/slots/by/{publisher.Username}").Result;
         Assert.That(message.StatusCode, Is.EqualTo(OK));
 
         SerializedMinimalLevelList result = message.Content.ReadAsXML<SerializedMinimalLevelList>();
@@ -389,14 +389,14 @@ public class LevelTests : GameServerTest
 
         GameLevel level = context.CreateLevel(publisher);
 
-        message = client.GetAsync($"/lbp/slots/by/{publisher.Username}").WaitResult();
+        message = client.GetAsync($"/lbp/slots/by/{publisher.Username}").Result;
         Assert.That(message.StatusCode, Is.EqualTo(OK));
 
         result = message.Content.ReadAsXML<SerializedMinimalLevelList>();
         Assert.That(result.Items, Has.Count.EqualTo(1));
         Assert.That(result.Items[0].LevelId, Is.EqualTo(level.LevelId));
         
-        message = client.GetAsync($"/lbp/slots/by/I_AM_NOT_REAL").WaitResult();
+        message = client.GetAsync($"/lbp/slots/by/I_AM_NOT_REAL").Result;
         Assert.That(message.StatusCode, Is.EqualTo(NotFound));
     }
     
@@ -409,13 +409,13 @@ public class LevelTests : GameServerTest
         
         using HttpClient client = context.GetAuthenticatedClient(TokenType.Game, publisher);
         
-        HttpResponseMessage message = client.GetAsync($"/lbp/s/user/{level.LevelId}").WaitResult();
+        HttpResponseMessage message = client.GetAsync($"/lbp/s/user/{level.LevelId}").Result;
         Assert.That(message.StatusCode, Is.EqualTo(OK));
 
         GameLevelResponse result = message.Content.ReadAsXML<GameLevelResponse>();
         Assert.That(result.LevelId, Is.EqualTo(level.LevelId));
 
-        message = client.GetAsync($"/lbp/s/user/{int.MaxValue}").WaitResult();
+        message = client.GetAsync($"/lbp/s/user/{int.MaxValue}").Result;
         Assert.That(message.StatusCode, Is.EqualTo(NotFound));
     }
     
@@ -429,7 +429,7 @@ public class LevelTests : GameServerTest
         
         using HttpClient client = context.GetAuthenticatedClient(TokenType.Game, publisher);
         
-        HttpResponseMessage message = client.GetAsync($"/lbp/slotList?s={level.LevelId}&s={level2.LevelId}").WaitResult();
+        HttpResponseMessage message = client.GetAsync($"/lbp/slotList?s={level.LevelId}&s={level2.LevelId}").Result;
         Assert.That(message.StatusCode, Is.EqualTo(OK));
 
         SerializedLevelList result = message.Content.ReadAsXML<SerializedLevelList>();
@@ -448,7 +448,7 @@ public class LevelTests : GameServerTest
         
         using HttpClient client = context.GetAuthenticatedClient(TokenType.Game, publisher);
         
-        HttpResponseMessage message = client.GetAsync($"/lbp/searches/newest").WaitResult();
+        HttpResponseMessage message = client.GetAsync($"/lbp/searches/newest").Result;
         Assert.That(message.StatusCode, Is.EqualTo(OK));
 
         SerializedMinimalLevelResultsList result = message.Content.ReadAsXML<SerializedMinimalLevelResultsList>();
@@ -465,7 +465,7 @@ public class LevelTests : GameServerTest
         
         using HttpClient client = context.GetAuthenticatedClient(TokenType.Game, publisher);
         
-        HttpResponseMessage message = client.GetAsync($"/lbp/slotList").WaitResult();
+        HttpResponseMessage message = client.GetAsync($"/lbp/slotList").Result;
         Assert.That(message.StatusCode, Is.EqualTo(BadRequest));
     } 
     
@@ -477,7 +477,7 @@ public class LevelTests : GameServerTest
         
         using HttpClient client = context.GetAuthenticatedClient(TokenType.Game, publisher);
         
-        HttpResponseMessage message = client.GetAsync($"/lbp/slotList?s=NOT_A_NUMBER").WaitResult();
+        HttpResponseMessage message = client.GetAsync($"/lbp/slotList?s=NOT_A_NUMBER").Result;
         Assert.That(message.StatusCode, Is.EqualTo(BadRequest));
     }
 
@@ -489,7 +489,7 @@ public class LevelTests : GameServerTest
 
         using HttpClient client = context.GetAuthenticatedClient(TokenType.Game, publisher);
 
-        HttpResponseMessage message = client.GetAsync($"/lbp/slotList?s={int.MaxValue}").WaitResult();
+        HttpResponseMessage message = client.GetAsync($"/lbp/slotList?s={int.MaxValue}").Result;
         Assert.That(message.StatusCode, Is.EqualTo(OK));
         SerializedLevelList result = message.Content.ReadAsXML<SerializedLevelList>();
         Assert.That(result.Items, Has.Count.EqualTo(0));
@@ -503,13 +503,13 @@ public class LevelTests : GameServerTest
 
         using HttpClient client = context.GetAuthenticatedClient(TokenType.Game, publisher);
 
-        HttpResponseMessage message = client.GetAsync($"/lbp/genres").WaitResult();
+        HttpResponseMessage message = client.GetAsync($"/lbp/genres").Result;
         Assert.That(message.StatusCode, Is.EqualTo(OK));
         
         //Just throw away the value, but at least make sure it parses
         _ = message.Content.ReadAsXML<SerializedCategoryList>();
         
-        message = client.GetAsync($"/lbp/searches").WaitResult();
+        message = client.GetAsync($"/lbp/searches").Result;
         Assert.That(message.StatusCode, Is.EqualTo(OK));
         
         //Just throw away the value, but at least make sure it parses
@@ -525,7 +525,7 @@ public class LevelTests : GameServerTest
 
         using HttpClient client = context.GetAuthenticatedClient(TokenType.Game, user);
         
-        HttpResponseMessage message = client.GetAsync($"/lbp/slots/waaaaaa").WaitResult();
+        HttpResponseMessage message = client.GetAsync($"/lbp/slots/waaaaaa").Result;
         Assert.That(message.StatusCode, Is.EqualTo(NotFound));
     }
     
@@ -538,7 +538,7 @@ public class LevelTests : GameServerTest
 
         using HttpClient client = context.GetUnauthenticatedClient();
         
-        HttpResponseMessage message = client.GetAsync($"/api/v3/levels/hearted").WaitResult();
+        HttpResponseMessage message = client.GetAsync($"/api/v3/levels/hearted").Result;
         Assert.That(message.StatusCode, Is.EqualTo(NotFound));
     }
 }

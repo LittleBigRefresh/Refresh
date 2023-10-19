@@ -25,10 +25,10 @@ public class ScoreLeaderboardTests : GameServerTest
             Score = 5,
         }; 
         
-        HttpResponseMessage message = client.PostAsync($"/lbp/scoreboard/user/{level.LevelId}", new StringContent(score.AsXML())).WaitResult();
+        HttpResponseMessage message = client.PostAsync($"/lbp/scoreboard/user/{level.LevelId}", new StringContent(score.AsXML())).Result;
         Assert.That(message.StatusCode, Is.EqualTo(OK));
         
-        message = client.GetAsync($"/lbp/topscores/user/{level.LevelId}/1").WaitResult();
+        message = client.GetAsync($"/lbp/topscores/user/{level.LevelId}/1").Result;
         Assert.That(message.StatusCode, Is.EqualTo(OK));
         
         SerializedScoreList scores = message.Content.ReadAsXML<SerializedScoreList>();
@@ -36,7 +36,7 @@ public class ScoreLeaderboardTests : GameServerTest
         Assert.That(scores.Scores[0].Player, Is.EqualTo(user.Username));
         Assert.That(scores.Scores[0].Score, Is.EqualTo(5));
         
-        message = client.GetAsync($"/lbp/scoreboard/user/{level.LevelId}").WaitResult();
+        message = client.GetAsync($"/lbp/scoreboard/user/{level.LevelId}").Result;
         Assert.That(message.StatusCode, Is.EqualTo(OK));
         
         SerializedMultiLeaderboardResponse scoresMulti = message.Content.ReadAsXML<SerializedMultiLeaderboardResponse>();
@@ -61,12 +61,12 @@ public class ScoreLeaderboardTests : GameServerTest
             Score = 5,
         }; 
         
-        HttpResponseMessage message = client.PostAsync($"/lbp/scoreboard/developer/1", new StringContent(score.AsXML())).WaitResult();
+        HttpResponseMessage message = client.PostAsync($"/lbp/scoreboard/developer/1", new StringContent(score.AsXML())).Result;
         Assert.That(message.StatusCode, Is.EqualTo(OK));
         
         context.Database.Refresh();
         
-        message = client.GetAsync($"/lbp/topscores/developer/1/1").WaitResult();
+        message = client.GetAsync($"/lbp/topscores/developer/1/1").Result;
         Assert.That(message.StatusCode, Is.EqualTo(OK));
         
         SerializedScoreList scores = message.Content.ReadAsXML<SerializedScoreList>();
@@ -74,7 +74,7 @@ public class ScoreLeaderboardTests : GameServerTest
         Assert.That(scores.Scores[0].Player, Is.EqualTo(user.Username));
         Assert.That(scores.Scores[0].Score, Is.EqualTo(5));
         
-        message = client.GetAsync($"/lbp/scoreboard/developer/1").WaitResult();
+        message = client.GetAsync($"/lbp/scoreboard/developer/1").Result;
         Assert.That(message.StatusCode, Is.EqualTo(OK));
         
         SerializedMultiLeaderboardResponse scoresMulti = message.Content.ReadAsXML<SerializedMultiLeaderboardResponse>();
@@ -92,7 +92,7 @@ public class ScoreLeaderboardTests : GameServerTest
 
         using HttpClient client = context.GetAuthenticatedClient(TokenType.Game, user);
 
-        HttpResponseMessage message2 = client.GetAsync($"/lbp/topscores/user/{int.MaxValue}/1").WaitResult();
+        HttpResponseMessage message2 = client.GetAsync($"/lbp/topscores/user/{int.MaxValue}/1").Result;
         Assert.That(message2.StatusCode, Is.EqualTo(NotFound));
     }
     
@@ -104,7 +104,7 @@ public class ScoreLeaderboardTests : GameServerTest
 
         using HttpClient client = context.GetAuthenticatedClient(TokenType.Game, user);
 
-        HttpResponseMessage message = client.GetAsync($"/lbp/scoreboard/user/{int.MaxValue}").WaitResult();
+        HttpResponseMessage message = client.GetAsync($"/lbp/scoreboard/user/{int.MaxValue}").Result;
         Assert.That(message.StatusCode, Is.EqualTo(NotFound));
     }
     
@@ -124,7 +124,7 @@ public class ScoreLeaderboardTests : GameServerTest
             Score = -1,
         }; 
         
-        HttpResponseMessage message = client.PostAsync($"/lbp/scoreboard/user/{level.LevelId}", new StringContent(score.AsXML())).WaitResult();
+        HttpResponseMessage message = client.PostAsync($"/lbp/scoreboard/user/{level.LevelId}", new StringContent(score.AsXML())).Result;
         Assert.That(message.StatusCode, Is.EqualTo(BadRequest));
 
         context.Database.Refresh();
@@ -148,7 +148,7 @@ public class ScoreLeaderboardTests : GameServerTest
             Score = -1,
         }; 
         
-        HttpResponseMessage message = client.PostAsync($"/lbp/scoreboard/developer/1", new StringContent(score.AsXML())).WaitResult();
+        HttpResponseMessage message = client.PostAsync($"/lbp/scoreboard/developer/1", new StringContent(score.AsXML())).Result;
         Assert.That(message.StatusCode, Is.EqualTo(BadRequest));
 
         context.Database.Refresh();
@@ -172,7 +172,7 @@ public class ScoreLeaderboardTests : GameServerTest
             Score = 0,
         }; 
         
-        HttpResponseMessage message = client.PostAsync($"/lbp/scoreboard/user/{int.MaxValue}", new StringContent(score.AsXML())).WaitResult();
+        HttpResponseMessage message = client.PostAsync($"/lbp/scoreboard/user/{int.MaxValue}", new StringContent(score.AsXML())).Result;
         Assert.That(message.StatusCode, Is.EqualTo(NotFound));
     }
     
@@ -191,7 +191,7 @@ public class ScoreLeaderboardTests : GameServerTest
             Score = 0,
         }; 
         
-        HttpResponseMessage message = client.PostAsync($"/lbp/scoreboard/developer/-1", new StringContent(score.AsXML())).WaitResult();
+        HttpResponseMessage message = client.PostAsync($"/lbp/scoreboard/developer/-1", new StringContent(score.AsXML())).Result;
         Assert.That(message.StatusCode, Is.EqualTo(BadRequest));
     }
     
@@ -203,7 +203,7 @@ public class ScoreLeaderboardTests : GameServerTest
 
         using HttpClient client = context.GetAuthenticatedClient(TokenType.Game, user);
 
-        HttpResponseMessage message = client.GetAsync($"/lbp/scoreboard/developer/-1").WaitResult();
+        HttpResponseMessage message = client.GetAsync($"/lbp/scoreboard/developer/-1").Result;
         Assert.That(message.StatusCode, Is.EqualTo(BadRequest));
     }
     
@@ -215,7 +215,7 @@ public class ScoreLeaderboardTests : GameServerTest
 
         using HttpClient client = context.GetAuthenticatedClient(TokenType.Game, user);
 
-        HttpResponseMessage message = client.GetAsync($"/lbp/topscores/developer/-1/1").WaitResult();
+        HttpResponseMessage message = client.GetAsync($"/lbp/topscores/developer/-1/1").Result;
         Assert.That(message.StatusCode, Is.EqualTo(BadRequest));
     }
     
@@ -299,7 +299,7 @@ public class ScoreLeaderboardTests : GameServerTest
 
         using HttpClient client = context.GetAuthenticatedClient(TokenType.Game, user);
 
-        HttpResponseMessage message = client.PostAsync($"/lbp/play/user/{level.LevelId}", new ReadOnlyMemoryContent(Array.Empty<byte>())).WaitResult();
+        HttpResponseMessage message = client.PostAsync($"/lbp/play/user/{level.LevelId}", new ReadOnlyMemoryContent(Array.Empty<byte>())).Result;
         Assert.That(message.StatusCode, Is.EqualTo(OK));
 
         context.Database.Refresh();
@@ -315,7 +315,7 @@ public class ScoreLeaderboardTests : GameServerTest
 
         using HttpClient client = context.GetAuthenticatedClient(TokenType.Game, user);
 
-        HttpResponseMessage message = client.PostAsync($"/lbp/play/user/{int.MaxValue}", new ReadOnlyMemoryContent(Array.Empty<byte>())).WaitResult();
+        HttpResponseMessage message = client.PostAsync($"/lbp/play/user/{int.MaxValue}", new ReadOnlyMemoryContent(Array.Empty<byte>())).Result;
         Assert.That(message.StatusCode, Is.EqualTo(NotFound));
     }
     
@@ -329,7 +329,7 @@ public class ScoreLeaderboardTests : GameServerTest
         using HttpClient client = context.GetAuthenticatedClient(TokenType.Game, user);
         client.DefaultRequestHeaders.UserAgent.TryParseAdd("LBPPSP CLIENT");
 
-        HttpResponseMessage message = client.PostAsync($"/lbp/play/user/{level.LevelId}?count=2", new ReadOnlyMemoryContent(Array.Empty<byte>())).WaitResult();
+        HttpResponseMessage message = client.PostAsync($"/lbp/play/user/{level.LevelId}?count=2", new ReadOnlyMemoryContent(Array.Empty<byte>())).Result;
         Assert.That(message.StatusCode, Is.EqualTo(OK));
         
         context.Database.Refresh();
@@ -347,10 +347,10 @@ public class ScoreLeaderboardTests : GameServerTest
         using HttpClient client = context.GetAuthenticatedClient(TokenType.Game, user);
         client.DefaultRequestHeaders.UserAgent.TryParseAdd("LBPPSP CLIENT");
 
-        HttpResponseMessage message = client.PostAsync($"/lbp/play/user/{level.LevelId}?count=gtgnyegth", new ReadOnlyMemoryContent(Array.Empty<byte>())).WaitResult();
+        HttpResponseMessage message = client.PostAsync($"/lbp/play/user/{level.LevelId}?count=gtgnyegth", new ReadOnlyMemoryContent(Array.Empty<byte>())).Result;
         Assert.That(message.StatusCode, Is.EqualTo(BadRequest));
         
-        HttpResponseMessage message2 = client.PostAsync($"/lbp/play/user/{level.LevelId}?count=-5", new ReadOnlyMemoryContent(Array.Empty<byte>())).WaitResult();
+        HttpResponseMessage message2 = client.PostAsync($"/lbp/play/user/{level.LevelId}?count=-5", new ReadOnlyMemoryContent(Array.Empty<byte>())).Result;
         Assert.That(message2.StatusCode, Is.EqualTo(BadRequest));
     }
     
@@ -363,7 +363,7 @@ public class ScoreLeaderboardTests : GameServerTest
 
         using HttpClient client = context.GetAuthenticatedClient(TokenType.Game, user);
 
-        HttpResponseMessage message = client.PostAsync($"/lbp/play/user/{level.LevelId}?count=3", new ReadOnlyMemoryContent(Array.Empty<byte>())).WaitResult();
+        HttpResponseMessage message = client.PostAsync($"/lbp/play/user/{level.LevelId}?count=3", new ReadOnlyMemoryContent(Array.Empty<byte>())).Result;
         Assert.That(message.StatusCode, Is.EqualTo(BadRequest));
     }
 }

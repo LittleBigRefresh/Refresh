@@ -17,7 +17,7 @@ public class AuthenticationIntegrationTests : GameServerTest
     {
         using TestContext context = this.GetServer();
         
-        HttpResponseMessage unauthedRequest = context.Http.GetAsync("/lbp/eula").WaitResult();
+        HttpResponseMessage unauthedRequest = context.Http.GetAsync("/lbp/eula").Result;
         Assert.That(unauthedRequest.StatusCode, Is.EqualTo(Forbidden));
 
         HttpClient authedClient = context.GetAuthenticatedClient(TokenType.Game, out string tokenData);
@@ -26,7 +26,7 @@ public class AuthenticationIntegrationTests : GameServerTest
         Assert.That(token, Is.Not.Null);
         Assert.That(token?.User, Is.Not.Null);
 
-        HttpResponseMessage authedRequest = authedClient.GetAsync("/lbp/eula").WaitResult();
+        HttpResponseMessage authedRequest = authedClient.GetAsync("/lbp/eula").Result;
         Assert.That(authedRequest.StatusCode, Is.EqualTo(OK));
     }
     
@@ -35,7 +35,7 @@ public class AuthenticationIntegrationTests : GameServerTest
     {
         using TestContext context = this.GetServer();
         
-        HttpResponseMessage unauthedRequest = context.Http.GetAsync("/api/v3/users/me").WaitResult();
+        HttpResponseMessage unauthedRequest = context.Http.GetAsync("/api/v3/users/me").Result;
         Assert.That(unauthedRequest.StatusCode, Is.EqualTo(Forbidden));
 
         HttpClient authedClient = context.GetAuthenticatedClient(TokenType.Api, out string tokenData);
@@ -45,12 +45,12 @@ public class AuthenticationIntegrationTests : GameServerTest
         Assert.That(token?.User, Is.Not.Null);
 
         // TODO: Fix serialization of ObjectId
-        HttpResponseMessage response = authedClient.GetAsync("/api/v3/users/me").WaitResult();
+        HttpResponseMessage response = authedClient.GetAsync("/api/v3/users/me").Result;
         // (GameUser? user, HttpResponseMessage response) = authedClient.GetJsonObjectAsync<GameUser>("/api/v3/user/me");
         Assert.Multiple(async () =>
         {
             // Assert.That(user, Is.Not.Null);
-            Assert.That(response.Content.ReadAsStringAsync().WaitResult(), Contains.Substring(token!.User.UserId.ToString()));
+            Assert.That(response.Content.ReadAsStringAsync().Result, Contains.Substring(token!.User.UserId.ToString()));
             Assert.That(response.StatusCode, Is.EqualTo(OK));
         });
     }
@@ -72,11 +72,11 @@ public class AuthenticationIntegrationTests : GameServerTest
             PasswordSha512 = Encoding.ASCII.GetString(SHA512.HashData(Encoding.ASCII.GetBytes(password))),
         };
 
-        HttpResponseMessage response = context.Http.PostAsync("/api/v3/login", new StringContent(JsonConvert.SerializeObject(payload))).WaitResult();
+        HttpResponseMessage response = context.Http.PostAsync("/api/v3/login", new StringContent(JsonConvert.SerializeObject(payload))).Result;
         Assert.That(response.StatusCode, Is.EqualTo(OK));
         
 
-        string respString = response.Content.ReadAsStringAsync().WaitResult();
+        string respString = response.Content.ReadAsStringAsync().Result;
         Console.WriteLine(respString);
         ApiResponse<ApiAuthenticationResponse>? authResponse = JsonConvert.DeserializeObject<ApiResponse<ApiAuthenticationResponse>>(respString);
         Assert.Multiple(() =>
@@ -96,7 +96,7 @@ public class AuthenticationIntegrationTests : GameServerTest
         });
         
         context.Http.DefaultRequestHeaders.TryAddWithoutValidation("Authorization", authResponse!.Data!.TokenData);
-        response = context.Http.GetAsync("/api/v3/users/me").WaitResult();
+        response = context.Http.GetAsync("/api/v3/users/me").Result;
         Assert.That(response.StatusCode, Is.EqualTo(OK));
         
         // jump to when token expires
@@ -109,7 +109,7 @@ public class AuthenticationIntegrationTests : GameServerTest
             Assert.That(context.Database.GetTokenFromTokenData(authResponse.Data.RefreshTokenData!, TokenType.ApiRefresh), Is.Not.Null);
         });
         
-        response = context.Http.GetAsync("/api/v3/users/me").WaitResult();
+        response = context.Http.GetAsync("/api/v3/users/me").Result;
         Assert.That(response.StatusCode, Is.EqualTo(Forbidden));
 
         ApiRefreshRequest refreshPayload = new()
@@ -117,16 +117,16 @@ public class AuthenticationIntegrationTests : GameServerTest
             TokenData = authResponse.Data.RefreshTokenData!,
         };
 
-        response = context.Http.PostAsync("/api/v3/refreshToken", new StringContent(JsonConvert.SerializeObject(refreshPayload))).WaitResult();
+        response = context.Http.PostAsync("/api/v3/refreshToken", new StringContent(JsonConvert.SerializeObject(refreshPayload))).Result;
         Assert.That(response.StatusCode, Is.EqualTo(OK));
         
-        respString = response.Content.ReadAsStringAsync().WaitResult();
+        respString = response.Content.ReadAsStringAsync().Result;
         Console.WriteLine(respString);
         authResponse = JsonConvert.DeserializeObject<ApiResponse<ApiAuthenticationResponse>>(respString);
 
         context.Http.DefaultRequestHeaders.Remove("Authorization");
         context.Http.DefaultRequestHeaders.TryAddWithoutValidation("Authorization", authResponse!.Data!.TokenData);
-        response = context.Http.GetAsync("/api/v3/users/me").WaitResult();
+        response = context.Http.GetAsync("/api/v3/users/me").Result;
         Assert.That(response.StatusCode, Is.EqualTo(OK));
     }
 }

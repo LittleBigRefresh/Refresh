@@ -10,12 +10,12 @@ public class ApiV2MiddlewareTests : GameServerTest
         using TestContext context = this.GetServer();
         context.Server.Value.Server.AddMiddleware<ApiV2GoneMiddleware>();
 
-        HttpResponseMessage response = context.Http.GetAsync("/api/v2/asdf").WaitResult();
+        HttpResponseMessage response = context.Http.GetAsync("/api/v2/asdf").Result;
         
         Assert.Multiple(async () =>
         {
             Assert.That(response.StatusCode, Is.EqualTo(Gone));
-            Assert.That(response.Content.ReadAsStringAsync().WaitResult(), Does.Contain("error"));
+            Assert.That(response.Content.ReadAsStringAsync().Result, Does.Contain("error"));
         });
     }
     
@@ -25,12 +25,12 @@ public class ApiV2MiddlewareTests : GameServerTest
         using TestContext context = this.GetServer();
         context.Server.Value.Server.AddMiddleware<ApiV2GoneMiddleware>();
 
-        HttpResponseMessage response = context.Http.GetAsync("/api/v3/instance").WaitResult();
+        HttpResponseMessage response = context.Http.GetAsync("/api/v3/instance").Result;
         
         Assert.Multiple(async () =>
         {
             Assert.That(response.StatusCode, Is.EqualTo(OK));
-            Assert.That(response.Content.ReadAsStringAsync().WaitResult(), Does.Not.Contain("error"));
+            Assert.That(response.Content.ReadAsStringAsync().Result, Does.Not.Contain("error"));
         });
     }
 }
