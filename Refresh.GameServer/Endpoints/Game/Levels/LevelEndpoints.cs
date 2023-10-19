@@ -42,8 +42,14 @@ public class LevelEndpoints : EndpointGroup
 
     [GameEndpoint("slots/{route}/{username}", ContentType.Xml)]
     [MinimumRole(GameUserRole.Restricted)]
+    [NullStatusCode(NotFound)]
     public SerializedMinimalLevelList? GetLevelsWithPlayer(RequestContext context, GameDatabaseContext database, CategoryService categories, MatchService matchService, Token token, string route, string username)
-        => this.GetLevels(context, database, categories, matchService, database.GetUserByUsername(username), token, route);
+    {
+        GameUser? user = database.GetUserByUsername(username);
+        if (user == null) return null;
+        
+        return this.GetLevels(context, database, categories, matchService, user, token, route);
+    }
 
     [GameEndpoint("s/user/{id}", ContentType.Xml)]
     [NullStatusCode(NotFound)]
