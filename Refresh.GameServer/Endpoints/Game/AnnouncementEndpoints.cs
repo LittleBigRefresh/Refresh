@@ -70,7 +70,6 @@ public class AnnouncementEndpoints : EndpointGroup
 
     [GameEndpoint("notification", ContentType.Xml)]
     [MinimumRole(GameUserRole.Restricted)]
-    [DebugResponseBody]
     public string Notification(RequestContext context, GameServerConfig config, GameUser user, GameDatabaseContext database)
     {
         DatabaseList<GameNotification> notifications = database.GetNotificationsByUser(user, 3, 0);

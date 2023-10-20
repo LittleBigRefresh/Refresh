@@ -56,6 +56,5 @@ public class ReviewEndpoints : EndpointGroup
         }
 
         return database.RateLevel(level, user, rating) ? OK : Unauthorized;
-
     } 
 }

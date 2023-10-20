@@ -156,6 +156,7 @@ public partial class GameDatabaseContext // Levels
             .Select(g => new { Level = g.Key, Count = g.Count() })
             .OrderByDescending(x => x.Count)
             .Select(x => x.Level)
+            .Where(l => l != null)
             .Where(l => l._Source == (int)GameLevelSource.User)
             .FilterByGameVersion(gameVersion);
 
@@ -173,6 +174,7 @@ public partial class GameDatabaseContext // Levels
             .Select(g => new { Level = g.Key, Count = g.Count() })
             .OrderByDescending(x => x.Count)
             .Select(x => x.Level)
+            .Where(l => l != null)
             .Where(l => l._Source == (int)GameLevelSource.User)
             .FilterByGameVersion(gameVersion);
 
@@ -190,6 +192,7 @@ public partial class GameDatabaseContext // Levels
             .Select(g => new { Level = g.Key, Count = g.Sum(p => p.Count) })
             .OrderByDescending(x => x.Count)
             .Select(x => x.Level)
+            .Where(l => l != null)
             .FilterByGameVersion(gameVersion);
 
         return new DatabaseList<GameLevel>(mostPlayed, skip, count);
@@ -206,6 +209,7 @@ public partial class GameDatabaseContext // Levels
             .Select(g => new { Level = g.Key, Karma = g.Sum(r => r._RatingType) })
             .OrderByDescending(x => x.Karma) // reddit moment
             .Select(x => x.Level)
+            .Where(l => l != null)
             .Where(l => l._Source == (int)GameLevelSource.User)
             .FilterByGameVersion(gameVersion);
 
