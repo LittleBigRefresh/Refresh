@@ -40,7 +40,12 @@ public class ActivityEndpointsTests : GameServerTest
         HttpResponseMessage message = client.GetAsync($"/lbp/stream").Result;
         Assert.That(message.StatusCode, Is.EqualTo(OK));
         
-        //TODO: once we figure out how to parse ActivityPage here, lets make sure the user is properly inside of the response!
+        //TODO: once we figure out how to parse ActivityPage here, lets do that instead of this mess
+        string response = message.Content.ReadAsStringAsync().Result;
+        
+        //Ensure that the response contains a first login event, and a user
+        StringAssert.Contains("<event type=\"firstlogin\">", response);
+        StringAssert.Contains("<user type=\"user\">", response);
     }
     
     [Test]
