@@ -1,5 +1,9 @@
+using System.Reflection;
+using Bunkum.Core;
+using Bunkum.Core.Services;
 using Bunkum.Core.Storage;
 using Bunkum.Protocols.Http;
+using JetBrains.Annotations;
 using NotEnoughLogs;
 using NotEnoughLogs.Behaviour;
 using NotEnoughLogs.Sinks;
@@ -67,5 +71,14 @@ public class TestRefreshGameServer : RefreshGameServer
         this._server.AddService<CommandService>();
         this._server.AddService<ImportService>();
         this._server.AddService<LevelListOverrideService>();
+    }
+    
+    [Pure]
+    public TService GetService<TService>() where TService : Service
+    {
+        List<Service> services = (List<Service>)typeof(BunkumServer).GetField("_services", BindingFlags.Instance | BindingFlags.NonPublic)!
+            .GetValue(this._server)!;
+
+        return (TService)services.First(s => typeof(TService) == s.GetType());
     }
 }

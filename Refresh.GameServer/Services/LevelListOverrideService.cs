@@ -15,13 +15,20 @@ public class LevelListOverrideService : EndpointService
 
     private readonly Dictionary<ObjectId, List<int>> _userIdsToLevelList = new(1);
 
-    public bool UserHasOverrides(GameUser user) => this._userIdsToLevelList.ContainsKey(user.UserId);
+    public bool UserHasOverrides(GameUser user)
+    {
+        bool result = this._userIdsToLevelList.ContainsKey(user.UserId);
+        
+        this.Logger.LogTrace(RefreshContext.LevelListOverride, "{0} has overrides: {1}", user, result);
+        return result;
+    }
 
     public void AddOverridesForUser(GameUser user, IEnumerable<GameLevel> levels)
     {
         Debug.Assert(!this.UserHasOverrides(user), "User already has overrides");
         
         List<int> ids = levels.Select(l => l.LevelId).ToList();
+        this.Logger.LogDebug(RefreshContext.LevelListOverride, "Adding level override for {0}: [{1}]", user, string.Join(", ", ids));
         this._userIdsToLevelList.Add(user.UserId, ids);
     }
 
@@ -30,6 +37,7 @@ public class LevelListOverrideService : EndpointService
         Debug.Assert(this.UserHasOverrides(user), "User does not have overrides, should be checked first");
         
         List<int> overrides = this._userIdsToLevelList[user.UserId];
+        this.Logger.LogDebug(RefreshContext.LevelListOverride, "Getting level override for {0}: [{1}]", user, string.Join(", ", overrides));
         this._userIdsToLevelList.Remove(user.UserId);
 
         return overrides.Select(database.GetLevelById)!;
