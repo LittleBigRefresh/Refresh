@@ -163,7 +163,10 @@ public class GameUserResponse : IDataConvertableFrom<GameUserResponse, GameUser>
             this.FavouriteUsers = new SerializedMinimalFavouriteUserList(users.Select(SerializedUserHandle.FromUser).ToList(), users.Count);
 
             //Fill out PSP favourite levels
-            List<GameMinimalLevelResponse> favouriteLevels = old.FavouriteLevelRelations.ToList().Select(f => GameMinimalLevelResponse.FromOld(f.Level)).ToList()!;
+            List<GameMinimalLevelResponse> favouriteLevels = old.FavouriteLevelRelations
+                .AsEnumerable()
+                .Where(l => l.Level._GameVersion == (int)TokenGame.LittleBigPlanetPSP)
+                .Select(f => GameMinimalLevelResponse.FromOld(f.Level)).ToList()!;
             this.FavouriteLevels = new SerializedMinimalFavouriteLevelList(new SerializedMinimalLevelList(favouriteLevels, favouriteLevels.Count));
         }
     }
