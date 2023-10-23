@@ -45,6 +45,7 @@ public class InstanceApiEndpoints : EndpointGroup
     }
 
     [ApiV3Endpoint("instance"), Authentication(false), AllowDuringMaintenance]
+    [ClientCacheResponse(3600)] // One hour
     [DocSummary("Retrieves various information and metadata about the Refresh instance.")]
     public ApiResponse<ApiInstanceResponse> GetInstanceInformation(RequestContext context,
         GameServerConfig gameConfig,
