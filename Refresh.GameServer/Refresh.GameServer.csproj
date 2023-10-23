@@ -51,16 +51,16 @@
     </ItemGroup>
 
     <ItemGroup Condition="'$(Configuration)'!='DebugLocalBunkum'">
-        <PackageReference Include="Bunkum" Version="4.2.2" />
-        <PackageReference Include="Bunkum.RealmDatabase" Version="4.2.2" />
-        <PackageReference Include="Bunkum.AutoDiscover" Version="4.2.2" />
-        <PackageReference Include="Bunkum.HealthChecks" Version="4.2.2" />
-        <PackageReference Include="Bunkum.HealthChecks.RealmDatabase" Version="4.2.2" />
-        <PackageReference Include="Bunkum.Protocols.Http" Version="4.2.2" />
+        <PackageReference Include="Bunkum" Version="4.3.1" />
+        <PackageReference Include="Bunkum.RealmDatabase" Version="4.3.1" />
+        <PackageReference Include="Bunkum.AutoDiscover" Version="4.3.1" />
+        <PackageReference Include="Bunkum.HealthChecks" Version="4.3.1" />
+        <PackageReference Include="Bunkum.HealthChecks.RealmDatabase" Version="4.3.1" />
+        <PackageReference Include="Bunkum.Protocols.Http" Version="4.3.1" />
     </ItemGroup>
 
     <ItemGroup>
-      <PackageReference Include="AttribDoc" Version="1.1.0" />
+      <PackageReference Include="AttribDoc" Version="1.2.0" />
       <PackageReference Include="BCnEncoder.Net" Version="2.1.0" />
       <PackageReference Include="BCrypt.Net-Next" Version="4.0.3" />
       <PackageReference Include="CommandLineParser" Version="2.9.1" />
