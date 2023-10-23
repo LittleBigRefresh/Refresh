@@ -31,16 +31,19 @@ public class TexStream : Stream
 
     private readonly Inflater _inflater;
     
-    public TexStream(Stream stream) {
+    public TexStream(Stream stream, bool checkMagic = true) {
         this._stream = stream;
         
         BEBinaryReader reader = new(stream);
-        
-        //Read the file magic
-        int magic = reader.ReadInt32();
-        if (magic != TexMagic)
+
+        if (checkMagic)
         {
-            throw new FormatException("Input stream is not in TEX format!");
+            //Read the file magic
+            int magic = reader.ReadInt32();
+            if (magic != TexMagic)
+            {
+                throw new FormatException("Input stream is not in TEX format!");
+            }
         }
 
         //Unknown flag, seems to always be 0x0001
