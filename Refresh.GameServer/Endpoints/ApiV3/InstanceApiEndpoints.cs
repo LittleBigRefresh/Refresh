@@ -45,6 +45,7 @@ public class InstanceApiEndpoints : EndpointGroup
     }
 
     [ApiV3Endpoint("instance"), Authentication(false), AllowDuringMaintenance]
+    [ClientCacheResponse(3600)] // One hour
     [DocSummary("Retrieves various information and metadata about the Refresh instance.")]
     public ApiResponse<ApiInstanceResponse> GetInstanceInformation(RequestContext context,
         GameServerConfig gameConfig,
@@ -58,6 +59,9 @@ public class InstanceApiEndpoints : EndpointGroup
             RegistrationEnabled = gameConfig.RegistrationEnabled,
             SoftwareName = "Refresh",
             SoftwareVersion = VersionInformation.Version,
+            SoftwareSourceUrl = "https://github.com/LittleBigRefresh/Refresh",
+            SoftwareLicenseName = "AGPL-3.0",
+            SoftwareLicenseUrl = "https://www.gnu.org/licenses/agpl-3.0.txt",
             MaximumAssetSafetyLevel = gameConfig.MaximumAssetSafetyLevel,
             Announcements = ApiGameAnnouncementResponse.FromOldList(database.GetAnnouncements()),
             MaintenanceModeEnabled = gameConfig.MaintenanceMode,

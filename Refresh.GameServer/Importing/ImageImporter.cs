@@ -19,7 +19,7 @@ public partial class ImageImporter : Importer
         List<GameAsset> assets = new();
 
         assets.AddRange(context.GetAssetsByType(GameAssetType.Texture));
-        // TODO: assets.AddRange(context.GetAssetsByType(GameAssetType.GameDataTexture));
+        assets.AddRange(context.GetAssetsByType(GameAssetType.GameDataTexture));
         assets.AddRange(context.GetAssetsByType(GameAssetType.Jpeg));
         assets.AddRange(context.GetAssetsByType(GameAssetType.Png));
 
@@ -73,6 +73,9 @@ public partial class ImageImporter : Importer
 
         switch (asset.AssetType)
         {
+            case GameAssetType.GameDataTexture:
+                GtfToPng(stream, writeStream);
+                break;
             case GameAssetType.Texture:
                 TextureToPng(stream, writeStream);
                 break;
