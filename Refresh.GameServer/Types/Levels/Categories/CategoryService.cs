@@ -1,5 +1,6 @@
 using Bunkum.Core.Services;
 using NotEnoughLogs;
+using Refresh.GameServer.Configuration;
 using Refresh.GameServer.Database;
 
 namespace Refresh.GameServer.Types.Levels.Categories;
@@ -14,7 +15,7 @@ public class CategoryService : EndpointService
         new LevelCategory("newest", "newest", false, nameof(GameDatabaseContext.GetNewestLevels))
         {
             Name = "Newest Levels",
-            Description = "Levels that were most recently uploaded",
+            Description = "Levels that were most recently uploaded!",
             IconHash = "g820623",
             FontAwesomeIcon = "calendar",
         },
@@ -50,15 +51,15 @@ public class CategoryService : EndpointService
         },
         new LevelCategory("mostLiked", new[] { "thumbs", "highestRated" }, false, nameof(GameDatabaseContext.GetHighestRatedLevels))
         {
-            Name = "Liked Levels",
-            Description = "The all-time most liked levels!",
+            Name = "Highest Rated",
+            Description = "Levels with the most Yays!",
             IconHash = "g820603",
             FontAwesomeIcon = "thumbs-up",
         },
         new LevelCategory("mostPlayed", "mostUniquePlays", false, nameof(GameDatabaseContext.GetMostUniquelyPlayedLevels))
         {
             Name = "Starter Pack",
-            Description = "Levels that many people have played!",
+            Description = "Levels that many people have played.",
             IconHash = "g820608",
             FontAwesomeIcon = "play",
         },
@@ -72,14 +73,14 @@ public class CategoryService : EndpointService
         new LevelCategory("teamPicks", "mmpicks", false, nameof(GameDatabaseContext.GetTeamPickedLevels))
         {
             Name = "Team Picks",
-            Description = "Handpicked quality levels",
+            Description = "High quality levels, hand-picked by us.",
             IconHash = "g820626",
             FontAwesomeIcon = "certificate",
         },
         new LevelCategory("developer", Array.Empty<string>(), false, nameof(GameDatabaseContext.GetDeveloperLevels))
         {
             Name = "Story Levels",
-            Description = "Levels bundled with LittleBigPlanet",
+            Description = "Levels from LittleBigPlanet's story mode.",
             IconHash = "g820604",
             FontAwesomeIcon = "certificate",
         },
