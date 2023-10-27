@@ -1,5 +1,6 @@
 using Bunkum.Protocols.Http.Direct;
 using NotEnoughLogs;
+using RefreshTests.GameServer.Logging;
 using RefreshTests.GameServer.Time;
 
 namespace RefreshTests.GameServer.GameServer;
@@ -8,7 +9,10 @@ namespace RefreshTests.GameServer.GameServer;
 [Timeout(2000)]
 public class GameServerTest
 {
-    protected static readonly Logger Logger = new();
+    protected static readonly Logger Logger = new(new []
+    {
+        new NUnitSink(),
+    });
     
     // ReSharper disable once MemberCanBeMadeStatic.Global
     protected TestContext GetServer(bool startServer = true)

@@ -41,15 +41,33 @@ public partial class MatchService : EndpointService
     public GameRoom GetOrCreateRoomByPlayer(GameUser player, TokenPlatform platform, TokenGame game, NatType natType)
     {
         GameRoom? room = this.GetRoomByPlayer(player, platform, game);
-
-        // ReSharper disable once InvertIf (happy path goes last)
+        
+        // ReSharper disable once ConvertIfStatementToNullCoalescingExpression
         if (room == null)
-        {
-            room = new GameRoom(player, platform, game, natType);
-            this._rooms.Add(room);
-        }
+            room = this.CreateRoomByPlayer(player, platform, game, natType);
 
         return room;
+    }
+
+    public GameRoom CreateRoomByPlayer(GameUser player, TokenPlatform platform, TokenGame game, NatType natType)
+    {
+        GameRoom room = new(player, platform, game, natType);
+        this._rooms.Add(room);
+
+        return room;
+    }
+
+    public GameRoom SplitUserIntoNewRoom(GameUser player, TokenPlatform platform, TokenGame game, NatType natType)
+    {
+        GameRoom? room = this.GetRoomByPlayer(player, platform, game);
+        if (room == null)
+        {
+            return this.CreateRoomByPlayer(player, platform, game, natType);
+        }
+        
+        // Remove player from old room
+        room.PlayerIds.RemoveAll(i => i.Id == player.UserId);
+        return this.CreateRoomByPlayer(player, platform, game, natType);
     }
     
     public GameRoom? GetRoomByPlayer(GameUser player)
