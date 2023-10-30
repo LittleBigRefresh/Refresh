@@ -71,7 +71,8 @@ public class LevelApiEndpoints : EndpointGroup
     
     [ApiV3Endpoint("levels/id/{id}", HttpMethods.Patch)]
     [DocSummary("Edits a level by the level's numerical ID")]
-    [DocError(typeof(ApiNotFoundError), "The level cannot be found")]
+    [DocError(typeof(ApiNotFoundError), ApiNotFoundError.LevelMissingErrorWhen)]
+    [DocError(typeof(ApiAuthenticationError), ApiAuthenticationError.NoPermissionsForObjectWhen)]
     public ApiResponse<ApiGameLevelResponse> EditLevelById(RequestContext context, GameDatabaseContext database, GameUser user,
         [DocSummary("The ID of the level")] int id, ApiEditLevelRequest body)
     {
@@ -84,5 +85,23 @@ public class LevelApiEndpoints : EndpointGroup
         database.UpdateLevel(body, level);
 
         return ApiGameLevelResponse.FromOld(level);
+    }
+
+    [ApiV3Endpoint("levels/id/{id}", HttpMethods.Delete)]
+    [DocSummary("Deletes a level by the level's numerical ID")]
+    [DocError(typeof(ApiNotFoundError), ApiNotFoundError.LevelMissingErrorWhen)]
+    [DocError(typeof(ApiAuthenticationError), ApiAuthenticationError.NoPermissionsForObjectWhen)]
+    public ApiOkResponse DeleteLevelById(RequestContext context, GameDatabaseContext database, GameUser user,
+        [DocSummary("The ID of the level")] int id)
+    {
+        GameLevel? level = database.GetLevelById(id);
+        if (level == null) return ApiNotFoundError.LevelMissingError;
+
+        if (level.Publisher?.UserId != user.UserId) 
+            return ApiAuthenticationError.NoPermissionsForObject;
+
+        database.DeleteLevel(level);
+
+        return new ApiOkResponse();
     }
 }

@@ -1,3 +1,4 @@
+using Refresh.GameServer.Authentication;
 using Refresh.GameServer.Endpoints.ApiV3.ApiTypes;
 using Refresh.GameServer.Endpoints.ApiV3.ApiTypes.Errors;
 using Refresh.GameServer.Endpoints.ApiV3.DataTypes.Response;
@@ -91,5 +92,42 @@ public class LevelApiTests : GameServerTest
         ApiResponse<ApiGameLevelResponse>? levelResponse = context.Http.GetData<ApiGameLevelResponse>($"/api/v3/levels/id/{int.MaxValue}");
         Assert.That(levelResponse, Is.Not.Null);
         levelResponse!.AssertErrorIsEqual(ApiNotFoundError.LevelMissingError);
+    }
+
+    [Test]
+    public void CanDeleteLevel()
+    {
+        using TestContext context = this.GetServer();
+        GameUser author = context.CreateUser();
+        GameLevel level = context.CreateLevel(author);
+
+        using HttpClient client = context.GetAuthenticatedClient(TokenType.Api, author);
+        client.DeleteAsync($"/api/v3/levels/id/{level.LevelId}").Wait();
+        Assert.That(level.IsValid, Is.False);
+    }
+    
+    [Test]
+    public void CantDeleteLevelIfNotAuthor()
+    {
+        using TestContext context = this.GetServer();
+        GameUser author = context.CreateUser();
+        GameUser moron = context.CreateUser();
+        GameLevel level = context.CreateLevel(author);
+
+        using HttpClient client = context.GetAuthenticatedClient(TokenType.Api, moron);
+        client.DeleteAsync($"/api/v3/levels/id/{level.LevelId}").Wait();
+        Assert.That(level.IsValid, Is.True);
+    }
+    
+    [Test]
+    public void CantDeleteLevelIfLevelInvalid()
+    {
+        using TestContext context = this.GetServer();
+        GameUser author = context.CreateUser();
+        GameLevel level = context.CreateLevel(author);
+
+        using HttpClient client = context.GetAuthenticatedClient(TokenType.Api, author);
+        client.DeleteAsync($"/api/v3/levels/id/{int.MaxValue}").Wait();
+        Assert.That(level.IsValid, Is.True);
     }
 }
