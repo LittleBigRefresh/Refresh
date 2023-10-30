@@ -1,11 +1,13 @@
 using AttribDoc.Attributes;
 using Bunkum.Core;
 using Bunkum.Core.Endpoints;
+using Bunkum.Protocols.Http;
 using Refresh.GameServer.Authentication;
 using Refresh.GameServer.Database;
 using Refresh.GameServer.Documentation.Attributes;
 using Refresh.GameServer.Endpoints.ApiV3.ApiTypes;
 using Refresh.GameServer.Endpoints.ApiV3.ApiTypes.Errors;
+using Refresh.GameServer.Endpoints.ApiV3.DataTypes.Request;
 using Refresh.GameServer.Endpoints.ApiV3.DataTypes.Response;
 using Refresh.GameServer.Extensions;
 using Refresh.GameServer.Services;
@@ -64,6 +66,23 @@ public class LevelApiEndpoints : EndpointGroup
         GameLevel? level = database.GetLevelById(id);
         if (level == null) return ApiNotFoundError.LevelMissingError;
         
+        return ApiGameLevelResponse.FromOld(level);
+    }
+    
+    [ApiV3Endpoint("levels/id/{id}", HttpMethods.Patch)]
+    [DocSummary("Edits a level by the level's numerical ID")]
+    [DocError(typeof(ApiNotFoundError), "The level cannot be found")]
+    public ApiResponse<ApiGameLevelResponse> EditLevelById(RequestContext context, GameDatabaseContext database, GameUser user,
+        [DocSummary("The ID of the level")] int id, ApiEditLevelRequest body)
+    {
+        GameLevel? level = database.GetLevelById(id);
+        if (level == null) return ApiNotFoundError.LevelMissingError;
+
+        if (level.Publisher?.UserId != user.UserId) 
+            return ApiAuthenticationError.NoPermissionsForObject;
+
+        database.UpdateLevel(body, level);
+
         return ApiGameLevelResponse.FromOld(level);
     }
 }
