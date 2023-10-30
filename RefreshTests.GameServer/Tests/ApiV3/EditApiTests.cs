@@ -32,8 +32,55 @@ public class EditApiTests : GameServerTest
         Assert.Multiple(() =>
         {
             Assert.That(level.Title, Is.EqualTo("Updated"));
-            Assert.That(level.UpdateDate, Is.Not.Zero);
+            Assert.That(level.UpdateDate, Is.Not.EqualTo(oldUpdate));
+            Assert.That(level.UpdateDate, Is.EqualTo(context.Time.TimestampMilliseconds));
         });
-        Assert.That(level.UpdateDate, Is.EqualTo(1));
+    }
+    
+    [Test]
+    public void OtherUserCantUpdateLevel()
+    {
+        using TestContext context = this.GetServer();
+        GameUser user = context.CreateUser();
+        GameUser user2 = context.CreateUser();
+        GameLevel level = context.CreateLevel(user, "Not updated");
+
+        ApiEditLevelRequest payload = new()
+        {
+            Title = "Updated",
+        };
+        
+        using HttpClient client = context.GetAuthenticatedClient(TokenType.Api, user2);
+        HttpResponseMessage response = client.PatchAsync($"/api/v3/levels/id/{level.LevelId}", JsonContent.Create(payload)).Result;
+        Assert.That(response.StatusCode, Is.EqualTo(Forbidden));
+        
+        context.Database.Refresh();
+        Assert.Multiple(() =>
+        {
+            Assert.That(level.Title, Is.EqualTo("Not updated"));
+        });
+    }
+    
+    [Test]
+    public void CantUpdateMissingLevel()
+    {
+        using TestContext context = this.GetServer();
+        GameUser user = context.CreateUser();
+        GameLevel level = context.CreateLevel(user, "Not updated");
+
+        ApiEditLevelRequest payload = new()
+        {
+            Title = "Updated",
+        };
+        
+        using HttpClient client = context.GetAuthenticatedClient(TokenType.Api, user);
+        HttpResponseMessage response = client.PatchAsync($"/api/v3/levels/id/{int.MaxValue}", JsonContent.Create(payload)).Result;
+        Assert.That(response.StatusCode, Is.EqualTo(NotFound));
+        
+        context.Database.Refresh();
+        Assert.Multiple(() =>
+        {
+            Assert.That(level.Title, Is.EqualTo("Not updated"));
+        });
     }
 }
