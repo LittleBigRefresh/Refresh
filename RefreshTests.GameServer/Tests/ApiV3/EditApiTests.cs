@@ -15,17 +15,25 @@ public class EditApiTests : GameServerTest
         GameUser user = context.CreateUser();
         GameLevel level = context.CreateLevel(user, "Not updated");
 
+        long oldUpdate = level.UpdateDate;
+
         ApiEditLevelRequest payload = new()
         {
             Title = "Updated",
         };
 
+        context.Time.TimestampMilliseconds = 1;
+        
         using HttpClient client = context.GetAuthenticatedClient(TokenType.Api, user);
-
         HttpResponseMessage response = client.PatchAsync($"/api/v3/levels/id/{level.LevelId}", JsonContent.Create(payload)).Result;
         Assert.That(response.StatusCode, Is.EqualTo(OK));
         
         context.Database.Refresh();
-        Assert.That(level.Title, Is.EqualTo("Updated"));
+        Assert.Multiple(() =>
+        {
+            Assert.That(level.Title, Is.EqualTo("Updated"));
+            Assert.That(level.UpdateDate, Is.Not.Zero);
+        });
+        Assert.That(level.UpdateDate, Is.EqualTo(1));
     }
 }
