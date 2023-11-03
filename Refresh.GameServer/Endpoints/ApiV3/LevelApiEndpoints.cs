@@ -104,4 +104,18 @@ public class LevelApiEndpoints : EndpointGroup
 
         return new ApiOkResponse();
     }
+
+    [ApiV3Endpoint("levels/id/{id}/setAsOverride", HttpMethods.Post)]
+    [DocSummary("Marks the level to show in the next slot list gotten from the game")]
+    [DocError(typeof(ApiNotFoundError), ApiNotFoundError.LevelMissingErrorWhen)]
+    public ApiOkResponse SetLevelAsOverrideById(RequestContext context, GameDatabaseContext database, GameUser user, LevelListOverrideService service,
+        [DocSummary("The ID of the level")] int id)
+    {
+        GameLevel? level = database.GetLevelById(id);
+        if (level == null) return ApiNotFoundError.LevelMissingError;
+        
+        service.AddOverridesForUser(user, level);
+        
+        return new ApiOkResponse();
+    }
 }

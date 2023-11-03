@@ -19,8 +19,13 @@ public class LevelListOverrideService : EndpointService
     {
         bool result = this._userIdsToLevelList.ContainsKey(user.UserId);
         
-        this.Logger.LogTrace(RefreshContext.LevelListOverride, "{0} has overrides: {1}", user, result);
+        this.Logger.LogTrace(RefreshContext.LevelListOverride, "{0} has overrides: {1}", user.Username, result);
         return result;
+    }
+
+    public void AddOverridesForUser(GameUser user, GameLevel level)
+    {
+        this.AddOverridesForUser(user, new[] { level });
     }
 
     public void AddOverridesForUser(GameUser user, IEnumerable<GameLevel> levels)
@@ -28,7 +33,7 @@ public class LevelListOverrideService : EndpointService
         Debug.Assert(!this.UserHasOverrides(user), "User already has overrides");
         
         List<int> ids = levels.Select(l => l.LevelId).ToList();
-        this.Logger.LogDebug(RefreshContext.LevelListOverride, "Adding level override for {0}: [{1}]", user, string.Join(", ", ids));
+        this.Logger.LogDebug(RefreshContext.LevelListOverride, "Adding level override for {0}: [{1}]", user.Username, string.Join(", ", ids));
         this._userIdsToLevelList.Add(user.UserId, ids);
     }
 
@@ -37,7 +42,7 @@ public class LevelListOverrideService : EndpointService
         Debug.Assert(this.UserHasOverrides(user), "User does not have overrides, should be checked first");
         
         List<int> overrides = this._userIdsToLevelList[user.UserId];
-        this.Logger.LogDebug(RefreshContext.LevelListOverride, "Getting level override for {0}: [{1}]", user, string.Join(", ", overrides));
+        this.Logger.LogDebug(RefreshContext.LevelListOverride, "Getting level override for {0}: [{1}]", user.Username, string.Join(", ", overrides));
         this._userIdsToLevelList.Remove(user.UserId);
 
         return overrides.Select(database.GetLevelById)!;
