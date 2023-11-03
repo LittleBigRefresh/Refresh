@@ -32,7 +32,7 @@ public class GameDatabaseProvider : RealmDatabaseProvider<GameDatabaseContext>
         this._time = time;
     }
 
-    protected override ulong SchemaVersion => 95;
+    protected override ulong SchemaVersion => 96;
 
     protected override string Filename => "refreshGameServer.realm";
     
@@ -233,6 +233,7 @@ public class GameDatabaseProvider : RealmDatabaseProvider<GameDatabaseContext>
         // IQueryable<dynamic>? oldEvents = migration.OldRealm.DynamicApi.All("Event");
         IQueryable<Event>? newEvents = migration.NewRealm.All<Event>();
 
+        List<Event> eventsToNuke = new();
         for (int i = 0; i < newEvents.Count(); i++)
         {
             // dynamic oldEvent = oldEvents.ElementAt(i);
@@ -246,6 +247,19 @@ public class GameDatabaseProvider : RealmDatabaseProvider<GameDatabaseContext>
 
             // Converts events to use millisecond timestamps
             if (oldVersion < 33 && newEvent.Timestamp < 1000000000000) newEvent.Timestamp *= 1000;
+
+            // fixup for dumb bad code not clearing score events when levels are deleted
+            if (oldVersion < 96 && newEvent.StoredDataType == EventDataType.Score)
+            {
+                GameSubmittedScore? score = migration.NewRealm.All<GameSubmittedScore>().FirstOrDefault(s => s.ScoreId == newEvent.StoredObjectId);
+                if(score == null) eventsToNuke.Add(newEvent);
+            }
+        }
+        
+        // realm won't let you use an IEnumerable in RemoveRange. too bad!
+        foreach (Event eventToNuke in eventsToNuke)
+        {
+            migration.NewRealm.Remove(eventToNuke);
         }
         
         // IQueryable<dynamic>? oldTokens = migration.OldRealm.DynamicApi.All("Token");
@@ -306,7 +320,7 @@ public class GameDatabaseProvider : RealmDatabaseProvider<GameDatabaseContext>
             }
         }
         
-        //Remove all scores with a null level, as in version 92 we started tracking story leaderboards differently
+        // Remove all scores with a null level, as in version 92 we started tracking story leaderboards differently
         if (oldVersion < 92) migration.NewRealm.RemoveRange(migration.NewRealm.All<GameSubmittedScore>().Where(s => s.Level == null));
         
         IQueryable<dynamic>? oldScores = migration.OldRealm.DynamicApi.All("GameSubmittedScore");
