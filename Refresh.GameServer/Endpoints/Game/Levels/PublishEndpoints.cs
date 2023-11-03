@@ -56,6 +56,7 @@ public class PublishEndpoints : EndpointGroup
         List<string> hashes = new();
         hashes.AddRange(body.XmlResources);
         hashes.Add(body.RootResource);
+        hashes.Add(body.IconHash);
 
         //Remove all invalid or GUID assets
         hashes.RemoveAll(r => r == "0" || r.StartsWith('g') || string.IsNullOrWhiteSpace(r));
