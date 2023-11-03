@@ -6,4 +6,5 @@ public enum RefreshContext
     Worker,
     Discord,
     PasswordReset,
+    LevelListOverride,
 }

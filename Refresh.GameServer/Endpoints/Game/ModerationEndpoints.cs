@@ -62,6 +62,7 @@ public class ModerationEndpoints : EndpointGroup
                 context.Logger.LogInfo(BunkumCategory.Commands, $"User used command '{command.Name.ToString()}' with args '{command.Arguments.ToString()}'");
 
                 commandService.HandleCommand(command, database, user, token);
+                return "(Command)";
             }
             catch
             {

@@ -20,7 +20,7 @@ public class CommandParseTests : GameServerTest
 	public void ParsingTest()
 	{
 		using Logger logger = new(new []{ new NUnitSink() });
-		CommandService service = new(logger, new MatchService(logger));
+		CommandService service = new(logger, new MatchService(logger), new LevelListOverrideService(logger));
         
 		ParseTest(service, "/parse test", "parse", "test");
 		ParseTest(service, "/noargs", "noargs", "");
@@ -31,7 +31,7 @@ public class CommandParseTests : GameServerTest
 	public void NoSlashThrows()
 	{
 		using Logger logger = new(new []{ new NUnitSink() });
-		CommandService service = new(logger, new MatchService(logger));
+		CommandService service = new(logger, new MatchService(logger), new LevelListOverrideService(logger));
 
 		Assert.That(() => _ = service.ParseCommand("parse test"), Throws.InstanceOf<FormatException>());
 	}
@@ -40,7 +40,7 @@ public class CommandParseTests : GameServerTest
 	public void BlankCommandThrows()
 	{
 		using Logger logger = new(new []{ new NUnitSink() });
-		CommandService service = new(logger, new MatchService(logger));
+		CommandService service = new(logger, new MatchService(logger), new LevelListOverrideService(logger));
 
 		Assert.That(() => _ = service.ParseCommand("/ test"), Throws.InstanceOf<FormatException>());
 	}

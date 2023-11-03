@@ -6,6 +6,7 @@ using NotEnoughLogs;
 using Refresh.GameServer.Authentication;
 using Refresh.GameServer.Database;
 using Refresh.GameServer.Types.Commands;
+using Refresh.GameServer.Types.Levels;
 using Refresh.GameServer.Types.UserData;
 
 namespace Refresh.GameServer.Services;
@@ -13,9 +14,11 @@ namespace Refresh.GameServer.Services;
 public class CommandService : EndpointService
 {
     private readonly MatchService _match;
+    private readonly LevelListOverrideService _levelListService;
     
-    public CommandService(Logger logger, MatchService match) : base(logger) {
+    public CommandService(Logger logger, MatchService match, LevelListOverrideService levelListService) : base(logger) {
         this._match = match;
+        this._levelListService = levelListService;
     }
 
     private readonly HashSet<ObjectId> _usersPublishing = new();
@@ -80,7 +83,8 @@ public class CommandService : EndpointService
     {
         switch (command.Name)
         {
-            case "forcematch": {
+            case "forcematch":
+            {
                 if (command.Arguments == null)
                 {
                     throw new Exception("User not provided for force match command");
@@ -95,19 +99,28 @@ public class CommandService : EndpointService
                 
                 break;
             }
-            case "clearforcematch": {
+            case "clearforcematch":
+            {
                 this._match.ClearForceMatch(user.UserId);
-                
                 break;
             }
-            case "griefphotoson": {
+            case "griefphotoson":
+            {
                 user.RedirectGriefReportsToPhotos = true;
-                
                 break;
             }
-            case "griefphotosoff": {
+            case "griefphotosoff":
+            {
                 user.RedirectGriefReportsToPhotos = false;
-                
+                break;
+            }
+            case "play":
+            {
+                GameLevel? level = database.GetLevelById(int.Parse(command.Arguments));
+                if (level != null)
+                {
+                    this._levelListService.AddOverridesForUser(user, level);
+                }
                 break;
             }
             #if DEBUG

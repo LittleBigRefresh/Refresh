@@ -1,4 +1,6 @@
+using Bunkum.Core.Services;
 using Bunkum.Protocols.Http.Direct;
+using JetBrains.Annotations;
 using Refresh.GameServer.Authentication;
 using Refresh.GameServer.Database;
 using Refresh.GameServer.Types;
@@ -119,6 +121,9 @@ public class TestContext : IDisposable
 
         return submittedScore;
     }
+
+    [Pure]
+    public TService GetService<TService>() where TService : Service => this.Server.Value.GetService<TService>();
 
     public void Dispose()
     {
