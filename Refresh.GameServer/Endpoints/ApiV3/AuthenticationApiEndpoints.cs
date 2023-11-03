@@ -123,6 +123,32 @@ public class AuthenticationApiEndpoints : EndpointGroup
 
         return new ApiOkResponse();
     }
+    
+    [ApiV3Endpoint("sendPasswordResetEmail", HttpMethods.Put), Authentication(false)]
+    [RateLimitSettings(86400 / 2, 5, 86400, "resetPassword")]
+    public ApiOkResponse SendPasswordResetEmail(RequestContext context,
+        GameDatabaseContext database,
+        ApiSendPasswordResetEmailRequest body,
+        SmtpService smtpService)
+    {
+        GameUser? user = database.GetUserByEmailAddress(body.EmailAddress);
+        if (user == null)
+        {
+            context.Logger.LogWarning(RefreshContext.PasswordReset, "Couldn't find a user by the email '{0}', not sending email", body.EmailAddress);
+            // return a fake success on purpose
+            return new ApiOkResponse();
+        }
+        
+        context.Logger.LogInfo(RefreshContext.PasswordReset, "Sending a password reset request email to {0}.", user.Username);
+        context.Logger.LogTrace(RefreshContext.PasswordReset, "Generating a reset token for {0}", user.Username);
+        
+        Token token = database.GenerateTokenForUser(user, TokenType.PasswordReset, TokenGame.Website, TokenPlatform.Website);
+        context.Logger.LogTrace(RefreshContext.PasswordReset, "Reset token: {0}", token.TokenData);
+        smtpService.SendPasswordResetRequest(user, token.TokenData);
+
+        context.Logger.LogTrace(RefreshContext.PasswordReset, "Email sent, token will expire at {0}", token.ExpiresAt);
+        return new ApiOkResponse();
+    }
 
     [ApiV3Endpoint("logout", HttpMethods.Put), MinimumRole(GameUserRole.Restricted)]
     [DocSummary("Tells the server to revoke the token used to make this request. Useful for logout behavior.")]
