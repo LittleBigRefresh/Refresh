@@ -6,6 +6,7 @@ using NotEnoughLogs;
 using Refresh.GameServer.Authentication;
 using Refresh.GameServer.Database;
 using Refresh.GameServer.Types.Commands;
+using Refresh.GameServer.Types.Levels;
 using Refresh.GameServer.Types.UserData;
 
 namespace Refresh.GameServer.Services;
@@ -76,7 +77,7 @@ public class CommandService : EndpointService
     }
 
     [SuppressMessage("ReSharper", "StringLiteralTypo")]
-    public void HandleCommand(CommandInvocation command, GameDatabaseContext database, GameUser user, Token token)
+    public void HandleCommand(CommandInvocation command, GameDatabaseContext database, LevelListOverrideService levelListService, GameUser user, Token token)
     {
         switch (command.Name)
         {
@@ -109,6 +110,15 @@ public class CommandService : EndpointService
             case "griefphotosoff":
             {
                 user.RedirectGriefReportsToPhotos = false;
+                break;
+            }
+            case "play":
+            {
+                GameLevel? level = database.GetLevelById(int.Parse(command.Arguments));
+                if (level != null)
+                {
+                    levelListService.AddOverridesForUser(user, level);
+                }
                 break;
             }
             #if DEBUG

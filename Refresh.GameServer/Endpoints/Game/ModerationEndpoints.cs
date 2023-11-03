@@ -43,7 +43,7 @@ public class ModerationEndpoints : EndpointGroup
     /// <returns>The string shown in-game.</returns>
     [GameEndpoint("filter", HttpMethods.Post)]
     [AllowEmptyBody]
-    public string Filter(RequestContext context, CommandService commandService, string body, GameUser user, Token token, GameDatabaseContext database)
+    public string Filter(RequestContext context, CommandService commandService, string body, GameUser user, Token token, GameDatabaseContext database, LevelListOverrideService levelListService)
     {
         // TODO: Add actual filtering/censoring
         
@@ -61,7 +61,8 @@ public class ModerationEndpoints : EndpointGroup
                 
                 context.Logger.LogInfo(BunkumCategory.Commands, $"User used command '{command.Name.ToString()}' with args '{command.Arguments.ToString()}'");
 
-                commandService.HandleCommand(command, database, user, token);
+                commandService.HandleCommand(command, database, levelListService, user, token);
+                return "(Command)";
             }
             catch
             {
