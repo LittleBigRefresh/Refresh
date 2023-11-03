@@ -77,4 +77,24 @@ public class SmtpService : EndpointService
                 The {this._gameConfig.InstanceName} Team
             """);
     }
+
+    public bool SendPasswordResetRequest(GameUser user, string token)
+    {
+        if (user.EmailAddress == null)
+            throw new InvalidOperationException("Cannot send verification request for user with no email");
+
+        return this.SendEmail(user.EmailAddress, $"Password Reset Request for {this._gameConfig.InstanceName}",
+            $"""
+             Hi {user.Username} (id: {user.UserId.ToString()}),
+
+             We've received a request to reset your password on your account for {this._gameConfig.InstanceName}.
+
+             To reset your password, continue via your browser by clicking the following link: {this._gameConfig.WebExternalUrl}/resetPassword?token={token}
+
+             If you didn't initiate this request, please disregard this message.
+
+             Best regards,
+                 The {this._gameConfig.InstanceName} Team
+             """);
+    }
 }

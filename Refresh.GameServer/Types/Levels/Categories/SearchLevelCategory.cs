@@ -11,7 +11,7 @@ public class SearchLevelCategory : LevelCategory
     internal SearchLevelCategory() : base("search", "search", false, nameof(GameDatabaseContext.SearchForLevels))
     {
         this.Name = "Search";
-        this.Description = "Search for new levels";
+        this.Description = "Search for new levels.";
         this.FontAwesomeIcon = "magnifying-glass";
         // no icon for now, too lazy to find
     }

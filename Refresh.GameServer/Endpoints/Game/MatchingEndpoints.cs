@@ -1,5 +1,6 @@
 using Bunkum.Core;
 using Bunkum.Core.Endpoints;
+using Bunkum.Core.Endpoints.Debugging;
 using Bunkum.Core.Responses;
 using Bunkum.Listener.Protocol;
 using Bunkum.Protocols.Http;
@@ -15,10 +16,11 @@ public class MatchingEndpoints : EndpointGroup
 {
     // [FindBestRoom,["Players":["VitaGamer128"],"Reservations":["0"],"NAT":[2],"Slots":[[5,0]],"Location":[0x17257bc9,0x17257bf2],"Language":1,"BuildVersion":289,"Search":"","RoomState":3]]
     [GameEndpoint("match", HttpMethods.Post, ContentType.Json)]
+    [DebugRequestBody, DebugResponseBody]
     public Response Match(RequestContext context, GameDatabaseContext database, GameUser user, Token token, MatchService service, string body)
     {
         (string method, string jsonBody) = MatchService.ExtractMethodAndBodyFromJson(body);
-        context.Logger.LogDebug(BunkumCategory.Matching, $"Received {method} match request, data: {jsonBody}");
+        context.Logger.LogInfo(BunkumCategory.Matching, $"Received {method} match request, data: {jsonBody}");
         
         JsonSerializer serializer = new();
         using StringReader reader = new(jsonBody);

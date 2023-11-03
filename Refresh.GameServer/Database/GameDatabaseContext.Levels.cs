@@ -3,6 +3,7 @@ using System.Reflection;
 using JetBrains.Annotations;
 using Realms;
 using Refresh.GameServer.Authentication;
+using Refresh.GameServer.Endpoints.ApiV3.DataTypes.Request;
 using Refresh.GameServer.Extensions;
 using Refresh.GameServer.Services;
 using Refresh.GameServer.Types;
@@ -84,6 +85,30 @@ public partial class GameDatabaseContext // Levels
         });
 
         return oldSlot;
+    }
+
+    public GameLevel UpdateLevel(ApiEditLevelRequest body, GameLevel level)
+    {
+        this._realm.Write(() =>
+        {
+            PropertyInfo[] userProps = typeof(ApiEditLevelRequest).GetProperties();
+            foreach (PropertyInfo prop in userProps)
+            {
+                if (!prop.CanWrite || !prop.CanRead) continue;
+                
+                object? propValue = prop.GetValue(body);
+                if(propValue == null) continue;
+
+                PropertyInfo? gameLevelProp = level.GetType().GetProperty(prop.Name);
+                Debug.Assert(gameLevelProp != null, $"Invalid property {prop.Name} on {nameof(ApiEditLevelRequest)}");
+                
+                 gameLevelProp.SetValue(level, prop.GetValue(body));
+            }
+            
+            level.UpdateDate = this._time.TimestampMilliseconds;
+        });
+
+        return level;
     }
 
     public void DeleteLevel(GameLevel level)

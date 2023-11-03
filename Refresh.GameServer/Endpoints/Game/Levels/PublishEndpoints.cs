@@ -56,6 +56,7 @@ public class PublishEndpoints : EndpointGroup
         List<string> hashes = new();
         hashes.AddRange(body.XmlResources);
         hashes.Add(body.RootResource);
+        hashes.Add(body.IconHash);
 
         //Remove all invalid or GUID assets
         hashes.RemoveAll(r => r == "0" || r.StartsWith('g') || string.IsNullOrWhiteSpace(r));
@@ -93,7 +94,7 @@ public class PublishEndpoints : EndpointGroup
 
         if (level.LevelId != default) // Republish requests contain the id of the old level
         {
-            context.Logger.LogInfo(BunkumCategory.UserContent, "Republishing level id " + level.LevelId);
+            context.Logger.LogInfo(BunkumCategory.UserContent, "Republishing level id {0}", level.LevelId);
 
             GameLevel? newBody;
             // ReSharper disable once InvertIf
@@ -113,6 +114,8 @@ public class PublishEndpoints : EndpointGroup
 
         database.AddLevel(level);
         database.CreateLevelUploadEvent(user, level);
+        
+        context.Logger.LogInfo(BunkumCategory.UserContent, "User {0} (id: {1}) uploaded level id {2}", user.Username, user.UserId, level.LevelId);
         
         return new Response(GameLevelResponse.FromOld(level)!, ContentType.Xml);
     }

@@ -17,7 +17,7 @@ namespace Refresh.GameServer.Endpoints.ApiV3;
 
 public class PhotoApiEndpoints : EndpointGroup
 {
-    [ApiV3Endpoint("photos/{id}", HttpMethods.Delete)]
+    [ApiV3Endpoint("photos/id/{id}", HttpMethods.Delete)]
     [DocSummary("Deletes an uploaded photo")]
     [DocError(typeof(ApiNotFoundError), ApiNotFoundError.PhotoMissingErrorWhen)]
     [DocError(typeof(ApiValidationError), ApiValidationError.NoPhotoDeletionPermissionErrorWhen)]
@@ -105,7 +105,7 @@ public class PhotoApiEndpoints : EndpointGroup
         return DatabaseList<ApiGamePhotoResponse>.FromOldList<ApiGamePhotoResponse, GamePhoto>(photos);
     }
     
-    [ApiV3Endpoint("photos/{id}"), Authentication(false)]
+    [ApiV3Endpoint("photos/id/{id}"), Authentication(false)]
     [DocUsesPageData, DocSummary("Get an individual photo by the photo's id")]
     [DocError(typeof(ApiNotFoundError), "The photo cannot be found")]
     public ApiResponse<ApiGamePhotoResponse> PhotoById(RequestContext context, GameDatabaseContext database, [DocSummary("The ID of the photo")] int id)

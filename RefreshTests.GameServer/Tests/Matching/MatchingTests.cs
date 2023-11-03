@@ -30,8 +30,8 @@ public class MatchingTests : GameServerTest
         Token token1 = context.CreateToken(user1);
         Token token2 = context.CreateToken(user2);
 
-        match.ExecuteMethod("UpdateMyPlayerData", roomData, context.Database, user1, token1);
-        match.ExecuteMethod("UpdateMyPlayerData", roomData, context.Database, user2, token2);
+        match.ExecuteMethod("CreateRoom", roomData, context.Database, user1, token1);
+        match.ExecuteMethod("CreateRoom", roomData, context.Database, user2, token2);
         
         Assert.Multiple(() =>
         {
@@ -70,7 +70,7 @@ public class MatchingTests : GameServerTest
         // Setup room
         GameUser user1 = context.CreateUser();
         Token token1 = context.CreateToken(user1);
-        match.ExecuteMethod("UpdateMyPlayerData", roomData, context.Database, user1, token1);
+        match.ExecuteMethod("CreateRoom", roomData, context.Database, user1, token1);
         
         // Tell user1 to try to find a room
         Response response = match.ExecuteMethod("FindBestRoom", new SerializedRoomData
@@ -106,8 +106,8 @@ public class MatchingTests : GameServerTest
         Token token1 = context.CreateToken(user1);
         Token token2 = context.CreateToken(user2);
         
-        match.ExecuteMethod("UpdateMyPlayerData", roomData, context.Database, user1, token1);
-        match.ExecuteMethod("UpdateMyPlayerData", roomData, context.Database, user2, token2);
+        match.ExecuteMethod("CreateRoom", roomData, context.Database, user1, token1);
+        match.ExecuteMethod("CreateRoom", roomData, context.Database, user2, token2);
         
         // Tell user2 to try to find a room
         Response response = match.ExecuteMethod("FindBestRoom", new SerializedRoomData
@@ -116,7 +116,6 @@ public class MatchingTests : GameServerTest
                 NatType.Strict,
             },
         }, context.Database, user2, token2);
-        // File.WriteAllBytes("/tmp/matchresp.json", response.Data);
         Assert.That(response.StatusCode, Is.EqualTo(NotFound));
     }
     
@@ -152,8 +151,8 @@ public class MatchingTests : GameServerTest
         Token token1 = context.CreateToken(user1);
         Token token2 = context.CreateToken(user2);
         
-        match.ExecuteMethod("UpdateMyPlayerData", roomData, context.Database, user1, token1);
-        match.ExecuteMethod("UpdateMyPlayerData", roomData2, context.Database, user2, token2);
+        match.ExecuteMethod("CreateRoom", roomData, context.Database, user1, token1);
+        match.ExecuteMethod("CreateRoom", roomData2, context.Database, user2, token2);
         
         // Tell user2 to try to find a room
         Response response = match.ExecuteMethod("FindBestRoom", new SerializedRoomData
@@ -162,7 +161,6 @@ public class MatchingTests : GameServerTest
                 NatType.Strict,
             },
         }, context.Database, user2, token2);
-        // File.WriteAllBytes("/tmp/matchresp.json", response.Data);
         Assert.That(response.StatusCode, Is.EqualTo(OK));
     }
 
@@ -189,8 +187,8 @@ public class MatchingTests : GameServerTest
         Token token1 = context.CreateToken(user1);
         Token token2 = context.CreateToken(user2);
         
-        match.ExecuteMethod("UpdateMyPlayerData", roomData, context.Database, user1, token1);
-        match.ExecuteMethod("UpdateMyPlayerData", roomData, context.Database, user2, token2);
+        match.ExecuteMethod("CreateRoom", roomData, context.Database, user1, token1);
+        match.ExecuteMethod("CreateRoom", roomData, context.Database, user2, token2);
         
         // Tell user2 to try to find a room
         Response response = match.ExecuteMethod("FindBestRoom", new SerializedRoomData
@@ -199,7 +197,93 @@ public class MatchingTests : GameServerTest
                 NatType.Open,
             },
         }, context.Database, user2, token2);
-        // File.WriteAllBytes("/tmp/matchresp.json", response.Data);
         Assert.That(response.StatusCode, Is.EqualTo(OK));
+    }
+
+    [Test]
+    public void HostCanSetPlayersInRoom()
+    {
+        using TestContext context = this.GetServer(false);
+        MatchService match = new(Logger);
+        match.Initialize();
+        
+        SerializedRoomData roomData = new()
+        {
+            Mood = (byte)RoomMood.AllowingAll, // Tells their rooms that they can be matched with each other
+            NatType = new List<NatType>
+            {
+                NatType.Open,
+            },
+        };
+        
+        // Setup rooms
+        GameUser user1 = context.CreateUser();
+        GameUser user2 = context.CreateUser();
+        
+        Token token1 = context.CreateToken(user1);
+        Token token2 = context.CreateToken(user2);
+        
+        match.ExecuteMethod("CreateRoom", roomData, context.Database, user1, token1);
+        match.ExecuteMethod("CreateRoom", roomData, context.Database, user2, token2);
+        
+        // Get user1 and user2 in the same room
+        roomData.Players = new List<string>
+        {
+            user1.Username,
+            user2.Username,
+        };
+
+        match.ExecuteMethod("UpdatePlayersInRoom", roomData, context.Database, user1, token1);
+        GameRoom room = match.Rooms.First();
+        Assert.Multiple(() =>
+        {
+            Assert.That(room.PlayerIds, Has.Count.EqualTo(2));
+            Assert.That(room.PlayerIds.FirstOrDefault(r => r.Id == user1.UserId), Is.Not.Null);
+            Assert.That(room.PlayerIds.FirstOrDefault(r => r.Id == user2.UserId), Is.Not.Null);
+        });
+    }
+    
+    [Test]
+    public void PlayersCanLeaveAndSplitIntoNewRoom()
+    {
+        using TestContext context = this.GetServer(false);
+        MatchService match = new(Logger);
+        match.Initialize();
+        
+        SerializedRoomData roomData = new()
+        {
+            Mood = (byte)RoomMood.AllowingAll, // Tells their rooms that they can be matched with each other
+            NatType = new List<NatType>
+            {
+                NatType.Open,
+            },
+        };
+        
+        // Setup rooms
+        GameUser user1 = context.CreateUser();
+        GameUser user2 = context.CreateUser();
+        
+        Token token1 = context.CreateToken(user1);
+        Token token2 = context.CreateToken(user2);
+        
+        match.ExecuteMethod("CreateRoom", roomData, context.Database, user1, token1);
+        match.ExecuteMethod("CreateRoom", roomData, context.Database, user2, token2);
+        
+        // Get user1 and user2 in the same room
+        roomData.Players = new List<string>
+        {
+            user1.Username,
+            user2.Username,
+        };
+
+        match.ExecuteMethod("UpdatePlayersInRoom", roomData, context.Database, user1, token1);
+        GameRoom user1Room = match.Rooms.First();
+        Assert.That(user1Room.PlayerIds.FirstOrDefault(r => r.Id == user2.UserId), Is.Not.Null);
+        
+        match.ExecuteMethod("CreateRoom", roomData, context.Database, user2, token2);
+        GameRoom user2Room = match.Rooms.Last();
+        Assert.That(user1Room.PlayerIds.FirstOrDefault(r => r.Id == user2.UserId), Is.Null);
+        Assert.That(user2Room.PlayerIds.First().Id, Is.EqualTo(user2.UserId));
+        
     }
 }

@@ -8,15 +8,19 @@ using Refresh.GameServer.Types.UserData;
 
 namespace Refresh.GameServer.Types.Matching.MatchMethods;
 
-public class UpdateRoomDataMethod : IMatchMethod
+public class CreateRoomMethod : IMatchMethod
 {
-    public IEnumerable<string> MethodNames => new[] { "UpdateMyPlayerData" };
+    public IEnumerable<string> MethodNames => new[] { "CreateRoom" };
 
-    public Response Execute(MatchService service, Logger logger,
-        GameDatabaseContext database, GameUser user, Token token, SerializedRoomData body)
+    public Response Execute(MatchService service, Logger logger, GameDatabaseContext database, GameUser user, Token token,
+        SerializedRoomData body)
     {
-        GameRoom room = service.GetOrCreateRoomByPlayer(user, token.TokenPlatform, token.TokenGame, body.NatType == null ? NatType.Open : body.NatType[0]);
-        if (room.HostId.Id != user.UserId) return Unauthorized;
+        NatType natType = body.NatType == null ? NatType.Open : body.NatType[0];
+        GameRoom room = service.GetOrCreateRoomByPlayer(user, token.TokenPlatform, token.TokenGame, natType);
+        if (room.HostId.Id != user.UserId)
+        {
+            room = service.SplitUserIntoNewRoom(user, token.TokenPlatform, token.TokenGame, natType);
+        }
 
         room.LastContact = DateTimeOffset.Now;
         if (body.RoomState != null) room.RoomState = body.RoomState.Value;
