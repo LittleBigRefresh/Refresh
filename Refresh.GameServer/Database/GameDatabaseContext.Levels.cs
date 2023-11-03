@@ -115,10 +115,10 @@ public partial class GameDatabaseContext // Levels
     {
         this._realm.Write(() =>
         {
-            IQueryable<Event> events = this._realm.All<Event>()
+            IQueryable<Event> levelEvents = this._realm.All<Event>()
                 .Where(e => e._StoredDataType == (int)EventDataType.Level && e.StoredSequentialId == level.LevelId);
             
-            this._realm.RemoveRange(events);
+            this._realm.RemoveRange(levelEvents);
 
             #region This is so terrible it needs to be hidden away
 
@@ -138,6 +138,14 @@ public partial class GameDatabaseContext // Levels
             this._realm.RemoveRange(uniquePlayLevelRelations);
             
             IQueryable<GameSubmittedScore> scores = this._realm.All<GameSubmittedScore>().Where(r => r.Level == level);
+            
+            foreach (GameSubmittedScore score in scores)
+            {
+                IQueryable<Event> scoreEvents = this._realm.All<Event>()
+                    .Where(e => e._StoredDataType == (int)EventDataType.Score && e.StoredObjectId == score.ScoreId);
+                this._realm.RemoveRange(scoreEvents);
+            }
+            
             this._realm.RemoveRange(scores);
 
             #endregion
