@@ -80,7 +80,8 @@ public class CommandService : EndpointService
     {
         switch (command.Name)
         {
-            case "forcematch": {
+            case "forcematch":
+            {
                 if (command.Arguments == null)
                 {
                     throw new Exception("User not provided for force match command");
@@ -95,19 +96,19 @@ public class CommandService : EndpointService
                 
                 break;
             }
-            case "clearforcematch": {
+            case "clearforcematch":
+            {
                 this._match.ClearForceMatch(user.UserId);
-                
                 break;
             }
-            case "griefphotoson": {
+            case "griefphotoson":
+            {
                 user.RedirectGriefReportsToPhotos = true;
-                
                 break;
             }
-            case "griefphotosoff": {
+            case "griefphotosoff":
+            {
                 user.RedirectGriefReportsToPhotos = false;
-                
                 break;
             }
             #if DEBUG
