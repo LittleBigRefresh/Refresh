@@ -14,9 +14,11 @@ namespace Refresh.GameServer.Services;
 public class CommandService : EndpointService
 {
     private readonly MatchService _match;
+    private readonly LevelListOverrideService _levelListService;
     
-    public CommandService(Logger logger, MatchService match) : base(logger) {
+    public CommandService(Logger logger, MatchService match, LevelListOverrideService levelListService) : base(logger) {
         this._match = match;
+        this._levelListService = levelListService;
     }
 
     private readonly HashSet<ObjectId> _usersPublishing = new();
@@ -77,7 +79,7 @@ public class CommandService : EndpointService
     }
 
     [SuppressMessage("ReSharper", "StringLiteralTypo")]
-    public void HandleCommand(CommandInvocation command, GameDatabaseContext database, LevelListOverrideService levelListService, GameUser user, Token token)
+    public void HandleCommand(CommandInvocation command, GameDatabaseContext database, GameUser user, Token token)
     {
         switch (command.Name)
         {
@@ -117,7 +119,7 @@ public class CommandService : EndpointService
                 GameLevel? level = database.GetLevelById(int.Parse(command.Arguments));
                 if (level != null)
                 {
-                    levelListService.AddOverridesForUser(user, level);
+                    this._levelListService.AddOverridesForUser(user, level);
                 }
                 break;
             }
