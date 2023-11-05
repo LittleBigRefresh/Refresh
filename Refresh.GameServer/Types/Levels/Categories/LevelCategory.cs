@@ -12,8 +12,6 @@ namespace Refresh.GameServer.Types.Levels.Categories;
 [JsonObject(MemberSerialization.OptIn)]
 public abstract class LevelCategory
 {
-    private static readonly Lazy<MethodInfo[]> Methods = new(() => typeof(GameDatabaseContext).GetMethods());
-    
     [JsonProperty] public string Name { get; set; } = "";
     [JsonProperty] public string Description { get; set; } = "";
     [JsonProperty] public string IconHash { get; set; } = "0";
