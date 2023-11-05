@@ -2,6 +2,7 @@ using Refresh.GameServer.Authentication;
 using Refresh.GameServer.Database;
 using Refresh.GameServer.Endpoints.Game.DataTypes.Request;
 using Refresh.GameServer.Endpoints.Game.DataTypes.Response;
+using Refresh.GameServer.Endpoints.Game.Levels.FilterSettings;
 using Refresh.GameServer.Types;
 using Refresh.GameServer.Types.Levels;
 using Refresh.GameServer.Types.Levels.SkillRewards;
@@ -344,7 +345,7 @@ public class PublishEndpointsTests : GameServerTest
         HttpResponseMessage message = client.PostAsync($"/lbp/unpublish/{level.LevelId}", new ReadOnlyMemoryContent(Array.Empty<byte>())).Result;
         Assert.That(message.StatusCode, Is.EqualTo(OK));
 
-        DatabaseList<GameLevel> levelsByUser = context.Database.GetLevelsByUser(user, 1, 0, TokenGame.LittleBigPlanet3);
+        DatabaseList<GameLevel> levelsByUser = context.Database.GetLevelsByUser(user, 1, 0, TokenGame.LittleBigPlanet3, new LevelFilterSettings());
         Assert.That(levelsByUser.TotalItems, Is.EqualTo(0));
     }
 
@@ -373,7 +374,7 @@ public class PublishEndpointsTests : GameServerTest
         HttpResponseMessage message = client.PostAsync($"/lbp/unpublish/{level.LevelId}", new ReadOnlyMemoryContent(Array.Empty<byte>())).Result;
         Assert.That(message.StatusCode, Is.EqualTo(Unauthorized));
 
-        DatabaseList<GameLevel> levelsByUser = context.Database.GetLevelsByUser(user1, 1, 0, TokenGame.LittleBigPlanet3);
+        DatabaseList<GameLevel> levelsByUser = context.Database.GetLevelsByUser(user1, 1, 0, TokenGame.LittleBigPlanet3, new LevelFilterSettings());
         Assert.That(levelsByUser.TotalItems, Is.EqualTo(1));
     }
 }

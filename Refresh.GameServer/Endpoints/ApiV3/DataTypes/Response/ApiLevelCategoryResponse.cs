@@ -1,6 +1,7 @@
 using Bunkum.Core;
 using Refresh.GameServer.Authentication;
 using Refresh.GameServer.Database;
+using Refresh.GameServer.Endpoints.Game.Levels.FilterSettings;
 using Refresh.GameServer.Services;
 using Refresh.GameServer.Types.Levels;
 using Refresh.GameServer.Types.Levels.Categories;
@@ -46,7 +47,7 @@ public class ApiLevelCategoryResponse : IApiResponse, IDataConvertableFrom<ApiLe
     {
         return oldList.Select(category =>
         {
-            DatabaseList<GameLevel>? list = category.Fetch(context, 0, 1, matchService, database, user, TokenGame.Website);
+            DatabaseList<GameLevel>? list = category.Fetch(context, 0, 1, matchService, database, user, TokenGame.Website, new LevelFilterSettings(context));
             GameLevel? level = list?.Items.FirstOrDefault();
             
             return FromOld(category, level);

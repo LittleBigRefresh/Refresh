@@ -9,6 +9,7 @@ using Refresh.GameServer.Endpoints.ApiV3.ApiTypes;
 using Refresh.GameServer.Endpoints.ApiV3.ApiTypes.Errors;
 using Refresh.GameServer.Endpoints.ApiV3.DataTypes.Request;
 using Refresh.GameServer.Endpoints.ApiV3.DataTypes.Response;
+using Refresh.GameServer.Endpoints.Game.Levels.FilterSettings;
 using Refresh.GameServer.Extensions;
 using Refresh.GameServer.Services;
 using Refresh.GameServer.Types.Levels;
@@ -50,7 +51,7 @@ public class LevelApiEndpoints : EndpointGroup
 
         DatabaseList<GameLevel>? list = categories.Categories
             .FirstOrDefault(c => c.ApiRoute.StartsWith(route))?
-            .Fetch(context, skip, count, matchService, database, user, TokenGame.Website);
+            .Fetch(context, skip, count, matchService, database, user, TokenGame.Website, new LevelFilterSettings(context));
 
         if (list == null) return ApiNotFoundError.Instance;
 

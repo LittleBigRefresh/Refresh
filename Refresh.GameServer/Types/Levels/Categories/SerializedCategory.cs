@@ -2,6 +2,7 @@ using System.Xml.Serialization;
 using Bunkum.Core;
 using Refresh.GameServer.Authentication;
 using Refresh.GameServer.Database;
+using Refresh.GameServer.Endpoints.Game.Levels.FilterSettings;
 using Refresh.GameServer.Services;
 using Refresh.GameServer.Types.Lists;
 using Refresh.GameServer.Types.UserData;
@@ -45,7 +46,7 @@ public class SerializedCategory
             IconHash = levelCategory.IconHash,
         };
 
-        DatabaseList<GameLevel> categoryLevels = levelCategory.Fetch(context, skip, count, matchService, database, user, token.TokenGame);
+        DatabaseList<GameLevel> categoryLevels = levelCategory.Fetch(context, skip, count, matchService, database, user, token.TokenGame, new LevelFilterSettings(context));
         
         IEnumerable<GameMinimalLevelResponse> levels = categoryLevels?.Items
             .Select(l => GameMinimalLevelResponse.FromOldWithExtraData(l, matchService)) ?? Array.Empty<GameMinimalLevelResponse>();

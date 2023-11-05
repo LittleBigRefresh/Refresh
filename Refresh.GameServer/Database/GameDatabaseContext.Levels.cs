@@ -4,6 +4,7 @@ using JetBrains.Annotations;
 using Realms;
 using Refresh.GameServer.Authentication;
 using Refresh.GameServer.Endpoints.ApiV3.DataTypes.Request;
+using Refresh.GameServer.Endpoints.Game.Levels.FilterSettings;
 using Refresh.GameServer.Extensions;
 using Refresh.GameServer.Services;
 using Refresh.GameServer.Types;
@@ -158,28 +159,32 @@ public partial class GameDatabaseContext // Levels
         => this._realm.All<GameLevel>().Where(l => l._Source == (int)GameLevelSource.User).FilterByGameVersion(gameVersion);
 
     [Pure]
-    public DatabaseList<GameLevel> GetLevelsByUser(GameUser user, int count, int skip, TokenGame gameVersion)
+    public DatabaseList<GameLevel> GetLevelsByUser(GameUser user, int count, int skip, TokenGame gameVersion, LevelFilterSettings levelFilterSettings)
     {
         if (user.Username == DeletedUser.Username)
         {
-            return new DatabaseList<GameLevel>(this.GetLevelsByGameVersion(gameVersion).Where(l => l.Publisher == null), skip, count);
+            return new DatabaseList<GameLevel>(this.GetLevelsByGameVersion(gameVersion).FilterByLevelFilterSettings(null, levelFilterSettings).Where(l => l.Publisher == null), skip, count);
         }
         
-        return new DatabaseList<GameLevel>(this.GetLevelsByGameVersion(gameVersion).Where(l => l.Publisher == user), skip, count);
+        return new DatabaseList<GameLevel>(this.GetLevelsByGameVersion(gameVersion).FilterByLevelFilterSettings(null, levelFilterSettings).Where(l => l.Publisher == user), skip, count);
     }
 
     [Pure]
-    public DatabaseList<GameLevel> GetNewestLevels(int count, int skip, TokenGame gameVersion) =>
-        new(this.GetLevelsByGameVersion(gameVersion).OrderByDescending(l => l.PublishDate), skip, count);
+    public DatabaseList<GameLevel> GetNewestLevels(int count, int skip, TokenGame gameVersion, GameUser? user, LevelFilterSettings levelFilterSettings) =>
+        new(this.GetLevelsByGameVersion(gameVersion)
+            .FilterByLevelFilterSettings(user, levelFilterSettings)
+            .OrderByDescending(l => l.PublishDate), skip, count);
     
     [Pure]
-    public DatabaseList<GameLevel> GetRandomLevels(int count, int skip, TokenGame gameVersion) =>
-        new(this.GetLevelsByGameVersion(gameVersion).AsEnumerable()
+    public DatabaseList<GameLevel> GetRandomLevels(int count, int skip, TokenGame gameVersion, GameUser? user, LevelFilterSettings levelFilterSettings) =>
+        new(this.GetLevelsByGameVersion(gameVersion)
+            .FilterByLevelFilterSettings(user, levelFilterSettings)
+            .AsEnumerable()
             .OrderBy(_ => Random.Shared.Next()), skip, count);
     
     // TODO: reduce code duplication for getting most of x
     [Pure]
-    public DatabaseList<GameLevel> GetMostHeartedLevels(int count, int skip, TokenGame gameVersion)
+    public DatabaseList<GameLevel> GetMostHeartedLevels(int count, int skip, TokenGame gameVersion, GameUser? user, LevelFilterSettings levelFilterSettings)
     {
         IQueryable<FavouriteLevelRelation> favourites = this._realm.All<FavouriteLevelRelation>();
         
@@ -191,13 +196,14 @@ public partial class GameDatabaseContext // Levels
             .Select(x => x.Level)
             .Where(l => l != null)
             .Where(l => l._Source == (int)GameLevelSource.User)
+            .FilterByLevelFilterSettings(user, levelFilterSettings)
             .FilterByGameVersion(gameVersion);
 
         return new DatabaseList<GameLevel>(mostHeartedLevels, skip, count);
     }
     
     [Pure]
-    public DatabaseList<GameLevel> GetMostUniquelyPlayedLevels(int count, int skip, TokenGame gameVersion)
+    public DatabaseList<GameLevel> GetMostUniquelyPlayedLevels(int count, int skip, TokenGame gameVersion, GameUser? user, LevelFilterSettings levelFilterSettings)
     {
         IQueryable<UniquePlayLevelRelation> uniquePlays = this._realm.All<UniquePlayLevelRelation>();
         
@@ -209,13 +215,14 @@ public partial class GameDatabaseContext // Levels
             .Select(x => x.Level)
             .Where(l => l != null)
             .Where(l => l._Source == (int)GameLevelSource.User)
+            .FilterByLevelFilterSettings(user, levelFilterSettings)
             .FilterByGameVersion(gameVersion);
 
         return new DatabaseList<GameLevel>(mostPlayed, skip, count);
     }
     
     [Pure]
-    public DatabaseList<GameLevel> GetMostReplayedLevels(int count, int skip, TokenGame gameVersion)
+    public DatabaseList<GameLevel> GetMostReplayedLevels(int count, int skip, TokenGame gameVersion, GameUser? user, LevelFilterSettings levelFilterSettings)
     {
         IQueryable<PlayLevelRelation> plays = this._realm.All<PlayLevelRelation>();
         
@@ -226,13 +233,14 @@ public partial class GameDatabaseContext // Levels
             .OrderByDescending(x => x.Count)
             .Select(x => x.Level)
             .Where(l => l != null)
+            .FilterByLevelFilterSettings(user, levelFilterSettings)
             .FilterByGameVersion(gameVersion);
 
         return new DatabaseList<GameLevel>(mostPlayed, skip, count);
     }
     
     [Pure]
-    public DatabaseList<GameLevel> GetHighestRatedLevels(int count, int skip, TokenGame gameVersion)
+    public DatabaseList<GameLevel> GetHighestRatedLevels(int count, int skip, TokenGame gameVersion, GameUser? user, LevelFilterSettings levelFilterSettings)
     {
         IQueryable<RateLevelRelation> ratings = this._realm.All<RateLevelRelation>();
         
@@ -244,25 +252,28 @@ public partial class GameDatabaseContext // Levels
             .Select(x => x.Level)
             .Where(l => l != null)
             .Where(l => l._Source == (int)GameLevelSource.User)
+            .FilterByLevelFilterSettings(user, levelFilterSettings)
             .FilterByGameVersion(gameVersion);
 
         return new DatabaseList<GameLevel>(highestRated, skip, count);
     }
     
     [Pure]
-    public DatabaseList<GameLevel> GetTeamPickedLevels(int count, int skip, TokenGame gameVersion) =>
+    public DatabaseList<GameLevel> GetTeamPickedLevels(int count, int skip, TokenGame gameVersion, GameUser? user, LevelFilterSettings levelFilterSettings) =>
         new(this.GetLevelsByGameVersion(gameVersion)
             .Where(l => l.TeamPicked)
+            .FilterByLevelFilterSettings(user, levelFilterSettings)
             .OrderByDescending(l => l.PublishDate), skip, count);
 
     [Pure]
-    public DatabaseList<GameLevel> GetDeveloperLevels(int count, int skip, TokenGame gameVersion) =>
+    public DatabaseList<GameLevel> GetDeveloperLevels(int count, int skip, GameUser? user, LevelFilterSettings levelFilterSettings) =>
         new(this._realm.All<GameLevel>()
             .Where(l => l._Source == (int)GameLevelSource.Story)
+            .FilterByLevelFilterSettings(user, levelFilterSettings)
             .OrderByDescending(l => l.Title), skip, count);
 
     [Pure]
-    public DatabaseList<GameLevel> GetBusiestLevels(int count, int skip, TokenGame gameVersion, MatchService service)
+    public DatabaseList<GameLevel> GetBusiestLevels(int count, int skip, TokenGame gameVersion, MatchService service, GameUser? user, LevelFilterSettings levelFilterSettings)
     {
         IOrderedEnumerable<IGrouping<GameLevel?,GameRoom>> rooms = service.Rooms
             .Where(r => r.LevelType == RoomSlotType.Online && r.HostId.Id != null) // if playing online level and host exists on server
@@ -271,13 +282,14 @@ public partial class GameDatabaseContext // Levels
 
         return new DatabaseList<GameLevel>(rooms.Select(r => r.Key)
             .Where(l => l != null && l._Source == (int)GameLevelSource.User)!
+            .FilterByLevelFilterSettings(user, levelFilterSettings)
             .FilterByGameVersion(gameVersion), skip, count);
     }
 
     [Pure]
-    public DatabaseList<GameLevel> SearchForLevels(int count, int skip, TokenGame gameVersion, string query)
+    public DatabaseList<GameLevel> SearchForLevels(int count, int skip, TokenGame gameVersion, LevelFilterSettings levelFilterSettings, string query)
     {
-        IQueryable<GameLevel> validLevels = this.GetLevelsByGameVersion(gameVersion);
+        IQueryable<GameLevel> validLevels = this.GetLevelsByGameVersion(gameVersion).FilterByLevelFilterSettings(null, levelFilterSettings);
 
         List<GameLevel> levels = validLevels.Where(l =>
                                                        QueryMethods.FullTextSearch(l.Title, query) ||
