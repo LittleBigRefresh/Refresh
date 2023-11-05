@@ -1,6 +1,7 @@
 using Bunkum.Core;
 using Refresh.GameServer.Authentication;
 using Refresh.GameServer.Database;
+using Refresh.GameServer.Endpoints.Game.Levels.FilterSettings;
 using Refresh.GameServer.Services;
 using Refresh.GameServer.Types.UserData;
 
@@ -8,7 +9,7 @@ namespace Refresh.GameServer.Types.Levels.Categories;
 
 public class SearchLevelCategory : LevelCategory
 {
-    internal SearchLevelCategory() : base("search", "search", false, nameof(GameDatabaseContext.SearchForLevels))
+    internal SearchLevelCategory() : base("search", "search", false)
     {
         this.Name = "Search";
         this.Description = "Search for new levels.";
@@ -17,14 +18,12 @@ public class SearchLevelCategory : LevelCategory
     }
 
     public override DatabaseList<GameLevel>? Fetch(RequestContext context, int skip, int count,
-        MatchService matchService, GameDatabaseContext database, GameUser? user, TokenGame gameVersion,
-        object[]? extraArgs)
+        MatchService matchService, GameDatabaseContext database, GameUser? user, 
+        LevelFilterSettings levelFilterSettings)
     {
         string? query = context.QueryString["query"];
         if (query == null) return null;
 
-        extraArgs = new object[] { query };
-        
-        return base.Fetch(context, skip, count, matchService, database, user, gameVersion, extraArgs);
+        return database.SearchForLevels(count, skip, user, levelFilterSettings, query);
     }
 }

@@ -7,18 +7,18 @@ using Refresh.GameServer.Types.UserData;
 
 namespace Refresh.GameServer.Types.Levels.Categories;
 
-public class CurrentlyPlayingCategory : LevelCategory
+public class DeveloperLevelsCategory : LevelCategory
 {
-    internal CurrentlyPlayingCategory() : base("currentlyPlaying", "busiest", false)
+    internal DeveloperLevelsCategory() : base("developer", Array.Empty<string>(), false)
     {
-        this.Name = "Popular Now";
-        this.Description = "Levels people are playing right now!";
-        this.IconHash = "g820602";
-        this.FontAwesomeIcon = "users";
+        this.Name = "Story Levels";
+        this.Description = "Levels from LittleBigPlanet's story mode.";
+        this.FontAwesomeIcon = "certificate";
+        this.IconHash = "g820604";
     }
 
     public override DatabaseList<GameLevel>? Fetch(RequestContext context, int skip, int count,
         MatchService matchService, GameDatabaseContext database, GameUser? user,
         LevelFilterSettings levelFilterSettings) 
-        => database.GetBusiestLevels(count, skip, matchService, user, levelFilterSettings);
+        => database.GetDeveloperLevels(count, skip, levelFilterSettings);
 }

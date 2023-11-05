@@ -1,5 +1,6 @@
 using System.Diagnostics.Contracts;
 using Refresh.GameServer.Authentication;
+using Refresh.GameServer.Endpoints.Game.Levels.FilterSettings;
 using Refresh.GameServer.Extensions;
 using Refresh.GameServer.Types.Levels;
 using Refresh.GameServer.Types.Relations;
@@ -16,12 +17,13 @@ public partial class GameDatabaseContext // Relations
         .FirstOrDefault(r => r.Level == level && r.User == user) != null;
 
     [Pure]
-    public DatabaseList<GameLevel> GetLevelsFavouritedByUser(GameUser user, int count, int skip, TokenGame gameVersion) 
+    public DatabaseList<GameLevel> GetLevelsFavouritedByUser(GameUser user, int count, int skip, LevelFilterSettings levelFilterSettings) 
         => new(this._realm.All<FavouriteLevelRelation>()
         .Where(r => r.User == user)
         .AsEnumerable()
         .Select(r => r.Level)
-        .FilterByGameVersion(gameVersion), skip, count);
+        .FilterByLevelFilterSettings(null, levelFilterSettings)
+        .FilterByGameVersion(levelFilterSettings.GameVersion), skip, count);
     
     public bool FavouriteLevel(GameLevel level, GameUser user)
     {
@@ -118,12 +120,13 @@ public partial class GameDatabaseContext // Relations
         .FirstOrDefault(r => r.Level == level && r.User == user) != null;
 
     [Pure]
-    public DatabaseList<GameLevel> GetLevelsQueuedByUser(GameUser user, int count, int skip, TokenGame gameVersion)
+    public DatabaseList<GameLevel> GetLevelsQueuedByUser(GameUser user, int count, int skip, LevelFilterSettings levelFilterSettings)
         => new(this._realm.All<QueueLevelRelation>()
         .Where(r => r.User == user)
         .AsEnumerable()
         .Select(r => r.Level)
-        .FilterByGameVersion(gameVersion), skip, count);
+        .FilterByLevelFilterSettings(null, levelFilterSettings)
+        .FilterByGameVersion(levelFilterSettings.GameVersion), skip, count);
     
     public bool QueueLevel(GameLevel level, GameUser user)
     {

@@ -7,6 +7,7 @@ using Bunkum.Core.Responses;
 using Bunkum.Listener.Protocol;
 using Refresh.GameServer.Authentication;
 using Refresh.GameServer.Database;
+using Refresh.GameServer.Endpoints.Game.Levels.FilterSettings;
 using Refresh.GameServer.Extensions;
 using Refresh.GameServer.Time;
 using Refresh.GameServer.Types.Activity;
@@ -49,7 +50,7 @@ public class ActivityEndpoints : EndpointGroup
 
         if (token != null)
         {
-            IEnumerable<GameLevel> teamPicks = database.GetTeamPickedLevels(32, 0, token.TokenGame).Items;
+            IEnumerable<GameLevel> teamPicks = database.GetTeamPickedLevels(32, 0, null, new LevelFilterSettings(token.TokenGame)).Items;
             
             int i = 0;
             foreach (GameLevel level in teamPicks)

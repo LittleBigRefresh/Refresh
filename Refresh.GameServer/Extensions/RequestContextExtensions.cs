@@ -21,4 +21,7 @@ public static class RequestContextExtensions
 
     [Pure]
     public static bool IsPSP(this RequestContext context) => context.RequestHeaders.Get("User-Agent") == "LBPPSP CLIENT";
+
+    [Pure]
+    public static bool IsApi(this RequestContext context) => context.Url.AbsolutePath.StartsWith("/api");
 }

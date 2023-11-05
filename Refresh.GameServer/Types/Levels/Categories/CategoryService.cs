@@ -1,7 +1,5 @@
 using Bunkum.Core.Services;
 using NotEnoughLogs;
-using Refresh.GameServer.Configuration;
-using Refresh.GameServer.Database;
 
 namespace Refresh.GameServer.Types.Levels.Categories;
 
@@ -12,78 +10,18 @@ public class CategoryService : EndpointService
     // ReSharper disable once InconsistentNaming
     private readonly List<LevelCategory> _categories = new()
     {
-        new LevelCategory("newest", "newest", false, nameof(GameDatabaseContext.GetNewestLevels))
-        {
-            Name = "Newest Levels",
-            Description = "Levels that were most recently uploaded!",
-            IconHash = "g820623",
-            FontAwesomeIcon = "calendar",
-        },
-        new LevelCategory("random", "lbp2luckydip", false, nameof(GameDatabaseContext.GetRandomLevels))
-        {
-            Name = "Lucky Dip",
-            Description = "A random assortment of levels!",
-            IconHash = "g820605",
-            FontAwesomeIcon = "shuffle",
-        },
+        new NewestLevelsCategory(),
+        new RandomLevelsCategory(),
         new ByUserLevelCategory(),
         new SearchLevelCategory(),
-        new LevelCategory("hearted", "favouriteSlots", true, nameof(GameDatabaseContext.GetLevelsFavouritedByUser))
-        {
-            Name = "My Favorites",
-            Description = "Your personal list filled with your favourite levels!",
-            IconHash = "g820611",
-            FontAwesomeIcon = "heart",
-        },
-        new LevelCategory("queued", "lolcatftw", true, nameof(GameDatabaseContext.GetLevelsQueuedByUser))
-        {
-            Name = "My Queue",
-            Description = "Levels you'd like to play!",
-            IconHash = "g820614",
-            FontAwesomeIcon = "bell",
-        },
-        new LevelCategory("mostHearted", "mostHearted", false, nameof(GameDatabaseContext.GetMostHeartedLevels))
-        {
-            Name = "Community's Favorites",
-            Description = "The all-time most hearted levels!",
-            IconHash = "g820607",
-            FontAwesomeIcon = "heart",
-        },
-        new LevelCategory("mostLiked", new[] { "thumbs", "highestRated" }, false, nameof(GameDatabaseContext.GetHighestRatedLevels))
-        {
-            Name = "Highest Rated",
-            Description = "Levels with the most Yays!",
-            IconHash = "g820603",
-            FontAwesomeIcon = "thumbs-up",
-        },
-        new LevelCategory("mostPlayed", "mostUniquePlays", false, nameof(GameDatabaseContext.GetMostUniquelyPlayedLevels))
-        {
-            Name = "Starter Pack",
-            Description = "Levels that many people have played.",
-            IconHash = "g820608",
-            FontAwesomeIcon = "play",
-        },
-        new LevelCategory("mostReplayed", "mostPlays", false, nameof(GameDatabaseContext.GetMostReplayedLevels))
-        {
-            Name = "Replayable Levels",
-            Description = "Levels people love to play over and over!",
-            IconHash = "g820608",
-            FontAwesomeIcon = "forward",
-        },
-        new LevelCategory("teamPicks", "mmpicks", false, nameof(GameDatabaseContext.GetTeamPickedLevels))
-        {
-            Name = "Team Picks",
-            Description = "High quality levels, hand-picked by us.",
-            IconHash = "g820626",
-            FontAwesomeIcon = "certificate",
-        },
-        new LevelCategory("developer", Array.Empty<string>(), false, nameof(GameDatabaseContext.GetDeveloperLevels))
-        {
-            Name = "Story Levels",
-            Description = "Levels from LittleBigPlanet's story mode.",
-            IconHash = "g820604",
-            FontAwesomeIcon = "certificate",
-        },
+        new FavouriteSlotsByUserCategory(),
+        new QueuedLevelsByUserCategory(),
+        new MostHeartedLevelsCategory(),
+        new HighestRatedLevelsCategory(),
+        new MostUniquelyPlayedLevelsCategory(),
+        new MostReplayedLevelsCategory(),
+        new TeamPickedLevelsCategory(),
+        new DeveloperLevelsCategory(),
         new CurrentlyPlayingCategory(),
     };
 

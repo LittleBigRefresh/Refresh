@@ -7,18 +7,18 @@ using Refresh.GameServer.Types.UserData;
 
 namespace Refresh.GameServer.Types.Levels.Categories;
 
-public class CurrentlyPlayingCategory : LevelCategory
+public class HighestRatedLevelsCategory : LevelCategory
 {
-    internal CurrentlyPlayingCategory() : base("currentlyPlaying", "busiest", false)
+    internal HighestRatedLevelsCategory() : base("mostLiked", new[] { "thumbs", "highestRated" }, false)
     {
-        this.Name = "Popular Now";
-        this.Description = "Levels people are playing right now!";
-        this.IconHash = "g820602";
-        this.FontAwesomeIcon = "users";
+        this.Name = "Highest Rated";
+        this.Description = "Levels with the most Yays!";
+        this.FontAwesomeIcon = "thumbs-up";
+        this.IconHash = "g820603";
     }
 
     public override DatabaseList<GameLevel>? Fetch(RequestContext context, int skip, int count,
         MatchService matchService, GameDatabaseContext database, GameUser? user,
         LevelFilterSettings levelFilterSettings) 
-        => database.GetBusiestLevels(count, skip, matchService, user, levelFilterSettings);
+        => database.GetHighestRatedLevels(count, skip, user, levelFilterSettings);
 }
