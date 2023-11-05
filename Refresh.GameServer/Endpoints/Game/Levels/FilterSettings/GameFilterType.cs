@@ -1,5 +1,8 @@
 namespace Refresh.GameServer.Endpoints.Game.Levels.FilterSettings;
 
+/// <summary>
+/// What game to filter to, only relevant to LBP2
+/// </summary>
 public enum GameFilterType
 {
     /// <summary>

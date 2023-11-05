@@ -19,7 +19,6 @@ public class CurrentlyPlayingCategory : LevelCategory
 
     public override DatabaseList<GameLevel>? Fetch(RequestContext context, int skip, int count,
         MatchService matchService, GameDatabaseContext database, GameUser? user,
-        TokenGame gameVersion,
         LevelFilterSettings levelFilterSettings) 
-        => database.GetBusiestLevels(count, skip, gameVersion, matchService, user, levelFilterSettings);
+        => database.GetBusiestLevels(count, skip, matchService, user, levelFilterSettings);
 }

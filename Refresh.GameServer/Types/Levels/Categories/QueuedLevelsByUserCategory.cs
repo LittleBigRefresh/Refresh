@@ -17,11 +17,11 @@ public class QueuedLevelsByUserCategory : LevelCategory
         this.IconHash = "g820614";
     }
     
-    public override DatabaseList<GameLevel>? Fetch(RequestContext context, int skip, int count, MatchService matchService, GameDatabaseContext database, GameUser? user, TokenGame gameVersion,
+    public override DatabaseList<GameLevel>? Fetch(RequestContext context, int skip, int count, MatchService matchService, GameDatabaseContext database, GameUser? user, 
         LevelFilterSettings levelFilterSettings)
     {
         if (user == null) return null;
 
-        return database.GetLevelsQueuedByUser(user, count, skip, gameVersion, levelFilterSettings);
+        return database.GetLevelsQueuedByUser(user, count, skip, levelFilterSettings);
     }
 }

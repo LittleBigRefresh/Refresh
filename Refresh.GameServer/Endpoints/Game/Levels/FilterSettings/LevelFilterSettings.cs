@@ -1,4 +1,5 @@
 using Bunkum.Core;
+using Refresh.GameServer.Authentication;
 using Refresh.GameServer.Extensions;
 using Refresh.GameServer.Services;
 
@@ -36,19 +37,15 @@ public class LevelFilterSettings
     /// </summary>
     public MoveFilterType MoveFilterType = MoveFilterType.True;
     /// <summary>
-    /// The first label filter
+    /// The labels to filter by
     /// </summary>
-    public string? LabelFilter0 = null;
+    public string[]? Labels;
     /// <summary>
-    /// The second label filter
+    /// The game of the request, eg. to prevent LBP3 levels from appearing on LBP2 or LBP1
     /// </summary>
-    public string? LabelFilter1 = null;
-    /// <summary>
-    /// The third label filter
-    /// </summary>
-    public string? LabelFilter2 = null;
+    public TokenGame GameVersion;
 
-    public LevelFilterSettings()
+    public LevelFilterSettings(TokenGame game)
     {
     }
     
@@ -56,7 +53,7 @@ public class LevelFilterSettings
     /// Gets the filter settings from a request
     /// </summary>
     /// <param name="context"></param>
-    public LevelFilterSettings(RequestContext context)
+    public LevelFilterSettings(RequestContext context, TokenGame game)
     {
         string[]? gameFilters = context.QueryString.GetValues(context.IsApi() ? "gameFilter" : "gameFilter[]");
         if (gameFilters != null)
@@ -86,9 +83,7 @@ public class LevelFilterSettings
                 "lbp1" => GameFilterType.LittleBigPlanet1,
                 "lbp2" => GameFilterType.LittleBigPlanet2,
                 "both" => GameFilterType.Both,
-                //NOTE: We dont throw an exception here because an unknown filter setting could very well just be an unhandled case,
-                //      and the wrong filter should just be ignored to at least give the user some response
-                _ => GameFilterType.Both,
+                _ => throw new ArgumentOutOfRangeException(),
             };
 
         string? excludeMyLevels = context.QueryString.Get("excludeMyLevels");
@@ -103,9 +98,7 @@ public class LevelFilterSettings
                 "true" => MoveFilterType.True,
                 "false" => MoveFilterType.False,
                 "only" => MoveFilterType.Only,
-                //NOTE: We dont throw an exception here because an unknown filter setting could very well just be an unhandled case,
-                //      and the wrong filter should just be ignored to at least give the user some response
-                _ => MoveFilterType.True,
+                _ => throw new ArgumentOutOfRangeException(),
             };
 
         string? players = context.QueryString.Get("players");
@@ -113,8 +106,24 @@ public class LevelFilterSettings
             if (!byte.TryParse(players, out this.Players))
                 this.Players = 0;
 
-        this.LabelFilter0 = context.QueryString.Get("labelFilter0");
-        this.LabelFilter1 = context.QueryString.Get("labelFilter1");
-        this.LabelFilter2 = context.QueryString.Get("labelFilter2");
+        string? labelFilter0 = context.QueryString.Get("labelFilter0");
+        string? labelFilter1 = context.QueryString.Get("labelFilter1");
+        string? labelFilter2 = context.QueryString.Get("labelFilter2");
+
+        if (labelFilter2 != null)
+        {
+            this.Labels ??= new string[3];
+            this.Labels[2] = labelFilter2;
+        }
+        if (labelFilter1 != null)
+        {
+            this.Labels ??= new string[2];
+            this.Labels[1] = labelFilter1;
+        }
+        if (labelFilter0 != null)
+        {
+            this.Labels ??= new string[1];
+            this.Labels[0] = labelFilter0;
+        }
     }
 }

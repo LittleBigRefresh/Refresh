@@ -18,7 +18,7 @@ public class MostUniquelyPlayedLevelsCategory : LevelCategory
     }
 
     public override DatabaseList<GameLevel>? Fetch(RequestContext context, int skip, int count,
-        MatchService matchService, GameDatabaseContext database, GameUser? user, TokenGame gameVersion,
+        MatchService matchService, GameDatabaseContext database, GameUser? user,
         LevelFilterSettings levelFilterSettings) 
-        => database.GetMostUniquelyPlayedLevels(count, skip, gameVersion, user, levelFilterSettings);
+        => database.GetMostUniquelyPlayedLevels(count, skip, user, levelFilterSettings);
 }

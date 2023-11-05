@@ -18,7 +18,7 @@ public class TeamPickedLevelsCategory : LevelCategory
     }
 
     public override DatabaseList<GameLevel>? Fetch(RequestContext context, int skip, int count,
-        MatchService matchService, GameDatabaseContext database, GameUser? user, TokenGame gameVersion,
+        MatchService matchService, GameDatabaseContext database, GameUser? user, 
         LevelFilterSettings levelFilterSettings) 
-        => database.GetTeamPickedLevels(count, skip, gameVersion, user, levelFilterSettings);
+        => database.GetTeamPickedLevels(count, skip, user, levelFilterSettings);
 }

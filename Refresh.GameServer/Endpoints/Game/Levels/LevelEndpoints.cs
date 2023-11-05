@@ -39,11 +39,9 @@ public class LevelEndpoints : EndpointGroup
         
         (int skip, int count) = context.GetPageData();
 
-        LevelFilterSettings filterSettings = new(context);
-        
         DatabaseList<GameLevel>? levels = categoryService.Categories
             .FirstOrDefault(c => c.GameRoutes.Any(r => r.StartsWith(route)))?
-            .Fetch(context, skip, count, matchService, database, user, token.TokenGame, filterSettings);
+            .Fetch(context, skip, count, matchService, database, user, new LevelFilterSettings(context, token.TokenGame));
 
         if (levels == null) return null;
         
@@ -126,7 +124,7 @@ public class LevelEndpoints : EndpointGroup
 
         DatabaseList<GameLevel>? levels = categories.Categories
             .FirstOrDefault(c => c.ApiRoute.StartsWith(apiRoute))?
-            .Fetch(context, skip, count, matchService, database, user, token.TokenGame, new LevelFilterSettings(context));
+            .Fetch(context, skip, count, matchService, database, user, new LevelFilterSettings(context, token.TokenGame));
         
         return new SerializedMinimalLevelResultsList(levels?.Items
             .Select(l => GameMinimalLevelResponse.FromOldWithExtraData(l, matchService))!, levels?.TotalItems ?? 0);

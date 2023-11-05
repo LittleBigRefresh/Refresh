@@ -33,6 +33,6 @@ public abstract class LevelCategory
     [JsonProperty] public readonly bool RequiresUser;
 
     [Pure]
-    public abstract DatabaseList<GameLevel>? Fetch(RequestContext context, int skip, int count, MatchService matchService, GameDatabaseContext database, GameUser? user, TokenGame gameVersion,
+    public abstract DatabaseList<GameLevel>? Fetch(RequestContext context, int skip, int count, MatchService matchService, GameDatabaseContext database, GameUser? user,
         LevelFilterSettings levelFilterSettings);
 }

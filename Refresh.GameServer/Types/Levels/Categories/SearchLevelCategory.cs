@@ -18,12 +18,12 @@ public class SearchLevelCategory : LevelCategory
     }
 
     public override DatabaseList<GameLevel>? Fetch(RequestContext context, int skip, int count,
-        MatchService matchService, GameDatabaseContext database, GameUser? user, TokenGame gameVersion,
+        MatchService matchService, GameDatabaseContext database, GameUser? user, 
         LevelFilterSettings levelFilterSettings)
     {
         string? query = context.QueryString["query"];
         if (query == null) return null;
 
-        return database.SearchForLevels(count, skip, gameVersion, levelFilterSettings, query);
+        return database.SearchForLevels(count, skip, user, levelFilterSettings, query);
     }
 }
