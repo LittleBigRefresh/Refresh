@@ -19,6 +19,7 @@ public class ApiLevelCategoryResponse : IApiResponse, IDataConvertableFrom<ApiLe
     public required string ApiRoute { get; set; }
     public required bool RequiresUser { get; set; }
     public required ApiGameLevelResponse? PreviewLevel { get; set; }
+    public required bool Hidden { get; set; } = false;
     
     public static ApiLevelCategoryResponse? FromOld(LevelCategory? old, GameLevel? previewLevel)
     {
@@ -33,6 +34,7 @@ public class ApiLevelCategoryResponse : IApiResponse, IDataConvertableFrom<ApiLe
             ApiRoute = old.ApiRoute,
             RequiresUser = old.RequiresUser,
             PreviewLevel = ApiGameLevelResponse.FromOld(previewLevel),
+            Hidden = old.Hidden,
         };
     }
     

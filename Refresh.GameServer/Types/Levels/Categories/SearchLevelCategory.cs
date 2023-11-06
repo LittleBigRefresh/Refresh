@@ -15,6 +15,7 @@ public class SearchLevelCategory : LevelCategory
         this.Description = "Search for new levels.";
         this.FontAwesomeIcon = "magnifying-glass";
         // no icon for now, too lazy to find
+        this.Hidden = true; // The search category is not meant to be shown, as it requires a special implementation on all frontends
     }
 
     public override DatabaseList<GameLevel>? Fetch(RequestContext context, int skip, int count,

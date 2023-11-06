@@ -109,8 +109,7 @@ public class LevelEndpoints : EndpointGroup
     public SerializedCategoryList GetModernCategories(RequestContext context, GameDatabaseContext database, CategoryService categoryService, MatchService matchService, GameUser user, Token token)
     {
         IEnumerable<SerializedCategory> categories = categoryService.Categories
-            .Where(c => c is not SearchLevelCategory)
-            .Take(5)
+            .Where(c => c.Hidden)
             .Select(c => SerializedCategory.FromLevelCategory(c, context, database, user, token, matchService, 0, 1));
         
         return new SerializedCategoryList(categories, categoryService);

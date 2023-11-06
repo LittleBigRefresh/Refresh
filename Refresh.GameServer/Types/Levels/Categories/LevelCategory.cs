@@ -16,6 +16,7 @@ public abstract class LevelCategory
     [JsonProperty] public string Description { get; set; } = "";
     [JsonProperty] public string IconHash { get; set; } = "0";
     [JsonProperty] public string FontAwesomeIcon { get; set; } = "faCertificate";
+    [JsonProperty] public bool Hidden { get; set; } = false;
     
     internal LevelCategory(string apiRoute, string gameRoute, bool requiresUser) : this(apiRoute, new []{gameRoute}, requiresUser) {}
     

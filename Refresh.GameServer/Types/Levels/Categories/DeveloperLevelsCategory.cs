@@ -15,6 +15,7 @@ public class DeveloperLevelsCategory : LevelCategory
         this.Description = "Levels from LittleBigPlanet's story mode.";
         this.FontAwesomeIcon = "certificate";
         this.IconHash = "g820604";
+        this.Hidden = true; // TODO: Set to false when we import story level names
     }
 
     public override DatabaseList<GameLevel>? Fetch(RequestContext context, int skip, int count,
