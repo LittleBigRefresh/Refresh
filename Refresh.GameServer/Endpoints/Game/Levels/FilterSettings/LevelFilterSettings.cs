@@ -47,13 +47,13 @@ public class LevelFilterSettings
 
     public LevelFilterSettings(TokenGame game)
     {
+        this.GameVersion = game;
     }
     
     /// <summary>
     /// Gets the filter settings from a request
     /// </summary>
-    /// <param name="context"></param>
-    public LevelFilterSettings(RequestContext context, TokenGame game)
+    public LevelFilterSettings(RequestContext context, TokenGame game) : this(game)
     {
         string[]? gameFilters = context.QueryString.GetValues(context.IsApi() ? "gameFilter" : "gameFilter[]");
         if (gameFilters != null)

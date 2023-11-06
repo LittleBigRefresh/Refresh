@@ -108,11 +108,19 @@ public class LevelEndpoints : EndpointGroup
     [MinimumRole(GameUserRole.Restricted)]
     public SerializedCategoryList GetModernCategories(RequestContext context, GameDatabaseContext database, CategoryService categoryService, MatchService matchService, GameUser user, Token token)
     {
+        (int skip, int count) = context.GetPageData();
+
         IEnumerable<SerializedCategory> categories = categoryService.Categories
             .Where(c => !c.Hidden)
-            .Select(c => SerializedCategory.FromLevelCategory(c, context, database, user, token, matchService, 0, 1));
+            .Select(c => SerializedCategory.FromLevelCategory(c, context, database, user, token, matchService, 0, 1))
+            .Where(c => c.Levels.Total > 0)
+            .ToList();
+
+        int total = categories.Count();
+
+        categories = categories.Skip(skip).Take(count);
         
-        return new SerializedCategoryList(categories, categoryService);
+        return new SerializedCategoryList(categories, total);
     }
 
     [GameEndpoint("searches/{apiRoute}", ContentType.Xml)]

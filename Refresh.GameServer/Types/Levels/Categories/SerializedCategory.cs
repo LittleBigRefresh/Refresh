@@ -45,7 +45,7 @@ public class SerializedCategory
             Tag = "",
             IconHash = levelCategory.IconHash,
         };
-
+        
         DatabaseList<GameLevel> categoryLevels = levelCategory.Fetch(context, skip, count, matchService, database, user, new LevelFilterSettings(context, token.TokenGame));
         
         IEnumerable<GameMinimalLevelResponse> levels = categoryLevels?.Items

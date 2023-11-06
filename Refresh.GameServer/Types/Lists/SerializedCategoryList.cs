@@ -6,10 +6,10 @@ namespace Refresh.GameServer.Types.Lists;
 [XmlType("categories")]
 public class SerializedCategoryList : SerializedList<SerializedCategory>
 {
-    public SerializedCategoryList(IEnumerable<SerializedCategory> items, CategoryService categories)
+    public SerializedCategoryList(IEnumerable<SerializedCategory> items, int total)
     {
         this.Items = items.ToList();
-        this.Total = categories.Categories.Count();
+        this.Total = total;
     }
 
     public SerializedCategoryList() {}
