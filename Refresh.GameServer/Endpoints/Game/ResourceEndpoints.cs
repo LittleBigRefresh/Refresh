@@ -36,6 +36,12 @@ public class ResourceEndpoints : EndpointGroup
         
         if (dataStore.ExistsInStore(assetPath))
             return Conflict;
+
+        if (body.Length > 1_048_576 * 2)
+        {
+            context.Logger.LogWarning(BunkumCategory.UserContent, "{0} is above 2MB ({1} bytes), rejecting.", hash, body.Length);
+            return RequestEntityTooLarge;
+        }
         
         GameAsset? gameAsset = importer.ReadAndVerifyAsset(hash, body, token.TokenPlatform);
         if (gameAsset == null)
