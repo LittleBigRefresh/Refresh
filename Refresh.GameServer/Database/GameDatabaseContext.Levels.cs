@@ -294,6 +294,7 @@ public partial class GameDatabaseContext // Levels
     public DatabaseList<GameLevel> GetCoolLevels(int count, int skip, GameUser? user, LevelFilterSettings levelFilterSettings) =>
         new(this.GetLevelsByGameVersion(levelFilterSettings.GameVersion)
             .FilterByLevelFilterSettings(user, levelFilterSettings)
+            .Where(l => l.Score > 0)
             .OrderByDescending(l => l.Score), skip, count);
 
     [Pure]
