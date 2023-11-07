@@ -29,7 +29,7 @@ public class CoolLevelsWorker : IWorker
             int positiveScore = CalculatePositiveScore(logger, level);
             int negativeScore = CalculateNegativeScore(logger, level);
 
-            float finalScore = (positiveScore * multiplier) - negativeScore;
+            float finalScore = (positiveScore * multiplier) - (negativeScore * Math.Min(1.0f, multiplier * 2));
             logger.LogDebug(RefreshContext.CoolLevels, "Score for '{0}' ({1}) is {2}", level.Title, level.LevelId, finalScore);
             scoresToSet.Add(level, finalScore);
         }
