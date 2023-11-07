@@ -4,12 +4,16 @@ using Bunkum.Core.Endpoints;
 using Bunkum.Core.Responses;
 using Bunkum.Core.Storage;
 using Bunkum.Listener.Protocol;
+using Bunkum.Protocols.Http;
+using Refresh.GameServer.Authentication;
 using Refresh.GameServer.Database;
 using Refresh.GameServer.Endpoints.ApiV3.ApiTypes;
 using Refresh.GameServer.Endpoints.ApiV3.ApiTypes.Errors;
 using Refresh.GameServer.Endpoints.ApiV3.DataTypes.Response;
 using Refresh.GameServer.Importing;
+using Refresh.GameServer.Time;
 using Refresh.GameServer.Types.Assets;
+using Refresh.GameServer.Types.UserData;
 using Refresh.GameServer.Verification;
 
 namespace Refresh.GameServer.Endpoints.ApiV3;
@@ -130,4 +134,45 @@ public class ResourceApiEndpoints : EndpointGroup
     [DocError(typeof(ApiNotFoundError), "The asset could not be found")]
     public ApiResponse<ApiGameAssetResponse> GetPspAssetInfo(RequestContext context, GameDatabaseContext database,
         [DocSummary("The SHA1 hash of the asset")] string hash) => GetAssetInfo(context, database, $"psp/{hash}");
+
+    [ApiV3Endpoint("assets/{hash}", HttpMethods.Post)]
+    [DocSummary("Uploads an image (PNG/JPEG) asset")]
+    [DocError(typeof(ApiValidationError), HashInvalidErrorWhen)]
+    public ApiResponse<ApiGameAssetResponse> UploadImageAsset(RequestContext context, GameDatabaseContext database, IDataStore dataStore, AssetImporter importer,
+        [DocSummary("The SHA1 hash of the asset")] string hash,
+        byte[] body, GameUser user)
+    {
+        if (!CommonPatterns.Sha1Regex().IsMatch(hash)) return HashInvalidError;
+
+        if (dataStore.ExistsInStore(hash))
+        {
+            GameAsset? existingAsset = database.GetAssetFromHash(hash);
+            if (existingAsset == null)
+                return new ApiInternalError("The hash was present on the server, but could not be found in the database.");
+
+            return ApiGameAssetResponse.FromOld(existingAsset);
+        }
+
+        if (body.Length > 1_048_576 * 2)
+        {
+            return new ApiValidationError($"The asset must be under 2MB. Your file was {body.Length:N0} bytes.");
+        }
+
+        GameAsset? gameAsset = importer.ReadAndVerifyAsset(hash, body, TokenPlatform.Website);
+        if (gameAsset == null)
+            return new ApiValidationError("The asset could not be read.");
+
+        if (gameAsset.AssetType is not GameAssetType.Jpeg and not GameAssetType.Png)
+        {
+            return new ApiValidationError("You must provide a PNG or a JPEG file.");
+        }
+        
+        if (!dataStore.WriteToStore(hash, body))
+            return new ApiInternalError("The asset could not be written to the server's data store.");
+        
+        gameAsset.OriginalUploader = user;
+        database.AddAssetToDatabase(gameAsset);
+
+        return ApiGameAssetResponse.FromOld(gameAsset);
+    }
 }

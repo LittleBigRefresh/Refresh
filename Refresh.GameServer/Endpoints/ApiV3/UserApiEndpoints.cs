@@ -47,6 +47,9 @@ public class UserApiEndpoints : EndpointGroup
     [DocSummary("Updates your profile with the given data")]
     public ApiResponse<ApiExtendedGameUserResponse> UpdateUser(RequestContext context, GameDatabaseContext database, GameUser user, ApiUpdateUserRequest body)
     {
+        if (body.IconHash != null && database.GetAssetFromHash(body.IconHash) == null)
+            return ApiNotFoundError.Instance;
+
         database.UpdateUserData(user, body);
         return ApiExtendedGameUserResponse.FromOld(user);
     }
