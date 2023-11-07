@@ -81,7 +81,7 @@ public class CoolLevelsWorker : IWorker
         const int negativeRatingPoints = 5;
         const int negativeReviewPoints = 1;
         
-        score += level.Ratings.Count(r => r._RatingType == (int)RatingType.Yay) * negativeRatingPoints;
+        score += level.Ratings.Count(r => r._RatingType == (int)RatingType.Boo) * negativeRatingPoints;
 
         logger.LogTrace(RefreshContext.CoolLevels, "Negative Score is {0}", score);
         return score;
