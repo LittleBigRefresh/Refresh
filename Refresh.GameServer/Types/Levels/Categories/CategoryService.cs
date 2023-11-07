@@ -23,6 +23,7 @@ public class CategoryService : EndpointService
         new TeamPickedLevelsCategory(),
         new DeveloperLevelsCategory(),
         new CurrentlyPlayingCategory(),
+        new CoolLevelsCategory(),
     };
 
     internal CategoryService(Logger logger) : base(logger)

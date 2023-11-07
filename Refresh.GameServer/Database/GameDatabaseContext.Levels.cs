@@ -289,6 +289,12 @@ public partial class GameDatabaseContext // Levels
             .FilterByLevelFilterSettings(user, levelFilterSettings)
             .FilterByGameVersion(levelFilterSettings.GameVersion), skip, count);
     }
+    
+    [Pure]
+    public DatabaseList<GameLevel> GetCoolLevels(int count, int skip, GameUser? user, LevelFilterSettings levelFilterSettings) =>
+        new(this.GetLevelsByGameVersion(levelFilterSettings.GameVersion)
+            .FilterByLevelFilterSettings(user, levelFilterSettings)
+            .OrderByDescending(l => l.Score), skip, count);
 
     [Pure]
     public DatabaseList<GameLevel> SearchForLevels(int count, int skip, GameUser? user, LevelFilterSettings levelFilterSettings, string query)
