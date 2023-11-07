@@ -45,7 +45,7 @@ public class CoolLevelsWorker : IWorker
 
     private static float CalculateLevelDecayMultiplier(Logger logger, long now, GameLevel level)
     {
-        const int decayDays = 90;
+        const int decayDays = 30 * 3;
         const int decaySeconds = decayDays * 24 * 3600;
         const float minimumMultiplier = 0.1f;
         
@@ -63,10 +63,12 @@ public class CoolLevelsWorker : IWorker
     {
         int score = 0;
         const int positiveRatingPoints = 5;
-        const int positiveReviewPoints = 1;
+        const int positiveReviewPoints = 5;
         const int uniquePlayPoints = 1;
-        const int heartPoints = 2;
+        const int heartPoints = 5;
 
+        if (level.TeamPicked) score += 10;
+        
         score += level.Ratings.Count(r => r._RatingType == (int)RatingType.Yay) * positiveRatingPoints;
         score += level.UniquePlays.Count() * uniquePlayPoints;
         score += level.FavouriteRelations.Count() * heartPoints;
@@ -79,7 +81,7 @@ public class CoolLevelsWorker : IWorker
     {
         int score = 0;
         const int negativeRatingPoints = 5;
-        const int negativeReviewPoints = 1;
+        const int negativeReviewPoints = 5;
         
         score += level.Ratings.Count(r => r._RatingType == (int)RatingType.Boo) * negativeRatingPoints;
 
