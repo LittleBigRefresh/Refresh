@@ -16,6 +16,8 @@ public class CoolLevelsWorker : IWorker
 
         long now = DateTimeOffset.Now.ToUnixTimeSeconds();
 
+        Dictionary<GameLevel, float> scoresToSet = new();
+
         Stopwatch stopwatch = new();
         stopwatch.Start();
 
@@ -29,11 +31,14 @@ public class CoolLevelsWorker : IWorker
 
             float finalScore = (positiveScore * multiplier) - negativeScore;
             logger.LogDebug(RefreshContext.CoolLevels, "Score for '{0}' ({1}) is {2}", level.Title, level.LevelId, finalScore);
-            database.SetLevelScore(level, finalScore);
+            scoresToSet.Add(level, finalScore);
         }
         
         stopwatch.Stop();
         logger.LogInfo(RefreshContext.CoolLevels, "Calculated scores for {0} levels in {1}ms", levels.TotalItems, stopwatch.ElapsedMilliseconds);
+        
+        // commit scores to database
+        database.SetLevelScores(scoresToSet);
 
         return false;
     }
@@ -79,6 +84,6 @@ public class CoolLevelsWorker : IWorker
         score += level.Ratings.Count(r => r._RatingType == (int)RatingType.Yay) * negativeRatingPoints;
 
         logger.LogTrace(RefreshContext.CoolLevels, "Negative Score is {0}", score);
-        return -score;
+        return score;
     }
 }

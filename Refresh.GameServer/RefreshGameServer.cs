@@ -202,7 +202,7 @@ public class RefreshGameServer : IDisposable
         {
             Behaviour = new QueueLoggingBehaviour(),
             #if DEBUG
-            MaxLevel = LogLevel.Debug,
+            MaxLevel = LogLevel.Trace,
             #else
             MaxLevel = LogLevel.Info,
             #endif
