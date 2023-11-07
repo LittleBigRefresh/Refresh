@@ -36,6 +36,7 @@ public class InstanceApiEndpoints : EndpointGroup
         {
             TotalLevels = database.GetTotalLevelCount(),
             TotalUsers = database.GetTotalUserCount(),
+            ActiveUsers = database.GetActiveUserCount(),
             TotalPhotos = database.GetTotalPhotoCount(),
             TotalEvents = database.GetTotalEventCount(),
             CurrentRoomCount = match.Rooms.Count(),
