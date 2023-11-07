@@ -8,10 +8,10 @@ namespace Refresh.GameServer.Types.Levels.Categories;
 
 public class CoolLevelsCategory : LevelCategory
 {
-    public CoolLevelsCategory() : base("coolLevels", "cool", false)
+    public CoolLevelsCategory() : base("coolLevels", new []{"lbpcool", "lbp2cool"}, false)
     {
         this.Name = "Cool Levels";
-        this.Description = "wacha wacha";
+        this.Description = "Levels trending with players like you!";
         this.FontAwesomeIcon = "fireAlt";
         this.IconHash = "g820625";
     }

@@ -38,6 +38,7 @@ public class ApiGameLevelResponse : IApiResponse, IDataConvertableFrom<ApiGameLe
     public required bool IsLocked { get; set; }
     public required bool IsSubLevel { get; set; }
     public required bool IsCopyable { get; set; }
+    public required float Score { get; set; }
 
     public static ApiGameLevelResponse? FromOld(GameLevel? level)
     {
@@ -69,6 +70,7 @@ public class ApiGameLevelResponse : IApiResponse, IDataConvertableFrom<ApiGameLe
             IsCopyable = level.IsCopyable,
             IsLocked = level.IsLocked,
             IsSubLevel = level.IsSubLevel,
+            Score = level.Score,
         };
     }
 
