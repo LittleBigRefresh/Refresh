@@ -1,9 +1,8 @@
+using System.Diagnostics;
 using Bunkum.Core.Storage;
 using NotEnoughLogs;
 using Refresh.GameServer.Database;
-using Refresh.GameServer.Endpoints.Game.Levels.FilterSettings;
 using Refresh.GameServer.Types.Levels;
-using Refresh.GameServer.Types.Relations;
 using Refresh.GameServer.Types.Reviews;
 
 namespace Refresh.GameServer.Workers;
@@ -17,6 +16,9 @@ public class CoolLevelsWorker : IWorker
 
         long now = DateTimeOffset.Now.ToUnixTimeSeconds();
 
+        Stopwatch stopwatch = new();
+        stopwatch.Start();
+
         foreach (GameLevel level in levels.Items)
         {
             logger.LogTrace(RefreshContext.CoolLevels, "Calculating score for '{0}' ({1})", level.Title, level.LevelId);
@@ -27,7 +29,11 @@ public class CoolLevelsWorker : IWorker
 
             float finalScore = (positiveScore * multiplier) - negativeScore;
             logger.LogDebug(RefreshContext.CoolLevels, "Score for '{0}' ({1}) is {2}", level.Title, level.LevelId, finalScore);
+            database.SetLevelScore(level, finalScore);
         }
+        
+        stopwatch.Stop();
+        logger.LogInfo(RefreshContext.CoolLevels, "Calculated scores for {0} levels in {1}ms", levels.TotalItems, stopwatch.ElapsedMilliseconds);
 
         return false;
     }
@@ -51,10 +57,10 @@ public class CoolLevelsWorker : IWorker
     private static int CalculatePositiveScore(Logger logger, GameLevel level)
     {
         int score = 0;
-        const int positiveRatingPoints = 1;
+        const int positiveRatingPoints = 5;
         const int positiveReviewPoints = 1;
         const int uniquePlayPoints = 1;
-        const int heartPoints = 1;
+        const int heartPoints = 2;
 
         score += level.Ratings.Count(r => r._RatingType == (int)RatingType.Yay) * positiveRatingPoints;
         score += level.UniquePlays.Count() * uniquePlayPoints;
@@ -67,7 +73,7 @@ public class CoolLevelsWorker : IWorker
     private static int CalculateNegativeScore(Logger logger, GameLevel level)
     {
         int score = 0;
-        const int negativeRatingPoints = 1;
+        const int negativeRatingPoints = 5;
         const int negativeReviewPoints = 1;
         
         score += level.Ratings.Count(r => r._RatingType == (int)RatingType.Yay) * negativeRatingPoints;

@@ -335,4 +335,12 @@ public partial class GameDatabaseContext // Levels
 
     public void AddTeamPickToLevel(GameLevel level) => this.SetLevelPickStatus(level, true);
     public void RemoveTeamPickFromLevel(GameLevel level) => this.SetLevelPickStatus(level, false);
+
+    public void SetLevelScore(GameLevel level, float score)
+    {
+        this._realm.Write(() =>
+        {
+            level.Score = score;
+        });
+    }
 }
