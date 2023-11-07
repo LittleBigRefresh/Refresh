@@ -170,6 +170,10 @@ public partial class GameDatabaseContext // Levels
     }
 
     [Pure]
+    public DatabaseList<GameLevel> GetAllUserLevels() 
+        => new(this._realm.All<GameLevel>().Where(l => l._Source == (int)GameLevelSource.User));
+
+    [Pure]
     public DatabaseList<GameLevel> GetNewestLevels(int count, int skip, GameUser? user, LevelFilterSettings levelFilterSettings) =>
         new(this.GetLevelsByGameVersion(levelFilterSettings.GameVersion)
             .FilterByLevelFilterSettings(user, levelFilterSettings)
@@ -285,6 +289,13 @@ public partial class GameDatabaseContext // Levels
             .FilterByLevelFilterSettings(user, levelFilterSettings)
             .FilterByGameVersion(levelFilterSettings.GameVersion), skip, count);
     }
+    
+    [Pure]
+    public DatabaseList<GameLevel> GetCoolLevels(int count, int skip, GameUser? user, LevelFilterSettings levelFilterSettings) =>
+        new(this.GetLevelsByGameVersion(levelFilterSettings.GameVersion)
+            .FilterByLevelFilterSettings(user, levelFilterSettings)
+            .Where(l => l.Score > 0)
+            .OrderByDescending(l => l.Score), skip, count);
 
     [Pure]
     public DatabaseList<GameLevel> SearchForLevels(int count, int skip, GameUser? user, LevelFilterSettings levelFilterSettings, string query)
@@ -331,4 +342,15 @@ public partial class GameDatabaseContext // Levels
 
     public void AddTeamPickToLevel(GameLevel level) => this.SetLevelPickStatus(level, true);
     public void RemoveTeamPickFromLevel(GameLevel level) => this.SetLevelPickStatus(level, false);
+
+    public void SetLevelScores(Dictionary<GameLevel, float> scoresToSet)
+    {
+        this._realm.Write(() =>
+        {
+            foreach ((GameLevel level, float score) in scoresToSet)
+            {
+                level.Score = score;
+            }
+        });
+    }
 }

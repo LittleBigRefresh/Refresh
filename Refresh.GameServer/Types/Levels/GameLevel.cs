@@ -8,6 +8,7 @@ using Refresh.GameServer.Types.Levels.SkillRewards;
 using Refresh.GameServer.Types.Relations;
 using Refresh.GameServer.Types.Reviews;
 using Refresh.GameServer.Types.UserData.Leaderboard;
+using Refresh.GameServer.Workers;
 
 namespace Refresh.GameServer.Types.Levels;
 
@@ -75,6 +76,12 @@ public partial class GameLevel : IRealmObject, ISequentialId
     public bool IsLocked { get; set; }
     public bool IsSubLevel { get; set; }
     public bool IsCopyable { get; set; }
+    
+    /// <summary>
+    /// The score, used for Cool Levels.
+    /// </summary>
+    /// <seealso cref="CoolLevelsWorker"/>
+    public float Score { get; set; }
 
 #nullable disable
     public IList<GameComment> LevelComments { get; }

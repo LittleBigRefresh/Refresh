@@ -159,6 +159,7 @@ public class RefreshGameServer : IDisposable
         
         this._workerManager.AddWorker<PunishmentExpiryWorker>();
         this._workerManager.AddWorker<ExpiredObjectWorker>();
+        this._workerManager.AddWorker<CoolLevelsWorker>();
         
         if ((this._integrationConfig?.DiscordWebhookEnabled ?? false) && this._config != null)
         {
@@ -201,7 +202,7 @@ public class RefreshGameServer : IDisposable
         {
             Behaviour = new QueueLoggingBehaviour(),
             #if DEBUG
-            MaxLevel = LogLevel.Debug,
+            MaxLevel = LogLevel.Trace,
             #else
             MaxLevel = LogLevel.Info,
             #endif

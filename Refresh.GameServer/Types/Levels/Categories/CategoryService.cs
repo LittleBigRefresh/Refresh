@@ -10,19 +10,24 @@ public class CategoryService : EndpointService
     // ReSharper disable once InconsistentNaming
     private readonly List<LevelCategory> _categories = new()
     {
-        new NewestLevelsCategory(),
+        new CoolLevelsCategory(),
+        new TeamPickedLevelsCategory(),
+        
+        new CurrentlyPlayingCategory(),
         new RandomLevelsCategory(),
-        new ByUserLevelCategory(),
-        new SearchLevelCategory(),
-        new FavouriteSlotsByUserCategory(),
-        new QueuedLevelsByUserCategory(),
+        new NewestLevelsCategory(),
+        
         new MostHeartedLevelsCategory(),
         new HighestRatedLevelsCategory(),
         new MostUniquelyPlayedLevelsCategory(),
         new MostReplayedLevelsCategory(),
-        new TeamPickedLevelsCategory(),
+        
+        new ByUserLevelCategory(),
+        new FavouriteSlotsByUserCategory(),
+        new QueuedLevelsByUserCategory(),
+        
+        new SearchLevelCategory(),
         new DeveloperLevelsCategory(),
-        new CurrentlyPlayingCategory(),
     };
 
     internal CategoryService(Logger logger) : base(logger)
