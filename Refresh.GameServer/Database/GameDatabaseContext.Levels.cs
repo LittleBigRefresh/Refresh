@@ -170,6 +170,10 @@ public partial class GameDatabaseContext // Levels
     }
 
     [Pure]
+    public DatabaseList<GameLevel> GetAllUserLevels() 
+        => new(this._realm.All<GameLevel>().Where(l => l._Source == (int)GameLevelSource.User));
+
+    [Pure]
     public DatabaseList<GameLevel> GetNewestLevels(int count, int skip, GameUser? user, LevelFilterSettings levelFilterSettings) =>
         new(this.GetLevelsByGameVersion(levelFilterSettings.GameVersion)
             .FilterByLevelFilterSettings(user, levelFilterSettings)

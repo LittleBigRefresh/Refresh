@@ -7,4 +7,5 @@ public enum RefreshContext
     Discord,
     PasswordReset,
     LevelListOverride,
+    CoolLevels,
 }
