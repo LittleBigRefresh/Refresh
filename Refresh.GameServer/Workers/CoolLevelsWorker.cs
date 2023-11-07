@@ -19,7 +19,7 @@ public class CoolLevelsWorker : IWorker
 
         foreach (GameLevel level in levels.Items)
         {
-            logger.LogDebug(RefreshContext.CoolLevels, "Calculating score for '{0}' ({1})", level.Title, level.LevelId);
+            logger.LogTrace(RefreshContext.CoolLevels, "Calculating score for '{0}' ({1})", level.Title, level.LevelId);
             float multiplier = CalculateLevelDecayMultiplier(logger, now, level);
 
             int positiveScore = CalculatePositiveScore(logger, level);
@@ -44,7 +44,7 @@ public class CoolLevelsWorker : IWorker
         float multiplier = 1.0f - Math.Min(1.0f, (float)elapsed / decaySeconds);
         multiplier = Math.Max(minimumMultiplier, multiplier);
         
-        logger.LogDebug(RefreshContext.CoolLevels, "Decay multiplier is {0}", multiplier);
+        logger.LogTrace(RefreshContext.CoolLevels, "Decay multiplier is {0}", multiplier);
         return multiplier;
     }
 
@@ -60,7 +60,7 @@ public class CoolLevelsWorker : IWorker
         score += level.UniquePlays.Count() * uniquePlayPoints;
         score += level.FavouriteRelations.Count() * heartPoints;
 
-        logger.LogDebug(RefreshContext.CoolLevels, "Positive Score is {0}", score);
+        logger.LogTrace(RefreshContext.CoolLevels, "Positive Score is {0}", score);
         return score;
     }
 
@@ -72,7 +72,7 @@ public class CoolLevelsWorker : IWorker
         
         score += level.Ratings.Count(r => r._RatingType == (int)RatingType.Yay) * negativeRatingPoints;
 
-        logger.LogDebug(RefreshContext.CoolLevels, "Negative Score is {0}", score);
+        logger.LogTrace(RefreshContext.CoolLevels, "Negative Score is {0}", score);
         return -score;
     }
 }
