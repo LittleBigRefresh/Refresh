@@ -42,7 +42,7 @@ public class CoolLevelsWorker : IWorker
             // Weigh everything with the multiplier and set a final score
             float finalScore = (positiveScore * decayMultiplier) - (negativeScore * Math.Min(1.0f, decayMultiplier * negativeScoreMultiplier));
             
-            logger.LogDebug(RefreshContext.CoolLevels, "Score for '{0}' ({1}) is {2}", level.Title, level.LevelId, finalScore);
+            logger.LogTrace(RefreshContext.CoolLevels, "Score for '{0}' ({1}) is {2}", level.Title, level.LevelId, finalScore);
             scoresToSet.Add(level, finalScore);
         }
         
