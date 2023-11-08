@@ -20,7 +20,7 @@ namespace RefreshTests.GameServer.GameServer;
 
 public class TestRefreshGameServer : RefreshGameServer
 {
-    public TestRefreshGameServer(BunkumHttpListener listener, Func<GameDatabaseProvider> provider) : base(listener, provider, null, new InMemoryDataStore())
+    public TestRefreshGameServer(BunkumHttpListener listener, Func<GameDatabaseProvider> provider, IDataStore? dataStore = null) : base(listener, provider, null, dataStore ?? new InMemoryDataStore())
     {}
 
     public BunkumHttpServer Server => this._server;
