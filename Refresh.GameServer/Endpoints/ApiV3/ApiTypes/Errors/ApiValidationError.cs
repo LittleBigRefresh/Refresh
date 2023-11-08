@@ -17,5 +17,20 @@ public class ApiValidationError : ApiError
     public const string NoPhotoDeletionPermissionErrorWhen = "You do not have permission to delete someone else's photo";
     public static readonly ApiValidationError NoPhotoDeletionPermissionError = new(NoPhotoDeletionPermissionErrorWhen);
     
+    public const string HashInvalidErrorWhen = "The hash is invalid (should be SHA1 hash)";
+    public static readonly ApiValidationError HashInvalidError = new(HashInvalidErrorWhen);
+    
+    public const string HashMissingErrorWhen = "The hash is missing or null";
+    public static readonly ApiValidationError HashMissingError = new(HashMissingErrorWhen);
+
+    public const string BodyTooLongErrorWhen = "The asset must be under 2MB";
+    public static readonly ApiValidationError BodyTooLongError = new(BodyTooLongErrorWhen);
+
+    public const string CannotReadAssetErrorWhen = "The asset could not be read";
+    public static readonly ApiValidationError CannotReadAssetError = new(CannotReadAssetErrorWhen);
+
+    public const string BodyMustBeImageErrorWhen = "The asset must be a PNG/JPEG file";
+    public static readonly ApiValidationError BodyMustBeImageError = new(BodyMustBeImageErrorWhen);
+    
     public ApiValidationError(string message) : base(message) {}
 }

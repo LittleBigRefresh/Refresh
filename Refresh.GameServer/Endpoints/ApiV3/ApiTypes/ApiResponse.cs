@@ -18,13 +18,13 @@ public class ApiResponse<TData> : IHasResponseCode where TData : class
         
     }
     
-    public ApiResponse(TData data)
+    public ApiResponse(TData data, HttpStatusCode statusCode = OK)
     {
         this.Success = true;
         this.Data = data;
         this.Error = null;
 
-        this.StatusCode = OK;
+        this.StatusCode = statusCode;
     }
 
     public ApiResponse(ApiError error)
