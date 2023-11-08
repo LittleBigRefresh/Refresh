@@ -241,4 +241,17 @@ public class AssetUploadTests : GameServerTest
         response = client.GetAsync("/lbp/r/..%2Frpc.json").Result;
         Assert.That(response.StatusCode, Is.EqualTo(BadRequest));
     }
+    
+    [Test]
+    public void CantCheckForInvalidMissingAssets()
+    {
+        using TestContext context = this.GetServer();
+        context.Server.Value.Server.AddService<ImportService>();
+        GameUser user = context.CreateUser();
+        using HttpClient client = context.GetAuthenticatedClient(TokenType.Game, user);
+
+        //Check the list initially, should have 1 item
+        HttpResponseMessage response = client.PostAsync("/lbp/filterResources", new StringContent(new SerializedResourceList(new[] { "I_AM_NOT_HASH" }).AsXML())).Result;
+        Assert.That(response.StatusCode, Is.EqualTo(BadRequest));
+    }
 }

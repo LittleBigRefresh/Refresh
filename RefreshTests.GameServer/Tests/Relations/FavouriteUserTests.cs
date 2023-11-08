@@ -41,17 +41,20 @@ public class FavouriteUserTests : GameServerTest
         Assert.That(result.Items, Has.Count.EqualTo(0));
     }
 
-    [Test]
-    public void CantFavouriteMissingUser()
+    [TestCase(false)]
+    [TestCase(true)]
+    public void CantFavouriteMissingUser(bool psp)
     {
         using TestContext context = this.GetServer();
         GameUser user = context.CreateUser();
 
         using HttpClient client = context.GetAuthenticatedClient(TokenType.Game, user);
+        if(psp)
+            client.DefaultRequestHeaders.UserAgent.TryParseAdd("LBPPSP CLIENT");
 
         //Favourite an invalid user
         HttpResponseMessage message = client.PostAsync($"/lbp/favourite/user/pain peko", new ReadOnlyMemoryContent(Array.Empty<byte>())).Result;
-        Assert.That(message.StatusCode, Is.EqualTo(NotFound));
+        Assert.That(message.StatusCode, Is.EqualTo(psp ? OK : NotFound));
         
         //Get the favourite users
         message = client.GetAsync($"/lbp/favouriteUsers/{user.Username}").Result;
@@ -61,70 +64,42 @@ public class FavouriteUserTests : GameServerTest
         Assert.That(result.Items, Has.Count.EqualTo(0)); 
     }
     
-    [Test]
-    public void CantFavouriteMissingUserPsp()
+    [TestCase(false)]
+    [TestCase(true)]
+    public void CantUnfavouriteMissingUser(bool psp)
     {
         using TestContext context = this.GetServer();
         GameUser user = context.CreateUser();
 
         using HttpClient client = context.GetAuthenticatedClient(TokenType.Game, user);
-        client.DefaultRequestHeaders.UserAgent.TryParseAdd("LBPPSP CLIENT");
-        
-        //Favourite an invalid user
-        HttpResponseMessage message = client.PostAsync($"/lbp/favourite/user/painer peko", new ReadOnlyMemoryContent(Array.Empty<byte>())).Result;
-        Assert.That(message.StatusCode, Is.EqualTo(OK));
-        
-        //Get the favourite users
-        message = client.GetAsync($"/lbp/favouriteUsers/{user.Username}").Result;
-        Assert.That(message.StatusCode, Is.EqualTo(OK));
-        //Make sure its still empty
-        SerializedFavouriteUserList result = message.Content.ReadAsXML<SerializedFavouriteUserList>();
-        Assert.That(result.Items, Has.Count.EqualTo(0)); 
-    }
-    
-    [Test]
-    public void CantUnfavouriteMissingUser()
-    {
-        using TestContext context = this.GetServer();
-        GameUser user = context.CreateUser();
-
-        using HttpClient client = context.GetAuthenticatedClient(TokenType.Game, user);
+        if(psp)
+            client.DefaultRequestHeaders.UserAgent.TryParseAdd("LBPPSP CLIENT");
 
         //Unfavourite an invalid user
         HttpResponseMessage message = client.PostAsync($"/lbp/unfavourite/user/womp womp", new ReadOnlyMemoryContent(Array.Empty<byte>())).Result;
-        Assert.That(message.StatusCode, Is.EqualTo(NotFound));
+        Assert.That(message.StatusCode, Is.EqualTo(psp ? OK : NotFound));
     }
     
-    [Test]
-    public void CantUnfavouriteMissingUserPsp()
-    {
-        using TestContext context = this.GetServer();
-        GameUser user = context.CreateUser();
-
-        using HttpClient client = context.GetAuthenticatedClient(TokenType.Game, user);
-        client.DefaultRequestHeaders.UserAgent.TryParseAdd("LBPPSP CLIENT");
-        
-        //Unfavourite an invalid user
-        HttpResponseMessage message = client.PostAsync($"/lbp/unfavourite/user/gymbag", new ReadOnlyMemoryContent(Array.Empty<byte>())).Result;
-        Assert.That(message.StatusCode, Is.EqualTo(OK));
-    }
-    
-    [Test]
-    public void CantFavouriteUserTwice()
+    [TestCase(false)]
+    [TestCase(true)]
+    public void CantFavouriteUserTwice(bool psp)
     {
         using TestContext context = this.GetServer();
         GameUser user1 = context.CreateUser();
         GameUser user2 = context.CreateUser();
 
         using HttpClient client = context.GetAuthenticatedClient(TokenType.Game, user1);
+        if (psp)
+            client.DefaultRequestHeaders.UserAgent.TryParseAdd("LBPPSP CLIENT");
 
+        
         //Favourite a user
         HttpResponseMessage message = client.PostAsync($"/lbp/favourite/user/{user2.Username}", new ReadOnlyMemoryContent(Array.Empty<byte>())).Result;
         Assert.That(message.StatusCode, Is.EqualTo(OK));
         
         //Favourite the same user again
         message = client.PostAsync($"/lbp/favourite/user/{user2.Username}", new ReadOnlyMemoryContent(Array.Empty<byte>())).Result;
-        Assert.That(message.StatusCode, Is.EqualTo(Unauthorized));
+        Assert.That(message.StatusCode, Is.EqualTo(psp ? OK : Unauthorized));
         
         //Get the favourite users
         message = client.GetAsync($"/lbp/favouriteUsers/{user1.Username}").Result;
@@ -135,60 +110,22 @@ public class FavouriteUserTests : GameServerTest
         Assert.That(result.Items.First().Handle.Username, Is.EqualTo(user2.Username));
     }
     
-    [Test]
-    public void CantFavouriteUserTwicePsp()
+    [TestCase(false)]
+    [TestCase(true)]
+    public void CantUnfavouriteUserTwice(bool psp)
     {
         using TestContext context = this.GetServer();
         GameUser user1 = context.CreateUser();
         GameUser user2 = context.CreateUser();
 
         using HttpClient client = context.GetAuthenticatedClient(TokenType.Game, user1);
-        client.DefaultRequestHeaders.UserAgent.TryParseAdd("LBPPSP CLIENT");
-        
-        //Favourite a user
-        HttpResponseMessage message = client.PostAsync($"/lbp/favourite/user/{user2.Username}", new ReadOnlyMemoryContent(Array.Empty<byte>())).Result;
-        Assert.That(message.StatusCode, Is.EqualTo(OK));
-        
-        //Favourite the same user again
-        message = client.PostAsync($"/lbp/favourite/user/{user2.Username}", new ReadOnlyMemoryContent(Array.Empty<byte>())).Result;
-        Assert.That(message.StatusCode, Is.EqualTo(OK));
-        
-        //Get the favourite users
-        message = client.GetAsync($"/lbp/favouriteUsers/{user1.Username}").Result;
-        Assert.That(message.StatusCode, Is.EqualTo(OK));
-        //Make sure it has the user
-        SerializedFavouriteUserList result = message.Content.ReadAsXML<SerializedFavouriteUserList>();
-        Assert.That(result.Items, Has.Count.EqualTo(1)); 
-        Assert.That(result.Items.First().Handle.Username, Is.EqualTo(user2.Username));
-    }
-    
-    [Test]
-    public void CantUnfavouriteUserTwice()
-    {
-        using TestContext context = this.GetServer();
-        GameUser user1 = context.CreateUser();
-        GameUser user2 = context.CreateUser();
+        if(psp)        
+            client.DefaultRequestHeaders.UserAgent.TryParseAdd("LBPPSP CLIENT");
 
-        using HttpClient client = context.GetAuthenticatedClient(TokenType.Game, user1);
 
         //Unfavourite a user, which we haven't favourited
         HttpResponseMessage message = client.PostAsync($"/lbp/unfavourite/user/{user2.Username}", new ReadOnlyMemoryContent(Array.Empty<byte>())).Result;
-        Assert.That(message.StatusCode, Is.EqualTo(Unauthorized));
-    }
-    
-    [Test]
-    public void CantUnfavouriteUserTwicePsp()
-    {
-        using TestContext context = this.GetServer();
-        GameUser user1 = context.CreateUser();
-        GameUser user2 = context.CreateUser();
-
-        using HttpClient client = context.GetAuthenticatedClient(TokenType.Game, user1);
-        client.DefaultRequestHeaders.UserAgent.TryParseAdd("LBPPSP CLIENT");
-        
-        //Unfavourite a user, which we haven't favourited
-        HttpResponseMessage message = client.PostAsync($"/lbp/unfavourite/user/{user2.Username}", new ReadOnlyMemoryContent(Array.Empty<byte>())).Result;
-        Assert.That(message.StatusCode, Is.EqualTo(OK));
+        Assert.That(message.StatusCode, Is.EqualTo(psp ? OK : Unauthorized));
     }
     
     [Test]
