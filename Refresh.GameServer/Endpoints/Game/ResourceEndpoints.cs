@@ -32,8 +32,10 @@ public class ResourceEndpoints : EndpointGroup
         if (!CommonPatterns.Sha1Regex().IsMatch(hash)) return BadRequest;
         
         bool isPSP = context.IsPSP();
-        string assetPath = isPSP ? $"psp/{hash}" : hash;
-        
+        string assetPath = hash;
+        if (isPSP)
+            assetPath = $"psp/{hash}";
+
         if (dataStore.ExistsInStore(assetPath))
             return Conflict;
 
