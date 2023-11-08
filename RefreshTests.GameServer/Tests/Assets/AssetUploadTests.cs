@@ -1,7 +1,9 @@
 using System.Security.Cryptography;
 using Refresh.GameServer.Authentication;
 using Refresh.GameServer.Services;
+using Refresh.GameServer.Types.Lists;
 using Refresh.GameServer.Types.UserData;
+using RefreshTests.GameServer.Extensions;
 
 namespace RefreshTests.GameServer.Tests.Assets;
 
@@ -9,32 +11,16 @@ public class AssetUploadTests : GameServerTest
 {
     private const string MissingHash = "6e4d252f247e3aa99ef846df8c65493393e79f4f";
     
-    [Test]
-    public void CanUploadAsset()
+    [TestCase(false)]
+    [TestCase(true)]
+    public void CanUploadAsset(bool psp)
     {
         using TestContext context = this.GetServer();
         context.Server.Value.Server.AddService<ImportService>();
         GameUser user = context.CreateUser();
         using HttpClient client = context.GetAuthenticatedClient(TokenType.Game, user);
-
-        ReadOnlySpan<byte> data = "TEX a"u8;
-        
-        string hash = BitConverter.ToString(SHA1.HashData(data))
-            .Replace("-", "")
-            .ToLower();
-
-        HttpResponseMessage response = client.PostAsync("/lbp/upload/" + hash, new ByteArrayContent(data.ToArray())).Result;
-        Assert.That(response.StatusCode, Is.EqualTo(OK));
-    }
-    
-    [Test]
-    public void CanUploadAssetPsp()
-    {
-        using TestContext context = this.GetServer();
-        context.Server.Value.Server.AddService<ImportService>();
-        GameUser user = context.CreateUser();
-        using HttpClient client = context.GetAuthenticatedClient(TokenType.Game, user);
-        client.DefaultRequestHeaders.UserAgent.TryParseAdd("LBPPSP CLIENT");
+        if(psp)
+            client.DefaultRequestHeaders.UserAgent.TryParseAdd("LBPPSP CLIENT");
 
         ReadOnlySpan<byte> data = "TEX a"u8;
         
@@ -153,14 +139,17 @@ public class AssetUploadTests : GameServerTest
         HttpResponseMessage response = client.PostAsync("/lbp/upload/I_AM_NOT_REAL", new ByteArrayContent(data.ToArray())).Result;
         Assert.That(response.StatusCode, Is.EqualTo(BadRequest));
     }
-
-    [Test]
-    public void CanRetrieveAsset()
+    
+    [TestCase(false)]
+    [TestCase(true)]
+    public void CanRetrieveAsset(bool psp)
     {
         using TestContext context = this.GetServer();
         context.Server.Value.Server.AddService<ImportService>();
         GameUser user = context.CreateUser();
         using HttpClient client = context.GetAuthenticatedClient(TokenType.Game, user);
+        if (psp) 
+            client.DefaultRequestHeaders.UserAgent.TryParseAdd("LBPPSP CLIENT");
 
         ReadOnlySpan<byte> data = "TEX a"u8;
         string hash = BitConverter.ToString(SHA1.HashData(data))
@@ -178,29 +167,53 @@ public class AssetUploadTests : GameServerTest
         Assert.That(data.SequenceEqual(returnedData), Is.True);
     }
     
-    [Test]
-    public void CanRetrieveAssetPsp()
+    [TestCase(false)]
+    [TestCase(true)]
+    public void CanCheckForMissingAssets(bool psp)
     {
         using TestContext context = this.GetServer();
         context.Server.Value.Server.AddService<ImportService>();
         GameUser user = context.CreateUser();
         using HttpClient client = context.GetAuthenticatedClient(TokenType.Game, user);
-        client.DefaultRequestHeaders.UserAgent.TryParseAdd("LBPPSP CLIENT");
+        if(psp) 
+            client.DefaultRequestHeaders.UserAgent.TryParseAdd("LBPPSP CLIENT");
 
         ReadOnlySpan<byte> data = "TEX a"u8;
         string hash = BitConverter.ToString(SHA1.HashData(data))
             .Replace("-", "")
             .ToLower();
+        
+        //Check the list initially, should have 1 item
+        HttpResponseMessage response = client.PostAsync("/lbp/filterResources", new StringContent(new SerializedResourceList(new[] { hash }).AsXML())).Result;
+        Assert.That(response.StatusCode, Is.EqualTo(OK));
 
-        HttpResponseMessage response = client.PostAsync("/lbp/upload/" + hash, new ByteArrayContent(data.ToArray())).Result;
+        SerializedResourceList missingList = response.Content.ReadAsXML<SerializedResourceList>();
+        Assert.That(missingList.Items, Has.Count.EqualTo(1));
+        Assert.That(missingList.Items[0], Is.EqualTo(hash));
+        
+        //Upload an asset
+        response = client.PostAsync("/lbp/upload/" + hash, new ByteArrayContent(data.ToArray())).Result;
         Assert.That(response.StatusCode, Is.EqualTo(OK));
         
-        response = client.GetAsync("/lbp/r/" + hash).Result;
+        //Check the list after uploading, should now only have 0 items returned
+        response = client.PostAsync("/lbp/filterResources", new StringContent(new SerializedResourceList(new[] { hash }).AsXML())).Result;
         Assert.That(response.StatusCode, Is.EqualTo(OK));
-        
-        byte[] returnedData = response.Content.ReadAsByteArrayAsync().Result;
-        
-        Assert.That(data.SequenceEqual(returnedData), Is.True);
+
+        missingList = response.Content.ReadAsXML<SerializedResourceList>();
+        Assert.That(missingList.Items, Has.Count.EqualTo(0));
+    }
+    
+    [Test]
+    public void CanCheckForMissingAssets()
+    {
+        using TestContext context = this.GetServer();
+        context.Server.Value.Server.AddService<ImportService>();
+        GameUser user = context.CreateUser();
+        using HttpClient client = context.GetAuthenticatedClient(TokenType.Game, user);
+
+        //Check the list initially, should have 1 item
+        HttpResponseMessage response = client.PostAsync("/lbp/filterResources", new StringContent(new SerializedResourceList(new[] { "I_AM_NOT_HASH" }).AsXML())).Result;
+        Assert.That(response.StatusCode, Is.EqualTo(BadRequest));
     }
     
     [Test]
