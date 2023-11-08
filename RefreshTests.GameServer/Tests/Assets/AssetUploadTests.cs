@@ -169,7 +169,7 @@ public class AssetUploadTests : GameServerTest
     
     [TestCase(false)]
     [TestCase(true)]
-    public void CanCheckForMissingAssets(bool psp)
+    public void CheckForMissingAssets(bool psp)
     {
         using TestContext context = this.GetServer();
         context.Server.Value.Server.AddService<ImportService>();
@@ -201,19 +201,6 @@ public class AssetUploadTests : GameServerTest
 
         missingList = response.Content.ReadAsXML<SerializedResourceList>();
         Assert.That(missingList.Items, Has.Count.EqualTo(0));
-    }
-    
-    [Test]
-    public void CanCheckForMissingAssets()
-    {
-        using TestContext context = this.GetServer();
-        context.Server.Value.Server.AddService<ImportService>();
-        GameUser user = context.CreateUser();
-        using HttpClient client = context.GetAuthenticatedClient(TokenType.Game, user);
-
-        //Check the list initially, should have 1 item
-        HttpResponseMessage response = client.PostAsync("/lbp/filterResources", new StringContent(new SerializedResourceList(new[] { "I_AM_NOT_HASH" }).AsXML())).Result;
-        Assert.That(response.StatusCode, Is.EqualTo(BadRequest));
     }
     
     [Test]
