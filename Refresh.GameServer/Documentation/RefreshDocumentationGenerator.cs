@@ -3,6 +3,7 @@ using AttribDoc;
 using Bunkum.Core.Endpoints;
 using Bunkum.Core.Extensions;
 using Refresh.GameServer.Endpoints;
+using Refresh.GameServer.Types.Roles;
 
 namespace Refresh.GameServer.Documentation;
 
@@ -25,5 +26,14 @@ public class RefreshDocumentationGenerator : DocumentationGenerator
         
         AuthenticationAttribute? authentication = method.GetCustomAttribute<AuthenticationAttribute>();
         route.AuthenticationRequired = authentication == null || authentication.Required;
+
+        if (route.AuthenticationRequired)
+        {
+            MinimumRoleAttribute? roleAttribute = method.GetCustomAttribute<MinimumRoleAttribute>();
+            if (roleAttribute != null)
+            {
+                route.ExtraProperties["minimumRole"] = roleAttribute.MinimumRole;
+            }   
+        }
     }
 }

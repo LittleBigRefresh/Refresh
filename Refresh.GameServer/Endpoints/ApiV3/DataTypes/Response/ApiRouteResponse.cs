@@ -1,4 +1,5 @@
 using AttribDoc;
+using Refresh.GameServer.Types.Roles;
 
 namespace Refresh.GameServer.Endpoints.ApiV3.DataTypes.Response;
 
@@ -9,6 +10,7 @@ public class ApiRouteResponse : IApiResponse, IDataConvertableFrom<ApiRouteRespo
     public required string RouteUri { get; set; }
     public required string Summary { get; set; }
     public required bool AuthenticationRequired { get; set; }
+    public required GameUserRole? MinimumRole { get; set; }
     public required IEnumerable<ApiParameterResponse> Parameters { get; set; }
     public required IEnumerable<ApiErrorResponse> PotentialErrors { get; set; }
     
@@ -24,6 +26,7 @@ public class ApiRouteResponse : IApiResponse, IDataConvertableFrom<ApiRouteRespo
             AuthenticationRequired = old.AuthenticationRequired,
             Parameters = ApiParameterResponse.FromOldList(old.Parameters),
             PotentialErrors = ApiErrorResponse.FromOldList(old.PotentialErrors),
+            MinimumRole = (GameUserRole?)old.ExtraProperties.GetValueOrDefault("minimumRole"),
         };
     }
 
