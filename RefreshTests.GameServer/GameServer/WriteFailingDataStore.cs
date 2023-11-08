@@ -2,6 +2,9 @@ using Bunkum.Core.Storage;
 
 namespace RefreshTests.GameServer.GameServer;
 
+/// <summary>
+/// A data store that you are unable to write to, it always returns a failure operation
+/// </summary>
 public class WriteFailingDataStore : IDataStore
 {
     public bool ExistsInStore(string key) => false;
