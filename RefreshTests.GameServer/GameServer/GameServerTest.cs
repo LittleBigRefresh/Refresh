@@ -1,3 +1,4 @@
+using Bunkum.Core.Storage;
 using Bunkum.Protocols.Http.Direct;
 using NotEnoughLogs;
 using RefreshTests.GameServer.Logging;
@@ -15,7 +16,7 @@ public class GameServerTest
     });
     
     // ReSharper disable once MemberCanBeMadeStatic.Global
-    protected TestContext GetServer(bool startServer = true)
+    protected TestContext GetServer(bool startServer = true, IDataStore? dataStore = null)
     {
         DirectHttpListener listener = new(Logger);
         HttpClient client = listener.GetClient();
@@ -25,7 +26,7 @@ public class GameServerTest
 
         Lazy<TestRefreshGameServer> gameServer = new(() =>
         {
-            TestRefreshGameServer gameServer = new(listener, () => provider);
+            TestRefreshGameServer gameServer = new(listener, () => provider, dataStore);
             gameServer.Start();
 
             return gameServer;

@@ -1,14 +1,89 @@
 using System.Security.Cryptography;
 using Refresh.GameServer.Authentication;
 using Refresh.GameServer.Services;
+using Refresh.GameServer.Types.Lists;
 using Refresh.GameServer.Types.UserData;
+using RefreshTests.GameServer.Extensions;
 
 namespace RefreshTests.GameServer.Tests.Assets;
 
 public class AssetUploadTests : GameServerTest
 {
+    private const string MissingHash = "6e4d252f247e3aa99ef846df8c65493393e79f4f";
+    
+    [TestCase(false)]
+    [TestCase(true)]
+    public void CanUploadAsset(bool psp)
+    {
+        using TestContext context = this.GetServer();
+        context.Server.Value.Server.AddService<ImportService>();
+        GameUser user = context.CreateUser();
+        using HttpClient client = context.GetAuthenticatedClient(TokenType.Game, user);
+        if(psp)
+            client.DefaultRequestHeaders.UserAgent.TryParseAdd("LBPPSP CLIENT");
+
+        ReadOnlySpan<byte> data = "TEX a"u8;
+        
+        string hash = BitConverter.ToString(SHA1.HashData(data))
+            .Replace("-", "")
+            .ToLower();
+
+        HttpResponseMessage response = client.PostAsync("/lbp/upload/" + hash, new ByteArrayContent(data.ToArray())).Result;
+        Assert.That(response.StatusCode, Is.EqualTo(OK));
+    }
+    
     [Test]
-    public void CanUploadAsset()
+    public void CantUploadAssetWithInvalidHash()
+    {
+        using TestContext context = this.GetServer();
+        context.Server.Value.Server.AddService<ImportService>();
+        GameUser user = context.CreateUser();
+        using HttpClient client = context.GetAuthenticatedClient(TokenType.Game, user);
+
+        ReadOnlySpan<byte> data = "TEX a"u8;
+        
+        HttpResponseMessage response = client.PostAsync($"/lbp/upload/{MissingHash}", new ByteArrayContent(data.ToArray())).Result;
+        Assert.That(response.StatusCode, Is.EqualTo(BadRequest));
+    }
+    
+    [Test]
+    public void CantUploadBlockedAsset()
+    {
+        using TestContext context = this.GetServer();
+        context.Server.Value.Server.AddService<ImportService>();
+        GameUser user = context.CreateUser();
+        using HttpClient client = context.GetAuthenticatedClient(TokenType.Game, user);
+
+        ReadOnlySpan<byte> data = "FSHbthsa"u8;
+        
+        string hash = BitConverter.ToString(SHA1.HashData(data))
+            .Replace("-", "")
+            .ToLower();
+
+        HttpResponseMessage response = client.PostAsync("/lbp/upload/" + hash, new ByteArrayContent(data.ToArray())).Result;
+        Assert.That(response.StatusCode, Is.EqualTo(Unauthorized));
+    }
+    
+    [Test]
+    public void DataStoreWriteFailReturnsInternalServerError()
+    {
+        using TestContext context = this.GetServer(true, new WriteFailingDataStore());
+        context.Server.Value.Server.AddService<ImportService>();
+        GameUser user = context.CreateUser();
+        using HttpClient client = context.GetAuthenticatedClient(TokenType.Game, user);
+
+        ReadOnlySpan<byte> data = "TEX a"u8;
+        
+        string hash = BitConverter.ToString(SHA1.HashData(data))
+            .Replace("-", "")
+            .ToLower();
+
+        HttpResponseMessage response = client.PostAsync("/lbp/upload/" + hash, new ByteArrayContent(data.ToArray())).Result;
+        Assert.That(response.StatusCode, Is.EqualTo(InternalServerError));
+    }
+    
+    [Test]
+    public void CantUploadDuplicateAssets()
     {
         using TestContext context = this.GetServer();
         context.Server.Value.Server.AddService<ImportService>();
@@ -22,12 +97,33 @@ public class AssetUploadTests : GameServerTest
             .ToLower();
 
         HttpResponseMessage response = client.PostAsync("/lbp/upload/" + hash, new ByteArrayContent(data.ToArray())).Result;
-        Assert.That(response.IsSuccessStatusCode, Is.True);
         Assert.That(response.StatusCode, Is.EqualTo(OK));
+        
+        response = client.PostAsync("/lbp/upload/" + hash, new ByteArrayContent(data.ToArray())).Result;
+        Assert.That(response.StatusCode, Is.EqualTo(Conflict));
     }
-
+    
     [Test]
-    public void CanRetrieveAsset()
+    public void CantUploadTooLarge()
+    {
+        using TestContext context = this.GetServer();
+        context.Server.Value.Server.AddService<ImportService>();
+        GameUser user = context.CreateUser();
+        using HttpClient client = context.GetAuthenticatedClient(TokenType.Game, user);
+
+        //create 5mb array
+        ReadOnlySpan<byte> data = new byte[5000000];
+        
+        string hash = BitConverter.ToString(SHA1.HashData(data))
+            .Replace("-", "")
+            .ToLower();
+
+        HttpResponseMessage response = client.PostAsync("/lbp/upload/" + hash, new ByteArrayContent(data.ToArray())).Result;
+        Assert.That(response.StatusCode, Is.EqualTo(RequestEntityTooLarge));
+    }
+    
+    [Test]
+    public void InvalidAssetHashUploadFails()
     {
         using TestContext context = this.GetServer();
         context.Server.Value.Server.AddService<ImportService>();
@@ -35,18 +131,102 @@ public class AssetUploadTests : GameServerTest
         using HttpClient client = context.GetAuthenticatedClient(TokenType.Game, user);
 
         ReadOnlySpan<byte> data = "TEX a"u8;
+        
         string hash = BitConverter.ToString(SHA1.HashData(data))
             .Replace("-", "")
             .ToLower();
 
-        client.PostAsync("/lbp/upload/" + hash, new ByteArrayContent(data.ToArray())).Wait();
-        HttpResponseMessage response = client.GetAsync("/lbp/r/" + hash).Result;
-        Assert.That(response.IsSuccessStatusCode, Is.True);
+        HttpResponseMessage response = client.PostAsync("/lbp/upload/I_AM_NOT_REAL", new ByteArrayContent(data.ToArray())).Result;
+        Assert.That(response.StatusCode, Is.EqualTo(BadRequest));
+    }
+    
+    [TestCase(false)]
+    [TestCase(true)]
+    public void CanRetrieveAsset(bool psp)
+    {
+        using TestContext context = this.GetServer();
+        context.Server.Value.Server.AddService<ImportService>();
+        GameUser user = context.CreateUser();
+        using HttpClient client = context.GetAuthenticatedClient(TokenType.Game, user);
+        if (psp) 
+            client.DefaultRequestHeaders.UserAgent.TryParseAdd("LBPPSP CLIENT");
+
+        ReadOnlySpan<byte> data = "TEX a"u8;
+        string hash = BitConverter.ToString(SHA1.HashData(data))
+            .Replace("-", "")
+            .ToLower();
+
+        HttpResponseMessage response = client.PostAsync("/lbp/upload/" + hash, new ByteArrayContent(data.ToArray())).Result;
+        Assert.That(response.StatusCode, Is.EqualTo(OK));
+        
+        response = client.GetAsync("/lbp/r/" + hash).Result;
+        Assert.That(response.StatusCode, Is.EqualTo(OK));
+        
         byte[] returnedData = response.Content.ReadAsByteArrayAsync().Result;
         
         Assert.That(data.SequenceEqual(returnedData), Is.True);
     }
+    
+    [TestCase(false)]
+    [TestCase(true)]
+    public void CheckForMissingAssets(bool psp)
+    {
+        using TestContext context = this.GetServer();
+        context.Server.Value.Server.AddService<ImportService>();
+        GameUser user = context.CreateUser();
+        using HttpClient client = context.GetAuthenticatedClient(TokenType.Game, user);
+        if(psp) 
+            client.DefaultRequestHeaders.UserAgent.TryParseAdd("LBPPSP CLIENT");
 
+        ReadOnlySpan<byte> data = "TEX a"u8;
+        string hash = BitConverter.ToString(SHA1.HashData(data))
+            .Replace("-", "")
+            .ToLower();
+        
+        //Check the list initially, should have 1 item
+        HttpResponseMessage response = client.PostAsync("/lbp/filterResources", new StringContent(new SerializedResourceList(new[] { hash }).AsXML())).Result;
+        Assert.That(response.StatusCode, Is.EqualTo(OK));
+
+        SerializedResourceList missingList = response.Content.ReadAsXML<SerializedResourceList>();
+        Assert.That(missingList.Items, Has.Count.EqualTo(1));
+        Assert.That(missingList.Items[0], Is.EqualTo(hash));
+        
+        //Upload an asset
+        response = client.PostAsync("/lbp/upload/" + hash, new ByteArrayContent(data.ToArray())).Result;
+        Assert.That(response.StatusCode, Is.EqualTo(OK));
+        
+        //Check the list after uploading, should now only have 0 items returned
+        response = client.PostAsync("/lbp/filterResources", new StringContent(new SerializedResourceList(new[] { hash }).AsXML())).Result;
+        Assert.That(response.StatusCode, Is.EqualTo(OK));
+
+        missingList = response.Content.ReadAsXML<SerializedResourceList>();
+        Assert.That(missingList.Items, Has.Count.EqualTo(0));
+    }
+    
+    [Test]
+    public void CantRetrieveMissingAsset()
+    {
+        using TestContext context = this.GetServer();
+        context.Server.Value.Server.AddService<ImportService>();
+        GameUser user = context.CreateUser();
+        using HttpClient client = context.GetAuthenticatedClient(TokenType.Game, user);
+
+        HttpResponseMessage response = client.GetAsync($"/lbp/r/{MissingHash}").Result;
+        Assert.That(response.StatusCode, Is.EqualTo(NotFound));
+    }
+
+    [Test]
+    public void DataStoreReadFailReturnsInternalServerError()
+    {
+        using TestContext context = this.GetServer(true, new ReadFailingDataStore());
+        context.Server.Value.Server.AddService<ImportService>();
+        GameUser user = context.CreateUser();
+        using HttpClient client = context.GetAuthenticatedClient(TokenType.Game, user);
+
+        HttpResponseMessage response = client.GetAsync($"/lbp/r/{MissingHash}").Result;
+        Assert.That(response.StatusCode, Is.EqualTo(InternalServerError));
+    }
+    
     [Test]
     public void InvalidHashFails()
     {
@@ -59,6 +239,19 @@ public class AssetUploadTests : GameServerTest
         Assert.That(response.StatusCode, Is.EqualTo(BadRequest));
         
         response = client.GetAsync("/lbp/r/..%2Frpc.json").Result;
+        Assert.That(response.StatusCode, Is.EqualTo(BadRequest));
+    }
+    
+    [Test]
+    public void CantCheckForInvalidMissingAssets()
+    {
+        using TestContext context = this.GetServer();
+        context.Server.Value.Server.AddService<ImportService>();
+        GameUser user = context.CreateUser();
+        using HttpClient client = context.GetAuthenticatedClient(TokenType.Game, user);
+
+        //Check the list initially, should have 1 item
+        HttpResponseMessage response = client.PostAsync("/lbp/filterResources", new StringContent(new SerializedResourceList(new[] { "I_AM_NOT_HASH" }).AsXML())).Result;
         Assert.That(response.StatusCode, Is.EqualTo(BadRequest));
     }
 }

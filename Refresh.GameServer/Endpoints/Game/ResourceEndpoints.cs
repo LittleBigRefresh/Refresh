@@ -32,8 +32,10 @@ public class ResourceEndpoints : EndpointGroup
         if (!CommonPatterns.Sha1Regex().IsMatch(hash)) return BadRequest;
         
         bool isPSP = context.IsPSP();
-        string assetPath = isPSP ? $"psp/{hash}" : hash;
-        
+        string assetPath = hash;
+        if (isPSP)
+            assetPath = $"psp/{hash}";
+
         if (dataStore.ExistsInStore(assetPath))
             return Conflict;
 
@@ -97,20 +99,9 @@ public class ResourceEndpoints : EndpointGroup
     [NullStatusCode(BadRequest)]
     public SerializedResourceList? GetAssetsMissingFromStore(RequestContext context, SerializedResourceList body, IDataStore dataStore)
     {
-        if (context.IsPSP())
-        {
-            //Iterate over all the items
-            for (int i = 0; i < body.Items.Count; i++)
-            {
-                string item = body.Items[i];
-                //Point them into the `psp` folder
-                body.Items[i] = $"psp/{item}";
-            }
-        }
-        
         if(body.Items.Any(hash => !CommonPatterns.Sha1Regex().IsMatch(hash)))
             return null;
-        
-        return new SerializedResourceList(body.Items.Where(r => !dataStore.ExistsInStore(r)));
+
+        return new SerializedResourceList(body.Items.Where(r => !dataStore.ExistsInStore(context.IsPSP() ? $"psp/{r}" : r)));
     }
 }
