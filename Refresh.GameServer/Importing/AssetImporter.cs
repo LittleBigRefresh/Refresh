@@ -91,38 +91,21 @@ public class AssetImporter : Importer
             IsPSP = platform == TokenPlatform.PSP,
             SizeInBytes = data.Length,
         };
-
-        List<string> dependencies = new();
+        
         if (AssetTypeHasDependencyTree(asset.AssetType, data))
         {
-            // Parse dependency table
-            MemoryStream ms = new(data);
-            BEBinaryReader reader = new(ms);
-
-            ms.Seek(8, SeekOrigin.Begin);
-            uint dependencyTableOffset = reader.ReadUInt32();
-
-            ms.Seek(dependencyTableOffset, SeekOrigin.Begin);
-            uint dependencyCount = reader.ReadUInt32();
-
-            this.Debug($"Dependency count offset: {dependencyTableOffset}, count: {dependencyCount}");
-            for (int i = 0; i < dependencyCount; i++)
+            try
             {
-                byte flags = reader.ReadByte();
-                if ((flags & 0x1) != 0) // UGC/SHA1
+                List<string> dependencies = this.ParseDependencyTree(data);
+                foreach (string dependency in dependencies)
                 {
-                    byte[] hashBytes = reader.ReadBytes(20);
-                    dependencies.Add(GetHashOfShaBytes(hashBytes));
+                    asset.Dependencies.Add(dependency);
                 }
-                else if ((flags & 0x2) != 0) reader.ReadUInt32(); // Skip GUID
-                
-                reader.ReadUInt32();
             }
-        }
-
-        foreach (string dependency in dependencies)
-        {
-            asset.Dependencies.Add(dependency);
+            catch (Exception e)
+            {
+                this.Warn($"Could not parse dependency tree for {hash}: {e}");
+            }
         }
 
         return asset;
@@ -147,5 +130,36 @@ public class AssetImporter : Importer
         #endif
 
         return true;
+    }
+
+    private List<string> ParseDependencyTree(byte[] data)
+    {
+        List<string> dependencies = new();
+        
+        // Parse dependency table
+        MemoryStream ms = new(data);
+        BEBinaryReader reader = new(ms);
+
+        ms.Seek(8, SeekOrigin.Begin);
+        uint dependencyTableOffset = reader.ReadUInt32();
+
+        ms.Seek(dependencyTableOffset, SeekOrigin.Begin);
+        uint dependencyCount = reader.ReadUInt32();
+
+        this.Debug($"Dependency count offset: {dependencyTableOffset}, count: {dependencyCount}");
+        for (int i = 0; i < dependencyCount; i++)
+        {
+            byte flags = reader.ReadByte();
+            if ((flags & 0x1) != 0) // UGC/SHA1
+            {
+                byte[] hashBytes = reader.ReadBytes(20);
+                dependencies.Add(GetHashOfShaBytes(hashBytes));
+            }
+            else if ((flags & 0x2) != 0) reader.ReadUInt32(); // Skip GUID
+                
+            reader.ReadUInt32();
+        }
+
+        return dependencies;
     }
 }
