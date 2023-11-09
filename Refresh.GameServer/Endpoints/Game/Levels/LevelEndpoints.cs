@@ -69,7 +69,7 @@ public class LevelEndpoints : EndpointGroup
         return this.GetLevels(context, database, categories, matchService, overrideService, user, token, route);
     }
 
-    [GameEndpoint("s/user/{id}", ContentType.Xml), Authentication(false)]
+    [GameEndpoint("s/user/{id}", ContentType.Xml)]
     [NullStatusCode(NotFound)]
     [MinimumRole(GameUserRole.Restricted)]
     public GameLevelResponse? LevelById(RequestContext context, GameDatabaseContext database, MatchService matchService, GameUser user, int id)
