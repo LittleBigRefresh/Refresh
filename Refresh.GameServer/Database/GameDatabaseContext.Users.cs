@@ -35,6 +35,7 @@ public partial class GameDatabaseContext // Users
     public GameUser? GetUserByEmailAddress(string? emailAddress)
     {
         if (emailAddress == null) return null;
+        emailAddress = emailAddress.ToLowerInvariant();
         return this._realm.All<GameUser>().FirstOrDefault(u => u.EmailAddress == emailAddress);
     }
 
@@ -104,6 +105,9 @@ public partial class GameDatabaseContext // Users
                 user.EmailAddressVerified = false;
             });
         }
+
+        data.EmailAddress = data.EmailAddress?.ToLowerInvariant();
+        
         this.UpdateUserData<ApiUpdateUserRequest>(user, data);
     }
 

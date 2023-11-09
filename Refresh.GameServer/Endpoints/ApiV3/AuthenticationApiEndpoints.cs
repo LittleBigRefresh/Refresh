@@ -140,7 +140,6 @@ public class AuthenticationApiEndpoints : EndpointGroup
         }
         
         context.Logger.LogInfo(RefreshContext.PasswordReset, "Sending a password reset request email to {0}.", user.Username);
-        context.Logger.LogTrace(RefreshContext.PasswordReset, "Generating a reset token for {0}", user.Username);
         
         Token token = database.GenerateTokenForUser(user, TokenType.PasswordReset, TokenGame.Website, TokenPlatform.Website);
         context.Logger.LogTrace(RefreshContext.PasswordReset, "Reset token: {0}", token.TokenData);

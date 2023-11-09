@@ -18,6 +18,8 @@ public partial class GameDatabaseContext // Registration
             if (this.IsEmailTaken(emailAddress))
                 throw new InvalidOperationException("Cannot create a user with an existing email address");
         }
+
+        emailAddress = emailAddress.ToLowerInvariant();
         
         GameUser user = new()
         {
