@@ -63,18 +63,31 @@ public class AssetImporter : Importer
             this.Warn($"{hashCount - assets.Count} assets were not imported");
         }
     }
-
-    private static string GetHashOfShaBytes(byte[] data)
+    
+    private static string BytesToHexString(ReadOnlySpan<byte> data)
     {
-        return BitConverter.ToString(data)
-            .Replace("-", "")
-            .ToLower();
+        Span<char> hexChars = stackalloc char[data.Length * 2];
+
+        for (int i = 0; i < data.Length; i++)
+        {
+            byte b = data[i];
+            hexChars[i * 2] = GetHexChar(b >> 4); // High bits
+            hexChars[i * 2 + 1] = GetHexChar(b & 0x0F); // Low bits
+        }
+
+        return new string(hexChars);
+
+        static char GetHexChar(int value)
+        {
+            return (char)(value < 10 ? '0' + value : 'a' + value - 10);
+        }
     }
+
 
     [Pure]
     public GameAsset? ReadAndVerifyAsset(string hash, byte[] data, TokenPlatform? platform)
     {
-        string checkedHash = GetHashOfShaBytes(SHA1.HashData(data));
+        string checkedHash = BytesToHexString(SHA1.HashData(data));
 
         if (checkedHash != hash)
         {
@@ -147,13 +160,15 @@ public class AssetImporter : Importer
         uint dependencyCount = reader.ReadUInt32();
 
         this.Debug($"Dependency count offset: {dependencyTableOffset}, count: {dependencyCount}");
+
+        Span<byte> hashBuffer = stackalloc byte[20];
         for (int i = 0; i < dependencyCount; i++)
         {
             byte flags = reader.ReadByte();
             if ((flags & 0x1) != 0) // UGC/SHA1
             {
-                byte[] hashBytes = reader.ReadBytes(20);
-                dependencies.Add(GetHashOfShaBytes(hashBytes));
+                ms.ReadExactly(hashBuffer);
+                dependencies.Add(BytesToHexString(hashBuffer));
             }
             else if ((flags & 0x2) != 0) reader.ReadUInt32(); // Skip GUID
                 
