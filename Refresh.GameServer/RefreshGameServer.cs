@@ -216,14 +216,7 @@ public class RefreshGameServer : IDisposable
         using GameDatabaseContext context = this.InitializeDatabase();
         
         AssetImporter importer = new();
-        if (!force)
-        {
-            importer.ImportFromDataStoreCli(context, this._dataStore);
-        }
-        else
-        {
-            importer.ImportFromDataStore(context, this._dataStore);
-        }
+        importer.ImportFromDataStore(context, this._dataStore);
     }
 
     public void ImportImages()

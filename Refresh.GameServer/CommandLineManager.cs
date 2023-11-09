@@ -18,7 +18,7 @@ internal class CommandLineManager
     private class Options
     {
         [Option('i', "import_assets", Required = false, 
-            HelpText = "Re-import all assets from the datastore into the database. This is a destructive action, only use when upgrading to <=v1.5.0")]
+            HelpText = "Re-import all assets from the datastore into the database.")]
         public bool ImportAssets { get; set; }
         
         [Option('I', "import_images", Required = false, HelpText = "Convert all images in the database to .PNGs. Otherwise, images will be converted as they are used")]
