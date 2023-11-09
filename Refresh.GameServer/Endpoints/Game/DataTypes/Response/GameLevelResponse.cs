@@ -2,8 +2,10 @@ using System.Xml.Serialization;
 using Refresh.GameServer.Authentication;
 using Refresh.GameServer.Database;
 using Refresh.GameServer.Endpoints.ApiV3.DataTypes;
+using Refresh.GameServer.Extensions;
 using Refresh.GameServer.Services;
 using Refresh.GameServer.Types;
+using Refresh.GameServer.Types.Assets;
 using Refresh.GameServer.Types.Levels;
 using Refresh.GameServer.Types.Levels.SkillRewards;
 using Refresh.GameServer.Types.Matching;
@@ -66,6 +68,7 @@ public class GameLevelResponse : IDataConvertableFrom<GameLevelResponse, GameLev
     [XmlElement("backgroundGUID")] public string? BackgroundGuid { get; set; }
     [XmlElement("links")] public string? Links { get; set; }
     [XmlElement("averageRating")] public double AverageStarRating { get; set; }
+    [XmlElement("sizeOfResources")] public int SizeOfResourcesInBytes { get; set; }
 
     public static GameLevelResponse? FromOldWithExtraData(GameLevel? old, GameDatabaseContext database, MatchService matchService, GameUser user)
     {
@@ -147,5 +150,15 @@ public class GameLevelResponse : IDataConvertableFrom<GameLevelResponse, GameLev
         this.YourRating = rating?.ToDPad() ?? (int)RatingType.Neutral;
         this.YourStarRating = rating?.ToLBP1() ?? 0;
         this.PlayerCount = matchService.GetPlayerCountForLevel(RoomSlotType.Online, this.LevelId);
+
+        GameAsset? rootResourceAsset = database.GetAssetFromHash(this.RootResource);
+        if (rootResourceAsset != null)
+        {
+            rootResourceAsset.TraverseDependenciesRecursively(database, (_, asset) =>
+            {
+                if (asset != null)
+                    this.SizeOfResourcesInBytes += asset.SizeInBytes;
+            });
+        }
     }
 }
