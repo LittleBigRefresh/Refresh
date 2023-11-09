@@ -12,7 +12,7 @@ public class CoolLevelsCategory : LevelCategory
     {
         this.Name = "Cool Levels";
         this.Description = "Levels trending with players like you!";
-        this.FontAwesomeIcon = "fireAlt";
+        this.FontAwesomeIcon = "fire";
         this.IconHash = "g820625";
     }
 
