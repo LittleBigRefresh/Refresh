@@ -18,15 +18,9 @@ public partial class GameDatabaseContext // AssetConfiguration
             this._realm.Add(asset);
         });
 
-    public void AddAssetsToDatabase(IEnumerable<GameAsset> assets) =>
+    public void AddOrUpdateAssetsInDatabase(IEnumerable<GameAsset> assets) =>
         this._realm.Write(() =>
         {
-            this._realm.Add(assets);
-        });
-
-    public void DeleteAllAssetMetadata() =>
-        this._realm.Write(() =>
-        {
-            this._realm.RemoveAll<GameAsset>();
+            this._realm.Add(assets, true);
         });
 }

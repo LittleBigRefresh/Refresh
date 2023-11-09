@@ -19,54 +19,48 @@ public class AssetImporter : Importer
         this._timeProvider = timeProvider;
     }
 
-    public void ImportFromDataStoreCli(GameDatabaseContext context, IDataStore dataStore)
+    public void ImportFromDataStore(GameDatabaseContext database, IDataStore dataStore)
     {
-        Console.WriteLine("This tool will scan and manually import existing assets into Refresh's database.");
-        Console.WriteLine("This will wipe all existing asset metadata in the database. Are you sure you want to follow through with this operation?");
-        Console.WriteLine();
-        Console.Write("Are you sure? [y/N] ");
-        
-        char key = char.ToLower(Console.ReadKey().KeyChar);
-        Console.WriteLine();
-        if(key != 'y')
-        {
-            if(key != 'n') Console.WriteLine("Unsure what you mean, assuming no.");
-            Environment.Exit(0);
-            return;
-        }
-        
-        this.ImportFromDataStore(context, dataStore);
-    }
-
-    public void ImportFromDataStore(GameDatabaseContext context, IDataStore dataStore)
-    {
+        int updatedAssets = 0;
+        int newAssets = 0;
         this.Stopwatch.Start();
         
-        context.DeleteAllAssetMetadata();
-        this.Info("Deleted all asset metadata");
-        
-        List<string> assetHashes = dataStore.GetKeysFromStore()
-            .Where(key => !key.Contains('/'))
-            .ToList();
+        IEnumerable<string> assetHashes = dataStore.GetKeysFromStore()
+            .Where(key => !key.Contains('/'));
 
         List<GameAsset> assets = new();
         foreach (string hash in assetHashes)
         {
             byte[] data = dataStore.GetDataFromStore(hash);
             
-            GameAsset? asset = this.ReadAndVerifyAsset(hash, data, null);
-            if (asset == null) continue;
+            GameAsset? newAsset = this.ReadAndVerifyAsset(hash, data, null);
+            if (newAsset == null) continue;
 
-            assets.Add(asset);
-            this.Info($"Processed {asset.AssetType} asset {hash} ({AssetSafetyLevelExtensions.FromAssetType(asset.AssetType)})");
+            GameAsset? oldAsset = database.GetAssetFromHash(hash);
+
+            if (oldAsset != null)
+            {
+                newAsset.OriginalUploader = oldAsset.OriginalUploader;
+                newAsset.UploadDate = oldAsset.UploadDate;
+                updatedAssets++;
+            }
+            else
+            {
+                newAssets++;
+            }
+
+            assets.Add(newAsset);
+            this.Info($"Processed {newAsset.AssetType} asset {hash} ({AssetSafetyLevelExtensions.FromAssetType(newAsset.AssetType)})");
         }
         
-        context.AddAssetsToDatabase(assets);
+        database.AddOrUpdateAssetsInDatabase(assets);
+
+        int hashCount = assetHashes.Count();
         
-        this.Info($"Successfully imported {assets.Count}/{assetHashes.Count} assets into database");
-        if (assets.Count < assetHashes.Count)
+        this.Info($"Successfully imported {assets.Count}/{hashCount} assets ({newAssets} new, {updatedAssets} updated) into database");
+        if (assets.Count < hashCount)
         {
-            this.Warn($"{assetHashes.Count - assets.Count} assets were not imported");
+            this.Warn($"{hashCount - assets.Count} assets were not imported");
         }
     }
 
@@ -90,6 +84,7 @@ public class AssetImporter : Importer
             AssetHash = hash,
             AssetType = this.DetermineAssetType(data, platform),
             IsPSP = platform == TokenPlatform.PSP,
+            SizeInBytes = data.Length,
         };
 
         return asset;
