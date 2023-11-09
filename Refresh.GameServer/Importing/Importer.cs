@@ -36,6 +36,11 @@ public abstract class Importer
     {
         this._logger.LogWarning(BunkumCategory.UserContent, $"[{this.Stopwatch.ElapsedMilliseconds}ms] {message}");
     }
+
+    protected void Debug(string message)
+    {
+        this._logger.LogDebug(BunkumCategory.UserContent, $"[{this.Stopwatch.ElapsedMilliseconds}ms] {message}");
+    }
     
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     private static bool MatchesMagic(ReadOnlySpan<byte> data, ReadOnlySpan<byte> magic)

@@ -9,6 +9,7 @@ public class ApiGameAssetResponse : IApiResponse, IDataConvertableFrom<ApiGameAs
     public required ApiGameUserResponse? OriginalUploader { get; set; }
     public required DateTimeOffset UploadDate { get; set; }
     public required GameAssetType AssetType { get; set; }
+    public required IEnumerable<string> Dependencies { get; set; }
     
     public static ApiGameAssetResponse? FromOld(GameAsset? old)
     {
@@ -20,6 +21,7 @@ public class ApiGameAssetResponse : IApiResponse, IDataConvertableFrom<ApiGameAs
             OriginalUploader = ApiGameUserResponse.FromOld(old.OriginalUploader),
             UploadDate = old.UploadDate,
             AssetType = old.AssetType,
+            Dependencies = old.Dependencies,
         };
     }
 

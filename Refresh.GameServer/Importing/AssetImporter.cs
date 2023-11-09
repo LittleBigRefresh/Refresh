@@ -55,7 +55,7 @@ public class AssetImporter : Importer
         
         database.AddOrUpdateAssetsInDatabase(assets);
 
-        int hashCount = assetHashes.Count();
+        int hashCount = newAssets + updatedAssets;
         
         this.Info($"Successfully imported {assets.Count}/{hashCount} assets ({newAssets} new, {updatedAssets} updated) into database");
         if (assets.Count < hashCount)
@@ -64,12 +64,17 @@ public class AssetImporter : Importer
         }
     }
 
+    private static string GetHashOfShaBytes(byte[] data)
+    {
+        return BitConverter.ToString(data)
+            .Replace("-", "")
+            .ToLower();
+    }
+
     [Pure]
     public GameAsset? ReadAndVerifyAsset(string hash, byte[] data, TokenPlatform? platform)
     {
-        string checkedHash = BitConverter.ToString(SHA1.HashData(data))
-            .Replace("-", "")
-            .ToLower();
+        string checkedHash = GetHashOfShaBytes(SHA1.HashData(data));
 
         if (checkedHash != hash)
         {
@@ -87,6 +92,60 @@ public class AssetImporter : Importer
             SizeInBytes = data.Length,
         };
 
+        List<string> dependencies = new();
+        if (AssetTypeHasDependencyTree(asset.AssetType, data))
+        {
+            // Parse dependency table
+            MemoryStream ms = new(data);
+            BEBinaryReader reader = new(ms);
+
+            ms.Seek(8, SeekOrigin.Begin);
+            uint dependencyTableOffset = reader.ReadUInt32();
+
+            ms.Seek(dependencyTableOffset, SeekOrigin.Begin);
+            uint dependencyCount = reader.ReadUInt32();
+
+            this.Debug($"Dependency count offset: {dependencyTableOffset}, count: {dependencyCount}");
+            for (int i = 0; i < dependencyCount; i++)
+            {
+                byte flags = reader.ReadByte();
+                if ((flags & 0x1) != 0) // UGC/SHA1
+                {
+                    byte[] hashBytes = reader.ReadBytes(20);
+                    dependencies.Add(GetHashOfShaBytes(hashBytes));
+                }
+                else if ((flags & 0x2) != 0) reader.ReadUInt32(); // Skip GUID
+                
+                reader.ReadUInt32();
+            }
+        }
+
+        foreach (string dependency in dependencies)
+        {
+            asset.Dependencies.Add(dependency);
+        }
+
         return asset;
+    }
+
+    [Pure]
+    private static bool AssetTypeHasDependencyTree(GameAssetType type, byte[] data)
+    {
+        if (type is GameAssetType.Jpeg
+            or GameAssetType.Png
+            or GameAssetType.Tga
+            or GameAssetType.Texture
+            or GameAssetType.GameDataTexture
+            or GameAssetType.Unknown)
+        {
+            return false;
+        }
+        
+        #if DEBUG
+        char typeChar = (char)data[3];
+        if (typeChar != 'b') throw new Exception($"Asset type {type} is not binary (char was '{typeChar}')");
+        #endif
+
+        return true;
     }
 }

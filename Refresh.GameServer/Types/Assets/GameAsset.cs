@@ -19,7 +19,7 @@ public partial class GameAsset : IRealmObject
     // ReSharper disable once InconsistentNaming
     internal int _AssetType { get; set; }
 
-    public IList<GameAsset> Dependencies { get; } = null!;
+    public IList<string> Dependencies { get; } = null!;
 
     [Ignored] public AssetSafetyLevel SafetyLevel => AssetSafetyLevelExtensions.FromAssetType(this.AssetType);
 }
