@@ -5,6 +5,7 @@ using Refresh.GameServer.Types.UserData;
 using Bunkum.Core.Authentication;
 using Bunkum.Core.Database;
 using Refresh.GameServer.Configuration;
+using Refresh.GameServer.Endpoints;
 using Refresh.GameServer.Types.Roles;
 
 namespace Refresh.GameServer.Authentication;
@@ -30,6 +31,17 @@ public class GameAuthenticationProvider : IAuthenticationProvider<Token>
             tokenType = TokenType.Api;
             tokenData = request.RequestHeaders["Authorization"];
         }
+
+        // ReSharper disable once SwitchExpressionHandlesSomeKnownEnumValuesWithExceptionInDefault
+        string validBaseRoute = tokenType switch
+        {
+            TokenType.Game => GameEndpointAttribute.BaseRoute,
+            TokenType.Api => ApiV3EndpointAttribute.BaseRoute,
+            _ => throw new ArgumentOutOfRangeException(),
+        };
+
+        if (!request.Uri.AbsolutePath.StartsWith(validBaseRoute))
+            return null;
 
         // if still null we dont have a token so bail 
         if (tokenData == null) return null;
