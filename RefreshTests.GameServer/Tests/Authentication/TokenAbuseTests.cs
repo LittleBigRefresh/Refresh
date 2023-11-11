@@ -35,6 +35,5 @@ public class TokenAbuseTests : GameServerTest
         
         request = gameClient.GetAsync("/lbp/eula").Result;
         Assert.That(request.StatusCode, Is.EqualTo(OK));
-        
     }
 }
