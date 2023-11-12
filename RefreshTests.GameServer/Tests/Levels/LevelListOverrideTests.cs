@@ -42,6 +42,7 @@ public class LevelListOverrideIntegrationTests : GameServerTest
         GameLevel level = context.CreateLevel(user, "dingus 2B47430C-70F1-4A21-A1D0-EC3011A62239");
 
         using HttpClient client = context.GetAuthenticatedClient(TokenType.Game, user);
+        using HttpClient apiClient = context.GetAuthenticatedClient(TokenType.Api, user);
         
         // Verify that the endpoint isn't already attempting to return anything
         // This can be any endpoint that doesnt return all levels but I chose mmpicks
@@ -55,7 +56,7 @@ public class LevelListOverrideIntegrationTests : GameServerTest
         Assert.That(overrideService.UserHasOverrides(user), Is.False);
 
         //Set a level as the override
-        message = client.PostAsync($"/api/v3/levels/id/{level.LevelId}/setAsOverride", new ByteArrayContent(Array.Empty<byte>())).Result;
+        message = apiClient.PostAsync($"/api/v3/levels/id/{level.LevelId}/setAsOverride", new ByteArrayContent(Array.Empty<byte>())).Result;
         Assert.That(message.StatusCode, Is.EqualTo(OK));
         
         context.Database.Refresh();
