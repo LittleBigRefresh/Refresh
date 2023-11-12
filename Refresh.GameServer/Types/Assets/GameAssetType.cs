@@ -103,4 +103,12 @@ public enum GameAssetType
     /// </summary>
     /// <seealso cref="Refresh.GameServer.Importing.Importer.IsPspTga"/>
     Tga = 13,
+    /// <summary>
+    /// Synced profile data. Stores the player and popit colors.
+    /// </summary>
+    /// <remarks>
+    /// Magic: PRFb
+    /// This is bundled with Cross-Controller levels since the uploading logic for those levels isn't great.
+    /// </remarks>
+    SyncedProfile = 14,
 }
