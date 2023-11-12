@@ -21,15 +21,26 @@ public class ReportingEndpoints : EndpointGroup
     {
         GameLevel? level = database.GetLevelById(body.LevelId);
 
-        Size imageSize = token.TokenGame switch {
-            TokenGame.LittleBigPlanet1 => new Size(640, 360),
-            TokenGame.LittleBigPlanet2 => new Size(640, 360),
-            TokenGame.LittleBigPlanet3 => new Size(640, 360),
-            TokenGame.LittleBigPlanetVita => new Size(512, 290),
-            TokenGame.LittleBigPlanetPSP => new Size(480, 272),
-            _ => throw new ArgumentOutOfRangeException(nameof(token), $"Token game {token.TokenGame} is not allowed for grief upload!"),
-        };
-        
+        Size imageSize;
+        switch (token.TokenGame)
+        {
+            case TokenGame.LittleBigPlanet1:
+            case TokenGame.LittleBigPlanet2:
+            case TokenGame.LittleBigPlanet3:
+                imageSize = new Size(640, 360);
+                break;
+            case TokenGame.LittleBigPlanetVita:
+                imageSize = new Size(512, 290);
+                break;
+            case TokenGame.LittleBigPlanetPSP:
+                imageSize = new Size(480, 272);
+                break;
+            case TokenGame.Website:
+            default:
+                context.Logger.LogWarning(BunkumCategory.Game, $"User {user} tried to upload grief report with token type {token.TokenGame}!");
+                return BadRequest;
+        }
+
         //If the level is specified but its invalid, return BadRequest
         if (body.LevelId != 0 && level == null)
             return BadRequest;

@@ -237,6 +237,14 @@ public partial class GameDatabaseContext // Users
             user.VitaPlanetsHash = "0";
         });
     }
+
+    public void SetUserGriefReportRedirection(GameUser user, bool value)
+    {
+        this._realm.Write(() =>
+        {
+            user.RedirectGriefReportsToPhotos = value;
+        });
+    }
     
     #if DEBUG
     public void ForceUserTokenGame(Token token, TokenGame game)

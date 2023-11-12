@@ -64,8 +64,9 @@ public class ModerationEndpoints : EndpointGroup
                 commandService.HandleCommand(command, database, user, token);
                 return "(Command)";
             }
-            catch
+            catch(Exception ex)
             {
+                context.Logger.LogWarning(BunkumCategory.Commands, $"Error running command {body}. ex {ex}");
                 //do nothing
             } 
         }

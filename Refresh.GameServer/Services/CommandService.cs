@@ -106,12 +106,12 @@ public class CommandService : EndpointService
             }
             case "griefphotoson":
             {
-                user.RedirectGriefReportsToPhotos = true;
+                database.SetUserGriefReportRedirection(user, true);
                 break;
             }
             case "griefphotosoff":
             {
-                user.RedirectGriefReportsToPhotos = false;
+                database.SetUserGriefReportRedirection(user, false);
                 break;
             }
             case "play":

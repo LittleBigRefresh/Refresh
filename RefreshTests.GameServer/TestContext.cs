@@ -37,6 +37,13 @@ public class TestContext : IDisposable
     {
         return this.GetAuthenticatedClient(type, out _, user, tokenExpirySeconds);
     }
+    
+    public HttpClient GetAuthenticatedClient(TokenType type, TokenGame game, TokenPlatform platform,
+        GameUser? user = null,
+        int tokenExpirySeconds = GameDatabaseContext.DefaultTokenExpirySeconds)
+    {
+        return this.GetAuthenticatedClient(type, game, platform, out _, user, tokenExpirySeconds);
+    }
 
     public HttpClient GetAuthenticatedClient(TokenType type, out string tokenData,
         GameUser? user = null,
@@ -55,6 +62,15 @@ public class TestContext : IDisposable
             TokenType.Game => TokenPlatform.PS3,
             _ => TokenPlatform.Website,
         };
+
+        return this.GetAuthenticatedClient(type, game, platform, out tokenData, user, tokenExpirySeconds);
+    }
+    
+    public HttpClient GetAuthenticatedClient(TokenType type, TokenGame game, TokenPlatform platform, out string tokenData,
+        GameUser? user = null,
+        int tokenExpirySeconds = GameDatabaseContext.DefaultTokenExpirySeconds)
+    {
+        user ??= this.CreateUser();
 
         Token token = this.Database.GenerateTokenForUser(user, type, game, platform, tokenExpirySeconds);
         tokenData = token.TokenData;
