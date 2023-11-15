@@ -1,3 +1,4 @@
+using System.Collections.Frozen;
 using System.Collections.ObjectModel;
 using System.Diagnostics;
 using Bunkum.Core.Services;
@@ -22,22 +23,21 @@ public class FriendStorageService : EndpointService
     /// <summary>
     /// A dictionary with a list of friends, by the player who friended them.
     /// </summary>
-    private readonly Dictionary<ObjectId, IEnumerable<ObjectId>> _friendIdsByPlayer = new();
+    private readonly Dictionary<ObjectId, FrozenSet<ObjectId>> _friendIdsByPlayer = new();
 
     public void SetUsersFriends(GameUser user, IEnumerable<GameUser> users)
     {
         this._friendIdsByPlayer.Remove(user.UserId);
 
-        ReadOnlyCollection<ObjectId> friendList = users.Select(u => u.UserId)
-            .ToList()
-            .AsReadOnly();
+        FrozenSet<ObjectId> friendList = users.Select(u => u.UserId)
+            .ToFrozenSet();
 
         this._friendIdsByPlayer.Add(user.UserId, friendList);
     }
 
     public IEnumerable<GameUser>? GetUsersFriends(GameUser user, GameDatabaseContext database)
     {
-        bool result = this._friendIdsByPlayer.TryGetValue(user.UserId, out IEnumerable<ObjectId>? friendIds);
+        bool result = this._friendIdsByPlayer.TryGetValue(user.UserId, out FrozenSet<ObjectId>? friendIds);
 
         if (!result) return null;
         Debug.Assert(friendIds != null);
