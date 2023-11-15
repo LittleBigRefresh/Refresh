@@ -1,3 +1,4 @@
+using System.Collections.Frozen;
 using System.Reflection;
 using Bunkum.Core.Services;
 using NotEnoughLogs;
@@ -12,12 +13,14 @@ public class DocumentationService : EndpointService
 
     public override void Initialize()
     {
+        List<ApiRouteResponse> docs = [];
+        
         AttribDoc.Documentation documentation = this._generator.Document(Assembly.GetExecutingAssembly());
-        this._docs.AddRange(ApiRouteResponse.FromOldList(documentation.Routes.OrderBy(r => r.RouteUri)));
+        docs.AddRange(ApiRouteResponse.FromOldList(documentation.Routes.OrderBy(r => r.RouteUri)));
+
+        this.Documentation = docs.ToFrozenSet();
     }
 
     private readonly RefreshDocumentationGenerator _generator = new();
-    
-    private readonly List<ApiRouteResponse> _docs = new();
-    public IEnumerable<ApiRouteResponse> Documentation => this._docs.AsReadOnly();
+    public FrozenSet<ApiRouteResponse> Documentation { get; private set; } = null!;
 }
