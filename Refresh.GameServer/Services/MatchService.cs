@@ -1,3 +1,4 @@
+using System.Collections.Frozen;
 using Bunkum.Core;
 using Bunkum.Core.Services;
 using NotEnoughLogs;
@@ -14,10 +15,9 @@ namespace Refresh.GameServer.Services;
 
 public partial class MatchService : EndpointService
 {
-    private readonly List<IMatchMethod> _matchMethods = new();
+    private FrozenSet<IMatchMethod> _matchMethods = null!; // initialized in Initialize()
 
     private readonly List<GameRoom> _rooms = new();
-
     private readonly Dictionary<ObjectId, ObjectId> _forceMatches = new();
     
     public IEnumerable<GameRoom> Rooms
@@ -122,15 +122,18 @@ public partial class MatchService : EndpointService
             .Where(t => t.IsAssignableTo(typeof(IMatchMethod)) && t != typeof(IMatchMethod))
             .ToList();
 
+        List<IMatchMethod> matchMethods = new(matchMethodTypes.Count);
+
         foreach (Type type in matchMethodTypes)
         {
             string name = type.Name.Substring(0, type.Name.IndexOf("Method", StringComparison.Ordinal));
-            this.Logger.LogTrace(BunkumCategory.Service, $"Found {nameof(IMatchMethod)} '{name}'");
+            this.Logger.LogTrace(BunkumCategory.Service, "Found {0} '{1}'", nameof(IMatchMethod), name);
             
-            this._matchMethods.Add((IMatchMethod)Activator.CreateInstance(type)!);
+            matchMethods.Add((IMatchMethod)Activator.CreateInstance(type)!);
         }
-        
-        this.Logger.LogDebug(BunkumCategory.Service, $"Discovered {matchMethodTypes.Count} match method types");
+
+        this._matchMethods = matchMethods.ToFrozenSet();
+        this.Logger.LogDebug(BunkumCategory.Service, "Discovered {0} match method types", this._matchMethods.Count);
     }
 
     private IMatchMethod? TryGetMatchMethod(string method) 
