@@ -51,16 +51,16 @@ jobs:
         name: "Refresh Website"
         repo: LittleBigRefresh/refresh-web
         if_no_artifact_found: fail
-        path: "Refresh.GameServer/bin/Release/net7.0/linux-x64/publish/web"
+        path: "Refresh.GameServer/bin/Release/net8.0/linux-x64/publish/web"
         
     - name: Copy artifact to windows build directory
-      run: cp -r "Refresh.GameServer/bin/Release/net7.0/linux-x64/publish/web" "Refresh.GameServer/bin/Release/net7.0/win-x64/publish/"
+      run: cp -r "Refresh.GameServer/bin/Release/net8.0/linux-x64/publish/web" "Refresh.GameServer/bin/Release/net8.0/win-x64/publish/"
       
     - name: Upload Linux x64 build
       uses: actions/upload-artifact@v3.1.1
       with:
           name: "Refresh for Linux x64"
-          path: "Refresh.GameServer/bin/Release/net7.0/linux-x64/publish/"
+          path: "Refresh.GameServer/bin/Release/net8.0/linux-x64/publish/"
           if-no-files-found: error
           retention-days: 30
           
@@ -68,7 +68,7 @@ jobs:
       uses: actions/upload-artifact@v3.1.1
       with:
           name: "Refresh for Windows x64"
-          path: "Refresh.GameServer/bin/Release/net7.0/win-x64/publish/"
+          path: "Refresh.GameServer/bin/Release/net8.0/win-x64/publish/"
           if-no-files-found: error
           retention-days: 30
           
