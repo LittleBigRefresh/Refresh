@@ -66,12 +66,8 @@ public class GtfDecoder : ImageDecoder
                 {
                     for (int x = 0; x < pixels.Width; x++)
                     {
-#if NET8_0_OR_GREATER
-#error Please move this to use Unsafe.BitCast<T>();
-#endif
-                        
                         TPixel pixel = new();
-                        pixel.FromRgba32(Unsafe.As<ColorRgba32, Rgba32>(ref colors[y * header.Width + x]));
+                        pixel.FromRgba32(Unsafe.BitCast<ColorRgba32, Rgba32>(colors[y * header.Width + x]));
                         row[x] = pixel;
                     }
                 }

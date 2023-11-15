@@ -1,7 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
     <PropertyGroup>
-        <TargetFramework>net7.0</TargetFramework>
+        <TargetFramework>net8.0</TargetFramework>
         <ImplicitUsings>enable</ImplicitUsings>
         <Nullable>enable</Nullable>
         
@@ -27,19 +27,19 @@
 
     <ItemGroup Condition="'$(Configuration)'=='DebugLocalBunkum'">
         <Reference Include="Bunkum.Core">
-            <HintPath>..\..\Bunkum\Bunkum.Core\bin\Debug\net7.0\Bunkum.Core.dll</HintPath>
+            <HintPath>..\..\Bunkum\Bunkum.Core\bin\Debug\net8.0\Bunkum.Core.dll</HintPath>
         </Reference>
         <Reference Include="Bunkum.Listener">
-            <HintPath>..\..\Bunkum\Bunkum.Listener\bin\Debug\net7.0\Bunkum.Listener.dll</HintPath>
+            <HintPath>..\..\Bunkum\Bunkum.Listener\bin\Debug\net8.0\Bunkum.Listener.dll</HintPath>
         </Reference>
         <Reference Include="Bunkum.Protocols.Http">
-            <HintPath>..\..\Bunkum\Bunkum.Protocols.Http\bin\Debug\net7.0\Bunkum.Protocols.Http.dll</HintPath>
+            <HintPath>..\..\Bunkum\Bunkum.Protocols.Http\bin\Debug\net8.0\Bunkum.Protocols.Http.dll</HintPath>
         </Reference>
         <Reference Include="Bunkum.RealmDatabase">
-            <HintPath>..\..\Bunkum\Bunkum.RealmDatabase\bin\Debug\net7.0\Bunkum.RealmDatabase.dll</HintPath>
+            <HintPath>..\..\Bunkum\Bunkum.RealmDatabase\bin\Debug\net8.0\Bunkum.RealmDatabase.dll</HintPath>
         </Reference>
         <Reference Include="Bunkum.AutoDiscover">
-            <HintPath>..\..\Bunkum\Bunkum.AutoDiscover\bin\Debug\net7.0\Bunkum.AutoDiscover.dll</HintPath>
+            <HintPath>..\..\Bunkum\Bunkum.AutoDiscover\bin\Debug\net8.0\Bunkum.AutoDiscover.dll</HintPath>
         </Reference>
 
         <!-- Package references must match Bunkum.HttpServer's csproj -->
