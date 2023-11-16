@@ -41,10 +41,6 @@ public class ReportingEndpoints : EndpointGroup
                 return BadRequest;
         }
 
-        //If the level is specified but its invalid, return BadRequest
-        if (body.LevelId != 0 && level == null)
-            return BadRequest;
-
         if (user.RedirectGriefReportsToPhotos)
         {
             List<SerializedPhotoSubject> subjects = new();
@@ -86,6 +82,10 @@ public class ReportingEndpoints : EndpointGroup
             
             return OK;
         }
+        
+        //If the level is specified but its invalid, return BadRequest
+        if (body.LevelId != 0 && level == null)
+            return BadRequest;
         
         //Basic validation
         if (body.Players is { Length: > 4 } || body.ScreenElements is { Player.Length: > 4 })
