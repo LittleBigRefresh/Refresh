@@ -85,7 +85,7 @@ public class ReportingEndpointsTests : GameServerTest
     }
     
     [Test]
-    public void CantUploadReportWithBadLevel()
+    public void CanUploadReportWithBadLevel()
     {
         using TestContext context = this.GetServer();
         GameUser user = context.CreateUser();
@@ -98,17 +98,26 @@ public class ReportingEndpointsTests : GameServerTest
         };
         
         HttpResponseMessage response = client.PostAsync("/lbp/grief", new StringContent(report.AsXML())).Result;
-        Assert.That(response.StatusCode, Is.EqualTo(BadRequest));
+        Assert.That(response.StatusCode, Is.EqualTo(OK));
+        
+        context.Database.Refresh();
+
+        DatabaseList<GameReport> griefReports = context.Database.GetGriefReports(10, 0);
+        Assert.That(griefReports.TotalItems, Is.EqualTo(1));
+        List<GameReport> reports = griefReports.Items.ToList();
+        Assert.That(reports[0].Description, Is.EqualTo(report.Description));
     }
     
-    [Test]
-    public void CantUploadReportWithBadPlayerCount()
+    [TestCase(true)]
+    [TestCase(false)]
+    public void CantUploadReportWithBadPlayerCount(bool psp)
     {
         using TestContext context = this.GetServer();
         GameUser user = context.CreateUser();
 
         using HttpClient client = context.GetAuthenticatedClient(TokenType.Game, TokenGame.LittleBigPlanet1, TokenPlatform.PS3, user);
-
+        if(psp) client.DefaultRequestHeaders.UserAgent.TryParseAdd("LBPPSP CLIENT");
+        
         GameReport report = new()
         {
             LevelId = 0,
@@ -138,17 +147,19 @@ public class ReportingEndpointsTests : GameServerTest
         };
         
         HttpResponseMessage response = client.PostAsync("/lbp/grief", new StringContent(report.AsXML())).Result;
-        Assert.That(response.StatusCode, Is.EqualTo(BadRequest));
+        Assert.That(response.StatusCode, Is.EqualTo(psp ? OK : BadRequest));
     }
     
-    [Test]
-    public void CantUploadReportWithBadScreenElementPlayerCount()
+    [TestCase(true)]
+    [TestCase(false)]
+    public void CantUploadReportWithBadScreenElementPlayerCount(bool psp)
     {
         using TestContext context = this.GetServer();
         GameUser user = context.CreateUser();
 
         using HttpClient client = context.GetAuthenticatedClient(TokenType.Game, TokenGame.LittleBigPlanet1, TokenPlatform.PS3, user);
-
+        if(psp) client.DefaultRequestHeaders.UserAgent.TryParseAdd("LBPPSP CLIENT");
+        
         GameReport report = new()
         {
             LevelId = 0,
@@ -181,7 +192,7 @@ public class ReportingEndpointsTests : GameServerTest
         };
         
         HttpResponseMessage response = client.PostAsync("/lbp/grief", new StringContent(report.AsXML())).Result;
-        Assert.That(response.StatusCode, Is.EqualTo(BadRequest));
+        Assert.That(response.StatusCode, Is.EqualTo(psp ? OK : BadRequest));
     }
 
     [TestCase(TokenGame.LittleBigPlanet1)]
