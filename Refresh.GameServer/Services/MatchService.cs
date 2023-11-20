@@ -9,38 +9,27 @@ using Refresh.GameServer.Authentication;
 using Refresh.GameServer.Database;
 using Refresh.GameServer.Types.Matching;
 using Refresh.GameServer.Types.Matching.MatchMethods;
+using Refresh.GameServer.Types.Matching.RoomAccessors;
 using Refresh.GameServer.Types.UserData;
 
 namespace Refresh.GameServer.Services;
 
-public partial class MatchService : EndpointService
+public partial class MatchService(Logger logger) : EndpointService(logger)
 {
     private FrozenSet<IMatchMethod> _matchMethods = null!; // initialized in Initialize()
 
-    private readonly List<GameRoom> _rooms = new();
+    public IRoomAccessor RoomAccessor { get; private set; } = null!; //initialized in Initialize()
     private readonly Dictionary<ObjectId, ObjectId> _forceMatches = new();
     
-    public IEnumerable<GameRoom> Rooms
-    {
-        get
-        {
-            this.RemoveExpiredRooms();
-            return this._rooms.AsReadOnly();
-        }
-    }
-
-    public int TotalPlayers => this._rooms.SelectMany(r => r.PlayerIds).Count();
-    public int TotalPlayersInPod => this._rooms
+    public int TotalPlayers => this.RoomAccessor.GetAllRooms().SelectMany(r => r.PlayerIds).Count();
+    public int TotalPlayersInPod => this.RoomAccessor.GetAllRooms()
         .Where(r => r.LevelType == RoomSlotType.Pod)
         .SelectMany(r => r.PlayerIds)
         .Count();
 
-    public MatchService(Logger logger) : base(logger)
-    {}
-
     public GameRoom GetOrCreateRoomByPlayer(GameUser player, TokenPlatform platform, TokenGame game, NatType natType)
     {
-        GameRoom? room = this.GetRoomByPlayer(player, platform, game);
+        GameRoom? room = this.RoomAccessor.GetRoomByUser(player, platform, game);
         
         // ReSharper disable once ConvertIfStatementToNullCoalescingExpression
         if (room == null)
@@ -52,14 +41,13 @@ public partial class MatchService : EndpointService
     public GameRoom CreateRoomByPlayer(GameUser player, TokenPlatform platform, TokenGame game, NatType natType)
     {
         GameRoom room = new(player, platform, game, natType);
-        this._rooms.Add(room);
-
+        this.RoomAccessor.AddRoom(room);
         return room;
     }
 
     public GameRoom SplitUserIntoNewRoom(GameUser player, TokenPlatform platform, TokenGame game, NatType natType)
     {
-        GameRoom? room = this.GetRoomByPlayer(player, platform, game);
+        GameRoom? room = this.RoomAccessor.GetRoomByUser(player, platform, game);
         if (room == null)
         {
             return this.CreateRoomByPlayer(player, platform, game, natType);
@@ -67,51 +55,42 @@ public partial class MatchService : EndpointService
         
         // Remove player from old room
         room.PlayerIds.RemoveAll(i => i.Id == player.UserId);
+        // Update the room on the room accessor
+        this.RoomAccessor.UpdateRoom(room);
+        
         return this.CreateRoomByPlayer(player, platform, game, natType);
     }
     
-    public GameRoom? GetRoomByPlayer(GameUser player)
-    {
-        this.RemoveExpiredRooms();
-        return this._rooms.FirstOrDefault(r => r.PlayerIds.Select(s => s.Id).Contains(player.UserId));
-    }
-
-    public GameRoom? GetRoomByPlayer(GameUser player, TokenPlatform platform, TokenGame game)
-    {
-        this.RemoveExpiredRooms();
-        return this._rooms.FirstOrDefault(r => r.PlayerIds.Select(s => s.Id).Contains(player.UserId) &&
-                                               r.Platform == platform &&
-                                               r.Game == game);
-    }
-
     public int GetPlayerCountForLevel(RoomSlotType type, int id)
     {
-        return this._rooms.Where(r => r.LevelType == type && r.LevelId == id)
+        return this.RoomAccessor.GetAllRooms().Where(r => r.LevelType == type && r.LevelId == id)
             .Sum(r => r.PlayerIds.Count);
     }
 
     public void AddPlayerToRoom(GameUser player, GameRoom targetRoom, TokenPlatform platform, TokenGame game)
     {
-        GameRoom? playersRoom = this.GetRoomByPlayer(player, platform, game);
+        GameRoom? playersRoom = this.RoomAccessor.GetRoomByUser(player, platform, game);
         if (playersRoom == null) return; // TODO: error?
         if (targetRoom == playersRoom) return;
-        
-        foreach (GameRoom room in this._rooms) room.PlayerIds.RemoveAll(i => i.Id == player.UserId);
+
+        foreach (GameRoom room in this.RoomAccessor.GetAllRooms())
+        {
+            int removed = room.PlayerIds.RemoveAll(i => i.Id == player.UserId);
+            if(removed > 0) this.RoomAccessor.UpdateRoom(room);
+        }
         targetRoom.PlayerIds.Add(new GameRoomPlayer(player.Username, player.UserId));
+        this.RoomAccessor.UpdateRoom(targetRoom);
     }
 
     public void AddPlayerToRoom(string username, GameRoom targetRoom)
     {
-        foreach (GameRoom room in this._rooms) room.PlayerIds.RemoveAll(i => i.Username == username);
+        foreach (GameRoom room in this.RoomAccessor.GetAllRooms())
+        {
+            int removed = room.PlayerIds.RemoveAll(i => i.Username == username);
+            if(removed > 0) this.RoomAccessor.UpdateRoom(room);
+        }
         targetRoom.PlayerIds.Add(new GameRoomPlayer(username, null));
-    }
-
-    public void RemoveExpiredRooms()
-    {
-        int removed = this._rooms.RemoveAll(r => r.IsExpired);
-        if (removed == 0) return;
-        
-        this.Logger.LogDebug(BunkumCategory.Matching, $"Removed {removed} expired rooms");
+        this.RoomAccessor.UpdateRoom(targetRoom);
     }
 
     public override void Initialize()
@@ -134,6 +113,8 @@ public partial class MatchService : EndpointService
 
         this._matchMethods = matchMethods.ToFrozenSet();
         this.Logger.LogDebug(BunkumCategory.Service, "Discovered {0} match method types", this._matchMethods.Count);
+
+        this.RoomAccessor = new InMemoryRoomAccessor(this.Logger);
     }
 
     private IMatchMethod? TryGetMatchMethod(string method) 

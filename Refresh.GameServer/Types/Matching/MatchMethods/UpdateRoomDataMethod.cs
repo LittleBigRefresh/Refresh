@@ -18,7 +18,6 @@ public class UpdateRoomDataMethod : IMatchMethod
         GameRoom room = service.GetOrCreateRoomByPlayer(user, token.TokenPlatform, token.TokenGame, body.NatType == null ? NatType.Open : body.NatType[0]);
         if (room.HostId.Id != user.UserId) return Unauthorized;
 
-        room.LastContact = DateTimeOffset.Now;
         if (body.RoomState != null) room.RoomState = body.RoomState.Value;
 
         // LBP likes to send both Slot and Slots interchangeably, handle that case here
@@ -39,6 +38,8 @@ public class UpdateRoomDataMethod : IMatchMethod
         {
             room.RoomMood = (RoomMood)mood;
         }
+        
+        service.RoomAccessor.UpdateRoom(room);
 
         return OK;
     }

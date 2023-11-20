@@ -26,7 +26,7 @@ public class MatchingApiEndpoints : EndpointGroup
         GameUser? user = database.GetUserByUsername(username);
         if (user == null) return ApiNotFoundError.UserMissingError;
 
-        GameRoom? room = service.GetRoomByPlayer(user);
+        GameRoom? room = service.RoomAccessor.GetRoomByUser(user);
         if(room == null) return ApiNotFoundError.Instance;
         
         return ApiGameRoomResponse.FromOld(room);
@@ -42,7 +42,7 @@ public class MatchingApiEndpoints : EndpointGroup
         GameUser? user = database.GetUserByUuid(uuid);
         if (user == null) return ApiNotFoundError.UserMissingError;
 
-        GameRoom? room = service.GetRoomByPlayer(user);
+        GameRoom? room = service.RoomAccessor.GetRoomByUser(user);
         if(room == null) return ApiNotFoundError.Instance;
         
         return ApiGameRoomResponse.FromOld(room);
@@ -58,7 +58,7 @@ public class MatchingApiEndpoints : EndpointGroup
         bool parsed = ObjectId.TryParse(uuid, out ObjectId objectId);
         if (!parsed) return ApiValidationError.ObjectIdParseError;
 
-        GameRoom? room = service.Rooms.FirstOrDefault(r => r.RoomId == objectId);
+        GameRoom? room = service.RoomAccessor.GetAllRooms().FirstOrDefault(r => r.RoomId == objectId);
         if(room == null) return ApiNotFoundError.Instance;
         
         return ApiGameRoomResponse.FromOld(room);
@@ -69,6 +69,6 @@ public class MatchingApiEndpoints : EndpointGroup
     public ApiListResponse<ApiGameRoomResponse> GetRooms(RequestContext context, MatchService service)
     {
         (int skip, int count) = context.GetPageData(true);
-        return new DatabaseList<ApiGameRoomResponse>(ApiGameRoomResponse.FromOldList(service.Rooms), skip, count);
+        return new DatabaseList<ApiGameRoomResponse>(ApiGameRoomResponse.FromOldList(service.RoomAccessor.GetAllRooms()), skip, count);
     }
 }
