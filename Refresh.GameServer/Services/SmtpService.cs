@@ -1,7 +1,8 @@
-using System.Net;
-using System.Net.Mail;
 using Bunkum.Core;
 using Bunkum.Core.Services;
+using MailKit.Net.Smtp;
+using MailKit.Security;
+using MimeKit;
 using NotEnoughLogs;
 using Refresh.GameServer.Configuration;
 using Refresh.GameServer.Types.UserData;
@@ -10,7 +11,6 @@ namespace Refresh.GameServer.Services;
 
 public class SmtpService : EndpointService
 {
-    private readonly SmtpClient? _smtpClient;
     private readonly IntegrationConfig _integrationConfig;
     private readonly GameServerConfig _gameConfig;
 
@@ -20,33 +20,36 @@ public class SmtpService : EndpointService
     {
         this._integrationConfig = integrationConfig;
         this._gameConfig = gameConfig;
-
-        if (!this._integrationConfig.SmtpEnabled) return;
-        
-        this._smtpClient = new SmtpClient(this._integrationConfig.SmtpHost)
-        {
-            Port = this._integrationConfig.SmtpPort,
-            EnableSsl = this._integrationConfig.SmtpTlsEnabled,
-            Credentials = new NetworkCredential(this._integrationConfig.SmtpUsername, this._integrationConfig.SmtpPassword),
-            DeliveryMethod = SmtpDeliveryMethod.Network,
-        };
     }
 
     private bool SendEmail(string recipient, string subject, string body)
     {
-        if (!this._integrationConfig.SmtpEnabled || this._smtpClient == null) return false;
+        if (!this._integrationConfig.SmtpEnabled) return false;
+
+        using SmtpClient client = new();
+
+        SecureSocketOptions tlsOptions = SecureSocketOptions.None;
+
+        if (this._integrationConfig is { SmtpTlsEnabled: true, SmtpPort: 587 })
+            tlsOptions = SecureSocketOptions.StartTls;
+        else if (this._integrationConfig.SmtpTlsEnabled)
+            tlsOptions = SecureSocketOptions.SslOnConnect;
         
-        MailMessage message = new()
-        {
-            From = new MailAddress(this._integrationConfig.SmtpUsername),
-            To = { new MailAddress(recipient) },
-            Subject = subject,
-            Body = body,
+        client.Connect(this._integrationConfig.SmtpHost, this._integrationConfig.SmtpPort, tlsOptions);
+        client.Authenticate(this._integrationConfig.SmtpUsername, this._integrationConfig.SmtpPassword);
+
+        MimeMessage message = new();
+        message.From.Add(new MailboxAddress(this._gameConfig.InstanceName, this._integrationConfig.SmtpUsername));
+        message.To.Add(new MailboxAddress(recipient, recipient));
+
+        message.Subject = subject;
+        message.Body = new TextPart("plain") {
+            Text = body,
         };
 
         try
         {
-            this._smtpClient.Send(message);
+            client.Send(message);
         }
         catch (Exception e)
         {
@@ -55,6 +58,8 @@ public class SmtpService : EndpointService
         }
         
         this.Logger.LogDebug(BunkumCategory.Service, $"Successfully sent '{subject}' to '{recipient}'");
+        
+        client.Disconnect(true);
         return true;
     }
 
