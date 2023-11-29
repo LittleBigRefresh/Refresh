@@ -11,8 +11,8 @@ public class CommandParseTests : GameServerTest
 	private void ParseTest(CommandService service, ReadOnlySpan<char> input, ReadOnlySpan<char> expectedName, ReadOnlySpan<char> expectedArguments)
 	{
 		CommandInvocation command = service.ParseCommand(input);
-		Assert.That(command.Name.SequenceEqual(expectedName), Is.True, $"Expected '{command.Name}' to equal '{expectedName}'");
-		Assert.That(command.Arguments.SequenceEqual(expectedArguments), Is.True, $"Expected '{command.Arguments}' to equal '{expectedArguments}'");
+		Assert.That(command.Name.SequenceEqual(expectedName), Is.True, $"Expected '{command.Name.ToString()}' to equal '{expectedName.ToString()}'");
+		Assert.That(command.Arguments.SequenceEqual(expectedArguments), Is.True, $"Expected '{command.Arguments.ToString()}' to equal '{expectedArguments.ToString()}'");
 	}
 #pragma warning restore NUnit2045
 	

@@ -44,8 +44,8 @@ public class ActivityEndpointsTests : GameServerTest
         string response = message.Content.ReadAsStringAsync().Result;
         
         //Ensure that the response contains a first login event, and a user
-        StringAssert.Contains("<event type=\"firstlogin\">", response);
-        StringAssert.Contains("<user type=\"user\">", response);
+        Assert.That(response, Contains.Substring("<event type=\"firstlogin\">"));
+        Assert.That(response, Contains.Substring("<user type=\"user\">"));
     }
     
     [Test]
