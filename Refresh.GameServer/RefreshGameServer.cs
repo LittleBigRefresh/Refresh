@@ -37,7 +37,7 @@ public class RefreshGameServer : IDisposable
     protected readonly BunkumHttpServer _server;
     protected WorkerManager? _workerManager;
     
-    protected readonly GameDatabaseProvider _databaseProvider;
+    protected readonly IGameDatabaseProvider _databaseProvider;
     protected readonly IDataStore _dataStore;
     
     protected GameServerConfig? _config;
@@ -45,12 +45,12 @@ public class RefreshGameServer : IDisposable
 
     public RefreshGameServer(
         BunkumHttpListener? listener = null,
-        Func<GameDatabaseProvider>? databaseProvider = null,
+        Func<IGameDatabaseProvider>? databaseProvider = null,
         IAuthenticationProvider<Token>? authProvider = null,
         IDataStore? dataStore = null
     )
     {
-        databaseProvider ??= () => new GameDatabaseProvider();
+        databaseProvider ??= () => new RealmGameDatabaseProvider();
         dataStore ??= new FileSystemDataStore();
 
         // ReSharper disable once VirtualMemberCallInConstructor
@@ -64,7 +64,7 @@ public class RefreshGameServer : IDisposable
         
         this._server.Initialize = _ =>
         {
-            GameDatabaseProvider provider = databaseProvider.Invoke();
+            IGameDatabaseProvider provider = databaseProvider.Invoke();
             
             this._workerManager?.Stop();
             this._workerManager = new WorkerManager(this.Logger, this._dataStore, provider);
@@ -79,7 +79,7 @@ public class RefreshGameServer : IDisposable
         CultureInfo.CurrentCulture = CultureInfo.InvariantCulture;
     }
 
-    private void InjectBaseServices(GameDatabaseProvider databaseProvider, IAuthenticationProvider<Token> authProvider, IDataStore dataStore)
+    private void InjectBaseServices(IGameDatabaseProvider databaseProvider, IAuthenticationProvider<Token> authProvider, IDataStore dataStore)
     {
         this._server.UseDatabaseProvider(databaseProvider);
         this._server.AddAuthenticationService(authProvider, true);

@@ -3,9 +3,9 @@ using RefreshTests.GameServer.Time;
 
 namespace RefreshTests.GameServer.GameServer;
 
-public class TestGameDatabaseProvider : GameDatabaseProvider
+public class TestRealmGameDatabaseProvider : RealmGameDatabaseProvider
 {
-    public TestGameDatabaseProvider(MockDateTimeProvider time) : base(time)
+    public TestRealmGameDatabaseProvider(MockDateTimeProvider time) : base(time)
     {}
 
     private readonly int _databaseId = Random.Shared.Next();

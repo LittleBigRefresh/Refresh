@@ -22,7 +22,7 @@ public class GameServerTest
         HttpClient client = listener.GetClient();
         MockDateTimeProvider time = new();
 
-        TestGameDatabaseProvider provider = new(time);
+        TestRealmGameDatabaseProvider provider = new(time);
 
         Lazy<TestRefreshGameServer> gameServer = new(() =>
         {

@@ -8,9 +8,9 @@ public class WorkerManager
 {
     private readonly Logger _logger;
     private readonly IDataStore _dataStore;
-    private readonly GameDatabaseProvider _databaseProvider;
+    private readonly IGameDatabaseProvider _databaseProvider;
 
-    public WorkerManager(Logger logger, IDataStore dataStore, GameDatabaseProvider databaseProvider)
+    public WorkerManager(Logger logger, IDataStore dataStore, IGameDatabaseProvider databaseProvider)
     {
         this._dataStore = dataStore;
         this._databaseProvider = databaseProvider;

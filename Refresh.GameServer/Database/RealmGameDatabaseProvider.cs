@@ -1,3 +1,4 @@
+using Bunkum.Core.Database;
 using Realms;
 using Refresh.GameServer.Authentication;
 using Refresh.GameServer.Types;
@@ -18,20 +19,20 @@ using GamePhotoSubject = Refresh.GameServer.Types.Photos.GamePhotoSubject;
 
 namespace Refresh.GameServer.Database;
 
-public class GameDatabaseProvider : RealmDatabaseProvider<GameDatabaseContext>
+public class RealmGameDatabaseProvider : RealmDatabaseProvider<GameDatabaseContext>, IGameDatabaseProvider
 {
-    private readonly IDateTimeProvider _time;
+    public IDateTimeProvider Time { get; }
     
-    public GameDatabaseProvider()
+    public RealmGameDatabaseProvider()
     {
-        this._time = new SystemDateTimeProvider();
+        this.Time = new SystemDateTimeProvider();
     }
 
-    protected GameDatabaseProvider(IDateTimeProvider time)
+    public RealmGameDatabaseProvider(IDateTimeProvider time)
     {
-        this._time = time;
+        this.Time = time;
     }
-
+    
     protected override ulong SchemaVersion => 101;
 
     protected override string Filename => "refreshGameServer.realm";
@@ -82,18 +83,18 @@ public class GameDatabaseProvider : RealmDatabaseProvider<GameDatabaseContext>
 
     protected override GameDatabaseContext CreateContext()
     {
-        return new GameDatabaseContext(this._time);
+        return new GameDatabaseContext(this.Time);
     }
 
     protected override void Migrate(Migration migration, ulong oldVersion)
     {
         // Get the current unix timestamp for when we add timestamps to objects
-        long timestampMilliseconds = this._time.TimestampMilliseconds;
+        long timestampMilliseconds = this.Time.TimestampMilliseconds;
 
         // DO NOT USE FOR NEW MIGRATIONS! LBP almost never actually uses seconds for timestamps.
         // This is from a mistake made early in development where this was not understood by me.
         // Unless you are certain second timestamps are used, use the millisecond timestamps set above.
-        long timestampSeconds = this._time.TimestampSeconds;
+        long timestampSeconds = this.Time.TimestampSeconds;
 
         IQueryable<dynamic>? oldUsers = migration.OldRealm.DynamicApi.All("GameUser");
         IQueryable<GameUser>? newUsers = migration.NewRealm.All<GameUser>();
