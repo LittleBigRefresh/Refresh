@@ -151,6 +151,11 @@ public partial class GameDatabaseContext // Levels
 
             #endregion
             
+        });
+
+        //do in separate transaction in a vain attempt to fix Weirdness with favourite level relations having missing levels
+        this._realm.Write(() =>
+        {
             this._realm.Remove(level);
         });
     }

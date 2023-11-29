@@ -32,7 +32,7 @@ public class GameDatabaseProvider : RealmDatabaseProvider<GameDatabaseContext>
         this._time = time;
     }
 
-    protected override ulong SchemaVersion => 100;
+    protected override ulong SchemaVersion => 101;
 
     protected override string Filename => "refreshGameServer.realm";
     
@@ -165,6 +165,9 @@ public class GameDatabaseProvider : RealmDatabaseProvider<GameDatabaseContext>
 
             // In version 100, we started enforcing lowercase email addresses
             if (oldVersion < 100) newUser.EmailAddress = oldUser.EmailAddress?.ToLowerInvariant();
+
+            // Version was bumped here to delete invalid favourite level relations
+            if (oldVersion < 101) migration.NewRealm.RemoveRange(newUser.FavouriteLevelRelations.Where(r => r.Level == null));
         }
 
         IQueryable<dynamic>? oldLevels = migration.OldRealm.DynamicApi.All("GameLevel");
