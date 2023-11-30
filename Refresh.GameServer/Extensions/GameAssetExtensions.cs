@@ -5,7 +5,7 @@ namespace Refresh.GameServer.Extensions;
 
 public static class GameAssetExtensions
 {
-    public static void TraverseDependenciesRecursively(this GameAsset asset, GameDatabaseContext database, Action<string, GameAsset?> callback)
+    public static void TraverseDependenciesRecursively(this GameAsset asset, IGameDatabaseContext database, Action<string, GameAsset?> callback)
     {
         callback(asset.AssetHash, asset);
         foreach (string internalAssetHash in asset.Dependencies)

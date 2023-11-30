@@ -22,6 +22,8 @@ public partial interface IGameDatabaseContext : IDatabaseContext
     private void AddSequentialObject<T>(T obj) where T : IRealmObject, ISequentialId 
         => this.AddSequentialObject(obj, null, null);
 
+    public void Refresh();
+
     protected IQueryable<T> All<T>() where T : IRealmObject;
     protected void Write(Action func);
     protected void Add<T>(T obj, bool update = false) where T : IRealmObject;

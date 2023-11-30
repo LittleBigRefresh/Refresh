@@ -20,7 +20,7 @@ public class NotificationApiEndpoints : EndpointGroup
 {
     [ApiV3Endpoint("notifications"), MinimumRole(GameUserRole.Restricted)]
     [DocUsesPageData, DocSummary("Gets a list of notifications stored for the user")]
-    public ApiListResponse<ApiGameNotificationResponse> GetNotifications(RequestContext context, GameUser user, GameDatabaseContext database)
+    public ApiListResponse<ApiGameNotificationResponse> GetNotifications(RequestContext context, GameUser user, IGameDatabaseContext database)
     {
         (int skip, int count) = context.GetPageData(true);
         DatabaseList<GameNotification> notifications = database.GetNotificationsByUser(user, count, skip);
@@ -31,7 +31,7 @@ public class NotificationApiEndpoints : EndpointGroup
     [DocSummary("Gets a specific notification for a user")]
     [DocError(typeof(ApiValidationError), ApiValidationError.ObjectIdParseErrorWhen)]
     [DocError(typeof(ApiNotFoundError), "The notification cannot be found")]
-    public ApiResponse<ApiGameNotificationResponse> GetNotificationByUuid(RequestContext context, GameUser user, GameDatabaseContext database,
+    public ApiResponse<ApiGameNotificationResponse> GetNotificationByUuid(RequestContext context, GameUser user, IGameDatabaseContext database,
         [DocSummary("The UUID of the notification")] string uuid)
     {
         bool parsed = ObjectId.TryParse(uuid, out ObjectId objectId);
@@ -47,7 +47,7 @@ public class NotificationApiEndpoints : EndpointGroup
     [DocSummary("Clears an individual notification for a user")]
     [DocError(typeof(ApiValidationError), ApiValidationError.ObjectIdParseErrorWhen)]
     [DocError(typeof(ApiNotFoundError), "The notification cannot be found")]
-    public ApiOkResponse ClearNotificationByUuid(RequestContext context, GameUser user, GameDatabaseContext database,
+    public ApiOkResponse ClearNotificationByUuid(RequestContext context, GameUser user, IGameDatabaseContext database,
         [DocSummary("The UUID of the notification")] string uuid)
     {
         bool parsed = ObjectId.TryParse(uuid, out ObjectId objectId);
@@ -62,7 +62,7 @@ public class NotificationApiEndpoints : EndpointGroup
     
     [ApiV3Endpoint("notifications", HttpMethods.Delete), MinimumRole(GameUserRole.Restricted)]
     [DocSummary("Clears all notifications stored for the user")]
-    public ApiOkResponse ClearAllNotifications(RequestContext context, GameUser user, GameDatabaseContext database)
+    public ApiOkResponse ClearAllNotifications(RequestContext context, GameUser user, IGameDatabaseContext database)
     {
         database.DeleteNotificationsByUser(user);
         return new ApiOkResponse();

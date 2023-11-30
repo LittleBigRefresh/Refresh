@@ -42,7 +42,7 @@ public class DiscordIntegrationWorker : IWorker
         return $"{this._externalUrl}/api/v3/assets/{hash}/image";
     }
 
-    private Embed? GenerateEmbedFromEvent(Event @event, GameDatabaseContext database)
+    private Embed? GenerateEmbedFromEvent(Event @event, IGameDatabaseContext database)
     {
         EmbedBuilder embed = new();
 
@@ -91,7 +91,7 @@ public class DiscordIntegrationWorker : IWorker
         return embed.Build();
     }
 
-    public bool DoWork(Logger logger, IDataStore dataStore, GameDatabaseContext database)
+    public bool DoWork(Logger logger, IDataStore dataStore, IGameDatabaseContext database)
     {
         if (this._firstCycle)
         {

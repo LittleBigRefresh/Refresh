@@ -30,7 +30,7 @@ public class SerializedCategory
 
     public static SerializedCategory FromLevelCategory(LevelCategory levelCategory,
         RequestContext context,
-        GameDatabaseContext database,
+        IGameDatabaseContext database,
         GameUser user,
         Token token,
         MatchService matchService,

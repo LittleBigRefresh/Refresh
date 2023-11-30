@@ -20,7 +20,7 @@ public class ActivityApiEndpoints : EndpointGroup
     [DocUsesPageData, DocSummary("Fetch a list of recent happenings on the server.")]
     [DocQueryParam("timestamp", "A timestamp in unix seconds, used to search backwards.")]
     [DocError(typeof(ApiValidationError), ApiValidationError.NumberParseErrorWhen)]
-    public ApiResponse<ApiActivityPageResponse> GetRecentActivity(RequestContext context, GameDatabaseContext database)
+    public ApiResponse<ApiActivityPageResponse> GetRecentActivity(RequestContext context, IGameDatabaseContext database)
     {
         long timestamp = 0;
 
@@ -39,7 +39,7 @@ public class ActivityApiEndpoints : EndpointGroup
     [DocQueryParam("timestamp", "A timestamp in unix seconds, used to search backwards")]
     [DocError(typeof(ApiValidationError), ApiValidationError.NumberParseErrorWhen)]
     [DocError(typeof(ApiNotFoundError), "The level could not be found")]
-    public ApiResponse<ApiActivityPageResponse> GetRecentActivityForLevel(RequestContext context, GameDatabaseContext database,
+    public ApiResponse<ApiActivityPageResponse> GetRecentActivityForLevel(RequestContext context, IGameDatabaseContext database,
         [DocSummary("The ID of the level")] int id)
     {
         long timestamp = 0;

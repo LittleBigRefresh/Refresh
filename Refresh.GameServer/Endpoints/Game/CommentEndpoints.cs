@@ -17,7 +17,7 @@ namespace Refresh.GameServer.Endpoints.Game;
 public class CommentEndpoints : EndpointGroup
 {
     [GameEndpoint("postUserComment/{username}", ContentType.Xml, HttpMethods.Post)]
-    public Response PostProfileComment(RequestContext context, GameDatabaseContext database, string username, GameComment body, GameUser user, IDateTimeProvider timeProvider)
+    public Response PostProfileComment(RequestContext context, IGameDatabaseContext database, string username, GameComment body, GameUser user, IDateTimeProvider timeProvider)
     {
         if (body.Content.Length > 4096)
         {
@@ -34,7 +34,7 @@ public class CommentEndpoints : EndpointGroup
     [GameEndpoint("userComments/{username}", ContentType.Xml)]
     [NullStatusCode(NotFound)]
     [MinimumRole(GameUserRole.Restricted)]
-    public SerializedCommentList? GetProfileComments(RequestContext context, GameDatabaseContext database, string username)
+    public SerializedCommentList? GetProfileComments(RequestContext context, IGameDatabaseContext database, string username)
     {
         GameUser? profile = database.GetUserByUsername(username);
         if (profile == null) return null;
@@ -48,7 +48,7 @@ public class CommentEndpoints : EndpointGroup
     }
 
     [GameEndpoint("deleteUserComment/{username}", HttpMethods.Post)]
-    public Response DeleteProfileComment(RequestContext context, GameDatabaseContext database, string username, GameUser user)
+    public Response DeleteProfileComment(RequestContext context, IGameDatabaseContext database, string username, GameUser user)
     {
         if (!int.TryParse(context.QueryString["commentId"], out int commentId)) return BadRequest;
 
@@ -71,7 +71,7 @@ public class CommentEndpoints : EndpointGroup
     }
 
     [GameEndpoint("postComment/user/{levelId}", ContentType.Xml, HttpMethods.Post)]
-    public Response PostLevelComment(RequestContext context, GameDatabaseContext database, int levelId, GameComment body, GameUser user)
+    public Response PostLevelComment(RequestContext context, IGameDatabaseContext database, int levelId, GameComment body, GameUser user)
     {
         if (body.Content.Length > 4096)
         {
@@ -88,7 +88,7 @@ public class CommentEndpoints : EndpointGroup
     [GameEndpoint("comments/user/{levelId}", ContentType.Xml)]
     [NullStatusCode(NotFound)]
     [MinimumRole(GameUserRole.Restricted)]
-    public SerializedCommentList? GetLevelComments(RequestContext context, GameDatabaseContext database, int levelId)
+    public SerializedCommentList? GetLevelComments(RequestContext context, IGameDatabaseContext database, int levelId)
     {
         GameLevel? level = database.GetLevelById(levelId);
         if (level == null) return null;
@@ -102,7 +102,7 @@ public class CommentEndpoints : EndpointGroup
     }
 
     [GameEndpoint("deleteComment/user/{levelId}", HttpMethods.Post)]
-    public Response DeleteLevelComment(RequestContext context, GameDatabaseContext database, int levelId, GameUser user)
+    public Response DeleteLevelComment(RequestContext context, IGameDatabaseContext database, int levelId, GameUser user)
     {
         if (!int.TryParse(context.QueryString["commentId"], out int commentId)) return BadRequest;
         

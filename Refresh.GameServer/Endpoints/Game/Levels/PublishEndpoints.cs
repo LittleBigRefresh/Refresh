@@ -48,7 +48,7 @@ public class PublishEndpoints : EndpointGroup
     
     [GameEndpoint("startPublish", ContentType.Xml, HttpMethods.Post)]
     [NullStatusCode(BadRequest)]
-    public SerializedLevelResources? StartPublish(RequestContext context, GameUser user, GameDatabaseContext database, GameLevelRequest body, CommandService command, IDataStore dataStore)
+    public SerializedLevelResources? StartPublish(RequestContext context, GameUser user, IGameDatabaseContext database, GameLevelRequest body, CommandService command, IDataStore dataStore)
     {
         //If verifying the request fails, return null
         if (!VerifyLevel(body, user, context.Logger)) return null;
@@ -74,7 +74,7 @@ public class PublishEndpoints : EndpointGroup
     }
 
     [GameEndpoint("publish", ContentType.Xml, HttpMethods.Post)]
-    public Response PublishLevel(RequestContext context, GameUser user, Token token, GameDatabaseContext database, GameLevelRequest body, CommandService command, IDataStore dataStore)
+    public Response PublishLevel(RequestContext context, GameUser user, Token token, IGameDatabaseContext database, GameLevelRequest body, CommandService command, IDataStore dataStore)
     {
         //If verifying the request fails, return null
         if (!VerifyLevel(body, user, context.Logger)) return BadRequest;
@@ -121,7 +121,7 @@ public class PublishEndpoints : EndpointGroup
     }
 
     [GameEndpoint("unpublish/{id}", ContentType.Xml, HttpMethods.Post)]
-    public Response DeleteLevel(RequestContext context, GameUser user, GameDatabaseContext database, int id)
+    public Response DeleteLevel(RequestContext context, GameUser user, IGameDatabaseContext database, int id)
     {
         GameLevel? level = database.GetLevelById(id);
         if (level == null) return NotFound;

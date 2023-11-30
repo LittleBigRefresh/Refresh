@@ -44,7 +44,7 @@ public class ApiLevelCategoryResponse : IApiResponse, IDataConvertableFrom<ApiLe
     public static IEnumerable<ApiLevelCategoryResponse> FromOldList(IEnumerable<LevelCategory> oldList,
         RequestContext context,
         MatchService matchService,
-        GameDatabaseContext database,
+        IGameDatabaseContext database,
         GameUser? user)
     {
         return oldList.Select(category =>

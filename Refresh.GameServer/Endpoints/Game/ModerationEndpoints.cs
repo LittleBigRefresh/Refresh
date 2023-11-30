@@ -43,7 +43,7 @@ public class ModerationEndpoints : EndpointGroup
     /// <returns>The string shown in-game.</returns>
     [GameEndpoint("filter", HttpMethods.Post)]
     [AllowEmptyBody]
-    public string Filter(RequestContext context, CommandService commandService, string body, GameUser user, Token token, GameDatabaseContext database)
+    public string Filter(RequestContext context, CommandService commandService, string body, GameUser user, Token token, IGameDatabaseContext database)
     {
         // TODO: Add actual filtering/censoring
         

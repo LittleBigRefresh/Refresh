@@ -12,7 +12,7 @@ public class TokenTests : GameServerTest
         using TestContext context = this.GetServer(false);
         GameUser user = context.CreateUser();
 
-        const int expirySeconds = GameDatabaseContext.DefaultTokenExpirySeconds;
+        const int expirySeconds = IGameDatabaseContext.DefaultTokenExpirySeconds;
         Token token = context.Database.GenerateTokenForUser(user, TokenType.Api, TokenGame.Website, TokenPlatform.Website, expirySeconds);
         
         Assert.That(context.Database.GetTokenFromTokenData(token.TokenData, TokenType.Api), Is.Not.Null);

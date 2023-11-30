@@ -20,7 +20,7 @@ public class LevelEndpoints : EndpointGroup
     [GameEndpoint("slots/{route}", ContentType.Xml)]
     [MinimumRole(GameUserRole.Restricted)]
     public SerializedMinimalLevelList? GetLevels(RequestContext context,
-        GameDatabaseContext database,
+        IGameDatabaseContext database,
         CategoryService categoryService,
         MatchService matchService,
         LevelListOverrideService overrideService,
@@ -55,7 +55,7 @@ public class LevelEndpoints : EndpointGroup
     [MinimumRole(GameUserRole.Restricted)]
     [NullStatusCode(NotFound)]
     public SerializedMinimalLevelList? GetLevelsWithPlayer(RequestContext context,
-        GameDatabaseContext database,
+        IGameDatabaseContext database,
         CategoryService categories,
         MatchService matchService,
         LevelListOverrideService overrideService,
@@ -72,13 +72,13 @@ public class LevelEndpoints : EndpointGroup
     [GameEndpoint("s/user/{id}", ContentType.Xml)]
     [NullStatusCode(NotFound)]
     [MinimumRole(GameUserRole.Restricted)]
-    public GameLevelResponse? LevelById(RequestContext context, GameDatabaseContext database, MatchService matchService, GameUser user, int id)
+    public GameLevelResponse? LevelById(RequestContext context, IGameDatabaseContext database, MatchService matchService, GameUser user, int id)
         => GameLevelResponse.FromOldWithExtraData(database.GetLevelById(id), database, matchService, user);
 
     [GameEndpoint("slotList", ContentType.Xml)]
     [NullStatusCode(BadRequest)]
     [MinimumRole(GameUserRole.Restricted)]
-    public SerializedLevelList? GetMultipleLevels(RequestContext context, GameDatabaseContext database, MatchService matchService, GameUser user)
+    public SerializedLevelList? GetMultipleLevels(RequestContext context, IGameDatabaseContext database, MatchService matchService, GameUser user)
     {
         string[]? levelIds = context.QueryString.GetValues("s");
         if (levelIds == null) return null;
@@ -106,7 +106,7 @@ public class LevelEndpoints : EndpointGroup
     [GameEndpoint("searches", ContentType.Xml)]
     [GameEndpoint("genres", ContentType.Xml)]
     [MinimumRole(GameUserRole.Restricted)]
-    public SerializedCategoryList GetModernCategories(RequestContext context, GameDatabaseContext database, CategoryService categoryService, MatchService matchService, GameUser user, Token token)
+    public SerializedCategoryList GetModernCategories(RequestContext context, IGameDatabaseContext database, CategoryService categoryService, MatchService matchService, GameUser user, Token token)
     {
         (int skip, int count) = context.GetPageData();
 
@@ -125,7 +125,7 @@ public class LevelEndpoints : EndpointGroup
 
     [GameEndpoint("searches/{apiRoute}", ContentType.Xml)]
     [MinimumRole(GameUserRole.Restricted)]
-    public SerializedMinimalLevelResultsList GetLevelsFromCategory(RequestContext context, GameDatabaseContext database, CategoryService categories, MatchService matchService, GameUser user, Token token, string apiRoute)
+    public SerializedMinimalLevelResultsList GetLevelsFromCategory(RequestContext context, IGameDatabaseContext database, CategoryService categories, MatchService matchService, GameUser user, Token token, string apiRoute)
     {
         (int skip, int count) = context.GetPageData();
 
@@ -144,7 +144,7 @@ public class LevelEndpoints : EndpointGroup
     [GameEndpoint("slots", ContentType.Xml)]
     [MinimumRole(GameUserRole.Restricted)]
     public SerializedMinimalLevelList? NewestLevels(RequestContext context,
-        GameDatabaseContext database,
+        IGameDatabaseContext database,
         CategoryService categories,
         MatchService matchService,
         LevelListOverrideService overrideService,
@@ -156,7 +156,7 @@ public class LevelEndpoints : EndpointGroup
     [NullStatusCode(NotFound)]
     [MinimumRole(GameUserRole.Restricted)]
     public SerializedMinimalFavouriteLevelList? FavouriteLevels(RequestContext context,
-        GameDatabaseContext database,
+        IGameDatabaseContext database,
         CategoryService categories,
         MatchService matchService,
         LevelListOverrideService overrideService,

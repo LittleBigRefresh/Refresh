@@ -18,12 +18,12 @@ public class UserEndpoints : EndpointGroup
 {
     [GameEndpoint("user/{name}", HttpMethods.Get, ContentType.Xml)]
     [MinimumRole(GameUserRole.Restricted)]
-    public GameUserResponse? GetUser(RequestContext context, GameDatabaseContext database, string name, Token token) 
+    public GameUserResponse? GetUser(RequestContext context, IGameDatabaseContext database, string name, Token token) 
         => GameUserResponse.FromOldWithExtraData(database.GetUserByUsername(name), token.TokenGame, database);
 
     [GameEndpoint("users", HttpMethods.Get, ContentType.Xml)]
     [MinimumRole(GameUserRole.Restricted)]
-    public SerializedUserList GetMultipleUsers(RequestContext context, GameDatabaseContext database, Token token)
+    public SerializedUserList GetMultipleUsers(RequestContext context, IGameDatabaseContext database, Token token)
     {
         string[]? usernames = context.QueryString.GetValues("u");
         if (usernames == null) return new SerializedUserList();
@@ -47,7 +47,7 @@ public class UserEndpoints : EndpointGroup
     [GameEndpoint("myFriends", HttpMethods.Get, ContentType.Xml)]
     [NullStatusCode(NotFound)]
     [MinimumRole(GameUserRole.Restricted)]
-    public SerializedFriendsList? GetFriends(RequestContext context, GameDatabaseContext database,
+    public SerializedFriendsList? GetFriends(RequestContext context, IGameDatabaseContext database,
         GameUser user, FriendStorageService friendService, Token token)
     {
         List<GameUser>? friends = friendService.GetUsersFriends(user, database)?.ToList();
@@ -58,7 +58,7 @@ public class UserEndpoints : EndpointGroup
 
     [GameEndpoint("updateUser", HttpMethods.Post, ContentType.Xml)]
     [NullStatusCode(BadRequest)]
-    public string? UpdateUser(RequestContext context, GameDatabaseContext database, GameUser user, string body, IDataStore dataStore, Token token)
+    public string? UpdateUser(RequestContext context, IGameDatabaseContext database, GameUser user, string body, IDataStore dataStore, Token token)
     {
         SerializedUpdateData? data = null;
         
@@ -139,7 +139,7 @@ public class UserEndpoints : EndpointGroup
 
     [GameEndpoint("update_my_pins", HttpMethods.Post, ContentType.Json)]
     [NullStatusCode(BadRequest)]
-    public string? UpdatePins(RequestContext context, GameDatabaseContext database, GameUser user, Stream body)
+    public string? UpdatePins(RequestContext context, IGameDatabaseContext database, GameUser user, Stream body)
     {
         JsonSerializer serializer = new();
 

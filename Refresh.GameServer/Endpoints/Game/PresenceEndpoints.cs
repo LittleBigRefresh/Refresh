@@ -21,7 +21,7 @@ public class PresenceEndpoints : EndpointGroup
 
     [GameEndpoint("planetStats", HttpMethods.Get, ContentType.Xml)]
     [MinimumRole(GameUserRole.Restricted)]
-    public SerializedLevelStatisticsResponse GetLevelStatistics(RequestContext context, GameDatabaseContext database) => new()
+    public SerializedLevelStatisticsResponse GetLevelStatistics(RequestContext context, IGameDatabaseContext database) => new()
     {
         TotalLevels = database.GetTotalLevelCount(),
         TotalTeamPicks = database.GetTotalTeamPickCount(),

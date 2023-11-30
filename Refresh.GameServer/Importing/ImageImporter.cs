@@ -12,7 +12,7 @@ public partial class ImageImporter : Importer
     public ImageImporter(Logger? logger = null) : base(logger)
     {}
 
-    public void ImportFromDataStore(GameDatabaseContext context, IDataStore dataStore)
+    public void ImportFromDataStore(IGameDatabaseContext context, IDataStore dataStore)
     {
         this.Stopwatch.Start();
 

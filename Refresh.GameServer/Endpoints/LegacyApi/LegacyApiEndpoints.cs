@@ -20,7 +20,7 @@ public class LegacyApiEndpoints : EndpointGroup
 
     [LegacyApiEndpoint("username/{username}")]
     [Authentication(false)]
-    public LegacyGameUser? GetLegacyUserByUsername(RequestContext context, GameDatabaseContext database, string username)
+    public LegacyGameUser? GetLegacyUserByUsername(RequestContext context, IGameDatabaseContext database, string username)
     {
         GameUser? user = database.GetUserByUsername(username);
         if (user == null) return null;
@@ -30,7 +30,7 @@ public class LegacyApiEndpoints : EndpointGroup
     
     [LegacyApiEndpoint("user/{id}")]
     [Authentication(false)]
-    public LegacyGameUser? GetLegacyUserByLegacyId(RequestContext context, GameDatabaseContext database, int id)
+    public LegacyGameUser? GetLegacyUserByLegacyId(RequestContext context, IGameDatabaseContext database, int id)
     {
         GameUser? user = database.GetUserByLegacyId(id);
         if (user == null) return null;
@@ -40,7 +40,7 @@ public class LegacyApiEndpoints : EndpointGroup
 
     [LegacyApiEndpoint("slot/{id}")]
     [Authentication(false)]
-    public LegacyGameLevel? GetLegacyLevel(RequestContext context, GameDatabaseContext database, int id)
+    public LegacyGameLevel? GetLegacyLevel(RequestContext context, IGameDatabaseContext database, int id)
     {
         GameLevel? level = database.GetLevelById(id);
         if (level == null) return null;
@@ -50,7 +50,7 @@ public class LegacyApiEndpoints : EndpointGroup
 
     [LegacyApiEndpoint("user/{id}/status")]
     [Authentication(false)]
-    public LegacyStatus? GetLegacyUserStatus(RequestContext context, MatchService match, GameDatabaseContext database, int id)
+    public LegacyStatus? GetLegacyUserStatus(RequestContext context, MatchService match, IGameDatabaseContext database, int id)
     {
         GameUser? user = database.GetUserByLegacyId(id);
         if (user == null) return null;

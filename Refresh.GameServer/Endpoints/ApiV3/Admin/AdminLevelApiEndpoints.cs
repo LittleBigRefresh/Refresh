@@ -17,7 +17,7 @@ public class AdminLevelApiEndpoints : EndpointGroup
     [ApiV3Endpoint("admin/levels/id/{id}/teamPick", HttpMethods.Post), MinimumRole(GameUserRole.Admin)]
     [DocSummary("Marks a level as team picked.")]
     [DocError(typeof(ApiNotFoundError), ApiNotFoundError.LevelMissingErrorWhen)]
-    public ApiOkResponse AddTeamPickToLevel(RequestContext context, GameDatabaseContext database, GameUser user, int id)
+    public ApiOkResponse AddTeamPickToLevel(RequestContext context, IGameDatabaseContext database, GameUser user, int id)
     {
         GameLevel? level = database.GetLevelById(id);
         if (level == null) return ApiNotFoundError.LevelMissingError;
@@ -30,7 +30,7 @@ public class AdminLevelApiEndpoints : EndpointGroup
     [ApiV3Endpoint("admin/levels/id/{id}/removeTeamPick", HttpMethods.Post), MinimumRole(GameUserRole.Admin)]
     [DocSummary("Removes a level's team pick status.")]
     [DocError(typeof(ApiNotFoundError), ApiNotFoundError.LevelMissingErrorWhen)]
-    public ApiOkResponse RemoveTeamPickFromLevel(RequestContext context, GameDatabaseContext database, int id)
+    public ApiOkResponse RemoveTeamPickFromLevel(RequestContext context, IGameDatabaseContext database, int id)
     {
         GameLevel? level = database.GetLevelById(id);
         if (level == null) return ApiNotFoundError.LevelMissingError;
@@ -42,7 +42,7 @@ public class AdminLevelApiEndpoints : EndpointGroup
     [ApiV3Endpoint("admin/levels/id/{id}", HttpMethods.Delete), MinimumRole(GameUserRole.Admin)]
     [DocSummary("Deletes a level.")]
     [DocError(typeof(ApiNotFoundError), ApiNotFoundError.LevelMissingErrorWhen)]
-    public ApiOkResponse DeleteLevel(RequestContext context, GameDatabaseContext database, int id)
+    public ApiOkResponse DeleteLevel(RequestContext context, IGameDatabaseContext database, int id)
     {
         GameLevel? level = database.GetLevelById(id);
         if (level == null) return ApiNotFoundError.LevelMissingError;

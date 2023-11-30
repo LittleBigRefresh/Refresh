@@ -16,7 +16,7 @@ public class RequestStatisticTrackingService : Service
 
     public override Response? OnRequestHandled(ListenerContext context, MethodInfo method, Lazy<IDatabaseContext> database)
     {
-        GameDatabaseContext gameDatabase = (GameDatabaseContext)database.Value;
+        IGameDatabaseContext gameDatabase = (IGameDatabaseContext)database.Value;
 
         if (context.Uri.AbsolutePath.StartsWith(GameEndpointAttribute.BaseRoute))
         {

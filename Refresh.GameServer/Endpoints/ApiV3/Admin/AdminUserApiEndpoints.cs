@@ -22,7 +22,7 @@ public class AdminUserApiEndpoints : EndpointGroup
     [ApiV3Endpoint("admin/users/name/{username}"), MinimumRole(GameUserRole.Admin)]
     [DocSummary("Gets a user by their name with extended information.")]
     [DocError(typeof(ApiNotFoundError), ApiNotFoundError.UserMissingErrorWhen)]
-    public ApiResponse<ApiExtendedGameUserResponse> GetExtendedUserByUsername(RequestContext context, GameDatabaseContext database, string username)
+    public ApiResponse<ApiExtendedGameUserResponse> GetExtendedUserByUsername(RequestContext context, IGameDatabaseContext database, string username)
     {
         GameUser? user = database.GetUserByUsername(username);
         if (user == null) return ApiNotFoundError.UserMissingError;
@@ -33,7 +33,7 @@ public class AdminUserApiEndpoints : EndpointGroup
     [ApiV3Endpoint("admin/users/uuid/{uuid}"), MinimumRole(GameUserRole.Admin)]
     [DocSummary("Gets a user by their UUID with extended information.")]
     [DocError(typeof(ApiNotFoundError), ApiNotFoundError.UserMissingErrorWhen)]
-    public ApiResponse<ApiExtendedGameUserResponse> GetExtendedUserByUuid(RequestContext context, GameDatabaseContext database, string uuid)
+    public ApiResponse<ApiExtendedGameUserResponse> GetExtendedUserByUuid(RequestContext context, IGameDatabaseContext database, string uuid)
     {
         GameUser? user = database.GetUserByUuid(uuid);
         if (user == null) return ApiNotFoundError.UserMissingError;
@@ -44,13 +44,13 @@ public class AdminUserApiEndpoints : EndpointGroup
     [ApiV3Endpoint("admin/users"), MinimumRole(GameUserRole.Admin)]
     [DocSummary("Gets all users with extended information.")]
     [DocUsesPageData]
-    public ApiListResponse<ApiExtendedGameUserResponse> GetExtendedUsers(RequestContext context, GameDatabaseContext database)
+    public ApiListResponse<ApiExtendedGameUserResponse> GetExtendedUsers(RequestContext context, IGameDatabaseContext database)
     {
         (int skip, int count) = context.GetPageData(true);
         return DatabaseList<ApiExtendedGameUserResponse>.FromOldList<ApiExtendedGameUserResponse, GameUser>(database.GetUsers(count, skip));
     }
 
-    private static ApiOkResponse ResetUserPassword(GameDatabaseContext database, ApiResetUserPasswordRequest body, GameUser user)
+    private static ApiOkResponse ResetUserPassword(IGameDatabaseContext database, ApiResetUserPasswordRequest body, GameUser user)
     {
         if (body.PasswordSha512.Length != 128 || !CommonPatterns.Sha512Regex().IsMatch(body.PasswordSha512))
             return new ApiValidationError("Password is definitely not SHA512. Please hash the password.");
@@ -66,7 +66,7 @@ public class AdminUserApiEndpoints : EndpointGroup
     [DocSummary("Reset's a user password by their UUID.")]
     [DocError(typeof(ApiNotFoundError), ApiNotFoundError.UserMissingErrorWhen)]
     [DocRequestBody(typeof(ApiResetUserPasswordRequest))]
-    public ApiOkResponse ResetUserPasswordByUuid(RequestContext context, GameDatabaseContext database, ApiResetUserPasswordRequest body, string uuid)
+    public ApiOkResponse ResetUserPasswordByUuid(RequestContext context, IGameDatabaseContext database, ApiResetUserPasswordRequest body, string uuid)
     {
         GameUser? user = database.GetUserByUuid(uuid);
         if (user == null) return ApiNotFoundError.UserMissingError;
@@ -78,7 +78,7 @@ public class AdminUserApiEndpoints : EndpointGroup
     [DocSummary("Reset's a user password by their username.")]
     [DocError(typeof(ApiNotFoundError), ApiNotFoundError.UserMissingErrorWhen)]
     [DocRequestBody(typeof(ApiResetUserPasswordRequest))]
-    public ApiOkResponse ResetUserPasswordByUsername(RequestContext context, GameDatabaseContext database, ApiResetUserPasswordRequest body, string username)
+    public ApiOkResponse ResetUserPasswordByUsername(RequestContext context, IGameDatabaseContext database, ApiResetUserPasswordRequest body, string username)
     {
         GameUser? user = database.GetUserByUsername(username);
         if (user == null) return ApiNotFoundError.UserMissingError;
@@ -89,7 +89,7 @@ public class AdminUserApiEndpoints : EndpointGroup
     [ApiV3Endpoint("admin/users/uuid/{uuid}/planets"), MinimumRole(GameUserRole.Admin)]
     [DocSummary("Retrieves the hashes of a user's planets. Gets user by their UUID.")]
     [DocError(typeof(ApiNotFoundError), ApiNotFoundError.UserMissingErrorWhen)]
-    public ApiResponse<ApiAdminUserPlanetsResponse> GetUserPlanetsByUuid(RequestContext context, GameDatabaseContext database, string uuid)
+    public ApiResponse<ApiAdminUserPlanetsResponse> GetUserPlanetsByUuid(RequestContext context, IGameDatabaseContext database, string uuid)
     {
         GameUser? user = database.GetUserByUuid(uuid);
         if (user == null) return ApiNotFoundError.UserMissingError;
@@ -105,7 +105,7 @@ public class AdminUserApiEndpoints : EndpointGroup
     [ApiV3Endpoint("admin/users/name/{username}/planets"), MinimumRole(GameUserRole.Admin)]
     [DocSummary("Retrieves the hashes of a user's planets. Gets user by their username.")]
     [DocError(typeof(ApiNotFoundError), ApiNotFoundError.UserMissingErrorWhen)]
-    public ApiResponse<ApiAdminUserPlanetsResponse> GetUserPlanetsByUsername(RequestContext context, GameDatabaseContext database, string username)
+    public ApiResponse<ApiAdminUserPlanetsResponse> GetUserPlanetsByUsername(RequestContext context, IGameDatabaseContext database, string username)
     {
         GameUser? user = database.GetUserByUsername(username);
         if (user == null) return ApiNotFoundError.UserMissingError;
@@ -121,7 +121,7 @@ public class AdminUserApiEndpoints : EndpointGroup
     [ApiV3Endpoint("admin/users/uuid/{uuid}/planets", HttpMethods.Delete), MinimumRole(GameUserRole.Admin)]
     [DocSummary("Resets a user's planets. Gets user by their UUID.")]
     [DocError(typeof(ApiNotFoundError), ApiNotFoundError.UserMissingErrorWhen)]
-    public ApiOkResponse ResetUserPlanetsByUuid(RequestContext context, GameDatabaseContext database, string uuid)
+    public ApiOkResponse ResetUserPlanetsByUuid(RequestContext context, IGameDatabaseContext database, string uuid)
     {
         GameUser? user = database.GetUserByUuid(uuid);
         if (user == null) return ApiNotFoundError.UserMissingError;
@@ -133,7 +133,7 @@ public class AdminUserApiEndpoints : EndpointGroup
     [ApiV3Endpoint("admin/users/name/{username}/planets", HttpMethods.Delete), MinimumRole(GameUserRole.Admin)]
     [DocSummary("Resets a user's planets. Gets user by their username.")]
     [DocError(typeof(ApiNotFoundError), ApiNotFoundError.UserMissingErrorWhen)]
-    public ApiOkResponse ResetUserPlanetsByUsername(RequestContext context, GameDatabaseContext database, string username)
+    public ApiOkResponse ResetUserPlanetsByUsername(RequestContext context, IGameDatabaseContext database, string username)
     {
         GameUser? user = database.GetUserByUsername(username);
         if (user == null) return ApiNotFoundError.UserMissingError;
@@ -145,7 +145,7 @@ public class AdminUserApiEndpoints : EndpointGroup
     [ApiV3Endpoint("admin/users/uuid/{uuid}", HttpMethods.Delete), MinimumRole(GameUserRole.Admin)]
     [DocSummary("Deletes a user user by their UUID.")]
     [DocError(typeof(ApiNotFoundError), ApiNotFoundError.UserMissingErrorWhen)]
-    public ApiOkResponse DeleteUserByUuid(RequestContext context, GameDatabaseContext database, string uuid)
+    public ApiOkResponse DeleteUserByUuid(RequestContext context, IGameDatabaseContext database, string uuid)
     {
         GameUser? user = database.GetUserByUuid(uuid);
         if (user == null) return ApiNotFoundError.UserMissingError;
@@ -157,7 +157,7 @@ public class AdminUserApiEndpoints : EndpointGroup
     [ApiV3Endpoint("admin/users/name/{username}", HttpMethods.Delete), MinimumRole(GameUserRole.Admin)]
     [DocSummary("Deletes a user user by their UUID.")]
     [DocError(typeof(ApiNotFoundError), ApiNotFoundError.UserMissingErrorWhen)]
-    public ApiOkResponse DeleteUserByUsername(RequestContext context, GameDatabaseContext database, string username)
+    public ApiOkResponse DeleteUserByUsername(RequestContext context, IGameDatabaseContext database, string username)
     {
         GameUser? user = database.GetUserByUsername(username);
         if (user == null) return ApiNotFoundError.UserMissingError;

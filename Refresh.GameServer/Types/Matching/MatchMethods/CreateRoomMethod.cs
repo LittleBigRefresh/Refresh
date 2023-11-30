@@ -12,7 +12,7 @@ public class CreateRoomMethod : IMatchMethod
 {
     public IEnumerable<string> MethodNames => new[] { "CreateRoom" };
 
-    public Response Execute(MatchService service, Logger logger, GameDatabaseContext database, GameUser user, Token token,
+    public Response Execute(MatchService service, Logger logger, IGameDatabaseContext database, GameUser user, Token token,
         SerializedRoomData body)
     {
         NatType natType = body.NatType == null ? NatType.Open : body.NatType[0];

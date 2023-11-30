@@ -139,7 +139,7 @@ public partial class MatchService : EndpointService
     private IMatchMethod? TryGetMatchMethod(string method) 
         => this._matchMethods.FirstOrDefault(m => m.MethodNames.Contains(method));
 
-    public Response ExecuteMethod(string methodStr, SerializedRoomData roomData, GameDatabaseContext database, GameUser user, Token token)
+    public Response ExecuteMethod(string methodStr, SerializedRoomData roomData, IGameDatabaseContext database, GameUser user, Token token)
     {
         IMatchMethod? method = this.TryGetMatchMethod(methodStr);
         if (method == null) return BadRequest;

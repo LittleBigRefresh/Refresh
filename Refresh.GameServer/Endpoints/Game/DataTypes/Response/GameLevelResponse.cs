@@ -70,7 +70,7 @@ public class GameLevelResponse : IDataConvertableFrom<GameLevelResponse, GameLev
     [XmlElement("averageRating")] public double AverageStarRating { get; set; }
     [XmlElement("sizeOfResources")] public int SizeOfResourcesInBytes { get; set; }
 
-    public static GameLevelResponse? FromOldWithExtraData(GameLevel? old, GameDatabaseContext database, MatchService matchService, GameUser user)
+    public static GameLevelResponse? FromOldWithExtraData(GameLevel? old, IGameDatabaseContext database, MatchService matchService, GameUser user)
     {
         if (old == null) return null;
 
@@ -140,7 +140,7 @@ public class GameLevelResponse : IDataConvertableFrom<GameLevelResponse, GameLev
 
     public static IEnumerable<GameLevelResponse> FromOldList(IEnumerable<GameLevel> oldList) => oldList.Select(FromOld)!;
 
-    private void FillInExtraData(GameDatabaseContext database, MatchService matchService, GameUser user)
+    private void FillInExtraData(IGameDatabaseContext database, MatchService matchService, GameUser user)
     {
         GameLevel? level = database.GetLevelById(this.LevelId);
         if (level == null) throw new InvalidOperationException("Cannot fill in level data for a level that does not exist.");

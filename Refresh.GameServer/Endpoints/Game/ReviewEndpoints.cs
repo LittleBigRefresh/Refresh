@@ -13,7 +13,7 @@ namespace Refresh.GameServer.Endpoints.Game;
 public class ReviewEndpoints : EndpointGroup
 {
     [GameEndpoint("dpadrate/{type}/{levelId}", HttpMethods.Post)]
-    public Response SubmitRating(RequestContext context, GameDatabaseContext database, GameUser user, int levelId)
+    public Response SubmitRating(RequestContext context, IGameDatabaseContext database, GameUser user, int levelId)
     {
         GameLevel? level = database.GetLevelById(levelId);
         if (level == null) return NotFound;
@@ -30,7 +30,7 @@ public class ReviewEndpoints : EndpointGroup
     
     [GameEndpoint("rate/user/{levelId}", ContentType.Xml, HttpMethods.Post)]
     [AllowEmptyBody]
-    public Response RateUserLevel(RequestContext context, GameDatabaseContext database, GameUser user, int levelId)
+    public Response RateUserLevel(RequestContext context, IGameDatabaseContext database, GameUser user, int levelId)
     {
         GameLevel? level = database.GetLevelById(levelId);
         if (level == null) return NotFound;

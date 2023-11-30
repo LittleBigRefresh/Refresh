@@ -24,7 +24,7 @@ public class LeaderboardEndpoints : EndpointGroup
     private const string BucketName = "score";
     
     [GameEndpoint("play/user/{id}", ContentType.Xml, HttpMethods.Post)]
-    public Response PlayLevel(RequestContext context, GameUser user, GameDatabaseContext database, int id)
+    public Response PlayLevel(RequestContext context, GameUser user, IGameDatabaseContext database, int id)
     {
         GameLevel? level = database.GetLevelById(id);
         if (level == null) return NotFound;
@@ -56,7 +56,7 @@ public class LeaderboardEndpoints : EndpointGroup
 
     [GameEndpoint("scoreboard/developer/{id}", HttpMethods.Get, ContentType.Xml)]
     [RateLimitSettings(RequestTimeoutDuration, MaxRequestAmount, RequestBlockDuration, BucketName)]
-    public Response GetDeveloperScores(RequestContext context, GameUser user, GameDatabaseContext database, int id, Token token)
+    public Response GetDeveloperScores(RequestContext context, GameUser user, IGameDatabaseContext database, int id, Token token)
     {
         //No story levels have an ID < 0
         if (id < 0)
@@ -73,7 +73,7 @@ public class LeaderboardEndpoints : EndpointGroup
 
     [GameEndpoint("scoreboard/developer/{id}", ContentType.Xml, HttpMethods.Post)]
     [RateLimitSettings(RequestTimeoutDuration, MaxRequestAmount, RequestBlockDuration, BucketName)]
-    public Response SubmitDeveloperScore(RequestContext context, GameUser user, GameDatabaseContext database, int id, SerializedScore body, Token token)
+    public Response SubmitDeveloperScore(RequestContext context, GameUser user, IGameDatabaseContext database, int id, SerializedScore body, Token token)
     {
         //No story levels have an ID < 0
         if (id < 0)
@@ -99,7 +99,7 @@ public class LeaderboardEndpoints : EndpointGroup
     
     [GameEndpoint("scoreboard/user/{id}", HttpMethods.Get, ContentType.Xml)]
     [RateLimitSettings(RequestTimeoutDuration, MaxRequestAmount, RequestBlockDuration, BucketName)]
-    public Response GetUserScores(RequestContext context, GameUser user, GameDatabaseContext database, int id, Token token)
+    public Response GetUserScores(RequestContext context, GameUser user, IGameDatabaseContext database, int id, Token token)
     {
         GameLevel? level = database.GetLevelById(id);
         if (level == null) return NotFound;
@@ -112,7 +112,7 @@ public class LeaderboardEndpoints : EndpointGroup
     
     [GameEndpoint("scoreboard/user/{id}", ContentType.Xml, HttpMethods.Post)]
     [RateLimitSettings(RequestTimeoutDuration, MaxRequestAmount, RequestBlockDuration, BucketName)]
-    public Response SubmitScore(RequestContext context, GameUser user, GameDatabaseContext database, int id, SerializedScore body, Token token)
+    public Response SubmitScore(RequestContext context, GameUser user, IGameDatabaseContext database, int id, SerializedScore body, Token token)
     {
         GameLevel? level = database.GetLevelById(id);
         if (level == null) return NotFound;
@@ -134,7 +134,7 @@ public class LeaderboardEndpoints : EndpointGroup
     [GameEndpoint("topscores/user/{id}/{type}", ContentType.Xml)]
     [MinimumRole(GameUserRole.Restricted)]
     [RateLimitSettings(RequestTimeoutDuration, MaxRequestAmount, RequestBlockDuration, BucketName)]
-    public Response GetTopScoresForLevel(RequestContext context, GameDatabaseContext database, int id, int type)
+    public Response GetTopScoresForLevel(RequestContext context, IGameDatabaseContext database, int id, int type)
     {
         GameLevel? level = database.GetLevelById(id);
         if (level == null) return NotFound;
@@ -146,7 +146,7 @@ public class LeaderboardEndpoints : EndpointGroup
     [GameEndpoint("topscores/developer/{id}/{type}", ContentType.Xml)]
     [MinimumRole(GameUserRole.Restricted)]
     [RateLimitSettings(RequestTimeoutDuration, MaxRequestAmount, RequestBlockDuration, BucketName)]
-    public Response GetTopScoresForDeveloperLevel(RequestContext context, GameDatabaseContext database, int id, int type)
+    public Response GetTopScoresForDeveloperLevel(RequestContext context, IGameDatabaseContext database, int id, int type)
     {
         //No story levels have an ID < 0
         if (id < 0)

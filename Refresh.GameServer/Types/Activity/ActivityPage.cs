@@ -52,7 +52,7 @@ public class ActivityPage
         this.Scores = new List<GameSubmittedScore>();
     }
 
-    public ActivityPage(GameDatabaseContext database, int count = 20, int skip = 0, long timestamp = 0, long endTimestamp = 0, bool generateGroups = true, GameLevel? level = null)
+    public ActivityPage(IGameDatabaseContext database, int count = 20, int skip = 0, long timestamp = 0, long endTimestamp = 0, bool generateGroups = true, GameLevel? level = null)
     {
         if (timestamp == 0) timestamp = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
 

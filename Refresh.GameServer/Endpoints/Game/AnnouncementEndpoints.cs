@@ -15,7 +15,7 @@ namespace Refresh.GameServer.Endpoints.Game;
 
 public class AnnouncementEndpoints : EndpointGroup
 {
-    private static string AnnounceGetNotifications(GameDatabaseContext database, GameUser user, GameServerConfig config)
+    private static string AnnounceGetNotifications(IGameDatabaseContext database, GameUser user, GameServerConfig config)
     {
         List<GameNotification> notifications = database.GetNotificationsByUser(user, 5, 0).Items.ToList();
         int count = database.GetNotificationCountByUser(user);
@@ -36,7 +36,7 @@ public class AnnouncementEndpoints : EndpointGroup
         return notificationText;
     }
 
-    private static string AnnounceGetAnnouncements(GameDatabaseContext database)
+    private static string AnnounceGetAnnouncements(IGameDatabaseContext database)
     {
         IEnumerable<GameAnnouncement> announcements = database.GetAnnouncements();
         // it's time to allocate
@@ -45,7 +45,7 @@ public class AnnouncementEndpoints : EndpointGroup
 
     [GameEndpoint("announce")]
     [MinimumRole(GameUserRole.Restricted)]
-    public string Announce(RequestContext context, GameServerConfig config, GameUser user, GameDatabaseContext database, Token token)
+    public string Announce(RequestContext context, GameServerConfig config, GameUser user, IGameDatabaseContext database, Token token)
     {
         if (user.Role == GameUserRole.Restricted)
         {
@@ -70,7 +70,7 @@ public class AnnouncementEndpoints : EndpointGroup
 
     [GameEndpoint("notification", ContentType.Xml)]
     [MinimumRole(GameUserRole.Restricted)]
-    public string Notification(RequestContext context, GameServerConfig config, GameUser user, GameDatabaseContext database)
+    public string Notification(RequestContext context, GameServerConfig config, GameUser user, IGameDatabaseContext database)
     {
         DatabaseList<GameNotification> notifications = database.GetNotificationsByUser(user, 3, 0);
         // ReSharper disable once LoopCanBeConvertedToQuery (makes it unreadable)

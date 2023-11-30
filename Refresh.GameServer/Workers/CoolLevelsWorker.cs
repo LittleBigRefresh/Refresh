@@ -10,7 +10,7 @@ namespace Refresh.GameServer.Workers;
 public class CoolLevelsWorker : IWorker
 {
     public int WorkInterval => 600_000; // Every 10 minutes
-    public bool DoWork(Logger logger, IDataStore dataStore, GameDatabaseContext database)
+    public bool DoWork(Logger logger, IDataStore dataStore, IGameDatabaseContext database)
     {
         DatabaseList<GameLevel> levels = database.GetAllUserLevels();
         if (levels.TotalItems <= 0)

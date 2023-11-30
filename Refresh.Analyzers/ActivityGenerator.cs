@@ -148,7 +148,7 @@ public partial interface IGameDatabaseContext
 {code}
 }}";
         
-        context.AddSource("GameDatabaseContext.Activity.DataGetters.g.cs", SourceText.From(sourceCode, Encoding.UTF8));
+        context.AddSource("IGameDatabaseContext.Activity.DataGetters.g.cs", SourceText.From(sourceCode, Encoding.UTF8));
     }
 
     public void Execute(GeneratorExecutionContext context)

@@ -20,7 +20,7 @@ public class MatchingApiEndpoints : EndpointGroup
     [DocSummary("Finds a room by a player's username")]
     [DocError(typeof(ApiNotFoundError), ApiNotFoundError.UserMissingErrorWhen)]
     [DocError(typeof(ApiNotFoundError), "The room could not be found")]
-    public ApiResponse<ApiGameRoomResponse> GetRoomByUsername(RequestContext context, MatchService service, GameDatabaseContext database,
+    public ApiResponse<ApiGameRoomResponse> GetRoomByUsername(RequestContext context, MatchService service, IGameDatabaseContext database,
         [DocSummary("The username of the player")] string username)
     {
         GameUser? user = database.GetUserByUsername(username);
@@ -36,7 +36,7 @@ public class MatchingApiEndpoints : EndpointGroup
     [DocSummary("Finds a room by a player's UUID")]
     [DocError(typeof(ApiNotFoundError), ApiNotFoundError.UserMissingErrorWhen)]
     [DocError(typeof(ApiNotFoundError), "The room could not be found")]
-    public ApiResponse<ApiGameRoomResponse> GetRoomByUserUuid(RequestContext context, MatchService service, GameDatabaseContext database,
+    public ApiResponse<ApiGameRoomResponse> GetRoomByUserUuid(RequestContext context, MatchService service, IGameDatabaseContext database,
         [DocSummary("The UUID of the player")] string uuid)
     {
         GameUser? user = database.GetUserByUuid(uuid);

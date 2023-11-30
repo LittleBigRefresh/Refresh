@@ -17,7 +17,7 @@ public class RandomLevelsCategory : LevelCategory
         this.IconHash = "g820605";
     }
     
-    public override DatabaseList<GameLevel>? Fetch(RequestContext context, int skip, int count, MatchService matchService, GameDatabaseContext database, GameUser? user, 
+    public override DatabaseList<GameLevel>? Fetch(RequestContext context, int skip, int count, MatchService matchService, IGameDatabaseContext database, GameUser? user, 
         LevelFilterSettings levelFilterSettings) 
         => database.GetRandomLevels(count, skip, user, levelFilterSettings);
 }

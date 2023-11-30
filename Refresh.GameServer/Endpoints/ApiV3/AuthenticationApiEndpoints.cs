@@ -35,7 +35,7 @@ public class AuthenticationApiEndpoints : EndpointGroup
     [ApiV3Endpoint("login", HttpMethods.Post), Authentication(false), AllowDuringMaintenance]
     [DocRequestBody(typeof(ApiAuthenticationRequest))]
     [RateLimitSettings(300, 10, 300, "auth")]
-    public ApiResponse<IApiAuthenticationResponse> Authenticate(RequestContext context, GameDatabaseContext database, ApiAuthenticationRequest body, GameServerConfig config)
+    public ApiResponse<IApiAuthenticationResponse> Authenticate(RequestContext context, IGameDatabaseContext database, ApiAuthenticationRequest body, GameServerConfig config)
     {
         GameUser? user = database.GetUserByEmailAddress(body.EmailAddress);
         if (user == null) return new ApiAuthenticationError("The email or password was incorrect.");
@@ -73,7 +73,7 @@ public class AuthenticationApiEndpoints : EndpointGroup
         }
 
         Token token = database.GenerateTokenForUser(user, TokenType.Api, TokenGame.Website, TokenPlatform.Website);
-        Token refreshToken = database.GenerateTokenForUser(user, TokenType.ApiRefresh, TokenGame.Website, TokenPlatform.Website, GameDatabaseContext.RefreshTokenExpirySeconds);
+        Token refreshToken = database.GenerateTokenForUser(user, TokenType.ApiRefresh, TokenGame.Website, TokenPlatform.Website, IGameDatabaseContext.RefreshTokenExpirySeconds);
 
         return new ApiAuthenticationResponse
         {
@@ -87,7 +87,7 @@ public class AuthenticationApiEndpoints : EndpointGroup
     [ApiV3Endpoint("refreshToken", HttpMethods.Post), Authentication(false), AllowDuringMaintenance]
     [DocRequestBody(typeof(ApiRefreshRequest))]
     [RateLimitSettings(300, 10, 300, "auth")]
-    public ApiResponse<IApiAuthenticationResponse> RefreshToken(RequestContext context, GameDatabaseContext database, ApiRefreshRequest body)
+    public ApiResponse<IApiAuthenticationResponse> RefreshToken(RequestContext context, IGameDatabaseContext database, ApiRefreshRequest body)
     {
         Token? refreshToken = database.GetTokenFromTokenData(body.TokenData, TokenType.ApiRefresh);
         if (refreshToken == null) return new ApiAuthenticationError("Your session has expired, please sign in again.");
@@ -107,7 +107,7 @@ public class AuthenticationApiEndpoints : EndpointGroup
 
     [ApiV3Endpoint("resetPassword", HttpMethods.Put), Authentication(false)]
     [RateLimitSettings(300, 10, 300, "auth")]
-    public ApiOkResponse ResetPassword(RequestContext context, GameDatabaseContext database, ApiResetPasswordRequest body, GameUser? user)
+    public ApiOkResponse ResetPassword(RequestContext context, IGameDatabaseContext database, ApiResetPasswordRequest body, GameUser? user)
     {
         user ??= database.GetUserFromTokenData(body.ResetToken, TokenType.PasswordReset);
         if (user == null) return new ApiAuthenticationError("The reset token is invalid");
@@ -127,7 +127,7 @@ public class AuthenticationApiEndpoints : EndpointGroup
     [ApiV3Endpoint("sendPasswordResetEmail", HttpMethods.Put), Authentication(false)]
     [RateLimitSettings(86400 / 2, 5, 86400, "resetPassword")]
     public ApiOkResponse SendPasswordResetEmail(RequestContext context,
-        GameDatabaseContext database,
+        IGameDatabaseContext database,
         ApiSendPasswordResetEmailRequest body,
         SmtpService smtpService)
     {
@@ -151,7 +151,7 @@ public class AuthenticationApiEndpoints : EndpointGroup
 
     [ApiV3Endpoint("logout", HttpMethods.Put), MinimumRole(GameUserRole.Restricted)]
     [DocSummary("Tells the server to revoke the token used to make this request. Useful for logout behavior.")]
-    public ApiOkResponse RevokeThisToken(RequestContext context, GameDatabaseContext database, Token token)
+    public ApiOkResponse RevokeThisToken(RequestContext context, IGameDatabaseContext database, Token token)
     {
         database.RevokeToken(token);
         return new ApiOkResponse();
@@ -160,7 +160,7 @@ public class AuthenticationApiEndpoints : EndpointGroup
     // IP Verification
     [ApiV3Endpoint("verificationRequests"), MinimumRole(GameUserRole.Restricted)]
     [DocSummary("Retrieves a list of IP addresses that have attempted to connect.")]
-    public ApiListResponse<ApiGameIpVerificationRequestResponse> GetVerificationRequests(RequestContext context, GameDatabaseContext database, GameUser user)
+    public ApiListResponse<ApiGameIpVerificationRequestResponse> GetVerificationRequests(RequestContext context, IGameDatabaseContext database, GameUser user)
     {
         (int skip, int count) = context.GetPageData(true);
 
@@ -172,7 +172,7 @@ public class AuthenticationApiEndpoints : EndpointGroup
     [DocSummary("Approves a given IP, and clears all remaining verification requests. Send the IP in the body.")]
     [DocError(typeof(ApiValidationError), ApiValidationError.IpAddressParseErrorWhen)]
     [DocRequestBody("127.0.0.1")]
-    public ApiOkResponse ApproveVerificationRequest(RequestContext context, GameDatabaseContext database, GameUser user, string body)
+    public ApiOkResponse ApproveVerificationRequest(RequestContext context, IGameDatabaseContext database, GameUser user, string body)
     {
         bool parsed = IPAddress.TryParse(body, out _);
         if (!parsed) return ApiValidationError.IpAddressParseError;
@@ -186,7 +186,7 @@ public class AuthenticationApiEndpoints : EndpointGroup
     [DocSummary("Denies all verification requests matching a given IP. Send the IP in the body.")]
     [DocError(typeof(ApiValidationError), ApiValidationError.IpAddressParseErrorWhen)]
     [DocRequestBody("127.0.0.1")]
-    public ApiOkResponse DenyVerificationRequest(RequestContext context, GameDatabaseContext database, GameUser user, string body)
+    public ApiOkResponse DenyVerificationRequest(RequestContext context, IGameDatabaseContext database, GameUser user, string body)
     {
         bool parsed = IPAddress.TryParse(body, out _);
         if (!parsed) return ApiValidationError.IpAddressParseError;
@@ -203,7 +203,7 @@ public class AuthenticationApiEndpoints : EndpointGroup
     [RateLimitSettings(86400, 1, 86400 / 2, "register")]
     #endif
     public ApiResponse<IApiAuthenticationResponse> Register(RequestContext context,
-        GameDatabaseContext database,
+        IGameDatabaseContext database,
         ApiRegisterRequest body,
         GameServerConfig config,
         IntegrationConfig integrationConfig,
@@ -261,7 +261,7 @@ public class AuthenticationApiEndpoints : EndpointGroup
     }
     [ApiV3Endpoint("verify", HttpMethods.Post)]
     [DocSummary("Verifies an email address using the given code")]
-    public ApiOkResponse VerifyEmail(RequestContext context, GameUser user, GameDatabaseContext database)
+    public ApiOkResponse VerifyEmail(RequestContext context, GameUser user, IGameDatabaseContext database)
     {
         string? code = context.QueryString.Get("code");
         if (code == null) return new ApiValidationError("The code parameter was not found or invalid");
@@ -274,7 +274,7 @@ public class AuthenticationApiEndpoints : EndpointGroup
 
     [ApiV3Endpoint("verify/resend", HttpMethods.Post)]
     [DocSummary("Instructs the server to resend the verification email with a new code")]
-    public ApiOkResponse ResendVerificationCode(RequestContext context, GameUser user, GameDatabaseContext database, SmtpService smtpService)
+    public ApiOkResponse ResendVerificationCode(RequestContext context, GameUser user, IGameDatabaseContext database, SmtpService smtpService)
     {
         EmailVerificationCode code = database.CreateEmailVerificationCode(user);
         smtpService.SendEmailVerificationRequest(user, code.Code);
@@ -284,7 +284,7 @@ public class AuthenticationApiEndpoints : EndpointGroup
 
     [ApiV3Endpoint("users/me", HttpMethods.Delete), MinimumRole(GameUserRole.Restricted)]
     [DocSummary("Deletes your own account. This action is non-reversible.")]
-    public ApiOkResponse DeleteMyAccount(RequestContext context, GameUser user, GameDatabaseContext database)
+    public ApiOkResponse DeleteMyAccount(RequestContext context, GameUser user, IGameDatabaseContext database)
     {
         database.DeleteUser(user);
         return new ApiOkResponse();

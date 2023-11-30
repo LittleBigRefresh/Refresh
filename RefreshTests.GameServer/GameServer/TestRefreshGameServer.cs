@@ -1,5 +1,6 @@
 using System.Reflection;
 using Bunkum.Core;
+using Bunkum.Core.Database;
 using Bunkum.Core.Services;
 using Bunkum.Core.Storage;
 using Bunkum.Protocols.Http;
@@ -20,7 +21,7 @@ namespace RefreshTests.GameServer.GameServer;
 
 public class TestRefreshGameServer : RefreshGameServer
 {
-    public TestRefreshGameServer(BunkumHttpListener listener, Func<IGameDatabaseProvider> provider, IDataStore? dataStore = null) : base(listener, provider, null, dataStore ?? new InMemoryDataStore())
+    public TestRefreshGameServer(BunkumHttpListener listener, Func<IDatabaseProvider<IGameDatabaseContext>> provider, IDataStore? dataStore = null) : base(listener, provider, null, dataStore ?? new InMemoryDataStore())
     {}
 
     public BunkumHttpServer Server => this._server;

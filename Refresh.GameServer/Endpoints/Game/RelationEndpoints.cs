@@ -17,7 +17,7 @@ namespace Refresh.GameServer.Endpoints.Game;
 public class RelationEndpoints : EndpointGroup
 {
     [GameEndpoint("favourite/slot/user/{id}", HttpMethods.Post)]
-    public Response FavouriteLevel(RequestContext context, GameDatabaseContext database, GameUser user, int id)
+    public Response FavouriteLevel(RequestContext context, IGameDatabaseContext database, GameUser user, int id)
     {
         GameLevel? level = database.GetLevelById(id);
         // On PSP, we have to lie or else the client will begin spamming the server
@@ -32,7 +32,7 @@ public class RelationEndpoints : EndpointGroup
     }
     
     [GameEndpoint("unfavourite/slot/user/{id}", HttpMethods.Post)]
-    public Response UnfavouriteLevel(RequestContext context, GameDatabaseContext database, GameUser user, int id)
+    public Response UnfavouriteLevel(RequestContext context, IGameDatabaseContext database, GameUser user, int id)
     {
         GameLevel? level = database.GetLevelById(id);
         // On PSP, we have to lie or else the client will begin spamming the server
@@ -47,7 +47,7 @@ public class RelationEndpoints : EndpointGroup
     }
     
     [GameEndpoint("favourite/user/{username}", HttpMethods.Post)]
-    public Response FavouriteUser(RequestContext context, GameDatabaseContext database, GameUser user, string username)
+    public Response FavouriteUser(RequestContext context, IGameDatabaseContext database, GameUser user, string username)
     {
         GameUser? userToFavourite = database.GetUserByUsername(username);
         // On PSP, we have to lie or else the client will begin spamming the server
@@ -62,7 +62,7 @@ public class RelationEndpoints : EndpointGroup
     }
     
     [GameEndpoint("unfavourite/user/{username}", HttpMethods.Post)]
-    public Response UnfavouriteUser(RequestContext context, GameDatabaseContext database, GameUser user, string username)
+    public Response UnfavouriteUser(RequestContext context, IGameDatabaseContext database, GameUser user, string username)
     {
         GameUser? userToFavourite = database.GetUserByUsername(username);
         // On PSP, we have to lie or else the client will begin spamming the server
@@ -79,7 +79,7 @@ public class RelationEndpoints : EndpointGroup
     [GameEndpoint("favouriteUsers/{username}", ContentType.Xml)]
     [NullStatusCode(NotFound)]
     [MinimumRole(GameUserRole.Restricted)]
-    public SerializedFavouriteUserList? GetFavouriteUsers(RequestContext context, GameDatabaseContext database, string username, Token token)
+    public SerializedFavouriteUserList? GetFavouriteUsers(RequestContext context, IGameDatabaseContext database, string username, Token token)
     {
         GameUser? user = database.GetUserByUsername(username);
         if (user == null) return null;
@@ -92,7 +92,7 @@ public class RelationEndpoints : EndpointGroup
     }
 
     [GameEndpoint("lolcatftw/add/user/{id}", HttpMethods.Post)]
-    public Response QueueLevel(RequestContext context, GameDatabaseContext database, GameUser user, int id)
+    public Response QueueLevel(RequestContext context, IGameDatabaseContext database, GameUser user, int id)
     {
         GameLevel? level = database.GetLevelById(id);
         if (level == null) return NotFound;
@@ -104,7 +104,7 @@ public class RelationEndpoints : EndpointGroup
     }
     
     [GameEndpoint("lolcatftw/remove/user/{id}", HttpMethods.Post)]
-    public Response DequeueLevel(RequestContext context, GameDatabaseContext database, GameUser user, int id)
+    public Response DequeueLevel(RequestContext context, IGameDatabaseContext database, GameUser user, int id)
     {
         GameLevel? level = database.GetLevelById(id);
         if (level == null) return NotFound;
@@ -116,7 +116,7 @@ public class RelationEndpoints : EndpointGroup
     }
 
     [GameEndpoint("lolcatftw/clear", HttpMethods.Post)]
-    public Response ClearQueue(RequestContext context, GameDatabaseContext database, GameUser user)
+    public Response ClearQueue(RequestContext context, IGameDatabaseContext database, GameUser user)
     {
         database.ClearQueue(user);
         return OK;

@@ -25,7 +25,7 @@ public class LevelApiEndpoints : EndpointGroup
     [DocSummary("Retrieves a list of categories you can use to search levels")]
     [DocQueryParam("includePreviews", "If true, a single level will be added to each category representing a level from that category. False by default.")]
     [DocError(typeof(ApiValidationError), "The boolean 'includePreviews' could not be parsed by the server.")]
-    public ApiListResponse<ApiLevelCategoryResponse> GetCategories(RequestContext context, CategoryService categories, MatchService matchService, GameDatabaseContext database, GameUser? user)
+    public ApiListResponse<ApiLevelCategoryResponse> GetCategories(RequestContext context, CategoryService categories, MatchService matchService, IGameDatabaseContext database, GameUser? user)
     {
         bool result = bool.TryParse(context.QueryString.Get("includePreviews") ?? "false", out bool includePreviews);
         if (!result) return ApiValidationError.BooleanParseError;
@@ -43,7 +43,7 @@ public class LevelApiEndpoints : EndpointGroup
     [DocSummary("Retrieves a list of levels from a category")]
     [DocError(typeof(ApiNotFoundError), "The level category cannot be found")]
     [DocUsesPageData]
-    public ApiListResponse<ApiGameLevelResponse> GetLevels(RequestContext context, GameDatabaseContext database, MatchService matchService, CategoryService categories, GameUser? user,
+    public ApiListResponse<ApiGameLevelResponse> GetLevels(RequestContext context, IGameDatabaseContext database, MatchService matchService, CategoryService categories, GameUser? user,
         [DocSummary("The name of the category you'd like to retrieve levels from. " +
                     "Make a request to /levels to see a list of available categories")] string route)
     {
@@ -61,7 +61,7 @@ public class LevelApiEndpoints : EndpointGroup
     [ApiV3Endpoint("levels/id/{id}"), Authentication(false)]
     [DocSummary("Gets an individual level by a numerical ID")]
     [DocError(typeof(ApiNotFoundError), "The level cannot be found")]
-    public ApiResponse<ApiGameLevelResponse> GetLevelById(RequestContext context, GameDatabaseContext database,
+    public ApiResponse<ApiGameLevelResponse> GetLevelById(RequestContext context, IGameDatabaseContext database,
         [DocSummary("The ID of the level")] int id)
     {
         GameLevel? level = database.GetLevelById(id);
@@ -74,7 +74,7 @@ public class LevelApiEndpoints : EndpointGroup
     [DocSummary("Edits a level by the level's numerical ID")]
     [DocError(typeof(ApiNotFoundError), ApiNotFoundError.LevelMissingErrorWhen)]
     [DocError(typeof(ApiAuthenticationError), ApiAuthenticationError.NoPermissionsForObjectWhen)]
-    public ApiResponse<ApiGameLevelResponse> EditLevelById(RequestContext context, GameDatabaseContext database, GameUser user,
+    public ApiResponse<ApiGameLevelResponse> EditLevelById(RequestContext context, IGameDatabaseContext database, GameUser user,
         [DocSummary("The ID of the level")] int id, ApiEditLevelRequest body)
     {
         GameLevel? level = database.GetLevelById(id);
@@ -92,7 +92,7 @@ public class LevelApiEndpoints : EndpointGroup
     [DocSummary("Deletes a level by the level's numerical ID")]
     [DocError(typeof(ApiNotFoundError), ApiNotFoundError.LevelMissingErrorWhen)]
     [DocError(typeof(ApiAuthenticationError), ApiAuthenticationError.NoPermissionsForObjectWhen)]
-    public ApiOkResponse DeleteLevelById(RequestContext context, GameDatabaseContext database, GameUser user,
+    public ApiOkResponse DeleteLevelById(RequestContext context, IGameDatabaseContext database, GameUser user,
         [DocSummary("The ID of the level")] int id)
     {
         GameLevel? level = database.GetLevelById(id);
@@ -109,7 +109,7 @@ public class LevelApiEndpoints : EndpointGroup
     [ApiV3Endpoint("levels/id/{id}/setAsOverride", HttpMethods.Post)]
     [DocSummary("Marks the level to show in the next slot list gotten from the game")]
     [DocError(typeof(ApiNotFoundError), ApiNotFoundError.LevelMissingErrorWhen)]
-    public ApiOkResponse SetLevelAsOverrideById(RequestContext context, GameDatabaseContext database, GameUser user, LevelListOverrideService service,
+    public ApiOkResponse SetLevelAsOverrideById(RequestContext context, IGameDatabaseContext database, GameUser user, LevelListOverrideService service,
         [DocSummary("The ID of the level")] int id)
     {
         GameLevel? level = database.GetLevelById(id);

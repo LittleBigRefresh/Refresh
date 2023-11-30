@@ -17,7 +17,7 @@ namespace Refresh.GameServer.Endpoints.Game;
 public class ReportingEndpoints : EndpointGroup 
 {
     [GameEndpoint("grief", HttpMethods.Post, ContentType.Xml)]
-    public Response UploadReport(RequestContext context, GameDatabaseContext database, GameReport body, GameUser user, IDateTimeProvider time, Token token)
+    public Response UploadReport(RequestContext context, IGameDatabaseContext database, GameReport body, GameUser user, IDateTimeProvider time, Token token)
     {
         GameLevel? level = database.GetLevelById(body.LevelId);
 

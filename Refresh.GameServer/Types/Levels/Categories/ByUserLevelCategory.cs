@@ -19,7 +19,7 @@ public class ByUserLevelCategory : LevelCategory
     }
 
     public override DatabaseList<GameLevel>? Fetch(RequestContext context, int skip, int count,
-        MatchService matchService, GameDatabaseContext database, GameUser? user, 
+        MatchService matchService, IGameDatabaseContext database, GameUser? user, 
         LevelFilterSettings levelFilterSettings)
     {
         // Prefer username from query, but fallback to user passed into this category if it's missing

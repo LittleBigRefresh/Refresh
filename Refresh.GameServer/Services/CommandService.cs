@@ -79,7 +79,7 @@ public class CommandService : EndpointService
     }
 
     [SuppressMessage("ReSharper", "StringLiteralTypo")]
-    public void HandleCommand(CommandInvocation command, GameDatabaseContext database, GameUser user, Token token)
+    public void HandleCommand(CommandInvocation command, IGameDatabaseContext database, GameUser user, Token token)
     {
         switch (command.Name)
         {

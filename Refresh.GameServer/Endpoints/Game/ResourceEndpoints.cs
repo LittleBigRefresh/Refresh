@@ -27,7 +27,7 @@ public class ResourceEndpoints : EndpointGroup
     [GameEndpoint("upload/{hash}", HttpMethods.Post)]
     [SuppressMessage("ReSharper", "ConvertIfStatementToReturnStatement")]
     public Response UploadAsset(RequestContext context, string hash, string type, byte[] body, IDataStore dataStore,
-        GameDatabaseContext database, GameUser user, AssetImporter importer, GameServerConfig config, IDateTimeProvider timeProvider, Token token)
+        IGameDatabaseContext database, GameUser user, AssetImporter importer, GameServerConfig config, IDateTimeProvider timeProvider, Token token)
     {
         if (!CommonPatterns.Sha1Regex().IsMatch(hash)) return BadRequest;
         
@@ -72,7 +72,7 @@ public class ResourceEndpoints : EndpointGroup
 
     [GameEndpoint("r/{hash}")]
     [MinimumRole(GameUserRole.Restricted)]
-    public Response GetResource(RequestContext context, string hash, IDataStore dataStore, GameDatabaseContext database, Token token)
+    public Response GetResource(RequestContext context, string hash, IDataStore dataStore, IGameDatabaseContext database, Token token)
     {
         if (!CommonPatterns.Sha1Regex().IsMatch(hash)) return BadRequest;
         

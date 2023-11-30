@@ -19,7 +19,7 @@ public class AssetImporter : Importer
         this._timeProvider = timeProvider;
     }
 
-    public void ImportFromDataStore(GameDatabaseContext database, IDataStore dataStore)
+    public void ImportFromDataStore(IGameDatabaseContext database, IDataStore dataStore)
     {
         int updatedAssets = 0;
         int newAssets = 0;

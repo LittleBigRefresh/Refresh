@@ -35,7 +35,7 @@ public class FriendStorageService : EndpointService
         this._friendIdsByPlayer.Add(user.UserId, friendList);
     }
 
-    public IEnumerable<GameUser>? GetUsersFriends(GameUser user, GameDatabaseContext database)
+    public IEnumerable<GameUser>? GetUsersFriends(GameUser user, IGameDatabaseContext database)
     {
         bool result = this._friendIdsByPlayer.TryGetValue(user.UserId, out FrozenSet<ObjectId>? friendIds);
 

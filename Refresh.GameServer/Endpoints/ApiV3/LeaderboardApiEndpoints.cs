@@ -21,7 +21,7 @@ public class LeaderboardApiEndpoints : EndpointGroup
                               "If true, all scores will be shown no matter what. False by default.")]
     [DocError(typeof(ApiNotFoundError), ApiNotFoundError.LevelMissingErrorWhen)]
     [DocError(typeof(ApiValidationError), "The boolean 'showAll' could not be parsed by the server.")]
-    public ApiListResponse<ApiGameScoreResponse> GetTopScoresForLevel(RequestContext context, GameDatabaseContext database,
+    public ApiListResponse<ApiGameScoreResponse> GetTopScoresForLevel(RequestContext context, IGameDatabaseContext database,
         [DocSummary("The ID of the level")] int id,
         [DocSummary("The leaderboard more (aka the number of players, e.g. 2 for 2-player mode)")] int mode)
     {
@@ -40,7 +40,7 @@ public class LeaderboardApiEndpoints : EndpointGroup
     [ApiV3Endpoint("scores/{uuid}"), Authentication(false)]
     [DocSummary("Gets an individual score by a UUID")]
     [DocError(typeof(ApiNotFoundError), "The score could not be found")]
-    public ApiResponse<ApiGameScoreResponse> GetScoreByUuid(RequestContext context, GameDatabaseContext database, 
+    public ApiResponse<ApiGameScoreResponse> GetScoreByUuid(RequestContext context, IGameDatabaseContext database, 
         [DocSummary("The UUID of the score")] string uuid)
     {
         GameSubmittedScore? score = database.GetScoreByUuid(uuid);

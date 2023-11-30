@@ -8,7 +8,7 @@ public class MultiLeaderboard
 {
     public readonly Dictionary<byte, DatabaseList<GameSubmittedScore>> Leaderboards;
 
-    public MultiLeaderboard(GameDatabaseContext database, GameLevel level, TokenGame game)
+    public MultiLeaderboard(IGameDatabaseContext database, GameLevel level, TokenGame game)
     {
         this.Leaderboards = new Dictionary<byte, DatabaseList<GameSubmittedScore>>
         {

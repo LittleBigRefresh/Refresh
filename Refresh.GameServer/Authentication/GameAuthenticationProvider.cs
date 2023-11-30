@@ -46,7 +46,7 @@ public class GameAuthenticationProvider : IAuthenticationProvider<Token>
         // if still null we dont have a token so bail 
         if (tokenData == null) return null;
         
-        GameDatabaseContext database = (GameDatabaseContext)db.Value;
+        IGameDatabaseContext database = (IGameDatabaseContext)db.Value;
         Debug.Assert(database != null);
 
         Token? token = database.GetTokenFromTokenData(tokenData, tokenType);

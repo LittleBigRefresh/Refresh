@@ -28,7 +28,7 @@ public class MetadataEndpoints : EndpointGroup
     }
 
     [GameEndpoint("npdata", ContentType.Xml, HttpMethods.Post)]
-    public Response SetFriendData(RequestContext context, GameUser user, GameDatabaseContext database,
+    public Response SetFriendData(RequestContext context, GameUser user, IGameDatabaseContext database,
         FriendStorageService friendService, SerializedFriendData body)
     {
         IEnumerable<GameUser> friends = body.FriendsList.Names

@@ -18,7 +18,7 @@ public class AdminAnnouncementsApiEndpoints : EndpointGroup
 {
     [ApiV3Endpoint("admin/announcements", HttpMethods.Post), MinimumRole(GameUserRole.Admin)]
     [DocSummary("Creates an announcement that shows up in the Instance API endpoint")]
-    public ApiResponse<ApiGameAnnouncementResponse> CreateAnnouncement(RequestContext context, GameDatabaseContext database, ApiGameAnnouncementRequest body)
+    public ApiResponse<ApiGameAnnouncementResponse> CreateAnnouncement(RequestContext context, IGameDatabaseContext database, ApiGameAnnouncementRequest body)
     {
         GameAnnouncement announcement = database.AddAnnouncement(body.Title, body.Text);
         return ApiGameAnnouncementResponse.FromOld(announcement);
@@ -28,7 +28,7 @@ public class AdminAnnouncementsApiEndpoints : EndpointGroup
     [DocError(typeof(ApiValidationError), ApiValidationError.ObjectIdParseErrorWhen)]
     [DocError(typeof(ApiNotFoundError), "The announcement could not be found")]
     [DocSummary("Removes an announcement")]
-    public ApiOkResponse RemoveAnnouncement(RequestContext context, GameDatabaseContext database, string idStr)
+    public ApiOkResponse RemoveAnnouncement(RequestContext context, IGameDatabaseContext database, string idStr)
     {
         bool parsed = ObjectId.TryParse(idStr, out ObjectId id);
         if (!parsed) return ApiValidationError.ObjectIdParseError;

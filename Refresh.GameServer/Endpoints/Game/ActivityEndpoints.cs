@@ -23,7 +23,7 @@ public class ActivityEndpoints : EndpointGroup
     [GameEndpoint("stream", ContentType.Xml)]
     [NullStatusCode(BadRequest)]
     [MinimumRole(GameUserRole.Restricted)]
-    public ActivityPage? GetRecentActivity(RequestContext context, GameDatabaseContext database)
+    public ActivityPage? GetRecentActivity(RequestContext context, IGameDatabaseContext database)
     {
         long timestamp = 0;
         long endTimestamp = 0;
@@ -42,7 +42,7 @@ public class ActivityEndpoints : EndpointGroup
     [GameEndpoint("news", ContentType.Xml)]
     [Authentication(false)]
     [MinimumRole(GameUserRole.Restricted)]
-    public Response GetNews(RequestContext context, GameDatabaseContext database, IDateTimeProvider time, Token? token)
+    public Response GetNews(RequestContext context, IGameDatabaseContext database, IDateTimeProvider time, Token? token)
     {
         List<GameNewsItem> items = new();
 

@@ -14,12 +14,12 @@ namespace RefreshTests.GameServer;
 public class TestContext : IDisposable
 {
     public Lazy<TestRefreshGameServer> Server { get; }
-    public GameDatabaseContext Database { get; }
+    public IGameDatabaseContext Database { get; }
     public HttpClient Http { get; }
     public MockDateTimeProvider Time { get; }
     private DirectHttpListener Listener { get; }
     
-    public TestContext(Lazy<TestRefreshGameServer> server, GameDatabaseContext database, HttpClient http, DirectHttpListener listener, MockDateTimeProvider time)
+    public TestContext(Lazy<TestRefreshGameServer> server, IGameDatabaseContext database, HttpClient http, DirectHttpListener listener, MockDateTimeProvider time)
     {
         this.Server = server;
         this.Database = database;
@@ -33,21 +33,21 @@ public class TestContext : IDisposable
 
     public HttpClient GetAuthenticatedClient(TokenType type,
         GameUser? user = null,
-        int tokenExpirySeconds = GameDatabaseContext.DefaultTokenExpirySeconds)
+        int tokenExpirySeconds = IGameDatabaseContext.DefaultTokenExpirySeconds)
     {
         return this.GetAuthenticatedClient(type, out _, user, tokenExpirySeconds);
     }
     
     public HttpClient GetAuthenticatedClient(TokenType type, TokenGame game, TokenPlatform platform,
         GameUser? user = null,
-        int tokenExpirySeconds = GameDatabaseContext.DefaultTokenExpirySeconds)
+        int tokenExpirySeconds = IGameDatabaseContext.DefaultTokenExpirySeconds)
     {
         return this.GetAuthenticatedClient(type, game, platform, out _, user, tokenExpirySeconds);
     }
 
     public HttpClient GetAuthenticatedClient(TokenType type, out string tokenData,
         GameUser? user = null,
-        int tokenExpirySeconds = GameDatabaseContext.DefaultTokenExpirySeconds)
+        int tokenExpirySeconds = IGameDatabaseContext.DefaultTokenExpirySeconds)
     {
         user ??= this.CreateUser();
 
@@ -68,7 +68,7 @@ public class TestContext : IDisposable
     
     public HttpClient GetAuthenticatedClient(TokenType type, TokenGame game, TokenPlatform platform, out string tokenData,
         GameUser? user = null,
-        int tokenExpirySeconds = GameDatabaseContext.DefaultTokenExpirySeconds)
+        int tokenExpirySeconds = IGameDatabaseContext.DefaultTokenExpirySeconds)
     {
         user ??= this.CreateUser();
 

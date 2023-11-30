@@ -13,7 +13,7 @@ public class UpdateRoomDataMethod : IMatchMethod
     public IEnumerable<string> MethodNames => new[] { "UpdateMyPlayerData" };
 
     public Response Execute(MatchService service, Logger logger,
-        GameDatabaseContext database, GameUser user, Token token, SerializedRoomData body)
+        IGameDatabaseContext database, GameUser user, Token token, SerializedRoomData body)
     {
         GameRoom room = service.GetOrCreateRoomByPlayer(user, token.TokenPlatform, token.TokenGame, body.NatType == null ? NatType.Open : body.NatType[0]);
         if (room.HostId.Id != user.UserId) return Unauthorized;

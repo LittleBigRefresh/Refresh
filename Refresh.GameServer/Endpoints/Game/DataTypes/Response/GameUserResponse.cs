@@ -51,7 +51,7 @@ public class GameUserResponse : IDataConvertableFrom<GameUserResponse, GameUser>
     /// </summary>
     [XmlElement("favouriteUsers")] public SerializedMinimalFavouriteUserList? FavouriteUsers { get; set; }
     
-    public static GameUserResponse? FromOldWithExtraData(GameUser? old, TokenGame gameVersion, GameDatabaseContext database)
+    public static GameUserResponse? FromOldWithExtraData(GameUser? old, TokenGame gameVersion, IGameDatabaseContext database)
     {
         if (old == null) return null;
 
@@ -97,10 +97,10 @@ public class GameUserResponse : IDataConvertableFrom<GameUserResponse, GameUser>
 
     public static IEnumerable<GameUserResponse> FromOldList(IEnumerable<GameUser> oldList) => oldList.Select(FromOld)!;
     
-    public static IEnumerable<GameUserResponse> FromOldListWithExtraData(IEnumerable<GameUser> oldList, TokenGame gameVersion, GameDatabaseContext database) 
+    public static IEnumerable<GameUserResponse> FromOldListWithExtraData(IEnumerable<GameUser> oldList, TokenGame gameVersion, IGameDatabaseContext database) 
         => oldList.Select(old => FromOldWithExtraData(old, gameVersion, database))!;
 
-    private void FillInExtraData(GameUser old, TokenGame gameVersion, GameDatabaseContext database)
+    private void FillInExtraData(GameUser old, TokenGame gameVersion, IGameDatabaseContext database)
     {
         if (!old.IsManaged)
         {

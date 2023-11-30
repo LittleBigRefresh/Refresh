@@ -37,7 +37,7 @@ public class LevelListOverrideService : EndpointService
         this._userIdsToLevelList.Add(user.UserId, ids);
     }
 
-    public IEnumerable<GameLevel> GetOverridesForUser(GameUser user, GameDatabaseContext database)
+    public IEnumerable<GameLevel> GetOverridesForUser(GameUser user, IGameDatabaseContext database)
     {
         Debug.Assert(this.UserHasOverrides(user), "User does not have overrides, should be checked first");
         

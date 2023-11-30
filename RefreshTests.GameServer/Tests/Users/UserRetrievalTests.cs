@@ -7,7 +7,7 @@ public class UserRetrievalTests : GameServerTest
 {
     private TestContext _context = null!;
     private GameUser _user = null!;
-    private GameDatabaseContext _db = null!;
+    private IGameDatabaseContext _db = null!;
     
     [OneTimeSetUp]
     public void SetUp()

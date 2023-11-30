@@ -26,7 +26,7 @@ public class AuthenticationEndpoints : EndpointGroup
     [RateLimitSettings(300, 10, 300, "auth")]
     [MinimumRole(GameUserRole.Restricted)]
     public object? Authenticate(RequestContext context,
-        GameDatabaseContext database,
+        IGameDatabaseContext database,
         Stream body,
         GameServerConfig config,
         IntegrationConfig integrationConfig,
@@ -155,7 +155,7 @@ public class AuthenticationEndpoints : EndpointGroup
         if (game == TokenGame.LittleBigPlanetVita && platform == TokenPlatform.PS3) platform = TokenPlatform.Vita;
         else if (game == TokenGame.LittleBigPlanetPSP && platform == TokenPlatform.PS3) platform = TokenPlatform.PSP;
 
-        Token token = database.GenerateTokenForUser(user, TokenType.Game, game.Value, platform.Value, GameDatabaseContext.GameTokenExpirySeconds); // 4 hours
+        Token token = database.GenerateTokenForUser(user, TokenType.Game, game.Value, platform.Value, IGameDatabaseContext.GameTokenExpirySeconds); // 4 hours
 
         if (game == TokenGame.LittleBigPlanetPSP)
         {
@@ -194,7 +194,7 @@ public class AuthenticationEndpoints : EndpointGroup
         return verifier.IsTicketValid();
     }
 
-    private static bool HandleIpAuthentication(RequestContext context, GameUser user, GameDatabaseContext database, bool notify)
+    private static bool HandleIpAuthentication(RequestContext context, GameUser user, IGameDatabaseContext database, bool notify)
     {
         if (user.AllowIpAuthentication == false)
         {
@@ -214,7 +214,7 @@ public class AuthenticationEndpoints : EndpointGroup
         return false;
     }
 
-    private static void SendVerificationFailureNotification(GameDatabaseContext database, GameUser user, GameServerConfig config)
+    private static void SendVerificationFailureNotification(IGameDatabaseContext database, GameUser user, GameServerConfig config)
     {
         const string failHeader = "The ticket could not be verified.";
         string failReason = failHeader + '\n';
@@ -238,7 +238,7 @@ public class AuthenticationEndpoints : EndpointGroup
         database.AddLoginFailNotification(failReason, user);
     }
 
-    private static void SendPlatformNotAllowedNotification(GameDatabaseContext database, GameUser user, TokenPlatform platform)
+    private static void SendPlatformNotAllowedNotification(IGameDatabaseContext database, GameUser user, TokenPlatform platform)
     {
         database.AddLoginFailNotification($"An authentication attempt was attempted to be made from {platform}, " +
                                           $"but the respective option for it was disabled. To allow authentication from " +
@@ -250,7 +250,7 @@ public class AuthenticationEndpoints : EndpointGroup
     /// </summary>
     [GameEndpoint("goodbye", HttpMethods.Post, ContentType.Xml)]
     [MinimumRole(GameUserRole.Restricted)]
-    public Response RevokeThisToken(RequestContext context, GameDatabaseContext database, GameUser user)
+    public Response RevokeThisToken(RequestContext context, IGameDatabaseContext database, GameUser user)
     {
         string? token = context.Cookies["MM_AUTH"];
         

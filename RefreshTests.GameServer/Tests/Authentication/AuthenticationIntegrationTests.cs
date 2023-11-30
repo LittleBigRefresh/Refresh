@@ -99,7 +99,7 @@ public class AuthenticationIntegrationTests : GameServerTest
         Assert.That(response.StatusCode, Is.EqualTo(OK));
         
         // jump to when token expires
-        context.Time.TimestampMilliseconds = (GameDatabaseContext.DefaultTokenExpirySeconds * 1000) + 1;
+        context.Time.TimestampMilliseconds = (IGameDatabaseContext.DefaultTokenExpirySeconds * 1000) + 1;
         context.Database.Refresh();
         
         Assert.Multiple(() =>

@@ -17,7 +17,7 @@ public class UserApiEndpoints : EndpointGroup
     [ApiV3Endpoint("users/name/{username}"), Authentication(false)]
     [DocSummary("Tries to find a user by the username")]
     [DocError(typeof(ApiNotFoundError), "The user cannot be found")]
-    public ApiResponse<ApiGameUserResponse> GetUserByName(RequestContext context, GameDatabaseContext database, 
+    public ApiResponse<ApiGameUserResponse> GetUserByName(RequestContext context, IGameDatabaseContext database, 
         [DocSummary("The username of the user")] string username)
     {
         GameUser? user = database.GetUserByUsername(username);
@@ -29,7 +29,7 @@ public class UserApiEndpoints : EndpointGroup
     [ApiV3Endpoint("users/uuid/{uuid}"), Authentication(false)]
     [DocSummary("Tries to find a user by the UUID")]
     [DocError(typeof(ApiNotFoundError), "The user cannot be found")]
-    public ApiResponse<ApiGameUserResponse> GetUserByUuid(RequestContext context, GameDatabaseContext database,
+    public ApiResponse<ApiGameUserResponse> GetUserByUuid(RequestContext context, IGameDatabaseContext database,
         [DocSummary("The UUID of the user")] string uuid)
     {
         GameUser? user = database.GetUserByUuid(uuid);
@@ -45,7 +45,7 @@ public class UserApiEndpoints : EndpointGroup
     
     [ApiV3Endpoint("users/me", HttpMethods.Patch)]
     [DocSummary("Updates your profile with the given data")]
-    public ApiResponse<ApiExtendedGameUserResponse> UpdateUser(RequestContext context, GameDatabaseContext database, GameUser user, ApiUpdateUserRequest body)
+    public ApiResponse<ApiExtendedGameUserResponse> UpdateUser(RequestContext context, IGameDatabaseContext database, GameUser user, ApiUpdateUserRequest body)
     {
         if (body.IconHash != null && database.GetAssetFromHash(body.IconHash) == null)
             return ApiNotFoundError.Instance;

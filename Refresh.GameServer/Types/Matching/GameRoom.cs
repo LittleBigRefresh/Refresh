@@ -28,13 +28,13 @@ public class GameRoom
 
     public DateTimeOffset LastContact;
 
-    public List<GameUser?> GetPlayers(GameDatabaseContext database) =>
+    public List<GameUser?> GetPlayers(IGameDatabaseContext database) =>
         this.PlayerIds
             .Where(i => i.Id != null)
             .Select(i => database.GetUserByObjectId(i.Id))
             .ToList();
 
-    public GameUser? GetHost(GameDatabaseContext database)
+    public GameUser? GetHost(IGameDatabaseContext database)
     {
         if (this.PlayerIds[0].Id == null) return null;
         return database.GetUserByObjectId(this.PlayerIds[0].Id);

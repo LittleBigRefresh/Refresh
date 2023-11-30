@@ -4,6 +4,7 @@ using System.Reflection;
 using Bunkum.AutoDiscover.Extensions;
 using Bunkum.Core.Authentication;
 using Bunkum.Core.Configuration;
+using Bunkum.Core.Database;
 using Bunkum.Core.RateLimit;
 using Bunkum.Core.Services;
 using Bunkum.Core.Storage;
@@ -38,7 +39,7 @@ public class RefreshGameServer : IDisposable
     protected readonly BunkumHttpServer _server;
     protected WorkerManager? _workerManager;
     
-    protected readonly IGameDatabaseProvider _databaseProvider;
+    protected readonly IDatabaseProvider<IGameDatabaseContext> _databaseProvider;
     protected readonly IDataStore _dataStore;
     
     protected GameServerConfig? _config;
@@ -46,7 +47,7 @@ public class RefreshGameServer : IDisposable
 
     public RefreshGameServer(
         BunkumHttpListener? listener = null,
-        Func<IGameDatabaseProvider>? databaseProvider = null,
+        Func<IDatabaseProvider<IGameDatabaseContext>>? databaseProvider = null,
         IAuthenticationProvider<Token>? authProvider = null,
         IDataStore? dataStore = null
     )
@@ -65,7 +66,7 @@ public class RefreshGameServer : IDisposable
         
         this._server.Initialize = _ =>
         {
-            IGameDatabaseProvider provider = databaseProvider.Invoke();
+            IDatabaseProvider<IGameDatabaseContext> provider = databaseProvider.Invoke();
             
             this._workerManager?.Stop();
             this._workerManager = new WorkerManager(this.Logger, this._dataStore, provider);
@@ -80,7 +81,7 @@ public class RefreshGameServer : IDisposable
         CultureInfo.CurrentCulture = CultureInfo.InvariantCulture;
     }
 
-    private void InjectBaseServices(IGameDatabaseProvider databaseProvider, IAuthenticationProvider<Token> authProvider, IDataStore dataStore)
+    private void InjectBaseServices(IDatabaseProvider<IGameDatabaseContext> databaseProvider, IAuthenticationProvider<Token> authProvider, IDataStore dataStore)
     {
         this._server.UseDatabaseProvider(databaseProvider);
         this._server.AddAuthenticationService(authProvider, true);
@@ -186,7 +187,7 @@ public class RefreshGameServer : IDisposable
         this._workerManager?.Stop();
     }
 
-    private GameDatabaseContext InitializeDatabase()
+    private IGameDatabaseContext InitializeDatabase()
     {
         this._databaseProvider.Initialize();
         return this._databaseProvider.GetContext();
@@ -214,7 +215,7 @@ public class RefreshGameServer : IDisposable
 
     public void ImportAssets(bool force = false)
     {
-        using GameDatabaseContext context = this.InitializeDatabase();
+        using IGameDatabaseContext context = this.InitializeDatabase();
         
         AssetImporter importer = new();
         importer.ImportFromDataStore(context, this._dataStore);
@@ -222,7 +223,7 @@ public class RefreshGameServer : IDisposable
 
     public void ImportImages()
     {
-        using GameDatabaseContext context = this.InitializeDatabase();
+        using IGameDatabaseContext context = this.InitializeDatabase();
         
         ImageImporter importer = new();
         importer.ImportFromDataStore(context, this._dataStore);
@@ -230,14 +231,14 @@ public class RefreshGameServer : IDisposable
 
     public void CreateUser(string username, string emailAddress)
     {
-        using GameDatabaseContext context = this.InitializeDatabase();
+        using IGameDatabaseContext context = this.InitializeDatabase();
         GameUser user = context.CreateUser(username, emailAddress);
         context.VerifyUserEmail(user);
     }
     
     public void SetAdminFromUsername(string username)
     {
-        using GameDatabaseContext context = this.InitializeDatabase();
+        using IGameDatabaseContext context = this.InitializeDatabase();
 
         GameUser? user = context.GetUserByUsername(username);
         if (user == null) throw new InvalidOperationException("Cannot find the user " + username);
@@ -247,7 +248,7 @@ public class RefreshGameServer : IDisposable
     
     public void SetAdminFromEmailAddress(string emailAddress)
     {
-        using GameDatabaseContext context = this.InitializeDatabase();
+        using IGameDatabaseContext context = this.InitializeDatabase();
 
         GameUser? user = context.GetUserByEmailAddress(emailAddress);
         if (user == null) throw new InvalidOperationException("Cannot find a user by emailAddress " + emailAddress);

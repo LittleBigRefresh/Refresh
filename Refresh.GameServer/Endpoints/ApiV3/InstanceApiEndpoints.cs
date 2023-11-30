@@ -14,7 +14,7 @@ public class InstanceApiEndpoints : EndpointGroup
 {
     [ApiV3Endpoint("statistics"), Authentication(false)]
     [DocSummary("Retrieves various statistics about the Refresh instance.")]
-    public ApiResponse<ApiStatisticsResponse> GetStatistics(RequestContext context, GameDatabaseContext database, MatchService match, GameServerConfig config)
+    public ApiResponse<ApiStatisticsResponse> GetStatistics(RequestContext context, IGameDatabaseContext database, MatchService match, GameServerConfig config)
     {
         ApiRequestStatisticsResponse requestStatistics;
         if (!config.TrackRequestStatistics)
@@ -52,7 +52,7 @@ public class InstanceApiEndpoints : EndpointGroup
         GameServerConfig gameConfig,
         RichPresenceConfig richConfig,
         IntegrationConfig integrationConfig,
-        GameDatabaseContext database) 
+        IGameDatabaseContext database) 
         => new ApiInstanceResponse
         {
             InstanceName = gameConfig.InstanceName,

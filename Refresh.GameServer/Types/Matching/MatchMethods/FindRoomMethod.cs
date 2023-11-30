@@ -15,7 +15,7 @@ public class FindRoomMethod : IMatchMethod
 {
     public IEnumerable<string> MethodNames => new[] { "FindBestRoom" };
 
-    public Response Execute(MatchService service, Logger logger, GameDatabaseContext database,
+    public Response Execute(MatchService service, Logger logger, IGameDatabaseContext database,
         GameUser user,
         Token token,
         SerializedRoomData body)

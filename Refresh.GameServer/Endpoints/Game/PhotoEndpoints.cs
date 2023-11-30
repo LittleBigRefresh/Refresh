@@ -16,7 +16,7 @@ namespace Refresh.GameServer.Endpoints.Game;
 public class PhotoEndpoints : EndpointGroup
 {
     [GameEndpoint("uploadPhoto", HttpMethods.Post, ContentType.Xml)]
-    public Response UploadPhoto(RequestContext context, SerializedPhoto body, GameDatabaseContext database, GameUser user, IDataStore dataStore)
+    public Response UploadPhoto(RequestContext context, SerializedPhoto body, IGameDatabaseContext database, GameUser user, IDataStore dataStore)
     {
         if (!dataStore.ExistsInStore(body.SmallHash) ||
             !dataStore.ExistsInStore(body.MediumHash) ||
@@ -39,7 +39,7 @@ public class PhotoEndpoints : EndpointGroup
     }
 
     [GameEndpoint("deletePhoto/{id}", HttpMethods.Post)]
-    public Response DeletePhoto(RequestContext context, GameDatabaseContext database, GameUser user, int id)
+    public Response DeletePhoto(RequestContext context, IGameDatabaseContext database, GameUser user, int id)
     {
         GamePhoto? photo = database.GetPhotoById(id);
         if (photo == null) return NotFound;
@@ -51,7 +51,7 @@ public class PhotoEndpoints : EndpointGroup
         return OK;
     }
     
-    private static Response GetPhotos(RequestContext context, GameDatabaseContext database, Func<GameUser, int, int, DatabaseList<GamePhoto>> photoGetter)
+    private static Response GetPhotos(RequestContext context, IGameDatabaseContext database, Func<GameUser, int, int, DatabaseList<GamePhoto>> photoGetter)
     {
         string? username = context.QueryString.Get("user");
         if (username == null) return BadRequest;
@@ -71,12 +71,12 @@ public class PhotoEndpoints : EndpointGroup
     [GameEndpoint("photos/with", ContentType.Xml)]
     [Authentication(false)]
     [MinimumRole(GameUserRole.Restricted)]
-    public Response PhotosWithUser(RequestContext context, GameDatabaseContext database) 
+    public Response PhotosWithUser(RequestContext context, IGameDatabaseContext database) 
         => GetPhotos(context, database, database.GetPhotosWithUser);
     
     [GameEndpoint("photos/by", ContentType.Xml)]
     [Authentication(false)]
     [MinimumRole(GameUserRole.Restricted)]
-    public Response PhotosByUser(RequestContext context, GameDatabaseContext database) 
+    public Response PhotosByUser(RequestContext context, IGameDatabaseContext database) 
         => GetPhotos(context, database, database.GetPhotosByUser);
 }

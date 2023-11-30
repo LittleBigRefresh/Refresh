@@ -19,7 +19,7 @@ public class SearchLevelCategory : LevelCategory
     }
 
     public override DatabaseList<GameLevel>? Fetch(RequestContext context, int skip, int count,
-        MatchService matchService, GameDatabaseContext database, GameUser? user, 
+        MatchService matchService, IGameDatabaseContext database, GameUser? user, 
         LevelFilterSettings levelFilterSettings)
     {
         string? query = context.QueryString["query"];
