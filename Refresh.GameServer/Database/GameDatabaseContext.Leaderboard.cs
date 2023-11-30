@@ -7,7 +7,7 @@ using Refresh.GameServer.Types.UserData.Leaderboard;
 
 namespace Refresh.GameServer.Database;
 
-public partial class GameDatabaseContext // Leaderboard
+public partial interface IGameDatabaseContext // Leaderboard
 {
     public GameSubmittedScore SubmitScore(SerializedScore score, GameUser user, GameLevel level, TokenGame game)
     {
@@ -17,13 +17,13 @@ public partial class GameDatabaseContext // Leaderboard
             ScoreType = score.ScoreType,
             Level = level,
             Players = { user },
-            ScoreSubmitted = this._time.Now,
+            ScoreSubmitted = this.Time.Now,
             Game = game,
         };
 
-        this._realm.Write(() =>
+        this.Write(() =>
         {
-            this._realm.Add(newScore);
+            this.Add(newScore);
         });
 
         this.CreateSubmittedScoreCreateEvent(user, newScore);
@@ -35,7 +35,7 @@ public partial class GameDatabaseContext // Leaderboard
 
     public DatabaseList<GameSubmittedScore> GetTopScoresForLevel(GameLevel level, int count, int skip, byte type, bool showDuplicates = false)
     {
-        IEnumerable<GameSubmittedScore> scores = this._realm.All<GameSubmittedScore>()
+        IEnumerable<GameSubmittedScore> scores = this.All<GameSubmittedScore>()
             .Where(s => s.ScoreType == type && s.Level == level)
             .OrderByDescending(s => s.Score)
             .AsEnumerable();
@@ -52,7 +52,7 @@ public partial class GameDatabaseContext // Leaderboard
         
         // this is probably REALLY fucking slow, and i probably shouldn't be trusted with LINQ anymore
 
-        List<GameSubmittedScore> scores = this._realm.All<GameSubmittedScore>().Where(s => s.ScoreType == score.ScoreType && s.Level == score.Level)
+        List<GameSubmittedScore> scores = this.All<GameSubmittedScore>().Where(s => s.ScoreType == score.ScoreType && s.Level == score.Level)
             .OrderByDescending(s => s.Score)
             .AsEnumerable()
             .ToList();
@@ -71,7 +71,7 @@ public partial class GameDatabaseContext // Leaderboard
     {
         if (uuid == null) return null;
         if(!ObjectId.TryParse(uuid, out ObjectId objectId)) return null;
-        return this._realm.All<GameSubmittedScore>().FirstOrDefault(u => u.ScoreId == objectId);
+        return this.All<GameSubmittedScore>().FirstOrDefault(u => u.ScoreId == objectId);
     }
     
     [Pure]
@@ -79,6 +79,6 @@ public partial class GameDatabaseContext // Leaderboard
     public GameSubmittedScore? GetScoreByObjectId(ObjectId? id)
     {
         if (id == null) return null;
-        return this._realm.All<GameSubmittedScore>().FirstOrDefault(u => u.ScoreId == id);
+        return this.All<GameSubmittedScore>().FirstOrDefault(u => u.ScoreId == id);
     }
 }

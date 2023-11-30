@@ -7,7 +7,7 @@ using GamePhotoSubject = Refresh.GameServer.Types.Photos.GamePhotoSubject;
 
 namespace Refresh.GameServer.Database;
 
-public partial class GameDatabaseContext // Photos
+public partial interface IGameDatabaseContext // Photos
 {
     public void UploadPhoto(SerializedPhoto photo, GameUser publisher)
     {
@@ -24,8 +24,8 @@ public partial class GameDatabaseContext // Photos
             //If level is null, default to level ID 0
             LevelId = photo.Level?.LevelId ?? 0,
 
-            TakenAt = DateTimeOffset.FromUnixTimeSeconds(Math.Clamp(photo.Timestamp, this._time.EarliestDate, this._time.TimestampSeconds)),
-            PublishedAt = this._time.Now,
+            TakenAt = DateTimeOffset.FromUnixTimeSeconds(Math.Clamp(photo.Timestamp, this.Time.EarliestDate, this.Time.TimestampSeconds)),
+            PublishedAt = this.Time.Now,
         };
 
         if (photo.Level?.Type == "user") 
@@ -54,31 +54,31 @@ public partial class GameDatabaseContext // Photos
 
     public void RemovePhoto(GamePhoto photo)
     {
-        this._realm.Write(() =>
+        this.Write(() =>
         {
-            this._realm.Remove(photo);
+            this.Remove(photo);
         });
     }
 
-    public int GetTotalPhotoCount() => this._realm.All<GamePhoto>().Count();
+    public int GetTotalPhotoCount() => this.All<GamePhoto>().Count();
     
     [Pure]
     public DatabaseList<GamePhoto> GetRecentPhotos(int count, int skip) =>
-        new(this._realm.All<GamePhoto>()
+        new(this.All<GamePhoto>()
             .OrderByDescending(p => p.PublishedAt), skip, count);
 
     [Pure]
     public GamePhoto? GetPhotoById(int id) =>
-        this._realm.All<GamePhoto>().FirstOrDefault(p => p.PhotoId == id);
+        this.All<GamePhoto>().FirstOrDefault(p => p.PhotoId == id);
 
     [Pure]
     public DatabaseList<GamePhoto> GetPhotosByUser(GameUser user, int count, int skip) =>
-        new(this._realm.All<GamePhoto>().Where(p => p.Publisher == user)
+        new(this.All<GamePhoto>().Where(p => p.Publisher == user)
             .OrderByDescending(p => p.TakenAt), skip, count);
 
     [Pure]
     public DatabaseList<GamePhoto> GetPhotosWithUser(GameUser user, int count, int skip) =>
-        new(this._realm.All<GamePhoto>()
+        new(this.All<GamePhoto>()
             .AsEnumerable()
             // FIXME: client-side enumeration
             .Where(p => p.Subjects.FirstOrDefault(s => Equals(s.User, user)) != null)
@@ -88,5 +88,5 @@ public partial class GameDatabaseContext // Photos
 
     [Pure]
     public DatabaseList<GamePhoto> GetPhotosInLevel(GameLevel level, int count, int skip) =>
-        new(this._realm.All<GamePhoto>().Where(p => p.LevelId == level.LevelId), skip, count);
+        new(this.All<GamePhoto>().Where(p => p.LevelId == level.LevelId), skip, count);
 }

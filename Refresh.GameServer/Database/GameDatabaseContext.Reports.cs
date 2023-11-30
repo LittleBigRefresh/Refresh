@@ -2,7 +2,7 @@ using Refresh.GameServer.Types.Report;
 
 namespace Refresh.GameServer.Database; 
 
-public partial class GameDatabaseContext 
+public partial interface IGameDatabaseContext 
 {
     public void AddGriefReport(GameReport report) 
     {
@@ -11,6 +11,6 @@ public partial class GameDatabaseContext
 
     public DatabaseList<GameReport> GetGriefReports(int count, int skip)
     {
-        return new DatabaseList<GameReport>(this._realm.All<GameReport>(), skip, count);
+        return new DatabaseList<GameReport>(this.All<GameReport>(), skip, count);
     }
 }

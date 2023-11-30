@@ -1,4 +1,5 @@
 using Refresh.GameServer.Database;
+using Refresh.GameServer.Database.Realm;
 using RefreshTests.GameServer.Time;
 
 namespace RefreshTests.GameServer.GameServer;

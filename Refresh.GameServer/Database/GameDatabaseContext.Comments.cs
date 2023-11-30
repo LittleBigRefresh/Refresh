@@ -4,7 +4,7 @@ using Refresh.GameServer.Types.UserData;
 
 namespace Refresh.GameServer.Database;
 
-public partial class GameDatabaseContext // Comments
+public partial interface IGameDatabaseContext // Comments
 {
     public GameComment PostCommentToProfile(GameUser profile, GameUser author, string content)
     {
@@ -12,7 +12,7 @@ public partial class GameDatabaseContext // Comments
         {
             Author = author,
             Content = content,
-            Timestamp = this._time.TimestampMilliseconds,
+            Timestamp = this.Time.TimestampMilliseconds,
         };
         
         this.AddSequentialObject(comment, profile.ProfileComments);
@@ -28,7 +28,7 @@ public partial class GameDatabaseContext // Comments
 
     public void DeleteProfileComment(GameComment comment, GameUser profile)
     {
-        this._realm.Write(() =>
+        this.Write(() =>
         {
             profile.ProfileComments.Remove(comment);
         });
@@ -40,7 +40,7 @@ public partial class GameDatabaseContext // Comments
             {
                 Author = author,
                 Content = content,
-                Timestamp = this._time.TimestampMilliseconds,
+                Timestamp = this.Time.TimestampMilliseconds,
             };
             
             this.AddSequentialObject(comment, level.LevelComments);
@@ -56,7 +56,7 @@ public partial class GameDatabaseContext // Comments
 
     public void DeleteLevelComment(GameComment comment, GameLevel level)
     {
-        this._realm.Write(() =>
+        this.Write(() =>
         {
             level.LevelComments.Remove(comment);
         });

@@ -9,16 +9,16 @@ using Refresh.GameServer.Types.UserData;
 
 namespace Refresh.GameServer.Database;
 
-public partial class GameDatabaseContext // Relations
+public partial interface IGameDatabaseContext // Relations
 {
     #region Favouriting Levels
     [Pure]
-    private bool IsLevelFavouritedByUser(GameLevel level, GameUser user) => this._realm.All<FavouriteLevelRelation>()
+    private bool IsLevelFavouritedByUser(GameLevel level, GameUser user) => this.All<FavouriteLevelRelation>()
         .FirstOrDefault(r => r.Level == level && r.User == user) != null;
 
     [Pure]
     public DatabaseList<GameLevel> GetLevelsFavouritedByUser(GameUser user, int count, int skip, LevelFilterSettings levelFilterSettings) 
-        => new(this._realm.All<FavouriteLevelRelation>()
+        => new(this.All<FavouriteLevelRelation>()
         .Where(r => r.User == user)
         .AsEnumerable()
         .Select(r => r.Level)
@@ -34,7 +34,7 @@ public partial class GameDatabaseContext // Relations
             Level = level,
             User = user,
         };
-        this._realm.Write(() => this._realm.Add(relation));
+        this.Write(() => this.Add(relation));
 
         this.CreateLevelFavouriteEvent(user, level);
 
@@ -43,12 +43,12 @@ public partial class GameDatabaseContext // Relations
     
     public bool UnfavouriteLevel(GameLevel level, GameUser user)
     {
-        FavouriteLevelRelation? relation = this._realm.All<FavouriteLevelRelation>()
+        FavouriteLevelRelation? relation = this.All<FavouriteLevelRelation>()
             .FirstOrDefault(r => r.Level == level && r.User == user);
 
         if (relation == null) return false;
 
-        this._realm.Write(() => this._realm.Remove(relation));
+        this.Write(() => this.Remove(relation));
 
         return true;
     }
@@ -57,7 +57,7 @@ public partial class GameDatabaseContext // Relations
     #region Favouriting Users
 
     [Pure]
-    private bool IsUserFavouritedByUser(GameUser userToFavourite, GameUser userFavouriting) => this._realm.All<FavouriteUserRelation>()
+    private bool IsUserFavouritedByUser(GameUser userToFavourite, GameUser userFavouriting) => this.All<FavouriteUserRelation>()
         .FirstOrDefault(r => r.UserToFavourite == userToFavourite && r.UserFavouriting == userFavouriting) != null;
 
     [Pure]
@@ -66,7 +66,7 @@ public partial class GameDatabaseContext // Relations
         this.IsUserFavouritedByUser(user2, user1);
     
     [Pure]
-    public IEnumerable<GameUser> GetUsersFavouritedByUser(GameUser user, int count, int skip) => this._realm.All<FavouriteUserRelation>()
+    public IEnumerable<GameUser> GetUsersFavouritedByUser(GameUser user, int count, int skip) => this.All<FavouriteUserRelation>()
         .Where(r => r.UserFavouriting == user)
         .AsEnumerable()
         .Select(r => r.UserToFavourite)
@@ -83,7 +83,7 @@ public partial class GameDatabaseContext // Relations
             UserFavouriting = userFavouriting,
         };
         
-        this._realm.Write(() => this._realm.Add(relation));
+        this.Write(() => this.Add(relation));
 
         this.CreateUserFavouriteEvent(userFavouriting, userToFavourite);
 
@@ -102,12 +102,12 @@ public partial class GameDatabaseContext // Relations
 
     public bool UnfavouriteUser(GameUser userToFavourite, GameUser userFavouriting)
     {
-        FavouriteUserRelation? relation = this._realm.All<FavouriteUserRelation>()
+        FavouriteUserRelation? relation = this.All<FavouriteUserRelation>()
             .FirstOrDefault(r => r.UserToFavourite == userToFavourite && r.UserFavouriting == userFavouriting);
 
         if (relation == null) return false;
 
-        this._realm.Write(() => this._realm.Remove(relation));
+        this.Write(() => this.Remove(relation));
 
         return true;
     }
@@ -116,12 +116,12 @@ public partial class GameDatabaseContext // Relations
 
     #region Queueing
     [Pure]
-    private bool IsLevelQueuedByUser(GameLevel level, GameUser user) => this._realm.All<QueueLevelRelation>()
+    private bool IsLevelQueuedByUser(GameLevel level, GameUser user) => this.All<QueueLevelRelation>()
         .FirstOrDefault(r => r.Level == level && r.User == user) != null;
 
     [Pure]
     public DatabaseList<GameLevel> GetLevelsQueuedByUser(GameUser user, int count, int skip, LevelFilterSettings levelFilterSettings)
-        => new(this._realm.All<QueueLevelRelation>()
+        => new(this.All<QueueLevelRelation>()
         .Where(r => r.User == user)
         .AsEnumerable()
         .Select(r => r.Level)
@@ -137,26 +137,26 @@ public partial class GameDatabaseContext // Relations
             Level = level,
             User = user,
         };
-        this._realm.Write(() => this._realm.Add(relation));
+        this.Write(() => this.Add(relation));
 
         return true;
     }
 
     public bool DequeueLevel(GameLevel level, GameUser user)
     {
-        QueueLevelRelation? relation = this._realm.All<QueueLevelRelation>()
+        QueueLevelRelation? relation = this.All<QueueLevelRelation>()
             .FirstOrDefault(r => r.Level == level && r.User == user);
 
         if (relation == null) return false;
 
-        this._realm.Write(() => this._realm.Remove(relation));
+        this.Write(() => this.Remove(relation));
 
         return true;
     }
 
     public void ClearQueue(GameUser user)
     {
-        this._realm.Write(() => this._realm.RemoveRange(user.QueueLevelRelations));
+        this.Write(() => this.RemoveRange(user.QueueLevelRelations));
     }
 
     #endregion
@@ -164,7 +164,7 @@ public partial class GameDatabaseContext // Relations
     #region Rating and Reviewing
 
     private RateLevelRelation? GetRateRelationByUser(GameLevel level, GameUser user)
-        => this._realm.All<RateLevelRelation>().FirstOrDefault(r => r.User == user && r.Level == level);
+        => this.All<RateLevelRelation>().FirstOrDefault(r => r.User == user && r.Level == level);
 
     /// <summary>
     /// Get a user's rating on a particular level.
@@ -192,17 +192,17 @@ public partial class GameDatabaseContext // Relations
                 Level = level,
                 User = user,
                 RatingType = type,
-                Timestamp = this._time.Now,
+                Timestamp = this.Time.Now,
             };
 
-            this._realm.Write(() => this._realm.Add(rating));
+            this.Write(() => this.Add(rating));
             return true;
         }
 
-        this._realm.Write(() =>
+        this.Write(() =>
         {
             rating.RatingType = type;
-            rating.Timestamp = this._time.Now;
+            rating.Timestamp = this.Time.Now;
         });
         return true;
     }
@@ -217,23 +217,23 @@ public partial class GameDatabaseContext // Relations
         {
             Level = level,
             User = user,
-            Timestamp = this._time.TimestampMilliseconds,
+            Timestamp = this.Time.TimestampMilliseconds,
             Count = count,
         };
         
-        UniquePlayLevelRelation? uniqueRelation = this._realm.All<UniquePlayLevelRelation>()
+        UniquePlayLevelRelation? uniqueRelation = this.All<UniquePlayLevelRelation>()
             .FirstOrDefault(r => r.Level == level && r.User == user);
 
-        this._realm.Write(() =>
+        this.Write(() =>
         {
-            this._realm.Add(relation);
+            this.Add(relation);
             
             // If the user hasn't played the level before, then add a unique relation too
-            if (uniqueRelation == null) this._realm.Add(new UniquePlayLevelRelation 
+            if (uniqueRelation == null) this.Add(new UniquePlayLevelRelation 
             {
                 Level = level,
                 User = user,
-                Timestamp = this._time.TimestampMilliseconds,
+                Timestamp = this.Time.TimestampMilliseconds,
             });
         });
 
@@ -241,7 +241,7 @@ public partial class GameDatabaseContext // Relations
     }
 
     public bool HasUserPlayedLevel(GameLevel level, GameUser user) =>
-        this._realm.All<UniquePlayLevelRelation>()
+        this.All<UniquePlayLevelRelation>()
             .FirstOrDefault(r => r.Level == level && r.User == user) != null;
 
     #endregion

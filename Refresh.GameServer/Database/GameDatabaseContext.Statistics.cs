@@ -2,17 +2,17 @@ using Refresh.GameServer.Types;
 
 namespace Refresh.GameServer.Database;
 
-public partial class GameDatabaseContext // Statistics
+public partial interface IGameDatabaseContext // Statistics
 {
     public RequestStatistics GetRequestStatistics()
     {
-        RequestStatistics? statistics = this._realm.All<RequestStatistics>().FirstOrDefault();
+        RequestStatistics? statistics = this.All<RequestStatistics>().FirstOrDefault();
         if (statistics != null) return statistics;
 
         statistics = new RequestStatistics();
-        this._realm.Write(() =>
+        this.Write(() =>
         {
-            this._realm.Add(statistics);
+            this.Add(statistics);
         });
 
         return statistics;
@@ -21,7 +21,7 @@ public partial class GameDatabaseContext // Statistics
     public void IncrementApiRequests()
     {
         RequestStatistics statistics = this.GetRequestStatistics();
-        this._realm.Write(() => {
+        this.Write(() => {
             statistics.TotalRequests++;
             statistics.ApiRequests++;
         });
@@ -29,7 +29,7 @@ public partial class GameDatabaseContext // Statistics
     public void IncrementLegacyApiRequests()
     {
         RequestStatistics statistics = this.GetRequestStatistics();
-        this._realm.Write(() => {
+        this.Write(() => {
             statistics.TotalRequests++;
             statistics.LegacyApiRequests++;
         });
@@ -37,7 +37,7 @@ public partial class GameDatabaseContext // Statistics
     public void IncrementGameRequests()
     {
         RequestStatistics statistics = this.GetRequestStatistics();
-        this._realm.Write(() => {
+        this.Write(() => {
             statistics.TotalRequests++;
             statistics.GameRequests++;
         });

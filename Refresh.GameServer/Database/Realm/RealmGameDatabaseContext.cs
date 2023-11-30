@@ -1,28 +1,20 @@
-using System.Diagnostics.CodeAnalysis;
-using Realms;
 using Bunkum.RealmDatabase;
+using Realms;
 using Refresh.GameServer.Time;
 using Refresh.GameServer.Types;
 
-namespace Refresh.GameServer.Database;
+namespace Refresh.GameServer.Database.Realm;
 
-[SuppressMessage("ReSharper", "InconsistentlySynchronizedField")]
-public partial class GameDatabaseContext : RealmDatabaseContext
+public class RealmGameDatabaseContext : RealmDatabaseContext, IGameDatabaseContext
 {
     private static readonly object IdLock = new();
-
-    private readonly IDateTimeProvider _time;
-
-    internal GameDatabaseContext(IDateTimeProvider time)
-    {
-        this._time = time;
-    }
+    public IDateTimeProvider Time { get; }
 
     private int GetOrCreateSequentialId<T>() where T : IRealmObject, ISequentialId
     {
         string name = typeof(T).Name;
 
-        SequentialIdStorage? storage = this._realm.All<SequentialIdStorage>()
+        SequentialIdStorage? storage = this.All<SequentialIdStorage>()
             .FirstOrDefault(s => s.TypeName == name);
 
         if (storage != null)
@@ -34,7 +26,7 @@ public partial class GameDatabaseContext : RealmDatabaseContext
         storage = new SequentialIdStorage
         {
             TypeName = name,
-            SequentialId = this._realm.All<T>().Count() * 2, // skip over a bunch of ids incase table is broken
+            SequentialId = this.All<T>().Count() * 2, // skip over a bunch of ids incase table is broken
         };
 
         // no need to do write block, this should only be called in a write transaction
@@ -42,9 +34,8 @@ public partial class GameDatabaseContext : RealmDatabaseContext
 
         return storage.SequentialId;
     }
-
-    // ReSharper disable once SuggestBaseTypeForParameter
-    private void AddSequentialObject<T>(T obj, IList<T>? list, Action? writtenCallback = null) where T : IRealmObject, ISequentialId
+    
+    public void AddSequentialObject<T>(T obj, IList<T>? list, Action? writtenCallback = null) where T : IRealmObject, ISequentialId
     {
         lock (IdLock)
         {
@@ -71,9 +62,16 @@ public partial class GameDatabaseContext : RealmDatabaseContext
         }
     }
 
-    private void AddSequentialObject<T>(T obj, Action? writtenCallback) where T : IRealmObject, ISequentialId 
-        => this.AddSequentialObject(obj, null, writtenCallback);
-    
-    private void AddSequentialObject<T>(T obj) where T : IRealmObject, ISequentialId 
-        => this.AddSequentialObject(obj, null, null);
+    public IQueryable<T> All<T>() where T : IRealmObject => this._realm.All<T>();
+    public void Write(Action func) => this._realm.Write(func);
+    public void Add<T>(T obj, bool update = false) where T : IRealmObject => this._realm.Add(obj, update);
+    public void AddRange<T>(IEnumerable<T> list, bool update = false) where T : IRealmObject => this._realm.Add(list, update);
+    public void Remove<T>(T obj) where T : IRealmObject => this._realm.Remove(obj);
+    public void RemoveRange<T>(IQueryable<T> list) where T : IRealmObject => this._realm.RemoveRange(list);
+    public void RemoveAll<T>() where T : IRealmObject => this._realm.RemoveAll<T>();
+
+    internal RealmGameDatabaseContext(IDateTimeProvider time)
+    {
+        this.Time = time;
+    }
 }

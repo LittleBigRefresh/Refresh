@@ -6,7 +6,7 @@ using Refresh.GameServer.Types.UserData;
 
 namespace Refresh.GameServer.Database;
 
-public partial class GameDatabaseContext // Notifications
+public partial interface IGameDatabaseContext // Notifications
 {
     public void AddNotification(string title, string text, GameUser user, string? icon = null)
     {
@@ -18,12 +18,12 @@ public partial class GameDatabaseContext // Notifications
             Text = text,
             User = user,
             FontAwesomeIcon = icon,
-            CreatedAt = this._time.Now,
+            CreatedAt = this.Time.Now,
         };
 
-        this._realm.Write(() =>
+        this.Write(() =>
         {
-            this._realm.Add(notification);
+            this.Add(notification);
         });
     }
 
@@ -44,38 +44,37 @@ public partial class GameDatabaseContext // Notifications
 
     [Pure]
     public int GetNotificationCountByUser(GameUser user) => 
-        this._realm.All<GameNotification>()
+        this.All<GameNotification>()
             .Count(n => n.User == user);
     
     [Pure]
     public DatabaseList<GameNotification> GetNotificationsByUser(GameUser user, int count, int skip) =>
-        new(this._realm.All<GameNotification>().Where(n => n.User == user), skip, count);
+        new(this.All<GameNotification>().Where(n => n.User == user), skip, count);
 
     [Pure]
     public GameNotification? GetNotificationByUuid(GameUser user, ObjectId id) 
-        => this._realm
-            .All<GameNotification>()
+        => this.All<GameNotification>()
             .FirstOrDefault(n => n.User == user && n.NotificationId == id);
     
     public void DeleteNotificationsByUser(GameUser user)
     {
-        this._realm.Write(() =>
+        this.Write(() =>
         {
-            this._realm.RemoveRange(this._realm.All<GameNotification>().Where(n => n.User == user));
+            this.RemoveRange(this.All<GameNotification>().Where(n => n.User == user));
         });
     }
     
     public void DeleteNotification(GameNotification notification)
     {
-        this._realm.Write(() =>
+        this.Write(() =>
         {
-            this._realm.Remove(notification);
+            this.Remove(notification);
         });
     }
 
-    public IEnumerable<GameAnnouncement> GetAnnouncements() => this._realm.All<GameAnnouncement>();
+    public IEnumerable<GameAnnouncement> GetAnnouncements() => this.All<GameAnnouncement>();
     
-    public GameAnnouncement? GetAnnouncementById(ObjectId id) => this._realm.All<GameAnnouncement>().FirstOrDefault(a => a.AnnouncementId == id);
+    public GameAnnouncement? GetAnnouncementById(ObjectId id) => this.All<GameAnnouncement>().FirstOrDefault(a => a.AnnouncementId == id);
     
     public GameAnnouncement AddAnnouncement(string title, string text)
     {
@@ -84,12 +83,12 @@ public partial class GameDatabaseContext // Notifications
             AnnouncementId = ObjectId.GenerateNewId(),
             Title = title,
             Text = text,
-            CreatedAt = this._time.Now,
+            CreatedAt = this.Time.Now,
         };
         
-        this._realm.Write(() =>
+        this.Write(() =>
         {
-            this._realm.Add(announcement);
+            this.Add(announcement);
         });
 
         return announcement;
@@ -97,9 +96,9 @@ public partial class GameDatabaseContext // Notifications
     
     public void DeleteAnnouncement(GameAnnouncement announcement)
     {
-        this._realm.Write(() =>
+        this.Write(() =>
         {
-            this._realm.Remove(announcement);
+            this.Remove(announcement);
         });
     }
 }

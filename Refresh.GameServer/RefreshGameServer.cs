@@ -16,6 +16,7 @@ using NotEnoughLogs.Sinks;
 using Refresh.GameServer.Authentication;
 using Refresh.GameServer.Configuration;
 using Refresh.GameServer.Database;
+using Refresh.GameServer.Database.Realm;
 using Refresh.GameServer.Documentation;
 using Refresh.GameServer.Endpoints;
 using Refresh.GameServer.Importing;

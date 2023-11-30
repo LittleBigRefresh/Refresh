@@ -78,12 +78,12 @@ public class ActivityGenerator : ISourceGenerator
         Event @event = new();
         @event.EventType = EventType.{eventName};
         @event.StoredDataType = EventDataType.{typeId};
-        @event.Timestamp = this._time.TimestampMilliseconds;
+        @event.Timestamp = this.Time.TimestampMilliseconds;
         @event.User = userFrom;
 
         @event.{idField} = {typeParam}.{typeId}Id;
 
-        this._realm.Write(() => this._realm.Add(@event));
+        this.Write(() => this.Add(@event));
         return @event;
     }}
 ";
@@ -95,7 +95,7 @@ public class ActivityGenerator : ISourceGenerator
         string sourceCode = $@"{Header}
 namespace Refresh.GameServer.Database;
 
-public partial class GameDatabaseContext
+public partial interface IGameDatabaseContext
 {{
 {code}
 }}";
@@ -130,7 +130,7 @@ public partial class GameDatabaseContext
         if (@event.{idField} == null)
             throw new InvalidOperationException(""Event was not created correctly, expected {idField} to not be null"");
 
-        return this._realm.All<{type}>()
+        return this.All<{type}>()
             .FirstOrDefault(l => l.{idAccess} == @event.{idFieldValue});
     }}
 ";
@@ -143,7 +143,7 @@ namespace Refresh.GameServer.Database;
 
 #nullable enable
 
-public partial class GameDatabaseContext
+public partial interface IGameDatabaseContext
 {{
 {code}
 }}";

@@ -1,28 +1,27 @@
-using Bunkum.Core.Database;
+using Bunkum.RealmDatabase;
 using Realms;
 using Refresh.GameServer.Authentication;
-using Refresh.GameServer.Types;
-using Refresh.GameServer.Types.Comments;
-using Refresh.GameServer.Types.Levels;
-using Refresh.GameServer.Types.UserData;
-using Bunkum.RealmDatabase;
 using Refresh.GameServer.Time;
+using Refresh.GameServer.Types;
 using Refresh.GameServer.Types.Activity;
 using Refresh.GameServer.Types.Assets;
+using Refresh.GameServer.Types.Comments;
+using Refresh.GameServer.Types.Levels;
 using Refresh.GameServer.Types.Levels.SkillRewards;
 using Refresh.GameServer.Types.Notifications;
 using Refresh.GameServer.Types.Relations;
 using Refresh.GameServer.Types.Report;
+using Refresh.GameServer.Types.UserData;
 using Refresh.GameServer.Types.UserData.Leaderboard;
 using GamePhoto = Refresh.GameServer.Types.Photos.GamePhoto;
 using GamePhotoSubject = Refresh.GameServer.Types.Photos.GamePhotoSubject;
 
-namespace Refresh.GameServer.Database;
+namespace Refresh.GameServer.Database.Realm;
 
-public class RealmGameDatabaseProvider : RealmDatabaseProvider<GameDatabaseContext>, IGameDatabaseProvider
+public class RealmGameDatabaseProvider : RealmDatabaseProvider<RealmGameDatabaseContext>, IGameDatabaseProvider
 {
     public IDateTimeProvider Time { get; }
-    
+
     public RealmGameDatabaseProvider()
     {
         this.Time = new SystemDateTimeProvider();
@@ -77,13 +76,18 @@ public class RealmGameDatabaseProvider : RealmDatabaseProvider<GameDatabaseConte
 
     public override void Warmup()
     {
-        using GameDatabaseContext context = this.GetContext();
+        using IGameDatabaseContext context = this.GetContext();
         _ = context.GetTotalLevelCount();
     }
 
-    protected override GameDatabaseContext CreateContext()
+    protected override RealmGameDatabaseContext CreateContext()
     {
-        return new GameDatabaseContext(this.Time);
+        return new RealmGameDatabaseContext(this.Time);
+    }
+    
+    public new IGameDatabaseContext GetContext()
+    {
+        return base.GetContext();
     }
 
     protected override void Migrate(Migration migration, ulong oldVersion)

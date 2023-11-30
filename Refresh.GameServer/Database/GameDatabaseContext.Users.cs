@@ -11,7 +11,7 @@ using Refresh.GameServer.Types.UserData;
 
 namespace Refresh.GameServer.Database;
 
-public partial class GameDatabaseContext // Users
+public partial interface IGameDatabaseContext // Users
 {
     private static readonly GameUser DeletedUser = new()
     {
@@ -27,7 +27,7 @@ public partial class GameDatabaseContext // Users
         if (username == null) return null;
         if (username == "!DeletedUser") return DeletedUser;
 
-        return this._realm.All<GameUser>().FirstOrDefault(u => u.Username == username);
+        return this.All<GameUser>().FirstOrDefault(u => u.Username == username);
     }
     
     [Pure]
@@ -36,7 +36,7 @@ public partial class GameDatabaseContext // Users
     {
         if (emailAddress == null) return null;
         emailAddress = emailAddress.ToLowerInvariant();
-        return this._realm.All<GameUser>().FirstOrDefault(u => u.EmailAddress == emailAddress);
+        return this.All<GameUser>().FirstOrDefault(u => u.EmailAddress == emailAddress);
     }
 
     [Pure]
@@ -44,7 +44,7 @@ public partial class GameDatabaseContext // Users
     public GameUser? GetUserByObjectId(ObjectId? id)
     {
         if (id == null) return null;
-        return this._realm.All<GameUser>().FirstOrDefault(u => u.UserId == id);
+        return this.All<GameUser>().FirstOrDefault(u => u.UserId == id);
     }
     
     [Pure]
@@ -53,7 +53,7 @@ public partial class GameDatabaseContext // Users
     {
         if (uuid == null) return null;
         if(!ObjectId.TryParse(uuid, out ObjectId objectId)) return null;
-        return this._realm.All<GameUser>().FirstOrDefault(u => u.UserId == objectId);
+        return this.All<GameUser>().FirstOrDefault(u => u.UserId == objectId);
     }
     
     /// <summary>
@@ -66,15 +66,15 @@ public partial class GameDatabaseContext // Users
         if (legacyId == null) return null;
         
         // THIS SUCKS
-        return this._realm.All<GameUser>().ToList().FirstOrDefault(u => u.UserId.Timestamp == legacyId);
+        return this.All<GameUser>().ToList().FirstOrDefault(u => u.UserId.Timestamp == legacyId);
     }
 
     public DatabaseList<GameUser> GetUsers(int count, int skip)
-        => new(this._realm.All<GameUser>().OrderByDescending(u => u.JoinDate), skip, count);
+        => new(this.All<GameUser>().OrderByDescending(u => u.JoinDate), skip, count);
     
     private void UpdateUserData<TUpdateData>(GameUser user, TUpdateData data)
     {
-        this._realm.Write(() =>
+        this.Write(() =>
         {
             PropertyInfo[] userProps = typeof(GameUser).GetProperties();
             foreach (PropertyInfo prop in typeof(TUpdateData).GetProperties())
@@ -100,7 +100,7 @@ public partial class GameDatabaseContext // Users
         if (data.EmailAddress != null && data.EmailAddress != user.EmailAddress)
         {
             // TODO: batch this in with the other realm write somehow
-            this._realm.Write(() =>
+            this.Write(() =>
             {
                 user.EmailAddressVerified = false;
             });
@@ -112,18 +112,18 @@ public partial class GameDatabaseContext // Users
     }
 
     [Pure]
-    public int GetTotalUserCount() => this._realm.All<GameUser>().Count();
+    public int GetTotalUserCount() => this.All<GameUser>().Count();
     
     [Pure]
     public int GetActiveUserCount()
     {
-        DateTimeOffset lastMonth = this._time.Now.Subtract(TimeSpan.FromDays(30));
-        return this._realm.All<GameUser>().Count(u => u.LastLoginDate > lastMonth);
+        DateTimeOffset lastMonth = this.Time.Now.Subtract(TimeSpan.FromDays(30));
+        return this.All<GameUser>().Count(u => u.LastLoginDate > lastMonth);
     }
 
     public void UpdateUserPins(GameUser user, UserPins pinsUpdate) 
     {
-        this._realm.Write(() => {
+        this.Write(() => {
             user.Pins = new UserPins();
 
             foreach (long pinsAward in pinsUpdate.Awards) user.Pins.Awards.Add(pinsAward);
@@ -135,7 +135,7 @@ public partial class GameDatabaseContext // Users
     public void SetUserRole(GameUser user, GameUserRole role)
     {
         if(role == GameUserRole.Banned) throw new InvalidOperationException($"Cannot ban a user with this method. Please use {nameof(this.BanUser)}().");
-        this._realm.Write(() =>
+        this.Write(() =>
         {
             if (user.Role is GameUserRole.Banned or GameUserRole.Restricted)
             {
@@ -149,7 +149,7 @@ public partial class GameDatabaseContext // Users
 
     private void PunishUser(GameUser user, string reason, DateTimeOffset expiryDate, GameUserRole role)
     {
-        this._realm.Write(() =>
+        this.Write(() =>
         {
             user.Role = role;
             user.BanReason = reason;
@@ -171,7 +171,7 @@ public partial class GameDatabaseContext // Users
         if (user.Role != role) return false;
         if (user.BanExpiryDate == null) return false;
         
-        return user.BanExpiryDate >= this._time.Now;
+        return user.BanExpiryDate >= this.Time.Now;
     }
 
     public bool IsUserBanned(GameUser user) => this.IsUserPunished(user, GameUserRole.Banned);
@@ -182,7 +182,7 @@ public partial class GameDatabaseContext // Users
         // for some stupid reason, we have to do the byte conversion here or realm won't work correctly.
         byte roleByte = (byte)role;
         
-        return new DatabaseList<GameUser>(this._realm.All<GameUser>().Where(u => u._Role == roleByte));
+        return new DatabaseList<GameUser>(this.All<GameUser>().Where(u => u._Role == roleByte));
     }
 
     public void DeleteUser(GameUser user)
@@ -193,7 +193,7 @@ public partial class GameDatabaseContext // Users
         this.RevokeAllTokensForUser(user);
         this.DeleteNotificationsByUser(user);
         
-        this._realm.Write(() =>
+        this.Write(() =>
         {
             user.Pins = new UserPins();
             user.Location = new GameLocation();
@@ -215,13 +215,13 @@ public partial class GameDatabaseContext // Users
             foreach (GamePhotoSubject subject in user.PhotosWithMe)
                 subject.User = null;
             
-            this._realm.RemoveRange(user.FavouriteLevelRelations);
-            this._realm.RemoveRange(user.UsersFavourited);
-            this._realm.RemoveRange(user.UsersFavouritingMe);
-            this._realm.RemoveRange(user.QueueLevelRelations);
-            this._realm.RemoveRange(user.PhotosByMe);
+            this.RemoveRange(user.FavouriteLevelRelations);
+            this.RemoveRange(user.UsersFavourited);
+            this.RemoveRange(user.UsersFavouritingMe);
+            this.RemoveRange(user.QueueLevelRelations);
+            this.RemoveRange(user.PhotosByMe);
 
-            foreach (GameLevel level in this._realm.All<GameLevel>().Where(l => l.Publisher == user))
+            foreach (GameLevel level in this.All<GameLevel>().Where(l => l.Publisher == user))
             {
                 level.Publisher = null;
             }
@@ -230,7 +230,7 @@ public partial class GameDatabaseContext // Users
 
     public void ResetUserPlanets(GameUser user)
     {
-        this._realm.Write(() =>
+        this.Write(() =>
         {
             user.Lbp2PlanetsHash = "0";
             user.Lbp3PlanetsHash = "0";
@@ -240,7 +240,7 @@ public partial class GameDatabaseContext // Users
 
     public void SetUserGriefReportRedirection(GameUser user, bool value)
     {
-        this._realm.Write(() =>
+        this.Write(() =>
         {
             user.RedirectGriefReportsToPhotos = value;
         });
@@ -249,7 +249,7 @@ public partial class GameDatabaseContext // Users
     #if DEBUG
     public void ForceUserTokenGame(Token token, TokenGame game)
     {
-        this._realm.Write(() =>
+        this.Write(() =>
         {
             token.TokenGame = game;
         });
@@ -257,7 +257,7 @@ public partial class GameDatabaseContext // Users
     
     public void ForceUserTokenPlatform(Token token, TokenPlatform platform)
     {
-        this._realm.Write(() =>
+        this.Write(() =>
         {
             token.TokenPlatform = platform;
         });

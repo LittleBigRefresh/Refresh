@@ -3,9 +3,9 @@ using Refresh.GameServer.Time;
 
 namespace Refresh.GameServer.Database;
 
-public interface IGameDatabaseProvider : IDatabaseProvider<GameDatabaseContext>
+public interface IGameDatabaseProvider
 {
     protected IDateTimeProvider Time { get; }
 
-    public GameDatabaseContext GetContext();
+    public IGameDatabaseContext GetContext();
 }

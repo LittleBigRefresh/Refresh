@@ -5,23 +5,17 @@ using Refresh.GameServer.Types.UserData;
 
 namespace Refresh.GameServer.Database;
 
-public partial class GameDatabaseContext // Tokens
+public partial interface IGameDatabaseContext // Tokens
 {
     private const int DefaultCookieLength = 128;
     private const int MaxBase64Padding = 4;
     private const int MaxGameCookieLength = 127;
     private const string GameCookieHeader = "MM_AUTH=";
-    private static readonly int GameCookieLength;
+    private static readonly int GameCookieLength = (int)Math.Floor((MaxGameCookieLength - GameCookieHeader.Length - MaxBase64Padding) * 3 / 4.0);
 
     public const int DefaultTokenExpirySeconds = 86400; // 1 day
     public const int RefreshTokenExpirySeconds = 2678400; // 1 month
     public const int GameTokenExpirySeconds = 14400; // 4 hours
-    
-    static GameDatabaseContext()
-    {
-        // LBP cannot store tokens if >127 chars, calculate max possible length here
-        GameCookieLength = (int)Math.Floor((MaxGameCookieLength - GameCookieHeader.Length - MaxBase64Padding) * 3 / 4.0);
-    }
     
     private static string GetTokenString(int length)
     {
@@ -46,8 +40,8 @@ public partial class GameDatabaseContext // Tokens
             TokenType = type,
             TokenGame = game,
             TokenPlatform = platform,
-            ExpiresAt = this._time.Now.AddSeconds(tokenExpirySeconds),
-            LoginDate = this._time.Now,
+            ExpiresAt = this.Time.Now.AddSeconds(tokenExpirySeconds),
+            LoginDate = this.Time.Now,
         };
         
         if (user.LastLoginDate == DateTimeOffset.MinValue)
@@ -55,10 +49,10 @@ public partial class GameDatabaseContext // Tokens
             this.CreateUserFirstLoginEvent(user, user);
         }
 
-        this._realm.Write(() =>
+        this.Write(() =>
         {
-            user.LastLoginDate = this._time.Now;
-            this._realm.Add(token);
+            user.LastLoginDate = this.Time.Now;
+            this.Add(token);
         });
         
         return token;
@@ -68,13 +62,13 @@ public partial class GameDatabaseContext // Tokens
     [ContractAnnotation("=> canbenull")]
     public Token? GetTokenFromTokenData(string tokenData, TokenType type)
     {
-        Token? token = this._realm.All<Token>()
+        Token? token = this.All<Token>()
             .FirstOrDefault(t => t.TokenData == tokenData && t._TokenType == (int)type);
 
         if (token == null) return null;
 
         // ReSharper disable once InvertIf
-        if (token.ExpiresAt < this._time.Now)
+        if (token.ExpiresAt < this.Time.Now)
         {
             this.RevokeToken(token);
             return null;
@@ -90,7 +84,7 @@ public partial class GameDatabaseContext // Tokens
 
     public void SetUserPassword(GameUser user, string? passwordBcrypt, bool shouldReset = false)
     {
-        this._realm.Write(() =>
+        this.Write(() =>
         {
             user.PasswordBcrypt = passwordBcrypt;
             user.ShouldResetPassword = shouldReset;
@@ -101,7 +95,7 @@ public partial class GameDatabaseContext // Tokens
     {
         if (tokenData == null) return false;
 
-        Token? token = this._realm.All<Token>().FirstOrDefault(t => t.TokenData == tokenData && t._TokenType == (int)type);
+        Token? token = this.All<Token>().FirstOrDefault(t => t.TokenData == tokenData && t._TokenType == (int)type);
         if (token == null) return false;
 
         this.RevokeToken(token);
@@ -111,17 +105,17 @@ public partial class GameDatabaseContext // Tokens
 
     public void RevokeToken(Token token)
     {
-        this._realm.Write(() =>
+        this.Write(() =>
         {
-            this._realm.Remove(token);
+            this.Remove(token);
         });
     }
 
     public void RevokeAllTokensForUser(GameUser user)
     {
-        this._realm.Write(() =>
+        this.Write(() =>
         {
-            this._realm.RemoveRange(this._realm.All<Token>().Where(t => t.User == user));
+            this.RemoveRange(this.All<Token>().Where(t => t.User == user));
         });
     }
 
@@ -130,10 +124,10 @@ public partial class GameDatabaseContext // Tokens
         GameIpVerificationRequest request = new()
         {
             IpAddress = ipAddress,
-            CreatedAt = this._time.Now,
+            CreatedAt = this.Time.Now,
         };
 
-        this._realm.Write(() =>
+        this.Write(() =>
         {
             user.IpVerificationRequests.Add(request);
         });
@@ -141,7 +135,7 @@ public partial class GameDatabaseContext // Tokens
 
     public void SetApprovedIp(GameUser user, string ipAddress)
     {
-        this._realm.Write(() =>
+        this.Write(() =>
         {
             user.CurrentVerifiedIp = ipAddress;
             user.IpVerificationRequests.Clear();
@@ -151,7 +145,7 @@ public partial class GameDatabaseContext // Tokens
     public void DenyIpVerificationRequest(GameUser user, string ipAddress)
     {
         IEnumerable<GameIpVerificationRequest> requests = user.IpVerificationRequests.Where(r => r.IpAddress == ipAddress);
-        this._realm.Write(() =>
+        this.Write(() =>
         {
             foreach (GameIpVerificationRequest request in requests)
             {
