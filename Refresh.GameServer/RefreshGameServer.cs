@@ -11,12 +11,14 @@ using Bunkum.Core.Storage;
 using Bunkum.HealthChecks;
 using Bunkum.HealthChecks.RealmDatabase;
 using Bunkum.Protocols.Http;
+using Microsoft.EntityFrameworkCore;
 using NotEnoughLogs;
 using NotEnoughLogs.Behaviour;
 using NotEnoughLogs.Sinks;
 using Refresh.GameServer.Authentication;
 using Refresh.GameServer.Configuration;
 using Refresh.GameServer.Database;
+using Refresh.GameServer.Database.Postgres;
 using Refresh.GameServer.Database.Realm;
 using Refresh.GameServer.Documentation;
 using Refresh.GameServer.Endpoints;
@@ -52,7 +54,11 @@ public class RefreshGameServer : IDisposable
         IDataStore? dataStore = null
     )
     {
-        databaseProvider ??= () => new RealmGameDatabaseProvider();
+        // databaseProvider ??= () => new RealmGameDatabaseProvider();
+        databaseProvider ??= () => new PostgresGameDatabaseProvider((options) =>
+        {
+            options.UseNpgsql();
+        });
         dataStore ??= new FileSystemDataStore();
 
         // ReSharper disable once VirtualMemberCallInConstructor

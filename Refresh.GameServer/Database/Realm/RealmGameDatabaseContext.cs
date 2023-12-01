@@ -10,7 +10,7 @@ public class RealmGameDatabaseContext : RealmDatabaseContext, IGameDatabaseConte
     private static readonly object IdLock = new();
     public IDateTimeProvider Time { get; }
 
-    private int GetOrCreateSequentialId<T>() where T : IRealmObject, ISequentialId
+    private int GetOrCreateSequentialId<T>() where T : class, IRealmObject, ISequentialId
     {
         string name = typeof(T).Name;
 
@@ -35,7 +35,7 @@ public class RealmGameDatabaseContext : RealmDatabaseContext, IGameDatabaseConte
         return storage.SequentialId;
     }
     
-    public void AddSequentialObject<T>(T obj, IList<T>? list, Action? writtenCallback = null) where T : IRealmObject, ISequentialId
+    public void AddSequentialObject<T>(T obj, IList<T>? list, Action? writtenCallback = null) where T : class, IRealmObject, ISequentialId
     {
         lock (IdLock)
         {
@@ -62,13 +62,13 @@ public class RealmGameDatabaseContext : RealmDatabaseContext, IGameDatabaseConte
         }
     }
 
-    public IQueryable<T> All<T>() where T : IRealmObject => this._realm.All<T>();
+    public IQueryable<T> All<T>() where T : class, IRealmObject => this._realm.All<T>();
     public void Write(Action func) => this._realm.Write(func);
-    public void Add<T>(T obj, bool update = false) where T : IRealmObject => this._realm.Add(obj, update);
-    public void AddRange<T>(IEnumerable<T> list, bool update = false) where T : IRealmObject => this._realm.Add(list, update);
-    public void Remove<T>(T obj) where T : IRealmObject => this._realm.Remove(obj);
-    public void RemoveRange<T>(IQueryable<T> list) where T : IRealmObject => this._realm.RemoveRange(list);
-    public void RemoveAll<T>() where T : IRealmObject => this._realm.RemoveAll<T>();
+    public void Add<T>(T obj, bool update = false) where T : class, IRealmObject => this._realm.Add(obj, update);
+    public void AddRange<T>(IEnumerable<T> list, bool update = false) where T : class, IRealmObject => this._realm.Add(list, update);
+    public void Remove<T>(T obj) where T : class, IRealmObject => this._realm.Remove(obj);
+    public void RemoveRange<T>(IQueryable<T> list) where T : class, IRealmObject => this._realm.RemoveRange(list);
+    public void RemoveAll<T>() where T : class, IRealmObject => this._realm.RemoveAll<T>();
 
     internal RealmGameDatabaseContext(IDateTimeProvider time)
     {

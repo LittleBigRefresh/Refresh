@@ -14,21 +14,21 @@ public partial interface IGameDatabaseContext : IDatabaseContext
 
     // ReSharper disable once SuggestBaseTypeForParameter
     protected void AddSequentialObject<T>(T obj, IList<T>? list, Action? writtenCallback = null)
-        where T : IRealmObject, ISequentialId;
+        where T : class, IRealmObject, ISequentialId;
 
-    private void AddSequentialObject<T>(T obj, Action? writtenCallback) where T : IRealmObject, ISequentialId 
+    private void AddSequentialObject<T>(T obj, Action? writtenCallback) where T : class, IRealmObject, ISequentialId 
         => this.AddSequentialObject(obj, null, writtenCallback);
     
-    private void AddSequentialObject<T>(T obj) where T : IRealmObject, ISequentialId 
+    private void AddSequentialObject<T>(T obj) where T : class, IRealmObject, ISequentialId 
         => this.AddSequentialObject(obj, null, null);
 
     public void Refresh();
 
-    protected IQueryable<T> All<T>() where T : IRealmObject;
+    protected IQueryable<T> All<T>() where T : class, IRealmObject;
     protected void Write(Action func);
-    protected void Add<T>(T obj, bool update = false) where T : IRealmObject;
-    protected void AddRange<T>(IEnumerable<T> list, bool update = false) where T : IRealmObject;
-    protected void Remove<T>(T obj) where T : IRealmObject;
-    protected void RemoveRange<T>(IQueryable<T> list) where T : IRealmObject;
-    protected void RemoveAll<T>() where T : IRealmObject;
+    protected void Add<T>(T obj, bool update = false) where T : class, IRealmObject;
+    protected void AddRange<T>(IEnumerable<T> list, bool update = false) where T : class, IRealmObject;
+    protected void Remove<T>(T obj) where T : class, IRealmObject;
+    protected void RemoveRange<T>(IQueryable<T> list) where T : class, IRealmObject;
+    protected void RemoveAll<T>() where T : class, IRealmObject;
 }
