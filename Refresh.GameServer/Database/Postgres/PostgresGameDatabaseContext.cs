@@ -29,7 +29,6 @@ namespace Refresh.GameServer.Database.Postgres;
 public class PostgresGameDatabaseContext(Action<DbContextOptionsBuilder> configureAction) : BunkumDbContext(configureAction), IGameDatabaseContext
 {
     private DbSet<GameUser> GameUsers { get; set; }
-    private DbSet<GameLocation> GameLocations { get; set; }
     private DbSet<UserPins> UserPins { get; set; }
     private DbSet<Token> Tokens { get; set; }
     private DbSet<GameLevel> GameLevels { get; set; }
@@ -46,7 +45,7 @@ public class PostgresGameDatabaseContext(Action<DbContextOptionsBuilder> configu
     private DbSet<GameAsset> GameAssets { get; set; }
     private DbSet<GameNotification> GameNotifications { get; set; }
     private DbSet<GamePhoto> GamePhotos { get; set; }
-    private DbSet<GamePhotoSubject> GamePhotoSubjects { get; set; }
+    // private DbSet<GamePhotoSubject> GamePhotoSubjects { get; set; } // TODO: persist this somehow
     private DbSet<GameIpVerificationRequest> GameIpVerificationRequests { get; set; }
     private DbSet<GameAnnouncement> GameAnnouncements { get; set; }
     private DbSet<QueuedRegistration> QueuedRegistrations { get; set; }
@@ -102,7 +101,7 @@ public class PostgresGameDatabaseContext(Action<DbContextOptionsBuilder> configu
         modelBuilder.Entity(efEntityType.Name).Ignore(entityProperty.Name);
     }
 
-    private static void FindPrimaryKey(ModelBuilder modelBuilder, IMutableEntityType efEntityType, PropertyInfo entityProperty, IMutableProperty efEntityProperty)
+    private static void FindPrimaryKey(IMutableEntityType efEntityType, PropertyInfo entityProperty, IMutableProperty efEntityProperty)
     {
         PrimaryKeyAttribute primaryKey = entityProperty.GetCustomAttribute<PrimaryKeyAttribute>();
         if (primaryKey == null) return;
@@ -123,6 +122,9 @@ public class PostgresGameDatabaseContext(Action<DbContextOptionsBuilder> configu
             AddConversion<ObjectId, string>(modelBuilder, efEntityType, v => v.ToString(), v => new ObjectId(v));
             AddConversion<ObjectId?, string>(modelBuilder, efEntityType, v => v.ToString(), v => new ObjectId(v));
             
+            // TODO: actually convert GameLocation
+            AddConversion<GameLocation, string>(modelBuilder, efEntityType, v => v.ToString(), v => new GameLocation());
+            
             Type entityType = Assembly.GetExecutingAssembly().GetTypes().First(t => t.FullName == efEntityType.Name);
 
             foreach (PropertyInfo entityProperty in entityType.GetProperties())
@@ -130,7 +132,7 @@ public class PostgresGameDatabaseContext(Action<DbContextOptionsBuilder> configu
                 AddBacklinks(modelBuilder, entityType, entityProperty);
                 DontMapIgnoredProperties(modelBuilder, efEntityType, entityProperty);
                 
-                IMutableProperty? efEntityProperty = null;
+                IMutableProperty efEntityProperty = null;
                 try
                 {
                     efEntityProperty = efEntityType.GetProperty(entityProperty.Name);
@@ -142,7 +144,7 @@ public class PostgresGameDatabaseContext(Action<DbContextOptionsBuilder> configu
 
                 if (efEntityProperty != null)
                 {
-                    FindPrimaryKey(modelBuilder, efEntityType, entityProperty, efEntityProperty);
+                    FindPrimaryKey(efEntityType, entityProperty, efEntityProperty);
                 }
             }
         }
