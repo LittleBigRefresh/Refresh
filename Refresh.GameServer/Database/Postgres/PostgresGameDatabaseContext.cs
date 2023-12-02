@@ -1,6 +1,9 @@
+using System.Linq.Expressions;
 using System.Reflection;
 using Bunkum.EntityFrameworkDatabase;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Metadata;
+using MongoDB.Bson;
 using Realms;
 using Refresh.GameServer.Authentication;
 using Refresh.GameServer.Time;
@@ -56,6 +59,30 @@ public class PostgresGameDatabaseContext(Action<DbContextOptionsBuilder> configu
     // private DbSet<ScreenElements> ScreenElements { get; set; }
     // private DbSet<ScreenRect> ScreenRects { get; set; }
     // private DbSet<Slot> Slots { get; set; }
+
+    private static void AddConversion<TType, TProvider>(ModelBuilder modelBuilder,
+        IReadOnlyTypeBase entity,
+        Expression<Func<TType, TProvider>> convertToProviderExpression,
+        Expression<Func<TProvider, TType>> convertFromProviderExpression)
+    {
+        IEnumerable<PropertyInfo> props = entity.ClrType.GetProperties()
+            .Where(p => p.PropertyType == typeof(TType));
+        
+        foreach (PropertyInfo prop in props)
+        {
+            modelBuilder.Entity(entity.Name).Property<TType>(prop.Name)
+                .HasConversion(convertToProviderExpression, convertFromProviderExpression);
+        }
+    }
+    
+    protected override void OnModelCreating(ModelBuilder modelBuilder)
+    {
+        foreach (IMutableEntityType entityType in modelBuilder.Model.GetEntityTypes())
+        {
+            AddConversion<ObjectId, string>(modelBuilder, entityType, v => v.ToString(), v => new ObjectId(v));
+            AddConversion<ObjectId?, string>(modelBuilder, entityType, v => v.ToString(), v => new ObjectId(v));
+        }
+    }
 
     private DbSet<T> GetSetFromType<T>() where T : class
     {
