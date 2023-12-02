@@ -1,3 +1,4 @@
+using System.ComponentModel.DataAnnotations.Schema;
 using System.Xml.Serialization;
 using MongoDB.Bson;
 using Realms;
@@ -50,7 +51,7 @@ public partial class GameUser : IRealmObject, IRateLimitUser
     [Backlink(nameof(FavouriteUserRelation.UserToFavourite))]
     public IQueryable<FavouriteUserRelation> UsersFavouritingMe { get; }
     
-    [Backlink(nameof(FavouriteUserRelation.UserFavouriting))]
+    [Backlink(nameof(FavouriteUserRelation.UserFavouriting)), NotMapped] // TODO: fix NotMapped usage
     public IQueryable<FavouriteUserRelation> UsersFavourited { get; }
 
     [Backlink(nameof(GameLevel.Publisher))]

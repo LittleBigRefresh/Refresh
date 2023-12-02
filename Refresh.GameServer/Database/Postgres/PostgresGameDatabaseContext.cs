@@ -20,6 +20,7 @@ using Refresh.GameServer.Types.Relations;
 using Refresh.GameServer.Types.Report;
 using Refresh.GameServer.Types.UserData;
 using Refresh.GameServer.Types.UserData.Leaderboard;
+using PrimaryKeyAttribute = Realms.PrimaryKeyAttribute;
 
 namespace Refresh.GameServer.Database.Postgres;
 
@@ -76,29 +77,74 @@ public class PostgresGameDatabaseContext(Action<DbContextOptionsBuilder> configu
         }
     }
 
-    private static void AddBacklinks(IMutableEntityType efEntityType)
+    private static void AddBacklinks(ModelBuilder modelBuilder, Type entityType, PropertyInfo entityProperty)
     {
-        Type entityType = Assembly.GetExecutingAssembly().GetTypes().First(t => t.FullName == efEntityType.Name);
-        
-        foreach (PropertyInfo propertyType in entityType.GetProperties())
-        {
-            BacklinkAttribute backlink = propertyType.GetCustomAttribute<BacklinkAttribute>();
-            if (backlink != null)
-            {
-                string propertyName = (string)(backlink.GetType().GetProperty("Property", BindingFlags.NonPublic | BindingFlags.Instance)!.GetValue(backlink));
-                Console.WriteLine($"Found backlink in {entityType.Name}: {propertyType.Name} <- {propertyName}");
-            }
-        }
+        BacklinkAttribute backlink = entityProperty.GetCustomAttribute<BacklinkAttribute>();
+        if (backlink == null) return;
+            
+        string backlinkPropertyName = (string)backlink.GetType().GetProperty("Property", BindingFlags.NonPublic | BindingFlags.Instance)!.GetValue(backlink)!;
+        Type backlinkType = entityProperty.PropertyType.GenericTypeArguments[0];
+        PropertyInfo backlinkProperty = backlinkType.GetProperty(backlinkPropertyName)!;
+
+        Console.WriteLine($"Found backlink: {entityType.Name}.{entityProperty.Name} <- {backlinkType.Name}.{backlinkProperty.Name}");
+
+        modelBuilder.Entity(entityType)
+            .HasMany(backlinkType)
+            .WithOne(backlinkPropertyName);
+    }
+
+    private static void DontMapIgnoredProperties(ModelBuilder modelBuilder, IMutableEntityType efEntityType, PropertyInfo entityProperty)
+    {
+        IgnoredAttribute ignored = entityProperty.GetCustomAttribute<IgnoredAttribute>();
+        if (ignored == null) return;
+
+        Console.WriteLine($"Ignoring {efEntityType.Name}->{entityProperty.Name}");
+        modelBuilder.Entity(efEntityType.Name).Ignore(entityProperty.Name);
+    }
+
+    private static void FindPrimaryKey(ModelBuilder modelBuilder, IMutableEntityType efEntityType, PropertyInfo entityProperty, IMutableProperty efEntityProperty)
+    {
+        PrimaryKeyAttribute primaryKey = entityProperty.GetCustomAttribute<PrimaryKeyAttribute>();
+        if (primaryKey == null) return;
+
+        efEntityType.SetPrimaryKey(efEntityProperty);
     }
     
+    /// <summary>
+    /// Generate an Entity Framework model using hints from pre-existing Realm types.
+    /// </summary>
+    /// <param name="modelBuilder">The model to build.</param>
+    /// <seealso cref="IgnoredAttribute"/>
+    /// <seealso cref="BacklinkAttribute"/>
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
-        foreach (IMutableEntityType entityType in modelBuilder.Model.GetEntityTypes())
+        foreach (IMutableEntityType efEntityType in modelBuilder.Model.GetEntityTypes())
         {
-            AddBacklinks(entityType);
+            AddConversion<ObjectId, string>(modelBuilder, efEntityType, v => v.ToString(), v => new ObjectId(v));
+            AddConversion<ObjectId?, string>(modelBuilder, efEntityType, v => v.ToString(), v => new ObjectId(v));
             
-            AddConversion<ObjectId, string>(modelBuilder, entityType, v => v.ToString(), v => new ObjectId(v));
-            AddConversion<ObjectId?, string>(modelBuilder, entityType, v => v.ToString(), v => new ObjectId(v));
+            Type entityType = Assembly.GetExecutingAssembly().GetTypes().First(t => t.FullName == efEntityType.Name);
+
+            foreach (PropertyInfo entityProperty in entityType.GetProperties())
+            {
+                AddBacklinks(modelBuilder, entityType, entityProperty);
+                DontMapIgnoredProperties(modelBuilder, efEntityType, entityProperty);
+                
+                IMutableProperty? efEntityProperty = null;
+                try
+                {
+                    efEntityProperty = efEntityType.GetProperty(entityProperty.Name);
+                }
+                catch (InvalidOperationException)
+                {
+                    // ignored
+                }
+
+                if (efEntityProperty != null)
+                {
+                    FindPrimaryKey(modelBuilder, efEntityType, entityProperty, efEntityProperty);
+                }
+            }
         }
     }
 
