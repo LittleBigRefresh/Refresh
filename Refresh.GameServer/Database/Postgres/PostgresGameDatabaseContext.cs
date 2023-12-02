@@ -1,3 +1,4 @@
+using System.Diagnostics;
 using System.Linq.Expressions;
 using System.Reflection;
 using Bunkum.EntityFrameworkDatabase;
@@ -74,11 +75,28 @@ public class PostgresGameDatabaseContext(Action<DbContextOptionsBuilder> configu
                 .HasConversion(convertToProviderExpression, convertFromProviderExpression);
         }
     }
+
+    private static void AddBacklinks(IMutableEntityType efEntityType)
+    {
+        Type entityType = Assembly.GetExecutingAssembly().GetTypes().First(t => t.FullName == efEntityType.Name);
+        
+        foreach (PropertyInfo propertyType in entityType.GetProperties())
+        {
+            BacklinkAttribute backlink = propertyType.GetCustomAttribute<BacklinkAttribute>();
+            if (backlink != null)
+            {
+                string propertyName = (string)(backlink.GetType().GetProperty("Property", BindingFlags.NonPublic | BindingFlags.Instance)!.GetValue(backlink));
+                Console.WriteLine($"Found backlink in {entityType.Name}: {propertyType.Name} <- {propertyName}");
+            }
+        }
+    }
     
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         foreach (IMutableEntityType entityType in modelBuilder.Model.GetEntityTypes())
         {
+            AddBacklinks(entityType);
+            
             AddConversion<ObjectId, string>(modelBuilder, entityType, v => v.ToString(), v => new ObjectId(v));
             AddConversion<ObjectId?, string>(modelBuilder, entityType, v => v.ToString(), v => new ObjectId(v));
         }
