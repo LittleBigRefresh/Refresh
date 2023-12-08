@@ -1,10 +1,13 @@
+using Microsoft.EntityFrameworkCore;
 using Realms;
 
 namespace Refresh.GameServer.Types.UserData; 
 
 #nullable disable
 
-public partial class UserPins : IEmbeddedObject { // TODO: Rename to GamePins
+[Keyless] // TODO: AGONY
+public partial class UserPins : IEmbeddedObject
+{ // TODO: Rename to GamePins
 	[JsonProperty(PropertyName = "progress")]
 	public IList<long> Progress { get; }
 	[JsonProperty(PropertyName = "awards")]

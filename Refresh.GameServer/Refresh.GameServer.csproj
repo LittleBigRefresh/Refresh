@@ -34,6 +34,9 @@
         <Reference Include="Bunkum.RealmDatabase">
             <HintPath>..\..\Bunkum\Bunkum.RealmDatabase\bin\Debug\net8.0\Bunkum.RealmDatabase.dll</HintPath>
         </Reference>
+        <Reference Include="Bunkum.EntityFrameworkDatabase">
+            <HintPath>..\..\Bunkum\Bunkum.EntityFrameworkDatabase\bin\Debug\net8.0\Bunkum.EntityFrameworkDatabase.dll</HintPath>
+        </Reference>
         <Reference Include="Bunkum.AutoDiscover">
             <HintPath>..\..\Bunkum\Bunkum.AutoDiscover\bin\Debug\net8.0\Bunkum.AutoDiscover.dll</HintPath>
         </Reference>
@@ -51,12 +54,13 @@
     </ItemGroup>
 
     <ItemGroup Condition="'$(Configuration)'!='DebugLocalBunkum'">
-        <PackageReference Include="Bunkum" Version="4.4.1" />
-        <PackageReference Include="Bunkum.RealmDatabase" Version="4.4.1" />
-        <PackageReference Include="Bunkum.AutoDiscover" Version="4.4.1" />
-        <PackageReference Include="Bunkum.HealthChecks" Version="4.4.1" />
-        <PackageReference Include="Bunkum.HealthChecks.RealmDatabase" Version="4.4.1" />
-        <PackageReference Include="Bunkum.Protocols.Http" Version="4.4.1" />
+        <PackageReference Include="Bunkum" Version="4.4.3" />
+        <PackageReference Include="Bunkum.RealmDatabase" Version="4.4.3" />
+        <PackageReference Include="Bunkum.EntityFrameworkDatabase" Version="4.4.3" />
+        <PackageReference Include="Bunkum.AutoDiscover" Version="4.4.3" />
+        <PackageReference Include="Bunkum.HealthChecks" Version="4.4.3" />
+        <PackageReference Include="Bunkum.HealthChecks.RealmDatabase" Version="4.4.3" />
+        <PackageReference Include="Bunkum.Protocols.Http" Version="4.4.3" />
     </ItemGroup>
 
     <ItemGroup>
@@ -76,7 +80,6 @@
     </ItemGroup>
 
     <ItemGroup>
-        <ProjectReference Include="..\Bunkum.EntityFrameworkDatabase\Bunkum.EntityFrameworkDatabase.csproj" />
         <ProjectReference Include="..\Refresh.Analyzers\Refresh.Analyzers.csproj">
             <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
             <OutputItemType>Analyzer</OutputItemType>

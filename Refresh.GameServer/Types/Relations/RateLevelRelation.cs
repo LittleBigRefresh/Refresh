@@ -1,3 +1,4 @@
+using Microsoft.EntityFrameworkCore;
 using MongoDB.Bson;
 using Realms;
 using Refresh.GameServer.Types.Levels;
@@ -8,6 +9,7 @@ namespace Refresh.GameServer.Types.Relations;
 
 #nullable disable
 
+// [Keyless] // TODO: AGONY
 public partial class RateLevelRelation : IRealmObject
 {
     public ObjectId RateLevelRelationId { get; set; } = ObjectId.GenerateNewId();

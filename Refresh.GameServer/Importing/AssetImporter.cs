@@ -83,7 +83,6 @@ public class AssetImporter : Importer
         }
     }
 
-
     [Pure]
     public GameAsset? ReadAndVerifyAsset(string hash, byte[] data, TokenPlatform? platform)
     {

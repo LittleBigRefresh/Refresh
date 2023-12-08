@@ -84,31 +84,32 @@ public partial class GameLevel : IRealmObject, ISequentialId
     public float Score { get; set; }
 
 #nullable disable
-    public IList<GameComment> LevelComments { get; }
+    [Ignored] public IList<GameComment> LevelComments { get; } // TODO: don't ignore
     
     [Backlink(nameof(FavouriteLevelRelation.Level))]
-    public IQueryable<FavouriteLevelRelation> FavouriteRelations { get; }
+    [Ignored] public IQueryable<FavouriteLevelRelation> FavouriteRelations { get; } // TODO: don't ignore
     
     [Backlink(nameof(UniquePlayLevelRelation.Level))]
-    public IQueryable<UniquePlayLevelRelation> UniquePlays { get; }
+    [Ignored] public IQueryable<UniquePlayLevelRelation> UniquePlays { get; } // TODO: don't ignore
     
     [Backlink(nameof(PlayLevelRelation.Level))]
-    public IQueryable<PlayLevelRelation> AllPlays { get; }
+    [Ignored] public IQueryable<PlayLevelRelation> AllPlays { get; } // TODO: don't ignore
     [Backlink(nameof(GameSubmittedScore.Level))]
-    public IQueryable<GameSubmittedScore> Scores { get; }
+    [Ignored] public IQueryable<GameSubmittedScore> Scores { get; } // TODO: don't ignore
     
     [Backlink(nameof(RateLevelRelation.Level))]
-    public IQueryable<RateLevelRelation> Ratings { get; }
+    [Ignored] public IQueryable<RateLevelRelation> Ratings { get; } // TODO: don't ignore
     
     // ILists can't be serialized to XML, and Lists/Arrays cannot be stored in realm,
     // hence _SkillRewards and SkillRewards both existing
     // ReSharper disable once InconsistentNaming
-    public IList<GameSkillReward> _SkillRewards { get; }
+    [Ignored] public IList<GameSkillReward> _SkillRewards { get; } // TODO: don't ignore
     
 #nullable restore
     
     [XmlArray("customRewards")]
     [XmlArrayItem("customReward")]
+    [Ignored]
     public GameSkillReward[] SkillRewards
     {
         get => this._SkillRewards.ToArray();

@@ -37,33 +37,33 @@ public partial class GameUser : IRealmObject, IRateLimitUser
     public GameLocation Location { get; set; } = GameLocation.Zero;
     
     public DateTimeOffset JoinDate { get; set; }
-    public UserPins Pins { get; set; } = new();
+    [Ignored] public UserPins Pins { get; set; } = new(); // TODO: don't ignore
     
     #nullable disable
     public IList<GameComment> ProfileComments { get; }
     
     [Backlink(nameof(FavouriteLevelRelation.User))]
-    public IQueryable<FavouriteLevelRelation> FavouriteLevelRelations { get; }
+    [Ignored] public IQueryable<FavouriteLevelRelation> FavouriteLevelRelations { get; } // TODO: don't ignore
     
     [Backlink(nameof(QueueLevelRelation.User))]
-    public IQueryable<QueueLevelRelation> QueueLevelRelations { get; }
+    [Ignored] public IQueryable<QueueLevelRelation> QueueLevelRelations { get; } // TODO: don't ignore
     
     [Backlink(nameof(FavouriteUserRelation.UserToFavourite))]
-    public IQueryable<FavouriteUserRelation> UsersFavouritingMe { get; }
+    [Ignored] public IQueryable<FavouriteUserRelation> UsersFavouritingMe { get; } // TODO: don't ignore
     
     [Backlink(nameof(FavouriteUserRelation.UserFavouriting)), NotMapped] // TODO: fix NotMapped usage
-    public IQueryable<FavouriteUserRelation> UsersFavourited { get; }
+    [Ignored] public IQueryable<FavouriteUserRelation> UsersFavourited { get; } // TODO: don't ignore
 
     [Backlink(nameof(GameLevel.Publisher))]
     public IQueryable<GameLevel> PublishedLevels { get; }
     
     [Backlink(nameof(GamePhoto.Publisher))]
-    public IQueryable<GamePhoto> PhotosByMe { get; }
+    [Ignored] public IQueryable<GamePhoto> PhotosByMe { get; } // TODO: don't ignore
     
     [Backlink(nameof(GamePhotoSubject.User))]
-    public IQueryable<GamePhotoSubject> PhotosWithMe { get; }
+    [Ignored] public IQueryable<GamePhotoSubject> PhotosWithMe { get; } // TODO: don't ignore
     
-    public IList<GameIpVerificationRequest> IpVerificationRequests { get; }
+    [Ignored] public IList<GameIpVerificationRequest> IpVerificationRequests { get; } // TODO: don't ignore
     #nullable restore
 
     public string Lbp2PlanetsHash { get; set; } = "0";

@@ -34,12 +34,12 @@ public class PostgresGameDatabaseContext(Action<DbContextOptionsBuilder> configu
     private DbSet<GameLevel> GameLevels { get; set; }
     private DbSet<GameSkillReward> GameSkillRewards { get; set; }
     private DbSet<GameComment> GameComments { get; set; }
-    private DbSet<FavouriteLevelRelation> FavouriteLevelRelations { get; set; }
-    private DbSet<QueueLevelRelation> QueueLevelRelations { get; set; }
-    private DbSet<FavouriteUserRelation> FavouriteUserRelations { get; set; }
-    private DbSet<PlayLevelRelation> PlayLevelRelations { get; set; }
-    private DbSet<UniquePlayLevelRelation> UniquePlayLevelRelations { get; set; }
-    private DbSet<RateLevelRelation> RateLevelRelations { get; set; }
+    // private DbSet<FavouriteLevelRelation> FavouriteLevelRelations { get; set; }  // TODO: persist this somehow
+    // private DbSet<QueueLevelRelation> QueueLevelRelations { get; set; }  // TODO: persist this somehow
+    // private DbSet<FavouriteUserRelation> FavouriteUserRelations { get; set; }  // TODO: persist this somehow
+    // private DbSet<PlayLevelRelation> PlayLevelRelations { get; set; }  // TODO: persist this somehow
+    // private DbSet<UniquePlayLevelRelation> UniquePlayLevelRelations { get; set; }  // TODO: persist this somehow
+    // private DbSet<RateLevelRelation> RateLevelRelations { get; set; }  // TODO: persist this somehow
     private DbSet<Event> Events { get; set; }
     private DbSet<GameSubmittedScore> GameSubmittedScores { get; set; }
     private DbSet<GameAsset> GameAssets { get; set; }
@@ -92,13 +92,14 @@ public class PostgresGameDatabaseContext(Action<DbContextOptionsBuilder> configu
             .WithOne(backlinkPropertyName);
     }
 
-    private static void DontMapIgnoredProperties(ModelBuilder modelBuilder, IMutableEntityType efEntityType, PropertyInfo entityProperty)
+    private static bool DontMapIgnoredProperties(ModelBuilder modelBuilder, IMutableEntityType efEntityType, PropertyInfo entityProperty)
     {
         IgnoredAttribute ignored = entityProperty.GetCustomAttribute<IgnoredAttribute>();
-        if (ignored == null) return;
+        if (ignored == null) return false;
 
         Console.WriteLine($"Ignoring {efEntityType.Name}->{entityProperty.Name}");
         modelBuilder.Entity(efEntityType.Name).Ignore(entityProperty.Name);
+        return true;
     }
 
     private static void FindPrimaryKey(IMutableEntityType efEntityType, PropertyInfo entityProperty, IMutableProperty efEntityProperty)
@@ -129,8 +130,9 @@ public class PostgresGameDatabaseContext(Action<DbContextOptionsBuilder> configu
 
             foreach (PropertyInfo entityProperty in entityType.GetProperties())
             {
+                bool wasIgnored = DontMapIgnoredProperties(modelBuilder, efEntityType, entityProperty);
+                if (wasIgnored) continue;
                 AddBacklinks(modelBuilder, entityType, entityProperty);
-                DontMapIgnoredProperties(modelBuilder, efEntityType, entityProperty);
                 
                 IMutableProperty efEntityProperty = null;
                 try

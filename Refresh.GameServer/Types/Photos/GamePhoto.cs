@@ -28,7 +28,7 @@ public partial class GamePhoto : IRealmObject, ISequentialId
     public string LargeHash { get; set; }
     public string PlanHash { get; set; }
     
-    public IList<GamePhotoSubject> Subjects { get; }
+    [Ignored] public IList<GamePhotoSubject> Subjects { get; } // TODO: don't ignore
     
     [JsonIgnore] public int SequentialId
     {
