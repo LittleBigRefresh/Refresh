@@ -58,7 +58,7 @@ public class MatchingApiEndpoints : EndpointGroup
         bool parsed = ObjectId.TryParse(uuid, out ObjectId objectId);
         if (!parsed) return ApiValidationError.ObjectIdParseError;
 
-        GameRoom? room = service.RoomAccessor.GetAllRooms().FirstOrDefault(r => r.RoomId == objectId);
+        GameRoom? room = service.RoomAccessor.GetRoomByUuid(objectId);
         if(room == null) return ApiNotFoundError.Instance;
         
         return ApiGameRoomResponse.FromOld(room);

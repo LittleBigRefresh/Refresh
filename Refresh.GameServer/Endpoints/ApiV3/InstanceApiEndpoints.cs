@@ -39,7 +39,7 @@ public class InstanceApiEndpoints : EndpointGroup
             ActiveUsers = database.GetActiveUserCount(),
             TotalPhotos = database.GetTotalPhotoCount(),
             TotalEvents = database.GetTotalEventCount(),
-            CurrentRoomCount = match.RoomAccessor.GetAllRooms().Count(),
+            CurrentRoomCount = match.RoomAccessor.GetStatistics().RoomCount,
             CurrentIngamePlayersCount = match.TotalPlayers,
             RequestStatistics = requestStatistics,
         };

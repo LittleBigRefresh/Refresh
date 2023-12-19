@@ -21,11 +21,8 @@ public partial class MatchService(Logger logger) : EndpointService(logger)
     public IRoomAccessor RoomAccessor { get; private set; } = null!; //initialized in Initialize()
     private readonly Dictionary<ObjectId, ObjectId> _forceMatches = new();
     
-    public int TotalPlayers => this.RoomAccessor.GetAllRooms().SelectMany(r => r.PlayerIds).Count();
-    public int TotalPlayersInPod => this.RoomAccessor.GetAllRooms()
-        .Where(r => r.LevelType == RoomSlotType.Pod)
-        .SelectMany(r => r.PlayerIds)
-        .Count();
+    public int TotalPlayers => this.RoomAccessor.GetStatistics().PlayerCount;
+    public int TotalPlayersInPod => this.RoomAccessor.GetStatistics().PlayersInPodCount;
 
     public GameRoom GetOrCreateRoomByPlayer(GameUser player, TokenPlatform platform, TokenGame game, NatType natType)
     {
@@ -63,8 +60,7 @@ public partial class MatchService(Logger logger) : EndpointService(logger)
     
     public int GetPlayerCountForLevel(RoomSlotType type, int id)
     {
-        return this.RoomAccessor.GetAllRooms().Where(r => r.LevelType == type && r.LevelId == id)
-            .Sum(r => r.PlayerIds.Count);
+        return this.RoomAccessor.GetRoomsInLevel(type, id).Sum(r => r.PlayerIds.Count);
     }
 
     public void AddPlayerToRoom(GameUser player, GameRoom targetRoom, TokenPlatform platform, TokenGame game)

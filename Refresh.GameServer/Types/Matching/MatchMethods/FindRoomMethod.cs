@@ -36,10 +36,11 @@ public class FindRoomMethod : IMatchMethod
         } 
         
         //TODO: add user option to filter rooms by language
-        
-        List<GameRoom> rooms = service.RoomAccessor.GetAllRooms().Where(r => r.RoomId != usersRoom.RoomId && 
-                                                        r.Platform == usersRoom.Platform && 
-                                                        (levelId == null || r.LevelId == levelId))
+
+        List<GameRoom> rooms = service.RoomAccessor.GetRoomsByGameAndPlatform(token.TokenGame, token.TokenPlatform)
+            .Where(r =>
+                r.RoomId != usersRoom.RoomId &&
+                (levelId == null || r.LevelId == levelId))
             .OrderByDescending(r => r.RoomMood)
             .ToList();
         
