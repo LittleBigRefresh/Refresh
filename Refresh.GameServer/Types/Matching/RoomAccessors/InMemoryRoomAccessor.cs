@@ -70,6 +70,85 @@ public class InMemoryRoomAccessor(Logger logger) : IRoomAccessor
     public void UpdateRoom(GameRoom room) => this.AddRoom(room);
 
     /// <inheritdoc/>
+    public RoomStatistics GetStatistics()
+    {
+        lock (this._rooms)
+        {
+            //Clear all expired rooms
+            this.RemoveExpiredRooms();
+
+            Dictionary<TokenGame, ushort> perGame = new();
+            Dictionary<TokenPlatform, ushort> perPlatform = new();
+            foreach (GameRoom room in this._rooms)
+            {
+                perGame.TryAdd(room.Game, 0);
+                perPlatform.TryAdd(room.Platform, 0);
+                
+                perGame[room.Game] += (ushort)room.PlayerIds.Count;
+                perPlatform[room.Platform] += (ushort)room.PlayerIds.Count;
+            }
+            
+            return new RoomStatistics
+            {
+                PlayerCount = (ushort)this._rooms.Sum(r => r.PlayerIds.Count),
+                PlayersInPodCount = (ushort)this._rooms.Count(r => r.LevelType == RoomSlotType.Pod),
+                RoomCount = (ushort)this._rooms.Count,
+                PerGame = perGame,
+                PerPlatform = perPlatform,
+            };
+        }
+    }
+    
+    /// <inheritdoc/>
+    public ushort GetPlayersInGame(TokenGame game)
+    {
+        lock (this._rooms)
+        {
+            //Clear all expired rooms
+            this.RemoveExpiredRooms();
+
+            return (ushort)this._rooms.Sum(r => r.PlayerIds.Count);
+        }
+    }
+    
+    /// <inheritdoc/>
+    public ushort GetPlayersOnPlatform(TokenPlatform platform)
+    {
+        lock (this._rooms)
+        {
+            //Clear all expired rooms
+            this.RemoveExpiredRooms();
+
+            return (ushort)this._rooms.Where(r => r.Platform == platform).Sum(r => r.PlayerIds.Count);
+        }
+    }
+    
+    /// <inheritdoc/>
+    public IEnumerable<GameRoom> GetRoomsInLevel(RoomSlotType type, int levelId)
+    {
+        lock (this._rooms)
+        {
+            //Clear all expired rooms
+            this.RemoveExpiredRooms();
+
+            //Return a copy of the room list
+            return this._rooms.Where(r => r.LevelId == levelId && r.LevelType == type).ToList();
+        }
+    }
+
+    /// <inheritdoc/>
+    public IEnumerable<GameRoom> GetRoomsByGameAndPlatform(TokenGame game, TokenPlatform platform)     {
+        lock (this._rooms)
+        {
+            //Clear all expired rooms
+            this.RemoveExpiredRooms();
+
+            //Return a copy of the room list
+            return this._rooms.Where(r => r.Game == game && r.Platform == platform).ToList();
+        }
+    }
+
+    /// <inheritdoc/>
     public GameRoom? GetRoomByUserUuid(ObjectId uuid, TokenPlatform? platform = null, TokenGame? game = null)
     {
         lock (this._rooms)

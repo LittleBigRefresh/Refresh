@@ -1,7 +1,6 @@
 using MongoDB.Bson;
 using Refresh.GameServer.Authentication;
-using Refresh.GameServer.Endpoints.ApiV3.ApiTypes;
-using Refresh.GameServer.Endpoints.ApiV3.DataTypes.Response;
+using Refresh.GameServer.Types.Levels;
 using Refresh.GameServer.Types.UserData;
 
 namespace Refresh.GameServer.Types.Matching;
@@ -37,6 +36,60 @@ public interface IRoomAccessor
     /// </summary>
     /// <param name="room"></param>
     public void UpdateRoom(GameRoom room);
+
+    /// <summary>
+    /// Returns the current match statistics 
+    /// </summary>
+    /// <returns>The room statistics</returns>
+    public RoomStatistics GetStatistics();
+    /// <summary>
+    /// Get the count of players that are playing a specific game
+    /// </summary>
+    /// <param name="game">The game to check</param>
+    /// <returns>The amount of players</returns>
+    public ushort GetPlayersInGame(TokenGame game);
+    /// <summary>
+    /// Gets the count of players that are playing on a specific platform
+    /// </summary>
+    /// <param name="platform">The platform to check</param>
+    /// <returns>The amount of players</returns>
+    public ushort GetPlayersOnPlatform(TokenPlatform platform);
+    
+    /// <summary>
+    /// Gets all the rooms that are on a particular level
+    /// </summary>
+    /// <param name="type">The type of level</param>
+    /// <param name="levelId">The level ID</param>
+    /// <returns>The found rooms</returns>
+    public IEnumerable<GameRoom> GetRoomsInLevel(RoomSlotType type, int levelId);
+    /// <summary>
+    /// Gets all the rooms that are on a particular level
+    /// </summary>
+    /// <param name="level">The level to check</param>
+    /// <returns>The found rooms</returns>
+    public IEnumerable<GameRoom> GetRoomsInLevel(GameLevel level) => this.GetRoomsInLevel(
+        level.Source switch
+        {
+            GameLevelSource.User => RoomSlotType.Online,
+            GameLevelSource.Story => RoomSlotType.Story,
+            _ => throw new ArgumentOutOfRangeException(),
+        },
+        level.LevelId
+    );
+
+    /// <summary>
+    /// Get all rooms that are open on a particular game and platform
+    /// </summary>
+    /// <param name="game">The game to check</param>
+    /// <param name="platform">The platform to check </param>
+    /// <returns>The found rooms</returns>
+    public IEnumerable<GameRoom> GetRoomsByGameAndPlatform(TokenGame game, TokenPlatform platform);
+    /// <summary>
+    /// Get all rooms that are open on a particular game and platform, corresponding to the passed token
+    /// </summary>
+    /// <param name="token">The token to get the game/platform from</param>
+    /// <returns>The found rooms</returns>
+    public IEnumerable<GameRoom> GetRoomsByGameAndPlatform(Token token) => this.GetRoomsByGameAndPlatform(token.TokenGame, token.TokenPlatform);
     
     /// <summary>
     /// Gets a room by a user.
