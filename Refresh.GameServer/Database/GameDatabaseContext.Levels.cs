@@ -329,10 +329,13 @@ public partial class GameDatabaseContext // Levels
     }
 
     [Pure]
+    public int GetTotalLevelCount(TokenGame game) => this._realm.All<GameLevel>().FilterByGameVersion(game).Count(l => l._Source == (int)GameLevelSource.User);
+    
+    [Pure]
     public int GetTotalLevelCount() => this._realm.All<GameLevel>().Count(l => l._Source == (int)GameLevelSource.User);
     
     [Pure]
-    public int GetTotalTeamPickCount() => this._realm.All<GameLevel>().Count(l => l.TeamPicked);
+    public int GetTotalTeamPickCount(TokenGame game) => this._realm.All<GameLevel>().FilterByGameVersion(game).Count(l => l.TeamPicked);
 
     [Pure]
     public GameLevel? GetLevelById(int id) => this._realm.All<GameLevel>().FirstOrDefault(l => l.LevelId == id);
