@@ -14,11 +14,11 @@ public class PresenceEndpoints : EndpointGroup
 {
     [GameEndpoint("playersInPodCount")]
     [MinimumRole(GameUserRole.Restricted)]
-    public int TotalPlayersInPod(RequestContext context, MatchService match) => match.TotalPlayersInPod;
+    public int TotalPlayersInPod(RequestContext context, MatchService match) => match.RoomAccessor.GetStatistics().PlayersInPodCount;
 
     [GameEndpoint("totalPlayerCount")]
     [MinimumRole(GameUserRole.Restricted)]
-    public int TotalPlayers(RequestContext context, MatchService match) => match.TotalPlayers;
+    public int TotalPlayers(RequestContext context, MatchService match) => match.RoomAccessor.GetStatistics().PlayerCount;
 
     [GameEndpoint("planetStats", HttpMethods.Get, ContentType.Xml)]
     [MinimumRole(GameUserRole.Restricted)]

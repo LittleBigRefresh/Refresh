@@ -6,6 +6,7 @@ using Refresh.GameServer.Database;
 using Refresh.GameServer.Endpoints.ApiV3.ApiTypes;
 using Refresh.GameServer.Endpoints.ApiV3.DataTypes.Response;
 using Refresh.GameServer.Services;
+using Refresh.GameServer.Types.Matching;
 using Refresh.GameServer.Types.RichPresence;
 
 namespace Refresh.GameServer.Endpoints.ApiV3;
@@ -31,6 +32,8 @@ public class InstanceApiEndpoints : EndpointGroup
         {
             requestStatistics = ApiRequestStatisticsResponse.FromOld(database.GetRequestStatistics())!;
         }
+
+        RoomStatistics statistics = match.RoomAccessor.GetStatistics();
         
         return new ApiStatisticsResponse
         {
@@ -39,8 +42,8 @@ public class InstanceApiEndpoints : EndpointGroup
             ActiveUsers = database.GetActiveUserCount(),
             TotalPhotos = database.GetTotalPhotoCount(),
             TotalEvents = database.GetTotalEventCount(),
-            CurrentRoomCount = match.RoomAccessor.GetStatistics().RoomCount,
-            CurrentIngamePlayersCount = match.TotalPlayers,
+            CurrentRoomCount = statistics.RoomCount,
+            CurrentIngamePlayersCount = statistics.PlayerCount,
             RequestStatistics = requestStatistics,
         };
     }

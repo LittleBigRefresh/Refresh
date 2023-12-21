@@ -21,9 +21,6 @@ public partial class MatchService(Logger logger) : EndpointService(logger)
     public IRoomAccessor RoomAccessor { get; private set; } = null!; //initialized in Initialize()
     private readonly Dictionary<ObjectId, ObjectId> _forceMatches = new();
     
-    public int TotalPlayers => this.RoomAccessor.GetStatistics().PlayerCount;
-    public int TotalPlayersInPod => this.RoomAccessor.GetStatistics().PlayersInPodCount;
-
     public GameRoom GetOrCreateRoomByPlayer(GameUser player, TokenPlatform platform, TokenGame game, NatType natType)
     {
         GameRoom? room = this.RoomAccessor.GetRoomByUser(player, platform, game);

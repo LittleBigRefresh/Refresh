@@ -2,6 +2,8 @@ using Refresh.GameServer.Authentication;
 
 namespace Refresh.GameServer.Types.Matching;
 
+#nullable disable
+
 [JsonObject(NamingStrategyType = typeof(CamelCaseNamingStrategy))]
 public class RoomStatistics
 {
