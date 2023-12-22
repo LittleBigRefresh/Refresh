@@ -25,8 +25,10 @@ public class PublishEndpoints : EndpointGroup
     /// <param name="body">The level to verify</param>
     /// <param name="user">The user that is attempting to upload</param>
     /// <param name="logger">A logger instance</param>
+    /// <param name="guidChecker">The associated GuidCheckerService with the request</param>
+    /// <param name="game">The game the level is being submitted from</param>
     /// <returns>Whether or not validation succeeded</returns>
-    private static bool VerifyLevel(GameLevelRequest body, GameUser user, Logger logger)
+    private static bool VerifyLevel(GameLevelRequest body, GameUser user, Logger logger, GuidCheckerService guidChecker, TokenGame game)
     {
         if (body.Title.Length > 256)
         {
@@ -43,15 +45,22 @@ public class PublishEndpoints : EndpointGroup
             return false;
         }
 
+        //If the icon hash is a GUID hash, verify its a valid texture GUID
+        if (body.IconHash.StartsWith('g'))
+        {
+            if (!guidChecker.IsTextureGuid(game, long.Parse(body.IconHash.AsSpan()[1..])))
+                return false;
+        }
+        
         return true;
     }
     
     [GameEndpoint("startPublish", ContentType.Xml, HttpMethods.Post)]
     [NullStatusCode(BadRequest)]
-    public SerializedLevelResources? StartPublish(RequestContext context, GameUser user, GameDatabaseContext database, GameLevelRequest body, CommandService command, IDataStore dataStore)
+    public SerializedLevelResources? StartPublish(RequestContext context, GameUser user, GameDatabaseContext database, GameLevelRequest body, CommandService command, IDataStore dataStore, GuidCheckerService guidChecker, Token token)
     {
         //If verifying the request fails, return null
-        if (!VerifyLevel(body, user, context.Logger)) return null;
+        if (!VerifyLevel(body, user, context.Logger, guidChecker, token.TokenGame)) return null;
         
         List<string> hashes = new();
         hashes.AddRange(body.XmlResources);
@@ -74,11 +83,11 @@ public class PublishEndpoints : EndpointGroup
     }
 
     [GameEndpoint("publish", ContentType.Xml, HttpMethods.Post)]
-    public Response PublishLevel(RequestContext context, GameUser user, Token token, GameDatabaseContext database, GameLevelRequest body, CommandService command, IDataStore dataStore)
+    public Response PublishLevel(RequestContext context, GameUser user, Token token, GameDatabaseContext database, GameLevelRequest body, CommandService command, IDataStore dataStore, GuidCheckerService guidChecker)
     {
         //If verifying the request fails, return null
-        if (!VerifyLevel(body, user, context.Logger)) return BadRequest;
-
+        if (!VerifyLevel(body, user, context.Logger, guidChecker, token.TokenGame)) return BadRequest;
+        
         GameLevel level = body.ToGameLevel(user);
         level.GameVersion = token.TokenGame;
 

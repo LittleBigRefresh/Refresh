@@ -127,6 +127,7 @@ public class RefreshGameServer : IDisposable
         this._server.AddService<MatchService>();
         this._server.AddService<ImportService>();
         this._server.AddService<DocumentationService>();
+        this._server.AddService<GuidCheckerService>();
         this._server.AddAutoDiscover(serverBrand: $"{this._config!.InstanceName} (Refresh)",
             baseEndpoint: GameEndpointAttribute.BaseRoute.Substring(0, GameEndpointAttribute.BaseRoute.Length - 1),
             usesCustomDigestKey: true,
