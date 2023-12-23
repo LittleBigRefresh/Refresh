@@ -11,6 +11,7 @@
     <PropertyGroup Condition=" '$(Configuration)' == 'DebugLocalBunkum' ">
       <DefineConstants>TRACE;DEBUG</DefineConstants>
       <DebugSymbols>true</DebugSymbols>
+      <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     </PropertyGroup>
 
     <ItemGroup>
@@ -19,6 +20,11 @@
     
     <PropertyGroup Condition=" '$(Configuration)' == 'Release' ">
         <PublishSingleFile>true</PublishSingleFile>
+        <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    </PropertyGroup>
+    
+    <PropertyGroup Condition=" '$(Configuration)' == 'Debug' ">
+      <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     </PropertyGroup>
 
     <ItemGroup Condition="'$(Configuration)'=='DebugLocalBunkum'">
