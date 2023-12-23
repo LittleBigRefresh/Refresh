@@ -41,13 +41,19 @@ public class GuidCheckerService : EndpointService
     /// <param name="guid"></param>
     /// <returns></returns>
     /// <exception cref="ArgumentOutOfRangeException"></exception>
-    public bool IsTextureGuid(TokenGame game, long guid) => game switch
+    public bool IsTextureGuid(TokenGame game, long guid)
     {
-        TokenGame.LittleBigPlanet1 => this._validMainlineTextureGuids.TryGetValue(guid, out _),
-        TokenGame.LittleBigPlanet2 => this._validMainlineTextureGuids.TryGetValue(guid, out _),
-        TokenGame.LittleBigPlanet3 => this._validMainlineTextureGuids.TryGetValue(guid, out _),
-        TokenGame.LittleBigPlanetVita => this._validVitaTextureGuids.TryGetValue(guid, out _),
-        TokenGame.LittleBigPlanetPSP => true,
-        _ => throw new ArgumentOutOfRangeException(nameof(game), game, null),
-    };
+        //Allow g0 explicitly
+        if (guid == 0) return true;
+        
+        return game switch
+        {
+            TokenGame.LittleBigPlanet1 => this._validMainlineTextureGuids.TryGetValue(guid, out _),
+            TokenGame.LittleBigPlanet2 => this._validMainlineTextureGuids.TryGetValue(guid, out _),
+            TokenGame.LittleBigPlanet3 => this._validMainlineTextureGuids.TryGetValue(guid, out _),
+            TokenGame.LittleBigPlanetVita => this._validVitaTextureGuids.TryGetValue(guid, out _),
+            TokenGame.LittleBigPlanetPSP => true,
+            _ => throw new ArgumentOutOfRangeException(nameof(game), game, null),
+        };
+    }
 }

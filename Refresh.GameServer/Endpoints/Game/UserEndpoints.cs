@@ -58,7 +58,7 @@ public class UserEndpoints : EndpointGroup
 
     [GameEndpoint("updateUser", HttpMethods.Post, ContentType.Xml)]
     [NullStatusCode(BadRequest)]
-    public string? UpdateUser(RequestContext context, GameDatabaseContext database, GameUser user, string body, IDataStore dataStore, Token token)
+    public string? UpdateUser(RequestContext context, GameDatabaseContext database, GameUser user, string body, IDataStore dataStore, Token token, GuidCheckerService guidChecker)
     {
         SerializedUpdateData? data = null;
         
@@ -96,10 +96,19 @@ public class UserEndpoints : EndpointGroup
             return null;
         }
 
-        if (data.IconHash != null && !data.IconHash.StartsWith("g") && !dataStore.ExistsInStore(data.IconHash))
+        if (data.IconHash != null)
         {
-            database.AddErrorNotification("Profile update failed", "Your avatar failed to update because the asset was missing on the server.", user);
-            return null;
+            if (!data.IconHash.StartsWith('g') && !dataStore.ExistsInStore(data.IconHash))
+            {
+                database.AddErrorNotification("Profile update failed", "Your avatar failed to update because the asset was missing on the server.", user);
+                return null;
+            }
+            
+            if(data.IconHash.StartsWith('g') && !guidChecker.IsTextureGuid(token.TokenGame, long.Parse(data.IconHash.AsSpan()[1..])))
+            {
+                database.AddErrorNotification("Profile update failed", "Your avatar failed to update because the asset was an invalid GUID.", user);
+                return null; 
+            }
         }
         
         if (data.PlanetsHash != null && !dataStore.ExistsInStore(data.PlanetsHash))
