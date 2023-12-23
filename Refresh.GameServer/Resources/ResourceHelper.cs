@@ -1,5 +1,9 @@
+using System.Buffers;
+using System.Buffers.Binary;
 using System.Numerics;
 using System.Reflection;
+using System.Security.Cryptography;
+using IronCompress;
 using Microsoft.Toolkit.HighPerformance;
 
 namespace Refresh.GameServer.Resources;
@@ -12,13 +16,15 @@ public static class ResourceHelper
         return assembly.GetManifestResourceStream(name)!;
     }
 
-    private static unsafe void XorVectorized(Span<byte> data, ReadOnlySpan<byte> key)
+    private static unsafe void XorVectorized(Span<byte> rawData, ReadOnlySpan<byte> key)
     {
-        fixed (byte* dataPtr = data)
+        fixed (byte* dataPtr = rawData)
         {
             //Get the misalignment of the data
             int misalignment = (int)((nint)dataPtr % sizeof(nint));
 
+            Span<byte> data = new(dataPtr, rawData.Length);
+            
             if (misalignment != 0)
             {
                 //XOR the data before the aligned data
@@ -61,7 +67,65 @@ public static class ResourceHelper
             data[i] ^= key[i];
     }
     
-    public static unsafe void Xor(Span<byte> data, ReadOnlySpan<byte> key)
+    private static readonly ThreadLocal<Iron> Iron = new(() => new Iron(ArrayPool<byte>.Shared));
+
+    private static void Encrypt(Span<byte> data, ReadOnlySpan<byte> key)
+    {
+        throw new NotImplementedException(); //TODO
+    }
+    
+    /// <summary>
+    /// Decrypt a PSP asset
+    /// </summary>
+    /// <param name="data">The data to decrypt</param>
+    /// <param name="key">The decryption key</param>
+    /// <returns>The decrypted data.</returns>
+    public static byte[] PspDecrypt(Span<byte> data, ReadOnlySpan<byte> key)
+    {
+        //XOR the data
+        Xor(data, key);
+
+        //Get the data buffer
+        Span<byte> buf = data[..^0x19];
+        //Get the info of the file
+        Span<byte> info = data[^0x19..];
+
+        uint len = BinaryPrimitives.ReadUInt32LittleEndian(info[..4]);
+
+        ReadOnlySpan<byte> signature = info[^0x10..];
+
+        //If the hash in the file does not match the data contained, the file is likely corrupt.
+        if (!signature.SequenceEqual(MD5.HashData(data[..^0x10]))) throw new InvalidDataException("Encrypted PSP asset hash does not match signature, likely corrupt");
+        
+        //If the data is not compressed, just return a copy of the raw buffer
+        if (info[0x4] != 1)
+        {
+            Xor(data, key);
+            return buf.ToArray();
+        }
+
+        //Decompress the data
+        using IronCompressResult decompressed = Iron.Value!.Decompress(Codec.LZO, buf, (int)len);
+
+        Xor(data, key);
+
+        //Return a copy of the decompressed data
+        return decompressed.AsSpan().ToArray();
+    }
+    
+    public static byte[] XorAlloc(ReadOnlySpan<byte> data, ReadOnlySpan<byte> key)
+    {
+        //Allocate the new array
+        byte[] result = new byte[data.Length];
+        //Copy the old data to the result
+        data.CopyTo(result);
+        //XOR the output array 
+        Xor(result, key);
+        //Return the result
+        return result;
+    }
+    
+    public static void Xor(Span<byte> data, ReadOnlySpan<byte> key)
     {
         if (key.Length < data.Length) throw new ArgumentException("Key must be as long or longer than the data!", nameof(key));
         

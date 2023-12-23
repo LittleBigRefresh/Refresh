@@ -71,6 +71,7 @@
       <PackageReference Include="BCrypt.Net-Next" Version="4.0.3" />
       <PackageReference Include="CommandLineParser" Version="2.9.1" />
       <PackageReference Include="Discord.Net.Webhook" Version="3.13.0" />
+      <PackageReference Include="IronCompress" Version="1.5.1" />
       <PackageReference Include="MailKit" Version="4.3.0" />
       <PackageReference Include="NPTicket" Version="3.1.0" />
       <PackageReference Include="Pfim" Version="0.11.2" />

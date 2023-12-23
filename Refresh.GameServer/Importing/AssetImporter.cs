@@ -132,6 +132,7 @@ public class AssetImporter : Importer
             or GameAssetType.Tga
             or GameAssetType.Texture
             or GameAssetType.GameDataTexture
+            or GameAssetType.Mip
             or GameAssetType.Unknown)
         {
             return false;

@@ -5,6 +5,7 @@ using System.Text;
 using Bunkum.Core;
 using NotEnoughLogs;
 using Refresh.GameServer.Authentication;
+using Refresh.GameServer.Resources;
 using Refresh.GameServer.Types.Assets;
 
 namespace Refresh.GameServer.Importing;
@@ -13,6 +14,7 @@ public abstract class Importer
 {
     private readonly Logger _logger;
     protected readonly Stopwatch Stopwatch;
+    private readonly Lazy<byte[]?> _pspKey;
 
     protected Importer(Logger? logger = null)
     {
@@ -23,6 +25,27 @@ public abstract class Importer
 
         this._logger = logger;
         this.Stopwatch = new Stopwatch();
+
+        this._pspKey = new(() =>
+        {
+            try
+            {
+                return File.ReadAllBytes("keys/psp");
+            }
+            catch(Exception e)
+            {
+                if (e.GetType() == typeof(FileNotFoundException) || e.GetType() == typeof(DirectoryNotFoundException))
+                {
+                    this._logger.LogWarning(BunkumCategory.Digest, "PSP key file not found, encrypting/decrypting of PSP images will not work.");
+                }
+                else
+                {
+                    this._logger.LogError(BunkumCategory.Digest, "Unknown error while loading PSP key! err: {0}", e.ToString());
+                }
+                
+                return null;
+            }
+        },  LazyThreadSafetyMode.ExecutionAndPublication);
     }
     
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -99,8 +122,47 @@ public abstract class Importer
         
         return true;
     }
+
+    private bool IsMip(Span<byte> rawData)
+    {
+        //If we dont have a key, then we cant determine the data type
+        if (this._pspKey.Value == null) return false;
+        
+        //Data less than this size isn't encrypted(?) and all Mip files uploaded to the server will be encrypted
+        //See https://github.com/ennuo/lbparc/blob/16ad36aa7f4eae2f7b406829e604082750f16fe1/tools/toggle.js#L33
+        if (rawData.Length < 0x19) return false;
+
+        //Decrypt the data
+        ReadOnlySpan<byte> data = ResourceHelper.PspDecrypt(rawData, this._pspKey.Value);
+
+        uint clutOffset = BinaryPrimitives.ReadUInt32LittleEndian(data[..4]);
+        uint width = BinaryPrimitives.ReadUInt32LittleEndian(data[4..8]);
+        uint height = BinaryPrimitives.ReadUInt32LittleEndian(data[8..12]);
+        byte bpp = data[12];
+        byte numBlocks = data[13];
+        byte texMode = data[14];
+        byte alpha = data[15];
+        uint dataOffset = BinaryPrimitives.ReadUInt32LittleEndian(data[16..20]);
+
+        //Its unlikely that any mip textures are ever gonna be this big
+        if (width > 512 || height > 512) return false;
+
+        //We only support MIP files which have a bpp of 4 and 8
+        if (bpp is not 8 and 4) return false;
+        
+        //Alpha can only be 0 or 1
+        if (alpha > 1) return false;
+
+        //If the data offset is past the end of the file, its not a MIP
+        if (dataOffset > data.Length || clutOffset > data.Length) return false;
+
+        //If the size of the image is too big for the data passed in, its not a MIP
+        if (width * height * bpp / 8 > data.Length - dataOffset) return false;
+        
+        return true;
+    }
     
-    protected GameAssetType DetermineAssetType(ReadOnlySpan<byte> data, TokenPlatform? tokenPlatform)
+    protected GameAssetType DetermineAssetType(Span<byte> data, TokenPlatform? tokenPlatform)
     {
         // LBP assets
         if (MatchesMagic(data, "TEX "u8)) return GameAssetType.Texture;
@@ -121,8 +183,10 @@ public abstract class Importer
         if (MatchesMagic(data, 0xFFD8FFE0)) return GameAssetType.Jpeg;
         if (MatchesMagic(data, 0x89504E470D0A1A0A)) return GameAssetType.Png;
 
+        // ReSharper disable once ConvertIfStatementToSwitchStatement
         if (tokenPlatform is null or TokenPlatform.PSP && IsPspTga(data)) return GameAssetType.Tga;
-        
+        if (tokenPlatform is null or TokenPlatform.PSP && this.IsMip(data)) return GameAssetType.Mip;
+                    
         this.Warn($"Unknown asset header [0x{Convert.ToHexString(data[..4])}] [str: {Encoding.ASCII.GetString(data[..4])}]");
 
         return GameAssetType.Unknown;
