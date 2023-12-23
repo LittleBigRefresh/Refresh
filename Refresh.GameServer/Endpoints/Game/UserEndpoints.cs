@@ -98,16 +98,27 @@ public class UserEndpoints : EndpointGroup
 
         if (data.IconHash != null)
         {
-            if (!data.IconHash.StartsWith('g') && !dataStore.ExistsInStore(data.IconHash))
+            //If the icon is a GUID
+            if (data.IconHash.StartsWith('g'))
             {
-                database.AddErrorNotification("Profile update failed", "Your avatar failed to update because the asset was missing on the server.", user);
-                return null;
+                //Parse out the GUID
+                long guid = long.Parse(data.IconHash.AsSpan()[1..]);
+                
+                //If its not a valid GUID, block the request
+                if(data.IconHash.StartsWith('g') && !guidChecker.IsTextureGuid(token.TokenGame, guid))
+                {
+                    database.AddErrorNotification("Profile update failed", "Your avatar failed to update because the asset was an invalid GUID.", user);
+                    return null; 
+                }
             }
-            
-            if(data.IconHash.StartsWith('g') && !guidChecker.IsTextureGuid(token.TokenGame, long.Parse(data.IconHash.AsSpan()[1..])))
+            else
             {
-                database.AddErrorNotification("Profile update failed", "Your avatar failed to update because the asset was an invalid GUID.", user);
-                return null; 
+                //If the asset does not exist on the server, block the request
+                if (!dataStore.ExistsInStore(data.IconHash))
+                {
+                    database.AddErrorNotification("Profile update failed", "Your avatar failed to update because the asset was missing on the server.", user);
+                    return null;
+                } 
             }
         }
         

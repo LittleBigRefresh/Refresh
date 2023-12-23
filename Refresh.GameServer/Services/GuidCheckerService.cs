@@ -52,7 +52,7 @@ public class GuidCheckerService : EndpointService
             TokenGame.LittleBigPlanet2 => this._validMainlineTextureGuids.TryGetValue(guid, out _),
             TokenGame.LittleBigPlanet3 => this._validMainlineTextureGuids.TryGetValue(guid, out _),
             TokenGame.LittleBigPlanetVita => this._validVitaTextureGuids.TryGetValue(guid, out _),
-            TokenGame.LittleBigPlanetPSP => true,
+            TokenGame.LittleBigPlanetPSP => guid is >= 0 and <= 63, //PSP avatar GUIDs can be g0 - g63
             _ => throw new ArgumentOutOfRangeException(nameof(game), game, null),
         };
     }
