@@ -14,7 +14,7 @@ public abstract class Importer
 {
     private readonly Logger _logger;
     protected readonly Stopwatch Stopwatch;
-    private readonly Lazy<byte[]?> _pspKey;
+    protected readonly Lazy<byte[]?> _pspKey;
 
     protected Importer(Logger? logger = null)
     {
@@ -127,41 +127,49 @@ public abstract class Importer
     {
         //If we dont have a key, then we cant determine the data type
         if (this._pspKey.Value == null) return false;
-        
+
         //Data less than this size isn't encrypted(?) and all Mip files uploaded to the server will be encrypted
         //See https://github.com/ennuo/lbparc/blob/16ad36aa7f4eae2f7b406829e604082750f16fe1/tools/toggle.js#L33
         if (rawData.Length < 0x19) return false;
 
-        //Decrypt the data
-        ReadOnlySpan<byte> data = ResourceHelper.PspDecrypt(rawData, this._pspKey.Value);
+        try
+        {
+            //Decrypt the data
+            ReadOnlySpan<byte> data = ResourceHelper.PspDecrypt(rawData, this._pspKey.Value);
+            
+            uint clutOffset = BinaryPrimitives.ReadUInt32LittleEndian(data[..4]);
+            uint width = BinaryPrimitives.ReadUInt32LittleEndian(data[4..8]);
+            uint height = BinaryPrimitives.ReadUInt32LittleEndian(data[8..12]);
+            byte bpp = data[12];
+            byte numBlocks = data[13];
+            byte texMode = data[14];
+            byte alpha = data[15];
+            uint dataOffset = BinaryPrimitives.ReadUInt32LittleEndian(data[16..20]);
 
-        uint clutOffset = BinaryPrimitives.ReadUInt32LittleEndian(data[..4]);
-        uint width = BinaryPrimitives.ReadUInt32LittleEndian(data[4..8]);
-        uint height = BinaryPrimitives.ReadUInt32LittleEndian(data[8..12]);
-        byte bpp = data[12];
-        byte numBlocks = data[13];
-        byte texMode = data[14];
-        byte alpha = data[15];
-        uint dataOffset = BinaryPrimitives.ReadUInt32LittleEndian(data[16..20]);
+            //Its unlikely that any mip textures are ever gonna be this big
+            if (width > 512 || height > 512) return false;
 
-        //Its unlikely that any mip textures are ever gonna be this big
-        if (width > 512 || height > 512) return false;
+            //We only support MIP files which have a bpp of 4 and 8
+            if (bpp is not 8 and 4) return false;
 
-        //We only support MIP files which have a bpp of 4 and 8
-        if (bpp is not 8 and 4) return false;
-        
-        //Alpha can only be 0 or 1
-        if (alpha > 1) return false;
+            //Alpha can only be 0 or 1
+            if (alpha > 1) return false;
 
-        //If the data offset is past the end of the file, its not a MIP
-        if (dataOffset > data.Length || clutOffset > data.Length) return false;
+            //If the data offset is past the end of the file, its not a MIP
+            if (dataOffset > data.Length || clutOffset > data.Length) return false;
 
-        //If the size of the image is too big for the data passed in, its not a MIP
-        if (width * height * bpp / 8 > data.Length - dataOffset) return false;
+            //If the size of the image is too big for the data passed in, its not a MIP
+            if (width * height * bpp / 8 > data.Length - dataOffset) return false;
+        }
+        catch
+        {
+            //If the data is invalid an invalid encrypted file, its not a MIP
+            return false;
+        }
         
         return true;
     }
-    
+
     protected GameAssetType DetermineAssetType(Span<byte> data, TokenPlatform? tokenPlatform)
     {
         // LBP assets

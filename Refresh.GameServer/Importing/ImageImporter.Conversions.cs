@@ -1,6 +1,7 @@
 using ICSharpCode.SharpZipLib.Zip.Compression;
 using Pfim;
 using Refresh.GameServer.Importing.Gtf;
+using Refresh.GameServer.Importing.Mip;
 using SixLabors.ImageSharp.Formats;
 
 namespace Refresh.GameServer.Importing;
@@ -31,6 +32,12 @@ public partial class ImageImporter // Conversions
     private static void GtfToPng(Stream stream, Stream writeStream)
     {
         using Image image = new GtfDecoder().Decode(new DecoderOptions(), stream);
+        image.SaveAsPng(writeStream);
+    }
+    
+    private static void MipToPng(Stream stream, Stream writeStream)
+    {
+        using Image image = new MipDecoder().Decode(new DecoderOptions(), stream);
         image.SaveAsPng(writeStream);
     }
 
