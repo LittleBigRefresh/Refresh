@@ -49,7 +49,7 @@ public class ApiGameLevelResponse : IApiResponse, IDataConvertableFrom<ApiGameLe
             Title = level.Title,
             Publisher = ApiGameUserResponse.FromOld(level.Publisher),
             LevelId = level.LevelId,
-            IconHash = level.IconHash,
+            IconHash = level.GameVersion == TokenGame.LittleBigPlanetPSP ? "psp/" + level.IconHash : level.IconHash,
             Description = level.Description,
             Location = ApiGameLocationResponse.FromGameLocation(level.Location)!,
             PublishDate = DateTimeOffset.FromUnixTimeMilliseconds(level.PublishDate),
