@@ -113,18 +113,6 @@ public static class ResourceHelper
         return decompressed.AsSpan().ToArray();
     }
     
-    public static byte[] XorAlloc(ReadOnlySpan<byte> data, ReadOnlySpan<byte> key)
-    {
-        //Allocate the new array
-        byte[] result = new byte[data.Length];
-        //Copy the old data to the result
-        data.CopyTo(result);
-        //XOR the output array 
-        Xor(result, key);
-        //Return the result
-        return result;
-    }
-    
     public static void Xor(Span<byte> data, ReadOnlySpan<byte> key)
     {
         if (key.Length < data.Length) throw new ArgumentException("Key must be as long or longer than the data!", nameof(key));
