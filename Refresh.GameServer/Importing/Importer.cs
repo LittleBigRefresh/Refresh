@@ -1,6 +1,7 @@
 using System.Buffers.Binary;
 using System.Diagnostics;
 using System.Runtime.CompilerServices;
+using System.Security.Cryptography;
 using System.Text;
 using Bunkum.Core;
 using NotEnoughLogs;
@@ -14,7 +15,7 @@ public abstract class Importer
 {
     private readonly Logger _logger;
     protected readonly Stopwatch Stopwatch;
-    protected readonly Lazy<byte[]?> _pspKey;
+    protected readonly Lazy<byte[]?> PSPKey;
 
     protected Importer(Logger? logger = null)
     {
@@ -26,11 +27,20 @@ public abstract class Importer
         this._logger = logger;
         this.Stopwatch = new Stopwatch();
 
-        this._pspKey = new(() =>
+        this.PSPKey = new(() =>
         {
             try
             {
-                return File.ReadAllBytes("keys/psp");
+                //Read the key
+                byte[] key = File.ReadAllBytes("keys/psp");
+                
+                //If the hash matches, return the read key
+                if (SHA1.HashData(key).AsSpan().SequenceEqual(new byte[] { 0x12, 0xb5, 0xa8, 0xb5, 0x91, 0x55, 0x24, 0x96, 0x00, 0xdf, 0x0e, 0x33, 0xf9, 0xc5, 0xa8, 0x76, 0xc1, 0x85, 0x43, 0xfe })) 
+                    return key;
+                
+                //If the hash does not match, log an error and return null
+                this._logger.LogError(BunkumCategory.Digest, "PSP key failed to validate! Correct hash is 12b5a8b59155249600df0e33f9c5a876c18543fe");
+                return null;
             }
             catch(Exception e)
             {
@@ -126,7 +136,7 @@ public abstract class Importer
     private bool IsMip(Span<byte> rawData)
     {
         //If we dont have a key, then we cant determine the data type
-        if (this._pspKey.Value == null) return false;
+        if (this.PSPKey.Value == null) return false;
 
         //Data less than this size isn't encrypted(?) and all Mip files uploaded to the server will be encrypted
         //See https://github.com/ennuo/lbparc/blob/16ad36aa7f4eae2f7b406829e604082750f16fe1/tools/toggle.js#L33
@@ -135,7 +145,7 @@ public abstract class Importer
         try
         {
             //Decrypt the data
-            ReadOnlySpan<byte> data = ResourceHelper.PspDecrypt(rawData, this._pspKey.Value);
+            ReadOnlySpan<byte> data = ResourceHelper.PspDecrypt(rawData, this.PSPKey.Value);
             
             uint clutOffset = BinaryPrimitives.ReadUInt32LittleEndian(data[..4]);
             uint width = BinaryPrimitives.ReadUInt32LittleEndian(data[4..8]);
