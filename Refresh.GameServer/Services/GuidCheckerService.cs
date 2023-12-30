@@ -13,16 +13,17 @@ public class GuidCheckerService : EndpointService
     internal GuidCheckerService(Logger logger) : base(logger)
     {
         //Get the resource streams for the LBP3 and LBPV files
-        using Stream lbpStream = ResourceHelper.StreamFromResource("Refresh.GameServer.Resources.lbp3.txt");
-        using Stream vitaStream = ResourceHelper.StreamFromResource("Refresh.GameServer.Resources.lbpv.txt");
+        // using Stream lbpStream = ResourceHelper.StreamFromResource("Refresh.GameServer.Resources.lbp3.txt");
+        // using Stream vitaStream = ResourceHelper.StreamFromResource("Refresh.GameServer.Resources.lbpv.txt");
         
         //Read the files into their respective hash sets
-        ReadStream(lbpStream, this._validMainlineTextureGuids);
-        ReadStream(vitaStream, this._validVitaTextureGuids);
+        // ReadStream(lbpStream, this._validMainlineTextureGuids);
+        // ReadStream(vitaStream, this._validVitaTextureGuids);
+        logger.LogInfo("DS", "GuidCheckerService disabled for modded LBP");
     }
 
     // ReSharper disable once SuggestBaseTypeForParameter MOVING TO ISet<long> IS SLOWER AT RUNTIME PLS STOP RIDER
-    private static void ReadStream(Stream stream, HashSet<long> set)
+/*    private static void ReadStream(Stream stream, HashSet<long> set)
     {
         StreamReader reader = new(stream);
 
@@ -32,7 +33,7 @@ public class GuidCheckerService : EndpointService
             //Parse out and add each line to the set
             set.Add(long.Parse(line));
         }
-    }
+    } */
 
     /// <summary>
     /// Returns whether or not the GUID is a valid texture GUID for the respective game
@@ -43,6 +44,8 @@ public class GuidCheckerService : EndpointService
     /// <exception cref="ArgumentOutOfRangeException"></exception>
     public bool IsTextureGuid(TokenGame game, long guid)
     {
+        return true;
+        /* 
         //Allow g0 explicitly
         if (guid == 0) return true;
         
@@ -54,6 +57,6 @@ public class GuidCheckerService : EndpointService
             TokenGame.LittleBigPlanetVita => this._validVitaTextureGuids.TryGetValue(guid, out _),
             TokenGame.LittleBigPlanetPSP => guid is >= 0 and <= 63, //PSP avatar GUIDs can be g0 - g63
             _ => throw new ArgumentOutOfRangeException(nameof(game), game, null),
-        };
+        }; */
     }
 }
