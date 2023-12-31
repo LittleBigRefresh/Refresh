@@ -24,8 +24,8 @@ public class MipDecoder : ImageDecoder
 
         BinaryReader reader = new(stream);
 
-        const int blockWidth = 16;
-        const int blockHeight = 8;
+        int blockWidth = 16 * (8 / header.Bpp);
+        int blockHeight = 8;
 
         int x = 0;
         int y = 0;
