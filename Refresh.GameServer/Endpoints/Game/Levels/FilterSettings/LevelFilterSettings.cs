@@ -98,6 +98,7 @@ public class LevelFilterSettings
                 "true" => MoveFilterType.True,
                 "false" => MoveFilterType.False,
                 "only" => MoveFilterType.Only,
+                "dontCare" => MoveFilterType.True,
                 _ => throw new ArgumentOutOfRangeException(),
             };
 

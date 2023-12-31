@@ -71,6 +71,7 @@ public class TestRefreshGameServer : RefreshGameServer
         this._server.AddService<ImportService>();
         this._server.AddService<LevelListOverrideService>();
         this._server.AddService<CommandService>();
+        this._server.AddService<GuidCheckerService>();
     }
     
     [Pure]
