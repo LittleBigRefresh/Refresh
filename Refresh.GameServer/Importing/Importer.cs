@@ -160,7 +160,7 @@ public abstract class Importer
             if (width > 512 || height > 512) return false;
 
             //We only support MIP files which have a bpp of 4 and 8
-            if (bpp is not 8 and 4) return false;
+            if (bpp != 8 && bpp != 4) return false;
 
             //Alpha can only be 0 or 1
             if (alpha > 1) return false;
