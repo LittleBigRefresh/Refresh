@@ -25,15 +25,20 @@ public class AssetImporter : Importer
         int newAssets = 0;
         this.Stopwatch.Start();
         
-        IEnumerable<string> assetHashes = dataStore.GetKeysFromStore()
-            .Where(key => !key.Contains('/'));
+        IEnumerable<string> assetHashes = dataStore.GetKeysFromStore();
 
-        List<GameAsset> assets = new();
-        foreach (string hash in assetHashes)
+        List<GameAsset> assets = new(assetHashes.Count());
+        foreach (string path in assetHashes)
         {
-            byte[] data = dataStore.GetDataFromStore(hash);
+            bool isPsp = path.StartsWith("psp/");
+            //If the hash has a `/` and it doesnt start with `psp/`, then its an invalid asset
+            if (path.Contains('/') && !isPsp) continue;
+
+            string hash = isPsp ? path[4..] : path;
             
-            GameAsset? newAsset = this.ReadAndVerifyAsset(hash, data, null);
+            byte[] data = dataStore.GetDataFromStore(path);
+            
+            GameAsset? newAsset = this.ReadAndVerifyAsset(hash, data, isPsp ? TokenPlatform.PSP : null);
             if (newAsset == null) continue;
 
             GameAsset? oldAsset = database.GetAssetFromHash(hash);
@@ -132,6 +137,7 @@ public class AssetImporter : Importer
             or GameAssetType.Tga
             or GameAssetType.Texture
             or GameAssetType.GameDataTexture
+            or GameAssetType.Mip
             or GameAssetType.Unknown)
         {
             return false;

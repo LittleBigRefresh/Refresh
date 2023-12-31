@@ -11,7 +11,6 @@ using Refresh.GameServer.Endpoints.ApiV3.ApiTypes;
 using Refresh.GameServer.Endpoints.ApiV3.ApiTypes.Errors;
 using Refresh.GameServer.Endpoints.ApiV3.DataTypes.Response;
 using Refresh.GameServer.Importing;
-using Refresh.GameServer.Time;
 using Refresh.GameServer.Types.Assets;
 using Refresh.GameServer.Types.UserData;
 using Refresh.GameServer.Verification;
@@ -59,7 +58,7 @@ public class ResourceApiEndpoints : EndpointGroup
     [DocError(typeof(ApiInternalError), ApiInternalError.CouldNotGetAssetErrorWhen)]
     [DocError(typeof(ApiValidationError), ApiValidationError.HashMissingErrorWhen)]
     public Response DownloadGameAssetAsImage(RequestContext context, IDataStore dataStore, GameDatabaseContext database,
-        [DocSummary("The SHA1 hash of the asset")] string hash)
+        [DocSummary("The SHA1 hash of the asset")] string hash, ImageImporter importer)
     {
         bool isPspAsset = hash.StartsWith("psp/");
 
@@ -73,8 +72,8 @@ public class ResourceApiEndpoints : EndpointGroup
         {
             GameAsset? asset = database.GetAssetFromHash(realHash);
             if (asset == null) return ApiInternalError.CouldNotGetAssetDatabaseError;
-            
-            ImageImporter.ImportAsset(asset, dataStore);
+
+            importer.ImportAsset(asset, dataStore);
         }
 
         bool gotData = dataStore.TryGetDataFromStore("png/" + realHash, out byte[]? data);
@@ -90,7 +89,7 @@ public class ResourceApiEndpoints : EndpointGroup
     [DocError(typeof(ApiInternalError), ApiInternalError.CouldNotGetAssetErrorWhen)]
     [DocError(typeof(ApiValidationError), ApiValidationError.HashMissingErrorWhen)]
     public Response DownloadPspGameAssetAsImage(RequestContext context, IDataStore dataStore, GameDatabaseContext database,
-        [DocSummary("The SHA1 hash of the asset")] string hash) => this.DownloadGameAssetAsImage(context, dataStore, database, $"psp/{hash}");
+        [DocSummary("The SHA1 hash of the asset")] string hash, ImageImporter importer) => this.DownloadGameAssetAsImage(context, dataStore, database, $"psp/{hash}", importer);
 
     [ApiV3Endpoint("assets/{hash}"), Authentication(false)]
     [DocSummary("Gets information from the database about a particular hash. Includes user who uploaded, dependencies, timestamps, etc.")]

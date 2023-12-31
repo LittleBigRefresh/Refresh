@@ -3,6 +3,7 @@ using Bunkum.Core.Storage;
 using NotEnoughLogs;
 using Refresh.GameServer.Database;
 using Refresh.GameServer.Extensions;
+using Refresh.GameServer.Resources;
 using Refresh.GameServer.Types.Assets;
 
 namespace Refresh.GameServer.Importing;
@@ -22,6 +23,7 @@ public partial class ImageImporter : Importer
         assets.AddRange(context.GetAssetsByType(GameAssetType.GameDataTexture));
         assets.AddRange(context.GetAssetsByType(GameAssetType.Jpeg));
         assets.AddRange(context.GetAssetsByType(GameAssetType.Png));
+        assets.AddRange(context.GetAssetsByType(GameAssetType.Mip));
 
         this.Info("Acquired all other assets");
 
@@ -66,7 +68,7 @@ public partial class ImageImporter : Importer
         this._runningCount--;
     }
 
-    public static void ImportAsset(GameAsset asset, IDataStore dataStore)
+    public void ImportAsset(GameAsset asset, IDataStore dataStore)
     {
         using Stream stream = dataStore.GetStreamFromStore(asset.IsPSP ? "psp/" + asset.AssetHash : asset.AssetHash);
         using Stream writeStream = dataStore.OpenWriteStream("png/" + asset.AssetHash);
@@ -76,6 +78,15 @@ public partial class ImageImporter : Importer
             case GameAssetType.GameDataTexture:
                 GtfToPng(stream, writeStream);
                 break;
+            case GameAssetType.Mip: {
+                byte[] rawData = dataStore.GetDataFromStore(asset.IsPSP ? "psp/" + asset.AssetHash : asset.AssetHash);
+                byte[] data = ResourceHelper.PspDecrypt(rawData, this.PSPKey.Value);
+
+                using MemoryStream dataStream = new(data);
+
+                MipToPng(dataStream, writeStream);
+                break;
+            }
             case GameAssetType.Texture:
                 TextureToPng(stream, writeStream);
                 break;
