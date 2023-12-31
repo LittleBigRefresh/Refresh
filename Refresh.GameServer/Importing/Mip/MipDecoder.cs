@@ -33,7 +33,10 @@ public class MipDecoder : ImageDecoder
         int xTarget = blockWidth;
         int yStart = 0;
         int yTarget = blockHeight;
-        for (int i = 0; i < header.Width * header.Height; i++)
+
+        int bytesToRead = (int)(header.Width * header.Height / (8 / header.Bpp));
+        
+        for (int i = 0; i < bytesToRead; i++)
         {
             #region hack to get swizzled coordinates
 
