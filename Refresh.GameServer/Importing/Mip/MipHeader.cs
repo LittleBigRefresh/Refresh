@@ -33,7 +33,7 @@ public class MipHeader
         };
 
         stream.Seek(header.ClutOffset, SeekOrigin.Begin);
-        for (int i = 0; i < header.Clut.Length; i++)
+        for (int i = 0; i < header.DataOffset && i < header.Clut.Length; i++)
         {
             header.Clut[i] = new Rgba32(reader.ReadByte(), reader.ReadByte(), reader.ReadByte(), reader.ReadByte());
         }
