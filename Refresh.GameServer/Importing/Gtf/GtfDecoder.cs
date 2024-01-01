@@ -4,9 +4,11 @@ using BCnEncoder.Decoder;
 using BCnEncoder.Shared;
 using Microsoft.Toolkit.HighPerformance;
 using Pfim;
+using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.Formats;
 using SixLabors.ImageSharp.Memory;
 using SixLabors.ImageSharp.Metadata;
+using SixLabors.ImageSharp.PixelFormats;
 
 namespace Refresh.GameServer.Importing.Gtf;
 
