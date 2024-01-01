@@ -20,7 +20,7 @@
     <PropertyGroup Condition=" '$(Configuration)' == 'Release' ">
         <PublishSingleFile>true</PublishSingleFile>
     </PropertyGroup>
-
+    
     <ItemGroup Condition="'$(Configuration)'=='DebugLocalBunkum'">
         <Reference Include="Bunkum.Core">
             <HintPath>..\..\Bunkum\Bunkum.Core\bin\Debug\net8.0\Bunkum.Core.dll</HintPath>
@@ -51,12 +51,12 @@
     </ItemGroup>
 
     <ItemGroup Condition="'$(Configuration)'!='DebugLocalBunkum'">
-        <PackageReference Include="Bunkum" Version="4.4.1" />
-        <PackageReference Include="Bunkum.RealmDatabase" Version="4.4.1" />
-        <PackageReference Include="Bunkum.AutoDiscover" Version="4.4.1" />
-        <PackageReference Include="Bunkum.HealthChecks" Version="4.4.1" />
-        <PackageReference Include="Bunkum.HealthChecks.RealmDatabase" Version="4.4.1" />
-        <PackageReference Include="Bunkum.Protocols.Http" Version="4.4.1" />
+        <PackageReference Include="Bunkum" Version="4.4.3" />
+        <PackageReference Include="Bunkum.RealmDatabase" Version="4.4.3" />
+        <PackageReference Include="Bunkum.AutoDiscover" Version="4.4.3" />
+        <PackageReference Include="Bunkum.HealthChecks" Version="4.4.3" />
+        <PackageReference Include="Bunkum.HealthChecks.RealmDatabase" Version="4.4.3" />
+        <PackageReference Include="Bunkum.Protocols.Http" Version="4.4.3" />
     </ItemGroup>
 
     <ItemGroup>
@@ -65,6 +65,8 @@
       <PackageReference Include="BCrypt.Net-Next" Version="4.0.3" />
       <PackageReference Include="CommandLineParser" Version="2.9.1" />
       <PackageReference Include="Discord.Net.Webhook" Version="3.13.0" />
+      <PackageReference Include="FastAes" Version="1.0.1" />
+      <PackageReference Include="IronCompress" Version="1.5.1" />
       <PackageReference Include="MailKit" Version="4.3.0" />
       <PackageReference Include="NPTicket" Version="3.1.0" />
       <PackageReference Include="Pfim" Version="0.11.2" />
@@ -79,5 +81,12 @@
             <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
             <OutputItemType>Analyzer</OutputItemType>
         </ProjectReference>
+    </ItemGroup>
+
+    <ItemGroup>
+      <None Remove="Resources\lbp3.txt" />
+      <EmbeddedResource Include="Resources\lbp3.txt" />
+      <None Remove="Resources\lbpv.txt" />
+      <EmbeddedResource Include="Resources\lbpv.txt" />
     </ItemGroup>
 </Project>

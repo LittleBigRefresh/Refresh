@@ -20,7 +20,7 @@ public class FindRoomMethod : IMatchMethod
         Token token,
         SerializedRoomData body)
     {
-        GameRoom? usersRoom = service.GetRoomByPlayer(user, token.TokenPlatform, token.TokenGame);
+        GameRoom? usersRoom = service.RoomAccessor.GetRoomByUser(user, token.TokenPlatform, token.TokenGame);
         if (usersRoom == null) return BadRequest; // user should already have a room.
 
         int? levelId = null;
@@ -36,10 +36,11 @@ public class FindRoomMethod : IMatchMethod
         } 
         
         //TODO: add user option to filter rooms by language
-        
-        List<GameRoom> rooms = service.Rooms.Where(r => r.RoomId != usersRoom.RoomId && 
-                                                        r.Platform == usersRoom.Platform && 
-                                                        (levelId == null || r.LevelId == levelId))
+
+        List<GameRoom> rooms = service.RoomAccessor.GetRoomsByGameAndPlatform(token.TokenGame, token.TokenPlatform)
+            .Where(r =>
+                r.RoomId != usersRoom.RoomId &&
+                (levelId == null || r.LevelId == levelId))
             .OrderByDescending(r => r.RoomMood)
             .ToList();
         

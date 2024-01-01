@@ -28,7 +28,7 @@ public class PublishEndpointsTests : GameServerTest
         {
             LevelId = 0,
             Title = "TEST LEVEL",
-            IconHash = "g0",
+            IconHash = "g719",
             Description = "DESCRIPTION",
             Location = new GameLocation(),
             GameVersion = 0,
@@ -244,6 +244,74 @@ public class PublishEndpointsTests : GameServerTest
         Assert.That(message.StatusCode, Is.EqualTo(BadRequest));
     }
     
+    [TestCase(TokenGame.LittleBigPlanet1)]
+    [TestCase(TokenGame.LittleBigPlanet2)]
+    [TestCase(TokenGame.LittleBigPlanet3)]
+    [TestCase(TokenGame.LittleBigPlanetVita)]
+    public void CantPublishLevelWithInvalidIconGuid(TokenGame game)
+    {
+        using TestContext context = this.GetServer();
+        GameUser user = context.CreateUser();
+
+        using HttpClient client = context.GetAuthenticatedClient(TokenType.Game, game, TokenPlatform.PS3, user);
+
+        GameLevelRequest level = new()
+        {
+            LevelId = 0,
+            Title = "Normal Title!",
+            IconHash = "g0",
+            Description = "Normal Description",
+            Location = new GameLocation(),
+            GameVersion = 0,
+            RootResource = "I AM INVALID!!!",
+            PublishDate = 0,
+            UpdateDate = 0,
+            MinPlayers = 0,
+            MaxPlayers = 0,
+            EnforceMinMaxPlayers = false,
+            SameScreenGame = false,
+            SkillRewards = new List<GameSkillReward>(),
+        };
+
+        HttpResponseMessage message = client.PostAsync("/lbp/startPublish", new StringContent(level.AsXML())).Result;
+        Assert.That(message.StatusCode, Is.EqualTo(BadRequest));
+        
+        message = client.PostAsync("/lbp/publish", new StringContent(level.AsXML())).Result;
+        Assert.That(message.StatusCode, Is.EqualTo(BadRequest));
+    }
+    
+    public void CanPublishLevelWithInvalidIconGuidPsp()
+    {
+        using TestContext context = this.GetServer();
+        GameUser user = context.CreateUser();
+
+        using HttpClient client = context.GetAuthenticatedClient(TokenType.Game, TokenGame.LittleBigPlanetPSP, TokenPlatform.PS3, user);
+
+        GameLevelRequest level = new()
+        {
+            LevelId = 0,
+            Title = "Normal Title!",
+            IconHash = "g0",
+            Description = "Normal Description",
+            Location = new GameLocation(),
+            GameVersion = 0,
+            RootResource = "I AM INVALID!!!",
+            PublishDate = 0,
+            UpdateDate = 0,
+            MinPlayers = 0,
+            MaxPlayers = 0,
+            EnforceMinMaxPlayers = false,
+            SameScreenGame = false,
+            SkillRewards = new List<GameSkillReward>(),
+        };
+
+        HttpResponseMessage message = client.PostAsync("/lbp/startPublish", new StringContent(level.AsXML())).Result;
+        Assert.That(message.StatusCode, Is.EqualTo(OK));
+        
+        message = client.PostAsync("/lbp/publish", new StringContent(level.AsXML())).Result;
+        Assert.That(message.StatusCode, Is.EqualTo(OK));
+    }
+    
     [Test]
     public void CantPublishLevelWithMissingRootResource()
     {
@@ -256,7 +324,7 @@ public class PublishEndpointsTests : GameServerTest
         {
             LevelId = 0,
             Title = "Normal Title!",
-            IconHash = "g0",
+            IconHash = "g719",
             Description = "Normal Description",
             Location = new GameLocation(),
             GameVersion = 0,
@@ -291,7 +359,7 @@ public class PublishEndpointsTests : GameServerTest
         {
             LevelId = 0,
             Title = "TEST LEVEL",
-            IconHash = "g0",
+            IconHash = "g719",
             Description = "DESCRIPTION",
             Location = new GameLocation(),
             GameVersion = 0,
