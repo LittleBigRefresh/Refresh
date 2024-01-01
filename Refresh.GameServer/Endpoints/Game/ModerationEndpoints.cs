@@ -55,20 +55,24 @@ public class ModerationEndpoints : EndpointGroup
         {
             context.Logger.LogInfo(BunkumCategory.Filter, $"<{user}>: {body}");
 
-            try
+            //If the text starts with a `/`, its a command
+            if (body.StartsWith('/'))
             {
-                CommandInvocation command = commandService.ParseCommand(body);
-                
-                context.Logger.LogInfo(BunkumCategory.Commands, $"User used command '{command.Name.ToString()}' with args '{command.Arguments.ToString()}'");
+                try
+                {
+                    CommandInvocation command = commandService.ParseCommand(body);
 
-                commandService.HandleCommand(command, database, user, token);
-                return "(Command)";
+                    context.Logger.LogInfo(BunkumCategory.Commands, $"User used command '{command.Name.ToString()}' with args '{command.Arguments.ToString()}'");
+
+                    commandService.HandleCommand(command, database, user, token);
+                    return "(Command)";
+                }
+                catch(Exception ex)
+                {
+                    context.Logger.LogWarning(BunkumCategory.Commands, $"Error running command {body}. ex {ex}");
+                    //do nothing
+                }
             }
-            catch(Exception ex)
-            {
-                context.Logger.LogWarning(BunkumCategory.Commands, $"Error running command {body}. ex {ex}");
-                //do nothing
-            } 
         }
         
         return body;
