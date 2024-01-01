@@ -83,7 +83,14 @@ public class PublishEndpoints : EndpointGroup
     }
 
     [GameEndpoint("publish", ContentType.Xml, HttpMethods.Post)]
-    public Response PublishLevel(RequestContext context, GameUser user, Token token, GameDatabaseContext database, GameLevelRequest body, CommandService command, IDataStore dataStore, GuidCheckerService guidChecker)
+    public Response PublishLevel(RequestContext context,
+        GameUser user,
+        Token token,
+        GameDatabaseContext database,
+        GameLevelRequest body,
+        CommandService commandService,
+        IDataStore dataStore,
+        GuidCheckerService guidChecker)
     {
         //If verifying the request fails, return null
         if (!VerifyLevel(body, user, context.Logger, guidChecker, token.TokenGame)) return BadRequest;
@@ -117,7 +124,7 @@ public class PublishEndpoints : EndpointGroup
         }
         
         //Mark the user as no longer publishing
-        command.StopPublishing(user.UserId);
+        commandService.StopPublishing(user.UserId);
 
         level.Publisher = user;
 
