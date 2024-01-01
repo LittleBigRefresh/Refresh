@@ -67,9 +67,21 @@ public partial class GameDatabaseContext // Levels
         Debug.Assert(oldLevel.Publisher != null);
         if (oldLevel.Publisher.UserId != author.UserId) return null;
         
-        // All checks passed, lets move
-
-        long oldDate = oldLevel.PublishDate;
+        // All checks passed, let's start by retaining some information from the old level
+        newLevel.Publisher = author;
+        newLevel.PublishDate = newLevel.PublishDate;
+        newLevel.UpdateDate = this._time.TimestampMilliseconds; // Set the last modified date
+        
+        // If the actual contents of the level haven't changed, extract some extra information
+        if (oldLevel.RootResource == newLevel.RootResource)
+        {
+            newLevel.TeamPicked = oldLevel.TeamPicked;
+            newLevel.GameVersion = oldLevel.GameVersion;
+        }
+        
+        // Now newLevel is set up to replace oldLevel.
+        // If information is lost here, then that's probably a bug.
+        // Update the level's properties in the database
         this._realm.Write(() =>
         {
             PropertyInfo[] userProps = typeof(GameLevel).GetProperties();
@@ -78,10 +90,6 @@ public partial class GameDatabaseContext // Levels
                 if (!prop.CanWrite || !prop.CanRead) continue;
                 prop.SetValue(oldLevel, prop.GetValue(newLevel));
             }
-
-            oldLevel.Publisher = author;
-            oldLevel.PublishDate = oldDate;
-            oldLevel.UpdateDate = this._time.TimestampMilliseconds;
         });
 
         return oldLevel;
