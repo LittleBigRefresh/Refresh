@@ -1,5 +1,5 @@
 # Build stage
-FROM mcr.microsoft.com/dotnet/sdk:7.0.400-bookworm-slim AS build
+FROM mcr.microsoft.com/dotnet/sdk:8.0.100-1-bookworm-slim AS build
 WORKDIR /build
 
 COPY *.sln ./
@@ -11,7 +11,8 @@ RUN dotnet sln list | grep ".csproj" \
     mv $(basename $line) $(dirname $line); \
     done;
 
-RUN dotnet restore --use-current-runtime
+# FIXME: .NET 8 started being dumb and requiring a runtime identifier for restores. This breaks non-amd64 caching. 
+RUN dotnet restore --use-current-runtime -r linux-x64
 
 COPY . .
 
@@ -19,7 +20,7 @@ RUN dotnet publish Refresh.GameServer -c Release --property:OutputPath=/build/pu
 
 # Final running container
 
-FROM mcr.microsoft.com/dotnet/runtime:7.0.10-bookworm-slim AS final
+FROM mcr.microsoft.com/dotnet/runtime:8.0.0-bookworm-slim AS final
 
 # Add non-root user
 RUN set -eux && \
