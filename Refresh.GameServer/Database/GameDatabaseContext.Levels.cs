@@ -284,7 +284,7 @@ public partial class GameDatabaseContext // Levels
     [Pure]
     public DatabaseList<GameLevel> GetBusiestLevels(int count, int skip, MatchService service, GameUser? user, LevelFilterSettings levelFilterSettings)
     {
-        IOrderedEnumerable<IGrouping<GameLevel?,GameRoom>> rooms = service.Rooms
+        IOrderedEnumerable<IGrouping<GameLevel?,GameRoom>> rooms = service.RoomAccessor.GetAllRooms()
             .Where(r => r.LevelType == RoomSlotType.Online && r.HostId.Id != null) // if playing online level and host exists on server
             .GroupBy(r => this.GetLevelById(r.LevelId))
             .OrderBy(r => r.Sum(room => room.PlayerIds.Count));

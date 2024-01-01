@@ -55,7 +55,7 @@ public class LegacyApiEndpoints : EndpointGroup
         GameUser? user = database.GetUserByLegacyId(id);
         if (user == null) return null;
 
-        GameRoom? room = match.GetRoomByPlayer(user);
+        GameRoom? room = match.RoomAccessor.GetRoomByUser(user);
         if (room == null) return null;
 
         List<int> playerIds = new();
