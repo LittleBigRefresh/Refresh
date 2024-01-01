@@ -1,3 +1,4 @@
+using System.Drawing;
 using Bunkum.Core;
 using Bunkum.Core.Endpoints;
 using Bunkum.Core.Responses;

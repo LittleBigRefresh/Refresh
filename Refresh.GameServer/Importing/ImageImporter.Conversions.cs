@@ -2,7 +2,9 @@ using ICSharpCode.SharpZipLib.Zip.Compression;
 using Pfim;
 using Refresh.GameServer.Importing.Gtf;
 using Refresh.GameServer.Importing.Mip;
+using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.Formats;
+using SixLabors.ImageSharp.PixelFormats;
 
 namespace Refresh.GameServer.Importing;
 
