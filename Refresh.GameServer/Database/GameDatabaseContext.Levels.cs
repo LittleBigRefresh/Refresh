@@ -58,34 +58,33 @@ public partial class GameDatabaseContext // Levels
         return level;
     }
 
-    public GameLevel? UpdateLevel(GameLevel level, GameUser user)
+    public GameLevel? UpdateLevel(GameLevel newLevel, GameUser author)
     {
         // Verify if this level is able to be republished
-        GameLevel? oldSlot = this.GetLevelById(level.LevelId);
-        if (oldSlot == null) return null;
+        GameLevel? oldLevel = this.GetLevelById(newLevel.LevelId);
+        if (oldLevel == null) return null;
             
-        Debug.Assert(oldSlot.Publisher != null);
-        if (oldSlot.Publisher.UserId != user.UserId) return null;
+        Debug.Assert(oldLevel.Publisher != null);
+        if (oldLevel.Publisher.UserId != author.UserId) return null;
         
         // All checks passed, lets move
 
-        long oldDate = oldSlot.PublishDate;
+        long oldDate = oldLevel.PublishDate;
         this._realm.Write(() =>
         {
             PropertyInfo[] userProps = typeof(GameLevel).GetProperties();
             foreach (PropertyInfo prop in userProps)
             {
                 if (!prop.CanWrite || !prop.CanRead) continue;
-                prop.SetValue(oldSlot, prop.GetValue(level));
+                prop.SetValue(oldLevel, prop.GetValue(newLevel));
             }
 
-            oldSlot.Publisher = user;
-            
-            oldSlot.PublishDate = oldDate;
-            oldSlot.UpdateDate = this._time.TimestampMilliseconds;
+            oldLevel.Publisher = author;
+            oldLevel.PublishDate = oldDate;
+            oldLevel.UpdateDate = this._time.TimestampMilliseconds;
         });
 
-        return oldSlot;
+        return oldLevel;
     }
 
     public GameLevel UpdateLevel(ApiEditLevelRequest body, GameLevel level)
