@@ -80,18 +80,11 @@ public class LevelApiEndpoints : EndpointGroup
     {
         GameLevel? level = database.GetLevelById(id);
         if (level == null) return ApiNotFoundError.LevelMissingError;
-
-        // If the user hasn't published this level and the user isn't an admin, reject this edit
-        if (level.Publisher?.UserId != user.UserId && user.Role < GameUserRole.Admin) 
+        
+        if (level.Publisher?.UserId != user.UserId) 
             return ApiAuthenticationError.NoPermissionsForObject;
 
-        // Only allow admins to set the GameVersion
-        if (user.Role < GameUserRole.Admin)
-        {
-            body.GameVersion = null;
-        }
-
-        database.UpdateLevel(body, level);
+        level = database.UpdateLevel(body, level);
 
         return ApiGameLevelResponse.FromOld(level);
     }

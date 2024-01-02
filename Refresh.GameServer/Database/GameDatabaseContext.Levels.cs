@@ -99,7 +99,7 @@ public partial class GameDatabaseContext // Levels
     {
         this._realm.Write(() =>
         {
-            PropertyInfo[] userProps = typeof(ApiEditLevelRequest).GetProperties();
+            PropertyInfo[] userProps = body.GetType().GetProperties();
             foreach (PropertyInfo prop in userProps)
             {
                 if (!prop.CanWrite || !prop.CanRead) continue;

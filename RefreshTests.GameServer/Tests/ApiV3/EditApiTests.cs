@@ -72,21 +72,23 @@ public class EditApiTests : GameServerTest
 
         long oldUpdate = level.UpdateDate;
 
-        ApiEditLevelRequest payload = new()
+        ApiAdminEditLevelRequest payload = new()
         {
             Title = "Updated",
+            GameVersion = TokenGame.LittleBigPlanetPSP,
         };
 
         context.Time.TimestampMilliseconds = 1;
         
         using HttpClient client = context.GetAuthenticatedClient(TokenType.Api, admin);
-        HttpResponseMessage response = client.PatchAsync($"/api/v3/levels/id/{level.LevelId}", JsonContent.Create(payload)).Result;
+        HttpResponseMessage response = client.PatchAsync($"/api/v3/admin/levels/id/{level.LevelId}", JsonContent.Create(payload)).Result;
         Assert.That(response.StatusCode, Is.EqualTo(OK));
         
         context.Database.Refresh();
         Assert.Multiple(() =>
         {
             Assert.That(level.Title, Is.EqualTo("Updated"));
+            Assert.That(level.GameVersion, Is.EqualTo(TokenGame.LittleBigPlanetPSP));
             Assert.That(level.UpdateDate, Is.Not.EqualTo(oldUpdate));
             Assert.That(level.UpdateDate, Is.EqualTo(context.Time.TimestampMilliseconds));
         });
