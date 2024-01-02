@@ -14,6 +14,7 @@ using Refresh.GameServer.Extensions;
 using Refresh.GameServer.Services;
 using Refresh.GameServer.Types.Levels;
 using Refresh.GameServer.Types.Levels.Categories;
+using Refresh.GameServer.Types.Roles;
 using Refresh.GameServer.Types.UserData;
 
 namespace Refresh.GameServer.Endpoints.ApiV3;
@@ -79,11 +80,11 @@ public class LevelApiEndpoints : EndpointGroup
     {
         GameLevel? level = database.GetLevelById(id);
         if (level == null) return ApiNotFoundError.LevelMissingError;
-
+        
         if (level.Publisher?.UserId != user.UserId) 
             return ApiAuthenticationError.NoPermissionsForObject;
 
-        database.UpdateLevel(body, level);
+        level = database.UpdateLevel(body, level);
 
         return ApiGameLevelResponse.FromOld(level);
     }
