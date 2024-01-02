@@ -32,7 +32,7 @@ public class GameDatabaseProvider : RealmDatabaseProvider<GameDatabaseContext>
         this._time = time;
     }
 
-    protected override ulong SchemaVersion => 101;
+    protected override ulong SchemaVersion => 102;
 
     protected override string Filename => "refreshGameServer.realm";
     
@@ -168,6 +168,9 @@ public class GameDatabaseProvider : RealmDatabaseProvider<GameDatabaseContext>
 
             // Version was bumped here to delete invalid favourite level relations
             if (oldVersion < 101) migration.NewRealm.RemoveRange(newUser.FavouriteLevelRelations.Where(r => r.Level == null));
+
+            // In version 102 we split the Vita icon hash from the PS3 icon hash
+            if (oldVersion < 102) newUser.VitaIconHash = oldUser.IconHash;
         }
 
         IQueryable<dynamic>? oldLevels = migration.OldRealm.DynamicApi.All("GameLevel");
