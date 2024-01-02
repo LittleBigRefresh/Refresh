@@ -134,26 +134,8 @@ public class UserEndpoints : EndpointGroup
             database.AddErrorNotification("Profile update failed", $"Your profile failed to update because the description was too long. The max length is {maxDescriptionLength}.", user);
             return null;
         }
-
-        // ReSharper disable once SwitchStatementMissingSomeEnumCasesNoDefault
-        switch (token.TokenGame)
-        {
-            case TokenGame.LittleBigPlanet2:
-                data.Lbp2PlanetsHash = data.PlanetsHash;
-                data.Lbp3PlanetsHash = data.PlanetsHash;
-                break;
-            case TokenGame.LittleBigPlanetVita:
-                data.VitaPlanetsHash = data.PlanetsHash;
-                break;
-            case TokenGame.LittleBigPlanet3:
-                data.Lbp3PlanetsHash = data.PlanetsHash;
-                break;
-            case TokenGame.LittleBigPlanetPSP:
-                data.PspIconHash = data.IconHash;
-                break;
-        }
         
-        database.UpdateUserData(user, data);
+        database.UpdateUserData(user, data, token.TokenGame);
         return string.Empty;
     }
 
