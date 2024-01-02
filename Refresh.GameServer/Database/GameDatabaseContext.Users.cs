@@ -140,7 +140,6 @@ public partial class GameDatabaseContext // Users
 
             if (data.EmailAddress != null)
                 user.EmailAddress = data.EmailAddress;
-
         });
     }
 
