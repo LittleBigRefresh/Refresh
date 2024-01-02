@@ -1,5 +1,5 @@
 # Build stage
-FROM mcr.microsoft.com/dotnet/sdk:7.0.400-bookworm-slim AS build
+FROM mcr.microsoft.com/dotnet/sdk:8.0.100-1-bookworm-slim AS build
 WORKDIR /build
 
 COPY *.sln ./
@@ -15,11 +15,11 @@ RUN dotnet restore --use-current-runtime
 
 COPY . .
 
-RUN dotnet publish Refresh.GameServer -c Release --property:OutputPath=/build/publish/ --no-restore --use-current-runtime --self-contained
+RUN dotnet publish Refresh.GameServer -c Release --property:OutputPath=/build/publish/ --no-restore --no-self-contained
 
 # Final running container
 
-FROM mcr.microsoft.com/dotnet/runtime:7.0.10-bookworm-slim AS final
+FROM mcr.microsoft.com/dotnet/runtime:8.0.0-bookworm-slim AS final
 
 # Add non-root user
 RUN set -eux && \
