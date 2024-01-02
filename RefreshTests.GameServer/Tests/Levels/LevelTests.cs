@@ -40,16 +40,32 @@ public class LevelTests : GameServerTest
     {
         using TestContext context = this.GetServer();
         GameUser user = context.CreateUser();
-        GameLevel level = context.CreateLevel(user);
+        
+        // 3 levels to test with
+        GameLevel level1 = context.CreateLevel(user);
+        GameLevel level2 = context.CreateLevel(user);
+        GameLevel level3 = context.CreateLevel(user);
 
         using HttpClient client = context.GetAuthenticatedClient(TokenType.Game, user);
-        
-        HttpResponseMessage message = client.GetAsync($"/lbp/slots/lbp2luckydip").Result;
-        Assert.That(message.StatusCode, Is.EqualTo(OK));
 
-        SerializedMinimalLevelList result = message.Content.ReadAsXML<SerializedMinimalLevelList>();
-        Assert.That(result.Items, Has.Count.EqualTo(1));
-        Assert.That(result.Items.First().LevelId, Is.EqualTo(level.LevelId));
+        void TestSeed(GameLevel expectedLevel, int seed)
+        {
+            // Iterate through a bunch of times to ensure it's deterministic
+            for (int i = 0; i < 10; i++)
+            {
+                HttpResponseMessage message = client.GetAsync($"/lbp/slots/lbp2luckydip?seed={seed}").Result;
+                Assert.That(message.StatusCode, Is.EqualTo(OK));
+
+                SerializedMinimalLevelList result = message.Content.ReadAsXML<SerializedMinimalLevelList>();
+                Assert.That(result.Items, Has.Count.EqualTo(3));
+                Assert.That(result.Items.First().LevelId, Is.EqualTo(expectedLevel.LevelId));
+            }
+        }
+        
+        TestSeed(level1, 69420);
+        TestSeed(level2, 1);
+        TestSeed(level3, 2);
+        TestSeed(level3, -2);
     }
     
     [Test]
