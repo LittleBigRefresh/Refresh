@@ -170,7 +170,7 @@ public class GameDatabaseProvider : RealmDatabaseProvider<GameDatabaseContext>
             if (oldVersion < 101) migration.NewRealm.RemoveRange(newUser.FavouriteLevelRelations.Where(r => r.Level == null));
 
             // In version 102 we split the Vita icon hash from the PS3 icon hash
-            if (oldVersion < 102) newUser.VitaIconHash = oldUser.IconHash;
+            if (oldVersion < 102) newUser.VitaIconHash = "0";
         }
 
         IQueryable<dynamic>? oldLevels = migration.OldRealm.DynamicApi.All("GameLevel");
