@@ -181,7 +181,7 @@ public partial class GameDatabaseContext // Relations
     public bool RateLevel(GameLevel level, GameUser user, RatingType type)
     {
         if (level.Publisher?.UserId == user.UserId) return false;
-        if (!this.HasUserPlayedLevel(level, user)) return false;
+        if (level.GameVersion != TokenGame.LittleBigPlanetPSP && !this.HasUserPlayedLevel(level, user)) return false;
         
         RateLevelRelation? rating = this.GetRateRelationByUser(level, user);
         
