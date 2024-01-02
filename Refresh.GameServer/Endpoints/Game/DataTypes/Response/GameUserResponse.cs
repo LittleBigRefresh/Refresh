@@ -142,6 +142,9 @@ public class GameUserResponse : IDataConvertableFrom<GameUserResponse, GameUser>
                 //Match all LBP Vita levels
                 this.UsedSlotsLBP2 = old.PublishedLevels.Count(x => x._GameVersion == (int)TokenGame.LittleBigPlanetVita);
                 this.FreeSlotsLBP2 = MaximumLevels - this.UsedSlotsLBP2;
+
+                //Apply Vita-specific icon hash
+                this.IconHash = old.VitaIconHash;
                 break;
             }
             case TokenGame.LittleBigPlanet1: {
@@ -154,28 +157,25 @@ public class GameUserResponse : IDataConvertableFrom<GameUserResponse, GameUser>
                 //Match all LBP PSP levels
                 this.UsedSlots = old.PublishedLevels.Count(x => x._GameVersion == (int)TokenGame.LittleBigPlanetPSP);
                 this.FreeSlots = MaximumLevels - this.UsedSlots;
+                
+                // Apply PSP-specific icon hash
+                this.IconHash = old.PspIconHash;
+
+                //Fill out PSP favourite users
+                List<GameUser> users = database.GetUsersFavouritedByUser(old, 20, 0).ToList();
+                this.FavouriteUsers = new SerializedMinimalFavouriteUserList(users.Select(SerializedUserHandle.FromUser).ToList(), users.Count);
+
+                //Fill out PSP favourite levels
+                List<GameMinimalLevelResponse> favouriteLevels = old.FavouriteLevelRelations
+                    .AsEnumerable()
+                    .Where(l => l.Level._GameVersion == (int)TokenGame.LittleBigPlanetPSP)
+                    .Select(f => GameMinimalLevelResponse.FromOld(f.Level)).ToList()!;
+                this.FavouriteLevels = new SerializedMinimalFavouriteLevelList(new SerializedMinimalLevelList(favouriteLevels, favouriteLevels.Count));
                 break;
             }
             case TokenGame.Website: break;
             default:
                 throw new ArgumentOutOfRangeException(nameof(gameVersion), gameVersion, null);
-        }
-
-        if (gameVersion == TokenGame.LittleBigPlanetPSP)
-        {
-            // Apply PSP-specific icon hashes
-            this.IconHash = old.PspIconHash;
-
-            //Fill out PSP favourite users
-            List<GameUser> users = database.GetUsersFavouritedByUser(old, 20, 0).ToList();
-            this.FavouriteUsers = new SerializedMinimalFavouriteUserList(users.Select(SerializedUserHandle.FromUser).ToList(), users.Count);
-
-            //Fill out PSP favourite levels
-            List<GameMinimalLevelResponse> favouriteLevels = old.FavouriteLevelRelations
-                .AsEnumerable()
-                .Where(l => l.Level._GameVersion == (int)TokenGame.LittleBigPlanetPSP)
-                .Select(f => GameMinimalLevelResponse.FromOld(f.Level)).ToList()!;
-            this.FavouriteLevels = new SerializedMinimalFavouriteLevelList(new SerializedMinimalLevelList(favouriteLevels, favouriteLevels.Count));
         }
     }
 }

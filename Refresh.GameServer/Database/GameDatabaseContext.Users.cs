@@ -100,12 +100,38 @@ public partial class GameDatabaseContext // Users
 
             // ReSharper disable once InvertIf
             if (data.IconHash != null)
-                //PSP icons are special and use a GUID system separate from the mainline games,
-                //so we separate PSP icons to another field
-                if (game == TokenGame.LittleBigPlanetPSP)
-                    user.PspIconHash = data.IconHash;
-                else
-                    user.IconHash = data.IconHash;
+                switch (game)
+                {
+
+                    case TokenGame.LittleBigPlanet1:
+                    case TokenGame.LittleBigPlanet2:
+                    case TokenGame.LittleBigPlanet3:
+#if false // TODO: Enable this code once https://github.com/LittleBigRefresh/Refresh/issues/309 is resolved
+                        //If the icon is a remote asset, then it will work on Vita as well, so set the Vita hash 
+                        if (!data.IconHash.StartsWith('g'))
+                        {
+                            user.VitaIconHash = data.IconHash;
+                        }
+#endif
+                        user.IconHash = data.IconHash;
+                        break;
+                    case TokenGame.LittleBigPlanetVita:
+#if false // TODO: Enable this code once https://github.com/LittleBigRefresh/Refresh/issues/309 is resolved
+                        //If the icon is a remote asset, then it will work on PS3 as well, so set the PS3 hash to it as well
+                        if (!data.IconHash.StartsWith('g'))
+                        {
+                            user.IconHash = data.IconHash;
+                        }
+#endif
+                        user.VitaIconHash = data.IconHash;
+                        
+                        break;
+                    case TokenGame.LittleBigPlanetPSP:
+                        //PSP icons are special and use a GUID system separate from the mainline games,
+                        //so we separate PSP icons to another field
+                        user.PspIconHash = data.IconHash;
+                        break;
+                }
         });
     }
     
