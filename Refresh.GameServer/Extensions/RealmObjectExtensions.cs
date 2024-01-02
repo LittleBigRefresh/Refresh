@@ -18,7 +18,7 @@ public static class RealmObjectExtensions
             if(prop.IsDefined(typeof(IgnoredAttribute))) continue;
             if(prop.IsDefined(typeof(BacklinkAttribute))) continue;
             
-            if(!prop.CanWrite) continue;
+            if(!prop.CanWrite || !prop.CanRead) continue;
 
             object? value = prop.GetValue(source);
 

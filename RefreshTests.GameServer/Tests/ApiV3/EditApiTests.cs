@@ -1,8 +1,8 @@
 using System.Net.Http.Json;
 using Refresh.GameServer.Authentication;
 using Refresh.GameServer.Endpoints.ApiV3.DataTypes.Request;
+using Refresh.GameServer.Extensions;
 using Refresh.GameServer.Types.Levels;
-using Refresh.GameServer.Types.Roles;
 using Refresh.GameServer.Types.UserData;
 
 namespace RefreshTests.GameServer.Tests.ApiV3;
@@ -114,6 +114,34 @@ public class EditApiTests : GameServerTest
         Assert.Multiple(() =>
         {
             Assert.That(level.Title, Is.EqualTo("Not updated"));
+        });
+    }
+
+    [Test]
+    public void UpdatingLevelPersistsPublishDate()
+    {
+        using TestContext context = this.GetServer(false);
+        GameUser author = context.CreateUser();
+
+        context.Time.TimestampMilliseconds = 1;
+        GameLevel level = context.CreateLevel(author);
+        Assert.Multiple(() =>
+        {
+            Assert.That(level.PublishDate, Is.EqualTo(1));
+            Assert.That(level.UpdateDate, Is.EqualTo(1));
+        });
+
+        GameLevel newLevel = (GameLevel)level.Clone();
+        // When originating from a request, it wouldn't pass down the original PublishDate.
+        // Replicate this here.
+        newLevel.PublishDate = default;
+
+        context.Time.TimestampMilliseconds = 2;
+        context.Database.UpdateLevel(newLevel, author);
+        Assert.Multiple(() =>
+        {
+            Assert.That(level.PublishDate, Is.EqualTo(1));
+            Assert.That(level.UpdateDate, Is.EqualTo(2));
         });
     }
 }

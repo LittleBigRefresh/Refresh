@@ -69,7 +69,7 @@ public partial class GameDatabaseContext // Levels
         
         // All checks passed, let's start by retaining some information from the old level
         newLevel.Publisher = author;
-        newLevel.PublishDate = newLevel.PublishDate;
+        newLevel.PublishDate = oldLevel.PublishDate;
         newLevel.UpdateDate = this._time.TimestampMilliseconds; // Set the last modified date
         
         // If the actual contents of the level haven't changed, extract some extra information
