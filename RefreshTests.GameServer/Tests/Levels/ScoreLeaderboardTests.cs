@@ -133,6 +133,33 @@ public class ScoreLeaderboardTests : GameServerTest
         List<GameSubmittedScore> scores = context.Database.GetTopScoresForLevel(level, 1, 0, 1).Items.ToList();
         Assert.That(scores, Has.Count.EqualTo(0));
     }
+
+    [Test]
+    [TestCase(1, true)]
+    [TestCase(2, true)]
+    [TestCase(3, true)]
+    [TestCase(4, true)]
+    [TestCase(7, true)]
+    [TestCase(0, false)]
+    [TestCase(255, false)]
+    [TestCase(8, false)]
+    public void DoesntSubmitInvalidScoreType(byte type, bool shouldPass)
+    {
+        using TestContext context = this.GetServer();
+        GameUser user = context.CreateUser();
+        GameLevel level = context.CreateLevel(user);
+        
+        using HttpClient client = context.GetAuthenticatedClient(TokenType.Game, user);
+        SerializedScore score = new()
+        {
+            Host = true,
+            ScoreType = type,
+            Score = 69,
+        };
+        
+        HttpResponseMessage message = client.PostAsync($"/lbp/scoreboard/user/{level.LevelId}", new StringContent(score.AsXML())).Result;
+        Assert.That(message.StatusCode, Is.EqualTo(shouldPass ? OK : BadRequest));
+    }
     
     [Test]
     public void DoesntSubmitDeveloperInvalidScore()

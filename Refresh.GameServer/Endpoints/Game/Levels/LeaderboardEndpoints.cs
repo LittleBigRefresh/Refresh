@@ -117,8 +117,15 @@ public class LeaderboardEndpoints : EndpointGroup
         GameLevel? level = database.GetLevelById(id);
         if (level == null) return NotFound;
 
-        //Validate the score is a non-negative amount
+        // Validate the score is a non-negative amount
         if (body.Score < 0)
+        {
+            return BadRequest;
+        }
+        
+        // Ensure score type is valid
+        // Only valid values are 1-4 players and 7 for versus
+        if (body.ScoreType is (> 4 or < 1) and not 7)
         {
             return BadRequest;
         }
