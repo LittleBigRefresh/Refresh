@@ -11,12 +11,11 @@ RUN dotnet sln list | grep ".csproj" \
     mv $(basename $line) $(dirname $line); \
     done;
 
-# FIXME: .NET 8 started being dumb and requiring a runtime identifier for restores. This breaks non-amd64 caching. 
-RUN dotnet restore --use-current-runtime -r linux-x64
+RUN dotnet restore --use-current-runtime
 
 COPY . .
 
-RUN dotnet publish Refresh.GameServer -c Release --property:OutputPath=/build/publish/ --no-restore --use-current-runtime --self-contained
+RUN dotnet publish Refresh.GameServer -c Release --property:OutputPath=/build/publish/ --no-restore --no-self-contained
 
 # Final running container
 
