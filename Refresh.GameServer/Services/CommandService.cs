@@ -134,6 +134,11 @@ public class CommandService : EndpointService
                 database.ForceUserTokenPlatform(token, (TokenPlatform)int.Parse(command.Arguments));
                 break;
             }
+            case "notif":
+            {
+                database.AddNotification("Debug", "This is a debug notification triggered by a command.", user);
+                break;
+            }
             #endif
         }
     }
