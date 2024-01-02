@@ -303,6 +303,22 @@ public partial class GameDatabaseContext // Users
             user.RedirectGriefReportsToPhotos = value;
         });
     }
+
+    public void ClearForceMatch(GameUser user)
+    {
+        this._realm.Write(() =>
+        {
+            user.ForceMatch = null;
+        });
+    }
+
+    public void SetForceMatch(GameUser user, GameUser target)
+    {
+        this._realm.Write(() =>
+        {
+            user.ForceMatch = target.ForceMatch;
+        });
+    }
     
     #if DEBUG
     public void ForceUserTokenGame(Token token, TokenGame game)

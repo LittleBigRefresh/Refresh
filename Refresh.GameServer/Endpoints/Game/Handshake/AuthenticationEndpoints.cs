@@ -157,6 +157,9 @@ public class AuthenticationEndpoints : EndpointGroup
 
         Token token = database.GenerateTokenForUser(user, TokenType.Game, game.Value, platform.Value, GameDatabaseContext.GameTokenExpirySeconds); // 4 hours
 
+        //Clear the user's force match
+        database.ClearForceMatch(user);
+        
         if (game == TokenGame.LittleBigPlanetPSP)
         {
             return new TicketLoginResponse
