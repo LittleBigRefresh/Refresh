@@ -1,3 +1,4 @@
+using IronCompress;
 using JetBrains.Annotations;
 using MongoDB.Bson;
 using Refresh.GameServer.Authentication;
@@ -9,7 +10,10 @@ namespace Refresh.GameServer.Database;
 
 public partial class GameDatabaseContext // Leaderboard
 {
-    public GameSubmittedScore SubmitScore(SerializedScore score, GameUser user, GameLevel level, TokenGame game)
+    public GameSubmittedScore SubmitScore(SerializedScore score, Token token, GameLevel level)
+        => this.SubmitScore(score, token.User, level, token.TokenGame, token.TokenPlatform);
+
+    public GameSubmittedScore SubmitScore(SerializedScore score, GameUser user, GameLevel level, TokenGame game, TokenPlatform platform)
     {
         GameSubmittedScore newScore = new()
         {
@@ -19,6 +23,7 @@ public partial class GameDatabaseContext // Leaderboard
             Players = { user },
             ScoreSubmitted = this._time.Now,
             Game = game,
+            Platform = platform,
         };
 
         this._realm.Write(() =>
