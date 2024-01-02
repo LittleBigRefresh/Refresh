@@ -2,6 +2,7 @@ using Bunkum.Core.Storage;
 using Discord;
 using Discord.Webhook;
 using NotEnoughLogs;
+using Refresh.GameServer.Authentication;
 using Refresh.GameServer.Configuration;
 using Refresh.GameServer.Database;
 using Refresh.GameServer.Types.Activity;
@@ -79,7 +80,7 @@ public class DiscordIntegrationWorker : IWorker
 
         if (level != null)
         {
-            embed.WithThumbnailUrl(this.GetAssetUrl(level.IconHash));
+            embed.WithThumbnailUrl(this.GetAssetUrl(level.GameVersion == TokenGame.LittleBigPlanetPSP ? $"psp/{level.IconHash}" : level.IconHash));
         } else if (user != null)
         {
             embed.WithThumbnailUrl(this.GetAssetUrl(user.IconHash));
