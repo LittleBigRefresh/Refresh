@@ -106,7 +106,7 @@ public partial class GameDatabaseContext // Users
                     case TokenGame.LittleBigPlanet1:
                     case TokenGame.LittleBigPlanet2:
                     case TokenGame.LittleBigPlanet3:
-#if false //Enable this code once https://github.com/LittleBigRefresh/Refresh/issues/309 is resolved
+#if false // TODO: Enable this code once https://github.com/LittleBigRefresh/Refresh/issues/309 is resolved
                         //If the icon is a remote asset, then it will work on Vita as well, so set the Vita hash 
                         if (!data.IconHash.StartsWith('g'))
                         {
@@ -116,7 +116,7 @@ public partial class GameDatabaseContext // Users
                         user.IconHash = data.IconHash;
                         break;
                     case TokenGame.LittleBigPlanetVita:
-#if false //Enable this code once https://github.com/LittleBigRefresh/Refresh/issues/309 is resolved
+#if false // TODO: Enable this code once https://github.com/LittleBigRefresh/Refresh/issues/309 is resolved
                         //If the icon is a remote asset, then it will work on PS3 as well, so set the PS3 hash to it as well
                         if (!data.IconHash.StartsWith('g'))
                         {
