@@ -19,7 +19,6 @@ public partial class MatchService(Logger logger) : EndpointService(logger)
     private FrozenSet<IMatchMethod> _matchMethods = null!; // initialized in Initialize()
 
     public IRoomAccessor RoomAccessor { get; private set; } = null!; //initialized in Initialize()
-    private readonly Dictionary<ObjectId, ObjectId> _forceMatches = new();
     
     public GameRoom GetOrCreateRoomByPlayer(GameUser player, TokenPlatform platform, TokenGame game, NatType natType)
     {
@@ -119,25 +118,5 @@ public partial class MatchService(Logger logger) : EndpointService(logger)
         if (method == null) return BadRequest;
 
         return method.Execute(this, this.Logger, database, user, token, roomData);
-    }
-
-    public void SetForceMatch(ObjectId user, ObjectId target)
-    {
-        this._forceMatches[user] = target;
-    }
-
-    public ObjectId? GetForceMatch(ObjectId user)
-    {
-        if (this._forceMatches.TryGetValue(user, out ObjectId target))
-        {
-            return target;
-        }
-
-        return null;
-    }
-    
-    public void ClearForceMatch(ObjectId user)
-    {
-        this._forceMatches.Remove(user);
     }
 }

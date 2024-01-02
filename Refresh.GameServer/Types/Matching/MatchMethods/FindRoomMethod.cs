@@ -50,7 +50,7 @@ public class FindRoomMethod : IMatchMethod
             rooms = rooms.Where(r => r.NatType == NatType.Open).ToList();
         }
 
-        ObjectId? forceMatch = service.GetForceMatch(user.UserId);
+        ObjectId? forceMatch = user.ForceMatch;
 
         //If the user has a forced match
         if (forceMatch != null)
@@ -68,7 +68,7 @@ public class FindRoomMethod : IMatchMethod
         if (forceMatch != null)
         {
             //Clear the user's force match
-            service.ClearForceMatch(user.UserId);
+            database.ClearForceMatch(user);
         }
         
         GameRoom room = rooms[Random.Shared.Next(0, rooms.Count)];

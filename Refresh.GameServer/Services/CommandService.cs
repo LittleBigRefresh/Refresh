@@ -94,14 +94,14 @@ public class CommandService : EndpointService
 
                 if (target != null)
                 {
-                    this._match.SetForceMatch(user.UserId, target.UserId);
+                    database.SetForceMatch(user, target);
                 }
                 
                 break;
             }
             case "clearforcematch":
             {
-                this._match.ClearForceMatch(user.UserId);
+                database.ClearForceMatch(user);
                 break;
             }
             case "griefphotoson":

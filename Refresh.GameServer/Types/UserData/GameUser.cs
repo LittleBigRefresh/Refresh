@@ -22,6 +22,11 @@ public partial class GameUser : IRealmObject, IRateLimitUser
     public bool ShouldResetPassword { get; set; }
     
     public string IconHash { get; set; } = "0";
+
+    /// <summary>
+    /// The force match of the user, cleared on login
+    /// </summary>
+    public ObjectId? ForceMatch { get; set; }
     
     /// <summary>
     /// The <see cref="IconHash"/>, except only for PSP clients.
