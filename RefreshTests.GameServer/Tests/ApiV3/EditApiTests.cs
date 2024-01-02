@@ -2,6 +2,7 @@ using System.Net.Http.Json;
 using Refresh.GameServer.Authentication;
 using Refresh.GameServer.Endpoints.ApiV3.DataTypes.Request;
 using Refresh.GameServer.Types.Levels;
+using Refresh.GameServer.Types.Roles;
 using Refresh.GameServer.Types.UserData;
 
 namespace RefreshTests.GameServer.Tests.ApiV3;
@@ -58,6 +59,36 @@ public class EditApiTests : GameServerTest
         Assert.Multiple(() =>
         {
             Assert.That(level.Title, Is.EqualTo("Not updated"));
+        });
+    }
+
+    [Test]
+    public void AdminCanUpdateLevel()
+    {
+        using TestContext context = this.GetServer();
+        GameUser user = context.CreateUser();
+        GameUser admin = context.CreateAdmin();
+        GameLevel level = context.CreateLevel(user, "Not updated");
+
+        long oldUpdate = level.UpdateDate;
+
+        ApiEditLevelRequest payload = new()
+        {
+            Title = "Updated",
+        };
+
+        context.Time.TimestampMilliseconds = 1;
+        
+        using HttpClient client = context.GetAuthenticatedClient(TokenType.Api, admin);
+        HttpResponseMessage response = client.PatchAsync($"/api/v3/levels/id/{level.LevelId}", JsonContent.Create(payload)).Result;
+        Assert.That(response.StatusCode, Is.EqualTo(OK));
+        
+        context.Database.Refresh();
+        Assert.Multiple(() =>
+        {
+            Assert.That(level.Title, Is.EqualTo("Updated"));
+            Assert.That(level.UpdateDate, Is.Not.EqualTo(oldUpdate));
+            Assert.That(level.UpdateDate, Is.EqualTo(context.Time.TimestampMilliseconds));
         });
     }
     

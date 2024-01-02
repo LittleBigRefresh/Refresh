@@ -5,6 +5,7 @@ using Refresh.GameServer.Authentication;
 using Refresh.GameServer.Database;
 using Refresh.GameServer.Types;
 using Refresh.GameServer.Types.Levels;
+using Refresh.GameServer.Types.Roles;
 using Refresh.GameServer.Types.UserData;
 using Refresh.GameServer.Types.UserData.Leaderboard;
 using RefreshTests.GameServer.Time;
@@ -93,6 +94,13 @@ public class TestContext : IDisposable
     {
         username ??= this.UserIncrement.ToString();
         return this.Database.CreateUser(username, $"{username}@{username}.local");
+    }
+
+    public GameUser CreateAdmin(string? username = null)
+    {
+        GameUser user = this.CreateUser(username);
+        this.Database.SetUserRole(user, GameUserRole.Admin);
+        return user;
     }
 
     public Token CreateToken(GameUser user, TokenType type = TokenType.Game, TokenGame game = TokenGame.LittleBigPlanet2, TokenPlatform platform = TokenPlatform.PS3)
