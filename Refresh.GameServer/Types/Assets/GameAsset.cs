@@ -70,11 +70,76 @@ public partial class GameAsset : IRealmObject
         
         return copy;
     }
-    
-    public string GetAsIcon(TokenGame game, GameDatabaseContext database, IDataStore dataStore)
+
+    /// <summary>
+    /// Transforms an image to be consumed by a particular game
+    /// </summary>
+    /// <param name="game">The game which will consume the resulting asset</param>
+    /// <param name="dataStore">The data store</param>
+    /// <param name="decodeImage">The function used to decode an image from the data store</param>
+    /// <param name="transformImage">The transformation function</param>
+    /// <returns>The hash of the transformed asset</returns>
+    /// <exception cref="NotImplementedException">That conversion step is unimplemented at the moment</exception>
+    /// <exception cref="ArgumentOutOfRangeException">Invalid TokenGame</exception>
+    private string TransformImage(TokenGame game, IDataStore dataStore, Func<string, Image> decodeImage, Func<Image, Image?> transformImage)
     {
         string dataStorePath = this.IsPSP ? $"psp/{this.AssetHash}" : this.AssetHash;
+
+        bool mainlineDoesntNeedConversion = this.AssetType is GameAssetType.Png or GameAssetType.Texture or GameAssetType.GameDataTexture;
         
+        switch (game)
+        {
+            case TokenGame.Website:
+            case TokenGame.LittleBigPlanet1: 
+            case TokenGame.LittleBigPlanet2:
+            case TokenGame.LittleBigPlanet3:
+            case TokenGame.LittleBigPlanetVita: {
+                Image sourceImage = decodeImage(dataStorePath);
+                
+                //Load the image from the data store and transform it
+                Image? image = transformImage(sourceImage);
+                //If its null, then no transformation was needed
+                if (image == null)
+                {
+                    if (mainlineDoesntNeedConversion)
+                    {
+                        //Return the existing asset hash
+                        return this.AssetHash;
+                    }
+
+                    //Set the image to use to the source image
+                    image = sourceImage;
+                }
+
+                //Save the image as a PNG file in a byte array in memory
+                MemoryStream memory = new();
+                image.SaveAsPng(memory);
+                byte[] data = memory.ToArray();
+
+                //Get the hash of the converted asset
+                string convertedHash = AssetImporter.BytesToHexString(SHA1.HashData(data));
+
+                //Write the data to the store
+                dataStore.WriteToStore(convertedHash, data);
+
+                //Return the new icon hash
+                return convertedHash;
+            }
+            case TokenGame.LittleBigPlanetPSP:
+#if false //TODO: convert to MIP
+                this.AsMipIconHash = convertedHash;
+                return this.AsMipIconHash;
+#endif
+
+                throw new NotImplementedException();
+            default:
+                throw new ArgumentOutOfRangeException(nameof(game), game, null);
+        }
+    }
+
+
+    public string GetAsIcon(TokenGame game, GameDatabaseContext database, IDataStore dataStore)
+    {
         switch (this.AssetType)
         {
             case GameAssetType.Tga:
@@ -87,25 +152,7 @@ public partial class GameAsset : IRealmObject
                         //If the cached icon hash is already set, early return it.
                         if (this.AsMainlineIconHash != null) return this.AsMainlineIconHash;
 
-                        //Load the image from the data store and crop it to an icon
-                        Image? croppedIcon = this.CropToIcon(Image.Load(dataStore.GetStreamFromStore(dataStorePath)));
-                        //If its null, then its already safe to use,
-                        if (croppedIcon == null)
-                        {
-                            database.SetAsMainlineIconHash(this, this.AssetHash);
-                            //Return the existing asset hash
-                            return this.AsMainlineIconHash!;
-                        }
-                        
-                        MemoryStream memory = new();
-                        croppedIcon.SaveAsPng(memory);
-                        byte[] data = memory.ToArray();
-                        
-                        //Get the hash of the converted asset
-                        string convertedHash = AssetImporter.BytesToHexString(SHA1.HashData(data));
-
-                        //Write the data to the store
-                        dataStore.WriteToStore(convertedHash, data);
+                        string convertedHash = this.TransformImage(game, dataStore, path => Image.Load(dataStore.GetStreamFromStore(path)), this.CropToIcon);
                         
                         database.SetAsMainlineIconHash(this, convertedHash);
                         
@@ -137,24 +184,8 @@ public partial class GameAsset : IRealmObject
                         //If the cached icon hash is already set, early return it.
                         if (this.AsMainlineIconHash != null) return this.AsMainlineIconHash;
 
-                        Image? croppedIcon = this.CropToIcon(ImageImporter.LoadTex(dataStore.GetStreamFromStore(dataStorePath)));
-                        if (croppedIcon == null)
-                        {
-                            database.SetAsMainlineIconHash(this, this.AssetHash);
+                        string convertedHash = this.TransformImage(game, dataStore, path => ImageImporter.LoadTex(dataStore.GetStreamFromStore(path)), this.CropToIcon);
 
-                            return this.AsMainlineIconHash!;
-                        }
-                        
-                        MemoryStream memory = new();
-                        croppedIcon.SaveAsPng(memory);
-                        byte[] data = memory.ToArray();
-                        
-                        //Get the hash of the converted asset
-                        string convertedHash = AssetImporter.BytesToHexString(SHA1.HashData(data));
-
-                        //Write the data to the store
-                        dataStore.WriteToStore(convertedHash, data);
-                        
                         database.SetAsMainlineIconHash(this, convertedHash);
                         
                         //Return the new icon hash
@@ -182,25 +213,9 @@ public partial class GameAsset : IRealmObject
                     case TokenGame.LittleBigPlanet1:
                         //If the cached icon hash is already set, early return it.
                         if (this.AsMainlineIconHash != null) return this.AsMainlineIconHash;
-
-                        Image? croppedIcon = this.CropToIcon(ImageImporter.LoadGtf(dataStore.GetStreamFromStore(dataStorePath)));
-                        if (croppedIcon == null)
-                        {
-                            database.SetAsMainlineIconHash(this, this.AssetHash);
-
-                            return this.AsMainlineIconHash!;
-                        }
                         
-                        MemoryStream memory = new();
-                        croppedIcon.SaveAsPng(memory);
-                        byte[] data = memory.ToArray();
-                        
-                        //Get the hash of the converted asset
-                        string convertedHash = AssetImporter.BytesToHexString(SHA1.HashData(data));
+                        string convertedHash = this.TransformImage(game, dataStore, path => ImageImporter.LoadGtf(dataStore.GetStreamFromStore(path)), this.CropToIcon);
 
-                        //Write the data to the store
-                        dataStore.WriteToStore(convertedHash, data);
-                        
                         database.SetAsMainlineIconHash(this, convertedHash);
                         
                         //Return the new icon hash
@@ -236,28 +251,20 @@ public partial class GameAsset : IRealmObject
                     case TokenGame.LittleBigPlanetVita: {
                         //If the cached icon hash is already set, early return it.
                         if (this.AsMainlineIconHash != null) return this.AsMainlineIconHash;
-
-                        byte[] rawData = dataStore.GetDataFromStore(dataStorePath);
-                        byte[] sourceData = ResourceHelper.PspDecrypt(rawData, Importer.PSPKey.Value);
-
-                        using MemoryStream sourceDataStream = new(sourceData);
                         
-                        //Load the source mip file
-                        Image source = ImageImporter.LoadMip(sourceDataStream);
+                        string convertedHash = this.TransformImage(game, dataStore, path =>
+                        {
+                            //Load the data from the data store
+                            byte[] rawData = dataStore.GetDataFromStore(path);
+                            //Decrypt it
+                            byte[] sourceData = ResourceHelper.PspDecrypt(rawData, Importer.PSPKey.Value);
+
+                            //Create a memory stream from the decrypted asset data
+                            using MemoryStream sourceDataStream = new(sourceData);
                         
-                        //Crop the icon, if no transformation was needed, just use the source image for the conversion.
-                        Image croppedIcon = this.CropToIcon(source) ?? source;
-
-                        //Save the loaded icon to memory
-                        MemoryStream memory = new();
-                        croppedIcon.SaveAsPng(memory);
-                        byte[] data = memory.ToArray();
-
-                        //Get the hash of the converted asset
-                        string convertedHash = AssetImporter.BytesToHexString(SHA1.HashData(data));
-
-                        //Write the data to the store
-                        dataStore.WriteToStore(convertedHash, data);
+                            //Load the mip file
+                            return ImageImporter.LoadMip(sourceDataStream);
+                        }, this.CropToIcon);
 
                         //Set the converted hash
                         database.SetAsMainlineIconHash(this, convertedHash);
