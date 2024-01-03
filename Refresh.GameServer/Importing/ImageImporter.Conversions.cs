@@ -45,7 +45,7 @@ public partial class ImageImporter // Conversions
 
     private static readonly PfimConfig Config = new();
 
-    private static void DdsToPng(Stream stream, Stream writeStream)
+    private static Image LoadDds(Stream stream)
     {
         Dds dds = Dds.Create(stream, Config);
         
@@ -56,6 +56,19 @@ public partial class ImageImporter // Conversions
             _ => throw new InvalidOperationException($"Cannot convert DDS format {dds.Format} to PNG"),
         };
 
-        image.SaveAsPng(writeStream);
+        return image;
+    }
+
+    //Loads a Tex file into a ImageSharp image.
+    public static Image LoadTex(Stream stream)
+    {
+        using Stream loadStream = new TexStream(stream);
+        
+        return LoadDds(loadStream);
+    }
+
+    private static void DdsToPng(Stream stream, Stream writeStream)
+    {
+        LoadDds(stream).SaveAsPng(writeStream);
     }
 }

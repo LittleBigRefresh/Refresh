@@ -1,6 +1,7 @@
 using AttribDoc.Attributes;
 using Bunkum.Core;
 using Bunkum.Core.Endpoints;
+using Bunkum.Core.Storage;
 using Refresh.GameServer.Database;
 using Refresh.GameServer.Documentation.Attributes;
 using Refresh.GameServer.Endpoints.ApiV3.ApiTypes;
@@ -20,7 +21,7 @@ public class ActivityApiEndpoints : EndpointGroup
     [DocUsesPageData, DocSummary("Fetch a list of recent happenings on the server.")]
     [DocQueryParam("timestamp", "A timestamp in unix seconds, used to search backwards.")]
     [DocError(typeof(ApiValidationError), ApiValidationError.NumberParseErrorWhen)]
-    public ApiResponse<ApiActivityPageResponse> GetRecentActivity(RequestContext context, GameDatabaseContext database)
+    public ApiResponse<ApiActivityPageResponse> GetRecentActivity(RequestContext context, GameDatabaseContext database, IDataStore dataStore)
     {
         long timestamp = 0;
 
@@ -30,16 +31,15 @@ public class ActivityApiEndpoints : EndpointGroup
         (int skip, int count) = context.GetPageData(true);
 
         ActivityPage page = new(database, generateGroups: false, timestamp: timestamp, skip: skip, count: count);
-        return ApiActivityPageResponse.FromOld(page);
+        return ApiActivityPageResponse.FromOldWithExtraData(page, database, dataStore);
     }
-    
     
     [ApiV3Endpoint("levels/id/{id}/activity"), Authentication(false)]
     [DocUsesPageData, DocSummary("Fetch a list of recent happenings for a particular level")]
     [DocQueryParam("timestamp", "A timestamp in unix seconds, used to search backwards")]
     [DocError(typeof(ApiValidationError), ApiValidationError.NumberParseErrorWhen)]
     [DocError(typeof(ApiNotFoundError), "The level could not be found")]
-    public ApiResponse<ApiActivityPageResponse> GetRecentActivityForLevel(RequestContext context, GameDatabaseContext database,
+    public ApiResponse<ApiActivityPageResponse> GetRecentActivityForLevel(RequestContext context, GameDatabaseContext database, IDataStore dataStore,
         [DocSummary("The ID of the level")] int id)
     {
         long timestamp = 0;
@@ -53,6 +53,6 @@ public class ActivityApiEndpoints : EndpointGroup
         (int skip, int count) = context.GetPageData(true);
         
         ActivityPage page = new(database, generateGroups: false, timestamp: timestamp, level: level, skip: skip, count: count);
-        return ApiActivityPageResponse.FromOld(page);
+        return ApiActivityPageResponse.FromOldWithExtraData(page, database, dataStore);
     }
 }

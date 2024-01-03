@@ -1,4 +1,6 @@
+using Bunkum.Core.Storage;
 using Refresh.GameServer.Authentication;
+using Refresh.GameServer.Database;
 using Refresh.GameServer.Types.Levels;
 using Refresh.GameServer.Types.Reviews;
 
@@ -72,6 +74,21 @@ public class ApiGameLevelResponse : IApiResponse, IDataConvertableFrom<ApiGameLe
             IsSubLevel = level.IsSubLevel,
             Score = level.Score,
         };
+    }
+    
+    public void FillInExtraData(GameDatabaseContext database, IDataStore dataStore)
+    {
+        this.Publisher?.FillInExtraData(database, dataStore);
+    }
+    
+    public static ApiGameLevelResponse? FromOldWithExtraData(GameLevel? old, GameDatabaseContext database, IDataStore dataStore)
+    {
+        if (old == null) return null;
+
+        ApiGameLevelResponse response = FromOld(old)!;
+        response.FillInExtraData(database, dataStore);
+
+        return response;
     }
 
     public static IEnumerable<ApiGameLevelResponse> FromOldList(IEnumerable<GameLevel> oldList) => oldList.Select(FromOld)!;
