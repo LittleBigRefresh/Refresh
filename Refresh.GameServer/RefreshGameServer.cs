@@ -226,8 +226,7 @@ public class RefreshGameServer : RefreshServer
 
     public override void Dispose()
     {
-        this.Logger.Dispose();
         this._databaseProvider.Dispose();
-        GC.SuppressFinalize(this);
+        base.Dispose();
     }
 }
