@@ -15,7 +15,8 @@ public abstract class Importer
 {
     private readonly Logger _logger;
     protected readonly Stopwatch Stopwatch;
-    protected readonly Lazy<byte[]?> PSPKey;
+    
+    public static Lazy<byte[]?> PSPKey;
 
     protected Importer(Logger? logger = null)
     {
@@ -27,7 +28,7 @@ public abstract class Importer
         this._logger = logger;
         this.Stopwatch = new Stopwatch();
 
-        this.PSPKey = new(() =>
+        PSPKey = new(() =>
         {
             try
             {
@@ -136,7 +137,7 @@ public abstract class Importer
     private bool IsMip(Span<byte> rawData)
     {
         //If we dont have a key, then we cant determine the data type
-        if (this.PSPKey.Value == null) return false;
+        if (PSPKey.Value == null) return false;
 
         //Data less than this size isn't encrypted(?) and all Mip files uploaded to the server will be encrypted
         //See https://github.com/ennuo/lbparc/blob/16ad36aa7f4eae2f7b406829e604082750f16fe1/tools/toggle.js#L33
@@ -145,7 +146,7 @@ public abstract class Importer
         try
         {
             //Decrypt the data
-            ReadOnlySpan<byte> data = ResourceHelper.PspDecrypt(rawData, this.PSPKey.Value);
+            ReadOnlySpan<byte> data = ResourceHelper.PspDecrypt(rawData, PSPKey.Value);
             
             uint clutOffset = BinaryPrimitives.ReadUInt32LittleEndian(data[..4]);
             uint width = BinaryPrimitives.ReadUInt32LittleEndian(data[4..8]);

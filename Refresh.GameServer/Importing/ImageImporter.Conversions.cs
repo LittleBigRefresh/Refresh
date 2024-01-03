@@ -59,12 +59,24 @@ public partial class ImageImporter // Conversions
         return image;
     }
 
-    //Loads a Tex file into a ImageSharp image.
+    //Loads a Tex file into an ImageSharp image.
     public static Image LoadTex(Stream stream)
     {
         using Stream loadStream = new TexStream(stream);
         
         return LoadDds(loadStream);
+    }
+    
+    //Loads a GTF file into an ImageSharp image.
+    public static Image LoadGtf(Stream stream)
+    {
+        return new GtfDecoder().Decode(new DecoderOptions(), stream);
+    }
+    
+    //Loads a MIP file into an ImageSharp image.
+    public static Image LoadMip(Stream stream)
+    {
+        return new MipDecoder().Decode(new DecoderOptions(), stream);
     }
 
     private static void DdsToPng(Stream stream, Stream writeStream)

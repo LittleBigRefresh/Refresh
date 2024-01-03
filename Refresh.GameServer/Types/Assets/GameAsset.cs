@@ -4,6 +4,7 @@ using Realms;
 using Refresh.GameServer.Authentication;
 using Refresh.GameServer.Database;
 using Refresh.GameServer.Importing;
+using Refresh.GameServer.Resources;
 using Refresh.GameServer.Types.UserData;
 using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.PixelFormats;
@@ -31,7 +32,7 @@ public partial class GameAsset : IRealmObject
 
     [Ignored] public AssetSafetyLevel SafetyLevel => AssetSafetyLevelExtensions.FromAssetType(this.AssetType);
 
-    public string? AsPngIconHash { get; set; }
+    public string? AsMainlineIconHash { get; set; }
     public string? AsMipIconHash { get; set; }
     
     /// <summary>
@@ -39,7 +40,7 @@ public partial class GameAsset : IRealmObject
     /// </summary>
     /// <param name="image">The source image</param>
     /// <returns>The cropped and resized image, or null if its already fine</returns>
-    private Image<Rgba32>? CropToIcon(Image image)
+    private Image? CropToIcon(Image image)
     {
         const int maxWidth = 256;
         
@@ -81,20 +82,19 @@ public partial class GameAsset : IRealmObject
             case GameAssetType.Png:
                 switch (game)
                 {
-
                     case TokenGame.Website:
                     case TokenGame.LittleBigPlanet1: {
                         //If the cached icon hash is already set, early return it.
-                        if (this.AsPngIconHash != null) return this.AsPngIconHash;
+                        if (this.AsMainlineIconHash != null) return this.AsMainlineIconHash;
 
                         //Load the image from the data store and crop it to an icon
-                        Image<Rgba32>? croppedIcon = this.CropToIcon(Image.Load(dataStore.GetStreamFromStore(dataStorePath)));
+                        Image? croppedIcon = this.CropToIcon(Image.Load(dataStore.GetStreamFromStore(dataStorePath)));
                         //If its null, then its already safe to use,
                         if (croppedIcon == null)
                         {
-                            database.SetAsPngIconHash(this, this.AssetHash);
+                            database.SetAsMainlineIconHash(this, this.AssetHash);
                             //Return the existing asset hash
-                            return this.AsPngIconHash!;
+                            return this.AsMainlineIconHash!;
                         }
                         
                         MemoryStream memory = new();
@@ -107,10 +107,10 @@ public partial class GameAsset : IRealmObject
                         //Write the data to the store
                         dataStore.WriteToStore(convertedHash, data);
                         
-                        database.SetAsPngIconHash(this, convertedHash);
+                        database.SetAsMainlineIconHash(this, convertedHash);
                         
-                        //Set and return the cached icon hash
-                        return this.AsPngIconHash!;
+                        //Return the new icon hash
+                        return this.AsMainlineIconHash!;
                     }
                     //On LBP2, LBP3, and LBPVita, it can automatically crop images, so theres no need to do anything here
                     case TokenGame.LittleBigPlanet2:
@@ -130,30 +130,153 @@ public partial class GameAsset : IRealmObject
                         throw new ArgumentOutOfRangeException(nameof(game), game, null);
                 }
             case GameAssetType.Texture:
-                // switch (game)
-                // {
-                //     case TokenGame.LittleBigPlanet1:
-                //         break;
-                //     case TokenGame.LittleBigPlanet2:
-                //         break;
-                //     case TokenGame.LittleBigPlanet3:
-                //         break;
-                //     case TokenGame.LittleBigPlanetVita:
-                //         break;
-                //     case TokenGame.LittleBigPlanetPSP:
-                //         break;
-                //     case TokenGame.Website:
-                //         break;
-                //     default:
-                //         throw new ArgumentOutOfRangeException(nameof(game), game, null);
-                // }
-                return "0";
+                switch (game)
+                {
+                    case TokenGame.Website:
+                    case TokenGame.LittleBigPlanet1:
+                        //If the cached icon hash is already set, early return it.
+                        if (this.AsMainlineIconHash != null) return this.AsMainlineIconHash;
+
+                        Image? croppedIcon = this.CropToIcon(ImageImporter.LoadTex(dataStore.GetStreamFromStore(dataStorePath)));
+                        if (croppedIcon == null)
+                        {
+                            database.SetAsMainlineIconHash(this, this.AssetHash);
+
+                            return this.AsMainlineIconHash!;
+                        }
+                        
+                        MemoryStream memory = new();
+                        croppedIcon.SaveAsPng(memory);
+                        byte[] data = memory.ToArray();
+                        
+                        //Get the hash of the converted asset
+                        string convertedHash = AssetImporter.BytesToHexString(SHA1.HashData(data));
+
+                        //Write the data to the store
+                        dataStore.WriteToStore(convertedHash, data);
+                        
+                        database.SetAsMainlineIconHash(this, convertedHash);
+                        
+                        //Return the new icon hash
+                        return this.AsMainlineIconHash!;
+                    case TokenGame.LittleBigPlanet2:
+                    case TokenGame.LittleBigPlanet3:
+                    case TokenGame.LittleBigPlanetVita:
+                        return this.AssetHash;
+                    case TokenGame.LittleBigPlanetPSP:
+                        if (this.AsMipIconHash != null) return this.AsMipIconHash;
+                        
+#if false //TODO: trim to 1:1 aspect ratio and convert to MIP
+                        this.AsMipIconHash = convertedHash;
+                        return this.AsMipIconHash;
+#endif
+                        
+                        throw new NotImplementedException();
+                    default:
+                        throw new ArgumentOutOfRangeException(nameof(game), game, null);
+                }
             case GameAssetType.GameDataTexture:
-                return "0";
+                switch (game)
+                {
+                    case TokenGame.Website:
+                    case TokenGame.LittleBigPlanet1:
+                        //If the cached icon hash is already set, early return it.
+                        if (this.AsMainlineIconHash != null) return this.AsMainlineIconHash;
+
+                        Image? croppedIcon = this.CropToIcon(ImageImporter.LoadGtf(dataStore.GetStreamFromStore(dataStorePath)));
+                        if (croppedIcon == null)
+                        {
+                            database.SetAsMainlineIconHash(this, this.AssetHash);
+
+                            return this.AsMainlineIconHash!;
+                        }
+                        
+                        MemoryStream memory = new();
+                        croppedIcon.SaveAsPng(memory);
+                        byte[] data = memory.ToArray();
+                        
+                        //Get the hash of the converted asset
+                        string convertedHash = AssetImporter.BytesToHexString(SHA1.HashData(data));
+
+                        //Write the data to the store
+                        dataStore.WriteToStore(convertedHash, data);
+                        
+                        database.SetAsMainlineIconHash(this, convertedHash);
+                        
+                        //Return the new icon hash
+                        return this.AsMainlineIconHash!;
+                    case TokenGame.LittleBigPlanet2:
+                    case TokenGame.LittleBigPlanet3:
+                    case TokenGame.LittleBigPlanetVita:
+                        return this.AssetHash;
+                    case TokenGame.LittleBigPlanetPSP:
+                        if (this.AsMipIconHash != null) return this.AsMipIconHash;
+                        
+#if false //TODO: trim to 1:1 aspect ratio and convert to MIP
+                        this.AsMipIconHash = convertedHash;
+                        return this.AsMipIconHash;
+#endif
+                        
+                        throw new NotImplementedException();
+                    default:
+                        throw new ArgumentOutOfRangeException(nameof(game), game, null);
+                }
             case GameAssetType.Painting:
                 return "0";
             case GameAssetType.Mip:
-                return "0";
+                switch (game)
+                {
+                    //LBP1, LBP2, LBP3, and LBP Vita are unable to handle MIP files.
+                    //The Website technically can utilize them after import,
+                    //but using PNGs for the site will cause less load on the server, so lets do that!
+                    case TokenGame.Website:
+                    case TokenGame.LittleBigPlanet1:
+                    case TokenGame.LittleBigPlanet2:
+                    case TokenGame.LittleBigPlanet3:
+                    case TokenGame.LittleBigPlanetVita: {
+                        //If the cached icon hash is already set, early return it.
+                        if (this.AsMainlineIconHash != null) return this.AsMainlineIconHash;
+
+                        byte[] rawData = dataStore.GetDataFromStore(dataStorePath);
+                        byte[] sourceData = ResourceHelper.PspDecrypt(rawData, Importer.PSPKey.Value);
+
+                        using MemoryStream sourceDataStream = new(sourceData);
+                        
+                        //Load the source mip file
+                        Image source = ImageImporter.LoadMip(sourceDataStream);
+                        
+                        //Crop the icon, if no transformation was needed, just use the source image for the conversion.
+                        Image croppedIcon = this.CropToIcon(source) ?? source;
+
+                        //Save the loaded icon to memory
+                        MemoryStream memory = new();
+                        croppedIcon.SaveAsPng(memory);
+                        byte[] data = memory.ToArray();
+
+                        //Get the hash of the converted asset
+                        string convertedHash = AssetImporter.BytesToHexString(SHA1.HashData(data));
+
+                        //Write the data to the store
+                        dataStore.WriteToStore(convertedHash, data);
+
+                        //Set the converted hash
+                        database.SetAsMainlineIconHash(this, convertedHash);
+
+                        //Return the new icon hash
+                        return this.AsMainlineIconHash!;
+                    }
+                    case TokenGame.LittleBigPlanetPSP:
+                        if (this.AsMipIconHash != null) return this.AsMipIconHash;
+
+#if false //TODO: trim to 1:1 aspect ratio and convert to MIP
+                        this.AsMipIconHash = convertedHash;
+                        return this.AsMipIconHash;
+#endif
+
+                        throw new NotImplementedException();
+                    default:
+                        throw new ArgumentOutOfRangeException(nameof(game), game, null);
+                }
             case GameAssetType.Level:
             case GameAssetType.Plan:
             case GameAssetType.Material:

@@ -14,6 +14,7 @@ public class ApiGameLevelResponse : IApiResponse, IDataConvertableFrom<ApiGameLe
 
     public required string Title { get; set; }
     public required string IconHash { get; set; }
+    private string? _originalIconHash;
     public required string Description { get; set; }
     public required ApiGameLocationResponse Location { get; set; }
     
@@ -52,6 +53,7 @@ public class ApiGameLevelResponse : IApiResponse, IDataConvertableFrom<ApiGameLe
             Publisher = ApiGameUserResponse.FromOld(level.Publisher),
             LevelId = level.LevelId,
             IconHash = level.GameVersion == TokenGame.LittleBigPlanetPSP ? "psp/" + level.IconHash : level.IconHash,
+            _originalIconHash = level.IconHash,
             Description = level.Description,
             Location = ApiGameLocationResponse.FromGameLocation(level.Location)!,
             PublishDate = DateTimeOffset.FromUnixTimeMilliseconds(level.PublishDate),
@@ -79,6 +81,9 @@ public class ApiGameLevelResponse : IApiResponse, IDataConvertableFrom<ApiGameLe
     public void FillInExtraData(GameDatabaseContext database, IDataStore dataStore)
     {
         this.Publisher?.FillInExtraData(database, dataStore);
+
+        //Get the icon form of the icon asset
+        this.IconHash = database.GetAssetFromHash(this._originalIconHash ?? "0")?.GetAsIcon(TokenGame.Website, database, dataStore) ?? this.IconHash;
     }
     
     public static ApiGameLevelResponse? FromOldWithExtraData(GameLevel? old, GameDatabaseContext database, IDataStore dataStore)

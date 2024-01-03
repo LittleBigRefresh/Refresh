@@ -14,7 +14,10 @@ public partial class GameDatabaseContext // AssetConfiguration
         
         foreach (GameAsset asset in assets)
         {
-            if (asset.AsPngIconHash == hash)
+            //If the asset hash is the requested hash, its not a converted file
+            if (asset.AssetHash == hash) return null;
+            
+            if (asset.AsMainlineIconHash == hash)
                 return GameAssetType.Png;
 
             if (asset.AsMipIconHash == hash)
@@ -40,9 +43,9 @@ public partial class GameDatabaseContext // AssetConfiguration
             this._realm.Add(assets, true);
         });
 
-    public void SetAsPngIconHash(GameAsset asset, string hash) =>
+    public void SetAsMainlineIconHash(GameAsset asset, string hash) =>
         this._realm.Write(() =>
         {
-            asset.AsPngIconHash = hash;
+            asset.AsMainlineIconHash = hash;
         });
 }

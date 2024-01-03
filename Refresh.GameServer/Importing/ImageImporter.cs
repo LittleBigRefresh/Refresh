@@ -82,7 +82,7 @@ public partial class ImageImporter : Importer
                 break;
             case GameAssetType.Mip: {
                 byte[] rawData = dataStore.GetDataFromStore(dataStorePath);
-                byte[] data = ResourceHelper.PspDecrypt(rawData, this.PSPKey.Value);
+                byte[] data = ResourceHelper.PspDecrypt(rawData, PSPKey.Value);
 
                 using MemoryStream dataStream = new(data);
 
