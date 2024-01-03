@@ -1,4 +1,3 @@
-using IronCompress;
 using JetBrains.Annotations;
 using MongoDB.Bson;
 using Refresh.GameServer.Authentication;
