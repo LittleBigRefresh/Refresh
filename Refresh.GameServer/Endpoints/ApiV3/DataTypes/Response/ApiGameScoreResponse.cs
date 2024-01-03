@@ -1,3 +1,4 @@
+using Refresh.GameServer.Authentication;
 using Refresh.GameServer.Types.UserData.Leaderboard;
 
 namespace Refresh.GameServer.Endpoints.ApiV3.DataTypes.Response;
@@ -12,6 +13,9 @@ public class ApiGameScoreResponse : IApiResponse, IDataConvertableFrom<ApiGameSc
     public required int Score { get; set; }
     public required byte ScoreType { get; set; }
     
+    public required TokenGame Game { get; set; }
+    public required TokenPlatform Platform { get; set; }
+    
     public static ApiGameScoreResponse? FromOld(GameSubmittedScore? old)
     {
         if (old == null) return null;
@@ -24,6 +28,8 @@ public class ApiGameScoreResponse : IApiResponse, IDataConvertableFrom<ApiGameSc
             ScoreSubmitted = old.ScoreSubmitted,
             Score = old.Score,
             ScoreType = old.ScoreType,
+            Game = old.Game,
+            Platform = old.Platform,
         };
     }
 

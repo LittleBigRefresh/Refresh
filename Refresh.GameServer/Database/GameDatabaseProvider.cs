@@ -32,7 +32,7 @@ public class GameDatabaseProvider : RealmDatabaseProvider<GameDatabaseContext>
         this._time = time;
     }
 
-    protected override ulong SchemaVersion => 103;
+    protected override ulong SchemaVersion => 104;
 
     protected override string Filename => "refreshGameServer.realm";
     
@@ -343,6 +343,24 @@ public class GameDatabaseProvider : RealmDatabaseProvider<GameDatabaseContext>
             if (oldVersion < 92)
             {
                 newScore.Game = newScore.Level.GameVersion;
+            }
+
+            // In version 104 we started tracking the platform
+            if (oldVersion < 104)
+            {
+                // Determine the most reasonable platform for the score's game
+                TokenPlatform platform = newScore.Game switch
+                {
+                    TokenGame.LittleBigPlanet1 => TokenPlatform.PS3,
+                    TokenGame.LittleBigPlanet2 => TokenPlatform.PS3,
+                    TokenGame.LittleBigPlanet3 => TokenPlatform.PS3,
+                    TokenGame.LittleBigPlanetVita => TokenPlatform.Vita,
+                    TokenGame.LittleBigPlanetPSP => TokenPlatform.PSP,
+                    TokenGame.Website => throw new InvalidOperationException($"what? score id {newScore.ScoreId} by {newScore.Players[0].Username} is fucked"),
+                    _ => throw new ArgumentOutOfRangeException(),
+                };
+
+                newScore.Platform = platform;
             }
         }
         
