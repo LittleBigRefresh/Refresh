@@ -10,7 +10,7 @@ public partial class GameDatabaseContext // AssetConfiguration
 
     public GameAssetType? GetConvertedType(string hash)
     {
-        IQueryable<GameAsset> assets =this._realm.All<GameAsset>();
+        IQueryable<GameAsset> assets = this._realm.All<GameAsset>();
         
         foreach (GameAsset asset in assets)
         {
@@ -47,5 +47,11 @@ public partial class GameDatabaseContext // AssetConfiguration
         this._realm.Write(() =>
         {
             asset.AsMainlineIconHash = hash;
+        });
+    
+    public void SetAsMipIconHash(GameAsset asset, string hash) =>
+        this._realm.Write(() =>
+        {
+            asset.AsMipIconHash = hash;
         });
 }

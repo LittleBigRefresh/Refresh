@@ -4,6 +4,7 @@ using Realms;
 using Refresh.GameServer.Authentication;
 using Refresh.GameServer.Database;
 using Refresh.GameServer.Importing;
+using Refresh.GameServer.Importing.Mip;
 using Refresh.GameServer.Resources;
 using Refresh.GameServer.Types.UserData;
 using SixLabors.ImageSharp;
@@ -40,7 +41,7 @@ public partial class GameAsset : IRealmObject
     /// </summary>
     /// <param name="image">The source image</param>
     /// <returns>The cropped and resized image, or null if its already fine</returns>
-    private Image? CropToIcon(Image image)
+    private Image<Rgba32>? CropToIcon(Image image)
     {
         const int maxWidth = 256;
         
@@ -64,7 +65,14 @@ public partial class GameAsset : IRealmObject
             //If the image is taller than it is wide
             new Rectangle(0, image.Height / 2 - image.Width / 2, image.Width, image.Width);
 
-        int targetWidth = Math.Min(maxWidth, cropRectangle.Width);
+        int targetWidth = Math.Clamp(cropRectangle.Width, 16, maxWidth);
+        
+        //Round to the nearest multiple of 16, this is to make PSP happy
+        targetWidth = 
+            (int)Math.Round(
+                targetWidth / (double)16,
+                MidpointRounding.AwayFromZero
+            ) * 16;
         
         copy.Mutate(ctx => ctx.Crop(cropRectangle).Resize(targetWidth, targetWidth));
         
@@ -81,7 +89,7 @@ public partial class GameAsset : IRealmObject
     /// <returns>The hash of the transformed asset</returns>
     /// <exception cref="NotImplementedException">That conversion step is unimplemented at the moment</exception>
     /// <exception cref="ArgumentOutOfRangeException">Invalid TokenGame</exception>
-    private string TransformImage(TokenGame game, IDataStore dataStore, Func<string, Image> decodeImage, Func<Image, Image?> transformImage)
+    private string TransformImage(TokenGame game, IDataStore dataStore, Func<string, Image<Rgba32>> decodeImage, Func<Image, Image<Rgba32>?> transformImage)
     {
         string dataStorePath = this.IsPSP ? $"psp/{this.AssetHash}" : this.AssetHash;
 
@@ -125,13 +133,26 @@ public partial class GameAsset : IRealmObject
                 //Return the new icon hash
                 return convertedHash;
             }
-            case TokenGame.LittleBigPlanetPSP:
-#if false //TODO: convert to MIP
-                this.AsMipIconHash = convertedHash;
-                return this.AsMipIconHash;
-#endif
+            case TokenGame.LittleBigPlanetPSP: {
+                Image<Rgba32> sourceImage = decodeImage(dataStorePath);
 
-                throw new NotImplementedException();
+                //Transform the image, if no transformation is needed, use the source image
+                Image<Rgba32> image = transformImage(sourceImage) ?? sourceImage;
+
+                MemoryStream memory = new();
+                new MipEncoder().Encode(image, memory);
+                //Get the used chunk of the underlying buffer
+                Span<byte> data = memory.GetBuffer().AsSpan()[..((int)memory.Length)];
+                //Encrypt the data
+                byte[] encryptedData = ResourceHelper.PspEncrypt(data, Importer.PSPKey.Value);
+
+                //Get the hash
+                string convertedHash = AssetImporter.BytesToHexString(SHA1.HashData(encryptedData));
+
+                dataStore.WriteToStore($"psp/{convertedHash}", encryptedData);
+
+                return convertedHash;
+            }
             default:
                 throw new ArgumentOutOfRangeException(nameof(game), game, null);
         }
@@ -152,7 +173,7 @@ public partial class GameAsset : IRealmObject
                         //If the cached icon hash is already set, early return it.
                         if (this.AsMainlineIconHash != null) return this.AsMainlineIconHash;
 
-                        string convertedHash = this.TransformImage(game, dataStore, path => Image.Load(dataStore.GetStreamFromStore(path)), this.CropToIcon);
+                        string convertedHash = this.TransformImage(game, dataStore, path => Image.Load<Rgba32>(dataStore.GetStreamFromStore(path)), this.CropToIcon);
                         
                         database.SetAsMainlineIconHash(this, convertedHash);
                         
@@ -164,15 +185,15 @@ public partial class GameAsset : IRealmObject
                     case TokenGame.LittleBigPlanet3:
                     case TokenGame.LittleBigPlanetVita:
                         return this.AssetHash;
-                    case TokenGame.LittleBigPlanetPSP:
+                    case TokenGame.LittleBigPlanetPSP: {
                         if (this.AsMipIconHash != null) return this.AsMipIconHash;
+
+                        string convertedHash = this.TransformImage(game, dataStore, path => Image.Load<Rgba32>(dataStore.GetStreamFromStore(path)), this.CropToIcon);
                         
-#if false //TODO: trim to 1:1 aspect ratio and convert to MIP
-                        this.AsMipIconHash = convertedHash;
-                        return this.AsMipIconHash;
-#endif
+                        database.SetAsMipIconHash(this, convertedHash);
                         
-                        throw new NotImplementedException();
+                        return this.AsMipIconHash!;
+                    }
                     default:
                         throw new ArgumentOutOfRangeException(nameof(game), game, null);
                 }
@@ -180,7 +201,7 @@ public partial class GameAsset : IRealmObject
                 switch (game)
                 {
                     case TokenGame.Website:
-                    case TokenGame.LittleBigPlanet1:
+                    case TokenGame.LittleBigPlanet1: {
                         //If the cached icon hash is already set, early return it.
                         if (this.AsMainlineIconHash != null) return this.AsMainlineIconHash;
 
@@ -190,19 +211,20 @@ public partial class GameAsset : IRealmObject
                         
                         //Return the new icon hash
                         return this.AsMainlineIconHash!;
+                    }
                     case TokenGame.LittleBigPlanet2:
                     case TokenGame.LittleBigPlanet3:
                     case TokenGame.LittleBigPlanetVita:
                         return this.AssetHash;
-                    case TokenGame.LittleBigPlanetPSP:
+                    case TokenGame.LittleBigPlanetPSP: {
                         if (this.AsMipIconHash != null) return this.AsMipIconHash;
+
+                        string convertedHash = this.TransformImage(game, dataStore, path => ImageImporter.LoadTex(dataStore.GetStreamFromStore(path)), this.CropToIcon);
+ 
+                        database.SetAsMipIconHash(this, convertedHash);
                         
-#if false //TODO: trim to 1:1 aspect ratio and convert to MIP
-                        this.AsMipIconHash = convertedHash;
-                        return this.AsMipIconHash;
-#endif
-                        
-                        throw new NotImplementedException();
+                        return this.AsMipIconHash!;
+                    };
                     default:
                         throw new ArgumentOutOfRangeException(nameof(game), game, null);
                 }
@@ -210,7 +232,7 @@ public partial class GameAsset : IRealmObject
                 switch (game)
                 {
                     case TokenGame.Website:
-                    case TokenGame.LittleBigPlanet1:
+                    case TokenGame.LittleBigPlanet1: {
                         //If the cached icon hash is already set, early return it.
                         if (this.AsMainlineIconHash != null) return this.AsMainlineIconHash;
                         
@@ -220,19 +242,20 @@ public partial class GameAsset : IRealmObject
                         
                         //Return the new icon hash
                         return this.AsMainlineIconHash!;
+                    }
                     case TokenGame.LittleBigPlanet2:
                     case TokenGame.LittleBigPlanet3:
                     case TokenGame.LittleBigPlanetVita:
                         return this.AssetHash;
-                    case TokenGame.LittleBigPlanetPSP:
+                    case TokenGame.LittleBigPlanetPSP: {
                         if (this.AsMipIconHash != null) return this.AsMipIconHash;
+
+                        string convertedHash = this.TransformImage(game, dataStore, path => ImageImporter.LoadGtf(dataStore.GetStreamFromStore(path)), this.CropToIcon);
+ 
+                        database.SetAsMipIconHash(this, convertedHash);
                         
-#if false //TODO: trim to 1:1 aspect ratio and convert to MIP
-                        this.AsMipIconHash = convertedHash;
-                        return this.AsMipIconHash;
-#endif
-                        
-                        throw new NotImplementedException();
+                        return this.AsMipIconHash!;
+                    };
                     default:
                         throw new ArgumentOutOfRangeException(nameof(game), game, null);
                 }
@@ -272,15 +295,30 @@ public partial class GameAsset : IRealmObject
                         //Return the new icon hash
                         return this.AsMainlineIconHash!;
                     }
-                    case TokenGame.LittleBigPlanetPSP:
+                    case TokenGame.LittleBigPlanetPSP: {
+                        //If the cached icon hash is already set, early return it.
                         if (this.AsMipIconHash != null) return this.AsMipIconHash;
 
-#if false //TODO: trim to 1:1 aspect ratio and convert to MIP
-                        this.AsMipIconHash = convertedHash;
-                        return this.AsMipIconHash;
-#endif
+                        string convertedHash = this.TransformImage(game, dataStore, path =>
+                        {
+                            //Load the data from the data store
+                            byte[] rawData = dataStore.GetDataFromStore(path);
+                            //Decrypt it
+                            byte[] sourceData = ResourceHelper.PspDecrypt(rawData, Importer.PSPKey.Value);
 
-                        throw new NotImplementedException();
+                            //Create a memory stream from the decrypted asset data
+                            using MemoryStream sourceDataStream = new(sourceData);
+
+                            //Load the mip file
+                            return ImageImporter.LoadMip(sourceDataStream);
+                        }, this.CropToIcon);
+
+                        //Set the converted hash
+                        database.SetAsMipIconHash(this, convertedHash);
+
+                        //Return the new icon hash
+                        return this.AsMipIconHash!;
+                    }
                     default:
                         throw new ArgumentOutOfRangeException(nameof(game), game, null);
                 }

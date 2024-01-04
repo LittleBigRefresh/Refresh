@@ -1,5 +1,6 @@
 using System.Buffers;
 using System.Buffers.Binary;
+using System.IO.Compression;
 using System.Reflection;
 using System.Security.Cryptography;
 using FastAes;
@@ -17,11 +18,42 @@ public static class ResourceHelper
     
     private static readonly ThreadLocal<Iron> Iron = new(() => new Iron(ArrayPool<byte>.Shared));
 
-    private static void Encrypt(ReadOnlySpan<byte> data, ReadOnlySpan<byte> key)
+    public static byte[] PspEncrypt(Span<byte> data, ReadOnlySpan<byte> key)
     {
-        throw new NotImplementedException(); //TODO
+        byte[] initialCounter = new byte[16];
+        key[..8].CopyTo(initialCounter);
+        
+        //If the file is big enough, try to compress it
+        bool compress = data.Length > 1024;
+
+        //If we want to compress the data, do so, if not, dont
+        ReadOnlySpan<byte> resultData = compress
+            ? Iron.Value!.Compress(Codec.LZO, data, null, CompressionLevel.SmallestSize).AsSpan().ToArray()
+            : data;
+
+        byte[] final = new byte[resultData.Length + 0x19];
+
+        Span<byte> info = final.AsSpan()[^0x19..];
+
+        //Copy the result data
+        resultData.CopyTo(final.AsSpan()[..^0x19]);
+
+        //Write the buffer length
+        BinaryPrimitives.WriteUInt32LittleEndian(info[..4], (uint)data.Length);
+        //Mark whether or not its compressed
+        info[4] = (byte)(compress ? 1 : 0);
+        BinaryPrimitives.WriteUInt32LittleEndian(info[5..], 0xFFFFFFFF);
+
+        byte[] hash = MD5.HashData(final.AsSpan()[..(final.Length - 0x10)]);
+        hash.AsSpan().CopyTo(info[^0x10..]);
+        
+        //Encrypt the data
+        AesCtr ctr = new(key, initialCounter);
+        ctr.EncryptBytes(final, final);
+
+        return final;
     }
-    
+
     /// <summary>
     /// Decrypt a PSP asset
     /// </summary>

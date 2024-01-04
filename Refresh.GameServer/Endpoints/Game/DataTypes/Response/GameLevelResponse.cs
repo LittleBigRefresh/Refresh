@@ -1,4 +1,5 @@
 using System.Xml.Serialization;
+using Bunkum.Core.Storage;
 using Refresh.GameServer.Authentication;
 using Refresh.GameServer.Database;
 using Refresh.GameServer.Endpoints.ApiV3.DataTypes;
@@ -70,12 +71,12 @@ public class GameLevelResponse : IDataConvertableFrom<GameLevelResponse, GameLev
     [XmlElement("averageRating")] public double AverageStarRating { get; set; }
     [XmlElement("sizeOfResources")] public int SizeOfResourcesInBytes { get; set; }
 
-    public static GameLevelResponse? FromOldWithExtraData(GameLevel? old, GameDatabaseContext database, MatchService matchService, GameUser user)
+    public static GameLevelResponse? FromOldWithExtraData(GameLevel? old, GameDatabaseContext database, MatchService matchService, GameUser user, IDataStore dataStore, TokenGame game)
     {
         if (old == null) return null;
 
         GameLevelResponse response = FromOld(old)!;
-        response.FillInExtraData(database, matchService, user);
+        response.FillInExtraData(database, matchService, user, dataStore, game);
 
         return response;
     }
@@ -140,7 +141,7 @@ public class GameLevelResponse : IDataConvertableFrom<GameLevelResponse, GameLev
 
     public static IEnumerable<GameLevelResponse> FromOldList(IEnumerable<GameLevel> oldList) => oldList.Select(FromOld)!;
 
-    private void FillInExtraData(GameDatabaseContext database, MatchService matchService, GameUser user)
+    private void FillInExtraData(GameDatabaseContext database, MatchService matchService, GameUser user, IDataStore dataStore, TokenGame game)
     {
         GameLevel? level = database.GetLevelById(this.LevelId);
         if (level == null) throw new InvalidOperationException("Cannot fill in level data for a level that does not exist.");
@@ -160,5 +161,7 @@ public class GameLevelResponse : IDataConvertableFrom<GameLevelResponse, GameLev
                     this.SizeOfResourcesInBytes += asset.SizeInBytes;
             });
         }
+
+        this.IconHash = database.GetAssetFromHash(this.IconHash)?.GetAsIcon(game, database, dataStore) ?? this.IconHash;
     }
 }

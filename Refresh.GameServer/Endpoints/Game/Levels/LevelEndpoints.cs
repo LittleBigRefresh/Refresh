@@ -1,5 +1,6 @@
 using Bunkum.Core;
 using Bunkum.Core.Endpoints;
+using Bunkum.Core.Storage;
 using Bunkum.Listener.Protocol;
 using Refresh.GameServer.Authentication;
 using Refresh.GameServer.Database;
@@ -26,12 +27,13 @@ public class LevelEndpoints : EndpointGroup
         LevelListOverrideService overrideService,
         GameUser user,
         Token token,
+        IDataStore dataStore,
         string route)
     {
         if (overrideService.UserHasOverrides(user))
         {
             List<GameMinimalLevelResponse> overrides = overrideService.GetOverridesForUser(user, database)
-                .Select(l => GameMinimalLevelResponse.FromOldWithExtraData(l, matchService))
+                .Select(l => GameMinimalLevelResponse.FromOldWithExtraData(l, matchService, database, dataStore, token.TokenGame))
                 .ToList()!;
             
             return new SerializedMinimalLevelList(overrides, overrides.Count);
@@ -46,7 +48,7 @@ public class LevelEndpoints : EndpointGroup
         if (levels == null) return null;
         
         IEnumerable<GameMinimalLevelResponse> category = levels.Items
-            .Select(l => GameMinimalLevelResponse.FromOldWithExtraData(l, matchService))!;
+            .Select(l => GameMinimalLevelResponse.FromOldWithExtraData(l, matchService, database, dataStore, token.TokenGame))!;
         
         return new SerializedMinimalLevelList(category, levels.TotalItems);
     }
@@ -60,25 +62,26 @@ public class LevelEndpoints : EndpointGroup
         MatchService matchService,
         LevelListOverrideService overrideService,
         Token token,
+        IDataStore dataStore,
         string route,
         string username)
     {
         GameUser? user = database.GetUserByUsername(username);
         if (user == null) return null;
         
-        return this.GetLevels(context, database, categories, matchService, overrideService, user, token, route);
+        return this.GetLevels(context, database, categories, matchService, overrideService, user, token, dataStore, route);
     }
 
     [GameEndpoint("s/user/{id}", ContentType.Xml)]
     [NullStatusCode(NotFound)]
     [MinimumRole(GameUserRole.Restricted)]
-    public GameLevelResponse? LevelById(RequestContext context, GameDatabaseContext database, MatchService matchService, GameUser user, int id)
-        => GameLevelResponse.FromOldWithExtraData(database.GetLevelById(id), database, matchService, user);
+    public GameLevelResponse? LevelById(RequestContext context, GameDatabaseContext database, MatchService matchService, GameUser user, int id, IDataStore dataStore, Token token)
+        => GameLevelResponse.FromOldWithExtraData(database.GetLevelById(id), database, matchService, user, dataStore, token.TokenGame);
 
     [GameEndpoint("slotList", ContentType.Xml)]
     [NullStatusCode(BadRequest)]
     [MinimumRole(GameUserRole.Restricted)]
-    public SerializedLevelList? GetMultipleLevels(RequestContext context, GameDatabaseContext database, MatchService matchService, GameUser user)
+    public SerializedLevelList? GetMultipleLevels(RequestContext context, GameDatabaseContext database, MatchService matchService, GameUser user, IDataStore dataStore, Token token)
     {
         string[]? levelIds = context.QueryString.GetValues("s");
         if (levelIds == null) return null;
@@ -92,7 +95,7 @@ public class LevelEndpoints : EndpointGroup
 
             if (level == null) continue;
             
-            levels.Add(GameLevelResponse.FromOldWithExtraData(level, database, matchService, user)!);
+            levels.Add(GameLevelResponse.FromOldWithExtraData(level, database, matchService, user, dataStore, token.TokenGame)!);
         }
 
         return new SerializedLevelList
@@ -106,13 +109,13 @@ public class LevelEndpoints : EndpointGroup
     [GameEndpoint("searches", ContentType.Xml)]
     [GameEndpoint("genres", ContentType.Xml)]
     [MinimumRole(GameUserRole.Restricted)]
-    public SerializedCategoryList GetModernCategories(RequestContext context, GameDatabaseContext database, CategoryService categoryService, MatchService matchService, GameUser user, Token token)
+    public SerializedCategoryList GetModernCategories(RequestContext context, GameDatabaseContext database, CategoryService categoryService, MatchService matchService, GameUser user, Token token, IDataStore dataStore)
     {
         (int skip, int count) = context.GetPageData();
 
         IEnumerable<SerializedCategory> categories = categoryService.Categories
             .Where(c => !c.Hidden)
-            .Select(c => SerializedCategory.FromLevelCategory(c, context, database, user, token, matchService, 0, 1))
+            .Select(c => SerializedCategory.FromLevelCategory(c, context, database, dataStore, user, token, matchService, 0, 1))
             .Where(c => c.Levels.Total > 0)
             .ToList();
 
@@ -125,7 +128,7 @@ public class LevelEndpoints : EndpointGroup
 
     [GameEndpoint("searches/{apiRoute}", ContentType.Xml)]
     [MinimumRole(GameUserRole.Restricted)]
-    public SerializedMinimalLevelResultsList GetLevelsFromCategory(RequestContext context, GameDatabaseContext database, CategoryService categories, MatchService matchService, GameUser user, Token token, string apiRoute)
+    public SerializedMinimalLevelResultsList GetLevelsFromCategory(RequestContext context, GameDatabaseContext database, CategoryService categories, MatchService matchService, GameUser user, Token token, IDataStore dataStore, string apiRoute)
     {
         (int skip, int count) = context.GetPageData();
 
@@ -134,7 +137,7 @@ public class LevelEndpoints : EndpointGroup
             .Fetch(context, skip, count, matchService, database, user, new LevelFilterSettings(context, token.TokenGame));
         
         return new SerializedMinimalLevelResultsList(levels?.Items
-            .Select(l => GameMinimalLevelResponse.FromOldWithExtraData(l, matchService))!, levels?.TotalItems ?? 0);
+            .Select(l => GameMinimalLevelResponse.FromOldWithExtraData(l, matchService, database, dataStore, token.TokenGame))!, levels?.TotalItems ?? 0);
     }
 
     #region Quirk workarounds
@@ -149,8 +152,9 @@ public class LevelEndpoints : EndpointGroup
         MatchService matchService,
         LevelListOverrideService overrideService,
         GameUser user,
+        IDataStore dataStore,
         Token token) 
-        => this.GetLevels(context, database, categories, matchService, overrideService, user, token, "newest");
+        => this.GetLevels(context, database, categories, matchService, overrideService, user, token, dataStore, "newest");
 
     [GameEndpoint("favouriteSlots/{username}", ContentType.Xml)]
     [NullStatusCode(NotFound)]
@@ -161,12 +165,13 @@ public class LevelEndpoints : EndpointGroup
         MatchService matchService,
         LevelListOverrideService overrideService,
         Token token,
+        IDataStore dataStore,
         string username)
     {
         GameUser? user = database.GetUserByUsername(username);
         if (user == null) return null;
         
-        SerializedMinimalLevelList? levels = this.GetLevels(context, database, categories, matchService, overrideService, user, token, "favouriteSlots");
+        SerializedMinimalLevelList? levels = this.GetLevels(context, database, categories, matchService, overrideService, user, token, dataStore, "favouriteSlots");
         
         return new SerializedMinimalFavouriteLevelList(levels);
     }
