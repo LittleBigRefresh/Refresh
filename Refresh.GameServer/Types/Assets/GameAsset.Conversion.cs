@@ -357,7 +357,7 @@ public partial class GameAsset
             case GameAssetType.SyncedProfile:
             case GameAssetType.Unknown:
             default:
-                throw new ArgumentOutOfRangeException();
+                throw new InvalidOperationException($"Format '{this.AssetType}' is not a valid image.");
         }
     }
 }
