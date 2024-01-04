@@ -18,7 +18,7 @@ public class MipEncoder : ImageEncoder
             Dither = ErrorDither.Atkinson,
             MaxColors = 256,
         })));
-        image.SaveAsPng("rawquant.png");
+        
         Dictionary<Rgba32, byte> outputPalette = new(256);
         {
             for (int x = 0; x < image.Width; x++)
@@ -48,74 +48,76 @@ public class MipEncoder : ImageEncoder
             NumBlocks = 2,
             TexMode = 1,
             Alpha = alpha,
-            Clut = new Rgba32[256],
+            ColorLookupTable = new Rgba32[256],
         };
         
         //Fill in the header's CLUT
-        foreach ((Rgba32 key, byte value) in outputPalette) header.Clut[value] = key;
+        foreach ((Rgba32 key, byte value) in outputPalette) header.ColorLookupTable[value] = key;
 
         //Write the header
         header.Write(stream);
         
         BinaryWriter writer = new(stream);
+        WriteImageData(image, writer, outputPalette);
+    }
 
-        {
-            //NOTE: this code assumes the image is 4bpp!!!
-            int blockWidth = 16;
-            int blockHeight = 8;
+    private static void WriteImageData(Image<Rgba32> image, BinaryWriter writer, IReadOnlyDictionary<Rgba32, byte> palette)
+    {
+        //NOTE: this code assumes the image is 4bpp!!!
+        int blockWidth = 16;
+        int blockHeight = 8;
 
-            int x = 0;
-            int y = 0;
-            int xStart = 0;
-            int xTarget = blockWidth;
-            int yStart = 0;
-            int yTarget = blockHeight;
+        int x = 0;
+        int y = 0;
+        int xStart = 0;
+        int xTarget = blockWidth;
+        int yStart = 0;
+        int yTarget = blockHeight;
             
-            int bytesToWrite = image.Width * image.Height;
-            for (int i = 0; i < bytesToWrite; i++)
-            {
-                #region hack to get swizzled coordinates
+        int bytesToWrite = image.Width * image.Height;
+        for (int i = 0; i < bytesToWrite; i++)
+        {
+            #region hack to get swizzled coordinates
 
-                if (x == xTarget && y == yTarget - 1)
+            if (x == xTarget && y == yTarget - 1)
+            {
+                xStart += blockWidth;
+                xTarget += blockWidth;
+
+                if (xStart == image.Width)
+                {
+                    xStart = 0;
+                    xTarget = blockWidth;
+                    yStart += blockHeight;
+                    yTarget += blockHeight;
+                }
+
+                x = xStart;
+                y = yStart;
+            }
+            else
+            {
+                if (x == xTarget)
+                {
+                    y += 1;
+                    x = xStart;
+                }
+
+                if (y == yTarget)
                 {
                     xStart += blockWidth;
                     xTarget += blockWidth;
-
-                    if (xStart == header.Width)
-                    {
-                        xStart = 0;
-                        xTarget = blockWidth;
-                        yStart += blockHeight;
-                        yTarget += blockHeight;
-                    }
-
                     x = xStart;
                     y = yStart;
                 }
-                else
-                {
-                    if (x == xTarget)
-                    {
-                        y += 1;
-                        x = xStart;
-                    }
-
-                    if (y == yTarget)
-                    {
-                        xStart += blockWidth;
-                        xTarget += blockWidth;
-                        x = xStart;
-                        y = yStart;
-                    }
-                }
-
-                #endregion
-                
-                //Write the byte at the location in the image
-                writer.Write(outputPalette[image[x, image.Height - y - 1]]);
-                
-                x += 1;
             }
-        }
+
+            #endregion
+                
+            //Write the byte at the location in the image
+            writer.Write(palette[image[x, image.Height - y - 1]]);
+                
+            x += 1;
+        } 
     }
 }

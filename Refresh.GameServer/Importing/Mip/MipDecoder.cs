@@ -81,7 +81,7 @@ public class MipDecoder : ImageDecoder
             {
                 case 8: {
                     TPixel pixel = new();
-                    pixel.FromRgba32(header.Clut[reader.ReadByte()]);
+                    pixel.FromRgba32(header.ColorLookupTable[reader.ReadByte()]);
                     pixels[x, (int)(header.Height - y - 1)] = pixel;
 
                     x++;
@@ -92,10 +92,10 @@ public class MipDecoder : ImageDecoder
 
                     byte data = reader.ReadByte();
 
-                    pixel.FromRgba32(header.Clut[data & 0x0f]);
+                    pixel.FromRgba32(header.ColorLookupTable[data & 0x0f]);
                     pixels[x, (int)(header.Height - y - 1)] = pixel;
 
-                    pixel.FromRgba32(header.Clut[data >> 4]);
+                    pixel.FromRgba32(header.ColorLookupTable[data >> 4]);
                     pixels[x + 1, (int)(header.Height - y - 1)] = pixel;
 
                     x += 2;

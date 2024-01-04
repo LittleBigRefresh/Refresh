@@ -43,19 +43,19 @@ public partial class GameDatabaseContext // AssetConfiguration
             this._realm.Add(assets, true);
         });
 
-    public void SetAsMainlineIconHash(GameAsset asset, string hash) =>
+    public void SetMainlineIconHash(GameAsset asset, string hash) =>
         this._realm.Write(() =>
         {
             asset.AsMainlineIconHash = hash;
         });
     
-    public void SetAsMipIconHash(GameAsset asset, string hash) =>
+    public void SetMipIconHash(GameAsset asset, string hash) =>
         this._realm.Write(() =>
         {
             asset.AsMipIconHash = hash;
         });
     
-    public void SetAsMainlinePhotoHash(GameAsset asset, string hash) =>
+    public void SetMainlinePhotoHash(GameAsset asset, string hash) =>
         this._realm.Write(() =>
         {
             asset.AsMainlinePhotoHash = hash;
