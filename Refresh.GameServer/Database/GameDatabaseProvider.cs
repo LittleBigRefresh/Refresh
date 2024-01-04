@@ -313,9 +313,9 @@ public class GameDatabaseProvider : RealmDatabaseProvider<GameDatabaseContext>
 
             if (oldVersion < 110)
             {
-                newPhoto.LargeAsset = migration.NewRealm.Find<GameAsset>(oldPhoto.LargeHash.StartsWith("psp/") ? oldPhoto.LargeHash[4..] : oldPhoto.LargeHash);
-                newPhoto.MediumAsset = migration.NewRealm.Find<GameAsset>(oldPhoto.MediumHash.StartsWith("psp/") ? oldPhoto.MediumHash[4..] : oldPhoto.MediumHash);
-                newPhoto.SmallAsset = migration.NewRealm.Find<GameAsset>(oldPhoto.SmallHash.StartsWith("psp/") ? oldPhoto.SmallHash[4..] : oldPhoto.SmallHash);
+                newPhoto.LargeAsset = migration.NewRealm.Find<GameAsset>(oldPhoto.LargeHash.StartsWith("psp/") ? oldPhoto.LargeHash.Substring(4) : oldPhoto.LargeHash);
+                newPhoto.MediumAsset = migration.NewRealm.Find<GameAsset>(oldPhoto.MediumHash.StartsWith("psp/") ? oldPhoto.MediumHash.Substring(4) : oldPhoto.MediumHash);
+                newPhoto.SmallAsset = migration.NewRealm.Find<GameAsset>(oldPhoto.SmallHash.StartsWith("psp/") ? oldPhoto.SmallHash.Substring(4) : oldPhoto.SmallHash);
             }
         }
         
