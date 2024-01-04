@@ -54,4 +54,10 @@ public partial class GameDatabaseContext // AssetConfiguration
         {
             asset.AsMipIconHash = hash;
         });
+    
+    public void SetAsMainlinePhotoHash(GameAsset asset, string hash) =>
+        this._realm.Write(() =>
+        {
+            asset.AsMainlinePhotoHash = hash;
+        });
 }

@@ -32,7 +32,7 @@ public class GameDatabaseProvider : RealmDatabaseProvider<GameDatabaseContext>
         this._time = time;
     }
 
-    protected override ulong SchemaVersion => 106;
+    protected override ulong SchemaVersion => 110;
 
     protected override string Filename => "refreshGameServer.realm";
     
@@ -300,7 +300,7 @@ public class GameDatabaseProvider : RealmDatabaseProvider<GameDatabaseContext>
         IQueryable<dynamic>? oldPhotos = migration.OldRealm.DynamicApi.All("GamePhoto");
         IQueryable<GamePhoto>? newPhotos = migration.NewRealm.All<GamePhoto>();
 
-        for (int i = 0; i < newComments.Count(); i++)
+        for (int i = 0; i < oldPhotos.Count(); i++)
         {
             dynamic oldPhoto = oldPhotos.ElementAt(i);
             GamePhoto newPhoto = newPhotos.ElementAt(i);
@@ -309,6 +309,13 @@ public class GameDatabaseProvider : RealmDatabaseProvider<GameDatabaseContext>
             if (oldVersion < 52)
             {
                 newPhoto.TakenAt = DateTimeOffset.FromUnixTimeSeconds(oldPhoto.TakenAt.ToUnixTimeMilliseconds());
+            }
+
+            if (oldVersion < 110)
+            {
+                newPhoto.LargeAsset = migration.NewRealm.Find<GameAsset>(oldPhoto.LargeHash.StartsWith("psp/") ? oldPhoto.LargeHash[4..] : oldPhoto.LargeHash);
+                newPhoto.MediumAsset = migration.NewRealm.Find<GameAsset>(oldPhoto.MediumHash.StartsWith("psp/") ? oldPhoto.MediumHash[4..] : oldPhoto.MediumHash);
+                newPhoto.SmallAsset = migration.NewRealm.Find<GameAsset>(oldPhoto.SmallHash.StartsWith("psp/") ? oldPhoto.SmallHash[4..] : oldPhoto.SmallHash);
             }
         }
         

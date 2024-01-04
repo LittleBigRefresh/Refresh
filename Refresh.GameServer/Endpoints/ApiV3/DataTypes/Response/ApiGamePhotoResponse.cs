@@ -42,9 +42,9 @@ public class ApiGamePhotoResponse : IApiResponse, IDataConvertableFrom<ApiGamePh
             LevelType = old.LevelType,
             LevelId = old.LevelId,
 
-            SmallHash = old.SmallHash,
-            MediumHash = old.MediumHash,
-            LargeHash = old.LargeHash,
+            SmallHash = old.SmallAsset.IsPSP ? $"psp/{old.SmallAsset.AssetHash}" : old.SmallAsset.AssetHash,
+            MediumHash = old.MediumAsset.IsPSP ? $"psp/{old.MediumAsset.AssetHash}" : old.MediumAsset.AssetHash,
+            LargeHash = old.LargeAsset.IsPSP ? $"psp/{old.LargeAsset.AssetHash}" : old.LargeAsset.AssetHash,
             PlanHash = old.PlanHash,
 
             Subjects = ApiGamePhotoSubjectResponse.FromOldList(old.Subjects),
