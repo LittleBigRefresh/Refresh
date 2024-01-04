@@ -36,7 +36,7 @@ public class MipEncoder : ImageEncoder
             }
         }
 
-        if (outputPalette.Count > 256) throw new Exception("Too many colours in image!");
+        if (outputPalette.Count > 256) throw new InvalidOperationException("Too many colors in image!");
 
         bool alpha = outputPalette.Any(col => col.Key.A != 255);
         
