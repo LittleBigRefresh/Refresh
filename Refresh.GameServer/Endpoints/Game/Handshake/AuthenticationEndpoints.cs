@@ -113,7 +113,6 @@ public class AuthenticationEndpoints : EndpointGroup
             }
             
             ticketVerified = VerifyTicket(context, (MemoryStream)body, ticket);
-            ticketVerified = true;
             if (!ticketVerified)
             {
                 SendVerificationFailureNotification(database, user, config);
