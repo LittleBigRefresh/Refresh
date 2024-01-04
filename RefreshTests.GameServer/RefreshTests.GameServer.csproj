@@ -49,6 +49,11 @@
 
     </ItemGroup>
 
+    <ItemGroup>
+      <None Remove="Resources\1x1.png" />
+      <EmbeddedResource Include="Resources\1x1.png" />
+    </ItemGroup>
+
 
 
 

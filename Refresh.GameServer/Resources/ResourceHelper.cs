@@ -10,10 +10,17 @@ namespace Refresh.GameServer.Resources;
 
 public static class ResourceHelper
 {
-    public static Stream StreamFromResource(string name)
+    public static Stream StreamFromResource(string name, Assembly? assembly = null)
     {
-        Assembly assembly = Assembly.GetExecutingAssembly();
+        assembly ??= Assembly.GetExecutingAssembly();
         return assembly.GetManifestResourceStream(name)!;
+    }
+
+    public static byte[] ReadResource(string name, Assembly? assembly = null)
+    {
+        MemoryStream stream = new();
+        StreamFromResource(name, assembly).CopyTo(stream);
+        return stream.ToArray();
     }
     
     private static readonly ThreadLocal<Iron> Iron = new(() => new Iron(ArrayPool<byte>.Shared));

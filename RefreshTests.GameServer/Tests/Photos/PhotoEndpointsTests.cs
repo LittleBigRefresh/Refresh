@@ -1,4 +1,6 @@
+using System.Reflection;
 using Refresh.GameServer.Authentication;
+using Refresh.GameServer.Resources;
 using Refresh.GameServer.Types.Levels;
 using Refresh.GameServer.Types.Lists;
 using Refresh.GameServer.Types.Photos;
@@ -9,7 +11,8 @@ namespace RefreshTests.GameServer.Tests.Photos;
 
 public class PhotoEndpointsTests : GameServerTest
 {
-    private const string TEST_ASSET_HASH = "acddf3f9251c1ddb675ad81ba34ba16135b54aca";
+    private const string TEST_ASSET_HASH = "0ec63b140374ba704a58fa0c743cb357683313dd";
+    private static readonly byte[] TestAsset = ResourceHelper.ReadResource("RefreshTests.GameServer.Resources.1x1.png", Assembly.GetExecutingAssembly());
     
     [Test]
     public void UploadAndDeletePhoto()
@@ -21,7 +24,7 @@ public class PhotoEndpointsTests : GameServerTest
         using HttpClient client = context.GetAuthenticatedClient(TokenType.Game, user);
 
         //Upload our """photo"""
-        HttpResponseMessage message = client.PostAsync($"/lbp/upload/{TEST_ASSET_HASH}", new ReadOnlyMemoryContent("LVLb"u8.ToArray())).Result;
+        HttpResponseMessage message = client.PostAsync($"/lbp/upload/{TEST_ASSET_HASH}", new ReadOnlyMemoryContent(TestAsset)).Result;
         Assert.That(message.StatusCode, Is.EqualTo(OK));
         
         SerializedPhoto photo = new()
@@ -129,7 +132,7 @@ public class PhotoEndpointsTests : GameServerTest
         using HttpClient client = context.GetAuthenticatedClient(TokenType.Game, user);
         
         //Upload our """photo"""
-        HttpResponseMessage message = client.PostAsync($"/lbp/upload/{TEST_ASSET_HASH}", new ReadOnlyMemoryContent("LVLb"u8.ToArray())).Result;
+        HttpResponseMessage message = client.PostAsync($"/lbp/upload/{TEST_ASSET_HASH}", new ReadOnlyMemoryContent(TestAsset)).Result;
         Assert.That(message.StatusCode, Is.EqualTo(OK));
         
         SerializedPhoto photo = new()
@@ -230,7 +233,7 @@ public class PhotoEndpointsTests : GameServerTest
     }
     
         [Test]
-    public void CantDeleteothersPhoto()
+    public void CantDeleteOthersPhoto()
     {
         using TestContext context = this.GetServer();
         GameUser user1 = context.CreateUser();
@@ -241,7 +244,7 @@ public class PhotoEndpointsTests : GameServerTest
         using HttpClient client2 = context.GetAuthenticatedClient(TokenType.Game, user2);
 
         //Upload our """photo"""
-        HttpResponseMessage message = client1.PostAsync($"/lbp/upload/{TEST_ASSET_HASH}", new ReadOnlyMemoryContent("LVLb"u8.ToArray())).Result;
+        HttpResponseMessage message = client1.PostAsync($"/lbp/upload/{TEST_ASSET_HASH}", new ReadOnlyMemoryContent(TestAsset)).Result;
         Assert.That(message.StatusCode, Is.EqualTo(OK));
         
         SerializedPhoto photo = new()
