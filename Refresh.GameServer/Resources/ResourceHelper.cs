@@ -18,7 +18,7 @@ public static class ResourceHelper
 
     public static byte[] ReadResource(string name, Assembly? assembly = null)
     {
-        MemoryStream stream = new();
+        using MemoryStream stream = new();
         StreamFromResource(name, assembly).CopyTo(stream);
         return stream.ToArray();
     }
