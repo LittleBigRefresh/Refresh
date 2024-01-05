@@ -169,7 +169,7 @@ public class GameUserResponse : IDataConvertableFrom<GameUserResponse, GameUser>
                     .AsEnumerable()
                     .Where(l => l.Level._GameVersion == (int)TokenGame.LittleBigPlanetPSP)
                     .Select(f => GameMinimalLevelResponse.FromOld(f.Level)).ToList()!;
-                this.FavouriteLevels = new SerializedMinimalFavouriteLevelList(new SerializedMinimalLevelList(favouriteLevels, favouriteLevels.Count));
+                this.FavouriteLevels = new SerializedMinimalFavouriteLevelList(new SerializedMinimalLevelList(favouriteLevels, favouriteLevels.Count, favouriteLevels.Count));
                 break;
             }
             case TokenGame.Website: break;

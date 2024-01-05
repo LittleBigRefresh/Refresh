@@ -36,7 +36,7 @@ public class LevelEndpoints : EndpointGroup
                 .Select(l => GameMinimalLevelResponse.FromOldWithExtraData(l, matchService, database, dataStore, token.TokenGame))
                 .ToList()!;
             
-            return new SerializedMinimalLevelList(overrides, overrides.Count);
+            return new SerializedMinimalLevelList(overrides, overrides.Count, overrides.Count);
         }
         
         (int skip, int count) = context.GetPageData();
@@ -50,7 +50,7 @@ public class LevelEndpoints : EndpointGroup
         IEnumerable<GameMinimalLevelResponse> category = levels.Items
             .Select(l => GameMinimalLevelResponse.FromOldWithExtraData(l, matchService, database, dataStore, token.TokenGame))!;
         
-        return new SerializedMinimalLevelList(category, levels.TotalItems);
+        return new SerializedMinimalLevelList(category, levels.TotalItems, skip + count);
     }
 
     [GameEndpoint("slots/{route}/{username}", ContentType.Xml)]
@@ -137,7 +137,7 @@ public class LevelEndpoints : EndpointGroup
             .Fetch(context, skip, count, matchService, database, user, new LevelFilterSettings(context, token.TokenGame));
         
         return new SerializedMinimalLevelResultsList(levels?.Items
-            .Select(l => GameMinimalLevelResponse.FromOldWithExtraData(l, matchService, database, dataStore, token.TokenGame))!, levels?.TotalItems ?? 0);
+            .Select(l => GameMinimalLevelResponse.FromOldWithExtraData(l, matchService, database, dataStore, token.TokenGame))!, levels?.TotalItems ?? 0, skip + count);
     }
 
     #region Quirk workarounds

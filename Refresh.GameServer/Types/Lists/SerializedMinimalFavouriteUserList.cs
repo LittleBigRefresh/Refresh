@@ -19,6 +19,7 @@ public class SerializedMinimalFavouriteUserList : SerializedList<SerializedUserH
     {
         this.Total = count;
         this.Items = list;
+        this.NextPageStart = count + 1;
     }
     
     [XmlElement("user")]
