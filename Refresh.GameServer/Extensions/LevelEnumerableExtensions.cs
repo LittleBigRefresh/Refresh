@@ -61,7 +61,7 @@ public static class LevelEnumerableExtensions
         // };
 
         //Filter out sub-levels, unless the user is the publisher
-        levels = levels.Where(l => !l.IsSubLevel || user == l.Publisher);
+        levels = levels.Where(l => !l.IsSubLevel || l.Publisher == user);
 
         return levels;
     }
@@ -96,7 +96,7 @@ public static class LevelEnumerableExtensions
         // };
         
         //Filter out sub-levels, unless the user is the publisher
-        levels = levels.Where(l => !l.IsSubLevel || user == l.Publisher);
+        levels = levels.Where(l => !l.IsSubLevel || l.Publisher == user);
 
         return levels;
     }
