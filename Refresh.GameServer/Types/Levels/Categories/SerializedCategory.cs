@@ -53,7 +53,7 @@ public class SerializedCategory
         IEnumerable<GameMinimalLevelResponse> levels = categoryLevels?.Items
             .Select(l => GameMinimalLevelResponse.FromOldWithExtraData(l, matchService, database, dataStore, token.TokenGame)) ?? Array.Empty<GameMinimalLevelResponse>();
 
-        category.Levels = new SerializedMinimalLevelList(levels, categoryLevels?.TotalItems ?? 0);
+        category.Levels = new SerializedMinimalLevelList(levels, categoryLevels?.TotalItems ?? 0, skip + count);
 
         return category;
     }

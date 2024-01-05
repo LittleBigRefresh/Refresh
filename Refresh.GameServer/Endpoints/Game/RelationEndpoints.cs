@@ -89,7 +89,7 @@ public class RelationEndpoints : EndpointGroup
         List<GameUser> users = database.GetUsersFavouritedByUser(user, count, skip)
             .ToList();
 
-        return new SerializedFavouriteUserList(GameUserResponse.FromOldListWithExtraData(users, token.TokenGame, database, dataStore).ToList(), users.Count);
+        return new SerializedFavouriteUserList(GameUserResponse.FromOldListWithExtraData(users, token.TokenGame, database, dataStore).ToList(), users.Count, skip + count);
     }
 
     [GameEndpoint("lolcatftw/add/user/{id}", HttpMethods.Post)]
