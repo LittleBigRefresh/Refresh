@@ -60,8 +60,8 @@ public static class LevelEnumerableExtensions
         // _ => throw new ArgumentOutOfRangeException()
         // };
 
-        //Filter out sub-levels
-        levels = levels.Where(l => !l.IsSubLevel);
+        //Filter out sub-levels, unless the user is the publisher
+        levels = levels.Where(l => !l.IsSubLevel || user == l.Publisher);
 
         return levels;
     }
@@ -95,8 +95,8 @@ public static class LevelEnumerableExtensions
         // _ => throw new ArgumentOutOfRangeException()
         // };
         
-        //Filter out sub-levels
-        levels = levels.Where(l => !l.IsSubLevel);
+        //Filter out sub-levels, unless the user is the publisher
+        levels = levels.Where(l => !l.IsSubLevel || user == l.Publisher);
 
         return levels;
     }
