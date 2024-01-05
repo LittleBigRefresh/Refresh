@@ -33,17 +33,22 @@ public static class ResourceHelper
         //If the file is big enough, try to compress it
         bool compress = data.Length > 1024;
 
+        IronCompressResult? compressResult = null;
+        
         //If we want to compress the data, do so, if not, dont
         ReadOnlySpan<byte> resultData = compress
-            ? Iron.Value!.Compress(Codec.LZO, data, null, CompressionLevel.SmallestSize).AsSpan().ToArray()
+            ? (compressResult = Iron.Value!.Compress(Codec.LZO, data, null, CompressionLevel.SmallestSize)).AsSpan()
             : data;
 
-        byte[] final = new byte[resultData.Length + 0x19];
+        const int infoLength = 0x19;
+        const int hashLength = 0x10;
+        
+        byte[] final = new byte[resultData.Length + infoLength];
 
-        Span<byte> info = final.AsSpan()[^0x19..];
+        Span<byte> info = final.AsSpan()[^infoLength..];
 
         //Copy the result data
-        resultData.CopyTo(final.AsSpan()[..^0x19]);
+        resultData.CopyTo(final.AsSpan()[..^infoLength]);
 
         //Write the buffer length
         BinaryPrimitives.WriteUInt32LittleEndian(info[..4], (uint)data.Length);
@@ -51,12 +56,17 @@ public static class ResourceHelper
         info[4] = (byte)(compress ? 1 : 0);
         BinaryPrimitives.WriteUInt32LittleEndian(info[5..], 0xFFFFFFFF);
 
-        byte[] hash = MD5.HashData(final.AsSpan()[..(final.Length - 0x10)]);
-        hash.AsSpan().CopyTo(info[^0x10..]);
+        //Get the hash of the data and part of the info
+        byte[] hash = MD5.HashData(final.AsSpan()[..(final.Length - hashLength)]);
+        //Copy the hash into the end of the info
+        hash.AsSpan().CopyTo(info[^hashLength..]);
         
         //Encrypt the data
         AesCtr ctr = new(key, initialCounter);
         ctr.EncryptBytes(final, final);
+
+        //If we compressed the data, free it
+        compressResult?.Dispose();
 
         return final;
     }
