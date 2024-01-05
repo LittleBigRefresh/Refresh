@@ -64,7 +64,7 @@ public partial class GameDatabaseContext // Leaderboard
         scores = scores.DistinctBy(s => new ScoreLevelWithPlayer(s.Level, s.Players[0]))
             .ToList();
 
-        return scores.Select((s, i) => new ScoreWithRank(s, i))
+        return scores.Select((s, i) => new ScoreWithRank(s, i + 1))
             .Skip(Math.Min(scores.Count, scores.IndexOf(score) - count / 2)) // center user's score around other scores
             .Take(count);
     }
