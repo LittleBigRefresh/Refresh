@@ -357,7 +357,8 @@ public partial class GameAsset
             case GameAssetType.SyncedProfile:
             case GameAssetType.Unknown:
             default:
-                throw new InvalidOperationException($"Format '{this.AssetType}' is not a valid image.");
+                //If we dont know what asset type this is, just hope that whatever is asking for it knows what it is
+                return this.AssetHash;
         }
     }
 }
