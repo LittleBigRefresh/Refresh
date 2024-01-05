@@ -61,26 +61,28 @@ public partial class ImageImporter : Importer
         
         while (assetQueue.TryDequeue(out GameAsset? asset))
         {
-            ImportAsset(asset, dataStore);
+            this.ImportAsset(asset.AssetHash, asset.IsPSP, asset.AssetType, dataStore);
             this.Info($"Imported {asset.AssetType} {asset.AssetHash}");   
         }
 
         this._runningCount--;
     }
 
-    public void ImportAsset(GameAsset asset, IDataStore dataStore)
+    public void ImportAsset(string hash, bool isPsp, GameAssetType type, IDataStore dataStore)
     {
-        using Stream stream = dataStore.GetStreamFromStore(asset.IsPSP ? "psp/" + asset.AssetHash : asset.AssetHash);
-        using Stream writeStream = dataStore.OpenWriteStream("png/" + asset.AssetHash);
+        string dataStorePath = isPsp ? $"psp/{hash}" : hash;
+        
+        using Stream stream = dataStore.GetStreamFromStore(dataStorePath);
+        using Stream writeStream = dataStore.OpenWriteStream($"png/{hash}");
 
-        switch (asset.AssetType)
+        switch (type)
         {
             case GameAssetType.GameDataTexture:
                 GtfToPng(stream, writeStream);
                 break;
             case GameAssetType.Mip: {
-                byte[] rawData = dataStore.GetDataFromStore(asset.IsPSP ? "psp/" + asset.AssetHash : asset.AssetHash);
-                byte[] data = ResourceHelper.PspDecrypt(rawData, this.PSPKey.Value);
+                byte[] rawData = dataStore.GetDataFromStore(dataStorePath);
+                byte[] data = ResourceHelper.PspDecrypt(rawData, PSPKey.Value);
 
                 using MemoryStream dataStream = new(data);
 
@@ -98,7 +100,7 @@ public partial class ImageImporter : Importer
                 stream.CopyTo(writeStream); // TODO: use hard links instead of just replicating same data, or run 'optipng'?
                 break;
             default:
-                throw new InvalidOperationException($"Cannot convert a {asset.AssetType} to PNG");
+                throw new InvalidOperationException($"Cannot convert a {type} to PNG");
         }
     }
 }

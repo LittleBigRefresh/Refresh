@@ -1,3 +1,5 @@
+using Bunkum.Core.Storage;
+using Refresh.GameServer.Database;
 using Refresh.GameServer.Types.Photos;
 
 namespace Refresh.GameServer.Endpoints.ApiV3.DataTypes.Response;
@@ -40,13 +42,33 @@ public class ApiGamePhotoResponse : IApiResponse, IDataConvertableFrom<ApiGamePh
             LevelType = old.LevelType,
             LevelId = old.LevelId,
 
-            SmallHash = old.SmallHash,
-            MediumHash = old.MediumHash,
-            LargeHash = old.LargeHash,
+            SmallHash = old.SmallAsset.IsPSP ? $"psp/{old.SmallAsset.AssetHash}" : old.SmallAsset.AssetHash,
+            MediumHash = old.MediumAsset.IsPSP ? $"psp/{old.MediumAsset.AssetHash}" : old.MediumAsset.AssetHash,
+            LargeHash = old.LargeAsset.IsPSP ? $"psp/{old.LargeAsset.AssetHash}" : old.LargeAsset.AssetHash,
             PlanHash = old.PlanHash,
 
             Subjects = ApiGamePhotoSubjectResponse.FromOldList(old.Subjects),
         };
+    }
+
+    public void FillInExtraData(GameDatabaseContext database, IDataStore dataStore)
+    {
+        foreach (ApiGamePhotoSubjectResponse subject in this.Subjects)
+        {
+            subject.FillInExtraData(database, dataStore);
+        }
+        
+        this.Publisher.FillInExtraData(database, dataStore);
+    }
+
+    public static ApiGamePhotoResponse? FromOldWithExtraData(GamePhoto? old, GameDatabaseContext database, IDataStore dataStore)
+    {
+        if (old == null) return null;
+
+        ApiGamePhotoResponse response = FromOld(old)!;
+        response.FillInExtraData(database, dataStore);
+
+        return response;
     }
 
     public static IEnumerable<ApiGamePhotoResponse> FromOldList(IEnumerable<GamePhoto> oldList) => oldList.Select(FromOld)!;

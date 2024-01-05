@@ -69,7 +69,7 @@ public class AssetImporter : Importer
         }
     }
     
-    private static string BytesToHexString(ReadOnlySpan<byte> data)
+    public static string BytesToHexString(ReadOnlySpan<byte> data)
     {
         Span<char> hexChars = stackalloc char[data.Length * 2];
 

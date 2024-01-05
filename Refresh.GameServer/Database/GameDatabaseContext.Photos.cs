@@ -13,9 +13,9 @@ public partial class GameDatabaseContext // Photos
     {
         GamePhoto newPhoto = new()
         {
-            SmallHash = photo.SmallHash,
-            MediumHash = photo.MediumHash,
-            LargeHash = photo.LargeHash,
+            SmallAsset = this.GetAssetFromHash(photo.SmallHash) ?? throw new Exception($"Small asset {photo.SmallHash} is missing!"),
+            MediumAsset = this.GetAssetFromHash(photo.MediumHash) ?? throw new Exception($"Medium asset {photo.MediumHash} is missing!"),
+            LargeAsset = this.GetAssetFromHash(photo.LargeHash) ?? throw new Exception($"Large asset {photo.LargeHash} is missing!"),
             PlanHash = photo.PlanHash,
             
             Publisher = publisher,

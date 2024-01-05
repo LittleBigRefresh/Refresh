@@ -1,4 +1,7 @@
+using Bunkum.Core.Storage;
 using JetBrains.Annotations;
+using Refresh.GameServer.Authentication;
+using Refresh.GameServer.Database;
 using Refresh.GameServer.Types.Roles;
 using Refresh.GameServer.Types.UserData;
 
@@ -59,6 +62,23 @@ public class ApiExtendedGameUserResponse : IApiResponse, IDataConvertableFrom<Ap
             RedirectGriefReportsToPhotos = user.RedirectGriefReportsToPhotos,
         };
     }
+    
+    public void FillInExtraData(GameDatabaseContext database, IDataStore dataStore)
+    {
+        this.IconHash = database.GetAssetFromHash(this.IconHash)?.GetAsIcon(TokenGame.Website, database, dataStore) ?? "0";
+    }
+    
+    public static ApiExtendedGameUserResponse? FromOldWithExtraData(GameUser? old, GameDatabaseContext database, IDataStore dataStore)
+    {
+        if (old == null) return null;
+
+        ApiExtendedGameUserResponse response = FromOld(old)!;
+        response.FillInExtraData(database, dataStore);
+
+        return response;
+    }
 
     public static IEnumerable<ApiExtendedGameUserResponse> FromOldList(IEnumerable<GameUser> oldList) => oldList.Select(FromOld)!;
+    
+    public static IEnumerable<ApiExtendedGameUserResponse> FromOldListWithExtraData(IEnumerable<GameUser> oldList, GameDatabaseContext database, IDataStore dataStore) => oldList.Select(old => FromOldWithExtraData(old, database, dataStore))!;
 }

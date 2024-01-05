@@ -1,4 +1,3 @@
-using ICSharpCode.SharpZipLib.Zip.Compression;
 using Pfim;
 using Refresh.GameServer.Importing.Gtf;
 using Refresh.GameServer.Importing.Mip;
@@ -45,17 +44,42 @@ public partial class ImageImporter // Conversions
 
     private static readonly PfimConfig Config = new();
 
-    private static void DdsToPng(Stream stream, Stream writeStream)
+    private static Image<Rgba32> LoadDds(Stream stream)
     {
         Dds dds = Dds.Create(stream, Config);
         
         // ReSharper disable once SwitchExpressionHandlesSomeKnownEnumValuesWithExceptionInDefault
-        Image image = dds.Format switch
+        Image<Rgba32> image = dds.Format switch
         {
-            ImageFormat.Rgba32 => Image.LoadPixelData<Bgra32>(dds.Data, dds.Width, dds.Height),
+            ImageFormat.Rgba32 => Image.LoadPixelData<Bgra32>(dds.Data, dds.Width, dds.Height).CloneAs<Rgba32>(),
             _ => throw new InvalidOperationException($"Cannot convert DDS format {dds.Format} to PNG"),
         };
 
-        image.SaveAsPng(writeStream);
+        return image;
+    }
+
+    //Loads a Tex file into an ImageSharp image.
+    public static Image<Rgba32> LoadTex(Stream stream)
+    {
+        using Stream loadStream = new TexStream(stream);
+        
+        return LoadDds(loadStream);
+    }
+    
+    //Loads a GTF file into an ImageSharp image.
+    public static Image<Rgba32> LoadGtf(Stream stream)
+    {
+        return new GtfDecoder().Decode<Rgba32>(new DecoderOptions(), stream);
+    }
+    
+    //Loads a MIP file into an ImageSharp image.
+    public static Image<Rgba32> LoadMip(Stream stream)
+    {
+        return new MipDecoder().Decode<Rgba32>(new DecoderOptions(), stream);
+    }
+
+    private static void DdsToPng(Stream stream, Stream writeStream)
+    {
+        LoadDds(stream).SaveAsPng(writeStream);
     }
 }

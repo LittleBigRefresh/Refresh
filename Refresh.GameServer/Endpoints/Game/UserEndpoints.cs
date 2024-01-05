@@ -18,12 +18,12 @@ public class UserEndpoints : EndpointGroup
 {
     [GameEndpoint("user/{name}", HttpMethods.Get, ContentType.Xml)]
     [MinimumRole(GameUserRole.Restricted)]
-    public GameUserResponse? GetUser(RequestContext context, GameDatabaseContext database, string name, Token token) 
-        => GameUserResponse.FromOldWithExtraData(database.GetUserByUsername(name), token.TokenGame, database);
+    public GameUserResponse? GetUser(RequestContext context, GameDatabaseContext database, string name, Token token, IDataStore dataStore) 
+        => GameUserResponse.FromOldWithExtraData(database.GetUserByUsername(name), token.TokenGame, database, dataStore);
 
     [GameEndpoint("users", HttpMethods.Get, ContentType.Xml)]
     [MinimumRole(GameUserRole.Restricted)]
-    public SerializedUserList GetMultipleUsers(RequestContext context, GameDatabaseContext database, Token token)
+    public SerializedUserList GetMultipleUsers(RequestContext context, GameDatabaseContext database, Token token, IDataStore dataStore)
     {
         string[]? usernames = context.QueryString.GetValues("u");
         if (usernames == null) return new SerializedUserList();
@@ -35,7 +35,7 @@ public class UserEndpoints : EndpointGroup
             GameUser? user = database.GetUserByUsername(username);
             if (user == null) continue;
             
-            users.Add(GameUserResponse.FromOldWithExtraData(user, token.TokenGame, database)!);
+            users.Add(GameUserResponse.FromOldWithExtraData(user, token.TokenGame, database, dataStore)!);
         }
 
         return new SerializedUserList
@@ -48,12 +48,12 @@ public class UserEndpoints : EndpointGroup
     [NullStatusCode(NotFound)]
     [MinimumRole(GameUserRole.Restricted)]
     public SerializedFriendsList? GetFriends(RequestContext context, GameDatabaseContext database,
-        GameUser user, FriendStorageService friendService, Token token)
+        GameUser user, FriendStorageService friendService, Token token, IDataStore dataStore)
     {
         List<GameUser>? friends = friendService.GetUsersFriends(user, database)?.ToList();
         if (friends == null) return null;
         
-        return new SerializedFriendsList(GameUserResponse.FromOldListWithExtraData(friends, token.TokenGame, database).ToList());
+        return new SerializedFriendsList(GameUserResponse.FromOldListWithExtraData(friends, token.TokenGame, database, dataStore).ToList());
     }
 
     [GameEndpoint("updateUser", HttpMethods.Post, ContentType.Xml)]

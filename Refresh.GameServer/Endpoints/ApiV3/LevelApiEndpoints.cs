@@ -1,6 +1,7 @@
 using AttribDoc.Attributes;
 using Bunkum.Core;
 using Bunkum.Core.Endpoints;
+using Bunkum.Core.Storage;
 using Bunkum.Protocols.Http;
 using Refresh.GameServer.Authentication;
 using Refresh.GameServer.Database;
@@ -26,7 +27,7 @@ public class LevelApiEndpoints : EndpointGroup
     [DocSummary("Retrieves a list of categories you can use to search levels")]
     [DocQueryParam("includePreviews", "If true, a single level will be added to each category representing a level from that category. False by default.")]
     [DocError(typeof(ApiValidationError), "The boolean 'includePreviews' could not be parsed by the server.")]
-    public ApiListResponse<ApiLevelCategoryResponse> GetCategories(RequestContext context, CategoryService categories, MatchService matchService, GameDatabaseContext database, GameUser? user)
+    public ApiListResponse<ApiLevelCategoryResponse> GetCategories(RequestContext context, CategoryService categories, MatchService matchService, GameDatabaseContext database, GameUser? user, IDataStore dataStore)
     {
         bool result = bool.TryParse(context.QueryString.Get("includePreviews") ?? "false", out bool includePreviews);
         if (!result) return ApiValidationError.BooleanParseError;
@@ -35,7 +36,7 @@ public class LevelApiEndpoints : EndpointGroup
 
         // ReSharper disable once ConvertIfStatementToConditionalTernaryExpression
         if (includePreviews)resp = ApiLevelCategoryResponse.FromOldList(categories.Categories, context, matchService, database, user);
-        else resp = ApiLevelCategoryResponse.FromOldList(categories.Categories);
+        else resp = ApiLevelCategoryResponse.FromOldListWithExtraData(categories.Categories, database, dataStore);
         
         return new ApiListResponse<ApiLevelCategoryResponse>(resp);
     }
@@ -44,7 +45,7 @@ public class LevelApiEndpoints : EndpointGroup
     [DocSummary("Retrieves a list of levels from a category")]
     [DocError(typeof(ApiNotFoundError), "The level category cannot be found")]
     [DocUsesPageData]
-    public ApiListResponse<ApiGameLevelResponse> GetLevels(RequestContext context, GameDatabaseContext database, MatchService matchService, CategoryService categories, GameUser? user,
+    public ApiListResponse<ApiGameLevelResponse> GetLevels(RequestContext context, GameDatabaseContext database, MatchService matchService, CategoryService categories, GameUser? user, IDataStore dataStore,
         [DocSummary("The name of the category you'd like to retrieve levels from. " +
                     "Make a request to /levels to see a list of available categories")] string route)
     {
@@ -56,26 +57,31 @@ public class LevelApiEndpoints : EndpointGroup
 
         if (list == null) return ApiNotFoundError.Instance;
 
-        return DatabaseList<ApiGameLevelResponse>.FromOldList<ApiGameLevelResponse, GameLevel>(list);
+        DatabaseList<ApiGameLevelResponse> levels = DatabaseList<ApiGameLevelResponse>.FromOldList<ApiGameLevelResponse, GameLevel>(list);
+        foreach (ApiGameLevelResponse level in levels.Items)
+        {
+            level.FillInExtraData(database, dataStore);
+        }
+        return levels;
     }
 
     [ApiV3Endpoint("levels/id/{id}"), Authentication(false)]
     [DocSummary("Gets an individual level by a numerical ID")]
     [DocError(typeof(ApiNotFoundError), "The level cannot be found")]
-    public ApiResponse<ApiGameLevelResponse> GetLevelById(RequestContext context, GameDatabaseContext database,
+    public ApiResponse<ApiGameLevelResponse> GetLevelById(RequestContext context, GameDatabaseContext database, IDataStore dataStore,
         [DocSummary("The ID of the level")] int id)
     {
         GameLevel? level = database.GetLevelById(id);
         if (level == null) return ApiNotFoundError.LevelMissingError;
         
-        return ApiGameLevelResponse.FromOld(level);
+        return ApiGameLevelResponse.FromOldWithExtraData(level, database, dataStore);
     }
     
     [ApiV3Endpoint("levels/id/{id}", HttpMethods.Patch)]
     [DocSummary("Edits a level by the level's numerical ID")]
     [DocError(typeof(ApiNotFoundError), ApiNotFoundError.LevelMissingErrorWhen)]
     [DocError(typeof(ApiAuthenticationError), ApiAuthenticationError.NoPermissionsForObjectWhen)]
-    public ApiResponse<ApiGameLevelResponse> EditLevelById(RequestContext context, GameDatabaseContext database, GameUser user,
+    public ApiResponse<ApiGameLevelResponse> EditLevelById(RequestContext context, GameDatabaseContext database, GameUser user, IDataStore dataStore,
         [DocSummary("The ID of the level")] int id, ApiEditLevelRequest body)
     {
         GameLevel? level = database.GetLevelById(id);
@@ -86,7 +92,7 @@ public class LevelApiEndpoints : EndpointGroup
 
         level = database.UpdateLevel(body, level);
 
-        return ApiGameLevelResponse.FromOld(level);
+        return ApiGameLevelResponse.FromOldWithExtraData(level, database, dataStore);
     }
 
     [ApiV3Endpoint("levels/id/{id}", HttpMethods.Delete)]

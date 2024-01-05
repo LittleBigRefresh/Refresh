@@ -1,4 +1,6 @@
+using Bunkum.Core.Storage;
 using Refresh.GameServer.Authentication;
+using Refresh.GameServer.Database;
 using Refresh.GameServer.Types.UserData.Leaderboard;
 
 namespace Refresh.GameServer.Endpoints.ApiV3.DataTypes.Response;
@@ -33,5 +35,23 @@ public class ApiGameScoreResponse : IApiResponse, IDataConvertableFrom<ApiGameSc
         };
     }
 
+    public void FillInExtraData(GameDatabaseContext database, IDataStore dataStore)
+    {
+        foreach (ApiGameUserResponse player in this.Players)
+        {
+            player.FillInExtraData(database, dataStore);
+        }
+    }
+
+    public static ApiGameScoreResponse? FromOldWithExtraData(GameSubmittedScore? old, GameDatabaseContext database, IDataStore dataStore)
+    {
+        if (old == null) return null;
+
+        ApiGameScoreResponse response = FromOld(old)!;
+        response.FillInExtraData(database, dataStore);
+
+        return response;
+    }
+    
     public static IEnumerable<ApiGameScoreResponse> FromOldList(IEnumerable<GameSubmittedScore> oldList) => oldList.Select(FromOld)!;
 }

@@ -1,4 +1,5 @@
 using System.Xml.Serialization;
+using Bunkum.Core.Storage;
 using Refresh.GameServer.Authentication;
 using Refresh.GameServer.Database;
 using Refresh.GameServer.Endpoints.ApiV3.DataTypes;
@@ -15,7 +16,6 @@ public class GameUserResponse : IDataConvertableFrom<GameUserResponse, GameUser>
     public const int MaximumLevels = 9_999;
     
     [XmlAttribute("type")] public string Type { get; set; } = "user";
-    [XmlIgnore] public required string IconHash { get; set; }
     [XmlElement("biography")] public required string Description { get; set; }
     [XmlElement("location")] public required GameLocation Location { get; set; }
     [XmlElement("planets")] public required string PlanetsHash { get; set; }
@@ -51,12 +51,12 @@ public class GameUserResponse : IDataConvertableFrom<GameUserResponse, GameUser>
     /// </summary>
     [XmlElement("favouriteUsers")] public SerializedMinimalFavouriteUserList? FavouriteUsers { get; set; }
     
-    public static GameUserResponse? FromOldWithExtraData(GameUser? old, TokenGame gameVersion, GameDatabaseContext database)
+    public static GameUserResponse? FromOldWithExtraData(GameUser? old, TokenGame gameVersion, GameDatabaseContext database, IDataStore dataStore)
     {
         if (old == null) return null;
 
         GameUserResponse response = FromOld(old)!;
-        response.FillInExtraData(old, gameVersion, database);
+        response.FillInExtraData(old, gameVersion, database, dataStore);
 
         return response;
     }
@@ -67,7 +67,6 @@ public class GameUserResponse : IDataConvertableFrom<GameUserResponse, GameUser>
 
         GameUserResponse response = new()
         {
-            IconHash = old.IconHash,
             Description = old.Description,
             Location = old.Location,
             PlanetsHash = "0",
@@ -97,15 +96,15 @@ public class GameUserResponse : IDataConvertableFrom<GameUserResponse, GameUser>
 
     public static IEnumerable<GameUserResponse> FromOldList(IEnumerable<GameUser> oldList) => oldList.Select(FromOld)!;
     
-    public static IEnumerable<GameUserResponse> FromOldListWithExtraData(IEnumerable<GameUser> oldList, TokenGame gameVersion, GameDatabaseContext database) 
-        => oldList.Select(old => FromOldWithExtraData(old, gameVersion, database))!;
+    public static IEnumerable<GameUserResponse> FromOldListWithExtraData(IEnumerable<GameUser> oldList, TokenGame gameVersion, GameDatabaseContext database, IDataStore dataStore) 
+        => oldList.Select(old => FromOldWithExtraData(old, gameVersion, database, dataStore))!;
 
-    private void FillInExtraData(GameUser old, TokenGame gameVersion, GameDatabaseContext database)
+    private void FillInExtraData(GameUser old, TokenGame gameVersion, GameDatabaseContext database, IDataStore dataStore)
     {
         if (!old.IsManaged)
         {
             this.PlanetsHash = "0";
-            this.IconHash = "0";
+            this.Handle.IconHash = "0";
             
             return;
         }
@@ -144,7 +143,7 @@ public class GameUserResponse : IDataConvertableFrom<GameUserResponse, GameUser>
                 this.FreeSlotsLBP2 = MaximumLevels - this.UsedSlotsLBP2;
 
                 //Apply Vita-specific icon hash
-                this.IconHash = old.VitaIconHash;
+                this.Handle.IconHash = old.VitaIconHash;
                 break;
             }
             case TokenGame.LittleBigPlanet1: {
@@ -159,7 +158,7 @@ public class GameUserResponse : IDataConvertableFrom<GameUserResponse, GameUser>
                 this.FreeSlots = MaximumLevels - this.UsedSlots;
                 
                 // Apply PSP-specific icon hash
-                this.IconHash = old.PspIconHash;
+                this.Handle.IconHash = old.PspIconHash;
 
                 //Fill out PSP favourite users
                 List<GameUser> users = database.GetUsersFavouritedByUser(old, 20, 0).ToList();
@@ -177,5 +176,7 @@ public class GameUserResponse : IDataConvertableFrom<GameUserResponse, GameUser>
             default:
                 throw new ArgumentOutOfRangeException(nameof(gameVersion), gameVersion, null);
         }
+        
+        this.Handle.FillInExtraData(database, dataStore, gameVersion);
     }
 }
