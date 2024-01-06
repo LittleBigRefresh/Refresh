@@ -96,5 +96,5 @@ public class ApiGameLevelResponse : IApiResponse, IDataConvertableFrom<ApiGameLe
         return response;
     }
 
-    public static IEnumerable<ApiGameLevelResponse> FromOldList(IEnumerable<GameLevel> oldList) => oldList.Select(FromOld)!;
+    public static IEnumerable<ApiGameLevelResponse> FromOldList(IEnumerable<GameLevel> oldList) => oldList.Select(FromOld).ToList()!;
 }

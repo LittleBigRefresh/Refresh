@@ -39,7 +39,7 @@ public class ApiGameUserResponse : IApiResponse, IDataConvertableFrom<ApiGameUse
 
     public void FillInExtraData(GameDatabaseContext database, IDataStore dataStore)
     {
-        this.IconHash = database.GetAssetFromHash(this.IconHash)?.GetAsIcon(TokenGame.Website, database, dataStore) ?? "0";
+        this.IconHash = database.GetAssetFromHash(this.IconHash)?.GetAsIcon(TokenGame.Website, database, dataStore) ?? this.IconHash;
     }
     
     public static ApiGameUserResponse? FromOldWithExtraData(GameUser? old, GameDatabaseContext database, IDataStore dataStore)
@@ -52,5 +52,5 @@ public class ApiGameUserResponse : IApiResponse, IDataConvertableFrom<ApiGameUse
         return response;
     }
 
-    public static IEnumerable<ApiGameUserResponse> FromOldList(IEnumerable<GameUser> oldList) => oldList.Select(FromOld)!;
+    public static IEnumerable<ApiGameUserResponse> FromOldList(IEnumerable<GameUser> oldList) => oldList.Select(FromOld).ToList()!;
 }

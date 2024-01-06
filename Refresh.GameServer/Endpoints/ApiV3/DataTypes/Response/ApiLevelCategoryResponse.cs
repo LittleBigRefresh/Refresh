@@ -56,9 +56,9 @@ public class ApiLevelCategoryResponse : IApiResponse, IDataConvertableFrom<ApiLe
     
     public static ApiLevelCategoryResponse? FromOld(LevelCategory? old) => FromOld(old, null);
 
-    public static IEnumerable<ApiLevelCategoryResponse> FromOldList(IEnumerable<LevelCategory> oldList) => oldList.Select(FromOld)!;
+    public static IEnumerable<ApiLevelCategoryResponse> FromOldList(IEnumerable<LevelCategory> oldList) => oldList.Select(FromOld).ToList()!;
     public static IEnumerable<ApiLevelCategoryResponse> FromOldListWithExtraData(IEnumerable<LevelCategory> oldList, GameDatabaseContext database, IDataStore dataStore) 
-        => oldList.Select(old => FromOldWithExtraData(old, database, dataStore, null))!;
+        => oldList.Select(old => FromOldWithExtraData(old, database, dataStore, null)).ToList()!;
     
     public static IEnumerable<ApiLevelCategoryResponse> FromOldList(IEnumerable<LevelCategory> oldList,
         RequestContext context,
@@ -72,7 +72,7 @@ public class ApiLevelCategoryResponse : IApiResponse, IDataConvertableFrom<ApiLe
             GameLevel? level = list?.Items.FirstOrDefault();
             
             return FromOld(category, level);
-        })!;
+        }).ToList()!;
     }
 
     public static IEnumerable<ApiLevelCategoryResponse> FromOldListWithExtraData(IEnumerable<LevelCategory> oldList,

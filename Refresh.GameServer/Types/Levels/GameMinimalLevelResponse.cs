@@ -103,6 +103,6 @@ public class GameMinimalLevelResponse : IDataConvertableFrom<GameMinimalLevelRes
         this.IconHash = database.GetAssetFromHash(this.IconHash)?.GetAsIcon(game, database, dataStore) ?? this.IconHash;
     }
 
-    public static IEnumerable<GameMinimalLevelResponse> FromOldList(IEnumerable<GameLevel> oldList) => oldList.Select(FromOld)!;
-    public static IEnumerable<GameMinimalLevelResponse> FromOldList(IEnumerable<GameLevelResponse> oldList) => oldList.Select(FromOld)!;
+    public static IEnumerable<GameMinimalLevelResponse> FromOldList(IEnumerable<GameLevel> oldList) => oldList.Select(FromOld).ToList()!;
+    public static IEnumerable<GameMinimalLevelResponse> FromOldList(IEnumerable<GameLevelResponse> oldList) => oldList.Select(FromOld).ToList()!;
 }

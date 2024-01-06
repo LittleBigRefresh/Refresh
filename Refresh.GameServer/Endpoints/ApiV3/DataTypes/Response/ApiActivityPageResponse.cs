@@ -42,5 +42,5 @@ public class ApiActivityPageResponse : IApiResponse, IDataConvertableFrom<ApiAct
         return response;
     }
 
-    public static IEnumerable<ApiActivityPageResponse> FromOldList(IEnumerable<ActivityPage> oldList) => oldList.Select(FromOld)!;
+    public static IEnumerable<ApiActivityPageResponse> FromOldList(IEnumerable<ActivityPage> oldList) => oldList.Select(FromOld).ToList()!;
 }

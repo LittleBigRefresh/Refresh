@@ -45,5 +45,5 @@ public class LegacyGameUser : IDataConvertableFrom<LegacyGameUser, GameUser>
         };
     }
 
-    public static IEnumerable<LegacyGameUser> FromOldList(IEnumerable<GameUser> oldList) => oldList.Select(FromOld)!;
+    public static IEnumerable<LegacyGameUser> FromOldList(IEnumerable<GameUser> oldList) => oldList.Select(FromOld).ToList()!;
 }

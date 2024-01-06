@@ -53,5 +53,5 @@ public class ApiGameScoreResponse : IApiResponse, IDataConvertableFrom<ApiGameSc
         return response;
     }
     
-    public static IEnumerable<ApiGameScoreResponse> FromOldList(IEnumerable<GameSubmittedScore> oldList) => oldList.Select(FromOld)!;
+    public static IEnumerable<ApiGameScoreResponse> FromOldList(IEnumerable<GameSubmittedScore> oldList) => oldList.Select(FromOld).ToList()!;
 }

@@ -30,5 +30,5 @@ public class ApiRouteResponse : IApiResponse, IDataConvertableFrom<ApiRouteRespo
         };
     }
 
-    public static IEnumerable<ApiRouteResponse> FromOldList(IEnumerable<Route> oldList) => oldList.Select(FromOld)!;
+    public static IEnumerable<ApiRouteResponse> FromOldList(IEnumerable<Route> oldList) => oldList.Select(FromOld).ToList()!;
 }

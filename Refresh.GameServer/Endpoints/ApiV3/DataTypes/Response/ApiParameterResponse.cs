@@ -23,5 +23,5 @@ public class ApiParameterResponse : IApiResponse, IDataConvertableFrom<ApiParame
         };
     }
 
-    public static IEnumerable<ApiParameterResponse> FromOldList(IEnumerable<Parameter> oldList) => oldList.Select(FromOld)!;
+    public static IEnumerable<ApiParameterResponse> FromOldList(IEnumerable<Parameter> oldList) => oldList.Select(FromOld).ToList()!;
 }

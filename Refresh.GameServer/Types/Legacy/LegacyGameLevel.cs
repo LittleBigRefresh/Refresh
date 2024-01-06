@@ -69,5 +69,5 @@ public class LegacyGameLevel : IDataConvertableFrom<LegacyGameLevel, GameLevel>
         LevelType = "",
     };
 
-    public static IEnumerable<LegacyGameLevel> FromOldList(IEnumerable<GameLevel> oldList) => oldList.Select(FromOld)!;
+    public static IEnumerable<LegacyGameLevel> FromOldList(IEnumerable<GameLevel> oldList) => oldList.Select(FromOld).ToList()!;
 }

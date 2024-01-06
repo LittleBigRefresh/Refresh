@@ -94,10 +94,10 @@ public class GameUserResponse : IDataConvertableFrom<GameUserResponse, GameUser>
         return response;
     }
 
-    public static IEnumerable<GameUserResponse> FromOldList(IEnumerable<GameUser> oldList) => oldList.Select(FromOld)!;
+    public static IEnumerable<GameUserResponse> FromOldList(IEnumerable<GameUser> oldList) => oldList.Select(FromOld).ToList()!;
     
     public static IEnumerable<GameUserResponse> FromOldListWithExtraData(IEnumerable<GameUser> oldList, TokenGame gameVersion, GameDatabaseContext database, IDataStore dataStore) 
-        => oldList.Select(old => FromOldWithExtraData(old, gameVersion, database, dataStore))!;
+        => oldList.Select(old => FromOldWithExtraData(old, gameVersion, database, dataStore)).ToList()!;
 
     private void FillInExtraData(GameUser old, TokenGame gameVersion, GameDatabaseContext database, IDataStore dataStore)
     {
