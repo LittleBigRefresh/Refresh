@@ -191,174 +191,181 @@ public partial class GameAsset
     private string GetAsGeneric(TokenGame game, GameDatabaseContext database, IDataStore dataStore, Func<Image, Image<Rgba32>?> transformImage, Func<string?> getMainline, Action<string> setMainline,
         Func<string?> getMip, Action<string> setMip)
     {
-        switch (this.AssetType)
+        try
         {
-            case GameAssetType.Tga:
-            case GameAssetType.Jpeg:
-            case GameAssetType.Png:
-                switch (game)
-                {
-                    case TokenGame.Website:
-                    case TokenGame.LittleBigPlanet1:
-                    case TokenGame.LittleBigPlanet2:
-                    case TokenGame.LittleBigPlanet3:
-                    case TokenGame.LittleBigPlanetVita: {
-                        //If the cached icon hash is already set, early return it.
-                        if (getMainline() != null) return getMainline()!;
+            switch (this.AssetType)
+            {
+                case GameAssetType.Tga:
+                case GameAssetType.Jpeg:
+                case GameAssetType.Png:
+                    switch (game)
+                    {
+                        case TokenGame.Website:
+                        case TokenGame.LittleBigPlanet1:
+                        case TokenGame.LittleBigPlanet2:
+                        case TokenGame.LittleBigPlanet3:
+                        case TokenGame.LittleBigPlanetVita: {
+                            //If the cached icon hash is already set, early return it.
+                            if (getMainline() != null) return getMainline()!;
 
-                        string convertedHash = this.TransformImage(game, dataStore, path => Image.Load<Rgba32>(dataStore.GetStreamFromStore(path)), transformImage);
+                            string convertedHash = this.TransformImage(game, dataStore, path => Image.Load<Rgba32>(dataStore.GetStreamFromStore(path)), transformImage);
 
-                        setMainline(convertedHash);
+                            setMainline(convertedHash);
 
-                        //Return the new icon hash
-                        return getMainline()!;
+                            //Return the new icon hash
+                            return getMainline()!;
+                        }
+                        case TokenGame.LittleBigPlanetPSP: {
+                            if (getMip() != null) return getMip()!;
+
+                            string convertedHash = this.TransformImage(game, dataStore, path => Image.Load<Rgba32>(dataStore.GetStreamFromStore(path)), transformImage);
+
+                            setMip(convertedHash);
+
+                            return getMip()!;
+                        }
+                        default:
+                            throw new ArgumentOutOfRangeException(nameof(game), game, null);
                     }
-                    case TokenGame.LittleBigPlanetPSP: {
-                        if (getMip() != null) return getMip()!;
+                case GameAssetType.Texture:
+                    switch (game)
+                    {
+                        case TokenGame.Website:
+                        case TokenGame.LittleBigPlanet1:
+                        case TokenGame.LittleBigPlanet2:
+                        case TokenGame.LittleBigPlanet3:
+                        case TokenGame.LittleBigPlanetVita: {
+                            //If the cached icon hash is already set, early return it.
+                            if (getMainline() != null) return getMainline()!;
 
-                        string convertedHash = this.TransformImage(game, dataStore, path => Image.Load<Rgba32>(dataStore.GetStreamFromStore(path)), transformImage);
+                            string convertedHash = this.TransformImage(game, dataStore, path => ImageImporter.LoadTex(dataStore.GetStreamFromStore(path)), transformImage);
 
-                        setMip(convertedHash);
+                            setMainline(convertedHash);
 
-                        return getMip()!;
+                            //Return the new icon hash
+                            return getMainline()!;
+                        }
+                        case TokenGame.LittleBigPlanetPSP: {
+                            if (getMip() != null) return getMip()!;
+
+                            string convertedHash = this.TransformImage(game, dataStore, path => ImageImporter.LoadTex(dataStore.GetStreamFromStore(path)), transformImage);
+
+                            setMip(convertedHash);
+
+                            return getMip()!;
+                        }
+                            ;
+                        default:
+                            throw new ArgumentOutOfRangeException(nameof(game), game, null);
                     }
-                    default:
-                        throw new ArgumentOutOfRangeException(nameof(game), game, null);
-                }
-            case GameAssetType.Texture:
-                switch (game)
-                {
-                    case TokenGame.Website:
-                    case TokenGame.LittleBigPlanet1:
-                    case TokenGame.LittleBigPlanet2:
-                    case TokenGame.LittleBigPlanet3:
-                    case TokenGame.LittleBigPlanetVita: {
-                        //If the cached icon hash is already set, early return it.
-                        if (getMainline() != null) return getMainline()!;
+                case GameAssetType.GameDataTexture:
+                    switch (game)
+                    {
+                        case TokenGame.Website:
+                        case TokenGame.LittleBigPlanet1:
+                        case TokenGame.LittleBigPlanet2:
+                        case TokenGame.LittleBigPlanet3:
+                        case TokenGame.LittleBigPlanetVita: {
+                            //If the cached icon hash is already set, early return it.
+                            if (getMainline() != null) return getMainline()!;
 
-                        string convertedHash = this.TransformImage(game, dataStore, path => ImageImporter.LoadTex(dataStore.GetStreamFromStore(path)), transformImage);
+                            string convertedHash = this.TransformImage(game, dataStore, path => ImageImporter.LoadGtf(dataStore.GetStreamFromStore(path)), transformImage);
 
-                        setMainline(convertedHash);
+                            setMainline(convertedHash);
 
-                        //Return the new icon hash
-                        return getMainline()!;
+                            //Return the new icon hash
+                            return getMainline()!;
+                        }
+                        case TokenGame.LittleBigPlanetPSP: {
+                            if (getMip() != null) return getMip()!;
+
+                            string convertedHash = this.TransformImage(game, dataStore, path => ImageImporter.LoadGtf(dataStore.GetStreamFromStore(path)), transformImage);
+
+                            setMip(convertedHash);
+
+                            return getMip()!;
+                        }
+                            ;
+                        default:
+                            throw new ArgumentOutOfRangeException(nameof(game), game, null);
                     }
-                    case TokenGame.LittleBigPlanetPSP: {
-                        if (getMip() != null) return getMip()!;
+                case GameAssetType.Mip:
+                    switch (game)
+                    {
+                        //LBP1, LBP2, LBP3, and LBP Vita are unable to handle MIP files.
+                        //The Website technically can utilize them after import,
+                        //but using PNGs for the site will cause less load on the server, so lets do that!
+                        case TokenGame.Website:
+                        case TokenGame.LittleBigPlanet1:
+                        case TokenGame.LittleBigPlanet2:
+                        case TokenGame.LittleBigPlanet3:
+                        case TokenGame.LittleBigPlanetVita: {
+                            //If the cached icon hash is already set, early return it.
+                            if (getMainline() != null) return getMainline()!;
 
-                        string convertedHash = this.TransformImage(game, dataStore, path => ImageImporter.LoadTex(dataStore.GetStreamFromStore(path)), transformImage);
+                            string convertedHash = this.TransformImage(game, dataStore, path =>
+                            {
+                                //Load the data from the data store
+                                byte[] rawData = dataStore.GetDataFromStore(path);
+                                //Decrypt it
+                                byte[] sourceData = ResourceHelper.PspDecrypt(rawData, Importer.PSPKey.Value);
 
-                        setMip(convertedHash);
+                                //Create a memory stream from the decrypted asset data
+                                using MemoryStream sourceDataStream = new(sourceData);
 
-                        return getMip()!;
+                                //Load the mip file
+                                return ImageImporter.LoadMip(sourceDataStream);
+                            }, transformImage);
+
+                            setMainline(convertedHash);
+
+                            //Return the new icon hash
+                            return getMainline()!;
+                        }
+                        case TokenGame.LittleBigPlanetPSP: {
+                            //If the cached icon hash is already set, early return it.
+                            if (getMip() != null) return getMip()!;
+
+                            string convertedHash = this.TransformImage(game, dataStore, path =>
+                            {
+                                //Load the data from the data store
+                                byte[] rawData = dataStore.GetDataFromStore(path);
+                                //Decrypt it
+                                byte[] sourceData = ResourceHelper.PspDecrypt(rawData, Importer.PSPKey.Value);
+
+                                //Create a memory stream from the decrypted asset data
+                                using MemoryStream sourceDataStream = new(sourceData);
+
+                                //Load the mip file
+                                return ImageImporter.LoadMip(sourceDataStream);
+                            }, transformImage);
+
+                            setMip(convertedHash);
+
+                            return getMip()!;
+                        }
+                        default:
+                            throw new ArgumentOutOfRangeException(nameof(game), game, null);
                     }
-                        ;
-                    default:
-                        throw new ArgumentOutOfRangeException(nameof(game), game, null);
-                }
-            case GameAssetType.GameDataTexture:
-                switch (game)
-                {
-                    case TokenGame.Website:
-                    case TokenGame.LittleBigPlanet1:
-                    case TokenGame.LittleBigPlanet2:
-                    case TokenGame.LittleBigPlanet3:
-                    case TokenGame.LittleBigPlanetVita: {
-                        //If the cached icon hash is already set, early return it.
-                        if (getMainline() != null) return getMainline()!;
-
-                        string convertedHash = this.TransformImage(game, dataStore, path => ImageImporter.LoadGtf(dataStore.GetStreamFromStore(path)), transformImage);
-
-                        setMainline(convertedHash);
-
-                        //Return the new icon hash
-                        return getMainline()!;
-                    }
-                    case TokenGame.LittleBigPlanetPSP: {
-                        if (getMip() != null) return getMip()!;
-
-                        string convertedHash = this.TransformImage(game, dataStore, path => ImageImporter.LoadGtf(dataStore.GetStreamFromStore(path)), transformImage);
-
-                        setMip(convertedHash);
-
-                        return getMip()!;
-                    }
-                        ;
-                    default:
-                        throw new ArgumentOutOfRangeException(nameof(game), game, null);
-                }
-            case GameAssetType.Mip:
-                switch (game)
-                {
-                    //LBP1, LBP2, LBP3, and LBP Vita are unable to handle MIP files.
-                    //The Website technically can utilize them after import,
-                    //but using PNGs for the site will cause less load on the server, so lets do that!
-                    case TokenGame.Website:
-                    case TokenGame.LittleBigPlanet1:
-                    case TokenGame.LittleBigPlanet2:
-                    case TokenGame.LittleBigPlanet3:
-                    case TokenGame.LittleBigPlanetVita: {
-                        //If the cached icon hash is already set, early return it.
-                        if (getMainline() != null) return getMainline()!;
-
-                        string convertedHash = this.TransformImage(game, dataStore, path =>
-                        {
-                            //Load the data from the data store
-                            byte[] rawData = dataStore.GetDataFromStore(path);
-                            //Decrypt it
-                            byte[] sourceData = ResourceHelper.PspDecrypt(rawData, Importer.PSPKey.Value);
-
-                            //Create a memory stream from the decrypted asset data
-                            using MemoryStream sourceDataStream = new(sourceData);
-
-                            //Load the mip file
-                            return ImageImporter.LoadMip(sourceDataStream);
-                        }, transformImage);
-
-                        setMainline(convertedHash);
-
-                        //Return the new icon hash
-                        return getMainline()!;
-                    }
-                    case TokenGame.LittleBigPlanetPSP: {
-                        //If the cached icon hash is already set, early return it.
-                        if (getMip() != null) return getMip()!;
-
-                        string convertedHash = this.TransformImage(game, dataStore, path =>
-                        {
-                            //Load the data from the data store
-                            byte[] rawData = dataStore.GetDataFromStore(path);
-                            //Decrypt it
-                            byte[] sourceData = ResourceHelper.PspDecrypt(rawData, Importer.PSPKey.Value);
-
-                            //Create a memory stream from the decrypted asset data
-                            using MemoryStream sourceDataStream = new(sourceData);
-
-                            //Load the mip file
-                            return ImageImporter.LoadMip(sourceDataStream);
-                        }, transformImage);
-
-                        setMip(convertedHash);
-
-                        return getMip()!;
-                    }
-                    default:
-                        throw new ArgumentOutOfRangeException(nameof(game), game, null);
-                }
-            case GameAssetType.Level:
-            case GameAssetType.Painting:
-            case GameAssetType.Plan:
-            case GameAssetType.Material:
-            case GameAssetType.Mesh:
-            case GameAssetType.Palette:
-            case GameAssetType.Script:
-            case GameAssetType.MoveRecording:
-            case GameAssetType.VoiceRecording:
-            case GameAssetType.SyncedProfile:
-            case GameAssetType.Unknown:
-            default:
-                //If we dont know what asset type this is, just hope that whatever is asking for it knows what it is
-                return this.AssetHash;
+                case GameAssetType.Level:
+                case GameAssetType.Painting:
+                case GameAssetType.Plan:
+                case GameAssetType.Material:
+                case GameAssetType.Mesh:
+                case GameAssetType.Palette:
+                case GameAssetType.Script:
+                case GameAssetType.MoveRecording:
+                case GameAssetType.VoiceRecording:
+                case GameAssetType.SyncedProfile:
+                case GameAssetType.Unknown:
+                default:
+                    //If we dont know what asset type this is, just hope that whatever is asking for it knows what it is
+                    return this.AssetHash;
+            }
+        }
+        catch
+        {
+            return this.AssetHash;
         }
     }
 }
