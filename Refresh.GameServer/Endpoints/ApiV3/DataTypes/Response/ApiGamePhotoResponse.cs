@@ -71,5 +71,5 @@ public class ApiGamePhotoResponse : IApiResponse, IDataConvertableFrom<ApiGamePh
         return response;
     }
 
-    public static IEnumerable<ApiGamePhotoResponse> FromOldList(IEnumerable<GamePhoto> oldList) => oldList.Select(FromOld)!;
+    public static IEnumerable<ApiGamePhotoResponse> FromOldList(IEnumerable<GamePhoto> oldList) => oldList.Select(FromOld).ToList()!;
 }

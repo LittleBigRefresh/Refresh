@@ -25,5 +25,5 @@ public class ApiGameSkillRewardResponse : IApiResponse, IDataConvertableFrom<Api
         };
     }
 
-    public static IEnumerable<ApiGameSkillRewardResponse> FromOldList(IEnumerable<GameSkillReward> oldList) => oldList.Select(FromOld)!;
+    public static IEnumerable<ApiGameSkillRewardResponse> FromOldList(IEnumerable<GameSkillReward> oldList) => oldList.Select(FromOld).ToList()!;
 }

@@ -133,14 +133,15 @@ public partial class GameAsset
                 throw new ArgumentOutOfRangeException(nameof(game), game, null);
         }
     }
+    
     /// <summary>
     /// Converts the asset into a suitable format to be used as a photo in the target game.
     /// </summary>
     /// <param name="game">The game to convert for</param>
     /// <param name="database">The database</param>
     /// <param name="dataStore">The data store</param>
-    /// <returns>The new hash of the converted asset</returns>
-    public string GetAsPhoto(TokenGame game, GameDatabaseContext database, IDataStore dataStore)
+    /// <returns>The new hash of the converted asset, or null if no conversion has taken place</returns>
+    public string? GetAsPhoto(TokenGame game, GameDatabaseContext database, IDataStore dataStore)
     {
         return this.GetAsGeneric(
             game,
@@ -153,14 +154,15 @@ public partial class GameAsset
             _ => throw new NotSupportedException()
         );
     }
+    
     /// <summary>
     /// Converts the asset into a suitable format to be used as an icon in the target game.
     /// </summary>
     /// <param name="game">The game to convert for</param>
     /// <param name="database">The database</param>
     /// <param name="dataStore">The data store</param>
-    /// <returns>The new hash of the converted asset</returns>
-    public string GetAsIcon(TokenGame game, GameDatabaseContext database, IDataStore dataStore)
+    /// <returns>The new hash of the converted asset, or null if no conversion has taken place</returns>
+    public string? GetAsIcon(TokenGame game, GameDatabaseContext database, IDataStore dataStore)
     {
         return this.GetAsGeneric(
             game,
@@ -173,6 +175,7 @@ public partial class GameAsset
             hash => database.SetMipIconHash(this, hash)
         );
     }
+    
     /// <summary>
     /// Converts the asset to the correct type for the specified game, using the provided transformation methods.
     ///
@@ -186,9 +189,8 @@ public partial class GameAsset
     /// <param name="setMainline">The method to set the cached mainline hash</param>
     /// <param name="getMip">The method to get the cached MIP hash, or null if uncached</param>
     /// <param name="setMip">The method to set the cached MIP hash</param>
-    /// <returns>The converted hash</returns>
-    /// <exception cref="ArgumentOutOfRangeException">The asset type is invalid for this conversion.</exception>
-    private string GetAsGeneric(TokenGame game, GameDatabaseContext database, IDataStore dataStore, Func<Image, Image<Rgba32>?> transformImage, Func<string?> getMainline, Action<string> setMainline,
+    /// <returns>The converted hash, or null if no conversion has taken place</returns>
+    private string? GetAsGeneric(TokenGame game, GameDatabaseContext database, IDataStore dataStore, Func<Image, Image<Rgba32>?> transformImage, Func<string?> getMainline, Action<string> setMainline,
         Func<string?> getMip, Action<string> setMip)
     {
         try
@@ -360,12 +362,12 @@ public partial class GameAsset
                 case GameAssetType.Unknown:
                 default:
                     //If we dont know what asset type this is, just hope that whatever is asking for it knows what it is
-                    return this.AssetHash;
+                    return null;
             }
         }
         catch
         {
-            return this.AssetHash;
+            return null;
         }
     }
 }

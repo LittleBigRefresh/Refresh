@@ -42,5 +42,5 @@ public class ApiGameAssetResponse : IApiResponse, IDataConvertableFrom<ApiGameAs
         this.OriginalUploader?.FillInExtraData(database, dataStore);
     }
 
-    public static IEnumerable<ApiGameAssetResponse> FromOldList(IEnumerable<GameAsset> oldList) => oldList.Select(FromOld)!;
+    public static IEnumerable<ApiGameAssetResponse> FromOldList(IEnumerable<GameAsset> oldList) => oldList.Select(FromOld).ToList()!;
 }

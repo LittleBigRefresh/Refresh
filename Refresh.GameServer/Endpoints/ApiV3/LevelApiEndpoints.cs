@@ -35,7 +35,7 @@ public class LevelApiEndpoints : EndpointGroup
         IEnumerable<ApiLevelCategoryResponse> resp;
 
         // ReSharper disable once ConvertIfStatementToConditionalTernaryExpression
-        if (includePreviews)resp = ApiLevelCategoryResponse.FromOldList(categories.Categories, context, matchService, database, user);
+        if (includePreviews)resp = ApiLevelCategoryResponse.FromOldListWithExtraData(categories.Categories, context, matchService, database, dataStore, user);
         else resp = ApiLevelCategoryResponse.FromOldListWithExtraData(categories.Categories, database, dataStore);
         
         return new ApiListResponse<ApiLevelCategoryResponse>(resp);

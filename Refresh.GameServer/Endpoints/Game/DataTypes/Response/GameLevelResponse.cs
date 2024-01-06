@@ -139,7 +139,7 @@ public class GameLevelResponse : IDataConvertableFrom<GameLevelResponse, GameLev
         return response;
     }
 
-    public static IEnumerable<GameLevelResponse> FromOldList(IEnumerable<GameLevel> oldList) => oldList.Select(FromOld)!;
+    public static IEnumerable<GameLevelResponse> FromOldList(IEnumerable<GameLevel> oldList) => oldList.Select(FromOld).ToList()!;
 
     private void FillInExtraData(GameDatabaseContext database, MatchService matchService, GameUser user, IDataStore dataStore, TokenGame game)
     {

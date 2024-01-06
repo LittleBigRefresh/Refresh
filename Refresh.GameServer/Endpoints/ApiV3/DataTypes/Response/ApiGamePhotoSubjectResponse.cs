@@ -38,7 +38,7 @@ public class ApiGamePhotoSubjectResponse : IApiResponse,IDataConvertableFrom<Api
         return response;
     }
 
-    public static IEnumerable<ApiGamePhotoSubjectResponse> FromOldList(IEnumerable<GamePhotoSubject> oldList) => oldList.Select(FromOld)!;
+    public static IEnumerable<ApiGamePhotoSubjectResponse> FromOldList(IEnumerable<GamePhotoSubject> oldList) => oldList.Select(FromOld).ToList()!;
     
-    public static IEnumerable<ApiGamePhotoSubjectResponse> FromOldListWithExtraData(IEnumerable<GamePhotoSubject> oldList, GameDatabaseContext database, IDataStore dataStore) => oldList.Select(old => FromOldWithExtraData(old, database, dataStore))!;
+    public static IEnumerable<ApiGamePhotoSubjectResponse> FromOldListWithExtraData(IEnumerable<GamePhotoSubject> oldList, GameDatabaseContext database, IDataStore dataStore) => oldList.Select(old => FromOldWithExtraData(old, database, dataStore)).ToList()!;
 }
