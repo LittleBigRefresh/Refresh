@@ -49,6 +49,7 @@ public class RefreshGameServer : RefreshServer
         dataStore ??= new FileSystemDataStore();
         
         this._databaseProvider = databaseProvider.Invoke();
+        this._databaseProvider.Initialize();
         this._dataStore = dataStore;
         
         this.SetupInitializer(() =>
@@ -170,9 +171,8 @@ public class RefreshGameServer : RefreshServer
         this.WorkerManager?.Stop();
     }
 
-    private GameDatabaseContext InitializeDatabase()
+    private GameDatabaseContext GetContext()
     {
-        this._databaseProvider.Initialize();
         return this._databaseProvider.GetContext();
     }
     
@@ -183,7 +183,7 @@ public class RefreshGameServer : RefreshServer
 
     public void ImportAssets(bool force = false)
     {
-        using GameDatabaseContext context = this.InitializeDatabase();
+        using GameDatabaseContext context = this.GetContext();
         
         AssetImporter importer = new();
         importer.ImportFromDataStore(context, this._dataStore);
@@ -191,7 +191,7 @@ public class RefreshGameServer : RefreshServer
 
     public void ImportImages()
     {
-        using GameDatabaseContext context = this.InitializeDatabase();
+        using GameDatabaseContext context = this.GetContext();
         
         ImageImporter importer = new();
         importer.ImportFromDataStore(context, this._dataStore);
@@ -199,14 +199,14 @@ public class RefreshGameServer : RefreshServer
 
     public void CreateUser(string username, string emailAddress)
     {
-        using GameDatabaseContext context = this.InitializeDatabase();
+        using GameDatabaseContext context = this.GetContext();
         GameUser user = context.CreateUser(username, emailAddress);
         context.VerifyUserEmail(user);
     }
     
     public void SetAdminFromUsername(string username)
     {
-        using GameDatabaseContext context = this.InitializeDatabase();
+        using GameDatabaseContext context = this.GetContext();
 
         GameUser? user = context.GetUserByUsername(username);
         if (user == null) throw new InvalidOperationException("Cannot find the user " + username);
@@ -216,7 +216,7 @@ public class RefreshGameServer : RefreshServer
     
     public void SetAdminFromEmailAddress(string emailAddress)
     {
-        using GameDatabaseContext context = this.InitializeDatabase();
+        using GameDatabaseContext context = this.GetContext();
 
         GameUser? user = context.GetUserByEmailAddress(emailAddress);
         if (user == null) throw new InvalidOperationException("Cannot find a user by emailAddress " + emailAddress);
