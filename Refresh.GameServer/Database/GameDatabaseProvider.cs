@@ -32,7 +32,7 @@ public class GameDatabaseProvider : RealmDatabaseProvider<GameDatabaseContext>
         this._time = time;
     }
 
-    protected override ulong SchemaVersion => 101;
+    protected override ulong SchemaVersion => 110;
 
     protected override string Filename => "refreshGameServer.realm";
     
@@ -168,6 +168,9 @@ public class GameDatabaseProvider : RealmDatabaseProvider<GameDatabaseContext>
 
             // Version was bumped here to delete invalid favourite level relations
             if (oldVersion < 101) migration.NewRealm.RemoveRange(newUser.FavouriteLevelRelations.Where(r => r.Level == null));
+
+            // In version 102 we split the Vita icon hash from the PS3 icon hash
+            if (oldVersion < 102) newUser.VitaIconHash = "0";
         }
 
         IQueryable<dynamic>? oldLevels = migration.OldRealm.DynamicApi.All("GameLevel");
@@ -297,7 +300,7 @@ public class GameDatabaseProvider : RealmDatabaseProvider<GameDatabaseContext>
         IQueryable<dynamic>? oldPhotos = migration.OldRealm.DynamicApi.All("GamePhoto");
         IQueryable<GamePhoto>? newPhotos = migration.NewRealm.All<GamePhoto>();
 
-        for (int i = 0; i < newComments.Count(); i++)
+        for (int i = 0; i < oldPhotos.Count(); i++)
         {
             dynamic oldPhoto = oldPhotos.ElementAt(i);
             GamePhoto newPhoto = newPhotos.ElementAt(i);
@@ -306,6 +309,13 @@ public class GameDatabaseProvider : RealmDatabaseProvider<GameDatabaseContext>
             if (oldVersion < 52)
             {
                 newPhoto.TakenAt = DateTimeOffset.FromUnixTimeSeconds(oldPhoto.TakenAt.ToUnixTimeMilliseconds());
+            }
+
+            if (oldVersion < 110)
+            {
+                newPhoto.LargeAsset = migration.NewRealm.Find<GameAsset>(oldPhoto.LargeHash.StartsWith("psp/") ? oldPhoto.LargeHash.Substring(4) : oldPhoto.LargeHash);
+                newPhoto.MediumAsset = migration.NewRealm.Find<GameAsset>(oldPhoto.MediumHash.StartsWith("psp/") ? oldPhoto.MediumHash.Substring(4) : oldPhoto.MediumHash);
+                newPhoto.SmallAsset = migration.NewRealm.Find<GameAsset>(oldPhoto.SmallHash.StartsWith("psp/") ? oldPhoto.SmallHash.Substring(4) : oldPhoto.SmallHash);
             }
         }
         
@@ -340,6 +350,24 @@ public class GameDatabaseProvider : RealmDatabaseProvider<GameDatabaseContext>
             if (oldVersion < 92)
             {
                 newScore.Game = newScore.Level.GameVersion;
+            }
+
+            // In version 104 we started tracking the platform
+            if (oldVersion < 104)
+            {
+                // Determine the most reasonable platform for the score's game
+                TokenPlatform platform = newScore.Game switch
+                {
+                    TokenGame.LittleBigPlanet1 => TokenPlatform.PS3,
+                    TokenGame.LittleBigPlanet2 => TokenPlatform.PS3,
+                    TokenGame.LittleBigPlanet3 => TokenPlatform.PS3,
+                    TokenGame.LittleBigPlanetVita => TokenPlatform.Vita,
+                    TokenGame.LittleBigPlanetPSP => TokenPlatform.PSP,
+                    TokenGame.Website => throw new InvalidOperationException($"what? score id {newScore.ScoreId} by {newScore.Players[0].Username} is fucked"),
+                    _ => throw new ArgumentOutOfRangeException(),
+                };
+
+                newScore.Platform = platform;
             }
         }
         

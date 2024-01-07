@@ -133,6 +133,33 @@ public class ScoreLeaderboardTests : GameServerTest
         List<GameSubmittedScore> scores = context.Database.GetTopScoresForLevel(level, 1, 0, 1).Items.ToList();
         Assert.That(scores, Has.Count.EqualTo(0));
     }
+
+    [Test]
+    [TestCase(1, true)]
+    [TestCase(2, true)]
+    [TestCase(3, true)]
+    [TestCase(4, true)]
+    [TestCase(7, true)]
+    [TestCase(0, false)]
+    [TestCase(255, false)]
+    [TestCase(8, false)]
+    public void DoesntSubmitInvalidScoreType(byte type, bool shouldPass)
+    {
+        using TestContext context = this.GetServer();
+        GameUser user = context.CreateUser();
+        GameLevel level = context.CreateLevel(user);
+        
+        using HttpClient client = context.GetAuthenticatedClient(TokenType.Game, user);
+        SerializedScore score = new()
+        {
+            Host = true,
+            ScoreType = type,
+            Score = 69,
+        };
+        
+        HttpResponseMessage message = client.PostAsync($"/lbp/scoreboard/user/{level.LevelId}", new StringContent(score.AsXML())).Result;
+        Assert.That(message.StatusCode, Is.EqualTo(shouldPass ? OK : BadRequest));
+    }
     
     [Test]
     public void DoesntSubmitDeveloperInvalidScore()
@@ -231,7 +258,7 @@ public class ScoreLeaderboardTests : GameServerTest
         GameLevel level = context.CreateLevel(user);
 
         context.FillLeaderboard(level, leaderboardCount, 1);
-        GameSubmittedScore score = context.SubmitScore(submittedScore, 1, level, user, TokenGame.LittleBigPlanet2);
+        GameSubmittedScore score = context.SubmitScore(submittedScore, 1, level, user, TokenGame.LittleBigPlanet2, TokenPlatform.PS3);
 
         List<ObjectId> scores = context.Database.GetRankedScoresAroundScore(score, count)!
             .Select(s => s.score.ScoreId)
@@ -271,8 +298,8 @@ public class ScoreLeaderboardTests : GameServerTest
         
         GameLevel level = context.CreateLevel(user1);
         
-        GameSubmittedScore score1 = context.SubmitScore(0, 1, level, user1, TokenGame.LittleBigPlanet2);
-        GameSubmittedScore score2 = context.SubmitScore(0, 2, level, user2, TokenGame.LittleBigPlanet2);
+        GameSubmittedScore score1 = context.SubmitScore(0, 1, level, user1, TokenGame.LittleBigPlanet2, TokenPlatform.PS3);
+        GameSubmittedScore score2 = context.SubmitScore(0, 2, level, user2, TokenGame.LittleBigPlanet2, TokenPlatform.PS3);
         
         Assert.Multiple(() =>
         {
@@ -286,7 +313,7 @@ public class ScoreLeaderboardTests : GameServerTest
     {
         using TestContext context = this.GetServer(false);
         GameUser user = context.CreateUser();
-        GameSubmittedScore score = context.SubmitScore(0, 1, context.CreateLevel(user), user, TokenGame.LittleBigPlanet2);
+        GameSubmittedScore score = context.SubmitScore(0, 1, context.CreateLevel(user), user, TokenGame.LittleBigPlanet2, TokenPlatform.PS3);
         
         Assert.That(() => context.Database.GetRankedScoresAroundScore(score, 2), Throws.ArgumentException);
     }

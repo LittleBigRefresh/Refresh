@@ -20,6 +20,14 @@ public partial class GameSubmittedScore : IRealmObject // TODO: Rename to GameSc
         get => (TokenGame)this._Game;
         set => this._Game = (int)value;
     }
+    
+    // ReSharper disable once InconsistentNaming
+    public int _Platform { get; set; }
+    [Ignored] public TokenPlatform Platform
+    {
+        get => (TokenPlatform)this._Platform;
+        set => this._Platform = (int)value;
+    }
 
     public GameLevel Level { get; set; }
     public IList<GameUser> Players { get; }

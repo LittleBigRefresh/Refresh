@@ -23,5 +23,5 @@ public class ApiAdminQueuedRegistrationResponse : IApiResponse, IDataConvertable
         };
     }
 
-    public static IEnumerable<ApiAdminQueuedRegistrationResponse> FromOldList(IEnumerable<QueuedRegistration> oldList) => oldList.Select(FromOld)!;
+    public static IEnumerable<ApiAdminQueuedRegistrationResponse> FromOldList(IEnumerable<QueuedRegistration> oldList) => oldList.Select(FromOld).ToList()!;
 }

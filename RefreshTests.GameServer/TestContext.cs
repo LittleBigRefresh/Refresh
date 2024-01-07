@@ -5,6 +5,7 @@ using Refresh.GameServer.Authentication;
 using Refresh.GameServer.Database;
 using Refresh.GameServer.Types;
 using Refresh.GameServer.Types.Levels;
+using Refresh.GameServer.Types.Roles;
 using Refresh.GameServer.Types.UserData;
 using Refresh.GameServer.Types.UserData.Leaderboard;
 using RefreshTests.GameServer.Time;
@@ -95,6 +96,13 @@ public class TestContext : IDisposable
         return this.Database.CreateUser(username, $"{username}@{username}.local");
     }
 
+    public GameUser CreateAdmin(string? username = null)
+    {
+        GameUser user = this.CreateUser(username);
+        this.Database.SetUserRole(user, GameUserRole.Admin);
+        return user;
+    }
+
     public Token CreateToken(GameUser user, TokenType type = TokenType.Game, TokenGame game = TokenGame.LittleBigPlanet2, TokenPlatform platform = TokenPlatform.PS3)
     {
         return this.Database.GenerateTokenForUser(user, type, game, platform);
@@ -119,11 +127,11 @@ public class TestContext : IDisposable
         for (byte i = 0; i < count; i++)
         {
             GameUser scoreUser = this.CreateUser("score" + i);
-            this.SubmitScore(i, type, level, scoreUser, TokenGame.LittleBigPlanet2);
+            this.SubmitScore(i, type, level, scoreUser, TokenGame.LittleBigPlanet2, TokenPlatform.PS3);
         }
     }
 
-    public GameSubmittedScore SubmitScore(int score, byte type, GameLevel level, GameUser user, TokenGame game)
+    public GameSubmittedScore SubmitScore(int score, byte type, GameLevel level, GameUser user, TokenGame game, TokenPlatform platform)
     {
         SerializedScore scoreObject = new()
         {
@@ -132,7 +140,7 @@ public class TestContext : IDisposable
             ScoreType = type,
         };
         
-        GameSubmittedScore submittedScore = this.Database.SubmitScore(scoreObject, user, level, game);
+        GameSubmittedScore submittedScore = this.Database.SubmitScore(scoreObject, user, level, game, platform);
         Assert.That(submittedScore, Is.Not.Null);
 
         return submittedScore;

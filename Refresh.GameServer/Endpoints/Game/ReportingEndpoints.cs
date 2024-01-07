@@ -1,3 +1,4 @@
+using System.Drawing;
 using Bunkum.Core;
 using Bunkum.Core.Endpoints;
 using Bunkum.Core.Responses;
@@ -56,7 +57,7 @@ public class ReportingEndpoints : EndpointGroup
                                  $"{(float)(player.Rectangle.Bottom - imageSize.Height / 2) / (imageSize.Height / 2)}",
                 }));
 
-            string hash = context.IsPSP() ? "psp/" + body.JpegHash : body.JpegHash;
+            string hash = body.JpegHash;
             
             database.UploadPhoto(new SerializedPhoto
             {

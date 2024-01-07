@@ -14,6 +14,7 @@ public class SerializedMinimalFavouriteLevelList : SerializedList<GameMinimalLev
     public SerializedMinimalFavouriteLevelList(SerializedMinimalLevelList list)
     {
         this.Total = list.Total;
+        this.NextPageStart = list.NextPageStart;
         this.Items = list.Items;
     }
     

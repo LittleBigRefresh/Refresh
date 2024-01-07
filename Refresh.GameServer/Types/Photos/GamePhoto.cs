@@ -1,5 +1,6 @@
 using Realms;
 using Refresh.GameServer.Database;
+using Refresh.GameServer.Types.Assets;
 using Refresh.GameServer.Types.Levels;
 using Refresh.GameServer.Types.UserData;
 
@@ -23,9 +24,9 @@ public partial class GamePhoto : IRealmObject, ISequentialId
     public string LevelType { get; set; }
     public int LevelId { get; set; }
     
-    public string SmallHash { get; set; }
-    public string MediumHash { get; set; }
-    public string LargeHash { get; set; }
+    public GameAsset SmallAsset { get; set; }
+    public GameAsset MediumAsset { get; set; }
+    public GameAsset LargeAsset { get; set; }
     public string PlanHash { get; set; }
     
     public IList<GamePhotoSubject> Subjects { get; }

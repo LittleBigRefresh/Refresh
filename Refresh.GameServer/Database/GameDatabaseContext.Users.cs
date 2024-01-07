@@ -71,44 +71,102 @@ public partial class GameDatabaseContext // Users
 
     public DatabaseList<GameUser> GetUsers(int count, int skip)
         => new(this._realm.All<GameUser>().OrderByDescending(u => u.JoinDate), skip, count);
-    
-    private void UpdateUserData<TUpdateData>(GameUser user, TUpdateData data)
+
+    public void UpdateUserData(GameUser user, SerializedUpdateData data, TokenGame game)
     {
         this._realm.Write(() =>
         {
-            PropertyInfo[] userProps = typeof(GameUser).GetProperties();
-            foreach (PropertyInfo prop in typeof(TUpdateData).GetProperties())
-            {
-                if(prop.Name == "PlanetsHash") continue;
-                
-                object? value = prop.GetValue(data);
-                if(value == null) continue;
+            if (data.Description != null)
+                user.Description = data.Description;
 
-                PropertyInfo? userProp = userProps.FirstOrDefault(p => p.Name == prop.Name);
-                if (userProp == null) throw new ArgumentOutOfRangeException(prop.Name);
-                
-                userProp.SetValue(user, value);
-            }
+            if (data.Location != null)
+                user.Location = data.Location;
+
+            if (data.PlanetsHash != null)
+                // ReSharper disable once SwitchStatementMissingSomeEnumCasesNoDefault
+                switch (game)
+                {
+                    case TokenGame.LittleBigPlanet2:
+                        user.Lbp2PlanetsHash = data.PlanetsHash;
+                        user.Lbp3PlanetsHash = data.PlanetsHash;
+                        break;
+                    case TokenGame.LittleBigPlanet3:
+                        user.Lbp3PlanetsHash = data.PlanetsHash;
+                        break;
+                    case TokenGame.LittleBigPlanetVita:
+                        user.VitaPlanetsHash = data.PlanetsHash;
+                        break;
+                }
+
+            // ReSharper disable once InvertIf
+            if (data.IconHash != null)
+                switch (game)
+                {
+
+                    case TokenGame.LittleBigPlanet1:
+                    case TokenGame.LittleBigPlanet2:
+                    case TokenGame.LittleBigPlanet3:
+#if false // TODO: Enable this code once https://github.com/LittleBigRefresh/Refresh/issues/309 is resolved
+                        //If the icon is a remote asset, then it will work on Vita as well, so set the Vita hash 
+                        if (!data.IconHash.StartsWith('g'))
+                        {
+                            user.VitaIconHash = data.IconHash;
+                        }
+#endif
+                        user.IconHash = data.IconHash;
+                        break;
+                    case TokenGame.LittleBigPlanetVita:
+#if false // TODO: Enable this code once https://github.com/LittleBigRefresh/Refresh/issues/309 is resolved
+                        //If the icon is a remote asset, then it will work on PS3 as well, so set the PS3 hash to it as well
+                        if (!data.IconHash.StartsWith('g'))
+                        {
+                            user.IconHash = data.IconHash;
+                        }
+#endif
+                        user.VitaIconHash = data.IconHash;
+                        
+                        break;
+                    case TokenGame.LittleBigPlanetPSP:
+                        //PSP icons are special and use a GUID system separate from the mainline games,
+                        //so we separate PSP icons to another field
+                        user.PspIconHash = data.IconHash;
+                        break;
+                }
         });
     }
     
-    public void UpdateUserData(GameUser user, SerializedUpdateData data) 
-        => this.UpdateUserData<SerializedUpdateData>(user, data);
-    
     public void UpdateUserData(GameUser user, ApiUpdateUserRequest data)
     {
-        if (data.EmailAddress != null && data.EmailAddress != user.EmailAddress)
+        this._realm.Write(() =>
         {
-            // TODO: batch this in with the other realm write somehow
-            this._realm.Write(() =>
+            if (data.EmailAddress != null && data.EmailAddress != user.EmailAddress)
             {
                 user.EmailAddressVerified = false;
-            });
-        }
+            }
 
-        data.EmailAddress = data.EmailAddress?.ToLowerInvariant();
-        
-        this.UpdateUserData<ApiUpdateUserRequest>(user, data);
+            data.EmailAddress = data.EmailAddress?.ToLowerInvariant();
+
+            if (data.IconHash != null)
+                user.IconHash = data.IconHash;
+
+            if (data.Description != null)
+                user.Description = data.Description;
+
+            if (data.AllowIpAuthentication != null)
+                user.AllowIpAuthentication = data.AllowIpAuthentication.Value;
+
+            if (data.PsnAuthenticationAllowed != null)
+                user.PsnAuthenticationAllowed = data.PsnAuthenticationAllowed.Value;
+
+            if (data.RpcnAuthenticationAllowed != null)
+                user.RpcnAuthenticationAllowed = data.RpcnAuthenticationAllowed.Value;
+
+            if (data.RedirectGriefReportsToPhotos != null)
+                user.RedirectGriefReportsToPhotos = data.RedirectGriefReportsToPhotos.Value;
+
+            if (data.EmailAddress != null)
+                user.EmailAddress = data.EmailAddress;
+        });
     }
 
     [Pure]
@@ -243,6 +301,22 @@ public partial class GameDatabaseContext // Users
         this._realm.Write(() =>
         {
             user.RedirectGriefReportsToPhotos = value;
+        });
+    }
+
+    public void ClearForceMatch(GameUser user)
+    {
+        this._realm.Write(() =>
+        {
+            user.ForceMatch = null;
+        });
+    }
+
+    public void SetForceMatch(GameUser user, GameUser target)
+    {
+        this._realm.Write(() =>
+        {
+            user.ForceMatch = target.ForceMatch;
         });
     }
     

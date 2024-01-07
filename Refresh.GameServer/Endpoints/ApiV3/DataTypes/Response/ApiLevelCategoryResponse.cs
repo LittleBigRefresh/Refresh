@@ -1,4 +1,5 @@
 using Bunkum.Core;
+using Bunkum.Core.Storage;
 using Refresh.GameServer.Authentication;
 using Refresh.GameServer.Database;
 using Refresh.GameServer.Endpoints.Game.Levels.FilterSettings;
@@ -37,10 +38,28 @@ public class ApiLevelCategoryResponse : IApiResponse, IDataConvertableFrom<ApiLe
             Hidden = old.Hidden,
         };
     }
+
+    public void FillInExtraData(GameDatabaseContext database, IDataStore dataStore)
+    {
+        this.PreviewLevel?.FillInExtraData(database, dataStore);
+    }
+    
+    public static ApiLevelCategoryResponse? FromOldWithExtraData(LevelCategory? old, GameDatabaseContext database, IDataStore dataStore, GameLevel? previewLevel)
+    {
+        if (old == null) return null;
+
+        ApiLevelCategoryResponse response = FromOld(old, previewLevel)!;
+        response.FillInExtraData(database, dataStore);
+
+        return response;
+    }
     
     public static ApiLevelCategoryResponse? FromOld(LevelCategory? old) => FromOld(old, null);
 
-    public static IEnumerable<ApiLevelCategoryResponse> FromOldList(IEnumerable<LevelCategory> oldList) => oldList.Select(FromOld)!;
+    public static IEnumerable<ApiLevelCategoryResponse> FromOldList(IEnumerable<LevelCategory> oldList) => oldList.Select(FromOld).ToList()!;
+    public static IEnumerable<ApiLevelCategoryResponse> FromOldListWithExtraData(IEnumerable<LevelCategory> oldList, GameDatabaseContext database, IDataStore dataStore) 
+        => oldList.Select(old => FromOldWithExtraData(old, database, dataStore, null)).ToList()!;
+    
     public static IEnumerable<ApiLevelCategoryResponse> FromOldList(IEnumerable<LevelCategory> oldList,
         RequestContext context,
         MatchService matchService,
@@ -53,6 +72,23 @@ public class ApiLevelCategoryResponse : IApiResponse, IDataConvertableFrom<ApiLe
             GameLevel? level = list?.Items.FirstOrDefault();
             
             return FromOld(category, level);
-        })!;
+        }).ToList()!;
+    }
+
+    public static IEnumerable<ApiLevelCategoryResponse> FromOldListWithExtraData(IEnumerable<LevelCategory> oldList,
+        RequestContext context,
+        MatchService matchService,
+        GameDatabaseContext database,
+        IDataStore dataStore,
+        GameUser? user)
+    {
+        IEnumerable<ApiLevelCategoryResponse> list = FromOldList(oldList, context, matchService, database, user).ToList();
+
+        foreach (ApiLevelCategoryResponse category in list)
+        {
+            category.FillInExtraData(database, dataStore);
+        }
+        
+        return list;
     }
 }

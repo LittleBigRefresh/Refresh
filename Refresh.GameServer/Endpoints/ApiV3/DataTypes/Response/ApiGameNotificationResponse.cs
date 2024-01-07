@@ -27,5 +27,5 @@ public class ApiGameNotificationResponse : IApiResponse, IDataConvertableFrom<Ap
         };
     }
 
-    public static IEnumerable<ApiGameNotificationResponse> FromOldList(IEnumerable<GameNotification> oldList) => oldList.Select(FromOld)!;
+    public static IEnumerable<ApiGameNotificationResponse> FromOldList(IEnumerable<GameNotification> oldList) => oldList.Select(FromOld).ToList()!;
 }

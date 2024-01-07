@@ -89,7 +89,7 @@ public class LeaderboardEndpoints : EndpointGroup
             return BadRequest;
         }
 
-        GameSubmittedScore score = database.SubmitScore(body, user, level, token.TokenGame);
+        GameSubmittedScore score = database.SubmitScore(body, token, level);
 
         IEnumerable<ScoreWithRank>? scores = database.GetRankedScoresAroundScore(score, 5);
         Debug.Assert(scores != null);
@@ -117,13 +117,20 @@ public class LeaderboardEndpoints : EndpointGroup
         GameLevel? level = database.GetLevelById(id);
         if (level == null) return NotFound;
 
-        //Validate the score is a non-negative amount
+        // Validate the score is a non-negative amount
         if (body.Score < 0)
         {
             return BadRequest;
         }
+        
+        // Ensure score type is valid
+        // Only valid values are 1-4 players and 7 for versus
+        if (body.ScoreType is (> 4 or < 1) and not 7)
+        {
+            return BadRequest;
+        }
 
-        GameSubmittedScore score = database.SubmitScore(body, user, level, token.TokenGame);
+        GameSubmittedScore score = database.SubmitScore(body, token, level);
 
         IEnumerable<ScoreWithRank>? scores = database.GetRankedScoresAroundScore(score, 5);
         Debug.Assert(scores != null);

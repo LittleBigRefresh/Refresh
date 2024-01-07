@@ -38,11 +38,11 @@ public class MatchingTests : GameServerTest
             GameRoom? room1;
             GameRoom? room2;
             
-            Assert.That(room1 = match.GetRoomByPlayer(user1), Is.Not.Null);
-            Assert.That(room2 = match.GetRoomByPlayer(user2), Is.Not.Null);
+            Assert.That(room1 = match.RoomAccessor.GetRoomByUser(user1), Is.Not.Null);
+            Assert.That(room2 = match.RoomAccessor.GetRoomByUser(user2), Is.Not.Null);
             
-            Assert.That(match.GetRoomByPlayer(user1, token1.TokenPlatform, token1.TokenGame), Is.Not.Null);
-            Assert.That(match.GetRoomByPlayer(user2, token2.TokenPlatform, token2.TokenGame), Is.Not.Null);
+            Assert.That(match.RoomAccessor.GetRoomByUser(user1, token1.TokenPlatform, token1.TokenGame), Is.Not.Null);
+            Assert.That(match.RoomAccessor.GetRoomByUser(user2, token2.TokenPlatform, token2.TokenGame), Is.Not.Null);
             
             Debug.Assert(room1 != null);
             Debug.Assert(room2 != null);
@@ -234,10 +234,11 @@ public class MatchingTests : GameServerTest
         };
 
         match.ExecuteMethod("UpdatePlayersInRoom", roomData, context.Database, user1, token1);
-        GameRoom room = match.Rooms.First();
+        GameRoom? room = match.RoomAccessor.GetRoomByUser(user1);
         Assert.Multiple(() =>
         {
-            Assert.That(room.PlayerIds, Has.Count.EqualTo(2));
+            Assert.That(room, Is.Not.Null);
+            Assert.That(room!.PlayerIds, Has.Count.EqualTo(2));
             Assert.That(room.PlayerIds.FirstOrDefault(r => r.Id == user1.UserId), Is.Not.Null);
             Assert.That(room.PlayerIds.FirstOrDefault(r => r.Id == user2.UserId), Is.Not.Null);
         });
@@ -276,14 +277,22 @@ public class MatchingTests : GameServerTest
             user2.Username,
         };
 
-        match.ExecuteMethod("UpdatePlayersInRoom", roomData, context.Database, user1, token1);
-        GameRoom user1Room = match.Rooms.First();
-        Assert.That(user1Room.PlayerIds.FirstOrDefault(r => r.Id == user2.UserId), Is.Not.Null);
-        
-        match.ExecuteMethod("CreateRoom", roomData, context.Database, user2, token2);
-        GameRoom user2Room = match.Rooms.Last();
-        Assert.That(user1Room.PlayerIds.FirstOrDefault(r => r.Id == user2.UserId), Is.Null);
-        Assert.That(user2Room.PlayerIds.First().Id, Is.EqualTo(user2.UserId));
-        
+        {
+            match.ExecuteMethod("UpdatePlayersInRoom", roomData, context.Database, user1, token1);
+            GameRoom? user1Room = match.RoomAccessor.GetRoomByUser(user1);
+            Assert.That(user1Room, Is.Not.Null);
+            Assert.That(user1Room!.PlayerIds.FirstOrDefault(r => r.Id == user2.UserId), Is.Not.Null);
+        }
+
+        {
+            match.ExecuteMethod("CreateRoom", roomData, context.Database, user2, token2);
+            GameRoom? user1Room = match.RoomAccessor.GetRoomByUser(user1);
+            GameRoom? user2Room = match.RoomAccessor.GetRoomByUser(user2);
+            Assert.That(user1Room, Is.Not.Null);
+            Assert.That(user2Room, Is.Not.Null);
+            Assert.That(user1Room!.PlayerIds.FirstOrDefault(r => r.Id == user2.UserId), Is.Null);
+            Assert.That(user2Room!.PlayerIds.First().Id, Is.EqualTo(user2.UserId));
+        }
+
     }
 }

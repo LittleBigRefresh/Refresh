@@ -1,4 +1,7 @@
 using System.Xml.Serialization;
+using Bunkum.Core.Storage;
+using Refresh.GameServer.Authentication;
+using Refresh.GameServer.Database;
 using Refresh.GameServer.Endpoints.ApiV3.DataTypes;
 using Refresh.GameServer.Endpoints.Game.DataTypes.Response;
 using Refresh.GameServer.Services;
@@ -38,22 +41,22 @@ public class GameMinimalLevelResponse : IDataConvertableFrom<GameMinimalLevelRes
 
     private GameMinimalLevelResponse() {}
     
-    public static GameMinimalLevelResponse? FromOldWithExtraData(GameLevelResponse? old, MatchService matchService)
+    public static GameMinimalLevelResponse? FromOldWithExtraData(GameLevelResponse? old, MatchService matchService, GameDatabaseContext database, IDataStore dataStore, TokenGame game)
     {
         if (old == null) return null;
 
         GameMinimalLevelResponse response = FromOld(old)!;
-        response.FillInExtraData(matchService);
+        response.FillInExtraData(matchService, database, dataStore, game);
 
         return response;
     }
     
-    public static GameMinimalLevelResponse? FromOldWithExtraData(GameLevel? old, MatchService matchService)
+    public static GameMinimalLevelResponse? FromOldWithExtraData(GameLevel? old, MatchService matchService, GameDatabaseContext database, IDataStore dataStore, TokenGame game)
     {
         if (old == null) return null;
 
         GameMinimalLevelResponse response = FromOld(old)!;
-        response.FillInExtraData(matchService);
+        response.FillInExtraData(matchService, database, dataStore, game);
 
         return response;
     }
@@ -94,11 +97,12 @@ public class GameMinimalLevelResponse : IDataConvertableFrom<GameMinimalLevelRes
         };
     }
 
-    private void FillInExtraData(MatchService matchService)
+    private void FillInExtraData(MatchService matchService, GameDatabaseContext database, IDataStore dataStore, TokenGame game)
     {
         this.PlayerCount = matchService.GetPlayerCountForLevel(RoomSlotType.Online, this.LevelId);
+        this.IconHash = database.GetAssetFromHash(this.IconHash)?.GetAsIcon(game, database, dataStore) ?? this.IconHash;
     }
 
-    public static IEnumerable<GameMinimalLevelResponse> FromOldList(IEnumerable<GameLevel> oldList) => oldList.Select(FromOld)!;
-    public static IEnumerable<GameMinimalLevelResponse> FromOldList(IEnumerable<GameLevelResponse> oldList) => oldList.Select(FromOld)!;
+    public static IEnumerable<GameMinimalLevelResponse> FromOldList(IEnumerable<GameLevel> oldList) => oldList.Select(FromOld).ToList()!;
+    public static IEnumerable<GameMinimalLevelResponse> FromOldList(IEnumerable<GameLevelResponse> oldList) => oldList.Select(FromOld).ToList()!;
 }
