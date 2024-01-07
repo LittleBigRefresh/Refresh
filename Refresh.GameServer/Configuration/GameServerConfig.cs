@@ -25,4 +25,5 @@ public class GameServerConfig : Config
     public bool RequireGameLoginToRegister { get; set; } = false;
     public bool TrackRequestStatistics { get; set; } = false;
     public string WebExternalUrl { get; set; } = "https://refresh.example.com";
+    public bool EnableUnknownGuids { get; set; } = false;
 }
