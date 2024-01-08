@@ -47,8 +47,8 @@ public class GuidCheckerService : EndpointService
     /// <exception cref="ArgumentOutOfRangeException"></exception>
     public bool IsTextureGuid(TokenGame game, long guid)
     {
-        // Check if all guids are enabled
-        if (this._config.EnableUnknownGuids) return true;
+        // If specified in the config, allow all GUIDs
+        if (this._config.AllowInvalidTextureGuids) return true;
         
         //Allow g0 explicitly
         if (guid == 0) return true;
