@@ -146,7 +146,7 @@ public abstract class Importer
         try
         {
             //Decrypt the data
-            ReadOnlySpan<byte> data = ResourceHelper.PspDecrypt(rawData, PSPKey.Value);
+            ReadOnlySpan<byte> data = ResourceHelper.PspDecrypt(rawData.ToArray(), PSPKey.Value);
             
             uint clutOffset = BinaryPrimitives.ReadUInt32LittleEndian(data[..4]);
             uint width = BinaryPrimitives.ReadUInt32LittleEndian(data[4..8]);
