@@ -1,17 +1,21 @@
 using Bunkum.Core.Services;
 using NotEnoughLogs;
 using Refresh.GameServer.Authentication;
+using Refresh.GameServer.Configuration;
 using Refresh.GameServer.Resources;
 
 namespace Refresh.GameServer.Services;
 
 public class GuidCheckerService : EndpointService
 {
+    
+    private readonly GameServerConfig _config;
     private readonly HashSet<long> _validMainlineTextureGuids= [];
     private readonly HashSet<long> _validVitaTextureGuids = [];
 
-    internal GuidCheckerService(Logger logger) : base(logger)
+    internal GuidCheckerService(GameServerConfig config, Logger logger) : base(logger)
     {
+        this._config = config;
         //Get the resource streams for the LBP3 and LBPV files
         using Stream lbpStream = ResourceHelper.StreamFromResource("Refresh.GameServer.Resources.lbp3.txt");
         using Stream vitaStream = ResourceHelper.StreamFromResource("Refresh.GameServer.Resources.lbpv.txt");
@@ -43,6 +47,9 @@ public class GuidCheckerService : EndpointService
     /// <exception cref="ArgumentOutOfRangeException"></exception>
     public bool IsTextureGuid(TokenGame game, long guid)
     {
+        // If specified in the config, allow all GUIDs
+        if (this._config.AllowInvalidTextureGuids) return true;
+        
         //Allow g0 explicitly
         if (guid == 0) return true;
         
