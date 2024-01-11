@@ -51,7 +51,8 @@ public class ReportingEndpoints : EndpointGroup
                     Username = player.Username,
                     DisplayName = player.Username,
                     // ReSharper disable PossibleLossOfFraction YES I KNOW THESE ARE INTEGERS
-                    BoundsList = $"{(float)(player.Rectangle.Left - imageSize.Width / 2) / (imageSize.Width / 2)}," +
+                    BoundsList = player.Rectangle == null 
+                        ? null : $"{(float)(player.Rectangle.Left - imageSize.Width / 2) / (imageSize.Width / 2)}," +
                                  $"{(float)(player.Rectangle.Top - imageSize.Height / 2) / (imageSize.Height / 2)}," +
                                  $"{(float)(player.Rectangle.Right - imageSize.Width / 2) / (imageSize.Width / 2)}," +
                                  $"{(float)(player.Rectangle.Bottom - imageSize.Height / 2) / (imageSize.Height / 2)}",
