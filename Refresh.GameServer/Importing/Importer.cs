@@ -196,6 +196,7 @@ public abstract class Importer
         if (MatchesMagic(data, "VOPb"u8)) return GameAssetType.VoiceRecording;
         if (MatchesMagic(data, "PTGb"u8)) return GameAssetType.Painting;
         if (MatchesMagic(data, "PRFb"u8)) return GameAssetType.SyncedProfile;
+        if (MatchesMagic(data, "MATT"u8)) return GameAssetType.GriefSongState;
         
         // Traditional files
         // Good reference for magics: https://en.wikipedia.org/wiki/List_of_file_signatures
