@@ -117,4 +117,8 @@ public enum GameAssetType
     /// </summary>
     /// <seealso cref="Refresh.GameServer.Importing.Importer.IsMip"/>
     Mip = 15,
+    /// <summary>
+    /// A file containing information about the currently playing song, uploaded during a grief report.
+    /// </summary>
+    GriefSongState = 16,
 }
