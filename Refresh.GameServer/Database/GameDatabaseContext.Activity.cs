@@ -28,6 +28,24 @@ public partial class GameDatabaseContext // Activity
             .Where(e => e.Timestamp < timestamp && e.Timestamp >= endTimestamp)
             .AsEnumerable();
 
+        if (user != null)
+        {
+            List<ObjectId?> favouriteUsers = user.UsersFavourited.AsEnumerable().Select(f => (ObjectId?)f.UserToFavourite.UserId).ToList();
+            List<ObjectId?>? userFriends = friendService?.GetUsersFriends(user, this)?.Select(u => (ObjectId?)u.UserId).ToList();
+
+            query = query.Where(e =>
+                e.User.UserId == user.UserId ||
+                e.StoredObjectId == user.UserId ||
+                favouriteUsers.Contains(e.User.UserId) ||
+                favouriteUsers.Contains(e.StoredObjectId) ||
+                (userFriends?.Contains(e.User.UserId) ?? false) ||
+                (userFriends?.Contains(e.StoredObjectId) ?? false) ||
+                this.GetLevelById(e.StoredSequentialId ?? int.MaxValue)?.Publisher?.UserId == user.UserId ||
+                e.EventType == EventType.Level_TeamPick ||
+                e.EventType == EventType.User_FirstLogin
+            );
+        }
+        
         if (excludeMyLevels && user != null)
         {
             //Filter the query to events which either arent level related, or which the level publisher doesnt contain the user
@@ -53,7 +71,7 @@ public partial class GameDatabaseContext // Activity
         {
             query = query.Where(e => e.User.UserId != user.UserId && e.StoredObjectId != user.UserId);  
         }
-        
+
         return new(query.OrderByDescending(e => e.Timestamp), skip, count);
     }
 
@@ -74,7 +92,8 @@ public partial class GameDatabaseContext // Activity
         IEnumerable<Event> query = this._realm.All<Event>()
             .Where(e => e._StoredDataType == 1 && e.StoredSequentialId == level.LevelId)
             .Where(e => e.Timestamp < timestamp && e.Timestamp >= endTimestamp)
-            .AsEnumerable();
+            .AsEnumerable()
+            .OrderByDescending(e => e.Timestamp);
         
         if (excludeFriends && user != null && friendService != null)
         {
@@ -96,8 +115,7 @@ public partial class GameDatabaseContext // Activity
             query = query.Where(e => e.User.UserId != user.UserId && e.StoredObjectId != user.UserId);  
         }
         
-        return new DatabaseList<Event>(query
-            .OrderByDescending(e => e.Timestamp), skip, count);
+        return new DatabaseList<Event>(query, skip, count);
     }
 
     public int GetTotalEventCount() => this._realm.All<Event>().Count();

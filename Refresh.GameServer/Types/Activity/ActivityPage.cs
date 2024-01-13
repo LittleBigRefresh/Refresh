@@ -53,6 +53,78 @@ public class ActivityPage
         this.Scores = new List<GameSubmittedScore>();
     }
 
+    public static ActivityPage LevelActivity(
+        GameDatabaseContext database,
+        int count = 20,
+        int skip = 0,
+        long timestamp = 0,
+        long endTimestamp = 0,
+        GameLevel? level = null,
+        bool excludeFriends = false,
+        bool excludeFavouriteUsers = false,
+        bool excludeMyself = false,
+        GameUser? user = null,
+        FriendStorageService? friendStorageService = null
+    )
+    {
+        if (timestamp == 0) timestamp = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
+
+        DatabaseList<Event> events = database.GetRecentActivityForLevel(level, count, skip, timestamp, endTimestamp, excludeFriends, excludeFavouriteUsers, excludeMyself, user, friendStorageService);
+
+        ActivityPage page = new()
+        {
+            Events = new List<Event>(events.Items),
+        };
+        
+        List<GameUser> users = page.Events
+            .Select(e => e.User)
+            .DistinctBy(e => e.UserId)
+            .ToList();
+        
+        users.AddRange(page.Events.Where(e => e.StoredDataType == EventDataType.User)
+            .DistinctBy(e => e.StoredObjectId)
+            .Select(e => database.GetUserFromEvent(e)!));
+
+        page.SerializedUsers = new SerializedUserList
+        {
+            Users = GameUserResponse.FromOldList(users).ToList(),
+        };
+
+        page.Users = users;
+
+        List<GameLevel> levels = page.Events
+            .Where(e => e.StoredDataType == EventDataType.Level)
+            .DistinctBy(e => e.StoredSequentialId)
+            .Select(e => database.GetLevelFromEvent(e)!) // probably pretty inefficient
+            .ToList();
+
+        page.SerializedLevels = new SerializedLevelList
+        {
+            Items = GameLevelResponse.FromOldList(levels).ToList(),
+        };
+
+        page.Levels = levels;
+        
+        List<GameSubmittedScore> scores = page.Events
+            .Where(e => e.StoredDataType == EventDataType.Score)
+            .DistinctBy(e => e.StoredObjectId)
+            .Select(e => database.GetScoreByObjectId(e.StoredObjectId))
+            .ToList()!;
+
+        page.Scores = scores;
+
+        page.Groups = page.GenerateGroups(users, scores);
+        page.Groups.Groups = page.Groups.Groups.SelectMany(group => group.Subgroups?.Items ?? []).ToList();
+        
+        if (page.Events.Count > 0)
+        {
+            page.StartTimestamp = timestamp;
+            page.EndTimestamp = endTimestamp;
+        }
+        
+        return page;
+    }
+    
     public ActivityPage(
         GameDatabaseContext database, 
         int count = 20, 
