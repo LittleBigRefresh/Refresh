@@ -9,6 +9,7 @@ using Refresh.GameServer.Authentication;
 using Refresh.GameServer.Database;
 using Refresh.GameServer.Endpoints.Game.Levels.FilterSettings;
 using Refresh.GameServer.Extensions;
+using Refresh.GameServer.Services;
 using Refresh.GameServer.Time;
 using Refresh.GameServer.Types.Activity;
 using Refresh.GameServer.Types.Levels;
@@ -23,11 +24,16 @@ public class ActivityEndpoints : EndpointGroup
     [GameEndpoint("stream", ContentType.Xml)]
     [NullStatusCode(BadRequest)]
     [MinimumRole(GameUserRole.Restricted)]
-    public ActivityPage? GetRecentActivity(RequestContext context, GameDatabaseContext database)
+    public ActivityPage? GetRecentActivity(RequestContext context, GameDatabaseContext database, GameUser? user, FriendStorageService friendStorageService)
     {
         long timestamp = 0;
         long endTimestamp = 0;
 
+        bool excludeMyLevels = bool.Parse(context.QueryString["excludeMyLevels"] ?? "false");
+        bool excludeFriends = bool.Parse(context.QueryString["excludeFriends"] ?? "false");
+        bool excludeFavouriteUsers = bool.Parse(context.QueryString["excludeFavouriteUsers"] ?? "false");
+        bool excludeMyself = bool.Parse(context.QueryString["excludeMyself"] ?? "false");
+        
         string? tsStr = context.QueryString["timestamp"];
         string? tsEndStr = context.QueryString["endTimestamp"];
         if (tsStr != null && !long.TryParse(tsStr, out timestamp)) return null;
@@ -35,7 +41,17 @@ public class ActivityEndpoints : EndpointGroup
 
         if (endTimestamp == 0) endTimestamp = timestamp - 86400000 * 7; // 1 week
 
-        ActivityPage page = new(database, timestamp: timestamp, endTimestamp: endTimestamp);
+        ActivityPage page = new(
+            database, 
+            timestamp: timestamp, 
+            endTimestamp: endTimestamp, 
+            excludeFriends: excludeFriends, 
+            excludeMyLevels: excludeMyLevels, 
+            excludeFavouriteUsers: excludeFavouriteUsers, 
+            excludeMyself: excludeMyself, 
+            user: user, 
+            friendStorageService: friendStorageService
+        );
         return page;
     }
 

@@ -1,6 +1,7 @@
 using System.Xml.Serialization;
 using Refresh.GameServer.Database;
 using Refresh.GameServer.Endpoints.Game.DataTypes.Response;
+using Refresh.GameServer.Services;
 using Refresh.GameServer.Types.Activity.Groups;
 using Refresh.GameServer.Types.Activity.SerializedEvents;
 using Refresh.GameServer.Types.Levels;
@@ -52,7 +53,21 @@ public class ActivityPage
         this.Scores = new List<GameSubmittedScore>();
     }
 
-    public ActivityPage(GameDatabaseContext database, int count = 20, int skip = 0, long timestamp = 0, long endTimestamp = 0, bool generateGroups = true, GameLevel? level = null)
+    public ActivityPage(
+        GameDatabaseContext database, 
+        int count = 20, 
+        int skip = 0, 
+        long timestamp = 0, 
+        long endTimestamp = 0, 
+        bool generateGroups = true, 
+        GameLevel? level = null, 
+        bool excludeMyLevels = false, 
+        bool excludeFriends = false,
+        bool excludeFavouriteUsers = false,
+        bool excludeMyself = false,
+        GameUser? user = null,
+        FriendStorageService? friendStorageService = null
+    )
     {
         if (timestamp == 0) timestamp = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
 
@@ -60,9 +75,9 @@ public class ActivityPage
         
         // ReSharper disable once ConvertIfStatementToConditionalTernaryExpression
         if (level != null)
-            events = database.GetRecentActivityForLevel(level, count, skip, timestamp, endTimestamp);
+            events = database.GetRecentActivityForLevel(level, count, skip, timestamp, endTimestamp, excludeFriends, excludeFavouriteUsers, excludeMyself, user, friendStorageService);
         else
-            events = database.GetRecentActivity(count, skip, timestamp, endTimestamp);
+            events = database.GetRecentActivity(count, skip, timestamp, endTimestamp, excludeMyLevels, excludeFriends, excludeFavouriteUsers, excludeMyself, user, friendStorageService);
 
         this.Events = new List<Event>(events.Items);
         
