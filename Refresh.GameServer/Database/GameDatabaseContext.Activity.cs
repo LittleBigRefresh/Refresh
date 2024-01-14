@@ -38,13 +38,13 @@ public partial class GameDatabaseContext // Activity
             );
         }
         
-        if (parameters.ExcludeMyLevels && parameters.User != null)
+        if (parameters is { ExcludeMyLevels: true, User: not null })
         {
             //Filter the query to events which either arent level related, or which the level publisher doesnt contain the user
             query = query.Where(e => this.GetLevelById(e.StoredSequentialId ?? int.MaxValue)?.Publisher?.UserId != parameters.User.UserId);
         }
         
-        if (parameters.ExcludeFriends && parameters.User != null && friendService != null)
+        if (parameters is { ExcludeFriends: true, User: not null } && friendService != null)
         {
             List<ObjectId?>? userFriends = friendService.GetUsersFriends(parameters.User, this)?.Select(u => (ObjectId?)u.UserId).ToList();
 
@@ -52,14 +52,14 @@ public partial class GameDatabaseContext // Activity
                                                               !userFriends.Contains(e.User.UserId));
         }
 
-        if (parameters.ExcludeFavouriteUsers && parameters.User != null)
+        if (parameters is { ExcludeFavouriteUsers: true, User: not null })
         {
             List<FavouriteUserRelation> favouriteUsers = parameters.User.UsersFavourited.ToList();
             
             query = query.Where(e => favouriteUsers.All(r => r.UserToFavourite.UserId != e.User.UserId && r.UserToFavourite.UserId != e.StoredObjectId)); 
         }
 
-        if (parameters.ExcludeMyself && parameters.User != null)
+        if (parameters is { ExcludeMyself: true, User: not null })
         {
             query = query.Where(e => e.User.UserId != parameters.User.UserId && e.StoredObjectId != parameters.User.UserId);  
         }
@@ -80,7 +80,7 @@ public partial class GameDatabaseContext // Activity
             .AsEnumerable()
             .OrderByDescending(e => e.Timestamp);
         
-        if (parameters.ExcludeFriends && parameters.User != null && friendService != null)
+        if (parameters is { ExcludeFriends: true, User: not null } && friendService != null)
         {
             List<ObjectId?>? userFriends = friendService.GetUsersFriends(parameters.User, this)?.Select(u => (ObjectId?)u.UserId).ToList();
 
@@ -88,14 +88,14 @@ public partial class GameDatabaseContext // Activity
                                                               !userFriends.Contains(e.User.UserId));
         }
 
-        if (parameters.ExcludeFavouriteUsers && parameters.User != null)
+        if (parameters is { ExcludeFavouriteUsers: true, User: not null })
         {
             List<FavouriteUserRelation> favouriteUsers = parameters.User.UsersFavourited.ToList();
             
             query = query.Where(e => favouriteUsers.All(r => r.UserToFavourite.UserId != e.User.UserId && r.UserToFavourite.UserId != e.StoredObjectId)); 
         }
 
-        if (parameters.ExcludeMyself && parameters.User != null)
+        if (parameters is { ExcludeMyself: true, User: not null })
         {
             query = query.Where(e => e.User.UserId != parameters.User.UserId && e.StoredObjectId != parameters.User.UserId);  
         }
