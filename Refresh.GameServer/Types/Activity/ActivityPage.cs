@@ -56,20 +56,11 @@ public class ActivityPage
     public static ActivityPage LevelActivity(
         GameDatabaseContext database,
         GameLevel level,
-        int count = 20,
-        int skip = 0,
-        long timestamp = 0,
-        long endTimestamp = 0,
-        bool excludeFriends = false,
-        bool excludeFavouriteUsers = false,
-        bool excludeMyself = false,
-        GameUser? user = null,
+        ActivityQueryParameters parameters,
         FriendStorageService? friendStorageService = null
     )
     {
-        if (timestamp == 0) timestamp = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
-
-        DatabaseList<Event> events = database.GetRecentActivityForLevel(level, count, skip, timestamp, endTimestamp, excludeFriends, excludeFavouriteUsers, excludeMyself, user, friendStorageService);
+        DatabaseList<Event> events = database.GetRecentActivityForLevel(level, parameters, friendStorageService);
 
         ActivityPage page = new()
         {
@@ -118,8 +109,8 @@ public class ActivityPage
         
         if (page.Events.Any())
         {
-            page.StartTimestamp = timestamp;
-            page.EndTimestamp = endTimestamp;
+            page.StartTimestamp = parameters.Timestamp;
+            page.EndTimestamp = parameters.EndTimestamp;
         }
         
         return page;
@@ -127,29 +118,21 @@ public class ActivityPage
     
     public ActivityPage(
         GameDatabaseContext database, 
-        int count = 20, 
-        int skip = 0, 
-        long timestamp = 0, 
-        long endTimestamp = 0, 
-        bool generateGroups = true, 
+        ActivityQueryParameters parameters,
+        bool generateGroups = true,
         GameLevel? level = null, 
-        bool excludeMyLevels = false, 
-        bool excludeFriends = false,
-        bool excludeFavouriteUsers = false,
-        bool excludeMyself = false,
-        GameUser? user = null,
         FriendStorageService? friendStorageService = null
     )
     {
-        if (timestamp == 0) timestamp = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
+        if (parameters.Timestamp == 0) parameters.Timestamp = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
 
         DatabaseList<Event> events;
         
         // ReSharper disable once ConvertIfStatementToConditionalTernaryExpression
         if (level != null)
-            events = database.GetRecentActivityForLevel(level, count, skip, timestamp, endTimestamp, excludeFriends, excludeFavouriteUsers, excludeMyself, user, friendStorageService);
+            events = database.GetRecentActivityForLevel(level, parameters, friendStorageService);
         else
-            events = database.GetRecentActivity(count, skip, timestamp, endTimestamp, excludeMyLevels, excludeFriends, excludeFavouriteUsers, excludeMyself, user, friendStorageService);
+            events = database.GetRecentActivity(parameters, friendStorageService);
 
         this.Events = new List<Event>(events.Items);
         
@@ -198,8 +181,8 @@ public class ActivityPage
 
         if (this.Events.Any())
         {
-            this.StartTimestamp = timestamp;
-            this.EndTimestamp = endTimestamp;
+            this.StartTimestamp = parameters.Timestamp;
+            this.EndTimestamp = parameters.EndTimestamp;
         }
     }
 

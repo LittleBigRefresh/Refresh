@@ -32,7 +32,13 @@ public class ActivityApiEndpoints : EndpointGroup
         
         (int skip, int count) = context.GetPageData(true);
 
-        ActivityPage page = new(database, generateGroups: false, timestamp: timestamp, skip: skip, count: count, user: user, friendStorageService: friendStorageService);
+        ActivityPage page = new(database, new ActivityQueryParameters
+        {
+            Timestamp = timestamp,
+            Count = count,
+            Skip = skip,
+            User = user,
+        }, false, null, friendStorageService);
         return ApiActivityPageResponse.FromOldWithExtraData(page, database, dataStore);
     }
     
@@ -54,7 +60,13 @@ public class ActivityApiEndpoints : EndpointGroup
         
         (int skip, int count) = context.GetPageData(true);
         
-        ActivityPage page = new(database, generateGroups: false, timestamp: timestamp, level: level, skip: skip, count: count, user: user, friendStorageService: friendStorageService);
+        ActivityPage page = new(database, new ActivityQueryParameters
+        {
+            Timestamp = timestamp,
+            Skip = skip,
+            Count = count,
+            User = user,
+        }, false, level, friendStorageService);
         return ApiActivityPageResponse.FromOldWithExtraData(page, database, dataStore);
     }
 }

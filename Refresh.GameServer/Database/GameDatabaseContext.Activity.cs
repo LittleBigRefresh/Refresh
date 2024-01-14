@@ -12,110 +12,95 @@ public partial class GameDatabaseContext // Activity
 {
     [Pure]
     public DatabaseList<Event> GetRecentActivity(
-        int count, 
-        int skip, 
-        long timestamp, 
-        long endTimestamp,
-        bool excludeMyLevels = false, 
-        bool excludeFriends = false,
-        bool excludeFavouriteUsers = false,
-        bool excludeMyself = false,
-        GameUser? user = null,
+        ActivityQueryParameters parameters,
         FriendStorageService? friendService = null
     )
     {
         IEnumerable<Event> query = this._realm.All<Event>()
-            .Where(e => e.Timestamp < timestamp && e.Timestamp >= endTimestamp)
+            .Where(e => e.Timestamp < parameters.Timestamp && e.Timestamp >= parameters.EndTimestamp)
             .AsEnumerable();
 
-        if (user != null)
+        if (parameters.User != null)
         {
-            List<ObjectId?> favouriteUsers = user.UsersFavourited.AsEnumerable().Select(f => (ObjectId?)f.UserToFavourite.UserId).ToList();
-            List<ObjectId?>? userFriends = friendService?.GetUsersFriends(user, this)?.Select(u => (ObjectId?)u.UserId).ToList();
+            List<ObjectId?> favouriteUsers = parameters.User.UsersFavourited.AsEnumerable().Select(f => (ObjectId?)f.UserToFavourite.UserId).ToList();
+            List<ObjectId?>? userFriends = friendService?.GetUsersFriends(parameters.User, this)?.Select(u => (ObjectId?)u.UserId).ToList();
 
             query = query.Where(e =>
-                e.User.UserId == user.UserId ||
-                e.StoredObjectId == user.UserId ||
+                e.User.UserId == parameters.User.UserId ||
+                e.StoredObjectId == parameters.User.UserId ||
                 favouriteUsers.Contains(e.User.UserId) ||
                 favouriteUsers.Contains(e.StoredObjectId) ||
                 (userFriends?.Contains(e.User.UserId) ?? false) ||
                 (userFriends?.Contains(e.StoredObjectId) ?? false) ||
-                this.GetLevelById(e.StoredSequentialId ?? int.MaxValue)?.Publisher?.UserId == user.UserId ||
+                this.GetLevelById(e.StoredSequentialId ?? int.MaxValue)?.Publisher?.UserId == parameters.User.UserId ||
                 e.EventType == EventType.Level_TeamPick ||
                 e.EventType == EventType.User_FirstLogin
             );
         }
         
-        if (excludeMyLevels && user != null)
+        if (parameters.ExcludeMyLevels && parameters.User != null)
         {
             //Filter the query to events which either arent level related, or which the level publisher doesnt contain the user
-            query = query.Where(e => this.GetLevelById(e.StoredSequentialId ?? int.MaxValue)?.Publisher?.UserId != user.UserId);
+            query = query.Where(e => this.GetLevelById(e.StoredSequentialId ?? int.MaxValue)?.Publisher?.UserId != parameters.User.UserId);
         }
         
-        if (excludeFriends && user != null && friendService != null)
+        if (parameters.ExcludeFriends && parameters.User != null && friendService != null)
         {
-            List<ObjectId?>? userFriends = friendService.GetUsersFriends(user, this)?.Select(u => (ObjectId?)u.UserId).ToList();
+            List<ObjectId?>? userFriends = friendService.GetUsersFriends(parameters.User, this)?.Select(u => (ObjectId?)u.UserId).ToList();
 
             if (userFriends != null) query = query.Where(e => !userFriends.Contains(e.StoredObjectId) &&
                                                               !userFriends.Contains(e.User.UserId));
         }
 
-        if (excludeFavouriteUsers && user != null)
+        if (parameters.ExcludeFavouriteUsers && parameters.User != null)
         {
-            List<FavouriteUserRelation> favouriteUsers = user.UsersFavourited.ToList();
+            List<FavouriteUserRelation> favouriteUsers = parameters.User.UsersFavourited.ToList();
             
             query = query.Where(e => favouriteUsers.All(r => r.UserToFavourite.UserId != e.User.UserId && r.UserToFavourite.UserId != e.StoredObjectId)); 
         }
 
-        if (excludeMyself && user != null)
+        if (parameters.ExcludeMyself && parameters.User != null)
         {
-            query = query.Where(e => e.User.UserId != user.UserId && e.StoredObjectId != user.UserId);  
+            query = query.Where(e => e.User.UserId != parameters.User.UserId && e.StoredObjectId != parameters.User.UserId);  
         }
 
-        return new(query.OrderByDescending(e => e.Timestamp), skip, count);
+        return new(query.OrderByDescending(e => e.Timestamp), parameters.Skip, parameters.Count);
     }
 
     [Pure]
     public DatabaseList<Event> GetRecentActivityForLevel(
         GameLevel level, 
-        int count, 
-        int skip, 
-        long timestamp, 
-        long endTimestamp,        
-        bool excludeFriends = false,
-        bool excludeFavouriteUsers = false,
-        bool excludeMyself = false,
-        GameUser? user = null,
+        ActivityQueryParameters parameters,
         FriendStorageService? friendService = null
     )
     {
         IEnumerable<Event> query = this._realm.All<Event>()
             .Where(e => e._StoredDataType == 1 && e.StoredSequentialId == level.LevelId)
-            .Where(e => e.Timestamp < timestamp && e.Timestamp >= endTimestamp)
+            .Where(e => e.Timestamp < parameters.Timestamp && e.Timestamp >= parameters.EndTimestamp)
             .AsEnumerable()
             .OrderByDescending(e => e.Timestamp);
         
-        if (excludeFriends && user != null && friendService != null)
+        if (parameters.ExcludeFriends && parameters.User != null && friendService != null)
         {
-            List<ObjectId?>? userFriends = friendService.GetUsersFriends(user, this)?.Select(u => (ObjectId?)u.UserId).ToList();
+            List<ObjectId?>? userFriends = friendService.GetUsersFriends(parameters.User, this)?.Select(u => (ObjectId?)u.UserId).ToList();
 
             if (userFriends != null) query = query.Where(e => !userFriends.Contains(e.StoredObjectId) &&
                                                               !userFriends.Contains(e.User.UserId));
         }
 
-        if (excludeFavouriteUsers && user != null)
+        if (parameters.ExcludeFavouriteUsers && parameters.User != null)
         {
-            List<FavouriteUserRelation> favouriteUsers = user.UsersFavourited.ToList();
+            List<FavouriteUserRelation> favouriteUsers = parameters.User.UsersFavourited.ToList();
             
             query = query.Where(e => favouriteUsers.All(r => r.UserToFavourite.UserId != e.User.UserId && r.UserToFavourite.UserId != e.StoredObjectId)); 
         }
 
-        if (excludeMyself && user != null)
+        if (parameters.ExcludeMyself && parameters.User != null)
         {
-            query = query.Where(e => e.User.UserId != user.UserId && e.StoredObjectId != user.UserId);  
+            query = query.Where(e => e.User.UserId != parameters.User.UserId && e.StoredObjectId != parameters.User.UserId);  
         }
         
-        return new DatabaseList<Event>(query, skip, count);
+        return new DatabaseList<Event>(query, parameters.Skip, parameters.Count);
     }
 
     public int GetTotalEventCount() => this._realm.All<Event>().Count();

@@ -43,14 +43,19 @@ public class ActivityEndpoints : EndpointGroup
 
         ActivityPage page = new(
             database, 
-            timestamp: timestamp, 
-            endTimestamp: endTimestamp, 
-            excludeFriends: excludeFriends, 
-            excludeMyLevels: excludeMyLevels, 
-            excludeFavouriteUsers: excludeFavouriteUsers, 
-            excludeMyself: excludeMyself, 
-            user: user, 
-            friendStorageService: friendStorageService
+            new ActivityQueryParameters
+            {
+                Timestamp = timestamp,
+                EndTimestamp = endTimestamp,
+                ExcludeFriends = excludeFriends,
+                ExcludeMyLevels = excludeMyLevels,
+                ExcludeFavouriteUsers = excludeFavouriteUsers,
+                ExcludeMyself = excludeMyself,
+                User = user,
+            }, 
+            true, 
+            null, 
+            friendStorageService
         );
         return page;
     }
@@ -77,7 +82,17 @@ public class ActivityEndpoints : EndpointGroup
 
         if (endTimestamp == 0) endTimestamp = timestamp - 86400000 * 7; // 1 week
 
-        ActivityPage page = ActivityPage.LevelActivity(database, level, 20, 0, timestamp, endTimestamp, excludeFriends, excludeFavouriteUsers, excludeMyself, user, friendStorageService);
+        ActivityPage page = ActivityPage.LevelActivity(database, level, new ActivityQueryParameters
+        {
+            Count = 20,
+            Skip = 0,
+            Timestamp = timestamp,
+            EndTimestamp = endTimestamp,
+            ExcludeFriends = excludeFriends,
+            ExcludeFavouriteUsers = excludeFavouriteUsers,
+            ExcludeMyself = excludeMyself,
+            User = user,
+        }, friendStorageService);
         
         return new Response(page, ContentType.Xml);
     }
@@ -107,13 +122,16 @@ public class ActivityEndpoints : EndpointGroup
 
         ActivityPage page = new(
             database, 
-            timestamp: timestamp, 
-            endTimestamp: endTimestamp, 
-            excludeFriends: excludeFriends, 
-            excludeMyLevels: excludeMyLevels, 
-            excludeFavouriteUsers: excludeFavouriteUsers, 
-            excludeMyself: excludeMyself, 
-            user: user
+            new ActivityQueryParameters
+            {
+                Timestamp = timestamp,
+                EndTimestamp = endTimestamp,
+                ExcludeFriends = excludeFriends,
+                ExcludeMyLevels = excludeMyLevels,
+                ExcludeFavouriteUsers = excludeFavouriteUsers,
+                ExcludeMyself = excludeMyself,
+                User = user,
+            }
         );
         
         return new Response(page, ContentType.Xml);
