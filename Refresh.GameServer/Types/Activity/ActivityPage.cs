@@ -23,7 +23,7 @@ public class ActivityPage
     public long EndTimestamp { get; set; }
     
     [XmlIgnore]
-    public List<Event> Events { get; set; }
+    public IEnumerable<Event> Events { get; set; }
     
     [XmlIgnore]
     public List<GameUser> Users { get; set; }
@@ -73,7 +73,7 @@ public class ActivityPage
 
         ActivityPage page = new()
         {
-            Events = new List<Event>(events.Items),
+            Events = events.Items,
         };
         
         List<GameUser> users = page.Events
@@ -116,7 +116,7 @@ public class ActivityPage
         page.Groups = page.GenerateGroups(users, scores);
         page.Groups.Groups = page.Groups.Groups.SelectMany(group => group.Subgroups?.Items ?? []).ToList();
         
-        if (page.Events.Count > 0)
+        if (page.Events.Any())
         {
             page.StartTimestamp = timestamp;
             page.EndTimestamp = endTimestamp;
@@ -196,7 +196,7 @@ public class ActivityPage
             .OrderByDescending(g => g.Timestamp)
             .ToList();
 
-        if (this.Events.Count > 0)
+        if (this.Events.Any())
         {
             this.StartTimestamp = timestamp;
             this.EndTimestamp = endTimestamp;
