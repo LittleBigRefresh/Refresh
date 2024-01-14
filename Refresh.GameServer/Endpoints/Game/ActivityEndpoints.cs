@@ -77,7 +77,7 @@ public class ActivityEndpoints : EndpointGroup
 
         if (endTimestamp == 0) endTimestamp = timestamp - 86400000 * 7; // 1 week
 
-        ActivityPage page = ActivityPage.LevelActivity(database, 20, 0, timestamp, endTimestamp, level, excludeFriends, excludeFavouriteUsers, excludeMyself, user, friendStorageService);
+        ActivityPage page = ActivityPage.LevelActivity(database, level, 20, 0, timestamp, endTimestamp, excludeFriends, excludeFavouriteUsers, excludeMyself, user, friendStorageService);
         
         return new Response(page, ContentType.Xml);
     }

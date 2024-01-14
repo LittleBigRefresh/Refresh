@@ -55,11 +55,11 @@ public class ActivityPage
 
     public static ActivityPage LevelActivity(
         GameDatabaseContext database,
+        GameLevel level,
         int count = 20,
         int skip = 0,
         long timestamp = 0,
         long endTimestamp = 0,
-        GameLevel? level = null,
         bool excludeFriends = false,
         bool excludeFavouriteUsers = false,
         bool excludeMyself = false,
