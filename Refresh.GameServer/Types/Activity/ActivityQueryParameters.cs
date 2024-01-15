@@ -6,7 +6,7 @@ public struct ActivityQueryParameters
 {
     public int Count = 20;
     public int Skip = 0;
-    public long Timestamp = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
+    public long Timestamp = 0;
     public long EndTimestamp = 0;
     
     public bool ExcludeMyLevels = false;
@@ -15,7 +15,7 @@ public struct ActivityQueryParameters
     public bool ExcludeMyself = false;
 
     public GameUser? User = null;
-    
+
     public ActivityQueryParameters()
     {}
 }

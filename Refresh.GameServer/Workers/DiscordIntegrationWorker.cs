@@ -100,7 +100,7 @@ public class DiscordIntegrationWorker : IWorker
             return true;
         }
 
-        DatabaseList<Event> activity = database.GetRecentActivity(new ActivityQueryParameters
+        DatabaseList<Event> activity = database.GetGlobalRecentActivity(new ActivityQueryParameters
         {
             Timestamp = Now,
             EndTimestamp = this._lastTimestamp,

@@ -53,89 +53,8 @@ public class ActivityPage
         this.Scores = new List<GameSubmittedScore>();
     }
 
-    public static ActivityPage LevelActivity(
-        GameDatabaseContext database,
-        GameLevel level,
-        ActivityQueryParameters parameters,
-        FriendStorageService? friendStorageService = null
-    )
+    private void FillInInfo(GameDatabaseContext database, bool generateGroups, ActivityQueryParameters parameters)
     {
-        DatabaseList<Event> events = database.GetRecentActivityForLevel(level, parameters, friendStorageService);
-
-        ActivityPage page = new()
-        {
-            Events = events.Items,
-        };
-        
-        List<GameUser> users = page.Events
-            .Select(e => e.User)
-            .DistinctBy(e => e.UserId)
-            .ToList();
-        
-        users.AddRange(page.Events.Where(e => e.StoredDataType == EventDataType.User)
-            .DistinctBy(e => e.StoredObjectId)
-            .Select(e => database.GetUserFromEvent(e)!));
-
-        page.SerializedUsers = new SerializedUserList
-        {
-            Users = GameUserResponse.FromOldList(users).ToList(),
-        };
-
-        page.Users = users;
-
-        List<GameLevel> levels = page.Events
-            .Where(e => e.StoredDataType == EventDataType.Level)
-            .DistinctBy(e => e.StoredSequentialId)
-            .Select(e => database.GetLevelFromEvent(e)!) // probably pretty inefficient
-            .ToList();
-
-        page.SerializedLevels = new SerializedLevelList
-        {
-            Items = GameLevelResponse.FromOldList(levels).ToList(),
-        };
-
-        page.Levels = levels;
-        
-        List<GameSubmittedScore> scores = page.Events
-            .Where(e => e.StoredDataType == EventDataType.Score)
-            .DistinctBy(e => e.StoredObjectId)
-            .Select(e => database.GetScoreByObjectId(e.StoredObjectId))
-            .ToList()!;
-
-        page.Scores = scores;
-
-        page.Groups = page.GenerateGroups(users, scores);
-        page.Groups.Groups = page.Groups.Groups.SelectMany(group => group.Subgroups?.Items ?? []).ToList();
-        
-        if (page.Events.Any())
-        {
-            page.StartTimestamp = parameters.Timestamp;
-            page.EndTimestamp = parameters.EndTimestamp;
-        }
-        
-        return page;
-    }
-    
-    public ActivityPage(
-        GameDatabaseContext database, 
-        ActivityQueryParameters parameters,
-        bool generateGroups = true,
-        GameLevel? level = null, 
-        FriendStorageService? friendStorageService = null
-    )
-    {
-        if (parameters.Timestamp == 0) parameters.Timestamp = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
-
-        DatabaseList<Event> events;
-        
-        // ReSharper disable once ConvertIfStatementToConditionalTernaryExpression
-        if (level != null)
-            events = database.GetRecentActivityForLevel(level, parameters, friendStorageService);
-        else
-            events = database.GetRecentActivity(parameters, friendStorageService);
-
-        this.Events = new List<Event>(events.Items);
-        
         List<GameUser> users = this.Events
             .Select(e => e.User)
             .DistinctBy(e => e.UserId)
@@ -183,9 +102,88 @@ public class ActivityPage
         {
             this.StartTimestamp = parameters.Timestamp;
             this.EndTimestamp = parameters.EndTimestamp;
-        }
+        } 
     }
 
+    public static ActivityPage GameLevelActivity(
+        GameDatabaseContext database,
+        GameLevel level,
+        ActivityQueryParameters parameters,
+        FriendStorageService? friendStorageService = null
+    )
+    {
+        DatabaseList<Event> events = database.GetRecentActivityForLevel(level, parameters, friendStorageService);
+
+        ActivityPage page = new()
+        {
+            Events = events.Items,
+        };
+        
+        page.FillInInfo(database, true, parameters);
+        
+        page.Groups.Groups = page.Groups.Groups.SelectMany(group => group.Subgroups?.Items ?? []).ToList();
+        
+        return page;
+    }
+    
+    public static ActivityPage ApiLevelActivity(
+        GameDatabaseContext database,
+        GameLevel level,
+        ActivityQueryParameters parameters,
+        FriendStorageService? friendStorageService = null,
+        bool generateGroups = true
+    )
+    {
+        DatabaseList<Event> events = database.GetRecentActivityForLevel(level, parameters, friendStorageService);
+
+        ActivityPage page = new()
+        {
+            Events = events.Items,
+        };
+        
+        page.FillInInfo(database, generateGroups, parameters);
+        
+        return page;
+    }
+    
+    public static ActivityPage UserActivity(
+        GameDatabaseContext database,
+        ActivityQueryParameters parameters,
+        FriendStorageService? friendStorageService = null,
+        bool generateGroups = true
+    )
+    {
+        DatabaseList<Event> events = database.GetUserRecentActivity(parameters, friendStorageService);
+
+        ActivityPage page = new()
+        {
+            Events = events.Items,
+        };
+        
+        page.FillInInfo(database, generateGroups, parameters);
+        
+        return page;
+    }
+    
+    public static ActivityPage GlobalActivity(
+        GameDatabaseContext database,
+        ActivityQueryParameters parameters,
+        FriendStorageService? friendStorageService = null,
+        bool generateGroups = true
+    )
+    {
+        DatabaseList<Event> events = database.GetGlobalRecentActivity(parameters, friendStorageService);
+
+        ActivityPage page = new()
+        {
+            Events = events.Items,
+        };
+        
+        page.FillInInfo(database, generateGroups, parameters);
+        
+        return page;
+    }
+    
     private ActivityGroups GenerateGroups(IReadOnlyCollection<GameUser> users, IReadOnlyCollection<GameSubmittedScore> scores)
     {
         ActivityGroups groups = new();

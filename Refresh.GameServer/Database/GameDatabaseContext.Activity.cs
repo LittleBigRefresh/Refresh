@@ -11,14 +11,12 @@ namespace Refresh.GameServer.Database;
 public partial class GameDatabaseContext // Activity
 {
     [Pure]
-    public DatabaseList<Event> GetRecentActivity(
+    public DatabaseList<Event> GetUserRecentActivity(
         ActivityQueryParameters parameters,
         FriendStorageService? friendService = null
     )
     {
-        IEnumerable<Event> query = this._realm.All<Event>()
-            .Where(e => e.Timestamp < parameters.Timestamp && e.Timestamp >= parameters.EndTimestamp)
-            .AsEnumerable();
+        IEnumerable<Event> query = this.GetRecentActivity(parameters, friendService);
 
         if (parameters.User != null)
         {
@@ -38,6 +36,19 @@ public partial class GameDatabaseContext // Activity
             );
         }
         
+        return new(query.OrderByDescending(e => e.Timestamp), parameters.Skip, parameters.Count);
+    }
+
+    private IEnumerable<Event> GetRecentActivity(ActivityQueryParameters parameters,
+        FriendStorageService? friendService = null)
+    {
+        if (parameters.Timestamp == 0) 
+            parameters.Timestamp = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
+        
+        IEnumerable<Event> query = this._realm.All<Event>()
+            .Where(e => e.Timestamp < parameters.Timestamp && e.Timestamp >= parameters.EndTimestamp)
+            .AsEnumerable();
+
         if (parameters is { ExcludeMyLevels: true, User: not null })
         {
             //Filter the query to events which either arent level related, or which the level publisher doesnt contain the user
@@ -64,7 +75,16 @@ public partial class GameDatabaseContext // Activity
             query = query.Where(e => e.User.UserId != parameters.User.UserId && e.StoredObjectId != parameters.User.UserId);  
         }
 
-        return new(query.OrderByDescending(e => e.Timestamp), parameters.Skip, parameters.Count);
+        return query;
+    }
+    
+    [Pure]
+    public DatabaseList<Event> GetGlobalRecentActivity(
+        ActivityQueryParameters parameters,
+        FriendStorageService? friendService = null
+    )
+    {
+        return new(this.GetRecentActivity(parameters, friendService).OrderByDescending(e => e.Timestamp), parameters.Skip, parameters.Count);
     }
 
     [Pure]
@@ -74,33 +94,9 @@ public partial class GameDatabaseContext // Activity
         FriendStorageService? friendService = null
     )
     {
-        IEnumerable<Event> query = this._realm.All<Event>()
+        return new DatabaseList<Event>(this.GetRecentActivity(parameters, friendService)
             .Where(e => e._StoredDataType == 1 && e.StoredSequentialId == level.LevelId)
-            .Where(e => e.Timestamp < parameters.Timestamp && e.Timestamp >= parameters.EndTimestamp)
-            .AsEnumerable()
-            .OrderByDescending(e => e.Timestamp);
-        
-        if (parameters is { ExcludeFriends: true, User: not null } && friendService != null)
-        {
-            List<ObjectId?>? userFriends = friendService.GetUsersFriends(parameters.User, this)?.Select(u => (ObjectId?)u.UserId).ToList();
-
-            if (userFriends != null) query = query.Where(e => !userFriends.Contains(e.StoredObjectId) &&
-                                                              !userFriends.Contains(e.User.UserId));
-        }
-
-        if (parameters is { ExcludeFavouriteUsers: true, User: not null })
-        {
-            List<FavouriteUserRelation> favouriteUsers = parameters.User.UsersFavourited.ToList();
-            
-            query = query.Where(e => favouriteUsers.All(r => r.UserToFavourite.UserId != e.User.UserId && r.UserToFavourite.UserId != e.StoredObjectId)); 
-        }
-
-        if (parameters is { ExcludeMyself: true, User: not null })
-        {
-            query = query.Where(e => e.User.UserId != parameters.User.UserId && e.StoredObjectId != parameters.User.UserId);  
-        }
-        
-        return new DatabaseList<Event>(query, parameters.Skip, parameters.Count);
+            .OrderByDescending(e => e.Timestamp), parameters.Skip, parameters.Count);
     }
 
     public int GetTotalEventCount() => this._realm.All<Event>().Count();

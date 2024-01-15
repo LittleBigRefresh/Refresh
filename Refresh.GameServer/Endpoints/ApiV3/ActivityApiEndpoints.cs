@@ -23,7 +23,7 @@ public class ActivityApiEndpoints : EndpointGroup
     [DocUsesPageData, DocSummary("Fetch a list of recent happenings on the server.")]
     [DocQueryParam("timestamp", "A timestamp in unix seconds, used to search backwards.")]
     [DocError(typeof(ApiValidationError), ApiValidationError.NumberParseErrorWhen)]
-    public ApiResponse<ApiActivityPageResponse> GetRecentActivity(RequestContext context, GameDatabaseContext database, IDataStore dataStore, GameUser? user, FriendStorageService friendStorageService)
+    public ApiResponse<ApiActivityPageResponse> GetRecentActivity(RequestContext context, GameDatabaseContext database, IDataStore dataStore, FriendStorageService friendStorageService)
     {
         long timestamp = 0;
 
@@ -32,13 +32,12 @@ public class ActivityApiEndpoints : EndpointGroup
         
         (int skip, int count) = context.GetPageData(true);
 
-        ActivityPage page = new(database, new ActivityQueryParameters
+        ActivityPage page = ActivityPage.GlobalActivity(database, new ActivityQueryParameters
         {
             Timestamp = timestamp,
             Count = count,
             Skip = skip,
-            User = user,
-        }, false, null, friendStorageService);
+        }, friendStorageService, false);
         return ApiActivityPageResponse.FromOldWithExtraData(page, database, dataStore);
     }
     
@@ -60,13 +59,13 @@ public class ActivityApiEndpoints : EndpointGroup
         
         (int skip, int count) = context.GetPageData(true);
         
-        ActivityPage page = new(database, new ActivityQueryParameters
+        ActivityPage page = ActivityPage.ApiLevelActivity(database, level, new ActivityQueryParameters
         {
             Timestamp = timestamp,
             Skip = skip,
             Count = count,
             User = user,
-        }, false, level, friendStorageService);
+        }, friendStorageService, false);
         return ApiActivityPageResponse.FromOldWithExtraData(page, database, dataStore);
     }
 }
