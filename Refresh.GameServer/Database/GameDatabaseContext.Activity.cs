@@ -36,7 +36,7 @@ public partial class GameDatabaseContext // Activity
             );
         }
         
-        return new(query.OrderByDescending(e => e.Timestamp), parameters.Skip, parameters.Count);
+        return new DatabaseList<Event>(query.OrderByDescending(e => e.Timestamp), parameters.Skip, parameters.Count);
     }
 
     private IEnumerable<Event> GetRecentActivity(ActivityQueryParameters parameters,
