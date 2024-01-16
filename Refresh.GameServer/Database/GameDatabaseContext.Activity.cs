@@ -84,7 +84,7 @@ public partial class GameDatabaseContext // Activity
         FriendStorageService? friendService = null
     )
     {
-        return new(this.GetRecentActivity(parameters, friendService).OrderByDescending(e => e.Timestamp), parameters.Skip, parameters.Count);
+        return new DatabaseList<Event>(this.GetRecentActivity(parameters, friendService).OrderByDescending(e => e.Timestamp), parameters.Skip, parameters.Count);
     }
 
     [Pure]
