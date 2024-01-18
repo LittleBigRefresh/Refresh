@@ -32,7 +32,7 @@ public class LevelEndpoints : EndpointGroup
     {
         if (overrideService.UserHasOverrides(user))
         {
-            List<GameMinimalLevelResponse> overrides = overrideService.GetOverridesForUser(user, database)
+            List<GameMinimalLevelResponse> overrides = overrideService.GetOverridesForUser(token, database)
                 .Select(l => GameMinimalLevelResponse.FromOldWithExtraData(l, matchService, database, dataStore, token.TokenGame))
                 .ToList()!;
             
