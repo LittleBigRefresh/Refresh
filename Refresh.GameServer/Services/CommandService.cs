@@ -114,6 +114,16 @@ public class CommandService : EndpointService
                 database.SetUserGriefReportRedirection(user, false);
                 break;
             }
+            case "unescapexmlon":
+            {
+                database.SetUnescapeXmlSequences(user, true);
+                break;
+            }
+            case "unescapexmloff":
+            {
+                database.SetUnescapeXmlSequences(user, false);
+                break;
+            }
             case "play":
             {
                 GameLevel? level = database.GetLevelById(int.Parse(command.Arguments));

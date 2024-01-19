@@ -299,6 +299,14 @@ public partial class GameDatabaseContext // Users
         });
     }
 
+    public void SetUnescapeXmlSequences(GameUser user, bool value)
+    {
+        this._realm.Write(() =>
+        {
+            user.UnescapeXmlSequences = value;
+        });
+    }
+    
     public void SetUserGriefReportRedirection(GameUser user, bool value)
     {
         this._realm.Write(() =>
