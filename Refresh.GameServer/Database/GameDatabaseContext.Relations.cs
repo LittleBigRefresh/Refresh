@@ -64,6 +64,17 @@ public partial class GameDatabaseContext // Relations
     public bool AreUsersMutual(GameUser user1, GameUser user2) =>
         this.IsUserFavouritedByUser(user1, user2) &&
         this.IsUserFavouritedByUser(user2, user1);
+
+    [Pure]
+    public IEnumerable<GameUser> GetUsersMutuals(GameUser user)
+    {
+        // this might be the shittiest query i've ever written.
+        return user.UsersFavourited.AsEnumerable()
+            .Select(relation => relation.UserToFavourite).AsEnumerable()
+            .Where(f => f.UsersFavourited
+                .Select(otherUserRelation => otherUserRelation.UserToFavourite).AsEnumerable()
+                .Contains(user));
+    }
     
     [Pure]
     public IEnumerable<GameUser> GetUsersFavouritedByUser(GameUser user, int count, int skip) => this._realm.All<FavouriteUserRelation>()
