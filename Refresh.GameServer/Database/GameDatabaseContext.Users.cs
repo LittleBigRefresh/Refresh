@@ -163,6 +163,9 @@ public partial class GameDatabaseContext // Users
 
             if (data.RedirectGriefReportsToPhotos != null)
                 user.RedirectGriefReportsToPhotos = data.RedirectGriefReportsToPhotos.Value;
+            
+            if (data.UnescapeXmlSequences != null)
+                user.UnescapeXmlSequences = data.UnescapeXmlSequences.Value;
 
             if (data.EmailAddress != null)
                 user.EmailAddress = data.EmailAddress;
