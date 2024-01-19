@@ -1,6 +1,7 @@
 using System.Xml.Serialization;
 using Refresh.GameServer.Database;
 using Refresh.GameServer.Endpoints.Game.DataTypes.Response;
+using Refresh.GameServer.Services;
 using Refresh.GameServer.Types.Activity.Groups;
 using Refresh.GameServer.Types.Activity.SerializedEvents;
 using Refresh.GameServer.Types.Levels;
@@ -22,7 +23,7 @@ public class ActivityPage
     public long EndTimestamp { get; set; }
     
     [XmlIgnore]
-    public List<Event> Events { get; set; }
+    public IEnumerable<Event> Events { get; set; }
     
     [XmlIgnore]
     public List<GameUser> Users { get; set; }
@@ -52,20 +53,8 @@ public class ActivityPage
         this.Scores = new List<GameSubmittedScore>();
     }
 
-    public ActivityPage(GameDatabaseContext database, int count = 20, int skip = 0, long timestamp = 0, long endTimestamp = 0, bool generateGroups = true, GameLevel? level = null)
+    private void FillInInfo(GameDatabaseContext database, bool generateGroups, ActivityQueryParameters parameters)
     {
-        if (timestamp == 0) timestamp = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
-
-        DatabaseList<Event> events;
-        
-        // ReSharper disable once ConvertIfStatementToConditionalTernaryExpression
-        if (level != null)
-            events = database.GetRecentActivityForLevel(level, count, skip, timestamp, endTimestamp);
-        else
-            events = database.GetRecentActivity(count, skip, timestamp, endTimestamp);
-
-        this.Events = new List<Event>(events.Items);
-        
         List<GameUser> users = this.Events
             .Select(e => e.User)
             .DistinctBy(e => e.UserId)
@@ -109,13 +98,92 @@ public class ActivityPage
             .OrderByDescending(g => g.Timestamp)
             .ToList();
 
-        if (this.Events.Count > 0)
+        if (this.Events.Any())
         {
-            this.StartTimestamp = timestamp;
-            this.EndTimestamp = endTimestamp;
-        }
+            this.StartTimestamp = parameters.Timestamp;
+            this.EndTimestamp = parameters.EndTimestamp;
+        } 
     }
 
+    public static ActivityPage GameLevelActivity(
+        GameDatabaseContext database,
+        GameLevel level,
+        ActivityQueryParameters parameters,
+        FriendStorageService? friendStorageService = null
+    )
+    {
+        DatabaseList<Event> events = database.GetRecentActivityForLevel(level, parameters, friendStorageService);
+
+        ActivityPage page = new()
+        {
+            Events = events.Items,
+        };
+        
+        page.FillInInfo(database, true, parameters);
+        
+        page.Groups.Groups = page.Groups.Groups.SelectMany(group => group.Subgroups?.Items ?? []).ToList();
+        
+        return page;
+    }
+    
+    public static ActivityPage ApiLevelActivity(
+        GameDatabaseContext database,
+        GameLevel level,
+        ActivityQueryParameters parameters,
+        FriendStorageService? friendStorageService = null,
+        bool generateGroups = true
+    )
+    {
+        DatabaseList<Event> events = database.GetRecentActivityForLevel(level, parameters, friendStorageService);
+
+        ActivityPage page = new()
+        {
+            Events = events.Items,
+        };
+        
+        page.FillInInfo(database, generateGroups, parameters);
+        
+        return page;
+    }
+    
+    public static ActivityPage UserActivity(
+        GameDatabaseContext database,
+        ActivityQueryParameters parameters,
+        FriendStorageService? friendStorageService = null,
+        bool generateGroups = true
+    )
+    {
+        DatabaseList<Event> events = database.GetUserRecentActivity(parameters, friendStorageService);
+
+        ActivityPage page = new()
+        {
+            Events = events.Items,
+        };
+        
+        page.FillInInfo(database, generateGroups, parameters);
+        
+        return page;
+    }
+    
+    public static ActivityPage GlobalActivity(
+        GameDatabaseContext database,
+        ActivityQueryParameters parameters,
+        FriendStorageService? friendStorageService = null,
+        bool generateGroups = true
+    )
+    {
+        DatabaseList<Event> events = database.GetGlobalRecentActivity(parameters, friendStorageService);
+
+        ActivityPage page = new()
+        {
+            Events = events.Items,
+        };
+        
+        page.FillInInfo(database, generateGroups, parameters);
+        
+        return page;
+    }
+    
     private ActivityGroups GenerateGroups(IReadOnlyCollection<GameUser> users, IReadOnlyCollection<GameSubmittedScore> scores)
     {
         ActivityGroups groups = new();
