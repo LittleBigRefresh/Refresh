@@ -51,45 +51,10 @@ public class LevelListOverrideService : EndpointService
         List<GameLevel> levels = [];
         foreach (GameLevel level in overrides.Select(levelId => database.GetLevelById(levelId)!))
         {
-            switch (token.TokenGame)
-            {
-                //LBP1 can only play LBP1 levels.
-                case TokenGame.LittleBigPlanet1:
-                    if (level.GameVersion != TokenGame.LittleBigPlanet1) 
-                        continue;
-                            
-                    break;
-                //LBP2 can play LBP1,2
-                case TokenGame.LittleBigPlanet2:
-                    if (level.GameVersion != TokenGame.LittleBigPlanet1 && level.GameVersion != TokenGame.LittleBigPlanet2) 
-                        continue;
-                            
-                    break;
-                //LBP3 can play LBP1,2,3
-                case TokenGame.LittleBigPlanet3:
-                    if (level.GameVersion != TokenGame.LittleBigPlanet1 && level.GameVersion != TokenGame.LittleBigPlanet2 && level.GameVersion != TokenGame.LittleBigPlanet3)
-                        continue;
-                            
-                    break;
-                //LBPV can only play LBPV levels.
-                case TokenGame.LittleBigPlanetVita:
-                    if (level.GameVersion != TokenGame.LittleBigPlanetVita)
-                        continue;
-                            
-                    break;
-                //LBP PSP can only play LBP PSP levels.
-                case TokenGame.LittleBigPlanetPSP:
-                    if (level.GameVersion != TokenGame.LittleBigPlanetPSP)
-                        continue;
-                            
-                    break;
-                //Allow all for website
-                case TokenGame.Website:
-                    break;
-                default:
-                    throw new ArgumentOutOfRangeException();
-            }
-            
+            //If the game cannot play this level, skip it
+            if (!token.TokenGame.CanPlay(level)) 
+                continue;
+
             levels.Add(level);
         }
         
