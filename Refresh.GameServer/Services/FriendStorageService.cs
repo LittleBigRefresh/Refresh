@@ -16,6 +16,7 @@ namespace Refresh.GameServer.Services;
 /// Friend data is stored this way as opposed to in Realm for privacy reasons; we have no right to be harvesting it and storing it.
 /// Additionally, this will only store friends who have registered on the server.
 /// </remarks>
+[Obsolete("Deprecated in favor of mutuals.")]
 public class FriendStorageService : EndpointService
 {
     public FriendStorageService(Logger logger) : base(logger) {}
