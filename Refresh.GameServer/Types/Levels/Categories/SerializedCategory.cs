@@ -29,6 +29,20 @@ public class SerializedCategory
     [XmlElement("results")]
     public SerializedMinimalLevelList Levels { get; set; }
 
+    public static SerializedCategory FromLevelCategory(LevelCategory levelCategory)
+    {
+        SerializedCategory category = new()
+        {
+            Name = levelCategory.Name,
+            Description = levelCategory.Description,
+            Url = "/searches/" + levelCategory.ApiRoute,
+            Tag = levelCategory.ApiRoute,
+            IconHash = levelCategory.IconHash,
+        };
+
+        return category;
+    }
+
     public static SerializedCategory FromLevelCategory(LevelCategory levelCategory,
         RequestContext context,
         GameDatabaseContext database,
@@ -39,14 +53,7 @@ public class SerializedCategory
         int skip = 0,
         int count = 20)
     {
-        SerializedCategory category = new()
-        {
-            Name = levelCategory.Name,
-            Description = levelCategory.Description,
-            Url = "/searches/" + levelCategory.ApiRoute,
-            Tag = "",
-            IconHash = levelCategory.IconHash,
-        };
+        SerializedCategory category = FromLevelCategory(levelCategory);
         
         DatabaseList<GameLevel> categoryLevels = levelCategory.Fetch(context, skip, count, matchService, database, user, new LevelFilterSettings(context, token.TokenGame));
         

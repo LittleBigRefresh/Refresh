@@ -1,5 +1,6 @@
 using Bunkum.Core;
 using Bunkum.Core.Endpoints;
+using Bunkum.Core.Endpoints.Debugging;
 using Bunkum.Core.Storage;
 using Bunkum.Listener.Protocol;
 using Refresh.GameServer.Authentication;
@@ -116,14 +117,16 @@ public class LevelEndpoints : EndpointGroup
         IEnumerable<SerializedCategory> categories = categoryService.Categories
             .Where(c => !c.Hidden)
             .Select(c => SerializedCategory.FromLevelCategory(c, context, database, dataStore, user, token, matchService, 0, 1))
-            .Where(c => c.Levels.Total > 0)
             .ToList();
 
         int total = categories.Count();
 
         categories = categories.Skip(skip).Take(count);
+
+        SearchLevelCategory searchCategory = (SearchLevelCategory)categoryService.Categories
+            .First(c => c is SearchLevelCategory);
         
-        return new SerializedCategoryList(categories, total);
+        return new SerializedCategoryList(categories, searchCategory, total);
     }
 
     [GameEndpoint("searches/{apiRoute}", ContentType.Xml)]
