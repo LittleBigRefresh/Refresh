@@ -96,6 +96,10 @@ public partial class GameUser : IRealmObject, IRateLimitUser
     /// If `true`, turn all grief reports into photo uploads
     /// </summary>
     public bool RedirectGriefReportsToPhotos { get; set; }
+    /// <summary>
+    /// If `true`, unescape XML tags sent to /filter
+    /// </summary>
+    public bool UnescapeXmlSequences { get; set; }
     
     [Ignored] public GameUserRole Role
     {
