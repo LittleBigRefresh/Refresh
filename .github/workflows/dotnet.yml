@@ -30,8 +30,6 @@ jobs:
     - name: Print VERSION variable for debugging
       run: echo "$VERSION"
         
-    - name: Restore
-      run: dotnet restore
     - name: Test
       run: dotnet test -c Release --verbosity normal
       
@@ -40,21 +38,6 @@ jobs:
       
     - name: Publish for Windows x64
       run: dotnet publish -c Release -r win-x64 --self-contained Refresh.GameServer /p:Version=${VERSION}
-
-    - name: Download Refresh Website artifact
-      id: download-artifact
-      uses: dawidd6/action-download-artifact@v2
-      with:
-        github_token: ${{secrets.GITHUB_TOKEN}}
-        workflow: ng.yml
-        workflow_conclusion: success
-        name: "Refresh Website"
-        repo: LittleBigRefresh/refresh-web
-        if_no_artifact_found: fail
-        path: "Refresh.GameServer/bin/Release/net8.0/linux-x64/publish/web"
-        
-    - name: Copy artifact to windows build directory
-      run: cp -r "Refresh.GameServer/bin/Release/net8.0/linux-x64/publish/web" "Refresh.GameServer/bin/Release/net8.0/win-x64/publish/"
       
     - name: Upload Linux x64 build
       uses: actions/upload-artifact@v3.1.1
@@ -71,14 +54,3 @@ jobs:
           path: "Refresh.GameServer/bin/Release/net8.0/win-x64/publish/"
           if-no-files-found: error
           retention-days: 30
-          
-    - name: Generate API Documentation
-      run: dotnet run -c Release --no-build --project Refresh.GameServer -- --generate_docs
-      
-    - name: Upload API Documentation
-      uses: actions/upload-artifact@v3.1.1
-      with:
-        name: "API Documentation"
-        path: "apiDocumentation.json"
-        if-no-files-found: error
-        retention-days: 30
