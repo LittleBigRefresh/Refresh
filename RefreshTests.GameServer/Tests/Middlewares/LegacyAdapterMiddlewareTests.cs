@@ -35,7 +35,7 @@ public class LegacyAdapterMiddlewareTests : GameServerTest
         Assert.Multiple(async () =>
         {
             Assert.That(response.StatusCode, Is.EqualTo(OK));
-            Assert.That(response.Content.ReadAsStringAsync().Result, Is.EqualTo("test"));
+            Assert.That(await response.Content.ReadAsStringAsync(), Is.EqualTo("test"));
         });
     }
 }
