@@ -26,10 +26,10 @@ public class ActivityPage
     public IEnumerable<Event> Events { get; set; }
     
     [XmlIgnore]
-    public List<GameUser> Users { get; set; }
-    
+    public List<GameUser> Users { get; set; } = null!;
+
     [XmlIgnore]
-    public List<GameLevel> Levels { get; set; }
+    public List<GameLevel> Levels { get; set; } = null!;
 
     [JsonIgnore]
     [XmlElement("groups")]

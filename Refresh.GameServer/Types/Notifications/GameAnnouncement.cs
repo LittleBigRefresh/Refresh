@@ -3,6 +3,8 @@ using Realms;
 
 namespace Refresh.GameServer.Types.Notifications;
 
+#nullable disable
+
 /// <summary>
 /// An announcement posted by a server administrator.
 /// </summary>

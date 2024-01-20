@@ -5,15 +5,15 @@ namespace Refresh.GameServer.Importing.Mip;
 public class MipHeader
 {
     public uint ClutOffset;
-    public uint Width;
-    public uint Height;
-    public byte Bpp;
-    public byte NumBlocks;
-    public byte TexMode;
-    public bool Alpha;
+    public required uint Width;
+    public required uint Height;
+    public required byte Bpp;
+    public required byte NumBlocks;
+    public required byte TexMode;
+    public required bool Alpha;
     public uint DataOffset;
 
-    public Rgba32[] ColorLookupTable;
+    public required Rgba32[] ColorLookupTable;
     
     public static MipHeader Read(Stream stream)
     {
