@@ -31,6 +31,7 @@ public class ApiExtendedGameUserResponse : IApiResponse, IDataConvertableFrom<Ap
     public required bool PsnAuthenticationAllowed { get; set; }
     
     public bool RedirectGriefReportsToPhotos { get; set; } 
+    public bool UnescapeXmlSequences { get; set; } 
     
     public required string? EmailAddress { get; set; }
     public required bool EmailAddressVerified { get; set; }
@@ -60,6 +61,7 @@ public class ApiExtendedGameUserResponse : IApiResponse, IDataConvertableFrom<Ap
             EmailAddressVerified = user.EmailAddressVerified,
             ShouldResetPassword = user.ShouldResetPassword,
             RedirectGriefReportsToPhotos = user.RedirectGriefReportsToPhotos,
+            UnescapeXmlSequences = user.UnescapeXmlSequences,
         };
     }
     

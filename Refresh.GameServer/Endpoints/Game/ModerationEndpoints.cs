@@ -1,5 +1,6 @@
 using Bunkum.Core;
 using Bunkum.Core.Endpoints;
+using Bunkum.Core.Endpoints.Debugging;
 using Bunkum.Listener.Protocol;
 using Bunkum.Protocols.Http;
 using Refresh.GameServer.Authentication;
@@ -46,7 +47,17 @@ public class ModerationEndpoints : EndpointGroup
     public string Filter(RequestContext context, CommandService commandService, string body, GameUser user, Token token, GameDatabaseContext database)
     {
         // TODO: Add actual filtering/censoring
-        
+
+        //If the user has enabled unescaping of XML sequences, lets unescape all the XML tags in the body
+        if (user.UnescapeXmlSequences)
+        {
+            body = body.Replace("&apos;", "'");
+            body = body.Replace("&quot;", "\"");
+            body = body.Replace("&gt;", ">");
+            body = body.Replace("&lt;", "<");
+            body = body.Replace("&amp;", "&");
+        }
+
         if (commandService.IsPublishing(user.UserId))
         {
             context.Logger.LogInfo(BunkumCategory.UserLevels, $"Publish filter: '{body}'");

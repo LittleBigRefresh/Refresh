@@ -163,6 +163,9 @@ public partial class GameDatabaseContext // Users
 
             if (data.RedirectGriefReportsToPhotos != null)
                 user.RedirectGriefReportsToPhotos = data.RedirectGriefReportsToPhotos.Value;
+            
+            if (data.UnescapeXmlSequences != null)
+                user.UnescapeXmlSequences = data.UnescapeXmlSequences.Value;
 
             if (data.EmailAddress != null)
                 user.EmailAddress = data.EmailAddress;
@@ -296,6 +299,14 @@ public partial class GameDatabaseContext // Users
         });
     }
 
+    public void SetUnescapeXmlSequences(GameUser user, bool value)
+    {
+        this._realm.Write(() =>
+        {
+            user.UnescapeXmlSequences = value;
+        });
+    }
+    
     public void SetUserGriefReportRedirection(GameUser user, bool value)
     {
         this._realm.Write(() =>
