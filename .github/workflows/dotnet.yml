@@ -30,8 +30,6 @@ jobs:
     - name: Print VERSION variable for debugging
       run: echo "$VERSION"
         
-    - name: Restore
-      run: dotnet restore
     - name: Test
       run: dotnet test -c Release --verbosity normal
       
