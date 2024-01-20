@@ -49,9 +49,6 @@ jobs:
           zip -r "Refresh_for_Linux_x64.zip" Refresh.GameServer/bin/Release/net8.0/linux-x64/publish/
           zip -r "Refresh_for_Windows_x64.zip" Refresh.GameServer/bin/Release/net8.0/win-x64/publish/
 
-      - name: Generate API Documentation
-        run: dotnet run -c Release --no-build --project Refresh.GameServer -- --generate_docs
-
       - uses: "marvinpinto/action-automatic-releases@latest"
         with:
           repo_token: "${{ secrets.GITHUB_TOKEN }}"
@@ -59,4 +56,3 @@ jobs:
           draft: true
           files: |
             *.zip
-            apiDocumentation.json
