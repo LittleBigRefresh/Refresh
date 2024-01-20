@@ -23,7 +23,7 @@ public class ActivityApiEndpoints : EndpointGroup
     [DocUsesPageData, DocSummary("Fetch a list of recent happenings on the server.")]
     [DocQueryParam("timestamp", "A timestamp in unix seconds, used to search backwards.")]
     [DocError(typeof(ApiValidationError), ApiValidationError.NumberParseErrorWhen)]
-    public ApiResponse<ApiActivityPageResponse> GetRecentActivity(RequestContext context, GameDatabaseContext database, IDataStore dataStore, FriendStorageService friendStorageService)
+    public ApiResponse<ApiActivityPageResponse> GetRecentActivity(RequestContext context, GameDatabaseContext database, IDataStore dataStore)
     {
         long timestamp = 0;
 
@@ -37,7 +37,7 @@ public class ActivityApiEndpoints : EndpointGroup
             Timestamp = timestamp,
             Count = count,
             Skip = skip,
-        }, friendStorageService, false);
+        }, false);
         return ApiActivityPageResponse.FromOldWithExtraData(page, database, dataStore);
     }
     
@@ -46,7 +46,7 @@ public class ActivityApiEndpoints : EndpointGroup
     [DocQueryParam("timestamp", "A timestamp in unix seconds, used to search backwards")]
     [DocError(typeof(ApiValidationError), ApiValidationError.NumberParseErrorWhen)]
     [DocError(typeof(ApiNotFoundError), "The level could not be found")]
-    public ApiResponse<ApiActivityPageResponse> GetRecentActivityForLevel(RequestContext context, GameDatabaseContext database, IDataStore dataStore, GameUser? user, FriendStorageService friendStorageService,
+    public ApiResponse<ApiActivityPageResponse> GetRecentActivityForLevel(RequestContext context, GameDatabaseContext database, IDataStore dataStore, GameUser? user,
         [DocSummary("The ID of the level")] int id)
     {
         long timestamp = 0;
@@ -65,7 +65,7 @@ public class ActivityApiEndpoints : EndpointGroup
             Skip = skip,
             Count = count,
             User = user,
-        }, friendStorageService, false);
+        }, false);
         return ApiActivityPageResponse.FromOldWithExtraData(page, database, dataStore);
     }
 }

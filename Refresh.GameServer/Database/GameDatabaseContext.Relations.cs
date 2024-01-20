@@ -70,8 +70,8 @@ public partial class GameDatabaseContext // Relations
     {
         // this might be the shittiest query i've ever written.
         return user.UsersFavourited.AsEnumerable()
-            .Select(relation => relation.UserToFavourite).AsEnumerable()
-            .Where(f => f.UsersFavourited
+            .Select(relation => relation.UserToFavourite)
+            .Where(f => f.UsersFavourited.AsEnumerable()
                 .Select(otherUserRelation => otherUserRelation.UserToFavourite).AsEnumerable()
                 .Contains(user));
     }
