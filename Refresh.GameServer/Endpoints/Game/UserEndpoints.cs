@@ -48,11 +48,9 @@ public class UserEndpoints : EndpointGroup
     [NullStatusCode(NotFound)]
     [MinimumRole(GameUserRole.Restricted)]
     public SerializedFriendsList? GetFriends(RequestContext context, GameDatabaseContext database,
-        GameUser user, FriendStorageService friendService, Token token, IDataStore dataStore)
+        GameUser user, Token token, IDataStore dataStore)
     {
-        List<GameUser>? friends = friendService.GetUsersFriends(user, database)?.ToList();
-        if (friends == null) return null;
-        
+        List<GameUser> friends = database.GetUsersMutuals(user).ToList();
         return new SerializedFriendsList(GameUserResponse.FromOldListWithExtraData(friends, token.TokenGame, database, dataStore).ToList());
     }
 

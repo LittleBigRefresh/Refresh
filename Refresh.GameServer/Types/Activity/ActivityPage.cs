@@ -108,11 +108,10 @@ public class ActivityPage
     public static ActivityPage GameLevelActivity(
         GameDatabaseContext database,
         GameLevel level,
-        ActivityQueryParameters parameters,
-        FriendStorageService? friendStorageService = null
+        ActivityQueryParameters parameters
     )
     {
-        DatabaseList<Event> events = database.GetRecentActivityForLevel(level, parameters, friendStorageService);
+        DatabaseList<Event> events = database.GetRecentActivityForLevel(level, parameters);
 
         ActivityPage page = new()
         {
@@ -130,11 +129,10 @@ public class ActivityPage
         GameDatabaseContext database,
         GameLevel level,
         ActivityQueryParameters parameters,
-        FriendStorageService? friendStorageService = null,
         bool generateGroups = true
     )
     {
-        DatabaseList<Event> events = database.GetRecentActivityForLevel(level, parameters, friendStorageService);
+        DatabaseList<Event> events = database.GetRecentActivityForLevel(level, parameters);
 
         ActivityPage page = new()
         {
@@ -149,11 +147,10 @@ public class ActivityPage
     public static ActivityPage UserActivity(
         GameDatabaseContext database,
         ActivityQueryParameters parameters,
-        FriendStorageService? friendStorageService = null,
         bool generateGroups = true
     )
     {
-        DatabaseList<Event> events = database.GetUserRecentActivity(parameters, friendStorageService);
+        DatabaseList<Event> events = database.GetUserRecentActivity(parameters);
 
         ActivityPage page = new()
         {
@@ -168,11 +165,10 @@ public class ActivityPage
     public static ActivityPage GlobalActivity(
         GameDatabaseContext database,
         ActivityQueryParameters parameters,
-        FriendStorageService? friendStorageService = null,
         bool generateGroups = true
     )
     {
-        DatabaseList<Event> events = database.GetGlobalRecentActivity(parameters, friendStorageService);
+        DatabaseList<Event> events = database.GetGlobalRecentActivity(parameters);
 
         ActivityPage page = new()
         {

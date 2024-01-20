@@ -11,25 +11,22 @@ namespace Refresh.GameServer.Database;
 public partial class GameDatabaseContext // Activity
 {
     [Pure]
-    public DatabaseList<Event> GetUserRecentActivity(
-        ActivityQueryParameters parameters,
-        FriendStorageService? friendService = null
-    )
+    public DatabaseList<Event> GetUserRecentActivity(ActivityQueryParameters parameters)
     {
-        IEnumerable<Event> query = this.GetRecentActivity(parameters, friendService);
+        IEnumerable<Event> query = this.GetRecentActivity(parameters);
 
         if (parameters.User != null)
         {
             List<ObjectId?> favouriteUsers = parameters.User.UsersFavourited.AsEnumerable().Select(f => (ObjectId?)f.UserToFavourite.UserId).ToList();
-            List<ObjectId?>? userFriends = friendService?.GetUsersFriends(parameters.User, this)?.Select(u => (ObjectId?)u.UserId).ToList();
+            List<ObjectId?> userFriends = this.GetUsersMutuals(parameters.User).Select(u => (ObjectId?)u.UserId).ToList();
 
             query = query.Where(e =>
                 e.User.UserId == parameters.User.UserId ||
                 e.StoredObjectId == parameters.User.UserId ||
                 favouriteUsers.Contains(e.User.UserId) ||
                 favouriteUsers.Contains(e.StoredObjectId) ||
-                (userFriends?.Contains(e.User.UserId) ?? false) ||
-                (userFriends?.Contains(e.StoredObjectId) ?? false) ||
+                userFriends.Contains(e.User.UserId) ||
+                userFriends.Contains(e.StoredObjectId) ||
                 this.GetLevelById(e.StoredSequentialId ?? int.MaxValue)?.Publisher?.UserId == parameters.User.UserId ||
                 e.EventType == EventType.Level_TeamPick ||
                 e.EventType == EventType.User_FirstLogin
@@ -39,8 +36,7 @@ public partial class GameDatabaseContext // Activity
         return new DatabaseList<Event>(query.OrderByDescending(e => e.Timestamp), parameters.Skip, parameters.Count);
     }
 
-    private IEnumerable<Event> GetRecentActivity(ActivityQueryParameters parameters,
-        FriendStorageService? friendService = null)
+    private IEnumerable<Event> GetRecentActivity(ActivityQueryParameters parameters)
     {
         if (parameters.Timestamp == 0) 
             parameters.Timestamp = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
@@ -55,12 +51,12 @@ public partial class GameDatabaseContext // Activity
             query = query.Where(e => this.GetLevelById(e.StoredSequentialId ?? int.MaxValue)?.Publisher?.UserId != parameters.User.UserId);
         }
         
-        if (parameters is { ExcludeFriends: true, User: not null } && friendService != null)
+        if (parameters is { ExcludeFriends: true, User: not null })
         {
-            List<ObjectId?>? userFriends = friendService.GetUsersFriends(parameters.User, this)?.Select(u => (ObjectId?)u.UserId).ToList();
+            List<ObjectId?> userFriends = this.GetUsersMutuals(parameters.User).Select(u => (ObjectId?)u.UserId).ToList();
 
-            if (userFriends != null) query = query.Where(e => !userFriends.Contains(e.StoredObjectId) &&
-                                                              !userFriends.Contains(e.User.UserId));
+            query = query.Where(e => !userFriends.Contains(e.StoredObjectId) &&
+                                     !userFriends.Contains(e.User.UserId));
         }
 
         if (parameters is { ExcludeFavouriteUsers: true, User: not null })
@@ -79,22 +75,18 @@ public partial class GameDatabaseContext // Activity
     }
     
     [Pure]
-    public DatabaseList<Event> GetGlobalRecentActivity(
-        ActivityQueryParameters parameters,
-        FriendStorageService? friendService = null
-    )
+    public DatabaseList<Event> GetGlobalRecentActivity(ActivityQueryParameters parameters)
     {
-        return new DatabaseList<Event>(this.GetRecentActivity(parameters, friendService).OrderByDescending(e => e.Timestamp), parameters.Skip, parameters.Count);
+        return new DatabaseList<Event>(this.GetRecentActivity(parameters).OrderByDescending(e => e.Timestamp), parameters.Skip, parameters.Count);
     }
 
     [Pure]
     public DatabaseList<Event> GetRecentActivityForLevel(
         GameLevel level, 
-        ActivityQueryParameters parameters,
-        FriendStorageService? friendService = null
+        ActivityQueryParameters parameters
     )
     {
-        return new DatabaseList<Event>(this.GetRecentActivity(parameters, friendService)
+        return new DatabaseList<Event>(this.GetRecentActivity(parameters)
             .Where(e => e._StoredDataType == 1 && e.StoredSequentialId == level.LevelId)
             .OrderByDescending(e => e.Timestamp), parameters.Skip, parameters.Count);
     }

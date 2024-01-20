@@ -24,7 +24,7 @@ public class ActivityEndpoints : EndpointGroup
     [GameEndpoint("stream", ContentType.Xml)]
     [NullStatusCode(BadRequest)]
     [MinimumRole(GameUserRole.Restricted)]
-    public ActivityPage? GetRecentActivity(RequestContext context, GameDatabaseContext database, GameUser? user, FriendStorageService friendStorageService)
+    public ActivityPage? GetRecentActivity(RequestContext context, GameDatabaseContext database, GameUser? user)
     {
         long timestamp = 0;
         long endTimestamp = 0;
@@ -50,13 +50,13 @@ public class ActivityEndpoints : EndpointGroup
             ExcludeFavouriteUsers = excludeFavouriteUsers,
             ExcludeMyself = excludeMyself,
             User = user,
-        }, friendStorageService);
+        });
     }
 
     [GameEndpoint("stream/slot/{type}/{id}", ContentType.Xml)]
     [NullStatusCode(BadRequest)]
     [MinimumRole(GameUserRole.Restricted)]
-    public Response GetRecentActivityForLevel(RequestContext context, GameDatabaseContext database, GameUser? user, FriendStorageService friendStorageService, string type, int id)
+    public Response GetRecentActivityForLevel(RequestContext context, GameDatabaseContext database, GameUser? user, string type, int id)
     {
         GameLevel? level = type == "developer" ? database.GetStoryLevelById(id) : database.GetLevelById(id);
         if (level == null) return NotFound;
@@ -85,7 +85,7 @@ public class ActivityEndpoints : EndpointGroup
             ExcludeFavouriteUsers = excludeFavouriteUsers,
             ExcludeMyself = excludeMyself,
             User = user,
-        }, friendStorageService);
+        });
         
         return new Response(page, ContentType.Xml);
     }
