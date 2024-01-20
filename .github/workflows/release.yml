@@ -11,23 +11,52 @@ jobs:
     name: Release Built Artifacts
     runs-on: ubuntu-latest
     steps:
-      - name: Wait for builds
-        uses: lewagon/wait-on-check-action@v1.3.1
+      - uses: actions/checkout@v3
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v3
         with:
-          ref: ${{ github.ref }}
-          check-name: 'Build, Test, and Upload Builds'
-          repo-token: ${{ secrets.GITHUB_TOKEN }}
-          wait-interval: 10
-      - name: Download artifacts
+          dotnet-version: 8.0.x
+
+      - name: Set VERSION variable from tag (for tag pushes)
+        run: echo "VERSION=${GITHUB_REF/refs\/tags\/v/}" >> $GITHUB_ENV
+
+      - name: Print VERSION variable for debugging
+        run: echo "$VERSION"
+
+      - name: Restore
+        run: dotnet restore
+      - name: Test
+        run: dotnet test -c Release --verbosity normal
+
+      - name: Publish for Linux x64
+        run: dotnet publish -c Release -r linux-x64 --self-contained Refresh.GameServer /p:Version=${VERSION}
+
+      - name: Publish for Windows x64
+        run: dotnet publish -c Release -r win-x64 --self-contained Refresh.GameServer /p:Version=${VERSION}
+
+      - name: Download Refresh Website artifact
         id: download-artifact
         uses: dawidd6/action-download-artifact@v2
         with:
           github_token: ${{secrets.GITHUB_TOKEN}}
-          branch: main
-          workflow: dotnet.yml
+          workflow: ng.yml
           workflow_conclusion: success
+          name: "Refresh Website"
+          repo: LittleBigRefresh/refresh-web
           if_no_artifact_found: fail
-          skip_unpack: true
+          path: "Refresh.GameServer/bin/Release/net8.0/linux-x64/publish/web"
+
+      - name: Copy artifact to windows build directory
+        run: cp -r "Refresh.GameServer/bin/Release/net8.0/linux-x64/publish/web" "Refresh.GameServer/bin/Release/net8.0/win-x64/publish/"
+
+      - name: Create zip files
+        run: |
+          zip -r "Refresh_for_Linux_x64.zip" Refresh.GameServer/bin/Release/net8.0/linux-x64/publish/
+          zip -r "Refresh_for_Windows_x64.zip" Refresh.GameServer/bin/Release/net8.0/win-x64/publish/
+
+      - name: Generate API Documentation
+        run: dotnet run -c Release --no-build --project Refresh.GameServer -- --generate_docs
+
       - uses: "marvinpinto/action-automatic-releases@latest"
         with:
           repo_token: "${{ secrets.GITHUB_TOKEN }}"
