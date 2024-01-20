@@ -1,5 +1,6 @@
 using Bunkum.Core;
 using Bunkum.Core.Endpoints;
+using Bunkum.Core.Endpoints.Debugging;
 using Bunkum.Core.Responses;
 using Bunkum.Listener.Protocol;
 using Bunkum.Protocols.Http;
@@ -56,5 +57,29 @@ public class ReviewEndpoints : EndpointGroup
         }
 
         return database.RateLevel(level, user, rating) ? OK : Unauthorized;
-    } 
+    }
+
+    [GameEndpoint("reviewsFor/{slotType}/{levelId}", ContentType.Xml)]
+    [DebugResponseBody]
+    [AllowEmptyBody]
+    public Response GetReviewsForLevel(RequestContext context, GameDatabaseContext database, string slotType, int levelId)
+    {
+        GameLevel? level;
+        switch (slotType)
+        {
+            case "developer":
+                level = database.GetStoryLevelById(levelId);
+                break;
+            case "user":
+                level = database.GetLevelById(levelId);
+                break;
+            default:
+                return BadRequest;
+        }
+
+        if (level == null) 
+            return NotFound;
+
+        return new Response(new SerializedGameReviewResponse(), ContentType.Xml);
+    }
 }
