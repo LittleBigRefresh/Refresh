@@ -46,8 +46,11 @@ jobs:
 
       - name: Create zip files
         run: |
-          zip -r "Refresh_for_Linux_x64.zip" Refresh.GameServer/bin/Release/net8.0/linux-x64/publish/
-          zip -r "Refresh_for_Windows_x64.zip" Refresh.GameServer/bin/Release/net8.0/win-x64/publish/
+          cd Refresh.GameServer/bin/Release/net8.0/linux-x64/publish/
+          zip -r "../../../../../../Refresh_for_Linux_x64.zip" .
+
+          cd ../../win-x64/publish/
+          zip -r "../../../../../../Refresh_for_Windows_x64.zip" .
 
       - uses: "marvinpinto/action-automatic-releases@latest"
         with:
