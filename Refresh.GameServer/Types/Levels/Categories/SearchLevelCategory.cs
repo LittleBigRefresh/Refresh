@@ -9,7 +9,9 @@ namespace Refresh.GameServer.Types.Levels.Categories;
 
 public class SearchLevelCategory : LevelCategory
 {
-    internal SearchLevelCategory() : base("search", "search", false)
+    public const string SearchRoute = "search";
+    
+    internal SearchLevelCategory() : base(SearchRoute, "search", false)
     {
         this.Name = "Search";
         this.Description = "Search for new levels.";
@@ -22,7 +24,8 @@ public class SearchLevelCategory : LevelCategory
         MatchService matchService, GameDatabaseContext database, GameUser? user, 
         LevelFilterSettings levelFilterSettings)
     {
-        string? query = context.QueryString["query"];
+        string? query = context.QueryString["query"]
+                        ?? context.QueryString["textFilter"]; // LBP3 sends this instead of query
         if (query == null) return null;
 
         return database.SearchForLevels(count, skip, user, levelFilterSettings, query);
