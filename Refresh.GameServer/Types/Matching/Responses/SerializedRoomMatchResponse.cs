@@ -1,5 +1,7 @@
 namespace Refresh.GameServer.Types.Matching.Responses;
 
+#nullable disable
+
 [JsonObject(MemberSerialization.OptIn)]
 public class SerializedRoomMatchResponse
 {

@@ -16,7 +16,7 @@ public abstract class Importer
     private readonly Logger _logger;
     protected readonly Stopwatch Stopwatch;
     
-    public static Lazy<byte[]?> PSPKey;
+    public static Lazy<byte[]?> PSPKey = null!;
 
     protected Importer(Logger? logger = null)
     {

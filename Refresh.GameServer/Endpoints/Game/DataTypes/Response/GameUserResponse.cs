@@ -20,7 +20,7 @@ public class GameUserResponse : IDataConvertableFrom<GameUserResponse, GameUser>
     [XmlElement("location")] public required GameLocation Location { get; set; }
     [XmlElement("planets")] public required string PlanetsHash { get; set; }
     
-    [XmlElement("npHandle")] public SerializedUserHandle Handle { get; set; }
+    [XmlElement("npHandle")] public required SerializedUserHandle Handle { get; set; }
     [XmlElement("commentCount")] public int CommentCount { get; set; }
     [XmlElement("commentsEnabled")] public bool CommentsEnabled { get; set; }
     [XmlElement("favouriteSlotCount")] public int FavouriteLevelCount { get; set; }
