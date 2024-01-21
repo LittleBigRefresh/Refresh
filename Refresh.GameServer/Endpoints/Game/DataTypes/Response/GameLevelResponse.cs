@@ -53,6 +53,9 @@ public class GameLevelResponse : IDataConvertableFrom<GameLevelResponse, GameLev
     [XmlElement("thumbsdown")] public required int BooCount { get; set; }
     [XmlElement("yourRating")] public int YourStarRating { get; set; }
     
+    // 1 by default since this will break reviews if set to 0 for GameLevelResponses that do not have extra data being filled in
+    [XmlElement("yourlbp2PlayCount")] public int YourLbp2PlayCount { get; set; } = 1;
+    
     [XmlArray("customRewards")]
     [XmlArrayItem("customReward")]
     public required List<GameSkillReward> SkillRewards { get; set; }
@@ -74,7 +77,6 @@ public class GameLevelResponse : IDataConvertableFrom<GameLevelResponse, GameLev
     [XmlElement("reviewsEnabled")] public bool ReviewsEnabled { get; set; } = true;
     [XmlElement("commentCount")] public int CommentCount { get; set; } = 0;
     [XmlElement("commentsEnabled")] public bool CommentsEnabled { get; set; } = true;
-    [XmlElement("yourlbp2PlayCount")] public int YourLbp2PlayCount { get; set; } = 1;
 
     public static GameLevelResponse? FromOldWithExtraData(GameLevel? old, GameDatabaseContext database, MatchService matchService, GameUser user, IDataStore dataStore, TokenGame game)
     {
@@ -155,6 +157,7 @@ public class GameLevelResponse : IDataConvertableFrom<GameLevelResponse, GameLev
         
         this.YourRating = rating?.ToDPad() ?? (int)RatingType.Neutral;
         this.YourStarRating = rating?.ToLBP1() ?? 0;
+        this.YourLbp2PlayCount = level.AllPlays.Count(p => p.User == user);
         this.PlayerCount = matchService.GetPlayerCountForLevel(RoomSlotType.Online, this.LevelId);
 
         GameAsset? rootResourceAsset = database.GetAssetFromHash(this.RootResource);
