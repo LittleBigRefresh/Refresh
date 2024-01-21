@@ -71,7 +71,7 @@ public class GameLevelResponse : IDataConvertableFrom<GameLevelResponse, GameLev
     [XmlElement("averageRating")] public double AverageStarRating { get; set; }
     [XmlElement("sizeOfResources")] public int SizeOfResourcesInBytes { get; set; }
     [XmlElement("reviewsEnabled")] public bool ReviewsEnabled { get; set; } = true;
-    [XmlElement("reviewCount")] public int ReviewCount { get; set; } = 0;
+    [XmlElement("reviewCount")] public int ReviewCount { get; set; }
     [XmlElement("commentsEnabled")] public bool CommentsEnabled { get; set; } = true;
     [XmlElement("commentCount")] public int CommentCount { get; set; } = 0;
 
