@@ -15,6 +15,8 @@ public enum ReviewDeletedBy
     LevelAuthor,
 }
 
+[XmlRoot("review")]
+[XmlType("review")]
 public class SerializedGameReview
 {
     [XmlElement("id")] 
