@@ -42,10 +42,14 @@ public class LevelApiTests : GameServerTest
         ApiListResponse<ApiLevelCategoryResponse>? categories = context.Http.GetList<ApiLevelCategoryResponse>("/api/v3/levels?includePreviews=true");
         Assert.That(categories, Is.Not.Null);
         
-        ApiLevelCategoryResponse? category = categories.Data.FirstOrDefault(c => c.ApiRoute == "newest");
+        ApiLevelCategoryResponse? category = categories?.Data?.FirstOrDefault(c => c.ApiRoute == "newest");
         Assert.That(category, Is.Not.Null);
-        Assert.That(category!.PreviewLevel, Is.Not.Null);
-        Assert.That(category.PreviewLevel!.LevelId, Is.EqualTo(level.LevelId));
+        
+        Assert.Multiple(() =>
+        {
+            Assert.That(category!.PreviewLevel, Is.Not.Null);
+            Assert.That(category.PreviewLevel!.LevelId, Is.EqualTo(level.LevelId));
+        });
     }
     
     [Test]

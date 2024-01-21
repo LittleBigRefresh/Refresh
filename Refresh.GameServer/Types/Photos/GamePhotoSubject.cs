@@ -10,6 +10,7 @@ public partial class GamePhotoSubject : IEmbeddedObject
 {
     public GameUser? User { get; set; }
 
+#nullable disable
     public string DisplayName { get; set; }
     public IList<float> Bounds { get; }
 }

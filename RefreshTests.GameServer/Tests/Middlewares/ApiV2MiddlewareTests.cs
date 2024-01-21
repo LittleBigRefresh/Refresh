@@ -15,7 +15,7 @@ public class ApiV2MiddlewareTests : GameServerTest
         Assert.Multiple(async () =>
         {
             Assert.That(response.StatusCode, Is.EqualTo(Gone));
-            Assert.That(response.Content.ReadAsStringAsync().Result, Does.Contain("error"));
+            Assert.That(await response.Content.ReadAsStringAsync(), Does.Contain("error"));
         });
     }
     
@@ -30,7 +30,7 @@ public class ApiV2MiddlewareTests : GameServerTest
         Assert.Multiple(async () =>
         {
             Assert.That(response.StatusCode, Is.EqualTo(OK));
-            Assert.That(response.Content.ReadAsStringAsync().Result, Does.Not.Contain("error"));
+            Assert.That(await response.Content.ReadAsStringAsync(), Does.Not.Contain("error"));
         });
     }
 }
