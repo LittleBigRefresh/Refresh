@@ -1,23 +1,14 @@
 using System.Xml.Serialization;
-using Realms;
+using Refresh.GameServer.Database;
+using Refresh.GameServer.Endpoints.ApiV3.DataTypes;
 using Refresh.GameServer.Types.Levels;
+using Refresh.GameServer.Types.UserData;
 
 namespace Refresh.GameServer.Types.Reviews;
 
-[XmlRoot("deleted_by")]
-public enum ReviewDeletedBy
-{
-    [XmlEnum(Name = "none")]
-    None,
-    [XmlEnum(Name = "moderator")]
-    Moderator,
-    [XmlEnum(Name = "level_author")]
-    LevelAuthor,
-}
-
 [XmlRoot("review")]
 [XmlType("review")]
-public class SerializedGameReview
+public class SerializedGameReview : IDataConvertableFrom<SerializedGameReview, GameReview>
 {
     [XmlElement("id")] 
     public int Id { get; set; }
@@ -42,7 +33,10 @@ public class SerializedGameReview
 
     [XmlElement("text")]
     public string Text { get; set; } = "";
-
+    
+    /// <summary>
+    /// The rating the user has on the level.
+    /// </summary>
     [XmlElement("thumb")]
     public int Thumb { get; set; }
 
@@ -55,27 +49,36 @@ public class SerializedGameReview
     [XmlElement("yourthumb")]
     public RatingType YourThumb { get; set; }
 
-    public SerializedGameReview FromOld(GameReview review)
+    public static SerializedGameReview? FromOld(GameReview? review)
     {
+        if (review == null) 
+            return null;
+        
         return new SerializedGameReview
         {
             Id = review.SequentialId,
             Slot = new GameReviewSlot
             {
-                SlotType = review.Level.Source.ToGameType(),
-                SlotId = review.Level.LevelId,
+                SlotType = review.Level.First().Source.ToGameType(),
+                SlotId = review.Level.First().LevelId,
             },
             Reviewer = review.Publisher.Username,
             Timestamp = review.Timestamp,
             Labels = review.Labels,
-            Deleted = review.Deleted,
-            DeletedBy = review.DeletedBy,
-            //If the review is deleted, dont send the review text
-            Text = review.Deleted ? "" : review.Text,
-            Thumb = 0,
+            Deleted = false,
+            DeletedBy = ReviewDeletedBy.None,
+            Text = review.Text,
+            Thumb = review.Level.First().Ratings.FirstOrDefault(r => r.User == review.Publisher)?.RatingType.ToDPad() ?? 0,
             ThumbsUp = 0,
             ThumbsDown = 0,
             YourThumb = 0,
         };
     }
+
+    public void FillInExtraData(GameDatabaseContext database, GameUser user)
+    {
+        //TODO: fill in this.YourThumb
+    }
+    
+    public static IEnumerable<SerializedGameReview> FromOldList(IEnumerable<GameReview> oldList) => oldList.Select(FromOld).ToList()!;
 }

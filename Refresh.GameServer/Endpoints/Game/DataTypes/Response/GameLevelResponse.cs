@@ -127,6 +127,8 @@ public class GameLevelResponse : IDataConvertableFrom<GameLevelResponse, GameLev
             BackgroundGuid = old.BackgroundGuid,
             Links = "",
             AverageStarRating = old.CalculateAverageStarRating(),
+            ReviewCount = old.Reviews.Count,
+            CommentCount = old.LevelComments.Count,
         };
 
         response.Type = "user";

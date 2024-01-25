@@ -109,6 +109,8 @@ public class GameUserResponse : IDataConvertableFrom<GameUserResponse, GameUser>
             
             return;
         }
+
+        this.ReviewCount = database.GetReviewsByUser(old).Count();
         
         this.PlanetsHash = gameVersion switch
         {

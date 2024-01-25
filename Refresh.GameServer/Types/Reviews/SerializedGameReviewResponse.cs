@@ -1,16 +1,16 @@
 using System.Xml.Serialization;
+using Refresh.GameServer.Types.Lists;
 
 namespace Refresh.GameServer.Types.Reviews;
 
+#nullable disable
+
 [XmlRoot("reviews")]
-public class SerializedGameReviewResponse
+public class SerializedGameReviewResponse(List<SerializedGameReview> items) : SerializedList<SerializedGameReview>
 {
     [XmlElement("review")]
-    public List<SerializedGameReview> Reviews { get; set; }
+    public sealed override List<SerializedGameReview> Items { get; set; } = items;
 
     [XmlAttribute("hint")]
-    public long Hint { get; set; }
-
-    [XmlAttribute("hint_start")]
-    public int HintStart { get; set; }
+    public string Hint { get; set; } = string.Empty;
 }

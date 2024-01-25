@@ -105,6 +105,8 @@ public partial class GameLevel : IRealmObject, ISequentialId
     // ReSharper disable once InconsistentNaming
     public IList<GameSkillReward> _SkillRewards { get; }
     
+    public IList<GameReview> Reviews { get; }
+    
 #nullable restore
     
     [XmlArray("customRewards")]

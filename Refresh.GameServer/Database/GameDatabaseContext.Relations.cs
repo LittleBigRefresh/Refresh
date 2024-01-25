@@ -217,6 +217,47 @@ public partial class GameDatabaseContext // Relations
         });
         return true;
     }
+    
+    public bool AddReviewToLevel(SerializedGameReview body, GameLevel level, GameUser user)
+    {
+        List<GameReview> toRemove = level.Reviews.Where(r => r.Publisher.UserId == user.UserId).ToList();
+        if (toRemove.Count > 0)
+        {
+            this._realm.Write(() =>
+            {
+                foreach (GameReview review in toRemove)
+                {
+                    level.Reviews.Remove(review);
+                    this._realm.Remove(review);
+                }
+            });
+        }
+        
+        this.AddSequentialObject(new GameReview
+        {
+            Publisher = user,
+            Timestamp = this._time.TimestampMilliseconds,
+            Labels = body.Labels,
+            Text = body.Text,
+        }, level.Reviews);
+
+        return true;
+    }
+
+    public IQueryable<GameReview> GetReviewsByUser(GameUser user)
+    {
+        return this._realm.All<GameReview>().Where(r => r.Publisher == user);
+    }
+    
+    public void DeleteReview(GameReview review)
+    {
+        this._realm.Remove(review);
+    }
+    
+    public GameReview? GetReviewByLevelAndUser(GameLevel level, GameUser user)
+    {
+        return level.Reviews.FirstOrDefault(r => r.Publisher.UserId == user.UserId);
+    }
 
     #endregion
 
