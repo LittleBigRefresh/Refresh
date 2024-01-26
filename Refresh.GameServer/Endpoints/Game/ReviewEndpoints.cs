@@ -6,6 +6,7 @@ using Bunkum.Listener.Protocol;
 using Bunkum.Protocols.Http;
 using Refresh.GameServer.Database;
 using Refresh.GameServer.Extensions;
+using Refresh.GameServer.Time;
 using Refresh.GameServer.Types.Levels;
 using Refresh.GameServer.Types.Reviews;
 using Refresh.GameServer.Types.UserData;
@@ -100,7 +101,15 @@ public class ReviewEndpoints : EndpointGroup
     }
 
     [GameEndpoint("postReview/{slotType}/{levelId}", ContentType.Xml, HttpMethods.Post)]
-    public Response PostReviewForLevel(RequestContext context, GameDatabaseContext database, string slotType, int levelId, SerializedGameReview body, GameUser user)
+    public Response PostReviewForLevel(
+        RequestContext context,
+        GameDatabaseContext database,
+        string slotType,
+        int levelId,
+        SerializedGameReview body,
+        GameUser user,
+        IDateTimeProvider timeProvider
+    )
     {
         GameLevel? level;
         switch (slotType)
@@ -114,17 +123,23 @@ public class ReviewEndpoints : EndpointGroup
             default:
                 return BadRequest;
         }
-        
-        if(level == null) 
+
+        if (level == null)
             return NotFound;
-        
+
         //You cant review a level you haven't played.
-        if (!database.HasUserPlayedLevel(level, user)) 
+        if (!database.HasUserPlayedLevel(level, user))
             return BadRequest;
 
-        if (!database.AddReviewToLevel(body, level, user)) 
-            return BadRequest;
-        
+        //Add the review to the database
+        database.AddReviewToLevel(new GameReview
+        {
+            Publisher = user,
+            Timestamp = timeProvider.TimestampMilliseconds,
+            Labels = body.Labels,
+            Text = body.Text,
+        }, level);
+
         return OK;
     }
 }
