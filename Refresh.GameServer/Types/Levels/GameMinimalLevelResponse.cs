@@ -38,7 +38,10 @@ public class GameMinimalLevelResponse : IDataConvertableFrom<GameMinimalLevelRes
 
     [XmlElement("playerCount")] public int PlayerCount { get; set; }
     
-
+    [XmlElement("initiallyLocked")] public bool IsLocked { get; set; }
+    [XmlElement("isSubLevel")] public bool IsSubLevel { get; set; }
+    [XmlElement("shareable")] public int IsCopyable { get; set; }
+    
     private GameMinimalLevelResponse() {}
     
     public static GameMinimalLevelResponse? FromOldWithExtraData(GameLevelResponse? old, MatchService matchService, GameDatabaseContext database, IDataStore dataStore, TokenGame game)
@@ -94,6 +97,9 @@ public class GameMinimalLevelResponse : IDataConvertableFrom<GameMinimalLevelRes
             YourStarRating = level.YourStarRating,
             YourRating = level.YourRating,
             AverageStarRating = level.AverageStarRating,
+            IsLocked = level.IsLocked,
+            IsSubLevel = level.IsSubLevel,
+            IsCopyable = level.IsCopyable,
         };
     }
 
