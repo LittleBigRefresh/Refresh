@@ -56,6 +56,8 @@ public static class TokenGameUtility
         
         // Betas/Debug/Prerelease
         "NPUA70117", // US Private Beta
+        "BCET70055", // LBP Hub (real title id)
+        "NPEA00449", // LBP HUB (sent title id)
     };
 
     // PS4 title ids are not here on purpose.
