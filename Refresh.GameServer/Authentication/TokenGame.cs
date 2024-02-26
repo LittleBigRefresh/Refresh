@@ -62,12 +62,13 @@ public static class TokenGameExtensions
                     return false;
                             
                 break;
-            //Allow all for website and beta
+            // Isolate beta builds' levels
             case TokenGame.BetaBuild:
                 if (level.GameVersion != TokenGame.BetaBuild)
                     return false;
                 
                 break;
+            //Allow all for website
             case TokenGame.Website:
                 break;
             default:
