@@ -138,6 +138,10 @@ public class CommandService : EndpointService
                 database.ForceUserTokenGame(token, TokenGame.BetaBuild);
                 break;
             }
+            case "revoketoken":
+            {
+                database.RevokeToken(token);
+            }
             #if DEBUG
             case "tokengame":
             {
