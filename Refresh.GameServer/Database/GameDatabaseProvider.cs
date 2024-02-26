@@ -363,6 +363,7 @@ public class GameDatabaseProvider : RealmDatabaseProvider<GameDatabaseContext>
                     TokenGame.LittleBigPlanet3 => TokenPlatform.PS3,
                     TokenGame.LittleBigPlanetVita => TokenPlatform.Vita,
                     TokenGame.LittleBigPlanetPSP => TokenPlatform.PSP,
+                    TokenGame.BetaBuild => TokenPlatform.RPCS3,
                     TokenGame.Website => throw new InvalidOperationException($"what? score id {newScore.ScoreId} by {newScore.Players[0].Username} is fucked"),
                     _ => throw new ArgumentOutOfRangeException(),
                 };

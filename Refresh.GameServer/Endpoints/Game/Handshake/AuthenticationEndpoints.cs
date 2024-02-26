@@ -133,7 +133,13 @@ public class AuthenticationEndpoints : EndpointGroup
             }
         }
 
-        TokenGame? game = TokenGameUtility.FromTitleId(ticket.TitleId);
+        TokenGame? game = null;
+
+        // check if we're connecting from a beta build
+        bool parsedBeta = byte.TryParse(context.QueryString.Get("beta"), out byte isBeta);
+        if (parsedBeta && isBeta == 1) game = TokenGame.BetaBuild;
+
+        game ??= TokenGameUtility.FromTitleId(ticket.TitleId);
 
         if (platform == null)
         {

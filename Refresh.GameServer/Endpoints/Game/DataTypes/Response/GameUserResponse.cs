@@ -117,6 +117,7 @@ public class GameUserResponse : IDataConvertableFrom<GameUserResponse, GameUser>
             TokenGame.LittleBigPlanetVita => old.VitaPlanetsHash,
             TokenGame.LittleBigPlanetPSP => "0",
             TokenGame.Website => "0",
+            TokenGame.BetaBuild => old.Lbp2PlanetsHash, // TODO: Planet hash for beta builds
             _ => throw new ArgumentOutOfRangeException(nameof(gameVersion), gameVersion, null),
         };
 
@@ -130,6 +131,7 @@ public class GameUserResponse : IDataConvertableFrom<GameUserResponse, GameUser>
                 //Fill out LBP2/LBP1 levels
                 goto case TokenGame.LittleBigPlanet2;
             }
+            case TokenGame.BetaBuild:
             case TokenGame.LittleBigPlanet2: {
                 //Match all LBP2 levels
                 this.UsedSlotsLBP2 = old.PublishedLevels.Count(x => x._GameVersion == (int)TokenGame.LittleBigPlanet2);

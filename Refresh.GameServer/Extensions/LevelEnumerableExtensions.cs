@@ -15,6 +15,7 @@ public static class LevelEnumerableExtensions
             TokenGame.LittleBigPlanet3 => levels.Where(l => l._GameVersion <= (int)TokenGame.LittleBigPlanet3),
             TokenGame.LittleBigPlanetVita => levels.Where(l => l._GameVersion == (int)TokenGame.LittleBigPlanetVita),
             TokenGame.LittleBigPlanetPSP => levels.Where(l => l._GameVersion == (int)TokenGame.LittleBigPlanetPSP),
+            TokenGame.BetaBuild => levels.Where(l => l._GameVersion == (int)TokenGame.BetaBuild),
             TokenGame.Website => levels,
             _ => throw new ArgumentOutOfRangeException(nameof(gameVersion), gameVersion, null),
         };
@@ -27,6 +28,7 @@ public static class LevelEnumerableExtensions
             TokenGame.LittleBigPlanet3 => levels.Where(l => l._GameVersion <= (int)TokenGame.LittleBigPlanet3),
             TokenGame.LittleBigPlanetVita => levels.Where(l => l._GameVersion == (int)TokenGame.LittleBigPlanetVita),
             TokenGame.LittleBigPlanetPSP => levels.Where(l => l._GameVersion == (int)TokenGame.LittleBigPlanetPSP),
+            TokenGame.BetaBuild => levels.Where(l => l._GameVersion == (int)TokenGame.BetaBuild),
             TokenGame.Website => levels,
             _ => throw new ArgumentOutOfRangeException(nameof(gameVersion), gameVersion, null),
         };
@@ -36,14 +38,17 @@ public static class LevelEnumerableExtensions
         if (levelFilterSettings.ExcludeMyLevels && user != null)
             levels = levels.Where(l => l.Publisher != user);
 
-        levels = levelFilterSettings.GameFilterType switch {
-            GameFilterType.LittleBigPlanet1 => levels.Where(l => l._GameVersion == (int)TokenGame.LittleBigPlanet1),
-            GameFilterType.LittleBigPlanet2 => levels.Where(l => l._GameVersion == (int)TokenGame.LittleBigPlanet2),
-            //NOTE: ideally this should be .Where(l => l._GameVersion == (int)TokenGame.LittleBigPlane1 || l._GameVersion == (int)TokenGame.LittleBigPlane2)
-            //      however, there should be no differences in all real-world cases
-            GameFilterType.Both => levels,
-            _ => throw new ArgumentOutOfRangeException(),
-        };
+        if (levelFilterSettings.GameVersion != TokenGame.BetaBuild)
+        {
+            levels = levelFilterSettings.GameFilterType switch {
+                GameFilterType.LittleBigPlanet1 => levels.Where(l => l._GameVersion == (int)TokenGame.LittleBigPlanet1),
+                GameFilterType.LittleBigPlanet2 => levels.Where(l => l._GameVersion == (int)TokenGame.LittleBigPlanet2),
+                //NOTE: ideally this should be .Where(l => l._GameVersion == (int)TokenGame.LittleBigPlane1 || l._GameVersion == (int)TokenGame.LittleBigPlane2)
+                //      however, there should be no differences in all real-world cases
+                GameFilterType.Both => levels,
+                _ => throw new ArgumentOutOfRangeException(),
+            };
+        }
 
         if (levelFilterSettings.Players != 0) 
             levels = levels.Where(l => l.MaxPlayers >= levelFilterSettings.Players && l.MinPlayers <= levelFilterSettings.Players);
@@ -68,14 +73,17 @@ public static class LevelEnumerableExtensions
         if (levelFilterSettings.ExcludeMyLevels && user != null)
             levels = levels.Where(l => l.Publisher != user);
 
-        levels = levelFilterSettings.GameFilterType switch {
-            GameFilterType.LittleBigPlanet1 => levels.Where(l => l._GameVersion == (int)TokenGame.LittleBigPlanet1),
-            GameFilterType.LittleBigPlanet2 => levels.Where(l => l._GameVersion == (int)TokenGame.LittleBigPlanet2),
-            //NOTE: ideally this should be .Where(l => l._GameVersion == (int)TokenGame.LittleBigPlane1 || l._GameVersion == (int)TokenGame.LittleBigPlane2)
-            //      however, there should be no differences in all real-world cases
-            GameFilterType.Both => levels,
-            _ => throw new ArgumentOutOfRangeException(),
-        };
+        if (levelFilterSettings.GameVersion != TokenGame.BetaBuild)
+        {
+            levels = levelFilterSettings.GameFilterType switch {
+                GameFilterType.LittleBigPlanet1 => levels.Where(l => l._GameVersion == (int)TokenGame.LittleBigPlanet1),
+                GameFilterType.LittleBigPlanet2 => levels.Where(l => l._GameVersion == (int)TokenGame.LittleBigPlanet2),
+                //NOTE: ideally this should be .Where(l => l._GameVersion == (int)TokenGame.LittleBigPlane1 || l._GameVersion == (int)TokenGame.LittleBigPlane2)
+                //      however, there should be no differences in all real-world cases
+                GameFilterType.Both => levels,
+                _ => throw new ArgumentOutOfRangeException(),
+            };
+        }
 
         if (levelFilterSettings.Players != 0) 
             levels = levels.Where(l => l.MaxPlayers >= levelFilterSettings.Players && l.MinPlayers <= levelFilterSettings.Players);

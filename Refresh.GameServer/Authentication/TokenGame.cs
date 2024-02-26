@@ -10,6 +10,7 @@ public enum TokenGame
     LittleBigPlanetVita = 3,
     LittleBigPlanetPSP = 4,
     Website = 5,
+    BetaBuild = 6,
 }
 
 public static class TokenGameExtensions
@@ -22,6 +23,7 @@ public static class TokenGameExtensions
             TokenGame.LittleBigPlanet3 => 2,
             TokenGame.LittleBigPlanetVita => 1,
             TokenGame.LittleBigPlanetPSP => 0,
+            TokenGame.BetaBuild => 1, // treat beta levels as LBP2 for now.
             TokenGame.Website => throw new InvalidOperationException("https://osuhow.com/"),
             _ => throw new ArgumentOutOfRangeException(),
         };
@@ -60,7 +62,12 @@ public static class TokenGameExtensions
                     return false;
                             
                 break;
-            //Allow all for website
+            //Allow all for website and beta
+            case TokenGame.BetaBuild:
+                if (level.GameVersion != TokenGame.BetaBuild)
+                    return false;
+                
+                break;
             case TokenGame.Website:
                 break;
             default:
