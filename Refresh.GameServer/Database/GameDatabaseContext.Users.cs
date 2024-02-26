@@ -331,7 +331,6 @@ public partial class GameDatabaseContext // Users
         });
     }
     
-    #if DEBUG
     public void ForceUserTokenGame(Token token, TokenGame game)
     {
         this._realm.Write(() =>
@@ -347,5 +346,4 @@ public partial class GameDatabaseContext // Users
             token.TokenPlatform = platform;
         });
     }
-    #endif
 }
