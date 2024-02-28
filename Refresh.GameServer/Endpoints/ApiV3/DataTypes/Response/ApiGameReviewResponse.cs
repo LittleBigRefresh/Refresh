@@ -3,6 +3,7 @@ using Refresh.GameServer.Types.Reviews;
 
 namespace Refresh.GameServer.Endpoints.ApiV3.DataTypes.Response;
 
+[JsonObject(NamingStrategyType = typeof(CamelCaseNamingStrategy))]
 public class ApiGameReviewResponse : IApiResponse, IDataConvertableFrom<ApiGameReviewResponse, GameReview>
 {
     public required int ReviewId { get; set; }
