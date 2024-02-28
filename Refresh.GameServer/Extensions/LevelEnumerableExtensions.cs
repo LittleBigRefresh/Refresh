@@ -38,6 +38,8 @@ public static class LevelEnumerableExtensions
         if (levelFilterSettings.ExcludeMyLevels && user != null)
             levels = levels.Where(l => l.Publisher != user);
 
+        // Don't allow beta builds to use this filtering option
+        // If the client specifies this option then it will filter out *all* levels.
         if (levelFilterSettings.GameVersion != TokenGame.BetaBuild)
         {
             levels = levelFilterSettings.GameFilterType switch {
@@ -73,6 +75,8 @@ public static class LevelEnumerableExtensions
         if (levelFilterSettings.ExcludeMyLevels && user != null)
             levels = levels.Where(l => l.Publisher != user);
 
+        // Don't allow beta builds to use this filtering option
+        // If the client specifies this option then it will filter out *all* levels.
         if (levelFilterSettings.GameVersion != TokenGame.BetaBuild)
         {
             levels = levelFilterSettings.GameFilterType switch {

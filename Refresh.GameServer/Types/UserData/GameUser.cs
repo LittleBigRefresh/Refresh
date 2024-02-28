@@ -43,6 +43,10 @@ public partial class GameUser : IRealmObject, IRateLimitUser
     /// Vita GUIDs do not map to mainline GUIDs, so we dont want someone to set their Vita icon, and it map to an invalid GUID on PS3.
     /// </remarks>
     public string VitaIconHash { get; set; } = "0";
+    /// <summary>
+    /// The <see cref="IconHash"/>, except only for clients in beta mode.
+    /// </summary>
+    public string BetaIconHash { get; set; } = "0";
 
     public string Description { get; set; } = "";
     public GameLocation Location { get; set; } = GameLocation.Zero;
@@ -77,6 +81,7 @@ public partial class GameUser : IRealmObject, IRateLimitUser
     public IList<GameIpVerificationRequest> IpVerificationRequests { get; }
     #nullable restore
 
+    public string BetaPlanetsHash { get; set; } = "0";
     public string Lbp2PlanetsHash { get; set; } = "0";
     public string Lbp3PlanetsHash { get; set; } = "0";
     public string VitaPlanetsHash { get; set; } = "0";
