@@ -135,9 +135,9 @@ public class ReviewEndpoints : EndpointGroup
         database.AddReviewToLevel(new GameReview
         {
             Publisher = user,
-            Timestamp = timeProvider.TimestampMilliseconds,
+            PostedAt = timeProvider.Now,
             Labels = body.Labels,
-            Text = body.Text,
+            Content = body.Text,
         }, level);
 
         return OK;

@@ -16,12 +16,12 @@ public class ApiGameReviewResponse : IDataConvertableFrom<ApiGameReviewResponse,
         if (old == null) return null;
         return new ApiGameReviewResponse
         {
-            ReviewId = old.SequentialId,
-            Level = ApiGameLevelResponse.FromOld(old.Level.First())!,
+            ReviewId = old.ReviewId,
+            Level = ApiGameLevelResponse.FromOld(old.Level)!,
             Publisher = ApiGameUserResponse.FromOld(old.Publisher)!,
-            PostedAt = DateTimeOffset.FromUnixTimeMilliseconds(old.Timestamp),
+            PostedAt = old.PostedAt,
             Labels = old.Labels,
-            Text = old.Text,
+            Text = old.Content,
         };
     }
 

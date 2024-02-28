@@ -5,19 +5,24 @@ using Refresh.GameServer.Types.UserData;
 
 namespace Refresh.GameServer.Types.Reviews;
 
+#nullable disable
+
 public partial class GameReview : IRealmObject, ISequentialId
 {
-    [PrimaryKey] 
-    public int SequentialId { get; set; }
+    public int ReviewId { get; set; }
     
-    [Backlink(nameof(GameLevel.Reviews))]
-    public IQueryable<GameLevel> Level { get; }
+    public GameLevel Level { get; set;  }
 
     public GameUser Publisher { get; set; }
     
-    public long Timestamp { get; set; }
+    public DateTimeOffset PostedAt { get; set; }
     
     public string Labels { get; set; }
     
-    public string Text { get; set; }
+    public string Content { get; set; }
+    
+    public int SequentialId
+    {
+        set => this.ReviewId = value;
+    }
 }

@@ -56,19 +56,19 @@ public class SerializedGameReview : IDataConvertableFrom<SerializedGameReview, G
         
         return new SerializedGameReview
         {
-            Id = review.SequentialId,
+            Id = review.ReviewId,
             Slot = new GameReviewSlot
             {
-                SlotType = review.Level.First().Source.ToGameType(),
-                SlotId = review.Level.First().LevelId,
+                SlotType = review.Level.Source.ToGameType(),
+                SlotId = review.Level.LevelId,
             },
             Reviewer = review.Publisher.Username,
-            Timestamp = review.Timestamp,
+            Timestamp = review.PostedAt.ToUnixTimeMilliseconds(),
             Labels = review.Labels,
             Deleted = false,
             DeletedBy = ReviewDeletedBy.None,
-            Text = review.Text,
-            Thumb = review.Level.First().Ratings.FirstOrDefault(r => r.User == review.Publisher)?.RatingType.ToDPad() ?? 0,
+            Text = review.Content,
+            Thumb = review.Level.Ratings.FirstOrDefault(r => r.User == review.Publisher)?.RatingType.ToDPad() ?? 0,
             ThumbsUp = 0,
             ThumbsDown = 0,
             YourThumb = 0,
