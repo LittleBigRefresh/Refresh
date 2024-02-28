@@ -3,7 +3,7 @@ using Refresh.GameServer.Types.Reviews;
 
 namespace Refresh.GameServer.Endpoints.ApiV3.DataTypes.Response;
 
-public class ApiGameReviewResponse : IDataConvertableFrom<ApiGameReviewResponse, GameReview>
+public class ApiGameReviewResponse : IApiResponse, IDataConvertableFrom<ApiGameReviewResponse, GameReview>
 {
     public required int ReviewId { get; set; }
     public required ApiGameLevelResponse Level { get; set; }

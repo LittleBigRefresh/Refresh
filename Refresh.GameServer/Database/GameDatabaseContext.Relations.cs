@@ -242,10 +242,14 @@ public partial class GameDatabaseContext // Relations
         this.AddSequentialObject(review, level.Reviews);
     }
 
-    public IQueryable<GameReview> GetReviewsByUser(GameUser user)
+    public DatabaseList<GameReview> GetReviewsByUser(GameUser user, int count, int skip)
     {
-        return this._realm.All<GameReview>().Where(r => r.Publisher == user);
+        return new DatabaseList<GameReview>(this._realm.All<GameReview>()
+            .Where(r => r.Publisher == user), skip, count);
     }
+
+    public int GetTotalReviewsByUser(GameUser user)
+        => this._realm.All<GameReview>().Count(r => r.Publisher == user);
     
     public void DeleteReview(GameReview review)
     {
@@ -255,6 +259,12 @@ public partial class GameDatabaseContext // Relations
     public GameReview? GetReviewByLevelAndUser(GameLevel level, GameUser user)
     {
         return level.Reviews.FirstOrDefault(r => r.Publisher.UserId == user.UserId);
+    }
+
+    public DatabaseList<GameReview> GetReviewsForLevel(GameLevel level, int count, int skip)
+    {
+        return new DatabaseList<GameReview>(this._realm.All<GameReview>()
+            .Where(r => r.Level == level), skip, count);
     }
 
     #endregion

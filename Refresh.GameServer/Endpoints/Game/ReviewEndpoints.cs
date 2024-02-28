@@ -83,7 +83,7 @@ public class ReviewEndpoints : EndpointGroup
 
         (int skip, int count) =  context.GetPageData();
         
-        return new Response(new SerializedGameReviewResponse(items: SerializedGameReview.FromOldList(new DatabaseList<GameReview>(level.Reviews.AsEnumerable(), skip, count).Items).ToList()), ContentType.Xml);
+        return new Response(new SerializedGameReviewResponse(items: SerializedGameReview.FromOldList(database.GetReviewsForLevel(level, count, skip).Items).ToList()), ContentType.Xml);
     }
     
     [GameEndpoint("reviewsBy/{username}", ContentType.Xml)]
@@ -97,7 +97,7 @@ public class ReviewEndpoints : EndpointGroup
 
         (int skip, int count) =  context.GetPageData();
         
-        return new Response(new SerializedGameReviewResponse(items: SerializedGameReview.FromOldList(new DatabaseList<GameReview>(database.GetReviewsByUser(user), skip, count).Items).ToList()), ContentType.Xml);
+        return new Response(new SerializedGameReviewResponse(SerializedGameReview.FromOldList(database.GetReviewsByUser(user, count, skip).Items).ToList()), ContentType.Xml);
     }
 
     [GameEndpoint("postReview/{slotType}/{levelId}", ContentType.Xml, HttpMethods.Post)]
