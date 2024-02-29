@@ -24,11 +24,6 @@ public static class TokenGameUtility
         
         "NPJA00052", // JP Digital
         "BCJS30018", // JP Disc
-        
-        // Betas/Debug/Prerelease
-        "BCET70002", // EU "Online Trial" Beta Test
-        "BCET70011", // EU Water Beta Test
-        "NPUA70045", // US Demo
     };
 
     private static readonly string[] LittleBigPlanet2Titles =
@@ -53,11 +48,6 @@ public static class TokenGameUtility
         
         "BCJS30058", // JP Disc
         // missing japan digital?
-        
-        // Betas/Debug/Prerelease
-        "NPUA70117", // US Private Beta
-        "BCET70055", // LBP Hub (real title id)
-        "NPEA00449", // LBP HUB (sent title id)
     };
 
     // PS4 title ids are not here on purpose.
@@ -86,11 +76,6 @@ public static class TokenGameUtility
         
         "NPJG00073", // JP Digital
         "NPHG00033", // Asia Digital
-        
-        // Betas/Debug/Prerelease
-        "NPUG70064", // US Demo
-        "NPEG90019", // EU Demo
-        "NPHG00035", // Asia Demo
     };
 
     private static readonly string[] LittleBigPlanetVitaTitles =
@@ -106,8 +91,26 @@ public static class TokenGameUtility
         
         "PCSC00013", // JP Digital
         "VCJS10006", // JP Cartridge
+    };
+
+    private static readonly string[] BetaBuildTitles =
+    {
+        // LBP1
+        "BCET70002", // EU "Online Trial" Beta Test
+        "BCET70011", // EU Water Beta Test
+        "NPUA70045", // US Demo
         
-        // Betas/Debug/Prerelease
+        // LBP2
+        "NPUA70117", // US Private Beta
+        "BCET70055", // LBP Hub (real title id)
+        "NPEA00449", // LBP HUB (sent title id)
+        
+        // PSP
+        "NPUG70064", // US Demo
+        "NPEG90019", // EU Demo
+        "NPHG00035", // Asia Demo
+        
+        // Vita
         "PCSA00061", // US Beta
         "PCSF00152", // EU Beta
     };
@@ -119,6 +122,7 @@ public static class TokenGameUtility
         if (LittleBigPlanet3Titles.Contains(titleId)) return TokenGame.LittleBigPlanet3;
         if (LittleBigPlanetPSPTitles.Contains(titleId)) return TokenGame.LittleBigPlanetPSP;
         if (LittleBigPlanetVitaTitles.Contains(titleId)) return TokenGame.LittleBigPlanetVita;
+        if (BetaBuildTitles.Contains(titleId)) return TokenGame.BetaBuild;
         
         return null;
     }

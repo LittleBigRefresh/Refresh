@@ -120,6 +120,7 @@ public class GameUserResponse : IDataConvertableFrom<GameUserResponse, GameUser>
             TokenGame.LittleBigPlanetVita => old.VitaPlanetsHash,
             TokenGame.LittleBigPlanetPSP => "0",
             TokenGame.Website => "0",
+            TokenGame.BetaBuild => old.BetaPlanetsHash,
             _ => throw new ArgumentOutOfRangeException(nameof(gameVersion), gameVersion, null),
         };
 
@@ -173,6 +174,20 @@ public class GameUserResponse : IDataConvertableFrom<GameUserResponse, GameUser>
                     .Where(l => l.Level._GameVersion == (int)TokenGame.LittleBigPlanetPSP)
                     .Select(f => GameMinimalLevelResponse.FromOld(f.Level)).ToList()!;
                 this.FavouriteLevels = new SerializedMinimalFavouriteLevelList(new SerializedMinimalLevelList(favouriteLevels, favouriteLevels.Count, favouriteLevels.Count));
+                break;
+            }
+            case TokenGame.BetaBuild:
+            {
+                // only beta levels
+                this.UsedSlots = old.PublishedLevels.Count(x => x._GameVersion == (int)TokenGame.BetaBuild);
+                this.FreeSlots = MaximumLevels - this.UsedSlotsLBP2;
+                
+                // use the same values for LBP3 and LBP2 since they're all shared under one count
+                this.UsedSlotsLBP3 = this.UsedSlots;
+                this.FreeSlotsLBP3 = this.FreeSlots;
+                
+                this.UsedSlotsLBP2 = this.UsedSlots;
+                this.FreeSlotsLBP2 = this.FreeSlots;
                 break;
             }
             case TokenGame.Website: break;

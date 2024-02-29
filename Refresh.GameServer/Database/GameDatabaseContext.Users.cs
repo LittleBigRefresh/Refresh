@@ -96,6 +96,9 @@ public partial class GameDatabaseContext // Users
                     case TokenGame.LittleBigPlanetVita:
                         user.VitaPlanetsHash = data.PlanetsHash;
                         break;
+                    case TokenGame.BetaBuild:
+                        user.BetaPlanetsHash = data.PlanetsHash;
+                        break;
                 }
 
             // ReSharper disable once InvertIf
@@ -130,6 +133,9 @@ public partial class GameDatabaseContext // Users
                         //PSP icons are special and use a GUID system separate from the mainline games,
                         //so we separate PSP icons to another field
                         user.PspIconHash = data.IconHash;
+                        break;
+                    case TokenGame.BetaBuild:
+                        user.BetaIconHash = data.IconHash;
                         break;
                 }
         });
@@ -331,7 +337,6 @@ public partial class GameDatabaseContext // Users
         });
     }
     
-    #if DEBUG
     public void ForceUserTokenGame(Token token, TokenGame game)
     {
         this._realm.Write(() =>
@@ -347,5 +352,4 @@ public partial class GameDatabaseContext // Users
             token.TokenPlatform = platform;
         });
     }
-    #endif
 }

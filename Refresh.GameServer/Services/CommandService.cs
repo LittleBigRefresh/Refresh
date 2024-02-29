@@ -133,6 +133,16 @@ public class CommandService : EndpointService
                 }
                 break;
             }
+            case "beta":
+            {
+                database.ForceUserTokenGame(token, TokenGame.BetaBuild);
+                break;
+            }
+            case "revoketoken":
+            {
+                database.RevokeToken(token);
+                break;
+            }
             #if DEBUG
             case "tokengame":
             {
