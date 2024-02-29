@@ -11,3 +11,16 @@ public enum GameLevelSource
     /// </summary>
     Story,
 }
+
+public static class GameLevelSourceExtensions
+{
+    public static string ToGameType(this GameLevelSource source)
+    {
+        return source switch
+        {
+            GameLevelSource.User => "user",
+            GameLevelSource.Story => "developer",
+            _ => throw new ArgumentOutOfRangeException(nameof(source), source, null),
+        };
+    }
+}

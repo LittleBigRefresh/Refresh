@@ -217,6 +217,55 @@ public partial class GameDatabaseContext // Relations
         });
         return true;
     }
+    
+    /// <summary>
+    /// Adds a review to the database, deleting any old ones by the user on that level.
+    /// </summary>
+    /// <param name="review">The review to add</param>
+    /// <param name="level">The level the review is for</param>
+    /// <param name="user">The user who made the review</param>
+    public void AddReviewToLevel(GameReview review, GameLevel level)
+    {
+        List<GameReview> toRemove = level.Reviews.Where(r => r.Publisher.UserId == review.Publisher.UserId).ToList();
+        if (toRemove.Count > 0)
+        {
+            this._realm.Write(() =>
+            {
+                foreach (GameReview reviewToDelete in toRemove)
+                {
+                    level.Reviews.Remove(reviewToDelete);
+                    this._realm.Remove(reviewToDelete);
+                }
+            });
+        }
+        
+        this.AddSequentialObject(review, level.Reviews);
+    }
+
+    public DatabaseList<GameReview> GetReviewsByUser(GameUser user, int count, int skip)
+    {
+        return new DatabaseList<GameReview>(this._realm.All<GameReview>()
+            .Where(r => r.Publisher == user), skip, count);
+    }
+
+    public int GetTotalReviewsByUser(GameUser user)
+        => this._realm.All<GameReview>().Count(r => r.Publisher == user);
+    
+    public void DeleteReview(GameReview review)
+    {
+        this._realm.Remove(review);
+    }
+    
+    public GameReview? GetReviewByLevelAndUser(GameLevel level, GameUser user)
+    {
+        return level.Reviews.FirstOrDefault(r => r.Publisher.UserId == user.UserId);
+    }
+
+    public DatabaseList<GameReview> GetReviewsForLevel(GameLevel level, int count, int skip)
+    {
+        return new DatabaseList<GameReview>(this._realm.All<GameReview>()
+            .Where(r => r.Level == level), skip, count);
+    }
 
     #endregion
 
