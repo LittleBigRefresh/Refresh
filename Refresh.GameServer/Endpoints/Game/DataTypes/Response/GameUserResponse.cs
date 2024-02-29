@@ -23,6 +23,7 @@ public class GameUserResponse : IDataConvertableFrom<GameUserResponse, GameUser>
     [XmlElement("npHandle")] public required SerializedUserHandle Handle { get; set; }
     [XmlElement("commentCount")] public int CommentCount { get; set; }
     [XmlElement("commentsEnabled")] public bool CommentsEnabled { get; set; }
+    [XmlElement("reviewCount")] public int ReviewCount { get; set; }
     [XmlElement("favouriteSlotCount")] public int FavouriteLevelCount { get; set; }
     [XmlElement("favouriteUserCount")] public int FavouriteUserCount { get; set; }
     [XmlElement("lolcatftwCount")] public int QueuedLevelCount { get; set; }
@@ -108,6 +109,8 @@ public class GameUserResponse : IDataConvertableFrom<GameUserResponse, GameUser>
             
             return;
         }
+
+        this.ReviewCount = database.GetTotalReviewsByUser(old);
         
         this.PlanetsHash = gameVersion switch
         {

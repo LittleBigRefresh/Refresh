@@ -12,6 +12,7 @@ using Refresh.GameServer.Types.Levels.SkillRewards;
 using Refresh.GameServer.Types.Notifications;
 using Refresh.GameServer.Types.Relations;
 using Refresh.GameServer.Types.Report;
+using Refresh.GameServer.Types.Reviews;
 using Refresh.GameServer.Types.UserData.Leaderboard;
 using GamePhoto = Refresh.GameServer.Types.Photos.GamePhoto;
 using GamePhotoSubject = Refresh.GameServer.Types.Photos.GamePhotoSubject;
@@ -32,7 +33,7 @@ public class GameDatabaseProvider : RealmDatabaseProvider<GameDatabaseContext>
         this._time = time;
     }
 
-    protected override ulong SchemaVersion => 113;
+    protected override ulong SchemaVersion => 116;
 
     protected override string Filename => "refreshGameServer.realm";
     
@@ -72,6 +73,7 @@ public class GameDatabaseProvider : RealmDatabaseProvider<GameDatabaseContext>
         typeof(ScreenElements),
         typeof(ScreenRect),
         typeof(Slot),
+        typeof(GameReview),
     };
 
     public override void Warmup()

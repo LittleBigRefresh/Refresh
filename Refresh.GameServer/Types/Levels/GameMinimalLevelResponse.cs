@@ -37,6 +37,10 @@ public class GameMinimalLevelResponse : IDataConvertableFrom<GameMinimalLevelRes
     [XmlElement("yourDPadRating")] public int YourRating { get; set; }
 
     [XmlElement("playerCount")] public int PlayerCount { get; set; }
+    [XmlElement("reviewsEnabled")] public bool ReviewsEnabled { get; set; } = true;
+    [XmlElement("reviewCount")] public int ReviewCount { get; set; } = 0;
+    [XmlElement("commentsEnabled")] public bool CommentsEnabled { get; set; } = true;
+    [XmlElement("commentCount")] public int CommentCount { get; set; } = 0; 
     
     [XmlElement("initiallyLocked")] public bool IsLocked { get; set; }
     [XmlElement("isSubLevel")] public bool IsSubLevel { get; set; }
@@ -97,6 +101,7 @@ public class GameMinimalLevelResponse : IDataConvertableFrom<GameMinimalLevelRes
             YourStarRating = level.YourStarRating,
             YourRating = level.YourRating,
             AverageStarRating = level.AverageStarRating,
+            CommentCount = level.CommentCount,
             IsLocked = level.IsLocked,
             IsSubLevel = level.IsSubLevel,
             IsCopyable = level.IsCopyable,
