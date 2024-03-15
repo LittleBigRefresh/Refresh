@@ -1,4 +1,7 @@
+using Bunkum.Core.Storage;
 using JetBrains.Annotations;
+using Refresh.GameServer.Authentication;
+using Refresh.GameServer.Database;
 using Refresh.GameServer.Types.Roles;
 using Refresh.GameServer.Types.UserData;
 
@@ -28,6 +31,7 @@ public class ApiExtendedGameUserResponse : IApiResponse, IDataConvertableFrom<Ap
     public required bool PsnAuthenticationAllowed { get; set; }
     
     public bool RedirectGriefReportsToPhotos { get; set; } 
+    public bool UnescapeXmlSequences { get; set; } 
     
     public required string? EmailAddress { get; set; }
     public required bool EmailAddressVerified { get; set; }
@@ -57,8 +61,26 @@ public class ApiExtendedGameUserResponse : IApiResponse, IDataConvertableFrom<Ap
             EmailAddressVerified = user.EmailAddressVerified,
             ShouldResetPassword = user.ShouldResetPassword,
             RedirectGriefReportsToPhotos = user.RedirectGriefReportsToPhotos,
+            UnescapeXmlSequences = user.UnescapeXmlSequences,
         };
     }
+    
+    public void FillInExtraData(IGameDatabaseContext database, IDataStore dataStore)
+    {
+        this.IconHash = database.GetAssetFromHash(this.IconHash)?.GetAsIcon(TokenGame.Website, database, dataStore) ?? this.IconHash;
+    }
+    
+    public static ApiExtendedGameUserResponse? FromOldWithExtraData(GameUser? old, IGameDatabaseContext database, IDataStore dataStore)
+    {
+        if (old == null) return null;
 
-    public static IEnumerable<ApiExtendedGameUserResponse> FromOldList(IEnumerable<GameUser> oldList) => oldList.Select(FromOld)!;
+        ApiExtendedGameUserResponse response = FromOld(old)!;
+        response.FillInExtraData(database, dataStore);
+
+        return response;
+    }
+
+    public static IEnumerable<ApiExtendedGameUserResponse> FromOldList(IEnumerable<GameUser> oldList) => oldList.Select(FromOld).ToList()!;
+    
+    public static IEnumerable<ApiExtendedGameUserResponse> FromOldListWithExtraData(IEnumerable<GameUser> oldList, IGameDatabaseContext database, IDataStore dataStore) => oldList.Select(old => FromOldWithExtraData(old, database, dataStore)).ToList()!;
 }

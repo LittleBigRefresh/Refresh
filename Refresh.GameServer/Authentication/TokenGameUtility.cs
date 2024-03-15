@@ -2,105 +2,118 @@ namespace Refresh.GameServer.Authentication;
 
 public static class TokenGameUtility
 {
-    // All values taken from SerialStation.
+    // Most values taken from SerialStation.
     // https://serialstation.com
     
     private static readonly string[] LittleBigPlanet1Titles =
     {
-        "BCES00141",
-        "NPEW00047",
-        "NPEA00147",
-        "NPHG00035",
-        "BCET70011",
-        "BCUS98199",
-        "BCAS20091",
-        "NPEA00241",
-        "NPUG70064",
-        "BCET70002",
-        "BCJS70009",
-        "NPHA80092",
-        "BCJB95003",
-        "BCUS70030",
-        "NPEG90019",
-        "BCUS98148",
-        "NPUA70045",
-        "BCAS20058",
-        "BCJS30018",
-        "NPHG00033",
-        "BCKS10059",
-        "BCAS20078",
-        "BCUS98208",
-        "BCES00611",
-        "NPJG00073",
-        "NPUA80472",
-        "NPJA00052",
+        "NPUA80472", // US Digital
+        "BCUS98148", // US Disc
+        "BCUS98199", // US Disc? Comes with 02.00 apparently. Maybe never sold?
+        "BCUS98208", // US "Game of the Year" Disc
+        
+        "BCES00141", // EU Disc
+        "NPEA00241", // EU Digital
+        "BCES00611", // EU "Game of the Year" Disc
+        
+        "BCAS20058", // Asia Disc
+        "BCAS20078", // Asia "Game of the Year" Disc
+        
+        "BCKS10059", // Korea Disc
+        "NPHA80092", // Korea Digital
+        
+        "NPJA00052", // JP Digital
+        "BCJS30018", // JP Disc
     };
 
     private static readonly string[] LittleBigPlanet2Titles =
     {
-        "BCAS20201",
-        "BCUS98245",
-        "BCES01345",
-        "BCJS30058",
-        "BCUS98249",
-        "BCES00850",
-        "BCES01346",
-        "BCUS90260",
-        "BCUS98372",
-        "NPUA80662",
-        "NPEA00324",
-        "BCES01086",
-        "BCES01694",
+        "NPUA80662", // US Digital
+        "BCUS98245", // US Disc
+        "BCUS98249", // US Collector's Edition Disc (hey, that's me!)
+        "BCUS90260", // US Special Edition Disc
+        "BCUS98372", // US Special Edition Disc
+        
+        "NPEA00324", // EU Digital
+        "BCES00850", // EU Disc
+        "BCES01345", // EU Special Edition Disc
+        "BCES01694", // EU Extras Edition Disc
+        "NPEA00437", // EU Extras Edition Digital
+        
+        "BCES01086", // UK Disc
+        "BCES01346", // UK Special Edition Disc
+        
+        // missing asia disc?
+        // missing asia digital?
+        "BCAS20201", // Asia Special Edition Disc
+        
+        "BCJS30058", // JP Disc
+        // missing japan digital?
     };
 
+    // PS4 title ids are not here on purpose.
     private static readonly string[] LittleBigPlanet3Titles =
     {
-        "CUSA00738",
-        "CUSA00810",
-        "CUSA00473",
-        "CUSA01072",
-        "CUSA00063",
-        "PCJS50003",
-        "BCES02068",
-        "BCAS20322",
-        "BCJS30095",
-        "BCES01663",
-        "BCUS98362",
-        "PCKS90007",
-        "PCAS00012",
-        "CUSA00601",
-        "NPJA00123",
-        "BCUS81138",
-        "CUSA00762",
-        "PCAS20007",
-        "CUSA01077",
-        "CUSA01304",
-        "CUSA00693",
+        "BCUS98362", // US Disc
+        "BCUS81138", // US Disc (another? v01.01)
+        
+        "BCES01663", // EU Disc
+        "NPEA00515", // EU Digital
+        
+        "BCES02068", // UK Disc
+        
+        "BCAS20322", // Asia Disc
+        
+        "BCJS30095", // JP Disc
+        "NPJA00123", // JP Digital
     };
 
     private static readonly string[] LittleBigPlanetPSPTitles =
     {
-        "UCUS98744",
-        "UCES01264",
-        "UCJS10107",
-        "UCAS40262",
+        "UCUS98744", // US UMD
+        "UCES01264", // EU UMD
+        "UCJS10107", // JP UMD
+        "UCAS40262", // Asia UMD
+        
+        "NPJG00073", // JP Digital
+        "NPHG00033", // Asia Digital
     };
 
     private static readonly string[] LittleBigPlanetVitaTitles =
     {
-        "PCSC00013",
-        "PCSF00021",
-        "PCSA22106",
-        "PCSF00152",
-        "PCSF00211",
-        "VCAS32010",
-        "PCSA22018",
-        "VCJS10006",
-        "PCSD00006",
-        "PCSA00078",
-        "PCSA00061",
-        "PCSA00017",
-        "PCSA00081", 
+        "PCSA22018", // US Cartridge
+        "PCSA00017", // US Digital
+        
+        "PCSF00021", // EU Cartridge
+        "PCSA22106", // Canada Cartridge
+        
+        "PCSD00006", // Asia Cartridge
+        "VCAS32010", // Asia Cartridge
+        
+        "PCSC00013", // JP Digital
+        "VCJS10006", // JP Cartridge
+    };
+
+    private static readonly string[] BetaBuildTitles =
+    {
+        // LBP1
+        "BCET70002", // EU "Online Trial" Beta Test
+        "BCET70011", // EU Water Beta Test
+        "NPUA70045", // US Demo
+        
+        // LBP2
+        "NPUA70117", // US Private Beta
+        "BCET70055", // LBP Hub (real title id)
+        "NPEA00449", // LBP HUB (sent title id)
+        
+        // PSP
+        "NPUG70064", // US Demo
+        "NPEG90019", // EU Demo
+        "NPHG00035", // Asia Demo
+        
+        // Vita
+        "PCSA00061", // US Beta
+        "PCSF00152", // EU Beta
     };
     
     public static TokenGame? FromTitleId(string titleId)
@@ -110,6 +123,7 @@ public static class TokenGameUtility
         if (LittleBigPlanet3Titles.Contains(titleId)) return TokenGame.LittleBigPlanet3;
         if (LittleBigPlanetPSPTitles.Contains(titleId)) return TokenGame.LittleBigPlanetPSP;
         if (LittleBigPlanetVitaTitles.Contains(titleId)) return TokenGame.LittleBigPlanetVita;
+        if (BetaBuildTitles.Contains(titleId)) return TokenGame.BetaBuild;
         
         return null;
     }

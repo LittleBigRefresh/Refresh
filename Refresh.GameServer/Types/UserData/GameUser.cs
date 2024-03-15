@@ -23,6 +23,11 @@ public partial class GameUser : IRealmObject, IRateLimitUser
     public bool ShouldResetPassword { get; set; }
     
     public string IconHash { get; set; } = "0";
+
+    /// <summary>
+    /// The force match of the user, cleared on login
+    /// </summary>
+    public ObjectId? ForceMatch { get; set; }
     
     /// <summary>
     /// The <see cref="IconHash"/>, except only for PSP clients.
@@ -32,6 +37,17 @@ public partial class GameUser : IRealmObject, IRateLimitUser
     /// Hopefully this explains why this distinction is necessary.
     /// </remarks>
     public string PspIconHash { get; set; } = "0";
+    /// <summary>
+    /// The <see cref="IconHash"/>, except only for Vita clients.
+    /// </summary>
+    /// <remarks>
+    /// Vita GUIDs do not map to mainline GUIDs, so we dont want someone to set their Vita icon, and it map to an invalid GUID on PS3.
+    /// </remarks>
+    public string VitaIconHash { get; set; } = "0";
+    /// <summary>
+    /// The <see cref="IconHash"/>, except only for clients in beta mode.
+    /// </summary>
+    public string BetaIconHash { get; set; } = "0";
 
     public string Description { get; set; } = "";
     public GameLocation Location { get; set; } = GameLocation.Zero;
@@ -66,6 +82,7 @@ public partial class GameUser : IRealmObject, IRateLimitUser
     [Ignored] public IList<GameIpVerificationRequest> IpVerificationRequests { get; } // TODO: don't ignore
     #nullable restore
 
+    public string BetaPlanetsHash { get; set; } = "0";
     public string Lbp2PlanetsHash { get; set; } = "0";
     public string Lbp3PlanetsHash { get; set; } = "0";
     public string VitaPlanetsHash { get; set; } = "0";
@@ -85,6 +102,10 @@ public partial class GameUser : IRealmObject, IRateLimitUser
     /// If `true`, turn all grief reports into photo uploads
     /// </summary>
     public bool RedirectGriefReportsToPhotos { get; set; }
+    /// <summary>
+    /// If `true`, unescape XML tags sent to /filter
+    /// </summary>
+    public bool UnescapeXmlSequences { get; set; }
     
     [Ignored] public GameUserRole Role
     {

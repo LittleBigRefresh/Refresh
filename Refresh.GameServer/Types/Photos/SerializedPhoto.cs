@@ -1,4 +1,7 @@
 using System.Xml.Serialization;
+using Bunkum.Core.Storage;
+using Refresh.GameServer.Authentication;
+using Refresh.GameServer.Database;
 
 namespace Refresh.GameServer.Types.Photos;
 
@@ -33,9 +36,10 @@ public class SerializedPhoto
             PhotoId = photo.PhotoId,
             AuthorName = photo.Publisher.Username,
             Timestamp = photo.TakenAt.ToUnixTimeMilliseconds(),
-            SmallHash = photo.SmallHash,
-            MediumHash = photo.MediumHash,
-            LargeHash = photo.LargeHash,
+            //NOTE: we usually would do `if psp, prepend psp/ to the hashes`, but since we are converting the psp TGA assets to PNG in FillInExtraData, we dont need to! (also i think the game would get mad if we did that)
+            SmallHash = photo.SmallAsset.AssetHash,
+            MediumHash = photo.MediumAsset.AssetHash,
+            LargeHash = photo.LargeAsset.AssetHash,
             PlanHash = photo.PlanHash,
             PhotoSubjects = new List<SerializedPhotoSubject>(photo.Subjects.Count),
         };
@@ -53,5 +57,19 @@ public class SerializedPhoto
         }
 
         return newPhoto;
+    }
+
+    public static SerializedPhoto FromGamePhotoWithExtraData(GamePhoto photo, IGameDatabaseContext database, IDataStore dataStore, TokenGame game)
+    {
+        SerializedPhoto serializedPhoto = FromGamePhoto(photo);
+        serializedPhoto.FillInExtraData(database, dataStore, game);
+        return serializedPhoto;
+    }
+
+    public void FillInExtraData(IGameDatabaseContext database, IDataStore dataStore, TokenGame game)
+    {
+        this.LargeHash = database.GetAssetFromHash(this.LargeHash)?.GetAsPhoto(game, database, dataStore) ?? this.LargeHash;
+        this.MediumHash = database.GetAssetFromHash(this.MediumHash)?.GetAsPhoto(game, database, dataStore) ?? this.MediumHash;
+        this.SmallHash = database.GetAssetFromHash(this.SmallHash)?.GetAsPhoto(game, database, dataStore) ?? this.SmallHash;
     }
 }

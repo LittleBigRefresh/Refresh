@@ -2,6 +2,7 @@ using Bunkum.Core;
 using Refresh.GameServer.Authentication;
 using Refresh.GameServer.Extensions;
 using Refresh.GameServer.Services;
+using Refresh.GameServer.Types.Levels.Categories;
 
 namespace Refresh.GameServer.Endpoints.Game.Levels.FilterSettings;
 
@@ -44,6 +45,12 @@ public class LevelFilterSettings
     /// The game of the request, eg. to prevent LBP3 levels from appearing on LBP2 or LBP1
     /// </summary>
     public TokenGame GameVersion;
+
+    /// <summary>
+    /// The seed used for lucky dip/random levels.
+    /// </summary>
+    /// <seealso cref="RandomLevelsCategory"/>
+    public int? Seed;
 
     public LevelFilterSettings(TokenGame game)
     {
@@ -98,6 +105,7 @@ public class LevelFilterSettings
                 "true" => MoveFilterType.True,
                 "false" => MoveFilterType.False,
                 "only" => MoveFilterType.Only,
+                "dontCare" => MoveFilterType.True,
                 _ => throw new ArgumentOutOfRangeException(),
             };
 
@@ -124,6 +132,12 @@ public class LevelFilterSettings
         {
             this.Labels ??= new string[1];
             this.Labels[0] = labelFilter0;
+        }
+
+        string? seedStr = context.QueryString.Get("seed");
+        if (seedStr != null && int.TryParse(seedStr, out int seed))
+        {
+            this.Seed = seed;
         }
     }
 }

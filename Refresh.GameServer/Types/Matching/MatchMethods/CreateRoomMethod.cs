@@ -22,7 +22,6 @@ public class CreateRoomMethod : IMatchMethod
             room = service.SplitUserIntoNewRoom(user, token.TokenPlatform, token.TokenGame, natType);
         }
 
-        room.LastContact = DateTimeOffset.Now;
         if (body.RoomState != null) room.RoomState = body.RoomState.Value;
 
         // LBP likes to send both Slot and Slots interchangeably, handle that case here
@@ -43,6 +42,8 @@ public class CreateRoomMethod : IMatchMethod
         {
             room.RoomMood = (RoomMood)mood;
         }
+        
+        service.RoomAccessor.UpdateRoom(room);
 
         return OK;
     }

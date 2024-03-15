@@ -58,41 +58,48 @@ public partial interface IGameDatabaseContext // Levels
         return level;
     }
 
-    public GameLevel? UpdateLevel(GameLevel level, GameUser user)
+    public GameLevel? UpdateLevel(GameLevel newLevel, GameUser author)
     {
         // Verify if this level is able to be republished
-        GameLevel? oldSlot = this.GetLevelById(level.LevelId);
-        if (oldSlot == null) return null;
+        GameLevel? oldLevel = this.GetLevelById(newLevel.LevelId);
+        if (oldLevel == null) return null;
             
-        Debug.Assert(oldSlot.Publisher != null);
-        if (oldSlot.Publisher.UserId != user.UserId) return null;
+        Debug.Assert(oldLevel.Publisher != null);
+        if (oldLevel.Publisher.UserId != author.UserId) return null;
         
-        // All checks passed, lets move
-
-        long oldDate = oldSlot.PublishDate;
+        // All checks passed, let's start by retaining some information from the old level
+        newLevel.Publisher = author;
+        newLevel.PublishDate = oldLevel.PublishDate;
+        newLevel.UpdateDate = this.Time.TimestampMilliseconds; // Set the last modified date
+        
+        // If the actual contents of the level haven't changed, extract some extra information
+        if (oldLevel.RootResource == newLevel.RootResource)
+        {
+            newLevel.TeamPicked = oldLevel.TeamPicked;
+            newLevel.GameVersion = oldLevel.GameVersion;
+        }
+        
+        // Now newLevel is set up to replace oldLevel.
+        // If information is lost here, then that's probably a bug.
+        // Update the level's properties in the database
         this.Write(() =>
         {
             PropertyInfo[] userProps = typeof(GameLevel).GetProperties();
             foreach (PropertyInfo prop in userProps)
             {
                 if (!prop.CanWrite || !prop.CanRead) continue;
-                prop.SetValue(oldSlot, prop.GetValue(level));
+                prop.SetValue(oldLevel, prop.GetValue(newLevel));
             }
-
-            oldSlot.Publisher = user;
-            
-            oldSlot.PublishDate = oldDate;
-            oldSlot.UpdateDate = this.Time.TimestampMilliseconds;
         });
 
-        return oldSlot;
+        return oldLevel;
     }
 
     public GameLevel UpdateLevel(ApiEditLevelRequest body, GameLevel level)
     {
         this.Write(() =>
         {
-            PropertyInfo[] userProps = typeof(ApiEditLevelRequest).GetProperties();
+            PropertyInfo[] userProps = body.GetType().GetProperties();
             foreach (PropertyInfo prop in userProps)
             {
                 if (!prop.CanWrite || !prop.CanRead) continue;
@@ -185,12 +192,16 @@ public partial interface IGameDatabaseContext // Levels
             .OrderByDescending(l => l.PublishDate), skip, count);
     
     [Pure]
-    public DatabaseList<GameLevel> GetRandomLevels(int count, int skip, GameUser? user, LevelFilterSettings levelFilterSettings) =>
-        new(this.GetLevelsByGameVersion(levelFilterSettings.GameVersion)
+    public DatabaseList<GameLevel> GetRandomLevels(int count, int skip, GameUser? user, LevelFilterSettings levelFilterSettings)
+    {
+        Random random = new(levelFilterSettings.Seed ?? 0);
+        
+        return new DatabaseList<GameLevel>(this.GetLevelsByGameVersion(levelFilterSettings.GameVersion)
             .FilterByLevelFilterSettings(user, levelFilterSettings)
             .AsEnumerable()
-            .OrderBy(_ => Random.Shared.Next()), skip, count);
-    
+            .OrderBy(_ => random.Next()), skip, count);
+    }
+
     // TODO: reduce code duplication for getting most of x
     [Pure]
     public DatabaseList<GameLevel> GetMostHeartedLevels(int count, int skip, GameUser? user, LevelFilterSettings levelFilterSettings)
@@ -284,7 +295,7 @@ public partial interface IGameDatabaseContext // Levels
     [Pure]
     public DatabaseList<GameLevel> GetBusiestLevels(int count, int skip, MatchService service, GameUser? user, LevelFilterSettings levelFilterSettings)
     {
-        IOrderedEnumerable<IGrouping<GameLevel?,GameRoom>> rooms = service.Rooms
+        IOrderedEnumerable<IGrouping<GameLevel?,GameRoom>> rooms = service.RoomAccessor.GetAllRooms()
             .Where(r => r.LevelType == RoomSlotType.Online && r.HostId.Id != null) // if playing online level and host exists on server
             .GroupBy(r => this.GetLevelById(r.LevelId))
             .OrderBy(r => r.Sum(room => room.PlayerIds.Count));
@@ -329,10 +340,13 @@ public partial interface IGameDatabaseContext // Levels
     }
 
     [Pure]
+    public int GetTotalLevelCount(TokenGame game) => this.All<GameLevel>().FilterByGameVersion(game).Count(l => l._Source == (int)GameLevelSource.User);
+    
+    [Pure]
     public int GetTotalLevelCount() => this.All<GameLevel>().Count(l => l._Source == (int)GameLevelSource.User);
     
     [Pure]
-    public int GetTotalTeamPickCount() => this.All<GameLevel>().Count(l => l.TeamPicked);
+    public int GetTotalTeamPickCount(TokenGame game) => this.All<GameLevel>().FilterByGameVersion(game).Count(l => l.TeamPicked);
 
     [Pure]
     public GameLevel? GetLevelById(int id) => this.All<GameLevel>().FirstOrDefault(l => l.LevelId == id);

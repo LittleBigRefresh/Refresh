@@ -18,12 +18,12 @@ public class UserEndpoints : EndpointGroup
 {
     [GameEndpoint("user/{name}", HttpMethods.Get, ContentType.Xml)]
     [MinimumRole(GameUserRole.Restricted)]
-    public GameUserResponse? GetUser(RequestContext context, IGameDatabaseContext database, string name, Token token) 
-        => GameUserResponse.FromOldWithExtraData(database.GetUserByUsername(name), token.TokenGame, database);
+    public GameUserResponse? GetUser(RequestContext context, IGameDatabaseContext database, string name, Token token, IDataStore dataStore) 
+        => GameUserResponse.FromOldWithExtraData(database.GetUserByUsername(name), token.TokenGame, database, dataStore);
 
     [GameEndpoint("users", HttpMethods.Get, ContentType.Xml)]
     [MinimumRole(GameUserRole.Restricted)]
-    public SerializedUserList GetMultipleUsers(RequestContext context, IGameDatabaseContext database, Token token)
+    public SerializedUserList GetMultipleUsers(RequestContext context, IGameDatabaseContext database, Token token, IDataStore dataStore)
     {
         string[]? usernames = context.QueryString.GetValues("u");
         if (usernames == null) return new SerializedUserList();
@@ -35,7 +35,7 @@ public class UserEndpoints : EndpointGroup
             GameUser? user = database.GetUserByUsername(username);
             if (user == null) continue;
             
-            users.Add(GameUserResponse.FromOldWithExtraData(user, token.TokenGame, database)!);
+            users.Add(GameUserResponse.FromOldWithExtraData(user, token.TokenGame, database, dataStore)!);
         }
 
         return new SerializedUserList
@@ -48,17 +48,15 @@ public class UserEndpoints : EndpointGroup
     [NullStatusCode(NotFound)]
     [MinimumRole(GameUserRole.Restricted)]
     public SerializedFriendsList? GetFriends(RequestContext context, IGameDatabaseContext database,
-        GameUser user, FriendStorageService friendService, Token token)
+        GameUser user, Token token, IDataStore dataStore)
     {
-        List<GameUser>? friends = friendService.GetUsersFriends(user, database)?.ToList();
-        if (friends == null) return null;
-        
-        return new SerializedFriendsList(GameUserResponse.FromOldListWithExtraData(friends, token.TokenGame, database).ToList());
+        List<GameUser> friends = database.GetUsersMutuals(user).ToList();
+        return new SerializedFriendsList(GameUserResponse.FromOldListWithExtraData(friends, token.TokenGame, database, dataStore).ToList());
     }
 
     [GameEndpoint("updateUser", HttpMethods.Post, ContentType.Xml)]
     [NullStatusCode(BadRequest)]
-    public string? UpdateUser(RequestContext context, IGameDatabaseContext database, GameUser user, string body, IDataStore dataStore, Token token)
+    public string? UpdateUser(RequestContext context, IGameDatabaseContext database, GameUser user, string body, IDataStore dataStore, Token token, GuidCheckerService guidChecker)
     {
         SerializedUpdateData? data = null;
         
@@ -96,10 +94,30 @@ public class UserEndpoints : EndpointGroup
             return null;
         }
 
-        if (data.IconHash != null && !data.IconHash.StartsWith("g") && !dataStore.ExistsInStore(data.IconHash))
+        if (data.IconHash != null)
         {
-            database.AddErrorNotification("Profile update failed", "Your avatar failed to update because the asset was missing on the server.", user);
-            return null;
+            //If the icon is a GUID
+            if (data.IconHash.StartsWith('g'))
+            {
+                //Parse out the GUID
+                long guid = long.Parse(data.IconHash.AsSpan()[1..]);
+                
+                //If its not a valid GUID, block the request
+                if(data.IconHash.StartsWith('g') && !guidChecker.IsTextureGuid(token.TokenGame, guid))
+                {
+                    database.AddErrorNotification("Profile update failed", "Your avatar failed to update because the asset was an invalid GUID.", user);
+                    return null; 
+                }
+            }
+            else
+            {
+                //If the asset does not exist on the server, block the request
+                if (!dataStore.ExistsInStore(data.IconHash))
+                {
+                    database.AddErrorNotification("Profile update failed", "Your avatar failed to update because the asset was missing on the server.", user);
+                    return null;
+                } 
+            }
         }
         
         if (data.PlanetsHash != null && !dataStore.ExistsInStore(data.PlanetsHash))
@@ -114,26 +132,8 @@ public class UserEndpoints : EndpointGroup
             database.AddErrorNotification("Profile update failed", $"Your profile failed to update because the description was too long. The max length is {maxDescriptionLength}.", user);
             return null;
         }
-
-        // ReSharper disable once SwitchStatementMissingSomeEnumCasesNoDefault
-        switch (token.TokenGame)
-        {
-            case TokenGame.LittleBigPlanet2:
-                data.Lbp2PlanetsHash = data.PlanetsHash;
-                data.Lbp3PlanetsHash = data.PlanetsHash;
-                break;
-            case TokenGame.LittleBigPlanetVita:
-                data.VitaPlanetsHash = data.PlanetsHash;
-                break;
-            case TokenGame.LittleBigPlanet3:
-                data.Lbp3PlanetsHash = data.PlanetsHash;
-                break;
-            case TokenGame.LittleBigPlanetPSP:
-                data.PspIconHash = data.IconHash;
-                break;
-        }
         
-        database.UpdateUserData(user, data);
+        database.UpdateUserData(user, data, token.TokenGame);
         return string.Empty;
     }
 

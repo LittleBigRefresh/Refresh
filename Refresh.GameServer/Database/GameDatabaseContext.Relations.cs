@@ -64,6 +64,17 @@ public partial interface IGameDatabaseContext // Relations
     public bool AreUsersMutual(GameUser user1, GameUser user2) =>
         this.IsUserFavouritedByUser(user1, user2) &&
         this.IsUserFavouritedByUser(user2, user1);
+
+    [Pure]
+    public IEnumerable<GameUser> GetUsersMutuals(GameUser user)
+    {
+        // this might be the shittiest query i've ever written.
+        return user.UsersFavourited.AsEnumerable()
+            .Select(relation => relation.UserToFavourite)
+            .Where(f => f.UsersFavourited.AsEnumerable()
+                .Select(otherUserRelation => otherUserRelation.UserToFavourite).AsEnumerable()
+                .Contains(user));
+    }
     
     [Pure]
     public IEnumerable<GameUser> GetUsersFavouritedByUser(GameUser user, int count, int skip) => this.All<FavouriteUserRelation>()
@@ -181,7 +192,7 @@ public partial interface IGameDatabaseContext // Relations
     public bool RateLevel(GameLevel level, GameUser user, RatingType type)
     {
         if (level.Publisher?.UserId == user.UserId) return false;
-        if (!this.HasUserPlayedLevel(level, user)) return false;
+        if (level.GameVersion != TokenGame.LittleBigPlanetPSP && !this.HasUserPlayedLevel(level, user)) return false;
         
         RateLevelRelation? rating = this.GetRateRelationByUser(level, user);
         
@@ -205,6 +216,55 @@ public partial interface IGameDatabaseContext // Relations
             rating.Timestamp = this.Time.Now;
         });
         return true;
+    }
+    
+    /// <summary>
+    /// Adds a review to the database, deleting any old ones by the user on that level.
+    /// </summary>
+    /// <param name="review">The review to add</param>
+    /// <param name="level">The level the review is for</param>
+    /// <param name="user">The user who made the review</param>
+    public void AddReviewToLevel(GameReview review, GameLevel level)
+    {
+        List<GameReview> toRemove = level.Reviews.Where(r => r.Publisher.UserId == review.Publisher.UserId).ToList();
+        if (toRemove.Count > 0)
+        {
+            this.Write(() =>
+            {
+                foreach (GameReview reviewToDelete in toRemove)
+                {
+                    level.Reviews.Remove(reviewToDelete);
+                    this.Remove(reviewToDelete);
+                }
+            });
+        }
+        
+        this.AddSequentialObject(review, level.Reviews);
+    }
+
+    public DatabaseList<GameReview> GetReviewsByUser(GameUser user, int count, int skip)
+    {
+        return new DatabaseList<GameReview>(this.All<GameReview>()
+            .Where(r => r.Publisher == user), skip, count);
+    }
+
+    public int GetTotalReviewsByUser(GameUser user)
+        => this.All<GameReview>().Count(r => r.Publisher == user);
+    
+    public void DeleteReview(GameReview review)
+    {
+        this.Remove(review);
+    }
+    
+    public GameReview? GetReviewByLevelAndUser(GameLevel level, GameUser user)
+    {
+        return level.Reviews.FirstOrDefault(r => r.Publisher.UserId == user.UserId);
+    }
+
+    public DatabaseList<GameReview> GetReviewsForLevel(GameLevel level, int count, int skip)
+    {
+        return new DatabaseList<GameReview>(this.All<GameReview>()
+            .Where(r => r.Level == level), skip, count);
     }
 
     #endregion

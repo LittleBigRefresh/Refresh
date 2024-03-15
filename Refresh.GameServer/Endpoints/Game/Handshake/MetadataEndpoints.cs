@@ -28,15 +28,16 @@ public class MetadataEndpoints : EndpointGroup
     }
 
     [GameEndpoint("npdata", ContentType.Xml, HttpMethods.Post)]
-    public Response SetFriendData(RequestContext context, GameUser user, IGameDatabaseContext database,
-        FriendStorageService friendService, SerializedFriendData body)
+    public Response SetFriendData(RequestContext context, GameUser user, IGameDatabaseContext database, SerializedFriendData body)
     {
         IEnumerable<GameUser> friends = body.FriendsList.Names
             .Take(128) // should be way more than enough - we'll see if this becomes a problem
             .Select(database.GetUserByUsername)
             .Where(u => u != null)!;
-
-        friendService.SetUsersFriends(user, friends);
+        
+        foreach (GameUser userToFavourite in friends)
+            database.FavouriteUser(userToFavourite, user);
+        
         return OK;
     }
 

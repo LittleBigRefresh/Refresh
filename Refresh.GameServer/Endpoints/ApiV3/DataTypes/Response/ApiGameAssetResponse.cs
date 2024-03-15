@@ -1,3 +1,5 @@
+using Bunkum.Core.Storage;
+using Refresh.GameServer.Database;
 using Refresh.GameServer.Types.Assets;
 
 namespace Refresh.GameServer.Endpoints.ApiV3.DataTypes.Response;
@@ -25,5 +27,20 @@ public class ApiGameAssetResponse : IApiResponse, IDataConvertableFrom<ApiGameAs
         };
     }
 
-    public static IEnumerable<ApiGameAssetResponse> FromOldList(IEnumerable<GameAsset> oldList) => oldList.Select(FromOld)!;
+    public static ApiGameAssetResponse? FromOldWithExtraData(GameAsset? old, IGameDatabaseContext database, IDataStore dataStore)
+    {
+        if (old == null) return null;
+
+        ApiGameAssetResponse response = FromOld(old)!;
+        response.FillInExtraData(database, dataStore);
+
+        return response;
+    }
+
+    public void FillInExtraData(IGameDatabaseContext database, IDataStore dataStore)
+    {
+        this.OriginalUploader?.FillInExtraData(database, dataStore);
+    }
+
+    public static IEnumerable<ApiGameAssetResponse> FromOldList(IEnumerable<GameAsset> oldList) => oldList.Select(FromOld).ToList()!;
 }

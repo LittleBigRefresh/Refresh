@@ -24,19 +24,17 @@ public class TestRefreshGameServer : RefreshGameServer
     public TestRefreshGameServer(BunkumHttpListener listener, Func<IDatabaseProvider<IGameDatabaseContext>> provider, IDataStore? dataStore = null) : base(listener, provider, null, dataStore ?? new InMemoryDataStore())
     {}
 
-    public BunkumHttpServer Server => this._server;
-
     protected override void SetupConfiguration()
     {
-        this._server.AddConfig(new GameServerConfig());
-        this._server.AddConfig(new RichPresenceConfig());
-        this._server.AddConfig(new IntegrationConfig());
+        this.Server.AddConfig(new GameServerConfig());
+        this.Server.AddConfig(new RichPresenceConfig());
+        this.Server.AddConfig(new IntegrationConfig());
     }
 
     public override void Start()
     {
-        this._server.Start(0);
-        // this._workerManager.Start();
+        this.Server.Start(0);
+        // this.WorkerManager.Start();
     }
 
     public IDateTimeProvider DateTimeProvider { get; set; } = new MockDateTimeProvider();
@@ -66,19 +64,20 @@ public class TestRefreshGameServer : RefreshGameServer
 
     protected override void SetupServices()
     {
-        this._server.AddService<TimeProviderService>(this.DateTimeProvider);
-        this._server.AddService<CategoryService>();
-        this._server.AddService<MatchService>();
-        this._server.AddService<ImportService>();
-        this._server.AddService<LevelListOverrideService>();
-        this._server.AddService<CommandService>();
+        this.Server.AddService<TimeProviderService>(this.DateTimeProvider);
+        this.Server.AddService<CategoryService>();
+        this.Server.AddService<MatchService>();
+        this.Server.AddService<ImportService>();
+        this.Server.AddService<LevelListOverrideService>();
+        this.Server.AddService<CommandService>();
+        this.Server.AddService<GuidCheckerService>();
     }
     
     [Pure]
     public TService GetService<TService>() where TService : Service
     {
         List<Service> services = (List<Service>)typeof(BunkumServer).GetField("_services", BindingFlags.Instance | BindingFlags.NonPublic)!
-            .GetValue(this._server)!;
+            .GetValue(this.Server)!;
 
         return (TService)services.First(s => typeof(TService) == s.GetType());
     }

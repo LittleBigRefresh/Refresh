@@ -1,6 +1,7 @@
 using AttribDoc.Attributes;
 using Bunkum.Core;
 using Bunkum.Core.Endpoints;
+using Bunkum.Core.Storage;
 using Bunkum.Listener.Protocol;
 using Bunkum.Protocols.Http;
 using Refresh.GameServer.Database;
@@ -22,32 +23,35 @@ public class AdminUserApiEndpoints : EndpointGroup
     [ApiV3Endpoint("admin/users/name/{username}"), MinimumRole(GameUserRole.Admin)]
     [DocSummary("Gets a user by their name with extended information.")]
     [DocError(typeof(ApiNotFoundError), ApiNotFoundError.UserMissingErrorWhen)]
-    public ApiResponse<ApiExtendedGameUserResponse> GetExtendedUserByUsername(RequestContext context, IGameDatabaseContext database, string username)
+    public ApiResponse<ApiExtendedGameUserResponse> GetExtendedUserByUsername(RequestContext context, IGameDatabaseContext database, string username, IDataStore dataStore)
     {
         GameUser? user = database.GetUserByUsername(username);
         if (user == null) return ApiNotFoundError.UserMissingError;
 
-        return ApiExtendedGameUserResponse.FromOld(user);
+        return ApiExtendedGameUserResponse.FromOldWithExtraData(user, database, dataStore);
     }
 
     [ApiV3Endpoint("admin/users/uuid/{uuid}"), MinimumRole(GameUserRole.Admin)]
     [DocSummary("Gets a user by their UUID with extended information.")]
     [DocError(typeof(ApiNotFoundError), ApiNotFoundError.UserMissingErrorWhen)]
-    public ApiResponse<ApiExtendedGameUserResponse> GetExtendedUserByUuid(RequestContext context, IGameDatabaseContext database, string uuid)
+    public ApiResponse<ApiExtendedGameUserResponse> GetExtendedUserByUuid(RequestContext context, IGameDatabaseContext database, string uuid, IDataStore dataStore)
     {
         GameUser? user = database.GetUserByUuid(uuid);
         if (user == null) return ApiNotFoundError.UserMissingError;
 
-        return ApiExtendedGameUserResponse.FromOld(user);
+        return ApiExtendedGameUserResponse.FromOldWithExtraData(user, database, dataStore);
     }
 
     [ApiV3Endpoint("admin/users"), MinimumRole(GameUserRole.Admin)]
     [DocSummary("Gets all users with extended information.")]
     [DocUsesPageData]
-    public ApiListResponse<ApiExtendedGameUserResponse> GetExtendedUsers(RequestContext context, IGameDatabaseContext database)
+    public ApiListResponse<ApiExtendedGameUserResponse> GetExtendedUsers(RequestContext context, IGameDatabaseContext database, IDataStore dataStore)
     {
         (int skip, int count) = context.GetPageData(true);
-        return DatabaseList<ApiExtendedGameUserResponse>.FromOldList<ApiExtendedGameUserResponse, GameUser>(database.GetUsers(count, skip));
+        DatabaseList<ApiExtendedGameUserResponse> list = DatabaseList<ApiExtendedGameUserResponse>.FromOldList<ApiExtendedGameUserResponse, GameUser>(database.GetUsers(count, skip));
+        //Fill in the extra data of all the users
+        foreach (ApiExtendedGameUserResponse user in list.Items) user.FillInExtraData(database, dataStore);
+        return list;
     }
 
     private static ApiOkResponse ResetUserPassword(IGameDatabaseContext database, ApiResetUserPasswordRequest body, GameUser user)

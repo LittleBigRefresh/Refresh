@@ -23,5 +23,5 @@ public class ApiGameAnnouncementResponse : IApiResponse, IDataConvertableFrom<Ap
         };
     }
 
-    public static IEnumerable<ApiGameAnnouncementResponse> FromOldList(IEnumerable<GameAnnouncement> oldList) => oldList.Select(FromOld)!;
+    public static IEnumerable<ApiGameAnnouncementResponse> FromOldList(IEnumerable<GameAnnouncement> oldList) => oldList.Select(FromOld).ToList()!;
 }

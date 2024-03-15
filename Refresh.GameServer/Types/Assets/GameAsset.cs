@@ -1,5 +1,4 @@
 using Realms;
-using Refresh.GameServer.Database;
 using Refresh.GameServer.Types.UserData;
 
 namespace Refresh.GameServer.Types.Assets;
@@ -23,4 +22,10 @@ public partial class GameAsset : IRealmObject
     public IList<string> Dependencies { get; } = null!;
 
     [Ignored] public AssetSafetyLevel SafetyLevel => AssetSafetyLevelExtensions.FromAssetType(this.AssetType);
+
+    public string? AsMainlineIconHash { get; set; }
+    public string? AsMipIconHash { get; set; }
+    
+    //NOTE: there's no "as MIP photo hash" because theres no way to browse photos on LBP PSP.
+    public string? AsMainlinePhotoHash { get; set; }
 }

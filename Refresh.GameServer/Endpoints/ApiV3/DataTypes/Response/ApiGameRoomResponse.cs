@@ -33,5 +33,5 @@ public class ApiGameRoomResponse : IApiResponse, IDataConvertableFrom<ApiGameRoo
         };
     }
 
-    public static IEnumerable<ApiGameRoomResponse> FromOldList(IEnumerable<GameRoom> oldList) => oldList.Select(FromOld)!;
+    public static IEnumerable<ApiGameRoomResponse> FromOldList(IEnumerable<GameRoom> oldList) => oldList.Select(FromOld).ToList()!;
 }

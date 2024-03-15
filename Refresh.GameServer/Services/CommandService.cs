@@ -94,14 +94,14 @@ public class CommandService : EndpointService
 
                 if (target != null)
                 {
-                    this._match.SetForceMatch(user.UserId, target.UserId);
+                    database.SetForceMatch(user, target);
                 }
                 
                 break;
             }
             case "clearforcematch":
             {
-                this._match.ClearForceMatch(user.UserId);
+                database.ClearForceMatch(user);
                 break;
             }
             case "griefphotoson":
@@ -114,6 +114,16 @@ public class CommandService : EndpointService
                 database.SetUserGriefReportRedirection(user, false);
                 break;
             }
+            case "unescapexmlon":
+            {
+                database.SetUnescapeXmlSequences(user, true);
+                break;
+            }
+            case "unescapexmloff":
+            {
+                database.SetUnescapeXmlSequences(user, false);
+                break;
+            }
             case "play":
             {
                 GameLevel? level = database.GetLevelById(int.Parse(command.Arguments));
@@ -121,6 +131,16 @@ public class CommandService : EndpointService
                 {
                     this._levelListService.AddOverridesForUser(user, level);
                 }
+                break;
+            }
+            case "beta":
+            {
+                database.ForceUserTokenGame(token, TokenGame.BetaBuild);
+                break;
+            }
+            case "revoketoken":
+            {
+                database.RevokeToken(token);
                 break;
             }
             #if DEBUG
@@ -132,6 +152,11 @@ public class CommandService : EndpointService
             case "tokenplatform":
             {
                 database.ForceUserTokenPlatform(token, (TokenPlatform)int.Parse(command.Arguments));
+                break;
+            }
+            case "notif":
+            {
+                database.AddNotification("Debug", "This is a debug notification triggered by a command.", user);
                 break;
             }
             #endif

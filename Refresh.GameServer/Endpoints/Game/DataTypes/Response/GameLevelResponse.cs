@@ -1,4 +1,5 @@
 using System.Xml.Serialization;
+using Bunkum.Core.Storage;
 using Refresh.GameServer.Authentication;
 using Refresh.GameServer.Database;
 using Refresh.GameServer.Endpoints.ApiV3.DataTypes;
@@ -52,6 +53,9 @@ public class GameLevelResponse : IDataConvertableFrom<GameLevelResponse, GameLev
     [XmlElement("thumbsdown")] public required int BooCount { get; set; }
     [XmlElement("yourRating")] public int YourStarRating { get; set; }
     
+    // 1 by default since this will break reviews if set to 0 for GameLevelResponses that do not have extra data being filled in
+    [XmlElement("yourlbp2PlayCount")] public int YourLbp2PlayCount { get; set; } = 1;
+    
     [XmlArray("customRewards")]
     [XmlArrayItem("customReward")]
     public required List<GameSkillReward> SkillRewards { get; set; }
@@ -69,13 +73,17 @@ public class GameLevelResponse : IDataConvertableFrom<GameLevelResponse, GameLev
     [XmlElement("links")] public string? Links { get; set; }
     [XmlElement("averageRating")] public double AverageStarRating { get; set; }
     [XmlElement("sizeOfResources")] public int SizeOfResourcesInBytes { get; set; }
+    [XmlElement("reviewCount")] public int ReviewCount { get; set; }
+    [XmlElement("reviewsEnabled")] public bool ReviewsEnabled { get; set; } = true;
+    [XmlElement("commentCount")] public int CommentCount { get; set; } = 0;
+    [XmlElement("commentsEnabled")] public bool CommentsEnabled { get; set; } = true;
 
-    public static GameLevelResponse? FromOldWithExtraData(GameLevel? old, IGameDatabaseContext database, MatchService matchService, GameUser user)
+    public static GameLevelResponse? FromOldWithExtraData(GameLevel? old, IGameDatabaseContext database, MatchService matchService, GameUser user, IDataStore dataStore, TokenGame game)
     {
         if (old == null) return null;
 
         GameLevelResponse response = FromOld(old)!;
-        response.FillInExtraData(database, matchService, user);
+        response.FillInExtraData(database, matchService, user, dataStore, game);
 
         return response;
     }
@@ -119,6 +127,8 @@ public class GameLevelResponse : IDataConvertableFrom<GameLevelResponse, GameLev
             BackgroundGuid = old.BackgroundGuid,
             Links = "",
             AverageStarRating = old.CalculateAverageStarRating(),
+            ReviewCount = old.Reviews.Count,
+            CommentCount = old.LevelComments.Count,
         };
 
         response.Type = "user";
@@ -138,9 +148,9 @@ public class GameLevelResponse : IDataConvertableFrom<GameLevelResponse, GameLev
         return response;
     }
 
-    public static IEnumerable<GameLevelResponse> FromOldList(IEnumerable<GameLevel> oldList) => oldList.Select(FromOld)!;
+    public static IEnumerable<GameLevelResponse> FromOldList(IEnumerable<GameLevel> oldList) => oldList.Select(FromOld).ToList()!;
 
-    private void FillInExtraData(IGameDatabaseContext database, MatchService matchService, GameUser user)
+    private void FillInExtraData(IGameDatabaseContext database, MatchService matchService, GameUser user, IDataStore dataStore, TokenGame game)
     {
         GameLevel? level = database.GetLevelById(this.LevelId);
         if (level == null) throw new InvalidOperationException("Cannot fill in level data for a level that does not exist.");
@@ -149,6 +159,7 @@ public class GameLevelResponse : IDataConvertableFrom<GameLevelResponse, GameLev
         
         this.YourRating = rating?.ToDPad() ?? (int)RatingType.Neutral;
         this.YourStarRating = rating?.ToLBP1() ?? 0;
+        this.YourLbp2PlayCount = level.AllPlays.Count(p => p.User == user);
         this.PlayerCount = matchService.GetPlayerCountForLevel(RoomSlotType.Online, this.LevelId);
 
         GameAsset? rootResourceAsset = database.GetAssetFromHash(this.RootResource);
@@ -160,5 +171,9 @@ public class GameLevelResponse : IDataConvertableFrom<GameLevelResponse, GameLev
                     this.SizeOfResourcesInBytes += asset.SizeInBytes;
             });
         }
+
+        this.IconHash = database.GetAssetFromHash(this.IconHash)?.GetAsIcon(game, database, dataStore) ?? this.IconHash;
+
+        this.CommentCount = level.LevelComments.Count;
     }
 }

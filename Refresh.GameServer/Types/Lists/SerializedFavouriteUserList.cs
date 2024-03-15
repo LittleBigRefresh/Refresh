@@ -11,10 +11,11 @@ public class SerializedFavouriteUserList : SerializedList<GameUserResponse>
 {
     public SerializedFavouriteUserList() {}
     
-    public SerializedFavouriteUserList(List<GameUserResponse> list, int count)
+    public SerializedFavouriteUserList(List<GameUserResponse> list, int total, int skip)
     {
-        this.Total = count;
+        this.Total = total;
         this.Items = list;
+        this.NextPageStart = skip + 1;
     }
     
     [XmlElement("user")]

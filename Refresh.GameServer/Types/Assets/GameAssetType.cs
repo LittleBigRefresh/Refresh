@@ -111,4 +111,14 @@ public enum GameAssetType
     /// This is bundled with Cross-Controller levels since the uploading logic for those levels isn't great.
     /// </remarks>
     SyncedProfile = 14,
+    /// <summary>
+    /// A PSP MIP image file. While this file type has no magic, we do some heuristics on the file to detect it.
+    /// This image is uploaded by LBP PSP for new levels, and is what it loads for level badges.
+    /// </summary>
+    /// <seealso cref="Refresh.GameServer.Importing.Importer.IsMip"/>
+    Mip = 15,
+    /// <summary>
+    /// A file containing information about the currently playing song, uploaded during a grief report.
+    /// </summary>
+    GriefSongState = 16,
 }

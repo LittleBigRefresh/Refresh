@@ -23,5 +23,5 @@ public class ApiRequestStatisticsResponse : IApiResponse, IDataConvertableFrom<A
         };
     }
 
-    public static IEnumerable<ApiRequestStatisticsResponse> FromOldList(IEnumerable<RequestStatistics> oldList) => oldList.Select(FromOld)!;
+    public static IEnumerable<ApiRequestStatisticsResponse> FromOldList(IEnumerable<RequestStatistics> oldList) => oldList.Select(FromOld).ToList()!;
 }

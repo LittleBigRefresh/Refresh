@@ -1,5 +1,6 @@
 using Bunkum.Core;
 using Bunkum.Core.Endpoints;
+using Bunkum.Core.Endpoints.Debugging;
 using Bunkum.Listener.Protocol;
 using Bunkum.Protocols.Http;
 using Refresh.GameServer.Authentication;
@@ -46,7 +47,17 @@ public class ModerationEndpoints : EndpointGroup
     public string Filter(RequestContext context, CommandService commandService, string body, GameUser user, Token token, IGameDatabaseContext database)
     {
         // TODO: Add actual filtering/censoring
-        
+
+        //If the user has enabled unescaping of XML sequences, lets unescape all the XML tags in the body
+        if (user.UnescapeXmlSequences)
+        {
+            body = body.Replace("&apos;", "'");
+            body = body.Replace("&quot;", "\"");
+            body = body.Replace("&gt;", ">");
+            body = body.Replace("&lt;", "<");
+            body = body.Replace("&amp;", "&");
+        }
+
         if (commandService.IsPublishing(user.UserId))
         {
             context.Logger.LogInfo(BunkumCategory.UserLevels, $"Publish filter: '{body}'");
@@ -55,20 +66,24 @@ public class ModerationEndpoints : EndpointGroup
         {
             context.Logger.LogInfo(BunkumCategory.Filter, $"<{user}>: {body}");
 
-            try
+            //If the text starts with a `/`, its a command
+            if (body.StartsWith('/'))
             {
-                CommandInvocation command = commandService.ParseCommand(body);
-                
-                context.Logger.LogInfo(BunkumCategory.Commands, $"User used command '{command.Name.ToString()}' with args '{command.Arguments.ToString()}'");
+                try
+                {
+                    CommandInvocation command = commandService.ParseCommand(body);
 
-                commandService.HandleCommand(command, database, user, token);
-                return "(Command)";
+                    context.Logger.LogInfo(BunkumCategory.Commands, $"User used command '{command.Name.ToString()}' with args '{command.Arguments.ToString()}'");
+
+                    commandService.HandleCommand(command, database, user, token);
+                    return "(Command)";
+                }
+                catch(Exception ex)
+                {
+                    context.Logger.LogWarning(BunkumCategory.Commands, $"Error running command {body}. ex {ex}");
+                    //do nothing
+                }
             }
-            catch(Exception ex)
-            {
-                context.Logger.LogWarning(BunkumCategory.Commands, $"Error running command {body}. ex {ex}");
-                //do nothing
-            } 
         }
         
         return body;

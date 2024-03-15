@@ -2,6 +2,7 @@ using System.Diagnostics;
 using Bunkum.Core.Services;
 using MongoDB.Bson;
 using NotEnoughLogs;
+using Refresh.GameServer.Authentication;
 using Refresh.GameServer.Database;
 using Refresh.GameServer.Types.Levels;
 using Refresh.GameServer.Types.UserData;
@@ -37,14 +38,26 @@ public class LevelListOverrideService : EndpointService
         this._userIdsToLevelList.Add(user.UserId, ids);
     }
 
-    public IEnumerable<GameLevel> GetOverridesForUser(GameUser user, IGameDatabaseContext database)
+    public IEnumerable<GameLevel> GetOverridesForUser(Token token, IGameDatabaseContext database)
     {
+        GameUser user = token.User;
+        
         Debug.Assert(this.UserHasOverrides(user), "User does not have overrides, should be checked first");
         
         List<int> overrides = this._userIdsToLevelList[user.UserId];
         this.Logger.LogDebug(RefreshContext.LevelListOverride, "Getting level override for {0}: [{1}]", user.Username, string.Join(", ", overrides));
         this._userIdsToLevelList.Remove(user.UserId);
 
-        return overrides.Select(database.GetLevelById)!;
+        List<GameLevel> levels = [];
+        foreach (GameLevel level in overrides.Select(levelId => database.GetLevelById(levelId)!))
+        {
+            //If the game cannot play this level, skip it
+            if (!token.TokenGame.CanPlay(level)) 
+                continue;
+
+            levels.Add(level);
+        }
+        
+        return levels;
     }
 }

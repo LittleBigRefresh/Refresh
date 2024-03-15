@@ -19,5 +19,5 @@ public class ApiGameIpVerificationRequestResponse : IApiResponse, IDataConvertab
         };
     }
 
-    public static IEnumerable<ApiGameIpVerificationRequestResponse> FromOldList(IEnumerable<GameIpVerificationRequest> oldList) => oldList.Select(FromOld)!;
+    public static IEnumerable<ApiGameIpVerificationRequestResponse> FromOldList(IEnumerable<GameIpVerificationRequest> oldList) => oldList.Select(FromOld).ToList()!;
 }

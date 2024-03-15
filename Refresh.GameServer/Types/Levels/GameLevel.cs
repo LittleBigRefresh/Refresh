@@ -105,6 +105,8 @@ public partial class GameLevel : IRealmObject, ISequentialId
     // ReSharper disable once InconsistentNaming
     [Ignored] public IList<GameSkillReward> _SkillRewards { get; } // TODO: don't ignore
     
+    public IList<GameReview> Reviews { get; }
+    
 #nullable restore
     
     [XmlArray("customRewards")]

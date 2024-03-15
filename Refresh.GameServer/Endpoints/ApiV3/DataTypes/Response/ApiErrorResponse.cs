@@ -19,5 +19,5 @@ public class ApiErrorResponse : IApiResponse, IDataConvertableFrom<ApiErrorRespo
         };
     }
 
-    public static IEnumerable<ApiErrorResponse> FromOldList(IEnumerable<Error> oldList) => oldList.Select(FromOld)!;
+    public static IEnumerable<ApiErrorResponse> FromOldList(IEnumerable<Error> oldList) => oldList.Select(FromOld).ToList()!;
 }

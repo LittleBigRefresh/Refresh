@@ -7,7 +7,7 @@ using RefreshTests.GameServer.Time;
 namespace RefreshTests.GameServer.GameServer;
 
 [Parallelizable]
-[Timeout(2000)]
+[CancelAfter(2000)]
 public class GameServerTest
 {
     protected static readonly Logger Logger = new(new []

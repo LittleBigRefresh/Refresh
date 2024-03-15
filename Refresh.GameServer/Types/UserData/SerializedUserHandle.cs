@@ -1,4 +1,7 @@
 using System.Xml.Serialization;
+using Bunkum.Core.Storage;
+using Refresh.GameServer.Authentication;
+using Refresh.GameServer.Database;
 
 namespace Refresh.GameServer.Types.UserData;
 
@@ -16,4 +19,12 @@ public class SerializedUserHandle
             Username = user.Username,
             IconHash = user.IconHash,
         };
+
+    public void FillInExtraData(IGameDatabaseContext database, IDataStore dataStore, TokenGame game)
+    {
+        //If the icon is a remote asset
+        if(!this.IconHash.StartsWith('g'))
+            //Get the icon form of that remote asset
+            this.IconHash = database.GetAssetFromHash(this.IconHash)?.GetAsIcon(game, database, dataStore) ?? this.IconHash;
+    }
 }

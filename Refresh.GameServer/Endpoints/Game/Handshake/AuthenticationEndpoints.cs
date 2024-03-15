@@ -113,7 +113,6 @@ public class AuthenticationEndpoints : EndpointGroup
             }
             
             ticketVerified = VerifyTicket(context, (MemoryStream)body, ticket);
-            ticketVerified = true;
             if (!ticketVerified)
             {
                 SendVerificationFailureNotification(database, user, config);
@@ -134,7 +133,13 @@ public class AuthenticationEndpoints : EndpointGroup
             }
         }
 
-        TokenGame? game = TokenGameUtility.FromTitleId(ticket.TitleId);
+        TokenGame? game = null;
+
+        // check if we're connecting from a beta build
+        bool parsedBeta = byte.TryParse(context.QueryString.Get("beta"), out byte isBeta);
+        if (parsedBeta && isBeta == 1) game = TokenGame.BetaBuild;
+
+        game ??= TokenGameUtility.FromTitleId(ticket.TitleId);
 
         if (platform == null)
         {
@@ -157,6 +162,9 @@ public class AuthenticationEndpoints : EndpointGroup
 
         Token token = database.GenerateTokenForUser(user, TokenType.Game, game.Value, platform.Value, IGameDatabaseContext.GameTokenExpirySeconds); // 4 hours
 
+        //Clear the user's force match
+        database.ClearForceMatch(user);
+        
         if (game == TokenGame.LittleBigPlanetPSP)
         {
             return new TicketLoginResponse

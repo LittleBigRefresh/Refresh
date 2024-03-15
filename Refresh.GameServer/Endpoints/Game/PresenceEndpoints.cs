@@ -3,6 +3,7 @@ using Bunkum.Core;
 using Bunkum.Core.Endpoints;
 using Bunkum.Listener.Protocol;
 using Bunkum.Protocols.Http;
+using Refresh.GameServer.Authentication;
 using Refresh.GameServer.Database;
 using Refresh.GameServer.Services;
 using Refresh.GameServer.Types.Roles;
@@ -13,18 +14,18 @@ public class PresenceEndpoints : EndpointGroup
 {
     [GameEndpoint("playersInPodCount")]
     [MinimumRole(GameUserRole.Restricted)]
-    public int TotalPlayersInPod(RequestContext context, MatchService match) => match.TotalPlayersInPod;
+    public int TotalPlayersInPod(RequestContext context, MatchService match) => match.RoomAccessor.GetStatistics().PlayersInPodCount;
 
     [GameEndpoint("totalPlayerCount")]
     [MinimumRole(GameUserRole.Restricted)]
-    public int TotalPlayers(RequestContext context, MatchService match) => match.TotalPlayers;
+    public int TotalPlayers(RequestContext context, MatchService match) => match.RoomAccessor.GetStatistics().PlayerCount;
 
     [GameEndpoint("planetStats", HttpMethods.Get, ContentType.Xml)]
     [MinimumRole(GameUserRole.Restricted)]
-    public SerializedLevelStatisticsResponse GetLevelStatistics(RequestContext context, IGameDatabaseContext database) => new()
+    public SerializedLevelStatisticsResponse GetLevelStatistics(RequestContext context, IGameDatabaseContext database, Token token) => new()
     {
-        TotalLevels = database.GetTotalLevelCount(),
-        TotalTeamPicks = database.GetTotalTeamPickCount(),
+        TotalLevels = database.GetTotalLevelCount(token.TokenGame),
+        TotalTeamPicks = database.GetTotalTeamPickCount(token.TokenGame),
     };
 
     [XmlRoot("planetStats")]

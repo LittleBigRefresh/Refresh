@@ -9,7 +9,10 @@ namespace Refresh.GameServer.Database;
 
 public partial interface IGameDatabaseContext // Leaderboard
 {
-    public GameSubmittedScore SubmitScore(SerializedScore score, GameUser user, GameLevel level, TokenGame game)
+    public GameSubmittedScore SubmitScore(SerializedScore score, Token token, GameLevel level)
+        => this.SubmitScore(score, token.User, level, token.TokenGame, token.TokenPlatform);
+
+    public GameSubmittedScore SubmitScore(SerializedScore score, GameUser user, GameLevel level, TokenGame game, TokenPlatform platform)
     {
         GameSubmittedScore newScore = new()
         {
@@ -19,6 +22,7 @@ public partial interface IGameDatabaseContext // Leaderboard
             Players = { user },
             ScoreSubmitted = this.Time.Now,
             Game = game,
+            Platform = platform,
         };
 
         this.Write(() =>
@@ -60,7 +64,7 @@ public partial interface IGameDatabaseContext // Leaderboard
         scores = scores.DistinctBy(s => new ScoreLevelWithPlayer(s.Level, s.Players[0]))
             .ToList();
 
-        return scores.Select((s, i) => new ScoreWithRank(s, i))
+        return scores.Select((s, i) => new ScoreWithRank(s, i + 1))
             .Skip(Math.Min(scores.Count, scores.IndexOf(score) - count / 2)) // center user's score around other scores
             .Take(count);
     }

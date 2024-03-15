@@ -6,9 +6,10 @@ namespace Refresh.GameServer.Types.Lists;
 [XmlType("categories")]
 public class SerializedCategoryList : SerializedList<SerializedCategory>
 {
-    public SerializedCategoryList(IEnumerable<SerializedCategory> items, int total)
+    public SerializedCategoryList(IEnumerable<SerializedCategory> items, SearchLevelCategory searchCategory, int total)
     {
         this.Items = items.ToList();
+        this.TextSearchCategory = SerializedCategory.FromLevelCategory(searchCategory);
         this.Total = total;
     }
 
@@ -16,6 +17,9 @@ public class SerializedCategoryList : SerializedList<SerializedCategory>
 
     [XmlElement("category")]
     public sealed override List<SerializedCategory> Items { get; set; } = null!;
+
+    [XmlElement("text_search")]
+    public SerializedCategory TextSearchCategory { get; set; } = null!;
 
     [XmlAttribute("hint")]
     public string Hint { get; set; } = string.Empty;

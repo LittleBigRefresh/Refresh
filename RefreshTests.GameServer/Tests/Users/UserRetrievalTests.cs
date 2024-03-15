@@ -21,7 +21,6 @@ public class UserRetrievalTests : GameServerTest
     public void TearDown()
     {
         this._context.Dispose();
-        this._db.Dispose();
     }
 
     [Test]

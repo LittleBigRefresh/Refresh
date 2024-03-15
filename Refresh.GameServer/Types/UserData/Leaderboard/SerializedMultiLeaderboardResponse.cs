@@ -32,7 +32,7 @@ public class SerializedMultiLeaderboardResponse
                 PlayerCount = type,
             };
 
-            int i = 0;
+            int i = 1;
             foreach (GameSubmittedScore score in scores.Items)
             {
                 leaderboard.Scores.Add(SerializedLeaderboardScore.FromOld(score, i));

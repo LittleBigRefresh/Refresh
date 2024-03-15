@@ -32,6 +32,8 @@ public static class AssetSafetyLevelExtensions
             GameAssetType.VoiceRecording => AssetSafetyLevel.Safe,
             GameAssetType.Painting => AssetSafetyLevel.Safe,
             GameAssetType.SyncedProfile => AssetSafetyLevel.Safe,
+            GameAssetType.Mip => AssetSafetyLevel.Safe,
+            GameAssetType.GriefSongState => AssetSafetyLevel.Safe,
             
             GameAssetType.Material => AssetSafetyLevel.PotentiallyUnwanted,
             GameAssetType.Mesh => AssetSafetyLevel.PotentiallyUnwanted,

@@ -1,5 +1,7 @@
+using System.Reflection;
 using Refresh.GameServer.Authentication;
 using Refresh.GameServer.Database;
+using Refresh.GameServer.Resources;
 using Refresh.GameServer.Types.Levels;
 using Refresh.GameServer.Types.Photos;
 using Refresh.GameServer.Types.Report;
@@ -195,6 +197,9 @@ public class ReportingEndpointsTests : GameServerTest
         Assert.That(response.StatusCode, Is.EqualTo(psp ? OK : BadRequest));
     }
 
+    private const string TEST_ASSET_HASH = "0ec63b140374ba704a58fa0c743cb357683313dd";
+    private static readonly byte[] TestAsset = ResourceHelper.ReadResource("RefreshTests.GameServer.Resources.1x1.png", Assembly.GetExecutingAssembly());
+    
     [TestCase(TokenGame.LittleBigPlanet1)]
     [TestCase(TokenGame.LittleBigPlanet2)]
     [TestCase(TokenGame.LittleBigPlanet3)]
@@ -212,6 +217,10 @@ public class ReportingEndpointsTests : GameServerTest
 
         using HttpClient client = context.GetAuthenticatedClient(TokenType.Game, game, TokenPlatform.PS3, user);
 
+        //Upload our """photo"""
+        HttpResponseMessage message = client.PostAsync($"/lbp/upload/{TEST_ASSET_HASH}", new ReadOnlyMemoryContent(TestAsset)).Result;
+        Assert.That(message.StatusCode, Is.EqualTo(OK));
+        
         HttpResponseMessage response = client.PostAsync("/lbp/grief", new StringContent(new GameReport
         {
             Players = new Player[]
@@ -229,6 +238,7 @@ public class ReportingEndpointsTests : GameServerTest
                 },
             },
             LevelId = level.LevelId,
+            JpegHash = TEST_ASSET_HASH,
         }.AsXML())).Result;
         Assert.That(response.StatusCode, Is.EqualTo(OK));
         
@@ -258,6 +268,10 @@ public class ReportingEndpointsTests : GameServerTest
 
         using HttpClient client = context.GetAuthenticatedClient(TokenType.Game, game, TokenPlatform.PS3, user);
 
+        //Upload our """photo"""
+        HttpResponseMessage message = client.PostAsync($"/lbp/upload/{TEST_ASSET_HASH}", new ReadOnlyMemoryContent(TestAsset)).Result;
+        Assert.That(message.StatusCode, Is.EqualTo(OK));
+        
         HttpResponseMessage response = client.PostAsync("/lbp/grief", new StringContent(new GameReport
         {
             Players = new Player[]
@@ -275,6 +289,7 @@ public class ReportingEndpointsTests : GameServerTest
                 },
             },
             LevelId = level.LevelId,
+            JpegHash = TEST_ASSET_HASH,
         }.AsXML())).Result;
         Assert.That(response.StatusCode, Is.EqualTo(OK));
         

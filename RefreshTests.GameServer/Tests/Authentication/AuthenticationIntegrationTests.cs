@@ -49,8 +49,7 @@ public class AuthenticationIntegrationTests : GameServerTest
         // (GameUser? user, HttpResponseMessage response) = authedClient.GetJsonObjectAsync<GameUser>("/api/v3/user/me");
         Assert.Multiple(async () =>
         {
-            // Assert.That(user, Is.Not.Null);
-            Assert.That(response.Content.ReadAsStringAsync().Result, Contains.Substring(token!.User.UserId.ToString()));
+            Assert.That(await response.Content.ReadAsStringAsync(), Contains.Substring(token!.User.UserId.ToString()));
             Assert.That(response.StatusCode, Is.EqualTo(OK));
         });
     }

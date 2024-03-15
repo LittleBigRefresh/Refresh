@@ -1,3 +1,5 @@
+using Bunkum.Core.Storage;
+using Refresh.GameServer.Database;
 using Refresh.GameServer.Types.Photos;
 
 namespace Refresh.GameServer.Endpoints.ApiV3.DataTypes.Response;
@@ -21,5 +23,22 @@ public class ApiGamePhotoSubjectResponse : IApiResponse,IDataConvertableFrom<Api
         };
     }
 
-    public static IEnumerable<ApiGamePhotoSubjectResponse> FromOldList(IEnumerable<GamePhotoSubject> oldList) => oldList.Select(FromOld)!;
+    public void FillInExtraData(IGameDatabaseContext database, IDataStore dataStore)
+    {
+        this.User?.FillInExtraData(database, dataStore);
+    }
+
+    public static ApiGamePhotoSubjectResponse? FromOldWithExtraData(GamePhotoSubject? old, IGameDatabaseContext database, IDataStore dataStore)
+    {
+        if (old == null) return null;
+
+        ApiGamePhotoSubjectResponse response = FromOld(old)!;
+        response.FillInExtraData(database, dataStore);
+
+        return response;
+    }
+
+    public static IEnumerable<ApiGamePhotoSubjectResponse> FromOldList(IEnumerable<GamePhotoSubject> oldList) => oldList.Select(FromOld).ToList()!;
+    
+    public static IEnumerable<ApiGamePhotoSubjectResponse> FromOldListWithExtraData(IEnumerable<GamePhotoSubject> oldList, IGameDatabaseContext database, IDataStore dataStore) => oldList.Select(old => FromOldWithExtraData(old, database, dataStore)).ToList()!;
 }

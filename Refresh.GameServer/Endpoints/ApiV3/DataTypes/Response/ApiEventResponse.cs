@@ -29,5 +29,5 @@ public class ApiEventResponse : IApiResponse, IDataConvertableFrom<ApiEventRespo
         };
     }
 
-    public static IEnumerable<ApiEventResponse> FromOldList(IEnumerable<Event> oldList) => oldList.Select(FromOld)!;
+    public static IEnumerable<ApiEventResponse> FromOldList(IEnumerable<Event> oldList) => oldList.Select(FromOld).ToList()!;
 }

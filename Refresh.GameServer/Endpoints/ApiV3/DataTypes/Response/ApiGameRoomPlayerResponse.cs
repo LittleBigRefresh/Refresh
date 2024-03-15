@@ -19,5 +19,5 @@ public class ApiGameRoomPlayerResponse : IApiResponse, IDataConvertableFrom<ApiG
         };
     }
 
-    public static IEnumerable<ApiGameRoomPlayerResponse> FromOldList(IEnumerable<GameRoomPlayer> oldList) => oldList.Select(FromOld)!;
+    public static IEnumerable<ApiGameRoomPlayerResponse> FromOldList(IEnumerable<GameRoomPlayer> oldList) => oldList.Select(FromOld).ToList()!;
 }

@@ -1,4 +1,5 @@
 using System.Xml.Serialization;
+using Bunkum.Core.Storage;
 using Refresh.GameServer.Authentication;
 using Refresh.GameServer.Database;
 using Refresh.GameServer.Endpoints.ApiV3.DataTypes;
@@ -15,14 +16,14 @@ public class GameUserResponse : IDataConvertableFrom<GameUserResponse, GameUser>
     public const int MaximumLevels = 9_999;
     
     [XmlAttribute("type")] public string Type { get; set; } = "user";
-    [XmlIgnore] public required string IconHash { get; set; }
     [XmlElement("biography")] public required string Description { get; set; }
     [XmlElement("location")] public required GameLocation Location { get; set; }
     [XmlElement("planets")] public required string PlanetsHash { get; set; }
     
-    [XmlElement("npHandle")] public SerializedUserHandle Handle { get; set; }
+    [XmlElement("npHandle")] public required SerializedUserHandle Handle { get; set; }
     [XmlElement("commentCount")] public int CommentCount { get; set; }
     [XmlElement("commentsEnabled")] public bool CommentsEnabled { get; set; }
+    [XmlElement("reviewCount")] public int ReviewCount { get; set; }
     [XmlElement("favouriteSlotCount")] public int FavouriteLevelCount { get; set; }
     [XmlElement("favouriteUserCount")] public int FavouriteUserCount { get; set; }
     [XmlElement("lolcatftwCount")] public int QueuedLevelCount { get; set; }
@@ -51,12 +52,12 @@ public class GameUserResponse : IDataConvertableFrom<GameUserResponse, GameUser>
     /// </summary>
     [XmlElement("favouriteUsers")] public SerializedMinimalFavouriteUserList? FavouriteUsers { get; set; }
     
-    public static GameUserResponse? FromOldWithExtraData(GameUser? old, TokenGame gameVersion, IGameDatabaseContext database)
+    public static GameUserResponse? FromOldWithExtraData(GameUser? old, TokenGame gameVersion, IGameDatabaseContext database, IDataStore dataStore)
     {
         if (old == null) return null;
 
         GameUserResponse response = FromOld(old)!;
-        response.FillInExtraData(old, gameVersion, database);
+        response.FillInExtraData(old, gameVersion, database, dataStore);
 
         return response;
     }
@@ -67,7 +68,6 @@ public class GameUserResponse : IDataConvertableFrom<GameUserResponse, GameUser>
 
         GameUserResponse response = new()
         {
-            IconHash = old.IconHash,
             Description = old.Description,
             Location = old.Location,
             PlanetsHash = "0",
@@ -95,20 +95,22 @@ public class GameUserResponse : IDataConvertableFrom<GameUserResponse, GameUser>
         return response;
     }
 
-    public static IEnumerable<GameUserResponse> FromOldList(IEnumerable<GameUser> oldList) => oldList.Select(FromOld)!;
+    public static IEnumerable<GameUserResponse> FromOldList(IEnumerable<GameUser> oldList) => oldList.Select(FromOld).ToList()!;
     
-    public static IEnumerable<GameUserResponse> FromOldListWithExtraData(IEnumerable<GameUser> oldList, TokenGame gameVersion, IGameDatabaseContext database) 
-        => oldList.Select(old => FromOldWithExtraData(old, gameVersion, database))!;
+    public static IEnumerable<GameUserResponse> FromOldListWithExtraData(IEnumerable<GameUser> oldList, TokenGame gameVersion, IGameDatabaseContext database, IDataStore dataStore) 
+        => oldList.Select(old => FromOldWithExtraData(old, gameVersion, database, dataStore)).ToList()!;
 
-    private void FillInExtraData(GameUser old, TokenGame gameVersion, IGameDatabaseContext database)
+    private void FillInExtraData(GameUser old, TokenGame gameVersion, IGameDatabaseContext database, IDataStore dataStore)
     {
         if (!old.IsManaged)
         {
             this.PlanetsHash = "0";
-            this.IconHash = "0";
+            this.Handle.IconHash = "0";
             
             return;
         }
+
+        this.ReviewCount = database.GetTotalReviewsByUser(old);
         
         this.PlanetsHash = gameVersion switch
         {
@@ -118,6 +120,7 @@ public class GameUserResponse : IDataConvertableFrom<GameUserResponse, GameUser>
             TokenGame.LittleBigPlanetVita => old.VitaPlanetsHash,
             TokenGame.LittleBigPlanetPSP => "0",
             TokenGame.Website => "0",
+            TokenGame.BetaBuild => old.BetaPlanetsHash,
             _ => throw new ArgumentOutOfRangeException(nameof(gameVersion), gameVersion, null),
         };
 
@@ -142,6 +145,9 @@ public class GameUserResponse : IDataConvertableFrom<GameUserResponse, GameUser>
                 //Match all LBP Vita levels
                 this.UsedSlotsLBP2 = old.PublishedLevels.Count(x => x._GameVersion == (int)TokenGame.LittleBigPlanetVita);
                 this.FreeSlotsLBP2 = MaximumLevels - this.UsedSlotsLBP2;
+
+                //Apply Vita-specific icon hash
+                this.Handle.IconHash = old.VitaIconHash;
                 break;
             }
             case TokenGame.LittleBigPlanet1: {
@@ -154,28 +160,41 @@ public class GameUserResponse : IDataConvertableFrom<GameUserResponse, GameUser>
                 //Match all LBP PSP levels
                 this.UsedSlots = old.PublishedLevels.Count(x => x._GameVersion == (int)TokenGame.LittleBigPlanetPSP);
                 this.FreeSlots = MaximumLevels - this.UsedSlots;
+                
+                // Apply PSP-specific icon hash
+                this.Handle.IconHash = old.PspIconHash;
+
+                //Fill out PSP favourite users
+                List<GameUser> users = database.GetUsersFavouritedByUser(old, 20, 0).ToList();
+                this.FavouriteUsers = new SerializedMinimalFavouriteUserList(users.Select(SerializedUserHandle.FromUser).ToList(), users.Count);
+
+                //Fill out PSP favourite levels
+                List<GameMinimalLevelResponse> favouriteLevels = old.FavouriteLevelRelations
+                    .AsEnumerable()
+                    .Where(l => l.Level._GameVersion == (int)TokenGame.LittleBigPlanetPSP)
+                    .Select(f => GameMinimalLevelResponse.FromOld(f.Level)).ToList()!;
+                this.FavouriteLevels = new SerializedMinimalFavouriteLevelList(new SerializedMinimalLevelList(favouriteLevels, favouriteLevels.Count, favouriteLevels.Count));
+                break;
+            }
+            case TokenGame.BetaBuild:
+            {
+                // only beta levels
+                this.UsedSlots = old.PublishedLevels.Count(x => x._GameVersion == (int)TokenGame.BetaBuild);
+                this.FreeSlots = MaximumLevels - this.UsedSlotsLBP2;
+                
+                // use the same values for LBP3 and LBP2 since they're all shared under one count
+                this.UsedSlotsLBP3 = this.UsedSlots;
+                this.FreeSlotsLBP3 = this.FreeSlots;
+                
+                this.UsedSlotsLBP2 = this.UsedSlots;
+                this.FreeSlotsLBP2 = this.FreeSlots;
                 break;
             }
             case TokenGame.Website: break;
             default:
                 throw new ArgumentOutOfRangeException(nameof(gameVersion), gameVersion, null);
         }
-
-        if (gameVersion == TokenGame.LittleBigPlanetPSP)
-        {
-            // Apply PSP-specific icon hashes
-            this.IconHash = old.PspIconHash;
-
-            //Fill out PSP favourite users
-            List<GameUser> users = database.GetUsersFavouritedByUser(old, 20, 0).ToList();
-            this.FavouriteUsers = new SerializedMinimalFavouriteUserList(users.Select(SerializedUserHandle.FromUser).ToList(), users.Count);
-
-            //Fill out PSP favourite levels
-            List<GameMinimalLevelResponse> favouriteLevels = old.FavouriteLevelRelations
-                .AsEnumerable()
-                .Where(l => l.Level._GameVersion == (int)TokenGame.LittleBigPlanetPSP)
-                .Select(f => GameMinimalLevelResponse.FromOld(f.Level)).ToList()!;
-            this.FavouriteLevels = new SerializedMinimalFavouriteLevelList(new SerializedMinimalLevelList(favouriteLevels, favouriteLevels.Count));
-        }
+        
+        this.Handle.FillInExtraData(database, dataStore, gameVersion);
     }
 }

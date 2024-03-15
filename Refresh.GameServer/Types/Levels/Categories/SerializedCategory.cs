@@ -1,5 +1,6 @@
 using System.Xml.Serialization;
 using Bunkum.Core;
+using Bunkum.Core.Storage;
 using Refresh.GameServer.Authentication;
 using Refresh.GameServer.Database;
 using Refresh.GameServer.Endpoints.Game.Levels.FilterSettings;
@@ -28,30 +29,38 @@ public class SerializedCategory
     [XmlElement("results")]
     public SerializedMinimalLevelList Levels { get; set; }
 
-    public static SerializedCategory FromLevelCategory(LevelCategory levelCategory,
-        RequestContext context,
-        IGameDatabaseContext database,
-        GameUser user,
-        Token token,
-        MatchService matchService,
-        int skip = 0,
-        int count = 20)
+    public static SerializedCategory FromLevelCategory(LevelCategory levelCategory)
     {
         SerializedCategory category = new()
         {
             Name = levelCategory.Name,
             Description = levelCategory.Description,
             Url = "/searches/" + levelCategory.ApiRoute,
-            Tag = "",
+            Tag = levelCategory.ApiRoute,
             IconHash = levelCategory.IconHash,
         };
+
+        return category;
+    }
+
+    public static SerializedCategory FromLevelCategory(LevelCategory levelCategory,
+        RequestContext context,
+        IGameDatabaseContext database,
+        IDataStore dataStore,
+        GameUser user,
+        Token token,
+        MatchService matchService,
+        int skip = 0,
+        int count = 20)
+    {
+        SerializedCategory category = FromLevelCategory(levelCategory);
         
         DatabaseList<GameLevel> categoryLevels = levelCategory.Fetch(context, skip, count, matchService, database, user, new LevelFilterSettings(context, token.TokenGame));
         
         IEnumerable<GameMinimalLevelResponse> levels = categoryLevels?.Items
-            .Select(l => GameMinimalLevelResponse.FromOldWithExtraData(l, matchService)) ?? Array.Empty<GameMinimalLevelResponse>();
+            .Select(l => GameMinimalLevelResponse.FromOldWithExtraData(l, matchService, database, dataStore, token.TokenGame)) ?? Array.Empty<GameMinimalLevelResponse>();
 
-        category.Levels = new SerializedMinimalLevelList(levels, categoryLevels?.TotalItems ?? 0);
+        category.Levels = new SerializedMinimalLevelList(levels, categoryLevels?.TotalItems ?? 0, skip + count);
 
         return category;
     }

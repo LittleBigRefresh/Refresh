@@ -15,6 +15,7 @@ using Microsoft.EntityFrameworkCore;
 using NotEnoughLogs;
 using NotEnoughLogs.Behaviour;
 using NotEnoughLogs.Sinks;
+using Refresh.Common;
 using Refresh.GameServer.Authentication;
 using Refresh.GameServer.Configuration;
 using Refresh.GameServer.Database;
@@ -34,12 +35,9 @@ using Refresh.GameServer.Workers;
 namespace Refresh.GameServer;
 
 [SuppressMessage("ReSharper", "InconsistentNaming")]
-public class RefreshGameServer : IDisposable
+public class RefreshGameServer : RefreshServer
 {
-    public Logger Logger => this._server.Logger;
-    
-    protected readonly BunkumHttpServer _server;
-    protected WorkerManager? _workerManager;
+    protected WorkerManager? WorkerManager;
     
     protected readonly IDatabaseProvider<IGameDatabaseContext> _databaseProvider;
     protected readonly IDataStore _dataStore;
@@ -52,7 +50,7 @@ public class RefreshGameServer : IDisposable
         Func<IDatabaseProvider<IGameDatabaseContext>>? databaseProvider = null,
         IAuthenticationProvider<Token>? authProvider = null,
         IDataStore? dataStore = null
-    )
+    ) : base(listener)
     {
         // databaseProvider ??= () => new RealmGameDatabaseProvider();
         databaseProvider ??= () => new PostgresGameDatabaseProvider((options) =>
@@ -60,125 +58,114 @@ public class RefreshGameServer : IDisposable
             options.UseNpgsql();
         });
         dataStore ??= new FileSystemDataStore();
-
-        // ReSharper disable once VirtualMemberCallInConstructor
-        (LoggerConfiguration logConfig, List<ILoggerSink>? sinks) = this.GetLoggerConfiguration();
         
         this._databaseProvider = databaseProvider.Invoke();
+        this._databaseProvider.Initialize();
         this._dataStore = dataStore;
         
-        this._server = listener == null ? new BunkumHttpServer(logConfig, sinks) : new BunkumHttpServer(listener, configuration: logConfig, sinks);
-        this.Logger.LogDebug(RefreshContext.Startup, "Successfully initialized " + this.GetType().Name);
-        
-        this._server.Initialize = _ =>
+        this.SetupInitializer(() =>
         {
             IDatabaseProvider<IGameDatabaseContext> provider = databaseProvider.Invoke();
             
-            this._workerManager?.Stop();
-            this._workerManager = new WorkerManager(this.Logger, this._dataStore, provider);
+            this.WorkerManager?.Stop();
+            this.WorkerManager = new WorkerManager(this.Logger, this._dataStore!, provider);
             
-            this.SetupConfiguration();
             authProvider ??= new GameAuthenticationProvider(this._config!);
-            
+
             this.InjectBaseServices(provider, authProvider, dataStore);
-            this.Initialize();
-        };
-        
-        CultureInfo.CurrentCulture = CultureInfo.InvariantCulture;
+        });
     }
 
     private void InjectBaseServices(IDatabaseProvider<IGameDatabaseContext> databaseProvider, IAuthenticationProvider<Token> authProvider, IDataStore dataStore)
     {
-        this._server.UseDatabaseProvider(databaseProvider);
-        this._server.AddAuthenticationService(authProvider, true);
-        this._server.AddStorageService(dataStore);
+        this.Server.UseDatabaseProvider(databaseProvider);
+        this.Server.AddAuthenticationService(authProvider, true);
+        this.Server.AddStorageService(dataStore);
     }
 
-    private void Initialize()
+    protected override void Initialize()
     {
-        this.SetupServices();
-        this.SetupMiddlewares();
+        base.Initialize();
         this.SetupWorkers();
-        
-        this._server.DiscoverEndpointsFromAssembly(Assembly.GetExecutingAssembly());
     }
 
-    protected virtual void SetupMiddlewares()
+    protected override void SetupMiddlewares()
     {
-        this._server.AddMiddleware<ApiV2GoneMiddleware>();
-        this._server.AddMiddleware<LegacyAdapterMiddleware>();
-        this._server.AddMiddleware<WebsiteMiddleware>();
-        this._server.AddMiddleware<DigestMiddleware>();
-        this._server.AddMiddleware<CrossOriginMiddleware>();
-        this._server.AddMiddleware<PspVersionMiddleware>();
+        this.Server.AddMiddleware<ApiV2GoneMiddleware>();
+        this.Server.AddMiddleware<LegacyAdapterMiddleware>();
+        this.Server.AddMiddleware<WebsiteMiddleware>();
+        this.Server.AddMiddleware<DigestMiddleware>();
+        this.Server.AddMiddleware<CrossOriginMiddleware>();
+        this.Server.AddMiddleware<PspVersionMiddleware>();
     }
 
-    protected virtual void SetupConfiguration()
+    protected override void SetupConfiguration()
     {
-        GameServerConfig config = Config.LoadFromJsonFile<GameServerConfig>("refreshGameServer.json", this._server.Logger);
+        GameServerConfig config = Config.LoadFromJsonFile<GameServerConfig>("refreshGameServer.json", this.Server.Logger);
         this._config = config;
 
-        IntegrationConfig integrationConfig = Config.LoadFromJsonFile<IntegrationConfig>("integrations.json", this._server.Logger);
+        IntegrationConfig integrationConfig = Config.LoadFromJsonFile<IntegrationConfig>("integrations.json", this.Server.Logger);
         this._integrationConfig = integrationConfig;
         
-        this._server.AddConfig(config);
-        this._server.AddConfig(integrationConfig);
-        this._server.AddConfigFromJsonFile<RichPresenceConfig>("rpc.json");
+        this.Server.AddConfig(config);
+        this.Server.AddConfig(integrationConfig);
+        this.Server.AddConfigFromJsonFile<RichPresenceConfig>("rpc.json");
     }
     
-    protected virtual void SetupServices()
+    protected override void SetupServices()
     {
-        this._server.AddService<TimeProviderService>(this.GetTimeProvider());
-        this._server.AddRateLimitService(new RateLimitSettings(60, 400, 30, "global"));
-        this._server.AddService<CategoryService>();
-        this._server.AddService<FriendStorageService>();
-        this._server.AddService<MatchService>();
-        this._server.AddService<ImportService>();
-        this._server.AddService<DocumentationService>();
-        this._server.AddAutoDiscover(serverBrand: $"{this._config!.InstanceName} (Refresh)",
+        this.Server.AddService<TimeProviderService>(this.GetTimeProvider());
+        this.Server.AddRateLimitService(new RateLimitSettings(60, 400, 30, "global"));
+        this.Server.AddService<CategoryService>();
+        this.Server.AddService<MatchService>();
+        this.Server.AddService<ImportService>();
+        this.Server.AddService<DocumentationService>();
+        this.Server.AddService<GuidCheckerService>();
+        this.Server.AddAutoDiscover(serverBrand: $"{this._config!.InstanceName} (Refresh)",
             baseEndpoint: GameEndpointAttribute.BaseRoute.Substring(0, GameEndpointAttribute.BaseRoute.Length - 1),
             usesCustomDigestKey: true,
             serverDescription: this._config.InstanceDescription,
             bannerImageUrl: "https://github.com/LittleBigRefresh/Branding/blob/main/logos/refresh_type.png?raw=true");
         
-        this._server.AddHealthCheckService(this._databaseProvider, new []
+        this.Server.AddHealthCheckService(this._databaseProvider, new []
         {
             typeof(RealmDatabaseHealthCheck),
         });
         
-        this._server.AddService<RoleService>();
-        this._server.AddService<SmtpService>();
+        this.Server.AddService<RoleService>();
+        this.Server.AddService<SmtpService>();
 
         if (this._config!.TrackRequestStatistics)
-            this._server.AddService<RequestStatisticTrackingService>();
+            this.Server.AddService<RequestStatisticTrackingService>();
         
-        this._server.AddService<LevelListOverrideService>();
+        this.Server.AddService<LevelListOverrideService>();
         
-        this._server.AddService<CommandService>();
+        this.Server.AddService<CommandService>();
         
         #if DEBUG
-        this._server.AddService<DebugService>();
+        this.Server.AddService<DebugService>();
         #endif
     }
 
     protected virtual void SetupWorkers()
     {
-        if (this._workerManager == null) return;
+        if (this.WorkerManager == null) return;
         
-        this._workerManager.AddWorker<PunishmentExpiryWorker>();
-        this._workerManager.AddWorker<ExpiredObjectWorker>();
-        this._workerManager.AddWorker<CoolLevelsWorker>();
+        this.WorkerManager.AddWorker<PunishmentExpiryWorker>();
+        this.WorkerManager.AddWorker<ExpiredObjectWorker>();
+        this.WorkerManager.AddWorker<CoolLevelsWorker>();
         
         if ((this._integrationConfig?.DiscordWebhookEnabled ?? false) && this._config != null)
         {
-            this._workerManager.AddWorker(new DiscordIntegrationWorker(this._integrationConfig, this._config));
+            this.WorkerManager.AddWorker(new DiscordIntegrationWorker(this._integrationConfig, this._config));
         }
     }
 
-    public virtual void Start()
+    /// <inheritdoc/>
+    public override void Start()
     {
-        this._server.Start();
-        this._workerManager?.Start();
+        this.Server.Start();
+        this.WorkerManager?.Start();
 
         if (this._config!.MaintenanceMode)
         {
@@ -187,15 +174,15 @@ public class RefreshGameServer : IDisposable
         }
     }
 
-    public void Stop()
+    /// <inheritdoc/>
+    public override void Stop()
     {
-        this._server.Stop();
-        this._workerManager?.Stop();
+        this.Server.Stop();
+        this.WorkerManager?.Stop();
     }
 
-    private IGameDatabaseContext InitializeDatabase()
+    private IGameDatabaseContext GetContext()
     {
-        this._databaseProvider.Initialize();
         return this._databaseProvider.GetContext();
     }
     
@@ -203,25 +190,10 @@ public class RefreshGameServer : IDisposable
     {
         return new SystemDateTimeProvider();
     }
-    
-    protected virtual (LoggerConfiguration logConfig, List<ILoggerSink>? sinks) GetLoggerConfiguration()
-    {
-        LoggerConfiguration logConfig = new()
-        {
-            Behaviour = new QueueLoggingBehaviour(),
-            #if DEBUG
-            MaxLevel = LogLevel.Debug,
-            #else
-            MaxLevel = LogLevel.Info,
-            #endif
-        };
-        
-        return (logConfig, null);
-    }
 
     public void ImportAssets(bool force = false)
     {
-        using IGameDatabaseContext context = this.InitializeDatabase();
+        using IGameDatabaseContext context = this.GetContext();
         
         AssetImporter importer = new();
         importer.ImportFromDataStore(context, this._dataStore);
@@ -229,7 +201,7 @@ public class RefreshGameServer : IDisposable
 
     public void ImportImages()
     {
-        using IGameDatabaseContext context = this.InitializeDatabase();
+        using IGameDatabaseContext context = this.GetContext();
         
         ImageImporter importer = new();
         importer.ImportFromDataStore(context, this._dataStore);
@@ -237,14 +209,14 @@ public class RefreshGameServer : IDisposable
 
     public void CreateUser(string username, string emailAddress)
     {
-        using IGameDatabaseContext context = this.InitializeDatabase();
+        using IGameDatabaseContext context = this.GetContext();
         GameUser user = context.CreateUser(username, emailAddress);
         context.VerifyUserEmail(user);
     }
     
     public void SetAdminFromUsername(string username)
     {
-        using IGameDatabaseContext context = this.InitializeDatabase();
+        using IGameDatabaseContext context = this.GetContext();
 
         GameUser? user = context.GetUserByUsername(username);
         if (user == null) throw new InvalidOperationException("Cannot find the user " + username);
@@ -254,7 +226,7 @@ public class RefreshGameServer : IDisposable
     
     public void SetAdminFromEmailAddress(string emailAddress)
     {
-        using IGameDatabaseContext context = this.InitializeDatabase();
+        using IGameDatabaseContext context = this.GetContext();
 
         GameUser? user = context.GetUserByEmailAddress(emailAddress);
         if (user == null) throw new InvalidOperationException("Cannot find a user by emailAddress " + emailAddress);
@@ -262,10 +234,9 @@ public class RefreshGameServer : IDisposable
         context.SetUserRole(user, GameUserRole.Admin);
     }
 
-    public void Dispose()
+    public override void Dispose()
     {
-        this.Logger.Dispose();
         this._databaseProvider.Dispose();
-        GC.SuppressFinalize(this);
+        base.Dispose();
     }
 }

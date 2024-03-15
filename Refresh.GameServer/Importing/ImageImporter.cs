@@ -3,6 +3,7 @@ using Bunkum.Core.Storage;
 using NotEnoughLogs;
 using Refresh.GameServer.Database;
 using Refresh.GameServer.Extensions;
+using Refresh.GameServer.Resources;
 using Refresh.GameServer.Types.Assets;
 
 namespace Refresh.GameServer.Importing;
@@ -22,6 +23,7 @@ public partial class ImageImporter : Importer
         assets.AddRange(context.GetAssetsByType(GameAssetType.GameDataTexture));
         assets.AddRange(context.GetAssetsByType(GameAssetType.Jpeg));
         assets.AddRange(context.GetAssetsByType(GameAssetType.Png));
+        assets.AddRange(context.GetAssetsByType(GameAssetType.Mip));
 
         this.Info("Acquired all other assets");
 
@@ -59,23 +61,34 @@ public partial class ImageImporter : Importer
         
         while (assetQueue.TryDequeue(out GameAsset? asset))
         {
-            ImportAsset(asset, dataStore);
+            this.ImportAsset(asset.AssetHash, asset.IsPSP, asset.AssetType, dataStore);
             this.Info($"Imported {asset.AssetType} {asset.AssetHash}");   
         }
 
         this._runningCount--;
     }
 
-    public static void ImportAsset(GameAsset asset, IDataStore dataStore)
+    public void ImportAsset(string hash, bool isPsp, GameAssetType type, IDataStore dataStore)
     {
-        using Stream stream = dataStore.GetStreamFromStore(asset.IsPSP ? "psp/" + asset.AssetHash : asset.AssetHash);
-        using Stream writeStream = dataStore.OpenWriteStream("png/" + asset.AssetHash);
+        string dataStorePath = isPsp ? $"psp/{hash}" : hash;
+        
+        using Stream stream = dataStore.GetStreamFromStore(dataStorePath);
+        using Stream writeStream = dataStore.OpenWriteStream($"png/{hash}");
 
-        switch (asset.AssetType)
+        switch (type)
         {
             case GameAssetType.GameDataTexture:
                 GtfToPng(stream, writeStream);
                 break;
+            case GameAssetType.Mip: {
+                byte[] rawData = dataStore.GetDataFromStore(dataStorePath);
+                byte[] data = ResourceHelper.PspDecrypt(rawData, PSPKey.Value);
+
+                using MemoryStream dataStream = new(data);
+
+                MipToPng(dataStream, writeStream);
+                break;
+            }
             case GameAssetType.Texture:
                 TextureToPng(stream, writeStream);
                 break;
@@ -87,7 +100,7 @@ public partial class ImageImporter : Importer
                 stream.CopyTo(writeStream); // TODO: use hard links instead of just replicating same data, or run 'optipng'?
                 break;
             default:
-                throw new InvalidOperationException($"Cannot convert a {asset.AssetType} to PNG");
+                throw new InvalidOperationException($"Cannot convert a {type} to PNG");
         }
     }
 }

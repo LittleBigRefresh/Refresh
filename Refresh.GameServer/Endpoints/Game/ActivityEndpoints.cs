@@ -9,6 +9,7 @@ using Refresh.GameServer.Authentication;
 using Refresh.GameServer.Database;
 using Refresh.GameServer.Endpoints.Game.Levels.FilterSettings;
 using Refresh.GameServer.Extensions;
+using Refresh.GameServer.Services;
 using Refresh.GameServer.Time;
 using Refresh.GameServer.Types.Activity;
 using Refresh.GameServer.Types.Levels;
@@ -23,10 +24,15 @@ public class ActivityEndpoints : EndpointGroup
     [GameEndpoint("stream", ContentType.Xml)]
     [NullStatusCode(BadRequest)]
     [MinimumRole(GameUserRole.Restricted)]
-    public ActivityPage? GetRecentActivity(RequestContext context, IGameDatabaseContext database)
+    public ActivityPage? GetRecentActivity(RequestContext context, IGameDatabaseContext database, GameUser? user)
     {
         long timestamp = 0;
         long endTimestamp = 0;
+
+        bool excludeMyLevels = bool.Parse(context.QueryString["excludeMyLevels"] ?? "false");
+        bool excludeFriends = bool.Parse(context.QueryString["excludeFriends"] ?? "false");
+        bool excludeFavouriteUsers = bool.Parse(context.QueryString["excludeFavouriteUsers"] ?? "false");
+        bool excludeMyself = bool.Parse(context.QueryString["excludeMyself"] ?? "false");
 
         string? tsStr = context.QueryString["timestamp"];
         string? tsEndStr = context.QueryString["endTimestamp"];
@@ -35,10 +41,90 @@ public class ActivityEndpoints : EndpointGroup
 
         if (endTimestamp == 0) endTimestamp = timestamp - 86400000 * 7; // 1 week
 
-        ActivityPage page = new(database, timestamp: timestamp, endTimestamp: endTimestamp);
-        return page;
+        return ActivityPage.UserActivity(database, new ActivityQueryParameters
+        {
+            Timestamp = timestamp,
+            EndTimestamp = endTimestamp,
+            ExcludeFriends = excludeFriends,
+            ExcludeMyLevels = excludeMyLevels,
+            ExcludeFavouriteUsers = excludeFavouriteUsers,
+            ExcludeMyself = excludeMyself,
+            User = user,
+        });
     }
 
+    [GameEndpoint("stream/slot/{type}/{id}", ContentType.Xml)]
+    [NullStatusCode(BadRequest)]
+    [MinimumRole(GameUserRole.Restricted)]
+    public Response GetRecentActivityForLevel(RequestContext context, IGameDatabaseContext database, GameUser? user, string type, int id)
+    {
+        GameLevel? level = type == "developer" ? database.GetStoryLevelById(id) : database.GetLevelById(id);
+        if (level == null) return NotFound;
+        
+        long timestamp = 0;
+        long endTimestamp = 0;
+
+        bool excludeFriends = bool.Parse(context.QueryString["excludeFriends"] ?? "false");
+        bool excludeFavouriteUsers = bool.Parse(context.QueryString["excludeFavouriteUsers"] ?? "false");
+        bool excludeMyself = bool.Parse(context.QueryString["excludeMyself"] ?? "false");
+        
+        string? tsStr = context.QueryString["timestamp"];
+        string? tsEndStr = context.QueryString["endTimestamp"];
+        if (tsStr != null && !long.TryParse(tsStr, out timestamp)) return BadRequest;
+        if (tsEndStr != null && !long.TryParse(tsEndStr, out endTimestamp)) return BadRequest;
+
+        if (endTimestamp == 0) endTimestamp = timestamp - 86400000 * 7; // 1 week
+
+        ActivityPage page = ActivityPage.GameLevelActivity(database, level, new ActivityQueryParameters
+        {
+            Count = 20,
+            Skip = 0,
+            Timestamp = timestamp,
+            EndTimestamp = endTimestamp,
+            ExcludeFriends = excludeFriends,
+            ExcludeFavouriteUsers = excludeFavouriteUsers,
+            ExcludeMyself = excludeMyself,
+            User = user,
+        });
+        
+        return new Response(page, ContentType.Xml);
+    }
+
+    [GameEndpoint("stream/user2/{username}", ContentType.Xml)]
+    [NullStatusCode(BadRequest)]
+    [MinimumRole(GameUserRole.Restricted)]
+    public Response GetRecentActivityForUser(RequestContext context, IGameDatabaseContext database, string username)
+    {
+        GameUser? user = database.GetUserByUsername(username);
+        if (user == null) return NotFound;
+        
+        long timestamp = 0;
+        long endTimestamp = 0;
+
+        bool excludeMyLevels = bool.Parse(context.QueryString["excludeMyLevels"] ?? "false");
+        bool excludeFriends = bool.Parse(context.QueryString["excludeFriends"] ?? "false");
+        bool excludeFavouriteUsers = bool.Parse(context.QueryString["excludeFavouriteUsers"] ?? "false");
+        bool excludeMyself = bool.Parse(context.QueryString["excludeMyself"] ?? "false");
+        
+        string? tsStr = context.QueryString["timestamp"];
+        string? tsEndStr = context.QueryString["endTimestamp"];
+        if (tsStr != null && !long.TryParse(tsStr, out timestamp)) return BadRequest;
+        if (tsEndStr != null && !long.TryParse(tsEndStr, out endTimestamp)) return BadRequest;
+
+        if (endTimestamp == 0) endTimestamp = timestamp - 86400000 * 7; // 1 week
+
+        return new Response(ActivityPage.UserActivity(database, new ActivityQueryParameters
+        {
+            Timestamp = timestamp,
+            EndTimestamp = endTimestamp,
+            ExcludeFriends = excludeFriends,
+            ExcludeMyLevels = excludeMyLevels,
+            ExcludeFavouriteUsers = excludeFavouriteUsers,
+            ExcludeMyself = excludeMyself,
+            User = user,
+        }), ContentType.Xml);
+    }
+    
     [GameEndpoint("news", ContentType.Xml)]
     [Authentication(false)]
     [MinimumRole(GameUserRole.Restricted)]

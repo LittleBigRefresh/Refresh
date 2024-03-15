@@ -11,10 +11,11 @@ public class SerializedMinimalLevelList : SerializedList<GameMinimalLevelRespons
 {
     public SerializedMinimalLevelList() {}
     
-    public SerializedMinimalLevelList(IEnumerable<GameMinimalLevelResponse> list, int total)
+    public SerializedMinimalLevelList(IEnumerable<GameMinimalLevelResponse> list, int total, int skip)
     {
         this.Total = total;
         this.Items = list.ToList();
+        this.NextPageStart = skip + 1;
     }
 
     [XmlElement("slot")]
