@@ -35,6 +35,7 @@ public static class AssetSafetyLevelExtensions
             GameAssetType.Mip => AssetSafetyLevel.Safe,
             GameAssetType.GriefSongState => AssetSafetyLevel.Safe,
             
+            GameAssetType.GfxMaterial => AssetSafetyLevel.PotentiallyUnwanted,
             GameAssetType.Material => AssetSafetyLevel.PotentiallyUnwanted,
             GameAssetType.Mesh => AssetSafetyLevel.PotentiallyUnwanted,
             GameAssetType.GameDataTexture => AssetSafetyLevel.PotentiallyUnwanted,

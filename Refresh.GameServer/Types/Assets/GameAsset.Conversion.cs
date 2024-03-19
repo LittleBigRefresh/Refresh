@@ -352,6 +352,7 @@ public partial class GameAsset
                 case GameAssetType.Level:
                 case GameAssetType.Painting:
                 case GameAssetType.Plan:
+                case GameAssetType.GfxMaterial:
                 case GameAssetType.Material:
                 case GameAssetType.Mesh:
                 case GameAssetType.Palette:
