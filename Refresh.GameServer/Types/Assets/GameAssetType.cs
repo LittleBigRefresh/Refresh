@@ -47,7 +47,7 @@ public enum GameAssetType
     /// <remarks>
     /// Magic: GMTb
     /// </remarks>
-    Material = 5,
+    GfxMaterial = 5,
     /// <summary>
     /// A mesh used for custom models.
     /// </summary>
@@ -121,4 +121,11 @@ public enum GameAssetType
     /// A file containing information about the currently playing song, uploaded during a grief report.
     /// </summary>
     GriefSongState = 16,
+    /// <summary>
+    /// A material file, contains information about a material's physical properties
+    /// </summary>
+    /// <remarks>
+    /// Magic: MATb
+    /// </remarks>
+    Material = 17,
 }
