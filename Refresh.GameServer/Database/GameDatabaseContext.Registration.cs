@@ -191,4 +191,39 @@ public partial class GameDatabaseContext // Registration
             this._realm.Remove(code);
         });
     }
+    
+    public bool DisallowUser(string username)
+    {
+        if (this._realm.Find<DisallowedUser>(username) != null) 
+            return false;
+        
+        this._realm.Write(() =>
+        {
+            this._realm.Add(new DisallowedUser
+            {
+                Username = username,
+            });
+        });
+        
+        return true;
+    }
+    
+    public bool ReallowUser(string username)
+    {
+        DisallowedUser? disallowedUser = this._realm.Find<DisallowedUser>(username);
+        if (disallowedUser == null) 
+            return false;
+        
+        this._realm.Write(() =>
+        {
+            this._realm.Remove(disallowedUser);
+        });
+        
+        return true;
+    }
+    
+    public bool IsUserDisallowed(string username)
+    {
+        return this._realm.Find<DisallowedUser>(username) != null;
+    }
 }

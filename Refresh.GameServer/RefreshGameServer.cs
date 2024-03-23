@@ -222,6 +222,20 @@ public class RefreshGameServer : RefreshServer
 
         context.SetUserRole(user, GameUserRole.Admin);
     }
+    
+    public bool DisallowUser(string username)
+    {
+        using GameDatabaseContext context = this.GetContext();
+        
+        return context.DisallowUser(username);
+    }
+    
+    public bool ReallowUser(string username)
+    {
+        using GameDatabaseContext context = this.GetContext();
+        
+        return context.ReallowUser(username);
+    }
 
     public override void Dispose()
     {

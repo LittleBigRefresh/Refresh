@@ -41,6 +41,12 @@ internal class CommandLineManager
         
         [Option('f', "force", Required = false, HelpText = "Force all operations to happen, skipping user consent")]
         public bool Force { get; set; }
+        
+        [Option('b', "disallow_user", Required = false, HelpText = "Disallow a user from registering. Username option is required if this is set.")]
+        public bool DisallowUser { get; set; }
+        
+        [Option('r', "reallow_user", Required = false, HelpText = "Re-allow a user to register. Username option is requried if this is set.")]
+        public bool ReallowUser { get; set; }
     }
 
     internal void StartWithArgs(string[] args)
@@ -96,6 +102,40 @@ internal class CommandLineManager
             else
             {
                 Console.WriteLine("No user/email was provided, cannot continue.");
+                Environment.Exit(1);
+            }
+        }
+        
+        if (options.DisallowUser)
+        {
+            if (options.Username != null)
+            {
+                if (!this._server.DisallowUser(options.Username))
+                {
+                    Console.WriteLine("User is already disallowed");
+                    Environment.Exit(1);
+                }
+            }
+            else
+            {
+                Console.WriteLine("No user was provided, cannot continue.");
+                Environment.Exit(1);
+            }
+        }
+        
+        if (options.ReallowUser)
+        {
+            if (options.Username != null)
+            {
+                if (!this._server.ReallowUser(options.Username))
+                {
+                    Console.WriteLine("User is already allowed");
+                    Environment.Exit(1);
+                }
+            }
+            else
+            {
+                Console.WriteLine("No user was provided, cannot continue.");
                 Environment.Exit(1);
             }
         }
