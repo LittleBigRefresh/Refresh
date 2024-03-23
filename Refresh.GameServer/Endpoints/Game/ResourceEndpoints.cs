@@ -29,6 +29,10 @@ public class ResourceEndpoints : EndpointGroup
     public Response UploadAsset(RequestContext context, string hash, string type, byte[] body, IDataStore dataStore,
         GameDatabaseContext database, GameUser user, AssetImporter importer, GameServerConfig config, IDateTimeProvider timeProvider, Token token)
     {
+        //If we block asset uploads, return unauthorized, unless the user is an admin
+        if (config.BlockAssetUploads && user.Role != GameUserRole.Admin)
+            return Unauthorized;
+        
         if (!CommonPatterns.Sha1Regex().IsMatch(hash)) return BadRequest;
         
         bool isPSP = context.IsPSP();

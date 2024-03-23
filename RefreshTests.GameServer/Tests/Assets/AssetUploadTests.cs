@@ -32,6 +32,30 @@ public class AssetUploadTests : GameServerTest
         Assert.That(response.StatusCode, Is.EqualTo(OK));
     }
     
+    [TestCase(false)]
+    [TestCase(true)]
+    public void CannotUploadAssetWhenBlocked(bool psp)
+    {
+        using TestContext context = this.GetServer();
+
+        context.Server.Value.GameServerConfig.BlockAssetUploads = true;
+            
+        context.Server.Value.Server.AddService<ImportService>();
+        GameUser user = context.CreateUser();
+        using HttpClient client = context.GetAuthenticatedClient(TokenType.Game, user);
+        if(psp)
+            client.DefaultRequestHeaders.UserAgent.TryParseAdd("LBPPSP CLIENT");
+
+        ReadOnlySpan<byte> data = "TEX a"u8;
+        
+        string hash = BitConverter.ToString(SHA1.HashData(data))
+            .Replace("-", "")
+            .ToLower();
+
+        HttpResponseMessage response = client.PostAsync("/lbp/upload/" + hash, new ByteArrayContent(data.ToArray())).Result;
+        Assert.That(response.StatusCode, Is.EqualTo(Unauthorized));
+    }
+    
     [Test]
     public void CantUploadAssetWithInvalidHash()
     {

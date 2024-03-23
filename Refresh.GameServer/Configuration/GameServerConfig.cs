@@ -8,7 +8,7 @@ namespace Refresh.GameServer.Configuration;
 [SuppressMessage("ReSharper", "RedundantDefaultMemberInitializer")]
 public class GameServerConfig : Config
 {
-    public override int CurrentConfigVersion => 10;
+    public override int CurrentConfigVersion => 11;
     public override int Version { get; set; } = 0;
 
     protected override void Migrate(int oldVer, dynamic oldConfig) {}
@@ -26,4 +26,5 @@ public class GameServerConfig : Config
     public bool TrackRequestStatistics { get; set; } = false;
     public string WebExternalUrl { get; set; } = "https://refresh.example.com";
     public bool AllowInvalidTextureGuids { get; set; } = false;
+    public bool BlockAssetUploads { get; set; } = false;
 }
