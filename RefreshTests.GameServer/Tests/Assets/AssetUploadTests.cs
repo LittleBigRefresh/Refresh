@@ -34,6 +34,38 @@ public class AssetUploadTests : GameServerTest
     
     [TestCase(false)]
     [TestCase(true)]
+    public void CannotUploadAssetPastFillingFilesizeQuota(bool psp)
+    {
+        using TestContext context = this.GetServer();
+        
+        context.Server.Value.GameServerConfig.UserFilesizeQuota = 8;
+        
+        context.Server.Value.Server.AddService<ImportService>();
+        GameUser user = context.CreateUser();
+        using HttpClient client = context.GetAuthenticatedClient(TokenType.Game, user);
+        if(psp)
+            client.DefaultRequestHeaders.UserAgent.TryParseAdd("LBPPSP CLIENT");
+
+        ReadOnlySpan<byte> data1 = "TEX a"u8;
+        ReadOnlySpan<byte> data2 = "TEX b"u8;
+        
+        string hash1 = BitConverter.ToString(SHA1.HashData(data1))
+            .Replace("-", "")
+            .ToLower();
+        
+        string hash2 = BitConverter.ToString(SHA1.HashData(data2))
+            .Replace("-", "")
+            .ToLower();
+
+        HttpResponseMessage response = client.PostAsync("/lbp/upload/" + hash1, new ByteArrayContent(data1.ToArray())).Result;
+        Assert.That(response.StatusCode, Is.EqualTo(OK));
+        
+        response = client.PostAsync("/lbp/upload/" + hash2, new ByteArrayContent(data2.ToArray())).Result;
+        Assert.That(response.StatusCode, Is.EqualTo(RequestEntityTooLarge));
+    }
+    
+    [TestCase(false)]
+    [TestCase(true)]
     public void CannotUploadAssetWhenBlocked(bool psp)
     {
         using TestContext context = this.GetServer();

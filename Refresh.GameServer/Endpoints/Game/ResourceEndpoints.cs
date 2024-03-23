@@ -42,7 +42,13 @@ public class ResourceEndpoints : EndpointGroup
 
         if (dataStore.ExistsInStore(assetPath))
             return Conflict;
-
+        
+        if (body.Length + user.FilesizeQuotaUsage > config.UserFilesizeQuota)
+        {
+            context.Logger.LogWarning(BunkumCategory.UserContent, "User {0} has hit the filesize quota ({1} bytes), rejecting.", user.Username, config.UserFilesizeQuota);
+            return RequestEntityTooLarge;
+        }
+        
         if (body.Length > 1_048_576 * 2)
         {
             context.Logger.LogWarning(BunkumCategory.UserContent, "{0} is above 2MB ({1} bytes), rejecting.", hash, body.Length);
@@ -70,7 +76,9 @@ public class ResourceEndpoints : EndpointGroup
 
         gameAsset.OriginalUploader = user;
         database.AddAssetToDatabase(gameAsset);
-
+        
+        database.IncrementUserFilesizeQuota(user, body.Length);
+        
         return OK;
     }
 

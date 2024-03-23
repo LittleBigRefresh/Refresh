@@ -27,4 +27,8 @@ public class GameServerConfig : Config
     public string WebExternalUrl { get; set; } = "https://refresh.example.com";
     public bool AllowInvalidTextureGuids { get; set; } = false;
     public bool BlockAssetUploads { get; set; } = false;
+    /// <summary>
+    /// The amount of data the user is allowed to upload before all resource uploads get blocked, defaults to 100mb.
+    /// </summary>
+    public int UserFilesizeQuota { get; set; } = 100 * 1_048_576;
 }
