@@ -33,7 +33,7 @@ public class GameDatabaseProvider : RealmDatabaseProvider<GameDatabaseContext>
         this._time = time;
     }
 
-    protected override ulong SchemaVersion => 116;
+    protected override ulong SchemaVersion => 117;
 
     protected override string Filename => "refreshGameServer.realm";
     
@@ -173,6 +173,15 @@ public class GameDatabaseProvider : RealmDatabaseProvider<GameDatabaseContext>
 
             // In version 102 we split the Vita icon hash from the PS3 icon hash
             if (oldVersion < 102) newUser.VitaIconHash = "0";
+            
+            //In version 117, we started tracking the amount of data the user has uploaded to the server
+            if (oldVersion < 117)
+            {
+                newUser.FilesizeQuotaUsage = migration.NewRealm.All<GameAsset>()
+                    .AsEnumerable()
+                    .Where(a => a.OriginalUploader?.UserId == newUser.UserId)
+                    .Sum(a => a.SizeInBytes);
+            }
         }
 
         IQueryable<dynamic>? oldLevels = migration.OldRealm.DynamicApi.All("GameLevel");

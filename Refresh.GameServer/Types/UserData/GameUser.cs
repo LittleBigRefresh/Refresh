@@ -47,6 +47,11 @@ public partial class GameUser : IRealmObject, IRateLimitUser
     /// The <see cref="IconHash"/>, except only for clients in beta mode.
     /// </summary>
     public string BetaIconHash { get; set; } = "0";
+    
+    /// <summary>
+    /// The cumulative size of all the assets the user has uploaded
+    /// </summary>
+    public int FilesizeQuotaUsage { get; set; }
 
     public string Description { get; set; } = "";
     public GameLocation Location { get; set; } = GameLocation.Zero;

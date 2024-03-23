@@ -352,4 +352,12 @@ public partial class GameDatabaseContext // Users
             token.TokenPlatform = platform;
         });
     }
+    
+    public void IncrementUserFilesizeQuota(GameUser user, int amount)
+    {
+        this._realm.Write(() =>
+        {
+            user.FilesizeQuotaUsage += amount;
+        });
+    }
 }
