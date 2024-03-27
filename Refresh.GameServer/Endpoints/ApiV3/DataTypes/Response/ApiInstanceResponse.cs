@@ -46,4 +46,6 @@ public class ApiInstanceResponse : IApiResponse
     
     public required bool MaintenanceModeEnabled { get; set; }
     public required string? GrafanaDashboardUrl { get; set; }
+    
+    public ApiContactInfoResponse ContactInfo { get; set; }
 }

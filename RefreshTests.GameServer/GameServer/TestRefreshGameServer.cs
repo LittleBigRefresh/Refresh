@@ -28,6 +28,7 @@ public class TestRefreshGameServer : RefreshGameServer
         this.Server.AddConfig(this._config = new GameServerConfig());
         this.Server.AddConfig(new RichPresenceConfig());
         this.Server.AddConfig(new IntegrationConfig());
+        this.Server.AddConfig(new ContactInfoConfig());
     }
 
     public GameServerConfig GameServerConfig => this._config!;
