@@ -218,6 +218,9 @@ public class AuthenticationApiEndpoints : EndpointGroup
         if (!CommonPatterns.EmailAddressRegex().IsMatch(body.EmailAddress))
             return new ApiValidationError("The email address given is invalid.");
         
+        if (database.IsUserDisallowed(body.Username))
+            return new ApiAuthenticationError("This username is disallowed from being registered.");
+        
         if (database.IsUsernameTaken(body.Username) || database.IsEmailTaken(body.EmailAddress))
         {
             return new ApiAuthenticationError(

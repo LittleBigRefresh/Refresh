@@ -1,6 +1,7 @@
 using Refresh.GameServer.Authentication;
 using Refresh.GameServer.Endpoints.ApiV3.ApiTypes;
 using Refresh.GameServer.Endpoints.ApiV3.ApiTypes.Errors;
+using Refresh.GameServer.Endpoints.ApiV3.DataTypes.Request.Authentication;
 using Refresh.GameServer.Endpoints.ApiV3.DataTypes.Response;
 using Refresh.GameServer.Types.UserData;
 using RefreshTests.GameServer.Extensions;
@@ -21,6 +22,48 @@ public class UserApiTests : GameServerTest
         response = context.Http.GetData<ApiGameUserResponse>($"/api/v3/users/uuid/{user.Username}");
         Assert.That(response, Is.Not.Null);
         response!.AssertErrorIsEqual(ApiNotFoundError.UserMissingError);
+    }
+
+    [Test]
+    public void RegisterAccount()
+    {
+        using TestContext context = this.GetServer();
+
+        const string username = "a_lil_guy";
+        
+        ApiResponse<ApiAuthenticationResponse>? response = context.Http.PostData<ApiAuthenticationResponse>("/api/v3/register", new ApiRegisterRequest
+        {
+            Username = username,
+            EmailAddress = "guy@lil.com",
+            PasswordSha512 = "ee26b0dd4af7e749aa1a8ee3c10ae9923f618980772e473f8819a5d4940e0db27ac185f8a0e1d5f84f88bc887fd67b143732c304cc5fa9ad8e6f57f50028a8ff",
+        });
+        Assert.That(response, Is.Not.EqualTo(null));
+        
+        context.Database.Refresh();
+        Assert.That(context.Database.GetUserByUsername(username), Is.Not.EqualTo(null));
+    }
+    
+    [Test]
+    public void CannotRegisterAccountWithDisallowedUsername()
+    {
+        using TestContext context = this.GetServer();
+
+        const string username = "a_lil_guy";
+
+        context.Database.DisallowUser(username);
+        
+        ApiResponse<ApiAuthenticationResponse>? response = context.Http.PostData<ApiAuthenticationResponse>("/api/v3/register", new ApiRegisterRequest
+        {
+            Username = username,
+            EmailAddress = "guy@lil.com",
+            PasswordSha512 = "ee26b0dd4af7e749aa1a8ee3c10ae9923f618980772e473f8819a5d4940e0db27ac185f8a0e1d5f84f88bc887fd67b143732c304cc5fa9ad8e6f57f50028a8ff",
+        });
+        Assert.That(response, Is.Not.EqualTo(null));
+        Assert.That(response.Error, Is.Not.EqualTo(null));
+        Assert.That(response.Error.Name, Is.EqualTo("ApiAuthenticationError"));
+        
+        context.Database.Refresh();
+        Assert.That(context.Database.GetUserByUsername(username), Is.EqualTo(null));
     }
     
     [Test]
