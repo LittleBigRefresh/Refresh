@@ -55,6 +55,7 @@ public class InstanceApiEndpoints : EndpointGroup
         GameServerConfig gameConfig,
         RichPresenceConfig richConfig,
         IntegrationConfig integrationConfig,
+        ContactInfoConfig contactInfoConfig,
         GameDatabaseContext database) 
         => new ApiInstanceResponse
         {
@@ -71,7 +72,14 @@ public class InstanceApiEndpoints : EndpointGroup
             MaintenanceModeEnabled = gameConfig.MaintenanceMode,
             RichPresenceConfiguration = ApiRichPresenceConfigurationResponse.FromOld(RichPresenceConfiguration.Create(gameConfig, richConfig))!,
             GrafanaDashboardUrl = integrationConfig.GrafanaDashboardUrl,
-
+            
+            ContactInfo = new ApiContactInfoResponse
+            {
+                AdminName = contactInfoConfig.AdminName,
+                EmailAddress = contactInfoConfig.EmailAddress,
+                DiscordServerInvite = contactInfoConfig.DiscordServerInvite,
+                AdminDiscordUsername = contactInfoConfig.AdminDiscordUsername,
+            },
 #if DEBUG
             SoftwareType = "Debug",
 #else
