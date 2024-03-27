@@ -99,6 +99,7 @@ public class RefreshGameServer : RefreshServer
         this.Server.AddConfig(config);
         this.Server.AddConfig(integrationConfig);
         this.Server.AddConfigFromJsonFile<RichPresenceConfig>("rpc.json");
+        this.Server.AddConfigFromJsonFile<ContactInfoConfig>("contactInfo.json");
     }
     
     protected override void SetupServices()
