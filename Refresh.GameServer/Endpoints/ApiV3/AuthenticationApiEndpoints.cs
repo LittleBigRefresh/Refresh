@@ -37,7 +37,7 @@ public class AuthenticationApiEndpoints : EndpointGroup
     /// A randomly generated password.
     /// Used to prevent against timing attacks.
     /// </summary>
-    private readonly string _fakePassword = BC.HashPassword(Random.Shared.Next().ToString(), WorkFactor);
+    private static readonly string FakePassword = BC.HashPassword(Random.Shared.Next().ToString(), WorkFactor);
 
     [ApiV3Endpoint("login", HttpMethods.Post), Authentication(false), AllowDuringMaintenance]
     [DocRequestBody(typeof(ApiAuthenticationRequest))]
@@ -53,7 +53,7 @@ public class AuthenticationApiEndpoints : EndpointGroup
             //
             // You can use this discrepancy to determine if a given email is valid.
             // Thus, we should always do the work of checking the password.
-            _ = BC.Verify(body.PasswordSha512, this._fakePassword);
+            _ = BC.Verify(body.PasswordSha512, FakePassword);
             
             return new ApiAuthenticationError("The email or password was incorrect.");
         }
