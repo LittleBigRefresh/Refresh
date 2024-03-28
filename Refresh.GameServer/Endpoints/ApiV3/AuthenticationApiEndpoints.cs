@@ -31,6 +31,11 @@ public class AuthenticationApiEndpoints : EndpointGroup
     // If increased, passwords will automatically be rehashed at login time to use the new WorkFactor
     // If decreased, passwords will stay at higher WorkFactor until reset
     public const int WorkFactor = 14;
+    /// <summary>
+    /// A randomly generated password for the purposes of creating false work.
+    /// Prevents against timing attacks.
+    /// </summary>
+    private readonly string _fakePassword = BC.HashPassword(Random.Shared.Next().ToString(), WorkFactor);
 
     [ApiV3Endpoint("login", HttpMethods.Post), Authentication(false), AllowDuringMaintenance]
     [DocRequestBody(typeof(ApiAuthenticationRequest))]
@@ -38,7 +43,18 @@ public class AuthenticationApiEndpoints : EndpointGroup
     public ApiResponse<IApiAuthenticationResponse> Authenticate(RequestContext context, GameDatabaseContext database, ApiAuthenticationRequest body, GameServerConfig config)
     {
         GameUser? user = database.GetUserByEmailAddress(body.EmailAddress);
-        if (user == null) return new ApiAuthenticationError("The email or password was incorrect.");
+        if (user == null)
+        {
+            // Do the work of checking the password if there was no user found.
+            // If we immediately return when we can't find a user, then it will be a short-lived request.
+            // If we find a user and we check the password, then the request will take much longer.
+            //
+            // You can use this discrepancy to determine if a given email is valid.
+            // Thus, we should always do the work of checking the password.
+            _ = BC.Verify(body.PasswordSha512, this._fakePassword);
+            
+            return new ApiAuthenticationError("The email or password was incorrect.");
+        }
 
         if (user.Role == GameUserRole.Banned)
             return new ApiAuthenticationError($"You are banned until {user.BanExpiryDate.ToString()}. " +
