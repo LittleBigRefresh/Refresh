@@ -55,15 +55,10 @@ public class AuthenticationApiEndpoints : EndpointGroup
             
             return new ApiAuthenticationError("The email or password was incorrect.");
         }
-
-        if (user.Role == GameUserRole.Banned)
-            return new ApiAuthenticationError($"You are banned until {user.BanExpiryDate.ToString()}. " +
-                                              $"For more information or to request account deletion, please contact the server administrator.\n" +
-                                              $"Reason: {user.BanReason}");
-
+        
         if (config.MaintenanceMode && user.Role != GameUserRole.Admin)
             return new ApiAuthenticationError(
-                "The server is currently in maintenance mode, so it is only accessible for administrators." +
+                "The server is currently in maintenance mode, so it is only accessible for administrators. " +
                 "Check back later.");
 
         // if this is a legacy user, have them create a password on login
@@ -84,9 +79,12 @@ public class AuthenticationApiEndpoints : EndpointGroup
         }
 
         if (!BC.Verify(body.PasswordSha512, user.PasswordBcrypt))
-        {
             return new ApiAuthenticationError("The email or password was incorrect.");
-        }
+        
+        if (user.Role == GameUserRole.Banned)
+            return new ApiAuthenticationError($"You are banned until {user.BanExpiryDate.ToString()}. " +
+                                              $"For more information or to request account deletion, please contact the server administrator.\n" +
+                                              $"Reason: {user.BanReason}");
 
         Token token = database.GenerateTokenForUser(user, TokenType.Api, TokenGame.Website, TokenPlatform.Website);
         Token refreshToken = database.GenerateTokenForUser(user, TokenType.ApiRefresh, TokenGame.Website, TokenPlatform.Website, GameDatabaseContext.RefreshTokenExpirySeconds);
