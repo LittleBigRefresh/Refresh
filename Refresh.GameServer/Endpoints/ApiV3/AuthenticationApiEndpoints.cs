@@ -75,13 +75,11 @@ public class AuthenticationApiEndpoints : EndpointGroup
             };
         }
 
-        if (BC.PasswordNeedsRehash(user.PasswordBcrypt, WorkFactor))
-        {
-            database.SetUserPassword(user, BC.HashPassword(body.PasswordSha512, WorkFactor));
-        }
-
         if (!BC.Verify(body.PasswordSha512, user.PasswordBcrypt))
             return new ApiAuthenticationError("The email or password was incorrect.");
+        
+        if (BC.PasswordNeedsRehash(user.PasswordBcrypt, WorkFactor))
+            database.SetUserPassword(user, BC.HashPassword(body.PasswordSha512, WorkFactor));
         
         if (user.Role == GameUserRole.Banned)
             return new ApiAuthenticationError($"You are banned until {user.BanExpiryDate.ToString()}. " +
