@@ -23,17 +23,19 @@ namespace Refresh.GameServer.Endpoints.ApiV3;
 
 public class AuthenticationApiEndpoints : EndpointGroup
 {
-    // How many rounds to do for password hashing (BCrypt)
-    // 14 is ~1 second for logins and reset, which is fair because logins are a one-time thing
-    // 200 OK on POST '/api/v3/resetPassword' (1058ms)
-    // 200 OK on POST '/api/v3/auth' (1087ms)
-    //
-    // If increased, passwords will automatically be rehashed at login time to use the new WorkFactor
-    // If decreased, passwords will stay at higher WorkFactor until reset
-    public const int WorkFactor = 14;
     /// <summary>
-    /// A randomly generated password for the purposes of creating false work.
-    /// Prevents against timing attacks.
+    ///     How many rounds to do for password hashing (BCrypt)
+    ///     On my machine, a work factor of 14 takes roughly 1 second for password checks.
+    /// </summary>
+    /// <remarks>
+    ///     If increased, passwords will automatically be rehashed at login time to use the new WorkFactor 
+    ///     If decreased, passwords will stay at higher WorkFactor until reset
+    /// </remarks>
+    public const int WorkFactor = 14;
+    
+    /// <summary>
+    /// A randomly generated password.
+    /// Used to prevent against timing attacks.
     /// </summary>
     private readonly string _fakePassword = BC.HashPassword(Random.Shared.Next().ToString(), WorkFactor);
 
