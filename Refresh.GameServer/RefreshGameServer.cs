@@ -238,6 +238,26 @@ public class RefreshGameServer : RefreshServer
         return context.ReallowUser(username);
     }
 
+    public void RenameUserFromUsername(string username, string newUsername)
+    {
+        using GameDatabaseContext context = this.GetContext();
+        
+        GameUser? user = context.GetUserByUsername(username);
+        if (user == null) throw new InvalidOperationException("Cannot find the user " + username);
+        
+        context.RenameUser(user, newUsername);
+    }
+    
+    public void RenameUserFromEmailAddress(string emailAddress, string newUsername)
+    {
+        using GameDatabaseContext context = this.GetContext();
+        
+        GameUser? user = context.GetUserByEmailAddress(emailAddress);
+        if (user == null) throw new InvalidOperationException("Cannot find a user by emailAddress " + emailAddress);
+        
+        context.RenameUser(user, newUsername);
+    }
+
     public override void Dispose()
     {
         this._databaseProvider.Dispose();

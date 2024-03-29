@@ -252,6 +252,23 @@ public partial class GameDatabaseContext // Users
         return new DatabaseList<GameUser>(this._realm.All<GameUser>().Where(u => u._Role == roleByte));
     }
 
+    public void RenameUser(GameUser user, string newUsername)
+    {
+        string oldUsername = user.Username;
+        
+        this._realm.Write(() =>
+        {
+            user.Username = newUsername;
+        });
+        
+        this.AddNotification("Username Updated", $"An admin has updated your account's username from '{oldUsername}' to '{newUsername}'. " +
+                                                 $"If there are any problems caused by this, please let us know.", user);
+        
+        // Since ticket authentication is username-based, delete all game tokens for this user
+        // Future authentication is going to be invalid, and the client is going to be in a broken state anyways.
+        this.RevokeAllTokensForUser(user, TokenType.Game);
+    }
+
     public void DeleteUser(GameUser user)
     {
         const string deletedReason = "This user's account has been deleted.";
