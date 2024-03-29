@@ -68,7 +68,7 @@ public class AuthenticationIntegrationTests : GameServerTest
         ApiAuthenticationRequest payload = new()
         {
             EmailAddress = user.EmailAddress,
-            PasswordSha512 = Encoding.ASCII.GetString(SHA512.HashData(Encoding.ASCII.GetBytes(password))),
+            PasswordSha512 = password,
         };
 
         HttpResponseMessage response = context.Http.PostAsync("/api/v3/login", new StringContent(JsonConvert.SerializeObject(payload))).Result;
@@ -85,28 +85,28 @@ public class AuthenticationIntegrationTests : GameServerTest
             Assert.That(authResponse.Data!.TokenData, Is.Not.Null);
             Assert.That(authResponse.Data.TokenData, Is.Not.Empty);
         });
-        
+
         context.Database.Refresh();
         Assert.Multiple(() =>
         {
             Assert.That(context.Database.GetTokenFromTokenData(authResponse!.Data!.TokenData, TokenType.Api), Is.Not.Null);
             Assert.That(context.Database.GetTokenFromTokenData(authResponse.Data.RefreshTokenData!, TokenType.ApiRefresh), Is.Not.Null);
         });
-        
+
         context.Http.DefaultRequestHeaders.TryAddWithoutValidation("Authorization", authResponse!.Data!.TokenData);
         response = context.Http.GetAsync("/api/v3/users/me").Result;
         Assert.That(response.StatusCode, Is.EqualTo(OK));
-        
+
         // jump to when token expires
         context.Time.TimestampMilliseconds = (GameDatabaseContext.DefaultTokenExpirySeconds * 1000) + 1;
         context.Database.Refresh();
-        
+
         Assert.Multiple(() =>
         {
             Assert.That(context.Database.GetTokenFromTokenData(authResponse!.Data!.TokenData, TokenType.Api), Is.Null);
             Assert.That(context.Database.GetTokenFromTokenData(authResponse.Data.RefreshTokenData!, TokenType.ApiRefresh), Is.Not.Null);
         });
-        
+
         response = context.Http.GetAsync("/api/v3/users/me").Result;
         Assert.That(response.StatusCode, Is.EqualTo(Forbidden));
 
@@ -117,7 +117,7 @@ public class AuthenticationIntegrationTests : GameServerTest
 
         response = context.Http.PostAsync("/api/v3/refreshToken", new StringContent(JsonConvert.SerializeObject(refreshPayload))).Result;
         Assert.That(response.StatusCode, Is.EqualTo(OK));
-        
+
         respString = response.Content.ReadAsStringAsync().Result;
         context.Server.Value.Logger.LogTrace("Tests", respString);
         authResponse = JsonConvert.DeserializeObject<ApiResponse<ApiAuthenticationResponse>>(respString);
