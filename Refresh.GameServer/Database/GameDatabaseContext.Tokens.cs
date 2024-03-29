@@ -124,6 +124,14 @@ public partial class GameDatabaseContext // Tokens
             this._realm.RemoveRange(this._realm.All<Token>().Where(t => t.User == user));
         });
     }
+    
+    public void RevokeAllTokensForUser(GameUser user, TokenType type)
+    {
+        this._realm.Write(() =>
+        {
+            this._realm.RemoveRange(this._realm.All<Token>().Where(t => t.User == user && t._TokenType == (int)type));
+        });
+    }
 
     public void AddIpVerificationRequest(GameUser user, string ipAddress)
     {

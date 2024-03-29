@@ -47,6 +47,9 @@ internal class CommandLineManager
         
         [Option('r', "reallow_user", Required = false, HelpText = "Re-allow a user to register. Username option is requried if this is set.")]
         public bool ReallowUser { get; set; }
+        
+        [Option("rename_user", Required = false, HelpText = "Changes a user's username. (old) username or Email option is required if this is set.")]
+        public string? RenameUser { get; set; }
     }
 
     internal void StartWithArgs(string[] args)
@@ -136,6 +139,22 @@ internal class CommandLineManager
             else
             {
                 Console.WriteLine("No user was provided, cannot continue.");
+                Environment.Exit(1);
+            }
+        }
+
+        if (options.RenameUser != null)
+        {
+            if (options.Username != null)
+            {
+                this._server.RenameUserFromUsername(options.Username, options.RenameUser);
+            } else if (options.EmailAddress != null)
+            {
+                this._server.RenameUserFromEmailAddress(options.EmailAddress, options.RenameUser);
+            }
+            else
+            {
+                Console.WriteLine("No user/email was provided, cannot continue.");
                 Environment.Exit(1);
             }
         }
