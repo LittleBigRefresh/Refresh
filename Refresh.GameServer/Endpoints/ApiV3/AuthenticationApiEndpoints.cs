@@ -23,14 +23,21 @@ namespace Refresh.GameServer.Endpoints.ApiV3;
 
 public class AuthenticationApiEndpoints : EndpointGroup
 {
-    // How many rounds to do for password hashing (BCrypt)
-    // 14 is ~1 second for logins and reset, which is fair because logins are a one-time thing
-    // 200 OK on POST '/api/v3/resetPassword' (1058ms)
-    // 200 OK on POST '/api/v3/auth' (1087ms)
-    //
-    // If increased, passwords will automatically be rehashed at login time to use the new WorkFactor
-    // If decreased, passwords will stay at higher WorkFactor until reset
+    /// <summary>
+    ///     How many rounds to do for password hashing (BCrypt)
+    ///     On my machine, a work factor of 14 takes roughly 1 second for password checks.
+    /// </summary>
+    /// <remarks>
+    ///     If increased, passwords will automatically be rehashed at login time to use the new WorkFactor 
+    ///     If decreased, passwords will stay at higher WorkFactor until reset
+    /// </remarks>
     public const int WorkFactor = 14;
+    
+    /// <summary>
+    /// A randomly generated password.
+    /// Used to prevent against timing attacks.
+    /// </summary>
+    private static readonly string FakePassword = BC.HashPassword(Random.Shared.Next().ToString(), WorkFactor);
 
     [ApiV3Endpoint("login", HttpMethods.Post), Authentication(false), AllowDuringMaintenance]
     [DocRequestBody(typeof(ApiAuthenticationRequest))]
@@ -38,16 +45,22 @@ public class AuthenticationApiEndpoints : EndpointGroup
     public ApiResponse<IApiAuthenticationResponse> Authenticate(RequestContext context, GameDatabaseContext database, ApiAuthenticationRequest body, GameServerConfig config)
     {
         GameUser? user = database.GetUserByEmailAddress(body.EmailAddress);
-        if (user == null) return new ApiAuthenticationError("The email or password was incorrect.");
-
-        if (user.Role == GameUserRole.Banned)
-            return new ApiAuthenticationError($"You are banned until {user.BanExpiryDate.ToString()}. " +
-                                              $"For more information or to request account deletion, please contact the server administrator.\n" +
-                                              $"Reason: {user.BanReason}");
-
+        if (user == null)
+        {
+            // Do the work of checking the password if there was no user found.
+            // If we immediately return when we can't find a user, then it will be a short-lived request.
+            // If we find a user and we check the password, then the request will take much longer.
+            //
+            // You can use this discrepancy to determine if a given email is valid.
+            // Thus, we should always do the work of checking the password.
+            _ = BC.Verify(body.PasswordSha512, FakePassword);
+            
+            return new ApiAuthenticationError("The email or password was incorrect.");
+        }
+        
         if (config.MaintenanceMode && user.Role != GameUserRole.Admin)
             return new ApiAuthenticationError(
-                "The server is currently in maintenance mode, so it is only accessible for administrators." +
+                "The server is currently in maintenance mode, so it is only accessible for administrators. " +
                 "Check back later.");
 
         // if this is a legacy user, have them create a password on login
@@ -62,15 +75,16 @@ public class AuthenticationApiEndpoints : EndpointGroup
             };
         }
 
-        if (BC.PasswordNeedsRehash(user.PasswordBcrypt, WorkFactor))
-        {
-            database.SetUserPassword(user, BC.HashPassword(body.PasswordSha512, WorkFactor));
-        }
-
         if (!BC.Verify(body.PasswordSha512, user.PasswordBcrypt))
-        {
             return new ApiAuthenticationError("The email or password was incorrect.");
-        }
+        
+        if (BC.PasswordNeedsRehash(user.PasswordBcrypt, WorkFactor))
+            database.SetUserPassword(user, BC.HashPassword(body.PasswordSha512, WorkFactor));
+        
+        if (user.Role == GameUserRole.Banned)
+            return new ApiAuthenticationError($"You are banned until {user.BanExpiryDate.ToString()}. " +
+                                              $"For more information or to request account deletion, please contact the server administrator.\n" +
+                                              $"Reason: {user.BanReason}");
 
         Token token = database.GenerateTokenForUser(user, TokenType.Api, TokenGame.Website, TokenPlatform.Website);
         Token refreshToken = database.GenerateTokenForUser(user, TokenType.ApiRefresh, TokenGame.Website, TokenPlatform.Website, GameDatabaseContext.RefreshTokenExpirySeconds);
