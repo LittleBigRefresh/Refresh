@@ -171,7 +171,7 @@ public class RefreshGameServer : RefreshServer
         this.WorkerManager?.Stop();
     }
 
-    private GameDatabaseContext GetContext()
+    internal GameDatabaseContext GetContext()
     {
         return this._databaseProvider.GetContext();
     }
@@ -204,23 +204,9 @@ public class RefreshGameServer : RefreshServer
         context.VerifyUserEmail(user);
     }
     
-    public void SetAdminFromUsername(string username)
+    public void SetUserAsAdmin(GameUser user)
     {
         using GameDatabaseContext context = this.GetContext();
-
-        GameUser? user = context.GetUserByUsername(username);
-        if (user == null) throw new InvalidOperationException("Cannot find the user " + username);
-
-        context.SetUserRole(user, GameUserRole.Admin);
-    }
-    
-    public void SetAdminFromEmailAddress(string emailAddress)
-    {
-        using GameDatabaseContext context = this.GetContext();
-
-        GameUser? user = context.GetUserByEmailAddress(emailAddress);
-        if (user == null) throw new InvalidOperationException("Cannot find a user by emailAddress " + emailAddress);
-
         context.SetUserRole(user, GameUserRole.Admin);
     }
     
@@ -238,23 +224,9 @@ public class RefreshGameServer : RefreshServer
         return context.ReallowUser(username);
     }
 
-    public void RenameUserFromUsername(string username, string newUsername)
+    public void RenameUser(GameUser user, string newUsername)
     {
         using GameDatabaseContext context = this.GetContext();
-        
-        GameUser? user = context.GetUserByUsername(username);
-        if (user == null) throw new InvalidOperationException("Cannot find the user " + username);
-        
-        context.RenameUser(user, newUsername);
-    }
-    
-    public void RenameUserFromEmailAddress(string emailAddress, string newUsername)
-    {
-        using GameDatabaseContext context = this.GetContext();
-        
-        GameUser? user = context.GetUserByEmailAddress(emailAddress);
-        if (user == null) throw new InvalidOperationException("Cannot find a user by emailAddress " + emailAddress);
-        
         context.RenameUser(user, newUsername);
     }
 
