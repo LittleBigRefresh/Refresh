@@ -8,7 +8,7 @@ namespace Refresh.GameServer.Endpoints.Game.Handshake;
 
 public class WelcomeEndpoints : EndpointGroup
 {
-    private const string Copyright = "Copyright (C) 2023 LittleBigRefresh";
+    private const string Copyright = "Copyright (C) 2024 LittleBigRefresh";
     private const string AGPLNotice = """
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU Affero General Public License as published
