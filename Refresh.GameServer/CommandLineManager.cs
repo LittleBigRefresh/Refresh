@@ -1,7 +1,9 @@
 using System.Diagnostics.CodeAnalysis;
 using CommandLine;
 using NotEnoughLogs;
+using Refresh.GameServer.Database;
 using Refresh.GameServer.Documentation;
+using Refresh.GameServer.Types.UserData;
 
 namespace Refresh.GameServer;
 
@@ -57,6 +59,33 @@ internal class CommandLineManager
             .WithParsed(this.StartWithOptions);
     }
 
+    [DoesNotReturn]
+    private static void Fail(string reason, int code = 1)
+    {
+        ConsoleColor oldColor = Console.ForegroundColor;
+        
+        Console.ForegroundColor = ConsoleColor.Red;
+        Console.WriteLine(reason);
+        Console.WriteLine($"Failed with exit code {code}");
+        Console.ForegroundColor = oldColor;
+        
+        Environment.Exit(code);
+    }
+    
+    private GameUser GetUserOrFail(Options options)
+    {
+        if (options.Username == null && options.EmailAddress == null) Fail("No username or email was provided");
+        
+        using GameDatabaseContext context = this._server.GetContext();
+
+        GameUser? user = null;
+        if (options.Username != null) user = context.GetUserByUsername(options.Username);
+        if (options.EmailAddress != null) user ??= context.GetUserByEmailAddress(options.EmailAddress);
+        
+        if (user == null) Fail($"Cannot find the user by username '{options.Username}' or by email '{options.EmailAddress}'");
+        return user;
+    }
+
     [SuppressMessage("ReSharper", "InvertIf")]
     private void StartWithOptions(Options options)
     {
@@ -85,8 +114,7 @@ internal class CommandLineManager
         {
             if (options.Username == null || options.EmailAddress == null)
             {
-                Console.WriteLine("Both the email and username are required to create a user, cannot continue.");
-                Environment.Exit(1);
+                Fail("Both the email and username are required to create a user");
             }
             
             this._server.CreateUser(options.Username, options.EmailAddress);
@@ -94,18 +122,8 @@ internal class CommandLineManager
 
         if (options.SetAdmin)
         {
-            if (options.Username != null)
-            {
-                this._server.SetAdminFromUsername(options.Username);
-            } else if (options.EmailAddress != null)
-            {
-                this._server.SetAdminFromEmailAddress(options.EmailAddress);
-            }
-            else
-            {
-                Console.WriteLine("No user/email was provided, cannot continue.");
-                Environment.Exit(1);
-            }
+            GameUser user = this.GetUserOrFail(options);
+            this._server.SetUserAsAdmin(user);
         }
         
         if (options.DisallowUser)
@@ -113,16 +131,9 @@ internal class CommandLineManager
             if (options.Username != null)
             {
                 if (!this._server.DisallowUser(options.Username))
-                {
-                    Console.WriteLine("User is already disallowed");
-                    Environment.Exit(1);
-                }
+                    Fail("User is already disallowed");
             }
-            else
-            {
-                Console.WriteLine("No user was provided, cannot continue.");
-                Environment.Exit(1);
-            }
+            else Fail("No username was provided");
         }
         
         if (options.ReallowUser)
@@ -130,32 +141,18 @@ internal class CommandLineManager
             if (options.Username != null)
             {
                 if (!this._server.ReallowUser(options.Username))
-                {
-                    Console.WriteLine("User is already allowed");
-                    Environment.Exit(1);
-                }
+                    Fail("User is already allowed");
             }
-            else
-            {
-                Console.WriteLine("No user was provided, cannot continue.");
-                Environment.Exit(1);
-            }
+            else Fail("No username was provided");
         }
 
         if (options.RenameUser != null)
         {
-            if (options.Username != null)
-            {
-                this._server.RenameUserFromUsername(options.Username, options.RenameUser);
-            } else if (options.EmailAddress != null)
-            {
-                this._server.RenameUserFromEmailAddress(options.EmailAddress, options.RenameUser);
-            }
-            else
-            {
-                Console.WriteLine("No user/email was provided, cannot continue.");
-                Environment.Exit(1);
-            }
+            if(string.IsNullOrWhiteSpace(options.RenameUser))
+                Fail("Username must contain content");
+            
+            GameUser user = this.GetUserOrFail(options);
+            this._server.RenameUser(user, options.RenameUser);
         }
     }
 }
