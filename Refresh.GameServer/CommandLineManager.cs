@@ -92,16 +92,12 @@ internal class CommandLineManager
         if (options.ImportAssets)
         {
             this._server.ImportAssets(options.Force);
-            return;
         }
-
-        if (options.ImportImages)
+        else if (options.ImportImages)
         {
             this._server.ImportImages();
-            return;
         }
-
-        if (options.GenerateDocumentation)
+        else if (options.GenerateDocumentation)
         {
             DocumentationService service = new(this._server.Logger);
             service.Initialize();
@@ -109,8 +105,7 @@ internal class CommandLineManager
             string json = JsonConvert.SerializeObject(service.Documentation, Formatting.Indented);
             File.WriteAllText(Path.Combine(Environment.CurrentDirectory, "apiDocumentation.json"), json);
         }
-
-        if (options.CreateUser)
+        else if (options.CreateUser)
         {
             if (options.Username == null || options.EmailAddress == null)
             {
@@ -119,14 +114,12 @@ internal class CommandLineManager
             
             this._server.CreateUser(options.Username, options.EmailAddress);
         }
-
-        if (options.SetAdmin)
+        else if (options.SetAdmin)
         {
             GameUser user = this.GetUserOrFail(options);
             this._server.SetUserAsAdmin(user);
         }
-        
-        if (options.DisallowUser)
+        else if (options.DisallowUser)
         {
             if (options.Username != null)
             {
@@ -135,8 +128,7 @@ internal class CommandLineManager
             }
             else Fail("No username was provided");
         }
-        
-        if (options.ReallowUser)
+        else if (options.ReallowUser)
         {
             if (options.Username != null)
             {
@@ -145,8 +137,7 @@ internal class CommandLineManager
             }
             else Fail("No username was provided");
         }
-
-        if (options.RenameUser != null)
+        else if (options.RenameUser != null)
         {
             if(string.IsNullOrWhiteSpace(options.RenameUser))
                 Fail("Username must contain content");
