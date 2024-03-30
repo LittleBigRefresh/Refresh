@@ -17,37 +17,37 @@ internal class CommandLineManager
     [Serializable]
     private class Options
     {
-        [Option("import-assets", Required = false, HelpText = "Re-import all assets from the datastore into the database.")]
+        [Option("import-assets", HelpText = "Re-import all assets from the datastore into the database.")]
         public bool ImportAssets { get; set; }
         
-        [Option("convert-images", Required = false, HelpText = "Convert all images in the database to .PNGs. Otherwise, images will be converted as they are used.")]
+        [Option("convert-images", HelpText = "Convert all images in the database to .PNGs. Otherwise, images will be converted as they are used.")]
         public bool ImportImages { get; set; }
         
-        [Option("generate-docs", Required = false, HelpText = "Generates documentation for API V3 endpoints.")]
+        [Option("generate-docs", HelpText = "Generates documentation for API V3 endpoints.")]
         public bool GenerateDocumentation { get; set; }
         
-        [Option('a', "set-admin", Required = false, HelpText = "Gives the user the Admin role. Username or Email options are required if this is set.")]
+        [Option('a', "set-admin", HelpText = "Gives the user the Admin role. Username or Email options are required if this is set.")]
         public bool SetAdmin { get; set; }
         
-        [Option('n', "new-user", Required = false, HelpText = "Creates a user. Username *and* Email options are required if this is set.")]
+        [Option('n', "new-user", HelpText = "Creates a user. Username *and* Email options are required if this is set.")]
         public bool CreateUser { get; set; }
         
-        [Option('u', "username", Required = false, HelpText = "The user to operate on/create.")]
+        [Option('u', "username", HelpText = "The user to operate on/create.")]
         public string? Username { get; set; }
         
-        [Option('e', "email", Required = false, HelpText = "The user's email to operate on/create.")]
+        [Option('e', "email", HelpText = "The user's email to operate on/create.")]
         public string? EmailAddress { get; set; }
         
-        [Option('f', "force", Required = false, HelpText = "Force all operations to happen, skipping user consent.")]
+        [Option('f', "force", HelpText = "Force all operations to happen, skipping user consent.")]
         public bool Force { get; set; }
         
-        [Option("disallow-user", Required = false, HelpText = "Disallow a user from registering. Username option is required if this is set.")]
+        [Option("disallow-user", HelpText = "Disallow a user from registering. Username option is required if this is set.")]
         public bool DisallowUser { get; set; }
         
-        [Option("reallow-user", Required = false, HelpText = "Re-allow a user to register. Username option is required if this is set.")]
+        [Option("reallow-user", HelpText = "Re-allow a user to register. Username option is required if this is set.")]
         public bool ReallowUser { get; set; }
         
-        [Option("rename-user", Required = false, HelpText = "Changes a user's username. (old) username or Email option is required if this is set.")]
+        [Option("rename-user", HelpText = "Changes a user's username. (old) username or Email option is required if this is set.")]
         public string? RenameUser { get; set; }
     }
 
