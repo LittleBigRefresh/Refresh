@@ -23,14 +23,14 @@ public class LeaderboardEndpoints : EndpointGroup
     private const int RequestBlockDuration = 300;
     private const string BucketName = "score";
     
-    [GameEndpoint("play/user/{id}", ContentType.Xml, HttpMethods.Post)]
-    public Response PlayLevel(RequestContext context, GameUser user, GameDatabaseContext database, int id)
+    [GameEndpoint("play/{slotType}/{id}", ContentType.Xml, HttpMethods.Post)]
+    public Response PlayLevel(RequestContext context, GameUser user, GameDatabaseContext database, string slotType, int id)
     {
-        GameLevel? level = database.GetLevelById(id);
+        GameLevel? level = database.GetLevelByIdAndType(slotType, id);
         if (level == null) return NotFound;
 
         int count = 1;
-        //If we are on PSP and it has sent a `count` parameter...
+        //If we are on PSP, and it has sent a `count` parameter...
         if (context.QueryString.Get("count") != null)
         {
             //Count parameters are invalid on non-PSP clients
@@ -53,55 +53,12 @@ public class LeaderboardEndpoints : EndpointGroup
         database.PlayLevel(level, user, count);
         return OK;
     }
-
-    [GameEndpoint("scoreboard/developer/{id}", HttpMethods.Get, ContentType.Xml)]
-    [RateLimitSettings(RequestTimeoutDuration, MaxRequestAmount, RequestBlockDuration, BucketName)]
-    public Response GetDeveloperScores(RequestContext context, GameUser user, GameDatabaseContext database, int id, Token token)
-    {
-        //No story levels have an ID < 0
-        if (id < 0)
-        {
-            return BadRequest;
-        }
-        
-        GameLevel level = database.GetStoryLevelById(id);
-
-        MultiLeaderboard multiLeaderboard = new(database, level, token.TokenGame);
-        
-        return new Response(SerializedMultiLeaderboardResponse.FromOld(multiLeaderboard), ContentType.Xml);
-    }
-
-    [GameEndpoint("scoreboard/developer/{id}", ContentType.Xml, HttpMethods.Post)]
-    [RateLimitSettings(RequestTimeoutDuration, MaxRequestAmount, RequestBlockDuration, BucketName)]
-    public Response SubmitDeveloperScore(RequestContext context, GameUser user, GameDatabaseContext database, int id, SerializedScore body, Token token)
-    {
-        //No story levels have an ID < 0
-        if (id < 0)
-        {
-            return BadRequest;
-        }
-        
-        GameLevel level = database.GetStoryLevelById(id);
-
-        //Validate the score is a non-negative amount
-        if (body.Score < 0)
-        {
-            return BadRequest;
-        }
-
-        GameSubmittedScore score = database.SubmitScore(body, token, level);
-
-        IEnumerable<ScoreWithRank>? scores = database.GetRankedScoresAroundScore(score, 5);
-        Debug.Assert(scores != null);
-        
-        return new Response(SerializedScoreLeaderboardList.FromSubmittedEnumerable(scores), ContentType.Xml);
-    }
     
-    [GameEndpoint("scoreboard/user/{id}", HttpMethods.Get, ContentType.Xml)]
+    [GameEndpoint("scoreboard/{slotType}/{id}", HttpMethods.Get, ContentType.Xml)]
     [RateLimitSettings(RequestTimeoutDuration, MaxRequestAmount, RequestBlockDuration, BucketName)]
-    public Response GetUserScores(RequestContext context, GameUser user, GameDatabaseContext database, int id, Token token)
+    public Response GetUserScores(RequestContext context, GameUser user, GameDatabaseContext database, string slotType, int id, Token token)
     {
-        GameLevel? level = database.GetLevelById(id);
+        GameLevel? level = database.GetLevelByIdAndType(slotType, id);
         if (level == null) return NotFound;
         
         //Get the scores from the database
@@ -110,11 +67,11 @@ public class LeaderboardEndpoints : EndpointGroup
         return new Response(SerializedMultiLeaderboardResponse.FromOld(multiLeaderboard), ContentType.Xml);
     }
     
-    [GameEndpoint("scoreboard/user/{id}", ContentType.Xml, HttpMethods.Post)]
+    [GameEndpoint("scoreboard/{slotType}/{id}", ContentType.Xml, HttpMethods.Post)]
     [RateLimitSettings(RequestTimeoutDuration, MaxRequestAmount, RequestBlockDuration, BucketName)]
-    public Response SubmitScore(RequestContext context, GameUser user, GameDatabaseContext database, int id, SerializedScore body, Token token)
+    public Response SubmitScore(RequestContext context, GameUser user, GameDatabaseContext database, string slotType, int id, SerializedScore body, Token token)
     {
-        GameLevel? level = database.GetLevelById(id);
+        GameLevel? level = database.GetLevelByIdAndType(slotType, id);
         if (level == null) return NotFound;
 
         // Validate the score is a non-negative amount
@@ -138,30 +95,13 @@ public class LeaderboardEndpoints : EndpointGroup
         return new Response(SerializedScoreLeaderboardList.FromSubmittedEnumerable(scores), ContentType.Xml);
     }
 
-    [GameEndpoint("topscores/user/{id}/{type}", ContentType.Xml)]
+    [GameEndpoint("topscores/{slotType}/{id}/{type}", ContentType.Xml)]
     [MinimumRole(GameUserRole.Restricted)]
     [RateLimitSettings(RequestTimeoutDuration, MaxRequestAmount, RequestBlockDuration, BucketName)]
-    public Response GetTopScoresForLevel(RequestContext context, GameDatabaseContext database, int id, int type)
+    public Response GetTopScoresForLevel(RequestContext context, GameDatabaseContext database, string slotType, int id, int type)
     {
-        GameLevel? level = database.GetLevelById(id);
+        GameLevel? level = database.GetLevelByIdAndType(slotType, id);
         if (level == null) return NotFound;
-        
-        (int skip, int count) = context.GetPageData();
-        return new Response(SerializedScoreList.FromSubmittedEnumerable(database.GetTopScoresForLevel(level, count, skip, (byte)type).Items), ContentType.Xml);
-    }
-    
-    [GameEndpoint("topscores/developer/{id}/{type}", ContentType.Xml)]
-    [MinimumRole(GameUserRole.Restricted)]
-    [RateLimitSettings(RequestTimeoutDuration, MaxRequestAmount, RequestBlockDuration, BucketName)]
-    public Response GetTopScoresForDeveloperLevel(RequestContext context, GameDatabaseContext database, int id, int type)
-    {
-        //No story levels have an ID < 0
-        if (id < 0)
-        {
-            return BadRequest;
-        }
-        
-        GameLevel level = database.GetStoryLevelById(id);
         
         (int skip, int count) = context.GetPageData();
         return new Response(SerializedScoreList.FromSubmittedEnumerable(database.GetTopScoresForLevel(level, count, skip, (byte)type).Items), ContentType.Xml);

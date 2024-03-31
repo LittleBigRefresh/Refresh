@@ -349,6 +349,29 @@ public partial class GameDatabaseContext // Levels
     public int GetTotalTeamPickCount(TokenGame game) => this._realm.All<GameLevel>().FilterByGameVersion(game).Count(l => l.TeamPicked);
 
     [Pure]
+    public GameLevel? GetLevelByIdAndType(string slotType, int id)
+    {
+        GameLevel? level;
+        
+        switch (slotType)
+        {
+            case "user":
+                level = this.GetLevelById(id);
+                break;
+            case "developer":
+                if (id < 0)
+                    return null;
+                
+                level = this.GetStoryLevelById(id);
+                break;
+            default:
+                return null;
+        }
+        
+        return level;
+    }
+    
+    [Pure]
     public GameLevel? GetLevelById(int id) => this._realm.All<GameLevel>().FirstOrDefault(l => l.LevelId == id);
 
     private void SetLevelPickStatus(GameLevel level, bool status)

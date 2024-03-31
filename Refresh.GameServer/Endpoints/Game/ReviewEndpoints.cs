@@ -15,10 +15,10 @@ namespace Refresh.GameServer.Endpoints.Game;
 
 public class ReviewEndpoints : EndpointGroup
 {
-    [GameEndpoint("dpadrate/{type}/{levelId}", HttpMethods.Post)]
-    public Response SubmitRating(RequestContext context, GameDatabaseContext database, GameUser user, int levelId)
+    [GameEndpoint("dpadrate/{slotType}/{id}", HttpMethods.Post)]
+    public Response SubmitRating(RequestContext context, GameDatabaseContext database, GameUser user, string slotType, int id)
     {
-        GameLevel? level = database.GetLevelById(levelId);
+        GameLevel? level = database.GetLevelByIdAndType(slotType, id);
         if (level == null) return NotFound;
 
         bool parsed = sbyte.TryParse(context.QueryString.Get("rating"), out sbyte rating);
@@ -31,11 +31,11 @@ public class ReviewEndpoints : EndpointGroup
         return rated ? OK : Unauthorized;
     }
     
-    [GameEndpoint("rate/user/{levelId}", ContentType.Xml, HttpMethods.Post)]
+    [GameEndpoint("rate/{slotType}/{id}", ContentType.Xml, HttpMethods.Post)]
     [AllowEmptyBody]
-    public Response RateUserLevel(RequestContext context, GameDatabaseContext database, GameUser user, int levelId)
+    public Response RateUserLevel(RequestContext context, GameDatabaseContext database, GameUser user, string slotType, int id)
     {
-        GameLevel? level = database.GetLevelById(levelId);
+        GameLevel? level = database.GetLevelByIdAndType(slotType, id);
         if (level == null) return NotFound;
 
         if (!int.TryParse(context.QueryString.Get("rating"), out int ratingInt)) return BadRequest;
@@ -61,22 +61,11 @@ public class ReviewEndpoints : EndpointGroup
         return database.RateLevel(level, user, rating) ? OK : Unauthorized;
     }
 
-    [GameEndpoint("reviewsFor/{slotType}/{levelId}", ContentType.Xml)]
+    [GameEndpoint("reviewsFor/{slotType}/{id}", ContentType.Xml)]
     [AllowEmptyBody]
-    public Response GetReviewsForLevel(RequestContext context, GameDatabaseContext database, string slotType, int levelId)
+    public Response GetReviewsForLevel(RequestContext context, GameDatabaseContext database, string slotType, int id)
     {
-        GameLevel? level;
-        switch (slotType)
-        {
-            case "developer":
-                level = database.GetStoryLevelById(levelId);
-                break;
-            case "user":
-                level = database.GetLevelById(levelId);
-                break;
-            default:
-                return BadRequest;
-        }
+        GameLevel? level = database.GetLevelByIdAndType(slotType, id);
 
         if (level == null) 
             return NotFound;
@@ -100,29 +89,18 @@ public class ReviewEndpoints : EndpointGroup
         return new Response(new SerializedGameReviewResponse(SerializedGameReview.FromOldList(database.GetReviewsByUser(user, count, skip).Items).ToList()), ContentType.Xml);
     }
 
-    [GameEndpoint("postReview/{slotType}/{levelId}", ContentType.Xml, HttpMethods.Post)]
+    [GameEndpoint("postReview/{slotType}/{id}", ContentType.Xml, HttpMethods.Post)]
     public Response PostReviewForLevel(
         RequestContext context,
         GameDatabaseContext database,
         string slotType,
-        int levelId,
+        int id,
         SerializedGameReview body,
         GameUser user,
         IDateTimeProvider timeProvider
     )
     {
-        GameLevel? level;
-        switch (slotType)
-        {
-            case "developer":
-                level = database.GetStoryLevelById(levelId);
-                break;
-            case "user":
-                level = database.GetLevelById(levelId);
-                break;
-            default:
-                return BadRequest;
-        }
+        GameLevel? level = database.GetLevelByIdAndType(slotType, id);
 
         if (level == null)
             return NotFound;

@@ -17,10 +17,10 @@ namespace Refresh.GameServer.Endpoints.Game;
 
 public class RelationEndpoints : EndpointGroup
 {
-    [GameEndpoint("favourite/slot/user/{id}", HttpMethods.Post)]
-    public Response FavouriteLevel(RequestContext context, GameDatabaseContext database, GameUser user, int id)
+    [GameEndpoint("favourite/slot/{slotType}/{id}", HttpMethods.Post)]
+    public Response FavouriteLevel(RequestContext context, GameDatabaseContext database, GameUser user, string slotType, int id)
     {
-        GameLevel? level = database.GetLevelById(id);
+        GameLevel? level = database.GetLevelByIdAndType(slotType, id);
         // On PSP, we have to lie or else the client will begin spamming the server
         // https://discord.com/channels/1049223665243389953/1049225857350254632/1153468991675838474 
         if (level == null) return context.IsPSP() ? OK : NotFound;
@@ -32,10 +32,10 @@ public class RelationEndpoints : EndpointGroup
         return context.IsPSP() ? OK : Unauthorized;
     }
     
-    [GameEndpoint("unfavourite/slot/user/{id}", HttpMethods.Post)]
-    public Response UnfavouriteLevel(RequestContext context, GameDatabaseContext database, GameUser user, int id)
+    [GameEndpoint("unfavourite/slot/{slotType}/{id}", HttpMethods.Post)]
+    public Response UnfavouriteLevel(RequestContext context, GameDatabaseContext database, GameUser user, string slotType, int id)
     {
-        GameLevel? level = database.GetLevelById(id);
+        GameLevel? level = database.GetLevelByIdAndType(slotType, id);
         // On PSP, we have to lie or else the client will begin spamming the server
         // https://discord.com/channels/1049223665243389953/1049225857350254632/1153468991675838474 
         if (level == null) return context.IsPSP() ? OK : NotFound;
@@ -92,10 +92,10 @@ public class RelationEndpoints : EndpointGroup
         return new SerializedFavouriteUserList(GameUserResponse.FromOldListWithExtraData(users, token.TokenGame, database, dataStore).ToList(), users.Count, skip + count);
     }
 
-    [GameEndpoint("lolcatftw/add/user/{id}", HttpMethods.Post)]
-    public Response QueueLevel(RequestContext context, GameDatabaseContext database, GameUser user, int id)
+    [GameEndpoint("lolcatftw/add/{slotType}/{id}", HttpMethods.Post)]
+    public Response QueueLevel(RequestContext context, GameDatabaseContext database, GameUser user, string slotType, int id)
     {
-        GameLevel? level = database.GetLevelById(id);
+        GameLevel? level = database.GetLevelByIdAndType(slotType, id);
         if (level == null) return NotFound;
         
         if (database.QueueLevel(level, user))
@@ -104,10 +104,10 @@ public class RelationEndpoints : EndpointGroup
         return Unauthorized;
     }
     
-    [GameEndpoint("lolcatftw/remove/user/{id}", HttpMethods.Post)]
-    public Response DequeueLevel(RequestContext context, GameDatabaseContext database, GameUser user, int id)
+    [GameEndpoint("lolcatftw/remove/{slotType}/{id}", HttpMethods.Post)]
+    public Response DequeueLevel(RequestContext context, GameDatabaseContext database, GameUser user, string slotType, int id)
     {
-        GameLevel? level = database.GetLevelById(id);
+        GameLevel? level = database.GetLevelByIdAndType(slotType, id);
         if (level == null) return NotFound;
         
         if (database.DequeueLevel(level, user))
