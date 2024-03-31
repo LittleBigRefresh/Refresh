@@ -20,6 +20,10 @@ public class PresenceEndpoints : EndpointGroup
     [MinimumRole(GameUserRole.Restricted)]
     public int TotalPlayers(RequestContext context, MatchService match) => match.RoomAccessor.GetStatistics().PlayerCount;
 
+    [GameEndpoint("planetStats/highestSlotId")]
+    [MinimumRole(GameUserRole.Restricted)]
+    public int GetTotalLevelCount(RequestContext context, GameDatabaseContext database, Token token) => database.GetTotalLevelCount(token.TokenGame);
+    
     [GameEndpoint("planetStats", HttpMethods.Get, ContentType.Xml)]
     [MinimumRole(GameUserRole.Restricted)]
     public SerializedLevelStatisticsResponse GetLevelStatistics(RequestContext context, GameDatabaseContext database, Token token) => new()
