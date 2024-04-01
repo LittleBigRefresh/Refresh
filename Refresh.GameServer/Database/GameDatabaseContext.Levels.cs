@@ -351,24 +351,18 @@ public partial class GameDatabaseContext // Levels
     [Pure]
     public GameLevel? GetLevelByIdAndType(string slotType, int id)
     {
-        GameLevel? level;
-        
         switch (slotType)
         {
             case "user":
-                level = this.GetLevelById(id);
-                break;
+                return this.GetLevelById(id);
             case "developer":
                 if (id < 0)
                     return null;
                 
-                level = this.GetStoryLevelById(id);
-                break;
+                return this.GetStoryLevelById(id);
             default:
                 return null;
         }
-        
-        return level;
     }
     
     [Pure]
