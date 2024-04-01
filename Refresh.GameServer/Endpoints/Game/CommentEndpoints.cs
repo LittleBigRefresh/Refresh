@@ -70,27 +70,27 @@ public class CommentEndpoints : EndpointGroup
         return OK;
     }
 
-    [GameEndpoint("postComment/user/{levelId}", ContentType.Xml, HttpMethods.Post)]
-    public Response PostLevelComment(RequestContext context, GameDatabaseContext database, int levelId, GameComment body, GameUser user)
+    [GameEndpoint("postComment/{slotType}/{id}", ContentType.Xml, HttpMethods.Post)]
+    public Response PostLevelComment(RequestContext context, GameDatabaseContext database, string slotType, int id, GameComment body, GameUser user)
     {
         if (body.Content.Length > 4096)
         {
             return BadRequest;
         }
         
-        GameLevel? level = database.GetLevelById(levelId);
+        GameLevel? level = database.GetLevelByIdAndType(slotType, id);
         if (level == null) return NotFound;
 
         database.PostCommentToLevel(level, user, body.Content);
         return OK;
     }
 
-    [GameEndpoint("comments/user/{levelId}", ContentType.Xml)]
+    [GameEndpoint("comments/{slotType}/{id}", ContentType.Xml)]
     [NullStatusCode(NotFound)]
     [MinimumRole(GameUserRole.Restricted)]
-    public SerializedCommentList? GetLevelComments(RequestContext context, GameDatabaseContext database, int levelId)
+    public SerializedCommentList? GetLevelComments(RequestContext context, GameDatabaseContext database, string slotType, int id)
     {
-        GameLevel? level = database.GetLevelById(levelId);
+        GameLevel? level = database.GetLevelByIdAndType(slotType, id);
         if (level == null) return null;
 
         (int skip, int count) = context.GetPageData();
@@ -101,21 +101,21 @@ public class CommentEndpoints : EndpointGroup
         return new SerializedCommentList(comments);
     }
 
-    [GameEndpoint("deleteComment/user/{levelId}", HttpMethods.Post)]
-    public Response DeleteLevelComment(RequestContext context, GameDatabaseContext database, int levelId, GameUser user)
+    [GameEndpoint("deleteComment/{slotType}/{id}", HttpMethods.Post)]
+    public Response DeleteLevelComment(RequestContext context, GameDatabaseContext database, string slotType, int id, GameUser user)
     {
         if (!int.TryParse(context.QueryString["commentId"], out int commentId)) return BadRequest;
         
-        GameLevel? level = database.GetLevelById(levelId);
+        GameLevel? level = database.GetLevelByIdAndType(slotType, id);
         if (level == null) return NotFound;
         
         GameComment? comment = level.LevelComments.FirstOrDefault(comment => comment.SequentialId == commentId);
         if (comment == null) return BadRequest;
         
-        //Validate someone doesnt try to delete someone elses comment
+        //Validate someone doesnt try to delete someone else's comment
         if (comment.Author.UserId != user.UserId)
         {
-            context.Logger.LogWarning(BunkumCategory.Game, $"User {user.Username} attempted to delete someone elses comment! This is likely a forged request");
+            context.Logger.LogWarning(BunkumCategory.Game, $"User {user.Username} attempted to delete someone else's comment! This is likely a forged request");
             return Unauthorized;
         }
         

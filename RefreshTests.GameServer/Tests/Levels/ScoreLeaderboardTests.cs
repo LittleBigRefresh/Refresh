@@ -220,7 +220,7 @@ public class ScoreLeaderboardTests : GameServerTest
         }; 
         
         HttpResponseMessage message = client.PostAsync($"/lbp/scoreboard/developer/-1", new StringContent(score.AsXML())).Result;
-        Assert.That(message.StatusCode, Is.EqualTo(BadRequest));
+        Assert.That(message.StatusCode, Is.EqualTo(NotFound));
     }
     
     [Test]
@@ -232,7 +232,7 @@ public class ScoreLeaderboardTests : GameServerTest
         using HttpClient client = context.GetAuthenticatedClient(TokenType.Game, user);
 
         HttpResponseMessage message = client.GetAsync($"/lbp/scoreboard/developer/-1").Result;
-        Assert.That(message.StatusCode, Is.EqualTo(BadRequest));
+        Assert.That(message.StatusCode, Is.EqualTo(NotFound));
     }
     
     [Test]
@@ -244,7 +244,7 @@ public class ScoreLeaderboardTests : GameServerTest
         using HttpClient client = context.GetAuthenticatedClient(TokenType.Game, user);
 
         HttpResponseMessage message = client.GetAsync($"/lbp/topscores/developer/-1/1").Result;
-        Assert.That(message.StatusCode, Is.EqualTo(BadRequest));
+        Assert.That(message.StatusCode, Is.EqualTo(NotFound));
     }
     
     /// <param name="count">The number of scores to try to fetch from the database</param>

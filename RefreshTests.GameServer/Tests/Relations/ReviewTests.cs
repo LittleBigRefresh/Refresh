@@ -19,6 +19,8 @@ public class ReviewTests : GameServerTest
 
         GameLevel level = slotType == "developer" ? context.Database.GetStoryLevelById(1) : context.CreateLevel(levelPublisher);
 
+        int levelId = slotType == "developer" ? 1 : level.LevelId;
+        
         context.Database.PlayLevel(level, reviewPublisher, 1);
         context.Database.Refresh();
         
@@ -30,9 +32,9 @@ public class ReviewTests : GameServerTest
             Text = "moku Sutolokanopu",
         };
         
-        Assert.That(reviewerClient.PostAsync($"/lbp/postReview/{slotType}/{level.LevelId}", new StringContent(review.AsXML())).Result.StatusCode, Is.EqualTo(OK));
+        Assert.That(reviewerClient.PostAsync($"/lbp/postReview/{slotType}/{levelId}", new StringContent(review.AsXML())).Result.StatusCode, Is.EqualTo(OK));
 
-        HttpResponseMessage response = reviewerClient.GetAsync($"/lbp/reviewsFor/{slotType}/{level.LevelId}").Result;
+        HttpResponseMessage response = reviewerClient.GetAsync($"/lbp/reviewsFor/{slotType}/{levelId}").Result;
         Assert.That(response.StatusCode, Is.EqualTo(OK));
 
         SerializedGameReviewResponse levelReviews = response.Content.ReadAsXML<SerializedGameReviewResponse>();
@@ -69,7 +71,7 @@ public class ReviewTests : GameServerTest
         
         using HttpClient client = context.GetAuthenticatedClient(TokenType.Game, user);
         
-        Assert.That(client.GetAsync($"/lbp/reviewsFor/badType/{level.LevelId}").Result.StatusCode, Is.EqualTo(BadRequest));
+        Assert.That(client.GetAsync($"/lbp/reviewsFor/badType/{level.LevelId}").Result.StatusCode, Is.EqualTo(NotFound));
     }
     
     [Test]
@@ -105,7 +107,7 @@ public class ReviewTests : GameServerTest
             Text = "moku Sutolokanopu",
         };
         
-        Assert.That(reviewerClient.PostAsync($"/lbp/postReview/badType/{level.LevelId}", new StringContent(review.AsXML())).Result.StatusCode, Is.EqualTo(BadRequest));
+        Assert.That(reviewerClient.PostAsync($"/lbp/postReview/badType/{level.LevelId}", new StringContent(review.AsXML())).Result.StatusCode, Is.EqualTo(NotFound));
         
         context.Database.Refresh();
         Assert.That(level.Reviews, Is.Empty);

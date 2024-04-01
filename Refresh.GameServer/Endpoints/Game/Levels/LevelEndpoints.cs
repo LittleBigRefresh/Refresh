@@ -73,11 +73,11 @@ public class LevelEndpoints : EndpointGroup
         return this.GetLevels(context, database, categories, matchService, overrideService, user, token, dataStore, route);
     }
 
-    [GameEndpoint("s/user/{id}", ContentType.Xml)]
+    [GameEndpoint("s/{slotType}/{id}", ContentType.Xml)]
     [NullStatusCode(NotFound)]
     [MinimumRole(GameUserRole.Restricted)]
-    public GameLevelResponse? LevelById(RequestContext context, GameDatabaseContext database, MatchService matchService, GameUser user, int id, IDataStore dataStore, Token token)
-        => GameLevelResponse.FromOldWithExtraData(database.GetLevelById(id), database, matchService, user, dataStore, token.TokenGame);
+    public GameLevelResponse? LevelById(RequestContext context, GameDatabaseContext database, MatchService matchService, GameUser user, string slotType, int id, IDataStore dataStore, Token token)
+        => GameLevelResponse.FromOldWithExtraData(database.GetLevelByIdAndType(slotType, id), database, matchService, user, dataStore, token.TokenGame);
 
     [GameEndpoint("slotList", ContentType.Xml)]
     [NullStatusCode(BadRequest)]
