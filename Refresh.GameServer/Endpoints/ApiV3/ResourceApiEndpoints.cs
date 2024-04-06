@@ -143,9 +143,15 @@ public class ResourceApiEndpoints : EndpointGroup
         [DocSummary("The SHA1 hash of the asset")] string hash,
         byte[] body, GameUser user)
     {
-        //If we block asset uploads, return unauthorized, unless the user is an admin
+        // If we're blocking asset uploads, throw unless the user is an admin.
+        // We also have the ability to block asset uploads for trusted users (when they would normally bypass this)
         if (config.BlockAssetUploads && user.Role != GameUserRole.Admin)
-            return ApiAuthenticationError.NoPermissionsForCreation;
+        {
+            if (user.Role < GameUserRole.Trusted || config.BlockAssetUploadsForTrustedUsers)
+            {
+                return ApiAuthenticationError.NoPermissionsForCreation;
+            }
+        }
         
         if (!CommonPatterns.Sha1Regex().IsMatch(hash)) return ApiValidationError.HashInvalidError;
 
