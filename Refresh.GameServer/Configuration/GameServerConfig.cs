@@ -1,6 +1,7 @@
 using System.Diagnostics.CodeAnalysis;
 using Bunkum.Core.Configuration;
 using Refresh.GameServer.Types.Assets;
+using Refresh.GameServer.Types.Roles;
 
 namespace Refresh.GameServer.Configuration;
 
@@ -27,6 +28,8 @@ public class GameServerConfig : Config
     public string WebExternalUrl { get; set; } = "https://refresh.example.com";
     public bool AllowInvalidTextureGuids { get; set; } = false;
     public bool BlockAssetUploads { get; set; } = false;
+    /// <seealso cref="GameUserRole.Trusted"/>
+    public bool BlockAssetUploadsForTrustedUsers { get; set; } = false;
     /// <summary>
     /// The amount of data the user is allowed to upload before all resource uploads get blocked, defaults to 100mb.
     /// </summary>

@@ -2,6 +2,7 @@ using System.Security.Cryptography;
 using Refresh.GameServer.Authentication;
 using Refresh.GameServer.Services;
 using Refresh.GameServer.Types.Lists;
+using Refresh.GameServer.Types.Roles;
 using Refresh.GameServer.Types.UserData;
 using RefreshTests.GameServer.Extensions;
 
@@ -86,6 +87,58 @@ public class AssetUploadTests : GameServerTest
 
         HttpResponseMessage response = client.PostAsync("/lbp/upload/" + hash, new ByteArrayContent(data.ToArray())).Result;
         Assert.That(response.StatusCode, Is.EqualTo(Unauthorized));
+    }
+
+    [TestCase(false)]
+    [TestCase(true)]
+    public void TrustedCanUploadAssetWhenBlocked(bool psp)
+    {
+        using TestContext context = this.GetServer();
+        context.Server.Value.Server.AddService<ImportService>();
+        context.Server.Value.GameServerConfig.BlockAssetUploads = true;
+        context.Server.Value.GameServerConfig.BlockAssetUploadsForTrustedUsers = false;
+        
+        GameUser user = context.CreateUser();
+        context.Database.SetUserRole(user, GameUserRole.Trusted);
+        
+        using HttpClient client = context.GetAuthenticatedClient(TokenType.Game, user);
+        if(psp)
+            client.DefaultRequestHeaders.UserAgent.TryParseAdd("LBPPSP CLIENT");
+        
+        ReadOnlySpan<byte> data = "TEX a"u8;
+        
+        string hash = BitConverter.ToString(SHA1.HashData(data))
+            .Replace("-", "")
+            .ToLower();
+
+        HttpResponseMessage response = client.PostAsync("/lbp/upload/" + hash, new ByteArrayContent(data.ToArray())).Result;
+        Assert.That(response.StatusCode, Is.EqualTo(OK));
+    }
+    
+    [TestCase(false)]
+    [TestCase(true)]
+    public void AdminCanUploadAssetWhenBlocked(bool psp)
+    {
+        using TestContext context = this.GetServer();
+        context.Server.Value.Server.AddService<ImportService>();
+        context.Server.Value.GameServerConfig.BlockAssetUploads = true;
+        context.Server.Value.GameServerConfig.BlockAssetUploadsForTrustedUsers = true;
+        
+        GameUser user = context.CreateUser();
+        context.Database.SetUserRole(user, GameUserRole.Admin);
+        
+        using HttpClient client = context.GetAuthenticatedClient(TokenType.Game, user);
+        if(psp)
+            client.DefaultRequestHeaders.UserAgent.TryParseAdd("LBPPSP CLIENT");
+        
+        ReadOnlySpan<byte> data = "TEX a"u8;
+        
+        string hash = BitConverter.ToString(SHA1.HashData(data))
+            .Replace("-", "")
+            .ToLower();
+
+        HttpResponseMessage response = client.PostAsync("/lbp/upload/" + hash, new ByteArrayContent(data.ToArray())).Result;
+        Assert.That(response.StatusCode, Is.EqualTo(OK));
     }
     
     [Test]

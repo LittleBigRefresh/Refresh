@@ -13,6 +13,10 @@ public enum GameUserRole : sbyte
     /// </summary>
     Admin = 127,
     /// <summary>
+    /// A user with special permissions. May upload assets when asset uploads are otherwise disabled.
+    /// </summary>
+    Trusted = 1,
+    /// <summary>
     /// A standard user. Can play the game, log in, play levels, review them, etc.
     /// </summary>
     User = 0,
