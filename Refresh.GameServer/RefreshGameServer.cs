@@ -204,10 +204,10 @@ public class RefreshGameServer : RefreshServer
         context.VerifyUserEmail(user);
     }
     
-    public void SetUserAsAdmin(GameUser user)
+    public void SetUserAsRole(GameUser user, GameUserRole role)
     {
         using GameDatabaseContext context = this.GetContext();
-        context.SetUserRole(user, GameUserRole.Admin);
+        context.SetUserRole(user, role);
     }
     
     public bool DisallowUser(string username)

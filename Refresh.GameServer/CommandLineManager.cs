@@ -3,6 +3,7 @@ using CommandLine;
 using NotEnoughLogs;
 using Refresh.GameServer.Database;
 using Refresh.GameServer.Documentation;
+using Refresh.GameServer.Types.Roles;
 using Refresh.GameServer.Types.UserData;
 
 namespace Refresh.GameServer;
@@ -30,6 +31,12 @@ internal class CommandLineManager
         
         [Option('a', "set-admin", HelpText = "Gives the user the Admin role. Username or Email options are required if this is set.")]
         public bool SetAdmin { get; set; }
+        
+        [Option("set-trusted", HelpText = "Gives the user the Trusted role. Username or Email options are required if this is set.")]
+        public bool SetTrusted { get; set; }
+        
+        [Option("set-default", HelpText = "Gives the user the default role. Username or Email options are required if this is set.")]
+        public bool SetDefault { get; set; }
         
         [Option('n', "new-user", HelpText = "Creates a user. Username *and* Email options are required if this is set.")]
         public bool CreateUser { get; set; }
@@ -117,7 +124,17 @@ internal class CommandLineManager
         else if (options.SetAdmin)
         {
             GameUser user = this.GetUserOrFail(options);
-            this._server.SetUserAsAdmin(user);
+            this._server.SetUserAsRole(user, GameUserRole.Admin);
+        }
+        else if (options.SetTrusted)
+        {
+            GameUser user = this.GetUserOrFail(options);
+            this._server.SetUserAsRole(user, GameUserRole.Trusted);
+        }
+        else if (options.SetDefault)
+        {
+            GameUser user = this.GetUserOrFail(options);
+            this._server.SetUserAsRole(user, GameUserRole.User);
         }
         else if (options.DisallowUser)
         {
