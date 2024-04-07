@@ -198,6 +198,8 @@ public abstract class Importer
         if (MatchesMagic(data, "PTGb"u8)) return GameAssetType.Painting;
         if (MatchesMagic(data, "PRFb"u8)) return GameAssetType.SyncedProfile;
         if (MatchesMagic(data, "MATT"u8)) return GameAssetType.GriefSongState;
+        if (MatchesMagic(data, "SSPt"u8)) return GameAssetType.SoftPhysicsSettings;
+        if (MatchesMagic(data, "BEVb"u8)) return GameAssetType.Bevel;
         
         // Traditional files
         // Good reference for magics: https://en.wikipedia.org/wiki/List_of_file_signatures

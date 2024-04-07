@@ -128,4 +128,18 @@ public enum GameAssetType
     /// Magic: MATb
     /// </remarks>
     Material = 17,
+    /// <summary>
+    /// Defines soft physics settings
+    /// </summary>
+    /// <remarks>
+    /// Magic: SSPt
+    /// </remarks>
+    SoftPhysicsSettings = 18,
+    /// <summary>
+    /// The bevel around a custom material.
+    /// </summary>
+    /// <remarks>
+    /// Magic: BEVb
+    /// </remarks>
+    Bevel = 19,
 }
