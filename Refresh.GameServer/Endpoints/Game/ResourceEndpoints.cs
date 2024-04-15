@@ -66,14 +66,18 @@ public class ResourceEndpoints : EndpointGroup
             return BadRequest;
 
         gameAsset.UploadDate = DateTimeOffset.FromUnixTimeSeconds(Math.Clamp(gameAsset.UploadDate.ToUnixTimeSeconds(), timeProvider.EarliestDate, timeProvider.TimestampSeconds));
+
+        AssetSafetyLevel safetyLevel = config.MaximumAssetSafetyLevel;
+        if (user.Role >= GameUserRole.Trusted)
+            safetyLevel = config.MaximumAssetSafetyLevelForTrustedUsers;
        
         // Dont block any assets uploaded from PSP, and block any unwanted assets,
         // for example, if asset safety level is Dangerous (2) and maximum is configured as Safe (0), return 401
         // if asset safety is Safe (0), and maximum is configured as Safe (0), proceed
-        if (gameAsset.SafetyLevel > config.MaximumAssetSafetyLevel && !isPSP)
+        if (gameAsset.SafetyLevel > safetyLevel && !isPSP)
         {
-            context.Logger.LogWarning(BunkumCategory.UserContent, $"{gameAsset.AssetType} {hash} is above configured safety limit " +
-                                                                 $"({gameAsset.SafetyLevel} > {config.MaximumAssetSafetyLevel})");
+            context.Logger.LogWarning(BunkumCategory.UserContent, $"{gameAsset.AssetType} {hash} by {user} is above configured safety limit " +
+                                                                 $"({gameAsset.SafetyLevel} > {safetyLevel})");
             return Unauthorized;
         }
 

@@ -5,15 +5,20 @@ public enum AssetSafetyLevel
     /// <summary>
     /// This asset is used in normal gameplay/operation and is okay to be uploaded.
     /// </summary>
+    /// <seealso cref="SafeMedia"/>
     Safe = 0,
+    /// <summary>
+    /// This asset is still used in normal gameplay similar to <see cref="Safe"/>, and is okay to be uploaded, but the distinction can be useful.
+    /// </summary>
+    SafeMedia = 1,
     /// <summary>
     /// This asset may disrupt the "vanilla" feel of a server and it's content, but is otherwise harmless.
     /// </summary>
-    PotentiallyUnwanted = 1,
+    PotentiallyUnwanted = 2,
     /// <summary>
     /// This asset may cause harm if uploaded.
     /// </summary>
-    Dangerous = 2,
+    Dangerous = 3,
 }
 
 public static class AssetSafetyLevelExtensions
@@ -24,16 +29,17 @@ public static class AssetSafetyLevelExtensions
         {
             GameAssetType.Level => AssetSafetyLevel.Safe,
             GameAssetType.Plan => AssetSafetyLevel.Safe,
-            GameAssetType.Texture => AssetSafetyLevel.Safe,
-            GameAssetType.Jpeg => AssetSafetyLevel.Safe,
-            GameAssetType.Png => AssetSafetyLevel.Safe,
-            GameAssetType.Tga => AssetSafetyLevel.Safe,
             GameAssetType.MoveRecording => AssetSafetyLevel.Safe,
-            GameAssetType.VoiceRecording => AssetSafetyLevel.Safe,
-            GameAssetType.Painting => AssetSafetyLevel.Safe,
             GameAssetType.SyncedProfile => AssetSafetyLevel.Safe,
-            GameAssetType.Mip => AssetSafetyLevel.Safe,
             GameAssetType.GriefSongState => AssetSafetyLevel.Safe,
+            
+            GameAssetType.VoiceRecording => AssetSafetyLevel.SafeMedia,
+            GameAssetType.Painting => AssetSafetyLevel.SafeMedia,
+            GameAssetType.Texture => AssetSafetyLevel.SafeMedia,
+            GameAssetType.Jpeg => AssetSafetyLevel.SafeMedia,
+            GameAssetType.Png => AssetSafetyLevel.SafeMedia,
+            GameAssetType.Tga => AssetSafetyLevel.SafeMedia,
+            GameAssetType.Mip => AssetSafetyLevel.SafeMedia,
             
             GameAssetType.GfxMaterial => AssetSafetyLevel.PotentiallyUnwanted,
             GameAssetType.Material => AssetSafetyLevel.PotentiallyUnwanted,
