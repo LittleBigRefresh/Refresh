@@ -37,6 +37,7 @@ public static class TokenGameUtility
         "NPEA00324", // EU Digital
         "BCES00850", // EU Disc
         "BCES01345", // EU Special Edition Disc
+        "BCES01693", // EU Extras Edition Disc
         "BCES01694", // EU Extras Edition Disc
         "NPEA00437", // EU Extras Edition Digital
         
