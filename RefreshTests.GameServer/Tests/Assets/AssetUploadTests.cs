@@ -1,6 +1,7 @@
 using System.Security.Cryptography;
 using Refresh.GameServer.Authentication;
 using Refresh.GameServer.Services;
+using Refresh.GameServer.Types.Assets;
 using Refresh.GameServer.Types.Lists;
 using Refresh.GameServer.Types.Roles;
 using Refresh.GameServer.Types.UserData;
@@ -139,6 +140,51 @@ public class AssetUploadTests : GameServerTest
 
         HttpResponseMessage response = client.PostAsync("/lbp/upload/" + hash, new ByteArrayContent(data.ToArray())).Result;
         Assert.That(response.StatusCode, Is.EqualTo(OK));
+    }
+    
+    [Test]
+    public void TrustedCanUploadAssetWithSafetyLevel()
+    {
+        using TestContext context = this.GetServer();
+        context.Server.Value.Server.AddService<ImportService>();
+        context.Server.Value.GameServerConfig.MaximumAssetSafetyLevel = AssetSafetyLevel.Safe;
+        context.Server.Value.GameServerConfig.MaximumAssetSafetyLevelForTrustedUsers = AssetSafetyLevel.SafeMedia;
+        
+        GameUser user = context.CreateUser();
+        context.Database.SetUserRole(user, GameUserRole.Trusted);
+        
+        using HttpClient client = context.GetAuthenticatedClient(TokenType.Game, user);
+        
+        ReadOnlySpan<byte> data = "TEX a"u8;
+        
+        string hash = BitConverter.ToString(SHA1.HashData(data))
+            .Replace("-", "")
+            .ToLower();
+
+        HttpResponseMessage response = client.PostAsync("/lbp/upload/" + hash, new ByteArrayContent(data.ToArray())).Result;
+        Assert.That(response.StatusCode, Is.EqualTo(OK));
+    }
+    
+    [Test]
+    public void NormalUserCantUploadAssetWithSafetyLevel()
+    {
+        using TestContext context = this.GetServer();
+        context.Server.Value.Server.AddService<ImportService>();
+        context.Server.Value.GameServerConfig.MaximumAssetSafetyLevel = AssetSafetyLevel.Safe;
+        context.Server.Value.GameServerConfig.MaximumAssetSafetyLevelForTrustedUsers = AssetSafetyLevel.SafeMedia;
+        
+        GameUser user = context.CreateUser();
+        
+        using HttpClient client = context.GetAuthenticatedClient(TokenType.Game, user);
+        
+        ReadOnlySpan<byte> data = "TEX a"u8;
+        
+        string hash = BitConverter.ToString(SHA1.HashData(data))
+            .Replace("-", "")
+            .ToLower();
+
+        HttpResponseMessage response = client.PostAsync("/lbp/upload/" + hash, new ByteArrayContent(data.ToArray())).Result;
+        Assert.That(response.StatusCode, Is.EqualTo(Unauthorized));
     }
     
     [Test]

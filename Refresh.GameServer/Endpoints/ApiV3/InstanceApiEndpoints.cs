@@ -6,6 +6,7 @@ using Refresh.GameServer.Database;
 using Refresh.GameServer.Endpoints.ApiV3.ApiTypes;
 using Refresh.GameServer.Endpoints.ApiV3.DataTypes.Response;
 using Refresh.GameServer.Services;
+using Refresh.GameServer.Types.Assets;
 using Refresh.GameServer.Types.Matching;
 using Refresh.GameServer.Types.RichPresence;
 
@@ -68,11 +69,14 @@ public class InstanceApiEndpoints : EndpointGroup
             SoftwareLicenseName = "AGPL-3.0",
             SoftwareLicenseUrl = "https://www.gnu.org/licenses/agpl-3.0.txt",
             MaximumAssetSafetyLevel = gameConfig.MaximumAssetSafetyLevel,
+            MaximumAssetSafetyLevelForTrustedUsers = gameConfig.MaximumAssetSafetyLevelForTrustedUsers,
             Announcements = ApiGameAnnouncementResponse.FromOldList(database.GetAnnouncements()),
             MaintenanceModeEnabled = gameConfig.MaintenanceMode,
-            RichPresenceConfiguration = ApiRichPresenceConfigurationResponse.FromOld(RichPresenceConfiguration.Create(gameConfig, richConfig))!,
+            RichPresenceConfiguration = ApiRichPresenceConfigurationResponse.FromOld(RichPresenceConfiguration.Create(
+                gameConfig,
+                richConfig))!,
             GrafanaDashboardUrl = integrationConfig.GrafanaDashboardUrl,
-            
+
             ContactInfo = new ApiContactInfoResponse
             {
                 AdminName = contactInfoConfig.AdminName,
