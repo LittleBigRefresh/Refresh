@@ -4,6 +4,7 @@ using NotEnoughLogs;
 using Refresh.GameServer.Database;
 using Refresh.GameServer.Types.Levels;
 using Refresh.GameServer.Types.Reviews;
+using Refresh.GameServer.Types.Roles;
 
 namespace Refresh.GameServer.Workers;
 
@@ -75,17 +76,21 @@ public class CoolLevelsWorker : IWorker
 
     private static int CalculatePositiveScore(Logger logger, GameLevel level)
     {
-        int score = 0;
+        int score = 20; // Start levels off with a few points to prevent one dislike from bombing the level
         const int positiveRatingPoints = 5;
-        // const int positiveReviewPoints = 5;
         const int uniquePlayPoints = 1;
         const int heartPoints = 5;
+        const int trustedAuthorPoints = 5;
 
-        if (level.TeamPicked) score += 10;
+        if (level.TeamPicked)
+            score += 10;
         
         score += level.Ratings.Count(r => r._RatingType == (int)RatingType.Yay) * positiveRatingPoints;
         score += level.UniquePlays.Count() * uniquePlayPoints;
         score += level.FavouriteRelations.Count() * heartPoints;
+
+        if (level.Publisher?.Role == GameUserRole.Trusted)
+            score += trustedAuthorPoints;
 
         logger.LogTrace(RefreshContext.CoolLevels, "positiveScore is {0}", score);
         return score;
@@ -93,13 +98,22 @@ public class CoolLevelsWorker : IWorker
 
     private static int CalculateNegativeScore(Logger logger, GameLevel level)
     {
-        int score = 0;
-        const int negativeRatingPoints = 5;
-        // const int negativeReviewPoints = 5;
+        int penalty = 0;
+        const int negativeRatingPenalty = 5;
+        const int noAuthorPenalty = 10;
+        const int restrictedAuthorPenalty = 50;
+        const int bannedAuthorPenalty = 100;
         
-        score += level.Ratings.Count(r => r._RatingType == (int)RatingType.Boo) * negativeRatingPoints;
+        penalty += level.Ratings.Count(r => r._RatingType == (int)RatingType.Boo) * negativeRatingPenalty;
+        
+        if (level.Publisher == null)
+            penalty += noAuthorPenalty;
+        else if (level.Publisher?.Role == GameUserRole.Restricted)
+            penalty += restrictedAuthorPenalty;
+        else if (level.Publisher?.Role == GameUserRole.Banned)
+            penalty += bannedAuthorPenalty;
 
-        logger.LogTrace(RefreshContext.CoolLevels, "negativeScore is {0}", score);
-        return score;
+        logger.LogTrace(RefreshContext.CoolLevels, "negativeScore is {0}", penalty);
+        return penalty;
     }
 }
