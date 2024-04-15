@@ -81,6 +81,12 @@ public class ResourceEndpoints : EndpointGroup
             return Unauthorized;
         }
 
+        if (isPSP && gameAsset.SafetyLevel == AssetSafetyLevel.SafeMedia && safetyLevel < AssetSafetyLevel.SafeMedia)
+        {
+            context.Logger.LogWarning(BunkumCategory.UserContent, $"{gameAsset.AssetType} {hash} by {user} cannot be uploaded because media is disabled");
+            return Unauthorized;
+        }
+
         if (!dataStore.WriteToStore(assetPath, body))
             return InternalServerError;
 

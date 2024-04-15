@@ -188,6 +188,50 @@ public class AssetUploadTests : GameServerTest
     }
     
     [Test]
+    public void PspCantUploadMediaAssetWhileBlocked()
+    {
+        using TestContext context = this.GetServer();
+        context.Server.Value.Server.AddService<ImportService>();
+        context.Server.Value.GameServerConfig.MaximumAssetSafetyLevel = AssetSafetyLevel.Safe;
+        
+        GameUser user = context.CreateUser();
+        
+        using HttpClient client = context.GetAuthenticatedClient(TokenType.Game, user);
+        client.DefaultRequestHeaders.UserAgent.TryParseAdd("LBPPSP CLIENT");
+        
+        ReadOnlySpan<byte> data = "TEX a"u8;
+        
+        string hash = BitConverter.ToString(SHA1.HashData(data))
+            .Replace("-", "")
+            .ToLower();
+
+        HttpResponseMessage response = client.PostAsync("/lbp/upload/" + hash, new ByteArrayContent(data.ToArray())).Result;
+        Assert.That(response.StatusCode, Is.EqualTo(Unauthorized));
+    }
+    
+    [Test]
+    public void PspCanUploadNormalAssetWhileBlocked()
+    {
+        using TestContext context = this.GetServer();
+        context.Server.Value.Server.AddService<ImportService>();
+        context.Server.Value.GameServerConfig.MaximumAssetSafetyLevel = AssetSafetyLevel.Safe;
+        
+        GameUser user = context.CreateUser();
+        
+        using HttpClient client = context.GetAuthenticatedClient(TokenType.Game, user);
+        client.DefaultRequestHeaders.UserAgent.TryParseAdd("LBPPSP CLIENT");
+        
+        ReadOnlySpan<byte> data = "LVLb "u8;
+        
+        string hash = BitConverter.ToString(SHA1.HashData(data))
+            .Replace("-", "")
+            .ToLower();
+
+        HttpResponseMessage response = client.PostAsync("/lbp/upload/" + hash, new ByteArrayContent(data.ToArray())).Result;
+        Assert.That(response.StatusCode, Is.EqualTo(OK));
+    }
+    
+    [Test]
     public void CantUploadAssetWithInvalidHash()
     {
         using TestContext context = this.GetServer();
