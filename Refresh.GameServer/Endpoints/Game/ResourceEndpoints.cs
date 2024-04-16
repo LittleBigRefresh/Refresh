@@ -95,6 +95,7 @@ public class ResourceEndpoints : EndpointGroup
         
         database.IncrementUserFilesizeQuota(user, body.Length);
         
+        context.Logger.LogInfo(BunkumCategory.UserContent, $"{user} uploaded a {gameAsset.AssetType} ({body.Length / 1024f:F1} KB)");
         return OK;
     }
 
