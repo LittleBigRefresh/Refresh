@@ -142,4 +142,13 @@ public enum GameAssetType
     /// Magic: BEVb
     /// </remarks>
     Bevel = 19,
+    /// <summary>
+    /// A chunk of a level, containing objects and such.
+    /// Used for 'Dynamic Thermometer' levels in LBP3.
+    /// </summary>
+    /// <remarks>
+    /// Magic: CHKb
+    /// </remarks>
+    /// <seealso cref="Level"/>
+    LevelChunk = 20,
 }

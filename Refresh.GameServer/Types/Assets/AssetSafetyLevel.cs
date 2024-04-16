@@ -28,6 +28,7 @@ public static class AssetSafetyLevelExtensions
         return type switch
         {
             GameAssetType.Level => AssetSafetyLevel.Safe,
+            GameAssetType.LevelChunk => AssetSafetyLevel.Safe,
             GameAssetType.Plan => AssetSafetyLevel.Safe,
             GameAssetType.MoveRecording => AssetSafetyLevel.Safe,
             GameAssetType.SyncedProfile => AssetSafetyLevel.Safe,
