@@ -165,6 +165,8 @@ public class AuthenticationEndpoints : EndpointGroup
         //Clear the user's force match
         database.ClearForceMatch(user);
         
+        context.Logger.LogInfo(BunkumCategory.Authentication, $"{user} successfully logged in on {game} via {platform}");
+        
         if (game == TokenGame.LittleBigPlanetPSP)
         {
             return new TicketLoginResponse
@@ -270,7 +272,8 @@ public class AuthenticationEndpoints : EndpointGroup
 
         if (!result)
             return Unauthorized;
-
+        
+        context.Logger.LogInfo(BunkumCategory.Authentication, $"{user} logged out");
         return OK;
     }
 }
