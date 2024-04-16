@@ -88,6 +88,8 @@ public class AuthenticationApiEndpoints : EndpointGroup
 
         Token token = database.GenerateTokenForUser(user, TokenType.Api, TokenGame.Website, TokenPlatform.Website);
         Token refreshToken = database.GenerateTokenForUser(user, TokenType.ApiRefresh, TokenGame.Website, TokenPlatform.Website, GameDatabaseContext.RefreshTokenExpirySeconds);
+        
+        context.Logger.LogInfo(BunkumCategory.Authentication, $"{user} successfully logged in through the API");
 
         return new ApiAuthenticationResponse
         {
@@ -109,6 +111,8 @@ public class AuthenticationApiEndpoints : EndpointGroup
         GameUser user = refreshToken.User;
 
         Token token = database.GenerateTokenForUser(user, TokenType.Api, TokenGame.Website, TokenPlatform.Website);
+        
+        context.Logger.LogInfo(BunkumCategory.Authentication, $"{user} successfully refreshed their token through the API");
 
         return new ApiAuthenticationResponse
         {
@@ -134,6 +138,8 @@ public class AuthenticationApiEndpoints : EndpointGroup
 
         database.SetUserPassword(user, passwordBcrypt);
         database.RevokeTokenByTokenData(body.ResetToken, TokenType.PasswordReset);
+        
+        context.Logger.LogInfo(BunkumCategory.Authentication, $"{user} successfully reset their password");
 
         return new ApiOkResponse();
     }
@@ -159,7 +165,7 @@ public class AuthenticationApiEndpoints : EndpointGroup
         context.Logger.LogTrace(RefreshContext.PasswordReset, "Reset token: {0}", token.TokenData);
         smtpService.SendPasswordResetRequest(user, token.TokenData);
 
-        context.Logger.LogTrace(RefreshContext.PasswordReset, "Email sent, token will expire at {0}", token.ExpiresAt);
+        context.Logger.LogInfo(RefreshContext.PasswordReset, "Email sent, token will expire at {0}", token.ExpiresAt);
         return new ApiOkResponse();
     }
 
@@ -168,6 +174,7 @@ public class AuthenticationApiEndpoints : EndpointGroup
     public ApiOkResponse RevokeThisToken(RequestContext context, GameDatabaseContext database, Token token)
     {
         database.RevokeToken(token);
+        context.Logger.LogInfo(BunkumCategory.Authentication, $"{token.User} logged out");
         return new ApiOkResponse();
     }
     
