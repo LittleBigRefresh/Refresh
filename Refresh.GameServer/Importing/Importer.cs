@@ -189,6 +189,7 @@ public abstract class Importer
         if (MatchesMagic(data, "MATb"u8)) return GameAssetType.Material;
         if (MatchesMagic(data, "PLNb"u8)) return GameAssetType.Plan;
         if (MatchesMagic(data, "LVLb"u8)) return GameAssetType.Level;
+        if (MatchesMagic(data, "CHKb"u8)) return GameAssetType.LevelChunk;
         if (MatchesMagic(data, "GMTb"u8)) return GameAssetType.GfxMaterial;
         if (MatchesMagic(data, "MSHb"u8)) return GameAssetType.Mesh;
         if (MatchesMagic(data, "PALb"u8)) return GameAssetType.Palette;

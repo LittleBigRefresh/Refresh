@@ -360,9 +360,13 @@ public partial class GameAsset
                 case GameAssetType.MoveRecording:
                 case GameAssetType.VoiceRecording:
                 case GameAssetType.SyncedProfile:
+                case GameAssetType.GriefSongState:
+                case GameAssetType.SoftPhysicsSettings:
+                case GameAssetType.Bevel:
+                case GameAssetType.LevelChunk:
                 case GameAssetType.Unknown:
                 default:
-                    //If we dont know what asset type this is, just hope that whatever is asking for it knows what it is
+                    // If we don't know what asset type this is, just hope that whatever is asking for it knows what it is
                     return null;
             }
         }
