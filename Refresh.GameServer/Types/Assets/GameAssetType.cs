@@ -151,4 +151,11 @@ public enum GameAssetType
     /// </remarks>
     /// <seealso cref="Level"/>
     LevelChunk = 20,
+    /// <summary>
+    /// An animation, used for modded costumes.
+    /// </summary>
+    /// <remarks>
+    /// Magic: ANMb
+    /// </remarks>
+    Animation = 21,
 }

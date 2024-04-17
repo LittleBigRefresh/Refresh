@@ -201,6 +201,7 @@ public abstract class Importer
         if (MatchesMagic(data, "MATT"u8)) return GameAssetType.GriefSongState;
         if (MatchesMagic(data, "SSPt"u8)) return GameAssetType.SoftPhysicsSettings;
         if (MatchesMagic(data, "BEVb"u8)) return GameAssetType.Bevel;
+        if (MatchesMagic(data, "ANMb"u8)) return GameAssetType.Animation;
         
         // Traditional files
         // Good reference for magics: https://en.wikipedia.org/wiki/List_of_file_signatures

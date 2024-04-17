@@ -49,6 +49,7 @@ public static class AssetSafetyLevelExtensions
             GameAssetType.Palette => AssetSafetyLevel.PotentiallyUnwanted,
             GameAssetType.SoftPhysicsSettings => AssetSafetyLevel.PotentiallyUnwanted,
             GameAssetType.Bevel => AssetSafetyLevel.PotentiallyUnwanted,
+            GameAssetType.Animation => AssetSafetyLevel.PotentiallyUnwanted,
             
             GameAssetType.Script => AssetSafetyLevel.Dangerous,
             GameAssetType.Unknown => AssetSafetyLevel.Dangerous,
