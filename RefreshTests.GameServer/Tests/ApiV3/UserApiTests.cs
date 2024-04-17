@@ -66,6 +66,27 @@ public class UserApiTests : GameServerTest
         Assert.That(context.Database.GetUserByUsername(username), Is.EqualTo(null));
     }
     
+    [TestCase("4")]
+    [TestCase("44444444444444444444444444444444444444")]
+    [TestCase("$#*(72($&8#$")]
+    public void CannotRegisterAccountWithInvalidUsername(string username)
+    {
+        using TestContext context = this.GetServer();
+        
+        ApiResponse<ApiAuthenticationResponse>? response = context.Http.PostData<ApiAuthenticationResponse>("/api/v3/register", new ApiRegisterRequest
+        {
+            Username = username,
+            EmailAddress = "far4@toolkit.vita",
+            PasswordSha512 = "ee26b0dd4af7e749aa1a8ee3c10ae9923f618980772e473f8819a5d4940e0db27ac185f8a0e1d5f84f88bc887fd67b143732c304cc5fa9ad8e6f57f50028a8ff",
+        });
+        Assert.That(response, Is.Not.Null);
+        Assert.That(response.Error, Is.Not.Null);
+        Assert.That(response.Error.Name, Is.EqualTo("ApiValidationError"));
+        
+        context.Database.Refresh();
+        Assert.That(context.Database.GetUserByUsername(username), Is.EqualTo(null));
+    }
+    
     [Test]
     public void GetsUserByUuid()
     {

@@ -231,7 +231,7 @@ public class AuthenticationApiEndpoints : EndpointGroup
         SmtpService smtpService)
     {
         if (!config.RegistrationEnabled)
-            return new ApiAuthenticationError("Registration is not enabled on this server.");
+            return new ApiAuthenticationError("Registration is not enabled on this server. Check back later.");
             
         if (body.PasswordSha512.Length != 128 || !CommonPatterns.Sha512Regex().IsMatch(body.PasswordSha512))
             return new ApiValidationError("Password is definitely not SHA512. Please hash the password.");
@@ -241,6 +241,12 @@ public class AuthenticationApiEndpoints : EndpointGroup
         
         if (database.IsUserDisallowed(body.Username))
             return new ApiAuthenticationError("This username is disallowed from being registered.");
+        
+        if (!database.IsUsernameValid(body.Username))
+            return new ApiValidationError(
+                "The username must be valid. " +
+                "The requirements are 3 to 16 alphanumeric characters, plus hyphens and underscores. " +
+                "Are you sure you used your PSN/RPCN username?");
         
         if (database.IsUsernameTaken(body.Username) || database.IsEmailTaken(body.EmailAddress))
         {

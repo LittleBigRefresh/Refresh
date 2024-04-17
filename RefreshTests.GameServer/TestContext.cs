@@ -29,7 +29,7 @@ public class TestContext : IDisposable
         this.Time = time;
     }
 
-    private int _users;
+    private int _users = 100; // start at 100 since usernames require 3 characters
     private int UserIncrement => this._users++;
 
     public HttpClient GetAuthenticatedClient(TokenType type,

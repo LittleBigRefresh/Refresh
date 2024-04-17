@@ -3,6 +3,7 @@ using MongoDB.Bson;
 using Refresh.GameServer.Authentication;
 using Refresh.GameServer.Extensions;
 using Refresh.GameServer.Types.UserData;
+using Refresh.GameServer.Verification;
 
 namespace Refresh.GameServer.Database;
 
@@ -12,6 +13,10 @@ public partial class GameDatabaseContext // Registration
     {
         if (!skipChecks)
         {
+            if (!this.IsUsernameValid(username))
+                throw new FormatException(
+                    "Username must be valid (3 to 16 alphanumeric characters, plus hyphens and underscores)"); 
+            
             if (this.IsUsernameTaken(username))
                 throw new InvalidOperationException("Cannot create a user with an existing username");
         
@@ -67,6 +72,11 @@ public partial class GameDatabaseContext // Registration
         }
 
         return user;
+    }
+    
+    public bool IsUsernameValid(string username)
+    {
+        return CommonPatterns.UsernameRegex().IsMatch(username);
     }
 
     public bool IsUsernameTaken(string username)
