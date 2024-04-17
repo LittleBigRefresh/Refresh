@@ -76,7 +76,7 @@ public class CoolLevelsWorker : IWorker
 
     private static int CalculatePositiveScore(Logger logger, GameLevel level)
     {
-        int score = 20; // Start levels off with a few points to prevent one dislike from bombing the level
+        int score = 15; // Start levels off with a few points to prevent one dislike from bombing the level
         const int positiveRatingPoints = 5;
         const int uniquePlayPoints = 1;
         const int heartPoints = 5;
