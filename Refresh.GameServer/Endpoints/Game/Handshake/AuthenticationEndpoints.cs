@@ -1,3 +1,4 @@
+using System.Diagnostics;
 using System.Net;
 using System.Xml.Serialization;
 using Bunkum.Core;
@@ -32,34 +33,50 @@ public class AuthenticationEndpoints : EndpointGroup
         IntegrationConfig integrationConfig,
         SmtpService smtpService)
     {
-        Ticket ticket;
+        bool oauth = context.QueryString.Get("oauth") == "1";
+        
+        string username;
+        Ticket? ticket = null;
+        
         try
         {
-            ticket = Ticket.ReadFromStream(body);
+            if (!oauth)
+            {
+                ticket = Ticket.ReadFromStream(body);
+                username = ticket.Username;
+            }
+            else
+            {
+                (username, _) = ReadPsnOauthTicket(body);
+            }
         }
         catch(Exception e)
         {
             context.Logger.LogWarning(BunkumCategory.Authentication, "Could not read ticket: " + e);
             return null;
         }
+
         
-        TokenPlatform? platform = ticket.IssuerId switch
+        TokenPlatform? platform = ticket?.IssuerId switch
         {
             0x100 => TokenPlatform.PS3,
             0x33333333 => TokenPlatform.RPCS3,
             _ => null,
         };
         
-        GameUser? user = database.GetUserByUsername(ticket.Username);
+        if (platform == null && oauth)
+            platform = TokenPlatform.PS4;
+        
+        GameUser? user = database.GetUserByUsername(username);
         if (user == null)
         {
             if (config.RequireGameLoginToRegister)
             {
                 // look for a registration, then use that to create a user
-                QueuedRegistration? registration = database.GetQueuedRegistrationByUsername(ticket.Username);
+                QueuedRegistration? registration = database.GetQueuedRegistrationByUsername(username);
                 if (registration == null)
                 {
-                    context.Logger.LogWarning(BunkumCategory.Authentication, $"Rejecting {ticket.Username}'s login because there was no matching queued registration");
+                    context.Logger.LogWarning(BunkumCategory.Authentication, $"Rejecting {username}'s login because there was no matching queued registration");
                     return null;
                 }
                 
@@ -85,7 +102,7 @@ public class AuthenticationEndpoints : EndpointGroup
             }
             else
             {
-                context.Logger.LogWarning(BunkumCategory.Authentication, $"Rejecting {ticket.Username}'s login because there was no matching username");
+                context.Logger.LogWarning(BunkumCategory.Authentication, $"Rejecting {username}'s login because there was no matching username");
                 return null;
             }
         }
@@ -102,8 +119,10 @@ public class AuthenticationEndpoints : EndpointGroup
         }
 
         bool ticketVerified = false;
-        if (config.UseTicketVerification)
+        if (config.UseTicketVerification && !oauth)
         {
+            Debug.Assert(ticket != null);
+
             if ((platform is TokenPlatform.PS3 or TokenPlatform.Vita or TokenPlatform.PSP && !user.PsnAuthenticationAllowed) ||
                 (platform is TokenPlatform.RPCS3 && !user.RpcnAuthenticationAllowed))
             {
@@ -138,14 +157,17 @@ public class AuthenticationEndpoints : EndpointGroup
         // check if we're connecting from a beta build
         bool parsedBeta = byte.TryParse(context.QueryString.Get("beta"), out byte isBeta);
         if (parsedBeta && isBeta == 1) game = TokenGame.BetaBuild;
+        
+        if (oauth)
+            game ??= TokenGame.LittleBigPlanet3; // ps4 only has LBP3
 
-        game ??= TokenGameUtility.FromTitleId(ticket.TitleId);
+        game ??= TokenGameUtility.FromTitleId(ticket!.TitleId);
 
         if (platform == null)
         {
             database.AddLoginFailNotification("The server could not determine what platform you were trying to connect from.", user);
             context.Logger.LogWarning(BunkumCategory.Authentication, $"Could not determine platform from ticket.\n" +
-                                                                    $"Missing IssuerID: {ticket.IssuerId}");
+                                                                    $"Missing IssuerID: {ticket?.IssuerId}");
             return null;
         }
 
@@ -153,7 +175,7 @@ public class AuthenticationEndpoints : EndpointGroup
         {
             database.AddLoginFailNotification("The server could not determine what game you were trying to connect from.", user);
             context.Logger.LogWarning(BunkumCategory.Authentication, $"Could not determine game from ticket.\n" +
-                                                                    $"Missing TitleID: {ticket.TitleId}");
+                                                                    $"Missing TitleID: {ticket?.TitleId}");
             return null;
         }
 
@@ -180,6 +202,18 @@ public class AuthenticationEndpoints : EndpointGroup
             TokenData = "MM_AUTH=" + token.TokenData,
             ServerBrand = $"{config.InstanceName} (Refresh {VersionInformation.Version})",
         };
+    }
+    
+    private static (string, int) ReadPsnOauthTicket(Stream body)
+    {
+        // example code: jvyden420:123456
+        using StreamReader reader = new(body);
+        string oauthTicket = reader.ReadToEnd();
+        
+        string username = oauthTicket[..oauthTicket.IndexOf(':')];
+        int code = int.Parse(oauthTicket[(oauthTicket.IndexOf(':') + 1)..]);
+        
+        return (username, code);
     }
 
     private static bool VerifyTicket(RequestContext context, MemoryStream body, Ticket ticket)
