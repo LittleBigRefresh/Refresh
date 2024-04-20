@@ -1,8 +1,11 @@
 using System.Diagnostics;
+using System.Text;
 using Bunkum.Core.Responses;
+using Newtonsoft.Json;
 using Refresh.GameServer.Authentication;
 using Refresh.GameServer.Services;
 using Refresh.GameServer.Types.Matching;
+using Refresh.GameServer.Types.Matching.Responses;
 using Refresh.GameServer.Types.UserData;
 
 namespace RefreshTests.GameServer.Tests.Matching;
@@ -80,7 +83,15 @@ public class MatchingTests : GameServerTest
                 NatType.Open,
             },
         }, context.Database, user1, token1);
-        Assert.That(response.StatusCode, Is.EqualTo(NotFound));
+
+        // Deserialize the result
+        List<SerializedStatusCodeMatchResponse> responseObjects =
+            JsonConvert.DeserializeObject<List<SerializedStatusCodeMatchResponse>>(Encoding.UTF8.GetString(response.Data))!;
+
+        //Make sure the only result is a 404 object
+        Assert.That(responseObjects, Has.Count.EqualTo(1));
+        Assert.That(response.StatusCode, Is.EqualTo(OK));
+        Assert.That(responseObjects[0].StatusCode, Is.EqualTo(404));
     }
 
     [Test]
@@ -116,7 +127,15 @@ public class MatchingTests : GameServerTest
                 NatType.Strict,
             },
         }, context.Database, user2, token2);
-        Assert.That(response.StatusCode, Is.EqualTo(NotFound));
+        
+        //Deserialize the result
+        List<SerializedStatusCodeMatchResponse> responseObjects =
+            JsonConvert.DeserializeObject<List<SerializedStatusCodeMatchResponse>>(Encoding.UTF8.GetString(response.Data))!;
+
+        //Make sure the only result is a 404 object
+        Assert.That(responseObjects, Has.Count.EqualTo(1));
+        Assert.That(response.StatusCode, Is.EqualTo(OK));
+        Assert.That(responseObjects[0].StatusCode, Is.EqualTo(404));
     }
     
     [Test]
