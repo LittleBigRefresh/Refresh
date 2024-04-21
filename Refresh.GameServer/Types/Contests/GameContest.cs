@@ -61,5 +61,5 @@ public partial class GameContest : IRealmObject
     /// <summary>
     /// String containing markdown, describing the contest and its rules in further detail.
     /// </summary>
-    public string ContestRulesMarkdown { get; set; }
+    public string ContestDetails { get; set; }
 }
