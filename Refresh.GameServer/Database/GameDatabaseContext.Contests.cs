@@ -34,6 +34,6 @@ public partial class GameDatabaseContext // Contests
         return new DatabaseList<GameLevel>(this.GetLevelsByGameVersion(levelFilterSettings.GameVersion)
             .FilterByLevelFilterSettings(user, levelFilterSettings)
             .Where(l => l.Title.Contains(contest.ContestTag))
-            .Where(l => l.PublishDate > start && l.PublishDate < end), skip, count);
+            .Where(l => l.PublishDate >= start && l.PublishDate < end), skip, count);
     }
 }
