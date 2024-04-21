@@ -24,8 +24,8 @@ public class ByUserLevelCategory : LevelCategory
     {
         // Prefer username from query, but fallback to user passed into this category if it's missing
         string? username = context.QueryString["u"];
-        
-        user = database.GetUserByUsername(username);
+        if (username != null) user = database.GetUserByUsername(username);
+
         if (user == null) return null;
         
         return database.GetLevelsByUser(user, count, skip, levelFilterSettings);
