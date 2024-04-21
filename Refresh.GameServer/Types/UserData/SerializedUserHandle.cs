@@ -9,7 +9,7 @@ namespace Refresh.GameServer.Types.UserData;
 [XmlType("npHandle")]
 public class SerializedUserHandle
 {
-    [XmlText] public string? Username { get; set; } = string.Empty;
+    [XmlText] public string Username { get; set; } = string.Empty;
 
     [XmlAttribute("icon")] public string IconHash { get; set; } = "0";
 
