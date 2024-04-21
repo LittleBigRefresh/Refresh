@@ -6,4 +6,5 @@ namespace Refresh.GameServer.Endpoints.ApiV3.DataTypes.Request;
 public class ApiAdminEditLevelRequest : ApiEditLevelRequest
 {
     public TokenGame? GameVersion { get; set; }
+    public string? OriginalAuthor { get; set; }
 }

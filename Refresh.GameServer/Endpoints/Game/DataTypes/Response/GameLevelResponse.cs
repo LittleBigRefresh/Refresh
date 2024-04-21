@@ -132,7 +132,7 @@ public class GameLevelResponse : IDataConvertableFrom<GameLevelResponse, GameLev
         };
 
         response.Type = "user";
-        if (old.Publisher != null)
+        if (old.Publisher != null && !old.IsReUpload())
         {
             response.Handle = SerializedUserHandle.FromUser(old.Publisher);
         }
@@ -141,7 +141,7 @@ public class GameLevelResponse : IDataConvertableFrom<GameLevelResponse, GameLev
             response.Handle = new SerializedUserHandle
             {
                 IconHash = "0",
-                Username = "!DeletedUser",
+                Username = old.IsReUpload() ? old.OriginalPublisher : "!DeletedUser",
             };
         }
         
