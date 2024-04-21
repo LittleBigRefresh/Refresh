@@ -7,5 +7,5 @@ public class ApiAdminEditLevelRequest : ApiEditLevelRequest
 {
     public TokenGame? GameVersion { get; set; }
     public bool? IsReUpload { get; set; }
-    public string? OriginalAuthor { get; set; }
+    public string? OriginalPublisher { get; set; }
 }
