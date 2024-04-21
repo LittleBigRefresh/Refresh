@@ -141,7 +141,7 @@ public class GameLevelResponse : IDataConvertableFrom<GameLevelResponse, GameLev
             response.Handle = new SerializedUserHandle
             {
                 IconHash = "0",
-                Username = old.OriginalPublisher ?? "!DeletedUser",
+                Username = string.IsNullOrEmpty(old.OriginalPublisher) ? "!DeletedUser" : "!" + old.OriginalPublisher,
             };
         }
         
