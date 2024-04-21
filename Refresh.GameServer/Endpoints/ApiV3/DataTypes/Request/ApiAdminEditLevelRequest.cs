@@ -6,4 +6,6 @@ namespace Refresh.GameServer.Endpoints.ApiV3.DataTypes.Request;
 public class ApiAdminEditLevelRequest : ApiEditLevelRequest
 {
     public TokenGame? GameVersion { get; set; }
+    public bool? IsReUpload { get; set; }
+    public string? OriginalPublisher { get; set; }
 }

@@ -97,6 +97,9 @@ public class ActivityEndpoints : EndpointGroup
     {
         GameUser? user = database.GetUserByUsername(username);
         if (user == null) return NotFound;
+
+        if (user.FakeUser)
+            return new Response(new ActivityPage());
         
         long timestamp = 0;
         long endTimestamp = 0;

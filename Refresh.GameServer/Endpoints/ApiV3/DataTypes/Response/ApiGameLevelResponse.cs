@@ -11,6 +11,8 @@ public class ApiGameLevelResponse : IApiResponse, IDataConvertableFrom<ApiGameLe
 {
     public required int LevelId { get; set; }
     public required ApiGameUserResponse? Publisher { get; set; }
+    public required bool IsReUpload { get; set; }
+    public required string? OriginalPublisher { get; set; }
 
     public required string Title { get; set; }
     public required string IconHash { get; set; }
@@ -51,8 +53,12 @@ public class ApiGameLevelResponse : IApiResponse, IDataConvertableFrom<ApiGameLe
         {
             Title = level.Title,
             Publisher = ApiGameUserResponse.FromOld(level.Publisher),
+            OriginalPublisher = level.OriginalPublisher,
+            IsReUpload = level.IsReUpload,
             LevelId = level.LevelId,
-            IconHash = level.GameVersion == TokenGame.LittleBigPlanetPSP ? "psp/" + level.IconHash : level.IconHash,
+            IconHash = level.GameVersion == TokenGame.LittleBigPlanetPSP
+                ? "psp/" + level.IconHash
+                : level.IconHash,
             _originalIconHash = level.IconHash,
             Description = level.Description,
             Location = ApiGameLocationResponse.FromGameLocation(level.Location)!,

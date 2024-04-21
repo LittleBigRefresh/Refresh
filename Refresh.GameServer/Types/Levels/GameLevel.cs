@@ -135,6 +135,13 @@ public partial class GameLevel : IRealmObject, ISequentialId
     }
 
     public GameUser? Publisher { get; set; }
+    /// <summary>
+    /// The publisher who originally published the level, if it has been re-uploaded by someone else.
+    /// Should only be set if the original publisher does not have an account.
+    /// </summary>
+    public string? OriginalPublisher { get; set; }
+
+    public bool IsReUpload { get; set; }
 
     /// <summary>
     /// Calculates the average rating of a level based on the ratings it has.

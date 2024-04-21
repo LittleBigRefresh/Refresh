@@ -133,4 +133,6 @@ public partial class GameUser : IRealmObject, IRateLimitUser
     [Ignored] [XmlIgnore] public object RateLimitUserId { get; internal set; } = null!;
 
     #endregion
+
+    [Ignored] public bool FakeUser { get; set; } = false;
 }
