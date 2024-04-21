@@ -118,6 +118,26 @@ public class ContestTests : GameServerTest
     }
 
     [Test]
+    public void UpdateApiIsSecure()
+    {
+        using TestContext context = this.GetServer();
+        GameContest contest = this.CreateContest(context);
+        GameUser randomUser = context.CreateUser();
+        
+        using HttpClient client = context.GetAuthenticatedClient(TokenType.Api, randomUser);
+        ApiResponse<ApiContestResponse>? response = client.PatchData<ApiContestResponse>("/api/v3/contests/ut", new ApiContestRequest
+        {
+            OrganizerId = contest.Organizer.UserId.ToString(),
+            ContestTag = "#ut2",
+        });
+        
+        Assert.That(response, Is.Not.Null);
+        Assert.That(response.Success, Is.False);
+        Assert.That(response.Error, Is.Not.Null);
+        Assert.That(response.Error.StatusCode, Is.EqualTo(Forbidden));
+    }
+
+    [Test]
     public void LevelsShowUpInCategory()
     {
         using TestContext context = this.GetServer(false);
