@@ -54,7 +54,7 @@ public class ApiGameLevelResponse : IApiResponse, IDataConvertableFrom<ApiGameLe
             Title = level.Title,
             Publisher = ApiGameUserResponse.FromOld(level.Publisher),
             OriginalPublisher = level.OriginalPublisher,
-            IsReUpload = level.IsReUpload(),
+            IsReUpload = level.IsReUpload,
             LevelId = level.LevelId,
             IconHash = level.GameVersion == TokenGame.LittleBigPlanetPSP
                 ? "psp/" + level.IconHash

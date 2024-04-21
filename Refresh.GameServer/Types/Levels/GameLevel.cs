@@ -140,7 +140,8 @@ public partial class GameLevel : IRealmObject, ISequentialId
     /// Should only be set if the original publisher does not have an account.
     /// </summary>
     public string? OriginalPublisher { get; set; }
-    public bool IsReUpload() => this.OriginalPublisher != null;
+
+    public bool IsReUpload { get; set; }
 
     /// <summary>
     /// Calculates the average rating of a level based on the ratings it has.
