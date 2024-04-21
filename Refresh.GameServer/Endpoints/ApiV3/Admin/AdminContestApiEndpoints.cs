@@ -43,9 +43,9 @@ public class AdminContestApiEndpoints : EndpointGroup
             ContestSummary = body.ContestSummary,
             ContestTag = body.ContestTag,
             ContestDetails = body.ContestDetails,
-            CreationDate = body.CreationDate,
-            StartDate = body.StartDate,
-            EndDate = body.EndDate,
+            CreationDate = body.CreationDate!.Value,
+            StartDate = body.StartDate!.Value,
+            EndDate = body.EndDate!.Value,
         };
         
         database.CreateContest(contest);

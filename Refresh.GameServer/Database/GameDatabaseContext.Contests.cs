@@ -1,4 +1,7 @@
+using System.Diagnostics;
+using System.Reflection;
 using JetBrains.Annotations;
+using Refresh.GameServer.Endpoints.ApiV3.DataTypes.Request;
 using Refresh.GameServer.Endpoints.Game.Levels.FilterSettings;
 using Refresh.GameServer.Extensions;
 using Refresh.GameServer.Types.Contests;
@@ -23,6 +26,32 @@ public partial class GameDatabaseContext // Contests
     {
         if (id == null) return null;
         return this._realm.All<GameContest>().FirstOrDefault(c => c.ContestId == id);
+    }
+    
+    public GameContest UpdateContest(ApiContestRequest body, GameContest contest, GameUser? newOrganizer = null)
+    {
+        this._realm.Write(() =>
+        {
+            PropertyInfo[] bodyProps = typeof(ApiContestRequest).GetProperties();
+            foreach (PropertyInfo prop in bodyProps)
+            {
+                if (!prop.CanWrite || !prop.CanRead) continue;
+                if(prop.Name == nameof(ApiContestRequest.OrganizerId)) continue;
+                
+                object? propValue = prop.GetValue(body);
+                if(propValue == null) continue;
+                
+                PropertyInfo? gameContestProp = typeof(GameContest).GetProperty(prop.Name);
+                Debug.Assert(gameContestProp != null, $"Invalid property {prop.Name} on {nameof(ApiContestRequest)}");
+                
+                gameContestProp.SetValue(contest, prop.GetValue(body));
+            }
+            
+            if (newOrganizer != null)
+                contest.Organizer = newOrganizer;
+        });
+        
+        return contest;
     }
     
     [Pure]

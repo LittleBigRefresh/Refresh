@@ -94,6 +94,28 @@ public class ContestTests : GameServerTest
         Assert.That(createdContest, Is.Not.Null);
         Assert.That(createdContest.Organizer, Is.EqualTo(organizer));
     }
+    
+    [Test]
+    public void CanUpdateContestFromApi()
+    {
+        using TestContext context = this.GetServer();
+        GameUser admin = context.CreateAdmin();
+        GameContest contest = this.CreateContest(context);
+
+        using HttpClient client = context.GetAuthenticatedClient(TokenType.Api, admin);
+        ApiResponse<ApiContestResponse>? response = client.PatchData<ApiContestResponse>("/api/v3/contests/ut", new ApiContestRequest
+        {
+            OrganizerId = contest.Organizer.UserId.ToString(),
+            ContestTag = "#ut2",
+        });
+        
+        Assert.That(response, Is.Not.Null);
+        Assert.That(response.Success, Is.True);
+
+        GameContest? createdContest = context.Database.GetContestById("ut");
+        Assert.That(createdContest, Is.Not.Null);
+        Assert.That(createdContest.ContestTag, Is.EqualTo("#ut2"));
+    }
 
     [Test]
     public void LevelsShowUpInCategory()
