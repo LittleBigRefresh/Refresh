@@ -34,7 +34,7 @@ public partial class GameDatabaseContext // Leaderboard
 
         #region Notifications
         
-        IEnumerable<ScoreWithRank> rankedScores = GetRankedScoresAroundScore(newScore, 2).ToList();
+        IEnumerable<ScoreWithRank> rankedScores = GetRankedScoresAroundScore(newScore, 3).ToList();
         ScoreWithRank? rankOne = rankedScores.FirstOrDefault(s => s.rank == 1);
         ScoreWithRank? rankTwo = rankedScores.FirstOrDefault(s => s.rank == 2);
         if (rankOne != null && rankTwo != null &&
