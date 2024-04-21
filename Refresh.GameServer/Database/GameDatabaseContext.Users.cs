@@ -16,7 +16,7 @@ public partial class GameDatabaseContext // Users
     private static readonly GameUser DeletedUser = new()
     {
         Location = GameLocation.Zero,
-        Username = "DeletedUser",
+        Username = "!DeletedUser",
         Description = "I'm a fake user that represents deleted users for levels.",
     };
     
