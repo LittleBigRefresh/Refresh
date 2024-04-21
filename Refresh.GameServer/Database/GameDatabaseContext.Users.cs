@@ -18,6 +18,7 @@ public partial class GameDatabaseContext // Users
         Location = GameLocation.Zero,
         Username = "!DeletedUser",
         Description = "I'm a fake user that represents deleted users for levels.",
+        FakeUser = true,
     };
     
     [Pure]
@@ -33,6 +34,7 @@ public partial class GameDatabaseContext // Users
                 Location = GameLocation.Zero,
                 Username = username,
                 Description = "I'm a fake user that represents a non existent publisher for re-published levels.",
+                FakeUser = true,
             };
 
         return this._realm.All<GameUser>().FirstOrDefault(u => u.Username == username);
