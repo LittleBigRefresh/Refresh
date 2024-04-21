@@ -16,7 +16,7 @@ public partial class GameDatabaseContext // Users
     private static readonly GameUser DeletedUser = new()
     {
         Location = GameLocation.Zero,
-        Username = "!DeletedUser",
+        Username = "DeletedUser",
         Description = "I'm a fake user that represents deleted users for levels.",
     };
     
@@ -25,7 +25,15 @@ public partial class GameDatabaseContext // Users
     public GameUser? GetUserByUsername(string? username)
     {
         if (username == null) return null;
-        if (username == "!DeletedUser") return DeletedUser;
+        if (username == "!DeletedUser")
+            return DeletedUser;
+        if (username.StartsWith("!"))
+            return new()
+            {
+                Location = GameLocation.Zero,
+                Username = username,
+                Description = "I'm a fake user that represents a non existent publisher for re-published levels.",
+            };
 
         return this._realm.All<GameUser>().FirstOrDefault(u => u.Username == username);
     }
