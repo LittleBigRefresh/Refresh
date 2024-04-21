@@ -173,8 +173,8 @@ public class AuthenticationApiEndpoints : EndpointGroup
     [DocSummary("Tells the server to revoke the token used to make this request. Useful for logout behavior.")]
     public ApiOkResponse RevokeThisToken(RequestContext context, GameDatabaseContext database, Token token)
     {
-        database.RevokeToken(token);
         context.Logger.LogInfo(BunkumCategory.Authentication, $"{token.User} logged out");
+        database.RevokeToken(token);
         return new ApiOkResponse();
     }
     
