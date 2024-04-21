@@ -180,7 +180,7 @@ public partial class GameDatabaseContext // Levels
 
         if (user.Username.StartsWith("!"))
         {
-            string withoutPrefix = user.Username.TrimStart('!');
+            string withoutPrefix = user.Username[1..];
             return new DatabaseList<GameLevel>(this.GetLevelsByGameVersion(levelFilterSettings.GameVersion).FilterByLevelFilterSettings(null, levelFilterSettings).Where(l => l.OriginalPublisher == withoutPrefix), skip, count);
         }
         
