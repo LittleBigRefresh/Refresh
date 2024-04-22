@@ -402,7 +402,7 @@ public class ScoreLeaderboardTests : GameServerTest
         using TestContext context = this.GetServer();
         const int userAmount = 10;
 
-        List<GameUser> users = Array.Empty<GameUser>().ToList();
+        List<GameUser> users = new(userAmount);
         for (int i = 0; i < userAmount; i++)
         {
             users.Add(context.CreateUser());
@@ -410,45 +410,42 @@ public class ScoreLeaderboardTests : GameServerTest
         
         GameLevel level = context.CreateLevel(users.First());
 
+        bool testedSent = false;
+        bool testedNotSent = false;
+
         for (int i = 0; i < users.Count; i++)
         {
+            GameSubmittedScore? lastBestScore = level
+                .Scores.OrderByDescending(s => s.Score).FirstOrDefault();
+            
             GameUser user = users[i];
             context.SubmitScore(i, 1, level, user, TokenGame.LittleBigPlanet2, TokenPlatform.PS3);
 
             // Check that notification was sent to the last #1 users
-            if (i <= 0) continue;
+            if (lastBestScore == null) continue;
 
-            GameUser notificationRecipient = users[i - 1];
+            GameUser notificationRecipient = lastBestScore.Players.First();
+            GameNotification? notification = notificationRecipient.Notifications.FirstOrDefault();
 
-            bool notificationSent = false;
-            foreach (GameNotification notification in notificationRecipient.Notifications)
+            if (lastBestScore.Score <= 0)
             {
-                if (notification.Title != "Score overtaken") continue;
-                
-                notificationSent = true;
-                context.Database.DeleteNotification(notification);
+                Assert.That(notification, Is.Null);
+                testedNotSent = true;
             }
-            
-            if (i - 1 == 0) // Notification should not be sent if the last #1 entry had a score of 0
-                Assert.That(notificationSent, Is.EqualTo(false));
             else
-                Assert.That(notificationSent, Is.EqualTo(true));
+            {
+                Assert.That(notification, Is.Not.Null);
+                context.Database.DeleteNotification(notification!);
+                testedSent = true;
+            }
 
             // Check that notification was not sent to people who weren't previously #1
-            if (i <= 1) continue;
+            if (level.Scores.Count() <= 2) continue;
             
             notificationRecipient = users[i - 2];
-
-            notificationSent = false;
-            foreach (GameNotification notification in notificationRecipient.Notifications)
-            {
-                if (notification.Title != "Score overtaken") continue;
-                
-                notificationSent = true;
-                context.Database.DeleteNotification(notification);
-            }
-            
-            Assert.That(notificationSent, Is.EqualTo(false));
+            Assert.That(notificationRecipient.Notifications.Any(), Is.False);
         }
+        
+        Assert.That(testedSent && testedNotSent, Is.True);
     }
 }
