@@ -15,15 +15,21 @@ public class ContestCategory : LevelCategory
         this.Description = "Levels from a contest.";
         this.FontAwesomeIcon = "certificate";
         this.IconHash = "g820608";
-        this.Hidden = true;
     }
     
     public override DatabaseList<GameLevel>? Fetch(RequestContext context, int skip, int count, MatchService matchService,
         GameDatabaseContext database, GameUser? user, LevelFilterSettings levelFilterSettings)
     {
+        // try to find a contest by the query parameter
         string? contestId = context.QueryString["contest"];
         GameContest? contest = database.GetContestById(contestId);
-        if (contest == null) return null;
+        
+        // if we cant find one by a query param try getting an active contest instead
+        contest ??= database.GetNewestActiveContest();
+        
+        // if not, then fail
+        if (contest == null)
+            return null;
         
         return database.GetLevelsFromContest(contest, count, skip, user, levelFilterSettings);
     }
