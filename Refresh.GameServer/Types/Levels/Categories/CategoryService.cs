@@ -29,6 +29,7 @@ public class CategoryService : EndpointService
 
         new SearchLevelCategory(),
         new DeveloperLevelsCategory(),
+        new ContestCategory(),
     ];
 
     internal CategoryService(Logger logger) : base(logger)

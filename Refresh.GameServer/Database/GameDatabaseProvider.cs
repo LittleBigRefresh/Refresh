@@ -8,6 +8,7 @@ using Bunkum.RealmDatabase;
 using Refresh.GameServer.Time;
 using Refresh.GameServer.Types.Activity;
 using Refresh.GameServer.Types.Assets;
+using Refresh.GameServer.Types.Contests;
 using Refresh.GameServer.Types.Levels.SkillRewards;
 using Refresh.GameServer.Types.Notifications;
 using Refresh.GameServer.Types.Relations;
@@ -33,7 +34,7 @@ public class GameDatabaseProvider : RealmDatabaseProvider<GameDatabaseContext>
         this._time = time;
     }
 
-    protected override ulong SchemaVersion => 119;
+    protected override ulong SchemaVersion => 120;
 
     protected override string Filename => "refreshGameServer.realm";
     
@@ -64,6 +65,7 @@ public class GameDatabaseProvider : RealmDatabaseProvider<GameDatabaseContext>
         typeof(EmailVerificationCode),
         typeof(RequestStatistics),
         typeof(SequentialIdStorage),
+        typeof(GameContest),
         //grief report items
         typeof(GameReport),
         typeof(InfoBubble),

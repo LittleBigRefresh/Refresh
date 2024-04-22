@@ -32,5 +32,8 @@ public class ApiValidationError : ApiError
     public const string BodyMustBeImageErrorWhen = "The asset must be a PNG/JPEG file";
     public static readonly ApiValidationError BodyMustBeImageError = new(BodyMustBeImageErrorWhen);
     
+    public const string ResourceExistsErrorWhen = "The resource you are attempting to create already exists.";
+    public static readonly ApiValidationError ResourceExistsError = new(ResourceExistsErrorWhen);
+    
     public ApiValidationError(string message) : base(message) {}
 }

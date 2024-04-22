@@ -26,7 +26,13 @@ public partial class GameLevel : IRealmObject, ISequentialId
 
     public string RootResource { get; set; } = string.Empty;
 
-    public long PublishDate { get; set; } // unix seconds
+    /// <summary>
+    /// When the level was first published in unix milliseconds
+    /// </summary>
+    public long PublishDate { get; set; }
+    /// <summary>
+    /// When the level was last updated in unix milliseconds
+    /// </summary>
     public long UpdateDate { get; set; }
     
     public int MinPlayers { get; set; }
