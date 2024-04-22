@@ -80,7 +80,6 @@ public class RefreshGameServer : RefreshServer
 
     protected override void SetupMiddlewares()
     {
-        this.Server.AddMiddleware<ApiV2GoneMiddleware>();
         this.Server.AddMiddleware<LegacyAdapterMiddleware>();
         this.Server.AddMiddleware<WebsiteMiddleware>();
         this.Server.AddMiddleware<DigestMiddleware>();
