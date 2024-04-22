@@ -28,6 +28,21 @@ public partial class GameDatabaseContext // Contests
         return this._realm.All<GameContest>().FirstOrDefault(c => c.ContestId == id);
     }
     
+    public IEnumerable<GameContest> GetAllContests()
+    {
+        return this._realm.All<GameContest>()
+            .OrderBy(c => c.CreationDate);
+    }
+    
+    public GameContest? GetOldestActiveContest()
+    {
+        DateTimeOffset now = this._time.Now;
+        return this._realm.All<GameContest>()
+            .Where(c => c.StartDate <= now && c.EndDate > now) // Filter active contests
+            .OrderBy(c => c.CreationDate)
+            .FirstOrDefault();
+    }
+    
     public GameContest UpdateContest(ApiContestRequest body, GameContest contest, GameUser? newOrganizer = null)
     {
         this._realm.Write(() =>

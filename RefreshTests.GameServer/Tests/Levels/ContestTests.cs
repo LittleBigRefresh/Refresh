@@ -15,12 +15,12 @@ public class ContestTests : GameServerTest
 {
     private const string Banner = "https://i.imgur.com/n80NswV.png";
     
-    private GameContest CreateContest(TestContext context, GameUser? organizer = null)
+    private GameContest CreateContest(TestContext context, GameUser? organizer = null, string id = "ut")
     {
         organizer ??= context.CreateUser();
         GameContest contest = new()
         {
-            ContestId = "ut",
+            ContestId = id,
             Organizer = organizer,
             BannerUrl = Banner,
             ContestTitle = "unit test",
@@ -162,5 +162,36 @@ public class ContestTests : GameServerTest
         DatabaseList<GameLevel> levels = context.Database.GetLevelsFromContest(contest, 4, 0, user, new LevelFilterSettings(TokenGame.LittleBigPlanet2));
         Assert.That(levels.TotalItems, Is.EqualTo(3));
         Assert.That(levels.Items.All(l => l.Title.Contains("#ut ")));
+    }
+
+    [Test]
+    public void OldestContestIsCorrectOne()
+    {
+        using TestContext context = this.GetServer(false);
+        // contests end after 10ms
+        context.Time.TimestampMilliseconds = 0; // start at 0ms
+        this.CreateContest(context, id: "0");
+        context.Time.TimestampMilliseconds = 5; // advance 5ms
+        this.CreateContest(context, id: "5");
+
+        // at this point, 0 and 5 are both active.
+        GameContest? oldestContest = context.Database.GetOldestActiveContest();
+        Assert.That(oldestContest, Is.Not.Null);
+        Assert.That(oldestContest.ContestId, Is.EqualTo("0"));
+        
+        // jump to 14ms, after 0 has ended
+        context.Time.TimestampMilliseconds = 14;
+        
+        // 5 should still be active
+        oldestContest = context.Database.GetOldestActiveContest();
+        Assert.That(oldestContest, Is.Not.Null);
+        Assert.That(oldestContest.ContestId, Is.EqualTo("5"));
+        
+        // jump to 15ms, 5 should be dead
+        context.Time.TimestampMilliseconds = 15;
+        
+        // no contests should be active
+        oldestContest = context.Database.GetOldestActiveContest();
+        Assert.That(oldestContest, Is.Null);
     }
 }

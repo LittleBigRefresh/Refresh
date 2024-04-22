@@ -16,6 +16,14 @@ namespace Refresh.GameServer.Endpoints.ApiV3;
 
 public class ContestApiEndpoints : EndpointGroup
 {
+    [ApiV3Endpoint("contests")]
+    [DocSummary("Gets all contests.")]
+    [DocError(typeof(ApiNotFoundError), ApiNotFoundError.ContestMissingErrorWhen)]
+    public ApiListResponse<ApiContestResponse> GetAllContests(RequestContext context, GameDatabaseContext database)
+    {
+        return new ApiListResponse<ApiContestResponse>(ApiContestResponse.FromOldList(database.GetAllContests()));
+    }
+    
     [ApiV3Endpoint("contests/{id}")]
     [DocSummary("Gets a contest by the contest's unique ID")]
     [DocError(typeof(ApiNotFoundError), ApiNotFoundError.ContestMissingErrorWhen)]
