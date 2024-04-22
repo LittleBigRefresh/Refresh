@@ -34,7 +34,7 @@ public class GameDatabaseProvider : RealmDatabaseProvider<GameDatabaseContext>
         this._time = time;
     }
 
-    protected override ulong SchemaVersion => 120;
+    protected override ulong SchemaVersion => 121;
 
     protected override string Filename => "refreshGameServer.realm";
     
@@ -47,6 +47,7 @@ public class GameDatabaseProvider : RealmDatabaseProvider<GameDatabaseContext>
         typeof(GameLevel),
         typeof(GameSkillReward),
         typeof(GameComment),
+        typeof(CommentRelation),
         typeof(FavouriteLevelRelation),
         typeof(QueueLevelRelation),
         typeof(FavouriteUserRelation),
@@ -76,7 +77,7 @@ public class GameDatabaseProvider : RealmDatabaseProvider<GameDatabaseContext>
         typeof(ScreenRect),
         typeof(Slot),
         typeof(GameReview),
-        typeof(DisallowedUser)
+        typeof(DisallowedUser),
     };
 
     public override void Warmup()
