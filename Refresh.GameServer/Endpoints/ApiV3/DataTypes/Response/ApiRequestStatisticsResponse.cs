@@ -7,7 +7,6 @@ public class ApiRequestStatisticsResponse : IApiResponse, IDataConvertableFrom<A
 {
     public required long TotalRequests { get; set; }
     public required long ApiRequests { get; set; }
-    public required long LegacyApiRequests { get; set; }
     public required long GameRequests { get; set; }
     
     public static ApiRequestStatisticsResponse? FromOld(RequestStatistics? old)
@@ -18,7 +17,6 @@ public class ApiRequestStatisticsResponse : IApiResponse, IDataConvertableFrom<A
         {
             TotalRequests = old.TotalRequests,
             ApiRequests = old.ApiRequests,
-            LegacyApiRequests = old.LegacyApiRequests,
             GameRequests = old.GameRequests,
         };
     }

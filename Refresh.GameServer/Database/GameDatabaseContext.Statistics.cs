@@ -26,14 +26,7 @@ public partial class GameDatabaseContext // Statistics
             statistics.ApiRequests++;
         });
     }
-    public void IncrementLegacyApiRequests()
-    {
-        RequestStatistics statistics = this.GetRequestStatistics();
-        this._realm.Write(() => {
-            statistics.TotalRequests++;
-            statistics.LegacyApiRequests++;
-        });
-    }
+    
     public void IncrementGameRequests()
     {
         RequestStatistics statistics = this.GetRequestStatistics();

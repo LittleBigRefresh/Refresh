@@ -65,19 +65,6 @@ public partial class GameDatabaseContext // Users
         if(!ObjectId.TryParse(uuid, out ObjectId objectId)) return null;
         return this._realm.All<GameUser>().FirstOrDefault(u => u.UserId == objectId);
     }
-    
-    /// <summary>
-    /// ID lookup for legacy API (v1). Do not use for any other purpose.
-    /// </summary>
-    [Pure]
-    [ContractAnnotation("null => null; notnull => canbenull")]
-    public GameUser? GetUserByLegacyId(int? legacyId)
-    {
-        if (legacyId == null) return null;
-        
-        // THIS SUCKS
-        return this._realm.All<GameUser>().ToList().FirstOrDefault(u => u.UserId.Timestamp == legacyId);
-    }
 
     public DatabaseList<GameUser> GetUsers(int count, int skip)
         => new(this._realm.All<GameUser>().OrderByDescending(u => u.JoinDate), skip, count);

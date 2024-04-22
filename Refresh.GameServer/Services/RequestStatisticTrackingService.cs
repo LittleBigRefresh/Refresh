@@ -22,10 +22,6 @@ public class RequestStatisticTrackingService : Service
         {
             gameDatabase.IncrementGameRequests();
         }
-        else if(context.Uri.AbsolutePath.StartsWith(LegacyApiEndpointAttribute.BaseRoute))
-        {
-            gameDatabase.IncrementLegacyApiRequests();
-        }
         else
         {
             gameDatabase.IncrementApiRequests();
