@@ -9,24 +9,20 @@ namespace RefreshTests.GameServer.Tests.Comments;
 
 public class CommentTests : GameServerTest
 {
-    [Test]
-    public void RateComment()
+    public static void RateComment(TestContext context, GameUser user, GameComment comment, string rateCommentUrl, string getCommentsUrl)
     {
-        using TestContext context = this.GetServer();
-        GameUser user = context.CreateUser();
-
         using HttpClient client = context.GetAuthenticatedClient(TokenType.Game, user);
-        GameComment comment = context.Database.PostCommentToProfile(user, user, "This is a test comment!");
+
 
         foreach (RatingType ratingType in new List<RatingType> {RatingType.Neutral, RatingType.Boo, RatingType.Yay})
         {
             for (int i = 0; i < 3; i++) // Rate multiple times to test that duplicate ratings are not added
             {
                 // ReSharper disable once RedundantAssignment
-                client.PostAsync($"/lbp/rateUserComment/{user.Username}?commentId={comment.SequentialId}&rating={ratingType.ToDPad()}", null);
+                client.PostAsync($"{rateCommentUrl}?commentId={comment.SequentialId}&rating={ratingType.ToDPad()}", null);
             }
         
-            HttpResponseMessage response = client.GetAsync($"/lbp/userComments/{user.Username}").Result;
+            HttpResponseMessage response = client.GetAsync(getCommentsUrl).Result;
             SerializedCommentList userComments = response.Content.ReadAsXML<SerializedCommentList>();
             comment = userComments.Items.First();
 
