@@ -2,6 +2,7 @@ using MongoDB.Bson;
 using Refresh.GameServer.Authentication;
 using Refresh.GameServer.Types.Levels;
 using Refresh.GameServer.Types.Lists;
+using Refresh.GameServer.Types.Notifications;
 using Refresh.GameServer.Types.UserData;
 using Refresh.GameServer.Types.UserData.Leaderboard;
 using RefreshTests.GameServer.Extensions;
@@ -86,7 +87,7 @@ public class ScoreLeaderboardTests : GameServerTest
     }
     
     [Test]
-    public void DosentGetLeaderboardForInvalidLevel()
+    public void DoesntGetLeaderboardForInvalidLevel()
     {
         using TestContext context = this.GetServer();
         GameUser user = context.CreateUser();
@@ -98,7 +99,7 @@ public class ScoreLeaderboardTests : GameServerTest
     }
     
     [Test]
-    public void DosentGetMultiLeaderboardForInvalidLevel()
+    public void DoesntGetMultiLeaderboardForInvalidLevel()
     {
         using TestContext context = this.GetServer();
         GameUser user = context.CreateUser();
@@ -393,5 +394,58 @@ public class ScoreLeaderboardTests : GameServerTest
 
         HttpResponseMessage message = client.PostAsync($"/lbp/play/user/{level.LevelId}?count=3", new ReadOnlyMemoryContent(Array.Empty<byte>())).Result;
         Assert.That(message.StatusCode, Is.EqualTo(BadRequest));
+    }
+
+    [Test]
+    public void OvertakeNotificationsWorkProperly()
+    {
+        using TestContext context = this.GetServer();
+        const int userAmount = 10;
+
+        List<GameUser> users = new(userAmount);
+        for (int i = 0; i < userAmount; i++)
+        {
+            users.Add(context.CreateUser());
+        }
+        
+        GameLevel level = context.CreateLevel(users.First());
+
+        bool testedSent = false;
+        bool testedNotSent = false;
+
+        for (int i = 0; i < users.Count; i++)
+        {
+            GameSubmittedScore? lastBestScore = level
+                .Scores.OrderByDescending(s => s.Score).FirstOrDefault();
+            
+            GameUser user = users[i];
+            context.SubmitScore(i, 1, level, user, TokenGame.LittleBigPlanet2, TokenPlatform.PS3);
+
+            // Check that notification was sent to the last #1 users
+            if (lastBestScore == null) continue;
+
+            GameUser notificationRecipient = lastBestScore.Players.First();
+            GameNotification? notification = notificationRecipient.Notifications.FirstOrDefault();
+
+            if (lastBestScore.Score <= 0)
+            {
+                Assert.That(notification, Is.Null);
+                testedNotSent = true;
+            }
+            else
+            {
+                Assert.That(notification, Is.Not.Null);
+                context.Database.DeleteNotification(notification!);
+                testedSent = true;
+            }
+
+            // Check that notification was not sent to people who weren't previously #1
+            if (level.Scores.Count() <= 2) continue;
+            
+            notificationRecipient = users[i - 2];
+            Assert.That(notificationRecipient.Notifications.Any(), Is.False);
+        }
+        
+        Assert.That(testedSent && testedNotSent, Is.True);
     }
 }

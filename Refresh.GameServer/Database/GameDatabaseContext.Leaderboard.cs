@@ -32,6 +32,30 @@ public partial class GameDatabaseContext // Leaderboard
 
         this.CreateSubmittedScoreCreateEvent(user, newScore);
 
+        #region Notifications
+        
+        IEnumerable<ScoreWithRank> rankedScores = GetRankedScoresAroundScore(newScore, 3).ToList();
+        ScoreWithRank? rankOne = rankedScores.FirstOrDefault(s => s.rank == 1);
+        ScoreWithRank? rankTwo = rankedScores.FirstOrDefault(s => s.rank == 2);
+        if (rankOne != null && rankTwo != null &&
+            rankOne.score.ScoreId == newScore.ScoreId && // if submitted score is the new #1
+            rankTwo.score.Score > 0 // don't send notification if the last #1 score was just 0
+           )
+        {
+            // Notify the last #1 users that they've been overtaken
+            foreach (GameUser? player in rankTwo.score.Players)
+            {
+                if (player == null)
+                    continue;
+                
+                this.AddNotification("Score overtaken", 
+                    $"Your #1 score on {level.Title} has been overtaken by {user.Username}!", 
+                    player, "medal");   
+            }
+        }
+        
+        #endregion
+
         return newScore;
     }
     
