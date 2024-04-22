@@ -402,7 +402,7 @@ public class ScoreLeaderboardTests : GameServerTest
         using TestContext context = this.GetServer();
         const int userAmount = 10;
 
-        List<GameUser> users = Array.Empty<GameUser>().ToList();
+        List<GameUser> users = new List<GameUser>(usersAmount);
         for (int i = 0; i < userAmount; i++)
         {
             users.Add(context.CreateUser());
