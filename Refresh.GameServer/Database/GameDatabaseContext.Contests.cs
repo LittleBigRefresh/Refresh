@@ -47,23 +47,25 @@ public partial class GameDatabaseContext // Contests
     {
         this._realm.Write(() =>
         {
-            PropertyInfo[] bodyProps = typeof(ApiContestRequest).GetProperties();
-            foreach (PropertyInfo prop in bodyProps)
-            {
-                if (!prop.CanWrite || !prop.CanRead) continue;
-                if(prop.Name == nameof(ApiContestRequest.OrganizerId)) continue;
-                
-                object? propValue = prop.GetValue(body);
-                if(propValue == null) continue;
-                
-                PropertyInfo? gameContestProp = typeof(GameContest).GetProperty(prop.Name);
-                Debug.Assert(gameContestProp != null, $"Invalid property {prop.Name} on {nameof(ApiContestRequest)}");
-                
-                gameContestProp.SetValue(contest, prop.GetValue(body));
-            }
-            
             if (newOrganizer != null)
                 contest.Organizer = newOrganizer;
+            
+            if(body.CreationDate != null)
+                contest.CreationDate = body.CreationDate.Value;
+            if(body.StartDate != null)
+                contest.StartDate = body.StartDate.Value;
+            if(body.EndDate != null)
+                contest.EndDate = body.EndDate.Value;
+            if(body.ContestTag != null)
+                contest.ContestTag = body.ContestTag;
+            if(body.BannerUrl != null)
+                contest.BannerUrl = body.BannerUrl;
+            if(body.ContestTitle != null)
+                contest.ContestTitle = body.ContestTitle;
+            if(body.ContestSummary != null)
+                contest.ContestSummary = body.ContestSummary;
+            if(body.ContestDetails != null)
+                contest.ContestDetails = body.ContestDetails;
         });
         
         return contest;
