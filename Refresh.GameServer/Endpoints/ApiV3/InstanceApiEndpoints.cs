@@ -25,7 +25,6 @@ public class InstanceApiEndpoints : EndpointGroup
             {
                 TotalRequests = -1,
                 ApiRequests = -1,
-                LegacyApiRequests = -1,
                 GameRequests = -1,
             };
         }

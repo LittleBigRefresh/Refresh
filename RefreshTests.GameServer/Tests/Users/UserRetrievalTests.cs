@@ -53,16 +53,7 @@ public class UserRetrievalTests : GameServerTest
             Assert.That(this._db.GetUserByUuid(this._user.UserId.ToString()), Is.EqualTo(this._user));
         });
     }
-    
-    [Test]
-    public void GetByLegacyId()
-    {
-        Assert.Multiple(() =>
-        {
-            Assert.That(this._db.GetUserByLegacyId(null), Is.Null);
-            Assert.That(this._db.GetUserByLegacyId(this._user.UserId.Timestamp), Is.EqualTo(this._user));
-        });
-    }
+
 
     [Test]
     public void GetTotalCount()
