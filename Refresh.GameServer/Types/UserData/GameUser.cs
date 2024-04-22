@@ -4,6 +4,7 @@ using Realms;
 using Refresh.GameServer.Types.Comments;
 using Bunkum.Core.RateLimit;
 using Refresh.GameServer.Types.Levels;
+using Refresh.GameServer.Types.Notifications;
 using Refresh.GameServer.Types.Photos;
 using Refresh.GameServer.Types.Relations;
 using Refresh.GameServer.Types.Roles;
@@ -82,6 +83,9 @@ public partial class GameUser : IRealmObject, IRateLimitUser
     
     [Backlink(nameof(GamePhotoSubject.User))]
     public IQueryable<GamePhotoSubject> PhotosWithMe { get; }
+    [Backlink(nameof(GameNotification.User))]
+    
+    public IQueryable<GameNotification> Notifications { get; }
     
     public IList<GameIpVerificationRequest> IpVerificationRequests { get; }
     #nullable restore

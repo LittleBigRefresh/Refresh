@@ -2,6 +2,7 @@ using MongoDB.Bson;
 using Refresh.GameServer.Authentication;
 using Refresh.GameServer.Types.Levels;
 using Refresh.GameServer.Types.Lists;
+using Refresh.GameServer.Types.Notifications;
 using Refresh.GameServer.Types.UserData;
 using Refresh.GameServer.Types.UserData.Leaderboard;
 using RefreshTests.GameServer.Extensions;
@@ -86,7 +87,7 @@ public class ScoreLeaderboardTests : GameServerTest
     }
     
     [Test]
-    public void DosentGetLeaderboardForInvalidLevel()
+    public void DoesntGetLeaderboardForInvalidLevel()
     {
         using TestContext context = this.GetServer();
         GameUser user = context.CreateUser();
@@ -98,7 +99,7 @@ public class ScoreLeaderboardTests : GameServerTest
     }
     
     [Test]
-    public void DosentGetMultiLeaderboardForInvalidLevel()
+    public void DoesntGetMultiLeaderboardForInvalidLevel()
     {
         using TestContext context = this.GetServer();
         GameUser user = context.CreateUser();
@@ -393,5 +394,61 @@ public class ScoreLeaderboardTests : GameServerTest
 
         HttpResponseMessage message = client.PostAsync($"/lbp/play/user/{level.LevelId}?count=3", new ReadOnlyMemoryContent(Array.Empty<byte>())).Result;
         Assert.That(message.StatusCode, Is.EqualTo(BadRequest));
+    }
+
+    [Test]
+    public void OvertakeNotificationsWorkProperly()
+    {
+        using TestContext context = this.GetServer();
+        const int userAmount = 10;
+
+        List<GameUser> users = Array.Empty<GameUser>().ToList();
+        for (int i = 0; i < userAmount; i++)
+        {
+            users.Add(context.CreateUser());
+        }
+        
+        GameLevel level = context.CreateLevel(users.First());
+
+        for (int i = 0; i < users.Count; i++)
+        {
+            GameUser user = users[i];
+            context.SubmitScore(i, 1, level, user, TokenGame.LittleBigPlanet2, TokenPlatform.PS3);
+
+            // Check that notification was sent to the last #1 users
+            if (i <= 0) continue;
+
+            GameUser notificationRecipient = users[i - 1];
+
+            bool notificationSent = false;
+            foreach (GameNotification notification in notificationRecipient.Notifications)
+            {
+                if (notification.Title != "Score overtaken") continue;
+                
+                notificationSent = true;
+                context.Database.DeleteNotification(notification);
+            }
+            
+            if (i - 1 == 0) // Notification should not be sent if the last #1 entry had a score of 0
+                Assert.That(notificationSent, Is.EqualTo(false));
+            else
+                Assert.That(notificationSent, Is.EqualTo(true));
+
+            // Check that notification was not sent to people who weren't previously #1
+            if (i <= 1) continue;
+            
+            notificationRecipient = users[i - 2];
+
+            notificationSent = false;
+            foreach (GameNotification notification in notificationRecipient.Notifications)
+            {
+                if (notification.Title != "Score overtaken") continue;
+                
+                notificationSent = true;
+                context.Database.DeleteNotification(notification);
+            }
+            
+            Assert.That(notificationSent, Is.EqualTo(false));
+        }
     }
 }

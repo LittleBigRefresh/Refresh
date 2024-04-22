@@ -49,7 +49,7 @@ public partial class GameDatabaseContext // Leaderboard
                     continue;
                 
                 this.AddNotification("Score overtaken", 
-                    $"Your #1 score on {level.Title} has been overtaken by {user.Username}", 
+                    $"Your #1 score on {level.Title} has been overtaken by {user.Username}!", 
                     player, "medal");   
             }
         }
