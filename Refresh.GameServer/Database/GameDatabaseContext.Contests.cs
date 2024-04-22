@@ -34,12 +34,12 @@ public partial class GameDatabaseContext // Contests
             .OrderBy(c => c.CreationDate);
     }
     
-    public GameContest? GetOldestActiveContest()
+    public GameContest? GetNewestActiveContest()
     {
         DateTimeOffset now = this._time.Now;
         return this._realm.All<GameContest>()
             .Where(c => c.StartDate <= now && c.EndDate > now) // Filter active contests
-            .OrderBy(c => c.CreationDate)
+            .OrderByDescending(c => c.CreationDate)
             .FirstOrDefault();
     }
     

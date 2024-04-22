@@ -85,7 +85,7 @@ public class InstanceApiEndpoints : EndpointGroup
                 AdminDiscordUsername = contactInfoConfig.AdminDiscordUsername,
             },
             
-            ActiveContest = ApiContestResponse.FromOld(database.GetOldestActiveContest()),
+            ActiveContest = ApiContestResponse.FromOld(database.GetNewestActiveContest()),
 #if DEBUG
             SoftwareType = "Debug",
 #else

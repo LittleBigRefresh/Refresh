@@ -165,25 +165,31 @@ public class ContestTests : GameServerTest
     }
 
     [Test]
-    public void OldestContestIsCorrectOne()
+    public void NewestContestIsCorrectOne()
     {
         using TestContext context = this.GetServer(false);
         // contests end after 10ms
         context.Time.TimestampMilliseconds = 0; // start at 0ms
         this.CreateContest(context, id: "0");
-        context.Time.TimestampMilliseconds = 5; // advance 5ms
-        this.CreateContest(context, id: "5");
-
-        // at this point, 0 and 5 are both active.
-        GameContest? oldestContest = context.Database.GetOldestActiveContest();
+        
+        // one contest, should definitely be 0.
+        GameContest? oldestContest = context.Database.GetNewestActiveContest();
         Assert.That(oldestContest, Is.Not.Null);
         Assert.That(oldestContest.ContestId, Is.EqualTo("0"));
+        
+        context.Time.TimestampMilliseconds = 5; // advance 5ms, create a new contest.
+        this.CreateContest(context, id: "5");
+
+        // at this point, 0 and 5 are both active. the newer one is 5 so it should be 5
+        oldestContest = context.Database.GetNewestActiveContest();
+        Assert.That(oldestContest, Is.Not.Null);
+        Assert.That(oldestContest.ContestId, Is.EqualTo("5"));
         
         // jump to 14ms, after 0 has ended
         context.Time.TimestampMilliseconds = 14;
         
-        // 5 should still be active
-        oldestContest = context.Database.GetOldestActiveContest();
+        // 5 should still be the active contest
+        oldestContest = context.Database.GetNewestActiveContest();
         Assert.That(oldestContest, Is.Not.Null);
         Assert.That(oldestContest.ContestId, Is.EqualTo("5"));
         
@@ -191,7 +197,7 @@ public class ContestTests : GameServerTest
         context.Time.TimestampMilliseconds = 15;
         
         // no contests should be active
-        oldestContest = context.Database.GetOldestActiveContest();
+        oldestContest = context.Database.GetNewestActiveContest();
         Assert.That(oldestContest, Is.Null);
     }
 }
