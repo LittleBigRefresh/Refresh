@@ -76,7 +76,7 @@ public class InstanceApiEndpoints : EndpointGroup
                 gameConfig,
                 richConfig))!,
             GrafanaDashboardUrl = integrationConfig.GrafanaDashboardUrl,
-
+            
             ContactInfo = new ApiContactInfoResponse
             {
                 AdminName = contactInfoConfig.AdminName,
@@ -84,6 +84,8 @@ public class InstanceApiEndpoints : EndpointGroup
                 DiscordServerInvite = contactInfoConfig.DiscordServerInvite,
                 AdminDiscordUsername = contactInfoConfig.AdminDiscordUsername,
             },
+            
+            ActiveContest = ApiContestResponse.FromOld(database.GetOldestActiveContest()),
 #if DEBUG
             SoftwareType = "Debug",
 #else
