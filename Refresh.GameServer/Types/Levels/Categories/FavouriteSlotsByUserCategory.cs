@@ -17,11 +17,11 @@ public class FavouriteSlotsByUserCategory : LevelCategory
         this.IconHash = "g820611";
     }
     
-    public override DatabaseList<GameLevel>? Fetch(RequestContext context, int skip, int count, MatchService matchService, GameDatabaseContext database, GameUser? user,
-        LevelFilterSettings levelFilterSettings)
+    public override DatabaseList<GameLevel>? Fetch(RequestContext context, int skip, int count, MatchService matchService, GameDatabaseContext database, GameUser? accessor,
+        LevelFilterSettings levelFilterSettings, GameUser? user)
     {
         if (user == null) return null;
         
-        return database.GetLevelsFavouritedByUser(user, count, skip, levelFilterSettings);
+        return database.GetLevelsFavouritedByUser(user, count, skip, levelFilterSettings, accessor);
     }
 }

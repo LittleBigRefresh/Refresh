@@ -17,8 +17,8 @@ public class CoolLevelsCategory : LevelCategory
     }
 
     public override DatabaseList<GameLevel>? Fetch(RequestContext context, int skip, int count, MatchService matchService,
-        GameDatabaseContext database, GameUser? user, LevelFilterSettings levelFilterSettings)
+        GameDatabaseContext database, GameUser? accessor, LevelFilterSettings levelFilterSettings, GameUser? _)
     {
-        return database.GetCoolLevels(count, skip, user, levelFilterSettings);
+        return database.GetCoolLevels(count, skip, accessor, levelFilterSettings);
     }
 }

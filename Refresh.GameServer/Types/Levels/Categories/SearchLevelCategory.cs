@@ -21,13 +21,13 @@ public class SearchLevelCategory : LevelCategory
     }
 
     public override DatabaseList<GameLevel>? Fetch(RequestContext context, int skip, int count,
-        MatchService matchService, GameDatabaseContext database, GameUser? user, 
-        LevelFilterSettings levelFilterSettings)
+        MatchService matchService, GameDatabaseContext database, GameUser? accessor, 
+        LevelFilterSettings levelFilterSettings, GameUser? _)
     {
         string? query = context.QueryString["query"]
                         ?? context.QueryString["textFilter"]; // LBP3 sends this instead of query
         if (query == null) return null;
 
-        return database.SearchForLevels(count, skip, user, levelFilterSettings, query);
+        return database.SearchForLevels(count, skip, accessor, levelFilterSettings, query);
     }
 }
