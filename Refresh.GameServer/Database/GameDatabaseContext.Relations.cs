@@ -53,6 +53,10 @@ public partial class GameDatabaseContext // Relations
 
         return true;
     }
+    
+    public int GetFavouriteCountForLevel(GameLevel level) => this._realm.All<FavouriteLevelRelation>()
+        .Count(r => r.Level == level);
+    
     #endregion
 
     #region Favouriting Users
@@ -219,6 +223,9 @@ public partial class GameDatabaseContext // Relations
         return true;
     }
     
+    public int GetTotalRatingsForLevel(GameLevel level, RatingType type) =>
+        this._realm.All<RateLevelRelation>().Count(r => r.Level == level && r._RatingType == (int)type);
+    
     /// <summary>
     /// Adds a review to the database, deleting any old ones by the user on that level.
     /// </summary>
@@ -304,7 +311,22 @@ public partial class GameDatabaseContext // Relations
     public bool HasUserPlayedLevel(GameLevel level, GameUser user) =>
         this._realm.All<UniquePlayLevelRelation>()
             .FirstOrDefault(r => r.Level == level && r.User == user) != null;
-
+    
+    public IEnumerable<PlayLevelRelation> GetAllPlaysForLevel(GameLevel level) =>
+        this._realm.All<PlayLevelRelation>().Where(r => r.Level == level);
+    
+    public IEnumerable<PlayLevelRelation> GetAllPlaysForLevelByUser(GameLevel level, GameUser user) =>
+        this._realm.All<PlayLevelRelation>().Where(r => r.Level == level && r.User == user);
+    
+    public int GetTotalPlaysForLevel(GameLevel level) =>
+        this.GetAllPlaysForLevel(level).Sum(playLevelRelation => playLevelRelation.Count);
+    
+    public int GetTotalPlaysForLevelByUser(GameLevel level, GameUser user) =>
+        this.GetAllPlaysForLevelByUser(level, user).Sum(playLevelRelation => playLevelRelation.Count);
+    
+    public int GetUniquePlaysForLevel(GameLevel level) =>
+        this._realm.All<UniquePlayLevelRelation>().Count(r => r.Level == level);
+    
     #endregion
 
     #region Comments

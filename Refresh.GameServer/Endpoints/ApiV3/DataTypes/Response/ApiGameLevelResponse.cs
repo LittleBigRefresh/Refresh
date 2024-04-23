@@ -34,10 +34,10 @@ public class ApiGameLevelResponse : IApiResponse, IDataConvertableFrom<ApiGameLe
     
     public required IEnumerable<ApiGameSkillRewardResponse>? SkillRewards { get; set; }
     
-    public required int YayRatings { get; set; }
-    public required int BooRatings { get; set; }
-    public required int Hearts { get; set; }
-    public required int UniquePlays { get; set; }
+    public int YayRatings { get; set; }
+    public int BooRatings { get; set; }
+    public int Hearts { get; set; }
+    public int UniquePlays { get; set; }
     public required bool TeamPicked { get; set; }
     public required GameLevelType LevelType { get; set; }
     public required bool IsLocked { get; set; }
@@ -69,10 +69,6 @@ public class ApiGameLevelResponse : IApiResponse, IDataConvertableFrom<ApiGameLe
             EnforceMinMaxPlayers = level.EnforceMinMaxPlayers,
             SameScreenGame = level.SameScreenGame,
             SkillRewards = ApiGameSkillRewardResponse.FromOldList(level.SkillRewards),
-            YayRatings = level.Ratings.Count(r => r._RatingType == (int)RatingType.Yay),
-            BooRatings = level.Ratings.Count(r => r._RatingType == (int)RatingType.Boo),
-            Hearts = level.FavouriteRelations.Count(),
-            UniquePlays = level.UniquePlays.Count(),
             TeamPicked = level.TeamPicked,
             RootLevelHash = level.RootResource,
             GameVersion = level.GameVersion,
@@ -90,6 +86,15 @@ public class ApiGameLevelResponse : IApiResponse, IDataConvertableFrom<ApiGameLe
 
         //Get the icon form of the icon asset
         this.IconHash = database.GetAssetFromHash(this._originalIconHash ?? "0")?.GetAsIcon(TokenGame.Website, database, dataStore) ?? this.IconHash;
+        
+        // TODO: no
+        GameLevel? level = database.GetLevelById(this.LevelId);
+        if (level == null) return;
+        
+        this.YayRatings = database.GetTotalRatingsForLevel(level, RatingType.Yay);
+        this.BooRatings = database.GetTotalRatingsForLevel(level, RatingType.Boo);
+        this.Hearts = database.GetFavouriteCountForLevel(level);
+        this.UniquePlays = database.GetUniquePlaysForLevel(level);
     }
     
     public static ApiGameLevelResponse? FromOldWithExtraData(GameLevel? old, GameDatabaseContext database, IDataStore dataStore)

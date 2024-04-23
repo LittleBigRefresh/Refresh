@@ -43,14 +43,14 @@ public class GameLevelResponse : IDataConvertableFrom<GameLevelResponse, GameLev
 
     [XmlElement("npHandle")] public SerializedUserHandle Handle { get; set; } = null!;
     
-    [XmlElement("heartCount")] public required int HeartCount { get; set; }
+    [XmlElement("heartCount")] public int HeartCount { get; set; }
     
-    [XmlElement("playCount")] public required int TotalPlayCount { get; set; }
-    [XmlElement("uniquePlayCount")] public required int UniquePlayCount { get; set; }
+    [XmlElement("playCount")] public int TotalPlayCount { get; set; }
+    [XmlElement("uniquePlayCount")] public int UniquePlayCount { get; set; }
 
     [XmlElement("yourDPadRating")] public int YourRating { get; set; }
-    [XmlElement("thumbsup")] public required int YayCount { get; set; }
-    [XmlElement("thumbsdown")] public required int BooCount { get; set; }
+    [XmlElement("thumbsup")] public int YayCount { get; set; }
+    [XmlElement("thumbsdown")] public int BooCount { get; set; }
     [XmlElement("yourRating")] public int YourStarRating { get; set; }
     
     // 1 by default since this will break reviews if set to 0 for GameLevelResponses that do not have extra data being filled in
@@ -91,12 +91,6 @@ public class GameLevelResponse : IDataConvertableFrom<GameLevelResponse, GameLev
     public static GameLevelResponse? FromOld(GameLevel? old)
     {
         if (old == null) return null;
-
-        int totalPlayCount = 0;
-        foreach (PlayLevelRelation playLevelRelation in old.AllPlays)
-        {
-            totalPlayCount += playLevelRelation.Count;
-        }
         
         GameLevelResponse response = new()
         {
@@ -113,11 +107,6 @@ public class GameLevelResponse : IDataConvertableFrom<GameLevelResponse, GameLev
             MaxPlayers = old.MaxPlayers,
             EnforceMinMaxPlayers = old.EnforceMinMaxPlayers,
             SameScreenGame = old.SameScreenGame,
-            HeartCount = old.FavouriteRelations.Count(),
-            TotalPlayCount = totalPlayCount,
-            UniquePlayCount = old.UniquePlays.Count(),
-            YayCount = old.Ratings.Count(r => r._RatingType == (int)RatingType.Yay),
-            BooCount = old.Ratings.Count(r => r._RatingType == (int)RatingType.Boo),
             SkillRewards = old.SkillRewards.ToList(),
             TeamPicked = old.TeamPicked,
             LevelType = old.LevelType.ToGameString(),
@@ -126,7 +115,6 @@ public class GameLevelResponse : IDataConvertableFrom<GameLevelResponse, GameLev
             IsSubLevel = old.IsSubLevel,
             BackgroundGuid = old.BackgroundGuid,
             Links = "",
-            AverageStarRating = old.CalculateAverageStarRating(),
             ReviewCount = old.Reviews.Count,
             CommentCount = old.LevelComments.Count,
         };
@@ -159,7 +147,7 @@ public class GameLevelResponse : IDataConvertableFrom<GameLevelResponse, GameLev
         
         this.YourRating = rating?.ToDPad() ?? (int)RatingType.Neutral;
         this.YourStarRating = rating?.ToLBP1() ?? 0;
-        this.YourLbp2PlayCount = level.AllPlays.Count(p => p.User == user);
+        this.YourLbp2PlayCount = database.GetTotalPlaysForLevelByUser(level, user);
         this.PlayerCount = matchService.GetPlayerCountForLevel(RoomSlotType.Online, this.LevelId);
 
         GameAsset? rootResourceAsset = database.GetAssetFromHash(this.RootResource);
@@ -175,5 +163,13 @@ public class GameLevelResponse : IDataConvertableFrom<GameLevelResponse, GameLev
         this.IconHash = database.GetAssetFromHash(this.IconHash)?.GetAsIcon(game, database, dataStore) ?? this.IconHash;
 
         this.CommentCount = level.LevelComments.Count;
+        
+        this.HeartCount = database.GetFavouriteCountForLevel(level);
+        this.TotalPlayCount = database.GetTotalPlaysForLevel(level);
+        this.UniquePlayCount = database.GetUniquePlaysForLevel(level);
+        this.YayCount = database.GetTotalRatingsForLevel(level, RatingType.Yay);
+        this.BooCount = database.GetTotalRatingsForLevel(level, RatingType.Boo);
+        
+        this.AverageStarRating = level.CalculateAverageStarRating(database);
     }
 }

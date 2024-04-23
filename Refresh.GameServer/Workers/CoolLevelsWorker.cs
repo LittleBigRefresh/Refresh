@@ -32,10 +32,10 @@ public class CoolLevelsWorker : IWorker
             logger.LogTrace(RefreshContext.CoolLevels, "Calculating score for '{0}' ({1})", level.Title, level.LevelId);
             float decayMultiplier = CalculateLevelDecayMultiplier(logger, now, level);
 
-            // Calculate positive & negative score separately so we don't run into issues with
+            // Calculate positive & negative score separately, so we don't run into issues with
             // the multiplier having an opposite effect with the negative score as time passes
-            int positiveScore = CalculatePositiveScore(logger, level);
-            int negativeScore = CalculateNegativeScore(logger, level);
+            int positiveScore = CalculatePositiveScore(logger, level, database);
+            int negativeScore = CalculateNegativeScore(logger, level, database);
 
             // Increase to tweak how little negative score gets affected by decay
             const int negativeScoreMultiplier = 2;
@@ -74,7 +74,7 @@ public class CoolLevelsWorker : IWorker
         return multiplier;
     }
 
-    private static int CalculatePositiveScore(Logger logger, GameLevel level)
+    private static int CalculatePositiveScore(Logger logger, GameLevel level, GameDatabaseContext database)
     {
         int score = 15; // Start levels off with a few points to prevent one dislike from bombing the level
         const int positiveRatingPoints = 5;
@@ -85,9 +85,9 @@ public class CoolLevelsWorker : IWorker
         if (level.TeamPicked)
             score += 10;
         
-        score += level.Ratings.Count(r => r._RatingType == (int)RatingType.Yay) * positiveRatingPoints;
-        score += level.UniquePlays.Count() * uniquePlayPoints;
-        score += level.FavouriteRelations.Count() * heartPoints;
+        score += database.GetTotalRatingsForLevel(level, RatingType.Yay) * positiveRatingPoints;
+        score += database.GetUniquePlaysForLevel(level) * uniquePlayPoints;
+        score += database.GetFavouriteCountForLevel(level) * heartPoints;
 
         if (level.Publisher?.Role == GameUserRole.Trusted)
             score += trustedAuthorPoints;
@@ -96,7 +96,7 @@ public class CoolLevelsWorker : IWorker
         return score;
     }
 
-    private static int CalculateNegativeScore(Logger logger, GameLevel level)
+    private static int CalculateNegativeScore(Logger logger, GameLevel level, GameDatabaseContext database)
     {
         int penalty = 0;
         const int negativeRatingPenalty = 5;
@@ -104,7 +104,7 @@ public class CoolLevelsWorker : IWorker
         const int restrictedAuthorPenalty = 50;
         const int bannedAuthorPenalty = 100;
         
-        penalty += level.Ratings.Count(r => r._RatingType == (int)RatingType.Boo) * negativeRatingPenalty;
+        penalty += database.GetTotalRatingsForLevel(level, RatingType.Boo) * negativeRatingPenalty;
         
         if (level.Publisher == null)
             penalty += noAuthorPenalty;

@@ -333,7 +333,7 @@ public class ScoreLeaderboardTests : GameServerTest
 
         context.Database.Refresh();
 
-        Assert.That(level.AllPlays.Count(), Is.EqualTo(1));
+        Assert.That(context.Database.GetTotalPlaysForLevel(level), Is.EqualTo(1));
     }
     
     [Test]
@@ -363,7 +363,7 @@ public class ScoreLeaderboardTests : GameServerTest
         
         context.Database.Refresh();
 
-        Assert.That(level.AllPlays.AsEnumerable().Sum(p => p.Count), Is.EqualTo(2));
+        Assert.That(context.Database.GetTotalPlaysForLevel(level), Is.EqualTo(2));
     }
     
     [Test]
@@ -415,8 +415,9 @@ public class ScoreLeaderboardTests : GameServerTest
 
         for (int i = 0; i < users.Count; i++)
         {
-            GameSubmittedScore? lastBestScore = level
-                .Scores.OrderByDescending(s => s.Score).FirstOrDefault();
+            // GameSubmittedScore? lastBestScore = level
+                // .Scores.OrderByDescending(s => s.Score).FirstOrDefault();
+            GameSubmittedScore? lastBestScore = context.Database.GetTopScoresForLevel(level, 1, 0, 1, true).Items.FirstOrDefault();
             
             GameUser user = users[i];
             context.SubmitScore(i, 1, level, user, TokenGame.LittleBigPlanet2, TokenPlatform.PS3);
@@ -440,7 +441,7 @@ public class ScoreLeaderboardTests : GameServerTest
             }
 
             // Check that notification was not sent to people who weren't previously #1
-            if (level.Scores.Count() <= 2) continue;
+            if (context.Database.GetTotalPlaysForLevel(level) <= 2) continue;
             
             notificationRecipient = users[i - 2];
             Assert.That(notificationRecipient.Notifications.Any(), Is.False);

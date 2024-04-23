@@ -68,7 +68,7 @@ public class SerializedGameReview : IDataConvertableFrom<SerializedGameReview, G
             Deleted = false,
             DeletedBy = ReviewDeletedBy.None,
             Text = review.Content,
-            Thumb = review.Level.Ratings.FirstOrDefault(r => r.User == review.Publisher)?.RatingType.ToDPad() ?? 0,
+            Thumb = 0,
             ThumbsUp = 0,
             ThumbsDown = 0,
             YourThumb = 0,
@@ -77,7 +77,16 @@ public class SerializedGameReview : IDataConvertableFrom<SerializedGameReview, G
 
     public void FillInExtraData(GameDatabaseContext database, GameUser user)
     {
-        //TODO: fill in this.YourThumb
+        // TODO: no
+        GameLevel? level = database.GetLevelByIdAndType(Slot.SlotType, Slot.SlotId);
+        if (level == null) return;
+        
+        // TODO: no
+        GameUser? reviewer = database.GetUserByUsername(this.Reviewer);
+        if (reviewer == null) return;
+        
+        RatingType? yourRating = database.GetRatingByUser(level, user);
+        this.YourThumb = yourRating ?? RatingType.Neutral;
     }
     
     public static IEnumerable<SerializedGameReview> FromOldList(IEnumerable<GameReview> oldList) => oldList.Select(FromOld).ToList()!;

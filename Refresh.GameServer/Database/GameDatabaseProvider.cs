@@ -67,15 +67,6 @@ public class GameDatabaseProvider : RealmDatabaseProvider<GameDatabaseContext>
         typeof(RequestStatistics),
         typeof(SequentialIdStorage),
         typeof(GameContest),
-        //grief report items
-        typeof(GameReport),
-        typeof(InfoBubble),
-        typeof(Marqee),
-        typeof(Player),
-        typeof(Rect),
-        typeof(ScreenElements),
-        typeof(ScreenRect),
-        typeof(Slot),
         typeof(GameReview),
         typeof(DisallowedUser),
     };

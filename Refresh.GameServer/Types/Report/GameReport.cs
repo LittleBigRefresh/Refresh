@@ -9,8 +9,7 @@ namespace Refresh.GameServer.Types.Report;
 [XmlRoot("griefReport")]
 public partial class GameReport
 {
-    [XmlIgnore]
-    private IList<InfoBubble> InternalInfoBubble { get; }
+    [XmlIgnore] private List<InfoBubble> InternalInfoBubble { get; } = [];
     
     [Ignored]
     [XmlElement("infoBubble")]
@@ -60,9 +59,8 @@ public partial class GameReport
 
     [XmlElement("jpegHash")]
     public string JpegHash { get; set; }
-
-    [XmlIgnore]
-    private IList<Player> InternalPlayers { get; }
+    
+    [XmlIgnore] private List<Player> InternalPlayers { get; } = [];
 
     [Ignored]
     [XmlElement("player")]

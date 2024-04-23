@@ -6,7 +6,7 @@ namespace Refresh.GameServer.Types.Report;
 #nullable disable
 
 [XmlRoot("infoBubble")]
-public partial class InfoBubble : IEmbeddedObject 
+public partial class InfoBubble
 { 
     [XmlElement("slot")] 
     public Slot Slot { get; set; } 
