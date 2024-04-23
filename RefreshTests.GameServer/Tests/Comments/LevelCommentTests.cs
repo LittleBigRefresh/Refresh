@@ -155,4 +155,28 @@ public class LevelCommentTests : GameServerTest
         response = client2.PostAsync($"/lbp/deleteComment/user/{level.LevelId}?commentId={userComments.Items[0].SequentialId}", new ByteArrayContent(Array.Empty<byte>())).Result;
         Assert.That(response.StatusCode, Is.EqualTo(Unauthorized));
     }
+
+    [Test]
+    public void RateUserLevelComment()
+    {
+        using TestContext context = this.GetServer();
+        GameUser user = context.CreateUser();
+        GameLevel level = context.CreateLevel(user);
+        GameComment comment = context.Database.PostCommentToLevel(level, user, "This is a test comment!");
+        
+        CommentTests.RateComment(context, user, comment, $"/lbp/rateComment/user/{level.LevelId}", $"/lbp/comments/user/{level.LevelId}");
+    }
+    
+    [Test]
+    public void RateDeveloperLevelComment()
+    {
+        const int levelId = 1;
+        
+        using TestContext context = this.GetServer();
+        GameUser user = context.CreateUser();
+        GameLevel level = context.Database.GetStoryLevelById(levelId);
+        GameComment comment = context.Database.PostCommentToLevel(level, user, "This is a test comment!");
+        
+        CommentTests.RateComment(context, user, comment, $"/lbp/rateComment/developer/{level.LevelId}", $"/lbp/comments/developer/{level.LevelId}");
+    }
 }

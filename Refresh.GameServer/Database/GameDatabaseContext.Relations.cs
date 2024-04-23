@@ -2,6 +2,7 @@ using System.Diagnostics.Contracts;
 using Refresh.GameServer.Authentication;
 using Refresh.GameServer.Endpoints.Game.Levels.FilterSettings;
 using Refresh.GameServer.Extensions;
+using Refresh.GameServer.Types.Comments;
 using Refresh.GameServer.Types.Levels;
 using Refresh.GameServer.Types.Relations;
 using Refresh.GameServer.Types.Reviews;
@@ -303,6 +304,58 @@ public partial class GameDatabaseContext // Relations
     public bool HasUserPlayedLevel(GameLevel level, GameUser user) =>
         this._realm.All<UniquePlayLevelRelation>()
             .FirstOrDefault(r => r.Level == level && r.User == user) != null;
+
+    #endregion
+
+    #region Comments
+
+    private CommentRelation? GetCommentRelationByUser(GameComment comment, GameUser user) => this._realm
+        .All<CommentRelation>().FirstOrDefault(r => r.Comment == comment && r.User == user);
+    
+    /// <summary>
+    /// Get a user's rating on a particular comment.
+    /// A null return value means a user has not set a rating.
+    /// </summary>
+    /// <param name="comment">The comment to check</param>
+    /// <param name="user">The user to check</param>
+    /// <returns>The rating if found</returns>
+    [Pure]
+    public RatingType? GetRatingByUser(GameComment comment, GameUser user) 
+        => this.GetCommentRelationByUser(comment, user)?.RatingType;
+    
+    public bool RateComment(GameUser user, GameComment comment, RatingType ratingType)
+    {
+        if (ratingType == RatingType.Neutral)
+            return false;
+        
+        CommentRelation? relation = GetCommentRelationByUser(comment, user);
+
+        if (relation == null)
+        {
+            relation = new CommentRelation
+            {
+                User = user,
+                Comment = comment,
+                Timestamp = this._time.Now,
+                RatingType = ratingType,
+            };
+            
+            this._realm.Write(() =>
+            {
+                this._realm.Add(relation);
+            });
+        }
+        else
+        {
+            this._realm.Write(() =>
+            {
+                relation.Timestamp = this._time.Now;
+                relation.RatingType = ratingType;
+            });
+        }
+
+        return true;
+    }
 
     #endregion
 }

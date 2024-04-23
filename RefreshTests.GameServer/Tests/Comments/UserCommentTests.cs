@@ -151,4 +151,14 @@ public class UserCommentTests : GameServerTest
         response = client2.PostAsync($"/lbp/deleteUserComment/{user2.Username}?commentId={userComments.Items[0].SequentialId}", new ByteArrayContent(Array.Empty<byte>())).Result;
         Assert.That(response.StatusCode, Is.EqualTo(Unauthorized));
     }
+    
+    [Test]
+    public void RateProfileComment()
+    {
+        using TestContext context = this.GetServer();
+        GameUser user = context.CreateUser();
+        GameComment comment = context.Database.PostCommentToProfile(user, user, "This is a test comment!");
+        
+        CommentTests.RateComment(context, user, comment, $"/lbp/rateUserComment/{user.Username}", $"/lbp/userComments/{user.Username}");
+    }
 }

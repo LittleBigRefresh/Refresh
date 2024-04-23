@@ -6,6 +6,8 @@ namespace Refresh.GameServer.Database;
 
 public partial class GameDatabaseContext // Comments
 {
+    public GameComment? GetCommentById(int id) =>
+        this._realm.All<GameComment>().FirstOrDefault(c => c.SequentialId == id);
     public GameComment PostCommentToProfile(GameUser profile, GameUser author, string content)
     {
         GameComment comment = new()
