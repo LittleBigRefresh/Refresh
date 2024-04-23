@@ -7,7 +7,7 @@ namespace Refresh.GameServer.Types.Report;
 #nullable disable
 
 [XmlRoot("griefReport")]
-public partial class GameReport : IRealmObject, ISequentialId 
+public partial class GameReport
 {
     [XmlIgnore]
     private IList<InfoBubble> InternalInfoBubble { get; }
@@ -85,11 +85,4 @@ public partial class GameReport : IRealmObject, ISequentialId
 
     [XmlElement("screenElements")]
     public ScreenElements ScreenElements { get; set; }
-
-    [PrimaryKey]
-    public int SequentialId 
-    {
-        get;
-        set;
-    }
 }

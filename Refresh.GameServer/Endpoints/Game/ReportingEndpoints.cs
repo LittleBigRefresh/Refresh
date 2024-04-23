@@ -94,8 +94,6 @@ public class ReportingEndpoints : EndpointGroup
         if (body.Players is { Length: > 4 } || body.ScreenElements is { Player.Length: > 4 })
             //Return OK on PSP, since if we dont, it will error when trying to access the community moon and soft-lock the save file
             return context.IsPSP() ? OK : BadRequest;
-
-        database.AddGriefReport(body);
         
         return OK;
     }

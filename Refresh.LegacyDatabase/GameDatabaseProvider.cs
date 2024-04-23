@@ -1,24 +1,25 @@
+using Bunkum.RealmDatabase;
 using Realms;
 using Refresh.GameServer.Authentication;
-using Refresh.GameServer.Types;
-using Refresh.GameServer.Types.Comments;
-using Refresh.GameServer.Types.Levels;
-using Refresh.GameServer.Types.UserData;
-using Bunkum.RealmDatabase;
+using Refresh.GameServer.Database;
 using Refresh.GameServer.Time;
+using Refresh.GameServer.Types;
 using Refresh.GameServer.Types.Activity;
 using Refresh.GameServer.Types.Assets;
+using Refresh.GameServer.Types.Comments;
 using Refresh.GameServer.Types.Contests;
+using Refresh.GameServer.Types.Levels;
 using Refresh.GameServer.Types.Levels.SkillRewards;
 using Refresh.GameServer.Types.Notifications;
 using Refresh.GameServer.Types.Relations;
 using Refresh.GameServer.Types.Report;
 using Refresh.GameServer.Types.Reviews;
+using Refresh.GameServer.Types.UserData;
 using Refresh.GameServer.Types.UserData.Leaderboard;
 using GamePhoto = Refresh.GameServer.Types.Photos.GamePhoto;
 using GamePhotoSubject = Refresh.GameServer.Types.Photos.GamePhotoSubject;
 
-namespace Refresh.GameServer.Database;
+namespace Refresh.LegacyDatabase;
 
 public class GameDatabaseProvider : RealmDatabaseProvider<GameDatabaseContext>
 {
@@ -34,9 +35,9 @@ public class GameDatabaseProvider : RealmDatabaseProvider<GameDatabaseContext>
         this._time = time;
     }
 
-    protected override ulong SchemaVersion => 1;
+    protected override ulong SchemaVersion => 121;
 
-    protected override string Filename => "refreshGameServer-new.realm";
+    protected override string Filename => "refreshGameServer.realm";
     
     protected override List<Type> SchemaTypes { get; } = new()
     {

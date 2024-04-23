@@ -76,14 +76,6 @@ public class ReportingEndpointsTests : GameServerTest
         
         HttpResponseMessage response = client.PostAsync("/lbp/grief", new StringContent(report.AsXML())).Result;
         Assert.That(response.StatusCode, Is.EqualTo(OK));
-
-        context.Database.Refresh();
-
-        DatabaseList<GameReport> griefReports = context.Database.GetGriefReports(10, 0);
-        Assert.That(griefReports.TotalItems, Is.EqualTo(1));
-        List<GameReport> reports = griefReports.Items.ToList();
-        Assert.That(reports[0].Description, Is.EqualTo(report.Description));
-        Assert.That(reports[0].LevelId, Is.EqualTo(report.LevelId));
     }
     
     [Test]
@@ -101,13 +93,6 @@ public class ReportingEndpointsTests : GameServerTest
         
         HttpResponseMessage response = client.PostAsync("/lbp/grief", new StringContent(report.AsXML())).Result;
         Assert.That(response.StatusCode, Is.EqualTo(OK));
-        
-        context.Database.Refresh();
-
-        DatabaseList<GameReport> griefReports = context.Database.GetGriefReports(10, 0);
-        Assert.That(griefReports.TotalItems, Is.EqualTo(1));
-        List<GameReport> reports = griefReports.Items.ToList();
-        Assert.That(reports[0].Description, Is.EqualTo(report.Description));
     }
     
     [TestCase(true)]
