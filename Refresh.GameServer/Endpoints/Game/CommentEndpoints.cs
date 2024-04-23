@@ -126,9 +126,10 @@ public class CommentEndpoints : EndpointGroup
     }
 
     
-    [GameEndpoint("rateComment/user/5", HttpMethods.Post)]
-    [GameEndpoint("rateUserComment/{username}", HttpMethods.Post)]
-    public Response RateComment(RequestContext context, GameDatabaseContext database, GameUser user, string username)
+    [GameEndpoint("rateComment/user/{content}", HttpMethods.Post)] // `user` level comments
+    [GameEndpoint("rateComment/developer/{content}", HttpMethods.Post)] // `developer` level comments
+    [GameEndpoint("rateUserComment/{content}", HttpMethods.Post)] // profile comments
+    public Response RateComment(RequestContext context, GameDatabaseContext database, GameUser user, string content)
     {
         if (!int.TryParse(context.QueryString["commentId"], out int commentId)) return BadRequest;
         if (!Enum.TryParse(context.QueryString["rating"], out RatingType ratingType)) return BadRequest;
