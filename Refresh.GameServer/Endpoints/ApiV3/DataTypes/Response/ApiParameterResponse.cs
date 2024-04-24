@@ -4,7 +4,7 @@ using Newtonsoft.Json.Converters;
 namespace Refresh.GameServer.Endpoints.ApiV3.DataTypes.Response;
 
 [JsonObject(NamingStrategyType = typeof(CamelCaseNamingStrategy))]
-public class ApiParameterResponse : IApiResponse
+public class ApiParameterResponse : IApiResponse, IDataConvertableFrom<ApiParameterResponse, Parameter>
 {
     public required string Name { get; set; }
     [JsonConverter(typeof(StringEnumConverter))]

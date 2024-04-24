@@ -39,7 +39,7 @@ public class PhotoApiEndpoints : EndpointGroup
         (int skip, int count) = context.GetPageData(true);
 
         DatabaseList<GamePhoto> photos = database.GetPhotosByUser(user, count, skip);
-        DatabaseList<ApiGamePhotoResponse> photosResponse = DatabaseList<ApiGamePhotoResponse>.FromOldList(photos, ApiGamePhotoResponse.FromOld);
+        DatabaseList<ApiGamePhotoResponse> photosResponse = DatabaseList<ApiGamePhotoResponse>.FromOldList<ApiGamePhotoResponse, GamePhoto>(photos);
         foreach (ApiGamePhotoResponse photo in photosResponse.Items) photo.FillInExtraData(database, dataStore);
         return photosResponse;
     }
@@ -50,7 +50,7 @@ public class PhotoApiEndpoints : EndpointGroup
         (int skip, int count) = context.GetPageData(true);
 
         DatabaseList<GamePhoto> photos = database.GetPhotosWithUser(user, count, skip);
-        DatabaseList<ApiGamePhotoResponse> photosResponse = DatabaseList<ApiGamePhotoResponse>.FromOldList(photos, ApiGamePhotoResponse.FromOld);
+        DatabaseList<ApiGamePhotoResponse> photosResponse = DatabaseList<ApiGamePhotoResponse>.FromOldList<ApiGamePhotoResponse, GamePhoto>(photos);
         foreach (ApiGamePhotoResponse photo in photosResponse.Items) photo.FillInExtraData(database, dataStore);
         return photosResponse;
     }
@@ -61,7 +61,7 @@ public class PhotoApiEndpoints : EndpointGroup
         (int skip, int count) = context.GetPageData(true);
 
         DatabaseList<GamePhoto> photos = database.GetPhotosInLevel(level, count, skip);
-        DatabaseList<ApiGamePhotoResponse> photosResponse = DatabaseList<ApiGamePhotoResponse>.FromOldList(photos, ApiGamePhotoResponse.FromOld);
+        DatabaseList<ApiGamePhotoResponse> photosResponse = DatabaseList<ApiGamePhotoResponse>.FromOldList<ApiGamePhotoResponse, GamePhoto>(photos);
         foreach (ApiGamePhotoResponse photo in photosResponse.Items)
         {
             photo.FillInExtraData(database, dataStore);
@@ -111,7 +111,7 @@ public class PhotoApiEndpoints : EndpointGroup
         (int skip, int count) = context.GetPageData(true);
         DatabaseList<GamePhoto> photos = database.GetRecentPhotos(count, skip);
 
-        DatabaseList<ApiGamePhotoResponse> photosResponse = DatabaseList<ApiGamePhotoResponse>.FromOldList(photos, ApiGamePhotoResponse.FromOld);
+        DatabaseList<ApiGamePhotoResponse> photosResponse = DatabaseList<ApiGamePhotoResponse>.FromOldList<ApiGamePhotoResponse, GamePhoto>(photos);
         foreach (ApiGamePhotoResponse photo in photosResponse.Items) photo.FillInExtraData(database, dataStore);
         return photosResponse;
     }

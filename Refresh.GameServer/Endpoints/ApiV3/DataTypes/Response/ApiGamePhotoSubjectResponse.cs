@@ -5,7 +5,7 @@ using Refresh.GameServer.Types.Photos;
 namespace Refresh.GameServer.Endpoints.ApiV3.DataTypes.Response;
 
 [JsonObject(NamingStrategyType = typeof(CamelCaseNamingStrategy))]
-public class ApiGamePhotoSubjectResponse : IApiResponse
+public class ApiGamePhotoSubjectResponse : IApiResponse,IDataConvertableFrom<ApiGamePhotoSubjectResponse, GamePhotoSubject>
 {
     public required ApiGameUserResponse? User { get; set; }
     public required string DisplayName { get; set; }

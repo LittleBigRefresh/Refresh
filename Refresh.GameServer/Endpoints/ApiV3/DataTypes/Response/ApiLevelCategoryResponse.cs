@@ -11,7 +11,7 @@ using Refresh.GameServer.Types.UserData;
 namespace Refresh.GameServer.Endpoints.ApiV3.DataTypes.Response;
 
 [JsonObject(NamingStrategyType = typeof(CamelCaseNamingStrategy))]
-public class ApiLevelCategoryResponse : IApiResponse
+public class ApiLevelCategoryResponse : IApiResponse, IDataConvertableFrom<ApiLevelCategoryResponse, LevelCategory>
 {
     public required string Name { get; set; }
     public required string Description { get; set; }

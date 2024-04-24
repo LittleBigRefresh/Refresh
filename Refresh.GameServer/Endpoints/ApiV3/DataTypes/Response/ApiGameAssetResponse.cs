@@ -5,7 +5,7 @@ using Refresh.GameServer.Types.Assets;
 namespace Refresh.GameServer.Endpoints.ApiV3.DataTypes.Response;
 
 [JsonObject(NamingStrategyType = typeof(CamelCaseNamingStrategy))]
-public class ApiGameAssetResponse : IApiResponse
+public class ApiGameAssetResponse : IApiResponse, IDataConvertableFrom<ApiGameAssetResponse, GameAsset>
 {
     public required string AssetHash { get; set; }
     public required ApiGameUserResponse? OriginalUploader { get; set; }

@@ -4,7 +4,7 @@ using Refresh.GameServer.Types.Matching;
 namespace Refresh.GameServer.Endpoints.ApiV3.DataTypes.Response;
 
 [JsonObject(NamingStrategyType = typeof(CamelCaseNamingStrategy))]
-public class ApiGameRoomResponse : IApiResponse
+public class ApiGameRoomResponse : IApiResponse, IDataConvertableFrom<ApiGameRoomResponse, GameRoom>
 {
     public required string RoomId { get; set; }
     public required IEnumerable<ApiGameRoomPlayerResponse> PlayerIds { get; set; }

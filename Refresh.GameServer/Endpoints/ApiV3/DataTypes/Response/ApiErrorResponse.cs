@@ -3,7 +3,7 @@ using AttribDoc;
 namespace Refresh.GameServer.Endpoints.ApiV3.DataTypes.Response;
 
 [JsonObject(NamingStrategyType = typeof(CamelCaseNamingStrategy))]
-public class ApiErrorResponse : IApiResponse
+public class ApiErrorResponse : IApiResponse, IDataConvertableFrom<ApiErrorResponse, Error>
 {
     public required string Name { get; set; }
     public required string OccursWhen { get; set; }

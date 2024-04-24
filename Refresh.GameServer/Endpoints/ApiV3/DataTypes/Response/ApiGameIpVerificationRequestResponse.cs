@@ -3,7 +3,7 @@ using Refresh.GameServer.Types.UserData;
 namespace Refresh.GameServer.Endpoints.ApiV3.DataTypes.Response;
 
 [JsonObject(NamingStrategyType = typeof(CamelCaseNamingStrategy))]
-public class ApiGameIpVerificationRequestResponse : IApiResponse
+public class ApiGameIpVerificationRequestResponse : IApiResponse, IDataConvertableFrom<ApiGameIpVerificationRequestResponse, GameIpVerificationRequest>
 {
     public required string IpAddress { get; set; }
     public required DateTimeOffset CreatedAt { get; set; }

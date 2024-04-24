@@ -185,8 +185,8 @@ public class AuthenticationApiEndpoints : EndpointGroup
     {
         (int skip, int count) = context.GetPageData(true);
 
-        return DatabaseList<ApiGameIpVerificationRequestResponse>.FromOldList
-                (database.GetIpVerificationRequestsForUser(user, count, skip), ApiGameIpVerificationRequestResponse.FromOld);
+        return DatabaseList<ApiGameIpVerificationRequestResponse>.FromOldList<ApiGameIpVerificationRequestResponse, GameIpVerificationRequest>
+                (database.GetIpVerificationRequestsForUser(user, count, skip));
     }
 
     [ApiV3Endpoint("verificationRequests/approve", HttpMethods.Put)]

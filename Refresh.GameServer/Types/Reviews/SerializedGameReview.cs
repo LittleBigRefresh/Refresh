@@ -1,5 +1,6 @@
 using System.Xml.Serialization;
 using Refresh.GameServer.Database;
+using Refresh.GameServer.Endpoints.ApiV3.DataTypes;
 using Refresh.GameServer.Types.Levels;
 using Refresh.GameServer.Types.UserData;
 
@@ -7,7 +8,7 @@ namespace Refresh.GameServer.Types.Reviews;
 
 [XmlRoot("review")]
 [XmlType("review")]
-public class SerializedGameReview
+public class SerializedGameReview : IDataConvertableFrom<SerializedGameReview, GameReview>
 {
     [XmlElement("id")] 
     public int Id { get; set; }
