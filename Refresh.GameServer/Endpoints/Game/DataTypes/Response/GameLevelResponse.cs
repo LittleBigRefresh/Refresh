@@ -2,7 +2,6 @@ using System.Xml.Serialization;
 using Bunkum.Core.Storage;
 using Refresh.GameServer.Authentication;
 using Refresh.GameServer.Database;
-using Refresh.GameServer.Endpoints.ApiV3.DataTypes;
 using Refresh.GameServer.Extensions;
 using Refresh.GameServer.Services;
 using Refresh.GameServer.Types;
@@ -18,7 +17,7 @@ namespace Refresh.GameServer.Endpoints.Game.DataTypes.Response;
 
 [XmlRoot("slot")]
 [XmlType("slot")]
-public class GameLevelResponse : IDataConvertableFrom<GameLevelResponse, GameLevel>
+public class GameLevelResponse
 {
     [XmlElement("id")] public required int LevelId { get; set; }
 

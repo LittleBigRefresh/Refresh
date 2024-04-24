@@ -2,7 +2,6 @@ using System.Xml.Serialization;
 using Bunkum.Core.Storage;
 using Refresh.GameServer.Authentication;
 using Refresh.GameServer.Database;
-using Refresh.GameServer.Endpoints.ApiV3.DataTypes;
 using Refresh.GameServer.Types;
 using Refresh.GameServer.Types.Levels;
 using Refresh.GameServer.Types.Lists;
@@ -11,7 +10,7 @@ using Refresh.GameServer.Types.UserData;
 namespace Refresh.GameServer.Endpoints.Game.DataTypes.Response;
 
 [XmlRoot("user")]
-public class GameUserResponse : IDataConvertableFrom<GameUserResponse, GameUser>
+public class GameUserResponse
 {
     public const int MaximumLevels = 9_999;
     

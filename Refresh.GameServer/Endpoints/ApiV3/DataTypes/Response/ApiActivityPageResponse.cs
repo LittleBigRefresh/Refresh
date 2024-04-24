@@ -5,7 +5,7 @@ using Refresh.GameServer.Types.Activity;
 namespace Refresh.GameServer.Endpoints.ApiV3.DataTypes.Response;
 
 [JsonObject(NamingStrategyType = typeof(CamelCaseNamingStrategy))]
-public class ApiActivityPageResponse : IApiResponse, IDataConvertableFrom<ApiActivityPageResponse, ActivityPage>
+public class ApiActivityPageResponse : IApiResponse
 {
     public required IEnumerable<ApiEventResponse> Events { get; set; }
     public required IEnumerable<ApiGameUserResponse> Users { get; set; }

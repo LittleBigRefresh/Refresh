@@ -11,7 +11,7 @@ namespace Refresh.GameServer.Endpoints.ApiV3.DataTypes.Response;
 /// A user with full information, like current role, ban status, etc.
 /// </summary>
 [JsonObject(NamingStrategyType = typeof(CamelCaseNamingStrategy))]
-public class ApiExtendedGameUserResponse : IApiResponse, IDataConvertableFrom<ApiExtendedGameUserResponse, GameUser>
+public class ApiExtendedGameUserResponse : IApiResponse
 {
     public required string UserId { get; set; }
     public required string Username { get; set; }

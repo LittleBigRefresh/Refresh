@@ -7,7 +7,7 @@ using Refresh.GameServer.Types.UserData;
 namespace Refresh.GameServer.Endpoints.ApiV3.DataTypes.Response;
 
 [JsonObject(NamingStrategyType = typeof(CamelCaseNamingStrategy))]
-public class ApiGameUserResponse : IApiResponse, IDataConvertableFrom<ApiGameUserResponse, GameUser>
+public class ApiGameUserResponse : IApiResponse
 {
     // HEY! When adding fields here, remember to propagate them in ApiExtendedGameUser too!
     // Otherwise, they won't show up in the admin panel endpoints or /users/me. Thank you!

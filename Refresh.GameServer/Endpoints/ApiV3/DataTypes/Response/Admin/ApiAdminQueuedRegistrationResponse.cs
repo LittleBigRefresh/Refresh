@@ -3,7 +3,7 @@ using Refresh.GameServer.Types.UserData;
 namespace Refresh.GameServer.Endpoints.ApiV3.DataTypes.Response.Admin;
 
 [JsonObject(NamingStrategyType = typeof(CamelCaseNamingStrategy))]
-public class ApiAdminQueuedRegistrationResponse : IApiResponse, IDataConvertableFrom<ApiAdminQueuedRegistrationResponse, QueuedRegistration>
+public class ApiAdminQueuedRegistrationResponse : IApiResponse
 {
     public required string RegistrationId { get; set; }
     public required string Username { get; set; }

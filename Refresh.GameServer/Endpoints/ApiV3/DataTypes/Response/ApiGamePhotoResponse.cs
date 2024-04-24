@@ -5,7 +5,7 @@ using Refresh.GameServer.Types.Photos;
 namespace Refresh.GameServer.Endpoints.ApiV3.DataTypes.Response;
 
 [JsonObject(NamingStrategyType = typeof(CamelCaseNamingStrategy))]
-public class ApiGamePhotoResponse : IApiResponse, IDataConvertableFrom<ApiGamePhotoResponse, GamePhoto>
+public class ApiGamePhotoResponse : IApiResponse
 {
     public required int PhotoId { get; set; }
     public required DateTimeOffset TakenAt { get; set; }
