@@ -7,5 +7,4 @@ public enum TokenPlatform
     Vita = 2,
     Website = 3,
     PSP = 4,
-    PS4 = 5,
 }
