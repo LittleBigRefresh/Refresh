@@ -143,7 +143,7 @@ public class GameLevelResponse : IDataConvertableFrom<GameLevelResponse, GameLev
                 publisher = "!DeletedUser";
             else
                 publisher = string.IsNullOrEmpty(old.OriginalPublisher)
-                    ? "!UnknownPublisher"
+                    ? "!Unknown"
                     : "!" + old.OriginalPublisher;
             
             response.Handle = new SerializedUserHandle
