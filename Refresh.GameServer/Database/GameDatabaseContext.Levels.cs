@@ -178,6 +178,11 @@ public partial class GameDatabaseContext // Levels
             return new DatabaseList<GameLevel>(this.GetLevelsByGameVersion(levelFilterSettings.GameVersion).FilterByLevelFilterSettings(null, levelFilterSettings).Where(l => l.Publisher == null), skip, count);
         }
 
+        if (user.Username == "!Unknown")
+        {
+            return new DatabaseList<GameLevel>(this.GetLevelsByGameVersion(levelFilterSettings.GameVersion).FilterByLevelFilterSettings(null, levelFilterSettings).Where(l => l.IsReUpload && String.IsNullOrEmpty(l.OriginalPublisher)), skip, count);
+        }
+        
         if (user.Username.StartsWith("!"))
         {
             string withoutPrefix = user.Username[1..];
