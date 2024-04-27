@@ -19,7 +19,7 @@ public class DeveloperLevelsCategory : LevelCategory
     }
 
     public override DatabaseList<GameLevel>? Fetch(RequestContext context, int skip, int count,
-        MatchService matchService, GameDatabaseContext database, GameUser? user,
-        LevelFilterSettings levelFilterSettings) 
+        MatchService matchService, GameDatabaseContext database, GameUser? accessor,
+        LevelFilterSettings levelFilterSettings, GameUser? _) 
         => database.GetDeveloperLevels(count, skip, levelFilterSettings);
 }

@@ -53,7 +53,7 @@ public class LevelApiEndpoints : EndpointGroup
 
         DatabaseList<GameLevel>? list = categories.Categories
             .FirstOrDefault(c => c.ApiRoute.StartsWith(route))?
-            .Fetch(context, skip, count, matchService, database, user, new LevelFilterSettings(context, TokenGame.Website));
+            .Fetch(context, skip, count, matchService, database, user, new LevelFilterSettings(context, TokenGame.Website), user);
 
         if (list == null) return ApiNotFoundError.Instance;
 
