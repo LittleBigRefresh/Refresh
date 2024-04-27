@@ -18,6 +18,7 @@ public partial class GameDatabaseContext // Contests
         
         this._realm.Write(() =>
         {
+            contest.CreationDate = this._time.Now;
             this._realm.Add(contest);
         });
     }
@@ -50,8 +51,6 @@ public partial class GameDatabaseContext // Contests
             if (newOrganizer != null)
                 contest.Organizer = newOrganizer;
             
-            if(body.CreationDate != null)
-                contest.CreationDate = body.CreationDate.Value;
             if(body.StartDate != null)
                 contest.StartDate = body.StartDate.Value;
             if(body.EndDate != null)

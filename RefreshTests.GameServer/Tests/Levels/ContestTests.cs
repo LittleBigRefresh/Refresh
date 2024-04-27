@@ -77,7 +77,6 @@ public class ContestTests : GameServerTest
         ApiResponse<ApiContestResponse>? response = client.PostData<ApiContestResponse>("/api/v3/admin/contests/cbt1", new ApiContestRequest
         {
             OrganizerId = organizer.UserId.ToString(),
-            CreationDate = context.Time.Now,
             StartDate = context.Time.Now + TimeSpan.FromHours(1),
             EndDate = context.Time.Now + TimeSpan.FromHours(2),
             ContestTag = "#cbt1",
