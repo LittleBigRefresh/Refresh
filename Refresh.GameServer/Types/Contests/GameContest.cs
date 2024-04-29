@@ -62,4 +62,10 @@ public partial class GameContest : IRealmObject
     /// String containing markdown, describing the contest and its rules in further detail.
     /// </summary>
     public string ContestDetails { get; set; }
+    
+    public string ContestTheme { get; set; }
+    /// <summary>
+    /// A URL to an image of the contest theme
+    /// </summary>
+    public string ContestThemeImageUrl { get; set; }
 }

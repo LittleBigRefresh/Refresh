@@ -14,6 +14,7 @@ namespace RefreshTests.GameServer.Tests.Levels;
 public class ContestTests : GameServerTest
 {
     private const string Banner = "https://i.imgur.com/n80NswV.png";
+    private const string ThemeUrl = "https://i.imgur.com/kB5GhvW.png";
     
     private GameContest CreateContest(TestContext context, GameUser? organizer = null, string id = "ut")
     {
@@ -30,6 +31,9 @@ public class ContestTests : GameServerTest
             CreationDate = context.Time.Now,
             StartDate = context.Time.Now,
             EndDate = context.Time.Now + TimeSpan.FromMilliseconds(10),
+            ContestTheme = "good level",
+            ContestThemeImageUrl = ThemeUrl,
+            
         };
         
         context.Database.CreateContest(contest);
@@ -57,6 +61,8 @@ public class ContestTests : GameServerTest
                 CreationDate = DateTimeOffset.FromUnixTimeMilliseconds(0),
                 StartDate = DateTimeOffset.FromUnixTimeMilliseconds(1),
                 EndDate = DateTimeOffset.FromUnixTimeMilliseconds(2),
+                ContestTheme = "good level",
+                ContestThemeImageUrl = ThemeUrl,
             });
         }, Throws.Nothing);
 
@@ -85,6 +91,8 @@ public class ContestTests : GameServerTest
             ContestTitle = "The You-Know-What Contest #1",
             ContestSummary = "The contest all about *that*",
             ContestDetails = "Yep Yep Yep Yep Yep",
+            ContestTheme = "good level",
+            ContestThemeImageUrl = ThemeUrl,
         });
         
         Assert.That(response, Is.Not.Null);

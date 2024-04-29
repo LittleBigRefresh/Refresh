@@ -66,6 +66,10 @@ public partial class GameDatabaseContext // Contests
                 contest.ContestSummary = body.ContestSummary;
             if(body.ContestDetails != null)
                 contest.ContestDetails = body.ContestDetails;
+            if (body.ContestTheme != null)
+                contest.ContestTheme = body.ContestTheme;
+            if (body.ContestThemeImageUrl != null)
+                contest.ContestThemeImageUrl = body.ContestThemeImageUrl;
         });
         
         return contest;

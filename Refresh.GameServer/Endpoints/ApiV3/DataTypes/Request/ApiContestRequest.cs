@@ -12,4 +12,6 @@ public class ApiContestRequest
     public string? ContestTitle { get; set; }
     public string? ContestSummary { get; set; }
     public string? ContestDetails { get; set; }
+    public string? ContestTheme { get; set; }
+    public string? ContestThemeImageUrl { get; set; }
 }
