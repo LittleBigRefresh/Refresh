@@ -48,6 +48,7 @@ public class AdminContestApiEndpoints : EndpointGroup
             EndDate = body.EndDate!.Value,
             ContestTheme = body.ContestTheme,
             ContestThemeImageUrl = body.ContestThemeImageUrl,
+            AllowedGames = body.AllowedGames,
         };
         
         database.CreateContest(contest);

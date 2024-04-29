@@ -70,6 +70,8 @@ public partial class GameDatabaseContext // Contests
                 contest.ContestTheme = body.ContestTheme;
             if (body.ContestThemeImageUrl != null)
                 contest.ContestThemeImageUrl = body.ContestThemeImageUrl;
+            if (body.AllowedGames != null)
+                contest.AllowedGames = body.AllowedGames;
         });
         
         return contest;
@@ -84,6 +86,8 @@ public partial class GameDatabaseContext // Contests
         return new DatabaseList<GameLevel>(this.GetLevelsByGameVersion(levelFilterSettings.GameVersion)
             .FilterByLevelFilterSettings(user, levelFilterSettings)
             .Where(l => l.Title.Contains(contest.ContestTag))
-            .Where(l => l.PublishDate >= start && l.PublishDate < end), skip, count);
+            .Where(l => l.PublishDate >= start && l.PublishDate < end)
+            .AsEnumerable() // This shouldn't be a noticeable performance hit, since levels that aren't for the contest have already been filtered out
+            .Where(l => contest.AllowedGames.Contains(l.GameVersion)), skip, count);
     }
 }

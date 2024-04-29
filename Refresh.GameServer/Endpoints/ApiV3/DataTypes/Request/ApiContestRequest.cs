@@ -1,3 +1,5 @@
+using Refresh.GameServer.Authentication;
+
 namespace Refresh.GameServer.Endpoints.ApiV3.DataTypes.Request;
 
 [JsonObject(NamingStrategyType = typeof(CamelCaseNamingStrategy))]
@@ -14,4 +16,5 @@ public class ApiContestRequest
     public string? ContestDetails { get; set; }
     public string? ContestTheme { get; set; }
     public string? ContestThemeImageUrl { get; set; }
+    public TokenGame[]? AllowedGames { get; set; }
 }
