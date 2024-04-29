@@ -14,7 +14,7 @@ namespace RefreshTests.GameServer.Tests.Levels;
 public class ContestTests : GameServerTest
 {
     private const string Banner = "https://i.imgur.com/n80NswV.png";
-    private const string ThemeUrl = "https://i.imgur.com/kB5GhvW.png";
+    private const string ThemeUrl = "https://i.imgur.com/qG0NSIw.png";
     
     private GameContest CreateContest(TestContext context, GameUser? organizer = null, string id = "ut")
     {
