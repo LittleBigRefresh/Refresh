@@ -4,11 +4,12 @@ using Bunkum.Core.Services;
 using NotEnoughLogs;
 using System.Reflection;
 using Bunkum.Core.Responses;
-using MongoDB.Bson;
+using Bunkum.Listener.Protocol;
 using Refresh.GameServer.Authentication;
 using Refresh.GameServer.Database;
 using Refresh.GameServer.Types.Matching;
 using Refresh.GameServer.Types.Matching.MatchMethods;
+using Refresh.GameServer.Types.Matching.Responses;
 using Refresh.GameServer.Types.Matching.RoomAccessors;
 using Refresh.GameServer.Types.UserData;
 
@@ -116,7 +117,20 @@ public partial class MatchService(Logger logger) : EndpointService(logger)
     {
         IMatchMethod? method = this.TryGetMatchMethod(methodStr);
         if (method == null) return BadRequest;
-
-        return method.Execute(this, this.Logger, database, user, token, roomData);
+        
+        Response response = method.Execute(this, this.Logger, database, user, token, roomData);
+        
+        // If there's a response data specified, then there's nothing more we need to do
+        if (response.Data.Length != 0) 
+            return response;
+        
+        // If there's no response body, then we need to make our own using the status code
+        SerializedStatusCodeMatchResponse status = new((int)response.StatusCode);
+        
+        List<object> responseData = [status];
+        
+        response = new Response(responseData, ContentType.Json, response.StatusCode);
+        
+        return response;
     }
 }
