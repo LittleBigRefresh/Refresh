@@ -179,6 +179,7 @@ public class AuthenticationEndpoints : EndpointGroup
         {
             TokenData = "MM_AUTH=" + token.TokenData,
             ServerBrand = $"{config.InstanceName} (Refresh {VersionInformation.Version})",
+            TitleStorageUrl = config.GameConfigStorageUrl,
         };
     }
 
@@ -286,6 +287,9 @@ public struct FullLoginResponse
     
     [XmlElement("lbpEnvVer")]
     public string ServerBrand { get; set; }
+    
+    [XmlElement("titleStorageURL")]
+    public string TitleStorageUrl { get; set; }
 }
 
 [XmlRoot("authTicket")]
