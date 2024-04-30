@@ -15,6 +15,6 @@ public class ApiContestRequest
     public string? ContestSummary { get; set; }
     public string? ContestDetails { get; set; }
     public string? ContestTheme { get; set; }
-    public string? ContestThemeImageUrl { get; set; }
     public TokenGame[]? AllowedGames { get; set; }
+    public int? TemplateLevelId { get; set; }
 }

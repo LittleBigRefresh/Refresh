@@ -47,8 +47,8 @@ public class AdminContestApiEndpoints : EndpointGroup
             StartDate = body.StartDate!.Value,
             EndDate = body.EndDate!.Value,
             ContestTheme = body.ContestTheme,
-            ContestThemeImageUrl = body.ContestThemeImageUrl,
             AllowedGames = body.AllowedGames,
+            TemplateLevel = body.TemplateLevelId != null ? database.GetLevelById((int)body.TemplateLevelId) : null,
         };
         
         database.CreateContest(contest);

@@ -17,8 +17,8 @@ public class ApiContestResponse : IApiResponse, IDataConvertableFrom<ApiContestR
     public required string ContestSummary { get; set; }
     public required string ContestDetails { get; set; }
     public required string? ContestTheme { get; set; }
-    public required string? ContestThemeImageUrl { get; set; }
     public required IEnumerable<TokenGame> AllowedGames { get; set; }
+    public required ApiGameLevelResponse? TemplateLevel { get; set; }
     
     public static ApiContestResponse? FromOld(GameContest? old)
     {
@@ -36,8 +36,8 @@ public class ApiContestResponse : IApiResponse, IDataConvertableFrom<ApiContestR
             ContestSummary = old.ContestSummary,
             ContestDetails = old.ContestDetails,
             ContestTheme = old.ContestTheme,
-            ContestThemeImageUrl = old.ContestThemeImageUrl,
             AllowedGames = old.AllowedGames,
+            TemplateLevel = ApiGameLevelResponse.FromOld(old.TemplateLevel),
         };
     }
     

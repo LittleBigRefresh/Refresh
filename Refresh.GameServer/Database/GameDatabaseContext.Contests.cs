@@ -68,10 +68,10 @@ public partial class GameDatabaseContext // Contests
                 contest.ContestDetails = body.ContestDetails;
             if (body.ContestTheme != null)
                 contest.ContestTheme = body.ContestTheme;
-            if (body.ContestThemeImageUrl != null)
-                contest.ContestThemeImageUrl = body.ContestThemeImageUrl;
             if (body.AllowedGames != null)
                 contest.AllowedGames = body.AllowedGames;
+            if (body.TemplateLevelId != null)
+                contest.TemplateLevel = this.GetLevelById((int)body.TemplateLevelId);
         });
         
         return contest;

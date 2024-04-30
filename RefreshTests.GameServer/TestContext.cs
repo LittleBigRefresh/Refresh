@@ -109,7 +109,7 @@ public class TestContext : IDisposable
         return this.Database.GenerateTokenForUser(user, type, game, platform);
     }
     
-    public GameLevel CreateLevel(GameUser author, string title = "Level")
+    public GameLevel CreateLevel(GameUser author, string title = "Level", TokenGame gameVersion = TokenGame.LittleBigPlanet1)
     {
         GameLevel level = new()
         {
@@ -117,6 +117,7 @@ public class TestContext : IDisposable
             Publisher = author,
             Location = GameLocation.Zero,
             Source = GameLevelSource.User,
+            GameVersion = gameVersion,
         };
 
         this.Database.AddLevel(level);

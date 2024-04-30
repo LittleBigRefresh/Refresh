@@ -1,6 +1,7 @@
 using JetBrains.Annotations;
 using Realms;
 using Refresh.GameServer.Authentication;
+using Refresh.GameServer.Types.Levels;
 using Refresh.GameServer.Types.UserData;
 
 namespace Refresh.GameServer.Types.Contests;
@@ -65,10 +66,6 @@ public partial class GameContest : IRealmObject
     public string ContestDetails { get; set; }
     
     [CanBeNull] public string ContestTheme { get; set; }
-    /// <summary>
-    /// A URL to an image of the contest theme
-    /// </summary>
-    [CanBeNull] public string ContestThemeImageUrl { get; set; }
     
     /// <summary>
     /// A list of games that are allowed in the contest
@@ -89,4 +86,6 @@ public partial class GameContest : IRealmObject
             }
         }
     }
+    
+    [CanBeNull] public GameLevel TemplateLevel { get; set; }
 }
