@@ -1,4 +1,5 @@
 using System.Reflection;
+using Bunkum.Core;
 using Bunkum.Listener.Request;
 using Bunkum.Core.Database;
 using Bunkum.Core.Services;
@@ -16,7 +17,7 @@ public class TimeProviderService : Service
         this.TimeProvider = timeProvider;
     }
 
-    public override object? AddParameterToEndpoint(ListenerContext context, ParameterInfo paramInfo, Lazy<IDatabaseContext> database)
+    public override object? AddParameterToEndpoint(ListenerContext context, BunkumParameterInfo paramInfo, Lazy<IDatabaseContext> database)
     {
         if (paramInfo.ParameterType == typeof(IDateTimeProvider))
         {
