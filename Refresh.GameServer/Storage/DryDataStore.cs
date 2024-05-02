@@ -76,7 +76,11 @@ public class DryDataStore : IDataStore
     
     public byte[] GetDataFromStore(string key)
     {
-        throw new NotImplementedException();
+        using MemoryStream ms = new();
+        Stream stream = this.GetStreamFromStore(key);
+        stream.CopyTo(ms);
+        
+        return ms.ToArray();
     }
     
     public bool RemoveFromStore(string key)
@@ -96,7 +100,12 @@ public class DryDataStore : IDataStore
     
     public Stream GetStreamFromStore(string key)
     {
-        throw new NotImplementedException();
+        ZipArchive? zip = this.OpenZipForHash(key);
+        Stream? stream = zip?.GetEntry(GetEntryPath(key))?.Open();
+        if (stream == null)
+            throw new InvalidOperationException("The entry could not be found, or the zip could not be opened.");
+        
+        return stream;
     }
     
     public Stream OpenWriteStream(string key)
