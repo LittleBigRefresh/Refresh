@@ -47,27 +47,26 @@ public class RefreshGameServer : RefreshServer
     ) : base(listener)
     {
         databaseProvider ??= () => new GameDatabaseProvider();
-        dataStore ??= new DryDataStore(new DryArchiveConfig
-        {
-            Enabled = true,
-            Location = "/home/jvyden/Documents/dry/extracted",
-            UseFolderNames = false,
-        });
+        dataStore ??= new FileSystemDataStore();
         
         this._databaseProvider = databaseProvider.Invoke();
         this._databaseProvider.Initialize();
         this._dataStore = dataStore;
+        
+        DryArchiveConfig dryConfig = Config.LoadFromJsonFile<DryArchiveConfig>("dry.json", this.Logger);
+        if (dryConfig.Enabled)
+            this._dataStore = new AggregateDataStore(dataStore, new DryDataStore(dryConfig));
         
         this.SetupInitializer(() =>
         {
             GameDatabaseProvider provider = databaseProvider.Invoke();
 
             this.WorkerManager?.Stop();
-            this.WorkerManager = new WorkerManager(this.Logger, this._dataStore!, provider);
+            this.WorkerManager = new WorkerManager(this.Logger, this._dataStore, provider);
             
             authProvider ??= new GameAuthenticationProvider(this._config!);
 
-            this.InjectBaseServices(provider, authProvider, dataStore);
+            this.InjectBaseServices(provider, authProvider, this._dataStore);
         });
     }
 
