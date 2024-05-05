@@ -84,8 +84,10 @@ public static class TokenGameUtility
     {
         "PCSA22018", // US Cartridge
         "PCSA00017", // US Digital
+        "PCSA00549", // US Digital (Marvel Super Hero Edition)
         
         "PCSF00021", // EU Cartridge
+        "PCSF00516", // EU Cartridge (Marvel Super Hero Edition)
         "PCSA22106", // Canada Cartridge
         
         "PCSD00006", // Asia Cartridge
@@ -93,6 +95,8 @@ public static class TokenGameUtility
         
         "PCSC00013", // JP Digital
         "VCJS10006", // JP Cartridge
+        
+        "VCKS62003", // Korea Cartridge
     };
 
     private static readonly string[] BetaBuildTitles =
