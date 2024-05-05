@@ -1,4 +1,3 @@
-using System.IO.Compression;
 using System.Text;
 using Bunkum.Core.Storage;
 using JetBrains.Annotations;
@@ -17,14 +16,22 @@ public class DryDataStore : IDataStore
         this._config = config;
     }
     
-    private string? GetZipPath(ReadOnlySpan<char> hash)
+    [Pure]
+    private string? GetPath(ReadOnlySpan<char> hash)
     {
         if (!CommonPatterns.Sha1Regex().IsMatch(hash))
             return null;
         
         StringBuilder builder = new();
+        
+        // /var/dry
         builder.Append(this._config.Location);
         
+        // /var/dry/
+        if (!this._config.Location.EndsWith('/'))
+            builder.Append('/');
+        
+        // /var/dry/dry23r0/
         if (this._config.UseFolderNames)
         {
             builder.Append("dry23r");
@@ -32,42 +39,21 @@ public class DryDataStore : IDataStore
             builder.Append('/');
         }
         
-        builder.Append("dry");
-        builder.Append(hash.Slice(0, 2));
-        builder.Append(".zip");
-        
-        return builder.ToString();
-    }
-    
-    private static string GetEntryPath(ReadOnlySpan<char> hash)
-    {
-        StringBuilder builder = new();
+        // /var/dry/dry23r0/01/
         builder.Append(hash.Slice(0, 2));
         builder.Append('/');
+        
+        // /var/dry/dry23r0/01/02/
         builder.Append(hash.Slice(2, 2));
         builder.Append('/');
+        
+        // /var/dry/dry2er0/01/02/010220123644c8e53d4054bf0d30d0e2bd0786ff8
         builder.Append(hash);
         
         return builder.ToString();
     }
     
-    [Pure]
-    private ZipArchive? OpenZipForHash(string hash)
-    {
-        string? zipPath = this.GetZipPath(hash);
-        if (zipPath == null) return null;
-        
-        FileStream stream = File.OpenRead(zipPath);
-        ZipArchive zipArchive = new(stream, ZipArchiveMode.Read, false);
-        
-        return zipArchive;
-    }
-    
-    public bool ExistsInStore(string key)
-    {
-        using ZipArchive? zip = this.OpenZipForHash(key);
-        return zip?.GetEntry(GetEntryPath(key)) != null;
-    }
+    public bool ExistsInStore(string key) => File.Exists(this.GetPath(key));
     
     public bool WriteToStore(string key, byte[] data)
     {
@@ -76,11 +62,12 @@ public class DryDataStore : IDataStore
     
     public byte[] GetDataFromStore(string key)
     {
-        using MemoryStream ms = new();
-        Stream stream = this.GetStreamFromStore(key);
-        stream.CopyTo(ms);
+        string? path = this.GetPath(key);
         
-        return ms.ToArray();
+        if (path == null)
+            throw new FormatException("The key was invalid.");
+        
+        return File.ReadAllBytes(path);
     }
     
     public bool RemoveFromStore(string key)
@@ -88,10 +75,7 @@ public class DryDataStore : IDataStore
         throw new InvalidOperationException(WriteError);
     }
     
-    public string[] GetKeysFromStore()
-    {
-        throw new NotImplementedException();
-    }
+    public string[] GetKeysFromStore() => [];
     
     public bool WriteToStoreFromStream(string key, Stream data)
     {
@@ -100,12 +84,12 @@ public class DryDataStore : IDataStore
     
     public Stream GetStreamFromStore(string key)
     {
-        ZipArchive? zip = this.OpenZipForHash(key);
-        Stream? stream = zip?.GetEntry(GetEntryPath(key))?.Open();
-        if (stream == null)
-            throw new InvalidOperationException("The entry could not be found, or the zip could not be opened.");
+        string? path = this.GetPath(key);
         
-        return stream;
+        if (path == null)
+            throw new FormatException("The key was invalid.");
+        
+        return File.OpenRead(path);
     }
     
     public Stream OpenWriteStream(string key)

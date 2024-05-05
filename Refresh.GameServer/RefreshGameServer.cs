@@ -47,11 +47,11 @@ public class RefreshGameServer : RefreshServer
     ) : base(listener)
     {
         databaseProvider ??= () => new GameDatabaseProvider();
-        dataStore ??= new DryDataStore(new DryArchiveConfig()
+        dataStore ??= new DryDataStore(new DryArchiveConfig
         {
             Enabled = true,
-            Location = "/home/jvyden/Documents/dry/",
-            UseFolderNames = true,
+            Location = "/home/jvyden/Documents/dry/extracted",
+            UseFolderNames = false,
         });
         
         this._databaseProvider = databaseProvider.Invoke();

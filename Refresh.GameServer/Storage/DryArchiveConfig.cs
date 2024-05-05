@@ -13,6 +13,6 @@ public class DryArchiveConfig : Config
     }
     
     public bool Enabled { get; set; }
-    public string Location { get; set; } = "/var/dry";
+    public string Location { get; set; } = "/var/dry/";
     public bool UseFolderNames { get; set; } = true;
 }
