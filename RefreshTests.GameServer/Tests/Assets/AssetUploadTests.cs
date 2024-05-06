@@ -147,8 +147,8 @@ public class AssetUploadTests : GameServerTest
     {
         using TestContext context = this.GetServer();
         context.Server.Value.Server.AddService<ImportService>();
-        context.Server.Value.GameServerConfig.MaximumAssetSafetyLevel = AssetSafetyLevel.Safe;
-        context.Server.Value.GameServerConfig.MaximumAssetSafetyLevelForTrustedUsers = AssetSafetyLevel.SafeMedia;
+        context.Server.Value.GameServerConfig.BlockedAssetFlags = AssetFlags.Dangerous | AssetFlags.Modded | AssetFlags.Media;
+        context.Server.Value.GameServerConfig.BlockedAssetFlagsForTrustedUsers = AssetFlags.Dangerous | AssetFlags.Modded;
         
         GameUser user = context.CreateUser();
         context.Database.SetUserRole(user, GameUserRole.Trusted);
@@ -170,8 +170,8 @@ public class AssetUploadTests : GameServerTest
     {
         using TestContext context = this.GetServer();
         context.Server.Value.Server.AddService<ImportService>();
-        context.Server.Value.GameServerConfig.MaximumAssetSafetyLevel = AssetSafetyLevel.Safe;
-        context.Server.Value.GameServerConfig.MaximumAssetSafetyLevelForTrustedUsers = AssetSafetyLevel.SafeMedia;
+        context.Server.Value.GameServerConfig.BlockedAssetFlags = AssetFlags.Dangerous | AssetFlags.Modded | AssetFlags.Media;
+        context.Server.Value.GameServerConfig.BlockedAssetFlagsForTrustedUsers = AssetFlags.Dangerous | AssetFlags.Modded | AssetFlags.Media;
         
         GameUser user = context.CreateUser();
         
@@ -192,7 +192,7 @@ public class AssetUploadTests : GameServerTest
     {
         using TestContext context = this.GetServer();
         context.Server.Value.Server.AddService<ImportService>();
-        context.Server.Value.GameServerConfig.MaximumAssetSafetyLevel = AssetSafetyLevel.Safe;
+        context.Server.Value.GameServerConfig.BlockedAssetFlags = AssetFlags.Modded | AssetFlags.Media | AssetFlags.Dangerous;
         
         GameUser user = context.CreateUser();
         
@@ -214,7 +214,7 @@ public class AssetUploadTests : GameServerTest
     {
         using TestContext context = this.GetServer();
         context.Server.Value.Server.AddService<ImportService>();
-        context.Server.Value.GameServerConfig.MaximumAssetSafetyLevel = AssetSafetyLevel.Safe;
+        context.Server.Value.GameServerConfig.BlockedAssetFlags = AssetFlags.Media | AssetFlags.Modded | AssetFlags.Dangerous;
         
         GameUser user = context.CreateUser();
         

@@ -9,16 +9,16 @@ namespace Refresh.GameServer.Configuration;
 [SuppressMessage("ReSharper", "RedundantDefaultMemberInitializer")]
 public class GameServerConfig : Config
 {
-    public override int CurrentConfigVersion => 13;
+    public override int CurrentConfigVersion => 14;
     public override int Version { get; set; } = 0;
 
     protected override void Migrate(int oldVer, dynamic oldConfig) {}
 
     public string LicenseText { get; set; } = "Welcome to Refresh!";
 
-    public AssetSafetyLevel MaximumAssetSafetyLevel { get; set; } = AssetSafetyLevel.SafeMedia;
+    public AssetFlags BlockedAssetFlags { get; set; } = AssetFlags.Dangerous | AssetFlags.Modded;
     /// <seealso cref="GameUserRole.Trusted"/>
-    public AssetSafetyLevel MaximumAssetSafetyLevelForTrustedUsers { get; set; } = AssetSafetyLevel.SafeMedia;
+    public AssetFlags BlockedAssetFlagsForTrustedUsers { get; set; } = AssetFlags.Dangerous | AssetFlags.Modded;
     public bool AllowUsersToUseIpAuthentication { get; set; } = false;
     public bool UseTicketVerification { get; set; } = true;
     public bool RegistrationEnabled { get; set; } = true;

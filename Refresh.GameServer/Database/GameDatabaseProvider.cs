@@ -34,7 +34,7 @@ public class GameDatabaseProvider : RealmDatabaseProvider<GameDatabaseContext>
         this._time = time;
     }
 
-    protected override ulong SchemaVersion => 121;
+    protected override ulong SchemaVersion => 122;
 
     protected override string Filename => "refreshGameServer.realm";
     
@@ -348,6 +348,65 @@ public class GameDatabaseProvider : RealmDatabaseProvider<GameDatabaseContext>
                 // but TGA files are the only asset currently affected by the tracking of `IsPSP`,
                 // and PSP is the only game to upload TGA files.
                 newAsset.IsPSP = newAsset.AssetType == GameAssetType.Tga;
+            }
+            
+            // In version 122, we started tracking asset types differently, so we need to convert to the new system
+            if (oldVersion < 122)
+            {
+                newAsset.AssetType = (int)oldAsset._AssetType switch
+                {
+                    -1 => GameAssetType.Unknown,
+                    0 => GameAssetType.Level,
+                    1 => GameAssetType.Plan,
+                    2 => GameAssetType.Texture,
+                    3 => GameAssetType.Jpeg,
+                    4 => GameAssetType.Png,
+                    5 => GameAssetType.GfxMaterial,
+                    6 => GameAssetType.Mesh,
+                    7 => GameAssetType.GameDataTexture,
+                    8 => GameAssetType.Palette,
+                    9 => GameAssetType.Script,
+                    10 => GameAssetType.ThingRecording,
+                    11 => GameAssetType.VoiceRecording,
+                    12 => GameAssetType.Painting,
+                    13 => GameAssetType.Tga,
+                    14 => GameAssetType.SyncedProfile,
+                    15 => GameAssetType.Mip,
+                    16 => GameAssetType.GriefSongState,
+                    17 => GameAssetType.Material,
+                    18 => GameAssetType.SoftPhysicsSettings,
+                    19 => GameAssetType.Bevel,
+                    20 => GameAssetType.StreamingLevelChunk,
+                    21 => GameAssetType.Animation,
+                    _ => throw new Exception("Invalid asset type " + oldAsset._AssetType),
+                };
+                newAsset.AssetSerializationMethod = (int)oldAsset._AssetType switch
+                {
+                    -1 => GameSerializationMethod.Unknown,
+                    0 => GameSerializationMethod.Binary,
+                    1 => GameSerializationMethod.Binary,
+                    2 => GameSerializationMethod.CompressedTexture,
+                    3 => GameSerializationMethod.Unknown,
+                    4 => GameSerializationMethod.Unknown,
+                    5 => GameSerializationMethod.Binary,
+                    6 => GameSerializationMethod.Binary,
+                    7 => GameSerializationMethod.CompressedTexture,
+                    8 => GameSerializationMethod.Binary,
+                    9 => GameSerializationMethod.Binary,
+                    10 => GameSerializationMethod.Binary,
+                    11 => GameSerializationMethod.Binary,
+                    12 => GameSerializationMethod.Binary,
+                    13 => GameSerializationMethod.Unknown,
+                    14 => GameSerializationMethod.Binary,
+                    15 => GameSerializationMethod.Unknown,
+                    16 => GameSerializationMethod.Unknown,
+                    17 => GameSerializationMethod.Binary,
+                    18 => GameSerializationMethod.Text,
+                    19 => GameSerializationMethod.Binary,
+                    20 => GameSerializationMethod.Binary,
+                    21 => GameSerializationMethod.Binary,
+                    _ => throw new Exception("Invalid asset type " + oldAsset._AssetType),
+                };
             }
         }
         

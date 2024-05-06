@@ -67,8 +67,8 @@ public class InstanceApiEndpoints : EndpointGroup
             SoftwareSourceUrl = "https://github.com/LittleBigRefresh/Refresh",
             SoftwareLicenseName = "AGPL-3.0",
             SoftwareLicenseUrl = "https://www.gnu.org/licenses/agpl-3.0.txt",
-            MaximumAssetSafetyLevel = gameConfig.MaximumAssetSafetyLevel,
-            MaximumAssetSafetyLevelForTrustedUsers = gameConfig.MaximumAssetSafetyLevelForTrustedUsers,
+            BlockedAssetFlags = gameConfig.BlockedAssetFlags,
+            BlockedAssetFlagsForTrustedUsers = gameConfig.BlockedAssetFlagsForTrustedUsers,
             Announcements = ApiGameAnnouncementResponse.FromOldList(database.GetAnnouncements()),
             MaintenanceModeEnabled = gameConfig.MaintenanceMode,
             RichPresenceConfiguration = ApiRichPresenceConfigurationResponse.FromOld(RichPresenceConfiguration.Create(

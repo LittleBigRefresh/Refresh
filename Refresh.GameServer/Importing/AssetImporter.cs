@@ -55,7 +55,7 @@ public class AssetImporter : Importer
             }
 
             assets.Add(newAsset);
-            this.Info($"Processed {newAsset.AssetType} asset {hash} ({AssetSafetyLevelExtensions.FromAssetType(newAsset.AssetType)})");
+            this.Info($"Processed {newAsset.AssetType} asset {hash} ({AssetSafetyLevelExtensions.FromAssetType(newAsset.AssetType, newAsset.AssetSerializationMethod)})");
         }
         
         database.AddOrUpdateAssetsInDatabase(assets);
@@ -99,13 +99,16 @@ public class AssetImporter : Importer
             this.Warn($"{hash} is actually hashed as {checkedHash} - this asset is likely corrupt.");
             return null;
         }
-
+        
+        (GameAssetType gameAssetType, GameSerializationMethod gameSerializationMethod) = this.DetermineAssetType(data, platform);
+        
         GameAsset asset = new()
         {
             UploadDate = this._timeProvider.Now,
             OriginalUploader = null,
             AssetHash = hash,
-            AssetType = this.DetermineAssetType(data, platform),
+            AssetType = gameAssetType,
+            AssetSerializationMethod = gameSerializationMethod,
             IsPSP = platform == TokenPlatform.PSP,
             SizeInBytes = data.Length,
         };

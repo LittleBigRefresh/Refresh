@@ -181,39 +181,29 @@ public abstract class Importer
         return true;
     }
 
-    protected GameAssetType DetermineAssetType(Span<byte> data, TokenPlatform? tokenPlatform)
+    protected (GameAssetType, GameSerializationMethod) DetermineAssetType(Span<byte> data, TokenPlatform? tokenPlatform)
     {
-        // LBP assets
-        if (MatchesMagic(data, "TEX "u8)) return GameAssetType.Texture;
-        if (MatchesMagic(data, "GTF "u8)) return GameAssetType.GameDataTexture;
-        if (MatchesMagic(data, "MATb"u8)) return GameAssetType.Material;
-        if (MatchesMagic(data, "PLNb"u8)) return GameAssetType.Plan;
-        if (MatchesMagic(data, "LVLb"u8)) return GameAssetType.Level;
-        if (MatchesMagic(data, "CHKb"u8)) return GameAssetType.LevelChunk;
-        if (MatchesMagic(data, "GMTb"u8)) return GameAssetType.GfxMaterial;
-        if (MatchesMagic(data, "MSHb"u8)) return GameAssetType.Mesh;
-        if (MatchesMagic(data, "PALb"u8)) return GameAssetType.Palette;
-        if (MatchesMagic(data, "FSHb"u8)) return GameAssetType.Script;
-        if (MatchesMagic(data, "RECb"u8)) return GameAssetType.MoveRecording;
-        if (MatchesMagic(data, "VOPb"u8)) return GameAssetType.VoiceRecording;
-        if (MatchesMagic(data, "PTGb"u8)) return GameAssetType.Painting;
-        if (MatchesMagic(data, "PRFb"u8)) return GameAssetType.SyncedProfile;
-        if (MatchesMagic(data, "MATT"u8)) return GameAssetType.GriefSongState;
-        if (MatchesMagic(data, "SSPt"u8)) return GameAssetType.SoftPhysicsSettings;
-        if (MatchesMagic(data, "BEVb"u8)) return GameAssetType.Bevel;
-        if (MatchesMagic(data, "ANMb"u8)) return GameAssetType.Animation;
+        GameAssetType? lbpAssetType = GameAssetTypeExtensions.LbpMagicToGameAssetType(data.Slice(0, 3));
+        
+        if (lbpAssetType != null)
+        {
+            return (lbpAssetType.Value, (GameSerializationMethod)data[3]);
+        }
+        
+        if (MatchesMagic(data, "MATT"u8)) 
+            return (GameAssetType.GriefSongState, GameSerializationMethod.Unknown);
         
         // Traditional files
         // Good reference for magics: https://en.wikipedia.org/wiki/List_of_file_signatures
-        if (MatchesMagic(data, 0xFFD8FFE0)) return GameAssetType.Jpeg;
-        if (MatchesMagic(data, 0x89504E470D0A1A0A)) return GameAssetType.Png;
+        if (MatchesMagic(data, 0xFFD8FFE0)) return (GameAssetType.Jpeg, GameSerializationMethod.Unknown);
+        if (MatchesMagic(data, 0x89504E470D0A1A0A)) return (GameAssetType.Png, GameSerializationMethod.Unknown);
 
         // ReSharper disable once ConvertIfStatementToSwitchStatement
-        if (tokenPlatform is null or TokenPlatform.PSP && IsPspTga(data)) return GameAssetType.Tga;
-        if (tokenPlatform is null or TokenPlatform.PSP && this.IsMip(data)) return GameAssetType.Mip;
+        if (tokenPlatform is null or TokenPlatform.PSP && IsPspTga(data)) return (GameAssetType.Tga, GameSerializationMethod.Unknown);
+        if (tokenPlatform is null or TokenPlatform.PSP && this.IsMip(data)) return (GameAssetType.Mip, GameSerializationMethod.Unknown);
                     
         this.Warn($"Unknown asset header [0x{Convert.ToHexString(data[..4])}] [str: {Encoding.ASCII.GetString(data[..4])}]");
 
-        return GameAssetType.Unknown;
+        return (GameAssetType.Unknown, GameSerializationMethod.Unknown);
     }
 }
