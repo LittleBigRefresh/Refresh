@@ -23,6 +23,14 @@ public partial class GameDatabaseContext // Contests
         });
     }
     
+    public void DeleteContest(GameContest contest)
+    {
+        this._realm.Write(() =>
+        {
+            this._realm.Remove(contest);
+        });
+    }
+    
     public GameContest? GetContestById(string? id)
     {
         if (id == null) return null;
