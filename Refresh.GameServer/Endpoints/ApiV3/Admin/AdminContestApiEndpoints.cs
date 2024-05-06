@@ -54,4 +54,17 @@ public class AdminContestApiEndpoints : EndpointGroup
         
         return ApiContestResponse.FromOld(contest);
     }
+    
+    [ApiV3Endpoint("admin/contests/{id}", HttpMethods.Delete), MinimumRole(GameUserRole.Admin)]
+    [DocSummary("Deletes a contest.")]
+    [DocError(typeof(ApiNotFoundError), ApiNotFoundError.ContestMissingErrorWhen)]
+    public ApiOkResponse DeleteContest(RequestContext context, GameDatabaseContext database, string id)
+    {
+        GameContest? contest = database.GetContestById(id);
+        if (contest == null) return ApiNotFoundError.ContestMissingError;
+        
+        database.DeleteContest(contest);
+        
+        return new ApiOkResponse();
+    }
 }
