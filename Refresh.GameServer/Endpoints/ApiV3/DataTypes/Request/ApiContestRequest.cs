@@ -6,7 +6,6 @@ namespace Refresh.GameServer.Endpoints.ApiV3.DataTypes.Request;
 public class ApiContestRequest
 {
     public string? OrganizerId { get; set; }
-    public DateTimeOffset? CreationDate { get; set; }
     public DateTimeOffset? StartDate { get; set; }
     public DateTimeOffset? EndDate { get; set; }
     public string? ContestTag { get; set; }

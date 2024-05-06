@@ -43,7 +43,6 @@ public class AdminContestApiEndpoints : EndpointGroup
             ContestSummary = body.ContestSummary,
             ContestTag = body.ContestTag,
             ContestDetails = body.ContestDetails,
-            CreationDate = body.CreationDate!.Value,
             StartDate = body.StartDate!.Value,
             EndDate = body.EndDate!.Value,
             ContestTheme = body.ContestTheme,

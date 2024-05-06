@@ -18,7 +18,7 @@ public class HighestRatedLevelsCategory : LevelCategory
     }
 
     public override DatabaseList<GameLevel>? Fetch(RequestContext context, int skip, int count,
-        MatchService matchService, GameDatabaseContext database, GameUser? user,
-        LevelFilterSettings levelFilterSettings) 
-        => database.GetHighestRatedLevels(count, skip, user, levelFilterSettings);
+        MatchService matchService, GameDatabaseContext database, GameUser? accessor,
+        LevelFilterSettings levelFilterSettings, GameUser? _) 
+        => database.GetHighestRatedLevels(count, skip, accessor, levelFilterSettings);
 }
