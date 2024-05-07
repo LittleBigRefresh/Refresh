@@ -133,7 +133,7 @@ public class LevelApiEndpoints : EndpointGroup
     public ApiOkResponse SetLevelAsOverrideByHash(RequestContext context, GameDatabaseContext database, GameUser user,
         LevelListOverrideService service, [DocSummary("The hash of level root resource")] string hash)
     {
-        if (CommonPatterns.Sha1Regex().IsMatch(hash)) 
+        if (!CommonPatterns.Sha1Regex().IsMatch(hash)) 
             return ApiValidationError.HashInvalidError;
         
         service.AddHashOverridesForUser(user, hash);

@@ -58,11 +58,11 @@ public class GameMinimalLevelResponse : IDataConvertableFrom<GameMinimalLevelRes
         return new GameMinimalLevelResponse
         {
             LevelId = int.MaxValue,
-            Title = "Hashed Level",
+            Title = $"Hashed Level - {hash}",
             IconHash = "0",
             GameVersion = 0,
             RootResource = hash,
-            Description = "This is a hashed level, we cant collect any details on it.",
+            Description = "This is a hashed level. We don't know anything about it.",
             Location = new GameLocation(),
             Handle = new SerializedUserHandle
             {
