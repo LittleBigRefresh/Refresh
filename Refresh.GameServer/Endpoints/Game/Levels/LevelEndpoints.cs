@@ -33,9 +33,13 @@ public class LevelEndpoints : EndpointGroup
     {
         if (overrideService.UserHasOverrides(user))
         {
-            List<GameMinimalLevelResponse> overrides = overrideService.GetOverridesForUser(token, database)
-                .Select(l => GameMinimalLevelResponse.FromOldWithExtraData(l, matchService, database, dataStore, token.TokenGame))
-                .ToList()!;
+            List<GameMinimalLevelResponse> overrides = [];
+            
+            if (overrideService.GetIdOverridesForUser(token, database, out IEnumerable<GameLevel> levelOverrides))
+                overrides.AddRange(levelOverrides.Select(l => GameMinimalLevelResponse.FromOldWithExtraData(l, matchService, database, dataStore, token.TokenGame))!);
+            
+            if (overrideService.GetHashOverridesForUser(token, out IEnumerable<string> hashOverrides))
+                overrides.AddRange(hashOverrides.Select(GameMinimalLevelResponse.FromHash));
             
             return new SerializedMinimalLevelList(overrides, overrides.Count, overrides.Count);
         }

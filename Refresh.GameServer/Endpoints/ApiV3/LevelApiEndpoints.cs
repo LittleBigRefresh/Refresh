@@ -15,8 +15,8 @@ using Refresh.GameServer.Extensions;
 using Refresh.GameServer.Services;
 using Refresh.GameServer.Types.Levels;
 using Refresh.GameServer.Types.Levels.Categories;
-using Refresh.GameServer.Types.Roles;
 using Refresh.GameServer.Types.UserData;
+using Refresh.GameServer.Verification;
 
 namespace Refresh.GameServer.Endpoints.ApiV3;
 
@@ -122,7 +122,21 @@ public class LevelApiEndpoints : EndpointGroup
         GameLevel? level = database.GetLevelById(id);
         if (level == null) return ApiNotFoundError.LevelMissingError;
         
-        service.AddOverridesForUser(user, level);
+        service.AddIdOverridesForUser(user, level);
+        
+        return new ApiOkResponse();
+    }
+    
+    [ApiV3Endpoint("levels/hash/{hash}/setAsOverride", HttpMethods.Post)]
+    [DocSummary("Marks the level hash to show in the next slot list gotten from the game")]
+    [DocError(typeof(ApiValidationError), ApiValidationError.HashInvalidErrorWhen)]
+    public ApiOkResponse SetLevelAsOverrideByHash(RequestContext context, GameDatabaseContext database, GameUser user,
+        LevelListOverrideService service, [DocSummary("The hash of level root resource")] string hash)
+    {
+        if (CommonPatterns.Sha1Regex().IsMatch(hash)) 
+            return ApiValidationError.HashInvalidError;
+        
+        service.AddHashOverridesForUser(user, hash);
         
         return new ApiOkResponse();
     }
