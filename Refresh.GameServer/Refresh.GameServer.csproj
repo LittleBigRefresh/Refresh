@@ -6,6 +6,7 @@
         <Nullable>enable</Nullable>
         <Configurations>Debug;Release;DebugLocalBunkum</Configurations>
         <Platforms>AnyCPU</Platforms>
+        <ServerGarbageCollection>true</ServerGarbageCollection>
     </PropertyGroup>
     
     <PropertyGroup Condition=" '$(Configuration)' == 'DebugLocalBunkum' ">
