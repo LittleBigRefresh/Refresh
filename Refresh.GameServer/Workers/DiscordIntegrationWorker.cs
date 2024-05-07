@@ -92,12 +92,11 @@ public class DiscordIntegrationWorker : IWorker
         return embed.Build();
     }
 
-    public bool DoWork(Logger logger, IDataStore dataStore, GameDatabaseContext database)
+    public void DoWork(Logger logger, IDataStore dataStore, GameDatabaseContext database)
     {
         if (this._firstCycle)
         {
             this.DoFirstCycle();
-            return true;
         }
 
         DatabaseList<Event> activity = database.GetGlobalRecentActivity(new ActivityQueryParameters
@@ -106,7 +105,8 @@ public class DiscordIntegrationWorker : IWorker
             EndTimestamp = this._lastTimestamp,
             Count = 5,
         });
-        if (!activity.Items.Any()) return false;
+        
+        if (!activity.Items.Any()) return;
 
         this._lastTimestamp = activity.Items
             .Select(e => e.Timestamp)
@@ -118,12 +118,11 @@ public class DiscordIntegrationWorker : IWorker
             .Where(e => e != null)
             .ToList()!;
 
-        if (!embeds.Any()) return false;
+        if (!embeds.Any()) return;
         
         ulong id = this._client.SendMessageAsync(embeds: embeds, 
             username: this._config.DiscordNickname, avatarUrl: this._config.DiscordAvatarUrl).Result;
         
         logger.LogInfo(RefreshContext.Worker, $"Posted webhook containing {activity.Items.Count()} events with id {id}");
-        return true;
     }
 }

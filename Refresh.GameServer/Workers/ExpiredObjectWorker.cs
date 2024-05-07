@@ -8,16 +8,14 @@ namespace Refresh.GameServer.Workers;
 public class ExpiredObjectWorker : IWorker
 {
     public int WorkInterval => 300_000; // 5 minutes
-    public bool DoWork(Logger logger, IDataStore dataStore, GameDatabaseContext database)
+    public void DoWork(Logger logger, IDataStore dataStore, GameDatabaseContext database)
     {
-        bool removed = false;
         foreach (QueuedRegistration registration in database.GetAllQueuedRegistrations().Items)
         {
             if (!database.IsRegistrationExpired(registration)) continue;
             
             logger.LogInfo(RefreshContext.Worker, $"Removed {registration.Username}'s queued registration since it has expired");
             database.RemoveRegistrationFromQueue(registration);
-            removed = true;
         }
         
         foreach (EmailVerificationCode code in database.GetAllVerificationCodes().Items)
@@ -26,9 +24,6 @@ public class ExpiredObjectWorker : IWorker
             
             logger.LogInfo(RefreshContext.Worker, $"Removed {code.User}'s verification code since it has expired");
             database.RemoveEmailVerificationCode(code);
-            removed = true;
         }
-
-        return removed;
     }
 }
