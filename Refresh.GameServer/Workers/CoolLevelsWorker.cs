@@ -21,43 +21,56 @@ public class CoolLevelsWorker : IWorker
     public int WorkInterval => 600_000; // Every 10 minutes
     public bool DoWork(Logger logger, IDataStore dataStore, GameDatabaseContext database)
     {
-        DatabaseList<GameLevel> levels = database.GetAllUserLevels();
+        const int pageSize = 1000;
+        DatabaseList<GameLevel> levels = database.GetUserLevelsChunk(0, pageSize);
         
         // Don't do anything if there are no levels to process.
         if (levels.TotalItems <= 0) return false;
+        
+        int remaining = levels.TotalItems;
 
         long now = DateTimeOffset.Now.ToUnixTimeSeconds();
+        
         // Create a dictionary so we can batch the write to the db
-        Dictionary<GameLevel, float> scoresToSet = new(levels.TotalItems);
+        Dictionary<GameLevel, float> scoresToSet = new(pageSize);
 
         Stopwatch stopwatch = new();
         stopwatch.Start();
-
-        foreach (GameLevel level in levels.Items)
+        
+        while (remaining > 0)
         {
-            Log(logger, LogLevel.Trace, "Calculating score for '{0}' ({1})", level.Title, level.LevelId);
-            float decayMultiplier = CalculateLevelDecayMultiplier(logger, now, level);
-
-            // Calculate positive & negative score separately so we don't run into issues with
-            // the multiplier having an opposite effect with the negative score as time passes
-            int positiveScore = CalculatePositiveScore(logger, level);
-            int negativeScore = CalculateNegativeScore(logger, level);
-
-            // Increase to tweak how little negative score gets affected by decay
-            const int negativeScoreMultiplier = 2;
+            scoresToSet.Clear(); // Re-use the same dictionary object.
             
-            // Weigh everything with the multiplier and set a final score
-            float finalScore = (positiveScore * decayMultiplier) - (negativeScore * Math.Min(1.0f, decayMultiplier * negativeScoreMultiplier));
+            foreach (GameLevel level in levels.Items)
+            {
+                Log(logger, LogLevel.Trace, "Calculating score for '{0}' ({1})", level.Title, level.LevelId);
+                float decayMultiplier = CalculateLevelDecayMultiplier(logger, now, level);
+                
+                // Calculate positive & negative score separately so we don't run into issues with
+                // the multiplier having an opposite effect with the negative score as time passes
+                int positiveScore = CalculatePositiveScore(logger, level);
+                int negativeScore = CalculateNegativeScore(logger, level);
+                
+                // Increase to tweak how little negative score gets affected by decay
+                const int negativeScoreMultiplier = 2;
+                
+                // Weigh everything with the multiplier and set a final score
+                float finalScore = (positiveScore * decayMultiplier) - (negativeScore * Math.Min(1.0f, decayMultiplier * negativeScoreMultiplier));
+                
+                Log(logger, LogLevel.Debug, "Score for '{0}' ({1}) is {2}", level.Title, level.LevelId, finalScore);
+                scoresToSet.Add(level, finalScore);
+                remaining--;
+            }
             
-            Log(logger, LogLevel.Debug, "Score for '{0}' ({1}) is {2}", level.Title, level.LevelId, finalScore);
-            scoresToSet.Add(level, finalScore);
+            // Commit scores to database. This method lets us use a dictionary so we can batch everything in one write
+            database.SetLevelScores(scoresToSet);
+            
+            // Load the next page
+            levels = database.GetUserLevelsChunk(levels.Items.Count(), pageSize);
         }
         
         stopwatch.Stop();
         logger.LogInfo(RefreshContext.CoolLevels,  "Calculated scores for {0} levels in {1}ms", levels.TotalItems, stopwatch.ElapsedMilliseconds);
-        
-        // Commit scores to database. This method lets us use a dictionary so we can batch everything in one write
-        database.SetLevelScores(scoresToSet);
         
         return true; // Tell the worker manager we did work
     }
