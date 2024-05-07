@@ -96,7 +96,7 @@ public class LevelEndpoints : EndpointGroup
     public GameLevelResponse? LevelById(RequestContext context, GameDatabaseContext database, MatchService matchService, 
         GameUser user, string slotType, int id, IDataStore dataStore, Token token, LevelListOverrideService overrideService)
     {
-        if (id == 5000 && overrideService.GetLastHashOverrideForUser(token, out string hash))
+        if (id == int.MaxValue && overrideService.GetLastHashOverrideForUser(token, out string hash))
         {
             return GameLevelResponse.FromHash(hash);
         }

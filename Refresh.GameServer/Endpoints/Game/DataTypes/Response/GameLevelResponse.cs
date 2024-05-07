@@ -82,7 +82,7 @@ public class GameLevelResponse : IDataConvertableFrom<GameLevelResponse, GameLev
     {
         return new GameLevelResponse
         {
-            LevelId = 5000,
+            LevelId = int.MaxValue,
             Title = $"Hashed Level - {hash}",
             IconHash = "0",
             GameVersion = 0,
@@ -118,7 +118,7 @@ public class GameLevelResponse : IDataConvertableFrom<GameLevelResponse, GameLev
             UpdateDate = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds(),
             EnforceMinMaxPlayers = false,
             SameScreenGame = false,
-            SkillRewards = null,
+            SkillRewards = [],
             LevelType = "",
         };
     }
