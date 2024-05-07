@@ -37,16 +37,16 @@ public class WorkerManager
     {
         foreach (IWorker worker in this._workers)
         {
+            long now = DateTimeOffset.Now.ToUnixTimeMilliseconds();
             if (this._lastWorkTimestamps.TryGetValue(worker, out long lastWork))
             {
-                long now = DateTimeOffset.Now.ToUnixTimeMilliseconds();
                 if(now - lastWork < worker.WorkInterval) continue;
                 
                 this._lastWorkTimestamps[worker] = now;
             }
             else
             {
-                this._lastWorkTimestamps.Add(worker, 0);
+                this._lastWorkTimestamps.Add(worker, now);
             }
             
             this._logger.LogTrace(RefreshContext.Worker, "Running work cycle for " + worker.GetType().Name);
