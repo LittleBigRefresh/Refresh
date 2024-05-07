@@ -19,13 +19,13 @@ namespace Refresh.GameServer.Workers;
 public class CoolLevelsWorker : IWorker
 {
     public int WorkInterval => 600_000; // Every 10 minutes
-    public bool DoWork(Logger logger, IDataStore dataStore, GameDatabaseContext database)
+    public void DoWork(Logger logger, IDataStore dataStore, GameDatabaseContext database)
     {
         const int pageSize = 1000;
         DatabaseList<GameLevel> levels = database.GetUserLevelsChunk(0, pageSize);
         
         // Don't do anything if there are no levels to process.
-        if (levels.TotalItems <= 0) return false;
+        if (levels.TotalItems <= 0) return;
         
         int remaining = levels.TotalItems;
 
@@ -71,8 +71,6 @@ public class CoolLevelsWorker : IWorker
         
         stopwatch.Stop();
         logger.LogInfo(RefreshContext.CoolLevels,  "Calculated scores for {0} levels in {1}ms", levels.TotalItems, stopwatch.ElapsedMilliseconds);
-        
-        return true; // Tell the worker manager we did work
     }
     
     [Conditional("COOL_DEBUG")]
