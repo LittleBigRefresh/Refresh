@@ -57,7 +57,7 @@ public class GameMinimalLevelResponse : IDataConvertableFrom<GameMinimalLevelRes
     {
         return new GameMinimalLevelResponse
         {
-            LevelId = int.MaxValue,
+            LevelId = 5000,
             Title = $"Hashed Level - {hash}",
             IconHash = "0",
             GameVersion = 0,
@@ -66,7 +66,7 @@ public class GameMinimalLevelResponse : IDataConvertableFrom<GameMinimalLevelRes
             Location = new GameLocation(),
             Handle = new SerializedUserHandle
             {
-                Username = "!Unknown",
+                Username = $"!Hashed",
                 IconHash = "0",
             },
             Type = "user",

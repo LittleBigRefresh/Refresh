@@ -77,7 +77,52 @@ public class GameLevelResponse : IDataConvertableFrom<GameLevelResponse, GameLev
     [XmlElement("reviewsEnabled")] public bool ReviewsEnabled { get; set; } = true;
     [XmlElement("commentCount")] public int CommentCount { get; set; } = 0;
     [XmlElement("commentsEnabled")] public bool CommentsEnabled { get; set; } = true;
-
+    
+    public static GameLevelResponse FromHash(string hash)
+    {
+        return new GameLevelResponse
+        {
+            LevelId = 5000,
+            Title = $"Hashed Level - {hash}",
+            IconHash = "0",
+            GameVersion = 0,
+            RootResource = hash,
+            Description = "This is a hashed level. We don't know anything about it.",
+            Location = new GameLocation(),
+            Handle = new SerializedUserHandle
+            {
+                Username = $"!Hashed",
+                IconHash = "0",
+            },
+            Type = "user",
+            TeamPicked = false,
+            MinPlayers = 1,
+            MaxPlayers = 4,
+            HeartCount = 0,
+            TotalPlayCount = 0,
+            UniquePlayCount = 0,
+            YayCount = 0,
+            BooCount = 0,
+            AverageStarRating = 0,
+            YourStarRating = 0,
+            YourRating = 0,
+            PlayerCount = 0,
+            ReviewsEnabled = false,
+            ReviewCount = 0,
+            CommentsEnabled = false,
+            CommentCount = 0,
+            IsLocked = false,
+            IsSubLevel = false,
+            IsCopyable = 0,
+            PublishDate = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds(),
+            UpdateDate = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds(),
+            EnforceMinMaxPlayers = false,
+            SameScreenGame = false,
+            SkillRewards = null,
+            LevelType = "",
+        };
+    }
+    
     public static GameLevelResponse? FromOldWithExtraData(GameLevel? old, GameDatabaseContext database, MatchService matchService, GameUser user, IDataStore dataStore, TokenGame game)
     {
         if (old == null) return null;
