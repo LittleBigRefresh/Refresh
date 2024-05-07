@@ -20,7 +20,7 @@ public class WorkerManager
     private Thread? _thread = null;
     private bool _threadShouldRun = false;
 
-    private readonly List<IWorker> _workers = new();
+    private readonly List<IWorker> _workers = [];
     private readonly Dictionary<IWorker, long> _lastWorkTimestamps = new();
 
     public void AddWorker<TWorker>() where TWorker : IWorker, new()
@@ -33,30 +33,25 @@ public class WorkerManager
         this._workers.Add(worker);
     }
 
-    private bool RunWorkCycle()
+    private void RunWorkCycle()
     {
-        bool didWork = false;
         foreach (IWorker worker in this._workers)
         {
+            long now = DateTimeOffset.Now.ToUnixTimeMilliseconds();
             if (this._lastWorkTimestamps.TryGetValue(worker, out long lastWork))
             {
-                long now = DateTimeOffset.Now.ToUnixTimeMilliseconds();
                 if(now - lastWork < worker.WorkInterval) continue;
                 
                 this._lastWorkTimestamps[worker] = now;
             }
             else
             {
-                this._lastWorkTimestamps.Add(worker, 0);
+                this._lastWorkTimestamps.Add(worker, now);
             }
             
             this._logger.LogTrace(RefreshContext.Worker, "Running work cycle for " + worker.GetType().Name);
-            bool workerDidWork = worker.DoWork(this._logger, this._dataStore, this._databaseProvider.GetContext());
-            if (workerDidWork) didWork = true;
+            worker.DoWork(this._logger, this._dataStore, this._databaseProvider.GetContext());
         }
-
-        // this.Logger.LogTrace(RefreshContext.Worker, "Ran work cycle, didWork: " + didWork);
-        return didWork;
     }
 
     public void Start()
@@ -69,10 +64,8 @@ public class WorkerManager
             {
                 try
                 {
-                    bool didWork = this.RunWorkCycle();
-
-                    int sleepMs = didWork ? 0 : 100;
-                    Thread.Sleep(sleepMs);
+                    this.RunWorkCycle();
+                    Thread.Sleep(100);
                 }
                 catch(Exception e)
                 {
