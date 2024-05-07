@@ -15,7 +15,7 @@ public class LevelListOverrideService : EndpointService
     {}
 
     private readonly Dictionary<ObjectId, List<int>> _userIdsToLevelList = new(1);
-    private readonly Dictionary<ObjectId, List<string>> _userIdsToLevelHashList = new(1);
+    private readonly Dictionary<ObjectId, (bool accessed, string hash)> _userIdsToLevelHash = new(1);
 
     private bool UserHasLevelIdOverrides(GameUser user)
     {
@@ -25,45 +25,67 @@ public class LevelListOverrideService : EndpointService
         return result;
     }
     
-    private bool UserHasLevelHashOverrides(GameUser user)
+    private bool UserHasLevelHashOverride(GameUser user)
     {
-        bool result = this._userIdsToLevelHashList.ContainsKey(user.UserId);
+        bool result;
         
-        this.Logger.LogTrace(RefreshContext.LevelListOverride, "{0} has hash overrides: {1}", user.Username, result);
+        if (this._userIdsToLevelHash.TryGetValue(user.UserId, out (bool accessed, string hash) value))
+            result = !value.accessed;
+        else
+            result = false;
+        
+        this.Logger.LogTrace(RefreshContext.LevelListOverride, "{0} has hash override: {1}", user.Username, result);
         return result; 
     }
     
     public bool UserHasOverrides(GameUser user) 
-        => this.UserHasLevelHashOverrides(user) || this.UserHasLevelIdOverrides(user);
+        => this.UserHasLevelHashOverride(user) || this.UserHasLevelIdOverrides(user);
     
-    public void AddHashOverridesForUser(GameUser user, string hash) 
-        => this.AddHashOverridesForUser(user, new[] { hash });
-    
-    public void AddHashOverridesForUser(GameUser user, IEnumerable<string> hashes)
+    public void AddHashOverrideForUser(GameUser user, string hash)
     {
-        Debug.Assert(!this.UserHasLevelHashOverrides(user), "User already has overrides");
+        this.Logger.LogDebug(RefreshContext.LevelListOverride, "Adding level hash override for {0}: [{1}]", user.Username, hash);
         
-        List<string> hashList = hashes.ToList();
-        
-        this.Logger.LogDebug(RefreshContext.LevelListOverride, "Adding level hash overrides for {0}: [{1}]", user.Username, string.Join(", ", hashList));
-        this._userIdsToLevelHashList.Add(user.UserId, hashList);
+        this._userIdsToLevelHash[user.UserId] = (false, hash);
     }
     
-    public bool GetHashOverridesForUser(Token token, out IEnumerable<string> hashes)
+    public bool GetLastHashOverrideForUser(Token token, out string hash)
     {
         GameUser user = token.User;
         
-        if (!this.UserHasLevelHashOverrides(user))
+        if (!this._userIdsToLevelHash.TryGetValue(user.UserId, out (bool accessed, string hash) value))
         {
-            hashes = null!;
+            hash = null!;
             return false;
         }
         
-        List<string> overrides = this._userIdsToLevelHashList[user.UserId].ToList();
-        this.Logger.LogDebug(RefreshContext.LevelListOverride, "Getting level hash overrides for {0}: [{1}]", user.Username, string.Join(", ", overrides));
-        this._userIdsToLevelHashList.Remove(user.UserId);
+        hash = value.hash;
         
-        hashes = overrides;
+        return true;
+    }
+    
+    public bool GetHashOverrideForUser(Token token, out string hash)
+    {
+        GameUser user = token.User;
+        
+        if (!this.UserHasLevelHashOverride(user))
+        {
+            hash = null!;
+            return false;
+        }
+        
+        (bool accessed, string hash) overrides = this._userIdsToLevelHash[user.UserId];
+        
+        if (overrides.accessed)
+        {
+            hash = null!;
+            return false;
+        }
+        
+        this.Logger.LogDebug(RefreshContext.LevelListOverride, "Getting level hash override for {0}: [{1}]", user.Username, overrides.hash);
+        
+        hash = overrides.hash;
+        
+        this._userIdsToLevelHash[user.UserId] = (true, overrides.hash);
         
         return true;
     } 

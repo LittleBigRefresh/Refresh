@@ -55,41 +55,7 @@ public class GameMinimalLevelResponse : IDataConvertableFrom<GameMinimalLevelRes
     /// <returns></returns>
     public static GameMinimalLevelResponse FromHash(string hash)
     {
-        return new GameMinimalLevelResponse
-        {
-            LevelId = int.MaxValue,
-            Title = $"Hashed Level - {hash}",
-            IconHash = "0",
-            GameVersion = 0,
-            RootResource = hash,
-            Description = "This is a hashed level. We don't know anything about it.",
-            Location = new GameLocation(),
-            Handle = new SerializedUserHandle
-            {
-                Username = "!Unknown",
-                IconHash = "0",
-            },
-            Type = "user",
-            TeamPicked = false,
-            MinPlayers = 1,
-            MaxPlayers = 4,
-            HeartCount = 0,
-            TotalPlayCount = 0,
-            UniquePlayCount = 0,
-            YayCount = 0,
-            BooCount = 0,
-            AverageStarRating = 0,
-            YourStarRating = 0,
-            YourRating = 0,
-            PlayerCount = 0,
-            ReviewsEnabled = false,
-            ReviewCount = 0,
-            CommentsEnabled = false,
-            CommentCount = 0,
-            IsLocked = false,
-            IsSubLevel = false,
-            IsCopyable = 0,
-        };
+        return FromOld(GameLevelResponse.FromHash(hash))!;
     }
     
     public static GameMinimalLevelResponse? FromOldWithExtraData(GameLevelResponse? old, MatchService matchService, GameDatabaseContext database, IDataStore dataStore, TokenGame game)

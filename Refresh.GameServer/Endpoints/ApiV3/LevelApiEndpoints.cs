@@ -136,7 +136,7 @@ public class LevelApiEndpoints : EndpointGroup
         if (!CommonPatterns.Sha1Regex().IsMatch(hash)) 
             return ApiValidationError.HashInvalidError;
         
-        service.AddHashOverridesForUser(user, hash);
+        service.AddHashOverrideForUser(user, hash);
         
         return new ApiOkResponse();
     }

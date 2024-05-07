@@ -38,10 +38,23 @@ public class LevelEndpoints : EndpointGroup
             if (overrideService.GetIdOverridesForUser(token, database, out IEnumerable<GameLevel> levelOverrides))
                 overrides.AddRange(levelOverrides.Select(l => GameMinimalLevelResponse.FromOldWithExtraData(l, matchService, database, dataStore, token.TokenGame))!);
             
-            if (overrideService.GetHashOverridesForUser(token, out IEnumerable<string> hashOverrides))
-                overrides.AddRange(hashOverrides.Select(GameMinimalLevelResponse.FromHash));
+            if (overrideService.GetHashOverrideForUser(token, out string hashOverride))
+                overrides.Add(GameMinimalLevelResponse.FromHash(hashOverride));
             
             return new SerializedMinimalLevelList(overrides, overrides.Count, overrides.Count);
+        }
+        
+        // If we are getting the levels by a user, and that user is "!Hashed", then we pull that user's overrides
+        if (route == "by" 
+            && (context.QueryString.Get("u") == "!Hashed" || user.Username == "!Hashed") 
+            && overrideService.GetLastHashOverrideForUser(token, out string hash))
+        {
+            return new SerializedMinimalLevelList
+            {
+                Total = 1,
+                NextPageStart = 1,
+                Items = [GameMinimalLevelResponse.FromHash(hash)],
+            };
         }
         
         (int skip, int count) = context.GetPageData();
@@ -80,9 +93,18 @@ public class LevelEndpoints : EndpointGroup
     [GameEndpoint("s/{slotType}/{id}", ContentType.Xml)]
     [NullStatusCode(NotFound)]
     [MinimumRole(GameUserRole.Restricted)]
-    public GameLevelResponse? LevelById(RequestContext context, GameDatabaseContext database, MatchService matchService, GameUser user, string slotType, int id, IDataStore dataStore, Token token)
-        => GameLevelResponse.FromOldWithExtraData(database.GetLevelByIdAndType(slotType, id), database, matchService, user, dataStore, token.TokenGame);
-
+    public GameLevelResponse? LevelById(RequestContext context, GameDatabaseContext database, MatchService matchService, 
+        GameUser user, string slotType, int id, IDataStore dataStore, Token token, LevelListOverrideService overrideService)
+    {
+        if (id == int.MaxValue && overrideService.GetLastHashOverrideForUser(token, out string hash))
+        {
+            return GameLevelResponse.FromHash(hash);
+        }
+        
+        return GameLevelResponse.FromOldWithExtraData(database.GetLevelByIdAndType(slotType, id), database,
+            matchService, user, dataStore, token.TokenGame);
+    }
+    
     [GameEndpoint("slotList", ContentType.Xml)]
     [NullStatusCode(BadRequest)]
     [MinimumRole(GameUserRole.Restricted)]

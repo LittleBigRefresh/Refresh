@@ -129,7 +129,7 @@ public class CommandService : EndpointService
             {
                 if (CommonPatterns.Sha1Regex().IsMatch(command.Arguments))
                 {
-                    this._levelListService.AddHashOverridesForUser(user, command.Arguments.ToString());
+                    this._levelListService.AddHashOverrideForUser(user, command.Arguments.ToString());
                 }
                 else
                 {
