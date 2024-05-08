@@ -24,7 +24,7 @@ FROM mcr.microsoft.com/dotnet/runtime:8.0.3-bookworm-slim AS final
 # Add non-root user
 RUN set -eux && \
 apt update && \
-apt install -y gosu && \
+apt install -y gosu curl && \
 rm -rf /var/lib/apt/lists/* && \
 gosu nobody true && \
 groupadd -g 1001 refresh && \
