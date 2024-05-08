@@ -11,7 +11,7 @@ services:
       BUNKUM_DATA_FOLDER: /refresh/data
     healthcheck:
       # Fails if the /_health endpoint contains 'Unhealthy'
-      test: ["CMD", "bash", "-c", "export UNHEALTHY=$(curl http://localhost:10061/_health --silent | grep -q Unhealthy); if [ '$UNHEALTHY' != '' ]; then exit 1; else exit 0; fi"]
+      test: ["CMD", "bash", "-c", "export UNHEALTHY=$(curl http://localhost:10061/_health --silent | grep -i Unhealthy); if [ '$UNHEALTHY' != '' ]; then exit 1; else exit 0; fi"]
       timeout: 3s
       interval: 5s
       retries: 5
