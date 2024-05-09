@@ -78,11 +78,25 @@ public class GameLevelResponse : IDataConvertableFrom<GameLevelResponse, GameLev
     [XmlElement("commentCount")] public int CommentCount { get; set; } = 0;
     [XmlElement("commentsEnabled")] public bool CommentsEnabled { get; set; } = true;
     
+    /// <summary>
+    /// Provides a unique level ID for ~1.1 billion hashed levels, uses the hash directly, so this is deterministic
+    /// </summary>
+    /// <param name="hash"></param>
+    /// <returns></returns>
+    public static int LevelIdFromHash(string hash)
+    {
+        const int rangeStart = 1_000_000_000;
+        const int rangeEnd = int.MaxValue;
+        const int range = rangeEnd - rangeStart;
+        
+        return rangeStart + Math.Abs(hash.GetHashCode()) % range;
+    }
+    
     public static GameLevelResponse FromHash(string hash)
     {
         return new GameLevelResponse
         {
-            LevelId = int.MaxValue,
+            LevelId = LevelIdFromHash(hash),
             Title = $"Hashed Level - {hash}",
             IconHash = "0",
             GameVersion = 0,

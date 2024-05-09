@@ -96,10 +96,10 @@ public class LevelEndpoints : EndpointGroup
     public GameLevelResponse? LevelById(RequestContext context, GameDatabaseContext database, MatchService matchService, 
         GameUser user, string slotType, int id, IDataStore dataStore, Token token, LevelListOverrideService overrideService)
     {
-        if (id == int.MaxValue && overrideService.GetLastHashOverrideForUser(token, out string hash))
-        {
+        // If the user has had a hash override in the past, and the level id they requested matches the level ID associated with that hash
+        if (overrideService.GetLastHashOverrideForUser(token, out string hash) && GameLevelResponse.LevelIdFromHash(hash) == id)
+            // Return the hashed level info
             return GameLevelResponse.FromHash(hash);
-        }
         
         return GameLevelResponse.FromOldWithExtraData(database.GetLevelByIdAndType(slotType, id), database,
             matchService, user, dataStore, token.TokenGame);
