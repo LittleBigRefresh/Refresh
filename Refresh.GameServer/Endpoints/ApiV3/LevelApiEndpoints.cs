@@ -45,6 +45,9 @@ public class LevelApiEndpoints : EndpointGroup
     [DocSummary("Retrieves a list of levels from a category")]
     [DocError(typeof(ApiNotFoundError), "The level category cannot be found")]
     [DocUsesPageData]
+    [DocQueryParam("game", "Filters levels to a specific game version. Allowed values: lbp1-3, vita, psp, beta")]
+    [DocQueryParam("seed", "The random seed to use for randomization. Uses 0 if not specified.")]
+    [DocQueryParam("players", "Filters levels to those accommodating the specified number of players.")]
     public ApiListResponse<ApiGameLevelResponse> GetLevels(RequestContext context, GameDatabaseContext database, MatchService matchService, CategoryService categories, GameUser? user, IDataStore dataStore,
         [DocSummary("The name of the category you'd like to retrieve levels from. " +
                     "Make a request to /levels to see a list of available categories")] string route)
