@@ -52,6 +52,12 @@ public class LevelApiEndpoints : EndpointGroup
         [DocSummary("The name of the category you'd like to retrieve levels from. " +
                     "Make a request to /levels to see a list of available categories")] string route)
     {
+        if (string.IsNullOrWhiteSpace(route))
+        {
+            return new ApiError("You didn't specify a route. " +
+                                "You probably meant to use the `/levels` endpoint and left a trailing slash in the URL.", NotFound);
+        }
+        
         (int skip, int count) = context.GetPageData();
 
         DatabaseList<GameLevel>? list = categories.Categories
