@@ -262,7 +262,7 @@ public class AuthenticationEndpoints : EndpointGroup
     /// </summary>
     [GameEndpoint("goodbye", HttpMethods.Post, ContentType.Xml)]
     [MinimumRole(GameUserRole.Restricted)]
-    public Response RevokeThisToken(RequestContext context, GameDatabaseContext database, Token token, MatchService matchService)
+    public Response RevokeThisToken(RequestContext context, GameDatabaseContext database, Token token, GameUser user, MatchService matchService)
     {
         //If the user is the host of a room, remove that room
         GameRoom? room = matchService.RoomAccessor.GetRoomByUser(token.User, token.TokenPlatform, token.TokenGame);
@@ -272,7 +272,7 @@ public class AuthenticationEndpoints : EndpointGroup
         // Revoke the token
         database.RevokeToken(token);
         
-        context.Logger.LogInfo(BunkumCategory.Authentication, $"{token.User} logged out");
+        context.Logger.LogInfo(BunkumCategory.Authentication, $"{user} logged out");
         return OK;
     }
 }
