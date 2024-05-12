@@ -21,6 +21,7 @@ public class PresenceEndpoints : EndpointGroup
     public int TotalPlayers(RequestContext context, MatchService match) => match.RoomAccessor.GetStatistics().PlayerCount;
 
     [GameEndpoint("planetStats/highestSlotId")]
+    [GameEndpoint("planetStats/totalLevelCount")]
     [MinimumRole(GameUserRole.Restricted)]
     public int GetTotalLevelCount(RequestContext context, GameDatabaseContext database, Token token) => database.GetTotalLevelCount(token.TokenGame);
     
