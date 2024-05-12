@@ -68,7 +68,7 @@ public class MatchingApiEndpoints : EndpointGroup
     [DocUsesPageData, DocSummary("Gets all rooms on the server")]
     public ApiListResponse<ApiGameRoomResponse> GetRooms(RequestContext context, MatchService service)
     {
-        (int skip, int count) = context.GetPageData(true);
+        (int skip, int count) = context.GetPageData();
         return new DatabaseList<ApiGameRoomResponse>(ApiGameRoomResponse.FromOldList(service.RoomAccessor.GetAllRooms()), skip, count);
     }
 }

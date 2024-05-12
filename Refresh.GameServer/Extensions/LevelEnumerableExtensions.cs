@@ -58,6 +58,9 @@ public static class LevelEnumerableExtensions
         if (!levelFilterSettings.DisplayLbp1) levels = levels.Where(l => l._GameVersion != (int)TokenGame.LittleBigPlanet1);
         if (!levelFilterSettings.DisplayLbp2) levels = levels.Where(l => l._GameVersion != (int)TokenGame.LittleBigPlanet2);
         if (!levelFilterSettings.DisplayLbp3) levels = levels.Where(l => l._GameVersion != (int)TokenGame.LittleBigPlanet3);
+        if (!levelFilterSettings.DisplayVita) levels = levels.Where(l => l._GameVersion != (int)TokenGame.LittleBigPlanetVita);
+        if (!levelFilterSettings.DisplayPSP) levels = levels.Where(l => l._GameVersion != (int)TokenGame.LittleBigPlanetPSP);
+        if (!levelFilterSettings.DisplayBeta) levels = levels.Where(l => l._GameVersion != (int)TokenGame.BetaBuild);
         
         //TODO: store move compatibility for levels
         // levels = levelFilterSettings.MoveFilterType switch {
@@ -66,6 +69,9 @@ public static class LevelEnumerableExtensions
         // MoveFilterType.False => levels.Where(l => !l.MoveCompatible),
         // _ => throw new ArgumentOutOfRangeException()
         // };
+        
+        // Filter out sub levels that weren't published by self
+        levels = levels.Where(l => !l.IsSubLevel || l.Publisher == user);
 
         return levels;
     }
@@ -95,6 +101,9 @@ public static class LevelEnumerableExtensions
         if (!levelFilterSettings.DisplayLbp1) levels = levels.Where(l => l._GameVersion != (int)TokenGame.LittleBigPlanet1);
         if (!levelFilterSettings.DisplayLbp2) levels = levels.Where(l => l._GameVersion != (int)TokenGame.LittleBigPlanet2);
         if (!levelFilterSettings.DisplayLbp3) levels = levels.Where(l => l._GameVersion != (int)TokenGame.LittleBigPlanet3);
+        if (!levelFilterSettings.DisplayVita) levels = levels.Where(l => l._GameVersion != (int)TokenGame.LittleBigPlanetVita);
+        if (!levelFilterSettings.DisplayPSP) levels = levels.Where(l => l._GameVersion != (int)TokenGame.LittleBigPlanetPSP);
+        if (!levelFilterSettings.DisplayBeta) levels = levels.Where(l => l._GameVersion != (int)TokenGame.BetaBuild);
         
         //TODO: store move compatibility for levels
         // levels = levelFilterSettings.MoveFilterType switch {
@@ -103,6 +112,9 @@ public static class LevelEnumerableExtensions
         // MoveFilterType.False => levels.Where(l => !l.MoveCompatible),
         // _ => throw new ArgumentOutOfRangeException()
         // };
+        
+        // Filter out sub levels that weren't published by self
+        levels = levels.Where(l => !l.IsSubLevel || l.Publisher?.UserId ==  user?.UserId);
 
         return levels;
     }

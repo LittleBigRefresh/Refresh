@@ -30,19 +30,17 @@ public class PunishmentExpiryTests : GameServerTest
             Assert.That(context.Database.GetAllUsersWithRole(Banned).Items, Contains.Item(user));
         });
         
-        bool didWork = worker.DoWork(logger, null!, context.Database);
+        worker.DoWork(logger, null!, context.Database);
         Assert.Multiple(() =>
         {
-            Assert.That(didWork, Is.False);
             Assert.That(user.Role, Is.EqualTo(Banned));
         });
 
         context.Time.TimestampMilliseconds = 2000;
-        didWork = worker.DoWork(logger, null!, context.Database);
+        worker.DoWork(logger, null!, context.Database);
         
         Assert.Multiple(() =>
         {
-            Assert.That(didWork, Is.True);
             Assert.That(user.Role, Is.EqualTo(User));
         });
     }
@@ -61,19 +59,17 @@ public class PunishmentExpiryTests : GameServerTest
         context.Database.RestrictUser(user, "", DateTimeOffset.FromUnixTimeMilliseconds(1000));
         Assert.That(user.Role, Is.EqualTo(Restricted));
         
-        bool didWork = worker.DoWork(logger, null!, context.Database);
+        worker.DoWork(logger, null!, context.Database);
         Assert.Multiple(() =>
         {
-            Assert.That(didWork, Is.False);
             Assert.That(user.Role, Is.EqualTo(Restricted));
         });
 
         context.Time.TimestampMilliseconds = 2000;
-        didWork = worker.DoWork(logger, null!, context.Database);
+        worker.DoWork(logger, null!, context.Database);
         
         Assert.Multiple(() =>
         {
-            Assert.That(didWork, Is.True);
             Assert.That(user.Role, Is.EqualTo(User));
         });
     }

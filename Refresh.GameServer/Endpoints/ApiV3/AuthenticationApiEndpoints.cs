@@ -183,7 +183,7 @@ public class AuthenticationApiEndpoints : EndpointGroup
     [DocSummary("Retrieves a list of IP addresses that have attempted to connect.")]
     public ApiListResponse<ApiGameIpVerificationRequestResponse> GetVerificationRequests(RequestContext context, GameDatabaseContext database, GameUser user)
     {
-        (int skip, int count) = context.GetPageData(true);
+        (int skip, int count) = context.GetPageData();
 
         return DatabaseList<ApiGameIpVerificationRequestResponse>.FromOldList<ApiGameIpVerificationRequestResponse, GameIpVerificationRequest>
                 (database.GetIpVerificationRequestsForUser(user, count, skip));

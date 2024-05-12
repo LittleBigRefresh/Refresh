@@ -1,3 +1,11 @@
+// Uncomment to enable extra logging.
+// Do not enable in production as this is very memory-heavy.
+// #define COOL_DEBUG
+
+#if !DEBUG
+#undef COOL_DEBUG
+#endif
+
 using System.Diagnostics;
 using Bunkum.Core.Storage;
 using NotEnoughLogs;
@@ -11,49 +19,64 @@ namespace Refresh.GameServer.Workers;
 public class CoolLevelsWorker : IWorker
 {
     public int WorkInterval => 600_000; // Every 10 minutes
-    public bool DoWork(Logger logger, IDataStore dataStore, GameDatabaseContext database)
+    public void DoWork(Logger logger, IDataStore dataStore, GameDatabaseContext database)
     {
-        DatabaseList<GameLevel> levels = database.GetAllUserLevels();
-        if (levels.TotalItems <= 0)
-        {
-            logger.LogWarning(RefreshContext.CoolLevels, "No levels to process for cool levels. If you're sure this server has levels, this is a bug.");
-            return false;
-        }
+        const int pageSize = 1000;
+        DatabaseList<GameLevel> levels = database.GetUserLevelsChunk(0, pageSize);
+        
+        // Don't do anything if there are no levels to process.
+        if (levels.TotalItems <= 0) return;
+        
+        int remaining = levels.TotalItems;
 
         long now = DateTimeOffset.Now.ToUnixTimeSeconds();
+        
         // Create a dictionary so we can batch the write to the db
-        Dictionary<GameLevel, float> scoresToSet = new(levels.TotalItems);
+        Dictionary<GameLevel, float> scoresToSet = new(pageSize);
 
         Stopwatch stopwatch = new();
         stopwatch.Start();
-
-        foreach (GameLevel level in levels.Items)
+        
+        while (remaining > 0)
         {
-            logger.LogTrace(RefreshContext.CoolLevels, "Calculating score for '{0}' ({1})", level.Title, level.LevelId);
-            float decayMultiplier = CalculateLevelDecayMultiplier(logger, now, level);
-
+            scoresToSet.Clear(); // Re-use the same dictionary object.
+            
+            foreach (GameLevel level in levels.Items)
+            {
+                Log(logger, LogLevel.Trace, "Calculating score for '{0}' ({1})", level.Title, level.LevelId);
+                float decayMultiplier = CalculateLevelDecayMultiplier(logger, now, level);
+                
             // Calculate positive & negative score separately, so we don't run into issues with
-            // the multiplier having an opposite effect with the negative score as time passes
+                // the multiplier having an opposite effect with the negative score as time passes
             int positiveScore = CalculatePositiveScore(logger, level, database);
             int negativeScore = CalculateNegativeScore(logger, level, database);
-
-            // Increase to tweak how little negative score gets affected by decay
-            const int negativeScoreMultiplier = 2;
+                
+                // Increase to tweak how little negative score gets affected by decay
+                const int negativeScoreMultiplier = 2;
+                
+                // Weigh everything with the multiplier and set a final score
+                float finalScore = (positiveScore * decayMultiplier) - (negativeScore * Math.Min(1.0f, decayMultiplier * negativeScoreMultiplier));
+                
+                Log(logger, LogLevel.Debug, "Score for '{0}' ({1}) is {2}", level.Title, level.LevelId, finalScore);
+                scoresToSet.Add(level, finalScore);
+                remaining--;
+            }
             
-            // Weigh everything with the multiplier and set a final score
-            float finalScore = (positiveScore * decayMultiplier) - (negativeScore * Math.Min(1.0f, decayMultiplier * negativeScoreMultiplier));
+            // Commit scores to database. This method lets us use a dictionary so we can batch everything in one write
+            database.SetLevelScores(scoresToSet);
             
-            logger.LogTrace(RefreshContext.CoolLevels, "Score for '{0}' ({1}) is {2}", level.Title, level.LevelId, finalScore);
-            scoresToSet.Add(level, finalScore);
+            // Load the next page
+            levels = database.GetUserLevelsChunk(levels.Items.Count(), pageSize);
         }
         
         stopwatch.Stop();
-        logger.LogInfo(RefreshContext.CoolLevels, "Calculated scores for {0} levels in {1}ms", levels.TotalItems, stopwatch.ElapsedMilliseconds);
-        
-        // Commit scores to database. This method lets us use a dictionary so we can batch everything in one write
-        database.SetLevelScores(scoresToSet);
-        
-        return true; // Tell the worker manager we did work
+        logger.LogInfo(RefreshContext.CoolLevels,  "Calculated scores for {0} levels in {1}ms", levels.TotalItems, stopwatch.ElapsedMilliseconds);
+    }
+    
+    [Conditional("COOL_DEBUG")]
+    private static void Log(Logger logger, LogLevel level, ReadOnlySpan<char> format, params object[] args)
+    {
+        logger.Log(level, RefreshContext.CoolLevels, format, args);
     }
 
     private static float CalculateLevelDecayMultiplier(Logger logger, long now, GameLevel level)
@@ -70,7 +93,7 @@ public class CoolLevelsWorker : IWorker
         float multiplier = 1.0f - Math.Min(1.0f, (float)elapsed / decaySeconds);
         multiplier = Math.Max(minimumMultiplier, multiplier); // Clamp to minimum multiplier
         
-        logger.LogTrace(RefreshContext.CoolLevels, "Decay multiplier is {0}", multiplier);
+        Log(logger, LogLevel.Trace, "Decay multiplier is {0}", multiplier);
         return multiplier;
     }
 
@@ -92,7 +115,7 @@ public class CoolLevelsWorker : IWorker
         if (level.Publisher?.Role == GameUserRole.Trusted)
             score += trustedAuthorPoints;
 
-        logger.LogTrace(RefreshContext.CoolLevels, "positiveScore is {0}", score);
+        Log(logger, LogLevel.Trace, "positiveScore is {0}", score);
         return score;
     }
 
@@ -113,7 +136,7 @@ public class CoolLevelsWorker : IWorker
         else if (level.Publisher?.Role == GameUserRole.Banned)
             penalty += bannedAuthorPenalty;
 
-        logger.LogTrace(RefreshContext.CoolLevels, "negativeScore is {0}", penalty);
+        Log(logger, LogLevel.Trace, "negativeScore is {0}", penalty);
         return penalty;
     }
 }

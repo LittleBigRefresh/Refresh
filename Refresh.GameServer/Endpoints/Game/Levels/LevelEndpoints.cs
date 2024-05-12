@@ -33,18 +33,35 @@ public class LevelEndpoints : EndpointGroup
     {
         if (overrideService.UserHasOverrides(user))
         {
-            List<GameMinimalLevelResponse> overrides = overrideService.GetOverridesForUser(token, database)
-                .Select(l => GameMinimalLevelResponse.FromOldWithExtraData(l, matchService, database, dataStore, token.TokenGame))
-                .ToList()!;
+            List<GameMinimalLevelResponse> overrides = [];
+            
+            if (overrideService.GetIdOverridesForUser(token, database, out IEnumerable<GameLevel> levelOverrides))
+                overrides.AddRange(levelOverrides.Select(l => GameMinimalLevelResponse.FromOldWithExtraData(l, matchService, database, dataStore, token.TokenGame))!);
+            
+            if (overrideService.GetHashOverrideForUser(token, out string hashOverride))
+                overrides.Add(GameMinimalLevelResponse.FromHash(hashOverride));
             
             return new SerializedMinimalLevelList(overrides, overrides.Count, overrides.Count);
+        }
+        
+        // If we are getting the levels by a user, and that user is "!Hashed", then we pull that user's overrides
+        if (route == "by" 
+            && (context.QueryString.Get("u") == "!Hashed" || user.Username == "!Hashed") 
+            && overrideService.GetLastHashOverrideForUser(token, out string hash))
+        {
+            return new SerializedMinimalLevelList
+            {
+                Total = 1,
+                NextPageStart = 1,
+                Items = [GameMinimalLevelResponse.FromHash(hash)],
+            };
         }
         
         (int skip, int count) = context.GetPageData();
 
         DatabaseList<GameLevel>? levels = categoryService.Categories
             .FirstOrDefault(c => c.GameRoutes.Any(r => r.StartsWith(route)))?
-            .Fetch(context, skip, count, matchService, database, user, new LevelFilterSettings(context, token.TokenGame));
+            .Fetch(context, skip, count, matchService, database, user, new LevelFilterSettings(context, token.TokenGame), user);
 
         if (levels == null) return null;
         
@@ -76,9 +93,18 @@ public class LevelEndpoints : EndpointGroup
     [GameEndpoint("s/{slotType}/{id}", ContentType.Xml)]
     [NullStatusCode(NotFound)]
     [MinimumRole(GameUserRole.Restricted)]
-    public GameLevelResponse? LevelById(RequestContext context, GameDatabaseContext database, MatchService matchService, GameUser user, string slotType, int id, IDataStore dataStore, Token token)
-        => GameLevelResponse.FromOldWithExtraData(database.GetLevelByIdAndType(slotType, id), database, matchService, user, dataStore, token.TokenGame);
-
+    public GameLevelResponse? LevelById(RequestContext context, GameDatabaseContext database, MatchService matchService, 
+        GameUser user, string slotType, int id, IDataStore dataStore, Token token, LevelListOverrideService overrideService)
+    {
+        // If the user has had a hash override in the past, and the level id they requested matches the level ID associated with that hash
+        if (overrideService.GetLastHashOverrideForUser(token, out string hash) && GameLevelResponse.LevelIdFromHash(hash) == id)
+            // Return the hashed level info
+            return GameLevelResponse.FromHash(hash);
+        
+        return GameLevelResponse.FromOldWithExtraData(database.GetLevelByIdAndType(slotType, id), database,
+            matchService, user, dataStore, token.TokenGame);
+    }
+    
     [GameEndpoint("slotList", ContentType.Xml)]
     [NullStatusCode(BadRequest)]
     [MinimumRole(GameUserRole.Restricted)]
@@ -137,7 +163,7 @@ public class LevelEndpoints : EndpointGroup
 
         DatabaseList<GameLevel>? levels = categories.Categories
             .FirstOrDefault(c => c.ApiRoute.StartsWith(apiRoute))?
-            .Fetch(context, skip, count, matchService, database, user, new LevelFilterSettings(context, token.TokenGame));
+            .Fetch(context, skip, count, matchService, database, user, new LevelFilterSettings(context, token.TokenGame), user);
         
         return new SerializedMinimalLevelResultsList(levels?.Items
             .Select(l => GameMinimalLevelResponse.FromOldWithExtraData(l, matchService, database, dataStore, token.TokenGame))!, levels?.TotalItems ?? 0, skip + count);

@@ -19,6 +19,7 @@ using Refresh.GameServer.Endpoints;
 using Refresh.GameServer.Importing;
 using Refresh.GameServer.Middlewares;
 using Refresh.GameServer.Services;
+using Refresh.GameServer.Storage;
 using Refresh.GameServer.Time;
 using Refresh.GameServer.Types.Levels.Categories;
 using Refresh.GameServer.Types.Roles;
@@ -52,16 +53,20 @@ public class RefreshGameServer : RefreshServer
         this._databaseProvider.Initialize();
         this._dataStore = dataStore;
         
+        DryArchiveConfig dryConfig = Config.LoadFromJsonFile<DryArchiveConfig>("dry.json", this.Logger);
+        if (dryConfig.Enabled)
+            this._dataStore = new AggregateDataStore(dataStore, new DryDataStore(dryConfig));
+        
         this.SetupInitializer(() =>
         {
             GameDatabaseProvider provider = databaseProvider.Invoke();
 
             this.WorkerManager?.Stop();
-            this.WorkerManager = new WorkerManager(this.Logger, this._dataStore!, provider);
+            this.WorkerManager = new WorkerManager(this.Logger, this._dataStore, provider);
             
             authProvider ??= new GameAuthenticationProvider(this._config!);
 
-            this.InjectBaseServices(provider, authProvider, dataStore);
+            this.InjectBaseServices(provider, authProvider, this._dataStore);
         });
     }
 

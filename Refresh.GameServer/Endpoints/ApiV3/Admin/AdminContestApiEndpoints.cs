@@ -43,13 +43,28 @@ public class AdminContestApiEndpoints : EndpointGroup
             ContestSummary = body.ContestSummary,
             ContestTag = body.ContestTag,
             ContestDetails = body.ContestDetails,
-            CreationDate = body.CreationDate!.Value,
             StartDate = body.StartDate!.Value,
             EndDate = body.EndDate!.Value,
+            ContestTheme = body.ContestTheme,
+            AllowedGames = body.AllowedGames,
+            TemplateLevel = body.TemplateLevelId != null ? database.GetLevelById((int)body.TemplateLevelId) : null,
         };
         
         database.CreateContest(contest);
         
         return ApiContestResponse.FromOld(contest);
+    }
+    
+    [ApiV3Endpoint("admin/contests/{id}", HttpMethods.Delete), MinimumRole(GameUserRole.Admin)]
+    [DocSummary("Deletes a contest.")]
+    [DocError(typeof(ApiNotFoundError), ApiNotFoundError.ContestMissingErrorWhen)]
+    public ApiOkResponse DeleteContest(RequestContext context, GameDatabaseContext database, string id)
+    {
+        GameContest? contest = database.GetContestById(id);
+        if (contest == null) return ApiNotFoundError.ContestMissingError;
+        
+        database.DeleteContest(contest);
+        
+        return new ApiOkResponse();
     }
 }

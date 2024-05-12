@@ -14,10 +14,17 @@ namespace RefreshTests.GameServer.Tests.Levels;
 public class ContestTests : GameServerTest
 {
     private const string Banner = "https://i.imgur.com/n80NswV.png";
+    private readonly TokenGame[] _allowedGames =
+    [
+        TokenGame.LittleBigPlanet1, TokenGame.LittleBigPlanet2, TokenGame.LittleBigPlanet3, TokenGame.LittleBigPlanetVita, TokenGame.LittleBigPlanetPSP,
+    ];
     
-    private GameContest CreateContest(TestContext context, GameUser? organizer = null, string id = "ut")
+    private GameContest CreateContest(TestContext context, GameUser? organizer = null, string id = "ut", TokenGame[]? allowedGames = null)
     {
         organizer ??= context.CreateUser();
+        allowedGames ??= this._allowedGames;
+        GameLevel templateLevel = context.CreateLevel(organizer);
+        
         GameContest contest = new()
         {
             ContestId = id,
@@ -30,6 +37,9 @@ public class ContestTests : GameServerTest
             CreationDate = context.Time.Now,
             StartDate = context.Time.Now,
             EndDate = context.Time.Now + TimeSpan.FromMilliseconds(10),
+            ContestTheme = "good level",
+            TemplateLevel = templateLevel,
+            AllowedGames = allowedGames,
         };
         
         context.Database.CreateContest(contest);
@@ -42,6 +52,8 @@ public class ContestTests : GameServerTest
     {
         using TestContext context = this.GetServer(false);
         GameUser organizer = context.CreateUser();
+        GameLevel templateLevel = context.CreateLevel(organizer);
+        
         Assert.That(() =>
         {
             // ReSharper disable once AccessToDisposedClosure
@@ -57,12 +69,15 @@ public class ContestTests : GameServerTest
                 CreationDate = DateTimeOffset.FromUnixTimeMilliseconds(0),
                 StartDate = DateTimeOffset.FromUnixTimeMilliseconds(1),
                 EndDate = DateTimeOffset.FromUnixTimeMilliseconds(2),
+                ContestTheme = "good level",
+                TemplateLevel = templateLevel,
+                AllowedGames = this._allowedGames,
             });
         }, Throws.Nothing);
 
         GameContest? contest = context.Database.GetContestById("contest");
         Assert.That(contest, Is.Not.Null);
-        Assert.That(contest.ContestTitle, Is.EqualTo("The Contest Contest"));
+        Assert.That(contest!.ContestTitle, Is.EqualTo("The Contest Contest"));
         Assert.That(contest.Organizer, Is.EqualTo(organizer));
     }
 
@@ -72,12 +87,12 @@ public class ContestTests : GameServerTest
         using TestContext context = this.GetServer();
         GameUser organizer = context.CreateUser();
         GameUser admin = context.CreateAdmin();
+        GameLevel templateLevel = context.CreateLevel(organizer);
 
         using HttpClient client = context.GetAuthenticatedClient(TokenType.Api, admin);
         ApiResponse<ApiContestResponse>? response = client.PostData<ApiContestResponse>("/api/v3/admin/contests/cbt1", new ApiContestRequest
         {
             OrganizerId = organizer.UserId.ToString(),
-            CreationDate = context.Time.Now,
             StartDate = context.Time.Now + TimeSpan.FromHours(1),
             EndDate = context.Time.Now + TimeSpan.FromHours(2),
             ContestTag = "#cbt1",
@@ -85,14 +100,17 @@ public class ContestTests : GameServerTest
             ContestTitle = "The You-Know-What Contest #1",
             ContestSummary = "The contest all about *that*",
             ContestDetails = "Yep Yep Yep Yep Yep",
+            ContestTheme = "good level",
+            AllowedGames = this._allowedGames,
+            TemplateLevelId = templateLevel.LevelId,
         });
         
         Assert.That(response, Is.Not.Null);
-        Assert.That(response.Success, Is.True);
+        Assert.That(response!.Success, Is.True);
 
         GameContest? createdContest = context.Database.GetContestById("cbt1");
         Assert.That(createdContest, Is.Not.Null);
-        Assert.That(createdContest.Organizer, Is.EqualTo(organizer));
+        Assert.That(createdContest!.Organizer, Is.EqualTo(organizer));
     }
     
     [Test]
@@ -110,11 +128,11 @@ public class ContestTests : GameServerTest
         });
         
         Assert.That(response, Is.Not.Null);
-        Assert.That(response.Success, Is.True);
+        Assert.That(response!.Success, Is.True);
 
         GameContest? createdContest = context.Database.GetContestById("ut");
         Assert.That(createdContest, Is.Not.Null);
-        Assert.That(createdContest.ContestTag, Is.EqualTo("#ut2"));
+        Assert.That(createdContest!.ContestTag, Is.EqualTo("#ut2"));
     }
 
     [Test]
@@ -132,9 +150,9 @@ public class ContestTests : GameServerTest
         });
         
         Assert.That(response, Is.Not.Null);
-        Assert.That(response.Success, Is.False);
+        Assert.That(response!.Success, Is.False);
         Assert.That(response.Error, Is.Not.Null);
-        Assert.That(response.Error.StatusCode, Is.EqualTo(Forbidden));
+        Assert.That(response.Error!.StatusCode, Is.EqualTo(Forbidden));
     }
 
     [Test]
@@ -144,12 +162,15 @@ public class ContestTests : GameServerTest
         GameUser user = context.CreateUser();
         
         context.Time.TimestampMilliseconds = 500;
-        GameContest contest = this.CreateContest(context);
+        TokenGame[] allowedGames = [TokenGame.LittleBigPlanet2];
+        GameContest contest = this.CreateContest(context, allowedGames:allowedGames);
 
-        context.CreateLevel(user, "#ut level 1");
-        context.CreateLevel(user, "level #ut 2");
-        context.CreateLevel(user, "#ut level 3");
-        context.CreateLevel(user, "level 4");
+        context.CreateLevel(user, "#ut level 1", TokenGame.LittleBigPlanet2);
+        context.CreateLevel(user, "level #ut 2", TokenGame.LittleBigPlanet2);
+        context.CreateLevel(user, "#ut level 3", TokenGame.LittleBigPlanet2);
+        
+        // test level without tag
+        context.CreateLevel(user, "level 4", TokenGame.LittleBigPlanet2);
         
         // test levels before start date
         context.Time.TimestampMilliseconds = 0;
@@ -158,6 +179,9 @@ public class ContestTests : GameServerTest
         // test levels after end date
         context.Time.TimestampMilliseconds = 1000;
         context.CreateLevel(user, "#ut missed deadline");
+        
+        // test level published in excluded game
+        context.CreateLevel(user, "#ut disallowed game", TokenGame.LittleBigPlanet1);
 
         DatabaseList<GameLevel> levels = context.Database.GetLevelsFromContest(contest, 4, 0, user, new LevelFilterSettings(TokenGame.LittleBigPlanet2));
         Assert.That(levels.TotalItems, Is.EqualTo(3));
@@ -175,7 +199,7 @@ public class ContestTests : GameServerTest
         // one contest, should definitely be 0.
         GameContest? oldestContest = context.Database.GetNewestActiveContest();
         Assert.That(oldestContest, Is.Not.Null);
-        Assert.That(oldestContest.ContestId, Is.EqualTo("0"));
+        Assert.That(oldestContest!.ContestId, Is.EqualTo("0"));
         
         context.Time.TimestampMilliseconds = 5; // advance 5ms, create a new contest.
         this.CreateContest(context, id: "5");
@@ -183,7 +207,7 @@ public class ContestTests : GameServerTest
         // at this point, 0 and 5 are both active. the newer one is 5 so it should be 5
         oldestContest = context.Database.GetNewestActiveContest();
         Assert.That(oldestContest, Is.Not.Null);
-        Assert.That(oldestContest.ContestId, Is.EqualTo("5"));
+        Assert.That(oldestContest!.ContestId, Is.EqualTo("5"));
         
         // jump to 14ms, after 0 has ended
         context.Time.TimestampMilliseconds = 14;
@@ -191,7 +215,7 @@ public class ContestTests : GameServerTest
         // 5 should still be the active contest
         oldestContest = context.Database.GetNewestActiveContest();
         Assert.That(oldestContest, Is.Not.Null);
-        Assert.That(oldestContest.ContestId, Is.EqualTo("5"));
+        Assert.That(oldestContest!.ContestId, Is.EqualTo("5"));
         
         // jump to 15ms, 5 should be dead
         context.Time.TimestampMilliseconds = 15;

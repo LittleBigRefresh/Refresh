@@ -15,8 +15,8 @@ using Refresh.GameServer.Extensions;
 using Refresh.GameServer.Services;
 using Refresh.GameServer.Types.Levels;
 using Refresh.GameServer.Types.Levels.Categories;
-using Refresh.GameServer.Types.Roles;
 using Refresh.GameServer.Types.UserData;
+using Refresh.GameServer.Verification;
 
 namespace Refresh.GameServer.Endpoints.ApiV3;
 
@@ -45,15 +45,24 @@ public class LevelApiEndpoints : EndpointGroup
     [DocSummary("Retrieves a list of levels from a category")]
     [DocError(typeof(ApiNotFoundError), "The level category cannot be found")]
     [DocUsesPageData]
+    [DocQueryParam("game", "Filters levels to a specific game version. Allowed values: lbp1-3, vita, psp, beta")]
+    [DocQueryParam("seed", "The random seed to use for randomization. Uses 0 if not specified.")]
+    [DocQueryParam("players", "Filters levels to those accommodating the specified number of players.")]
     public ApiListResponse<ApiGameLevelResponse> GetLevels(RequestContext context, GameDatabaseContext database, MatchService matchService, CategoryService categories, GameUser? user, IDataStore dataStore,
         [DocSummary("The name of the category you'd like to retrieve levels from. " +
                     "Make a request to /levels to see a list of available categories")] string route)
     {
-        (int skip, int count) = context.GetPageData(true);
+        if (string.IsNullOrWhiteSpace(route))
+        {
+            return new ApiError("You didn't specify a route. " +
+                                "You probably meant to use the `/levels` endpoint and left a trailing slash in the URL.", NotFound);
+        }
+        
+        (int skip, int count) = context.GetPageData();
 
         DatabaseList<GameLevel>? list = categories.Categories
             .FirstOrDefault(c => c.ApiRoute.StartsWith(route))?
-            .Fetch(context, skip, count, matchService, database, user, new LevelFilterSettings(context, TokenGame.Website));
+            .Fetch(context, skip, count, matchService, database, user, new LevelFilterSettings(context, TokenGame.Website), user);
 
         if (list == null) return ApiNotFoundError.Instance;
 
@@ -122,7 +131,21 @@ public class LevelApiEndpoints : EndpointGroup
         GameLevel? level = database.GetLevelById(id);
         if (level == null) return ApiNotFoundError.LevelMissingError;
         
-        service.AddOverridesForUser(user, level);
+        service.AddIdOverridesForUser(user, level);
+        
+        return new ApiOkResponse();
+    }
+    
+    [ApiV3Endpoint("levels/hash/{hash}/setAsOverride", HttpMethods.Post)]
+    [DocSummary("Marks the level hash to show in the next slot list gotten from the game")]
+    [DocError(typeof(ApiValidationError), ApiValidationError.HashInvalidErrorWhen)]
+    public ApiOkResponse SetLevelAsOverrideByHash(RequestContext context, GameDatabaseContext database, GameUser user,
+        LevelListOverrideService service, [DocSummary("The hash of level root resource")] string hash)
+    {
+        if (!CommonPatterns.Sha1Regex().IsMatch(hash)) 
+            return ApiValidationError.HashInvalidError;
+        
+        service.AddHashOverrideForUser(user, hash);
         
         return new ApiOkResponse();
     }

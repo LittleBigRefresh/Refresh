@@ -48,6 +48,16 @@ public class GameMinimalLevelResponse : IDataConvertableFrom<GameMinimalLevelRes
     
     private GameMinimalLevelResponse() {}
     
+    /// <summary>
+    /// Constructs a placeholder level response from a root level hash
+    /// </summary>
+    /// <param name="hash"></param>
+    /// <returns></returns>
+    public static GameMinimalLevelResponse FromHash(string hash)
+    {
+        return FromOld(GameLevelResponse.FromHash(hash))!;
+    }
+    
     public static GameMinimalLevelResponse? FromOldWithExtraData(GameLevelResponse? old, MatchService matchService, GameDatabaseContext database, IDataStore dataStore, TokenGame game)
     {
         if (old == null) return null;

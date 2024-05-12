@@ -1,5 +1,7 @@
-using MongoDB.Bson;
+using JetBrains.Annotations;
 using Realms;
+using Refresh.GameServer.Authentication;
+using Refresh.GameServer.Types.Levels;
 using Refresh.GameServer.Types.UserData;
 
 namespace Refresh.GameServer.Types.Contests;
@@ -62,4 +64,28 @@ public partial class GameContest : IRealmObject
     /// String containing markdown, describing the contest and its rules in further detail.
     /// </summary>
     public string ContestDetails { get; set; }
+    
+    [CanBeNull] public string ContestTheme { get; set; }
+    
+    /// <summary>
+    /// A list of games that are allowed in the contest
+    /// </summary>
+    // ReSharper disable once InconsistentNaming
+    // ReSharper disable once UnassignedGetOnlyAutoProperty
+    public IList<int> _AllowedGames { get; }
+
+    public IEnumerable<TokenGame> AllowedGames
+    {
+        get => this._AllowedGames.Select(g => (TokenGame)g);
+        set
+        {
+            this._AllowedGames.Clear();
+            foreach (TokenGame game in value)
+            {
+                this._AllowedGames.Add((int)game);
+            }
+        }
+    }
+    
+    [CanBeNull] public GameLevel TemplateLevel { get; set; }
 }

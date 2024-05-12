@@ -28,7 +28,7 @@ public class LeaderboardApiEndpoints : EndpointGroup
         GameLevel? level = database.GetLevelById(id);
         if (level == null) return ApiNotFoundError.LevelMissingError;
         
-        (int skip, int count) = context.GetPageData(true);
+        (int skip, int count) = context.GetPageData();
 
         bool result = bool.TryParse(context.QueryString.Get("showAll") ?? "false", out bool showAll);
         if (!result) return ApiValidationError.BooleanParseError;

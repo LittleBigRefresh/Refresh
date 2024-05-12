@@ -25,7 +25,7 @@ public class ReviewApiEndpoints : EndpointGroup
         GameLevel? level = database.GetLevelById(id);
         if (level == null) return ApiNotFoundError.LevelMissingError;
         
-        (int skip, int count) = context.GetPageData(true);
+        (int skip, int count) = context.GetPageData();
         
         DatabaseList<GameReview> reviews = database.GetReviewsForLevel(level, count, skip);
         DatabaseList<ApiGameReviewResponse> ret = DatabaseList<ApiGameScoreResponse>.FromOldList<ApiGameReviewResponse, GameReview>(reviews);

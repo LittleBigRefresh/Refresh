@@ -124,11 +124,11 @@ public class FindRoomMethod : IMatchMethod
 
         SerializedStatusCodeMatchResponse status = new(200);
 
-        List<object> response = new(2)
-        {
+        List<object> response =
+        [
             status,
             roomMatch,
-        };
+        ];
 
         return new Response(response, ContentType.Json);
     }
