@@ -1,5 +1,6 @@
 using Bunkum.Core.Storage;
 using NotEnoughLogs;
+using Refresh.GameServer.Authentication;
 using Refresh.GameServer.Database;
 using Refresh.GameServer.Types.UserData;
 
@@ -24,6 +25,14 @@ public class ExpiredObjectWorker : IWorker
             
             logger.LogInfo(RefreshContext.Worker, $"Removed {code.User}'s verification code since it has expired");
             database.RemoveEmailVerificationCode(code);
+        }
+        
+        foreach (Token token in database.GetAllTokens().Items)
+        {
+            if (!database.IsTokenExpired(token)) continue;
+            
+            logger.LogInfo(RefreshContext.Worker, $"Removed {token.User}'s {token.TokenType} token since it has expired {DateTimeOffset.Now - token.ExpiresAt} ago");
+            database.RevokeToken(token);
         }
     }
 }
