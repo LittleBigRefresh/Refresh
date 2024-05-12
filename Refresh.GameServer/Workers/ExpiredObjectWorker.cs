@@ -8,7 +8,7 @@ namespace Refresh.GameServer.Workers;
 
 public class ExpiredObjectWorker : IWorker
 {
-    public int WorkInterval => 300_000; // 5 minutes
+    public int WorkInterval => 60_000; // 1 minute
     public void DoWork(Logger logger, IDataStore dataStore, GameDatabaseContext database)
     {
         foreach (QueuedRegistration registration in database.GetAllQueuedRegistrations().Items)
