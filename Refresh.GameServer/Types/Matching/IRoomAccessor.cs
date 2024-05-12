@@ -80,8 +80,8 @@ public interface IRoomAccessor
     /// <summary>
     /// Get all rooms that are open on a particular game and platform
     /// </summary>
-    /// <param name="game">The game to check</param>
-    /// <param name="platform">The platform to check </param>
+    /// <param name="game">The game to check for</param>
+    /// <param name="platform">The platform to check for</param>
     /// <returns>The found rooms</returns>
     public IEnumerable<GameRoom> GetRoomsByGameAndPlatform(TokenGame game, TokenPlatform platform);
     /// <summary>
@@ -95,8 +95,10 @@ public interface IRoomAccessor
     /// Gets a room by a user.
     /// </summary>
     /// <param name="user">The user to search for</param>
+    /// <param name="platform">The platform to check for</param>
+    /// <param name="game">The game to check for</param>
     /// <returns>The found room, or null if not found</returns>
-    public GameRoom? GetRoomByUser(GameUser user, TokenPlatform? platform = null, TokenGame? game = null) => this.GetRoomByUserUuid(user.UserId);
+    public GameRoom? GetRoomByUser(GameUser user, TokenPlatform? platform = null, TokenGame? game = null) => this.GetRoomByUserUuid(user.UserId, platform, game);
     /// <summary>
     /// Gets a room by a user's UUID.
     /// </summary>
