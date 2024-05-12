@@ -13,6 +13,7 @@ using Refresh.GameServer.Authentication;
 using Refresh.GameServer.Configuration;
 using Refresh.GameServer.Database;
 using Refresh.GameServer.Services;
+using Refresh.GameServer.Types.Matching;
 using Refresh.GameServer.Types.Roles;
 using Refresh.GameServer.Types.UserData;
 using Refresh.GameServer.Verification;
@@ -261,18 +262,15 @@ public class AuthenticationEndpoints : EndpointGroup
     /// </summary>
     [GameEndpoint("goodbye", HttpMethods.Post, ContentType.Xml)]
     [MinimumRole(GameUserRole.Restricted)]
-    public Response RevokeThisToken(RequestContext context, GameDatabaseContext database, GameUser user)
+    public Response RevokeThisToken(RequestContext context, GameDatabaseContext database, Token token, GameUser user, MatchService matchService)
     {
-        string? token = context.Cookies["MM_AUTH"];
+        //If the user is the host of a room, remove that room
+        GameRoom? room = matchService.RoomAccessor.GetRoomByUser(token.User, token.TokenPlatform, token.TokenGame);
+        if (room != null && room.HostId.Id == token.User.UserId)
+            matchService.RoomAccessor.RemoveRoom(room.RoomId);
         
-        // we shouldn't ever hit this but handle it anyways
-        if (token == null) 
-            return new Response("Token was somehow null", ContentType.Plaintext, InternalServerError);
-
-        bool result = database.RevokeTokenByTokenData(token, TokenType.Game);
-
-        if (!result)
-            return Unauthorized;
+        // Revoke the token
+        database.RevokeToken(token);
         
         context.Logger.LogInfo(BunkumCategory.Authentication, $"{user} logged out");
         return OK;
