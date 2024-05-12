@@ -262,8 +262,9 @@ public class AuthenticationApiEndpoints : EndpointGroup
         {
             database.AddRegistrationToQueue(body.Username, body.EmailAddress, passwordBcrypt);
             return new ApiAuthenticationError(
-                "Your account has been created, but it is not yet activated. " +
-                "To complete registration, simply log in from LBP and your new account will be activated.", true);
+                "Your account has been put into the registration queue, but it is not yet activated. " +
+                "To complete registration, simply log in from LBP within the next hour and your new account will be activated. " +
+                "You will be unable to sign in until you are patched and playing.", true);
         }
 
         GameUser user = database.CreateUser(body.Username, body.EmailAddress, true);
