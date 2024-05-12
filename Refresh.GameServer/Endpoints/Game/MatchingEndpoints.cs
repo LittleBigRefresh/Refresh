@@ -37,4 +37,33 @@ public class MatchingEndpoints : EndpointGroup
         
         return service.ExecuteMethod(method, roomData, database, user, token);
     }
+    
+    // Sent by LBP1 to notify the server it has entered a level.
+    // While it doesn't send us any detailed room information, we can at least create a pseudo-room on the server with just that player.
+    // Due to it only sending this when the level is *entered*, it means its much more likely for the room to be auto cleared due to inactivity,
+    // since the "bump" is much less often. This will at the very least make API tools be able to see LBP1 player activity and player counts
+    [GameEndpoint("enterLevel/{slotType}/{id}", HttpMethods.Post)]
+    public Response EnterLevel(RequestContext context, Token token, MatchService matchService, string slotType, int id)
+    {
+        GameRoom room = matchService.GetOrCreateRoomByPlayer(token.User, token.TokenPlatform, token.TokenGame, NatType.Moderate);
+        
+        // User slot ID of 0 means pod/moon level
+        if (id == 0 && slotType == "user")
+        {
+            // We cant determine whether the user is in a pod or moon level, so we just assume it's the pod
+            room.LevelType = RoomSlotType.Pod;
+            room.LevelId = id;
+        }
+        else
+        {
+            room.LevelType = slotType == "user" ? RoomSlotType.Online : RoomSlotType.Story;
+            room.LevelId = id;
+        }
+        
+        room.LastContact = DateTimeOffset.Now;
+        
+        matchService.RoomAccessor.UpdateRoom(room);
+        
+        return OK;
+    }
 }
