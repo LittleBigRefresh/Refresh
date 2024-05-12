@@ -22,7 +22,7 @@ public class NotificationApiEndpoints : EndpointGroup
     [DocUsesPageData, DocSummary("Gets a list of notifications stored for the user")]
     public ApiListResponse<ApiGameNotificationResponse> GetNotifications(RequestContext context, GameUser user, GameDatabaseContext database)
     {
-        (int skip, int count) = context.GetPageData(true);
+        (int skip, int count) = context.GetPageData();
         DatabaseList<GameNotification> notifications = database.GetNotificationsByUser(user, count, skip);
         return DatabaseList<ApiGameNotificationResponse>.FromOldList<ApiGameNotificationResponse, GameNotification>(notifications);
     }

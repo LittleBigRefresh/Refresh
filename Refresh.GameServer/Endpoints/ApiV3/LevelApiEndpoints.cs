@@ -49,7 +49,7 @@ public class LevelApiEndpoints : EndpointGroup
         [DocSummary("The name of the category you'd like to retrieve levels from. " +
                     "Make a request to /levels to see a list of available categories")] string route)
     {
-        (int skip, int count) = context.GetPageData(true);
+        (int skip, int count) = context.GetPageData();
 
         DatabaseList<GameLevel>? list = categories.Categories
             .FirstOrDefault(c => c.ApiRoute.StartsWith(route))?

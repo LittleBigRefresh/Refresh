@@ -30,7 +30,7 @@ public class ActivityApiEndpoints : EndpointGroup
         string? tsStr = context.QueryString["timestamp"];
         if (tsStr != null && !long.TryParse(tsStr, out timestamp)) return ApiValidationError.NumberParseError;
         
-        (int skip, int count) = context.GetPageData(true);
+        (int skip, int count) = context.GetPageData();
 
         ActivityPage page = ActivityPage.GlobalActivity(database, new ActivityQueryParameters
         {
@@ -57,7 +57,7 @@ public class ActivityApiEndpoints : EndpointGroup
         GameLevel? level = database.GetLevelById(id);
         if (level == null) return ApiNotFoundError.Instance;
         
-        (int skip, int count) = context.GetPageData(true);
+        (int skip, int count) = context.GetPageData();
         
         ActivityPage page = ActivityPage.ApiLevelActivity(database, level, new ActivityQueryParameters
         {
