@@ -10,7 +10,7 @@ namespace Refresh.GameServer.Endpoints.ApiV3;
 public class DocumentationApiEndpoints : EndpointGroup
 {
     [ApiV3Endpoint("documentation"), Authentication(false)]
-    [DocSummary("Retrieve a JSON object containing documentation about the API")]
+    [DocSummary("Retrieve a JSON object containing documentation about the API. You know, the one you're looking at right now.")]
     [ClientCacheResponse(3600)] // 1 hour
     public ApiListResponse<ApiRouteResponse> GetDocumentation(RequestContext context, DocumentationService service)
     {
