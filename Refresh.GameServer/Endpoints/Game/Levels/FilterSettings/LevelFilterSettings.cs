@@ -26,11 +26,11 @@ public class LevelFilterSettings
     /// </summary>
     public readonly bool DisplayLbp3 = true;
     /// <summary>
-    /// Whether to display LBP3 levels in the results (corresponds to gameFilter[]=vita)
+    /// Whether to display Vita levels in the results (corresponds to gameFilter[]=vita)
     /// </summary>
     public readonly bool DisplayVita = true;
     /// <summary>
-    /// Whether to display LBP3 levels in the results (corresponds to gameFilter[]=psp)
+    /// Whether to display PSP levels in the results (corresponds to gameFilter[]=psp)
     /// </summary>
     public readonly bool DisplayPSP = true;
     /// <summary>
