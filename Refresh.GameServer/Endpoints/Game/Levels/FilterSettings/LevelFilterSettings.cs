@@ -62,7 +62,7 @@ public class LevelFilterSettings
     /// </summary>
     public LevelFilterSettings(RequestContext context, TokenGame game) : this(game)
     {
-        string[]? gameFilters = context.QueryString.GetValues(context.IsApi() ? "gameFilter" : "gameFilter[]");
+        string[]? gameFilters = context.QueryString.GetValues(context.IsApi() ? "game" : "gameFilter[]");
         if (gameFilters != null)
         {
             this.DisplayLbp1 = false;
