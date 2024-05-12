@@ -11,19 +11,33 @@ public class LevelFilterSettings
     /// <summary>
     /// The game(s) to filter the results to
     /// </summary>
-    public GameFilterType GameFilterType = GameFilterType.Both;
+    public readonly GameFilterType GameFilterType = GameFilterType.Both;
+    
     /// <summary>
-    /// Whether or not to display Lbp1 levels in the results (corresponds to gameFilter[]=lbp1)
+    /// Whether to display LBP1 levels in the results (corresponds to gameFilter[]=lbp1)
     /// </summary>
-    public bool DisplayLbp1 = true;
+    public readonly bool DisplayLbp1 = true;
     /// <summary>
-    /// Whether or not to display Lbp2 levels in the results (corresponds to gameFilter[]=lbp2)
+    /// Whether to display LBP2 levels in the results (corresponds to gameFilter[]=lbp2)
     /// </summary>
-    public bool DisplayLbp2 = true;
+    public readonly bool DisplayLbp2 = true;
     /// <summary>
-    /// Whether or not to display Lbp3 levels in the results (corresponds to gameFilter[]=lbp3)
+    /// Whether to display LBP3 levels in the results (corresponds to gameFilter[]=lbp3)
     /// </summary>
-    public bool DisplayLbp3 = true;
+    public readonly bool DisplayLbp3 = true;
+    /// <summary>
+    /// Whether to display LBP3 levels in the results (corresponds to gameFilter[]=vita)
+    /// </summary>
+    public readonly bool DisplayVita = true;
+    /// <summary>
+    /// Whether to display LBP3 levels in the results (corresponds to gameFilter[]=psp)
+    /// </summary>
+    public readonly bool DisplayPSP = true;
+    /// <summary>
+    /// Whether to display BetaBuild levels in the results (corresponds to gameFilter[]=beta)
+    /// </summary>
+    public readonly bool DisplayBeta = true;
+    
     /// <summary>
     /// Whether or not the user's own levels should be excluded from the results
     /// </summary>
@@ -68,6 +82,15 @@ public class LevelFilterSettings
             this.DisplayLbp1 = false;
             this.DisplayLbp2 = false;
             this.DisplayLbp3 = false;
+            
+            bool isApi = context.IsApi();
+            
+            // On the game, we want to include LBP Vita and PSP levels by default since those games never know to send this.
+            // The API has different expectations for this.
+            this.DisplayVita = !isApi;
+            this.DisplayPSP = !isApi;
+            this.DisplayBeta = !isApi;
+            
             foreach (string gameFilter in gameFilters)
                 switch (gameFilter)
                 {
@@ -79,6 +102,15 @@ public class LevelFilterSettings
                         break;
                     case "lbp3":
                         this.DisplayLbp3 = true;
+                        break;
+                    case "vita":
+                        this.DisplayVita = true;
+                        break;
+                    case "psp":
+                        this.DisplayPSP = true;
+                        break;
+                    case "beta":
+                        this.DisplayBeta = true;
                         break;
                 }
         }

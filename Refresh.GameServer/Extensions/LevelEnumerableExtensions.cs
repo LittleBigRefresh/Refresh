@@ -58,6 +58,9 @@ public static class LevelEnumerableExtensions
         if (!levelFilterSettings.DisplayLbp1) levels = levels.Where(l => l._GameVersion != (int)TokenGame.LittleBigPlanet1);
         if (!levelFilterSettings.DisplayLbp2) levels = levels.Where(l => l._GameVersion != (int)TokenGame.LittleBigPlanet2);
         if (!levelFilterSettings.DisplayLbp3) levels = levels.Where(l => l._GameVersion != (int)TokenGame.LittleBigPlanet3);
+        if (!levelFilterSettings.DisplayVita) levels = levels.Where(l => l._GameVersion != (int)TokenGame.LittleBigPlanetVita);
+        if (!levelFilterSettings.DisplayPSP) levels = levels.Where(l => l._GameVersion != (int)TokenGame.LittleBigPlanetPSP);
+        if (!levelFilterSettings.DisplayBeta) levels = levels.Where(l => l._GameVersion != (int)TokenGame.BetaBuild);
         
         //TODO: store move compatibility for levels
         // levels = levelFilterSettings.MoveFilterType switch {
@@ -98,6 +101,9 @@ public static class LevelEnumerableExtensions
         if (!levelFilterSettings.DisplayLbp1) levels = levels.Where(l => l._GameVersion != (int)TokenGame.LittleBigPlanet1);
         if (!levelFilterSettings.DisplayLbp2) levels = levels.Where(l => l._GameVersion != (int)TokenGame.LittleBigPlanet2);
         if (!levelFilterSettings.DisplayLbp3) levels = levels.Where(l => l._GameVersion != (int)TokenGame.LittleBigPlanet3);
+        if (!levelFilterSettings.DisplayVita) levels = levels.Where(l => l._GameVersion != (int)TokenGame.LittleBigPlanetVita);
+        if (!levelFilterSettings.DisplayPSP) levels = levels.Where(l => l._GameVersion != (int)TokenGame.LittleBigPlanetPSP);
+        if (!levelFilterSettings.DisplayBeta) levels = levels.Where(l => l._GameVersion != (int)TokenGame.BetaBuild);
         
         //TODO: store move compatibility for levels
         // levels = levelFilterSettings.MoveFilterType switch {
