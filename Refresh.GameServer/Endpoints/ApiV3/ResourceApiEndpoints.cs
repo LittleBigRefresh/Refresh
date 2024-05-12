@@ -1,6 +1,7 @@
 using AttribDoc.Attributes;
 using Bunkum.Core;
 using Bunkum.Core.Endpoints;
+using Bunkum.Core.RateLimit;
 using Bunkum.Core.Responses;
 using Bunkum.Core.Storage;
 using Bunkum.Listener.Protocol;
@@ -21,12 +22,18 @@ namespace Refresh.GameServer.Endpoints.ApiV3;
 
 public class ResourceApiEndpoints : EndpointGroup
 {
+    private const int RequestTimeoutDuration = 60;
+    private const int MaxRequestAmount = 50 * RequestTimeoutDuration; // requests per second
+    private const int RequestBlockDuration = 30;
+    private const string BucketName = "resource-api";
+    
     [ApiV3Endpoint("assets/{hash}/download"), Authentication(false)]
     [ClientCacheResponse(31556952)] // 1 year, we don't expect the data to change
     [DocSummary("Downloads the raw data for an asset hash. Sent as application/octet-stream")]
     [DocError(typeof(ApiNotFoundError), "The asset could not be found")]
     [DocError(typeof(ApiInternalError), ApiInternalError.CouldNotGetAssetErrorWhen)]
     [DocError(typeof(ApiValidationError), ApiValidationError.HashMissingErrorWhen)]
+    [RateLimitSettings(RequestTimeoutDuration, MaxRequestAmount, RequestBlockDuration, BucketName)]
     public Response DownloadGameAsset(RequestContext context, IDataStore dataStore,
         [DocSummary("The SHA1 hash of the asset")] string hash)
     {
@@ -50,6 +57,7 @@ public class ResourceApiEndpoints : EndpointGroup
     [DocError(typeof(ApiNotFoundError), "The asset could not be found")]
     [DocError(typeof(ApiInternalError), ApiInternalError.CouldNotGetAssetErrorWhen)]
     [DocError(typeof(ApiValidationError), ApiValidationError.HashMissingErrorWhen)]
+    [RateLimitSettings(RequestTimeoutDuration, MaxRequestAmount, RequestBlockDuration, BucketName)]
     public Response DownloadPspGameAsset(RequestContext context, IDataStore dataStore,
         [DocSummary("The SHA1 hash of the asset")] string hash) => DownloadGameAsset(context, dataStore, $"psp/{hash}");
     
