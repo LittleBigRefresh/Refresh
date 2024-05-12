@@ -36,7 +36,7 @@ public class PhotoApiEndpoints : EndpointGroup
     private static ApiListResponse<ApiGamePhotoResponse> PhotosByUser(RequestContext context, GameDatabaseContext database, GameUser? user, IDataStore dataStore)
     {
         if (user == null) return ApiNotFoundError.Instance;
-        (int skip, int count) = context.GetPageData(true);
+        (int skip, int count) = context.GetPageData();
 
         DatabaseList<GamePhoto> photos = database.GetPhotosByUser(user, count, skip);
         DatabaseList<ApiGamePhotoResponse> photosResponse = DatabaseList<ApiGamePhotoResponse>.FromOldList<ApiGamePhotoResponse, GamePhoto>(photos);
@@ -47,7 +47,7 @@ public class PhotoApiEndpoints : EndpointGroup
     private static ApiListResponse<ApiGamePhotoResponse> PhotosWithUser(RequestContext context, GameDatabaseContext database, GameUser? user, IDataStore dataStore)
     {
         if (user == null) return ApiNotFoundError.Instance;
-        (int skip, int count) = context.GetPageData(true);
+        (int skip, int count) = context.GetPageData();
 
         DatabaseList<GamePhoto> photos = database.GetPhotosWithUser(user, count, skip);
         DatabaseList<ApiGamePhotoResponse> photosResponse = DatabaseList<ApiGamePhotoResponse>.FromOldList<ApiGamePhotoResponse, GamePhoto>(photos);
@@ -58,7 +58,7 @@ public class PhotoApiEndpoints : EndpointGroup
     private static ApiListResponse<ApiGamePhotoResponse> PhotosInLevel(RequestContext context, GameDatabaseContext database, GameLevel? level, IDataStore dataStore)
     {
         if (level == null) return ApiNotFoundError.Instance;
-        (int skip, int count) = context.GetPageData(true);
+        (int skip, int count) = context.GetPageData();
 
         DatabaseList<GamePhoto> photos = database.GetPhotosInLevel(level, count, skip);
         DatabaseList<ApiGamePhotoResponse> photosResponse = DatabaseList<ApiGamePhotoResponse>.FromOldList<ApiGamePhotoResponse, GamePhoto>(photos);
@@ -108,7 +108,7 @@ public class PhotoApiEndpoints : EndpointGroup
     [DocUsesPageData, DocSummary("Get all photos taken recently")]
     public ApiListResponse<ApiGamePhotoResponse> RecentPhotos(RequestContext context, GameDatabaseContext database, IDataStore dataStore)
     {
-        (int skip, int count) = context.GetPageData(true);
+        (int skip, int count) = context.GetPageData();
         DatabaseList<GamePhoto> photos = database.GetRecentPhotos(count, skip);
 
         DatabaseList<ApiGamePhotoResponse> photosResponse = DatabaseList<ApiGamePhotoResponse>.FromOldList<ApiGamePhotoResponse, GamePhoto>(photos);

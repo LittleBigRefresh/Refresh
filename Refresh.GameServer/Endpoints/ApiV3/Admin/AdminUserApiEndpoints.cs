@@ -47,7 +47,7 @@ public class AdminUserApiEndpoints : EndpointGroup
     [DocUsesPageData]
     public ApiListResponse<ApiExtendedGameUserResponse> GetExtendedUsers(RequestContext context, GameDatabaseContext database, IDataStore dataStore)
     {
-        (int skip, int count) = context.GetPageData(true);
+        (int skip, int count) = context.GetPageData();
         DatabaseList<ApiExtendedGameUserResponse> list = DatabaseList<ApiExtendedGameUserResponse>.FromOldList<ApiExtendedGameUserResponse, GameUser>(database.GetUsers(count, skip));
         //Fill in the extra data of all the users
         foreach (ApiExtendedGameUserResponse user in list.Items) user.FillInExtraData(database, dataStore);
