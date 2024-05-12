@@ -262,23 +262,17 @@ public class AuthenticationEndpoints : EndpointGroup
     /// </summary>
     [GameEndpoint("goodbye", HttpMethods.Post, ContentType.Xml)]
     [MinimumRole(GameUserRole.Restricted)]
-    public Response RevokeThisToken(RequestContext context, GameDatabaseContext database, GameUser user, Token token, MatchService matchService)
+    public Response RevokeThisToken(RequestContext context, GameDatabaseContext database, Token token, MatchService matchService)
     {
-        // On LBP1, our concept of a "room" is very basic, and we can be sure that they are the only user in said "room",
-        // so we just remove it outright if the user is logging out
-        // NOTE: We don't need any extra logic to handle more complex rooms here,
-        //       since LBP2 and LBP3 do not actually send requests to this endpoint when closed.
-        if (token.TokenGame == TokenGame.LittleBigPlanet1)
-        {
-            GameRoom? room = matchService.RoomAccessor.GetRoomByUser(user);
-            if(room != null) 
-                matchService.RoomAccessor.RemoveRoom(room.RoomId);
-        }
+        //If the user is the host of a room, remove that room
+        GameRoom? room = matchService.RoomAccessor.GetRoomByUser(token.User, token.TokenPlatform, token.TokenGame);
+        if (room != null && room.HostId.Id == token.User.UserId)
+            matchService.RoomAccessor.RemoveRoom(room.RoomId);
         
         // Revoke the token
         database.RevokeToken(token);
         
-        context.Logger.LogInfo(BunkumCategory.Authentication, $"{user} logged out");
+        context.Logger.LogInfo(BunkumCategory.Authentication, $"{token.User} logged out");
         return OK;
     }
 }

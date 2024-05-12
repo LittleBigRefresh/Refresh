@@ -1,12 +1,13 @@
 using System.Xml.Serialization;
 using Bunkum.Core;
 using Bunkum.Core.Endpoints;
-using Bunkum.Core.Endpoints.Debugging;
 using Bunkum.Core.Responses.Serialization;
 using Bunkum.Listener.Protocol;
 using Refresh.GameServer.Authentication;
 using Refresh.GameServer.Configuration;
 using Refresh.GameServer.Database;
+using Refresh.GameServer.Services;
+using Refresh.GameServer.Types.Matching;
 using Refresh.GameServer.Types.Notifications;
 using Refresh.GameServer.Types.Roles;
 using Refresh.GameServer.Types.UserData;
@@ -70,10 +71,20 @@ public class AnnouncementEndpoints : EndpointGroup
 
     [GameEndpoint("notification", ContentType.Xml)]
     [MinimumRole(GameUserRole.Restricted)]
-    public string Notification(RequestContext context, GameServerConfig config, GameUser user, GameDatabaseContext database)
+    public string Notification(RequestContext context, GameServerConfig config, Token token, GameDatabaseContext database, MatchService matchService)
     {
-        DatabaseList<GameNotification> notifications = database.GetNotificationsByUser(user, 3, 0);
-        // ReSharper disable once LoopCanBeConvertedToQuery (makes it unreadable)
+        // On LBP1 the only regular ticking request is /notification,
+        // so we update the "last contact" of the user's room when we receive a notification request to prevent LBP1 rooms from being auto-closed early
+        GameRoom? room = matchService.RoomAccessor.GetRoomByUser(token.User, token.TokenPlatform, token.TokenGame);
+        
+        if (room != null)
+        {
+            room.LastContact = DateTimeOffset.Now;
+            
+            matchService.RoomAccessor.UpdateRoom(room);
+        }
+        
+        DatabaseList<GameNotification> notifications = database.GetNotificationsByUser(token.User, 3, 0);
         
         using MemoryStream ms = new();
         using BunkumXmlTextWriter bunkumXmlTextWriter = new(ms);
