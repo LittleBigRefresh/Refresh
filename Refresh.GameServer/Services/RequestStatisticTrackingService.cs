@@ -11,20 +11,32 @@ namespace Refresh.GameServer.Services;
 
 public class RequestStatisticTrackingService : Service
 {
+    public static readonly object TrackerLock = new();
+    
+    public static int GameRequestsToSubmit { get; private set; }
+    public static int ApiRequestsToSubmit { get; private set; }
+    
+    public static void ClearRequests()
+    {
+        GameRequestsToSubmit = 0;
+        ApiRequestsToSubmit = 0;
+    }
+    
     internal RequestStatisticTrackingService(Logger logger) : base(logger)
     {}
 
     public override Response? OnRequestHandled(ListenerContext context, MethodInfo method, Lazy<IDatabaseContext> database)
     {
-        GameDatabaseContext gameDatabase = (GameDatabaseContext)database.Value;
-
-        if (context.Uri.AbsolutePath.StartsWith(GameEndpointAttribute.BaseRoute))
+        lock (TrackerLock)
         {
-            gameDatabase.IncrementGameRequests();
-        }
-        else
-        {
-            gameDatabase.IncrementApiRequests();
+            if (context.Uri.AbsolutePath.StartsWith(GameEndpointAttribute.BaseRoute))
+            {
+                GameRequestsToSubmit++;
+            }
+            else
+            {
+                ApiRequestsToSubmit++;
+            }
         }
         
         return null;

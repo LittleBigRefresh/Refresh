@@ -18,21 +18,21 @@ public partial class GameDatabaseContext // Statistics
         return statistics;
     }
     
-    public void IncrementApiRequests()
+    public void IncrementApiRequests(int count)
     {
         RequestStatistics statistics = this.GetRequestStatistics();
         this._realm.Write(() => {
-            statistics.TotalRequests++;
-            statistics.ApiRequests++;
+            statistics.TotalRequests += count;
+            statistics.ApiRequests += count;
         });
     }
     
-    public void IncrementGameRequests()
+    public void IncrementGameRequests(int count)
     {
         RequestStatistics statistics = this.GetRequestStatistics();
         this._realm.Write(() => {
-            statistics.TotalRequests++;
-            statistics.GameRequests++;
+            statistics.TotalRequests += count;
+            statistics.GameRequests += count;
         });
     }
 }
