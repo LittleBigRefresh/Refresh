@@ -21,6 +21,7 @@ using Refresh.GameServer.Middlewares;
 using Refresh.GameServer.Services;
 using Refresh.GameServer.Storage;
 using Refresh.GameServer.Time;
+using Refresh.GameServer.Types.Data;
 using Refresh.GameServer.Types.Levels.Categories;
 using Refresh.GameServer.Types.Roles;
 using Refresh.GameServer.Types.UserData;
@@ -129,16 +130,18 @@ public class RefreshGameServer : RefreshServer
         
         this.Server.AddService<RoleService>();
         this.Server.AddService<SmtpService>();
-
         this.Server.AddService<RequestStatisticTrackingService>();
-        
         this.Server.AddService<LevelListOverrideService>();
-        
         this.Server.AddService<CommandService>();
         
         #if DEBUG
         this.Server.AddService<DebugService>();
         #endif
+        
+        // !!! HEY! !!!
+        // This service depends on most services that come before it.
+        // This should always be added last.
+        this.Server.AddService<DataContextService>();
     }
 
     protected virtual void SetupWorkers()
