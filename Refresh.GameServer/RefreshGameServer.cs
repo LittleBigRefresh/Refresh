@@ -130,8 +130,7 @@ public class RefreshGameServer : RefreshServer
         this.Server.AddService<RoleService>();
         this.Server.AddService<SmtpService>();
 
-        if (this._config!.TrackRequestStatistics)
-            this.Server.AddService<RequestStatisticTrackingService>();
+        this.Server.AddService<RequestStatisticTrackingService>();
         
         this.Server.AddService<LevelListOverrideService>();
         
@@ -149,6 +148,7 @@ public class RefreshGameServer : RefreshServer
         this.WorkerManager.AddWorker<PunishmentExpiryWorker>();
         this.WorkerManager.AddWorker<ExpiredObjectWorker>();
         this.WorkerManager.AddWorker<CoolLevelsWorker>();
+        this.WorkerManager.AddWorker<RequestStatisticSubmitWorker>();
         
         if ((this._integrationConfig?.DiscordWebhookEnabled ?? false) && this._config != null)
         {
