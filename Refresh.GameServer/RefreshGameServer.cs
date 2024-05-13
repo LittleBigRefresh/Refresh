@@ -87,6 +87,7 @@ public class RefreshGameServer : RefreshServer
     {
         this.Server.AddMiddleware<LegacyAdapterMiddleware>();
         this.Server.AddMiddleware<WebsiteMiddleware>();
+        this.Server.AddMiddleware(new DeflateMiddleware(this._config!));
         this.Server.AddMiddleware<DigestMiddleware>();
         this.Server.AddMiddleware<CrossOriginMiddleware>();
         this.Server.AddMiddleware<PspVersionMiddleware>();
