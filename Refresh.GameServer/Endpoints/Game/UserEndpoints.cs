@@ -8,6 +8,7 @@ using Refresh.GameServer.Authentication;
 using Refresh.GameServer.Database;
 using Refresh.GameServer.Endpoints.Game.DataTypes.Response;
 using Refresh.GameServer.Services;
+using Refresh.GameServer.Types.Data;
 using Refresh.GameServer.Types.Lists;
 using Refresh.GameServer.Types.Roles;
 using Refresh.GameServer.Types.UserData;
@@ -18,12 +19,14 @@ public class UserEndpoints : EndpointGroup
 {
     [GameEndpoint("user/{name}", HttpMethods.Get, ContentType.Xml)]
     [MinimumRole(GameUserRole.Restricted)]
-    public GameUserResponse? GetUser(RequestContext context, GameDatabaseContext database, string name, Token token, IDataStore dataStore) 
-        => GameUserResponse.FromOldWithExtraData(database.GetUserByUsername(name), token.TokenGame, database, dataStore);
+    public GameUserResponse? GetUser(RequestContext context, GameDatabaseContext database, string name, Token token,
+        IDataStore dataStore, DataContext dataContext) 
+        => GameUserResponse.FromOldWithExtraData(database.GetUserByUsername(name), token.TokenGame, database, dataStore, dataContext);
 
     [GameEndpoint("users", HttpMethods.Get, ContentType.Xml)]
     [MinimumRole(GameUserRole.Restricted)]
-    public SerializedUserList GetMultipleUsers(RequestContext context, GameDatabaseContext database, Token token, IDataStore dataStore)
+    public SerializedUserList GetMultipleUsers(RequestContext context, GameDatabaseContext database, Token token,
+        IDataStore dataStore, DataContext dataContext)
     {
         string[]? usernames = context.QueryString.GetValues("u");
         if (usernames == null) return new SerializedUserList();
@@ -35,7 +38,7 @@ public class UserEndpoints : EndpointGroup
             GameUser? user = database.GetUserByUsername(username);
             if (user == null) continue;
             
-            users.Add(GameUserResponse.FromOldWithExtraData(user, token.TokenGame, database, dataStore)!);
+            users.Add(GameUserResponse.FromOldWithExtraData(user, token.TokenGame, database, dataStore, dataContext)!);
         }
 
         return new SerializedUserList
@@ -48,10 +51,10 @@ public class UserEndpoints : EndpointGroup
     [NullStatusCode(NotFound)]
     [MinimumRole(GameUserRole.Restricted)]
     public SerializedFriendsList? GetFriends(RequestContext context, GameDatabaseContext database,
-        GameUser user, Token token, IDataStore dataStore)
+        GameUser user, Token token, IDataStore dataStore, DataContext dataContext)
     {
         List<GameUser> friends = database.GetUsersMutuals(user).ToList();
-        return new SerializedFriendsList(GameUserResponse.FromOldListWithExtraData(friends, token.TokenGame, database, dataStore).ToList());
+        return new SerializedFriendsList(GameUserResponse.FromOldListWithExtraData(friends, token.TokenGame, database, dataStore, dataContext).ToList());
     }
 
     [GameEndpoint("updateUser", HttpMethods.Post, ContentType.Xml)]

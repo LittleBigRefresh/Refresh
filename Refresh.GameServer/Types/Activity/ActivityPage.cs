@@ -4,6 +4,7 @@ using Refresh.GameServer.Endpoints.Game.DataTypes.Response;
 using Refresh.GameServer.Services;
 using Refresh.GameServer.Types.Activity.Groups;
 using Refresh.GameServer.Types.Activity.SerializedEvents;
+using Refresh.GameServer.Types.Data;
 using Refresh.GameServer.Types.Levels;
 using Refresh.GameServer.Types.Lists;
 using Refresh.GameServer.Types.UserData;
@@ -53,7 +54,8 @@ public class ActivityPage
         this.Scores = new List<GameSubmittedScore>();
     }
 
-    private void FillInInfo(GameDatabaseContext database, bool generateGroups, ActivityQueryParameters parameters)
+    private void FillInInfo(GameDatabaseContext database, bool generateGroups, ActivityQueryParameters parameters,
+        DataContext dataContext)
     {
         List<GameUser> users = this.Events
             .Select(e => e.User)
@@ -66,7 +68,7 @@ public class ActivityPage
 
         this.SerializedUsers = new SerializedUserList
         {
-            Users = GameUserResponse.FromOldList(users).ToList(),
+            Users = GameUserResponse.FromOldList(users, dataContext).ToList(),
         };
 
         this.Users = users;
@@ -79,7 +81,7 @@ public class ActivityPage
 
         this.SerializedLevels = new SerializedLevelList
         {
-            Items = GameLevelResponse.FromOldList(levels).ToList(),
+            Items = GameLevelResponse.FromOldList(levels, dataContext).ToList(),
         };
 
         this.Levels = levels;
@@ -105,11 +107,9 @@ public class ActivityPage
         } 
     }
 
-    public static ActivityPage GameLevelActivity(
-        GameDatabaseContext database,
+    public static ActivityPage GameLevelActivity(GameDatabaseContext database,
         GameLevel level,
-        ActivityQueryParameters parameters
-    )
+        ActivityQueryParameters parameters, DataContext dataContext)
     {
         DatabaseList<Event> events = database.GetRecentActivityForLevel(level, parameters);
 
@@ -118,19 +118,18 @@ public class ActivityPage
             Events = events.Items,
         };
         
-        page.FillInInfo(database, true, parameters);
+        page.FillInInfo(database, true, parameters, dataContext);
         
         page.Groups.Groups = page.Groups.Groups.SelectMany(group => group.Subgroups?.Items ?? []).ToList();
         
         return page;
     }
     
-    public static ActivityPage ApiLevelActivity(
-        GameDatabaseContext database,
+    public static ActivityPage ApiLevelActivity(GameDatabaseContext database,
         GameLevel level,
         ActivityQueryParameters parameters,
-        bool generateGroups = true
-    )
+        DataContext dataContext,
+        bool generateGroups = true)
     {
         DatabaseList<Event> events = database.GetRecentActivityForLevel(level, parameters);
 
@@ -139,16 +138,15 @@ public class ActivityPage
             Events = events.Items,
         };
         
-        page.FillInInfo(database, generateGroups, parameters);
+        page.FillInInfo(database, generateGroups, parameters, dataContext);
         
         return page;
     }
     
-    public static ActivityPage UserActivity(
-        GameDatabaseContext database,
+    public static ActivityPage UserActivity(GameDatabaseContext database,
         ActivityQueryParameters parameters,
-        bool generateGroups = true
-    )
+        DataContext dataContext,
+        bool generateGroups = true)
     {
         DatabaseList<Event> events = database.GetUserRecentActivity(parameters);
 
@@ -157,16 +155,15 @@ public class ActivityPage
             Events = events.Items,
         };
         
-        page.FillInInfo(database, generateGroups, parameters);
+        page.FillInInfo(database, generateGroups, parameters, dataContext);
         
         return page;
     }
     
-    public static ActivityPage GlobalActivity(
-        GameDatabaseContext database,
+    public static ActivityPage GlobalActivity(GameDatabaseContext database,
         ActivityQueryParameters parameters,
-        bool generateGroups = true
-    )
+        DataContext dataContext,
+        bool generateGroups = true)
     {
         DatabaseList<Event> events = database.GetGlobalRecentActivity(parameters);
 
@@ -175,7 +172,7 @@ public class ActivityPage
             Events = events.Items,
         };
         
-        page.FillInInfo(database, generateGroups, parameters);
+        page.FillInInfo(database, generateGroups, parameters, dataContext);
         
         return page;
     }

@@ -1,6 +1,7 @@
 using Bunkum.Core.Storage;
 using Refresh.GameServer.Authentication;
 using Refresh.GameServer.Database;
+using Refresh.GameServer.Types.Data;
 using Refresh.GameServer.Types.Levels;
 using Refresh.GameServer.Types.Reviews;
 
@@ -45,14 +46,14 @@ public class ApiGameLevelResponse : IApiResponse, IDataConvertableFrom<ApiGameLe
     public required bool IsCopyable { get; set; }
     public required float Score { get; set; }
 
-    public static ApiGameLevelResponse? FromOld(GameLevel? level)
+    public static ApiGameLevelResponse? FromOld(GameLevel? level, DataContext dataContext)
     {
         if (level == null) return null;
         
         return new ApiGameLevelResponse
         {
             Title = level.Title,
-            Publisher = ApiGameUserResponse.FromOld(level.Publisher),
+            Publisher = ApiGameUserResponse.FromOld(level.Publisher, dataContext),
             OriginalPublisher = level.OriginalPublisher,
             IsReUpload = level.IsReUpload,
             LevelId = level.LevelId,
@@ -68,7 +69,7 @@ public class ApiGameLevelResponse : IApiResponse, IDataConvertableFrom<ApiGameLe
             MaxPlayers = level.MaxPlayers,
             EnforceMinMaxPlayers = level.EnforceMinMaxPlayers,
             SameScreenGame = level.SameScreenGame,
-            SkillRewards = ApiGameSkillRewardResponse.FromOldList(level.SkillRewards),
+            SkillRewards = ApiGameSkillRewardResponse.FromOldList(level.SkillRewards, dataContext),
             YayRatings = level.Ratings.Count(r => r._RatingType == (int)RatingType.Yay),
             BooRatings = level.Ratings.Count(r => r._RatingType == (int)RatingType.Boo),
             Hearts = level.FavouriteRelations.Count(),
@@ -92,15 +93,16 @@ public class ApiGameLevelResponse : IApiResponse, IDataConvertableFrom<ApiGameLe
         this.IconHash = database.GetAssetFromHash(this._originalIconHash ?? "0")?.GetAsIcon(TokenGame.Website, database, dataStore) ?? this.IconHash;
     }
     
-    public static ApiGameLevelResponse? FromOldWithExtraData(GameLevel? old, GameDatabaseContext database, IDataStore dataStore)
+    public static ApiGameLevelResponse? FromOldWithExtraData(GameLevel? old, GameDatabaseContext database,
+        IDataStore dataStore, DataContext dataContext)
     {
         if (old == null) return null;
 
-        ApiGameLevelResponse response = FromOld(old)!;
+        ApiGameLevelResponse response = FromOld(old, dataContext)!;
         response.FillInExtraData(database, dataStore);
 
         return response;
     }
 
-    public static IEnumerable<ApiGameLevelResponse> FromOldList(IEnumerable<GameLevel> oldList) => oldList.Select(FromOld).ToList()!;
+    public static IEnumerable<ApiGameLevelResponse> FromOldList(IEnumerable<GameLevel> oldList, DataContext dataContext) => oldList.Select(old => FromOld(old, dataContext)).ToList()!;
 }

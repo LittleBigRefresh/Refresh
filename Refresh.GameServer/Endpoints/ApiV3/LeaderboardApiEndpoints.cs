@@ -8,6 +8,7 @@ using Refresh.GameServer.Endpoints.ApiV3.ApiTypes;
 using Refresh.GameServer.Endpoints.ApiV3.ApiTypes.Errors;
 using Refresh.GameServer.Endpoints.ApiV3.DataTypes.Response;
 using Refresh.GameServer.Extensions;
+using Refresh.GameServer.Types.Data;
 using Refresh.GameServer.Types.Levels;
 using Refresh.GameServer.Types.UserData.Leaderboard;
 
@@ -21,9 +22,11 @@ public class LeaderboardApiEndpoints : EndpointGroup
                               "If true, all scores will be shown no matter what. False by default.")]
     [DocError(typeof(ApiNotFoundError), ApiNotFoundError.LevelMissingErrorWhen)]
     [DocError(typeof(ApiValidationError), "The boolean 'showAll' could not be parsed by the server.")]
-    public ApiListResponse<ApiGameScoreResponse> GetTopScoresForLevel(RequestContext context, GameDatabaseContext database, IDataStore dataStore,
+    public ApiListResponse<ApiGameScoreResponse> GetTopScoresForLevel(RequestContext context,
+        GameDatabaseContext database, IDataStore dataStore,
         [DocSummary("The ID of the level")] int id,
-        [DocSummary("The leaderboard more (aka the number of players, e.g. 2 for 2-player mode)")] int mode)
+        [DocSummary("The leaderboard more (aka the number of players, e.g. 2 for 2-player mode)")]
+        int mode, DataContext dataContext)
     {
         GameLevel? level = database.GetLevelById(id);
         if (level == null) return ApiNotFoundError.LevelMissingError;
@@ -34,7 +37,7 @@ public class LeaderboardApiEndpoints : EndpointGroup
         if (!result) return ApiValidationError.BooleanParseError;
 
         DatabaseList<GameSubmittedScore> scores = database.GetTopScoresForLevel(level, count, skip, (byte)mode, showAll);
-        DatabaseList<ApiGameScoreResponse> ret = DatabaseList<ApiGameScoreResponse>.FromOldList<ApiGameScoreResponse, GameSubmittedScore>(scores);
+        DatabaseList<ApiGameScoreResponse> ret = DatabaseList<ApiGameScoreResponse>.FromOldList<ApiGameScoreResponse, GameSubmittedScore>(scores, dataContext);
         foreach (ApiGameScoreResponse score in ret.Items) score.FillInExtraData(database, dataStore);
         return ret;
     }
@@ -42,12 +45,13 @@ public class LeaderboardApiEndpoints : EndpointGroup
     [ApiV3Endpoint("scores/{uuid}"), Authentication(false)]
     [DocSummary("Gets an individual score by a UUID")]
     [DocError(typeof(ApiNotFoundError), "The score could not be found")]
-    public ApiResponse<ApiGameScoreResponse> GetScoreByUuid(RequestContext context, GameDatabaseContext database, IDataStore dataStore,
-        [DocSummary("The UUID of the score")] string uuid)
+    public ApiResponse<ApiGameScoreResponse> GetScoreByUuid(RequestContext context, GameDatabaseContext database,
+        IDataStore dataStore,
+        [DocSummary("The UUID of the score")] string uuid, DataContext dataContext)
     {
         GameSubmittedScore? score = database.GetScoreByUuid(uuid);
         if (score == null) return ApiNotFoundError.Instance;
         
-        return ApiGameScoreResponse.FromOldWithExtraData(score, database, dataStore);
+        return ApiGameScoreResponse.FromOldWithExtraData(score, database, dataStore, dataContext);
     }
 }

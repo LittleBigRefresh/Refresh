@@ -1,3 +1,4 @@
+using Refresh.GameServer.Types.Data;
 using Refresh.GameServer.Types.Matching;
 
 namespace Refresh.GameServer.Endpoints.ApiV3.DataTypes.Response;
@@ -8,7 +9,7 @@ public class ApiGameRoomPlayerResponse : IApiResponse, IDataConvertableFrom<ApiG
     public required string Username { get; set; }
     public required string? UserId { get; set; }
     
-    public static ApiGameRoomPlayerResponse? FromOld(GameRoomPlayer? old)
+    public static ApiGameRoomPlayerResponse? FromOld(GameRoomPlayer? old, DataContext dataContext)
     {
         if (old is null) return null;
 
@@ -19,5 +20,6 @@ public class ApiGameRoomPlayerResponse : IApiResponse, IDataConvertableFrom<ApiG
         };
     }
 
-    public static IEnumerable<ApiGameRoomPlayerResponse> FromOldList(IEnumerable<GameRoomPlayer> oldList) => oldList.Select(FromOld).ToList()!;
+    public static IEnumerable<ApiGameRoomPlayerResponse> FromOldList(IEnumerable<GameRoomPlayer> oldList,
+        DataContext dataContext) => oldList.Select(old => FromOld(old, dataContext)).ToList()!;
 }

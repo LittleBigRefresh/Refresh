@@ -2,6 +2,7 @@ using Bunkum.Core.Storage;
 using JetBrains.Annotations;
 using Refresh.GameServer.Authentication;
 using Refresh.GameServer.Database;
+using Refresh.GameServer.Types.Data;
 using Refresh.GameServer.Types.UserData;
 
 namespace Refresh.GameServer.Endpoints.ApiV3.DataTypes.Response;
@@ -21,7 +22,7 @@ public class ApiGameUserResponse : IApiResponse, IDataConvertableFrom<ApiGameUse
     public required DateTimeOffset LastLoginDate { get; set; }
 
     [ContractAnnotation("null => null; notnull => notnull")]
-    public static ApiGameUserResponse? FromOld(GameUser? user)
+    public static ApiGameUserResponse? FromOld(GameUser? user, DataContext dataContext)
     {
         if (user == null) return null;
         
@@ -42,15 +43,16 @@ public class ApiGameUserResponse : IApiResponse, IDataConvertableFrom<ApiGameUse
         this.IconHash = database.GetAssetFromHash(this.IconHash)?.GetAsIcon(TokenGame.Website, database, dataStore) ?? this.IconHash;
     }
     
-    public static ApiGameUserResponse? FromOldWithExtraData(GameUser? old, GameDatabaseContext database, IDataStore dataStore)
+    public static ApiGameUserResponse? FromOldWithExtraData(GameUser? old, GameDatabaseContext database,
+        IDataStore dataStore, DataContext dataContext)
     {
         if (old == null) return null;
 
-        ApiGameUserResponse response = FromOld(old)!;
+        ApiGameUserResponse response = FromOld(old, dataContext)!;
         response.FillInExtraData(database, dataStore);
 
         return response;
     }
 
-    public static IEnumerable<ApiGameUserResponse> FromOldList(IEnumerable<GameUser> oldList) => oldList.Select(FromOld).ToList()!;
+    public static IEnumerable<ApiGameUserResponse> FromOldList(IEnumerable<GameUser> oldList, DataContext dataContext) => oldList.Select(old => FromOld(old, dataContext)).ToList()!;
 }

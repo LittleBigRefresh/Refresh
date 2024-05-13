@@ -5,6 +5,7 @@ using Refresh.GameServer.Authentication;
 using Refresh.GameServer.Database;
 using Refresh.GameServer.Endpoints.Game.Levels.FilterSettings;
 using Refresh.GameServer.Services;
+using Refresh.GameServer.Types.Data;
 using Refresh.GameServer.Types.Lists;
 using Refresh.GameServer.Types.UserData;
 
@@ -50,6 +51,7 @@ public class SerializedCategory
         GameUser user,
         Token token,
         MatchService matchService,
+        DataContext dataContext,
         int skip = 0,
         int count = 20)
     {
@@ -58,7 +60,7 @@ public class SerializedCategory
         DatabaseList<GameLevel> categoryLevels = levelCategory.Fetch(context, skip, count, matchService, database, user, new LevelFilterSettings(context, token.TokenGame), user);
         
         IEnumerable<GameMinimalLevelResponse> levels = categoryLevels?.Items
-            .Select(l => GameMinimalLevelResponse.FromOldWithExtraData(l, matchService, database, dataStore, token.TokenGame)) ?? Array.Empty<GameMinimalLevelResponse>();
+            .Select(l => GameMinimalLevelResponse.FromOldWithExtraData(l, matchService, database, dataStore, token.TokenGame, dataContext)) ?? Array.Empty<GameMinimalLevelResponse>();
 
         category.Levels = new SerializedMinimalLevelList(levels, categoryLevels?.TotalItems ?? 0, skip + count);
 

@@ -1,5 +1,6 @@
 using Bunkum.Core.Storage;
 using Refresh.GameServer.Database;
+using Refresh.GameServer.Types.Data;
 using Refresh.GameServer.Types.Photos;
 
 namespace Refresh.GameServer.Endpoints.ApiV3.DataTypes.Response;
@@ -11,13 +12,13 @@ public class ApiGamePhotoSubjectResponse : IApiResponse,IDataConvertableFrom<Api
     public required string DisplayName { get; set; }
     public required IEnumerable<float> Bounds { get; set; }
 
-    public static ApiGamePhotoSubjectResponse? FromOld(GamePhotoSubject? old)
+    public static ApiGamePhotoSubjectResponse? FromOld(GamePhotoSubject? old, DataContext dataContext)
     {
         if (old == null) return null;
 
         return new ApiGamePhotoSubjectResponse
         {
-            User = ApiGameUserResponse.FromOld(old.User),
+            User = ApiGameUserResponse.FromOld(old.User, dataContext),
             DisplayName = old.DisplayName,
             Bounds = old.Bounds,
         };
@@ -28,17 +29,21 @@ public class ApiGamePhotoSubjectResponse : IApiResponse,IDataConvertableFrom<Api
         this.User?.FillInExtraData(database, dataStore);
     }
 
-    public static ApiGamePhotoSubjectResponse? FromOldWithExtraData(GamePhotoSubject? old, GameDatabaseContext database, IDataStore dataStore)
+    public static ApiGamePhotoSubjectResponse? FromOldWithExtraData(GamePhotoSubject? old, GameDatabaseContext database,
+        IDataStore dataStore, DataContext dataContext)
     {
         if (old == null) return null;
 
-        ApiGamePhotoSubjectResponse response = FromOld(old)!;
+        ApiGamePhotoSubjectResponse response = FromOld(old, dataContext)!;
         response.FillInExtraData(database, dataStore);
 
         return response;
     }
 
-    public static IEnumerable<ApiGamePhotoSubjectResponse> FromOldList(IEnumerable<GamePhotoSubject> oldList) => oldList.Select(FromOld).ToList()!;
+    public static IEnumerable<ApiGamePhotoSubjectResponse> FromOldList(IEnumerable<GamePhotoSubject> oldList,
+        DataContext dataContext) => oldList.Select(old => FromOld(old, dataContext)).ToList()!;
     
-    public static IEnumerable<ApiGamePhotoSubjectResponse> FromOldListWithExtraData(IEnumerable<GamePhotoSubject> oldList, GameDatabaseContext database, IDataStore dataStore) => oldList.Select(old => FromOldWithExtraData(old, database, dataStore)).ToList()!;
+    public static IEnumerable<ApiGamePhotoSubjectResponse> FromOldListWithExtraData(
+        IEnumerable<GamePhotoSubject> oldList, GameDatabaseContext database, IDataStore dataStore,
+        DataContext dataContext) => oldList.Select(old => FromOldWithExtraData(old, database, dataStore, dataContext)).ToList()!;
 }

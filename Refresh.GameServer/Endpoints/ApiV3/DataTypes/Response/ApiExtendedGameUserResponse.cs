@@ -2,6 +2,7 @@ using Bunkum.Core.Storage;
 using JetBrains.Annotations;
 using Refresh.GameServer.Authentication;
 using Refresh.GameServer.Database;
+using Refresh.GameServer.Types.Data;
 using Refresh.GameServer.Types.Roles;
 using Refresh.GameServer.Types.UserData;
 
@@ -38,7 +39,7 @@ public class ApiExtendedGameUserResponse : IApiResponse, IDataConvertableFrom<Ap
     public required bool ShouldResetPassword { get; set; }
     
     [ContractAnnotation("null => null; notnull => notnull")]
-    public static ApiExtendedGameUserResponse? FromOld(GameUser? user)
+    public static ApiExtendedGameUserResponse? FromOld(GameUser? user, DataContext dataContext)
     {
         if (user == null) return null;
         
@@ -70,17 +71,20 @@ public class ApiExtendedGameUserResponse : IApiResponse, IDataConvertableFrom<Ap
         this.IconHash = database.GetAssetFromHash(this.IconHash)?.GetAsIcon(TokenGame.Website, database, dataStore) ?? this.IconHash;
     }
     
-    public static ApiExtendedGameUserResponse? FromOldWithExtraData(GameUser? old, GameDatabaseContext database, IDataStore dataStore)
+    public static ApiExtendedGameUserResponse? FromOldWithExtraData(GameUser? old, GameDatabaseContext database,
+        IDataStore dataStore, DataContext dataContext)
     {
         if (old == null) return null;
 
-        ApiExtendedGameUserResponse response = FromOld(old)!;
+        ApiExtendedGameUserResponse response = FromOld(old, dataContext)!;
         response.FillInExtraData(database, dataStore);
 
         return response;
     }
 
-    public static IEnumerable<ApiExtendedGameUserResponse> FromOldList(IEnumerable<GameUser> oldList) => oldList.Select(FromOld).ToList()!;
+    public static IEnumerable<ApiExtendedGameUserResponse> FromOldList(IEnumerable<GameUser> oldList,
+        DataContext dataContext) => oldList.Select(old => FromOld(old, dataContext)).ToList()!;
     
-    public static IEnumerable<ApiExtendedGameUserResponse> FromOldListWithExtraData(IEnumerable<GameUser> oldList, GameDatabaseContext database, IDataStore dataStore) => oldList.Select(old => FromOldWithExtraData(old, database, dataStore)).ToList()!;
+    public static IEnumerable<ApiExtendedGameUserResponse> FromOldListWithExtraData(IEnumerable<GameUser> oldList,
+        GameDatabaseContext database, IDataStore dataStore, DataContext dataContext) => oldList.Select(old => FromOldWithExtraData(old, database, dataStore, dataContext)).ToList()!;
 }

@@ -12,6 +12,7 @@ using Refresh.GameServer.Endpoints.ApiV3.DataTypes.Request;
 using Refresh.GameServer.Endpoints.ApiV3.DataTypes.Response;
 using Refresh.GameServer.Endpoints.ApiV3.DataTypes.Response.Admin;
 using Refresh.GameServer.Extensions;
+using Refresh.GameServer.Types.Data;
 using Refresh.GameServer.Types.Roles;
 using Refresh.GameServer.Types.UserData;
 using Refresh.GameServer.Verification;
@@ -23,32 +24,35 @@ public class AdminUserApiEndpoints : EndpointGroup
     [ApiV3Endpoint("admin/users/name/{username}"), MinimumRole(GameUserRole.Admin)]
     [DocSummary("Gets a user by their name with extended information.")]
     [DocError(typeof(ApiNotFoundError), ApiNotFoundError.UserMissingErrorWhen)]
-    public ApiResponse<ApiExtendedGameUserResponse> GetExtendedUserByUsername(RequestContext context, GameDatabaseContext database, string username, IDataStore dataStore)
+    public ApiResponse<ApiExtendedGameUserResponse> GetExtendedUserByUsername(RequestContext context,
+        GameDatabaseContext database, string username, IDataStore dataStore, DataContext dataContext)
     {
         GameUser? user = database.GetUserByUsername(username);
         if (user == null) return ApiNotFoundError.UserMissingError;
 
-        return ApiExtendedGameUserResponse.FromOldWithExtraData(user, database, dataStore);
+        return ApiExtendedGameUserResponse.FromOldWithExtraData(user, database, dataStore, dataContext);
     }
 
     [ApiV3Endpoint("admin/users/uuid/{uuid}"), MinimumRole(GameUserRole.Admin)]
     [DocSummary("Gets a user by their UUID with extended information.")]
     [DocError(typeof(ApiNotFoundError), ApiNotFoundError.UserMissingErrorWhen)]
-    public ApiResponse<ApiExtendedGameUserResponse> GetExtendedUserByUuid(RequestContext context, GameDatabaseContext database, string uuid, IDataStore dataStore)
+    public ApiResponse<ApiExtendedGameUserResponse> GetExtendedUserByUuid(RequestContext context,
+        GameDatabaseContext database, string uuid, IDataStore dataStore, DataContext dataContext)
     {
         GameUser? user = database.GetUserByUuid(uuid);
         if (user == null) return ApiNotFoundError.UserMissingError;
 
-        return ApiExtendedGameUserResponse.FromOldWithExtraData(user, database, dataStore);
+        return ApiExtendedGameUserResponse.FromOldWithExtraData(user, database, dataStore, dataContext);
     }
 
     [ApiV3Endpoint("admin/users"), MinimumRole(GameUserRole.Admin)]
     [DocSummary("Gets all users with extended information.")]
     [DocUsesPageData]
-    public ApiListResponse<ApiExtendedGameUserResponse> GetExtendedUsers(RequestContext context, GameDatabaseContext database, IDataStore dataStore)
+    public ApiListResponse<ApiExtendedGameUserResponse> GetExtendedUsers(RequestContext context,
+        GameDatabaseContext database, IDataStore dataStore, DataContext dataContext)
     {
         (int skip, int count) = context.GetPageData();
-        DatabaseList<ApiExtendedGameUserResponse> list = DatabaseList<ApiExtendedGameUserResponse>.FromOldList<ApiExtendedGameUserResponse, GameUser>(database.GetUsers(count, skip));
+        DatabaseList<ApiExtendedGameUserResponse> list = DatabaseList<ApiExtendedGameUserResponse>.FromOldList<ApiExtendedGameUserResponse, GameUser>(database.GetUsers(count, skip), dataContext);
         //Fill in the extra data of all the users
         foreach (ApiExtendedGameUserResponse user in list.Items) user.FillInExtraData(database, dataStore);
         return list;

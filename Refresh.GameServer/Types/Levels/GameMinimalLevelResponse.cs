@@ -5,6 +5,7 @@ using Refresh.GameServer.Database;
 using Refresh.GameServer.Endpoints.ApiV3.DataTypes;
 using Refresh.GameServer.Endpoints.Game.DataTypes.Response;
 using Refresh.GameServer.Services;
+using Refresh.GameServer.Types.Data;
 using Refresh.GameServer.Types.Matching;
 using Refresh.GameServer.Types.UserData;
 
@@ -52,40 +53,43 @@ public class GameMinimalLevelResponse : IDataConvertableFrom<GameMinimalLevelRes
     /// Constructs a placeholder level response from a root level hash
     /// </summary>
     /// <param name="hash"></param>
+    /// <param name="dataContext"></param>
     /// <returns></returns>
-    public static GameMinimalLevelResponse FromHash(string hash)
+    public static GameMinimalLevelResponse FromHash(string hash, DataContext dataContext)
     {
-        return FromOld(GameLevelResponse.FromHash(hash))!;
+        return FromOld(GameLevelResponse.FromHash(hash), dataContext)!;
     }
     
-    public static GameMinimalLevelResponse? FromOldWithExtraData(GameLevelResponse? old, MatchService matchService, GameDatabaseContext database, IDataStore dataStore, TokenGame game)
+    public static GameMinimalLevelResponse? FromOldWithExtraData(GameLevelResponse? old, MatchService matchService,
+        GameDatabaseContext database, IDataStore dataStore, TokenGame game, DataContext dataContext)
     {
         if (old == null) return null;
 
-        GameMinimalLevelResponse response = FromOld(old)!;
+        GameMinimalLevelResponse response = FromOld(old, dataContext)!;
         response.FillInExtraData(matchService, database, dataStore, game);
 
         return response;
     }
     
-    public static GameMinimalLevelResponse? FromOldWithExtraData(GameLevel? old, MatchService matchService, GameDatabaseContext database, IDataStore dataStore, TokenGame game)
+    public static GameMinimalLevelResponse? FromOldWithExtraData(GameLevel? old, MatchService matchService,
+        GameDatabaseContext database, IDataStore dataStore, TokenGame game, DataContext dataContext)
     {
         if (old == null) return null;
 
-        GameMinimalLevelResponse response = FromOld(old)!;
+        GameMinimalLevelResponse response = FromOld(old, dataContext)!;
         response.FillInExtraData(matchService, database, dataStore, game);
 
         return response;
     }
 
-    public static GameMinimalLevelResponse? FromOld(GameLevel? level)
+    public static GameMinimalLevelResponse? FromOld(GameLevel? level, DataContext dataContext)
     {
         if(level == null) return null;
-        return FromOld(GameLevelResponse.FromOld(level));
+        return FromOld(GameLevelResponse.FromOld(level, dataContext), dataContext);
     }
 
 
-    public static GameMinimalLevelResponse? FromOld(GameLevelResponse? level)
+    public static GameMinimalLevelResponse? FromOld(GameLevelResponse? level, DataContext dataContext)
     {
         if(level == null) return null;
 
@@ -124,6 +128,8 @@ public class GameMinimalLevelResponse : IDataConvertableFrom<GameMinimalLevelRes
         this.IconHash = database.GetAssetFromHash(this.IconHash)?.GetAsIcon(game, database, dataStore) ?? this.IconHash;
     }
 
-    public static IEnumerable<GameMinimalLevelResponse> FromOldList(IEnumerable<GameLevel> oldList) => oldList.Select(FromOld).ToList()!;
-    public static IEnumerable<GameMinimalLevelResponse> FromOldList(IEnumerable<GameLevelResponse> oldList) => oldList.Select(FromOld).ToList()!;
+    public static IEnumerable<GameMinimalLevelResponse> FromOldList(IEnumerable<GameLevel> oldList,
+        DataContext dataContext) => oldList.Select(old => FromOld(old, dataContext)).ToList()!;
+    public static IEnumerable<GameMinimalLevelResponse> FromOldList(IEnumerable<GameLevelResponse> oldList,
+        DataContext dataContext) => oldList.Select(old => FromOld(old, dataContext)).ToList()!;
 }

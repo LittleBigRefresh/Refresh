@@ -7,6 +7,7 @@ using Refresh.GameServer.Extensions;
 using Refresh.GameServer.Services;
 using Refresh.GameServer.Types;
 using Refresh.GameServer.Types.Assets;
+using Refresh.GameServer.Types.Data;
 using Refresh.GameServer.Types.Levels;
 using Refresh.GameServer.Types.Levels.SkillRewards;
 using Refresh.GameServer.Types.Matching;
@@ -137,17 +138,18 @@ public class GameLevelResponse : IDataConvertableFrom<GameLevelResponse, GameLev
         };
     }
     
-    public static GameLevelResponse? FromOldWithExtraData(GameLevel? old, GameDatabaseContext database, MatchService matchService, GameUser user, IDataStore dataStore, TokenGame game)
+    public static GameLevelResponse? FromOldWithExtraData(GameLevel? old, GameDatabaseContext database,
+        MatchService matchService, GameUser user, IDataStore dataStore, TokenGame game, DataContext dataContext)
     {
         if (old == null) return null;
 
-        GameLevelResponse response = FromOld(old)!;
+        GameLevelResponse response = FromOld(old, dataContext)!;
         response.FillInExtraData(database, matchService, user, dataStore, game);
 
         return response;
     }
 
-    public static GameLevelResponse? FromOld(GameLevel? old)
+    public static GameLevelResponse? FromOld(GameLevel? old, DataContext dataContext)
     {
         if (old == null) return null;
 
@@ -215,7 +217,7 @@ public class GameLevelResponse : IDataConvertableFrom<GameLevelResponse, GameLev
         return response;
     }
 
-    public static IEnumerable<GameLevelResponse> FromOldList(IEnumerable<GameLevel> oldList) => oldList.Select(FromOld).ToList()!;
+    public static IEnumerable<GameLevelResponse> FromOldList(IEnumerable<GameLevel> oldList, DataContext dataContext) => oldList.Select(old => FromOld(old, dataContext)).ToList()!;
 
     private void FillInExtraData(GameDatabaseContext database, MatchService matchService, GameUser user, IDataStore dataStore, TokenGame game)
     {

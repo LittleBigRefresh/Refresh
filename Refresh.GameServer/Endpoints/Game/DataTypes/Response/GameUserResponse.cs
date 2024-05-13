@@ -4,6 +4,7 @@ using Refresh.GameServer.Authentication;
 using Refresh.GameServer.Database;
 using Refresh.GameServer.Endpoints.ApiV3.DataTypes;
 using Refresh.GameServer.Types;
+using Refresh.GameServer.Types.Data;
 using Refresh.GameServer.Types.Levels;
 using Refresh.GameServer.Types.Lists;
 using Refresh.GameServer.Types.UserData;
@@ -52,17 +53,18 @@ public class GameUserResponse : IDataConvertableFrom<GameUserResponse, GameUser>
     /// </summary>
     [XmlElement("favouriteUsers")] public SerializedMinimalFavouriteUserList? FavouriteUsers { get; set; }
     
-    public static GameUserResponse? FromOldWithExtraData(GameUser? old, TokenGame gameVersion, GameDatabaseContext database, IDataStore dataStore)
+    public static GameUserResponse? FromOldWithExtraData(GameUser? old, TokenGame gameVersion,
+        GameDatabaseContext database, IDataStore dataStore, DataContext dataContext)
     {
         if (old == null) return null;
 
-        GameUserResponse response = FromOld(old)!;
-        response.FillInExtraData(old, gameVersion, database, dataStore);
+        GameUserResponse response = FromOld(old, dataContext)!;
+        response.FillInExtraData(old, gameVersion, database, dataStore, dataContext);
 
         return response;
     }
     
-    public static GameUserResponse? FromOld(GameUser? old)
+    public static GameUserResponse? FromOld(GameUser? old, DataContext dataContext)
     {
         if (old == null) return null;
 
@@ -95,12 +97,14 @@ public class GameUserResponse : IDataConvertableFrom<GameUserResponse, GameUser>
         return response;
     }
 
-    public static IEnumerable<GameUserResponse> FromOldList(IEnumerable<GameUser> oldList) => oldList.Select(FromOld).ToList()!;
+    public static IEnumerable<GameUserResponse> FromOldList(IEnumerable<GameUser> oldList, DataContext dataContext) => oldList.Select(old => FromOld(old, dataContext)).ToList()!;
     
-    public static IEnumerable<GameUserResponse> FromOldListWithExtraData(IEnumerable<GameUser> oldList, TokenGame gameVersion, GameDatabaseContext database, IDataStore dataStore) 
-        => oldList.Select(old => FromOldWithExtraData(old, gameVersion, database, dataStore)).ToList()!;
+    public static IEnumerable<GameUserResponse> FromOldListWithExtraData(IEnumerable<GameUser> oldList,
+        TokenGame gameVersion, GameDatabaseContext database, IDataStore dataStore, DataContext dataContext) 
+        => oldList.Select(old => FromOldWithExtraData(old, gameVersion, database, dataStore, dataContext)).ToList()!;
 
-    private void FillInExtraData(GameUser old, TokenGame gameVersion, GameDatabaseContext database, IDataStore dataStore)
+    private void FillInExtraData(GameUser old, TokenGame gameVersion, GameDatabaseContext database,
+        IDataStore dataStore, DataContext dataContext)
     {
         if (!old.IsManaged)
         {
@@ -172,7 +176,7 @@ public class GameUserResponse : IDataConvertableFrom<GameUserResponse, GameUser>
                 List<GameMinimalLevelResponse> favouriteLevels = old.FavouriteLevelRelations
                     .AsEnumerable()
                     .Where(l => l.Level._GameVersion == (int)TokenGame.LittleBigPlanetPSP)
-                    .Select(f => GameMinimalLevelResponse.FromOld(f.Level)).ToList()!;
+                    .Select(f => GameMinimalLevelResponse.FromOld(f.Level, dataContext)).ToList()!;
                 this.FavouriteLevels = new SerializedMinimalFavouriteLevelList(new SerializedMinimalLevelList(favouriteLevels, favouriteLevels.Count, favouriteLevels.Count));
                 break;
             }

@@ -15,6 +15,7 @@ using Refresh.GameServer.Endpoints.ApiV3.DataTypes.Request.Authentication;
 using Refresh.GameServer.Endpoints.ApiV3.DataTypes.Response;
 using Refresh.GameServer.Extensions;
 using Refresh.GameServer.Services;
+using Refresh.GameServer.Types.Data;
 using Refresh.GameServer.Types.Roles;
 using Refresh.GameServer.Types.UserData;
 using Refresh.GameServer.Verification;
@@ -181,12 +182,13 @@ public class AuthenticationApiEndpoints : EndpointGroup
     // IP Verification
     [ApiV3Endpoint("verificationRequests"), MinimumRole(GameUserRole.Restricted)]
     [DocSummary("Retrieves a list of IP addresses that have attempted to connect.")]
-    public ApiListResponse<ApiGameIpVerificationRequestResponse> GetVerificationRequests(RequestContext context, GameDatabaseContext database, GameUser user)
+    public ApiListResponse<ApiGameIpVerificationRequestResponse> GetVerificationRequests(RequestContext context,
+        GameDatabaseContext database, GameUser user, DataContext dataContext)
     {
         (int skip, int count) = context.GetPageData();
 
         return DatabaseList<ApiGameIpVerificationRequestResponse>.FromOldList<ApiGameIpVerificationRequestResponse, GameIpVerificationRequest>
-                (database.GetIpVerificationRequestsForUser(user, count, skip));
+                (database.GetIpVerificationRequestsForUser(user, count, skip), dataContext);
     }
 
     [ApiV3Endpoint("verificationRequests/approve", HttpMethods.Put)]

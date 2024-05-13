@@ -1,3 +1,4 @@
+using Refresh.GameServer.Types.Data;
 using Refresh.GameServer.Types.Notifications;
 
 namespace Refresh.GameServer.Endpoints.ApiV3.DataTypes.Response;
@@ -10,7 +11,7 @@ public class ApiGameAnnouncementResponse : IApiResponse, IDataConvertableFrom<Ap
     public required string Text { get; set; }
     public required DateTimeOffset CreatedAt { get; set; }
     
-    public static ApiGameAnnouncementResponse? FromOld(GameAnnouncement? old)
+    public static ApiGameAnnouncementResponse? FromOld(GameAnnouncement? old, DataContext dataContext)
     {
         if (old == null) return null;
 
@@ -23,5 +24,6 @@ public class ApiGameAnnouncementResponse : IApiResponse, IDataConvertableFrom<Ap
         };
     }
 
-    public static IEnumerable<ApiGameAnnouncementResponse> FromOldList(IEnumerable<GameAnnouncement> oldList) => oldList.Select(FromOld).ToList()!;
+    public static IEnumerable<ApiGameAnnouncementResponse> FromOldList(IEnumerable<GameAnnouncement> oldList,
+        DataContext dataContext) => oldList.Select(old => FromOld(old, dataContext)).ToList()!;
 }

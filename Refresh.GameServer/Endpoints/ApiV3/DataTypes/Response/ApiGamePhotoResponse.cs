@@ -1,5 +1,6 @@
 using Bunkum.Core.Storage;
 using Refresh.GameServer.Database;
+using Refresh.GameServer.Types.Data;
 using Refresh.GameServer.Types.Photos;
 
 namespace Refresh.GameServer.Endpoints.ApiV3.DataTypes.Response;
@@ -25,7 +26,7 @@ public class ApiGamePhotoResponse : IApiResponse, IDataConvertableFrom<ApiGamePh
     
     public required IEnumerable<ApiGamePhotoSubjectResponse> Subjects { get; set; }
     
-    public static ApiGamePhotoResponse? FromOld(GamePhoto? old)
+    public static ApiGamePhotoResponse? FromOld(GamePhoto? old, DataContext dataContext)
     {
         if (old == null) return null;
 
@@ -35,8 +36,8 @@ public class ApiGamePhotoResponse : IApiResponse, IDataConvertableFrom<ApiGamePh
             TakenAt = old.TakenAt,
             PublishedAt = old.PublishedAt,
 
-            Publisher = ApiGameUserResponse.FromOld(old.Publisher)!,
-            Level = ApiGameLevelResponse.FromOld(old.Level),
+            Publisher = ApiGameUserResponse.FromOld(old.Publisher, dataContext)!,
+            Level = ApiGameLevelResponse.FromOld(old.Level, dataContext),
 
             LevelName = old.LevelName,
             LevelType = old.LevelType,
@@ -47,7 +48,7 @@ public class ApiGamePhotoResponse : IApiResponse, IDataConvertableFrom<ApiGamePh
             LargeHash = old.LargeAsset.IsPSP ? $"psp/{old.LargeAsset.AssetHash}" : old.LargeAsset.AssetHash,
             PlanHash = old.PlanHash,
 
-            Subjects = ApiGamePhotoSubjectResponse.FromOldList(old.Subjects),
+            Subjects = ApiGamePhotoSubjectResponse.FromOldList(old.Subjects, dataContext),
         };
     }
 
@@ -61,15 +62,16 @@ public class ApiGamePhotoResponse : IApiResponse, IDataConvertableFrom<ApiGamePh
         this.Publisher.FillInExtraData(database, dataStore);
     }
 
-    public static ApiGamePhotoResponse? FromOldWithExtraData(GamePhoto? old, GameDatabaseContext database, IDataStore dataStore)
+    public static ApiGamePhotoResponse? FromOldWithExtraData(GamePhoto? old, GameDatabaseContext database,
+        IDataStore dataStore, DataContext dataContext)
     {
         if (old == null) return null;
 
-        ApiGamePhotoResponse response = FromOld(old)!;
+        ApiGamePhotoResponse response = FromOld(old, dataContext)!;
         response.FillInExtraData(database, dataStore);
 
         return response;
     }
 
-    public static IEnumerable<ApiGamePhotoResponse> FromOldList(IEnumerable<GamePhoto> oldList) => oldList.Select(FromOld).ToList()!;
+    public static IEnumerable<ApiGamePhotoResponse> FromOldList(IEnumerable<GamePhoto> oldList, DataContext dataContext) => oldList.Select(old => FromOld(old, dataContext)).ToList()!;
 }
