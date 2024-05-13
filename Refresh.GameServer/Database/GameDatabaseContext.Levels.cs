@@ -348,7 +348,7 @@ public partial class GameDatabaseContext // Levels
         }
         
         // Try to look up a username to search by publisher.
-        GameUser? publisher = this.GetUserByUsername(query); 
+        GameUser? publisher = this.GetUserByUsername(query, false); 
         if (publisher != null)
         {
             levels.AddRange(validLevels.Where(l => l.Publisher == publisher));
