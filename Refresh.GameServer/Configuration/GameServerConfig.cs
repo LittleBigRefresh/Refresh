@@ -9,7 +9,7 @@ namespace Refresh.GameServer.Configuration;
 [SuppressMessage("ReSharper", "RedundantDefaultMemberInitializer")]
 public class GameServerConfig : Config
 {
-    public override int CurrentConfigVersion => 14;
+    public override int CurrentConfigVersion => 15;
     public override int Version { get; set; } = 0;
 
     protected override void Migrate(int oldVer, dynamic oldConfig) {}
@@ -26,7 +26,6 @@ public class GameServerConfig : Config
     public string InstanceDescription { get; set; } = "A server running Refresh!";
     public bool MaintenanceMode { get; set; } = false;
     public bool RequireGameLoginToRegister { get; set; } = false;
-    public bool TrackRequestStatistics { get; set; } = false;
     /// <summary>
     /// Whether to use deflate compression for responses.
     /// If this is disabled, large enough responses will cause LBP to overflow its read buffer and eventually corrupt its own memory to the point of crashing.

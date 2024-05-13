@@ -130,8 +130,7 @@ public class RefreshGameServer : RefreshServer
         this.Server.AddService<RoleService>();
         this.Server.AddService<SmtpService>();
 
-        if (this._config!.TrackRequestStatistics)
-            this.Server.AddService<RequestStatisticTrackingService>();
+        this.Server.AddService<RequestStatisticTrackingService>();
         
         this.Server.AddService<LevelListOverrideService>();
         

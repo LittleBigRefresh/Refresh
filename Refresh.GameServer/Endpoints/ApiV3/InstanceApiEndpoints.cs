@@ -18,20 +18,7 @@ public class InstanceApiEndpoints : EndpointGroup
     [DocSummary("Retrieves various statistics about the Refresh instance.")]
     public ApiResponse<ApiStatisticsResponse> GetStatistics(RequestContext context, GameDatabaseContext database, MatchService match, GameServerConfig config)
     {
-        ApiRequestStatisticsResponse requestStatistics;
-        if (!config.TrackRequestStatistics)
-        {
-            requestStatistics = new ApiRequestStatisticsResponse
-            {
-                TotalRequests = -1,
-                ApiRequests = -1,
-                GameRequests = -1,
-            };
-        }
-        else
-        {
-            requestStatistics = ApiRequestStatisticsResponse.FromOld(database.GetRequestStatistics())!;
-        }
+        ApiRequestStatisticsResponse requestStatistics = ApiRequestStatisticsResponse.FromOld(database.GetRequestStatistics())!;
 
         RoomStatistics statistics = match.RoomAccessor.GetStatistics();
         
