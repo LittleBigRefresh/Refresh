@@ -41,7 +41,7 @@ public class ApiLevelCategoryResponse : IApiResponse, IDataConvertableFrom<ApiLe
         };
     }
     
-    public static ApiLevelCategoryResponse? FromOld(LevelCategory? old, DataContext dataContext) => FromOld(old, dataContext);
+    public static ApiLevelCategoryResponse? FromOld(LevelCategory? old, DataContext dataContext) => FromOld(old, null, dataContext);
 
     public static IEnumerable<ApiLevelCategoryResponse> FromOldList(IEnumerable<LevelCategory> oldList,
         DataContext dataContext) => oldList.Select(old => FromOld(old, dataContext)).ToList()!;

@@ -142,15 +142,15 @@ public partial class GameAsset
     /// <param name="database">The database</param>
     /// <param name="dataStore">The data store</param>
     /// <returns>The new hash of the converted asset, or null if no conversion has taken place</returns>
-    public string? GetAsPhoto(TokenGame game, GameDatabaseContext database, IDataStore dataStore)
+    public string? GetAsPhoto(TokenGame game, DataContext dataContext)
     {
         return this.GetAsGeneric(
             game,
-            database,
-            dataStore,
+            dataContext.Database,
+            dataContext.DataStore,
             _ => null,
             () => this.AsMainlinePhotoHash,
-            hash => database.SetMainlinePhotoHash(this, hash),
+            hash => dataContext.Database.SetMainlinePhotoHash(this, hash),
             () => throw new NotSupportedException(),
             _ => throw new NotSupportedException()
         );

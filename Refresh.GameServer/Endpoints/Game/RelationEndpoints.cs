@@ -82,7 +82,7 @@ public class RelationEndpoints : EndpointGroup
     [NullStatusCode(NotFound)]
     [MinimumRole(GameUserRole.Restricted)]
     public SerializedFavouriteUserList? GetFavouriteUsers(RequestContext context, GameDatabaseContext database,
-        string username, Token token, IDataStore dataStore, DataContext dataContext)
+        string username, DataContext dataContext)
     {
         GameUser? user = database.GetUserByUsername(username);
         if (user == null) return null;
@@ -91,7 +91,7 @@ public class RelationEndpoints : EndpointGroup
         List<GameUser> users = database.GetUsersFavouritedByUser(user, count, skip)
             .ToList();
 
-        return new SerializedFavouriteUserList(GameUserResponse.FromOldListWithExtraData(users, token.TokenGame, database, dataStore, dataContext).ToList(), users.Count, skip + count);
+        return new SerializedFavouriteUserList(GameUserResponse.FromOldList(users, dataContext).ToList(), users.Count, skip + count);
     }
 
     [GameEndpoint("lolcatftw/add/{slotType}/{id}", HttpMethods.Post)]

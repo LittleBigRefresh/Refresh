@@ -55,6 +55,7 @@ public class SerializedGameReview : IDataConvertableFrom<SerializedGameReview, G
         if (review == null) 
             return null;
         
+        // TODO: fill in review.YourThumb
         return new SerializedGameReview
         {
             Id = review.ReviewId,
@@ -74,11 +75,6 @@ public class SerializedGameReview : IDataConvertableFrom<SerializedGameReview, G
             ThumbsDown = 0,
             YourThumb = 0,
         };
-    }
-
-    public void FillInExtraData(GameDatabaseContext database, GameUser user)
-    {
-        //TODO: fill in this.YourThumb
     }
     
     public static IEnumerable<SerializedGameReview> FromOldList(IEnumerable<GameReview> oldList,
