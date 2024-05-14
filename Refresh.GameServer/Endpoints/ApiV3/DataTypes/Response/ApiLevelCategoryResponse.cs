@@ -40,60 +40,22 @@ public class ApiLevelCategoryResponse : IApiResponse, IDataConvertableFrom<ApiLe
             Hidden = old.Hidden,
         };
     }
-
-    public void FillInExtraData(GameDatabaseContext database, IDataStore dataStore)
-    {
-        this.PreviewLevel?.FillInExtraData(database, dataStore);
-    }
     
-    public static ApiLevelCategoryResponse? FromOldWithExtraData(LevelCategory? old, GameDatabaseContext database,
-        IDataStore dataStore, GameLevel? previewLevel, DataContext dataContext)
-    {
-        if (old == null) return null;
-
-        ApiLevelCategoryResponse response = FromOld(old, previewLevel, dataContext)!;
-        response.FillInExtraData(database, dataStore);
-
-        return response;
-    }
-    
-    public static ApiLevelCategoryResponse? FromOld(LevelCategory? old, DataContext dataContext) => FromOld(old, null);
+    public static ApiLevelCategoryResponse? FromOld(LevelCategory? old, DataContext dataContext) => FromOld(old, dataContext);
 
     public static IEnumerable<ApiLevelCategoryResponse> FromOldList(IEnumerable<LevelCategory> oldList,
         DataContext dataContext) => oldList.Select(old => FromOld(old, dataContext)).ToList()!;
-    public static IEnumerable<ApiLevelCategoryResponse> FromOldListWithExtraData(IEnumerable<LevelCategory> oldList,
-        GameDatabaseContext database, IDataStore dataStore, DataContext dataContext) 
-        => oldList.Select(old => FromOldWithExtraData(old, database, dataStore, null, dataContext)).ToList()!;
     
     public static IEnumerable<ApiLevelCategoryResponse> FromOldList(IEnumerable<LevelCategory> oldList,
         RequestContext context,
-        MatchService matchService,
-        GameDatabaseContext database,
-        GameUser? user, DataContext dataContext)
+        DataContext dataContext)
     {
         return oldList.Select(category =>
         {
-            DatabaseList<GameLevel>? list = category.Fetch(context, 0, 1, matchService, database, user, new LevelFilterSettings(context, TokenGame.Website), user);
+            DatabaseList<GameLevel>? list = category.Fetch(context, 0, 1, dataContext.Match, dataContext.Database, dataContext.User, new LevelFilterSettings(context, TokenGame.Website), dataContext.User);
             GameLevel? level = list?.Items.FirstOrDefault();
             
             return FromOld(category, level, dataContext);
         }).ToList()!;
-    }
-
-    public static IEnumerable<ApiLevelCategoryResponse> FromOldListWithExtraData(IEnumerable<LevelCategory> oldList,
-        RequestContext context,
-        MatchService matchService,
-        GameDatabaseContext database,
-        IDataStore dataStore,
-        GameUser? user, DataContext dataContext)
-    {
-        IEnumerable<ApiLevelCategoryResponse> list = FromOldList(oldList, context, matchService, database, user, dataContext).ToList();
-
-        foreach (ApiLevelCategoryResponse category in list)
-        {
-            category.FillInExtraData(database, dataStore);
-        }
-        
-        return list;
     }
 }

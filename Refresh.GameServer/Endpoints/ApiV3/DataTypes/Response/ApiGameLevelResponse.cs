@@ -17,7 +17,6 @@ public class ApiGameLevelResponse : IApiResponse, IDataConvertableFrom<ApiGameLe
 
     public required string Title { get; set; }
     public required string IconHash { get; set; }
-    private string? _originalIconHash;
     public required string Description { get; set; }
     public required ApiGameLocationResponse Location { get; set; }
     
@@ -57,10 +56,7 @@ public class ApiGameLevelResponse : IApiResponse, IDataConvertableFrom<ApiGameLe
             OriginalPublisher = level.OriginalPublisher,
             IsReUpload = level.IsReUpload,
             LevelId = level.LevelId,
-            IconHash = level.GameVersion == TokenGame.LittleBigPlanetPSP
-                ? "psp/" + level.IconHash
-                : level.IconHash,
-            _originalIconHash = level.IconHash,
+            IconHash = GetIconHash(level, dataContext),
             Description = level.Description,
             Location = ApiGameLocationResponse.FromGameLocation(level.Location)!,
             PublishDate = DateTimeOffset.FromUnixTimeMilliseconds(level.PublishDate),
@@ -85,23 +81,12 @@ public class ApiGameLevelResponse : IApiResponse, IDataConvertableFrom<ApiGameLe
         };
     }
     
-    public void FillInExtraData(GameDatabaseContext database, IDataStore dataStore)
+    private static string GetIconHash(GameLevel level, DataContext dataContext)
     {
-        this.Publisher?.FillInExtraData(database, dataStore);
-
-        //Get the icon form of the icon asset
-        this.IconHash = database.GetAssetFromHash(this._originalIconHash ?? "0")?.GetAsIcon(TokenGame.Website, database, dataStore) ?? this.IconHash;
-    }
-    
-    public static ApiGameLevelResponse? FromOldWithExtraData(GameLevel? old, GameDatabaseContext database,
-        IDataStore dataStore, DataContext dataContext)
-    {
-        if (old == null) return null;
-
-        ApiGameLevelResponse response = FromOld(old, dataContext)!;
-        response.FillInExtraData(database, dataStore);
-
-        return response;
+        string hash = dataContext.Database.GetAssetFromHash(level.IconHash)?.GetAsIcon(TokenGame.Website, dataContext) ?? level.IconHash;
+        return level.GameVersion == TokenGame.LittleBigPlanetPSP
+            ? "psp/" + hash
+            : hash;
     }
 
     public static IEnumerable<ApiGameLevelResponse> FromOldList(IEnumerable<GameLevel> oldList, DataContext dataContext) => oldList.Select(old => FromOld(old, dataContext)).ToList()!;

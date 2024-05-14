@@ -133,7 +133,7 @@ public class ResourceApiEndpoints : EndpointGroup
         GameAsset? asset = database.GetAssetFromHash(realHash);
         if (asset == null) return ApiNotFoundError.Instance;
 
-        return ApiGameAssetResponse.FromOldWithExtraData(asset, database, dataStore, dataContext);
+        return ApiGameAssetResponse.FromOld(asset, dataContext);
     }
 
     [ApiV3Endpoint("assets/psp/{hash}"), Authentication(false)]
@@ -176,7 +176,7 @@ public class ResourceApiEndpoints : EndpointGroup
             if (existingAsset == null)
                 return ApiInternalError.HashNotFoundInDatabaseError;
 
-            return ApiGameAssetResponse.FromOldWithExtraData(existingAsset, database, dataStore, dataContext);
+            return ApiGameAssetResponse.FromOld(existingAsset, dataContext);
         }
 
         if (body.Length > 1_048_576 * 2)
@@ -197,6 +197,6 @@ public class ResourceApiEndpoints : EndpointGroup
         gameAsset.OriginalUploader = user;
         database.AddAssetToDatabase(gameAsset);
 
-        return new ApiResponse<ApiGameAssetResponse>(ApiGameAssetResponse.FromOldWithExtraData(gameAsset, database, dataStore, dataContext)!, Created);
+        return new ApiResponse<ApiGameAssetResponse>(ApiGameAssetResponse.FromOld(gameAsset, dataContext)!, Created);
     }
 }

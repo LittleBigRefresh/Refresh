@@ -60,7 +60,7 @@ public class SerializedCategory
         DatabaseList<GameLevel> categoryLevels = levelCategory.Fetch(context, skip, count, matchService, database, user, new LevelFilterSettings(context, token.TokenGame), user);
         
         IEnumerable<GameMinimalLevelResponse> levels = categoryLevels?.Items
-            .Select(l => GameMinimalLevelResponse.FromOldWithExtraData(l, matchService, database, dataStore, token.TokenGame, dataContext)) ?? Array.Empty<GameMinimalLevelResponse>();
+            .Select(l => GameMinimalLevelResponse.FromOld(l, dataContext)) ?? Array.Empty<GameMinimalLevelResponse>();
 
         category.Levels = new SerializedMinimalLevelList(levels, categoryLevels?.TotalItems ?? 0, skip + count);
 

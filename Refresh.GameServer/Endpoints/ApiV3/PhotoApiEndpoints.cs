@@ -42,7 +42,6 @@ public class PhotoApiEndpoints : EndpointGroup
 
         DatabaseList<GamePhoto> photos = database.GetPhotosByUser(user, count, skip);
         DatabaseList<ApiGamePhotoResponse> photosResponse = DatabaseList<ApiGamePhotoResponse>.FromOldList<ApiGamePhotoResponse, GamePhoto>(photos, dataContext);
-        foreach (ApiGamePhotoResponse photo in photosResponse.Items) photo.FillInExtraData(database, dataStore);
         return photosResponse;
     }
     
@@ -54,7 +53,6 @@ public class PhotoApiEndpoints : EndpointGroup
 
         DatabaseList<GamePhoto> photos = database.GetPhotosWithUser(user, count, skip);
         DatabaseList<ApiGamePhotoResponse> photosResponse = DatabaseList<ApiGamePhotoResponse>.FromOldList<ApiGamePhotoResponse, GamePhoto>(photos, dataContext);
-        foreach (ApiGamePhotoResponse photo in photosResponse.Items) photo.FillInExtraData(database, dataStore);
         return photosResponse;
     }
     
@@ -66,10 +64,6 @@ public class PhotoApiEndpoints : EndpointGroup
 
         DatabaseList<GamePhoto> photos = database.GetPhotosInLevel(level, count, skip);
         DatabaseList<ApiGamePhotoResponse> photosResponse = DatabaseList<ApiGamePhotoResponse>.FromOldList<ApiGamePhotoResponse, GamePhoto>(photos, dataContext);
-        foreach (ApiGamePhotoResponse photo in photosResponse.Items)
-        {
-            photo.FillInExtraData(database, dataStore);
-        }
         return photosResponse;
     }
     
@@ -124,7 +118,6 @@ public class PhotoApiEndpoints : EndpointGroup
         DatabaseList<GamePhoto> photos = database.GetRecentPhotos(count, skip);
 
         DatabaseList<ApiGamePhotoResponse> photosResponse = DatabaseList<ApiGamePhotoResponse>.FromOldList<ApiGamePhotoResponse, GamePhoto>(photos, dataContext);
-        foreach (ApiGamePhotoResponse photo in photosResponse.Items) photo.FillInExtraData(database, dataStore);
         return photosResponse;
     }
     
@@ -137,6 +130,6 @@ public class PhotoApiEndpoints : EndpointGroup
         GamePhoto? photo = database.GetPhotoById(id);
         if (photo == null) return ApiNotFoundError.Instance;
         
-        return ApiGamePhotoResponse.FromOldWithExtraData(photo, database, dataStore, dataContext);
+        return ApiGamePhotoResponse.FromOld(photo, dataContext);
     }
 }

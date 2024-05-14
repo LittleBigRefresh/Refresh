@@ -1,3 +1,4 @@
+using System.Diagnostics;
 using System.Xml.Serialization;
 using Bunkum.Core.Storage;
 using Refresh.GameServer.Authentication;
@@ -137,17 +138,6 @@ public class GameLevelResponse : IDataConvertableFrom<GameLevelResponse, GameLev
             LevelType = "",
         };
     }
-    
-    public static GameLevelResponse? FromOldWithExtraData(GameLevel? old, GameDatabaseContext database,
-        MatchService matchService, GameUser user, IDataStore dataStore, TokenGame game, DataContext dataContext)
-    {
-        if (old == null) return null;
-
-        GameLevelResponse response = FromOld(old, dataContext)!;
-        response.FillInExtraData(database, matchService, user, dataStore, game);
-
-        return response;
-    }
 
     public static GameLevelResponse? FromOld(GameLevel? old, DataContext dataContext)
     {
@@ -195,7 +185,7 @@ public class GameLevelResponse : IDataConvertableFrom<GameLevelResponse, GameLev
         response.Type = "user";
         if (old is { Publisher: not null, IsReUpload: false })
         {
-            response.Handle = SerializedUserHandle.FromUser(old.Publisher);
+            response.Handle = SerializedUserHandle.FromUser(old.Publisher, dataContext);
         }
         else
         {
@@ -214,35 +204,32 @@ public class GameLevelResponse : IDataConvertableFrom<GameLevelResponse, GameLev
             };
         }
         
+        Debug.Assert(dataContext.User != null);
+        Debug.Assert(dataContext.Game != null);
+        
+        RatingType? rating = dataContext.Database.GetRatingByUser(old, dataContext.User);
+        
+        response.YourRating = rating?.ToDPad() ?? (int)RatingType.Neutral;
+        response.YourStarRating = rating?.ToLBP1() ?? 0;
+        response.YourLbp2PlayCount = old.AllPlays.Count(p => p.User == dataContext.User);
+        response.PlayerCount = dataContext.Match.GetPlayerCountForLevel(RoomSlotType.Online, response.LevelId);
+        
+        GameAsset? rootResourceAsset = dataContext.Database.GetAssetFromHash(response.RootResource);
+        if (rootResourceAsset != null)
+        {
+            rootResourceAsset.TraverseDependenciesRecursively(dataContext.Database, (_, asset) =>
+            {
+                if (asset != null)
+                    response.SizeOfResourcesInBytes += asset.SizeInBytes;
+            });
+        }
+        
+        response.IconHash = dataContext.Database.GetAssetFromHash(old.IconHash)?.GetAsIcon(dataContext.Game.Value, dataContext) ?? response.IconHash;
+        
+        response.CommentCount = old.LevelComments.Count;
+        
         return response;
     }
 
     public static IEnumerable<GameLevelResponse> FromOldList(IEnumerable<GameLevel> oldList, DataContext dataContext) => oldList.Select(old => FromOld(old, dataContext)).ToList()!;
-
-    private void FillInExtraData(GameDatabaseContext database, MatchService matchService, GameUser user, IDataStore dataStore, TokenGame game)
-    {
-        GameLevel? level = database.GetLevelById(this.LevelId);
-        if (level == null) throw new InvalidOperationException("Cannot fill in level data for a level that does not exist.");
-
-        RatingType? rating = database.GetRatingByUser(level, user);
-        
-        this.YourRating = rating?.ToDPad() ?? (int)RatingType.Neutral;
-        this.YourStarRating = rating?.ToLBP1() ?? 0;
-        this.YourLbp2PlayCount = level.AllPlays.Count(p => p.User == user);
-        this.PlayerCount = matchService.GetPlayerCountForLevel(RoomSlotType.Online, this.LevelId);
-
-        GameAsset? rootResourceAsset = database.GetAssetFromHash(this.RootResource);
-        if (rootResourceAsset != null)
-        {
-            rootResourceAsset.TraverseDependenciesRecursively(database, (_, asset) =>
-            {
-                if (asset != null)
-                    this.SizeOfResourcesInBytes += asset.SizeInBytes;
-            });
-        }
-
-        this.IconHash = database.GetAssetFromHash(this.IconHash)?.GetAsIcon(game, database, dataStore) ?? this.IconHash;
-
-        this.CommentCount = level.LevelComments.Count;
-    }
 }

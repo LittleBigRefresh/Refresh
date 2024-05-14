@@ -38,8 +38,8 @@ public class LevelApiEndpoints : EndpointGroup
         IEnumerable<ApiLevelCategoryResponse> resp;
 
         // ReSharper disable once ConvertIfStatementToConditionalTernaryExpression
-        if (includePreviews)resp = ApiLevelCategoryResponse.FromOldListWithExtraData(categories.Categories, context, matchService, database, dataStore, user, dataContext);
-        else resp = ApiLevelCategoryResponse.FromOldListWithExtraData(categories.Categories, database, dataStore, dataContext);
+        if (includePreviews) resp = ApiLevelCategoryResponse.FromOldList(categories.Categories, context, dataContext);
+        else resp = ApiLevelCategoryResponse.FromOldList(categories.Categories, dataContext);
         
         return new ApiListResponse<ApiLevelCategoryResponse>(resp);
     }
@@ -72,10 +72,6 @@ public class LevelApiEndpoints : EndpointGroup
         if (list == null) return ApiNotFoundError.Instance;
 
         DatabaseList<ApiGameLevelResponse> levels = DatabaseList<ApiGameLevelResponse>.FromOldList<ApiGameLevelResponse, GameLevel>(list, dataContext);
-        foreach (ApiGameLevelResponse level in levels.Items)
-        {
-            level.FillInExtraData(database, dataStore);
-        }
         return levels;
     }
 
@@ -89,7 +85,7 @@ public class LevelApiEndpoints : EndpointGroup
         GameLevel? level = database.GetLevelById(id);
         if (level == null) return ApiNotFoundError.LevelMissingError;
         
-        return ApiGameLevelResponse.FromOldWithExtraData(level, database, dataStore, dataContext);
+        return ApiGameLevelResponse.FromOld(level, dataContext);
     }
     
     [ApiV3Endpoint("levels/id/{id}", HttpMethods.Patch)]
@@ -108,7 +104,7 @@ public class LevelApiEndpoints : EndpointGroup
 
         level = database.UpdateLevel(body, level);
 
-        return ApiGameLevelResponse.FromOldWithExtraData(level, database, dataStore, dataContext);
+        return ApiGameLevelResponse.FromOld(level, dataContext);
     }
 
     [ApiV3Endpoint("levels/id/{id}", HttpMethods.Delete)]

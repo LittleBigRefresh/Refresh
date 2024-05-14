@@ -26,24 +26,6 @@ public class ApiActivityPageResponse : IApiResponse, IDataConvertableFrom<ApiAct
         };
     }
 
-    public void FillInExtraData(GameDatabaseContext database, IDataStore dataStore)
-    {
-        foreach (ApiGameScoreResponse score in this.Scores) score.FillInExtraData(database, dataStore);
-        foreach (ApiGameUserResponse user in this.Users) user.FillInExtraData(database, dataStore);
-        foreach (ApiGameLevelResponse level in this.Levels) level.FillInExtraData(database, dataStore);
-    }
-    
-    public static ApiActivityPageResponse? FromOldWithExtraData(ActivityPage? old, GameDatabaseContext database,
-        IDataStore dataStore, DataContext dataContext)
-    {
-        if (old == null) return null;
-
-        ApiActivityPageResponse response = FromOld(old, dataContext)!;
-        response.FillInExtraData(database, dataStore);
-
-        return response;
-    }
-
     public static IEnumerable<ApiActivityPageResponse> FromOldList(IEnumerable<ActivityPage> oldList,
         DataContext dataContext) => oldList.Select(old => FromOld(old, dataContext)).ToList()!;
 }

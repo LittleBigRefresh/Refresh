@@ -1,3 +1,4 @@
+using System.Diagnostics;
 using System.Xml.Serialization;
 using Bunkum.Core.Storage;
 using Refresh.GameServer.Authentication;
@@ -59,28 +60,6 @@ public class GameMinimalLevelResponse : IDataConvertableFrom<GameMinimalLevelRes
     {
         return FromOld(GameLevelResponse.FromHash(hash), dataContext)!;
     }
-    
-    public static GameMinimalLevelResponse? FromOldWithExtraData(GameLevelResponse? old, MatchService matchService,
-        GameDatabaseContext database, IDataStore dataStore, TokenGame game, DataContext dataContext)
-    {
-        if (old == null) return null;
-
-        GameMinimalLevelResponse response = FromOld(old, dataContext)!;
-        response.FillInExtraData(matchService, database, dataStore, game);
-
-        return response;
-    }
-    
-    public static GameMinimalLevelResponse? FromOldWithExtraData(GameLevel? old, MatchService matchService,
-        GameDatabaseContext database, IDataStore dataStore, TokenGame game, DataContext dataContext)
-    {
-        if (old == null) return null;
-
-        GameMinimalLevelResponse response = FromOld(old, dataContext)!;
-        response.FillInExtraData(matchService, database, dataStore, game);
-
-        return response;
-    }
 
     public static GameMinimalLevelResponse? FromOld(GameLevel? level, DataContext dataContext)
     {
@@ -92,11 +71,13 @@ public class GameMinimalLevelResponse : IDataConvertableFrom<GameMinimalLevelRes
     public static GameMinimalLevelResponse? FromOld(GameLevelResponse? level, DataContext dataContext)
     {
         if(level == null) return null;
+        
+        Debug.Assert(dataContext.Game != null);
 
         return new GameMinimalLevelResponse
         {
             Title = level.Title,
-            IconHash = level.IconHash,
+            IconHash = dataContext.Database.GetAssetFromHash(level.IconHash)?.GetAsIcon(dataContext.Game.Value, dataContext) ?? level.IconHash,
             GameVersion = level.GameVersion,
             RootResource = level.RootResource,
             Description = level.Description,
@@ -119,13 +100,8 @@ public class GameMinimalLevelResponse : IDataConvertableFrom<GameMinimalLevelRes
             IsLocked = level.IsLocked,
             IsSubLevel = level.IsSubLevel,
             IsCopyable = level.IsCopyable,
+            PlayerCount = dataContext.Match.GetPlayerCountForLevel(RoomSlotType.Online, level.LevelId),
         };
-    }
-
-    private void FillInExtraData(MatchService matchService, GameDatabaseContext database, IDataStore dataStore, TokenGame game)
-    {
-        this.PlayerCount = matchService.GetPlayerCountForLevel(RoomSlotType.Online, this.LevelId);
-        this.IconHash = database.GetAssetFromHash(this.IconHash)?.GetAsIcon(game, database, dataStore) ?? this.IconHash;
     }
 
     public static IEnumerable<GameMinimalLevelResponse> FromOldList(IEnumerable<GameLevel> oldList,

@@ -38,7 +38,6 @@ public class LeaderboardApiEndpoints : EndpointGroup
 
         DatabaseList<GameSubmittedScore> scores = database.GetTopScoresForLevel(level, count, skip, (byte)mode, showAll);
         DatabaseList<ApiGameScoreResponse> ret = DatabaseList<ApiGameScoreResponse>.FromOldList<ApiGameScoreResponse, GameSubmittedScore>(scores, dataContext);
-        foreach (ApiGameScoreResponse score in ret.Items) score.FillInExtraData(database, dataStore);
         return ret;
     }
 
@@ -52,6 +51,6 @@ public class LeaderboardApiEndpoints : EndpointGroup
         GameSubmittedScore? score = database.GetScoreByUuid(uuid);
         if (score == null) return ApiNotFoundError.Instance;
         
-        return ApiGameScoreResponse.FromOldWithExtraData(score, database, dataStore, dataContext);
+        return ApiGameScoreResponse.FromOld(score, dataContext);
     }
 }

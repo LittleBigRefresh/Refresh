@@ -74,7 +74,7 @@ public class GameUserResponse : IDataConvertableFrom<GameUserResponse, GameUser>
             Location = old.Location,
             PlanetsHash = "0",
             
-            Handle = SerializedUserHandle.FromUser(old),
+            Handle = SerializedUserHandle.FromUser(old, dataContext),
             CommentCount = old.ProfileComments.Count,
             CommentsEnabled = true,
             FavouriteLevelCount = old.IsManaged ? old.FavouriteLevelRelations.Count() : 0,
@@ -170,7 +170,7 @@ public class GameUserResponse : IDataConvertableFrom<GameUserResponse, GameUser>
 
                 //Fill out PSP favourite users
                 List<GameUser> users = database.GetUsersFavouritedByUser(old, 20, 0).ToList();
-                this.FavouriteUsers = new SerializedMinimalFavouriteUserList(users.Select(SerializedUserHandle.FromUser).ToList(), users.Count);
+                this.FavouriteUsers = new SerializedMinimalFavouriteUserList(users.Select(u => SerializedUserHandle.FromUser(u, dataContext)).ToList(), users.Count);
 
                 //Fill out PSP favourite levels
                 List<GameMinimalLevelResponse> favouriteLevels = old.FavouriteLevelRelations
@@ -198,7 +198,5 @@ public class GameUserResponse : IDataConvertableFrom<GameUserResponse, GameUser>
             default:
                 throw new ArgumentOutOfRangeException(nameof(gameVersion), gameVersion, null);
         }
-        
-        this.Handle.FillInExtraData(database, dataStore, gameVersion);
     }
 }

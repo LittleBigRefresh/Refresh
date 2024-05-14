@@ -35,25 +35,6 @@ public class ApiGameScoreResponse : IApiResponse, IDataConvertableFrom<ApiGameSc
             Platform = old.Platform,
         };
     }
-
-    public void FillInExtraData(GameDatabaseContext database, IDataStore dataStore)
-    {
-        foreach (ApiGameUserResponse player in this.Players)
-        {
-            player.FillInExtraData(database, dataStore);
-        }
-    }
-
-    public static ApiGameScoreResponse? FromOldWithExtraData(GameSubmittedScore? old, GameDatabaseContext database,
-        IDataStore dataStore, DataContext dataContext)
-    {
-        if (old == null) return null;
-
-        ApiGameScoreResponse response = FromOld(old, dataContext)!;
-        response.FillInExtraData(database, dataStore);
-
-        return response;
-    }
     
     public static IEnumerable<ApiGameScoreResponse> FromOldList(IEnumerable<GameSubmittedScore> oldList,
         DataContext dataContext) => oldList.Select(old => FromOld(old, dataContext)).ToList()!;

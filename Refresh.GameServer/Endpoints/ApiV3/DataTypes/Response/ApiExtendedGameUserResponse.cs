@@ -47,7 +47,7 @@ public class ApiExtendedGameUserResponse : IApiResponse, IDataConvertableFrom<Ap
         {
             UserId = user.UserId.ToString()!,
             Username = user.Username,
-            IconHash = user.IconHash,
+            IconHash = dataContext.Database.GetAssetFromHash(user.IconHash)?.GetAsIcon(TokenGame.Website, dataContext) ?? user.IconHash,
             Description = user.Description,
             Location = ApiGameLocationResponse.FromGameLocation(user.Location)!,
             JoinDate = user.JoinDate,
@@ -65,26 +65,7 @@ public class ApiExtendedGameUserResponse : IApiResponse, IDataConvertableFrom<Ap
             UnescapeXmlSequences = user.UnescapeXmlSequences,
         };
     }
-    
-    public void FillInExtraData(GameDatabaseContext database, IDataStore dataStore)
-    {
-        this.IconHash = database.GetAssetFromHash(this.IconHash)?.GetAsIcon(TokenGame.Website, database, dataStore) ?? this.IconHash;
-    }
-    
-    public static ApiExtendedGameUserResponse? FromOldWithExtraData(GameUser? old, GameDatabaseContext database,
-        IDataStore dataStore, DataContext dataContext)
-    {
-        if (old == null) return null;
-
-        ApiExtendedGameUserResponse response = FromOld(old, dataContext)!;
-        response.FillInExtraData(database, dataStore);
-
-        return response;
-    }
 
     public static IEnumerable<ApiExtendedGameUserResponse> FromOldList(IEnumerable<GameUser> oldList,
         DataContext dataContext) => oldList.Select(old => FromOld(old, dataContext)).ToList()!;
-    
-    public static IEnumerable<ApiExtendedGameUserResponse> FromOldListWithExtraData(IEnumerable<GameUser> oldList,
-        GameDatabaseContext database, IDataStore dataStore, DataContext dataContext) => oldList.Select(old => FromOldWithExtraData(old, database, dataStore, dataContext)).ToList()!;
 }

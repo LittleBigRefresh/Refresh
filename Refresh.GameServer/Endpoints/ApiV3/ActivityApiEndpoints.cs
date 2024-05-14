@@ -40,7 +40,7 @@ public class ActivityApiEndpoints : EndpointGroup
             Count = count,
             Skip = skip,
         }, dataContext, false);
-        return ApiActivityPageResponse.FromOldWithExtraData(page, database, dataStore, dataContext);
+        return ApiActivityPageResponse.FromOld(page, dataContext);
     }
     
     [ApiV3Endpoint("levels/id/{id}/activity"), Authentication(false)]
@@ -69,6 +69,6 @@ public class ActivityApiEndpoints : EndpointGroup
             Count = count,
             User = user,
         }, dataContext, false);
-        return ApiActivityPageResponse.FromOldWithExtraData(page, database, dataStore, dataContext);
+        return ApiActivityPageResponse.FromOld(page, dataContext);
     }
 }

@@ -27,7 +27,7 @@ public class UserApiEndpoints : EndpointGroup
         GameUser? user = database.GetUserByUsername(username);
         if(user == null) return ApiNotFoundError.UserMissingError;
         
-        return ApiGameUserResponse.FromOldWithExtraData(user, database, dataStore, dataContext);
+        return ApiGameUserResponse.FromOld(user, dataContext);
     }
     
     [ApiV3Endpoint("users/uuid/{uuid}"), Authentication(false)]
@@ -40,14 +40,14 @@ public class UserApiEndpoints : EndpointGroup
         GameUser? user = database.GetUserByUuid(uuid);
         if(user == null) return ApiNotFoundError.UserMissingError;
         
-        return ApiGameUserResponse.FromOldWithExtraData(user, database, dataStore, dataContext);
+        return ApiGameUserResponse.FromOld(user, dataContext);
     }
     
     [ApiV3Endpoint("users/me"), MinimumRole(GameUserRole.Restricted)]
     [DocSummary("Returns your own user, provided you are authenticated")]
     public ApiResponse<ApiExtendedGameUserResponse> GetMyUser(RequestContext context, GameUser user,
         GameDatabaseContext database, IDataStore dataStore, DataContext dataContext)
-        => ApiExtendedGameUserResponse.FromOldWithExtraData(user, database, dataStore, dataContext);
+        => ApiExtendedGameUserResponse.FromOld(user, dataContext);
     
     [ApiV3Endpoint("users/me", HttpMethods.Patch)]
     [DocSummary("Updates your profile with the given data")]
@@ -58,6 +58,6 @@ public class UserApiEndpoints : EndpointGroup
             return ApiNotFoundError.Instance;
 
         database.UpdateUserData(user, body);
-        return ApiExtendedGameUserResponse.FromOldWithExtraData(user, database, dataStore, dataContext);
+        return ApiExtendedGameUserResponse.FromOld(user, dataContext);
     }
 }

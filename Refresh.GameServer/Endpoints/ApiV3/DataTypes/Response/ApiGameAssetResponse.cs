@@ -28,21 +28,5 @@ public class ApiGameAssetResponse : IApiResponse, IDataConvertableFrom<ApiGameAs
         };
     }
 
-    public static ApiGameAssetResponse? FromOldWithExtraData(GameAsset? old, GameDatabaseContext database,
-        IDataStore dataStore, DataContext dataContext)
-    {
-        if (old == null) return null;
-
-        ApiGameAssetResponse response = FromOld(old, dataContext)!;
-        response.FillInExtraData(database, dataStore);
-
-        return response;
-    }
-
-    public void FillInExtraData(GameDatabaseContext database, IDataStore dataStore)
-    {
-        this.OriginalUploader?.FillInExtraData(database, dataStore);
-    }
-
     public static IEnumerable<ApiGameAssetResponse> FromOldList(IEnumerable<GameAsset> oldList, DataContext dataContext) => oldList.Select(old => FromOld(old, dataContext)).ToList()!;
 }

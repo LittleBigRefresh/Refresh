@@ -30,7 +30,7 @@ public class AdminUserApiEndpoints : EndpointGroup
         GameUser? user = database.GetUserByUsername(username);
         if (user == null) return ApiNotFoundError.UserMissingError;
 
-        return ApiExtendedGameUserResponse.FromOldWithExtraData(user, database, dataStore, dataContext);
+        return ApiExtendedGameUserResponse.FromOld(user, dataContext);
     }
 
     [ApiV3Endpoint("admin/users/uuid/{uuid}"), MinimumRole(GameUserRole.Admin)]
@@ -42,7 +42,7 @@ public class AdminUserApiEndpoints : EndpointGroup
         GameUser? user = database.GetUserByUuid(uuid);
         if (user == null) return ApiNotFoundError.UserMissingError;
 
-        return ApiExtendedGameUserResponse.FromOldWithExtraData(user, database, dataStore, dataContext);
+        return ApiExtendedGameUserResponse.FromOld(user, dataContext);
     }
 
     [ApiV3Endpoint("admin/users"), MinimumRole(GameUserRole.Admin)]
@@ -53,8 +53,6 @@ public class AdminUserApiEndpoints : EndpointGroup
     {
         (int skip, int count) = context.GetPageData();
         DatabaseList<ApiExtendedGameUserResponse> list = DatabaseList<ApiExtendedGameUserResponse>.FromOldList<ApiExtendedGameUserResponse, GameUser>(database.GetUsers(count, skip), dataContext);
-        //Fill in the extra data of all the users
-        foreach (ApiExtendedGameUserResponse user in list.Items) user.FillInExtraData(database, dataStore);
         return list;
     }
 

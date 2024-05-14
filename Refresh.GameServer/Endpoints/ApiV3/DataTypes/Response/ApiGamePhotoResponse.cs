@@ -52,26 +52,5 @@ public class ApiGamePhotoResponse : IApiResponse, IDataConvertableFrom<ApiGamePh
         };
     }
 
-    public void FillInExtraData(GameDatabaseContext database, IDataStore dataStore)
-    {
-        foreach (ApiGamePhotoSubjectResponse subject in this.Subjects)
-        {
-            subject.FillInExtraData(database, dataStore);
-        }
-        
-        this.Publisher.FillInExtraData(database, dataStore);
-    }
-
-    public static ApiGamePhotoResponse? FromOldWithExtraData(GamePhoto? old, GameDatabaseContext database,
-        IDataStore dataStore, DataContext dataContext)
-    {
-        if (old == null) return null;
-
-        ApiGamePhotoResponse response = FromOld(old, dataContext)!;
-        response.FillInExtraData(database, dataStore);
-
-        return response;
-    }
-
     public static IEnumerable<ApiGamePhotoResponse> FromOldList(IEnumerable<GamePhoto> oldList, DataContext dataContext) => oldList.Select(old => FromOld(old, dataContext)).ToList()!;
 }

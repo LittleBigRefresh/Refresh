@@ -38,7 +38,7 @@ public class LevelEndpoints : EndpointGroup
             List<GameMinimalLevelResponse> overrides = [];
             
             if (overrideService.GetIdOverridesForUser(token, database, out IEnumerable<GameLevel> levelOverrides))
-                overrides.AddRange(levelOverrides.Select(l => GameMinimalLevelResponse.FromOldWithExtraData(l, matchService, database, dataStore, token.TokenGame, dataContext))!);
+                overrides.AddRange(levelOverrides.Select(l => GameMinimalLevelResponse.FromOld(l, dataContext))!);
             
             if (overrideService.GetHashOverrideForUser(token, out string hashOverride))
                 overrides.Add(GameMinimalLevelResponse.FromHash(hashOverride, dataContext));
@@ -68,7 +68,7 @@ public class LevelEndpoints : EndpointGroup
         if (levels == null) return null;
         
         IEnumerable<GameMinimalLevelResponse> category = levels.Items
-            .Select(l => GameMinimalLevelResponse.FromOldWithExtraData(l, matchService, database, dataStore, token.TokenGame, dataContext))!;
+            .Select(l => GameMinimalLevelResponse.FromOld(l, dataContext))!;
         
         return new SerializedMinimalLevelList(category, levels.TotalItems, skip + count);
     }
@@ -105,8 +105,7 @@ public class LevelEndpoints : EndpointGroup
             // Return the hashed level info
             return GameLevelResponse.FromHash(hash);
         
-        return GameLevelResponse.FromOldWithExtraData(database.GetLevelByIdAndType(slotType, id), database,
-            matchService, user, dataStore, token.TokenGame, dataContext);
+        return GameLevelResponse.FromOld(database.GetLevelByIdAndType(slotType, id), dataContext);
     }
     
     [GameEndpoint("slotList", ContentType.Xml)]
@@ -127,7 +126,7 @@ public class LevelEndpoints : EndpointGroup
 
             if (level == null) continue;
             
-            levels.Add(GameLevelResponse.FromOldWithExtraData(level, database, matchService, user, dataStore, token.TokenGame, dataContext)!);
+            levels.Add(GameLevelResponse.FromOld(level, dataContext)!);
         }
 
         return new SerializedLevelList
@@ -175,7 +174,7 @@ public class LevelEndpoints : EndpointGroup
             .Fetch(context, skip, count, matchService, database, user, new LevelFilterSettings(context, token.TokenGame), user);
         
         return new SerializedMinimalLevelResultsList(levels?.Items
-            .Select(l => GameMinimalLevelResponse.FromOldWithExtraData(l, matchService, database, dataStore, token.TokenGame, dataContext))!, levels?.TotalItems ?? 0, skip + count);
+            .Select(l => GameMinimalLevelResponse.FromOld(l, dataContext))!, levels?.TotalItems ?? 0, skip + count);
     }
 
     #region Quirk workarounds
