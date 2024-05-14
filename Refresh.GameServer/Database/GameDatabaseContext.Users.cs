@@ -1,6 +1,7 @@
 using System.Reflection;
 using JetBrains.Annotations;
 using MongoDB.Bson;
+using Realms;
 using Refresh.GameServer.Authentication;
 using Refresh.GameServer.Endpoints.ApiV3.DataTypes.Request;
 using Refresh.GameServer.Types;
@@ -23,7 +24,7 @@ public partial class GameDatabaseContext // Users
     
     [Pure]
     [ContractAnnotation("null => null; notnull => canbenull")]
-    public GameUser? GetUserByUsername(string? username)
+    public GameUser? GetUserByUsername(string? username, bool caseSensitive = true)
     {
         if (username == null) return null;
         if (username == "!DeletedUser")
@@ -36,7 +37,10 @@ public partial class GameDatabaseContext // Users
                 Description = "I'm a fake user that represents a non existent publisher for re-published levels.",
                 FakeUser = true,
             };
-
+        
+        if (!caseSensitive)
+            return this._realm.All<GameUser>().FirstOrDefault(u => u.Username.Equals(username, StringComparison.OrdinalIgnoreCase));
+        
         return this._realm.All<GameUser>().FirstOrDefault(u => u.Username == username);
     }
     
