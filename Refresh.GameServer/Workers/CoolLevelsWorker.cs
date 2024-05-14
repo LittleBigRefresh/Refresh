@@ -105,7 +105,7 @@ public class CoolLevelsWorker : IWorker
         
         const float positiveRatingPoints = 5;
         const float uniquePlayPoints = 0.1f;
-        const float heartPoints = 5;
+        const float heartPoints = 10;
         const float trustedAuthorPoints = 5;
 
         if (level.TeamPicked)
