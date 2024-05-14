@@ -17,12 +17,10 @@ public class SerializedUserHandle
 
     public static SerializedUserHandle FromUser(GameUser user, DataContext dataContext)
     {
-        TokenGame game = dataContext.Game ?? TokenGame.Website;
-        
         return new SerializedUserHandle
         {
             Username = user.Username,
-            IconHash = dataContext.Database.GetAssetFromHash(user.IconHash)?.GetAsIcon(game, dataContext) ?? user.IconHash,
+            IconHash = dataContext.Database.GetAssetFromHash(user.IconHash)?.GetAsIcon(dataContext.Game, dataContext) ?? user.IconHash,
         };
     }
 }

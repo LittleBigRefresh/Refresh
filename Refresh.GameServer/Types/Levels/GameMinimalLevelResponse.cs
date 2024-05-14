@@ -71,13 +71,11 @@ public class GameMinimalLevelResponse : IDataConvertableFrom<GameMinimalLevelRes
     public static GameMinimalLevelResponse? FromOld(GameLevelResponse? level, DataContext dataContext)
     {
         if(level == null) return null;
-        
-        Debug.Assert(dataContext.Game != null);
 
         return new GameMinimalLevelResponse
         {
             Title = level.Title,
-            IconHash = dataContext.Database.GetAssetFromHash(level.IconHash)?.GetAsIcon(dataContext.Game.Value, dataContext) ?? level.IconHash,
+            IconHash = dataContext.Database.GetAssetFromHash(level.IconHash)?.GetAsIcon(dataContext.Game, dataContext) ?? level.IconHash,
             GameVersion = level.GameVersion,
             RootResource = level.RootResource,
             Description = level.Description,

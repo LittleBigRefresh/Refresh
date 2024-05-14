@@ -16,6 +16,6 @@ public class DataContext
     
     public required Token? Token;
     public GameUser? User => this.Token?.User;
-    public TokenGame? Game => this.Token?.TokenGame;
-    public TokenPlatform? Platform => this.Token?.TokenPlatform;
+    public TokenGame Game => this.Token?.TokenGame ?? TokenGame.Website;
+    public TokenPlatform Platform => this.Token?.TokenPlatform ?? TokenPlatform.Website;
 }

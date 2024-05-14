@@ -204,14 +204,15 @@ public class GameLevelResponse : IDataConvertableFrom<GameLevelResponse, GameLev
             };
         }
         
-        Debug.Assert(dataContext.User != null);
-        Debug.Assert(dataContext.Game != null);
+        if (dataContext.User != null)
+        {
+            RatingType? rating = dataContext.Database.GetRatingByUser(old, dataContext.User);
+            
+            response.YourRating = rating?.ToDPad() ?? (int)RatingType.Neutral;
+            response.YourStarRating = rating?.ToLBP1() ?? 0;
+            response.YourLbp2PlayCount = old.AllPlays.Count(p => p.User == dataContext.User);
+        }
         
-        RatingType? rating = dataContext.Database.GetRatingByUser(old, dataContext.User);
-        
-        response.YourRating = rating?.ToDPad() ?? (int)RatingType.Neutral;
-        response.YourStarRating = rating?.ToLBP1() ?? 0;
-        response.YourLbp2PlayCount = old.AllPlays.Count(p => p.User == dataContext.User);
         response.PlayerCount = dataContext.Match.GetPlayerCountForLevel(RoomSlotType.Online, response.LevelId);
         
         GameAsset? rootResourceAsset = dataContext.Database.GetAssetFromHash(response.RootResource);
@@ -224,7 +225,7 @@ public class GameLevelResponse : IDataConvertableFrom<GameLevelResponse, GameLev
             });
         }
         
-        response.IconHash = dataContext.Database.GetAssetFromHash(old.IconHash)?.GetAsIcon(dataContext.Game.Value, dataContext) ?? response.IconHash;
+        response.IconHash = dataContext.Database.GetAssetFromHash(old.IconHash)?.GetAsIcon(dataContext.Game, dataContext) ?? response.IconHash;
         
         response.CommentCount = old.LevelComments.Count;
         
