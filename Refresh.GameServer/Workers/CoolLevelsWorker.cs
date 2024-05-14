@@ -81,7 +81,7 @@ public class CoolLevelsWorker : IWorker
 
     private static float CalculateLevelDecayMultiplier(Logger logger, long now, GameLevel level)
     {
-        const int decayMonths = 3;
+        const int decayMonths = 2;
         const int decaySeconds = decayMonths * 30 * 24 * 3600;
         const float minimumMultiplier = 0.1f;
         
