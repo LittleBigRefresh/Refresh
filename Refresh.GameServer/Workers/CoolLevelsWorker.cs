@@ -52,10 +52,10 @@ public class CoolLevelsWorker : IWorker
                 float negativeScore = CalculateNegativeScore(logger, level);
                 
                 // Increase to tweak how little negative score gets affected by decay
-                const int negativeScoreMultiplier = 2;
+                const int negativeScoreDecayMultiplier = 2;
                 
                 // Weigh everything with the multiplier and set a final score
-                float finalScore = (positiveScore * decayMultiplier) - (negativeScore * Math.Min(1.0f, decayMultiplier * negativeScoreMultiplier));
+                float finalScore = (positiveScore * decayMultiplier) - (negativeScore * Math.Min(1.0f, decayMultiplier * negativeScoreDecayMultiplier));
                 
                 Log(logger, LogLevel.Debug, "Score for '{0}' ({1}) is {2}", level.Title, level.LevelId, finalScore);
                 scoresToSet.Add(level, finalScore);
@@ -130,6 +130,9 @@ public class CoolLevelsWorker : IWorker
         const float restrictedAuthorPenalty = 50;
         const float bannedAuthorPenalty = 100;
         
+        // The percentage of how much penalty should be applied at the end of the calculation.
+        const float penaltyMultiplier = 0.75f;
+        
         penalty += level.Ratings.Count(r => r._RatingType == (int)RatingType.Boo) * negativeRatingPenalty;
         
         if (level.Publisher == null)
@@ -140,6 +143,6 @@ public class CoolLevelsWorker : IWorker
             penalty += bannedAuthorPenalty;
 
         Log(logger, LogLevel.Trace, "negativeScore is {0}", penalty);
-        return penalty;
+        return penalty * penaltyMultiplier;
     }
 }
