@@ -104,7 +104,7 @@ public class CoolLevelsWorker : IWorker
         float score = level.IsReUpload ? 0 : 15;
         
         const float positiveRatingPoints = 5;
-        const float uniquePlayPoints = 1;
+        const float uniquePlayPoints = 0.1f;
         const float heartPoints = 5;
         const float trustedAuthorPoints = 5;
 
