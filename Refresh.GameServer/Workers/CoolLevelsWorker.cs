@@ -100,7 +100,7 @@ public class CoolLevelsWorker : IWorker
     private static int CalculatePositiveScore(Logger logger, GameLevel level)
     {
         // Start levels off with a few points to prevent one dislike from bombing the level
-        // Don't apply this bonus to reuploads.
+        // Don't apply this bonus to reuploads to discourage a flood of 15CR levels.
         int score = level.IsReUpload ? 0 : 15;
         
         const int positiveRatingPoints = 5;
@@ -109,7 +109,7 @@ public class CoolLevelsWorker : IWorker
         const int trustedAuthorPoints = 5;
 
         if (level.TeamPicked)
-            score += 10;
+            score += 50;
         
         score += level.Ratings.Count(r => r._RatingType == (int)RatingType.Yay) * positiveRatingPoints;
         score += level.UniquePlays.Count() * uniquePlayPoints;
