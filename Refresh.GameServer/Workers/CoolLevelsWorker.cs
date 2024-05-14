@@ -99,7 +99,10 @@ public class CoolLevelsWorker : IWorker
 
     private static int CalculatePositiveScore(Logger logger, GameLevel level)
     {
-        int score = 15; // Start levels off with a few points to prevent one dislike from bombing the level
+        // Start levels off with a few points to prevent one dislike from bombing the level
+        // Don't apply this bonus to reuploads.
+        int score = level.IsReUpload ? 0 : 15;
+        
         const int positiveRatingPoints = 5;
         const int uniquePlayPoints = 1;
         const int heartPoints = 5;
