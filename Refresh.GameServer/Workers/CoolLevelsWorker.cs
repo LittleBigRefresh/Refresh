@@ -48,8 +48,8 @@ public class CoolLevelsWorker : IWorker
                 
                 // Calculate positive & negative score separately so we don't run into issues with
                 // the multiplier having an opposite effect with the negative score as time passes
-                int positiveScore = CalculatePositiveScore(logger, level);
-                int negativeScore = CalculateNegativeScore(logger, level);
+                float positiveScore = CalculatePositiveScore(logger, level);
+                float negativeScore = CalculateNegativeScore(logger, level);
                 
                 // Increase to tweak how little negative score gets affected by decay
                 const int negativeScoreMultiplier = 2;
@@ -97,16 +97,16 @@ public class CoolLevelsWorker : IWorker
         return multiplier;
     }
 
-    private static int CalculatePositiveScore(Logger logger, GameLevel level)
+    private static float CalculatePositiveScore(Logger logger, GameLevel level)
     {
         // Start levels off with a few points to prevent one dislike from bombing the level
         // Don't apply this bonus to reuploads to discourage a flood of 15CR levels.
-        int score = level.IsReUpload ? 0 : 15;
+        float score = level.IsReUpload ? 0 : 15;
         
-        const int positiveRatingPoints = 5;
-        const int uniquePlayPoints = 1;
-        const int heartPoints = 5;
-        const int trustedAuthorPoints = 5;
+        const float positiveRatingPoints = 5;
+        const float uniquePlayPoints = 1;
+        const float heartPoints = 5;
+        const float trustedAuthorPoints = 5;
 
         if (level.TeamPicked)
             score += 50;
@@ -122,13 +122,13 @@ public class CoolLevelsWorker : IWorker
         return score;
     }
 
-    private static int CalculateNegativeScore(Logger logger, GameLevel level)
+    private static float CalculateNegativeScore(Logger logger, GameLevel level)
     {
-        int penalty = 0;
-        const int negativeRatingPenalty = 5;
-        const int noAuthorPenalty = 10;
-        const int restrictedAuthorPenalty = 50;
-        const int bannedAuthorPenalty = 100;
+        float penalty = 0;
+        const float negativeRatingPenalty = 5;
+        const float noAuthorPenalty = 10;
+        const float restrictedAuthorPenalty = 50;
+        const float bannedAuthorPenalty = 100;
         
         penalty += level.Ratings.Count(r => r._RatingType == (int)RatingType.Boo) * negativeRatingPenalty;
         
