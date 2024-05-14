@@ -111,9 +111,20 @@ public class CoolLevelsWorker : IWorker
         if (level.TeamPicked)
             score += 50;
         
-        score += level.Ratings.Count(r => r._RatingType == (int)RatingType.Yay) * positiveRatingPoints;
-        score += level.UniquePlays.Count() * uniquePlayPoints;
+        int positiveRatings = level.Ratings.Count(r => r._RatingType == (int)RatingType.Yay);
+        int negativeRatings = level.Ratings.Count(r => r._RatingType == (int)RatingType.Boo);
+        int uniquePlays = level.UniquePlays.Count();
+        
+        score += positiveRatings * positiveRatingPoints;
+        score += uniquePlays * uniquePlayPoints;
         score += level.FavouriteRelations.Count() * heartPoints;
+        
+        // Reward for a good ratio between plays and yays
+        float ratingRatio = (positiveRatings - negativeRatings) / (float)uniquePlays;
+        if (ratingRatio > 0.5f)
+        {
+            score += positiveRatings * (positiveRatingPoints * ratingRatio);
+        }
 
         if (level.Publisher?.Role == GameUserRole.Trusted)
             score += trustedAuthorPoints;
