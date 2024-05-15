@@ -4,10 +4,14 @@ namespace Refresh.GameServer.Database;
 
 public partial class GameDatabaseContext // AssetConfiguration
 {
-    public GameAsset? GetAssetFromHash(string hash) =>
-        this._realm.All<GameAsset>()
+    public GameAsset? GetAssetFromHash(string hash)
+    {
+        if (hash == "0" || hash.StartsWith('g')) return null;
+        
+        return this._realm.All<GameAsset>()
             .FirstOrDefault(a => a.AssetHash == hash);
-
+    }
+    
     public GameAssetType? GetConvertedType(string hash)
     {
         IQueryable<GameAsset> assets = this._realm.All<GameAsset>();

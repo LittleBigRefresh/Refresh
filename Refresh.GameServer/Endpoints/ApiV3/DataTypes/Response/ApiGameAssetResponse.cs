@@ -1,6 +1,7 @@
 using Bunkum.Core.Storage;
 using Refresh.GameServer.Database;
 using Refresh.GameServer.Types.Assets;
+using Refresh.GameServer.Types.Data;
 
 namespace Refresh.GameServer.Endpoints.ApiV3.DataTypes.Response;
 
@@ -13,34 +14,19 @@ public class ApiGameAssetResponse : IApiResponse, IDataConvertableFrom<ApiGameAs
     public required GameAssetType AssetType { get; set; }
     public required IEnumerable<string> Dependencies { get; set; }
     
-    public static ApiGameAssetResponse? FromOld(GameAsset? old)
+    public static ApiGameAssetResponse? FromOld(GameAsset? old, DataContext dataContext)
     {
         if (old == null) return null;
 
         return new ApiGameAssetResponse
         {
             AssetHash = old.AssetHash,
-            OriginalUploader = ApiGameUserResponse.FromOld(old.OriginalUploader),
+            OriginalUploader = ApiGameUserResponse.FromOld(old.OriginalUploader, dataContext),
             UploadDate = old.UploadDate,
             AssetType = old.AssetType,
             Dependencies = old.Dependencies,
         };
     }
 
-    public static ApiGameAssetResponse? FromOldWithExtraData(GameAsset? old, GameDatabaseContext database, IDataStore dataStore)
-    {
-        if (old == null) return null;
-
-        ApiGameAssetResponse response = FromOld(old)!;
-        response.FillInExtraData(database, dataStore);
-
-        return response;
-    }
-
-    public void FillInExtraData(GameDatabaseContext database, IDataStore dataStore)
-    {
-        this.OriginalUploader?.FillInExtraData(database, dataStore);
-    }
-
-    public static IEnumerable<ApiGameAssetResponse> FromOldList(IEnumerable<GameAsset> oldList) => oldList.Select(FromOld).ToList()!;
+    public static IEnumerable<ApiGameAssetResponse> FromOldList(IEnumerable<GameAsset> oldList, DataContext dataContext) => oldList.Select(old => FromOld(old, dataContext)).ToList()!;
 }

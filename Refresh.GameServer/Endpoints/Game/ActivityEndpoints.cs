@@ -12,6 +12,7 @@ using Refresh.GameServer.Extensions;
 using Refresh.GameServer.Services;
 using Refresh.GameServer.Time;
 using Refresh.GameServer.Types.Activity;
+using Refresh.GameServer.Types.Data;
 using Refresh.GameServer.Types.Levels;
 using Refresh.GameServer.Types.News;
 using Refresh.GameServer.Types.Roles;
@@ -24,7 +25,8 @@ public class ActivityEndpoints : EndpointGroup
     [GameEndpoint("stream", ContentType.Xml)]
     [NullStatusCode(BadRequest)]
     [MinimumRole(GameUserRole.Restricted)]
-    public ActivityPage? GetRecentActivity(RequestContext context, GameDatabaseContext database, GameUser? user)
+    public ActivityPage? GetRecentActivity(RequestContext context, GameDatabaseContext database, GameUser? user,
+        DataContext dataContext)
     {
         long timestamp = 0;
         long endTimestamp = 0;
@@ -50,13 +52,14 @@ public class ActivityEndpoints : EndpointGroup
             ExcludeFavouriteUsers = excludeFavouriteUsers,
             ExcludeMyself = excludeMyself,
             User = user,
-        });
+        }, dataContext);
     }
 
     [GameEndpoint("stream/slot/{type}/{id}", ContentType.Xml)]
     [NullStatusCode(BadRequest)]
     [MinimumRole(GameUserRole.Restricted)]
-    public Response GetRecentActivityForLevel(RequestContext context, GameDatabaseContext database, GameUser? user, string type, int id)
+    public Response GetRecentActivityForLevel(RequestContext context, GameDatabaseContext database, GameUser? user,
+        string type, int id, DataContext dataContext)
     {
         GameLevel? level = type == "developer" ? database.GetStoryLevelById(id) : database.GetLevelById(id);
         if (level == null) return NotFound;
@@ -85,7 +88,7 @@ public class ActivityEndpoints : EndpointGroup
             ExcludeFavouriteUsers = excludeFavouriteUsers,
             ExcludeMyself = excludeMyself,
             User = user,
-        });
+        }, dataContext);
         
         return new Response(page, ContentType.Xml);
     }
@@ -93,7 +96,8 @@ public class ActivityEndpoints : EndpointGroup
     [GameEndpoint("stream/user2/{username}", ContentType.Xml)]
     [NullStatusCode(BadRequest)]
     [MinimumRole(GameUserRole.Restricted)]
-    public Response GetRecentActivityForUser(RequestContext context, GameDatabaseContext database, string username)
+    public Response GetRecentActivityForUser(RequestContext context, GameDatabaseContext database, string username,
+        DataContext dataContext)
     {
         GameUser? user = database.GetUserByUsername(username);
         if (user == null) return NotFound;
@@ -125,7 +129,7 @@ public class ActivityEndpoints : EndpointGroup
             ExcludeFavouriteUsers = excludeFavouriteUsers,
             ExcludeMyself = excludeMyself,
             User = user,
-        }), ContentType.Xml);
+        }, dataContext), ContentType.Xml);
     }
     
     [GameEndpoint("news", ContentType.Xml)]

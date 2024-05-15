@@ -1,3 +1,4 @@
+using Refresh.GameServer.Types.Data;
 using Refresh.GameServer.Types.Notifications;
 
 namespace Refresh.GameServer.Endpoints.ApiV3.DataTypes.Response;
@@ -13,7 +14,7 @@ public class ApiGameNotificationResponse : IApiResponse, IDataConvertableFrom<Ap
     
     public required string FontAwesomeIcon { get; set; }
     
-    public static ApiGameNotificationResponse? FromOld(GameNotification? old)
+    public static ApiGameNotificationResponse? FromOld(GameNotification? old, DataContext dataContext)
     {
         if (old == null) return null;
 
@@ -27,5 +28,6 @@ public class ApiGameNotificationResponse : IApiResponse, IDataConvertableFrom<Ap
         };
     }
 
-    public static IEnumerable<ApiGameNotificationResponse> FromOldList(IEnumerable<GameNotification> oldList) => oldList.Select(FromOld).ToList()!;
+    public static IEnumerable<ApiGameNotificationResponse> FromOldList(IEnumerable<GameNotification> oldList,
+        DataContext dataContext) => oldList.Select(old => FromOld(old, dataContext)).ToList()!;
 }

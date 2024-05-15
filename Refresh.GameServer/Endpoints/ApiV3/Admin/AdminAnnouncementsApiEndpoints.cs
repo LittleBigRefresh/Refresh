@@ -9,6 +9,7 @@ using Refresh.GameServer.Endpoints.ApiV3.ApiTypes;
 using Refresh.GameServer.Endpoints.ApiV3.ApiTypes.Errors;
 using Refresh.GameServer.Endpoints.ApiV3.DataTypes.Request;
 using Refresh.GameServer.Endpoints.ApiV3.DataTypes.Response;
+using Refresh.GameServer.Types.Data;
 using Refresh.GameServer.Types.Notifications;
 using Refresh.GameServer.Types.Roles;
 
@@ -18,10 +19,11 @@ public class AdminAnnouncementsApiEndpoints : EndpointGroup
 {
     [ApiV3Endpoint("admin/announcements", HttpMethods.Post), MinimumRole(GameUserRole.Admin)]
     [DocSummary("Creates an announcement that shows up in the Instance API endpoint")]
-    public ApiResponse<ApiGameAnnouncementResponse> CreateAnnouncement(RequestContext context, GameDatabaseContext database, ApiGameAnnouncementRequest body)
+    public ApiResponse<ApiGameAnnouncementResponse> CreateAnnouncement(RequestContext context,
+        GameDatabaseContext database, ApiGameAnnouncementRequest body, DataContext dataContext)
     {
         GameAnnouncement announcement = database.AddAnnouncement(body.Title, body.Text);
-        return ApiGameAnnouncementResponse.FromOld(announcement);
+        return ApiGameAnnouncementResponse.FromOld(announcement, dataContext);
     }
 
     [ApiV3Endpoint("admin/announcements/{idStr}", HttpMethods.Delete), MinimumRole(GameUserRole.Admin)]

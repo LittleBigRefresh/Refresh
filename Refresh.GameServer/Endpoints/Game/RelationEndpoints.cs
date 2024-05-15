@@ -8,6 +8,7 @@ using Refresh.GameServer.Authentication;
 using Refresh.GameServer.Database;
 using Refresh.GameServer.Endpoints.Game.DataTypes.Response;
 using Refresh.GameServer.Extensions;
+using Refresh.GameServer.Types.Data;
 using Refresh.GameServer.Types.Levels;
 using Refresh.GameServer.Types.Lists;
 using Refresh.GameServer.Types.Roles;
@@ -80,7 +81,8 @@ public class RelationEndpoints : EndpointGroup
     [GameEndpoint("favouriteUsers/{username}", ContentType.Xml)]
     [NullStatusCode(NotFound)]
     [MinimumRole(GameUserRole.Restricted)]
-    public SerializedFavouriteUserList? GetFavouriteUsers(RequestContext context, GameDatabaseContext database, string username, Token token, IDataStore dataStore)
+    public SerializedFavouriteUserList? GetFavouriteUsers(RequestContext context, GameDatabaseContext database,
+        string username, DataContext dataContext)
     {
         GameUser? user = database.GetUserByUsername(username);
         if (user == null) return null;
@@ -89,7 +91,7 @@ public class RelationEndpoints : EndpointGroup
         List<GameUser> users = database.GetUsersFavouritedByUser(user, count, skip)
             .ToList();
 
-        return new SerializedFavouriteUserList(GameUserResponse.FromOldListWithExtraData(users, token.TokenGame, database, dataStore).ToList(), users.Count, skip + count);
+        return new SerializedFavouriteUserList(GameUserResponse.FromOldList(users, dataContext).ToList(), users.Count, skip + count);
     }
 
     [GameEndpoint("lolcatftw/add/{slotType}/{id}", HttpMethods.Post)]

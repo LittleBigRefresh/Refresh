@@ -14,6 +14,7 @@ using Refresh.GameServer.Endpoints.ApiV3.ApiTypes.Errors;
 using Refresh.GameServer.Endpoints.ApiV3.DataTypes.Response;
 using Refresh.GameServer.Importing;
 using Refresh.GameServer.Types.Assets;
+using Refresh.GameServer.Types.Data;
 using Refresh.GameServer.Types.Roles;
 using Refresh.GameServer.Types.UserData;
 using Refresh.GameServer.Verification;
@@ -117,8 +118,10 @@ public class ResourceApiEndpoints : EndpointGroup
     [DocSummary("Gets information from the database about a particular hash. Includes user who uploaded, dependencies, timestamps, etc.")]
     [DocError(typeof(ApiNotFoundError), "The asset could not be found")]
     [DocError(typeof(ApiValidationError), ApiValidationError.HashMissingErrorWhen)]
-    public ApiResponse<ApiGameAssetResponse> GetAssetInfo(RequestContext context, GameDatabaseContext database, IDataStore dataStore,
-        [DocSummary("The SHA1 hash of the asset")] string hash)
+    public ApiResponse<ApiGameAssetResponse> GetAssetInfo(RequestContext context, GameDatabaseContext database,
+        IDataStore dataStore,
+        [DocSummary("The SHA1 hash of the asset")]
+        string hash, DataContext dataContext)
     {
         bool isPspAsset = hash.StartsWith("psp/");
 
@@ -130,15 +133,17 @@ public class ResourceApiEndpoints : EndpointGroup
         GameAsset? asset = database.GetAssetFromHash(realHash);
         if (asset == null) return ApiNotFoundError.Instance;
 
-        return ApiGameAssetResponse.FromOldWithExtraData(asset, database, dataStore);
+        return ApiGameAssetResponse.FromOld(asset, dataContext);
     }
 
     [ApiV3Endpoint("assets/psp/{hash}"), Authentication(false)]
     [DocSummary("Gets information from the database about a particular PSP hash. Includes user who uploaded, dependencies, timestamps, etc.")]
     [DocError(typeof(ApiValidationError), ApiValidationError.HashMissingErrorWhen)]
     [DocError(typeof(ApiNotFoundError), "The asset could not be found")]
-    public ApiResponse<ApiGameAssetResponse> GetPspAssetInfo(RequestContext context, GameDatabaseContext database, IDataStore dataStore,
-        [DocSummary("The SHA1 hash of the asset")] string hash) => this.GetAssetInfo(context, database, dataStore, $"psp/{hash}");
+    public ApiResponse<ApiGameAssetResponse> GetPspAssetInfo(RequestContext context, GameDatabaseContext database,
+        IDataStore dataStore,
+        [DocSummary("The SHA1 hash of the asset")]
+        string hash, DataContext dataContext) => this.GetAssetInfo(context, database, dataStore, $"psp/{hash}", dataContext);
 
     [ApiV3Endpoint("assets/{hash}", HttpMethods.Post)]
     [DocSummary("Uploads an image (PNG/JPEG) asset")]
@@ -147,9 +152,11 @@ public class ResourceApiEndpoints : EndpointGroup
     [DocError(typeof(ApiValidationError), ApiValidationError.CannotReadAssetErrorWhen)]
     [DocError(typeof(ApiValidationError), ApiValidationError.BodyMustBeImageErrorWhen)]
     [DocError(typeof(ApiAuthenticationError), ApiAuthenticationError.NoPermissionsForCreationWhen)]
-    public ApiResponse<ApiGameAssetResponse> UploadImageAsset(RequestContext context, GameDatabaseContext database, IDataStore dataStore, AssetImporter importer, GameServerConfig config,
-        [DocSummary("The SHA1 hash of the asset")] string hash,
-        byte[] body, GameUser user)
+    public ApiResponse<ApiGameAssetResponse> UploadImageAsset(RequestContext context, GameDatabaseContext database,
+        IDataStore dataStore, AssetImporter importer, GameServerConfig config,
+        [DocSummary("The SHA1 hash of the asset")]
+        string hash,
+        byte[] body, GameUser user, DataContext dataContext)
     {
         // If we're blocking asset uploads, throw unless the user is an admin.
         // We also have the ability to block asset uploads for trusted users (when they would normally bypass this)
@@ -169,7 +176,7 @@ public class ResourceApiEndpoints : EndpointGroup
             if (existingAsset == null)
                 return ApiInternalError.HashNotFoundInDatabaseError;
 
-            return ApiGameAssetResponse.FromOldWithExtraData(existingAsset, database, dataStore);
+            return ApiGameAssetResponse.FromOld(existingAsset, dataContext);
         }
 
         if (body.Length > 1_048_576 * 2)
@@ -190,6 +197,6 @@ public class ResourceApiEndpoints : EndpointGroup
         gameAsset.OriginalUploader = user;
         database.AddAssetToDatabase(gameAsset);
 
-        return new ApiResponse<ApiGameAssetResponse>(ApiGameAssetResponse.FromOldWithExtraData(gameAsset, database, dataStore)!, Created);
+        return new ApiResponse<ApiGameAssetResponse>(ApiGameAssetResponse.FromOld(gameAsset, dataContext)!, Created);
     }
 }

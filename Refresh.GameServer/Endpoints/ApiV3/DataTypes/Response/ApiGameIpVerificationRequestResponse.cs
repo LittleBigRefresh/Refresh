@@ -1,3 +1,4 @@
+using Refresh.GameServer.Types.Data;
 using Refresh.GameServer.Types.UserData;
 
 namespace Refresh.GameServer.Endpoints.ApiV3.DataTypes.Response;
@@ -8,7 +9,7 @@ public class ApiGameIpVerificationRequestResponse : IApiResponse, IDataConvertab
     public required string IpAddress { get; set; }
     public required DateTimeOffset CreatedAt { get; set; }
     
-    public static ApiGameIpVerificationRequestResponse? FromOld(GameIpVerificationRequest? old)
+    public static ApiGameIpVerificationRequestResponse? FromOld(GameIpVerificationRequest? old, DataContext dataContext)
     {
         if (old == null) return null;
 
@@ -19,5 +20,6 @@ public class ApiGameIpVerificationRequestResponse : IApiResponse, IDataConvertab
         };
     }
 
-    public static IEnumerable<ApiGameIpVerificationRequestResponse> FromOldList(IEnumerable<GameIpVerificationRequest> oldList) => oldList.Select(FromOld).ToList()!;
+    public static IEnumerable<ApiGameIpVerificationRequestResponse> FromOldList(
+        IEnumerable<GameIpVerificationRequest> oldList, DataContext dataContext) => oldList.Select(old => FromOld(old, dataContext)).ToList()!;
 }

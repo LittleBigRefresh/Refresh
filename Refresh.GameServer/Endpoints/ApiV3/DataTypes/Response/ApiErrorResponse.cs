@@ -1,9 +1,10 @@
 using AttribDoc;
+using Refresh.GameServer.Types.Data;
 
 namespace Refresh.GameServer.Endpoints.ApiV3.DataTypes.Response;
 
 [JsonObject(NamingStrategyType = typeof(CamelCaseNamingStrategy))]
-public class ApiErrorResponse : IApiResponse, IDataConvertableFrom<ApiErrorResponse, Error>
+public class ApiErrorResponse : IApiResponse
 {
     public required string Name { get; set; }
     public required string OccursWhen { get; set; }
@@ -19,5 +20,5 @@ public class ApiErrorResponse : IApiResponse, IDataConvertableFrom<ApiErrorRespo
         };
     }
 
-    public static IEnumerable<ApiErrorResponse> FromOldList(IEnumerable<Error> oldList) => oldList.Select(FromOld).ToList()!;
+    public static IEnumerable<ApiErrorResponse> FromOldList(IEnumerable<Error> oldList) => oldList.Select(old => FromOld(old)).ToList()!;
 }

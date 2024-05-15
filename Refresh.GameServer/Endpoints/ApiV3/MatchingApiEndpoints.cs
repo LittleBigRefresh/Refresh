@@ -9,6 +9,7 @@ using Refresh.GameServer.Endpoints.ApiV3.ApiTypes.Errors;
 using Refresh.GameServer.Endpoints.ApiV3.DataTypes.Response;
 using Refresh.GameServer.Extensions;
 using Refresh.GameServer.Services;
+using Refresh.GameServer.Types.Data;
 using Refresh.GameServer.Types.Matching;
 using Refresh.GameServer.Types.UserData;
 
@@ -20,8 +21,10 @@ public class MatchingApiEndpoints : EndpointGroup
     [DocSummary("Finds a room by a player's username")]
     [DocError(typeof(ApiNotFoundError), ApiNotFoundError.UserMissingErrorWhen)]
     [DocError(typeof(ApiNotFoundError), "The room could not be found")]
-    public ApiResponse<ApiGameRoomResponse> GetRoomByUsername(RequestContext context, MatchService service, GameDatabaseContext database,
-        [DocSummary("The username of the player")] string username)
+    public ApiResponse<ApiGameRoomResponse> GetRoomByUsername(RequestContext context, MatchService service,
+        GameDatabaseContext database,
+        [DocSummary("The username of the player")]
+        string username, DataContext dataContext)
     {
         GameUser? user = database.GetUserByUsername(username);
         if (user == null) return ApiNotFoundError.UserMissingError;
@@ -29,15 +32,16 @@ public class MatchingApiEndpoints : EndpointGroup
         GameRoom? room = service.RoomAccessor.GetRoomByUser(user);
         if(room == null) return ApiNotFoundError.Instance;
         
-        return ApiGameRoomResponse.FromOld(room);
+        return ApiGameRoomResponse.FromOld(room, dataContext);
     }
     
     [ApiV3Endpoint("rooms/uuid/{uuid}"), Authentication(false)]
     [DocSummary("Finds a room by a player's UUID")]
     [DocError(typeof(ApiNotFoundError), ApiNotFoundError.UserMissingErrorWhen)]
     [DocError(typeof(ApiNotFoundError), "The room could not be found")]
-    public ApiResponse<ApiGameRoomResponse> GetRoomByUserUuid(RequestContext context, MatchService service, GameDatabaseContext database,
-        [DocSummary("The UUID of the player")] string uuid)
+    public ApiResponse<ApiGameRoomResponse> GetRoomByUserUuid(RequestContext context, MatchService service,
+        GameDatabaseContext database,
+        [DocSummary("The UUID of the player")] string uuid, DataContext dataContext)
     {
         GameUser? user = database.GetUserByUuid(uuid);
         if (user == null) return ApiNotFoundError.UserMissingError;
@@ -45,7 +49,7 @@ public class MatchingApiEndpoints : EndpointGroup
         GameRoom? room = service.RoomAccessor.GetRoomByUser(user);
         if(room == null) return ApiNotFoundError.Instance;
         
-        return ApiGameRoomResponse.FromOld(room);
+        return ApiGameRoomResponse.FromOld(room, dataContext);
     }
     
     [ApiV3Endpoint("rooms/{uuid}"), Authentication(false)]
@@ -53,7 +57,7 @@ public class MatchingApiEndpoints : EndpointGroup
     [DocError(typeof(ApiValidationError), ApiValidationError.ObjectIdParseErrorWhen)]
     [DocError(typeof(ApiNotFoundError), "The room could not be found")]
     public ApiResponse<ApiGameRoomResponse> GetRoomByUuid(RequestContext context, MatchService service,
-        [DocSummary("The UUID of the room")] string uuid)
+        [DocSummary("The UUID of the room")] string uuid, DataContext dataContext)
     {
         bool parsed = ObjectId.TryParse(uuid, out ObjectId objectId);
         if (!parsed) return ApiValidationError.ObjectIdParseError;
@@ -61,14 +65,15 @@ public class MatchingApiEndpoints : EndpointGroup
         GameRoom? room = service.RoomAccessor.GetRoomByUuid(objectId);
         if(room == null) return ApiNotFoundError.Instance;
         
-        return ApiGameRoomResponse.FromOld(room);
+        return ApiGameRoomResponse.FromOld(room, dataContext);
     }
     
     [ApiV3Endpoint("rooms"), Authentication(false)]
     [DocUsesPageData, DocSummary("Gets all rooms on the server")]
-    public ApiListResponse<ApiGameRoomResponse> GetRooms(RequestContext context, MatchService service)
+    public ApiListResponse<ApiGameRoomResponse> GetRooms(RequestContext context, MatchService service,
+        DataContext dataContext)
     {
         (int skip, int count) = context.GetPageData();
-        return new DatabaseList<ApiGameRoomResponse>(ApiGameRoomResponse.FromOldList(service.RoomAccessor.GetAllRooms()), skip, count);
+        return new DatabaseList<ApiGameRoomResponse>(ApiGameRoomResponse.FromOldList(service.RoomAccessor.GetAllRooms(), dataContext), skip, count);
     }
 }
