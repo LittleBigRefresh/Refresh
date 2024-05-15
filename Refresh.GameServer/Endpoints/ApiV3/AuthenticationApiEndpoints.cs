@@ -223,7 +223,7 @@ public class AuthenticationApiEndpoints : EndpointGroup
     [DocSummary("Registers a new user.")]
     [DocRequestBody(typeof(ApiRegisterRequest))]
     #if !DEBUG
-    [RateLimitSettings(86400, 1, 86400 / 2, "register")]
+    [RateLimitSettings(3600, 5, 3600 / 2, "register")]
     #endif
     public ApiResponse<IApiAuthenticationResponse> Register(RequestContext context,
         GameDatabaseContext database,
