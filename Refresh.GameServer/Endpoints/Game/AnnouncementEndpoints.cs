@@ -74,12 +74,9 @@ public class AnnouncementEndpoints : EndpointGroup
 
     [GameEndpoint("announce")]
     [MinimumRole(GameUserRole.Restricted)]
-    [Authentication(false)]
     [SuppressMessage("ReSharper", "RedundantAssignment")]
     public string Announce(RequestContext context, GameServerConfig config, GameUser user, GameDatabaseContext database, Token token)
     {
-        user = database.GetUserByUsername("jvyden420");
-        token = database.GenerateTokenForUser(user, TokenType.Game, TokenGame.LittleBigPlanet2, TokenPlatform.PS3, 1);
         if (user.Role == GameUserRole.Restricted)
         {
             return """
