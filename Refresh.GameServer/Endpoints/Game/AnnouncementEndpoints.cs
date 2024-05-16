@@ -57,7 +57,7 @@ public class AnnouncementEndpoints : EndpointGroup
         if (!contest.AllowedGames.Contains(token.TokenGame)) return false;
         
         output.Append("There's a contest live right now!\n\n");
-        output.AppendLine($"**{contest.ContestTitle}**");
+        output.AppendLine($"** {contest.ContestTitle} **");
         
         output.Append("Summary: ");
         output.AppendLine(contest.ContestSummary);
