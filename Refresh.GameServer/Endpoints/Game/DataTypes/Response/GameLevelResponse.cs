@@ -94,11 +94,11 @@ public class GameLevelResponse : IDataConvertableFrom<GameLevelResponse, GameLev
         return rangeStart + Math.Abs(hash.GetHashCode()) % range;
     }
     
-    public static GameLevelResponse FromHash(string hash)
+    public static GameLevelResponse FromHash(string hash, DataContext dataContext)
     {
         return new GameLevelResponse
         {
-            LevelId = LevelIdFromHash(hash),
+            LevelId = dataContext.Game == TokenGame.LittleBigPlanet3 ? LevelIdFromHash(hash) : int.MaxValue,
             Title = $"Hashed Level - {hash}",
             IconHash = "0",
             GameVersion = 0,

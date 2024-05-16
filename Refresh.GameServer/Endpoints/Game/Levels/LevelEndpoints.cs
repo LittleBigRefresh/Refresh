@@ -103,7 +103,7 @@ public class LevelEndpoints : EndpointGroup
         // If the user has had a hash override in the past, and the level id they requested matches the level ID associated with that hash
         if (overrideService.GetLastHashOverrideForUser(token, out string hash) && GameLevelResponse.LevelIdFromHash(hash) == id)
             // Return the hashed level info
-            return GameLevelResponse.FromHash(hash);
+            return GameLevelResponse.FromHash(hash, dataContext);
         
         return GameLevelResponse.FromOld(database.GetLevelByIdAndType(slotType, id), dataContext);
     }

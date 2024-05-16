@@ -58,7 +58,7 @@ public class GameMinimalLevelResponse : IDataConvertableFrom<GameMinimalLevelRes
     /// <returns></returns>
     public static GameMinimalLevelResponse FromHash(string hash, DataContext dataContext)
     {
-        return FromOld(GameLevelResponse.FromHash(hash), dataContext)!;
+        return FromOld(GameLevelResponse.FromHash(hash, dataContext), dataContext)!;
     }
 
     public static GameMinimalLevelResponse? FromOld(GameLevel? level, DataContext dataContext)
