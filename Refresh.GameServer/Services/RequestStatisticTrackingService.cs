@@ -4,28 +4,30 @@ using Bunkum.Core.Database;
 using Bunkum.Core.Responses;
 using Bunkum.Core.Services;
 using NotEnoughLogs;
-using Refresh.GameServer.Database;
 using Refresh.GameServer.Endpoints;
 
 namespace Refresh.GameServer.Services;
 
 public class RequestStatisticTrackingService : Service
 {
+    private static int _gameRequestsToSubmit;
+    private static int _apiRequestsToSubmit;
+    
+    public static (int game, int api) SubmitAndClearRequests()
+    {
+        return (game: Interlocked.Exchange(ref _gameRequestsToSubmit, 0),
+                api: Interlocked.Exchange(ref _apiRequestsToSubmit, 0));
+    }
+    
     internal RequestStatisticTrackingService(Logger logger) : base(logger)
     {}
 
     public override Response? OnRequestHandled(ListenerContext context, MethodInfo method, Lazy<IDatabaseContext> database)
     {
-        GameDatabaseContext gameDatabase = (GameDatabaseContext)database.Value;
-
         if (context.Uri.AbsolutePath.StartsWith(GameEndpointAttribute.BaseRoute))
-        {
-            gameDatabase.IncrementGameRequests();
-        }
+            Interlocked.Increment(ref _gameRequestsToSubmit);
         else
-        {
-            gameDatabase.IncrementApiRequests();
-        }
+            Interlocked.Increment(ref _apiRequestsToSubmit);
         
         return null;
     }

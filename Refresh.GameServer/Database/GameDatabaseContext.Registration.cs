@@ -104,7 +104,7 @@ public partial class GameDatabaseContext // Registration
             Username = username,
             EmailAddress = emailAddress,
             PasswordBcrypt = passwordBcrypt,
-            ExpiryDate = this._time.Now + TimeSpan.FromDays(1), // This registration expires in 1 day
+            ExpiryDate = this._time.Now + TimeSpan.FromHours(1),
         };
 
         this._realm.Write(() =>

@@ -1,6 +1,7 @@
 using Bunkum.Core.Storage;
 using Refresh.GameServer.Authentication;
 using Refresh.GameServer.Database;
+using Refresh.GameServer.Types.Data;
 using Refresh.GameServer.Types.Levels;
 using Refresh.GameServer.Types.Reviews;
 
@@ -16,7 +17,6 @@ public class ApiGameLevelResponse : IApiResponse, IDataConvertableFrom<ApiGameLe
 
     public required string Title { get; set; }
     public required string IconHash { get; set; }
-    private string? _originalIconHash;
     public required string Description { get; set; }
     public required ApiGameLocationResponse Location { get; set; }
     
@@ -45,21 +45,18 @@ public class ApiGameLevelResponse : IApiResponse, IDataConvertableFrom<ApiGameLe
     public required bool IsCopyable { get; set; }
     public required float Score { get; set; }
 
-    public static ApiGameLevelResponse? FromOld(GameLevel? level)
+    public static ApiGameLevelResponse? FromOld(GameLevel? level, DataContext dataContext)
     {
         if (level == null) return null;
         
         return new ApiGameLevelResponse
         {
             Title = level.Title,
-            Publisher = ApiGameUserResponse.FromOld(level.Publisher),
+            Publisher = ApiGameUserResponse.FromOld(level.Publisher, dataContext),
             OriginalPublisher = level.OriginalPublisher,
             IsReUpload = level.IsReUpload,
             LevelId = level.LevelId,
-            IconHash = level.GameVersion == TokenGame.LittleBigPlanetPSP
-                ? "psp/" + level.IconHash
-                : level.IconHash,
-            _originalIconHash = level.IconHash,
+            IconHash = GetIconHash(level, dataContext),
             Description = level.Description,
             Location = ApiGameLocationResponse.FromGameLocation(level.Location)!,
             PublishDate = DateTimeOffset.FromUnixTimeMilliseconds(level.PublishDate),
@@ -68,7 +65,11 @@ public class ApiGameLevelResponse : IApiResponse, IDataConvertableFrom<ApiGameLe
             MaxPlayers = level.MaxPlayers,
             EnforceMinMaxPlayers = level.EnforceMinMaxPlayers,
             SameScreenGame = level.SameScreenGame,
-            SkillRewards = ApiGameSkillRewardResponse.FromOldList(level.SkillRewards),
+            YayRatings = dataContext.Database.GetTotalRatingsForLevel(level, RatingType.Yay),
+            BooRatings = dataContext.Database.GetTotalRatingsForLevel(level, RatingType.Boo),
+            Hearts = dataContext.Database.GetFavouriteCountForLevel(level),
+            UniquePlays = dataContext.Database.GetUniquePlaysForLevel(level),
+            SkillRewards = ApiGameSkillRewardResponse.FromOldList(level.SkillRewards, dataContext),
             TeamPicked = level.TeamPicked,
             RootLevelHash = level.RootResource,
             GameVersion = level.GameVersion,
@@ -80,32 +81,13 @@ public class ApiGameLevelResponse : IApiResponse, IDataConvertableFrom<ApiGameLe
         };
     }
     
-    public void FillInExtraData(GameDatabaseContext database, IDataStore dataStore)
+    private static string GetIconHash(GameLevel level, DataContext dataContext)
     {
-        this.Publisher?.FillInExtraData(database, dataStore);
-
-        //Get the icon form of the icon asset
-        this.IconHash = database.GetAssetFromHash(this._originalIconHash ?? "0")?.GetAsIcon(TokenGame.Website, database, dataStore) ?? this.IconHash;
-        
-        // TODO: no
-        GameLevel? level = database.GetLevelById(this.LevelId);
-        if (level == null) return;
-        
-        this.YayRatings = database.GetTotalRatingsForLevel(level, RatingType.Yay);
-        this.BooRatings = database.GetTotalRatingsForLevel(level, RatingType.Boo);
-        this.Hearts = database.GetFavouriteCountForLevel(level);
-        this.UniquePlays = database.GetUniquePlaysForLevel(level);
-    }
-    
-    public static ApiGameLevelResponse? FromOldWithExtraData(GameLevel? old, GameDatabaseContext database, IDataStore dataStore)
-    {
-        if (old == null) return null;
-
-        ApiGameLevelResponse response = FromOld(old)!;
-        response.FillInExtraData(database, dataStore);
-
-        return response;
+        string hash = dataContext.Database.GetAssetFromHash(level.IconHash)?.GetAsIcon(TokenGame.Website, dataContext) ?? level.IconHash;
+        return level.GameVersion == TokenGame.LittleBigPlanetPSP
+            ? "psp/" + hash
+            : hash;
     }
 
-    public static IEnumerable<ApiGameLevelResponse> FromOldList(IEnumerable<GameLevel> oldList) => oldList.Select(FromOld).ToList()!;
+    public static IEnumerable<ApiGameLevelResponse> FromOldList(IEnumerable<GameLevel> oldList, DataContext dataContext) => oldList.Select(old => FromOld(old, dataContext)).ToList()!;
 }

@@ -8,6 +8,7 @@ using Refresh.GameServer.Endpoints.ApiV3.ApiTypes;
 using Refresh.GameServer.Endpoints.ApiV3.ApiTypes.Errors;
 using Refresh.GameServer.Endpoints.ApiV3.DataTypes.Response;
 using Refresh.GameServer.Extensions;
+using Refresh.GameServer.Types.Data;
 using Refresh.GameServer.Types.Levels;
 using Refresh.GameServer.Types.Reviews;
 
@@ -20,7 +21,7 @@ public class ReviewApiEndpoints : EndpointGroup
     [DocError(typeof(ApiNotFoundError), ApiNotFoundError.LevelMissingErrorWhen)]
     public ApiListResponse<ApiGameReviewResponse> GetTopScoresForLevel(RequestContext context,
         GameDatabaseContext database, IDataStore dataStore,
-        [DocSummary("The ID of the level")] int id)
+        [DocSummary("The ID of the level")] int id, DataContext dataContext)
     {
         GameLevel? level = database.GetLevelById(id);
         if (level == null) return ApiNotFoundError.LevelMissingError;
@@ -28,7 +29,7 @@ public class ReviewApiEndpoints : EndpointGroup
         (int skip, int count) = context.GetPageData();
         
         DatabaseList<GameReview> reviews = database.GetReviewsForLevel(level, count, skip);
-        DatabaseList<ApiGameReviewResponse> ret = DatabaseList<ApiGameScoreResponse>.FromOldList<ApiGameReviewResponse, GameReview>(reviews);
+        DatabaseList<ApiGameReviewResponse> ret = DatabaseList<ApiGameScoreResponse>.FromOldList<ApiGameReviewResponse, GameReview>(reviews, dataContext);
 
         return ret;
     }

@@ -1,10 +1,11 @@
 using AttribDoc;
 using Newtonsoft.Json.Converters;
+using Refresh.GameServer.Types.Data;
 
 namespace Refresh.GameServer.Endpoints.ApiV3.DataTypes.Response;
 
 [JsonObject(NamingStrategyType = typeof(CamelCaseNamingStrategy))]
-public class ApiParameterResponse : IApiResponse, IDataConvertableFrom<ApiParameterResponse, Parameter>
+public class ApiParameterResponse : IApiResponse
 {
     public required string Name { get; set; }
     [JsonConverter(typeof(StringEnumConverter))]

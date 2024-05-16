@@ -1,6 +1,7 @@
 using System.Xml.Serialization;
 using Refresh.GameServer.Database;
 using Refresh.GameServer.Endpoints.ApiV3.DataTypes;
+using Refresh.GameServer.Types.Data;
 using Refresh.GameServer.Types.Levels;
 using Refresh.GameServer.Types.UserData;
 
@@ -49,11 +50,12 @@ public class SerializedGameReview : IDataConvertableFrom<SerializedGameReview, G
     [XmlElement("yourthumb")]
     public RatingType YourThumb { get; set; }
 
-    public static SerializedGameReview? FromOld(GameReview? review)
+    public static SerializedGameReview? FromOld(GameReview? review, DataContext dataContext)
     {
         if (review == null) 
             return null;
         
+        // TODO: fill in review.YourThumb
         return new SerializedGameReview
         {
             Id = review.ReviewId,
@@ -68,26 +70,13 @@ public class SerializedGameReview : IDataConvertableFrom<SerializedGameReview, G
             Deleted = false,
             DeletedBy = ReviewDeletedBy.None,
             Text = review.Content,
-            Thumb = 0,
+            Thumb = dataContext.Database.GetRatingByUser(review.Level, dataContext.User)?.ToDPad() ?? 0,
             ThumbsUp = 0,
             ThumbsDown = 0,
             YourThumb = 0,
         };
     }
-
-    public void FillInExtraData(GameDatabaseContext database, GameUser user)
-    {
-        // TODO: no
-        GameLevel? level = database.GetLevelByIdAndType(Slot.SlotType, Slot.SlotId);
-        if (level == null) return;
-        
-        // TODO: no
-        GameUser? reviewer = database.GetUserByUsername(this.Reviewer);
-        if (reviewer == null) return;
-        
-        RatingType? yourRating = database.GetRatingByUser(level, user);
-        this.YourThumb = yourRating ?? RatingType.Neutral;
-    }
     
-    public static IEnumerable<SerializedGameReview> FromOldList(IEnumerable<GameReview> oldList) => oldList.Select(FromOld).ToList()!;
+    public static IEnumerable<SerializedGameReview> FromOldList(IEnumerable<GameReview> oldList,
+        DataContext dataContext) => oldList.Select(old => FromOld(old, dataContext)).ToList()!;
 }

@@ -1,3 +1,4 @@
+using System.Diagnostics;
 using System.Xml.Serialization;
 using Bunkum.Core.Storage;
 using Refresh.GameServer.Authentication;
@@ -7,6 +8,7 @@ using Refresh.GameServer.Extensions;
 using Refresh.GameServer.Services;
 using Refresh.GameServer.Types;
 using Refresh.GameServer.Types.Assets;
+using Refresh.GameServer.Types.Data;
 using Refresh.GameServer.Types.Levels;
 using Refresh.GameServer.Types.Levels.SkillRewards;
 using Refresh.GameServer.Types.Matching;
@@ -43,14 +45,14 @@ public class GameLevelResponse : IDataConvertableFrom<GameLevelResponse, GameLev
 
     [XmlElement("npHandle")] public SerializedUserHandle Handle { get; set; } = null!;
     
-    [XmlElement("heartCount")] public int HeartCount { get; set; }
+    [XmlElement("heartCount")] public required int HeartCount { get; set; }
     
-    [XmlElement("playCount")] public int TotalPlayCount { get; set; }
-    [XmlElement("uniquePlayCount")] public int UniquePlayCount { get; set; }
+    [XmlElement("playCount")] public required int TotalPlayCount { get; set; }
+    [XmlElement("uniquePlayCount")] public required int UniquePlayCount { get; set; }
 
     [XmlElement("yourDPadRating")] public int YourRating { get; set; }
-    [XmlElement("thumbsup")] public int YayCount { get; set; }
-    [XmlElement("thumbsdown")] public int BooCount { get; set; }
+    [XmlElement("thumbsup")] public required int YayCount { get; set; }
+    [XmlElement("thumbsdown")] public required int BooCount { get; set; }
     [XmlElement("yourRating")] public int YourStarRating { get; set; }
     
     // 1 by default since this will break reviews if set to 0 for GameLevelResponses that do not have extra data being filled in
@@ -92,11 +94,11 @@ public class GameLevelResponse : IDataConvertableFrom<GameLevelResponse, GameLev
         return rangeStart + Math.Abs(hash.GetHashCode()) % range;
     }
     
-    public static GameLevelResponse FromHash(string hash)
+    public static GameLevelResponse FromHash(string hash, DataContext dataContext)
     {
         return new GameLevelResponse
         {
-            LevelId = LevelIdFromHash(hash),
+            LevelId = dataContext.Game == TokenGame.LittleBigPlanet3 ? LevelIdFromHash(hash) : int.MaxValue,
             Title = $"Hashed Level - {hash}",
             IconHash = "0",
             GameVersion = 0,
@@ -136,20 +138,16 @@ public class GameLevelResponse : IDataConvertableFrom<GameLevelResponse, GameLev
             LevelType = "",
         };
     }
-    
-    public static GameLevelResponse? FromOldWithExtraData(GameLevel? old, GameDatabaseContext database, MatchService matchService, GameUser user, IDataStore dataStore, TokenGame game)
+
+    public static GameLevelResponse? FromOld(GameLevel? old, DataContext dataContext)
     {
         if (old == null) return null;
 
-        GameLevelResponse response = FromOld(old)!;
-        response.FillInExtraData(database, matchService, user, dataStore, game);
-
-        return response;
-    }
-
-    public static GameLevelResponse? FromOld(GameLevel? old)
-    {
-        if (old == null) return null;
+        int totalPlayCount = 0;
+        foreach (PlayLevelRelation playLevelRelation in old.AllPlays)
+        {
+            totalPlayCount += playLevelRelation.Count;
+        }
         
         GameLevelResponse response = new()
         {
@@ -166,6 +164,11 @@ public class GameLevelResponse : IDataConvertableFrom<GameLevelResponse, GameLev
             MaxPlayers = old.MaxPlayers,
             EnforceMinMaxPlayers = old.EnforceMinMaxPlayers,
             SameScreenGame = old.SameScreenGame,
+            HeartCount = old.FavouriteRelations.Count(),
+            TotalPlayCount = totalPlayCount,
+            UniquePlayCount = old.UniquePlays.Count(),
+            YayCount = old.Ratings.Count(r => r._RatingType == (int)RatingType.Yay),
+            BooCount = old.Ratings.Count(r => r._RatingType == (int)RatingType.Boo),
             SkillRewards = old.SkillRewards.ToList(),
             TeamPicked = old.TeamPicked,
             LevelType = old.LevelType.ToGameString(),
@@ -174,6 +177,7 @@ public class GameLevelResponse : IDataConvertableFrom<GameLevelResponse, GameLev
             IsSubLevel = old.IsSubLevel,
             BackgroundGuid = old.BackgroundGuid,
             Links = "",
+            AverageStarRating = old.CalculateAverageStarRating(),
             ReviewCount = old.Reviews.Count,
             CommentCount = old.LevelComments.Count,
         };
@@ -181,7 +185,7 @@ public class GameLevelResponse : IDataConvertableFrom<GameLevelResponse, GameLev
         response.Type = "user";
         if (old is { Publisher: not null, IsReUpload: false })
         {
-            response.Handle = SerializedUserHandle.FromUser(old.Publisher);
+            response.Handle = SerializedUserHandle.FromUser(old.Publisher, dataContext);
         }
         else
         {
@@ -200,43 +204,33 @@ public class GameLevelResponse : IDataConvertableFrom<GameLevelResponse, GameLev
             };
         }
         
+        if (dataContext.User != null)
+        {
+            RatingType? rating = dataContext.Database.GetRatingByUser(old, dataContext.User);
+            
+            response.YourRating = rating?.ToDPad() ?? (int)RatingType.Neutral;
+            response.YourStarRating = rating?.ToLBP1() ?? 0;
+            response.YourLbp2PlayCount = old.AllPlays.Count(p => p.User == dataContext.User);
+        }
+        
+        response.PlayerCount = dataContext.Match.GetPlayerCountForLevel(RoomSlotType.Online, response.LevelId);
+        
+        GameAsset? rootResourceAsset = dataContext.Database.GetAssetFromHash(response.RootResource);
+        if (rootResourceAsset != null)
+        {
+            rootResourceAsset.TraverseDependenciesRecursively(dataContext.Database, (_, asset) =>
+            {
+                if (asset != null)
+                    response.SizeOfResourcesInBytes += asset.SizeInBytes;
+            });
+        }
+        
+        response.IconHash = dataContext.Database.GetAssetFromHash(old.IconHash)?.GetAsIcon(dataContext.Game, dataContext) ?? response.IconHash;
+        
+        response.CommentCount = old.LevelComments.Count;
+        
         return response;
     }
 
-    public static IEnumerable<GameLevelResponse> FromOldList(IEnumerable<GameLevel> oldList) => oldList.Select(FromOld).ToList()!;
-
-    private void FillInExtraData(GameDatabaseContext database, MatchService matchService, GameUser user, IDataStore dataStore, TokenGame game)
-    {
-        GameLevel? level = database.GetLevelById(this.LevelId);
-        if (level == null) throw new InvalidOperationException("Cannot fill in level data for a level that does not exist.");
-
-        RatingType? rating = database.GetRatingByUser(level, user);
-        
-        this.YourRating = rating?.ToDPad() ?? (int)RatingType.Neutral;
-        this.YourStarRating = rating?.ToLBP1() ?? 0;
-        this.YourLbp2PlayCount = database.GetTotalPlaysForLevelByUser(level, user);
-        this.PlayerCount = matchService.GetPlayerCountForLevel(RoomSlotType.Online, this.LevelId);
-
-        GameAsset? rootResourceAsset = database.GetAssetFromHash(this.RootResource);
-        if (rootResourceAsset != null)
-        {
-            rootResourceAsset.TraverseDependenciesRecursively(database, (_, asset) =>
-            {
-                if (asset != null)
-                    this.SizeOfResourcesInBytes += asset.SizeInBytes;
-            });
-        }
-
-        this.IconHash = database.GetAssetFromHash(this.IconHash)?.GetAsIcon(game, database, dataStore) ?? this.IconHash;
-
-        this.CommentCount = level.LevelComments.Count;
-        
-        this.HeartCount = database.GetFavouriteCountForLevel(level);
-        this.TotalPlayCount = database.GetTotalPlaysForLevel(level);
-        this.UniquePlayCount = database.GetUniquePlaysForLevel(level);
-        this.YayCount = database.GetTotalRatingsForLevel(level, RatingType.Yay);
-        this.BooCount = database.GetTotalRatingsForLevel(level, RatingType.Boo);
-        
-        this.AverageStarRating = level.CalculateAverageStarRating(database);
-    }
+    public static IEnumerable<GameLevelResponse> FromOldList(IEnumerable<GameLevel> oldList, DataContext dataContext) => oldList.Select(old => FromOld(old, dataContext)).ToList()!;
 }

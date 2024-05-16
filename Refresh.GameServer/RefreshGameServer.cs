@@ -21,6 +21,7 @@ using Refresh.GameServer.Middlewares;
 using Refresh.GameServer.Services;
 using Refresh.GameServer.Storage;
 using Refresh.GameServer.Time;
+using Refresh.GameServer.Types.Data;
 using Refresh.GameServer.Types.Levels.Categories;
 using Refresh.GameServer.Types.Roles;
 using Refresh.GameServer.Types.UserData;
@@ -87,6 +88,7 @@ public class RefreshGameServer : RefreshServer
     {
         this.Server.AddMiddleware<LegacyAdapterMiddleware>();
         this.Server.AddMiddleware<WebsiteMiddleware>();
+        this.Server.AddMiddleware(new DeflateMiddleware(this._config!));
         this.Server.AddMiddleware<DigestMiddleware>();
         this.Server.AddMiddleware<CrossOriginMiddleware>();
         this.Server.AddMiddleware<PspVersionMiddleware>();
@@ -128,17 +130,18 @@ public class RefreshGameServer : RefreshServer
         
         this.Server.AddService<RoleService>();
         this.Server.AddService<SmtpService>();
-
-        if (this._config!.TrackRequestStatistics)
-            this.Server.AddService<RequestStatisticTrackingService>();
-        
+        this.Server.AddService<RequestStatisticTrackingService>();
         this.Server.AddService<LevelListOverrideService>();
-        
         this.Server.AddService<CommandService>();
         
         #if DEBUG
         this.Server.AddService<DebugService>();
         #endif
+        
+        // !!! HEY! !!!
+        // This service depends on most services that come before it.
+        // This should always be added last.
+        this.Server.AddService<DataContextService>();
     }
 
     protected virtual void SetupWorkers()
@@ -148,6 +151,7 @@ public class RefreshGameServer : RefreshServer
         this.WorkerManager.AddWorker<PunishmentExpiryWorker>();
         this.WorkerManager.AddWorker<ExpiredObjectWorker>();
         this.WorkerManager.AddWorker<CoolLevelsWorker>();
+        this.WorkerManager.AddWorker<RequestStatisticSubmitWorker>();
         
         if ((this._integrationConfig?.DiscordWebhookEnabled ?? false) && this._config != null)
         {

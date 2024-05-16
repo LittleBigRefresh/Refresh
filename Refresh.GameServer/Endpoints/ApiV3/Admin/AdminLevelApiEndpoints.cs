@@ -7,6 +7,7 @@ using Refresh.GameServer.Endpoints.ApiV3.ApiTypes;
 using Refresh.GameServer.Endpoints.ApiV3.ApiTypes.Errors;
 using Refresh.GameServer.Endpoints.ApiV3.DataTypes.Request;
 using Refresh.GameServer.Endpoints.ApiV3.DataTypes.Response;
+using Refresh.GameServer.Types.Data;
 using Refresh.GameServer.Types.Levels;
 using Refresh.GameServer.Types.Roles;
 using Refresh.GameServer.Types.UserData;
@@ -44,15 +45,16 @@ public class AdminLevelApiEndpoints : EndpointGroup
     [DocSummary("Updates a level.")]
     [DocError(typeof(ApiNotFoundError), ApiNotFoundError.LevelMissingErrorWhen)]
     [DocError(typeof(ApiAuthenticationError), ApiAuthenticationError.NoPermissionsForObjectWhen)]
-    public ApiResponse<ApiGameLevelResponse> EditLevelById(RequestContext context, GameDatabaseContext database, GameUser user,
-        [DocSummary("The ID of the level")] int id, ApiAdminEditLevelRequest body)
+    public ApiResponse<ApiGameLevelResponse> EditLevelById(RequestContext context, GameDatabaseContext database,
+        GameUser user,
+        [DocSummary("The ID of the level")] int id, ApiAdminEditLevelRequest body, DataContext dataContext)
     {
         GameLevel? level = database.GetLevelById(id);
         if (level == null) return ApiNotFoundError.LevelMissingError;
 
         level = database.UpdateLevel(body, level);
 
-        return ApiGameLevelResponse.FromOld(level);
+        return ApiGameLevelResponse.FromOld(level, dataContext);
     }
     
     [ApiV3Endpoint("admin/levels/id/{id}", HttpMethods.Delete), MinimumRole(GameUserRole.Admin)]

@@ -7,6 +7,7 @@ using Refresh.GameServer.Endpoints.ApiV3.ApiTypes;
 using Refresh.GameServer.Endpoints.ApiV3.DataTypes.Response;
 using Refresh.GameServer.Services;
 using Refresh.GameServer.Types.Assets;
+using Refresh.GameServer.Types.Data;
 using Refresh.GameServer.Types.Matching;
 using Refresh.GameServer.Types.RichPresence;
 
@@ -16,22 +17,10 @@ public class InstanceApiEndpoints : EndpointGroup
 {
     [ApiV3Endpoint("statistics"), Authentication(false)]
     [DocSummary("Retrieves various statistics about the Refresh instance.")]
-    public ApiResponse<ApiStatisticsResponse> GetStatistics(RequestContext context, GameDatabaseContext database, MatchService match, GameServerConfig config)
+    public ApiResponse<ApiStatisticsResponse> GetStatistics(RequestContext context, GameDatabaseContext database,
+        MatchService match, GameServerConfig config, DataContext dataContext)
     {
-        ApiRequestStatisticsResponse requestStatistics;
-        if (!config.TrackRequestStatistics)
-        {
-            requestStatistics = new ApiRequestStatisticsResponse
-            {
-                TotalRequests = -1,
-                ApiRequests = -1,
-                GameRequests = -1,
-            };
-        }
-        else
-        {
-            requestStatistics = ApiRequestStatisticsResponse.FromOld(database.GetRequestStatistics())!;
-        }
+        ApiRequestStatisticsResponse requestStatistics = ApiRequestStatisticsResponse.FromOld(database.GetRequestStatistics(), dataContext)!;
 
         RoomStatistics statistics = match.RoomAccessor.GetStatistics();
         
@@ -56,7 +45,8 @@ public class InstanceApiEndpoints : EndpointGroup
         RichPresenceConfig richConfig,
         IntegrationConfig integrationConfig,
         ContactInfoConfig contactInfoConfig,
-        GameDatabaseContext database) 
+        GameDatabaseContext database,
+        DataContext dataContext) 
         => new ApiInstanceResponse
         {
             InstanceName = gameConfig.InstanceName,
@@ -69,11 +59,11 @@ public class InstanceApiEndpoints : EndpointGroup
             SoftwareLicenseUrl = "https://www.gnu.org/licenses/agpl-3.0.txt",
             MaximumAssetSafetyLevel = gameConfig.MaximumAssetSafetyLevel,
             MaximumAssetSafetyLevelForTrustedUsers = gameConfig.MaximumAssetSafetyLevelForTrustedUsers,
-            Announcements = ApiGameAnnouncementResponse.FromOldList(database.GetAnnouncements()),
+            Announcements = ApiGameAnnouncementResponse.FromOldList(database.GetAnnouncements(), dataContext),
             MaintenanceModeEnabled = gameConfig.MaintenanceMode,
             RichPresenceConfiguration = ApiRichPresenceConfigurationResponse.FromOld(RichPresenceConfiguration.Create(
                 gameConfig,
-                richConfig))!,
+                richConfig), dataContext)!,
             GrafanaDashboardUrl = integrationConfig.GrafanaDashboardUrl,
             
             ContactInfo = new ApiContactInfoResponse
@@ -84,7 +74,7 @@ public class InstanceApiEndpoints : EndpointGroup
                 AdminDiscordUsername = contactInfoConfig.AdminDiscordUsername,
             },
             
-            ActiveContest = ApiContestResponse.FromOld(database.GetNewestActiveContest()),
+            ActiveContest = ApiContestResponse.FromOld(database.GetNewestActiveContest(), dataContext),
 #if DEBUG
             SoftwareType = "Debug",
 #else

@@ -11,6 +11,7 @@ using Refresh.GameServer.Endpoints.Game.DataTypes.Request;
 using Refresh.GameServer.Endpoints.Game.DataTypes.Response;
 using Refresh.GameServer.Extensions;
 using Refresh.GameServer.Services;
+using Refresh.GameServer.Types.Data;
 using Refresh.GameServer.Types.Levels;
 using Refresh.GameServer.Types.UserData;
 using Refresh.GameServer.Verification;
@@ -90,7 +91,7 @@ public class PublishEndpoints : EndpointGroup
         GameLevelRequest body,
         CommandService commandService,
         IDataStore dataStore,
-        GuidCheckerService guidChecker)
+        GuidCheckerService guidChecker, DataContext dataContext)
     {
         //If verifying the request fails, return null
         if (!VerifyLevel(body, user, context.Logger, guidChecker, token.TokenGame)) return BadRequest;
@@ -116,7 +117,7 @@ public class PublishEndpoints : EndpointGroup
             // ReSharper disable once InvertIf
             if ((newBody = database.UpdateLevel(level, user)) != null)
             {
-                return new Response(GameLevelResponse.FromOld(newBody)!, ContentType.Xml);
+                return new Response(GameLevelResponse.FromOld(newBody, dataContext)!, ContentType.Xml);
             }
             
             database.AddPublishFailNotification("You may not republish another user's level.", level, user);
@@ -133,7 +134,7 @@ public class PublishEndpoints : EndpointGroup
         
         context.Logger.LogInfo(BunkumCategory.UserContent, "User {0} (id: {1}) uploaded level id {2}", user.Username, user.UserId, level.LevelId);
         
-        return new Response(GameLevelResponse.FromOld(level)!, ContentType.Xml);
+        return new Response(GameLevelResponse.FromOld(level, dataContext)!, ContentType.Xml);
     }
 
     [GameEndpoint("unpublish/{id}", ContentType.Xml, HttpMethods.Post)]

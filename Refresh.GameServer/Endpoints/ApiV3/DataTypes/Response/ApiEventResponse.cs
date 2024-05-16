@@ -1,4 +1,5 @@
 using Refresh.GameServer.Types.Activity;
+using Refresh.GameServer.Types.Data;
 
 namespace Refresh.GameServer.Endpoints.ApiV3.DataTypes.Response;
 
@@ -13,7 +14,7 @@ public class ApiEventResponse : IApiResponse, IDataConvertableFrom<ApiEventRespo
     public required int? StoredSequentialId { get; set; }
     public required string? StoredObjectId { get; set; }
     
-    public static ApiEventResponse? FromOld(Event? old)
+    public static ApiEventResponse? FromOld(Event? old, DataContext dataContext)
     {
         if (old == null) return null;
 
@@ -29,5 +30,5 @@ public class ApiEventResponse : IApiResponse, IDataConvertableFrom<ApiEventRespo
         };
     }
 
-    public static IEnumerable<ApiEventResponse> FromOldList(IEnumerable<Event> oldList) => oldList.Select(FromOld).ToList()!;
+    public static IEnumerable<ApiEventResponse> FromOldList(IEnumerable<Event> oldList, DataContext dataContext) => oldList.Select(old => FromOld(old, dataContext)).ToList()!;
 }

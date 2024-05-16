@@ -48,14 +48,14 @@ public class CoolLevelsWorker : IWorker
                 
             // Calculate positive & negative score separately, so we don't run into issues with
                 // the multiplier having an opposite effect with the negative score as time passes
-            int positiveScore = CalculatePositiveScore(logger, level, database);
-            int negativeScore = CalculateNegativeScore(logger, level, database);
+            float positiveScore = CalculatePositiveScore(logger, level, database);
+            float negativeScore = CalculateNegativeScore(logger, level, database);
                 
                 // Increase to tweak how little negative score gets affected by decay
-                const int negativeScoreMultiplier = 2;
+                const int negativeScoreDecayMultiplier = 2;
                 
                 // Weigh everything with the multiplier and set a final score
-                float finalScore = (positiveScore * decayMultiplier) - (negativeScore * Math.Min(1.0f, decayMultiplier * negativeScoreMultiplier));
+                float finalScore = (positiveScore * decayMultiplier) - (negativeScore * Math.Min(1.0f, decayMultiplier * negativeScoreDecayMultiplier));
                 
                 Log(logger, LogLevel.Debug, "Score for '{0}' ({1}) is {2}", level.Title, level.LevelId, finalScore);
                 scoresToSet.Add(level, finalScore);
@@ -81,7 +81,7 @@ public class CoolLevelsWorker : IWorker
 
     private static float CalculateLevelDecayMultiplier(Logger logger, long now, GameLevel level)
     {
-        const int decayMonths = 3;
+        const int decayMonths = 2;
         const int decaySeconds = decayMonths * 30 * 24 * 3600;
         const float minimumMultiplier = 0.1f;
         
@@ -97,20 +97,34 @@ public class CoolLevelsWorker : IWorker
         return multiplier;
     }
 
-    private static int CalculatePositiveScore(Logger logger, GameLevel level, GameDatabaseContext database)
+    private static float CalculatePositiveScore(Logger logger, GameLevel level, GameDatabaseContext database)
     {
-        int score = 15; // Start levels off with a few points to prevent one dislike from bombing the level
-        const int positiveRatingPoints = 5;
-        const int uniquePlayPoints = 1;
-        const int heartPoints = 5;
-        const int trustedAuthorPoints = 5;
+        // Start levels off with a few points to prevent one dislike from bombing the level
+        // Don't apply this bonus to reuploads to discourage a flood of 15CR levels.
+        float score = level.IsReUpload ? 0 : 15;
+        
+        const float positiveRatingPoints = 5;
+        const float uniquePlayPoints = 0.1f;
+        const float heartPoints = 10;
+        const float trustedAuthorPoints = 5;
 
         if (level.TeamPicked)
-            score += 10;
+            score += 50;
         
-        score += database.GetTotalRatingsForLevel(level, RatingType.Yay) * positiveRatingPoints;
-        score += database.GetUniquePlaysForLevel(level) * uniquePlayPoints;
+        int positiveRatings = database.GetTotalRatingsForLevel(level, RatingType.Yay);
+        int negativeRatings = database.GetTotalRatingsForLevel(level, RatingType.Boo);
+        int uniquePlays = database.GetUniquePlaysForLevel(level);
+        
+        score += positiveRatings * positiveRatingPoints;
+        score += uniquePlays * uniquePlayPoints;
         score += database.GetFavouriteCountForLevel(level) * heartPoints;
+        
+        // Reward for a good ratio between plays and yays
+        float ratingRatio = (positiveRatings - negativeRatings) / (float)uniquePlays;
+        if (ratingRatio > 0.5f)
+        {
+            score += positiveRatings * (positiveRatingPoints * ratingRatio);
+        }
 
         if (level.Publisher?.Role == GameUserRole.Trusted)
             score += trustedAuthorPoints;
@@ -119,13 +133,16 @@ public class CoolLevelsWorker : IWorker
         return score;
     }
 
-    private static int CalculateNegativeScore(Logger logger, GameLevel level, GameDatabaseContext database)
+    private static float CalculateNegativeScore(Logger logger, GameLevel level, GameDatabaseContext database)
     {
-        int penalty = 0;
-        const int negativeRatingPenalty = 5;
-        const int noAuthorPenalty = 10;
-        const int restrictedAuthorPenalty = 50;
-        const int bannedAuthorPenalty = 100;
+        float penalty = 0;
+        const float negativeRatingPenalty = 5;
+        const float noAuthorPenalty = 10;
+        const float restrictedAuthorPenalty = 50;
+        const float bannedAuthorPenalty = 100;
+        
+        // The percentage of how much penalty should be applied at the end of the calculation.
+        const float penaltyMultiplier = 0.75f;
         
         penalty += database.GetTotalRatingsForLevel(level, RatingType.Boo) * negativeRatingPenalty;
         
@@ -137,6 +154,6 @@ public class CoolLevelsWorker : IWorker
             penalty += bannedAuthorPenalty;
 
         Log(logger, LogLevel.Trace, "negativeScore is {0}", penalty);
-        return penalty;
+        return penalty * penaltyMultiplier;
     }
 }

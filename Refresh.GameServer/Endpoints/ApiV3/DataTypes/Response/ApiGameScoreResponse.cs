@@ -1,6 +1,7 @@
 using Bunkum.Core.Storage;
 using Refresh.GameServer.Authentication;
 using Refresh.GameServer.Database;
+using Refresh.GameServer.Types.Data;
 using Refresh.GameServer.Types.UserData.Leaderboard;
 
 namespace Refresh.GameServer.Endpoints.ApiV3.DataTypes.Response;
@@ -18,15 +19,15 @@ public class ApiGameScoreResponse : IApiResponse, IDataConvertableFrom<ApiGameSc
     public required TokenGame Game { get; set; }
     public required TokenPlatform Platform { get; set; }
     
-    public static ApiGameScoreResponse? FromOld(GameSubmittedScore? old)
+    public static ApiGameScoreResponse? FromOld(GameSubmittedScore? old, DataContext dataContext)
     {
         if (old == null) return null;
 
         return new ApiGameScoreResponse
         {
             ScoreId = old.ScoreId.ToString()!,
-            Level = ApiGameLevelResponse.FromOld(old.Level)!,
-            Players = ApiGameUserResponse.FromOldList(old.Players),
+            Level = ApiGameLevelResponse.FromOld(old.Level, dataContext)!,
+            Players = ApiGameUserResponse.FromOldList(old.Players, dataContext),
             ScoreSubmitted = old.ScoreSubmitted,
             Score = old.Score,
             ScoreType = old.ScoreType,
@@ -34,24 +35,7 @@ public class ApiGameScoreResponse : IApiResponse, IDataConvertableFrom<ApiGameSc
             Platform = old.Platform,
         };
     }
-
-    public void FillInExtraData(GameDatabaseContext database, IDataStore dataStore)
-    {
-        foreach (ApiGameUserResponse player in this.Players)
-        {
-            player.FillInExtraData(database, dataStore);
-        }
-    }
-
-    public static ApiGameScoreResponse? FromOldWithExtraData(GameSubmittedScore? old, GameDatabaseContext database, IDataStore dataStore)
-    {
-        if (old == null) return null;
-
-        ApiGameScoreResponse response = FromOld(old)!;
-        response.FillInExtraData(database, dataStore);
-
-        return response;
-    }
     
-    public static IEnumerable<ApiGameScoreResponse> FromOldList(IEnumerable<GameSubmittedScore> oldList) => oldList.Select(FromOld).ToList()!;
+    public static IEnumerable<ApiGameScoreResponse> FromOldList(IEnumerable<GameSubmittedScore> oldList,
+        DataContext dataContext) => oldList.Select(old => FromOld(old, dataContext)).ToList()!;
 }
