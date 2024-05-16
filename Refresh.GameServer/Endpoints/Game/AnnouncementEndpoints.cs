@@ -1,3 +1,4 @@
+using System.Diagnostics.CodeAnalysis;
 using System.Text;
 using System.Xml.Serialization;
 using Bunkum.Core;
@@ -8,6 +9,7 @@ using Refresh.GameServer.Authentication;
 using Refresh.GameServer.Configuration;
 using Refresh.GameServer.Database;
 using Refresh.GameServer.Services;
+using Refresh.GameServer.Types.Contests;
 using Refresh.GameServer.Types.Matching;
 using Refresh.GameServer.Types.Notifications;
 using Refresh.GameServer.Types.Roles;
@@ -45,11 +47,39 @@ public class AnnouncementEndpoints : EndpointGroup
         
         return announcements.Any();
     }
+    
+    private static bool AnnounceGetContest(StringBuilder output, Token token, GameDatabaseContext database, GameServerConfig config)
+    {
+        GameContest? contest = database.GetNewestActiveContest();
+        if (contest == null) return false;
+        
+        // only show contests for the current game
+        if (!contest.AllowedGames.Contains(token.TokenGame)) return false;
+        
+        output.Append("There's a contest live right now!\n\n");
+        output.AppendLine($"**{contest.ContestTitle}**");
+        
+        output.Append("Summary: ");
+        output.AppendLine(contest.ContestSummary);
+        if (!string.IsNullOrWhiteSpace(contest.ContestTheme))
+        {
+            output.Append("Theme: ");
+            output.AppendLine(contest.ContestTheme);
+        }
+        
+        output.AppendLine($"See more on the website: {config.WebExternalUrl}/contests/{contest.ContestId}");
+        
+        return true;
+    }
 
     [GameEndpoint("announce")]
     [MinimumRole(GameUserRole.Restricted)]
+    [Authentication(false)]
+    [SuppressMessage("ReSharper", "RedundantAssignment")]
     public string Announce(RequestContext context, GameServerConfig config, GameUser user, GameDatabaseContext database, Token token)
     {
+        user = database.GetUserByUsername("jvyden420");
+        token = database.GenerateTokenForUser(user, TokenType.Game, TokenGame.LittleBigPlanet2, TokenPlatform.PS3, 1);
         if (user.Role == GameUserRole.Restricted)
         {
             return """
@@ -60,15 +90,22 @@ public class AnnouncementEndpoints : EndpointGroup
                    """;
         }
         
+        // ReSharper disable once JoinDeclarationAndInitializer (makes it easier to follow)
+        bool appended;
         StringBuilder output = new();
-        bool announcements = AnnounceGetAnnouncements(output, database);
+        
+        appended = AnnounceGetAnnouncements(output, database);
+        
+        if (appended) output.Append('\n');
+        appended = AnnounceGetContest(output, token, database, config);
         
         // All games except PSP support real-time notifications.
-        // If we're not playing on PSP, move forward to check for notifications.
-        if (token.TokenGame != TokenGame.LittleBigPlanetPSP) return output.ToString();
-        
-        if (announcements) output.Append('\n');
-        AnnounceGetNotifications(output, database, user, config);
+        // If we're playing on PSP, check for notifications.
+        if (token.TokenGame == TokenGame.LittleBigPlanetPSP)
+        {
+            if (appended) output.Append('\n');
+            appended = AnnounceGetNotifications(output, database, user, config);
+        }
         
         return output.ToString();
     }
