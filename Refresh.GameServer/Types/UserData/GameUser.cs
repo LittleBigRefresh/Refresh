@@ -62,15 +62,6 @@ public partial class GameUser : IRealmObject, IRateLimitUser
     
     #nullable disable
     public IList<GameComment> ProfileComments { get; }
-    
-    [Backlink(nameof(QueueLevelRelation.User))]
-    public IQueryable<QueueLevelRelation> QueueLevelRelations { get; }
-    
-    [Backlink(nameof(FavouriteUserRelation.UserToFavourite))]
-    public IQueryable<FavouriteUserRelation> UsersFavouritingMe { get; }
-    
-    [Backlink(nameof(FavouriteUserRelation.UserFavouriting))]
-    public IQueryable<FavouriteUserRelation> UsersFavourited { get; }
 
     [Backlink(nameof(GameLevel.Publisher))]
     public IQueryable<GameLevel> PublishedLevels { get; }
@@ -80,8 +71,8 @@ public partial class GameUser : IRealmObject, IRateLimitUser
     
     [Backlink(nameof(GamePhotoSubject.User))]
     public IQueryable<GamePhotoSubject> PhotosWithMe { get; }
-    [Backlink(nameof(GameNotification.User))]
     
+    [Backlink(nameof(GameNotification.User))]
     public IQueryable<GameNotification> Notifications { get; }
     
     public IList<GameIpVerificationRequest> IpVerificationRequests { get; }

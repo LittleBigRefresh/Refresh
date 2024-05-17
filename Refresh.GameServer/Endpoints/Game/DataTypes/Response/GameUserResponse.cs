@@ -1,7 +1,5 @@
 using System.Xml.Serialization;
-using Bunkum.Core.Storage;
 using Refresh.GameServer.Authentication;
-using Refresh.GameServer.Database;
 using Refresh.GameServer.Endpoints.ApiV3.DataTypes;
 using Refresh.GameServer.Endpoints.Game.Levels.FilterSettings;
 using Refresh.GameServer.Types;
@@ -68,9 +66,9 @@ public class GameUserResponse : IDataConvertableFrom<GameUserResponse, GameUser>
             CommentCount = old.ProfileComments.Count,
             CommentsEnabled = true,
             FavouriteLevelCount = old.IsManaged ? dataContext.Database.GetTotalLevelsFavouritedByUser(old) : 0,
-            FavouriteUserCount = old.IsManaged ? old.UsersFavourited.Count() : 0,
-            QueuedLevelCount = old.IsManaged ? old.QueueLevelRelations.Count() : 0,
-            HeartCount = old.IsManaged ? old.UsersFavouritingMe.Count() : 0,
+            FavouriteUserCount = old.IsManaged ? dataContext.Database.GetTotalUsersFavouritedByUser(old) : 0,
+            QueuedLevelCount = old.IsManaged ? dataContext.Database.GetTotalLevelsQueuedByUser(old) : 0,
+            HeartCount = old.IsManaged ? dataContext.Database.GetTotalUsersFavouritingUser(old) : 0,
             PhotosByMeCount = old.IsManaged ? old.PhotosByMe.Count() : 0,
             PhotosWithMeCount = old.IsManaged ? old.PhotosWithMe.Count() : 0,
             

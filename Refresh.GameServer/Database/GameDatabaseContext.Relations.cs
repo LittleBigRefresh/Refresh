@@ -73,12 +73,8 @@ public partial class GameDatabaseContext // Relations
     [Pure]
     public IEnumerable<GameUser> GetUsersMutuals(GameUser user)
     {
-        // this might be the shittiest query i've ever written.
-        return user.UsersFavourited.AsEnumerable()
-            .Select(relation => relation.UserToFavourite)
-            .Where(f => f.UsersFavourited.AsEnumerable()
-                .Select(otherUserRelation => otherUserRelation.UserToFavourite).AsEnumerable()
-                .Contains(user));
+        return this.GetUsersFavouritedByUser(user, 1000, 0).AsEnumerable()
+            .Where(u => this.IsUserFavouritedByUser(user, u));
     }
     
     [Pure]
@@ -90,8 +86,12 @@ public partial class GameDatabaseContext // Relations
         .Take(count);
     
     public int GetTotalUsersFavouritedByUser(GameUser user)
-        => this._realm.All<FavouriteLevelRelation>()
-            .Count(r => r.User == user);
+        => this._realm.All<FavouriteUserRelation>()
+            .Count(r => r.UserFavouriting == user);
+    
+    public int GetTotalUsersFavouritingUser(GameUser user)
+        => this._realm.All<FavouriteUserRelation>()
+            .Count(r => r.UserToFavourite == user);
 
     public bool FavouriteUser(GameUser userToFavourite, GameUser userFavouriting)
     {
@@ -148,6 +148,11 @@ public partial class GameDatabaseContext // Relations
         .FilterByLevelFilterSettings(accessor, levelFilterSettings)
         .FilterByGameVersion(levelFilterSettings.GameVersion), skip, count);
     
+    [Pure]
+    public int GetTotalLevelsQueuedByUser(GameUser user) 
+        => this._realm.All<QueueLevelRelation>()
+            .Count(r => r.User == user);
+    
     public bool QueueLevel(GameLevel level, GameUser user)
     {
         if (this.IsLevelQueuedByUser(level, user)) return false;
@@ -176,7 +181,7 @@ public partial class GameDatabaseContext // Relations
 
     public void ClearQueue(GameUser user)
     {
-        this._realm.Write(() => this._realm.RemoveRange(user.QueueLevelRelations));
+        this._realm.Write(() => this._realm.RemoveRange(this._realm.All<QueueLevelRelation>().Where(r => r.User == user)));
     }
 
     #endregion
