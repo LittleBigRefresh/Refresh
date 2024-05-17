@@ -3,6 +3,7 @@ using Bunkum.Core.Storage;
 using Refresh.GameServer.Authentication;
 using Refresh.GameServer.Database;
 using Refresh.GameServer.Endpoints.ApiV3.DataTypes;
+using Refresh.GameServer.Endpoints.Game.Levels.FilterSettings;
 using Refresh.GameServer.Types;
 using Refresh.GameServer.Types.Data;
 using Refresh.GameServer.Types.Levels;
@@ -66,7 +67,7 @@ public class GameUserResponse : IDataConvertableFrom<GameUserResponse, GameUser>
             Handle = SerializedUserHandle.FromUser(old, dataContext),
             CommentCount = old.ProfileComments.Count,
             CommentsEnabled = true,
-            FavouriteLevelCount = old.IsManaged ? old.FavouriteLevelRelations.Count() : 0,
+            FavouriteLevelCount = old.IsManaged ? dataContext.Database.GetTotalLevelsFavouritedByUser(old) : 0,
             FavouriteUserCount = old.IsManaged ? old.UsersFavourited.Count() : 0,
             QueuedLevelCount = old.IsManaged ? old.QueueLevelRelations.Count() : 0,
             HeartCount = old.IsManaged ? old.UsersFavouritingMe.Count() : 0,
@@ -150,10 +151,11 @@ public class GameUserResponse : IDataConvertableFrom<GameUserResponse, GameUser>
                 response.FavouriteUsers = new SerializedMinimalFavouriteUserList(users.Select(u => SerializedUserHandle.FromUser(u, dataContext)).ToList(), users.Count);
 
                 //Fill out PSP favourite levels
-                List<GameMinimalLevelResponse> favouriteLevels = old.FavouriteLevelRelations
-                    .AsEnumerable()
-                    .Where(l => l.Level._GameVersion == (int)TokenGame.LittleBigPlanetPSP)
-                    .Select(f => GameMinimalLevelResponse.FromOld(f.Level, dataContext)).ToList()!;
+                List<GameMinimalLevelResponse> favouriteLevels = dataContext.Database
+                    .GetLevelsFavouritedByUser(old, 20, 0, new LevelFilterSettings(dataContext.Game), dataContext.User)
+                    .Items
+                    .Where(l => l._GameVersion == (int)TokenGame.LittleBigPlanetPSP)
+                    .Select(l => GameMinimalLevelResponse.FromOld(l, dataContext)).ToList()!;
                 response.FavouriteLevels = new SerializedMinimalFavouriteLevelList(new SerializedMinimalLevelList(favouriteLevels, favouriteLevels.Count, favouriteLevels.Count));
                 break;
             }

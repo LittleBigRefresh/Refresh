@@ -7,6 +7,7 @@ using Refresh.GameServer.Endpoints.ApiV3.DataTypes.Request;
 using Refresh.GameServer.Types;
 using Refresh.GameServer.Types.Levels;
 using Refresh.GameServer.Types.Photos;
+using Refresh.GameServer.Types.Relations;
 using Refresh.GameServer.Types.Roles;
 using Refresh.GameServer.Types.UserData;
 
@@ -300,11 +301,11 @@ public partial class GameDatabaseContext // Users
             foreach (GamePhotoSubject subject in user.PhotosWithMe)
                 subject.User = null;
             
-            this._realm.RemoveRange(user.FavouriteLevelRelations);
-            this._realm.RemoveRange(user.UsersFavourited);
-            this._realm.RemoveRange(user.UsersFavouritingMe);
-            this._realm.RemoveRange(user.QueueLevelRelations);
-            this._realm.RemoveRange(user.PhotosByMe);
+            this._realm.RemoveRange(this._realm.All<FavouriteLevelRelation>().Where(r => r.User == user));
+            this._realm.RemoveRange(this._realm.All<FavouriteUserRelation>().Where(r => r.UserToFavourite == user));
+            this._realm.RemoveRange(this._realm.All<FavouriteUserRelation>().Where(r => r.UserFavouriting == user));
+            this._realm.RemoveRange(this._realm.All<QueueLevelRelation>().Where(r => r.User == user));
+            this._realm.RemoveRange(this._realm.All<GamePhoto>().Where(p => p.Publisher == user));
 
             foreach (GameLevel level in this._realm.All<GameLevel>().Where(l => l.Publisher == user))
             {

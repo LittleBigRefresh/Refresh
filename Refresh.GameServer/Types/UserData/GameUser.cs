@@ -63,9 +63,6 @@ public partial class GameUser : IRealmObject, IRateLimitUser
     #nullable disable
     public IList<GameComment> ProfileComments { get; }
     
-    [Backlink(nameof(FavouriteLevelRelation.User))]
-    public IQueryable<FavouriteLevelRelation> FavouriteLevelRelations { get; }
-    
     [Backlink(nameof(QueueLevelRelation.User))]
     public IQueryable<QueueLevelRelation> QueueLevelRelations { get; }
     

@@ -26,6 +26,10 @@ public partial class GameDatabaseContext // Relations
         .FilterByLevelFilterSettings(accessor, levelFilterSettings)
         .FilterByGameVersion(levelFilterSettings.GameVersion), skip, count);
     
+    public int GetTotalLevelsFavouritedByUser(GameUser user) 
+        => this._realm.All<FavouriteLevelRelation>()
+            .Count(r => r.User == user);
+    
     public bool FavouriteLevel(GameLevel level, GameUser user)
     {
         if (this.IsLevelFavouritedByUser(level, user)) return false;
@@ -84,6 +88,10 @@ public partial class GameDatabaseContext // Relations
         .Select(r => r.UserToFavourite)
         .Skip(skip)
         .Take(count);
+    
+    public int GetTotalUsersFavouritedByUser(GameUser user)
+        => this._realm.All<FavouriteLevelRelation>()
+            .Count(r => r.User == user);
 
     public bool FavouriteUser(GameUser userToFavourite, GameUser userFavouriting)
     {
