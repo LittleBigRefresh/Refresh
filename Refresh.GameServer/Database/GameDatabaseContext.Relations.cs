@@ -358,6 +358,9 @@ public partial class GameDatabaseContext // Relations
     public RatingType? GetRatingByUser(GameComment comment, GameUser user) 
         => this.GetCommentRelationByUser(comment, user)?.RatingType;
     
+    public int GetTotalRatingsForComment(GameComment comment, RatingType type) =>
+        this._realm.All<CommentRelation>().Count(r => r.Comment == comment && r._RatingType == (int)type);
+    
     public bool RateComment(GameUser user, GameComment comment, RatingType ratingType)
     {
         if (ratingType == RatingType.Neutral)

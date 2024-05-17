@@ -7,6 +7,7 @@ using Refresh.GameServer.Database;
 using Refresh.GameServer.Extensions;
 using Refresh.GameServer.Time;
 using Refresh.GameServer.Types.Comments;
+using Refresh.GameServer.Types.Data;
 using Refresh.GameServer.Types.Levels;
 using Refresh.GameServer.Types.Lists;
 using Refresh.GameServer.Types.Reviews;
@@ -35,7 +36,7 @@ public class CommentEndpoints : EndpointGroup
     [GameEndpoint("userComments/{username}", ContentType.Xml)]
     [NullStatusCode(NotFound)]
     [MinimumRole(GameUserRole.Restricted)]
-    public SerializedCommentList? GetProfileComments(RequestContext context, GameDatabaseContext database, GameUser user, string username)
+    public SerializedCommentList? GetProfileComments(RequestContext context, GameDatabaseContext database, GameUser user, DataContext dataContext, string username)
     {
         GameUser? profile = database.GetUserByUsername(username);
         if (profile == null) return null;
@@ -43,7 +44,7 @@ public class CommentEndpoints : EndpointGroup
         (int skip, int count) = context.GetPageData();
 
         List<GameComment> comments = database.GetProfileComments(profile, count, skip).ToList();
-        foreach (GameComment comment in comments) comment.PrepareForSerialization(user);
+        foreach (GameComment comment in comments) comment.PrepareForSerialization(user, dataContext);
 
         return new SerializedCommentList(comments);
     }
@@ -89,7 +90,8 @@ public class CommentEndpoints : EndpointGroup
     [GameEndpoint("comments/{slotType}/{id}", ContentType.Xml)]
     [NullStatusCode(NotFound)]
     [MinimumRole(GameUserRole.Restricted)]
-    public SerializedCommentList? GetLevelComments(RequestContext context, GameDatabaseContext database, GameUser user, string slotType, int id)
+    public SerializedCommentList? GetLevelComments(RequestContext context, GameDatabaseContext database, GameUser user, DataContext dataContext,
+        string slotType, int id)
     {
         GameLevel? level = database.GetLevelByIdAndType(slotType, id);
         if (level == null) return null;
@@ -97,7 +99,7 @@ public class CommentEndpoints : EndpointGroup
         (int skip, int count) = context.GetPageData();
 
         List<GameComment> comments = database.GetLevelComments(level, count, skip).ToList();
-        foreach(GameComment comment in comments) comment.PrepareForSerialization(user);
+        foreach(GameComment comment in comments) comment.PrepareForSerialization(user, dataContext);
 
         return new SerializedCommentList(comments);
     }
