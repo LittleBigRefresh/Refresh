@@ -71,9 +71,6 @@ public partial class GameUser : IRealmObject, IRateLimitUser
     
     [Backlink(nameof(GamePhotoSubject.User))]
     public IQueryable<GamePhotoSubject> PhotosWithMe { get; }
-    
-    [Backlink(nameof(GameNotification.User))]
-    public IQueryable<GameNotification> Notifications { get; }
     #nullable restore
 
     public string BetaPlanetsHash { get; set; } = "0";
