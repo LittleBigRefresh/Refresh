@@ -298,8 +298,10 @@ public partial class GameDatabaseContext // Users
             user.PsnAuthenticationAllowed = false;
             user.RpcnAuthenticationAllowed = false;
 
-            foreach (GamePhotoSubject subject in user.PhotosWithMe)
-                subject.User = null;
+            // TODO: unit tests for this
+            foreach (GamePhoto photo in this.GetPhotosWithUser(user, int.MaxValue, 0).Items)
+                foreach (GamePhotoSubject subject in photo.Subjects.Where(s => s.User?.UserId == user.UserId))
+                    subject.User = null;
             
             this._realm.RemoveRange(this._realm.All<FavouriteLevelRelation>().Where(r => r.User == user));
             this._realm.RemoveRange(this._realm.All<FavouriteUserRelation>().Where(r => r.UserToFavourite == user));

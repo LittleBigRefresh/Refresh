@@ -66,12 +66,6 @@ public partial class GameUser : IRealmObject, IRateLimitUser
     [Backlink(nameof(GameLevel.Publisher))]
     public IQueryable<GameLevel> PublishedLevels { get; }
     
-    [Backlink(nameof(GamePhoto.Publisher))]
-    public IQueryable<GamePhoto> PhotosByMe { get; }
-    
-    [Backlink(nameof(GamePhotoSubject.User))]
-    public IQueryable<GamePhotoSubject> PhotosWithMe { get; }
-
     public IList<GameIpVerificationRequest> IpVerificationRequests { get; }
     #nullable restore
 

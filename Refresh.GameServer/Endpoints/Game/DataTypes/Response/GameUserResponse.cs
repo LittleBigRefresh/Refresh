@@ -69,8 +69,8 @@ public class GameUserResponse : IDataConvertableFrom<GameUserResponse, GameUser>
             FavouriteUserCount = old.IsManaged ? dataContext.Database.GetTotalUsersFavouritedByUser(old) : 0,
             QueuedLevelCount = old.IsManaged ? dataContext.Database.GetTotalLevelsQueuedByUser(old) : 0,
             HeartCount = old.IsManaged ? dataContext.Database.GetTotalUsersFavouritingUser(old) : 0,
-            PhotosByMeCount = old.IsManaged ? old.PhotosByMe.Count() : 0,
-            PhotosWithMeCount = old.IsManaged ? old.PhotosWithMe.Count() : 0,
+            PhotosByMeCount = old.IsManaged ? dataContext.Database.GetTotalPhotosByUser(old) : 0,
+            PhotosWithMeCount = old.IsManaged ? dataContext.Database.GetTotalPhotosWithUser(old) : 0,
             
             EntitledSlots = MaximumLevels,
             EntitledSlotsLBP2 = MaximumLevels,

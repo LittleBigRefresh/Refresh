@@ -75,16 +75,28 @@ public partial class GameDatabaseContext // Photos
     public DatabaseList<GamePhoto> GetPhotosByUser(GameUser user, int count, int skip) =>
         new(this._realm.All<GamePhoto>().Where(p => p.Publisher == user)
             .OrderByDescending(p => p.TakenAt), skip, count);
+    
+    [Pure]
+    public int GetTotalPhotosByUser(GameUser user)
+        => this._realm.All<GamePhoto>()
+            .Count(p => p.Publisher == user);
 
     [Pure]
     public DatabaseList<GamePhoto> GetPhotosWithUser(GameUser user, int count, int skip) =>
         new(this._realm.All<GamePhoto>()
-            .AsEnumerable()
             // FIXME: client-side enumeration
+            .AsEnumerable()
             .Where(p => p.Subjects.FirstOrDefault(s => Equals(s.User, user)) != null)
             .OrderByDescending(p => p.TakenAt)
             .Skip(skip)
             .Take(count));
+    
+    [Pure]
+    public int GetTotalPhotosWithUser(GameUser user)
+        => this._realm.All<GamePhoto>()
+            // FIXME: client-side enumeration
+            .AsEnumerable()
+            .Count(p => p.Subjects.FirstOrDefault(s => Equals(s.User, user)) != null);
 
     [Pure]
     public DatabaseList<GamePhoto> GetPhotosInLevel(GameLevel level, int count, int skip) =>
