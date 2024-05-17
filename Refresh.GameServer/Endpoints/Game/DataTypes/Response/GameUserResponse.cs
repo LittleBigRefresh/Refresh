@@ -109,21 +109,21 @@ public class GameUserResponse : IDataConvertableFrom<GameUserResponse, GameUser>
         {
             case TokenGame.LittleBigPlanet3: {
                 //Match all LBP3 levels
-                response.UsedSlotsLBP3 = old.PublishedLevels.Count(x => x._GameVersion == (int)TokenGame.LittleBigPlanet3);
+                response.UsedSlotsLBP3 = dataContext.Database.GetTotalLevelsPublishedByUser(old, TokenGame.LittleBigPlanet3);
                 response.FreeSlotsLBP3 = MaximumLevels - response.UsedSlotsLBP3;
                 //Fill out LBP2/LBP1 levels
                 goto case TokenGame.LittleBigPlanet2;
             }
             case TokenGame.LittleBigPlanet2: {
                 //Match all LBP2 levels
-                response.UsedSlotsLBP2 = old.PublishedLevels.Count(x => x._GameVersion == (int)TokenGame.LittleBigPlanet2);
+                response.UsedSlotsLBP2 = dataContext.Database.GetTotalLevelsPublishedByUser(old, TokenGame.LittleBigPlanet2);
                 response.FreeSlotsLBP2 = MaximumLevels - response.UsedSlotsLBP2;
                 //Fill out LBP1 levels
                 goto case TokenGame.LittleBigPlanet1;
             }
             case TokenGame.LittleBigPlanetVita: { 
                 //Match all LBP Vita levels
-                response.UsedSlotsLBP2 = old.PublishedLevels.Count(x => x._GameVersion == (int)TokenGame.LittleBigPlanetVita);
+                response.UsedSlotsLBP2 = dataContext.Database.GetTotalLevelsPublishedByUser(old, TokenGame.LittleBigPlanetVita);
                 response.FreeSlotsLBP2 = MaximumLevels - response.UsedSlotsLBP2;
 
                 //Apply Vita-specific icon hash
@@ -132,13 +132,13 @@ public class GameUserResponse : IDataConvertableFrom<GameUserResponse, GameUser>
             }
             case TokenGame.LittleBigPlanet1: {
                 //Match all LBP1 levels
-                response.UsedSlots = old.PublishedLevels.Count(x => x._GameVersion == (int)TokenGame.LittleBigPlanet1);
+                response.UsedSlots = dataContext.Database.GetTotalLevelsPublishedByUser(old, TokenGame.LittleBigPlanet1);
                 response.FreeSlots = MaximumLevels - response.UsedSlots;
                 break;
             }
             case TokenGame.LittleBigPlanetPSP: {
                 //Match all LBP PSP levels
-                response.UsedSlots = old.PublishedLevels.Count(x => x._GameVersion == (int)TokenGame.LittleBigPlanetPSP);
+                response.UsedSlots = dataContext.Database.GetTotalLevelsPublishedByUser(old, TokenGame.LittleBigPlanetPSP);
                 response.FreeSlots = MaximumLevels - response.UsedSlots;
                 
                 // Apply PSP-specific icon hash
@@ -160,7 +160,7 @@ public class GameUserResponse : IDataConvertableFrom<GameUserResponse, GameUser>
             case TokenGame.BetaBuild:
             {
                 // only beta levels
-                response.UsedSlots = old.PublishedLevels.Count(x => x._GameVersion == (int)TokenGame.BetaBuild);
+                response.UsedSlots = dataContext.Database.GetTotalLevelsPublishedByUser(old, TokenGame.BetaBuild);
                 response.FreeSlots = MaximumLevels - response.UsedSlotsLBP2;
                 
                 // use the same values for LBP3 and LBP2 since they're all shared under one count

@@ -62,9 +62,6 @@ public partial class GameUser : IRealmObject, IRateLimitUser
     
     #nullable disable
     public IList<GameComment> ProfileComments { get; }
-
-    [Backlink(nameof(GameLevel.Publisher))]
-    public IQueryable<GameLevel> PublishedLevels { get; }
     #nullable restore
 
     public string BetaPlanetsHash { get; set; } = "0";

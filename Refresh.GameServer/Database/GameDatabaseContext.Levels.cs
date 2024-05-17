@@ -363,6 +363,14 @@ public partial class GameDatabaseContext // Levels
     [Pure]
     public int GetTotalLevelCount() => this._realm.All<GameLevel>().Count(l => l._Source == (int)GameLevelSource.User);
     
+    public int GetTotalLevelsPublishedByUser(GameUser user)
+        => this._realm.All<GameLevel>()
+            .Count(r => r.Publisher == user);
+    
+    public int GetTotalLevelsPublishedByUser(GameUser user, TokenGame game)
+        => this._realm.All<GameLevel>()
+            .Count(r => r._GameVersion == (int)game);
+    
     [Pure]
     public int GetTotalTeamPickCount(TokenGame game) => this._realm.All<GameLevel>().FilterByGameVersion(game).Count(l => l.TeamPicked);
 
