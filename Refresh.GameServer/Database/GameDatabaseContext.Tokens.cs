@@ -142,13 +142,14 @@ public partial class GameDatabaseContext // Tokens
     {
         GameIpVerificationRequest request = new()
         {
+            User = user,
             IpAddress = ipAddress,
             CreatedAt = this._time.Now,
         };
 
         this._realm.Write(() =>
         {
-            user.IpVerificationRequests.Add(request);
+            this._realm.Add(request);
         });
     }
 
@@ -157,22 +158,18 @@ public partial class GameDatabaseContext // Tokens
         this._realm.Write(() =>
         {
             user.CurrentVerifiedIp = ipAddress;
-            user.IpVerificationRequests.Clear();
+            this._realm.RemoveRange(this._realm.All<GameIpVerificationRequest>().Where(r => r.User == user));
         });
     }
 
     public void DenyIpVerificationRequest(GameUser user, string ipAddress)
     {
-        IEnumerable<GameIpVerificationRequest> requests = user.IpVerificationRequests.Where(r => r.IpAddress == ipAddress);
         this._realm.Write(() =>
         {
-            foreach (GameIpVerificationRequest request in requests)
-            {
-                user.IpVerificationRequests.Remove(request);
-            }
+            this._realm.RemoveRange(this._realm.All<GameIpVerificationRequest>().Where(r => r.User == user && r.IpAddress == ipAddress));
         });
     }
 
     public DatabaseList<GameIpVerificationRequest> GetIpVerificationRequestsForUser(GameUser user, int count, int skip) 
-        => new(user.IpVerificationRequests, skip, count);
+        => new(this._realm.All<GameIpVerificationRequest>().Where(r => r.User == user), skip, count);
 }

@@ -74,8 +74,6 @@ public partial class GameUser : IRealmObject, IRateLimitUser
     
     [Backlink(nameof(GameNotification.User))]
     public IQueryable<GameNotification> Notifications { get; }
-    
-    public IList<GameIpVerificationRequest> IpVerificationRequests { get; }
     #nullable restore
 
     public string BetaPlanetsHash { get; set; } = "0";
