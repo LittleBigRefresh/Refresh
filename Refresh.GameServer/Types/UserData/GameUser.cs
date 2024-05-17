@@ -63,9 +63,6 @@ public partial class GameUser : IRealmObject, IRateLimitUser
     #nullable disable
     public IList<GameComment> ProfileComments { get; }
 
-    [Backlink(nameof(GameLevel.Publisher))]
-    public IQueryable<GameLevel> PublishedLevels { get; }
-    
     public IList<GameIpVerificationRequest> IpVerificationRequests { get; }
     #nullable restore
 
