@@ -164,7 +164,8 @@ public class GameDatabaseProvider : RealmDatabaseProvider<GameDatabaseContext>
             if (oldVersion < 100) newUser.EmailAddress = oldUser.EmailAddress?.ToLowerInvariant();
 
             // Version was bumped here to delete invalid favourite level relations
-            if (oldVersion < 101) migration.NewRealm.RemoveRange(newUser.FavouriteLevelRelations.Where(r => r.Level == null));
+            // TODO: fix this migration
+            // if (oldVersion < 101) migration.NewRealm.RemoveRange(newUser.FavouriteLevelRelations.Where(r => r.Level == null));
 
             // In version 102 we split the Vita icon hash from the PS3 icon hash
             if (oldVersion < 102) newUser.VitaIconHash = "0";
