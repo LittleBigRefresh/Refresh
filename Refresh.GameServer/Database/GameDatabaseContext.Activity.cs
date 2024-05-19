@@ -17,7 +17,7 @@ public partial class GameDatabaseContext // Activity
 
         if (parameters.User != null)
         {
-            List<ObjectId?> favouriteUsers = parameters.User.UsersFavourited.AsEnumerable().Select(f => (ObjectId?)f.UserToFavourite.UserId).ToList();
+            List<ObjectId?> favouriteUsers = this.GetUsersFavouritedByUser(parameters.User, 1000, 0).Select(f => (ObjectId?)f.UserId).ToList();
             List<ObjectId?> userFriends = this.GetUsersMutuals(parameters.User).Select(u => (ObjectId?)u.UserId).ToList();
 
             query = query.Where(e =>
@@ -61,9 +61,9 @@ public partial class GameDatabaseContext // Activity
 
         if (parameters is { ExcludeFavouriteUsers: true, User: not null })
         {
-            List<FavouriteUserRelation> favouriteUsers = parameters.User.UsersFavourited.ToList();
+            List<GameUser> favouriteUsers = this.GetUsersFavouritedByUser(parameters.User, 1000, 0).ToList();
             
-            query = query.Where(e => favouriteUsers.All(r => r.UserToFavourite.UserId != e.User.UserId && r.UserToFavourite.UserId != e.StoredObjectId)); 
+            query = query.Where(e => favouriteUsers.All(r => r.UserId != e.User.UserId && r.UserId != e.StoredObjectId)); 
         }
 
         if (parameters is { ExcludeMyself: true, User: not null })

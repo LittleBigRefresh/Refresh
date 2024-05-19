@@ -425,7 +425,7 @@ public class ScoreLeaderboardTests : GameServerTest
             if (lastBestScore == null) continue;
 
             GameUser notificationRecipient = lastBestScore.Players.First();
-            GameNotification? notification = notificationRecipient.Notifications.FirstOrDefault();
+            GameNotification? notification = context.Database.GetNotificationsByUser(notificationRecipient, 1, 0).Items.FirstOrDefault();
 
             if (lastBestScore.Score <= 0)
             {
@@ -443,7 +443,7 @@ public class ScoreLeaderboardTests : GameServerTest
             if (level.Scores.Count() <= 2) continue;
             
             notificationRecipient = users[i - 2];
-            Assert.That(notificationRecipient.Notifications.Any(), Is.False);
+            Assert.That(context.Database.GetNotificationCountByUser(notificationRecipient), Is.Zero);
         }
         
         Assert.That(testedSent && testedNotSent, Is.True);

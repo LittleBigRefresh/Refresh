@@ -1,8 +1,8 @@
 using Refresh.GameServer.Authentication;
+using Refresh.GameServer.Database;
+using Refresh.GameServer.Endpoints.Game.Levels.FilterSettings;
 using Refresh.GameServer.Types.Levels;
-using Refresh.GameServer.Types.Lists;
 using Refresh.GameServer.Types.UserData;
-using RefreshTests.GameServer.Extensions;
 
 namespace RefreshTests.GameServer.Tests.Relations;
 
@@ -23,8 +23,9 @@ public class QueueTests : GameServerTest
         
         context.Database.Refresh();
         //Ensure we only have one queued level, and that it is the level we queued
-        Assert.That(user.QueueLevelRelations.Count(), Is.EqualTo(1));
-        Assert.That(user.QueueLevelRelations.First().Level.LevelId, Is.EqualTo(level.LevelId));
+        Assert.That(context.Database.GetTotalLevelsQueuedByUser(user), Is.EqualTo(1));
+        Assert.That(context.Database.GetLevelsQueuedByUser(user, 1, 0, new LevelFilterSettings(TokenGame.LittleBigPlanet2), user)
+            .Items.First().LevelId, Is.EqualTo(level.LevelId));
         
         //Remove the level from the queue
         message = client.PostAsync($"/lbp/lolcatftw/remove/user/{level.LevelId}", new ReadOnlyMemoryContent(Array.Empty<byte>())).Result;
@@ -32,7 +33,7 @@ public class QueueTests : GameServerTest
         
         context.Database.Refresh();
         //Ensure the queue is cleared
-        Assert.That(user.QueueLevelRelations.Count(), Is.EqualTo(0));
+        Assert.That(context.Database.GetTotalLevelsQueuedByUser(user), Is.EqualTo(0));
     }
     
     [Test]
@@ -53,9 +54,13 @@ public class QueueTests : GameServerTest
         
         context.Database.Refresh();
         //Ensure we have both levels queued
-        Assert.That(user.QueueLevelRelations.Count(), Is.EqualTo(2));
-        Assert.That(user.QueueLevelRelations.AsEnumerable().Any(q => q.Level.LevelId == level1.LevelId));
-        Assert.That(user.QueueLevelRelations.AsEnumerable().Any(q => q.Level.LevelId == level2.LevelId));
+        Assert.That(context.Database.GetTotalLevelsQueuedByUser(user), Is.EqualTo(2));
+
+        DatabaseList<GameLevel> queue = context.Database.GetLevelsQueuedByUser(user, 2, 0,
+            new LevelFilterSettings(TokenGame.LittleBigPlanet2), user);
+        
+        Assert.That(queue.Items.Any(q => q.LevelId == level1.LevelId));
+        Assert.That(queue.Items.Any(q => q.LevelId == level2.LevelId));
         
         //Clear the queue
         message = client.PostAsync($"/lbp/lolcatftw/clear", new ReadOnlyMemoryContent(Array.Empty<byte>())).Result;
@@ -63,7 +68,7 @@ public class QueueTests : GameServerTest
         
         context.Database.Refresh();
         //Ensure the queue is cleared
-        Assert.That(user.QueueLevelRelations.Count(), Is.EqualTo(0));
+        Assert.That(context.Database.GetTotalLevelsQueuedByUser(user), Is.EqualTo(0));
     }
 
     [Test]
@@ -106,8 +111,9 @@ public class QueueTests : GameServerTest
         
         context.Database.Refresh();
         //Ensure we only have one queued level, and that it is the level we queued
-        Assert.That(user.QueueLevelRelations.Count(), Is.EqualTo(1));
-        Assert.That(user.QueueLevelRelations.First().Level.LevelId, Is.EqualTo(level.LevelId));
+        Assert.That(context.Database.GetTotalLevelsQueuedByUser(user), Is.EqualTo(1));
+        Assert.That(context.Database.GetLevelsQueuedByUser(user, 1, 0, new LevelFilterSettings(TokenGame.LittleBigPlanet2), user)
+            .Items.First().LevelId, Is.EqualTo(level.LevelId));
     }
     
     [Test]
@@ -124,6 +130,6 @@ public class QueueTests : GameServerTest
         
         context.Database.Refresh();
         //Ensure we have 0 queued levels
-        Assert.That(user.QueueLevelRelations.Count(), Is.EqualTo(0));
+        Assert.That(context.Database.GetTotalLevelsQueuedByUser(user), Is.EqualTo(0));
     }
 }

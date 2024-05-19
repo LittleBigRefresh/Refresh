@@ -1,8 +1,7 @@
 using System.Xml.Serialization;
-using Bunkum.Core.Storage;
 using Refresh.GameServer.Authentication;
-using Refresh.GameServer.Database;
 using Refresh.GameServer.Endpoints.ApiV3.DataTypes;
+using Refresh.GameServer.Endpoints.Game.Levels.FilterSettings;
 using Refresh.GameServer.Types;
 using Refresh.GameServer.Types.Data;
 using Refresh.GameServer.Types.Levels;
@@ -66,12 +65,12 @@ public class GameUserResponse : IDataConvertableFrom<GameUserResponse, GameUser>
             Handle = SerializedUserHandle.FromUser(old, dataContext),
             CommentCount = old.ProfileComments.Count,
             CommentsEnabled = true,
-            FavouriteLevelCount = old.IsManaged ? old.FavouriteLevelRelations.Count() : 0,
-            FavouriteUserCount = old.IsManaged ? old.UsersFavourited.Count() : 0,
-            QueuedLevelCount = old.IsManaged ? old.QueueLevelRelations.Count() : 0,
-            HeartCount = old.IsManaged ? old.UsersFavouritingMe.Count() : 0,
-            PhotosByMeCount = old.IsManaged ? old.PhotosByMe.Count() : 0,
-            PhotosWithMeCount = old.IsManaged ? old.PhotosWithMe.Count() : 0,
+            FavouriteLevelCount = old.IsManaged ? dataContext.Database.GetTotalLevelsFavouritedByUser(old) : 0,
+            FavouriteUserCount = old.IsManaged ? dataContext.Database.GetTotalUsersFavouritedByUser(old) : 0,
+            QueuedLevelCount = old.IsManaged ? dataContext.Database.GetTotalLevelsQueuedByUser(old) : 0,
+            HeartCount = old.IsManaged ? dataContext.Database.GetTotalUsersFavouritingUser(old) : 0,
+            PhotosByMeCount = old.IsManaged ? dataContext.Database.GetTotalPhotosByUser(old) : 0,
+            PhotosWithMeCount = old.IsManaged ? dataContext.Database.GetTotalPhotosWithUser(old) : 0,
             
             EntitledSlots = MaximumLevels,
             EntitledSlotsLBP2 = MaximumLevels,
@@ -110,21 +109,21 @@ public class GameUserResponse : IDataConvertableFrom<GameUserResponse, GameUser>
         {
             case TokenGame.LittleBigPlanet3: {
                 //Match all LBP3 levels
-                response.UsedSlotsLBP3 = old.PublishedLevels.Count(x => x._GameVersion == (int)TokenGame.LittleBigPlanet3);
+                response.UsedSlotsLBP3 = dataContext.Database.GetTotalLevelsPublishedByUser(old, TokenGame.LittleBigPlanet3);
                 response.FreeSlotsLBP3 = MaximumLevels - response.UsedSlotsLBP3;
                 //Fill out LBP2/LBP1 levels
                 goto case TokenGame.LittleBigPlanet2;
             }
             case TokenGame.LittleBigPlanet2: {
                 //Match all LBP2 levels
-                response.UsedSlotsLBP2 = old.PublishedLevels.Count(x => x._GameVersion == (int)TokenGame.LittleBigPlanet2);
+                response.UsedSlotsLBP2 = dataContext.Database.GetTotalLevelsPublishedByUser(old, TokenGame.LittleBigPlanet2);
                 response.FreeSlotsLBP2 = MaximumLevels - response.UsedSlotsLBP2;
                 //Fill out LBP1 levels
                 goto case TokenGame.LittleBigPlanet1;
             }
             case TokenGame.LittleBigPlanetVita: { 
                 //Match all LBP Vita levels
-                response.UsedSlotsLBP2 = old.PublishedLevels.Count(x => x._GameVersion == (int)TokenGame.LittleBigPlanetVita);
+                response.UsedSlotsLBP2 = dataContext.Database.GetTotalLevelsPublishedByUser(old, TokenGame.LittleBigPlanetVita);
                 response.FreeSlotsLBP2 = MaximumLevels - response.UsedSlotsLBP2;
 
                 //Apply Vita-specific icon hash
@@ -133,13 +132,13 @@ public class GameUserResponse : IDataConvertableFrom<GameUserResponse, GameUser>
             }
             case TokenGame.LittleBigPlanet1: {
                 //Match all LBP1 levels
-                response.UsedSlots = old.PublishedLevels.Count(x => x._GameVersion == (int)TokenGame.LittleBigPlanet1);
+                response.UsedSlots = dataContext.Database.GetTotalLevelsPublishedByUser(old, TokenGame.LittleBigPlanet1);
                 response.FreeSlots = MaximumLevels - response.UsedSlots;
                 break;
             }
             case TokenGame.LittleBigPlanetPSP: {
                 //Match all LBP PSP levels
-                response.UsedSlots = old.PublishedLevels.Count(x => x._GameVersion == (int)TokenGame.LittleBigPlanetPSP);
+                response.UsedSlots = dataContext.Database.GetTotalLevelsPublishedByUser(old, TokenGame.LittleBigPlanetPSP);
                 response.FreeSlots = MaximumLevels - response.UsedSlots;
                 
                 // Apply PSP-specific icon hash
@@ -150,17 +149,18 @@ public class GameUserResponse : IDataConvertableFrom<GameUserResponse, GameUser>
                 response.FavouriteUsers = new SerializedMinimalFavouriteUserList(users.Select(u => SerializedUserHandle.FromUser(u, dataContext)).ToList(), users.Count);
 
                 //Fill out PSP favourite levels
-                List<GameMinimalLevelResponse> favouriteLevels = old.FavouriteLevelRelations
-                    .AsEnumerable()
-                    .Where(l => l.Level._GameVersion == (int)TokenGame.LittleBigPlanetPSP)
-                    .Select(f => GameMinimalLevelResponse.FromOld(f.Level, dataContext)).ToList()!;
+                List<GameMinimalLevelResponse> favouriteLevels = dataContext.Database
+                    .GetLevelsFavouritedByUser(old, 20, 0, new LevelFilterSettings(dataContext.Game), dataContext.User)
+                    .Items
+                    .Where(l => l._GameVersion == (int)TokenGame.LittleBigPlanetPSP)
+                    .Select(l => GameMinimalLevelResponse.FromOld(l, dataContext)).ToList()!;
                 response.FavouriteLevels = new SerializedMinimalFavouriteLevelList(new SerializedMinimalLevelList(favouriteLevels, favouriteLevels.Count, favouriteLevels.Count));
                 break;
             }
             case TokenGame.BetaBuild:
             {
                 // only beta levels
-                response.UsedSlots = old.PublishedLevels.Count(x => x._GameVersion == (int)TokenGame.BetaBuild);
+                response.UsedSlots = dataContext.Database.GetTotalLevelsPublishedByUser(old, TokenGame.BetaBuild);
                 response.FreeSlots = MaximumLevels - response.UsedSlotsLBP2;
                 
                 // use the same values for LBP3 and LBP2 since they're all shared under one count

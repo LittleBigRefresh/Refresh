@@ -1,7 +1,7 @@
 using System.Xml.Serialization;
 using Realms;
 using Refresh.GameServer.Database;
-using Refresh.GameServer.Types.Relations;
+using Refresh.GameServer.Types.Data;
 using Refresh.GameServer.Types.Reviews;
 using Refresh.GameServer.Types.UserData;
 #pragma warning disable CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider declaring as nullable.
@@ -21,9 +21,6 @@ public partial class GameComment : IRealmObject, ISequentialId
     /// Timestamp in Unix milliseconds
     /// </summary>
     [XmlElement("timestamp")] public long Timestamp { get; set; } 
-    
-    [Backlink(nameof(CommentRelation.Comment))]
-    public IQueryable<CommentRelation> CommentRelations { get; }
 
     #region LBP Serialization Quirks
     
@@ -33,15 +30,14 @@ public partial class GameComment : IRealmObject, ISequentialId
     [XmlElement("thumbsdown")] [Ignored] public int? ThumbsDown { get; set; }
     [XmlElement("yourthumb")] [Ignored] public int? YourThumb { get; set; }
 
-    public void PrepareForSerialization(GameUser user)
+    public void PrepareForSerialization(GameUser user, DataContext dataContext)
     {
         this.Handle = this.Author.Username;
         
-        this.ThumbsUp = this.CommentRelations.Count(r => r._RatingType == (int)RatingType.Yay);
-        this.ThumbsDown = this.CommentRelations.Count(r => r._RatingType == (int)RatingType.Boo);
+        this.ThumbsUp = dataContext.Database.GetTotalRatingsForComment(this, RatingType.Yay);
+        this.ThumbsDown = dataContext.Database.GetTotalRatingsForComment(this, RatingType.Boo);
         
-        this.YourThumb = (int?)(this.CommentRelations
-            .FirstOrDefault(r => r.User == user)?.RatingType ?? 0);
+        this.YourThumb = (int?)dataContext.Database.GetRatingByUser(this, user) ?? 0;
     }
     
     #endregion
