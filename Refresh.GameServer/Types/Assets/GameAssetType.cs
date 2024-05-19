@@ -40,9 +40,6 @@ public enum GameAssetType
     /// </remarks>
     Animation,
     
-    /// <summary>
-    /// TODO
-    /// </summary>
     /// <remarks>
     /// Magic: "GSB"
     /// </remarks>
@@ -72,9 +69,6 @@ public enum GameAssetType
     /// </remarks>
     Script,
     
-    /// <summary>
-    /// TODO
-    /// </summary>
     /// <remarks>
     /// Magic: "CHA"
     /// </remarks>
@@ -104,41 +98,26 @@ public enum GameAssetType
     /// </remarks>
     Material,
     
-    /// <summary>
-    /// TODO
-    /// </summary>
     /// <remarks>
     /// Magic: "DLC"
     /// </remarks>
     DownloadableContent,
     
-    /// <summary>
-    /// TODO
-    /// </summary>
     /// <remarks>
     /// Magic: "JNT"
     /// </remarks>
     Joint,
     
-    /// <summary>
-    /// TODO
-    /// </summary>
     /// <remarks>
     /// Magic: "CON"
     /// </remarks>
     GameConstants,
     
-    /// <summary>
-    /// TODO
-    /// </summary>
     /// <remarks>
     /// Magic: "POP"
     /// </remarks>
     PoppetSettings,
     
-    /// <summary>
-    /// TODO
-    /// </summary>
     /// <remarks>
     /// Magic: "CLD"
     /// </remarks>
@@ -169,89 +148,56 @@ public enum GameAssetType
     /// </remarks>
     Game,
     
-    /// <summary>
-    /// TODO
-    /// </summary>
     /// <remarks>
     /// Magic: "NWS"
     /// </remarks>
     SettingsNetwork,
     
-    /// <summary>
-    /// TODO
-    /// </summary>
     /// <remarks>
     /// Magic: "PCK"
     /// </remarks>
     Packs,
     
-    /// <summary>
-    /// TODO
-    /// </summary>
     /// <remarks>
     /// Magic: "BPR"
     /// </remarks>
     BigProfile,
     
-    /// <summary>
-    /// TODO
-    /// </summary>
     /// <remarks>
     /// Magic: "SLT"
     /// </remarks>
     SlotList,
     
-    /// <summary>
-    /// TODO
-    /// </summary>
     /// <remarks>
     /// Magic: "ADC"
     /// </remarks>
     AdventureCreateProfile,
     
-    /// <summary>
-    /// TODO
-    /// </summary>
     /// <remarks>
     /// Magic: "IPR"
     /// </remarks>
     LocalProfile,
     
-    /// <summary>
-    /// TODO
-    /// </summary>
     /// <remarks>
     /// Magic: "LMT"
     /// </remarks>
     LimitsSettings,
     
-    /// <summary>
-    /// TODO
-    /// </summary>
     /// <remarks>
     /// Magic: "TUT"
     /// </remarks>
     Tutorials,
     
-    /// <summary>
-    /// TODO
-    /// </summary>
     /// <remarks>
     /// Magic: "GLT"
     /// </remarks>
     GuidList,
     
-    /// <summary>
-    /// TODO
-    /// </summary>
     /// <remarks>
     /// Magic: "AUM"
     /// </remarks>
     AudioMaterials,
     
-    /// <summary>
-    /// TODO
-    /// </summary>
     /// <remarks>
     /// Magic: "SSF"
     /// </remarks>
@@ -273,25 +219,16 @@ public enum GameAssetType
     /// </remarks>
     TextureList,
     
-    /// <summary>
-    /// TODO
-    /// </summary>
     /// <remarks>
     /// Magic: "MUS"
     /// </remarks>
     MusicSettings,
     
-    /// <summary>
-    /// TODO
-    /// </summary>
     /// <remarks>
     /// Magic: "MIX"
     /// </remarks>
     MixerSettings,
     
-    /// <summary>
-    /// TODO
-    /// </summary>
     /// <remarks>
     /// Magic: "REP"
     /// </remarks>
@@ -305,17 +242,11 @@ public enum GameAssetType
     /// </remarks>
     Palette,
     
-    /// <summary>
-    /// TODO
-    /// </summary>
     /// <remarks>
     /// Magic: "SMH"
     /// </remarks>
     StaticMesh,
     
-    /// <summary>
-    /// TODO
-    /// </summary>
     /// <remarks>
     /// Magic: "ATX"
     /// </remarks>
@@ -329,33 +260,21 @@ public enum GameAssetType
     /// </remarks>
     VoiceRecording,
     
-    /// <summary>
-    /// TODO
-    /// </summary>
     /// <remarks>
     /// Magic: "PIN"
     /// </remarks>
     Pins,
     
-    /// <summary>
-    /// TODO
-    /// </summary>
     /// <remarks>
     /// Magic: "INS"
     /// </remarks>
     Instrument,
     
-    /// <summary>
-    /// TODO
-    /// </summary>
     /// <remarks>
     /// Magic: "OFT"
     /// </remarks>
     OutfitList,
     
-    /// <summary>
-    /// TODO
-    /// </summary>
     /// <remarks>
     /// Magic: "PBR"
     /// </remarks>
@@ -377,49 +296,31 @@ public enum GameAssetType
     /// </remarks>
     Painting,
     
-    /// <summary>
-    /// TODO
-    /// </summary>
     /// <remarks>
     /// Magic: "QST"
     /// </remarks>
     Quest,
     
-    /// <summary>
-    /// TODO
-    /// </summary>
     /// <remarks>
     /// Magic: "ABK"
     /// </remarks>
     AnimationBank,
     
-    /// <summary>
-    /// TODO
-    /// </summary>
     /// <remarks>
     /// Magic: "AST"
     /// </remarks>
     AnimationSet,
     
-    /// <summary>
-    /// TODO
-    /// </summary>
     /// <remarks>
     /// Magic: "SMP"
     /// </remarks>
     SkeletonMap,
     
-    /// <summary>
-    /// TODO
-    /// </summary>
     /// <remarks>
     /// Magic: "SRG"
     /// </remarks>
     SkeletonRegistry,
     
-    /// <summary>
-    /// TODO
-    /// </summary>
     /// <remarks>
     /// Magic: "SAS"
     /// </remarks>
@@ -434,49 +335,31 @@ public enum GameAssetType
     /// </remarks>
     StreamingLevelChunk,
     
-    /// <summary>
-    /// TODO
-    /// </summary>
     /// <remarks>
     /// Magic: "ADS"
     /// </remarks>
     AdventureSharedData,
     
-    /// <summary>
-    /// TODO
-    /// </summary>
     /// <remarks>
     /// Magic: "ADP"
     /// </remarks>
     AdventurePlayProfile,
     
-    /// <summary>
-    /// TODO
-    /// </summary>
     /// <remarks>
     /// Magic: "AMP"
     /// </remarks>
     AnimationMap,
     
-    /// <summary>
-    /// TODO
-    /// </summary>
     /// <remarks>
     /// Magic: "CCD"
     /// </remarks>
     CachedCostumeData,
     
-    /// <summary>
-    /// TODO
-    /// </summary>
     /// <remarks>
     /// Magic: "DLA"
     /// </remarks>
     DataLabels,
     
-    /// <summary>
-    /// TODO
-    /// </summary>
     /// <remarks>
     /// Magic: "ADM"
     /// </remarks>
@@ -519,7 +402,7 @@ public enum GameAssetType
 
 public static class GameAssetTypeExtensions
 {
-    private static Dictionary<int, GameAssetType> _lbpMagics = new()
+    private static readonly Dictionary<int, GameAssetType> _lbpMagics = new()
     {
         { BinaryPrimitives.ReadInt32BigEndian("TEX\0"u8), GameAssetType.Texture },
         { BinaryPrimitives.ReadInt32BigEndian("GTF\0"u8), GameAssetType.GameDataTexture },

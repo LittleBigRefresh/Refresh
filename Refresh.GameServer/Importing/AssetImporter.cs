@@ -55,7 +55,7 @@ public class AssetImporter : Importer
             }
 
             assets.Add(newAsset);
-            this.Info($"Processed {newAsset.AssetType} asset {hash} ({AssetSafetyLevelExtensions.FromAssetType(newAsset.AssetType, newAsset.AssetSerializationMethod)})");
+            this.Info($"Processed {newAsset.AssetType} asset {hash} ({AssetSafetyLevelExtensions.FromAssetType(newAsset.AssetType, newAsset.AssetFormat)})");
         }
         
         database.AddOrUpdateAssetsInDatabase(assets);
@@ -100,24 +100,24 @@ public class AssetImporter : Importer
             return null;
         }
         
-        (GameAssetType gameAssetType, GameSerializationMethod gameSerializationMethod) = this.DetermineAssetType(data, platform);
+        (GameAssetType assetType, GameAssetFormat assetFormat) = this.DetermineAssetType(data, platform);
         
         GameAsset asset = new()
         {
             UploadDate = this._timeProvider.Now,
             OriginalUploader = null,
             AssetHash = hash,
-            AssetType = gameAssetType,
-            AssetSerializationMethod = gameSerializationMethod,
+            AssetType = assetType,
+            AssetFormat = assetFormat,
             IsPSP = platform == TokenPlatform.PSP,
             SizeInBytes = data.Length,
         };
         
-        if (AssetTypeHasDependencyTree(asset.AssetType, data))
+        if (asset.AssetFormat.HasDependencyTree())
         {
             try
             {
-                List<string> dependencies = this.ParseDependencyTree(data);
+                List<string> dependencies = this.ParseAssetDependencies(data);
                 foreach (string dependency in dependencies)
                 {
                     asset.Dependencies.Add(dependency);
@@ -132,43 +132,30 @@ public class AssetImporter : Importer
         return asset;
     }
 
-    [Pure]
-    private static bool AssetTypeHasDependencyTree(GameAssetType type, byte[] data)
+    // See toolkit's source code for this: https://github.com/ennuo/toolkit/blob/15342e1afca2d5ac1de49e207922099e7aacef86/lib/cwlib/src/main/java/cwlib/types/SerializedResource.java#L113
+    private List<string> ParseAssetDependencies(byte[] data)
     {
-        if (type is GameAssetType.Jpeg
-            or GameAssetType.Png
-            or GameAssetType.Tga
-            or GameAssetType.Texture
-            or GameAssetType.GameDataTexture
-            or GameAssetType.Mip
-            or GameAssetType.Unknown)
-        {
-            return false;
-        }
-        
-        #if DEBUG
-        char typeChar = (char)data[3];
-        if (typeChar != 'b') throw new Exception($"Asset type {type} is not binary (char was '{typeChar}')");
-        #endif
-
-        return true;
-    }
-
-    private List<string> ParseDependencyTree(byte[] data)
-    {
-        List<string> dependencies = new();
-        
-        // Parse dependency table
         MemoryStream ms = new(data);
         BEBinaryReader reader = new(ms);
+        
+        // Read magic from the asset
+        reader.ReadUInt32();
+        
+        // Read the head revision of the asset 
+        uint head = reader.ReadUInt32();
+        
+        // Dependency lists were only added in revision 0x109, so if we are less than that, then just skip trying to parse out the dependency tree
+        if (head < 0x109) 
+            return [];
 
-        ms.Seek(8, SeekOrigin.Begin);
         uint dependencyTableOffset = reader.ReadUInt32();
 
         ms.Seek(dependencyTableOffset, SeekOrigin.Begin);
         uint dependencyCount = reader.ReadUInt32();
 
-        this.Debug($"Dependency count offset: {dependencyTableOffset}, count: {dependencyCount}");
+        this.Debug($"Dependency table offset: {dependencyTableOffset}, count: {dependencyCount}");
+        
+        List<string> dependencies = [];
 
         Span<byte> hashBuffer = stackalloc byte[20];
         for (int i = 0; i < dependencyCount; i++)

@@ -20,43 +20,30 @@ public enum AssetFlags
 
 public static class AssetSafetyLevelExtensions
 {
-    public static AssetFlags FromAssetType(GameAssetType type, GameSerializationMethod? method)
+    public static AssetFlags FromAssetType(GameAssetType type, GameAssetFormat? method)
     {
-        return type switch
+        AssetFlags flags = type switch
         {
-            // Non-binary levels will not be loadable 
-            GameAssetType.Level => method == GameSerializationMethod.Binary
-                ? AssetFlags.None
-                : AssetFlags.Dangerous | AssetFlags.Modded,
-            GameAssetType.StreamingLevelChunk => method == GameSerializationMethod.Binary
-                ? AssetFlags.None
-                : AssetFlags.Dangerous | AssetFlags.Modded,
-            GameAssetType.Plan => method == GameSerializationMethod.Binary ? AssetFlags.None : AssetFlags.Modded,
-            GameAssetType.ThingRecording => method == GameSerializationMethod.Binary ? AssetFlags.None : AssetFlags.Modded,
-            GameAssetType.SyncedProfile => method == GameSerializationMethod.Binary ? AssetFlags.None : AssetFlags.Modded,
-            GameAssetType.GriefSongState => method == GameSerializationMethod.Binary ? AssetFlags.None : AssetFlags.Modded,
-            GameAssetType.Quest => method == GameSerializationMethod.Binary ? AssetFlags.None : AssetFlags.Modded,
-            GameAssetType.AdventureSharedData => method == GameSerializationMethod.Binary ? AssetFlags.None : AssetFlags.Modded,
-            GameAssetType.AdventureCreateProfile => method == GameSerializationMethod.Binary ? AssetFlags.None : AssetFlags.Modded,
+            GameAssetType.Level => AssetFlags.None,
+            GameAssetType.StreamingLevelChunk => AssetFlags.None,
+            GameAssetType.Plan => AssetFlags.None,
+            GameAssetType.ThingRecording => AssetFlags.None,
+            GameAssetType.SyncedProfile => AssetFlags.None,
+            GameAssetType.GriefSongState => AssetFlags.None,
+            GameAssetType.Quest => AssetFlags.None,
+            GameAssetType.AdventureSharedData => AssetFlags.None,
+            GameAssetType.AdventureCreateProfile => AssetFlags.None,
             
-            GameAssetType.VoiceRecording => method == GameSerializationMethod.Binary ? AssetFlags.Media : AssetFlags.Modded | AssetFlags.Media,
-            GameAssetType.Painting => method == GameSerializationMethod.Binary ? AssetFlags.Media : AssetFlags.Modded | AssetFlags.Media,
-            // Textures with the wrong serialization method will not be loadable
-            GameAssetType.Texture => method == GameSerializationMethod.CompressedTexture
-                ? AssetFlags.Media
-                : AssetFlags.Dangerous | AssetFlags.Modded | AssetFlags.Media,
+            GameAssetType.VoiceRecording => AssetFlags.Media,
+            GameAssetType.Painting => AssetFlags.Media,
+            GameAssetType.Texture => AssetFlags.Media,
             GameAssetType.Jpeg => AssetFlags.Media,
             GameAssetType.Png => AssetFlags.Media,
             GameAssetType.Tga => AssetFlags.Media,
             GameAssetType.Mip => AssetFlags.Media,
             
-            // Textures with the wrong serialization method will not be loadable
-            GameAssetType.GameDataTexture => method == GameSerializationMethod.CompressedTexture
-                ? AssetFlags.Modded | AssetFlags.Media
-                : AssetFlags.Dangerous | AssetFlags.Media | AssetFlags.Modded,
-            GameAssetType.AnimatedTexture => method == GameSerializationMethod.Binary
-                ? AssetFlags.Modded | AssetFlags.Media
-                : AssetFlags.Dangerous | AssetFlags.Modded | AssetFlags.Media,
+            GameAssetType.GameDataTexture => AssetFlags.Media | AssetFlags.Modded,
+            GameAssetType.AnimatedTexture => AssetFlags.Media | AssetFlags.Modded,
             
             GameAssetType.GfxMaterial => AssetFlags.Modded,
             GameAssetType.Material => AssetFlags.Modded,
@@ -73,6 +60,7 @@ public static class AssetSafetyLevelExtensions
             
             GameAssetType.Script => AssetFlags.Dangerous | AssetFlags.Modded,
             
+            // All of these types have no purpose when referenced as hashed assets
             GameAssetType.GuidSubstitution => AssetFlags.Dangerous | AssetFlags.Modded,
             GameAssetType.DownloadableContent => AssetFlags.Dangerous | AssetFlags.Modded,
             GameAssetType.GameConstants => AssetFlags.Dangerous | AssetFlags.Modded,
@@ -110,5 +98,18 @@ public static class AssetSafetyLevelExtensions
             
             _ => throw new ArgumentOutOfRangeException(nameof(type), type, null),
         };
+        
+        flags |= type switch {
+            // Non-binary levels will not be loadable 
+            GameAssetType.Level => method != GameAssetFormat.Binary ? AssetFlags.Dangerous : AssetFlags.None,
+            GameAssetType.StreamingLevelChunk => method != GameAssetFormat.Binary ? AssetFlags.Dangerous : AssetFlags.None,
+            // Textures with the wrong serialization method will not be loadable
+            GameAssetType.Texture => method != GameAssetFormat.CompressedTexture ? AssetFlags.Dangerous : AssetFlags.None,
+            GameAssetType.GameDataTexture => method != GameAssetFormat.CompressedTexture ? AssetFlags.Dangerous : AssetFlags.None,
+            GameAssetType.AnimatedTexture => method != GameAssetFormat.CompressedTexture ? AssetFlags.Dangerous : AssetFlags.None,
+            _ => AssetFlags.None,
+        };
+        
+        return flags;
     }
 }

@@ -181,29 +181,36 @@ public abstract class Importer
         return true;
     }
 
-    protected (GameAssetType, GameSerializationMethod) DetermineAssetType(Span<byte> data, TokenPlatform? tokenPlatform)
+    protected (GameAssetType, GameAssetFormat) DetermineAssetType(Span<byte> data, TokenPlatform? tokenPlatform)
     {
         GameAssetType? lbpAssetType = GameAssetTypeExtensions.LbpMagicToGameAssetType(data.Slice(0, 3));
         
         if (lbpAssetType != null)
         {
-            return (lbpAssetType.Value, (GameSerializationMethod)data[3]);
+            // If the asset format is a valid asset format, then return the asset type and format
+            if (Enum.IsDefined(typeof(GameAssetFormat), data[3])) 
+                return (lbpAssetType.Value, (GameAssetFormat)data[3]);
+            
+            // If the asset format is not a valid format, then we don't know what this asset is, all real serialized LBP assets will have a valid asset format
+            this.Warn($"Unknown asset format for game asset [0x{Convert.ToHexString(data[..4])}] [str: {Encoding.ASCII.GetString(data[..4])}]");
+            return (GameAssetType.Unknown, GameAssetFormat.Unknown);
         }
         
+        // MATT is a special format constructed by the game when making a grief report. It does not follow standard serialization rules, so it's not caught by the above lines
         if (MatchesMagic(data, "MATT"u8)) 
-            return (GameAssetType.GriefSongState, GameSerializationMethod.Unknown);
+            return (GameAssetType.GriefSongState, GameAssetFormat.Unknown);
         
         // Traditional files
         // Good reference for magics: https://en.wikipedia.org/wiki/List_of_file_signatures
-        if (MatchesMagic(data, 0xFFD8FFE0)) return (GameAssetType.Jpeg, GameSerializationMethod.Unknown);
-        if (MatchesMagic(data, 0x89504E470D0A1A0A)) return (GameAssetType.Png, GameSerializationMethod.Unknown);
+        if (MatchesMagic(data, 0xFFD8FFE0)) return (GameAssetType.Jpeg, GameAssetFormat.Unknown);
+        if (MatchesMagic(data, 0x89504E470D0A1A0A)) return (GameAssetType.Png, GameAssetFormat.Unknown);
 
         // ReSharper disable once ConvertIfStatementToSwitchStatement
-        if (tokenPlatform is null or TokenPlatform.PSP && IsPspTga(data)) return (GameAssetType.Tga, GameSerializationMethod.Unknown);
-        if (tokenPlatform is null or TokenPlatform.PSP && this.IsMip(data)) return (GameAssetType.Mip, GameSerializationMethod.Unknown);
+        if (tokenPlatform is null or TokenPlatform.PSP && IsPspTga(data)) return (GameAssetType.Tga, GameAssetFormat.Unknown);
+        if (tokenPlatform is null or TokenPlatform.PSP && this.IsMip(data)) return (GameAssetType.Mip, GameAssetFormat.Unknown);
                     
         this.Warn($"Unknown asset header [0x{Convert.ToHexString(data[..4])}] [str: {Encoding.ASCII.GetString(data[..4])}]");
 
-        return (GameAssetType.Unknown, GameSerializationMethod.Unknown);
+        return (GameAssetType.Unknown, GameAssetFormat.Unknown);
     }
 }
