@@ -586,10 +586,10 @@ public static class GameAssetTypeExtensions
     {
         int magicInt = magic[0] << 24 | magic[1] << 16 | magic[2] << 8;
         
-        if (_lbpMagics.TryGetValue(magicInt, out GameAssetType assetType))
-            return assetType;
+        if (!_lbpMagics.TryGetValue(magicInt, out GameAssetType assetType))
+            return null;
         
-        return null;
+        return assetType;
     }
     
     public static string Magic(this GameAssetType type)
