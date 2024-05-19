@@ -7,6 +7,7 @@ using Bunkum.Protocols.Http;
 using Refresh.GameServer.Authentication;
 using Refresh.GameServer.Database;
 using Refresh.GameServer.Extensions;
+using Refresh.GameServer.Types.Data;
 using Refresh.GameServer.Types.Lists;
 using Refresh.GameServer.Types.Photos;
 using Refresh.GameServer.Types.Roles;
@@ -52,7 +53,7 @@ public class PhotoEndpoints : EndpointGroup
         return OK;
     }
     
-    private static Response GetPhotos(RequestContext context, GameDatabaseContext database, IDataStore dataStore, TokenGame game, Func<GameUser, int, int, DatabaseList<GamePhoto>> photoGetter)
+    private static Response GetPhotos(RequestContext context, GameDatabaseContext database, DataContext dataContext, Func<GameUser, int, int, DatabaseList<GamePhoto>> photoGetter)
     {
         string? username = context.QueryString.Get("user");
         if (username == null) return BadRequest;
@@ -64,7 +65,7 @@ public class PhotoEndpoints : EndpointGroup
 
         // count not used ingame
         IEnumerable<SerializedPhoto> photos = photoGetter.Invoke(user, count, skip).Items
-            .Select(photo => SerializedPhoto.FromGamePhotoWithExtraData(photo, database, dataStore, game));
+            .Select(photo => SerializedPhoto.FromGamePhoto(photo, dataContext));
 
         return new Response(new SerializedPhotoList(photos), ContentType.Xml);
     }
@@ -72,12 +73,12 @@ public class PhotoEndpoints : EndpointGroup
     [GameEndpoint("photos/with", ContentType.Xml)]
     [Authentication(false)]
     [MinimumRole(GameUserRole.Restricted)]
-    public Response PhotosWithUser(RequestContext context, GameDatabaseContext database, IDataStore dataStore, Token token) 
-        => GetPhotos(context, database, dataStore, token.TokenGame, database.GetPhotosWithUser);
+    public Response PhotosWithUser(RequestContext context, GameDatabaseContext database, DataContext dataContext) 
+        => GetPhotos(context, database, dataContext, database.GetPhotosWithUser);
     
     [GameEndpoint("photos/by", ContentType.Xml)]
     [Authentication(false)]
     [MinimumRole(GameUserRole.Restricted)]
-    public Response PhotosByUser(RequestContext context, GameDatabaseContext database, IDataStore dataStore, Token token) 
-        => GetPhotos(context, database, dataStore, token.TokenGame, database.GetPhotosByUser);
+    public Response PhotosByUser(RequestContext context, GameDatabaseContext database, DataContext dataContext) 
+        => GetPhotos(context, database, dataContext, database.GetPhotosByUser);
 }

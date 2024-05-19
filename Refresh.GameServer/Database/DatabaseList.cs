@@ -1,4 +1,5 @@
 using Refresh.GameServer.Endpoints.ApiV3.DataTypes;
+using Refresh.GameServer.Types.Data;
 
 namespace Refresh.GameServer.Database;
 
@@ -54,11 +55,12 @@ public class DatabaseList<TObject> where TObject : class
     //     return newList;
     // }
     
-    public static DatabaseList<TNewObject> FromOldList<TNewObject, TOldObject>(DatabaseList<TOldObject> oldList)
+    public static DatabaseList<TNewObject> FromOldList<TNewObject, TOldObject>(DatabaseList<TOldObject> oldList,
+        DataContext dataContext)
         where TNewObject : class, IDataConvertableFrom<TNewObject, TOldObject>
         where TOldObject : class
     {
-        DatabaseList<TNewObject> newList = new(oldList.TotalItems, oldList.NextPageIndex, TNewObject.FromOldList(oldList.Items));
+        DatabaseList<TNewObject> newList = new(oldList.TotalItems, oldList.NextPageIndex, TNewObject.FromOldList(oldList.Items, dataContext));
         return newList;
     }
 

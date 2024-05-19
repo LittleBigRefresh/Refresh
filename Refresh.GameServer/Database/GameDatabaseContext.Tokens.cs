@@ -132,6 +132,11 @@ public partial class GameDatabaseContext // Tokens
             this._realm.RemoveRange(this._realm.All<Token>().Where(t => t.User == user && t._TokenType == (int)type));
         });
     }
+    
+    public bool IsTokenExpired(Token token) => token.ExpiresAt < this._time.Now;
+    
+    public DatabaseList<Token> GetAllTokens()
+        => new(this._realm.All<Token>());
 
     public void AddIpVerificationRequest(GameUser user, string ipAddress)
     {

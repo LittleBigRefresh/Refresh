@@ -7,6 +7,7 @@ using Bunkum.Protocols.Http;
 using Refresh.GameServer.Database;
 using Refresh.GameServer.Extensions;
 using Refresh.GameServer.Time;
+using Refresh.GameServer.Types.Data;
 using Refresh.GameServer.Types.Levels;
 using Refresh.GameServer.Types.Reviews;
 using Refresh.GameServer.Types.UserData;
@@ -63,7 +64,8 @@ public class ReviewEndpoints : EndpointGroup
 
     [GameEndpoint("reviewsFor/{slotType}/{id}", ContentType.Xml)]
     [AllowEmptyBody]
-    public Response GetReviewsForLevel(RequestContext context, GameDatabaseContext database, string slotType, int id)
+    public Response GetReviewsForLevel(RequestContext context, GameDatabaseContext database, string slotType, int id,
+        DataContext dataContext)
     {
         GameLevel? level = database.GetLevelByIdAndType(slotType, id);
 
@@ -72,12 +74,13 @@ public class ReviewEndpoints : EndpointGroup
 
         (int skip, int count) =  context.GetPageData();
         
-        return new Response(new SerializedGameReviewResponse(items: SerializedGameReview.FromOldList(database.GetReviewsForLevel(level, count, skip).Items).ToList()), ContentType.Xml);
+        return new Response(new SerializedGameReviewResponse(items: SerializedGameReview.FromOldList(database.GetReviewsForLevel(level, count, skip).Items, dataContext).ToList()), ContentType.Xml);
     }
     
     [GameEndpoint("reviewsBy/{username}", ContentType.Xml)]
     [AllowEmptyBody]
-    public Response GetReviewsForLevel(RequestContext context, GameDatabaseContext database, string username)
+    public Response GetReviewsForLevel(RequestContext context, GameDatabaseContext database, string username,
+        DataContext dataContext)
     {
         GameUser? user = database.GetUserByUsername(username);
         
@@ -86,7 +89,7 @@ public class ReviewEndpoints : EndpointGroup
 
         (int skip, int count) =  context.GetPageData();
         
-        return new Response(new SerializedGameReviewResponse(SerializedGameReview.FromOldList(database.GetReviewsByUser(user, count, skip).Items).ToList()), ContentType.Xml);
+        return new Response(new SerializedGameReviewResponse(SerializedGameReview.FromOldList(database.GetReviewsByUser(user, count, skip).Items, dataContext).ToList()), ContentType.Xml);
     }
 
     [GameEndpoint("postReview/{slotType}/{id}", ContentType.Xml, HttpMethods.Post)]

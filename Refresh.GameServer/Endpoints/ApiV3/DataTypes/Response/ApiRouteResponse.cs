@@ -1,10 +1,11 @@
 using AttribDoc;
+using Refresh.GameServer.Types.Data;
 using Refresh.GameServer.Types.Roles;
 
 namespace Refresh.GameServer.Endpoints.ApiV3.DataTypes.Response;
 
 [JsonObject(NamingStrategyType = typeof(CamelCaseNamingStrategy))]
-public class ApiRouteResponse : IApiResponse, IDataConvertableFrom<ApiRouteResponse, Route>
+public class ApiRouteResponse : IApiResponse
 {
     public required string Method { get; set; }
     public required string RouteUri { get; set; }
@@ -30,5 +31,5 @@ public class ApiRouteResponse : IApiResponse, IDataConvertableFrom<ApiRouteRespo
         };
     }
 
-    public static IEnumerable<ApiRouteResponse> FromOldList(IEnumerable<Route> oldList) => oldList.Select(FromOld).ToList()!;
+    public static IEnumerable<ApiRouteResponse> FromOldList(IEnumerable<Route> oldList) => oldList.Select(old => FromOld(old)).ToList()!;
 }

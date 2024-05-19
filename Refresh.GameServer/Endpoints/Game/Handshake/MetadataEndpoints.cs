@@ -34,7 +34,7 @@ public class MetadataEndpoints : EndpointGroup
     {
         IEnumerable<GameUser> friends = body.FriendsList.Names
             .Take(128) // should be way more than enough - we'll see if this becomes a problem
-            .Select(database.GetUserByUsername)
+            .Select(username => database.GetUserByUsername(username))
             .Where(u => u != null)!;
         
         foreach (GameUser userToFavourite in friends)

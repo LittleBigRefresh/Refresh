@@ -23,6 +23,14 @@ public partial class GameDatabaseContext // Contests
         });
     }
     
+    public void DeleteContest(GameContest contest)
+    {
+        this._realm.Write(() =>
+        {
+            this._realm.Remove(contest);
+        });
+    }
+    
     public GameContest? GetContestById(string? id)
     {
         if (id == null) return null;
@@ -65,6 +73,12 @@ public partial class GameDatabaseContext // Contests
                 contest.ContestSummary = body.ContestSummary;
             if(body.ContestDetails != null)
                 contest.ContestDetails = body.ContestDetails;
+            if (body.ContestTheme != null)
+                contest.ContestTheme = body.ContestTheme;
+            if (body.AllowedGames != null)
+                contest.AllowedGames = body.AllowedGames;
+            if (body.TemplateLevelId != null)
+                contest.TemplateLevel = this.GetLevelById((int)body.TemplateLevelId);
         });
         
         return contest;
@@ -79,6 +93,8 @@ public partial class GameDatabaseContext // Contests
         return new DatabaseList<GameLevel>(this.GetLevelsByGameVersion(levelFilterSettings.GameVersion)
             .FilterByLevelFilterSettings(user, levelFilterSettings)
             .Where(l => l.Title.Contains(contest.ContestTag))
-            .Where(l => l.PublishDate >= start && l.PublishDate < end), skip, count);
+            .Where(l => l.PublishDate >= start && l.PublishDate < end)
+            .AsEnumerable() // This shouldn't be a noticeable performance hit, since levels that aren't for the contest have already been filtered out
+            .Where(l => contest.AllowedGames.Contains(l.GameVersion)), skip, count);
     }
 }

@@ -15,6 +15,7 @@ using Refresh.GameServer.Endpoints.ApiV3.DataTypes.Request.Authentication;
 using Refresh.GameServer.Endpoints.ApiV3.DataTypes.Response;
 using Refresh.GameServer.Extensions;
 using Refresh.GameServer.Services;
+using Refresh.GameServer.Types.Data;
 using Refresh.GameServer.Types.Roles;
 using Refresh.GameServer.Types.UserData;
 using Refresh.GameServer.Verification;
@@ -181,12 +182,13 @@ public class AuthenticationApiEndpoints : EndpointGroup
     // IP Verification
     [ApiV3Endpoint("verificationRequests"), MinimumRole(GameUserRole.Restricted)]
     [DocSummary("Retrieves a list of IP addresses that have attempted to connect.")]
-    public ApiListResponse<ApiGameIpVerificationRequestResponse> GetVerificationRequests(RequestContext context, GameDatabaseContext database, GameUser user)
+    public ApiListResponse<ApiGameIpVerificationRequestResponse> GetVerificationRequests(RequestContext context,
+        GameDatabaseContext database, GameUser user, DataContext dataContext)
     {
-        (int skip, int count) = context.GetPageData(true);
+        (int skip, int count) = context.GetPageData();
 
         return DatabaseList<ApiGameIpVerificationRequestResponse>.FromOldList<ApiGameIpVerificationRequestResponse, GameIpVerificationRequest>
-                (database.GetIpVerificationRequestsForUser(user, count, skip));
+                (database.GetIpVerificationRequestsForUser(user, count, skip), dataContext);
     }
 
     [ApiV3Endpoint("verificationRequests/approve", HttpMethods.Put)]
@@ -221,7 +223,7 @@ public class AuthenticationApiEndpoints : EndpointGroup
     [DocSummary("Registers a new user.")]
     [DocRequestBody(typeof(ApiRegisterRequest))]
     #if !DEBUG
-    [RateLimitSettings(86400, 1, 86400 / 2, "register")]
+    [RateLimitSettings(3600, 5, 3600 / 2, "register")]
     #endif
     public ApiResponse<IApiAuthenticationResponse> Register(RequestContext context,
         GameDatabaseContext database,
@@ -262,8 +264,9 @@ public class AuthenticationApiEndpoints : EndpointGroup
         {
             database.AddRegistrationToQueue(body.Username, body.EmailAddress, passwordBcrypt);
             return new ApiAuthenticationError(
-                "Your account has been created, but it is not yet activated. " +
-                "To complete registration, simply log in from LBP and your new account will be activated.", true);
+                "Your account has been put into the registration queue, but it is not yet activated. " +
+                "To complete registration, patch your games to our servers and start playing within the next hour and your new account will be activated. " +
+                "You will be unable to sign in until you are patched and playing. For more instructions on patching, please visit https://docs.littlebigrefresh.com", true);
         }
 
         GameUser user = database.CreateUser(body.Username, body.EmailAddress, true);

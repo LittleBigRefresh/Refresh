@@ -1,6 +1,7 @@
 using System.Xml.Serialization;
 using Refresh.GameServer.Database;
 using Refresh.GameServer.Endpoints.ApiV3.DataTypes;
+using Refresh.GameServer.Types.Data;
 using Refresh.GameServer.Types.Levels;
 using Refresh.GameServer.Types.UserData;
 
@@ -49,11 +50,12 @@ public class SerializedGameReview : IDataConvertableFrom<SerializedGameReview, G
     [XmlElement("yourthumb")]
     public RatingType YourThumb { get; set; }
 
-    public static SerializedGameReview? FromOld(GameReview? review)
+    public static SerializedGameReview? FromOld(GameReview? review, DataContext dataContext)
     {
         if (review == null) 
             return null;
         
+        // TODO: fill in review.YourThumb
         return new SerializedGameReview
         {
             Id = review.ReviewId,
@@ -74,11 +76,7 @@ public class SerializedGameReview : IDataConvertableFrom<SerializedGameReview, G
             YourThumb = 0,
         };
     }
-
-    public void FillInExtraData(GameDatabaseContext database, GameUser user)
-    {
-        //TODO: fill in this.YourThumb
-    }
     
-    public static IEnumerable<SerializedGameReview> FromOldList(IEnumerable<GameReview> oldList) => oldList.Select(FromOld).ToList()!;
+    public static IEnumerable<SerializedGameReview> FromOldList(IEnumerable<GameReview> oldList,
+        DataContext dataContext) => oldList.Select(old => FromOld(old, dataContext)).ToList()!;
 }

@@ -10,6 +10,7 @@ using Refresh.GameServer.Endpoints.ApiV3.ApiTypes;
 using Refresh.GameServer.Endpoints.ApiV3.ApiTypes.Errors;
 using Refresh.GameServer.Endpoints.ApiV3.DataTypes.Response;
 using Refresh.GameServer.Extensions;
+using Refresh.GameServer.Types.Data;
 using Refresh.GameServer.Types.Notifications;
 using Refresh.GameServer.Types.Roles;
 using Refresh.GameServer.Types.UserData;
@@ -20,19 +21,22 @@ public class NotificationApiEndpoints : EndpointGroup
 {
     [ApiV3Endpoint("notifications"), MinimumRole(GameUserRole.Restricted)]
     [DocUsesPageData, DocSummary("Gets a list of notifications stored for the user")]
-    public ApiListResponse<ApiGameNotificationResponse> GetNotifications(RequestContext context, GameUser user, GameDatabaseContext database)
+    public ApiListResponse<ApiGameNotificationResponse> GetNotifications(RequestContext context, GameUser user,
+        GameDatabaseContext database, DataContext dataContext)
     {
-        (int skip, int count) = context.GetPageData(true);
+        (int skip, int count) = context.GetPageData();
         DatabaseList<GameNotification> notifications = database.GetNotificationsByUser(user, count, skip);
-        return DatabaseList<ApiGameNotificationResponse>.FromOldList<ApiGameNotificationResponse, GameNotification>(notifications);
+        return DatabaseList<ApiGameNotificationResponse>.FromOldList<ApiGameNotificationResponse, GameNotification>(notifications, dataContext);
     }
 
     [ApiV3Endpoint("notifications/{uuid}"), MinimumRole(GameUserRole.Restricted)]
     [DocSummary("Gets a specific notification for a user")]
     [DocError(typeof(ApiValidationError), ApiValidationError.ObjectIdParseErrorWhen)]
     [DocError(typeof(ApiNotFoundError), "The notification cannot be found")]
-    public ApiResponse<ApiGameNotificationResponse> GetNotificationByUuid(RequestContext context, GameUser user, GameDatabaseContext database,
-        [DocSummary("The UUID of the notification")] string uuid)
+    public ApiResponse<ApiGameNotificationResponse> GetNotificationByUuid(RequestContext context, GameUser user,
+        GameDatabaseContext database,
+        [DocSummary("The UUID of the notification")]
+        string uuid, DataContext dataContext)
     {
         bool parsed = ObjectId.TryParse(uuid, out ObjectId objectId);
         if (!parsed) return ApiValidationError.ObjectIdParseError;
@@ -40,7 +44,7 @@ public class NotificationApiEndpoints : EndpointGroup
         GameNotification? notification = database.GetNotificationByUuid(user, objectId);
         if (notification == null) return ApiNotFoundError.Instance;
         
-        return ApiGameNotificationResponse.FromOld(notification);
+        return ApiGameNotificationResponse.FromOld(notification, dataContext);
     }
     
     [ApiV3Endpoint("notifications/{uuid}", HttpMethods.Delete), MinimumRole(GameUserRole.Restricted)]

@@ -10,6 +10,7 @@ using Refresh.GameServer.Endpoints.ApiV3.DataTypes.Response;
 using Refresh.GameServer.Extensions;
 using Refresh.GameServer.Services;
 using Refresh.GameServer.Types.Activity;
+using Refresh.GameServer.Types.Data;
 using Refresh.GameServer.Types.Levels;
 using Refresh.GameServer.Types.UserData;
 
@@ -23,22 +24,23 @@ public class ActivityApiEndpoints : EndpointGroup
     [DocUsesPageData, DocSummary("Fetch a list of recent happenings on the server.")]
     [DocQueryParam("timestamp", "A timestamp in unix seconds, used to search backwards.")]
     [DocError(typeof(ApiValidationError), ApiValidationError.NumberParseErrorWhen)]
-    public ApiResponse<ApiActivityPageResponse> GetRecentActivity(RequestContext context, GameDatabaseContext database, IDataStore dataStore)
+    public ApiResponse<ApiActivityPageResponse> GetRecentActivity(RequestContext context, GameDatabaseContext database,
+        IDataStore dataStore, DataContext dataContext)
     {
         long timestamp = 0;
 
         string? tsStr = context.QueryString["timestamp"];
         if (tsStr != null && !long.TryParse(tsStr, out timestamp)) return ApiValidationError.NumberParseError;
         
-        (int skip, int count) = context.GetPageData(true);
+        (int skip, int count) = context.GetPageData();
 
         ActivityPage page = ActivityPage.GlobalActivity(database, new ActivityQueryParameters
         {
             Timestamp = timestamp,
             Count = count,
             Skip = skip,
-        }, false);
-        return ApiActivityPageResponse.FromOldWithExtraData(page, database, dataStore);
+        }, dataContext, false);
+        return ApiActivityPageResponse.FromOld(page, dataContext);
     }
     
     [ApiV3Endpoint("levels/id/{id}/activity"), Authentication(false)]
@@ -46,8 +48,9 @@ public class ActivityApiEndpoints : EndpointGroup
     [DocQueryParam("timestamp", "A timestamp in unix seconds, used to search backwards")]
     [DocError(typeof(ApiValidationError), ApiValidationError.NumberParseErrorWhen)]
     [DocError(typeof(ApiNotFoundError), "The level could not be found")]
-    public ApiResponse<ApiActivityPageResponse> GetRecentActivityForLevel(RequestContext context, GameDatabaseContext database, IDataStore dataStore, GameUser? user,
-        [DocSummary("The ID of the level")] int id)
+    public ApiResponse<ApiActivityPageResponse> GetRecentActivityForLevel(RequestContext context,
+        GameDatabaseContext database, IDataStore dataStore, GameUser? user,
+        [DocSummary("The ID of the level")] int id, DataContext dataContext)
     {
         long timestamp = 0;
 
@@ -57,7 +60,7 @@ public class ActivityApiEndpoints : EndpointGroup
         GameLevel? level = database.GetLevelById(id);
         if (level == null) return ApiNotFoundError.Instance;
         
-        (int skip, int count) = context.GetPageData(true);
+        (int skip, int count) = context.GetPageData();
         
         ActivityPage page = ActivityPage.ApiLevelActivity(database, level, new ActivityQueryParameters
         {
@@ -65,7 +68,7 @@ public class ActivityApiEndpoints : EndpointGroup
             Skip = skip,
             Count = count,
             User = user,
-        }, false);
-        return ApiActivityPageResponse.FromOldWithExtraData(page, database, dataStore);
+        }, dataContext, false);
+        return ApiActivityPageResponse.FromOld(page, dataContext);
     }
 }

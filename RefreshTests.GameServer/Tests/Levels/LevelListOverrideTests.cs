@@ -28,7 +28,7 @@ public class LevelListOverrideUnitTests
             LevelId = 1,
         };
         
-        service.AddOverridesForUser(user, new []{level});
+        service.AddIdOverridesForUser(user, new []{level});
     }
 }
 

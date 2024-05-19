@@ -1,3 +1,4 @@
+using System.Diagnostics;
 using System.Xml.Serialization;
 using Bunkum.Core.Storage;
 using Refresh.GameServer.Authentication;
@@ -7,6 +8,7 @@ using Refresh.GameServer.Extensions;
 using Refresh.GameServer.Services;
 using Refresh.GameServer.Types;
 using Refresh.GameServer.Types.Assets;
+using Refresh.GameServer.Types.Data;
 using Refresh.GameServer.Types.Levels;
 using Refresh.GameServer.Types.Levels.SkillRewards;
 using Refresh.GameServer.Types.Matching;
@@ -77,18 +79,67 @@ public class GameLevelResponse : IDataConvertableFrom<GameLevelResponse, GameLev
     [XmlElement("reviewsEnabled")] public bool ReviewsEnabled { get; set; } = true;
     [XmlElement("commentCount")] public int CommentCount { get; set; } = 0;
     [XmlElement("commentsEnabled")] public bool CommentsEnabled { get; set; } = true;
-
-    public static GameLevelResponse? FromOldWithExtraData(GameLevel? old, GameDatabaseContext database, MatchService matchService, GameUser user, IDataStore dataStore, TokenGame game)
+    
+    /// <summary>
+    /// Provides a unique level ID for ~1.1 billion hashed levels, uses the hash directly, so this is deterministic
+    /// </summary>
+    /// <param name="hash"></param>
+    /// <returns></returns>
+    public static int LevelIdFromHash(string hash)
     {
-        if (old == null) return null;
-
-        GameLevelResponse response = FromOld(old)!;
-        response.FillInExtraData(database, matchService, user, dataStore, game);
-
-        return response;
+        const int rangeStart = 1_000_000_000;
+        const int rangeEnd = int.MaxValue;
+        const int range = rangeEnd - rangeStart;
+        
+        return rangeStart + Math.Abs(hash.GetHashCode()) % range;
+    }
+    
+    public static GameLevelResponse FromHash(string hash, DataContext dataContext)
+    {
+        return new GameLevelResponse
+        {
+            LevelId = dataContext.Game == TokenGame.LittleBigPlanet3 ? LevelIdFromHash(hash) : int.MaxValue,
+            Title = $"Hashed Level - {hash}",
+            IconHash = "0",
+            GameVersion = 0,
+            RootResource = hash,
+            Description = "This is a hashed level. We don't know anything about it.",
+            Location = new GameLocation(),
+            Handle = new SerializedUserHandle
+            {
+                Username = $"!Hashed",
+                IconHash = "0",
+            },
+            Type = "user",
+            TeamPicked = false,
+            MinPlayers = 1,
+            MaxPlayers = 4,
+            HeartCount = 0,
+            TotalPlayCount = 0,
+            UniquePlayCount = 0,
+            YayCount = 0,
+            BooCount = 0,
+            AverageStarRating = 0,
+            YourStarRating = 0,
+            YourRating = 0,
+            PlayerCount = 0,
+            ReviewsEnabled = false,
+            ReviewCount = 0,
+            CommentsEnabled = false,
+            CommentCount = 0,
+            IsLocked = false,
+            IsSubLevel = false,
+            IsCopyable = 0,
+            PublishDate = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds(),
+            UpdateDate = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds(),
+            EnforceMinMaxPlayers = false,
+            SameScreenGame = false,
+            SkillRewards = [],
+            LevelType = "",
+        };
     }
 
-    public static GameLevelResponse? FromOld(GameLevel? old)
+    public static GameLevelResponse? FromOld(GameLevel? old, DataContext dataContext)
     {
         if (old == null) return null;
 
@@ -134,7 +185,7 @@ public class GameLevelResponse : IDataConvertableFrom<GameLevelResponse, GameLev
         response.Type = "user";
         if (old is { Publisher: not null, IsReUpload: false })
         {
-            response.Handle = SerializedUserHandle.FromUser(old.Publisher);
+            response.Handle = SerializedUserHandle.FromUser(old.Publisher, dataContext);
         }
         else
         {
@@ -153,35 +204,33 @@ public class GameLevelResponse : IDataConvertableFrom<GameLevelResponse, GameLev
             };
         }
         
+        if (dataContext.User != null)
+        {
+            RatingType? rating = dataContext.Database.GetRatingByUser(old, dataContext.User);
+            
+            response.YourRating = rating?.ToDPad() ?? (int)RatingType.Neutral;
+            response.YourStarRating = rating?.ToLBP1() ?? 0;
+            response.YourLbp2PlayCount = old.AllPlays.Count(p => p.User == dataContext.User);
+        }
+        
+        response.PlayerCount = dataContext.Match.GetPlayerCountForLevel(RoomSlotType.Online, response.LevelId);
+        
+        GameAsset? rootResourceAsset = dataContext.Database.GetAssetFromHash(response.RootResource);
+        if (rootResourceAsset != null)
+        {
+            rootResourceAsset.TraverseDependenciesRecursively(dataContext.Database, (_, asset) =>
+            {
+                if (asset != null)
+                    response.SizeOfResourcesInBytes += asset.SizeInBytes;
+            });
+        }
+        
+        response.IconHash = dataContext.Database.GetAssetFromHash(old.IconHash)?.GetAsIcon(dataContext.Game, dataContext) ?? response.IconHash;
+        
+        response.CommentCount = old.LevelComments.Count;
+        
         return response;
     }
 
-    public static IEnumerable<GameLevelResponse> FromOldList(IEnumerable<GameLevel> oldList) => oldList.Select(FromOld).ToList()!;
-
-    private void FillInExtraData(GameDatabaseContext database, MatchService matchService, GameUser user, IDataStore dataStore, TokenGame game)
-    {
-        GameLevel? level = database.GetLevelById(this.LevelId);
-        if (level == null) throw new InvalidOperationException("Cannot fill in level data for a level that does not exist.");
-
-        RatingType? rating = database.GetRatingByUser(level, user);
-        
-        this.YourRating = rating?.ToDPad() ?? (int)RatingType.Neutral;
-        this.YourStarRating = rating?.ToLBP1() ?? 0;
-        this.YourLbp2PlayCount = level.AllPlays.Count(p => p.User == user);
-        this.PlayerCount = matchService.GetPlayerCountForLevel(RoomSlotType.Online, this.LevelId);
-
-        GameAsset? rootResourceAsset = database.GetAssetFromHash(this.RootResource);
-        if (rootResourceAsset != null)
-        {
-            rootResourceAsset.TraverseDependenciesRecursively(database, (_, asset) =>
-            {
-                if (asset != null)
-                    this.SizeOfResourcesInBytes += asset.SizeInBytes;
-            });
-        }
-
-        this.IconHash = database.GetAssetFromHash(this.IconHash)?.GetAsIcon(game, database, dataStore) ?? this.IconHash;
-
-        this.CommentCount = level.LevelComments.Count;
-    }
+    public static IEnumerable<GameLevelResponse> FromOldList(IEnumerable<GameLevel> oldList, DataContext dataContext) => oldList.Select(old => FromOld(old, dataContext)).ToList()!;
 }

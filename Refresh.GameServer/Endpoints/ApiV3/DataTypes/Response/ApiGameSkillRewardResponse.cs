@@ -1,4 +1,5 @@
-﻿using Refresh.GameServer.Types.Levels.SkillRewards;
+﻿using Refresh.GameServer.Types.Data;
+using Refresh.GameServer.Types.Levels.SkillRewards;
 
 namespace Refresh.GameServer.Endpoints.ApiV3.DataTypes.Response;
 
@@ -11,7 +12,7 @@ public class ApiGameSkillRewardResponse : IApiResponse, IDataConvertableFrom<Api
     public float RequiredAmount { get; set; }
     public GameSkillRewardCondition ConditionType { get; set; }
 
-    public static ApiGameSkillRewardResponse? FromOld(GameSkillReward? old)
+    public static ApiGameSkillRewardResponse? FromOld(GameSkillReward? old, DataContext dataContext)
     {
         if (old == null) return null;
         
@@ -25,5 +26,6 @@ public class ApiGameSkillRewardResponse : IApiResponse, IDataConvertableFrom<Api
         };
     }
 
-    public static IEnumerable<ApiGameSkillRewardResponse> FromOldList(IEnumerable<GameSkillReward> oldList) => oldList.Select(FromOld).ToList()!;
+    public static IEnumerable<ApiGameSkillRewardResponse> FromOldList(IEnumerable<GameSkillReward> oldList,
+        DataContext dataContext) => oldList.Select(old => FromOld(old, dataContext)).ToList()!;
 }

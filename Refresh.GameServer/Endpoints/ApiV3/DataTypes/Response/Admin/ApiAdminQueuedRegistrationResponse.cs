@@ -1,3 +1,4 @@
+using Refresh.GameServer.Types.Data;
 using Refresh.GameServer.Types.UserData;
 
 namespace Refresh.GameServer.Endpoints.ApiV3.DataTypes.Response.Admin;
@@ -10,7 +11,7 @@ public class ApiAdminQueuedRegistrationResponse : IApiResponse, IDataConvertable
     public required string EmailAddress { get; set; }
     public required DateTimeOffset ExpiryDate { get; set; }
     
-    public static ApiAdminQueuedRegistrationResponse? FromOld(QueuedRegistration? old)
+    public static ApiAdminQueuedRegistrationResponse? FromOld(QueuedRegistration? old, DataContext dataContext)
     {
         if (old == null) return null;
 
@@ -23,5 +24,6 @@ public class ApiAdminQueuedRegistrationResponse : IApiResponse, IDataConvertable
         };
     }
 
-    public static IEnumerable<ApiAdminQueuedRegistrationResponse> FromOldList(IEnumerable<QueuedRegistration> oldList) => oldList.Select(FromOld).ToList()!;
+    public static IEnumerable<ApiAdminQueuedRegistrationResponse> FromOldList(IEnumerable<QueuedRegistration> oldList,
+        DataContext dataContext) => oldList.Select(old => FromOld(old, dataContext)).ToList()!;
 }

@@ -84,7 +84,7 @@ public class DigestMiddleware : IMiddleware
 
     public void HandleRequest(ListenerContext context, Lazy<IDatabaseContext> database, Action next)
     {
-        //If this isnt an LBP endpoint, dont do digest
+        //If this isn't an LBP endpoint, dont do digest
         if (!context.Uri.AbsolutePath.StartsWith(GameEndpointAttribute.BaseRoute))
         {
             next();

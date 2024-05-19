@@ -9,6 +9,7 @@ using Refresh.GameServer.Endpoints.ApiV3.ApiTypes.Errors;
 using Refresh.GameServer.Endpoints.ApiV3.DataTypes.Request;
 using Refresh.GameServer.Endpoints.ApiV3.DataTypes.Response;
 using Refresh.GameServer.Types.Contests;
+using Refresh.GameServer.Types.Data;
 using Refresh.GameServer.Types.Roles;
 using Refresh.GameServer.Types.UserData;
 
@@ -21,7 +22,8 @@ public class AdminContestApiEndpoints : EndpointGroup
     [DocError(typeof(ApiValidationError), ApiValidationError.ResourceExistsErrorWhen)]
     [DocError(typeof(ApiValidationError), ApiValidationError.ObjectIdParseErrorWhen)]
     [DocError(typeof(ApiNotFoundError), ApiNotFoundError.UserMissingErrorWhen)]
-    public ApiResponse<ApiContestResponse> CreateContest(RequestContext context, GameDatabaseContext database, ApiContestRequest body, string id)
+    public ApiResponse<ApiContestResponse> CreateContest(RequestContext context, GameDatabaseContext database,
+        ApiContestRequest body, string id, DataContext dataContext)
     {
         if (database.GetContestById(id) != null)
             return ApiValidationError.ResourceExistsError;
@@ -45,10 +47,26 @@ public class AdminContestApiEndpoints : EndpointGroup
             ContestDetails = body.ContestDetails,
             StartDate = body.StartDate!.Value,
             EndDate = body.EndDate!.Value,
+            ContestTheme = body.ContestTheme,
+            AllowedGames = body.AllowedGames,
+            TemplateLevel = body.TemplateLevelId != null ? database.GetLevelById((int)body.TemplateLevelId) : null,
         };
         
         database.CreateContest(contest);
         
-        return ApiContestResponse.FromOld(contest);
+        return ApiContestResponse.FromOld(contest, dataContext);
+    }
+    
+    [ApiV3Endpoint("admin/contests/{id}", HttpMethods.Delete), MinimumRole(GameUserRole.Admin)]
+    [DocSummary("Deletes a contest.")]
+    [DocError(typeof(ApiNotFoundError), ApiNotFoundError.ContestMissingErrorWhen)]
+    public ApiOkResponse DeleteContest(RequestContext context, GameDatabaseContext database, string id)
+    {
+        GameContest? contest = database.GetContestById(id);
+        if (contest == null) return ApiNotFoundError.ContestMissingError;
+        
+        database.DeleteContest(contest);
+        
+        return new ApiOkResponse();
     }
 }

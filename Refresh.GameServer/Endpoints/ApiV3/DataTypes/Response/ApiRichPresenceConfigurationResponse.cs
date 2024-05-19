@@ -1,3 +1,4 @@
+using Refresh.GameServer.Types.Data;
 using Refresh.GameServer.Types.RichPresence;
 
 namespace Refresh.GameServer.Endpoints.ApiV3.DataTypes.Response;
@@ -9,7 +10,7 @@ public class ApiRichPresenceConfigurationResponse : IApiResponse, IDataConvertab
     public required string PartyIdPrefix { get; set; }
     public required RichPresenceAssetConfiguration AssetConfiguration { get; set; }
     
-    public static ApiRichPresenceConfigurationResponse? FromOld(RichPresenceConfiguration? old)
+    public static ApiRichPresenceConfigurationResponse? FromOld(RichPresenceConfiguration? old, DataContext dataContext)
     {
         if (old == null) return null;
 
@@ -21,7 +22,8 @@ public class ApiRichPresenceConfigurationResponse : IApiResponse, IDataConvertab
         };
     }
 
-    public static IEnumerable<ApiRichPresenceConfigurationResponse> FromOldList(IEnumerable<RichPresenceConfiguration> oldList)
+    public static IEnumerable<ApiRichPresenceConfigurationResponse> FromOldList(
+        IEnumerable<RichPresenceConfiguration> oldList, DataContext dataContext)
     {
         throw new NotImplementedException();
     }

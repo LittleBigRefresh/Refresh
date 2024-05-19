@@ -193,8 +193,8 @@ public partial class GameDatabaseContext // Levels
     }
 
     [Pure]
-    public DatabaseList<GameLevel> GetAllUserLevels() 
-        => new(this._realm.All<GameLevel>().Where(l => l._Source == (int)GameLevelSource.User));
+    public DatabaseList<GameLevel> GetUserLevelsChunk(int skip, int count)
+        => new(this._realm.All<GameLevel>().Where(l => l._Source == (int)GameLevelSource.User), skip, count);
 
     [Pure]
     public DatabaseList<GameLevel> GetNewestLevels(int count, int skip, GameUser? user, LevelFilterSettings levelFilterSettings) =>
@@ -346,8 +346,15 @@ public partial class GameDatabaseContext // Levels
                 levels.Add(idLevel);
             }
         }
+        
+        // Try to look up a username to search by publisher.
+        GameUser? publisher = this.GetUserByUsername(query, false); 
+        if (publisher != null)
+        {
+            levels.AddRange(validLevels.Where(l => l.Publisher == publisher));
+        }
 
-        return new DatabaseList<GameLevel>(levels, skip, count);
+        return new DatabaseList<GameLevel>(levels.OrderByDescending(l => l.Score), skip, count);
     }
 
     [Pure]

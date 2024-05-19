@@ -1,12 +1,16 @@
+using System.Diagnostics.CodeAnalysis;
+using System.Text;
 using System.Xml.Serialization;
 using Bunkum.Core;
 using Bunkum.Core.Endpoints;
-using Bunkum.Core.Endpoints.Debugging;
 using Bunkum.Core.Responses.Serialization;
 using Bunkum.Listener.Protocol;
 using Refresh.GameServer.Authentication;
 using Refresh.GameServer.Configuration;
 using Refresh.GameServer.Database;
+using Refresh.GameServer.Services;
+using Refresh.GameServer.Types.Contests;
+using Refresh.GameServer.Types.Matching;
 using Refresh.GameServer.Types.Notifications;
 using Refresh.GameServer.Types.Roles;
 using Refresh.GameServer.Types.UserData;
@@ -15,65 +19,110 @@ namespace Refresh.GameServer.Endpoints.Game;
 
 public class AnnouncementEndpoints : EndpointGroup
 {
-    private static string AnnounceGetNotifications(GameDatabaseContext database, GameUser user, GameServerConfig config)
+    private static bool AnnounceGetNotifications(StringBuilder output, GameDatabaseContext database, GameUser user, GameServerConfig config)
     {
         List<GameNotification> notifications = database.GetNotificationsByUser(user, 5, 0).Items.ToList();
         int count = database.GetNotificationCountByUser(user);
-        if (count == 0) return string.Empty;
+        if (count == 0) return false;
 
         string s = count != 1 ? "s" : string.Empty;
 
-        string notificationText = $"Howdy, {user.Username}. You have {count} notification{s}:\n\n";
+        output.Append($"Howdy, {user.Username}. You have {count} notification{s}:\n\n");
         for (int i = 0; i < notifications.Count; i++)
         {
             GameNotification notification = notifications[i];
-            notificationText += $"  {notification.Title} ({i + 1}/{count}):\n" +
-                                $"    {notification.Text}\n\n";
+            output.Append($"  {notification.Title} ({i + 1}/{count}):\n");
+            output.Append($"    {notification.Text}\n\n");
         }
 
-        notificationText += $"To view more, or clear these notifications, you can visit the website at {config.WebExternalUrl}!\n";
-
-        return notificationText;
+        output.Append($"To view more, or clear these notifications, you can visit the website at {config.WebExternalUrl}!\n");
+        return true;
     }
 
-    private static string AnnounceGetAnnouncements(GameDatabaseContext database)
+    private static bool AnnounceGetAnnouncements(StringBuilder output, GameDatabaseContext database)
     {
-        IEnumerable<GameAnnouncement> announcements = database.GetAnnouncements();
-        // it's time to allocate
-        return announcements.Aggregate(string.Empty, (current, announcement) => current + $"{announcement.Title}: {announcement.Text}\n");
+        IEnumerable<GameAnnouncement> announcements = database.GetAnnouncements().ToList();
+        foreach (GameAnnouncement announcement in announcements)
+            output.Append($"{announcement.Title}: {announcement.Text}\n");
+        
+        return announcements.Any();
+    }
+    
+    private static bool AnnounceGetContest(StringBuilder output, Token token, GameDatabaseContext database, GameServerConfig config)
+    {
+        GameContest? contest = database.GetNewestActiveContest();
+        if (contest == null) return false;
+        
+        // only show contests for the current game
+        if (!contest.AllowedGames.Contains(token.TokenGame)) return false;
+        
+        output.Append("There's a contest live right now!\n\n");
+        output.AppendLine($"** {contest.ContestTitle} **");
+        
+        output.Append("Summary: ");
+        output.AppendLine(contest.ContestSummary);
+        if (!string.IsNullOrWhiteSpace(contest.ContestTheme))
+        {
+            output.Append("Theme: ");
+            output.AppendLine(contest.ContestTheme);
+        }
+        
+        output.AppendLine($"See more on the website: {config.WebExternalUrl}/contests/{contest.ContestId}");
+        
+        return true;
     }
 
     [GameEndpoint("announce")]
     [MinimumRole(GameUserRole.Restricted)]
+    [SuppressMessage("ReSharper", "RedundantAssignment")]
     public string Announce(RequestContext context, GameServerConfig config, GameUser user, GameDatabaseContext database, Token token)
     {
         if (user.Role == GameUserRole.Restricted)
         {
-            return "Your account is currently in restricted mode.\n\n" +
-                   "You can still play, but you won't be able to publish levels, post comments," +
-                   "or otherwise interact with the community." +
-                   "For more information, please contact an administrator.";
+            return """
+                   Your account is currently in restricted mode.
+                   
+                   You can still play, but you won't be able to publish levels, post comments, or otherwise interact with the community.
+                   For more information, please contact an administrator.
+                   """;
         }
         
-        string announcements = AnnounceGetAnnouncements(database);
+        // ReSharper disable once JoinDeclarationAndInitializer (makes it easier to follow)
+        bool appended;
+        StringBuilder output = new();
+        
+        appended = AnnounceGetAnnouncements(output, database);
+        
+        if (appended) output.Append('\n');
+        appended = AnnounceGetContest(output, token, database, config);
         
         // All games except PSP support real-time notifications.
-        // If we're not playing on PSP, move forward to check for notifications.
-        if (token.TokenGame != TokenGame.LittleBigPlanetPSP) return announcements;
+        // If we're playing on PSP, check for notifications.
+        if (token.TokenGame == TokenGame.LittleBigPlanetPSP)
+        {
+            if (appended) output.Append('\n');
+            appended = AnnounceGetNotifications(output, database, user, config);
+        }
         
-        string notifications = AnnounceGetNotifications(database, user, config);
-
-        if (announcements.Length == 0) return notifications;
-        if (notifications.Length == 0) return announcements;
-        return announcements + "\n" + notifications; // I HATE IT WHYYYYYYYYYYYY
+        return output.ToString();
     }
 
     [GameEndpoint("notification", ContentType.Xml)]
     [MinimumRole(GameUserRole.Restricted)]
-    public string Notification(RequestContext context, GameServerConfig config, GameUser user, GameDatabaseContext database)
+    public string Notification(RequestContext context, GameServerConfig config, Token token, GameDatabaseContext database, MatchService matchService)
     {
-        DatabaseList<GameNotification> notifications = database.GetNotificationsByUser(user, 3, 0);
-        // ReSharper disable once LoopCanBeConvertedToQuery (makes it unreadable)
+        // On LBP1 the only regular ticking request is /notification,
+        // so we update the "last contact" of the user's room when we receive a notification request to prevent LBP1 rooms from being auto-closed early
+        GameRoom? room = matchService.RoomAccessor.GetRoomByUser(token.User, token.TokenPlatform, token.TokenGame);
+        
+        if (room != null)
+        {
+            room.LastContact = DateTimeOffset.Now;
+            
+            matchService.RoomAccessor.UpdateRoom(room);
+        }
+        
+        DatabaseList<GameNotification> notifications = database.GetNotificationsByUser(token.User, 3, 0);
         
         using MemoryStream ms = new();
         using BunkumXmlTextWriter bunkumXmlTextWriter = new(ms);

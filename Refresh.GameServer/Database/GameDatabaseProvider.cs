@@ -34,7 +34,7 @@ public class GameDatabaseProvider : RealmDatabaseProvider<GameDatabaseContext>
         this._time = time;
     }
 
-    protected override ulong SchemaVersion => 122;
+    protected override ulong SchemaVersion => 125;
 
     protected override string Filename => "refreshGameServer.realm";
     
@@ -351,7 +351,7 @@ public class GameDatabaseProvider : RealmDatabaseProvider<GameDatabaseContext>
             }
             
             // In version 122, we started tracking asset types differently, so we need to convert to the new system
-            if (oldVersion < 122)
+            if (oldVersion < 125)
             {
                 newAsset.AssetType = (int)oldAsset._AssetType switch
                 {

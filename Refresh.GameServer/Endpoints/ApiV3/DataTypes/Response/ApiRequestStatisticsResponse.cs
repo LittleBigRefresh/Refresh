@@ -1,4 +1,5 @@
 using Refresh.GameServer.Types;
+using Refresh.GameServer.Types.Data;
 
 namespace Refresh.GameServer.Endpoints.ApiV3.DataTypes.Response;
 
@@ -9,7 +10,7 @@ public class ApiRequestStatisticsResponse : IApiResponse, IDataConvertableFrom<A
     public required long ApiRequests { get; set; }
     public required long GameRequests { get; set; }
     
-    public static ApiRequestStatisticsResponse? FromOld(RequestStatistics? old)
+    public static ApiRequestStatisticsResponse? FromOld(RequestStatistics? old, DataContext dataContext)
     {
         if (old == null) return null;
 
@@ -21,5 +22,6 @@ public class ApiRequestStatisticsResponse : IApiResponse, IDataConvertableFrom<A
         };
     }
 
-    public static IEnumerable<ApiRequestStatisticsResponse> FromOldList(IEnumerable<RequestStatistics> oldList) => oldList.Select(FromOld).ToList()!;
+    public static IEnumerable<ApiRequestStatisticsResponse> FromOldList(IEnumerable<RequestStatistics> oldList,
+        DataContext dataContext) => oldList.Select(old => FromOld(old, dataContext)).ToList()!;
 }
