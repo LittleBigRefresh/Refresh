@@ -68,7 +68,7 @@
       <PackageReference Include="Discord.Net.Webhook" Version="3.15.0" />
       <PackageReference Include="FastAes" Version="1.0.1" />
       <PackageReference Include="IronCompress" Version="1.5.1" />
-      <PackageReference Include="MailKit" Version="4.5.0" />
+      <PackageReference Include="MailKit" Version="4.6.0" />
       <PackageReference Include="NPTicket" Version="3.1.0" />
       <PackageReference Include="Pfim" Version="0.11.2" />
       <PackageReference Include="Realm" Version="11.7.0" />
