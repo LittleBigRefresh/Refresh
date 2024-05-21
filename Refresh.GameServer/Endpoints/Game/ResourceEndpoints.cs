@@ -67,9 +67,9 @@ public class ResourceEndpoints : EndpointGroup
 
         gameAsset.UploadDate = DateTimeOffset.FromUnixTimeSeconds(Math.Clamp(gameAsset.UploadDate.ToUnixTimeSeconds(), timeProvider.EarliestDate, timeProvider.TimestampSeconds));
 
-        AssetFlags blockedAssetFlags = config.BlockedAssetFlags;
+        AssetFlags blockedAssetFlags = config.BlockedAssetFlags.ToAssetFlags();
         if (user.Role >= GameUserRole.Trusted)
-            blockedAssetFlags = config.BlockedAssetFlagsForTrustedUsers;
+            blockedAssetFlags = config.BlockedAssetFlagsForTrustedUsers.ToAssetFlags();
        
         // Don't block any assets uploaded from PSP, else block any unwanted assets,
         // For example, if the "blocked asset flags" has the "Media" bit set, and so does the asset,
