@@ -350,7 +350,7 @@ public class GameDatabaseProvider : RealmDatabaseProvider<GameDatabaseContext>
                 newAsset.IsPSP = newAsset.AssetType == GameAssetType.Tga;
             }
             
-            // In version 122, we started tracking asset types differently, so we need to convert to the new system
+            // In version 125, we started tracking asset types differently, so we need to convert to the new system
             if (oldVersion < 125)
             {
                 newAsset.AssetType = (int)oldAsset._AssetType switch
