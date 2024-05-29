@@ -13,7 +13,7 @@ public partial class GameDatabaseContext : RealmDatabaseContext
 
     private readonly IDateTimeProvider _time;
 
-    internal GameDatabaseContext(IDateTimeProvider time)
+    public GameDatabaseContext(IDateTimeProvider time)
     {
         this._time = time;
     }
