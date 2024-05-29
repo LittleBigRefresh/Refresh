@@ -1,7 +1,7 @@
 using Refresh.GameServer.Types.Data;
 using Refresh.GameServer.Types.UserData;
 
-namespace Refresh.GameServer.Endpoints.ApiV3.DataTypes.Response;
+namespace Refresh.GameServer.Endpoints.ApiV3.DataTypes.Response.Users;
 
 [JsonObject(NamingStrategyType = typeof(CamelCaseNamingStrategy))]
 public class ApiGameIpVerificationRequestResponse : IApiResponse, IDataConvertableFrom<ApiGameIpVerificationRequestResponse, GameIpVerificationRequest>

@@ -2,7 +2,7 @@ using Refresh.GameServer.Authentication;
 using Refresh.GameServer.Types.Data;
 using Refresh.GameServer.Types.Matching;
 
-namespace Refresh.GameServer.Endpoints.ApiV3.DataTypes.Response;
+namespace Refresh.GameServer.Endpoints.ApiV3.DataTypes.Response.Users.Rooms;
 
 [JsonObject(NamingStrategyType = typeof(CamelCaseNamingStrategy))]
 public class ApiGameRoomResponse : IApiResponse, IDataConvertableFrom<ApiGameRoomResponse, GameRoom>
