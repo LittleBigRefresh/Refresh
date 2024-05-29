@@ -1,3 +1,4 @@
+using JetBrains.Annotations;
 using Refresh.GameServer.Types.Comments;
 using Refresh.GameServer.Types.Levels;
 using Refresh.GameServer.Types.UserData;
@@ -27,6 +28,9 @@ public partial class GameDatabaseContext // Comments
             .AsEnumerable()
             .Skip(skip)
             .Take(count);
+    
+    [Pure]
+    public int GetTotalCommentsForProfile(GameUser profile) => profile.ProfileComments.Count;
 
     public void DeleteProfileComment(GameComment comment, GameUser profile)
     {
@@ -55,6 +59,9 @@ public partial class GameDatabaseContext // Comments
              .AsEnumerable()
              .Skip(skip)
              .Take(count);
+    
+    [Pure]
+    public int GetTotalCommentsForLevel(GameLevel level) => level.LevelComments.Count;
 
     public void DeleteLevelComment(GameComment comment, GameLevel level)
     {

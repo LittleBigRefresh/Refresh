@@ -101,4 +101,8 @@ public partial class GameDatabaseContext // Photos
     [Pure]
     public DatabaseList<GamePhoto> GetPhotosInLevel(GameLevel level, int count, int skip) =>
         new(this._realm.All<GamePhoto>().Where(p => p.LevelId == level.LevelId), skip, count);
+    
+    [Pure]
+    public int GetTotalPhotosInLevel(GameLevel level)
+        => this._realm.All<GamePhoto>().Count(p => p.LevelId == level.LevelId);
 }
