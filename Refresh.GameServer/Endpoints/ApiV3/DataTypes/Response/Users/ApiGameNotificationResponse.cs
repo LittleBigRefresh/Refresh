@@ -1,7 +1,7 @@
 using Refresh.GameServer.Types.Data;
 using Refresh.GameServer.Types.Notifications;
 
-namespace Refresh.GameServer.Endpoints.ApiV3.DataTypes.Response;
+namespace Refresh.GameServer.Endpoints.ApiV3.DataTypes.Response.Users;
 
 [JsonObject(NamingStrategyType = typeof(CamelCaseNamingStrategy))]
 public class ApiGameNotificationResponse : IApiResponse, IDataConvertableFrom<ApiGameNotificationResponse, GameNotification>

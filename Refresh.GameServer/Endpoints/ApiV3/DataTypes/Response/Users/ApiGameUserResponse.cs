@@ -1,11 +1,10 @@
-using Bunkum.Core.Storage;
 using JetBrains.Annotations;
 using Refresh.GameServer.Authentication;
-using Refresh.GameServer.Database;
+using Refresh.GameServer.Endpoints.ApiV3.DataTypes.Response.Data;
 using Refresh.GameServer.Types.Data;
 using Refresh.GameServer.Types.UserData;
 
-namespace Refresh.GameServer.Endpoints.ApiV3.DataTypes.Response;
+namespace Refresh.GameServer.Endpoints.ApiV3.DataTypes.Response.Users;
 
 [JsonObject(NamingStrategyType = typeof(CamelCaseNamingStrategy))]
 public class ApiGameUserResponse : IApiResponse, IDataConvertableFrom<ApiGameUserResponse, GameUser>

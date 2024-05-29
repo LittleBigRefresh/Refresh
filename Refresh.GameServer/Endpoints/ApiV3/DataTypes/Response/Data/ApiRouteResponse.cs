@@ -1,8 +1,8 @@
 using AttribDoc;
-using Refresh.GameServer.Types.Data;
+using Refresh.GameServer.Endpoints.ApiV3.ApiTypes;
 using Refresh.GameServer.Types.Roles;
 
-namespace Refresh.GameServer.Endpoints.ApiV3.DataTypes.Response;
+namespace Refresh.GameServer.Endpoints.ApiV3.DataTypes.Response.Data;
 
 [JsonObject(NamingStrategyType = typeof(CamelCaseNamingStrategy))]
 public class ApiRouteResponse : IApiResponse
