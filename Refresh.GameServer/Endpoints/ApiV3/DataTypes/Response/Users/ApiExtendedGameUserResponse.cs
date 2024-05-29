@@ -30,12 +30,14 @@ public class ApiExtendedGameUserResponse : IApiResponse, IDataConvertableFrom<Ap
     public required bool RpcnAuthenticationAllowed { get; set; }
     public required bool PsnAuthenticationAllowed { get; set; }
     
-    public bool RedirectGriefReportsToPhotos { get; set; } 
-    public bool UnescapeXmlSequences { get; set; } 
+    public required bool RedirectGriefReportsToPhotos { get; set; } 
+    public required bool UnescapeXmlSequences { get; set; } 
     
     public required string? EmailAddress { get; set; }
     public required bool EmailAddressVerified { get; set; }
     public required bool ShouldResetPassword { get; set; }
+    
+    public required int FilesizeQuotaUsage { get; set; }
     
     [ContractAnnotation("null => null; notnull => notnull")]
     public static ApiExtendedGameUserResponse? FromOld(GameUser? user, DataContext dataContext)
@@ -62,6 +64,7 @@ public class ApiExtendedGameUserResponse : IApiResponse, IDataConvertableFrom<Ap
             ShouldResetPassword = user.ShouldResetPassword,
             RedirectGriefReportsToPhotos = user.RedirectGriefReportsToPhotos,
             UnescapeXmlSequences = user.UnescapeXmlSequences,
+            FilesizeQuotaUsage = user.FilesizeQuotaUsage,
         };
     }
 
