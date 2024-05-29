@@ -37,6 +37,10 @@ public class ApiGameLevelResponse : IApiResponse, IDataConvertableFrom<ApiGameLe
     public required int YayRatings { get; set; }
     public required int BooRatings { get; set; }
     public required int Hearts { get; set; }
+    public required int PhotosTaken { get; set; }
+    public required int LevelComments { get; set; }
+    public required int Reviews { get; set; }
+    
     public required int UniquePlays { get; set; }
     public required bool TeamPicked { get; set; }
     public required GameLevelType LevelType { get; set; }
@@ -78,6 +82,9 @@ public class ApiGameLevelResponse : IApiResponse, IDataConvertableFrom<ApiGameLe
             IsLocked = level.IsLocked,
             IsSubLevel = level.IsSubLevel,
             Score = level.Score,
+            PhotosTaken = dataContext.Database.GetTotalPhotosInLevel(level),
+            LevelComments = dataContext.Database.GetTotalCommentsForLevel(level),
+            Reviews = dataContext.Database.GetTotalReviewsForLevel(level),
         };
     }
     
