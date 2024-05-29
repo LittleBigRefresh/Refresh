@@ -27,6 +27,8 @@ public partial class GameDatabaseContext // Comments
             .AsEnumerable()
             .Skip(skip)
             .Take(count);
+    
+    public int GetTotalCommentsForProfile(GameUser profile) => profile.ProfileComments.Count;
 
     public void DeleteProfileComment(GameComment comment, GameUser profile)
     {

@@ -19,6 +19,8 @@ public class ApiGameUserResponse : IApiResponse, IDataConvertableFrom<ApiGameUse
     public required ApiGameLocationResponse Location { get; set; }
     public required DateTimeOffset JoinDate { get; set; }
     public required DateTimeOffset LastLoginDate { get; set; }
+    
+    public required ApiGameUserStatisticsResponse Statistics { get; set; }
 
     [ContractAnnotation("null => null; notnull => notnull")]
     public static ApiGameUserResponse? FromOld(GameUser? user, DataContext dataContext)
@@ -34,6 +36,7 @@ public class ApiGameUserResponse : IApiResponse, IDataConvertableFrom<ApiGameUse
             Location = ApiGameLocationResponse.FromGameLocation(user.Location)!,
             JoinDate = user.JoinDate,
             LastLoginDate = user.LastLoginDate,
+            Statistics = ApiGameUserStatisticsResponse.FromOld(user, dataContext)!,
         };
     }
 
