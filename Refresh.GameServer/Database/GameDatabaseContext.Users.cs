@@ -297,8 +297,7 @@ public partial class GameDatabaseContext // Users
             user.CurrentVerifiedIp = null;
             user.PsnAuthenticationAllowed = false;
             user.RpcnAuthenticationAllowed = false;
-
-            // TODO: unit tests for this
+            
             foreach (GamePhoto photo in this.GetPhotosWithUser(user, int.MaxValue, 0).Items)
                 foreach (GamePhotoSubject subject in photo.Subjects.Where(s => s.User?.UserId == user.UserId))
                     subject.User = null;
