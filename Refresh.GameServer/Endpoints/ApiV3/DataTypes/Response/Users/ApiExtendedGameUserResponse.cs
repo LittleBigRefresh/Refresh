@@ -20,8 +20,6 @@ public class ApiExtendedGameUserResponse : IApiResponse, IDataConvertableFrom<Ap
     public required ApiGameLocationResponse Location { get; set; }
     public required DateTimeOffset JoinDate { get; set; }
     public required DateTimeOffset LastLoginDate { get; set; }
-    
-    public required bool AllowIpAuthentication { get; set; }
     public required GameUserRole Role { get; set; }
     
     public required string? BanReason { get; set; }
@@ -36,6 +34,7 @@ public class ApiExtendedGameUserResponse : IApiResponse, IDataConvertableFrom<Ap
     public required string? EmailAddress { get; set; }
     public required bool EmailAddressVerified { get; set; }
     public required bool ShouldResetPassword { get; set; }
+    public required bool AllowIpAuthentication { get; set; }
     
     public required int FilesizeQuotaUsage { get; set; }
     
