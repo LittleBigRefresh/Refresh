@@ -1,6 +1,7 @@
 using JetBrains.Annotations;
 using Refresh.GameServer.Authentication;
 using Refresh.GameServer.Endpoints.ApiV3.DataTypes.Response.Data;
+using Refresh.GameServer.Endpoints.ApiV3.DataTypes.Response.Users.Rooms;
 using Refresh.GameServer.Types.Data;
 using Refresh.GameServer.Types.Roles;
 using Refresh.GameServer.Types.UserData;
@@ -23,6 +24,7 @@ public class ApiGameUserResponse : IApiResponse, IDataConvertableFrom<ApiGameUse
     public required GameUserRole Role { get; set; }
     
     public required ApiGameUserStatisticsResponse Statistics { get; set; }
+    public required ApiGameRoomResponse? ActiveRoom { get; set; }
 
     [ContractAnnotation("null => null; notnull => notnull")]
     public static ApiGameUserResponse? FromOld(GameUser? user, DataContext dataContext)
@@ -40,6 +42,7 @@ public class ApiGameUserResponse : IApiResponse, IDataConvertableFrom<ApiGameUse
             LastLoginDate = user.LastLoginDate,
             Role = user.Role,
             Statistics = ApiGameUserStatisticsResponse.FromOld(user, dataContext)!,
+            ActiveRoom = ApiGameRoomResponse.FromOld(dataContext.Match.RoomAccessor.GetRoomByUser(user), dataContext),
         };
     }
 

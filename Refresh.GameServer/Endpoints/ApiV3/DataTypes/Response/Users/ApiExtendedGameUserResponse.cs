@@ -1,6 +1,7 @@
 using JetBrains.Annotations;
 using Refresh.GameServer.Authentication;
 using Refresh.GameServer.Endpoints.ApiV3.DataTypes.Response.Data;
+using Refresh.GameServer.Endpoints.ApiV3.DataTypes.Response.Users.Rooms;
 using Refresh.GameServer.Types.Data;
 using Refresh.GameServer.Types.Roles;
 using Refresh.GameServer.Types.UserData;
@@ -38,6 +39,9 @@ public class ApiExtendedGameUserResponse : IApiResponse, IDataConvertableFrom<Ap
     
     public required int FilesizeQuotaUsage { get; set; }
     
+    public required ApiGameUserStatisticsResponse Statistics { get; set; }
+    public required ApiGameRoomResponse? ActiveRoom { get; set; }
+    
     [ContractAnnotation("null => null; notnull => notnull")]
     public static ApiExtendedGameUserResponse? FromOld(GameUser? user, DataContext dataContext)
     {
@@ -64,6 +68,8 @@ public class ApiExtendedGameUserResponse : IApiResponse, IDataConvertableFrom<Ap
             RedirectGriefReportsToPhotos = user.RedirectGriefReportsToPhotos,
             UnescapeXmlSequences = user.UnescapeXmlSequences,
             FilesizeQuotaUsage = user.FilesizeQuotaUsage,
+            Statistics = ApiGameUserStatisticsResponse.FromOld(user, dataContext)!,
+            ActiveRoom = ApiGameRoomResponse.FromOld(dataContext.Match.RoomAccessor.GetRoomByUser(user), dataContext),
         };
     }
 
