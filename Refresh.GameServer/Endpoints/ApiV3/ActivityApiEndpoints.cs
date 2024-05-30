@@ -7,6 +7,7 @@ using Refresh.GameServer.Documentation.Attributes;
 using Refresh.GameServer.Endpoints.ApiV3.ApiTypes;
 using Refresh.GameServer.Endpoints.ApiV3.ApiTypes.Errors;
 using Refresh.GameServer.Endpoints.ApiV3.DataTypes.Response;
+using Refresh.GameServer.Endpoints.ApiV3.DataTypes.Response.Activity;
 using Refresh.GameServer.Extensions;
 using Refresh.GameServer.Services;
 using Refresh.GameServer.Types.Activity;

@@ -191,7 +191,9 @@ public partial class GameDatabaseContext // Levels
         
         return new DatabaseList<GameLevel>(this.GetLevelsByGameVersion(levelFilterSettings.GameVersion).FilterByLevelFilterSettings(accessor, levelFilterSettings).Where(l => l.Publisher == user), skip, count);
     }
-
+    
+    public int GetTotalLevelsByUser(GameUser user) => this._realm.All<GameLevel>().Count(l => l.Publisher == user);
+    
     [Pure]
     public DatabaseList<GameLevel> GetUserLevelsChunk(int skip, int count)
         => new(this._realm.All<GameLevel>().Where(l => l._Source == (int)GameLevelSource.User), skip, count);

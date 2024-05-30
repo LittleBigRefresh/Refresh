@@ -38,6 +38,7 @@ jobs:
           workflow_conclusion: success
           name: "Refresh Website"
           repo: LittleBigRefresh/refresh-web
+          branch: master
           if_no_artifact_found: fail
           path: "Refresh.GameServer/bin/Release/net8.0/linux-x64/publish/web"
 

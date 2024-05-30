@@ -1,9 +1,9 @@
-using Bunkum.Core.Storage;
-using Refresh.GameServer.Database;
+using Refresh.GameServer.Endpoints.ApiV3.DataTypes.Response.Levels;
+using Refresh.GameServer.Endpoints.ApiV3.DataTypes.Response.Users;
 using Refresh.GameServer.Types.Activity;
 using Refresh.GameServer.Types.Data;
 
-namespace Refresh.GameServer.Endpoints.ApiV3.DataTypes.Response;
+namespace Refresh.GameServer.Endpoints.ApiV3.DataTypes.Response.Activity;
 
 [JsonObject(NamingStrategyType = typeof(CamelCaseNamingStrategy))]
 public class ApiActivityPageResponse : IApiResponse, IDataConvertableFrom<ApiActivityPageResponse, ActivityPage>

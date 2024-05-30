@@ -1,11 +1,11 @@
-using Bunkum.Core.Storage;
 using Refresh.GameServer.Authentication;
-using Refresh.GameServer.Database;
+using Refresh.GameServer.Endpoints.ApiV3.DataTypes.Response.Data;
+using Refresh.GameServer.Endpoints.ApiV3.DataTypes.Response.Users;
 using Refresh.GameServer.Types.Data;
 using Refresh.GameServer.Types.Levels;
 using Refresh.GameServer.Types.Reviews;
 
-namespace Refresh.GameServer.Endpoints.ApiV3.DataTypes.Response;
+namespace Refresh.GameServer.Endpoints.ApiV3.DataTypes.Response.Levels;
 
 [JsonObject(NamingStrategyType = typeof(CamelCaseNamingStrategy))]
 public class ApiGameLevelResponse : IApiResponse, IDataConvertableFrom<ApiGameLevelResponse, GameLevel>
@@ -37,6 +37,10 @@ public class ApiGameLevelResponse : IApiResponse, IDataConvertableFrom<ApiGameLe
     public required int YayRatings { get; set; }
     public required int BooRatings { get; set; }
     public required int Hearts { get; set; }
+    public required int PhotosTaken { get; set; }
+    public required int LevelComments { get; set; }
+    public required int Reviews { get; set; }
+    
     public required int UniquePlays { get; set; }
     public required bool TeamPicked { get; set; }
     public required GameLevelType LevelType { get; set; }
@@ -78,6 +82,9 @@ public class ApiGameLevelResponse : IApiResponse, IDataConvertableFrom<ApiGameLe
             IsLocked = level.IsLocked,
             IsSubLevel = level.IsSubLevel,
             Score = level.Score,
+            PhotosTaken = dataContext.Database.GetTotalPhotosInLevel(level),
+            LevelComments = dataContext.Database.GetTotalCommentsForLevel(level),
+            Reviews = dataContext.Database.GetTotalReviewsForLevel(level),
         };
     }
     
