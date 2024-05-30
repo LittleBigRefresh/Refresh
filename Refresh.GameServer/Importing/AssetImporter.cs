@@ -155,7 +155,7 @@ public class AssetImporter : Importer
 
         this.Debug($"Dependency table offset: {dependencyTableOffset}, count: {dependencyCount}");
         
-        List<string> dependencies = new(dependencyCount);
+        List<string> dependencies = new((int)dependencyCount);
 
         Span<byte> hashBuffer = stackalloc byte[20];
         for (int i = 0; i < dependencyCount; i++)
