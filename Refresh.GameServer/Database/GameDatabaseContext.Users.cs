@@ -177,6 +177,12 @@ public partial class GameDatabaseContext // Users
 
             if (data.EmailAddress != null)
                 user.EmailAddress = data.EmailAddress;
+            
+            if (data.LevelVisibility != null)
+                user.LevelVisibility = data.LevelVisibility.Value;
+            
+            if (data.ProfileVisibility != null)
+                user.ProfileVisibility = data.ProfileVisibility.Value;
         });
     }
 
@@ -378,6 +384,22 @@ public partial class GameDatabaseContext // Users
         this._realm.Write(() =>
         {
             user.FilesizeQuotaUsage += amount;
+        });
+    }
+    
+    public void SetProfileVisibility(GameUser user, Visibility visibility)
+    {
+        this._realm.Write(() =>
+        {
+            user.ProfileVisibility = visibility;
+        });
+    }
+    
+    public void SetLevelVisibility(GameUser user, Visibility visibility)
+    {
+        this._realm.Write(() =>
+        {
+            user.LevelVisibility = visibility;
         });
     }
 }
