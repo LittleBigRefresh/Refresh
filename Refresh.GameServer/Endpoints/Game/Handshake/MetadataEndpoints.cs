@@ -18,15 +18,31 @@ public class MetadataEndpoints : EndpointGroup
 {
     [GameEndpoint("privacySettings", ContentType.Xml)]
     [MinimumRole(GameUserRole.Restricted)]
-    public PrivacySettings GetPrivacySettings(RequestContext context)
+    public PrivacySettings GetPrivacySettings(RequestContext context, GameUser user)
     {
-        return new PrivacySettings();
+        return new PrivacySettings
+        {
+            LevelVisibility = user.LevelVisibility,
+            ProfileVisibility = user.ProfileVisibility,
+        };
     }
     
     [GameEndpoint("privacySettings", ContentType.Xml, HttpMethods.Post)]
-    public PrivacySettings SetPrivacySettings(RequestContext context)
+    [MinimumRole(GameUserRole.Restricted)]
+    [DebugRequestBody]
+    public PrivacySettings SetPrivacySettings(RequestContext context, PrivacySettings body, GameDatabaseContext database, GameUser user)
     {
-        return new PrivacySettings();
+        if (body.ProfileVisibility != null)
+        {
+            database.SetProfileVisibility(user, body.ProfileVisibility.Value);
+        }
+        
+        if (body.LevelVisibility != null)
+        {
+            database.SetLevelVisibility(user, body.LevelVisibility.Value);
+        }
+        
+        return body;
     }
 
     [GameEndpoint("npdata", ContentType.Xml, HttpMethods.Post)]
@@ -47,10 +63,11 @@ public class MetadataEndpoints : EndpointGroup
     [XmlRoot("privacySettings")]
     public class PrivacySettings
     {
+        // These are marked as nullable because the game sends these two options as separate requests, one for level visibility, one for profile visibility
         [XmlElement("levelVisibility")]
-        public Visibility LevelVisibility { get; set; } = Visibility.All;
+        public Visibility? LevelVisibility { get; set; }
         [XmlElement("profileVisibility")]
-        public Visibility ProfileVisibility { get; set; } = Visibility.All;
+        public Visibility? ProfileVisibility { get; set; }
     }
     
     private static readonly Lazy<string?> NetworkSettingsFile

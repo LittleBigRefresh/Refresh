@@ -82,6 +82,29 @@ public partial class GameUser : IRealmObject, IRateLimitUser
     public bool RpcnAuthenticationAllowed { get; set; }
     public bool PsnAuthenticationAllowed { get; set; }
     
+    private int _ProfileVisibility { get; set; } = (int)Visibility.All;
+    private int _LevelVisibility { get; set; } = (int)Visibility.All;
+    
+    /// <summary>
+    /// Whether the user's profile is displayed on the website
+    /// </summary>
+    [Ignored]
+    public Visibility ProfileVisibility
+    {
+        get => (Visibility)this._ProfileVisibility;
+        set => this._ProfileVisibility = (int)value;
+    }
+    
+    /// <summary>
+    /// Whether the user's levels are displayed on the website
+    /// </summary>
+    [Ignored]
+    public Visibility LevelVisibility
+    {
+        get => (Visibility)this._LevelVisibility;
+        set => this._LevelVisibility = (int)value;
+    }
+    
     /// <summary>
     /// If `true`, turn all grief reports into photo uploads
     /// </summary>
