@@ -45,7 +45,7 @@ public class MatchingEndpoints : EndpointGroup
     [GameEndpoint("enterLevel/{slotType}/{id}", HttpMethods.Post)]
     public Response EnterLevel(RequestContext context, Token token, MatchService matchService, string slotType, int id)
     {
-        GameRoom room = matchService.GetOrCreateRoomByPlayer(token.User, token.TokenPlatform, token.TokenGame, NatType.Strict);
+        GameRoom room = matchService.GetOrCreateRoomByPlayer(token.User, token.TokenPlatform, token.TokenGame, NatType.Strict, null, false);
         
         // User slot ID of 0 means pod/moon level
         if (id == 0 && slotType == "user")

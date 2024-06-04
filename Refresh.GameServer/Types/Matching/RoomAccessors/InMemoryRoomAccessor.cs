@@ -149,22 +149,30 @@ public class InMemoryRoomAccessor(Logger logger) : IRoomAccessor
     }
 
     /// <inheritdoc/>
-    public GameRoom? GetRoomByUserUuid(ObjectId uuid, TokenPlatform? platform = null, TokenGame? game = null)
+    public GameRoom? GetRoomByUserUuid(ObjectId uuid, TokenPlatform? platform = null, TokenGame? game = null, int? buildVersion = null)
     {
         lock (this._rooms)
         {
             this.RemoveExpiredRooms();
-            return this._rooms.FirstOrDefault(r => r.PlayerIds.Any(p => p.Id == uuid) && (platform == null || r.Platform == platform) && (game == null || r.Game == game));
+            return this._rooms.FirstOrDefault(r =>
+                r.PlayerIds.Any(p => p.Id == uuid) &&
+                (platform == null || r.Platform == platform) &&
+                (game == null || r.Game == game) &&
+                (buildVersion == null || r.BuildVersion == buildVersion));
         }
     }
     
     /// <inheritdoc/>
-    public GameRoom? GetRoomByUsername(string username, TokenPlatform? platform = null, TokenGame? game = null)
+    public GameRoom? GetRoomByUsername(string username, TokenPlatform? platform = null, TokenGame? game = null, int? buildVersion = null)
     {
         lock (this._rooms)
         {
             this.RemoveExpiredRooms();
-            return this._rooms.FirstOrDefault(r => r.PlayerIds.Any(p => p.Username == username) && (platform == null || r.Platform == platform) && (game == null || r.Game == game));
+            return this._rooms.FirstOrDefault(r =>
+                    r.PlayerIds.Any(p => p.Username == username) &&
+                    (platform == null || r.Platform == platform) &&
+                    (game == null || r.Game == game) &&
+                    (buildVersion == null || r.BuildVersion == buildVersion));
         }
     }
 }
