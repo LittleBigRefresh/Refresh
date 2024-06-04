@@ -4,6 +4,7 @@ using MongoDB.Bson;
 using Realms;
 using Refresh.GameServer.Authentication;
 using Refresh.GameServer.Endpoints.ApiV3.DataTypes.Request;
+using Refresh.GameServer.Endpoints.Game.Handshake;
 using Refresh.GameServer.Types;
 using Refresh.GameServer.Types.Levels;
 using Refresh.GameServer.Types.Photos;
@@ -387,19 +388,15 @@ public partial class GameDatabaseContext // Users
         });
     }
     
-    public void SetProfileVisibility(GameUser user, Visibility visibility)
+    public void SetPrivacySettings(GameUser user, MetadataEndpoints.PrivacySettings settings) 
     {
         this._realm.Write(() =>
         {
-            user.ProfileVisibility = visibility;
-        });
-    }
-    
-    public void SetLevelVisibility(GameUser user, Visibility visibility)
-    {
-        this._realm.Write(() =>
-        {
-            user.LevelVisibility = visibility;
-        });
+            if(settings.LevelVisibility != null)
+                user.LevelVisibility = settings.LevelVisibility.Value;
+            
+            if (settings.ProfileVisibility != null)
+                user.ProfileVisibility = settings.ProfileVisibility.Value;
+        });            
     }
 }

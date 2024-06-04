@@ -29,18 +29,9 @@ public class MetadataEndpoints : EndpointGroup
     
     [GameEndpoint("privacySettings", ContentType.Xml, HttpMethods.Post)]
     [MinimumRole(GameUserRole.Restricted)]
-    [DebugRequestBody]
     public PrivacySettings SetPrivacySettings(RequestContext context, PrivacySettings body, GameDatabaseContext database, GameUser user)
     {
-        if (body.ProfileVisibility != null)
-        {
-            database.SetProfileVisibility(user, body.ProfileVisibility.Value);
-        }
-        
-        if (body.LevelVisibility != null)
-        {
-            database.SetLevelVisibility(user, body.LevelVisibility.Value);
-        }
+        database.SetPrivacySettings(user, body);
         
         return body;
     }
