@@ -2,6 +2,7 @@ using JetBrains.Annotations;
 using Refresh.GameServer.Authentication;
 using Refresh.GameServer.Endpoints.ApiV3.DataTypes.Response.Data;
 using Refresh.GameServer.Endpoints.ApiV3.DataTypes.Response.Users.Rooms;
+using Refresh.GameServer.Types;
 using Refresh.GameServer.Types.Data;
 using Refresh.GameServer.Types.Roles;
 using Refresh.GameServer.Types.UserData;
@@ -37,6 +38,9 @@ public class ApiExtendedGameUserResponse : IApiResponse, IDataConvertableFrom<Ap
     public required bool ShouldResetPassword { get; set; }
     public required bool AllowIpAuthentication { get; set; }
     
+    public required Visibility LevelVisibility { get; set; }
+    public required Visibility ProfileVisibility { get; set; }
+    
     public required int FilesizeQuotaUsage { get; set; }
     
     public required ApiGameUserStatisticsResponse Statistics { get; set; }
@@ -70,6 +74,8 @@ public class ApiExtendedGameUserResponse : IApiResponse, IDataConvertableFrom<Ap
             FilesizeQuotaUsage = user.FilesizeQuotaUsage,
             Statistics = ApiGameUserStatisticsResponse.FromOld(user, dataContext)!,
             ActiveRoom = ApiGameRoomResponse.FromOld(dataContext.Match.RoomAccessor.GetRoomByUser(user), dataContext),
+            LevelVisibility = user.LevelVisibility,
+            ProfileVisibility = user.ProfileVisibility,
         };
     }
 

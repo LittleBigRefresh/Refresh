@@ -1,7 +1,5 @@
-using System.Reflection;
 using JetBrains.Annotations;
 using MongoDB.Bson;
-using Realms;
 using Refresh.GameServer.Authentication;
 using Refresh.GameServer.Endpoints.ApiV3.DataTypes.Request;
 using Refresh.GameServer.Types;
@@ -177,6 +175,12 @@ public partial class GameDatabaseContext // Users
 
             if (data.EmailAddress != null)
                 user.EmailAddress = data.EmailAddress;
+            
+            if (data.LevelVisibility != null)
+                user.LevelVisibility = data.LevelVisibility.Value;
+            
+            if (data.ProfileVisibility != null)
+                user.ProfileVisibility = data.ProfileVisibility.Value;
         });
     }
 
@@ -379,5 +383,17 @@ public partial class GameDatabaseContext // Users
         {
             user.FilesizeQuotaUsage += amount;
         });
+    }
+    
+    public void SetPrivacySettings(GameUser user, SerializedPrivacySettings settings) 
+    {
+        this._realm.Write(() =>
+        {
+            if(settings.LevelVisibility != null)
+                user.LevelVisibility = settings.LevelVisibility.Value;
+            
+            if (settings.ProfileVisibility != null)
+                user.ProfileVisibility = settings.ProfileVisibility.Value;
+        });            
     }
 }
