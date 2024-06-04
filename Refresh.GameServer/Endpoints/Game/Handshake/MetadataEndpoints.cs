@@ -18,9 +18,9 @@ public class MetadataEndpoints : EndpointGroup
 {
     [GameEndpoint("privacySettings", ContentType.Xml)]
     [MinimumRole(GameUserRole.Restricted)]
-    public PrivacySettings GetPrivacySettings(RequestContext context, GameUser user)
+    public SerializedPrivacySettings GetPrivacySettings(RequestContext context, GameUser user)
     {
-        return new PrivacySettings
+        return new SerializedPrivacySettings
         {
             LevelVisibility = user.LevelVisibility,
             ProfileVisibility = user.ProfileVisibility,
@@ -29,7 +29,7 @@ public class MetadataEndpoints : EndpointGroup
     
     [GameEndpoint("privacySettings", ContentType.Xml, HttpMethods.Post)]
     [MinimumRole(GameUserRole.Restricted)]
-    public PrivacySettings SetPrivacySettings(RequestContext context, PrivacySettings body, GameDatabaseContext database, GameUser user)
+    public SerializedPrivacySettings SetPrivacySettings(RequestContext context, SerializedPrivacySettings body, GameDatabaseContext database, GameUser user)
     {
         database.SetPrivacySettings(user, body);
         
@@ -50,17 +50,6 @@ public class MetadataEndpoints : EndpointGroup
         return OK;
     }
 
-    [XmlType("privacySettings")]
-    [XmlRoot("privacySettings")]
-    public class PrivacySettings
-    {
-        // These are marked as nullable because the game sends these two options as separate requests, one for level visibility, one for profile visibility
-        [XmlElement("levelVisibility")]
-        public Visibility? LevelVisibility { get; set; }
-        [XmlElement("profileVisibility")]
-        public Visibility? ProfileVisibility { get; set; }
-    }
-    
     private static readonly Lazy<string?> NetworkSettingsFile
         = new(() => 
         {

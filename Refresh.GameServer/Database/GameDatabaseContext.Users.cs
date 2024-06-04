@@ -1,10 +1,7 @@
-using System.Reflection;
 using JetBrains.Annotations;
 using MongoDB.Bson;
-using Realms;
 using Refresh.GameServer.Authentication;
 using Refresh.GameServer.Endpoints.ApiV3.DataTypes.Request;
-using Refresh.GameServer.Endpoints.Game.Handshake;
 using Refresh.GameServer.Types;
 using Refresh.GameServer.Types.Levels;
 using Refresh.GameServer.Types.Photos;
@@ -388,7 +385,7 @@ public partial class GameDatabaseContext // Users
         });
     }
     
-    public void SetPrivacySettings(GameUser user, MetadataEndpoints.PrivacySettings settings) 
+    public void SetPrivacySettings(GameUser user, SerializedPrivacySettings settings) 
     {
         this._realm.Write(() =>
         {
