@@ -118,7 +118,7 @@ public class FindRoomMethod : IMatchMethod
         // rounding errors may cause this to become roomList.Count (which would crash), so we use a Math.Min to make sure it doesn't
         GameRoom room = roomList[Math.Min(roomList.Count - 1, (int)Math.Floor(weightedRandom * roomList.Count))];
         
-        logger.LogDebug(BunkumCategory.Matching, "Matched user {0} into room {1}.", user.Username, room.RoomId);
+        logger.LogInfo(BunkumCategory.Matching, "Matched user {0} into {1}'s room (id: {2})", user.Username, room.HostId.Username, room.RoomId);
 
         SerializedRoomMatchResponse roomMatch = new()
         {
