@@ -138,8 +138,8 @@ public class AssetImporter : Importer
         MemoryStream ms = new(data);
         BEBinaryReader reader = new(ms);
         
-        // Read magic from the asset
-        reader.ReadUInt32();
+        // Skip magic
+        ms.Seek(4, SeekOrigin.Begin);
         
         // Read the head revision of the asset 
         uint head = reader.ReadUInt32();
