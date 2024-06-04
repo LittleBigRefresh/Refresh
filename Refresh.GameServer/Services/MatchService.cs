@@ -21,30 +21,48 @@ public partial class MatchService(Logger logger) : EndpointService(logger)
 
     public IRoomAccessor RoomAccessor { get; private set; } = null!; //initialized in Initialize()
     
-    public GameRoom GetOrCreateRoomByPlayer(GameUser player, TokenPlatform platform, TokenGame game, NatType natType)
+    public GameRoom GetOrCreateRoomByPlayer(
+        GameUser player, 
+        TokenPlatform platform, 
+        TokenGame game, 
+        NatType natType, 
+        int? buildVersion,
+        bool passedNoJoinPoint)
     {
         GameRoom? room = this.RoomAccessor.GetRoomByUser(player, platform, game);
         
         // ReSharper disable once ConvertIfStatementToNullCoalescingExpression
         if (room == null)
-            room = this.CreateRoomByPlayer(player, platform, game, natType);
+            room = this.CreateRoomByPlayer(player, platform, game, natType, buildVersion, passedNoJoinPoint);
 
         return room;
     }
 
-    public GameRoom CreateRoomByPlayer(GameUser player, TokenPlatform platform, TokenGame game, NatType natType)
+    public GameRoom CreateRoomByPlayer(
+        GameUser player, 
+        TokenPlatform platform, 
+        TokenGame game, 
+        NatType natType, 
+        int? buildVersion,
+        bool passedNoJoinPoint)
     {
-        GameRoom room = new(player, platform, game, natType);
+        GameRoom room = new(player, platform, game, natType, buildVersion, passedNoJoinPoint);
         this.RoomAccessor.AddRoom(room);
         return room;
     }
 
-    public GameRoom SplitUserIntoNewRoom(GameUser player, TokenPlatform platform, TokenGame game, NatType natType)
+    public GameRoom SplitUserIntoNewRoom(
+        GameUser player, 
+        TokenPlatform platform, 
+        TokenGame game, 
+        NatType natType, 
+        int? buildVersion,
+        bool passedNoJoinPoint)
     {
         GameRoom? room = this.RoomAccessor.GetRoomByUser(player, platform, game);
         if (room == null)
         {
-            return this.CreateRoomByPlayer(player, platform, game, natType);
+            return this.CreateRoomByPlayer(player, platform, game, natType, buildVersion, passedNoJoinPoint);
         }
         
         // Remove player from old room
@@ -52,7 +70,7 @@ public partial class MatchService(Logger logger) : EndpointService(logger)
         // Update the room on the room accessor
         this.RoomAccessor.UpdateRoom(room);
         
-        return this.CreateRoomByPlayer(player, platform, game, natType);
+        return this.CreateRoomByPlayer(player, platform, game, natType, buildVersion, passedNoJoinPoint);
     }
     
     public int GetPlayerCountForLevel(RoomSlotType type, int id)
