@@ -27,7 +27,7 @@ public partial class MatchService(Logger logger) : EndpointService(logger)
         TokenGame game, 
         NatType natType, 
         int? buildVersion,
-        bool passedNoJoinPoint)
+        bool? passedNoJoinPoint = null)
     {
         GameRoom? room = this.RoomAccessor.GetRoomByUser(player, platform, game);
         
@@ -44,7 +44,7 @@ public partial class MatchService(Logger logger) : EndpointService(logger)
         TokenGame game, 
         NatType natType, 
         int? buildVersion,
-        bool passedNoJoinPoint)
+        bool? passedNoJoinPoint = null)
     {
         GameRoom room = new(player, platform, game, natType, buildVersion, passedNoJoinPoint);
         this.RoomAccessor.AddRoom(room);
@@ -57,7 +57,7 @@ public partial class MatchService(Logger logger) : EndpointService(logger)
         TokenGame game, 
         NatType natType, 
         int? buildVersion,
-        bool passedNoJoinPoint)
+        bool? passedNoJoinPoint = null)
     {
         GameRoom? room = this.RoomAccessor.GetRoomByUser(player, platform, game);
         if (room == null)

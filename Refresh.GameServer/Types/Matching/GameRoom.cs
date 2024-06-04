@@ -8,14 +8,14 @@ namespace Refresh.GameServer.Types.Matching;
 
 public class GameRoom
 {
-    public GameRoom(GameUser host, TokenPlatform platform, TokenGame game, NatType natType, int? buildVersion, bool passedNoJoinPoint)
+    public GameRoom(GameUser host, TokenPlatform platform, TokenGame game, NatType natType, int? buildVersion, bool? passedNoJoinPoint)
     {
         this.PlayerIds.Add(new GameRoomPlayer(host.Username, host.UserId));
         this.Platform = platform;
         this.Game = game;
         this.NatType = natType;
         this.BuildVersion = buildVersion;
-        this.PassedNoJoinPoint = passedNoJoinPoint;
+        this.PassedNoJoinPoint = passedNoJoinPoint ?? false;
     }
 
     public readonly ObjectId RoomId = ObjectId.GenerateNewId();

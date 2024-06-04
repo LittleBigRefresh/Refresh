@@ -17,7 +17,7 @@ public class UpdatePlayersInRoomMethod : IMatchMethod
         SerializedRoomData body)
     {
         if (body.Players == null) return BadRequest;
-        GameRoom room = service.GetOrCreateRoomByPlayer(user, token.TokenPlatform, token.TokenGame, body.NatType == null ? NatType.Open : body.NatType[0], body.BuildVersion, body.PassedNoJoinPoint ?? false);
+        GameRoom room = service.GetOrCreateRoomByPlayer(user, token.TokenPlatform, token.TokenGame, body.NatType == null ? NatType.Open : body.NatType[0], body.BuildVersion, body.PassedNoJoinPoint);
         
         foreach (string playerUsername in body.Players)
         {

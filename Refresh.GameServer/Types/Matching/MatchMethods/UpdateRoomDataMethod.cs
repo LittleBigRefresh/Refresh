@@ -15,7 +15,7 @@ public class UpdateRoomDataMethod : IMatchMethod
     public Response Execute(MatchService service, Logger logger,
         GameDatabaseContext database, GameUser user, Token token, SerializedRoomData body)
     {
-        GameRoom room = service.GetOrCreateRoomByPlayer(user, token.TokenPlatform, token.TokenGame, body.NatType == null ? NatType.Open : body.NatType[0], body.BuildVersion, body.PassedNoJoinPoint ?? false);
+        GameRoom room = service.GetOrCreateRoomByPlayer(user, token.TokenPlatform, token.TokenGame, body.NatType == null ? NatType.Open : body.NatType[0], body.BuildVersion, body.PassedNoJoinPoint);
         if (room.HostId.Id != user.UserId) return Unauthorized;
 
         if (body.RoomState != null) room.RoomState = body.RoomState.Value;
