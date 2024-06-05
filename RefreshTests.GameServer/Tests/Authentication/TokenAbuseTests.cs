@@ -36,4 +36,28 @@ public class TokenAbuseTests : GameServerTest
         request = gameClient.GetAsync("/lbp/eula").Result;
         Assert.That(request.StatusCode, Is.EqualTo(OK));
     }
+    
+    [Test]
+    public void CantUseGameTokenFromWrongIp()
+    {
+        using TestContext context = this.GetServer();
+        GameUser user = context.CreateUser();
+
+        using HttpClient gameClient = context.GetAuthenticatedClient(TokenType.Game, user, ipAddress: "256.727.272.636");
+        
+        HttpResponseMessage request = gameClient.GetAsync("/lbp/eula").Result;
+        Assert.That(request.StatusCode, Is.EqualTo(Forbidden));
+    }
+
+    [Test]
+    public void CanUseApiTokenFromWrongIp()
+    {
+        using TestContext context = this.GetServer();
+        GameUser user = context.CreateUser();
+
+        using HttpClient gameClient = context.GetAuthenticatedClient(TokenType.Api, user, ipAddress: "256.727.272.636");
+
+        HttpResponseMessage request = gameClient.GetAsync("/api/v3/users/me").Result;
+        Assert.That(request.StatusCode, Is.EqualTo(OK));
+    }
 }
