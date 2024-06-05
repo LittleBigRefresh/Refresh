@@ -34,7 +34,7 @@ public class GameDatabaseProvider : RealmDatabaseProvider<GameDatabaseContext>
         this._time = time;
     }
 
-    protected override ulong SchemaVersion => 126;
+    protected override ulong SchemaVersion => 127;
 
     protected override string Filename => "refreshGameServer.realm";
     
