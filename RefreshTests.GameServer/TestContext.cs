@@ -35,21 +35,24 @@ public class TestContext : IDisposable
 
     public HttpClient GetAuthenticatedClient(TokenType type,
         GameUser? user = null,
-        int tokenExpirySeconds = GameDatabaseContext.DefaultTokenExpirySeconds)
+        int tokenExpirySeconds = GameDatabaseContext.DefaultTokenExpirySeconds,
+        string? ipAddress = null)
     {
-        return this.GetAuthenticatedClient(type, out _, user, tokenExpirySeconds);
+        return this.GetAuthenticatedClient(type, out _, user, tokenExpirySeconds, ipAddress);
     }
     
     public HttpClient GetAuthenticatedClient(TokenType type, TokenGame game, TokenPlatform platform,
         GameUser? user = null,
-        int tokenExpirySeconds = GameDatabaseContext.DefaultTokenExpirySeconds)
+        int tokenExpirySeconds = GameDatabaseContext.DefaultTokenExpirySeconds,
+        string? ipAddress = null)
     {
-        return this.GetAuthenticatedClient(type, game, platform, out _, user, tokenExpirySeconds);
+        return this.GetAuthenticatedClient(type, game, platform, out _, user, tokenExpirySeconds, ipAddress);
     }
 
     public HttpClient GetAuthenticatedClient(TokenType type, out string tokenData,
         GameUser? user = null,
-        int tokenExpirySeconds = GameDatabaseContext.DefaultTokenExpirySeconds)
+        int tokenExpirySeconds = GameDatabaseContext.DefaultTokenExpirySeconds,
+        string? ipAddress = null)
     {
         user ??= this.CreateUser();
 
@@ -65,16 +68,17 @@ public class TestContext : IDisposable
             _ => TokenPlatform.Website,
         };
 
-        return this.GetAuthenticatedClient(type, game, platform, out tokenData, user, tokenExpirySeconds);
+        return this.GetAuthenticatedClient(type, game, platform, out tokenData, user, tokenExpirySeconds, ipAddress);
     }
     
     public HttpClient GetAuthenticatedClient(TokenType type, TokenGame game, TokenPlatform platform, out string tokenData,
         GameUser? user = null,
-        int tokenExpirySeconds = GameDatabaseContext.DefaultTokenExpirySeconds)
+        int tokenExpirySeconds = GameDatabaseContext.DefaultTokenExpirySeconds, 
+        string? ipAddress = null)
     {
         user ??= this.CreateUser();
 
-        Token token = this.Database.GenerateTokenForUser(user, type, game, platform, tokenExpirySeconds);
+        Token token = this.Database.GenerateTokenForUser(user, type, game, platform, ipAddress ?? "0.0.0.0", tokenExpirySeconds);
         tokenData = token.TokenData;
         
         HttpClient client = this.Listener.GetClient();
@@ -106,7 +110,7 @@ public class TestContext : IDisposable
 
     public Token CreateToken(GameUser user, TokenType type = TokenType.Game, TokenGame game = TokenGame.LittleBigPlanet2, TokenPlatform platform = TokenPlatform.PS3)
     {
-        return this.Database.GenerateTokenForUser(user, type, game, platform);
+        return this.Database.GenerateTokenForUser(user, type, game, platform, "0.0.0.0");
     }
     
     public GameLevel CreateLevel(GameUser author, string title = "Level", TokenGame gameVersion = TokenGame.LittleBigPlanet1)

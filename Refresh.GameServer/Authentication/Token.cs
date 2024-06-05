@@ -43,6 +43,8 @@ public partial class Token : IRealmObject, IToken<GameUser>
 
     public DateTimeOffset ExpiresAt { get; set; }
     public DateTimeOffset LoginDate { get; set; }
+    
+    public string IpAddress { get; set; }
 
     public GameUser User { get; set; }
 }

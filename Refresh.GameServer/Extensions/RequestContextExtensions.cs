@@ -1,3 +1,4 @@
+using System.Net;
 using JetBrains.Annotations;
 using Bunkum.Core;
 
@@ -27,4 +28,7 @@ public static class RequestContextExtensions
 
     [Pure]
     public static bool IsApi(this RequestContext context) => context.Url.AbsolutePath.StartsWith("/api/");
+    
+    [Pure]
+    public static string RemoteIp(this RequestContext context) => ((IPEndPoint)context.RemoteEndpoint).Address.ToString();
 }

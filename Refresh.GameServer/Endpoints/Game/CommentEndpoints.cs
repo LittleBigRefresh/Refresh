@@ -125,7 +125,6 @@ public class CommentEndpoints : EndpointGroup
         return OK;
     }
 
-    
     [GameEndpoint("rateComment/user/{content}", HttpMethods.Post)] // `user` level comments
     [GameEndpoint("rateComment/developer/{content}", HttpMethods.Post)] // `developer` level comments
     [GameEndpoint("rateUserComment/{content}", HttpMethods.Post)] // profile comments

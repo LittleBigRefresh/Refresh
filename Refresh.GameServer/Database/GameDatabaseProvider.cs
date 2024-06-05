@@ -34,7 +34,7 @@ public class GameDatabaseProvider : RealmDatabaseProvider<GameDatabaseContext>
         this._time = time;
     }
 
-    protected override ulong SchemaVersion => 124;
+    protected override ulong SchemaVersion => 126;
 
     protected override string Filename => "refreshGameServer.realm";
     
@@ -285,6 +285,10 @@ public class GameDatabaseProvider : RealmDatabaseProvider<GameDatabaseContext>
         {
             migration.NewRealm.Remove(eventToNuke);
         }
+        
+        // In version 126, we started tracking token IP, there's no way for us to acquire this after the fact, so lets just clear all the tokens
+        if (oldVersion < 126) 
+            migration.NewRealm.RemoveAll<Token>();
         
         // IQueryable<dynamic>? oldTokens = migration.OldRealm.DynamicApi.All("Token");
         IQueryable<Token>? newTokens = migration.NewRealm.All<Token>();
