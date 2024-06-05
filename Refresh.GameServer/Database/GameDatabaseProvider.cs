@@ -349,6 +349,65 @@ public class GameDatabaseProvider : RealmDatabaseProvider<GameDatabaseContext>
                 // and PSP is the only game to upload TGA files.
                 newAsset.IsPSP = newAsset.AssetType == GameAssetType.Tga;
             }
+            
+            // In version 125, we started tracking asset types differently, so we need to convert to the new system
+            if (oldVersion < 125)
+            {
+                newAsset.AssetType = (int)oldAsset._AssetType switch
+                {
+                    -1 => GameAssetType.Unknown,
+                    0 => GameAssetType.Level,
+                    1 => GameAssetType.Plan,
+                    2 => GameAssetType.Texture,
+                    3 => GameAssetType.Jpeg,
+                    4 => GameAssetType.Png,
+                    5 => GameAssetType.GfxMaterial,
+                    6 => GameAssetType.Mesh,
+                    7 => GameAssetType.GameDataTexture,
+                    8 => GameAssetType.Palette,
+                    9 => GameAssetType.Script,
+                    10 => GameAssetType.ThingRecording,
+                    11 => GameAssetType.VoiceRecording,
+                    12 => GameAssetType.Painting,
+                    13 => GameAssetType.Tga,
+                    14 => GameAssetType.SyncedProfile,
+                    15 => GameAssetType.Mip,
+                    16 => GameAssetType.GriefSongState,
+                    17 => GameAssetType.Material,
+                    18 => GameAssetType.SoftPhysicsSettings,
+                    19 => GameAssetType.Bevel,
+                    20 => GameAssetType.StreamingLevelChunk,
+                    21 => GameAssetType.Animation,
+                    _ => throw new Exception("Invalid asset type " + oldAsset._AssetType),
+                };
+                newAsset.AssetFormat = (int)oldAsset._AssetType switch
+                {
+                    -1 => GameAssetFormat.Unknown,
+                    0 => GameAssetFormat.Binary,
+                    1 => GameAssetFormat.Binary,
+                    2 => GameAssetFormat.CompressedTexture,
+                    3 => GameAssetFormat.Unknown,
+                    4 => GameAssetFormat.Unknown,
+                    5 => GameAssetFormat.Binary,
+                    6 => GameAssetFormat.Binary,
+                    7 => GameAssetFormat.CompressedTexture,
+                    8 => GameAssetFormat.Binary,
+                    9 => GameAssetFormat.Binary,
+                    10 => GameAssetFormat.Binary,
+                    11 => GameAssetFormat.Binary,
+                    12 => GameAssetFormat.Binary,
+                    13 => GameAssetFormat.Unknown,
+                    14 => GameAssetFormat.Binary,
+                    15 => GameAssetFormat.Unknown,
+                    16 => GameAssetFormat.Unknown,
+                    17 => GameAssetFormat.Binary,
+                    18 => GameAssetFormat.Text,
+                    19 => GameAssetFormat.Binary,
+                    20 => GameAssetFormat.Binary,
+                    21 => GameAssetFormat.Binary,
+                    _ => throw new Exception("Invalid asset type " + oldAsset._AssetType),
+                };
+            }
         }
         
         // Remove all scores with a null level, as in version 92 we started tracking story leaderboards differently

@@ -358,15 +358,57 @@ public partial class GameAsset
                 case GameAssetType.Mesh:
                 case GameAssetType.Palette:
                 case GameAssetType.Script:
-                case GameAssetType.MoveRecording:
+                case GameAssetType.ThingRecording:
                 case GameAssetType.VoiceRecording:
                 case GameAssetType.SyncedProfile:
                 case GameAssetType.GriefSongState:
                 case GameAssetType.SoftPhysicsSettings:
                 case GameAssetType.Bevel:
-                case GameAssetType.LevelChunk:
+                case GameAssetType.StreamingLevelChunk:
                 case GameAssetType.Animation:
                 case GameAssetType.Unknown:
+                case GameAssetType.GuidSubstitution:
+                case GameAssetType.SettingsCharacter:
+                case GameAssetType.Fontface:
+                case GameAssetType.DownloadableContent:
+                case GameAssetType.Joint:
+                case GameAssetType.GameConstants:
+                case GameAssetType.PoppetSettings:
+                case GameAssetType.CachedLevelData:
+                case GameAssetType.Game:
+                case GameAssetType.SettingsNetwork:
+                case GameAssetType.Packs:
+                case GameAssetType.BigProfile:
+                case GameAssetType.SlotList:
+                case GameAssetType.AdventureCreateProfile:
+                case GameAssetType.LocalProfile:
+                case GameAssetType.LimitsSettings:
+                case GameAssetType.Tutorials:
+                case GameAssetType.GuidList:
+                case GameAssetType.AudioMaterials:
+                case GameAssetType.SettingsFluid:
+                case GameAssetType.TextureList:
+                case GameAssetType.MusicSettings:
+                case GameAssetType.MixerSettings:
+                case GameAssetType.ReplayConfig:
+                case GameAssetType.StaticMesh:
+                case GameAssetType.AnimatedTexture:
+                case GameAssetType.Pins:
+                case GameAssetType.Instrument:
+                case GameAssetType.OutfitList:
+                case GameAssetType.PaintBrush:
+                case GameAssetType.Quest:
+                case GameAssetType.AnimationBank:
+                case GameAssetType.AnimationSet:
+                case GameAssetType.SkeletonMap:
+                case GameAssetType.SkeletonRegistry:
+                case GameAssetType.SkeletonAnimStyles:
+                case GameAssetType.AdventureSharedData:
+                case GameAssetType.AdventurePlayProfile:
+                case GameAssetType.AnimationMap:
+                case GameAssetType.CachedCostumeData:
+                case GameAssetType.DataLabels:
+                case GameAssetType.AdventureMaps:
                 default:
                     // If we don't know what asset type this is, just hope that whatever is asking for it knows what it is
                     return null;
