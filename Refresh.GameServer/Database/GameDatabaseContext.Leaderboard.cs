@@ -1,6 +1,7 @@
 using JetBrains.Annotations;
 using MongoDB.Bson;
 using Refresh.GameServer.Authentication;
+using Refresh.GameServer.Types.Activity;
 using Refresh.GameServer.Types.Levels;
 using Refresh.GameServer.Types.UserData;
 using Refresh.GameServer.Types.UserData.Leaderboard;
@@ -108,5 +109,40 @@ public partial class GameDatabaseContext // Leaderboard
     {
         if (id == null) return null;
         return this._realm.All<GameSubmittedScore>().FirstOrDefault(u => u.ScoreId == id);
+    }
+    
+    public void DeleteScore(GameSubmittedScore score)
+    {
+        IQueryable<Event> scoreEvents = this._realm.All<Event>()
+            .Where(e => e._StoredDataType == (int)EventDataType.Score && e.StoredObjectId == score.ScoreId);
+        
+        this._realm.Write(() =>
+        {
+            this._realm.RemoveRange(scoreEvents);
+            this._realm.Remove(score);
+        });
+    }
+    
+    public void DeleteScoresSetByUser(GameUser user)
+    {
+        IEnumerable<GameSubmittedScore> scores = this._realm.All<GameSubmittedScore>()
+            // FIXME: Realm (ahem, I mean the atlas device sdk *rolls eyes*) is a fucking joke.
+            // Realm doesn't support .Contains on IList<T>. Yes, really.
+            // This means we are forced to iterate over EVERY SCORE.
+            // I can't wait for Postgres.
+            .AsEnumerable()
+            .Where(s => s.Players.Contains(user));
+        
+        this._realm.Write(() =>
+        {
+            foreach (GameSubmittedScore score in scores)
+            {
+                IQueryable<Event> scoreEvents = this._realm.All<Event>()
+                    .Where(e => e._StoredDataType == (int)EventDataType.Score && e.StoredObjectId == score.ScoreId);
+                
+                this._realm.RemoveRange(scoreEvents);
+                this._realm.Remove(score);
+            }
+        });
     }
 }

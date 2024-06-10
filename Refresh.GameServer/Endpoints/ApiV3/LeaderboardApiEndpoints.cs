@@ -46,8 +46,8 @@ public class LeaderboardApiEndpoints : EndpointGroup
     [DocSummary("Gets an individual score by a UUID")]
     [DocError(typeof(ApiNotFoundError), "The score could not be found")]
     public ApiResponse<ApiGameScoreResponse> GetScoreByUuid(RequestContext context, GameDatabaseContext database,
-        IDataStore dataStore,
-        [DocSummary("The UUID of the score")] string uuid, DataContext dataContext)
+        DataContext dataContext,
+        [DocSummary("The UUID of the score")] string uuid)
     {
         GameSubmittedScore? score = database.GetScoreByUuid(uuid);
         if (score == null) return ApiNotFoundError.Instance;

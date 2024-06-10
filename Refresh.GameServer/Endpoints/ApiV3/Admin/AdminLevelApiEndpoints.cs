@@ -22,7 +22,7 @@ public class AdminLevelApiEndpoints : EndpointGroup
     [DocError(typeof(ApiNotFoundError), ApiNotFoundError.LevelMissingErrorWhen)]
     public ApiOkResponse AddTeamPickToLevel(RequestContext context, GameDatabaseContext database, GameUser user, int id)
     {
-        GameLevel? level = database.GetLevelById(id);
+        GameLevel? level = database.GetLevelById(id); 
         if (level == null) return ApiNotFoundError.LevelMissingError;
         
         database.AddTeamPickToLevel(level);
