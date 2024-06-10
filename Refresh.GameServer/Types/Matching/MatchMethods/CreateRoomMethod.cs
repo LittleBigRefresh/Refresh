@@ -16,25 +16,30 @@ public class CreateRoomMethod : IMatchMethod
         SerializedRoomData body)
     {
         NatType natType = body.NatType == null ? NatType.Open : body.NatType[0];
-        GameRoom room = service.GetOrCreateRoomByPlayer(user, token.TokenPlatform, token.TokenGame, natType);
+        GameRoom room = service.GetOrCreateRoomByPlayer(user, token.TokenPlatform, token.TokenGame, natType, body.BuildVersion, body.PassedNoJoinPoint);
         if (room.HostId.Id != user.UserId)
         {
-            room = service.SplitUserIntoNewRoom(user, token.TokenPlatform, token.TokenGame, natType);
+            room = service.SplitUserIntoNewRoom(user, token.TokenPlatform, token.TokenGame, natType, body.BuildVersion, body.PassedNoJoinPoint);
         }
 
         if (body.RoomState != null) room.RoomState = body.RoomState.Value;
-
-        // LBP likes to send both Slot and Slots interchangeably, handle that case here
-        if (body.Slots != null)
+        
+        if (body.Slots.Count > 1)
         {
-            if (body.Slots.Count != 2)
+            logger.LogWarning(BunkumCategory.Matching, "Received create room request with multiple slots, rejecting");
+            return BadRequest;
+        }
+        
+        foreach(List<int> slot in body.Slots)
+        {
+            if (slot.Count != 2)
             {
-                logger.LogWarning(BunkumCategory.Matching, "Received request with invalid amount of slots, rejecting.");
+                logger.LogWarning(BunkumCategory.Matching, "Received request with invalid slot, rejecting.");
                 return BadRequest;
             }
 
-            room.LevelType = (RoomSlotType)body.Slots[0];
-            room.LevelId = body.Slots[1];
+            room.LevelType = (RoomSlotType)slot[0];
+            room.LevelId = slot[1];
         }
 
         byte? mood = body.HostMood ?? body.Mood;

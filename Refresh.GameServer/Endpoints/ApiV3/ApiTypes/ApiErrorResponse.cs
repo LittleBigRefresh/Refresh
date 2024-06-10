@@ -1,7 +1,7 @@
 using AttribDoc;
-using Refresh.GameServer.Types.Data;
+using Refresh.GameServer.Endpoints.ApiV3.DataTypes;
 
-namespace Refresh.GameServer.Endpoints.ApiV3.DataTypes.Response;
+namespace Refresh.GameServer.Endpoints.ApiV3.ApiTypes;
 
 [JsonObject(NamingStrategyType = typeof(CamelCaseNamingStrategy))]
 public class ApiErrorResponse : IApiResponse

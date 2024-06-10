@@ -1,9 +1,7 @@
-using Bunkum.Core.Storage;
-using Refresh.GameServer.Database;
 using Refresh.GameServer.Types.Data;
 using Refresh.GameServer.Types.Photos;
 
-namespace Refresh.GameServer.Endpoints.ApiV3.DataTypes.Response;
+namespace Refresh.GameServer.Endpoints.ApiV3.DataTypes.Response.Users.Photos;
 
 [JsonObject(NamingStrategyType = typeof(CamelCaseNamingStrategy))]
 public class ApiGamePhotoSubjectResponse : IApiResponse,IDataConvertableFrom<ApiGamePhotoSubjectResponse, GamePhotoSubject>

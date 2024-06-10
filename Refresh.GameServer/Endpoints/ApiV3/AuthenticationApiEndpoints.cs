@@ -13,6 +13,7 @@ using Refresh.GameServer.Endpoints.ApiV3.ApiTypes.Errors;
 using Refresh.GameServer.Endpoints.ApiV3.DataTypes;
 using Refresh.GameServer.Endpoints.ApiV3.DataTypes.Request.Authentication;
 using Refresh.GameServer.Endpoints.ApiV3.DataTypes.Response;
+using Refresh.GameServer.Endpoints.ApiV3.DataTypes.Response.Users;
 using Refresh.GameServer.Extensions;
 using Refresh.GameServer.Services;
 using Refresh.GameServer.Types.Data;
@@ -63,11 +64,13 @@ public class AuthenticationApiEndpoints : EndpointGroup
             return new ApiAuthenticationError(
                 "The server is currently in maintenance mode, so it is only accessible for administrators. " +
                 "Check back later.");
-
+        
+        string ipAddress = context.RemoteIp();
+        
         // if this is a legacy user, have them create a password on login
         if (user.PasswordBcrypt == null)
         {
-            Token resetToken = database.GenerateTokenForUser(user, TokenType.PasswordReset, TokenGame.Website, TokenPlatform.Website);
+            Token resetToken = database.GenerateTokenForUser(user, TokenType.PasswordReset, TokenGame.Website, TokenPlatform.Website, ipAddress);
 
             return new ApiResetPasswordResponse
             {
@@ -87,8 +90,8 @@ public class AuthenticationApiEndpoints : EndpointGroup
                                               $"For more information or to request account deletion, please contact the server administrator.\n" +
                                               $"Reason: {user.BanReason}");
 
-        Token token = database.GenerateTokenForUser(user, TokenType.Api, TokenGame.Website, TokenPlatform.Website);
-        Token refreshToken = database.GenerateTokenForUser(user, TokenType.ApiRefresh, TokenGame.Website, TokenPlatform.Website, GameDatabaseContext.RefreshTokenExpirySeconds);
+        Token token = database.GenerateTokenForUser(user, TokenType.Api, TokenGame.Website, TokenPlatform.Website, ipAddress);
+        Token refreshToken = database.GenerateTokenForUser(user, TokenType.ApiRefresh, TokenGame.Website, TokenPlatform.Website, ipAddress, GameDatabaseContext.RefreshTokenExpirySeconds);
         
         context.Logger.LogInfo(BunkumCategory.Authentication, $"{user} successfully logged in through the API");
 
@@ -111,7 +114,7 @@ public class AuthenticationApiEndpoints : EndpointGroup
 
         GameUser user = refreshToken.User;
 
-        Token token = database.GenerateTokenForUser(user, TokenType.Api, TokenGame.Website, TokenPlatform.Website);
+        Token token = database.GenerateTokenForUser(user, TokenType.Api, TokenGame.Website, TokenPlatform.Website, context.RemoteIp());
         
         context.Logger.LogInfo(BunkumCategory.Authentication, $"{user} successfully refreshed their token through the API");
 
@@ -162,7 +165,7 @@ public class AuthenticationApiEndpoints : EndpointGroup
         
         context.Logger.LogInfo(RefreshContext.PasswordReset, "Sending a password reset request email to {0}.", user.Username);
         
-        Token token = database.GenerateTokenForUser(user, TokenType.PasswordReset, TokenGame.Website, TokenPlatform.Website);
+        Token token = database.GenerateTokenForUser(user, TokenType.PasswordReset, TokenGame.Website, TokenPlatform.Website, context.RemoteIp());
         context.Logger.LogTrace(RefreshContext.PasswordReset, "Reset token: {0}", token.TokenData);
         smtpService.SendPasswordResetRequest(user, token.TokenData);
 
@@ -283,7 +286,7 @@ public class AuthenticationApiEndpoints : EndpointGroup
             database.VerifyUserEmail(user);
         }
         
-        Token token = database.GenerateTokenForUser(user, TokenType.Api, TokenGame.Website, TokenPlatform.Website);
+        Token token = database.GenerateTokenForUser(user, TokenType.Api, TokenGame.Website, TokenPlatform.Website, context.RemoteIp());
 
         return new ApiAuthenticationResponse
         {

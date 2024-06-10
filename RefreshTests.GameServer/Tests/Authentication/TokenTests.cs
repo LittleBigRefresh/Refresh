@@ -13,7 +13,7 @@ public class TokenTests : GameServerTest
         GameUser user = context.CreateUser();
 
         const int expirySeconds = GameDatabaseContext.DefaultTokenExpirySeconds;
-        Token token = context.Database.GenerateTokenForUser(user, TokenType.Api, TokenGame.Website, TokenPlatform.Website, expirySeconds);
+        Token token = context.Database.GenerateTokenForUser(user, TokenType.Api, TokenGame.Website, TokenPlatform.Website, "0.0.0.0", expirySeconds);
         
         Assert.That(context.Database.GetTokenFromTokenData(token.TokenData, TokenType.Api), Is.Not.Null);
         context.Time.TimestampMilliseconds = expirySeconds * 1000;
@@ -27,8 +27,8 @@ public class TokenTests : GameServerTest
     {
         using TestContext context = this.GetServer(false);
         
-        // make a token so that the test doesnt pass cause we have no tokens
-        context.Database.GenerateTokenForUser(context.CreateUser(), TokenType.Api, TokenGame.Website, TokenPlatform.Website);
+        // make a token so that the test doesn't pass because we have no tokens
+        context.Database.GenerateTokenForUser(context.CreateUser(), TokenType.Api, TokenGame.Website, TokenPlatform.Website, "0.0.0.0");
 
         Token? token = context.Database.GetTokenFromTokenData("bad token data", TokenType.Api);
         GameUser? user = context.Database.GetUserFromTokenData("bad token data", TokenType.Api);

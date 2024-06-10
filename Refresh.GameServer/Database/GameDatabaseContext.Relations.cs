@@ -287,6 +287,9 @@ public partial class GameDatabaseContext // Relations
         return new DatabaseList<GameReview>(this._realm.All<GameReview>()
             .Where(r => r.Level == level), skip, count);
     }
+    
+    public int GetTotalReviewsForLevel(GameLevel level)
+        => this._realm.All<GameReview>().Count(r => r.Level == level);
 
     #endregion
 
