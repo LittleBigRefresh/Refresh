@@ -30,6 +30,34 @@ public partial class GameDatabaseContext // AssetConfiguration
         
         return null;
     }
+
+    public IQueryable<AssetDependencyRelation> GetAssetDependencies(GameAsset asset) 
+        => this._realm.All<AssetDependencyRelation>().Where(a => a.Dependent == asset.AssetHash);
+
+    public void AddAssetDependencyRelation(string dependent, string dependency)
+    {
+        this._realm.Write(() =>
+        {
+            this._realm.Add(new AssetDependencyRelation
+            {
+                Dependent = dependent,
+                Dependency = dependency,
+            }); 
+        });
+    }
+
+    public void AddAssetDependencyRelations(string dependent, IEnumerable<string> dependencies)
+    {
+        this._realm.Write(() =>
+        {
+            foreach (string dependency in dependencies)
+                this._realm.Add(new AssetDependencyRelation
+                {
+                    Dependent = dependent,
+                    Dependency = dependency,
+                });
+        });
+    }
     
     public IEnumerable<GameAsset> GetAssetsByType(GameAssetType type) =>
         this._realm.All<GameAsset>()
