@@ -31,8 +31,10 @@ public partial class GameDatabaseContext // AssetConfiguration
         return null;
     }
 
-    public IQueryable<AssetDependencyRelation> GetAssetDependencies(GameAsset asset) 
-        => this._realm.All<AssetDependencyRelation>().Where(a => a.Dependent == asset.AssetHash);
+    public IEnumerable<string> GetAssetDependencies(GameAsset asset) 
+        => this._realm.All<AssetDependencyRelation>().Where(a => a.Dependent == asset.AssetHash)
+            .AsEnumerable()
+            .Select(a => a.Dependency);
 
     public void AddAssetDependencyRelation(string dependent, string dependency)
     {

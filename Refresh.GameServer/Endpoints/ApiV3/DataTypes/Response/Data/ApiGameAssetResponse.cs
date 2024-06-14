@@ -23,7 +23,7 @@ public class ApiGameAssetResponse : IApiResponse, IDataConvertableFrom<ApiGameAs
             OriginalUploader = ApiGameUserResponse.FromOld(old.OriginalUploader, dataContext),
             UploadDate = old.UploadDate,
             AssetType = old.AssetType,
-            Dependencies = dataContext.Database.GetAssetDependencies(old).AsEnumerable().Select(a => a.Dependency),
+            Dependencies = dataContext.Database.GetAssetDependencies(old),
         };
     }
 
