@@ -185,7 +185,7 @@ public class ResourceApiEndpoints : EndpointGroup
             return new ApiValidationError($"The asset must be under 2MB. Your file was {body.Length:N0} bytes.");
         }
 
-        GameAsset? gameAsset = importer.ReadAndVerifyAsset(hash, body, TokenPlatform.Website);
+        GameAsset? gameAsset = importer.ReadAndVerifyAsset(hash, body, TokenPlatform.Website, database);
         if (gameAsset == null)
             return ApiValidationError.CannotReadAssetError;
 

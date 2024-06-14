@@ -30,6 +30,27 @@ public partial class GameDatabaseContext // AssetConfiguration
         
         return null;
     }
+
+    public IEnumerable<string> GetAssetDependencies(GameAsset asset) 
+        => this._realm.All<AssetDependencyRelation>().Where(a => a.Dependent == asset.AssetHash)
+            .AsEnumerable()
+            .Select(a => a.Dependency);
+
+    public void AddOrOverwriteAssetDependencyRelations(string dependent, IEnumerable<string> dependencies)
+    {
+        this._realm.Write(() =>
+        {
+            // delete all existing relations. ensures duplicates won't exist when reprocessing
+            this._realm.RemoveRange(this._realm.All<AssetDependencyRelation>().Where(a => a.Dependent == dependent));
+            
+            foreach (string dependency in dependencies)
+                this._realm.Add(new AssetDependencyRelation
+                {
+                    Dependent = dependent,
+                    Dependency = dependency,
+                });
+        });
+    }
     
     public IEnumerable<GameAsset> GetAssetsByType(GameAssetType type) =>
         this._realm.All<GameAsset>()

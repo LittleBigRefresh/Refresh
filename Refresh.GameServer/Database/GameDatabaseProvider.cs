@@ -34,7 +34,7 @@ public class GameDatabaseProvider : RealmDatabaseProvider<GameDatabaseContext>
         this._time = time;
     }
 
-    protected override ulong SchemaVersion => 127;
+    protected override ulong SchemaVersion => 128;
 
     protected override string Filename => "refreshGameServer.realm";
     
@@ -67,6 +67,7 @@ public class GameDatabaseProvider : RealmDatabaseProvider<GameDatabaseContext>
         typeof(RequestStatistics),
         typeof(SequentialIdStorage),
         typeof(GameContest),
+        typeof(AssetDependencyRelation),
         //grief report items
         typeof(GameReport),
         typeof(InfoBubble),
@@ -352,6 +353,21 @@ public class GameDatabaseProvider : RealmDatabaseProvider<GameDatabaseContext>
                 // but TGA files are the only asset currently affected by the tracking of `IsPSP`,
                 // and PSP is the only game to upload TGA files.
                 newAsset.IsPSP = newAsset.AssetType == GameAssetType.Tga;
+            }
+
+            // In version 128 assets were moved from a list on the asset to a separate "relations" table
+            if (oldVersion < 128)
+            {
+                IList<string> dependencies = oldAsset.Dependencies;
+                
+                foreach (string dependency in dependencies)
+                {
+                    migration.NewRealm.Add(new AssetDependencyRelation
+                    {
+                        Dependent = oldAsset.AssetHash,
+                        Dependency = dependency,
+                    });
+                }
             }
         }
         

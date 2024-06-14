@@ -61,7 +61,7 @@ public class ResourceEndpoints : EndpointGroup
             return RequestEntityTooLarge;
         }
         
-        GameAsset? gameAsset = importer.ReadAndVerifyAsset(hash, body, token.TokenPlatform);
+        GameAsset? gameAsset = importer.ReadAndVerifyAsset(hash, body, token.TokenPlatform, database);
         if (gameAsset == null)
             return BadRequest;
 
