@@ -190,8 +190,8 @@ public partial class GameDatabaseContext // Users
     [Pure]
     public int GetActiveUserCount()
     {
-        DateTimeOffset lastMonth = this._time.Now.Subtract(TimeSpan.FromDays(30));
-        return this._realm.All<GameUser>().Count(u => u.LastLoginDate > lastMonth);
+        DateTimeOffset timeFrame = this._time.Now.Subtract(TimeSpan.FromDays(7));
+        return this._realm.All<GameUser>().Count(u => u.LastLoginDate > timeFrame);
     }
 
     public void UpdateUserPins(GameUser user, UserPins pinsUpdate) 
