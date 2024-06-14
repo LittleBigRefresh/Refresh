@@ -140,11 +140,6 @@ public class AssetImporter : Importer
         {
             return false;
         }
-        
-        #if DEBUG
-        char typeChar = (char)data[3];
-        if (typeChar != 'b') throw new Exception($"Asset type {type} is not binary (char was '{typeChar}')");
-        #endif
 
         return true;
     }
