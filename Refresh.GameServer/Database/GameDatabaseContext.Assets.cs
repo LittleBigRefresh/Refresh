@@ -36,22 +36,13 @@ public partial class GameDatabaseContext // AssetConfiguration
             .AsEnumerable()
             .Select(a => a.Dependency);
 
-    public void AddAssetDependencyRelation(string dependent, string dependency)
+    public void AddOrOverwriteAssetDependencyRelations(string dependent, IEnumerable<string> dependencies)
     {
         this._realm.Write(() =>
         {
-            this._realm.Add(new AssetDependencyRelation
-            {
-                Dependent = dependent,
-                Dependency = dependency,
-            }); 
-        });
-    }
-
-    public void AddAssetDependencyRelations(string dependent, IEnumerable<string> dependencies)
-    {
-        this._realm.Write(() =>
-        {
+            // delete all existing relations. ensures duplicates won't exist when reprocessing
+            this._realm.RemoveRange(this._realm.All<AssetDependencyRelation>().Where(a => a.Dependent == dependent));
+            
             foreach (string dependency in dependencies)
                 this._realm.Add(new AssetDependencyRelation
                 {

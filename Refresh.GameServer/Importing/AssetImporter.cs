@@ -116,7 +116,7 @@ public class AssetImporter : Importer
             {
                 List<string> dependencies = this.ParseDependencyTree(data);
                 
-                database.AddAssetDependencyRelations(hash, dependencies);
+                database.AddOrOverwriteAssetDependencyRelations(hash, dependencies);
             }
             catch (Exception e)
             {
