@@ -259,7 +259,7 @@ public class ActivityPage
     
     private void GenerateScoreGroups(ActivityGroups groups, IReadOnlyCollection<GameSubmittedScore> scores)
     {
-        foreach (Event @event in this.Events.Where(e => e.EventType == EventType.SubmittedScore_Create))
+        foreach (Event @event in this.Events.Where(e => e.EventType == EventType.Level_Score))
         {
             GameSubmittedScore score = scores.First(u => u.ScoreId == @event.StoredObjectId);
             

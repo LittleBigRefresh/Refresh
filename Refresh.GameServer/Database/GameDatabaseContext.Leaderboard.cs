@@ -31,7 +31,7 @@ public partial class GameDatabaseContext // Leaderboard
             this._realm.Add(newScore);
         });
 
-        this.CreateSubmittedScoreCreateEvent(user, newScore);
+        this.CreateLevelScoreEvent(user, newScore);
 
         #region Notifications
         

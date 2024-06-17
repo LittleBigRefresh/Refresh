@@ -68,9 +68,9 @@ public class DiscordIntegrationWorker : IWorker
             EventType.Level_Play => null,
             EventType.Level_Tag => null,
             EventType.Level_TeamPick => $"team picked {levelLink}",
-            EventType.RateLevelRelation_Create => null,
+            EventType.Level_Rate => null,
             EventType.Level_Review => null,
-            EventType.SubmittedScore_Create => $"got {score!.Score:N0} points on {levelLink}",
+            EventType.Level_Score => $"got {score!.Score:N0} points on {levelLink}",
             EventType.User_FirstLogin => "logged in for the first time",
             _ => null,
         };

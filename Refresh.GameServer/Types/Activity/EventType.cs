@@ -6,7 +6,7 @@ namespace Refresh.GameServer.Types.Activity;
 
 [JsonConverter(typeof(StringEnumConverter))]
 [SuppressMessage("ReSharper", "InconsistentNaming")]
-public enum EventType
+public enum EventType : byte
 {
     [XmlEnum("publish_level")]
     Level_Upload = 0,
@@ -37,7 +37,7 @@ public enum EventType
     [XmlEnum("mm_pick_level")]
     Level_TeamPick = 13,
     [XmlEnum("dpad_rate_level")]
-    RateLevelRelation_Create = 14,
+    Level_Rate = 14,
     [XmlEnum("review_level")]
     Level_Review = 15,
     // [XmlEnum("comment_on_user")]
@@ -49,7 +49,7 @@ public enum EventType
     // [XmlEnum("add_level_to_playlist")]
     // Playlist_AddLevel = 19,
     [XmlEnum("score")]
-    SubmittedScore_Create = 20, // FIXME: this name is shit
+    Level_Score = 20,
     
     // Custom events
     [XmlEnum("firstlogin")]

@@ -8,207 +8,219 @@ namespace Refresh.GameServer.Database;
 
 public partial class GameDatabaseContext // ActivityWrite
 {
-        /// <summary>
+    /// <summary>
     /// Creates a new Level_Upload event from a <see cref='GameLevel'/>, and adds it to the event list.
     /// </summary>
-    public Event CreateLevelUploadEvent(GameUser userFrom, GameLevel gamelevel)
+    public Event CreateLevelUploadEvent(GameUser userFrom, GameLevel level)
     {
-        Event @event = new();
-        @event.EventType = EventType.Level_Upload;
-        @event.StoredDataType = EventDataType.Level;
-        @event.Timestamp = this._time.TimestampMilliseconds;
-        @event.User = userFrom;
+        Event e = new()
+        {
+            EventType = EventType.Level_Upload,
+            StoredDataType = EventDataType.Level,
+            Timestamp = this._time.TimestampMilliseconds,
+            User = userFrom,
+            StoredSequentialId = level.LevelId,
+        };
 
-        @event.StoredSequentialId = gamelevel.LevelId;
-
-        this._realm.Write(() => this._realm.Add(@event));
-        return @event;
+        this._realm.Write(() => this._realm.Add(e));
+        return e;
     }
 
     /// <summary>
     /// Creates a new Level_Favourite event from a <see cref='GameLevel'/>, and adds it to the event list.
     /// </summary>
-    public Event CreateLevelFavouriteEvent(GameUser userFrom, GameLevel gamelevel)
+    public Event CreateLevelFavouriteEvent(GameUser userFrom, GameLevel level)
     {
-        Event @event = new();
-        @event.EventType = EventType.Level_Favourite;
-        @event.StoredDataType = EventDataType.Level;
-        @event.Timestamp = this._time.TimestampMilliseconds;
-        @event.User = userFrom;
+        Event e = new()
+        {
+            EventType = EventType.Level_Favourite,
+            StoredDataType = EventDataType.Level,
+            Timestamp = this._time.TimestampMilliseconds,
+            User = userFrom,
+            StoredSequentialId = level.LevelId,
+        };
 
-        @event.StoredSequentialId = gamelevel.LevelId;
-
-        this._realm.Write(() => this._realm.Add(@event));
-        return @event;
+        this._realm.Write(() => this._realm.Add(e));
+        return e;
     }
 
     /// <summary>
     /// Creates a new Level_Unfavourite event from a <see cref='GameLevel'/>, and adds it to the event list.
     /// </summary>
-    public Event CreateLevelUnfavouriteEvent(GameUser userFrom, GameLevel gamelevel)
+    public Event CreateLevelUnfavouriteEvent(GameUser userFrom, GameLevel level)
     {
-        Event @event = new();
-        @event.EventType = EventType.Level_Unfavourite;
-        @event.StoredDataType = EventDataType.Level;
-        @event.Timestamp = this._time.TimestampMilliseconds;
-        @event.User = userFrom;
+        Event e = new()
+        {
+            EventType = EventType.Level_Unfavourite,
+            StoredDataType = EventDataType.Level,
+            Timestamp = this._time.TimestampMilliseconds,
+            User = userFrom,
+            StoredSequentialId = level.LevelId,
+        };
 
-        @event.StoredSequentialId = gamelevel.LevelId;
-
-        this._realm.Write(() => this._realm.Add(@event));
-        return @event;
+        this._realm.Write(() => this._realm.Add(e));
+        return e;
     }
 
     /// <summary>
     /// Creates a new User_Favourite event from a <see cref='GameUser'/>, and adds it to the event list.
     /// </summary>
-    public Event CreateUserFavouriteEvent(GameUser userFrom, GameUser gameuser)
+    public Event CreateUserFavouriteEvent(GameUser userFrom, GameUser user)
     {
-        Event @event = new();
-        @event.EventType = EventType.User_Favourite;
-        @event.StoredDataType = EventDataType.User;
-        @event.Timestamp = this._time.TimestampMilliseconds;
-        @event.User = userFrom;
+        Event e = new()
+        {
+            EventType = EventType.User_Favourite,
+            StoredDataType = EventDataType.User,
+            Timestamp = this._time.TimestampMilliseconds,
+            User = userFrom,
+            StoredObjectId = user.UserId,
+        };
 
-        @event.StoredObjectId = gameuser.UserId;
-
-        this._realm.Write(() => this._realm.Add(@event));
-        return @event;
+        this._realm.Write(() => this._realm.Add(e));
+        return e;
     }
 
     /// <summary>
     /// Creates a new User_Unfavourite event from a <see cref='GameUser'/>, and adds it to the event list.
     /// </summary>
-    public Event CreateUserUnfavouriteEvent(GameUser userFrom, GameUser gameuser)
+    public Event CreateUserUnfavouriteEvent(GameUser userFrom, GameUser user)
     {
-        Event @event = new();
-        @event.EventType = EventType.User_Unfavourite;
-        @event.StoredDataType = EventDataType.User;
-        @event.Timestamp = this._time.TimestampMilliseconds;
-        @event.User = userFrom;
+        Event e = new()
+        {
+            EventType = EventType.User_Unfavourite,
+            StoredDataType = EventDataType.User,
+            Timestamp = this._time.TimestampMilliseconds,
+            User = userFrom,
+            StoredObjectId = user.UserId,
+        };
 
-        @event.StoredObjectId = gameuser.UserId;
-
-        this._realm.Write(() => this._realm.Add(@event));
-        return @event;
+        this._realm.Write(() => this._realm.Add(e));
+        return e;
     }
 
     /// <summary>
     /// Creates a new Level_Play event from a <see cref='GameLevel'/>, and adds it to the event list.
     /// </summary>
-    public Event CreateLevelPlayEvent(GameUser userFrom, GameLevel gamelevel)
+    public Event CreateLevelPlayEvent(GameUser userFrom, GameLevel level)
     {
-        Event @event = new();
-        @event.EventType = EventType.Level_Play;
-        @event.StoredDataType = EventDataType.Level;
-        @event.Timestamp = this._time.TimestampMilliseconds;
-        @event.User = userFrom;
+        Event e = new()
+        {
+            EventType = EventType.Level_Play,
+            StoredDataType = EventDataType.Level,
+            Timestamp = this._time.TimestampMilliseconds,
+            User = userFrom,
+            StoredSequentialId = level.LevelId,
+        };
 
-        @event.StoredSequentialId = gamelevel.LevelId;
-
-        this._realm.Write(() => this._realm.Add(@event));
-        return @event;
+        this._realm.Write(() => this._realm.Add(e));
+        return e;
     }
 
     /// <summary>
     /// Creates a new Level_Tag event from a <see cref='GameLevel'/>, and adds it to the event list.
     /// </summary>
-    public Event CreateLevelTagEvent(GameUser userFrom, GameLevel gamelevel)
+    public Event CreateLevelTagEvent(GameUser userFrom, GameLevel level)
     {
-        Event @event = new();
-        @event.EventType = EventType.Level_Tag;
-        @event.StoredDataType = EventDataType.Level;
-        @event.Timestamp = this._time.TimestampMilliseconds;
-        @event.User = userFrom;
+        Event e = new()
+        {
+            EventType = EventType.Level_Tag,
+            StoredDataType = EventDataType.Level,
+            Timestamp = this._time.TimestampMilliseconds,
+            User = userFrom,
+            StoredSequentialId = level.LevelId,
+        };
 
-        @event.StoredSequentialId = gamelevel.LevelId;
-
-        this._realm.Write(() => this._realm.Add(@event));
-        return @event;
+        this._realm.Write(() => this._realm.Add(e));
+        return e;
     }
 
     /// <summary>
     /// Creates a new Level_TeamPick event from a <see cref='GameLevel'/>, and adds it to the event list.
     /// </summary>
-    public Event CreateLevelTeamPickEvent(GameUser userFrom, GameLevel gamelevel)
+    public Event CreateLevelTeamPickEvent(GameUser userFrom, GameLevel level)
     {
-        Event @event = new();
-        @event.EventType = EventType.Level_TeamPick;
-        @event.StoredDataType = EventDataType.Level;
-        @event.Timestamp = this._time.TimestampMilliseconds;
-        @event.User = userFrom;
+        Event e = new()
+        {
+            EventType = EventType.Level_TeamPick,
+            StoredDataType = EventDataType.Level,
+            Timestamp = this._time.TimestampMilliseconds,
+            User = userFrom,
+            StoredSequentialId = level.LevelId,
+        };
 
-        @event.StoredSequentialId = gamelevel.LevelId;
-
-        this._realm.Write(() => this._realm.Add(@event));
-        return @event;
+        this._realm.Write(() => this._realm.Add(e));
+        return e;
     }
 
     /// <summary>
-    /// Creates a new RateLevelRelation_Create event from a <see cref='RateLevelRelation'/>, and adds it to the event list.
+    /// Creates a new Level_Rate event from a <see cref='RateLevelRelation'/>, and adds it to the event list.
     /// </summary>
-    public Event CreateRateLevelRelationCreateEvent(GameUser userFrom, RateLevelRelation ratelevelrelation)
+    public Event CreateRateLevelEvent(GameUser userFrom, RateLevelRelation relation)
     {
-        Event @event = new();
-        @event.EventType = EventType.RateLevelRelation_Create;
-        @event.StoredDataType = EventDataType.RateLevelRelation;
-        @event.Timestamp = this._time.TimestampMilliseconds;
-        @event.User = userFrom;
+        Event e = new()
+        {
+            EventType = EventType.Level_Rate,
+            StoredDataType = EventDataType.RateLevelRelation,
+            Timestamp = this._time.TimestampMilliseconds,
+            User = userFrom,
+            StoredObjectId = relation.RateLevelRelationId,
+        };
 
-        @event.StoredObjectId = ratelevelrelation.RateLevelRelationId;
-
-        this._realm.Write(() => this._realm.Add(@event));
-        return @event;
+        this._realm.Write(() => this._realm.Add(e));
+        return e;
     }
 
     /// <summary>
     /// Creates a new Level_Review event from a <see cref='GameLevel'/>, and adds it to the event list.
     /// </summary>
-    public Event CreateLevelReviewEvent(GameUser userFrom, GameLevel gamelevel)
+    public Event CreateLevelReviewEvent(GameUser userFrom, GameLevel level)
     {
-        Event @event = new();
-        @event.EventType = EventType.Level_Review;
-        @event.StoredDataType = EventDataType.Level;
-        @event.Timestamp = this._time.TimestampMilliseconds;
-        @event.User = userFrom;
+        Event e = new()
+        {
+            EventType = EventType.Level_Review,
+            StoredDataType = EventDataType.Level,
+            Timestamp = this._time.TimestampMilliseconds,
+            User = userFrom,
+            StoredSequentialId = level.LevelId,
+        };
 
-        @event.StoredSequentialId = gamelevel.LevelId;
-
-        this._realm.Write(() => this._realm.Add(@event));
-        return @event;
+        this._realm.Write(() => this._realm.Add(e));
+        return e;
     }
 
     /// <summary>
-    /// Creates a new SubmittedScore_Create event from a <see cref='GameSubmittedScore'/>, and adds it to the event list.
+    /// Creates a new Level_Score event from a <see cref='GameSubmittedScore'/>, and adds it to the event list.
     /// </summary>
-    public Event CreateSubmittedScoreCreateEvent(GameUser userFrom, GameSubmittedScore gamesubmittedscore)
+    public Event CreateLevelScoreEvent(GameUser userFrom, GameSubmittedScore score)
     {
-        Event @event = new();
-        @event.EventType = EventType.SubmittedScore_Create;
-        @event.StoredDataType = EventDataType.Score;
-        @event.Timestamp = this._time.TimestampMilliseconds;
-        @event.User = userFrom;
+        Event e = new()
+        {
+            EventType = EventType.Level_Score,
+            StoredDataType = EventDataType.Score,
+            Timestamp = this._time.TimestampMilliseconds,
+            User = userFrom,
+            StoredObjectId = score.ScoreId,
+        };
 
-        @event.StoredObjectId = gamesubmittedscore.ScoreId;
-
-        this._realm.Write(() => this._realm.Add(@event));
-        return @event;
+        this._realm.Write(() => this._realm.Add(e));
+        return e;
     }
 
     /// <summary>
     /// Creates a new User_FirstLogin event from a <see cref='GameUser'/>, and adds it to the event list.
     /// </summary>
-    public Event CreateUserFirstLoginEvent(GameUser userFrom, GameUser gameuser)
+    public Event CreateUserFirstLoginEvent(GameUser userFrom, GameUser user)
     {
-        Event @event = new();
-        @event.EventType = EventType.User_FirstLogin;
-        @event.StoredDataType = EventDataType.User;
-        @event.Timestamp = this._time.TimestampMilliseconds;
-        @event.User = userFrom;
+        Event e = new()
+        {
+            EventType = EventType.User_FirstLogin,
+            StoredDataType = EventDataType.User,
+            Timestamp = this._time.TimestampMilliseconds,
+            User = userFrom,
+            StoredObjectId = user.UserId,
+        };
 
-        @event.StoredObjectId = gameuser.UserId;
-
-        this._realm.Write(() => this._realm.Add(@event));
-        return @event;
+        this._realm.Write(() => this._realm.Add(e));
+        return e;
     }
 }
