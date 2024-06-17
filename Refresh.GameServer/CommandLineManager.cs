@@ -58,6 +58,9 @@ internal class CommandLineManager
         
         [Option("rename-user", HelpText = "Changes a user's username. (old) username or Email option is required if this is set.")]
         public string? RenameUser { get; set; }
+        
+        [Option("fully-delete-user", HelpText = "Fully deletes a user, entirely removing the row and allowing people to register with that username once again. Not recommended.")]
+        public bool FullyDeleteUser { get; set; }
     }
 
     internal void StartWithArgs(string[] args)
@@ -161,6 +164,11 @@ internal class CommandLineManager
             
             GameUser user = this.GetUserOrFail(options);
             this._server.RenameUser(user, options.RenameUser);
+        }
+        else if (options.FullyDeleteUser)
+        {
+            GameUser user = this.GetUserOrFail(options);
+            this._server.FullyDeleteUser(user);
         }
     }
 }

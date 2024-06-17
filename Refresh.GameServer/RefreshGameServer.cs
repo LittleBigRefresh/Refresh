@@ -237,6 +237,12 @@ public class RefreshGameServer : RefreshServer
         using GameDatabaseContext context = this.GetContext();
         context.RenameUser(user, newUsername);
     }
+    
+    public void FullyDeleteUser(GameUser user)
+    {
+        using GameDatabaseContext context = this.GetContext();
+        context.FullyDeleteUser(user);
+    }
 
     public override void Dispose()
     {

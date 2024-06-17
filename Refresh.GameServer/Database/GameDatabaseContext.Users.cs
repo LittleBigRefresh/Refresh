@@ -318,6 +318,17 @@ public partial class GameDatabaseContext // Users
         });
     }
 
+    public void FullyDeleteUser(GameUser user)
+    {
+        // do an initial cleanup of everything before deleting the row  
+        this.DeleteUser(user);
+        
+        this._realm.Write(() =>
+        {
+            this._realm.Remove(user);
+        });
+    }
+
     public void ResetUserPlanets(GameUser user)
     {
         this._realm.Write(() =>
