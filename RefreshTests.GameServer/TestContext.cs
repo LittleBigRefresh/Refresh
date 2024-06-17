@@ -119,7 +119,6 @@ public class TestContext : IDisposable
         {
             Title = title,
             Publisher = author,
-            Location = GameLocation.Zero,
             Source = GameLevelSource.User,
             GameVersion = gameVersion,
         };

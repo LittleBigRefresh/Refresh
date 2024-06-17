@@ -1,6 +1,7 @@
 using Refresh.GameServer.Authentication;
 using Refresh.GameServer.Endpoints.ApiV3.DataTypes.Response.Data;
 using Refresh.GameServer.Endpoints.ApiV3.DataTypes.Response.Users;
+using Refresh.GameServer.Types;
 using Refresh.GameServer.Types.Data;
 using Refresh.GameServer.Types.Levels;
 using Refresh.GameServer.Types.Reviews;
@@ -62,7 +63,7 @@ public class ApiGameLevelResponse : IApiResponse, IDataConvertableFrom<ApiGameLe
             LevelId = level.LevelId,
             IconHash = GetIconHash(level, dataContext),
             Description = level.Description,
-            Location = ApiGameLocationResponse.FromGameLocation(level.Location)!,
+            Location = ApiGameLocationResponse.FromLocation(level.LocationX, level.LocationY)!,
             PublishDate = DateTimeOffset.FromUnixTimeMilliseconds(level.PublishDate),
             UpdateDate = DateTimeOffset.FromUnixTimeMilliseconds(level.UpdateDate),
             MinPlayers = level.MinPlayers,

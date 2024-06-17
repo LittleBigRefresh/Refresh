@@ -42,7 +42,6 @@ public partial class GameDatabaseContext // Levels
         {
             Title = $"Story level #{id}",
             Publisher = null,
-            Location = GameLocation.Zero,
             Source = GameLevelSource.Story,
             StoryId = id,
         };

@@ -55,7 +55,9 @@ public partial class GameUser : IRealmObject, IRateLimitUser
     public int FilesizeQuotaUsage { get; set; }
 
     public string Description { get; set; } = "";
-    public GameLocation Location { get; set; } = GameLocation.Zero;
+
+    public int LocationX { get; set; }
+    public int LocationY { get; set; }
     
     public DateTimeOffset JoinDate { get; set; }
     public UserPins Pins { get; set; } = new();
