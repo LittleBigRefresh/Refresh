@@ -9,7 +9,7 @@ namespace Refresh.GameServer.Types.Report;
 public class ScreenElements
 { 
     [XmlIgnore]
-    private IList<Slot> InternalSlot { get; }
+    private List<Slot> InternalSlot { get; } = [];
 
     [XmlElement("slot")] 
     public Slot[] Slot 
@@ -30,7 +30,7 @@ public class ScreenElements
     }
 
     [XmlIgnore]
-    private IList<Player> InternalPlayer { get; } 
+    private List<Player> InternalPlayer { get; } = []; 
     
     [XmlElement("player")] 
     public Player[] Player 

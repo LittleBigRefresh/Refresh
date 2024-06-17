@@ -57,6 +57,16 @@ public class ReportingEndpoints : EndpointGroup
             }));
 
         string hash = body.JpegHash;
+        
+        //If the level is specified but its invalid, set it to 0, to indicate the level is unknown
+        //This case is hit when someone makes a grief report from a non-existent level, which we allow
+        if (body.LevelId != 0 && level == null)
+            body.LevelId = 0;
+        
+        //Basic validation
+        if (body.Players is { Length: > 4 } || body.ScreenElements is { Player.Length: > 4 })
+            //Return OK on PSP, since if we dont, it will error when trying to access the community moon and soft-lock the save file
+            return context.IsPSP() ? OK : BadRequest;
             
         database.UploadPhoto(new SerializedPhoto
         {
