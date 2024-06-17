@@ -78,10 +78,6 @@
     </ItemGroup>
 
     <ItemGroup>
-        <ProjectReference Include="..\Refresh.Analyzers\Refresh.Analyzers.csproj">
-            <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
-            <OutputItemType>Analyzer</OutputItemType>
-        </ProjectReference>
         <ProjectReference Include="..\Refresh.Common\Refresh.Common.csproj" />
     </ItemGroup>
 
