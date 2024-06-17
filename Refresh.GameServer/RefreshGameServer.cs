@@ -238,6 +238,12 @@ public class RefreshGameServer : RefreshServer
         context.RenameUser(user, newUsername);
     }
     
+    public void DeleteUser(GameUser user)
+    {
+        using GameDatabaseContext context = this.GetContext();
+        context.DeleteUser(user);
+    }
+    
     public void FullyDeleteUser(GameUser user)
     {
         using GameDatabaseContext context = this.GetContext();
