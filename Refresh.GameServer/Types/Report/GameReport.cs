@@ -7,10 +7,10 @@ namespace Refresh.GameServer.Types.Report;
 #nullable disable
 
 [XmlRoot("griefReport")]
-public partial class GameReport : IRealmObject, ISequentialId 
+public class GameReport
 {
     [XmlIgnore]
-    private IList<InfoBubble> InternalInfoBubble { get; }
+    private List<InfoBubble> InternalInfoBubble { get; } = [];
     
     [Ignored]
     [XmlElement("infoBubble")]
@@ -62,7 +62,7 @@ public partial class GameReport : IRealmObject, ISequentialId
     public string JpegHash { get; set; }
 
     [XmlIgnore]
-    private IList<Player> InternalPlayers { get; }
+    private List<Player> InternalPlayers { get; } = [];
 
     [Ignored]
     [XmlElement("player")]

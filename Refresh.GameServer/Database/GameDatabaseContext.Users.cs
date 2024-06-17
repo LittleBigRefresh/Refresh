@@ -167,9 +167,6 @@ public partial class GameDatabaseContext // Users
 
             if (data.RpcnAuthenticationAllowed != null)
                 user.RpcnAuthenticationAllowed = data.RpcnAuthenticationAllowed.Value;
-
-            if (data.RedirectGriefReportsToPhotos != null)
-                user.RedirectGriefReportsToPhotos = data.RedirectGriefReportsToPhotos.Value;
             
             if (data.UnescapeXmlSequences != null)
                 user.UnescapeXmlSequences = data.UnescapeXmlSequences.Value;
@@ -336,14 +333,6 @@ public partial class GameDatabaseContext // Users
         this._realm.Write(() =>
         {
             user.UnescapeXmlSequences = value;
-        });
-    }
-    
-    public void SetUserGriefReportRedirection(GameUser user, bool value)
-    {
-        this._realm.Write(() =>
-        {
-            user.RedirectGriefReportsToPhotos = value;
         });
     }
 
