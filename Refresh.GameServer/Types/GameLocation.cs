@@ -1,10 +1,9 @@
 using System.Xml.Serialization;
-using Realms;
 
 namespace Refresh.GameServer.Types;
 
 [XmlType("location")]
-public partial class GameLocation : IEmbeddedObject
+public class GameLocation
 {
     public static GameLocation Zero => new()
     {
