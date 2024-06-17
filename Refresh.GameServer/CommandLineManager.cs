@@ -68,8 +68,17 @@ internal class CommandLineManager
 
     internal void StartWithArgs(string[] args)
     {
-        Parser.Default.ParseArguments<Options>(args)
-            .WithParsed(this.StartWithOptions);
+        try
+        {
+            Parser.Default.ParseArguments<Options>(args)
+                .WithParsed(this.StartWithOptions);
+        }
+        catch (Exception e)
+        {
+            Fail($"An internal error occurred: {e}", 139);
+        }
+        
+        Console.WriteLine("The operation completed successfully.");
     }
 
     [DoesNotReturn]
@@ -79,7 +88,7 @@ internal class CommandLineManager
         
         Console.ForegroundColor = ConsoleColor.Red;
         Console.WriteLine(reason);
-        Console.WriteLine($"Failed with exit code {code}");
+        Console.WriteLine($"The operation failed with exit code {code}");
         Console.ForegroundColor = oldColor;
         
         Environment.Exit(code);
