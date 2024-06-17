@@ -34,14 +34,13 @@ public class GameDatabaseProvider : RealmDatabaseProvider<GameDatabaseContext>
         this._time = time;
     }
 
-    protected override ulong SchemaVersion => 128;
+    protected override ulong SchemaVersion => 129;
 
     protected override string Filename => "refreshGameServer.realm";
     
     protected override List<Type> SchemaTypes { get; } = new()
     {
         typeof(GameUser),
-        typeof(GameLocation),
         typeof(UserPins),
         typeof(Token),
         typeof(GameLevel),
@@ -113,7 +112,8 @@ public class GameDatabaseProvider : RealmDatabaseProvider<GameDatabaseContext>
             if (oldVersion < 3)
             {
                 newUser.Description = "";
-                newUser.Location = new GameLocation { X = 0, Y = 0, };
+                newUser.LocationX = 0;
+                newUser.LocationY = 0;
             }
 
             //In version 4, GameLocation went from TopLevel -> Embedded, and UserPins was added
@@ -187,6 +187,14 @@ public class GameDatabaseProvider : RealmDatabaseProvider<GameDatabaseContext>
                     .Where(a => a.OriginalUploader?.UserId == newUser.UserId)
                     .Sum(a => a.SizeInBytes);
             }
+            
+            // In version 129, we split locations from an embedded object out to two fields
+            if (oldVersion < 129)
+            {
+                // cast required because apparently they're stored as longs???
+                newUser.LocationX = (int)oldUser.Location.X;
+                newUser.LocationY = (int)oldUser.Location.Y;
+            }
         }
 
         IQueryable<dynamic>? oldLevels = migration.OldRealm.DynamicApi.All("GameLevel");
@@ -246,6 +254,13 @@ public class GameDatabaseProvider : RealmDatabaseProvider<GameDatabaseContext>
             if (oldVersion < 92)
             {
                 newLevel._Source = (int)GameLevelSource.User;
+            }
+            
+            // In version 129, we split locations from an embedded object out to two fields
+            if (oldVersion < 129)
+            {
+                newLevel.LocationX = (int)oldLevel.Location.X;
+                newLevel.LocationY = (int)oldLevel.Location.Y;
             }
         }
 

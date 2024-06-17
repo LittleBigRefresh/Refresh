@@ -8,16 +8,12 @@ public class ApiGameLocationResponse : IApiResponse
 {
     public required int X { get; set; }
     public required int Y { get; set; }
-
-    [ContractAnnotation("null => null; notnull => notnull")]
-    public static ApiGameLocationResponse? FromGameLocation(GameLocation? location)
+    public static ApiGameLocationResponse? FromLocation(int x, int y)
     {
-        if (location == null) return null;
-        
         return new ApiGameLocationResponse
         {
-            X = location.X,
-            Y = location.Y,
+            X = x,
+            Y = y,
         };
     }
 }

@@ -155,7 +155,7 @@ public class GameLevelResponse : IDataConvertableFrom<GameLevelResponse, GameLev
             Title = old.Title,
             IconHash = old.IconHash,
             Description = old.Description,
-            Location = old.Location,
+            Location = new GameLocation(old.LocationX, old.LocationY),
             GameVersion = old.GameVersion.ToSerializedGame(),
             RootResource = old.RootResource,
             PublishDate = old.PublishDate,

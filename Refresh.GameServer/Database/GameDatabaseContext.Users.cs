@@ -15,7 +15,6 @@ public partial class GameDatabaseContext // Users
 {
     private static readonly GameUser DeletedUser = new()
     {
-        Location = GameLocation.Zero,
         Username = "!DeletedUser",
         Description = "I'm a fake user that represents deleted users for levels.",
         FakeUser = true,
@@ -31,7 +30,6 @@ public partial class GameDatabaseContext // Users
         if (username.StartsWith("!"))
             return new()
             {
-                Location = GameLocation.Zero,
                 Username = username,
                 Description = "I'm a fake user that represents a non existent publisher for re-published levels.",
                 FakeUser = true,
@@ -80,7 +78,10 @@ public partial class GameDatabaseContext // Users
                 user.Description = data.Description;
 
             if (data.Location != null)
-                user.Location = data.Location;
+            {
+                user.LocationX = data.Location.X;
+                user.LocationY = data.Location.Y;
+            }
 
             if (data.PlanetsHash != null)
                 // ReSharper disable once SwitchStatementMissingSomeEnumCasesNoDefault
@@ -286,7 +287,8 @@ public partial class GameDatabaseContext // Users
         this._realm.Write(() =>
         {
             user.Pins = new UserPins();
-            user.Location = new GameLocation();
+            user.LocationX = 0;
+            user.LocationY = 0;
             user.Description = deletedReason;
             user.EmailAddress = null;
             user.PasswordBcrypt = "deleted";
