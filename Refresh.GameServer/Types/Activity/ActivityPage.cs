@@ -232,8 +232,8 @@ public class ActivityPage
             // You will waste 30 seconds of your time if you don't.
             levelEvent = @event.EventType switch
             {
-                EventType.Level_Upload => SerializedLevelUploadEvent.FromSerializedLevelEvent(levelEvent),
-                EventType.Level_Play => SerializedLevelPlayEvent.FromSerializedLevelEvent(levelEvent),
+                EventType.LevelUpload => SerializedLevelUploadEvent.FromSerializedLevelEvent(levelEvent),
+                EventType.LevelPlay => SerializedLevelPlayEvent.FromSerializedLevelEvent(levelEvent),
                 _ => levelEvent,
             };
 
@@ -259,7 +259,7 @@ public class ActivityPage
     
     private void GenerateScoreGroups(ActivityGroups groups, IReadOnlyCollection<GameSubmittedScore> scores)
     {
-        foreach (Event @event in this.Events.Where(e => e.EventType == EventType.Level_Score))
+        foreach (Event @event in this.Events.Where(e => e.EventType == EventType.LevelScore))
         {
             GameSubmittedScore score = scores.First(u => u.ScoreId == @event.StoredObjectId);
             

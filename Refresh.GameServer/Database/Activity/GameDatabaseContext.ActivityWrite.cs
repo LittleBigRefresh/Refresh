@@ -9,13 +9,13 @@ namespace Refresh.GameServer.Database;
 public partial class GameDatabaseContext // ActivityWrite
 {
     /// <summary>
-    /// Creates a new Level_Upload event from a <see cref='GameLevel'/>, and adds it to the event list.
+    /// Creates a new LevelUpload event from a <see cref='GameLevel'/>, and adds it to the event list.
     /// </summary>
     public Event CreateLevelUploadEvent(GameUser userFrom, GameLevel level)
     {
         Event e = new()
         {
-            EventType = EventType.Level_Upload,
+            EventType = EventType.LevelUpload,
             StoredDataType = EventDataType.Level,
             Timestamp = this._time.TimestampMilliseconds,
             User = userFrom,
@@ -27,13 +27,13 @@ public partial class GameDatabaseContext // ActivityWrite
     }
 
     /// <summary>
-    /// Creates a new Level_Favourite event from a <see cref='GameLevel'/>, and adds it to the event list.
+    /// Creates a new LevelFavourite event from a <see cref='GameLevel'/>, and adds it to the event list.
     /// </summary>
     public Event CreateLevelFavouriteEvent(GameUser userFrom, GameLevel level)
     {
         Event e = new()
         {
-            EventType = EventType.Level_Favourite,
+            EventType = EventType.LevelFavourite,
             StoredDataType = EventDataType.Level,
             Timestamp = this._time.TimestampMilliseconds,
             User = userFrom,
@@ -45,13 +45,13 @@ public partial class GameDatabaseContext // ActivityWrite
     }
 
     /// <summary>
-    /// Creates a new Level_Unfavourite event from a <see cref='GameLevel'/>, and adds it to the event list.
+    /// Creates a new LevelUnfavourite event from a <see cref='GameLevel'/>, and adds it to the event list.
     /// </summary>
     public Event CreateLevelUnfavouriteEvent(GameUser userFrom, GameLevel level)
     {
         Event e = new()
         {
-            EventType = EventType.Level_Unfavourite,
+            EventType = EventType.LevelUnfavourite,
             StoredDataType = EventDataType.Level,
             Timestamp = this._time.TimestampMilliseconds,
             User = userFrom,
@@ -63,13 +63,13 @@ public partial class GameDatabaseContext // ActivityWrite
     }
 
     /// <summary>
-    /// Creates a new User_Favourite event from a <see cref='GameUser'/>, and adds it to the event list.
+    /// Creates a new UserFavourite event from a <see cref='GameUser'/>, and adds it to the event list.
     /// </summary>
     public Event CreateUserFavouriteEvent(GameUser userFrom, GameUser user)
     {
         Event e = new()
         {
-            EventType = EventType.User_Favourite,
+            EventType = EventType.UserFavourite,
             StoredDataType = EventDataType.User,
             Timestamp = this._time.TimestampMilliseconds,
             User = userFrom,
@@ -81,13 +81,13 @@ public partial class GameDatabaseContext // ActivityWrite
     }
 
     /// <summary>
-    /// Creates a new User_Unfavourite event from a <see cref='GameUser'/>, and adds it to the event list.
+    /// Creates a new UserUnfavourite event from a <see cref='GameUser'/>, and adds it to the event list.
     /// </summary>
     public Event CreateUserUnfavouriteEvent(GameUser userFrom, GameUser user)
     {
         Event e = new()
         {
-            EventType = EventType.User_Unfavourite,
+            EventType = EventType.UserUnfavourite,
             StoredDataType = EventDataType.User,
             Timestamp = this._time.TimestampMilliseconds,
             User = userFrom,
@@ -99,13 +99,13 @@ public partial class GameDatabaseContext // ActivityWrite
     }
 
     /// <summary>
-    /// Creates a new Level_Play event from a <see cref='GameLevel'/>, and adds it to the event list.
+    /// Creates a new LevelPlay event from a <see cref='GameLevel'/>, and adds it to the event list.
     /// </summary>
     public Event CreateLevelPlayEvent(GameUser userFrom, GameLevel level)
     {
         Event e = new()
         {
-            EventType = EventType.Level_Play,
+            EventType = EventType.LevelPlay,
             StoredDataType = EventDataType.Level,
             Timestamp = this._time.TimestampMilliseconds,
             User = userFrom,
@@ -117,13 +117,13 @@ public partial class GameDatabaseContext // ActivityWrite
     }
 
     /// <summary>
-    /// Creates a new Level_Tag event from a <see cref='GameLevel'/>, and adds it to the event list.
+    /// Creates a new LevelTag event from a <see cref='GameLevel'/>, and adds it to the event list.
     /// </summary>
     public Event CreateLevelTagEvent(GameUser userFrom, GameLevel level)
     {
         Event e = new()
         {
-            EventType = EventType.Level_Tag,
+            EventType = EventType.LevelTag,
             StoredDataType = EventDataType.Level,
             Timestamp = this._time.TimestampMilliseconds,
             User = userFrom,
@@ -135,13 +135,13 @@ public partial class GameDatabaseContext // ActivityWrite
     }
 
     /// <summary>
-    /// Creates a new Level_TeamPick event from a <see cref='GameLevel'/>, and adds it to the event list.
+    /// Creates a new LevelTeamPick event from a <see cref='GameLevel'/>, and adds it to the event list.
     /// </summary>
     public Event CreateLevelTeamPickEvent(GameUser userFrom, GameLevel level)
     {
         Event e = new()
         {
-            EventType = EventType.Level_TeamPick,
+            EventType = EventType.LevelTeamPick,
             StoredDataType = EventDataType.Level,
             Timestamp = this._time.TimestampMilliseconds,
             User = userFrom,
@@ -153,13 +153,13 @@ public partial class GameDatabaseContext // ActivityWrite
     }
 
     /// <summary>
-    /// Creates a new Level_Rate event from a <see cref='RateLevelRelation'/>, and adds it to the event list.
+    /// Creates a new LevelRate event from a <see cref='RateLevelRelation'/>, and adds it to the event list.
     /// </summary>
     public Event CreateRateLevelEvent(GameUser userFrom, RateLevelRelation relation)
     {
         Event e = new()
         {
-            EventType = EventType.Level_Rate,
+            EventType = EventType.LevelRate,
             StoredDataType = EventDataType.RateLevelRelation,
             Timestamp = this._time.TimestampMilliseconds,
             User = userFrom,
@@ -171,13 +171,13 @@ public partial class GameDatabaseContext // ActivityWrite
     }
 
     /// <summary>
-    /// Creates a new Level_Review event from a <see cref='GameLevel'/>, and adds it to the event list.
+    /// Creates a new LevelReview event from a <see cref='GameLevel'/>, and adds it to the event list.
     /// </summary>
     public Event CreateLevelReviewEvent(GameUser userFrom, GameLevel level)
     {
         Event e = new()
         {
-            EventType = EventType.Level_Review,
+            EventType = EventType.LevelReview,
             StoredDataType = EventDataType.Level,
             Timestamp = this._time.TimestampMilliseconds,
             User = userFrom,
@@ -189,13 +189,13 @@ public partial class GameDatabaseContext // ActivityWrite
     }
 
     /// <summary>
-    /// Creates a new Level_Score event from a <see cref='GameSubmittedScore'/>, and adds it to the event list.
+    /// Creates a new LevelScore event from a <see cref='GameSubmittedScore'/>, and adds it to the event list.
     /// </summary>
     public Event CreateLevelScoreEvent(GameUser userFrom, GameSubmittedScore score)
     {
         Event e = new()
         {
-            EventType = EventType.Level_Score,
+            EventType = EventType.LevelScore,
             StoredDataType = EventDataType.Score,
             Timestamp = this._time.TimestampMilliseconds,
             User = userFrom,
@@ -207,13 +207,13 @@ public partial class GameDatabaseContext // ActivityWrite
     }
 
     /// <summary>
-    /// Creates a new User_FirstLogin event from a <see cref='GameUser'/>, and adds it to the event list.
+    /// Creates a new UserFirstLogin event from a <see cref='GameUser'/>, and adds it to the event list.
     /// </summary>
     public Event CreateUserFirstLoginEvent(GameUser userFrom, GameUser user)
     {
         Event e = new()
         {
-            EventType = EventType.User_FirstLogin,
+            EventType = EventType.UserFirstLogin,
             StoredDataType = EventDataType.User,
             Timestamp = this._time.TimestampMilliseconds,
             User = userFrom,
