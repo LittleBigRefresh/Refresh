@@ -53,7 +53,7 @@ public partial class GameDatabaseContext // Relations
 
         if (relation == null) return false;
 
-        this.Write(() => this._realm.Remove(relation));
+        this.Write(() => this.FavouriteLevelRelations.Remove(relation));
 
         return true;
     }
@@ -127,7 +127,7 @@ public partial class GameDatabaseContext // Relations
 
         if (relation == null) return false;
 
-        this.Write(() => this._realm.Remove(relation));
+        this.Write(() => this.FavouriteUserRelations.Remove(relation));
 
         return true;
     }
@@ -174,14 +174,14 @@ public partial class GameDatabaseContext // Relations
 
         if (relation == null) return false;
 
-        this.Write(() => this._realm.Remove(relation));
+        this.Write(() => this.QueueLevelRelations.Remove(relation));
 
         return true;
     }
 
     public void ClearQueue(GameUser user)
     {
-        this.Write(() => this._realm.RemoveRange(this.QueueLevelRelations.Where(r => r.User == user)));
+        this.Write(() => this.QueueLevelRelations.RemoveRange(this.QueueLevelRelations.Where(r => r.User == user)));
     }
 
     #endregion
@@ -248,7 +248,7 @@ public partial class GameDatabaseContext // Relations
                 foreach (GameReview reviewToDelete in toRemove)
                 {
                     level.Reviews.Remove(reviewToDelete);
-                    this._realm.Remove(reviewToDelete);
+                    this.GameReviews.Remove(reviewToDelete);
                 }
             });
         }
@@ -267,7 +267,7 @@ public partial class GameDatabaseContext // Relations
     
     public void DeleteReview(GameReview review)
     {
-        this._realm.Remove(review);
+        this.GameReviews.Remove(review);
     }
     
     public GameReview? GetReviewByLevelAndUser(GameLevel level, GameUser user)

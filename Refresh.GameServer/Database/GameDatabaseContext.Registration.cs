@@ -47,7 +47,7 @@ public partial class GameDatabaseContext // Registration
 
         this.Write(() =>
         {
-            this._realm.Remove(registration);
+            this.QueuedRegistrations.Remove(registration);
         });
 
         GameUser user = this.CreateUser(cloned.Username, cloned.EmailAddress);
@@ -117,18 +117,12 @@ public partial class GameDatabaseContext // Registration
     {
         this.Write(() =>
         {
-            this._realm.Remove(registration);
+            this.QueuedRegistrations.Remove(registration);
         });
     }
     
-    public void RemoveAllRegistrationsFromQueue()
-    {
-        this.Write(() =>
-        {
-            this._realm.RemoveAll<QueuedRegistration>();
-        });
-    }
-    
+    public void RemoveAllRegistrationsFromQueue() => this.Write(this.RemoveAll<QueuedRegistration>);
+
     public bool IsRegistrationExpired(QueuedRegistration registration) => registration.ExpiryDate < this._time.Now;
 
     public QueuedRegistration? GetQueuedRegistrationByUsername(string username) 
@@ -149,7 +143,7 @@ public partial class GameDatabaseContext // Registration
         this.Write(() =>
         {
             user.EmailAddressVerified = true;
-            this._realm.RemoveRange(this.EmailVerificationCodes
+            this.EmailVerificationCodes.RemoveRange(this.EmailVerificationCodes
                 .Where(c => c.User == user));
         });
     }
@@ -198,7 +192,7 @@ public partial class GameDatabaseContext // Registration
     {
         this.Write(() =>
         {
-            this._realm.Remove(code);
+            this.EmailVerificationCodes.Remove(code);
         });
     }
     
@@ -226,7 +220,7 @@ public partial class GameDatabaseContext // Registration
         
         this.Write(() =>
         {
-            this._realm.Remove(disallowedUser);
+            this.DisallowedUsers.Remove(disallowedUser);
         });
         
         return true;

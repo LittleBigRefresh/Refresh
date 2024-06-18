@@ -305,11 +305,11 @@ public partial class GameDatabaseContext // Users
                 foreach (GamePhotoSubject subject in photo.Subjects.Where(s => s.User?.UserId == user.UserId))
                     subject.User = null;
             
-            this._realm.RemoveRange(this.FavouriteLevelRelations.Where(r => r.User == user));
-            this._realm.RemoveRange(this.FavouriteUserRelations.Where(r => r.UserToFavourite == user));
-            this._realm.RemoveRange(this.FavouriteUserRelations.Where(r => r.UserFavouriting == user));
-            this._realm.RemoveRange(this.QueueLevelRelations.Where(r => r.User == user));
-            this._realm.RemoveRange(this.GamePhotos.Where(p => p.Publisher == user));
+            this.FavouriteLevelRelations.RemoveRange(this.FavouriteLevelRelations.Where(r => r.User == user));
+            this.FavouriteUserRelations.RemoveRange(this.FavouriteUserRelations.Where(r => r.UserToFavourite == user));
+            this.FavouriteUserRelations.RemoveRange(this.FavouriteUserRelations.Where(r => r.UserFavouriting == user));
+            this.QueueLevelRelations.RemoveRange(this.QueueLevelRelations.Where(r => r.User == user));
+            this.GamePhotos.RemoveRange(this.GamePhotos.Where(p => p.Publisher == user));
 
             foreach (GameLevel level in this.GameLevels.Where(l => l.Publisher == user))
             {
@@ -325,7 +325,7 @@ public partial class GameDatabaseContext // Users
         
         this.Write(() =>
         {
-            this._realm.Remove(user);
+            this.GameUsers.Remove(user);
         });
     }
 

@@ -32,4 +32,14 @@ public class RealmDbSet<T> : IQueryable<T> where T : IRealmObject
     {
         this._realm.Add(objs, update);
     }
+
+    public void Remove(T obj)
+    {
+        this._realm.Remove(obj);
+    }
+    
+    public void RemoveRange(IQueryable<T> objs)
+    {
+        this._realm.RemoveRange(objs);
+    }
 }

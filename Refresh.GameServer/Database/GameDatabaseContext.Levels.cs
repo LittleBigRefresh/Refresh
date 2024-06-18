@@ -125,24 +125,24 @@ public partial class GameDatabaseContext // Levels
             IQueryable<Event> levelEvents = this.Events
                 .Where(e => e._StoredDataType == (int)EventDataType.Level && e.StoredSequentialId == level.LevelId);
             
-            this._realm.RemoveRange(levelEvents);
+            this.Events.RemoveRange(levelEvents);
 
             #region This is so terrible it needs to be hidden away
 
             IQueryable<FavouriteLevelRelation> favouriteLevelRelations = this.FavouriteLevelRelations.Where(r => r.Level == level);
-            this._realm.RemoveRange(favouriteLevelRelations);
+            this.FavouriteLevelRelations.RemoveRange(favouriteLevelRelations);
             
             IQueryable<PlayLevelRelation> playLevelRelations = this.PlayLevelRelations.Where(r => r.Level == level);
-            this._realm.RemoveRange(playLevelRelations);
+            this.PlayLevelRelations.RemoveRange(playLevelRelations);
             
             IQueryable<QueueLevelRelation> queueLevelRelations = this.QueueLevelRelations.Where(r => r.Level == level);
-            this._realm.RemoveRange(queueLevelRelations);
+            this.QueueLevelRelations.RemoveRange(queueLevelRelations);
             
             IQueryable<RateLevelRelation> rateLevelRelations = this.RateLevelRelations.Where(r => r.Level == level);
-            this._realm.RemoveRange(rateLevelRelations);
+            this.RateLevelRelations.RemoveRange(rateLevelRelations);
             
             IQueryable<UniquePlayLevelRelation> uniquePlayLevelRelations = this.UniquePlayLevelRelations.Where(r => r.Level == level);
-            this._realm.RemoveRange(uniquePlayLevelRelations);
+            this.UniquePlayLevelRelations.RemoveRange(uniquePlayLevelRelations);
             
             IQueryable<GameSubmittedScore> scores = this.GameSubmittedScores.Where(r => r.Level == level);
             
@@ -150,10 +150,10 @@ public partial class GameDatabaseContext // Levels
             {
                 IQueryable<Event> scoreEvents = this.Events
                     .Where(e => e._StoredDataType == (int)EventDataType.Score && e.StoredObjectId == score.ScoreId);
-                this._realm.RemoveRange(scoreEvents);
+                this.Events.RemoveRange(scoreEvents);
             }
             
-            this._realm.RemoveRange(scores);
+            this.GameSubmittedScores.RemoveRange(scores);
 
             #endregion
             
@@ -162,7 +162,7 @@ public partial class GameDatabaseContext // Levels
         //do in separate transaction in a vain attempt to fix Weirdness with favourite level relations having missing levels
         this.Write(() =>
         {
-            this._realm.Remove(level);
+            this.GameLevels.Remove(level);
         });
     }
 

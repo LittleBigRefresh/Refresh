@@ -118,8 +118,8 @@ public partial class GameDatabaseContext // Leaderboard
         
         this.Write(() =>
         {
-            this._realm.RemoveRange(scoreEvents);
-            this._realm.Remove(score);
+            this.Events.RemoveRange(scoreEvents);
+            this.GameSubmittedScores.Remove(score);
         });
     }
     
@@ -140,8 +140,8 @@ public partial class GameDatabaseContext // Leaderboard
                 IQueryable<Event> scoreEvents = this.Events
                     .Where(e => e._StoredDataType == (int)EventDataType.Score && e.StoredObjectId == score.ScoreId);
                 
-                this._realm.RemoveRange(scoreEvents);
-                this._realm.Remove(score);
+                this.Events.RemoveRange(scoreEvents);
+                this.GameSubmittedScores.Remove(score);
             }
         });
     }

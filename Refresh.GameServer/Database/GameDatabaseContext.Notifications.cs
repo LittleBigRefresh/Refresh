@@ -60,7 +60,7 @@ public partial class GameDatabaseContext // Notifications
     {
         this.Write(() =>
         {
-            this._realm.RemoveRange(this.GameNotifications.Where(n => n.User == user));
+            this.GameNotifications.RemoveRange(this.GameNotifications.Where(n => n.User == user));
         });
     }
     
@@ -68,7 +68,7 @@ public partial class GameDatabaseContext // Notifications
     {
         this.Write(() =>
         {
-            this._realm.Remove(notification);
+            this.GameNotifications.Remove(notification);
         });
     }
 
@@ -98,7 +98,7 @@ public partial class GameDatabaseContext // Notifications
     {
         this.Write(() =>
         {
-            this._realm.Remove(announcement);
+            this.GameAnnouncements.Remove(announcement);
         });
     }
 }

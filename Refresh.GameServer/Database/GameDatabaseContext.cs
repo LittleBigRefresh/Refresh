@@ -122,4 +122,9 @@ public partial class GameDatabaseContext : RealmDatabaseContext
     {
         this._realm.Write(callback);
     }
+
+    private void RemoveAll<T>() where T : IRealmObject
+    {
+        this._realm.RemoveAll<T>();
+    }
 }

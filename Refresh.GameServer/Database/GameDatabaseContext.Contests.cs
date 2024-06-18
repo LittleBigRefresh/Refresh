@@ -27,7 +27,7 @@ public partial class GameDatabaseContext // Contests
     {
         this.Write(() =>
         {
-            this._realm.Remove(contest);
+            this.GameContests.Remove(contest);
         });
     }
     

@@ -114,7 +114,7 @@ public partial class GameDatabaseContext // Tokens
     {
         this.Write(() =>
         {
-            this._realm.Remove(token);
+            this.Tokens.Remove(token);
         });
     }
 
@@ -122,7 +122,7 @@ public partial class GameDatabaseContext // Tokens
     {
         this.Write(() =>
         {
-            this._realm.RemoveRange(this.Tokens.Where(t => t.User == user));
+            this.Tokens.RemoveRange(this.Tokens.Where(t => t.User == user));
         });
     }
     
@@ -130,7 +130,7 @@ public partial class GameDatabaseContext // Tokens
     {
         this.Write(() =>
         {
-            this._realm.RemoveRange(this.Tokens.Where(t => t.User == user && t._TokenType == (int)type));
+            this.Tokens.RemoveRange(this.Tokens.Where(t => t.User == user && t._TokenType == (int)type));
         });
     }
     
