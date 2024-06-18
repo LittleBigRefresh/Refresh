@@ -60,18 +60,18 @@ public class DiscordIntegrationWorker : IWorker
 
         string? description = @event.EventType switch
         {
-            EventType.Level_Upload => $"uploaded the level {levelLink}",
-            EventType.Level_Favourite => $"gave {levelLink} a heart",
-            EventType.Level_Unfavourite => null,
-            EventType.User_Favourite => $"hearted {userLink}",
-            EventType.User_Unfavourite => null,
-            EventType.Level_Play => null,
-            EventType.Level_Tag => null,
-            EventType.Level_TeamPick => $"team picked {levelLink}",
-            EventType.RateLevelRelation_Create => null,
-            EventType.Level_Review => null,
-            EventType.SubmittedScore_Create => $"got {score!.Score:N0} points on {levelLink}",
-            EventType.User_FirstLogin => "logged in for the first time",
+            EventType.LevelUpload => $"uploaded the level {levelLink}",
+            EventType.LevelFavourite => $"gave {levelLink} a heart",
+            EventType.LevelUnfavourite => null,
+            EventType.UserFavourite => $"hearted {userLink}",
+            EventType.UserUnfavourite => null,
+            EventType.LevelPlay => null,
+            EventType.LevelTag => null,
+            EventType.LevelTeamPick => $"team picked {levelLink}",
+            EventType.LevelRate => null,
+            EventType.LevelReview => null,
+            EventType.LevelScore => $"got {score!.Score:N0} points on {levelLink}",
+            EventType.UserFirstLogin => "logged in for the first time",
             _ => null,
         };
 

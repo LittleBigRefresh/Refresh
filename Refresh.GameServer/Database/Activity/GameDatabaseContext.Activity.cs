@@ -28,8 +28,8 @@ public partial class GameDatabaseContext // Activity
                 userFriends.Contains(e.User.UserId) ||
                 userFriends.Contains(e.StoredObjectId) ||
                 this.GetLevelById(e.StoredSequentialId ?? int.MaxValue)?.Publisher?.UserId == parameters.User.UserId ||
-                e.EventType == EventType.Level_TeamPick ||
-                e.EventType == EventType.User_FirstLogin
+                e.EventType == EventType.LevelTeamPick ||
+                e.EventType == EventType.UserFirstLogin
             );
         }
         

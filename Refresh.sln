@@ -5,8 +5,6 @@ VisualStudioVersion = 17.0.31903.59
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Refresh.GameServer", "Refresh.GameServer\Refresh.GameServer.csproj", "{622EB919-5FD2-45FE-B006-4EE5C7849FDF}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Refresh.Analyzers", "Refresh.Analyzers\Refresh.Analyzers.csproj", "{4717B220-62C1-4CF9-9734-D9975C462159}"
-EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RefreshTests.GameServer", "RefreshTests.GameServer\RefreshTests.GameServer.csproj", "{8DC15128-D9C9-498B-AD3B-537C50966C91}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Refresh.Common", "Refresh.Common\Refresh.Common.csproj", "{A3D76B31-8732-4134-907B-F36773DF70D3}"
@@ -27,12 +25,6 @@ Global
 		{622EB919-5FD2-45FE-B006-4EE5C7849FDF}.DebugLocalBunkum|Any CPU.Build.0 = DebugLocalBunkum|Any CPU
 		{622EB919-5FD2-45FE-B006-4EE5C7849FDF}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{622EB919-5FD2-45FE-B006-4EE5C7849FDF}.Release|Any CPU.Build.0 = Release|Any CPU
-		{4717B220-62C1-4CF9-9734-D9975C462159}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{4717B220-62C1-4CF9-9734-D9975C462159}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{4717B220-62C1-4CF9-9734-D9975C462159}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{4717B220-62C1-4CF9-9734-D9975C462159}.Release|Any CPU.Build.0 = Release|Any CPU
-		{4717B220-62C1-4CF9-9734-D9975C462159}.DebugLocalBunkum|Any CPU.ActiveCfg = Debug|Any CPU
-		{4717B220-62C1-4CF9-9734-D9975C462159}.DebugLocalBunkum|Any CPU.Build.0 = Debug|Any CPU
 		{8DC15128-D9C9-498B-AD3B-537C50966C91}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{8DC15128-D9C9-498B-AD3B-537C50966C91}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{8DC15128-D9C9-498B-AD3B-537C50966C91}.Release|Any CPU.ActiveCfg = Release|Any CPU
