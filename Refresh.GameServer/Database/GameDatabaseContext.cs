@@ -120,6 +120,14 @@ public partial class GameDatabaseContext : RealmDatabaseContext
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     private void Write(Action callback)
     {
+        // if already in a write transaction, include this within that write transaction
+        // throws RealmInvalidTransactionException without this
+        if (this._realm.IsInTransaction)
+        {
+            callback();
+            return;
+        }
+        
         this._realm.Write(callback);
     }
 
