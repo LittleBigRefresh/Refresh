@@ -34,7 +34,7 @@ public partial class GameDatabaseContext // Comments
 
     public void DeleteProfileComment(GameComment comment, GameUser profile)
     {
-        this._realm.Write(() =>
+        this.Write(() =>
         {
             profile.ProfileComments.Remove(comment);
         });
@@ -65,7 +65,7 @@ public partial class GameDatabaseContext // Comments
 
     public void DeleteLevelComment(GameComment comment, GameLevel level)
     {
-        this._realm.Write(() =>
+        this.Write(() =>
         {
             level.LevelComments.Remove(comment);
         });

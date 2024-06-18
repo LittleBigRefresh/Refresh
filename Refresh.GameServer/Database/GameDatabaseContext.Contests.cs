@@ -16,7 +16,7 @@ public partial class GameDatabaseContext // Contests
     {
         if (this.GetContestById(contest.ContestId) != null) throw new InvalidOperationException("Contest already exists.");
         
-        this._realm.Write(() =>
+        this.Write(() =>
         {
             contest.CreationDate = this._time.Now;
             this._realm.Add(contest);
@@ -25,7 +25,7 @@ public partial class GameDatabaseContext // Contests
     
     public void DeleteContest(GameContest contest)
     {
-        this._realm.Write(() =>
+        this.Write(() =>
         {
             this._realm.Remove(contest);
         });
@@ -54,7 +54,7 @@ public partial class GameDatabaseContext // Contests
     
     public GameContest UpdateContest(ApiContestRequest body, GameContest contest, GameUser? newOrganizer = null)
     {
-        this._realm.Write(() =>
+        this.Write(() =>
         {
             if (newOrganizer != null)
                 contest.Organizer = newOrganizer;

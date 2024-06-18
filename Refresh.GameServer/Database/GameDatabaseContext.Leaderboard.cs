@@ -26,7 +26,7 @@ public partial class GameDatabaseContext // Leaderboard
             Platform = platform,
         };
 
-        this._realm.Write(() =>
+        this.Write(() =>
         {
             this._realm.Add(newScore);
         });
@@ -116,7 +116,7 @@ public partial class GameDatabaseContext // Leaderboard
         IQueryable<Event> scoreEvents = this._realm.All<Event>()
             .Where(e => e._StoredDataType == (int)EventDataType.Score && e.StoredObjectId == score.ScoreId);
         
-        this._realm.Write(() =>
+        this.Write(() =>
         {
             this._realm.RemoveRange(scoreEvents);
             this._realm.Remove(score);
@@ -133,7 +133,7 @@ public partial class GameDatabaseContext // Leaderboard
             .AsEnumerable()
             .Where(s => s.Players.Contains(user));
         
-        this._realm.Write(() =>
+        this.Write(() =>
         {
             foreach (GameSubmittedScore score in scores)
             {

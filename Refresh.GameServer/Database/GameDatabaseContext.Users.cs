@@ -72,7 +72,7 @@ public partial class GameDatabaseContext // Users
 
     public void UpdateUserData(GameUser user, SerializedUpdateData data, TokenGame game)
     {
-        this._realm.Write(() =>
+        this.Write(() =>
         {
             if (data.Description != null)
                 user.Description = data.Description;
@@ -144,7 +144,7 @@ public partial class GameDatabaseContext // Users
     
     public void UpdateUserData(GameUser user, ApiUpdateUserRequest data)
     {
-        this._realm.Write(() =>
+        this.Write(() =>
         {
             if (data.EmailAddress != null && data.EmailAddress != user.EmailAddress)
             {
@@ -194,7 +194,7 @@ public partial class GameDatabaseContext // Users
 
     public void UpdateUserPins(GameUser user, UserPins pinsUpdate) 
     {
-        this._realm.Write(() => {
+        this.Write(() => {
             user.Pins = new UserPins();
 
             foreach (long pinsAward in pinsUpdate.Awards) user.Pins.Awards.Add(pinsAward);
@@ -206,7 +206,7 @@ public partial class GameDatabaseContext // Users
     public void SetUserRole(GameUser user, GameUserRole role)
     {
         if(role == GameUserRole.Banned) throw new InvalidOperationException($"Cannot ban a user with this method. Please use {nameof(this.BanUser)}().");
-        this._realm.Write(() =>
+        this.Write(() =>
         {
             if (user.Role is GameUserRole.Banned or GameUserRole.Restricted)
             {
@@ -220,7 +220,7 @@ public partial class GameDatabaseContext // Users
 
     private void PunishUser(GameUser user, string reason, DateTimeOffset expiryDate, GameUserRole role)
     {
-        this._realm.Write(() =>
+        this.Write(() =>
         {
             user.Role = role;
             user.BanReason = reason;
@@ -260,7 +260,7 @@ public partial class GameDatabaseContext // Users
     {
         string oldUsername = user.Username;
         
-        this._realm.Write(() =>
+        this.Write(() =>
         {
             user.Username = newUsername;
         });
@@ -281,7 +281,7 @@ public partial class GameDatabaseContext // Users
         this.RevokeAllTokensForUser(user);
         this.DeleteNotificationsByUser(user);
         
-        this._realm.Write(() =>
+        this.Write(() =>
         {
             user.Pins = new UserPins();
             user.LocationX = 0;
@@ -323,7 +323,7 @@ public partial class GameDatabaseContext // Users
         // do an initial cleanup of everything before deleting the row  
         this.DeleteUser(user);
         
-        this._realm.Write(() =>
+        this.Write(() =>
         {
             this._realm.Remove(user);
         });
@@ -331,7 +331,7 @@ public partial class GameDatabaseContext // Users
 
     public void ResetUserPlanets(GameUser user)
     {
-        this._realm.Write(() =>
+        this.Write(() =>
         {
             user.Lbp2PlanetsHash = "0";
             user.Lbp3PlanetsHash = "0";
@@ -341,7 +341,7 @@ public partial class GameDatabaseContext // Users
 
     public void SetUnescapeXmlSequences(GameUser user, bool value)
     {
-        this._realm.Write(() =>
+        this.Write(() =>
         {
             user.UnescapeXmlSequences = value;
         });
@@ -349,7 +349,7 @@ public partial class GameDatabaseContext // Users
 
     public void ClearForceMatch(GameUser user)
     {
-        this._realm.Write(() =>
+        this.Write(() =>
         {
             user.ForceMatch = null;
         });
@@ -357,7 +357,7 @@ public partial class GameDatabaseContext // Users
 
     public void SetForceMatch(GameUser user, GameUser target)
     {
-        this._realm.Write(() =>
+        this.Write(() =>
         {
             user.ForceMatch = target.ForceMatch;
         });
@@ -365,7 +365,7 @@ public partial class GameDatabaseContext // Users
     
     public void ForceUserTokenGame(Token token, TokenGame game)
     {
-        this._realm.Write(() =>
+        this.Write(() =>
         {
             token.TokenGame = game;
         });
@@ -373,7 +373,7 @@ public partial class GameDatabaseContext // Users
     
     public void ForceUserTokenPlatform(Token token, TokenPlatform platform)
     {
-        this._realm.Write(() =>
+        this.Write(() =>
         {
             token.TokenPlatform = platform;
         });
@@ -381,7 +381,7 @@ public partial class GameDatabaseContext // Users
     
     public void IncrementUserFilesizeQuota(GameUser user, int amount)
     {
-        this._realm.Write(() =>
+        this.Write(() =>
         {
             user.FilesizeQuotaUsage += amount;
         });
@@ -389,7 +389,7 @@ public partial class GameDatabaseContext // Users
     
     public void SetPrivacySettings(GameUser user, SerializedPrivacySettings settings) 
     {
-        this._realm.Write(() =>
+        this.Write(() =>
         {
             if(settings.LevelVisibility != null)
                 user.LevelVisibility = settings.LevelVisibility.Value;

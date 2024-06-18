@@ -34,7 +34,7 @@ public partial class GameDatabaseContext // Registration
             JoinDate = this._time.Now,
         };
 
-        this._realm.Write(() =>
+        this.Write(() =>
         {
             this._realm.Add(user);
         });
@@ -45,7 +45,7 @@ public partial class GameDatabaseContext // Registration
     {
         QueuedRegistration cloned = (QueuedRegistration)registration.Clone();
 
-        this._realm.Write(() =>
+        this.Write(() =>
         {
             this._realm.Remove(registration);
         });
@@ -55,7 +55,7 @@ public partial class GameDatabaseContext // Registration
 
         if (platform != null)
         {
-            this._realm.Write(() =>
+            this.Write(() =>
             {
                 // ReSharper disable once SwitchStatementHandlesSomeKnownEnumValuesWithDefault
                 switch (platform)
@@ -107,7 +107,7 @@ public partial class GameDatabaseContext // Registration
             ExpiryDate = this._time.Now + TimeSpan.FromHours(1),
         };
 
-        this._realm.Write(() =>
+        this.Write(() =>
         {
             this._realm.Add(registration);
         });
@@ -115,7 +115,7 @@ public partial class GameDatabaseContext // Registration
 
     public void RemoveRegistrationFromQueue(QueuedRegistration registration)
     {
-        this._realm.Write(() =>
+        this.Write(() =>
         {
             this._realm.Remove(registration);
         });
@@ -123,7 +123,7 @@ public partial class GameDatabaseContext // Registration
     
     public void RemoveAllRegistrationsFromQueue()
     {
-        this._realm.Write(() =>
+        this.Write(() =>
         {
             this._realm.RemoveAll<QueuedRegistration>();
         });
@@ -146,7 +146,7 @@ public partial class GameDatabaseContext // Registration
     
     public void VerifyUserEmail(GameUser user)
     {
-        this._realm.Write(() =>
+        this.Write(() =>
         {
             user.EmailAddressVerified = true;
             this._realm.RemoveRange(this._realm.All<EmailVerificationCode>()
@@ -186,7 +186,7 @@ public partial class GameDatabaseContext // Registration
             ExpiryDate = this._time.Now + TimeSpan.FromDays(1),
         };
 
-        this._realm.Write(() =>
+        this.Write(() =>
         {
             this._realm.Add(verificationCode);
         });
@@ -196,7 +196,7 @@ public partial class GameDatabaseContext // Registration
 
     public void RemoveEmailVerificationCode(EmailVerificationCode code)
     {
-        this._realm.Write(() =>
+        this.Write(() =>
         {
             this._realm.Remove(code);
         });
@@ -207,7 +207,7 @@ public partial class GameDatabaseContext // Registration
         if (this._realm.Find<DisallowedUser>(username) != null) 
             return false;
         
-        this._realm.Write(() =>
+        this.Write(() =>
         {
             this._realm.Add(new DisallowedUser
             {
@@ -224,7 +224,7 @@ public partial class GameDatabaseContext // Registration
         if (disallowedUser == null) 
             return false;
         
-        this._realm.Write(() =>
+        this.Write(() =>
         {
             this._realm.Remove(disallowedUser);
         });

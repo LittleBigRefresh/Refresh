@@ -21,7 +21,7 @@ public partial class GameDatabaseContext // Notifications
             CreatedAt = this._time.Now,
         };
 
-        this._realm.Write(() =>
+        this.Write(() =>
         {
             this._realm.Add(notification);
         });
@@ -59,7 +59,7 @@ public partial class GameDatabaseContext // Notifications
     
     public void DeleteNotificationsByUser(GameUser user)
     {
-        this._realm.Write(() =>
+        this.Write(() =>
         {
             this._realm.RemoveRange(this._realm.All<GameNotification>().Where(n => n.User == user));
         });
@@ -67,7 +67,7 @@ public partial class GameDatabaseContext // Notifications
     
     public void DeleteNotification(GameNotification notification)
     {
-        this._realm.Write(() =>
+        this.Write(() =>
         {
             this._realm.Remove(notification);
         });
@@ -87,7 +87,7 @@ public partial class GameDatabaseContext // Notifications
             CreatedAt = this._time.Now,
         };
         
-        this._realm.Write(() =>
+        this.Write(() =>
         {
             this._realm.Add(announcement);
         });
@@ -97,7 +97,7 @@ public partial class GameDatabaseContext // Notifications
     
     public void DeleteAnnouncement(GameAnnouncement announcement)
     {
-        this._realm.Write(() =>
+        this.Write(() =>
         {
             this._realm.Remove(announcement);
         });

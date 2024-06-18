@@ -81,7 +81,7 @@ public partial class GameDatabaseContext // Levels
         // Now newLevel is set up to replace oldLevel.
         // If information is lost here, then that's probably a bug.
         // Update the level's properties in the database
-        this._realm.Write(() =>
+        this.Write(() =>
         {
             PropertyInfo[] userProps = typeof(GameLevel).GetProperties();
             foreach (PropertyInfo prop in userProps)
@@ -96,7 +96,7 @@ public partial class GameDatabaseContext // Levels
 
     public GameLevel UpdateLevel(ApiEditLevelRequest body, GameLevel level)
     {
-        this._realm.Write(() =>
+        this.Write(() =>
         {
             PropertyInfo[] userProps = body.GetType().GetProperties();
             foreach (PropertyInfo prop in userProps)
@@ -120,7 +120,7 @@ public partial class GameDatabaseContext // Levels
 
     public void DeleteLevel(GameLevel level)
     {
-        this._realm.Write(() =>
+        this.Write(() =>
         {
             IQueryable<Event> levelEvents = this._realm.All<Event>()
                 .Where(e => e._StoredDataType == (int)EventDataType.Level && e.StoredSequentialId == level.LevelId);
@@ -160,7 +160,7 @@ public partial class GameDatabaseContext // Levels
         });
 
         //do in separate transaction in a vain attempt to fix Weirdness with favourite level relations having missing levels
-        this._realm.Write(() =>
+        this.Write(() =>
         {
             this._realm.Remove(level);
         });
@@ -397,7 +397,7 @@ public partial class GameDatabaseContext // Levels
 
     private void SetLevelPickStatus(GameLevel level, bool status)
     {
-        this._realm.Write(() =>
+        this.Write(() =>
         {
             level.TeamPicked = status;
         });
@@ -408,7 +408,7 @@ public partial class GameDatabaseContext // Levels
 
     public void SetLevelScores(Dictionary<GameLevel, float> scoresToSet)
     {
-        this._realm.Write(() =>
+        this.Write(() =>
         {
             foreach ((GameLevel level, float score) in scoresToSet)
             {

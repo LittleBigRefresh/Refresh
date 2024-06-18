@@ -1,4 +1,5 @@
 using System.Diagnostics.CodeAnalysis;
+using System.Runtime.CompilerServices;
 using Realms;
 using Bunkum.RealmDatabase;
 using Refresh.GameServer.Time;
@@ -48,7 +49,7 @@ public partial class GameDatabaseContext : RealmDatabaseContext
     {
         lock (IdLock)
         {
-            this._realm.Write(() =>
+            this.Write(() =>
             {
                 int newId = this.GetOrCreateSequentialId<T>() + 1;
 
@@ -63,7 +64,7 @@ public partial class GameDatabaseContext : RealmDatabaseContext
         // We've already set a SequentialId so we can be outside the lock at this stage
         if (list != null)
         {
-            this._realm.Write(() =>
+            this.Write(() =>
             {
                 list.Add(obj);
                 writtenCallback?.Invoke();
@@ -76,4 +77,10 @@ public partial class GameDatabaseContext : RealmDatabaseContext
     
     private void AddSequentialObject<T>(T obj) where T : IRealmObject, ISequentialId 
         => this.AddSequentialObject(obj, null, null);
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    private void Write(Action callback)
+    {
+        this._realm.Write(callback);
+    }
 }

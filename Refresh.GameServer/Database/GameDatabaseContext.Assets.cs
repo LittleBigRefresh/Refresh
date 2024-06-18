@@ -38,7 +38,7 @@ public partial class GameDatabaseContext // AssetConfiguration
 
     public void AddOrOverwriteAssetDependencyRelations(string dependent, IEnumerable<string> dependencies)
     {
-        this._realm.Write(() =>
+        this.Write(() =>
         {
             // delete all existing relations. ensures duplicates won't exist when reprocessing
             this._realm.RemoveRange(this._realm.All<AssetDependencyRelation>().Where(a => a.Dependent == dependent));
@@ -57,31 +57,31 @@ public partial class GameDatabaseContext // AssetConfiguration
             .Where(a => a._AssetType == (int)type);
 
     public void AddAssetToDatabase(GameAsset asset) =>
-        this._realm.Write(() =>
+        this.Write(() =>
         {
             this._realm.Add(asset);
         });
 
     public void AddOrUpdateAssetsInDatabase(IEnumerable<GameAsset> assets) =>
-        this._realm.Write(() =>
+        this.Write(() =>
         {
             this._realm.Add(assets, true);
         });
 
     public void SetMainlineIconHash(GameAsset asset, string hash) =>
-        this._realm.Write(() =>
+        this.Write(() =>
         {
             asset.AsMainlineIconHash = hash;
         });
     
     public void SetMipIconHash(GameAsset asset, string hash) =>
-        this._realm.Write(() =>
+        this.Write(() =>
         {
             asset.AsMipIconHash = hash;
         });
     
     public void SetMainlinePhotoHash(GameAsset asset, string hash) =>
-        this._realm.Write(() =>
+        this.Write(() =>
         {
             asset.AsMainlinePhotoHash = hash;
         });

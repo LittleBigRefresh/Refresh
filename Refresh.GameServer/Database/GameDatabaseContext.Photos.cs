@@ -54,7 +54,7 @@ public partial class GameDatabaseContext // Photos
 
     public void RemovePhoto(GamePhoto photo)
     {
-        this._realm.Write(() =>
+        this.Write(() =>
         {
             this._realm.Remove(photo);
         });
