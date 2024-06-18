@@ -143,12 +143,6 @@ public class GameLevelResponse : IDataConvertableFrom<GameLevelResponse, GameLev
     {
         if (old == null) return null;
 
-        int totalPlayCount = 0;
-        foreach (PlayLevelRelation playLevelRelation in old.AllPlays)
-        {
-            totalPlayCount += playLevelRelation.Count;
-        }
-        
         GameLevelResponse response = new()
         {
             LevelId = old.LevelId,
@@ -164,11 +158,11 @@ public class GameLevelResponse : IDataConvertableFrom<GameLevelResponse, GameLev
             MaxPlayers = old.MaxPlayers,
             EnforceMinMaxPlayers = old.EnforceMinMaxPlayers,
             SameScreenGame = old.SameScreenGame,
-            HeartCount = old.FavouriteRelations.Count(),
-            TotalPlayCount = totalPlayCount,
-            UniquePlayCount = old.UniquePlays.Count(),
-            YayCount = old.Ratings.Count(r => r._RatingType == (int)RatingType.Yay),
-            BooCount = old.Ratings.Count(r => r._RatingType == (int)RatingType.Boo),
+            HeartCount = dataContext.Database.GetFavouriteCountForLevel(old),
+            TotalPlayCount = dataContext.Database.GetTotalPlaysForLevel(old),
+            UniquePlayCount = dataContext.Database.GetUniquePlaysForLevel(old),
+            YayCount = dataContext.Database.GetTotalRatingsForLevel(old, RatingType.Yay),
+            BooCount = dataContext.Database.GetTotalRatingsForLevel(old, RatingType.Boo),
             SkillRewards = old.SkillRewards.ToList(),
             TeamPicked = old.TeamPicked,
             LevelType = old.LevelType.ToGameString(),
@@ -177,7 +171,7 @@ public class GameLevelResponse : IDataConvertableFrom<GameLevelResponse, GameLev
             IsSubLevel = old.IsSubLevel,
             BackgroundGuid = old.BackgroundGuid,
             Links = "",
-            AverageStarRating = old.CalculateAverageStarRating(),
+            AverageStarRating = old.CalculateAverageStarRating(dataContext.Database),
             ReviewCount = old.Reviews.Count,
             CommentCount = old.LevelComments.Count,
         };
@@ -210,7 +204,7 @@ public class GameLevelResponse : IDataConvertableFrom<GameLevelResponse, GameLev
             
             response.YourRating = rating?.ToDPad() ?? (int)RatingType.Neutral;
             response.YourStarRating = rating?.ToLBP1() ?? 0;
-            response.YourLbp2PlayCount = old.AllPlays.Count(p => p.User == dataContext.User);
+            response.YourLbp2PlayCount = dataContext.Database.GetTotalPlaysForLevelByUser(old, dataContext.User);
         }
         
         response.PlayerCount = dataContext.Match.GetPlayerCountForLevel(RoomSlotType.Online, response.LevelId);
