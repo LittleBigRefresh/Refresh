@@ -22,7 +22,7 @@ public partial class GameDatabaseContext // ActivityWrite
             StoredSequentialId = level.LevelId,
         };
 
-        this._realm.Write(() => this._realm.Add(e));
+        this.Write(() => this.Events.Add(e));
         return e;
     }
 
@@ -40,7 +40,7 @@ public partial class GameDatabaseContext // ActivityWrite
             StoredSequentialId = level.LevelId,
         };
 
-        this._realm.Write(() => this._realm.Add(e));
+        this.Write(() => this.Events.Add(e));
         return e;
     }
 
@@ -58,7 +58,7 @@ public partial class GameDatabaseContext // ActivityWrite
             StoredSequentialId = level.LevelId,
         };
 
-        this._realm.Write(() => this._realm.Add(e));
+        this.Write(() => this.Events.Add(e));
         return e;
     }
 
@@ -76,7 +76,7 @@ public partial class GameDatabaseContext // ActivityWrite
             StoredObjectId = user.UserId,
         };
 
-        this._realm.Write(() => this._realm.Add(e));
+        this.Write(() => this.Events.Add(e));
         return e;
     }
 
@@ -94,7 +94,7 @@ public partial class GameDatabaseContext // ActivityWrite
             StoredObjectId = user.UserId,
         };
 
-        this._realm.Write(() => this._realm.Add(e));
+        this.Write(() => this.Events.Add(e));
         return e;
     }
 
@@ -112,7 +112,7 @@ public partial class GameDatabaseContext // ActivityWrite
             StoredSequentialId = level.LevelId,
         };
 
-        this._realm.Write(() => this._realm.Add(e));
+        this.Write(() => this.Events.Add(e));
         return e;
     }
 
@@ -130,7 +130,7 @@ public partial class GameDatabaseContext // ActivityWrite
             StoredSequentialId = level.LevelId,
         };
 
-        this._realm.Write(() => this._realm.Add(e));
+        this.Write(() => this.Events.Add(e));
         return e;
     }
 
@@ -148,7 +148,7 @@ public partial class GameDatabaseContext // ActivityWrite
             StoredSequentialId = level.LevelId,
         };
 
-        this._realm.Write(() => this._realm.Add(e));
+        this.Write(() => this.Events.Add(e));
         return e;
     }
 
@@ -166,7 +166,7 @@ public partial class GameDatabaseContext // ActivityWrite
             StoredObjectId = relation.RateLevelRelationId,
         };
 
-        this._realm.Write(() => this._realm.Add(e));
+        this.Write(() => this.Events.Add(e));
         return e;
     }
 
@@ -184,7 +184,7 @@ public partial class GameDatabaseContext // ActivityWrite
             StoredSequentialId = level.LevelId,
         };
 
-        this._realm.Write(() => this._realm.Add(e));
+        this.Write(() => this.Events.Add(e));
         return e;
     }
 
@@ -202,7 +202,7 @@ public partial class GameDatabaseContext // ActivityWrite
             StoredObjectId = score.ScoreId,
         };
 
-        this._realm.Write(() => this._realm.Add(e));
+        this.Write(() => this.Events.Add(e));
         return e;
     }
 
@@ -220,7 +220,7 @@ public partial class GameDatabaseContext // ActivityWrite
             StoredObjectId = user.UserId,
         };
 
-        this._realm.Write(() => this._realm.Add(e));
+        this.Write(() => this.Events.Add(e));
         return e;
     }
 }
