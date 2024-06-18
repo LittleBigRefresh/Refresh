@@ -97,7 +97,7 @@ public partial class GameDatabaseContext // ActivityWrite
         this.Write(() => this.Events.Add(e));
         return e;
     }
-    
+
     /// <summary>
     /// Creates a new LevelPlay event from a <see cref='GameLevel'/>, and adds it to the event list.
     /// </summary>
