@@ -27,31 +27,31 @@ public partial class GameDatabaseContext : RealmDatabaseContext
 
     private readonly IDateTimeProvider _time;
     
-    private IQueryable<GameUser> GameUsers => this._realm.All<GameUser>();
-    private IQueryable<Token> Tokens => this._realm.All<Token>();
-    private IQueryable<GameLevel> GameLevels => this._realm.All<GameLevel>();
-    private IQueryable<GameComment> GameComments => this._realm.All<GameComment>();
-    private IQueryable<CommentRelation> CommentRelations => this._realm.All<CommentRelation>();
-    private IQueryable<FavouriteLevelRelation> FavouriteLevelRelations => this._realm.All<FavouriteLevelRelation>();
-    private IQueryable<QueueLevelRelation> QueueLevelRelations => this._realm.All<QueueLevelRelation>();
-    private IQueryable<FavouriteUserRelation> FavouriteUserRelations => this._realm.All<FavouriteUserRelation>();
-    private IQueryable<PlayLevelRelation> PlayLevelRelations => this._realm.All<PlayLevelRelation>();
-    private IQueryable<UniquePlayLevelRelation> UniquePlayLevelRelations => this._realm.All<UniquePlayLevelRelation>();
-    private IQueryable<RateLevelRelation> RateLevelRelations => this._realm.All<RateLevelRelation>();
-    private IQueryable<Event> Events => this._realm.All<Event>();
-    private IQueryable<GameSubmittedScore> GameSubmittedScores => this._realm.All<GameSubmittedScore>();
-    private IQueryable<GameAsset> GameAssets => this._realm.All<GameAsset>();
-    private IQueryable<GameNotification> GameNotifications => this._realm.All<GameNotification>();
-    private IQueryable<GamePhoto> GamePhotos => this._realm.All<GamePhoto>();
-    private IQueryable<GameAnnouncement> GameAnnouncements => this._realm.All<GameAnnouncement>();
-    private IQueryable<QueuedRegistration> QueuedRegistrations => this._realm.All<QueuedRegistration>();
-    private IQueryable<EmailVerificationCode> EmailVerificationCodes => this._realm.All<EmailVerificationCode>();
-    private IQueryable<RequestStatistics> RequestStatistics => this._realm.All<RequestStatistics>();
-    private IQueryable<SequentialIdStorage> SequentialIdStorage => this._realm.All<SequentialIdStorage>();
-    private IQueryable<GameContest> GameContests => this._realm.All<GameContest>();
-    private IQueryable<AssetDependencyRelation> AssetDependencyRelations => this._realm.All<AssetDependencyRelation>();
-    private IQueryable<GameReview> GameReviews => this._realm.All<GameReview>();
-    private IQueryable<DisallowedUser> DisallowedUsers => this._realm.All<DisallowedUser>();
+    private RealmDbSet<GameUser> GameUsers => new(this._realm);
+    private RealmDbSet<Token> Tokens => new(this._realm);
+    private RealmDbSet<GameLevel> GameLevels => new(this._realm);
+    private RealmDbSet<GameComment> GameComments => new(this._realm);
+    private RealmDbSet<CommentRelation> CommentRelations => new(this._realm);
+    private RealmDbSet<FavouriteLevelRelation> FavouriteLevelRelations => new(this._realm);
+    private RealmDbSet<QueueLevelRelation> QueueLevelRelations => new(this._realm);
+    private RealmDbSet<FavouriteUserRelation> FavouriteUserRelations => new(this._realm);
+    private RealmDbSet<PlayLevelRelation> PlayLevelRelations => new(this._realm);
+    private RealmDbSet<UniquePlayLevelRelation> UniquePlayLevelRelations => new(this._realm);
+    private RealmDbSet<RateLevelRelation> RateLevelRelations => new(this._realm);
+    private RealmDbSet<Event> Events => new(this._realm);
+    private RealmDbSet<GameSubmittedScore> GameSubmittedScores => new(this._realm);
+    private RealmDbSet<GameAsset> GameAssets => new(this._realm);
+    private RealmDbSet<GameNotification> GameNotifications => new(this._realm);
+    private RealmDbSet<GamePhoto> GamePhotos => new(this._realm);
+    private RealmDbSet<GameAnnouncement> GameAnnouncements => new(this._realm);
+    private RealmDbSet<QueuedRegistration> QueuedRegistrations => new(this._realm);
+    private RealmDbSet<EmailVerificationCode> EmailVerificationCodes => new(this._realm);
+    private RealmDbSet<RequestStatistics> RequestStatistics => new(this._realm);
+    private RealmDbSet<SequentialIdStorage> SequentialIdStorage => new(this._realm);
+    private RealmDbSet<GameContest> GameContests => new(this._realm);
+    private RealmDbSet<AssetDependencyRelation> AssetDependencyRelations => new(this._realm);
+    private RealmDbSet<GameReview> GameReviews => new(this._realm);
+    private RealmDbSet<DisallowedUser> DisallowedUsers => new(this._realm);
 
     internal GameDatabaseContext(IDateTimeProvider time)
     {
@@ -78,7 +78,7 @@ public partial class GameDatabaseContext : RealmDatabaseContext
         };
 
         // no need to do write block, this should only be called in a write transaction
-        this._realm.Add(storage);
+        this.SequentialIdStorage.Add(storage);
 
         return storage.SequentialId;
     }

@@ -12,7 +12,7 @@ public partial class GameDatabaseContext // Statistics
         statistics = new RequestStatistics();
         this.Write(() =>
         {
-            this._realm.Add(statistics);
+            this.RequestStatistics.Add(statistics);
         });
 
         return statistics;

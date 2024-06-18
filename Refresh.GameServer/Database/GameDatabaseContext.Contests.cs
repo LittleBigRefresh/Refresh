@@ -19,7 +19,7 @@ public partial class GameDatabaseContext // Contests
         this.Write(() =>
         {
             contest.CreationDate = this._time.Now;
-            this._realm.Add(contest);
+            this.GameContests.Add(contest);
         });
     }
     

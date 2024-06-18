@@ -23,7 +23,7 @@ public partial class GameDatabaseContext // Notifications
 
         this.Write(() =>
         {
-            this._realm.Add(notification);
+            this.GameNotifications.Add(notification);
         });
     }
 
@@ -89,7 +89,7 @@ public partial class GameDatabaseContext // Notifications
         
         this.Write(() =>
         {
-            this._realm.Add(announcement);
+            this.GameAnnouncements.Add(announcement);
         });
 
         return announcement;

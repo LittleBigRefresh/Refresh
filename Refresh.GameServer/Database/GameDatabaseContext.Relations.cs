@@ -39,7 +39,7 @@ public partial class GameDatabaseContext // Relations
             Level = level,
             User = user,
         };
-        this.Write(() => this._realm.Add(relation));
+        this.Write(() => this.FavouriteLevelRelations.Add(relation));
 
         this.CreateLevelFavouriteEvent(user, level);
 
@@ -103,7 +103,7 @@ public partial class GameDatabaseContext // Relations
             UserFavouriting = userFavouriting,
         };
         
-        this.Write(() => this._realm.Add(relation));
+        this.Write(() => this.FavouriteUserRelations.Add(relation));
 
         this.CreateUserFavouriteEvent(userFavouriting, userToFavourite);
 
@@ -162,7 +162,7 @@ public partial class GameDatabaseContext // Relations
             Level = level,
             User = user,
         };
-        this.Write(() => this._realm.Add(relation));
+        this.Write(() => this.QueueLevelRelations.Add(relation));
 
         return true;
     }
@@ -220,7 +220,7 @@ public partial class GameDatabaseContext // Relations
                 Timestamp = this._time.Now,
             };
 
-            this.Write(() => this._realm.Add(rating));
+            this.Write(() => this.RateLevelRelations.Add(rating));
             return true;
         }
 
@@ -303,10 +303,10 @@ public partial class GameDatabaseContext // Relations
 
         this.Write(() =>
         {
-            this._realm.Add(relation);
+            this.PlayLevelRelations.Add(relation);
             
             // If the user hasn't played the level before, then add a unique relation too
-            if (uniqueRelation == null) this._realm.Add(new UniquePlayLevelRelation 
+            if (uniqueRelation == null) this.UniquePlayLevelRelations.Add(new UniquePlayLevelRelation 
             {
                 Level = level,
                 User = user,
@@ -361,7 +361,7 @@ public partial class GameDatabaseContext // Relations
             
             this.Write(() =>
             {
-                this._realm.Add(relation);
+                this.CommentRelations.Add(relation);
             });
         }
         else

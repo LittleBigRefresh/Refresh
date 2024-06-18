@@ -59,7 +59,7 @@ public partial class GameDatabaseContext // Tokens
         this.Write(() =>
         {
             user.LastLoginDate = this._time.Now;
-            this._realm.Add(token);
+            this.Tokens.Add(token);
         });
         
         return token;

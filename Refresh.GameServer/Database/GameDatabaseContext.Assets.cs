@@ -44,7 +44,7 @@ public partial class GameDatabaseContext // AssetConfiguration
             this._realm.RemoveRange(this.AssetDependencyRelations.Where(a => a.Dependent == dependent));
             
             foreach (string dependency in dependencies)
-                this._realm.Add(new AssetDependencyRelation
+                this.AssetDependencyRelations.Add(new AssetDependencyRelation
                 {
                     Dependent = dependent,
                     Dependency = dependency,
@@ -59,13 +59,13 @@ public partial class GameDatabaseContext // AssetConfiguration
     public void AddAssetToDatabase(GameAsset asset) =>
         this.Write(() =>
         {
-            this._realm.Add(asset);
+            this.GameAssets.Add(asset);
         });
 
     public void AddOrUpdateAssetsInDatabase(IEnumerable<GameAsset> assets) =>
         this.Write(() =>
         {
-            this._realm.Add(assets, true);
+            this.GameAssets.AddRange(assets, true);
         });
 
     public void SetMainlineIconHash(GameAsset asset, string hash) =>

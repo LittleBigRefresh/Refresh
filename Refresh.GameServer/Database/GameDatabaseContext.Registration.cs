@@ -36,7 +36,7 @@ public partial class GameDatabaseContext // Registration
 
         this.Write(() =>
         {
-            this._realm.Add(user);
+            this.GameUsers.Add(user);
         });
         return user;
     }
@@ -109,7 +109,7 @@ public partial class GameDatabaseContext // Registration
 
         this.Write(() =>
         {
-            this._realm.Add(registration);
+            this.QueuedRegistrations.Add(registration);
         });
     }
 
@@ -188,7 +188,7 @@ public partial class GameDatabaseContext // Registration
 
         this.Write(() =>
         {
-            this._realm.Add(verificationCode);
+            this.EmailVerificationCodes.Add(verificationCode);
         });
 
         return verificationCode;
@@ -209,7 +209,7 @@ public partial class GameDatabaseContext // Registration
         
         this.Write(() =>
         {
-            this._realm.Add(new DisallowedUser
+            this.DisallowedUsers.Add(new DisallowedUser
             {
                 Username = username,
             });

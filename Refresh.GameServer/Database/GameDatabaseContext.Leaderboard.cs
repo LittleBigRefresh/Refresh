@@ -28,7 +28,7 @@ public partial class GameDatabaseContext // Leaderboard
 
         this.Write(() =>
         {
-            this._realm.Add(newScore);
+            this.GameSubmittedScores.Add(newScore);
         });
 
         this.CreateLevelScoreEvent(user, newScore);
