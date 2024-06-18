@@ -99,24 +99,6 @@ public partial class GameDatabaseContext // ActivityWrite
     }
 
     /// <summary>
-    /// Creates a new LevelPlay event from a <see cref='GameLevel'/>, and adds it to the event list.
-    /// </summary>
-    public Event CreateLevelPlayEvent(GameUser userFrom, GameLevel level)
-    {
-        Event e = new()
-        {
-            EventType = EventType.LevelPlay,
-            StoredDataType = EventDataType.Level,
-            Timestamp = this._time.TimestampMilliseconds,
-            User = userFrom,
-            StoredSequentialId = level.LevelId,
-        };
-
-        this.Write(() => this.Events.Add(e));
-        return e;
-    }
-
-    /// <summary>
     /// Creates a new LevelTag event from a <see cref='GameLevel'/>, and adds it to the event list.
     /// </summary>
     public Event CreateLevelTagEvent(GameUser userFrom, GameLevel level)

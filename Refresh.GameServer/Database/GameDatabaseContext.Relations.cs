@@ -313,8 +313,6 @@ public partial class GameDatabaseContext // Relations
                 Timestamp = this._time.TimestampMilliseconds,
             });
         });
-
-        this.CreateLevelPlayEvent(user, level);
     }
 
     public bool HasUserPlayedLevel(GameLevel level, GameUser user) =>
