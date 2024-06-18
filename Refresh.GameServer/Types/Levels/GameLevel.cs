@@ -94,20 +94,6 @@ public partial class GameLevel : IRealmObject, ISequentialId
 #nullable disable
     public IList<GameComment> LevelComments { get; }
     
-    [Backlink(nameof(FavouriteLevelRelation.Level))]
-    public IQueryable<FavouriteLevelRelation> FavouriteRelations { get; }
-    
-    [Backlink(nameof(UniquePlayLevelRelation.Level))]
-    public IQueryable<UniquePlayLevelRelation> UniquePlays { get; }
-    
-    [Backlink(nameof(PlayLevelRelation.Level))]
-    public IQueryable<PlayLevelRelation> AllPlays { get; }
-    [Backlink(nameof(GameSubmittedScore.Level))]
-    public IQueryable<GameSubmittedScore> Scores { get; }
-    
-    [Backlink(nameof(RateLevelRelation.Level))]
-    public IQueryable<RateLevelRelation> Ratings { get; }
-    
     // ILists can't be serialized to XML, and Lists/Arrays cannot be stored in realm,
     // hence _SkillRewards and SkillRewards both existing
     // ReSharper disable once InconsistentNaming
@@ -155,13 +141,13 @@ public partial class GameLevel : IRealmObject, ISequentialId
     /// Calculates the average rating of a level based on the ratings it has.
     /// </summary>
     /// <returns>A double between 1 and 5, indicating the level's average ratings.</returns>
-    public double CalculateAverageStarRating()
+    public double CalculateAverageStarRating(GameDatabaseContext database)
     {
-        int yayCount = this.Ratings.Count(x => x._RatingType == (int)RatingType.Yay);
-        int booCount = this.Ratings.Count(x => x._RatingType == (int)RatingType.Boo);
-        int neutralCount = this.Ratings.Count(x => x._RatingType == (int)RatingType.Neutral);
+        int yayCount = database.GetTotalRatingsForLevel(this, RatingType.Yay);
+        int booCount = database.GetTotalRatingsForLevel(this, RatingType.Boo);
+        int neutralCount = database.GetTotalRatingsForLevel(this, RatingType.Neutral);
 
-        // Return 0 if all the counts are 0, we dont want a div by 0 error!
+        // Return 0 if all the counts are 0, we don't want a div by 0 error!
         if (yayCount + booCount + neutralCount == 0) return 0;
         
         return (double)((5 * yayCount) + (1 * booCount) + (3 * neutralCount)) / (yayCount + booCount + neutralCount);
