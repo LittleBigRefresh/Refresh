@@ -48,8 +48,8 @@ public class CoolLevelsWorker : IWorker
                 
                 // Calculate positive & negative score separately so we don't run into issues with
                 // the multiplier having an opposite effect with the negative score as time passes
-                float positiveScore = CalculatePositiveScore(logger, level);
-                float negativeScore = CalculateNegativeScore(logger, level);
+                float positiveScore = CalculatePositiveScore(logger, level, database);
+                float negativeScore = CalculateNegativeScore(logger, level, database);
                 
                 // Increase to tweak how little negative score gets affected by decay
                 const int negativeScoreDecayMultiplier = 2;
@@ -97,7 +97,7 @@ public class CoolLevelsWorker : IWorker
         return multiplier;
     }
 
-    private static float CalculatePositiveScore(Logger logger, GameLevel level)
+    private static float CalculatePositiveScore(Logger logger, GameLevel level, GameDatabaseContext database)
     {
         // Start levels off with a few points to prevent one dislike from bombing the level
         // Don't apply this bonus to reuploads to discourage a flood of 15CR levels.
@@ -111,13 +111,13 @@ public class CoolLevelsWorker : IWorker
         if (level.TeamPicked)
             score += 50;
         
-        int positiveRatings = level.Ratings.Count(r => r._RatingType == (int)RatingType.Yay);
-        int negativeRatings = level.Ratings.Count(r => r._RatingType == (int)RatingType.Boo);
-        int uniquePlays = level.UniquePlays.Count();
+        int positiveRatings = database.GetTotalRatingsForLevel(level, RatingType.Yay);
+        int negativeRatings = database.GetTotalRatingsForLevel(level, RatingType.Boo);
+        int uniquePlays = database.GetUniquePlaysForLevel(level);
         
         score += positiveRatings * positiveRatingPoints;
         score += uniquePlays * uniquePlayPoints;
-        score += level.FavouriteRelations.Count() * heartPoints;
+        score += database.GetFavouriteCountForLevel(level) * heartPoints;
         
         // Reward for a good ratio between plays and yays
         float ratingRatio = (positiveRatings - negativeRatings) / (float)uniquePlays;
@@ -133,7 +133,7 @@ public class CoolLevelsWorker : IWorker
         return score;
     }
 
-    private static float CalculateNegativeScore(Logger logger, GameLevel level)
+    private static float CalculateNegativeScore(Logger logger, GameLevel level, GameDatabaseContext database)
     {
         float penalty = 0;
         const float negativeRatingPenalty = 5;
@@ -144,7 +144,7 @@ public class CoolLevelsWorker : IWorker
         // The percentage of how much penalty should be applied at the end of the calculation.
         const float penaltyMultiplier = 0.75f;
         
-        penalty += level.Ratings.Count(r => r._RatingType == (int)RatingType.Boo) * negativeRatingPenalty;
+        penalty += database.GetTotalRatingsForLevel(level, RatingType.Boo) * negativeRatingPenalty;
         
         if (level.Publisher == null)
             penalty += noAuthorPenalty;
