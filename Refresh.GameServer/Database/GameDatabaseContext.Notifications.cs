@@ -53,8 +53,7 @@ public partial class GameDatabaseContext // Notifications
 
     [Pure]
     public GameNotification? GetNotificationByUuid(GameUser user, ObjectId id) 
-        => this._realm
-            .All<GameNotification>()
+        => this.GameNotifications
             .FirstOrDefault(n => n.User == user && n.NotificationId == id);
     
     public void DeleteNotificationsByUser(GameUser user)

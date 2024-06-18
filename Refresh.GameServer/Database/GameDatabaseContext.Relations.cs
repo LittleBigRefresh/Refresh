@@ -325,8 +325,8 @@ public partial class GameDatabaseContext // Relations
 
     #region Comments
 
-    private CommentRelation? GetCommentRelationByUser(GameComment comment, GameUser user) => this._realm
-        .All<CommentRelation>().FirstOrDefault(r => r.Comment == comment && r.User == user);
+    private CommentRelation? GetCommentRelationByUser(GameComment comment, GameUser user) => this.CommentRelations
+        .FirstOrDefault(r => r.Comment == comment && r.User == user);
     
     /// <summary>
     /// Get a user's rating on a particular comment.
