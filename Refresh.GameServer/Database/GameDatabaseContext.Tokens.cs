@@ -69,7 +69,7 @@ public partial class GameDatabaseContext // Tokens
     [ContractAnnotation("=> canbenull")]
     public Token? GetTokenFromTokenData(string tokenData, TokenType type)
     {
-        Token? token = this._realm.All<Token>()
+        Token? token = this.Tokens
             .FirstOrDefault(t => t.TokenData == tokenData && t._TokenType == (int)type);
 
         if (token == null) return null;
@@ -102,7 +102,7 @@ public partial class GameDatabaseContext // Tokens
     {
         if (tokenData == null) return false;
 
-        Token? token = this._realm.All<Token>().FirstOrDefault(t => t.TokenData == tokenData && t._TokenType == (int)type);
+        Token? token = this.Tokens.FirstOrDefault(t => t.TokenData == tokenData && t._TokenType == (int)type);
         if (token == null) return false;
 
         this.RevokeToken(token);
@@ -122,7 +122,7 @@ public partial class GameDatabaseContext // Tokens
     {
         this.Write(() =>
         {
-            this._realm.RemoveRange(this._realm.All<Token>().Where(t => t.User == user));
+            this._realm.RemoveRange(this.Tokens.Where(t => t.User == user));
         });
     }
     
@@ -130,14 +130,14 @@ public partial class GameDatabaseContext // Tokens
     {
         this.Write(() =>
         {
-            this._realm.RemoveRange(this._realm.All<Token>().Where(t => t.User == user && t._TokenType == (int)type));
+            this._realm.RemoveRange(this.Tokens.Where(t => t.User == user && t._TokenType == (int)type));
         });
     }
     
     public bool IsTokenExpired(Token token) => token.ExpiresAt < this._time.Now;
     
     public DatabaseList<Token> GetAllTokens()
-        => new(this._realm.All<Token>());
+        => new(this.Tokens);
 
     public void AddIpVerificationRequest(GameUser user, string ipAddress)
     {

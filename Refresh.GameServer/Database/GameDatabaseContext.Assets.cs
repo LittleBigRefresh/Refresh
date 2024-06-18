@@ -8,13 +8,13 @@ public partial class GameDatabaseContext // AssetConfiguration
     {
         if (hash == "0" || hash.StartsWith('g')) return null;
         
-        return this._realm.All<GameAsset>()
+        return this.GameAssets
             .FirstOrDefault(a => a.AssetHash == hash);
     }
     
     public GameAssetType? GetConvertedType(string hash)
     {
-        IQueryable<GameAsset> assets = this._realm.All<GameAsset>();
+        IQueryable<GameAsset> assets = this.GameAssets;
         
         foreach (GameAsset asset in assets)
         {
@@ -32,7 +32,7 @@ public partial class GameDatabaseContext // AssetConfiguration
     }
 
     public IEnumerable<string> GetAssetDependencies(GameAsset asset) 
-        => this._realm.All<AssetDependencyRelation>().Where(a => a.Dependent == asset.AssetHash)
+        => this.AssetDependencyRelations.Where(a => a.Dependent == asset.AssetHash)
             .AsEnumerable()
             .Select(a => a.Dependency);
 
@@ -41,7 +41,7 @@ public partial class GameDatabaseContext // AssetConfiguration
         this.Write(() =>
         {
             // delete all existing relations. ensures duplicates won't exist when reprocessing
-            this._realm.RemoveRange(this._realm.All<AssetDependencyRelation>().Where(a => a.Dependent == dependent));
+            this._realm.RemoveRange(this.AssetDependencyRelations.Where(a => a.Dependent == dependent));
             
             foreach (string dependency in dependencies)
                 this._realm.Add(new AssetDependencyRelation
@@ -53,7 +53,7 @@ public partial class GameDatabaseContext // AssetConfiguration
     }
     
     public IEnumerable<GameAsset> GetAssetsByType(GameAssetType type) =>
-        this._realm.All<GameAsset>()
+        this.GameAssets
             .Where(a => a._AssetType == (int)type);
 
     public void AddAssetToDatabase(GameAsset asset) =>

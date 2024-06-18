@@ -34,19 +34,19 @@ public partial class GameDatabaseContext // Contests
     public GameContest? GetContestById(string? id)
     {
         if (id == null) return null;
-        return this._realm.All<GameContest>().FirstOrDefault(c => c.ContestId == id);
+        return this.GameContests.FirstOrDefault(c => c.ContestId == id);
     }
     
     public IEnumerable<GameContest> GetAllContests()
     {
-        return this._realm.All<GameContest>()
+        return this.GameContests
             .OrderBy(c => c.CreationDate);
     }
     
     public GameContest? GetNewestActiveContest()
     {
         DateTimeOffset now = this._time.Now;
-        return this._realm.All<GameContest>()
+        return this.GameContests
             .Where(c => c.StartDate <= now && c.EndDate > now) // Filter active contests
             .OrderByDescending(c => c.CreationDate)
             .FirstOrDefault();

@@ -60,30 +60,30 @@ public partial class GameDatabaseContext // Photos
         });
     }
 
-    public int GetTotalPhotoCount() => this._realm.All<GamePhoto>().Count();
+    public int GetTotalPhotoCount() => this.GamePhotos.Count();
     
     [Pure]
     public DatabaseList<GamePhoto> GetRecentPhotos(int count, int skip) =>
-        new(this._realm.All<GamePhoto>()
+        new(this.GamePhotos
             .OrderByDescending(p => p.PublishedAt), skip, count);
 
     [Pure]
     public GamePhoto? GetPhotoById(int id) =>
-        this._realm.All<GamePhoto>().FirstOrDefault(p => p.PhotoId == id);
+        this.GamePhotos.FirstOrDefault(p => p.PhotoId == id);
 
     [Pure]
     public DatabaseList<GamePhoto> GetPhotosByUser(GameUser user, int count, int skip) =>
-        new(this._realm.All<GamePhoto>().Where(p => p.Publisher == user)
+        new(this.GamePhotos.Where(p => p.Publisher == user)
             .OrderByDescending(p => p.TakenAt), skip, count);
     
     [Pure]
     public int GetTotalPhotosByUser(GameUser user)
-        => this._realm.All<GamePhoto>()
+        => this.GamePhotos
             .Count(p => p.Publisher == user);
 
     [Pure]
     public DatabaseList<GamePhoto> GetPhotosWithUser(GameUser user, int count, int skip) =>
-        new(this._realm.All<GamePhoto>()
+        new(this.GamePhotos
             // FIXME: client-side enumeration
             .AsEnumerable()
             .Where(p => p.Subjects.FirstOrDefault(s => Equals(s.User, user)) != null)
@@ -93,16 +93,16 @@ public partial class GameDatabaseContext // Photos
     
     [Pure]
     public int GetTotalPhotosWithUser(GameUser user)
-        => this._realm.All<GamePhoto>()
+        => this.GamePhotos
             // FIXME: client-side enumeration
             .AsEnumerable()
             .Count(p => p.Subjects.FirstOrDefault(s => Equals(s.User, user)) != null);
 
     [Pure]
     public DatabaseList<GamePhoto> GetPhotosInLevel(GameLevel level, int count, int skip) =>
-        new(this._realm.All<GamePhoto>().Where(p => p.LevelId == level.LevelId), skip, count);
+        new(this.GamePhotos.Where(p => p.LevelId == level.LevelId), skip, count);
     
     [Pure]
     public int GetTotalPhotosInLevel(GameLevel level)
-        => this._realm.All<GamePhoto>().Count(p => p.LevelId == level.LevelId);
+        => this.GamePhotos.Count(p => p.LevelId == level.LevelId);
 }

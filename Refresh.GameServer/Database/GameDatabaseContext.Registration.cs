@@ -81,14 +81,14 @@ public partial class GameDatabaseContext // Registration
 
     public bool IsUsernameTaken(string username)
     {
-        return this._realm.All<GameUser>().Any(u => u.Username == username) ||
-               this._realm.All<QueuedRegistration>().Any(r => r.Username == username);
+        return this.GameUsers.Any(u => u.Username == username) ||
+               this.QueuedRegistrations.Any(r => r.Username == username);
     }
     
     public bool IsEmailTaken(string emailAddress)
     {
-        return this._realm.All<GameUser>().Any(u => u.EmailAddress == emailAddress) ||
-               this._realm.All<QueuedRegistration>().Any(r => r.EmailAddress == emailAddress);
+        return this.GameUsers.Any(u => u.EmailAddress == emailAddress) ||
+               this.QueuedRegistrations.Any(r => r.EmailAddress == emailAddress);
     }
 
     public void AddRegistrationToQueue(string username, string emailAddress, string passwordBcrypt)
@@ -132,30 +132,30 @@ public partial class GameDatabaseContext // Registration
     public bool IsRegistrationExpired(QueuedRegistration registration) => registration.ExpiryDate < this._time.Now;
 
     public QueuedRegistration? GetQueuedRegistrationByUsername(string username) 
-        => this._realm.All<QueuedRegistration>().FirstOrDefault(q => q.Username == username);
+        => this.QueuedRegistrations.FirstOrDefault(q => q.Username == username);
     
     public QueuedRegistration? GetQueuedRegistrationByObjectId(ObjectId id) 
-        => this._realm.All<QueuedRegistration>().FirstOrDefault(q => q.RegistrationId == id);
+        => this.QueuedRegistrations.FirstOrDefault(q => q.RegistrationId == id);
     
 
     public DatabaseList<QueuedRegistration> GetAllQueuedRegistrations()
-        => new(this._realm.All<QueuedRegistration>());
+        => new(this.QueuedRegistrations);
     
     public DatabaseList<EmailVerificationCode> GetAllVerificationCodes()
-        => new(this._realm.All<EmailVerificationCode>());
+        => new(this.EmailVerificationCodes);
     
     public void VerifyUserEmail(GameUser user)
     {
         this.Write(() =>
         {
             user.EmailAddressVerified = true;
-            this._realm.RemoveRange(this._realm.All<EmailVerificationCode>()
+            this._realm.RemoveRange(this.EmailVerificationCodes
                 .Where(c => c.User == user));
         });
     }
 
     public bool VerificationCodeMatches(GameUser user, string code) => 
-        this._realm.All<EmailVerificationCode>().Any(c => c.User == user && c.Code == code);
+        this.EmailVerificationCodes.Any(c => c.User == user && c.Code == code);
     
     public bool IsVerificationCodeExpired(EmailVerificationCode code) => code.ExpiryDate < this._time.Now;
 

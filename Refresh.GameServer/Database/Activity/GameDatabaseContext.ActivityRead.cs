@@ -46,7 +46,7 @@ public partial class GameDatabaseContext // ActivityRead
 
         Debug.Assert(e.StoredObjectId != null);
 
-        return this._realm.All<RateLevelRelation>()
+        return this.RateLevelRelations
             .FirstOrDefault(l => l.RateLevelRelationId == e.StoredObjectId);
     }
 }

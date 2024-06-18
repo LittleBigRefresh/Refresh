@@ -36,9 +36,9 @@ public partial class GameDatabaseContext // Users
             };
         
         if (!caseSensitive)
-            return this._realm.All<GameUser>().FirstOrDefault(u => u.Username.Equals(username, StringComparison.OrdinalIgnoreCase));
+            return this.GameUsers.FirstOrDefault(u => u.Username.Equals(username, StringComparison.OrdinalIgnoreCase));
         
-        return this._realm.All<GameUser>().FirstOrDefault(u => u.Username == username);
+        return this.GameUsers.FirstOrDefault(u => u.Username == username);
     }
     
     [Pure]
@@ -47,7 +47,7 @@ public partial class GameDatabaseContext // Users
     {
         if (emailAddress == null) return null;
         emailAddress = emailAddress.ToLowerInvariant();
-        return this._realm.All<GameUser>().FirstOrDefault(u => u.EmailAddress == emailAddress);
+        return this.GameUsers.FirstOrDefault(u => u.EmailAddress == emailAddress);
     }
 
     [Pure]
@@ -55,7 +55,7 @@ public partial class GameDatabaseContext // Users
     public GameUser? GetUserByObjectId(ObjectId? id)
     {
         if (id == null) return null;
-        return this._realm.All<GameUser>().FirstOrDefault(u => u.UserId == id);
+        return this.GameUsers.FirstOrDefault(u => u.UserId == id);
     }
     
     [Pure]
@@ -64,11 +64,11 @@ public partial class GameDatabaseContext // Users
     {
         if (uuid == null) return null;
         if(!ObjectId.TryParse(uuid, out ObjectId objectId)) return null;
-        return this._realm.All<GameUser>().FirstOrDefault(u => u.UserId == objectId);
+        return this.GameUsers.FirstOrDefault(u => u.UserId == objectId);
     }
 
     public DatabaseList<GameUser> GetUsers(int count, int skip)
-        => new(this._realm.All<GameUser>().OrderByDescending(u => u.JoinDate), skip, count);
+        => new(this.GameUsers.OrderByDescending(u => u.JoinDate), skip, count);
 
     public void UpdateUserData(GameUser user, SerializedUpdateData data, TokenGame game)
     {
@@ -183,13 +183,13 @@ public partial class GameDatabaseContext // Users
     }
 
     [Pure]
-    public int GetTotalUserCount() => this._realm.All<GameUser>().Count();
+    public int GetTotalUserCount() => this.GameUsers.Count();
     
     [Pure]
     public int GetActiveUserCount()
     {
         DateTimeOffset timeFrame = this._time.Now.Subtract(TimeSpan.FromDays(7));
-        return this._realm.All<GameUser>().Count(u => u.LastLoginDate > timeFrame);
+        return this.GameUsers.Count(u => u.LastLoginDate > timeFrame);
     }
 
     public void UpdateUserPins(GameUser user, UserPins pinsUpdate) 
@@ -253,7 +253,7 @@ public partial class GameDatabaseContext // Users
         // for some stupid reason, we have to do the byte conversion here or realm won't work correctly.
         byte roleByte = (byte)role;
         
-        return new DatabaseList<GameUser>(this._realm.All<GameUser>().Where(u => u._Role == roleByte));
+        return new DatabaseList<GameUser>(this.GameUsers.Where(u => u._Role == roleByte));
     }
 
     public void RenameUser(GameUser user, string newUsername)
@@ -305,13 +305,13 @@ public partial class GameDatabaseContext // Users
                 foreach (GamePhotoSubject subject in photo.Subjects.Where(s => s.User?.UserId == user.UserId))
                     subject.User = null;
             
-            this._realm.RemoveRange(this._realm.All<FavouriteLevelRelation>().Where(r => r.User == user));
-            this._realm.RemoveRange(this._realm.All<FavouriteUserRelation>().Where(r => r.UserToFavourite == user));
-            this._realm.RemoveRange(this._realm.All<FavouriteUserRelation>().Where(r => r.UserFavouriting == user));
-            this._realm.RemoveRange(this._realm.All<QueueLevelRelation>().Where(r => r.User == user));
-            this._realm.RemoveRange(this._realm.All<GamePhoto>().Where(p => p.Publisher == user));
+            this._realm.RemoveRange(this.FavouriteLevelRelations.Where(r => r.User == user));
+            this._realm.RemoveRange(this.FavouriteUserRelations.Where(r => r.UserToFavourite == user));
+            this._realm.RemoveRange(this.FavouriteUserRelations.Where(r => r.UserFavouriting == user));
+            this._realm.RemoveRange(this.QueueLevelRelations.Where(r => r.User == user));
+            this._realm.RemoveRange(this.GamePhotos.Where(p => p.Publisher == user));
 
-            foreach (GameLevel level in this._realm.All<GameLevel>().Where(l => l.Publisher == user))
+            foreach (GameLevel level in this.GameLevels.Where(l => l.Publisher == user))
             {
                 level.Publisher = null;
             }

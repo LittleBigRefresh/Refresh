@@ -44,12 +44,12 @@ public partial class GameDatabaseContext // Notifications
 
     [Pure]
     public int GetNotificationCountByUser(GameUser user) => 
-        this._realm.All<GameNotification>()
+        this.GameNotifications
             .Count(n => n.User == user);
     
     [Pure]
     public DatabaseList<GameNotification> GetNotificationsByUser(GameUser user, int count, int skip) =>
-        new(this._realm.All<GameNotification>().Where(n => n.User == user), skip, count);
+        new(this.GameNotifications.Where(n => n.User == user), skip, count);
 
     [Pure]
     public GameNotification? GetNotificationByUuid(GameUser user, ObjectId id) 
@@ -61,7 +61,7 @@ public partial class GameDatabaseContext // Notifications
     {
         this.Write(() =>
         {
-            this._realm.RemoveRange(this._realm.All<GameNotification>().Where(n => n.User == user));
+            this._realm.RemoveRange(this.GameNotifications.Where(n => n.User == user));
         });
     }
     
@@ -73,9 +73,9 @@ public partial class GameDatabaseContext // Notifications
         });
     }
 
-    public IEnumerable<GameAnnouncement> GetAnnouncements() => this._realm.All<GameAnnouncement>();
+    public IEnumerable<GameAnnouncement> GetAnnouncements() => this.GameAnnouncements;
     
-    public GameAnnouncement? GetAnnouncementById(ObjectId id) => this._realm.All<GameAnnouncement>().FirstOrDefault(a => a.AnnouncementId == id);
+    public GameAnnouncement? GetAnnouncementById(ObjectId id) => this.GameAnnouncements.FirstOrDefault(a => a.AnnouncementId == id);
     
     public GameAnnouncement AddAnnouncement(string title, string text)
     {
