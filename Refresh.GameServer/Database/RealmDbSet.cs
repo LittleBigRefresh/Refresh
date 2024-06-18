@@ -28,6 +28,7 @@ public class RealmDbSet<T> : IQueryable<T> where T : IRealmObject
         this._realm.Add(obj);
     }
 
+    // TODO: update = true will need extra consideration for EF. for now just let consumers specify
     public void AddRange(IEnumerable<T> objs, bool update = false)
     {
         this._realm.Add(objs, update);

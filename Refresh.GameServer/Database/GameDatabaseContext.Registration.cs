@@ -198,7 +198,7 @@ public partial class GameDatabaseContext // Registration
     
     public bool DisallowUser(string username)
     {
-        if (this._realm.Find<DisallowedUser>(username) != null) 
+        if (this.DisallowedUsers.FirstOrDefault(u => u.Username == username) != null) 
             return false;
         
         this.Write(() =>
@@ -214,7 +214,7 @@ public partial class GameDatabaseContext // Registration
     
     public bool ReallowUser(string username)
     {
-        DisallowedUser? disallowedUser = this._realm.Find<DisallowedUser>(username);
+        DisallowedUser? disallowedUser = this.DisallowedUsers.FirstOrDefault(u => u.Username == username);
         if (disallowedUser == null) 
             return false;
         
@@ -228,6 +228,6 @@ public partial class GameDatabaseContext // Registration
     
     public bool IsUserDisallowed(string username)
     {
-        return this._realm.Find<DisallowedUser>(username) != null;
+        return this.DisallowedUsers.FirstOrDefault(u => u.Username == username) != null;
     }
 }
