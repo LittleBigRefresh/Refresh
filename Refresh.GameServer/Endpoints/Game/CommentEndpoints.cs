@@ -43,10 +43,7 @@ public class CommentEndpoints : EndpointGroup
         
         (int skip, int count) = context.GetPageData();
 
-        List<GameComment> comments = database.GetProfileComments(profile, count, skip).ToList();
-        foreach (GameComment comment in comments) comment.PrepareForSerialization(user, dataContext);
-
-        return new SerializedCommentList(comments);
+        return new SerializedCommentList(SerializedComment.FromOldList(database.GetProfileComments(profile, count, skip), dataContext));
     }
 
     [GameEndpoint("deleteUserComment/{username}", HttpMethods.Post)]
@@ -98,10 +95,7 @@ public class CommentEndpoints : EndpointGroup
 
         (int skip, int count) = context.GetPageData();
 
-        List<GameComment> comments = database.GetLevelComments(level, count, skip).ToList();
-        foreach(GameComment comment in comments) comment.PrepareForSerialization(user, dataContext);
-
-        return new SerializedCommentList(comments);
+        return new SerializedCommentList(SerializedComment.FromOldList(database.GetLevelComments(level, count, skip), dataContext));
     }
 
     [GameEndpoint("deleteComment/{slotType}/{id}", HttpMethods.Post)]

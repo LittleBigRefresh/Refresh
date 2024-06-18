@@ -32,7 +32,7 @@ public class LevelCommentTests : GameServerTest
         Assert.That(userComments.Items, Has.Count.EqualTo(1));
         Assert.That(userComments.Items[0].Content, Is.EqualTo(comment.Content));
         
-        response = client.PostAsync($"/lbp/deleteComment/user/{level.LevelId}?commentId={userComments.Items[0].SequentialId}", new ByteArrayContent(Array.Empty<byte>())).Result;
+        response = client.PostAsync($"/lbp/deleteComment/user/{level.LevelId}?commentId={userComments.Items[0].CommentId}", new ByteArrayContent(Array.Empty<byte>())).Result;
         Assert.That(response.StatusCode, Is.EqualTo(OK));
         
         response = client.GetAsync($"/lbp/comments/user/{level.LevelId}").Result;
@@ -152,7 +152,7 @@ public class LevelCommentTests : GameServerTest
         Assert.That(userComments.Items, Has.Count.EqualTo(1));
         Assert.That(userComments.Items[0].Content, Is.EqualTo(comment.Content));
         
-        response = client2.PostAsync($"/lbp/deleteComment/user/{level.LevelId}?commentId={userComments.Items[0].SequentialId}", new ByteArrayContent(Array.Empty<byte>())).Result;
+        response = client2.PostAsync($"/lbp/deleteComment/user/{level.LevelId}?commentId={userComments.Items[0].CommentId}", new ByteArrayContent(Array.Empty<byte>())).Result;
         Assert.That(response.StatusCode, Is.EqualTo(Unauthorized));
     }
 
