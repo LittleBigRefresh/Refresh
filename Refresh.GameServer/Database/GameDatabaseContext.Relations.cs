@@ -313,15 +313,18 @@ public partial class GameDatabaseContext // Relations
             this.PlayLevelRelations.Add(relation);
             
             // If the user hasn't played the level before, then add a unique relation too
-            if (uniqueRelation == null) this.UniquePlayLevelRelations.Add(new UniquePlayLevelRelation 
+            if (uniqueRelation == null)
             {
-                Level = level,
-                User = user,
-                Timestamp = this._time.TimestampMilliseconds,
-            });
-        });
+                this.UniquePlayLevelRelations.Add(new UniquePlayLevelRelation
+                {
+                    Level = level,
+                    User = user,
+                    Timestamp = this._time.TimestampMilliseconds,
+                });
 
-        this.CreateLevelPlayEvent(user, level);
+                this.CreateLevelPlayEvent(user, level);
+            }
+        });
     }
 
     public bool HasUserPlayedLevel(GameLevel level, GameUser user) =>

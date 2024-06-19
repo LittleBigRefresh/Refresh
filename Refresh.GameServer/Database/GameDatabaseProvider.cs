@@ -34,7 +34,7 @@ public class GameDatabaseProvider : RealmDatabaseProvider<GameDatabaseContext>
         this._time = time;
     }
 
-    protected override ulong SchemaVersion => 130;
+    protected override ulong SchemaVersion => 131;
 
     protected override string Filename => "refreshGameServer.realm";
     
@@ -281,6 +281,12 @@ public class GameDatabaseProvider : RealmDatabaseProvider<GameDatabaseContext>
             {
                 GameSubmittedScore? score = migration.NewRealm.All<GameSubmittedScore>().FirstOrDefault(s => s.ScoreId == newEvent.StoredObjectId);
                 if(score == null) eventsToNuke.Add(newEvent);
+            }
+            
+            // In version 131 we removed the LevelPlay event
+            if (oldVersion < 131 && newEvent.EventType == EventType.LevelPlay)
+            {
+                eventsToNuke.Add(newEvent);
             }
         }
         
