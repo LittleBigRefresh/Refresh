@@ -43,6 +43,7 @@ public partial class GameDatabaseContext : RealmDatabaseContext
     private RealmDbSet<GameAsset> GameAssets => new(this._realm);
     private RealmDbSet<GameNotification> GameNotifications => new(this._realm);
     private RealmDbSet<GamePhoto> GamePhotos => new(this._realm);
+    private RealmDbSet<GameIpVerificationRequest> GameIpVerificationRequests => new(this._realm);
     private RealmDbSet<GameAnnouncement> GameAnnouncements => new(this._realm);
     private RealmDbSet<QueuedRegistration> QueuedRegistrations => new(this._realm);
     private RealmDbSet<EmailVerificationCode> EmailVerificationCodes => new(this._realm);
