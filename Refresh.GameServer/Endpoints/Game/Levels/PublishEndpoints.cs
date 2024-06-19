@@ -29,7 +29,7 @@ public class PublishEndpoints : EndpointGroup
     /// <param name="guidChecker">The associated GuidCheckerService with the request</param>
     /// <param name="game">The game the level is being submitted from</param>
     /// <returns>Whether or not validation succeeded</returns>
-    private static bool VerifyLevel(GameLevelRequest body, GameUser user, Logger logger, GuidCheckerService guidChecker, TokenGame game)
+    private static bool VerifyLevel(GameLevelRequest body, GameUser user, Logger logger, GuidCheckerService guidChecker, TokenGame game, GameDatabaseContext database)
     {
         if (body.Title.Length > 256)
         {
@@ -52,6 +52,15 @@ public class PublishEndpoints : EndpointGroup
             if (!guidChecker.IsTextureGuid(game, long.Parse(body.IconHash.AsSpan()[1..])))
                 return false;
         }
+
+        GameLevel? existingLevel = database.GetLevelByRootResource(body.RootResource);
+        // If there is an existing level with this root hash, and this isn't an update request, block the upload
+        if (existingLevel != null && body.LevelId != existingLevel.LevelId)
+        {
+            database.AddPublishFailNotification("You may not re-upload another user's level.", body.ToGameLevel(user), user);
+ 
+            return false;
+        }
         
         return true;
     }
@@ -61,7 +70,7 @@ public class PublishEndpoints : EndpointGroup
     public SerializedLevelResources? StartPublish(RequestContext context, GameUser user, GameDatabaseContext database, GameLevelRequest body, CommandService command, IDataStore dataStore, GuidCheckerService guidChecker, Token token)
     {
         //If verifying the request fails, return null
-        if (!VerifyLevel(body, user, context.Logger, guidChecker, token.TokenGame)) return null;
+        if (!VerifyLevel(body, user, context.Logger, guidChecker, token.TokenGame, database)) return null;
         
         List<string> hashes = new();
         hashes.AddRange(body.XmlResources);
@@ -93,8 +102,8 @@ public class PublishEndpoints : EndpointGroup
         IDataStore dataStore,
         GuidCheckerService guidChecker, DataContext dataContext)
     {
-        //If verifying the request fails, return null
-        if (!VerifyLevel(body, user, context.Logger, guidChecker, token.TokenGame)) return BadRequest;
+        //If verifying the request fails, return BadRequest
+        if (!VerifyLevel(body, user, context.Logger, guidChecker, token.TokenGame, database)) return BadRequest;
         
         GameLevel level = body.ToGameLevel(user);
         level.GameVersion = token.TokenGame;

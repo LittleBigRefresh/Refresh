@@ -400,7 +400,62 @@ public class PublishEndpointsTests : GameServerTest
         message = client2.PostAsync("/lbp/publish", new StringContent(level.AsXML())).Result;
         Assert.That(message.StatusCode, Is.EqualTo(BadRequest));
     }
+    
+    [Test]
+    public void CantPublishSameRootLevelHashTwice()
+    {
+        using TestContext context = this.GetServer();
+        GameUser user1 = context.CreateUser();
+        GameUser user2 = context.CreateUser();
 
+        using HttpClient client1 = context.GetAuthenticatedClient(TokenType.Game, user1);
+        using HttpClient client2 = context.GetAuthenticatedClient(TokenType.Game, user2);
+
+        GameLevelRequest level = new()
+        {
+            LevelId = 0,
+            Title = "TEST LEVEL",
+            IconHash = "g719",
+            Description = "DESCRIPTION",
+            Location = new GameLocation(),
+            GameVersion = 0,
+            RootResource = TEST_ASSET_HASH,
+            PublishDate = 0,
+            UpdateDate = 0,
+            MinPlayers = 0,
+            MaxPlayers = 0,
+            EnforceMinMaxPlayers = false,
+            SameScreenGame = false,
+            SkillRewards = new List<GameSkillReward>(),
+        };
+
+        HttpResponseMessage message = client1.PostAsync("/lbp/startPublish", new StringContent(level.AsXML())).Result;
+        Assert.That(message.StatusCode, Is.EqualTo(OK));
+
+        SerializedLevelResources resourcesToUpload = message.Content.ReadAsXML<SerializedLevelResources>();
+        Assert.That(resourcesToUpload.Resources, Has.Length.EqualTo(1));
+        Assert.That(resourcesToUpload.Resources[0], Is.EqualTo(TEST_ASSET_HASH));
+
+        //Upload our """level"""
+        message = client1.PostAsync($"/lbp/upload/{TEST_ASSET_HASH}", new ReadOnlyMemoryContent("LVLb"u8.ToArray())).Result;
+        Assert.That(message.StatusCode, Is.EqualTo(OK));
+        
+        //As user 1, publish a level
+        message = client1.PostAsync("/lbp/publish", new StringContent(level.AsXML())).Result;
+        Assert.That(message.StatusCode, Is.EqualTo(OK));
+
+        GameLevelResponse response = message.Content.ReadAsXML<GameLevelResponse>();
+        Assert.That(response.Title, Is.EqualTo(level.Title));
+        Assert.That(response.Description, Is.EqualTo(level.Description));
+
+        level.Title = "REPUBLISH!";
+        level.Description = "PANA KIN!!!! MI PAIN PEKO E SINA";
+        
+        //As user 2, try to publish a level with the same root hash
+        message = client2.PostAsync("/lbp/publish", new StringContent(level.AsXML())).Result;
+        Assert.That(message.StatusCode, Is.EqualTo(BadRequest));
+    }
+    
     [Test]
     public void UnpublishLevel()
     {
