@@ -233,6 +233,7 @@ public class ActivityPage
             levelEvent = @event.EventType switch
             {
                 EventType.LevelUpload => SerializedLevelUploadEvent.FromSerializedLevelEvent(levelEvent),
+                EventType.LevelPlay => SerializedLevelPlayEvent.FromSerializedLevelEvent(levelEvent),
                 _ => levelEvent,
             };
 
