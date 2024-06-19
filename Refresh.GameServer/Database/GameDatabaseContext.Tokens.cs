@@ -165,13 +165,9 @@ public partial class GameDatabaseContext // Tokens
 
     public void DenyIpVerificationRequest(GameUser user, string ipAddress)
     {
-        IEnumerable<GameIpVerificationRequest> requests = this.GameIpVerificationRequests.Where(r => r.IpAddress == ipAddress && r.User == user);
         this.Write(() =>
         {
-            foreach (GameIpVerificationRequest request in requests)
-            {
-                this.GameIpVerificationRequests.Remove(request);
-            }
+            this.GameIpVerificationRequests.RemoveRange(this.GameIpVerificationRequests.Where(r => r.IpAddress == ipAddress && r.User == user));
         });
     }
 
