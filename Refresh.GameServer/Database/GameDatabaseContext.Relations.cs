@@ -185,7 +185,7 @@ public partial class GameDatabaseContext // Relations
 
     public void ClearQueue(GameUser user)
     {
-        this.Write(() => this.QueueLevelRelations.RemoveRange(this.QueueLevelRelations.Where(r => r.User == user)));
+        this.Write(() => this.QueueLevelRelations.RemoveRange(r => r.User == user));
     }
 
     #endregion

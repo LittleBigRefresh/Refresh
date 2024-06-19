@@ -41,7 +41,7 @@ public partial class GameDatabaseContext // AssetConfiguration
         this.Write(() =>
         {
             // delete all existing relations. ensures duplicates won't exist when reprocessing
-            this.AssetDependencyRelations.RemoveRange(this.AssetDependencyRelations.Where(a => a.Dependent == dependent));
+            this.AssetDependencyRelations.RemoveRange(a => a.Dependent == dependent);
             
             foreach (string dependency in dependencies)
                 this.AssetDependencyRelations.Add(new AssetDependencyRelation

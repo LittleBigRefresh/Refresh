@@ -60,7 +60,7 @@ public partial class GameDatabaseContext // Notifications
     {
         this.Write(() =>
         {
-            this.GameNotifications.RemoveRange(this.GameNotifications.Where(n => n.User == user));
+            this.GameNotifications.RemoveRange(n => n.User == user);
         });
     }
     
