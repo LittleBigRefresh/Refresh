@@ -89,6 +89,19 @@ public class LevelApiEndpoints : EndpointGroup
         return ApiGameLevelResponse.FromOld(level, dataContext);
     }
     
+    [ApiV3Endpoint("levels/hash/{hash}"), Authentication(false)]
+    [DocSummary("Gets an individual level by the level's RootResource hash")]
+    [DocError(typeof(ApiNotFoundError), "The level cannot be found")]
+    public ApiResponse<ApiGameLevelResponse> GetLevelByRootResource(RequestContext context, GameDatabaseContext database,
+        IDataStore dataStore,
+        [DocSummary("The RootResource hash of the level")] string hash, DataContext dataContext)
+    {
+        GameLevel? level = database.GetLevelByRootResource(hash);
+        if (level == null) return ApiNotFoundError.LevelMissingError;
+        
+        return ApiGameLevelResponse.FromOld(level, dataContext);
+    }
+    
     [ApiV3Endpoint("levels/id/{id}", HttpMethods.Patch)]
     [DocSummary("Edits a level by the level's numerical ID")]
     [DocError(typeof(ApiNotFoundError), ApiNotFoundError.LevelMissingErrorWhen)]
