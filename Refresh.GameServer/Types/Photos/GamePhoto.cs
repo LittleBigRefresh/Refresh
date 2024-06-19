@@ -29,7 +29,53 @@ public partial class GamePhoto : IRealmObject, ISequentialId
     public GameAsset LargeAsset { get; set; }
     public string PlanHash { get; set; }
     
-    public IList<GamePhotoSubject> Subjects { get; }
+    [Ignored]
+    public IReadOnlyCollection<GamePhotoSubject> Subjects
+    {
+        get
+        {
+            List<GamePhotoSubject> subjects = new(4);
+            
+            if (this.Subject1DisplayName != null)
+                subjects.Add(new GamePhotoSubject(this.Subject1User, this.Subject1DisplayName, this.Subject1Bounds));
+            else return subjects;
+            
+            if (this.Subject2DisplayName != null)
+                subjects.Add(new GamePhotoSubject(this.Subject2User, this.Subject2DisplayName, this.Subject2Bounds));
+            else return subjects;
+            
+            if (this.Subject3DisplayName != null)
+                subjects.Add(new GamePhotoSubject(this.Subject3User, this.Subject3DisplayName, this.Subject3Bounds));
+            else return subjects;
+            
+            if (this.Subject4DisplayName != null)
+                subjects.Add(new GamePhotoSubject(this.Subject4User, this.Subject4DisplayName, this.Subject4Bounds));
+
+            return subjects;
+        }
+    }
+
+#nullable enable
+    #pragma warning disable CS8618 // realm forces us to have a non-nullable IList<float> so we have to have these shenanigans
+    
+    public GameUser? Subject1User { get; set; }
+    public string? Subject1DisplayName { get; set; }
+    public IList<float> Subject1Bounds { get; }
+    
+    public GameUser? Subject2User { get; set; }
+    public string? Subject2DisplayName { get; set; }
+    public IList<float> Subject2Bounds { get; }
+    
+    public GameUser? Subject3User { get; set; }
+    public string? Subject3DisplayName { get; set; }
+    public IList<float> Subject3Bounds { get; }
+    
+    public GameUser? Subject4User { get; set; }
+    public string? Subject4DisplayName { get; set; }
+    public IList<float> Subject4Bounds { get; }
+    
+    #pragma warning restore CS8618
+    #nullable disable
     
     [JsonIgnore] public int SequentialId
     {

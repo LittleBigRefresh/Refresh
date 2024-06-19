@@ -12,11 +12,9 @@ using Refresh.GameServer.Types.Contests;
 using Refresh.GameServer.Types.Levels.SkillRewards;
 using Refresh.GameServer.Types.Notifications;
 using Refresh.GameServer.Types.Relations;
-using Refresh.GameServer.Types.Report;
 using Refresh.GameServer.Types.Reviews;
 using Refresh.GameServer.Types.UserData.Leaderboard;
-using GamePhoto = Refresh.GameServer.Types.Photos.GamePhoto;
-using GamePhotoSubject = Refresh.GameServer.Types.Photos.GamePhotoSubject;
+using Refresh.GameServer.Types.Photos;
 
 namespace Refresh.GameServer.Database;
 
@@ -58,7 +56,6 @@ public class GameDatabaseProvider : RealmDatabaseProvider<GameDatabaseContext>
         typeof(GameAsset),
         typeof(GameNotification),
         typeof(GamePhoto),
-        typeof(GamePhotoSubject),
         typeof(GameIpVerificationRequest),
         typeof(GameAnnouncement),
         typeof(QueuedRegistration),

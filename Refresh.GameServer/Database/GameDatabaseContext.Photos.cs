@@ -32,9 +32,10 @@ public partial class GameDatabaseContext // Photos
             newPhoto.Level = this.GetLevelById(photo.Level.LevelId);
 
         float[] bounds = new float[SerializedPhotoSubject.FloatCount];
+
+        byte subjects = 0;
         foreach (SerializedPhotoSubject subject in photo.PhotoSubjects)
         {
-            GamePhotoSubject newSubject = new();
             GameUser? subjectUser = null;
             
             if (!string.IsNullOrEmpty(subject.Username)) 
@@ -42,11 +43,40 @@ public partial class GameDatabaseContext // Photos
             
             SerializedPhotoSubject.ParseBoundsList(subject.BoundsList, bounds);
 
-            newSubject.User = subjectUser;
-            newSubject.DisplayName = subject.DisplayName;
-            foreach (float coord in bounds) newSubject.Bounds.Add(coord);
-            
-            newPhoto.Subjects.Add(newSubject);
+            subjects++;
+            switch (subjects)
+            {
+                case 1:
+                    newPhoto.Subject1User = subjectUser;
+                    newPhoto.Subject1DisplayName = subject.DisplayName;
+                    foreach (float bound in bounds)
+                        newPhoto.Subject1Bounds.Add(bound);
+                    
+                    break;
+                case 2:
+                    newPhoto.Subject2User = subjectUser;
+                    newPhoto.Subject2DisplayName = subject.DisplayName;
+                    foreach (float bound in bounds)
+                        newPhoto.Subject2Bounds.Add(bound);
+                    
+                    break;
+                case 3:
+                    newPhoto.Subject3User = subjectUser;
+                    newPhoto.Subject3DisplayName = subject.DisplayName;
+                    foreach (float bound in bounds)
+                        newPhoto.Subject3Bounds.Add(bound);
+
+                    break;
+                case 4:
+                    newPhoto.Subject4User = subjectUser;
+                    newPhoto.Subject4DisplayName = subject.DisplayName;
+                    foreach (float bound in bounds)
+                        newPhoto.Subject4Bounds.Add(bound);
+
+                    break;
+                default:
+                    throw new InvalidOperationException($"Tried to process subject #{subjects}");
+            }
         }
 
         this.AddSequentialObject(newPhoto);
