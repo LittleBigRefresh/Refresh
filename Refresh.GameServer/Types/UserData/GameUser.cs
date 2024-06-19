@@ -64,8 +64,6 @@ public partial class GameUser : IRealmObject, IRateLimitUser
     
     #nullable disable
     public IList<GameComment> ProfileComments { get; }
-
-    public IList<GameIpVerificationRequest> IpVerificationRequests { get; }
     #nullable restore
 
     public string BetaPlanetsHash { get; set; } = "0";

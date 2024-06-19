@@ -46,5 +46,6 @@ public partial class Token : IRealmObject, IToken<GameUser>
     
     public string IpAddress { get; set; }
 
+    public ObjectId UserId { get; set; }
     public GameUser User { get; set; }
 }

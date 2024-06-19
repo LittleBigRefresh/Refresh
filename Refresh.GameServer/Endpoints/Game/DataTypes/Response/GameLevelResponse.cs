@@ -142,7 +142,7 @@ public class GameLevelResponse : IDataConvertableFrom<GameLevelResponse, GameLev
     public static GameLevelResponse? FromOld(GameLevel? old, DataContext dataContext)
     {
         if (old == null) return null;
-
+        
         GameLevelResponse response = new()
         {
             LevelId = old.LevelId,
