@@ -57,7 +57,7 @@ public class PublishEndpoints : EndpointGroup
         // If there is an existing level with this root hash, and this isn't an update request, block the upload
         if (existingLevel != null && body.LevelId != existingLevel.LevelId)
         {
-            database.AddPublishFailNotification("You may not re-upload another user's level.", body.ToGameLevel(user), user);
+            database.AddPublishFailNotification("The level you tried to publish has already been uploaded by another user.", body.ToGameLevel(user), user);
  
             return false;
         }
