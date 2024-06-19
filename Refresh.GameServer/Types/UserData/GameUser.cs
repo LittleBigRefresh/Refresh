@@ -55,7 +55,9 @@ public partial class GameUser : IRealmObject, IRateLimitUser
     public int FilesizeQuotaUsage { get; set; }
 
     public string Description { get; set; } = "";
-    public GameLocation Location { get; set; } = GameLocation.Zero;
+
+    public int LocationX { get; set; }
+    public int LocationY { get; set; }
     
     public DateTimeOffset JoinDate { get; set; }
     public UserPins Pins { get; set; } = new();
@@ -102,11 +104,7 @@ public partial class GameUser : IRealmObject, IRateLimitUser
         get => (Visibility)this._LevelVisibility;
         set => this._LevelVisibility = (int)value;
     }
-    
-    /// <summary>
-    /// If `true`, turn all grief reports into photo uploads
-    /// </summary>
-    public bool RedirectGriefReportsToPhotos { get; set; }
+
     /// <summary>
     /// If `true`, unescape XML tags sent to /filter
     /// </summary>

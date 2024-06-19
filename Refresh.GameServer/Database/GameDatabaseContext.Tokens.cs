@@ -56,10 +56,10 @@ public partial class GameDatabaseContext // Tokens
             this.CreateUserFirstLoginEvent(user, user);
         }
 
-        this._realm.Write(() =>
+        this.Write(() =>
         {
             user.LastLoginDate = this._time.Now;
-            this._realm.Add(token);
+            this.Tokens.Add(token);
         });
         
         return token;
@@ -69,7 +69,7 @@ public partial class GameDatabaseContext // Tokens
     [ContractAnnotation("=> canbenull")]
     public Token? GetTokenFromTokenData(string tokenData, TokenType type)
     {
-        Token? token = this._realm.All<Token>()
+        Token? token = this.Tokens
             .FirstOrDefault(t => t.TokenData == tokenData && t._TokenType == (int)type);
 
         if (token == null) return null;
@@ -91,7 +91,7 @@ public partial class GameDatabaseContext // Tokens
 
     public void SetUserPassword(GameUser user, string? passwordBcrypt, bool shouldReset = false)
     {
-        this._realm.Write(() =>
+        this.Write(() =>
         {
             user.PasswordBcrypt = passwordBcrypt;
             user.ShouldResetPassword = shouldReset;
@@ -102,7 +102,7 @@ public partial class GameDatabaseContext // Tokens
     {
         if (tokenData == null) return false;
 
-        Token? token = this._realm.All<Token>().FirstOrDefault(t => t.TokenData == tokenData && t._TokenType == (int)type);
+        Token? token = this.Tokens.FirstOrDefault(t => t.TokenData == tokenData && t._TokenType == (int)type);
         if (token == null) return false;
 
         this.RevokeToken(token);
@@ -112,32 +112,32 @@ public partial class GameDatabaseContext // Tokens
 
     public void RevokeToken(Token token)
     {
-        this._realm.Write(() =>
+        this.Write(() =>
         {
-            this._realm.Remove(token);
+            this.Tokens.Remove(token);
         });
     }
 
     public void RevokeAllTokensForUser(GameUser user)
     {
-        this._realm.Write(() =>
+        this.Write(() =>
         {
-            this._realm.RemoveRange(this._realm.All<Token>().Where(t => t.User == user));
+            this.Tokens.RemoveRange(this.Tokens.Where(t => t.User == user));
         });
     }
     
     public void RevokeAllTokensForUser(GameUser user, TokenType type)
     {
-        this._realm.Write(() =>
+        this.Write(() =>
         {
-            this._realm.RemoveRange(this._realm.All<Token>().Where(t => t.User == user && t._TokenType == (int)type));
+            this.Tokens.RemoveRange(this.Tokens.Where(t => t.User == user && t._TokenType == (int)type));
         });
     }
     
     public bool IsTokenExpired(Token token) => token.ExpiresAt < this._time.Now;
     
     public DatabaseList<Token> GetAllTokens()
-        => new(this._realm.All<Token>());
+        => new(this.Tokens);
 
     public void AddIpVerificationRequest(GameUser user, string ipAddress)
     {
@@ -148,29 +148,33 @@ public partial class GameDatabaseContext // Tokens
             CreatedAt = this._time.Now,
         };
 
-        this._realm.Write(() =>
+        this.Write(() =>
         {
-            this._realm.Add(request);
+            this.GameIpVerificationRequests.Add(request);
         });
     }
 
     public void SetApprovedIp(GameUser user, string ipAddress)
     {
-        this._realm.Write(() =>
+        this.Write(() =>
         {
             user.CurrentVerifiedIp = ipAddress;
-            this._realm.RemoveRange(this._realm.All<GameIpVerificationRequest>().Where(r => r.User == user));
+            this.GameIpVerificationRequests.RemoveRange(this.GameIpVerificationRequests.Where(r => r.User == user));
         });
     }
 
     public void DenyIpVerificationRequest(GameUser user, string ipAddress)
     {
-        this._realm.Write(() =>
+        IEnumerable<GameIpVerificationRequest> requests = this.GameIpVerificationRequests.Where(r => r.IpAddress == ipAddress && r.User == user);
+        this.Write(() =>
         {
-            this._realm.RemoveRange(this._realm.All<GameIpVerificationRequest>().Where(r => r.User == user && r.IpAddress == ipAddress));
+            foreach (GameIpVerificationRequest request in requests)
+            {
+                this.GameIpVerificationRequests.Remove(request);
+            }
         });
     }
 
     public DatabaseList<GameIpVerificationRequest> GetIpVerificationRequestsForUser(GameUser user, int count, int skip) 
-        => new(this._realm.All<GameIpVerificationRequest>().Where(r => r.User == user), skip, count);
+        => new(this.GameIpVerificationRequests.Where(r => r.User == user), skip, count);
 }

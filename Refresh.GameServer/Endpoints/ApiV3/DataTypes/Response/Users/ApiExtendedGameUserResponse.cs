@@ -29,8 +29,7 @@ public class ApiExtendedGameUserResponse : IApiResponse, IDataConvertableFrom<Ap
     
     public required bool RpcnAuthenticationAllowed { get; set; }
     public required bool PsnAuthenticationAllowed { get; set; }
-    
-    public required bool RedirectGriefReportsToPhotos { get; set; } 
+
     public required bool UnescapeXmlSequences { get; set; } 
     
     public required string? EmailAddress { get; set; }
@@ -57,7 +56,7 @@ public class ApiExtendedGameUserResponse : IApiResponse, IDataConvertableFrom<Ap
             Username = user.Username,
             IconHash = dataContext.Database.GetAssetFromHash(user.IconHash)?.GetAsIcon(TokenGame.Website, dataContext) ?? user.IconHash,
             Description = user.Description,
-            Location = ApiGameLocationResponse.FromGameLocation(user.Location)!,
+            Location = ApiGameLocationResponse.FromLocation(user.LocationX, user.LocationY)!,
             JoinDate = user.JoinDate,
             LastLoginDate = user.LastLoginDate,
             AllowIpAuthentication = user.AllowIpAuthentication,
@@ -69,7 +68,6 @@ public class ApiExtendedGameUserResponse : IApiResponse, IDataConvertableFrom<Ap
             EmailAddress = user.EmailAddress,
             EmailAddressVerified = user.EmailAddressVerified,
             ShouldResetPassword = user.ShouldResetPassword,
-            RedirectGriefReportsToPhotos = user.RedirectGriefReportsToPhotos,
             UnescapeXmlSequences = user.UnescapeXmlSequences,
             FilesizeQuotaUsage = user.FilesizeQuotaUsage,
             Statistics = ApiGameUserStatisticsResponse.FromOld(user, dataContext)!,

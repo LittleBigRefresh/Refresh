@@ -12,6 +12,9 @@ namespace RefreshTests.GameServer.Tests.Reporting;
 
 public class ReportingEndpointsTests : GameServerTest
 {
+    private const string TEST_ASSET_HASH = "0ec63b140374ba704a58fa0c743cb357683313dd";
+    private static readonly byte[] TestAsset = ResourceHelper.ReadResource("RefreshTests.GameServer.Resources.1x1.png", Assembly.GetExecutingAssembly());
+    
     [Test]
     public void UploadReport()
     {
@@ -20,6 +23,10 @@ public class ReportingEndpointsTests : GameServerTest
         GameLevel level = context.CreateLevel(user);
 
         using HttpClient client = context.GetAuthenticatedClient(TokenType.Game, TokenGame.LittleBigPlanet1, TokenPlatform.PS3, user);
+        
+        //Upload our """photo"""
+        HttpResponseMessage message = client.PostAsync($"/lbp/upload/{TEST_ASSET_HASH}", new ReadOnlyMemoryContent(TestAsset)).Result;
+        Assert.That(message.StatusCode, Is.EqualTo(OK));
 
         GameReport report = new()
         {
@@ -42,7 +49,7 @@ public class ReportingEndpointsTests : GameServerTest
             LevelId = level.LevelId,
             Description = "This is a description, sent by LBP3",
             GriefStateHash = null,
-            JpegHash = null,
+            JpegHash = TEST_ASSET_HASH,
             Players = new Player[]
             {
                 new()
@@ -76,6 +83,12 @@ public class ReportingEndpointsTests : GameServerTest
         
         HttpResponseMessage response = client.PostAsync("/lbp/grief", new StringContent(report.AsXML())).Result;
         Assert.That(response.StatusCode, Is.EqualTo(OK));
+
+        context.Database.Refresh();
+
+        DatabaseList<GamePhoto> photos = context.Database.GetRecentPhotos(10, 0);
+        Assert.That(photos.TotalItems, Is.EqualTo(1));
+        Assert.That(photos.Items.First().LevelId, Is.EqualTo(report.LevelId));
     }
     
     [Test]
@@ -85,14 +98,24 @@ public class ReportingEndpointsTests : GameServerTest
         GameUser user = context.CreateUser();
 
         using HttpClient client = context.GetAuthenticatedClient(TokenType.Game, TokenGame.LittleBigPlanet1, TokenPlatform.PS3, user);
+        
+        //Upload our """photo"""
+        HttpResponseMessage message = client.PostAsync($"/lbp/upload/{TEST_ASSET_HASH}", new ReadOnlyMemoryContent(TestAsset)).Result;
+        Assert.That(message.StatusCode, Is.EqualTo(OK));
 
         GameReport report = new()
         {
             LevelId = int.MaxValue,
+            JpegHash = TEST_ASSET_HASH,
         };
         
         HttpResponseMessage response = client.PostAsync("/lbp/grief", new StringContent(report.AsXML())).Result;
         Assert.That(response.StatusCode, Is.EqualTo(OK));
+        
+        context.Database.Refresh();
+
+        DatabaseList<GamePhoto> photos = context.Database.GetRecentPhotos(10, 0);
+        Assert.That(photos.TotalItems, Is.EqualTo(1));
     }
     
     [TestCase(true)]
@@ -105,30 +128,40 @@ public class ReportingEndpointsTests : GameServerTest
         using HttpClient client = context.GetAuthenticatedClient(TokenType.Game, TokenGame.LittleBigPlanet1, TokenPlatform.PS3, user);
         if(psp) client.DefaultRequestHeaders.UserAgent.TryParseAdd("LBPPSP CLIENT");
         
+        //Upload our """photo"""
+        HttpResponseMessage message = client.PostAsync($"/lbp/upload/{TEST_ASSET_HASH}", new ReadOnlyMemoryContent(TestAsset)).Result;
+        Assert.That(message.StatusCode, Is.EqualTo(OK));
+        
         GameReport report = new()
         {
             LevelId = 0,
+            JpegHash = TEST_ASSET_HASH,
             Players = new Player[]
             {
                 new()
                 {
                     Username = "hee",
+                    Rectangle = new Rect(),
                 },
                 new()
                 {
                     Username = "haw",
+                    Rectangle = new Rect(),
                 },
                 new()
                 {
                     Username = "ham",
+                    Rectangle = new Rect(),
                 },
                 new()
                 {
                     Username = "burg",
+                    Rectangle = new Rect(),
                 },
                 new()
                 {
                     Username = "er",
+                    Rectangle = new Rect(),
                 },
             },
         };
@@ -147,9 +180,14 @@ public class ReportingEndpointsTests : GameServerTest
         using HttpClient client = context.GetAuthenticatedClient(TokenType.Game, TokenGame.LittleBigPlanet1, TokenPlatform.PS3, user);
         if(psp) client.DefaultRequestHeaders.UserAgent.TryParseAdd("LBPPSP CLIENT");
         
+        //Upload our """photo"""
+        HttpResponseMessage message = client.PostAsync($"/lbp/upload/{TEST_ASSET_HASH}", new ReadOnlyMemoryContent(TestAsset)).Result;
+        Assert.That(message.StatusCode, Is.EqualTo(OK));
+        
         GameReport report = new()
         {
             LevelId = 0,
+            JpegHash = TEST_ASSET_HASH,
             ScreenElements = new ScreenElements
             {
                 Player = new Player[]
@@ -157,22 +195,27 @@ public class ReportingEndpointsTests : GameServerTest
                     new()
                     {
                         Username = "hee",
+                        Rectangle = new Rect(),
                     },
                     new()
                     {
                         Username = "haw",
+                        Rectangle = new Rect(),
                     },
                     new()
                     {
                         Username = "ham",
+                        Rectangle = new Rect(),
                     },
                     new()
                     {
                         Username = "burg",
+                        Rectangle = new Rect(),
                     },
                     new()
                     {
                         Username = "er",
+                        Rectangle = new Rect(),
                     },
                 },
             },
@@ -181,9 +224,6 @@ public class ReportingEndpointsTests : GameServerTest
         HttpResponseMessage response = client.PostAsync("/lbp/grief", new StringContent(report.AsXML())).Result;
         Assert.That(response.StatusCode, Is.EqualTo(psp ? OK : BadRequest));
     }
-
-    private const string TEST_ASSET_HASH = "0ec63b140374ba704a58fa0c743cb357683313dd";
-    private static readonly byte[] TestAsset = ResourceHelper.ReadResource("RefreshTests.GameServer.Resources.1x1.png", Assembly.GetExecutingAssembly());
     
     [TestCase(TokenGame.LittleBigPlanet1)]
     [TestCase(TokenGame.LittleBigPlanet2)]
@@ -195,10 +235,6 @@ public class ReportingEndpointsTests : GameServerTest
         using TestContext context = this.GetServer();
         GameUser user = context.CreateUser();
         GameLevel level = context.CreateLevel(user);
-        
-        //Enable the grief report re-direction
-        context.Database.SetUserGriefReportRedirection(user, true);
-        context.Database.Refresh();
 
         using HttpClient client = context.GetAuthenticatedClient(TokenType.Game, game, TokenPlatform.PS3, user);
 
@@ -246,10 +282,6 @@ public class ReportingEndpointsTests : GameServerTest
         using TestContext context = this.GetServer();
         GameUser user = context.CreateUser();
         GameLevel level = context.Database.GetStoryLevelById(100000);
-        
-        //Enable the grief report re-direction
-        context.Database.SetUserGriefReportRedirection(user, true);
-        context.Database.Refresh();
 
         using HttpClient client = context.GetAuthenticatedClient(TokenType.Game, game, TokenPlatform.PS3, user);
 
@@ -292,10 +324,6 @@ public class ReportingEndpointsTests : GameServerTest
     {
         using TestContext context = this.GetServer();
         GameUser user = context.CreateUser();
-        
-        //Enable the grief report re-direction
-        context.Database.SetUserGriefReportRedirection(user, true);
-        context.Database.Refresh();
 
         using HttpClient client = context.GetAuthenticatedClient(TokenType.Game, TokenGame.Website, TokenPlatform.PS3, user);
 

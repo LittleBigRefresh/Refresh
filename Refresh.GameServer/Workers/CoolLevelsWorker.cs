@@ -46,10 +46,10 @@ public class CoolLevelsWorker : IWorker
                 Log(logger, LogLevel.Trace, "Calculating score for '{0}' ({1})", level.Title, level.LevelId);
                 float decayMultiplier = CalculateLevelDecayMultiplier(logger, now, level);
                 
-            // Calculate positive & negative score separately, so we don't run into issues with
+                // Calculate positive & negative score separately so we don't run into issues with
                 // the multiplier having an opposite effect with the negative score as time passes
-            float positiveScore = CalculatePositiveScore(logger, level, database);
-            float negativeScore = CalculateNegativeScore(logger, level, database);
+                float positiveScore = CalculatePositiveScore(logger, level, database);
+                float negativeScore = CalculateNegativeScore(logger, level, database);
                 
                 // Increase to tweak how little negative score gets affected by decay
                 const int negativeScoreDecayMultiplier = 2;

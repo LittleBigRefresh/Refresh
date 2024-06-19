@@ -59,7 +59,7 @@ public class GameUserResponse : IDataConvertableFrom<GameUserResponse, GameUser>
         GameUserResponse response = new()
         {
             Description = old.Description,
-            Location = old.Location,
+            Location = new GameLocation(old.LocationX, old.LocationY),
             PlanetsHash = "0",
             
             Handle = SerializedUserHandle.FromUser(old, dataContext),

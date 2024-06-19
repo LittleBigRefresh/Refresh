@@ -415,8 +415,6 @@ public class ScoreLeaderboardTests : GameServerTest
 
         for (int i = 0; i < users.Count; i++)
         {
-            // GameSubmittedScore? lastBestScore = level
-                // .Scores.OrderByDescending(s => s.Score).FirstOrDefault();
             GameSubmittedScore? lastBestScore = context.Database.GetTopScoresForLevel(level, 1, 0, 1, true).Items.FirstOrDefault();
             
             GameUser user = users[i];

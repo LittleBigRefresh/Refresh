@@ -7,7 +7,6 @@ using Refresh.GameServer.Endpoints.ApiV3.DataTypes.Request;
 using Refresh.GameServer.Endpoints.Game.Levels.FilterSettings;
 using Refresh.GameServer.Extensions;
 using Refresh.GameServer.Services;
-using Refresh.GameServer.Types;
 using Refresh.GameServer.Types.Activity;
 using Refresh.GameServer.Types.Levels;
 using Refresh.GameServer.Types.Matching;
@@ -33,7 +32,7 @@ public partial class GameDatabaseContext // Levels
 
     public GameLevel GetStoryLevelById(int id)
     {
-        GameLevel? level = this._realm.All<GameLevel>().FirstOrDefault(l => l.StoryId == id);
+        GameLevel? level = this.GameLevels.FirstOrDefault(l => l.StoryId == id);
 
         if (level != null) return level;
         
@@ -42,7 +41,6 @@ public partial class GameDatabaseContext // Levels
         {
             Title = $"Story level #{id}",
             Publisher = null,
-            Location = GameLocation.Zero,
             Source = GameLevelSource.Story,
             StoryId = id,
         };
@@ -82,7 +80,7 @@ public partial class GameDatabaseContext // Levels
         // Now newLevel is set up to replace oldLevel.
         // If information is lost here, then that's probably a bug.
         // Update the level's properties in the database
-        this._realm.Write(() =>
+        this.Write(() =>
         {
             PropertyInfo[] userProps = typeof(GameLevel).GetProperties();
             foreach (PropertyInfo prop in userProps)
@@ -97,7 +95,7 @@ public partial class GameDatabaseContext // Levels
 
     public GameLevel UpdateLevel(ApiEditLevelRequest body, GameLevel level)
     {
-        this._realm.Write(() =>
+        this.Write(() =>
         {
             PropertyInfo[] userProps = body.GetType().GetProperties();
             foreach (PropertyInfo prop in userProps)
@@ -121,54 +119,54 @@ public partial class GameDatabaseContext // Levels
 
     public void DeleteLevel(GameLevel level)
     {
-        this._realm.Write(() =>
+        this.Write(() =>
         {
-            IQueryable<Event> levelEvents = this._realm.All<Event>()
+            IQueryable<Event> levelEvents = this.Events
                 .Where(e => e._StoredDataType == (int)EventDataType.Level && e.StoredSequentialId == level.LevelId);
             
-            this._realm.RemoveRange(levelEvents);
+            this.Events.RemoveRange(levelEvents);
 
             #region This is so terrible it needs to be hidden away
 
-            IQueryable<FavouriteLevelRelation> favouriteLevelRelations = this._realm.All<FavouriteLevelRelation>().Where(r => r.Level == level);
-            this._realm.RemoveRange(favouriteLevelRelations);
+            IQueryable<FavouriteLevelRelation> favouriteLevelRelations = this.FavouriteLevelRelations.Where(r => r.Level == level);
+            this.FavouriteLevelRelations.RemoveRange(favouriteLevelRelations);
             
-            IQueryable<PlayLevelRelation> playLevelRelations = this._realm.All<PlayLevelRelation>().Where(r => r.Level == level);
-            this._realm.RemoveRange(playLevelRelations);
+            IQueryable<PlayLevelRelation> playLevelRelations = this.PlayLevelRelations.Where(r => r.Level == level);
+            this.PlayLevelRelations.RemoveRange(playLevelRelations);
             
-            IQueryable<QueueLevelRelation> queueLevelRelations = this._realm.All<QueueLevelRelation>().Where(r => r.Level == level);
-            this._realm.RemoveRange(queueLevelRelations);
+            IQueryable<QueueLevelRelation> queueLevelRelations = this.QueueLevelRelations.Where(r => r.Level == level);
+            this.QueueLevelRelations.RemoveRange(queueLevelRelations);
             
-            IQueryable<RateLevelRelation> rateLevelRelations = this._realm.All<RateLevelRelation>().Where(r => r.Level == level);
-            this._realm.RemoveRange(rateLevelRelations);
+            IQueryable<RateLevelRelation> rateLevelRelations = this.RateLevelRelations.Where(r => r.Level == level);
+            this.RateLevelRelations.RemoveRange(rateLevelRelations);
             
-            IQueryable<UniquePlayLevelRelation> uniquePlayLevelRelations = this._realm.All<UniquePlayLevelRelation>().Where(r => r.Level == level);
-            this._realm.RemoveRange(uniquePlayLevelRelations);
+            IQueryable<UniquePlayLevelRelation> uniquePlayLevelRelations = this.UniquePlayLevelRelations.Where(r => r.Level == level);
+            this.UniquePlayLevelRelations.RemoveRange(uniquePlayLevelRelations);
             
-            IQueryable<GameSubmittedScore> scores = this._realm.All<GameSubmittedScore>().Where(r => r.Level == level);
+            IQueryable<GameSubmittedScore> scores = this.GameSubmittedScores.Where(r => r.Level == level);
             
             foreach (GameSubmittedScore score in scores)
             {
-                IQueryable<Event> scoreEvents = this._realm.All<Event>()
+                IQueryable<Event> scoreEvents = this.Events
                     .Where(e => e._StoredDataType == (int)EventDataType.Score && e.StoredObjectId == score.ScoreId);
-                this._realm.RemoveRange(scoreEvents);
+                this.Events.RemoveRange(scoreEvents);
             }
             
-            this._realm.RemoveRange(scores);
+            this.GameSubmittedScores.RemoveRange(scores);
 
             #endregion
             
         });
 
         //do in separate transaction in a vain attempt to fix Weirdness with favourite level relations having missing levels
-        this._realm.Write(() =>
+        this.Write(() =>
         {
-            this._realm.Remove(level);
+            this.GameLevels.Remove(level);
         });
     }
 
     private IQueryable<GameLevel> GetLevelsByGameVersion(TokenGame gameVersion) 
-        => this._realm.All<GameLevel>().Where(l => l._Source == (int)GameLevelSource.User).FilterByGameVersion(gameVersion);
+        => this.GameLevels.Where(l => l._Source == (int)GameLevelSource.User).FilterByGameVersion(gameVersion);
 
     [Pure]
     public DatabaseList<GameLevel> GetLevelsByUser(GameUser user, int count, int skip, LevelFilterSettings levelFilterSettings, GameUser? accessor)
@@ -192,11 +190,11 @@ public partial class GameDatabaseContext // Levels
         return new DatabaseList<GameLevel>(this.GetLevelsByGameVersion(levelFilterSettings.GameVersion).FilterByLevelFilterSettings(accessor, levelFilterSettings).Where(l => l.Publisher == user), skip, count);
     }
     
-    public int GetTotalLevelsByUser(GameUser user) => this._realm.All<GameLevel>().Count(l => l.Publisher == user);
+    public int GetTotalLevelsByUser(GameUser user) => this.GameLevels.Count(l => l.Publisher == user);
     
     [Pure]
     public DatabaseList<GameLevel> GetUserLevelsChunk(int skip, int count)
-        => new(this._realm.All<GameLevel>().Where(l => l._Source == (int)GameLevelSource.User), skip, count);
+        => new(this.GameLevels.Where(l => l._Source == (int)GameLevelSource.User), skip, count);
 
     [Pure]
     public DatabaseList<GameLevel> GetNewestLevels(int count, int skip, GameUser? user, LevelFilterSettings levelFilterSettings) =>
@@ -219,7 +217,7 @@ public partial class GameDatabaseContext // Levels
     [Pure]
     public DatabaseList<GameLevel> GetMostHeartedLevels(int count, int skip, GameUser? user, LevelFilterSettings levelFilterSettings)
     {
-        IQueryable<FavouriteLevelRelation> favourites = this._realm.All<FavouriteLevelRelation>();
+        IQueryable<FavouriteLevelRelation> favourites = this.FavouriteLevelRelations;
         
         IEnumerable<GameLevel> mostHeartedLevels = favourites
             .AsEnumerable()
@@ -238,7 +236,7 @@ public partial class GameDatabaseContext // Levels
     [Pure]
     public DatabaseList<GameLevel> GetMostUniquelyPlayedLevels(int count, int skip, GameUser? user, LevelFilterSettings levelFilterSettings)
     {
-        IQueryable<UniquePlayLevelRelation> uniquePlays = this._realm.All<UniquePlayLevelRelation>();
+        IQueryable<UniquePlayLevelRelation> uniquePlays = this.UniquePlayLevelRelations;
         
         IEnumerable<GameLevel> mostPlayed = uniquePlays
             .AsEnumerable()
@@ -257,7 +255,7 @@ public partial class GameDatabaseContext // Levels
     [Pure]
     public DatabaseList<GameLevel> GetMostReplayedLevels(int count, int skip, GameUser? user, LevelFilterSettings levelFilterSettings)
     {
-        IQueryable<PlayLevelRelation> plays = this._realm.All<PlayLevelRelation>();
+        IQueryable<PlayLevelRelation> plays = this.PlayLevelRelations;
         
         IEnumerable<GameLevel> mostPlayed = plays
             .AsEnumerable()
@@ -275,7 +273,7 @@ public partial class GameDatabaseContext // Levels
     [Pure]
     public DatabaseList<GameLevel> GetHighestRatedLevels(int count, int skip, GameUser? user, LevelFilterSettings levelFilterSettings)
     {
-        IQueryable<RateLevelRelation> ratings = this._realm.All<RateLevelRelation>();
+        IQueryable<RateLevelRelation> ratings = this.RateLevelRelations;
         
         IEnumerable<GameLevel> highestRated = ratings
             .AsEnumerable()
@@ -300,7 +298,7 @@ public partial class GameDatabaseContext // Levels
 
     [Pure]
     public DatabaseList<GameLevel> GetDeveloperLevels(int count, int skip, LevelFilterSettings levelFilterSettings) =>
-        new(this._realm.All<GameLevel>()
+        new(this.GameLevels
             .Where(l => l._Source == (int)GameLevelSource.Story)
             .FilterByLevelFilterSettings(null, levelFilterSettings)
             .OrderByDescending(l => l.Title), skip, count);
@@ -360,21 +358,21 @@ public partial class GameDatabaseContext // Levels
     }
 
     [Pure]
-    public int GetTotalLevelCount(TokenGame game) => this._realm.All<GameLevel>().FilterByGameVersion(game).Count(l => l._Source == (int)GameLevelSource.User);
+    public int GetTotalLevelCount(TokenGame game) => this.GameLevels.FilterByGameVersion(game).Count(l => l._Source == (int)GameLevelSource.User);
     
     [Pure]
-    public int GetTotalLevelCount() => this._realm.All<GameLevel>().Count(l => l._Source == (int)GameLevelSource.User);
+    public int GetTotalLevelCount() => this.GameLevels.Count(l => l._Source == (int)GameLevelSource.User);
     
     public int GetTotalLevelsPublishedByUser(GameUser user)
-        => this._realm.All<GameLevel>()
+        => this.GameLevels
             .Count(r => r.Publisher == user);
     
     public int GetTotalLevelsPublishedByUser(GameUser user, TokenGame game)
-        => this._realm.All<GameLevel>()
-            .Count(r => r._GameVersion == (int)game);
+        => this.GameLevels
+            .Count(r => r.Publisher == user && r._GameVersion == (int)game);
     
     [Pure]
-    public int GetTotalTeamPickCount(TokenGame game) => this._realm.All<GameLevel>().FilterByGameVersion(game).Count(l => l.TeamPicked);
+    public int GetTotalTeamPickCount(TokenGame game) => this.GameLevels.FilterByGameVersion(game).Count(l => l.TeamPicked);
 
     [Pure]
     public GameLevel? GetLevelByIdAndType(string slotType, int id)
@@ -392,13 +390,16 @@ public partial class GameDatabaseContext // Levels
                 return null;
         }
     }
+
+    public GameLevel? GetLevelByRootResource(string rootResource) =>
+        this.GameLevels.FirstOrDefault(level => level.RootResource == rootResource);
     
     [Pure]
-    public GameLevel? GetLevelById(int id) => this._realm.All<GameLevel>().FirstOrDefault(l => l.LevelId == id);
+    public GameLevel? GetLevelById(int id) => this.GameLevels.FirstOrDefault(l => l.LevelId == id);
 
     private void SetLevelPickStatus(GameLevel level, bool status)
     {
-        this._realm.Write(() =>
+        this.Write(() =>
         {
             level.TeamPicked = status;
         });
@@ -409,7 +410,7 @@ public partial class GameDatabaseContext // Levels
 
     public void SetLevelScores(Dictionary<GameLevel, float> scoresToSet)
     {
-        this._realm.Write(() =>
+        this.Write(() =>
         {
             foreach ((GameLevel level, float score) in scoresToSet)
             {

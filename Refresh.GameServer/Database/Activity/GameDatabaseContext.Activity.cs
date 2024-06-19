@@ -28,8 +28,8 @@ public partial class GameDatabaseContext // Activity
                 userFriends.Contains(e.User.UserId) ||
                 userFriends.Contains(e.StoredObjectId) ||
                 this.GetLevelById(e.StoredSequentialId ?? int.MaxValue)?.Publisher?.UserId == parameters.User.UserId ||
-                e.EventType == EventType.Level_TeamPick ||
-                e.EventType == EventType.User_FirstLogin
+                e.EventType == EventType.LevelTeamPick ||
+                e.EventType == EventType.UserFirstLogin
             );
         }
         
@@ -41,7 +41,7 @@ public partial class GameDatabaseContext // Activity
         if (parameters.Timestamp == 0) 
             parameters.Timestamp = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
         
-        IEnumerable<Event> query = this._realm.All<Event>()
+        IEnumerable<Event> query = this.Events
             .Where(e => e.Timestamp < parameters.Timestamp && e.Timestamp >= parameters.EndTimestamp)
             .AsEnumerable();
 
@@ -91,5 +91,5 @@ public partial class GameDatabaseContext // Activity
             .OrderByDescending(e => e.Timestamp), parameters.Skip, parameters.Count);
     }
 
-    public int GetTotalEventCount() => this._realm.All<Event>().Count();
+    public int GetTotalEventCount() => this.Events.Count();
 }

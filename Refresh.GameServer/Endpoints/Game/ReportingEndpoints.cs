@@ -42,48 +42,21 @@ public class ReportingEndpoints : EndpointGroup
                 return BadRequest;
         }
 
-        if (user.RedirectGriefReportsToPhotos)
-        {
-            List<SerializedPhotoSubject> subjects = new();
-            if (body.Players != null)
-                subjects.AddRange(body.Players.Select(player => new SerializedPhotoSubject
-                {
-                    Username = player.Username,
-                    DisplayName = player.Username,
-                    // ReSharper disable PossibleLossOfFraction YES I KNOW THESE ARE INTEGERS
-                    BoundsList = player.Rectangle == null 
-                        ? null : $"{(float)(player.Rectangle.Left - imageSize.Width / 2) / (imageSize.Width / 2)}," +
-                                 $"{(float)(player.Rectangle.Top - imageSize.Height / 2) / (imageSize.Height / 2)}," +
-                                 $"{(float)(player.Rectangle.Right - imageSize.Width / 2) / (imageSize.Width / 2)}," +
-                                 $"{(float)(player.Rectangle.Bottom - imageSize.Height / 2) / (imageSize.Height / 2)}",
-                }));
-
-            string hash = body.JpegHash;
-            
-            database.UploadPhoto(new SerializedPhoto
+        List<SerializedPhotoSubject> subjects = new();
+        if (body.Players != null)
+            subjects.AddRange(body.Players.Select(player => new SerializedPhotoSubject
             {
-                Timestamp = time.TimestampSeconds,
-                AuthorName = user.Username,
-                SmallHash = hash,
-                MediumHash = hash,
-                LargeHash = hash,
-                PlanHash = "0",
-                //If the level id is 0 or we couldn't find the level null, dont fill out the `Level` field
-                Level = body.LevelId == 0 || level == null ? null : new SerializedPhotoLevel
-                {
-                    LevelId = level.LevelId,
-                    Title = level.Title,
-                    Type = level.Source switch {
-                        GameLevelSource.User => "user",
-                        GameLevelSource.Story => "developer",
-                        _ => throw new ArgumentOutOfRangeException(),
-                    },
-                },
-                PhotoSubjects = subjects,
-            }, user);
-            
-            return OK;
-        }
+                Username = player.Username,
+                DisplayName = player.Username,
+                // ReSharper disable PossibleLossOfFraction YES I KNOW THESE ARE INTEGERS
+                BoundsList = player.Rectangle == null 
+                    ? null : $"{(float)(player.Rectangle.Left - imageSize.Width / 2) / (imageSize.Width / 2)}," +
+                             $"{(float)(player.Rectangle.Top - imageSize.Height / 2) / (imageSize.Height / 2)}," +
+                             $"{(float)(player.Rectangle.Right - imageSize.Width / 2) / (imageSize.Width / 2)}," +
+                             $"{(float)(player.Rectangle.Bottom - imageSize.Height / 2) / (imageSize.Height / 2)}",
+            }));
+
+        string hash = body.JpegHash;
         
         //If the level is specified but its invalid, set it to 0, to indicate the level is unknown
         //This case is hit when someone makes a grief report from a non-existent level, which we allow
@@ -94,7 +67,29 @@ public class ReportingEndpoints : EndpointGroup
         if (body.Players is { Length: > 4 } || body.ScreenElements is { Player.Length: > 4 })
             //Return OK on PSP, since if we dont, it will error when trying to access the community moon and soft-lock the save file
             return context.IsPSP() ? OK : BadRequest;
-        
+            
+        database.UploadPhoto(new SerializedPhoto
+        {
+            Timestamp = time.TimestampSeconds,
+            AuthorName = user.Username,
+            SmallHash = hash,
+            MediumHash = hash,
+            LargeHash = hash,
+            PlanHash = "0",
+            //If the level id is 0 or we couldn't find the level null, dont fill out the `Level` field
+            Level = body.LevelId == 0 || level == null ? null : new SerializedPhotoLevel
+            {
+                LevelId = level.LevelId,
+                Title = level.Title,
+                Type = level.Source switch {
+                    GameLevelSource.User => "user",
+                    GameLevelSource.Story => "developer",
+                    _ => throw new ArgumentOutOfRangeException(),
+                },
+            },
+            PhotoSubjects = subjects,
+        }, user);
+            
         return OK;
     }
 }

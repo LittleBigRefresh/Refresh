@@ -8,7 +8,7 @@ namespace Refresh.GameServer.Database;
 public partial class GameDatabaseContext // Comments
 {
     public GameComment? GetCommentById(int id) =>
-        this._realm.All<GameComment>().FirstOrDefault(c => c.SequentialId == id);
+        this.GameComments.FirstOrDefault(c => c.SequentialId == id);
     public GameComment PostCommentToProfile(GameUser profile, GameUser author, string content)
     {
         GameComment comment = new()
@@ -34,7 +34,7 @@ public partial class GameDatabaseContext // Comments
 
     public void DeleteProfileComment(GameComment comment, GameUser profile)
     {
-        this._realm.Write(() =>
+        this.Write(() =>
         {
             profile.ProfileComments.Remove(comment);
         });
@@ -65,7 +65,7 @@ public partial class GameDatabaseContext // Comments
 
     public void DeleteLevelComment(GameComment comment, GameLevel level)
     {
-        this._realm.Write(() =>
+        this.Write(() =>
         {
             level.LevelComments.Remove(comment);
         });

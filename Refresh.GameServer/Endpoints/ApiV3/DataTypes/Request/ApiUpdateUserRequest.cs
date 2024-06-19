@@ -11,8 +11,7 @@ public class ApiUpdateUserRequest
     
     public bool? PsnAuthenticationAllowed { get; set; }
     public bool? RpcnAuthenticationAllowed { get; set; }
-    
-    public bool? RedirectGriefReportsToPhotos { get; set; }
+
     public bool? UnescapeXmlSequences { get; set; }
     
     public string? EmailAddress { get; set; }

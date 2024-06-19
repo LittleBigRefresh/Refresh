@@ -16,37 +16,37 @@ public partial class GameDatabaseContext // Contests
     {
         if (this.GetContestById(contest.ContestId) != null) throw new InvalidOperationException("Contest already exists.");
         
-        this._realm.Write(() =>
+        this.Write(() =>
         {
             contest.CreationDate = this._time.Now;
-            this._realm.Add(contest);
+            this.GameContests.Add(contest);
         });
     }
     
     public void DeleteContest(GameContest contest)
     {
-        this._realm.Write(() =>
+        this.Write(() =>
         {
-            this._realm.Remove(contest);
+            this.GameContests.Remove(contest);
         });
     }
     
     public GameContest? GetContestById(string? id)
     {
         if (id == null) return null;
-        return this._realm.All<GameContest>().FirstOrDefault(c => c.ContestId == id);
+        return this.GameContests.FirstOrDefault(c => c.ContestId == id);
     }
     
     public IEnumerable<GameContest> GetAllContests()
     {
-        return this._realm.All<GameContest>()
+        return this.GameContests
             .OrderBy(c => c.CreationDate);
     }
     
     public GameContest? GetNewestActiveContest()
     {
         DateTimeOffset now = this._time.Now;
-        return this._realm.All<GameContest>()
+        return this.GameContests
             .Where(c => c.StartDate <= now && c.EndDate > now) // Filter active contests
             .OrderByDescending(c => c.CreationDate)
             .FirstOrDefault();
@@ -54,7 +54,7 @@ public partial class GameDatabaseContext // Contests
     
     public GameContest UpdateContest(ApiContestRequest body, GameContest contest, GameUser? newOrganizer = null)
     {
-        this._realm.Write(() =>
+        this.Write(() =>
         {
             if (newOrganizer != null)
                 contest.Organizer = newOrganizer;

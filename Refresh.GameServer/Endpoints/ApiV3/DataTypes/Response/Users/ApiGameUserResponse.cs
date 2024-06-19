@@ -37,7 +37,7 @@ public class ApiGameUserResponse : IApiResponse, IDataConvertableFrom<ApiGameUse
             Username = user.Username,
             IconHash = dataContext.Database.GetAssetFromHash(user.IconHash)?.GetAsIcon(TokenGame.Website, dataContext) ?? user.IconHash,
             Description = user.Description,
-            Location = ApiGameLocationResponse.FromGameLocation(user.Location)!,
+            Location = ApiGameLocationResponse.FromLocation(user.LocationX, user.LocationY)!,
             JoinDate = user.JoinDate,
             LastLoginDate = user.LastLoginDate,
             Role = user.Role,

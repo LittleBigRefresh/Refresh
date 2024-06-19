@@ -6,9 +6,10 @@ namespace Refresh.GameServer.Types.Report;
 #nullable disable
 
 [XmlRoot("screenElements")]
-public partial class ScreenElements
-{
-    [XmlIgnore] private List<Slot> InternalSlot { get; } = [];
+public class ScreenElements
+{ 
+    [XmlIgnore]
+    private List<Slot> InternalSlot { get; } = [];
 
     [XmlElement("slot")] 
     public Slot[] Slot 
@@ -27,8 +28,9 @@ public partial class ScreenElements
                 this.InternalSlot.Add(slot);
         }
     }
-    
-    [XmlIgnore] private List<Player> InternalPlayer = [];
+
+    [XmlIgnore]
+    private List<Player> InternalPlayer { get; } = []; 
     
     [XmlElement("player")] 
     public Player[] Player 

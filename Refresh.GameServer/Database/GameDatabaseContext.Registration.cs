@@ -34,9 +34,9 @@ public partial class GameDatabaseContext // Registration
             JoinDate = this._time.Now,
         };
 
-        this._realm.Write(() =>
+        this.Write(() =>
         {
-            this._realm.Add(user);
+            this.GameUsers.Add(user);
         });
         return user;
     }
@@ -45,9 +45,9 @@ public partial class GameDatabaseContext // Registration
     {
         QueuedRegistration cloned = (QueuedRegistration)registration.Clone();
 
-        this._realm.Write(() =>
+        this.Write(() =>
         {
-            this._realm.Remove(registration);
+            this.QueuedRegistrations.Remove(registration);
         });
 
         GameUser user = this.CreateUser(cloned.Username, cloned.EmailAddress);
@@ -55,7 +55,7 @@ public partial class GameDatabaseContext // Registration
 
         if (platform != null)
         {
-            this._realm.Write(() =>
+            this.Write(() =>
             {
                 // ReSharper disable once SwitchStatementHandlesSomeKnownEnumValuesWithDefault
                 switch (platform)
@@ -81,14 +81,14 @@ public partial class GameDatabaseContext // Registration
 
     public bool IsUsernameTaken(string username)
     {
-        return this._realm.All<GameUser>().Any(u => u.Username == username) ||
-               this._realm.All<QueuedRegistration>().Any(r => r.Username == username);
+        return this.GameUsers.Any(u => u.Username == username) ||
+               this.QueuedRegistrations.Any(r => r.Username == username);
     }
     
     public bool IsEmailTaken(string emailAddress)
     {
-        return this._realm.All<GameUser>().Any(u => u.EmailAddress == emailAddress) ||
-               this._realm.All<QueuedRegistration>().Any(r => r.EmailAddress == emailAddress);
+        return this.GameUsers.Any(u => u.EmailAddress == emailAddress) ||
+               this.QueuedRegistrations.Any(r => r.EmailAddress == emailAddress);
     }
 
     public void AddRegistrationToQueue(string username, string emailAddress, string passwordBcrypt)
@@ -107,55 +107,49 @@ public partial class GameDatabaseContext // Registration
             ExpiryDate = this._time.Now + TimeSpan.FromHours(1),
         };
 
-        this._realm.Write(() =>
+        this.Write(() =>
         {
-            this._realm.Add(registration);
+            this.QueuedRegistrations.Add(registration);
         });
     }
 
     public void RemoveRegistrationFromQueue(QueuedRegistration registration)
     {
-        this._realm.Write(() =>
+        this.Write(() =>
         {
-            this._realm.Remove(registration);
+            this.QueuedRegistrations.Remove(registration);
         });
     }
     
-    public void RemoveAllRegistrationsFromQueue()
-    {
-        this._realm.Write(() =>
-        {
-            this._realm.RemoveAll<QueuedRegistration>();
-        });
-    }
-    
+    public void RemoveAllRegistrationsFromQueue() => this.Write(this.RemoveAll<QueuedRegistration>);
+
     public bool IsRegistrationExpired(QueuedRegistration registration) => registration.ExpiryDate < this._time.Now;
 
     public QueuedRegistration? GetQueuedRegistrationByUsername(string username) 
-        => this._realm.All<QueuedRegistration>().FirstOrDefault(q => q.Username == username);
+        => this.QueuedRegistrations.FirstOrDefault(q => q.Username == username);
     
     public QueuedRegistration? GetQueuedRegistrationByObjectId(ObjectId id) 
-        => this._realm.All<QueuedRegistration>().FirstOrDefault(q => q.RegistrationId == id);
+        => this.QueuedRegistrations.FirstOrDefault(q => q.RegistrationId == id);
     
 
     public DatabaseList<QueuedRegistration> GetAllQueuedRegistrations()
-        => new(this._realm.All<QueuedRegistration>());
+        => new(this.QueuedRegistrations);
     
     public DatabaseList<EmailVerificationCode> GetAllVerificationCodes()
-        => new(this._realm.All<EmailVerificationCode>());
+        => new(this.EmailVerificationCodes);
     
     public void VerifyUserEmail(GameUser user)
     {
-        this._realm.Write(() =>
+        this.Write(() =>
         {
             user.EmailAddressVerified = true;
-            this._realm.RemoveRange(this._realm.All<EmailVerificationCode>()
+            this.EmailVerificationCodes.RemoveRange(this.EmailVerificationCodes
                 .Where(c => c.User == user));
         });
     }
 
     public bool VerificationCodeMatches(GameUser user, string code) => 
-        this._realm.All<EmailVerificationCode>().Any(c => c.User == user && c.Code == code);
+        this.EmailVerificationCodes.Any(c => c.User == user && c.Code == code);
     
     public bool IsVerificationCodeExpired(EmailVerificationCode code) => code.ExpiryDate < this._time.Now;
 
@@ -186,9 +180,9 @@ public partial class GameDatabaseContext // Registration
             ExpiryDate = this._time.Now + TimeSpan.FromDays(1),
         };
 
-        this._realm.Write(() =>
+        this.Write(() =>
         {
-            this._realm.Add(verificationCode);
+            this.EmailVerificationCodes.Add(verificationCode);
         });
 
         return verificationCode;
@@ -196,20 +190,20 @@ public partial class GameDatabaseContext // Registration
 
     public void RemoveEmailVerificationCode(EmailVerificationCode code)
     {
-        this._realm.Write(() =>
+        this.Write(() =>
         {
-            this._realm.Remove(code);
+            this.EmailVerificationCodes.Remove(code);
         });
     }
     
     public bool DisallowUser(string username)
     {
-        if (this._realm.Find<DisallowedUser>(username) != null) 
+        if (this.DisallowedUsers.FirstOrDefault(u => u.Username == username) != null) 
             return false;
         
-        this._realm.Write(() =>
+        this.Write(() =>
         {
-            this._realm.Add(new DisallowedUser
+            this.DisallowedUsers.Add(new DisallowedUser
             {
                 Username = username,
             });
@@ -220,13 +214,13 @@ public partial class GameDatabaseContext // Registration
     
     public bool ReallowUser(string username)
     {
-        DisallowedUser? disallowedUser = this._realm.Find<DisallowedUser>(username);
+        DisallowedUser? disallowedUser = this.DisallowedUsers.FirstOrDefault(u => u.Username == username);
         if (disallowedUser == null) 
             return false;
         
-        this._realm.Write(() =>
+        this.Write(() =>
         {
-            this._realm.Remove(disallowedUser);
+            this.DisallowedUsers.Remove(disallowedUser);
         });
         
         return true;
@@ -234,6 +228,6 @@ public partial class GameDatabaseContext // Registration
     
     public bool IsUserDisallowed(string username)
     {
-        return this._realm.Find<DisallowedUser>(username) != null;
+        return this.DisallowedUsers.FirstOrDefault(u => u.Username == username) != null;
     }
 }

@@ -41,7 +41,6 @@ public class GameDatabaseProvider : RealmDatabaseProvider<GameDatabaseContext>
     protected override List<Type> SchemaTypes { get; } = new()
     {
         typeof(GameUser),
-        typeof(GameLocation),
         typeof(UserPins),
         typeof(Token),
         typeof(GameLevel),
@@ -67,6 +66,7 @@ public class GameDatabaseProvider : RealmDatabaseProvider<GameDatabaseContext>
         typeof(RequestStatistics),
         typeof(SequentialIdStorage),
         typeof(GameContest),
+        typeof(AssetDependencyRelation),
         typeof(GameReview),
         typeof(DisallowedUser),
     };
@@ -103,7 +103,8 @@ public class GameDatabaseProvider : RealmDatabaseProvider<GameDatabaseContext>
             if (oldVersion < 3)
             {
                 newUser.Description = "";
-                newUser.Location = new GameLocation { X = 0, Y = 0, };
+                newUser.LocationX = 0;
+                newUser.LocationY = 0;
             }
 
             //In version 4, GameLocation went from TopLevel -> Embedded, and UserPins was added
@@ -157,9 +158,6 @@ public class GameDatabaseProvider : RealmDatabaseProvider<GameDatabaseContext>
                 newUser.VitaPlanetsHash = "0";
             }
 
-            // In version 94, we added an option to redirect grief reports to photos
-            if (oldVersion < 94) newUser.RedirectGriefReportsToPhotos = false;
-
             // In version 100, we started enforcing lowercase email addresses
             if (oldVersion < 100) newUser.EmailAddress = oldUser.EmailAddress?.ToLowerInvariant();
 
@@ -176,6 +174,14 @@ public class GameDatabaseProvider : RealmDatabaseProvider<GameDatabaseContext>
                     .AsEnumerable()
                     .Where(a => a.OriginalUploader?.UserId == newUser.UserId)
                     .Sum(a => a.SizeInBytes);
+            }
+            
+            // In version 129, we split locations from an embedded object out to two fields
+            if (oldVersion < 129)
+            {
+                // cast required because apparently they're stored as longs???
+                newUser.LocationX = (int)oldUser.Location.X;
+                newUser.LocationY = (int)oldUser.Location.Y;
             }
         }
 
@@ -237,6 +243,13 @@ public class GameDatabaseProvider : RealmDatabaseProvider<GameDatabaseContext>
             {
                 newLevel._Source = (int)GameLevelSource.User;
             }
+            
+            // In version 129, we split locations from an embedded object out to two fields
+            if (oldVersion < 129)
+            {
+                newLevel.LocationX = (int)oldLevel.Location.X;
+                newLevel.LocationY = (int)oldLevel.Location.Y;
+            }
         }
 
         // In version 22, tokens added expiry and types so just wipe them all
@@ -268,6 +281,12 @@ public class GameDatabaseProvider : RealmDatabaseProvider<GameDatabaseContext>
             {
                 GameSubmittedScore? score = migration.NewRealm.All<GameSubmittedScore>().FirstOrDefault(s => s.ScoreId == newEvent.StoredObjectId);
                 if(score == null) eventsToNuke.Add(newEvent);
+            }
+            
+            // In version 131 we removed the LevelPlay event
+            if (oldVersion < 131 && newEvent.EventType == EventType.LevelPlay)
+            {
+                eventsToNuke.Add(newEvent);
             }
         }
         
@@ -343,6 +362,21 @@ public class GameDatabaseProvider : RealmDatabaseProvider<GameDatabaseContext>
                 // but TGA files are the only asset currently affected by the tracking of `IsPSP`,
                 // and PSP is the only game to upload TGA files.
                 newAsset.IsPSP = newAsset.AssetType == GameAssetType.Tga;
+            }
+
+            // In version 128 assets were moved from a list on the asset to a separate "relations" table
+            if (oldVersion < 128)
+            {
+                IList<string> dependencies = oldAsset.Dependencies;
+                
+                foreach (string dependency in dependencies)
+                {
+                    migration.NewRealm.Add(new AssetDependencyRelation
+                    {
+                        Dependent = oldAsset.AssetHash,
+                        Dependency = dependency,
+                    });
+                }
             }
         }
         

@@ -22,7 +22,9 @@ public partial class GameLevel : IRealmObject, ISequentialId
     public string IconHash { get; set; } = "0";
     [Indexed(IndexType.FullText)]
     public string Description { get; set; } = "";
-    public GameLocation Location { get; set; } = GameLocation.Zero;
+
+    public int LocationX { get; set; }
+    public int LocationY { get; set; }
 
     public string RootResource { get; set; } = string.Empty;
 

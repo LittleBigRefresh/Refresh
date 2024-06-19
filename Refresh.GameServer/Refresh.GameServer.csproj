@@ -52,12 +52,12 @@
     </ItemGroup>
 
     <ItemGroup Condition="'$(Configuration)'!='DebugLocalBunkum'">
-        <PackageReference Include="Bunkum" Version="4.5.5" />
-        <PackageReference Include="Bunkum.RealmDatabase" Version="4.5.5" />
-        <PackageReference Include="Bunkum.AutoDiscover" Version="4.5.4" />
-        <PackageReference Include="Bunkum.HealthChecks" Version="4.5.5" />
-        <PackageReference Include="Bunkum.HealthChecks.RealmDatabase" Version="4.5.5" />
-        <PackageReference Include="Bunkum.Protocols.Http" Version="4.5.5" />
+        <PackageReference Include="Bunkum" Version="4.5.6" />
+        <PackageReference Include="Bunkum.RealmDatabase" Version="4.5.6" />
+        <PackageReference Include="Bunkum.AutoDiscover" Version="4.5.6" />
+        <PackageReference Include="Bunkum.HealthChecks" Version="4.5.6" />
+        <PackageReference Include="Bunkum.HealthChecks.RealmDatabase" Version="4.5.6" />
+        <PackageReference Include="Bunkum.Protocols.Http" Version="4.5.6" />
     </ItemGroup>
 
     <ItemGroup>
@@ -67,21 +67,17 @@
       <PackageReference Include="CommandLineParser" Version="2.9.1" />
       <PackageReference Include="Discord.Net.Webhook" Version="3.15.0" />
       <PackageReference Include="FastAes" Version="1.0.1" />
-      <PackageReference Include="IronCompress" Version="1.5.1" />
+      <PackageReference Include="IronCompress" Version="1.5.2" />
       <PackageReference Include="MailKit" Version="4.6.0" />
       <PackageReference Include="NPTicket" Version="3.1.0" />
       <PackageReference Include="Pfim" Version="0.11.2" />
-      <PackageReference Include="Realm" Version="11.7.0" />
+      <PackageReference Include="Realm" Version="12.2.0" />
       <PackageReference Include="SharpZipLib" Version="1.4.2" />
       <PackageReference Include="SixLabors.ImageSharp" Version="3.1.4" />
       <PackageReference Include="EasyHotReload" Version="1.0.0" />
     </ItemGroup>
 
     <ItemGroup>
-        <ProjectReference Include="..\Refresh.Analyzers\Refresh.Analyzers.csproj">
-            <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
-            <OutputItemType>Analyzer</OutputItemType>
-        </ProjectReference>
         <ProjectReference Include="..\Refresh.Common\Refresh.Common.csproj" />
     </ItemGroup>
 
