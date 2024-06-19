@@ -159,7 +159,7 @@ public partial class GameDatabaseContext // Tokens
         this.Write(() =>
         {
             user.CurrentVerifiedIp = ipAddress;
-            this.GameIpVerificationRequests.RemoveRange(this.GameIpVerificationRequests.Where(r => r.User == user));
+            this.GameIpVerificationRequests.RemoveRange(r => r.User == user);
         });
     }
 
@@ -167,7 +167,7 @@ public partial class GameDatabaseContext // Tokens
     {
         this.Write(() =>
         {
-            this.GameIpVerificationRequests.RemoveRange(this.GameIpVerificationRequests.Where(r => r.IpAddress == ipAddress && r.User == user));
+            this.GameIpVerificationRequests.RemoveRange(r => r.IpAddress == ipAddress && r.User == user);
         });
     }
 
