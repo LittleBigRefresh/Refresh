@@ -143,8 +143,7 @@ public partial class GameDatabaseContext // Registration
         this.Write(() =>
         {
             user.EmailAddressVerified = true;
-            this.EmailVerificationCodes.RemoveRange(this.EmailVerificationCodes
-                .Where(c => c.User == user));
+            this.EmailVerificationCodes.RemoveRange(c => c.User == user);
         });
     }
 
