@@ -7,7 +7,6 @@ using Refresh.GameServer.Endpoints.ApiV3.DataTypes.Request;
 using Refresh.GameServer.Endpoints.Game.Levels.FilterSettings;
 using Refresh.GameServer.Extensions;
 using Refresh.GameServer.Services;
-using Refresh.GameServer.Types;
 using Refresh.GameServer.Types.Activity;
 using Refresh.GameServer.Types.Levels;
 using Refresh.GameServer.Types.Matching;
@@ -391,6 +390,9 @@ public partial class GameDatabaseContext // Levels
                 return null;
         }
     }
+
+    public GameLevel? GetLevelByRootResource(string rootResource) =>
+        this.GameLevels.FirstOrDefault(level => level.RootResource == rootResource);
     
     [Pure]
     public GameLevel? GetLevelById(int id) => this.GameLevels.FirstOrDefault(l => l.LevelId == id);

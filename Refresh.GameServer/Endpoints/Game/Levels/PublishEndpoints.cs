@@ -29,7 +29,7 @@ public class PublishEndpoints : EndpointGroup
     /// <param name="guidChecker">The associated GuidCheckerService with the request</param>
     /// <param name="game">The game the level is being submitted from</param>
     /// <returns>Whether or not validation succeeded</returns>
-    private static bool VerifyLevel(GameLevelRequest body, GameUser user, Logger logger, GuidCheckerService guidChecker, TokenGame game)
+    private static bool VerifyLevel(GameLevelRequest body, DataContext dataContext, GuidCheckerService guidChecker)
     {
         if (body.Title.Length > 256)
         {
@@ -49,34 +49,51 @@ public class PublishEndpoints : EndpointGroup
         //If the icon hash is a GUID hash, verify its a valid texture GUID
         if (body.IconHash.StartsWith('g'))
         {
-            if (!guidChecker.IsTextureGuid(game, long.Parse(body.IconHash.AsSpan()[1..])))
+            if (!guidChecker.IsTextureGuid(dataContext.Game, long.Parse(body.IconHash.AsSpan()[1..])))
                 return false;
         }
-        
+
+        GameLevel? existingLevel = dataContext.Database.GetLevelByRootResource(body.RootResource);
+        // If there is an existing level with this root hash, and this isn't an update request, block the upload
+        if (existingLevel != null && body.LevelId != existingLevel.LevelId)
+        {
+            dataContext.Database.AddPublishFailNotification("The level you tried to publish has already been uploaded by another user.", body.ToGameLevel(dataContext.User!), dataContext.User!);
+
+            return false;
+        }
+
         return true;
     }
-    
+
     [GameEndpoint("startPublish", ContentType.Xml, HttpMethods.Post)]
     [NullStatusCode(BadRequest)]
-    public SerializedLevelResources? StartPublish(RequestContext context, GameUser user, GameDatabaseContext database, GameLevelRequest body, CommandService command, IDataStore dataStore, GuidCheckerService guidChecker, Token token)
+    public SerializedLevelResources? StartPublish(RequestContext context,
+        GameUser user,
+        GameLevelRequest body,
+        CommandService command,
+        IDataStore dataStore,
+        GuidCheckerService guidChecker,
+        DataContext dataContext)
     {
         //If verifying the request fails, return null
-        if (!VerifyLevel(body, user, context.Logger, guidChecker, token.TokenGame)) return null;
-        
-        List<string> hashes = new();
-        hashes.AddRange(body.XmlResources);
-        hashes.Add(body.RootResource);
-        hashes.Add(body.IconHash);
+        if (!VerifyLevel(body, dataContext, guidChecker)) return null;
+
+        List<string> hashes =
+        [
+            .. body.XmlResources,
+            body.RootResource,
+            body.IconHash
+        ];
 
         //Remove all invalid or GUID assets
         hashes.RemoveAll(r => r == "0" || r.StartsWith('g') || string.IsNullOrWhiteSpace(r));
-        
+
         //Verify all hashes are valid SHA1 hashes
         if (hashes.Any(hash => !CommonPatterns.Sha1Regex().IsMatch(hash))) return null;
 
         //Mark the user as publishing
         command.StartPublishing(user.UserId);
-            
+
         return new SerializedLevelResources
         {
             Resources = hashes.Where(r => !dataStore.ExistsInStore(r)).ToArray(),
@@ -93,9 +110,9 @@ public class PublishEndpoints : EndpointGroup
         IDataStore dataStore,
         GuidCheckerService guidChecker, DataContext dataContext)
     {
-        //If verifying the request fails, return null
-        if (!VerifyLevel(body, user, context.Logger, guidChecker, token.TokenGame)) return BadRequest;
-        
+        //If verifying the request fails, return BadRequest
+        if (!VerifyLevel(body, dataContext, guidChecker)) return BadRequest;
+
         GameLevel level = body.ToGameLevel(user);
         level.GameVersion = token.TokenGame;
 
@@ -103,7 +120,7 @@ public class PublishEndpoints : EndpointGroup
         level.MaxPlayers = Math.Clamp(level.MaxPlayers, 1, 4);
 
         string rootResourcePath = context.IsPSP() ? $"psp/{level.RootResource}" : level.RootResource;
-        
+
         //Check if the root resource is a SHA1 hash
         if (!CommonPatterns.Sha1Regex().IsMatch(level.RootResource)) return BadRequest;
         //Make sure the root resource exists in the data store
@@ -119,11 +136,11 @@ public class PublishEndpoints : EndpointGroup
             {
                 return new Response(GameLevelResponse.FromOld(newBody, dataContext)!, ContentType.Xml);
             }
-            
+
             database.AddPublishFailNotification("You may not republish another user's level.", level, user);
             return BadRequest;
         }
-        
+
         //Mark the user as no longer publishing
         commandService.StopPublishing(user.UserId);
 
@@ -131,9 +148,9 @@ public class PublishEndpoints : EndpointGroup
 
         database.AddLevel(level);
         database.CreateLevelUploadEvent(user, level);
-        
+
         context.Logger.LogInfo(BunkumCategory.UserContent, "User {0} (id: {1}) uploaded level id {2}", user.Username, user.UserId, level.LevelId);
-        
+
         return new Response(GameLevelResponse.FromOld(level, dataContext)!, ContentType.Xml);
     }
 
