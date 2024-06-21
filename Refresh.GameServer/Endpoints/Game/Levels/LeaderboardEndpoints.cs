@@ -104,6 +104,6 @@ public class LeaderboardEndpoints : EndpointGroup
         if (level == null) return NotFound;
         
         (int skip, int count) = context.GetPageData();
-        return new Response(SerializedScoreList.FromSubmittedEnumerable(database.GetTopScoresForLevel(level, count, skip, (byte)type).Items), ContentType.Xml);
+        return new Response(SerializedScoreList.FromSubmittedEnumerable(database.GetTopScoresForLevel(level, count, skip, (byte)type).Items, skip), ContentType.Xml);
     }
 }
