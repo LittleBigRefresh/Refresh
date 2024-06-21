@@ -28,9 +28,11 @@ public partial class GamePhoto : IRealmObject, ISequentialId
     public GameAsset MediumAsset { get; set; }
     public GameAsset LargeAsset { get; set; }
     public string PlanHash { get; set; }
+
+    #region Subjects
     
     [Ignored]
-    public IReadOnlyCollection<GamePhotoSubject> Subjects
+    public IReadOnlyList<GamePhotoSubject> Subjects
     {
         get
         {
@@ -53,6 +55,62 @@ public partial class GamePhoto : IRealmObject, ISequentialId
 
             return subjects;
         }
+        set
+        {
+            if (value.Count > 4) throw new InvalidOperationException("Too many subjects. Should be caught beforehand by input validation");
+            this.ClearSubjects();
+
+            if (value.Count >= 1)
+            {
+                this.Subject1User = value[0].User;
+                this.Subject1DisplayName = value[0].DisplayName;
+                foreach (float bound in value[0].Bounds)
+                    this.Subject1Bounds.Add(bound);
+            }
+            
+            if (value.Count >= 2)
+            {
+                this.Subject2User = value[1].User;
+                this.Subject2DisplayName = value[1].DisplayName;
+                foreach (float bound in value[1].Bounds)
+                    this.Subject2Bounds.Add(bound);
+            }
+            
+            if (value.Count >= 3)
+            {
+                this.Subject3User = value[2].User;
+                this.Subject3DisplayName = value[2].DisplayName;
+                foreach (float bound in value[2].Bounds)
+                    this.Subject3Bounds.Add(bound);
+            }
+            
+            if (value.Count >= 4)
+            {
+                this.Subject4User = value[3].User;
+                this.Subject4DisplayName = value[3].DisplayName;
+                foreach (float bound in value[3].Bounds)
+                    this.Subject4Bounds.Add(bound);
+            }
+        }
+    }
+
+    private void ClearSubjects()
+    {
+        this.Subject1User = null;
+        this.Subject1DisplayName = null;
+        this.Subject1Bounds.Clear();
+        
+        this.Subject2User = null;
+        this.Subject2DisplayName = null;
+        this.Subject2Bounds.Clear();
+        
+        this.Subject3User = null;
+        this.Subject3DisplayName = null;
+        this.Subject3Bounds.Clear();
+        
+        this.Subject4User = null;
+        this.Subject4DisplayName = null;
+        this.Subject4Bounds.Clear();
     }
 
 #nullable enable
@@ -76,6 +134,8 @@ public partial class GamePhoto : IRealmObject, ISequentialId
     
     #pragma warning restore CS8618
     #nullable disable
+    
+    #endregion
     
     [JsonIgnore] public int SequentialId
     {
