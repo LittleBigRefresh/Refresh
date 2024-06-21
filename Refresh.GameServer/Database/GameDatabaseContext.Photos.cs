@@ -32,9 +32,10 @@ public partial class GameDatabaseContext // Photos
             newPhoto.Level = this.GetLevelById(photo.Level.LevelId);
 
         float[] bounds = new float[SerializedPhotoSubject.FloatCount];
+
+        List<GamePhotoSubject> gameSubjects = new(photo.PhotoSubjects.Count);
         foreach (SerializedPhotoSubject subject in photo.PhotoSubjects)
         {
-            GamePhotoSubject newSubject = new();
             GameUser? subjectUser = null;
             
             if (!string.IsNullOrEmpty(subject.Username)) 
@@ -42,12 +43,10 @@ public partial class GameDatabaseContext // Photos
             
             SerializedPhotoSubject.ParseBoundsList(subject.BoundsList, bounds);
 
-            newSubject.User = subjectUser;
-            newSubject.DisplayName = subject.DisplayName;
-            foreach (float coord in bounds) newSubject.Bounds.Add(coord);
-            
-            newPhoto.Subjects.Add(newSubject);
+            gameSubjects.Add(new GamePhotoSubject(subjectUser, subject.DisplayName, bounds));
         }
+
+        newPhoto.Subjects = gameSubjects;
 
         this.AddSequentialObject(newPhoto);
     }
