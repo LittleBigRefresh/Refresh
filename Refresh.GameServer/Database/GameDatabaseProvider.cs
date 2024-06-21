@@ -32,7 +32,7 @@ public class GameDatabaseProvider : RealmDatabaseProvider<GameDatabaseContext>
         this._time = time;
     }
 
-    protected override ulong SchemaVersion => 132;
+    protected override ulong SchemaVersion => 133;
 
     protected override string Filename => "refreshGameServer.realm";
     
@@ -342,6 +342,25 @@ public class GameDatabaseProvider : RealmDatabaseProvider<GameDatabaseContext>
                 newPhoto.LargeAsset = migration.NewRealm.Find<GameAsset>(oldPhoto.LargeHash.StartsWith("psp/") ? oldPhoto.LargeHash.Substring(4) : oldPhoto.LargeHash);
                 newPhoto.MediumAsset = migration.NewRealm.Find<GameAsset>(oldPhoto.MediumHash.StartsWith("psp/") ? oldPhoto.MediumHash.Substring(4) : oldPhoto.MediumHash);
                 newPhoto.SmallAsset = migration.NewRealm.Find<GameAsset>(oldPhoto.SmallHash.StartsWith("psp/") ? oldPhoto.SmallHash.Substring(4) : oldPhoto.SmallHash);
+            }
+
+            // In version 133, we removed GamePhotoSubject from the schema entirely, and instead we put 4 'unrolled' sets of fields in the GamePhoto.
+            // This makes things chaotic code-wise, but is significantly more compatible with Postgres.
+            if (oldVersion < 133)
+            {
+                List<GamePhotoSubject> oldSubjects = new(oldPhoto.Subjects.Count);
+                foreach(dynamic subject in oldPhoto.Subjects)
+                {
+                    List<float> bounds = new(4);
+                    foreach (float bound in subject.Bounds) bounds.Add(bound);
+
+                    GameUser? user = subject.User != null ? migration.NewRealm.Find<GameUser>(subject.User.UserId) : null;
+                    oldSubjects.Add(new GamePhotoSubject(user, subject.DisplayName, bounds));
+                }
+
+                Console.WriteLine(JsonConvert.SerializeObject(oldSubjects));
+                
+                newPhoto.Subjects = oldSubjects;
             }
         }
         
