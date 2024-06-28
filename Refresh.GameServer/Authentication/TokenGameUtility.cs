@@ -111,6 +111,9 @@ public static class TokenGameUtility
         "BCET70055", // LBP Hub (real title id)
         "NPEA00449", // LBP HUB (sent title id)
         
+        // LBP3
+        "NPUA81174", // US Private Beta
+        
         // PSP
         "NPUG70064", // US Demo
         "NPEG90019", // EU Demo
