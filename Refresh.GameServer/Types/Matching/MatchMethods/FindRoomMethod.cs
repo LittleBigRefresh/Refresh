@@ -4,6 +4,7 @@ using Bunkum.Listener.Protocol;
 using MongoDB.Bson;
 using NotEnoughLogs;
 using Refresh.GameServer.Authentication;
+using Refresh.GameServer.Configuration;
 using Refresh.GameServer.Database;
 using Refresh.GameServer.Services;
 using Refresh.GameServer.Types.Levels;
@@ -19,7 +20,7 @@ public class FindRoomMethod : IMatchMethod
     public Response Execute(MatchService service, Logger logger, GameDatabaseContext database,
         GameUser user,
         Token token,
-        SerializedRoomData body)
+        SerializedRoomData body, GameServerConfig gameServerConfig)
     {
         GameRoom? usersRoom = service.RoomAccessor.GetRoomByUser(user, token.TokenPlatform, token.TokenGame);
         if (usersRoom == null) return BadRequest; // user should already have a room.
@@ -101,7 +102,7 @@ public class FindRoomMethod : IMatchMethod
         List<GameRoom> foundRooms = rooms.ToList();
         
         // If there's no rooms, dump an "overview" of the global room state, to help debug matching issues
-        if (foundRooms.Count <= 0)
+        if (foundRooms.Count <= 0 && gameServerConfig.PrintRoomStateWhenNoFoundRooms)
         {
             if (allRooms.Count == 0)
             {

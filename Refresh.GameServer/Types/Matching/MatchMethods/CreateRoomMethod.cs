@@ -2,6 +2,7 @@ using Bunkum.Core;
 using Bunkum.Core.Responses;
 using NotEnoughLogs;
 using Refresh.GameServer.Authentication;
+using Refresh.GameServer.Configuration;
 using Refresh.GameServer.Database;
 using Refresh.GameServer.Services;
 using Refresh.GameServer.Types.UserData;
@@ -12,8 +13,9 @@ public class CreateRoomMethod : IMatchMethod
 {
     public IEnumerable<string> MethodNames => new[] { "CreateRoom" };
 
-    public Response Execute(MatchService service, Logger logger, GameDatabaseContext database, GameUser user, Token token,
-        SerializedRoomData body)
+    public Response Execute(MatchService service, Logger logger, GameDatabaseContext database, GameUser user,
+        Token token,
+        SerializedRoomData body, GameServerConfig gameServerConfig)
     {
         NatType natType = body.NatType == null ? NatType.Open : body.NatType[0];
         GameRoom room = service.GetOrCreateRoomByPlayer(user, token.TokenPlatform, token.TokenGame, natType, body.BuildVersion, body.PassedNoJoinPoint);
