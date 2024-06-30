@@ -6,6 +6,7 @@ using NotEnoughLogs;
 using Refresh.GameServer.Authentication;
 using Refresh.GameServer.Database;
 using Refresh.GameServer.Services;
+using Refresh.GameServer.Types.Levels;
 using Refresh.GameServer.Types.Matching.Responses;
 using Refresh.GameServer.Types.UserData;
 
@@ -23,7 +24,9 @@ public class FindRoomMethod : IMatchMethod
         GameRoom? usersRoom = service.RoomAccessor.GetRoomByUser(user, token.TokenPlatform, token.TokenGame);
         if (usersRoom == null) return BadRequest; // user should already have a room.
         
-        List<int> levelIds = new(body.Slots.Count);
+        // We only really need to match level IDs for user or developer levels
+        List<int> userLevelIds = [];
+        List<int> developerLevelIds = [];
         // Iterate over all sent slots and append their IDs to the list of level IDs to check
         foreach(List<int> slot in body.Slots)
         {
@@ -32,33 +35,44 @@ public class FindRoomMethod : IMatchMethod
                 logger.LogWarning(BunkumCategory.Matching, "Received request with invalid slot, rejecting.");
                 return BadRequest;
             }
+
+            RoomSlotType slotType = (RoomSlotType)slot[0];
+            int slotId = slot[1];
             
             // 0 means "no level specified"
-            if (slot[1] == 0) 
+            if (slotId == 0) 
                 continue;
             
-            levelIds.Add(slot[1]);
+            switch (slotType)
+            {
+                case RoomSlotType.Online:
+                    userLevelIds.Add(slotId);
+                    break;
+                case RoomSlotType.Story:
+                    developerLevelIds.Add(slotId);
+                    break;
+            }
         }
         
         // If we are on vita and the game specified more than one level ID, then its trying to do dive in only to players in a certain category of levels
         // This is not how most people expect dive in to work, so let's pretend that the game didn't specify any level IDs whatsoever, so they will get matched with all players
-        if (token.TokenGame == TokenGame.LittleBigPlanetVita && levelIds.Count > 1)
-            levelIds = [];
+        if (token.TokenGame == TokenGame.LittleBigPlanetVita && userLevelIds.Count > 1)
+            userLevelIds = [];
         
         //TODO: Add user option to filter rooms by language
-        
-        IEnumerable<GameRoom> rooms = service.RoomAccessor
-            // Get all the available rooms 
+
+        List<GameRoom> allRooms = service.RoomAccessor
             .GetRoomsByGameAndPlatform(token.TokenGame, token.TokenPlatform)
-            .Where(r =>
-                // Make sure we don't match the user into their own room
-                r.RoomId != usersRoom.RoomId &&
+            .Where(r => r.RoomId != usersRoom.RoomId).ToList();
+        
+        IEnumerable<GameRoom> rooms = allRooms.Where(r =>
                 // If the level id isn't specified, or is 0, then we don't want to try to match against level IDs, else only match the user to people who are playing that level
-                (levelIds.Count == 0 || levelIds.Contains(r.LevelId)) &&
+                (userLevelIds.Count == 0 || r.LevelType != RoomSlotType.Online || userLevelIds.Contains(r.LevelId)) &&
+                (developerLevelIds.Count == 0 || r.LevelType != RoomSlotType.Story || developerLevelIds.Contains(r.LevelId)) &&
                 // Make sure that we don't try to match the player into a full room, or a room which won't fit the user's current room
                 usersRoom.PlayerIds.Count + r.PlayerIds.Count <= 4 &&
-                // Match the build version of the rooms
-                (r.BuildVersion ?? 0) == body.BuildVersion)
+                // Match the build version of the rooms, or dont match build versions if the game doesnt specify it
+                (body.BuildVersion == null || (r.BuildVersion ?? 0) == body.BuildVersion))
             // Shuffle the rooms around before sorting, this is because the selection is based on a weighted average towards the top of the range,
             // so there would be a bias towards longer lasting rooms without this shuffle
             .OrderBy(r => Random.Shared.Next())
@@ -84,18 +98,27 @@ public class FindRoomMethod : IMatchMethod
         }
         
         // Now that we've done all our filtering, lets convert it to a list, so we can index it quickly.
-        List<GameRoom> roomList = rooms.ToList();
+        List<GameRoom> foundRooms = rooms.ToList();
         
-        if (roomList.Count <= 0)
+        // If there's no rooms, dump an "overview" of the global room state, to help debug matching issues
+        if (foundRooms.Count <= 0)
         {
-#if DEBUG
-            logger.LogDebug(BunkumCategory.Matching, "Room search by {0} on {1} ({2}) returned no results, dumping list of available rooms.", user.Username, token.TokenGame, token.TokenPlatform);
-            
-            // Dump an "overview" of the global room state, to help debug matching issues
-            rooms = service.RoomAccessor.GetRoomsByGameAndPlatform(token.TokenGame, token.TokenPlatform);
-            foreach (GameRoom logRoom in rooms)
-                logger.LogDebug(BunkumCategory.Matching,"Room {0} has NAT type {1} and is on level {2}", logRoom.RoomId, logRoom.NatType, logRoom.LevelId);
-#endif
+            if (allRooms.Count == 0)
+            {
+                logger.LogDebug(BunkumCategory.Matching,
+                    "Room search by {0} on {1} ({2}) returned no results due to there being no open rooms on the game/platform.",
+                    user.Username, token.TokenGame, token.TokenPlatform);
+            }
+            else
+            {
+                logger.LogDebug(BunkumCategory.Matching,
+                    "Room search by {0} on {1} ({2}) returned no results, dumping list of possible rooms.",
+                    user.Username, token.TokenGame, token.TokenPlatform);
+
+                foreach (GameRoom logRoom in allRooms)
+                    logger.LogDebug(BunkumCategory.Matching, "Room {0}: Nat Type {1}, Level {2} ({3}), Build Version {4}",
+                        logRoom.RoomId, logRoom.NatType, logRoom.LevelId, logRoom.LevelType, logRoom.BuildVersion ?? 0);
+            }
             
             // Return a 404 status code if there's no rooms to match them to
             return new Response(new List<object> { new SerializedStatusCodeMatchResponse(404), }, ContentType.Json);
@@ -116,7 +139,7 @@ public class FindRoomMethod : IMatchMethod
         
         // Even though NextDouble guarantees the result to be < 1.0, and this mathematically always will check out,
         // rounding errors may cause this to become roomList.Count (which would crash), so we use a Math.Min to make sure it doesn't
-        GameRoom room = roomList[Math.Min(roomList.Count - 1, (int)Math.Floor(weightedRandom * roomList.Count))];
+        GameRoom room = foundRooms[Math.Min(foundRooms.Count - 1, (int)Math.Floor(weightedRandom * foundRooms.Count))];
         
         logger.LogInfo(BunkumCategory.Matching, "Matched user {0} into {1}'s room (id: {2})", user.Username, room.HostId.Username, room.RoomId);
 
