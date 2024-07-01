@@ -2,6 +2,7 @@ using Bunkum.Core;
 using Bunkum.Core.Responses;
 using NotEnoughLogs;
 using Refresh.GameServer.Authentication;
+using Refresh.GameServer.Configuration;
 using Refresh.GameServer.Database;
 using Refresh.GameServer.Services;
 using Refresh.GameServer.Types.UserData;
@@ -13,7 +14,8 @@ public class UpdateRoomDataMethod : IMatchMethod
     public IEnumerable<string> MethodNames => new[] { "UpdateMyPlayerData" };
 
     public Response Execute(MatchService service, Logger logger,
-        GameDatabaseContext database, GameUser user, Token token, SerializedRoomData body)
+        GameDatabaseContext database, GameUser user, Token token, SerializedRoomData body,
+        GameServerConfig gameServerConfig)
     {
         GameRoom room = service.GetOrCreateRoomByPlayer(user, token.TokenPlatform, token.TokenGame, body.NatType == null ? NatType.Open : body.NatType[0], body.BuildVersion, body.PassedNoJoinPoint);
         if (room.HostId.Id != user.UserId) return Unauthorized;
