@@ -7,7 +7,7 @@ using Bunkum.Core.Responses;
 using Bunkum.Listener.Protocol;
 using Refresh.GameServer.Authentication;
 using Refresh.GameServer.Configuration;
-using Refresh.GameServer.Database;
+using Refresh.GameServer.Types.Data;
 using Refresh.GameServer.Types.Matching;
 using Refresh.GameServer.Types.Matching.MatchMethods;
 using Refresh.GameServer.Types.Matching.Responses;
@@ -132,12 +132,12 @@ public partial class MatchService(Logger logger) : EndpointService(logger)
     private IMatchMethod? TryGetMatchMethod(string method) 
         => this._matchMethods.FirstOrDefault(m => m.MethodNames.Contains(method));
 
-    public Response ExecuteMethod(string methodStr, SerializedRoomData roomData, GameDatabaseContext database, GameUser user, Token token, GameServerConfig gameServerConfig)
+    public Response ExecuteMethod(string methodStr, SerializedRoomData roomData, DataContext dataContext, GameServerConfig gameServerConfig)
     {
         IMatchMethod? method = this.TryGetMatchMethod(methodStr);
         if (method == null) return BadRequest;
         
-        Response response = method.Execute(this, this.Logger, database, user, token, roomData, gameServerConfig);
+        Response response = method.Execute(dataContext, roomData, gameServerConfig);
         
         // If there's a response data specified, then there's nothing more we need to do
         if (response.Data.Length != 0) 

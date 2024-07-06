@@ -1,11 +1,7 @@
 using Bunkum.Core;
 using Bunkum.Core.Responses;
-using NotEnoughLogs;
-using Refresh.GameServer.Authentication;
 using Refresh.GameServer.Configuration;
-using Refresh.GameServer.Database;
-using Refresh.GameServer.Services;
-using Refresh.GameServer.Types.UserData;
+using Refresh.GameServer.Types.Data;
 
 namespace Refresh.GameServer.Types.Matching.MatchMethods;
 
@@ -13,22 +9,20 @@ public class CreateRoomMethod : IMatchMethod
 {
     public IEnumerable<string> MethodNames => new[] { "CreateRoom" };
 
-    public Response Execute(MatchService service, Logger logger, GameDatabaseContext database, GameUser user,
-        Token token,
-        SerializedRoomData body, GameServerConfig gameServerConfig)
+    public Response Execute(DataContext dataContext, SerializedRoomData body, GameServerConfig gameServerConfig)
     {
         NatType natType = body.NatType == null ? NatType.Open : body.NatType[0];
-        GameRoom room = service.GetOrCreateRoomByPlayer(user, token.TokenPlatform, token.TokenGame, natType, body.BuildVersion, body.PassedNoJoinPoint);
-        if (room.HostId.Id != user.UserId)
+        GameRoom room = dataContext.Match.GetOrCreateRoomByPlayer(dataContext.User!, dataContext.Platform, dataContext.Game, natType, body.BuildVersion, body.PassedNoJoinPoint);
+        if (room.HostId.Id != dataContext.User!.UserId)
         {
-            room = service.SplitUserIntoNewRoom(user, token.TokenPlatform, token.TokenGame, natType, body.BuildVersion, body.PassedNoJoinPoint);
+            room = dataContext.Match.SplitUserIntoNewRoom(dataContext.User, dataContext.Platform, dataContext.Game, natType, body.BuildVersion, body.PassedNoJoinPoint);
         }
 
         if (body.RoomState != null) room.RoomState = body.RoomState.Value;
         
         if (body.Slots.Count > 1)
         {
-            logger.LogWarning(BunkumCategory.Matching, "Received create room request with multiple slots, rejecting");
+            dataContext.Logger.LogWarning(BunkumCategory.Matching, "Received create room request with multiple slots, rejecting");
             return BadRequest;
         }
         
@@ -36,7 +30,7 @@ public class CreateRoomMethod : IMatchMethod
         {
             if (slot.Count != 2)
             {
-                logger.LogWarning(BunkumCategory.Matching, "Received request with invalid slot, rejecting.");
+                dataContext.Logger.LogWarning(BunkumCategory.Matching, "Received request with invalid slot, rejecting.");
                 return BadRequest;
             }
 
@@ -50,7 +44,7 @@ public class CreateRoomMethod : IMatchMethod
             room.RoomMood = (RoomMood)mood;
         }
         
-        service.RoomAccessor.UpdateRoom(room);
+        dataContext.Match.RoomAccessor.UpdateRoom(room);
 
         return OK;
     }

@@ -6,10 +6,9 @@ using Bunkum.Listener.Protocol;
 using Bunkum.Protocols.Http;
 using Refresh.GameServer.Authentication;
 using Refresh.GameServer.Configuration;
-using Refresh.GameServer.Database;
 using Refresh.GameServer.Services;
+using Refresh.GameServer.Types.Data;
 using Refresh.GameServer.Types.Matching;
-using Refresh.GameServer.Types.UserData;
 
 namespace Refresh.GameServer.Endpoints.Game;
 
@@ -20,11 +19,8 @@ public class MatchingEndpoints : EndpointGroup
     [DebugRequestBody, DebugResponseBody]
     public Response Match(
         RequestContext context, 
-        GameDatabaseContext database, 
-        GameUser user, 
-        Token token, 
-        MatchService service, 
         string body, 
+        DataContext dataContext,
         GameServerConfig gameServerConfig)
     {
         (string method, string jsonBody) = MatchService.ExtractMethodAndBodyFromJson(body);
@@ -43,7 +39,7 @@ public class MatchingEndpoints : EndpointGroup
             return BadRequest;
         }
         
-        return service.ExecuteMethod(method, roomData, database, user, token, gameServerConfig);
+        return dataContext.Match.ExecuteMethod(method, roomData, dataContext, gameServerConfig);
     }
     
     // Sent by LBP1 to notify the server it has entered a level.

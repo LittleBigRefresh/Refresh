@@ -7,6 +7,7 @@ using Refresh.GameServer.Authentication;
 using Refresh.GameServer.Configuration;
 using Refresh.GameServer.Database;
 using Refresh.GameServer.Services;
+using Refresh.GameServer.Types.Data;
 using Refresh.GameServer.Types.Levels;
 using Refresh.GameServer.Types.Matching.Responses;
 using Refresh.GameServer.Types.UserData;
@@ -17,12 +18,9 @@ public class FindRoomMethod : IMatchMethod
 {
     public IEnumerable<string> MethodNames => new[] { "FindBestRoom" };
 
-    public Response Execute(MatchService service, Logger logger, GameDatabaseContext database,
-        GameUser user,
-        Token token,
-        SerializedRoomData body, GameServerConfig gameServerConfig)
+    public Response Execute(DataContext dataContext, SerializedRoomData body, GameServerConfig gameServerConfig)
     {
-        GameRoom? usersRoom = service.RoomAccessor.GetRoomByUser(user, token.TokenPlatform, token.TokenGame);
+        GameRoom? usersRoom = dataContext.Match.RoomAccessor.GetRoomByUser(dataContext.User!, dataContext.Platform, dataContext.Game);
         if (usersRoom == null) return BadRequest; // user should already have a room.
         
         // We only really need to match level IDs for user or developer levels
@@ -33,7 +31,7 @@ public class FindRoomMethod : IMatchMethod
         {
             if (slot.Count != 2)
             {
-                logger.LogWarning(BunkumCategory.Matching, "Received request with invalid slot, rejecting.");
+                dataContext.Logger.LogWarning(BunkumCategory.Matching, "Received request with invalid slot, rejecting.");
                 return BadRequest;
             }
 
@@ -57,13 +55,13 @@ public class FindRoomMethod : IMatchMethod
         
         // If we are on vita and the game specified more than one level ID, then its trying to do dive in only to players in a certain category of levels
         // This is not how most people expect dive in to work, so let's pretend that the game didn't specify any level IDs whatsoever, so they will get matched with all players
-        if (token.TokenGame == TokenGame.LittleBigPlanetVita && userLevelIds.Count > 1)
+        if (dataContext.Game == TokenGame.LittleBigPlanetVita && userLevelIds.Count > 1)
             userLevelIds = [];
         
         //TODO: Add user option to filter rooms by language
 
-        List<GameRoom> allRooms = service.RoomAccessor
-            .GetRoomsByGameAndPlatform(token.TokenGame, token.TokenPlatform)
+        List<GameRoom> allRooms = dataContext.Match.RoomAccessor
+            .GetRoomsByGameAndPlatform(dataContext.Game, dataContext.Platform)
             .Where(r => r.RoomId != usersRoom.RoomId).ToList();
         
         IEnumerable<GameRoom> rooms = allRooms.Where(r =>
@@ -89,7 +87,7 @@ public class FindRoomMethod : IMatchMethod
             rooms = rooms.Where(r => r.NatType == NatType.Open);
         }
 
-        ObjectId? forceMatch = user.ForceMatch;
+        ObjectId? forceMatch = dataContext.User!.ForceMatch;
 
         //If the user has a forced match
         if (forceMatch != null)
@@ -106,18 +104,18 @@ public class FindRoomMethod : IMatchMethod
         {
             if (allRooms.Count == 0)
             {
-                logger.LogDebug(BunkumCategory.Matching,
+                dataContext.Logger.LogDebug(BunkumCategory.Matching,
                     "Room search by {0} on {1} ({2}) returned no results due to there being no open rooms on the game/platform.",
-                    user.Username, token.TokenGame, token.TokenPlatform);
+                    dataContext.User.Username, dataContext.Game, dataContext.Platform);
             }
             else
             {
-                logger.LogDebug(BunkumCategory.Matching,
+                dataContext.Logger.LogDebug(BunkumCategory.Matching,
                     "Room search by {0} on {1} ({2}) returned no results, dumping list of possible rooms.",
-                    user.Username, token.TokenGame, token.TokenPlatform);
+                    dataContext.User.Username, dataContext.Game, dataContext.Platform);
 
                 foreach (GameRoom logRoom in allRooms)
-                    logger.LogDebug(BunkumCategory.Matching, "Room {0}: Nat Type {1}, Level {2} ({3}), Build Version {4}",
+                    dataContext.Logger.LogDebug(BunkumCategory.Matching, "Room {0}: Nat Type {1}, Level {2} ({3}), Build Version {4}",
                         logRoom.RoomId, logRoom.NatType, logRoom.LevelId, logRoom.LevelType, logRoom.BuildVersion ?? 0);
             }
             
@@ -129,7 +127,7 @@ public class FindRoomMethod : IMatchMethod
         if (forceMatch != null)
         {
             // Clear the user's force match
-            database.ClearForceMatch(user);
+            dataContext.Database.ClearForceMatch(dataContext.User);
         }
         
         // Generate a weighted random number, this is weighted relatively strongly towards lower numbers,
@@ -142,7 +140,7 @@ public class FindRoomMethod : IMatchMethod
         // rounding errors may cause this to become roomList.Count (which would crash), so we use a Math.Min to make sure it doesn't
         GameRoom room = foundRooms[Math.Min(foundRooms.Count - 1, (int)Math.Floor(weightedRandom * foundRooms.Count))];
         
-        logger.LogInfo(BunkumCategory.Matching, "Matched user {0} into {1}'s room (id: {2})", user.Username, room.HostId.Username, room.RoomId);
+        dataContext.Logger.LogInfo(BunkumCategory.Matching, "Matched user {0} into {1}'s room (id: {2})", dataContext.User.Username, room.HostId.Username, room.RoomId);
 
         SerializedRoomMatchResponse roomMatch = new()
         {
@@ -158,13 +156,13 @@ public class FindRoomMethod : IMatchMethod
             ],
         };
         
-        foreach (GameUser? roomUser in room.GetPlayers(database))
+        foreach (GameUser? roomUser in room.GetPlayers(dataContext.Database))
         {
             if(roomUser == null) continue;
             roomMatch.Players.Add(new SerializedRoomPlayer(roomUser.Username, 0));
         }
         
-        foreach (GameUser? roomUser in usersRoom.GetPlayers(database))
+        foreach (GameUser? roomUser in usersRoom.GetPlayers(dataContext.Database))
         {
             if(roomUser == null) continue;
             roomMatch.Players.Add(new SerializedRoomPlayer(roomUser.Username, 1));
