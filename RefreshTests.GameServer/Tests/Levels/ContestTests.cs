@@ -6,6 +6,7 @@ using Refresh.GameServer.Endpoints.ApiV3.DataTypes.Response;
 using Refresh.GameServer.Endpoints.Game.Levels.FilterSettings;
 using Refresh.GameServer.Types.Contests;
 using Refresh.GameServer.Types.Levels;
+using Refresh.GameServer.Types.Roles;
 using Refresh.GameServer.Types.UserData;
 using RefreshTests.GameServer.Extensions;
 
@@ -86,7 +87,7 @@ public class ContestTests : GameServerTest
     {
         using TestContext context = this.GetServer();
         GameUser organizer = context.CreateUser();
-        GameUser admin = context.CreateAdmin();
+        GameUser admin = context.CreateUser(role: GameUserRole.Admin);
         GameLevel templateLevel = context.CreateLevel(organizer);
 
         using HttpClient client = context.GetAuthenticatedClient(TokenType.Api, admin);
@@ -117,7 +118,7 @@ public class ContestTests : GameServerTest
     public void CanUpdateContestFromApi()
     {
         using TestContext context = this.GetServer();
-        GameUser admin = context.CreateAdmin();
+        GameUser admin = context.CreateUser(role: GameUserRole.Admin);
         GameContest contest = this.CreateContest(context);
 
         using HttpClient client = context.GetAuthenticatedClient(TokenType.Api, admin);

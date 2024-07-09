@@ -95,16 +95,13 @@ public class TestContext : IDisposable
         return client;
     }
 
-    public GameUser CreateUser(string? username = null)
+    public GameUser CreateUser(string? username = null, GameUserRole role = GameUserRole.User)
     {
         username ??= this.UserIncrement.ToString();
-        return this.Database.CreateUser(username, $"{username}@{username}.local");
-    }
+        
+        GameUser user = this.Database.CreateUser(username, $"{username}@{username}.local");
+        if (role != GameUserRole.User) this.Database.SetUserRole(user, role);
 
-    public GameUser CreateAdmin(string? username = null)
-    {
-        GameUser user = this.CreateUser(username);
-        this.Database.SetUserRole(user, GameUserRole.Admin);
         return user;
     }
 

@@ -3,6 +3,7 @@ using Refresh.GameServer.Authentication;
 using Refresh.GameServer.Endpoints.ApiV3.DataTypes.Request;
 using Refresh.GameServer.Extensions;
 using Refresh.GameServer.Types.Levels;
+using Refresh.GameServer.Types.Roles;
 using Refresh.GameServer.Types.UserData;
 
 namespace RefreshTests.GameServer.Tests.ApiV3;
@@ -63,11 +64,13 @@ public class EditApiTests : GameServerTest
     }
 
     [Test]
-    public void AdminCanUpdateLevel()
+    [TestCase(GameUserRole.Admin)]
+    [TestCase(GameUserRole.Curator)]
+    public void RoleCanUpdateLevel(GameUserRole role)
     {
         using TestContext context = this.GetServer();
         GameUser user = context.CreateUser();
-        GameUser admin = context.CreateAdmin();
+        GameUser admin = context.CreateUser(role: role);
         GameLevel level = context.CreateLevel(user, "Not updated");
 
         long oldUpdate = level.UpdateDate;

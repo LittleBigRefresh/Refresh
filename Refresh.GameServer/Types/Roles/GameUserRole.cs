@@ -13,6 +13,10 @@ public enum GameUserRole : sbyte
     /// </summary>
     Admin = 127,
     /// <summary>
+    /// A user that doesn't have moderator powers, but may team pick levels, set re-upload data, and adjust the level's game version.
+    /// </summary>
+    Curator = 64,
+    /// <summary>
     /// A user with special permissions. May upload assets when asset uploads are otherwise disabled.
     /// </summary>
     Trusted = 1,
