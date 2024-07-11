@@ -3,8 +3,8 @@ using System.Security.Cryptography;
 using Bunkum.Listener.Request;
 using Bunkum.Core.Database;
 using Bunkum.Core.Endpoints.Middlewares;
+using Refresh.Common.Extensions;
 using Refresh.GameServer.Endpoints;
-using Refresh.GameServer.Extensions;
 
 namespace Refresh.GameServer.Middlewares;
 
