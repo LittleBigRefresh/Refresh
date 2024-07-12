@@ -15,7 +15,7 @@ public class ProxyMiddleware(ProxyConfig config) : IMiddleware
     {
         HttpClient client = this._httpClients.Value!;
 
-        UriBuilder uri = new(config.Target)
+        UriBuilder uri = new(config.TargetServerUrl)
         {
             Path = context.Uri.AbsolutePath,
         };
