@@ -30,9 +30,7 @@ public class ProxyMiddleware(ProxyConfig config) : IMiddleware
         for (int i = 0; i < context.Query.Count; i++)
         {
             string key = context.Query.GetKey(i)!;
-            
             string name = HttpUtility.HtmlEncode(key);
-
             string value = HttpUtility.HtmlEncode(context.Query[key]!);
 
             queryString.AppendFormat("{0}={1}", name, value);
