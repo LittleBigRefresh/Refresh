@@ -35,6 +35,9 @@ internal class CommandLineManager
         [Option("set-trusted", HelpText = "Gives the user the Trusted role. Username or Email options are required if this is set.")]
         public bool SetTrusted { get; set; }
         
+        [Option("set-curator", HelpText = "Gives the user the Curator role. Username or Email options are required if this is set.")]
+        public bool SetCurator { get; set; }
+        
         [Option("set-default", HelpText = "Gives the user the default role. Username or Email options are required if this is set.")]
         public bool SetDefault { get; set; }
         
@@ -145,6 +148,11 @@ internal class CommandLineManager
         {
             GameUser user = this.GetUserOrFail(options);
             this._server.SetUserAsRole(user, GameUserRole.Trusted);
+        }
+        else if (options.SetCurator)
+        {
+            GameUser user = this.GetUserOrFail(options);
+            this._server.SetUserAsRole(user, GameUserRole.Curator);
         }
         else if (options.SetDefault)
         {
