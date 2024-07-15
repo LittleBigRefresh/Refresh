@@ -9,7 +9,7 @@ namespace RefreshTests.GameServer.Tests.Comments;
 
 public class CommentTests : GameServerTest
 {
-    public static void RateComment(TestContext context, GameUser user, GameComment comment, string rateCommentUrl, string getCommentsUrl)
+    public static void RateComment(TestContext context, GameUser user, IGameComment comment, string rateCommentUrl, string getCommentsUrl)
     {
         using HttpClient client = context.GetAuthenticatedClient(TokenType.Game, user);
 

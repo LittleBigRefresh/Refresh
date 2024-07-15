@@ -173,7 +173,7 @@ public class GameLevelResponse : IDataConvertableFrom<GameLevelResponse, GameLev
             Links = "",
             AverageStarRating = old.CalculateAverageStarRating(dataContext.Database),
             ReviewCount = old.Reviews.Count,
-            CommentCount = old.LevelComments.Count,
+            CommentCount = dataContext.Database.GetTotalCommentsForLevel(old),
         };
 
         response.Type = "user";
@@ -221,7 +221,7 @@ public class GameLevelResponse : IDataConvertableFrom<GameLevelResponse, GameLev
         
         response.IconHash = dataContext.Database.GetAssetFromHash(old.IconHash)?.GetAsIcon(dataContext.Game, dataContext) ?? response.IconHash;
         
-        response.CommentCount = old.LevelComments.Count;
+        response.CommentCount = dataContext.Database.GetTotalCommentsForLevel(old);
         
         return response;
     }

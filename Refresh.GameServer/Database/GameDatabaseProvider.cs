@@ -8,6 +8,7 @@ using Bunkum.RealmDatabase;
 using Refresh.GameServer.Time;
 using Refresh.GameServer.Types.Activity;
 using Refresh.GameServer.Types.Assets;
+using Refresh.GameServer.Types.Comments.Relations;
 using Refresh.GameServer.Types.Contests;
 using Refresh.GameServer.Types.Levels.SkillRewards;
 using Refresh.GameServer.Types.Notifications;
@@ -43,8 +44,10 @@ public class GameDatabaseProvider : RealmDatabaseProvider<GameDatabaseContext>
         typeof(Token),
         typeof(GameLevel),
         typeof(GameSkillReward),
-        typeof(GameComment),
-        typeof(CommentRelation),
+        typeof(GameProfileComment),
+        typeof(GameLevelComment),
+        typeof(ProfileCommentRelation),
+        typeof(LevelCommentRelation),
         typeof(FavouriteLevelRelation),
         typeof(QueueLevelRelation),
         typeof(FavouriteUserRelation),
@@ -309,14 +312,14 @@ public class GameDatabaseProvider : RealmDatabaseProvider<GameDatabaseContext>
         }
         
         IQueryable<dynamic>? oldComments = migration.OldRealm.DynamicApi.All("GameComment");
-        IQueryable<GameComment>? newComments = migration.NewRealm.All<GameComment>();
+        IQueryable<dynamic>? newComments = migration.NewRealm.DynamicApi.All("GameComment");
 
         for (int i = 0; i < newComments.Count(); i++)
         {
             dynamic oldComment = oldComments.ElementAt(i);
-            GameComment newComment = newComments.ElementAt(i);
+            dynamic newComment = newComments.ElementAt(i);
 
-            // In version 40, we switched to Realm source generators which requires some values to be reset
+            // In version 40, we switched to Realm source generators, which requires some values to be reset
             if (oldVersion < 40)
             {
                 newComment.Content = oldComment.Content;

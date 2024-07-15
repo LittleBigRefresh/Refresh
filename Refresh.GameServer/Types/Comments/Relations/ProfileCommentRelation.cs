@@ -1,17 +1,15 @@
-﻿using MongoDB.Bson;
+using MongoDB.Bson;
 using Realms;
-using Refresh.GameServer.Types.Comments;
 using Refresh.GameServer.Types.Reviews;
 using Refresh.GameServer.Types.UserData;
 
-namespace Refresh.GameServer.Types.Relations;
-#nullable disable
+namespace Refresh.GameServer.Types.Comments.Relations;
 
-public partial class CommentRelation : IRealmObject
+public partial class ProfileCommentRelation : IRealmObject, ICommentRelation<GameProfileComment>
 {
     public ObjectId CommentRelationId { get; set; } = ObjectId.GenerateNewId();
     public GameUser User { get; set; }
-    public GameComment Comment { get; set; }
+    public GameProfileComment Comment { get; set; }
     [Ignored]
     public RatingType RatingType
     {

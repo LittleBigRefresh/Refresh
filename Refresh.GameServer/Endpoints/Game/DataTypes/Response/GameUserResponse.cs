@@ -63,7 +63,7 @@ public class GameUserResponse : IDataConvertableFrom<GameUserResponse, GameUser>
             PlanetsHash = "0",
             
             Handle = SerializedUserHandle.FromUser(old, dataContext),
-            CommentCount = old.ProfileComments.Count,
+            CommentCount = dataContext.Database.GetTotalCommentsForProfile(old),
             CommentsEnabled = true,
             FavouriteLevelCount = old.IsManaged ? dataContext.Database.GetTotalLevelsFavouritedByUser(old) : 0,
             FavouriteUserCount = old.IsManaged ? dataContext.Database.GetTotalUsersFavouritedByUser(old) : 0,
