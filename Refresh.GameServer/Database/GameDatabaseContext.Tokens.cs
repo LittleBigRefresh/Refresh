@@ -122,7 +122,7 @@ public partial class GameDatabaseContext // Tokens
     {
         this.Write(() =>
         {
-            this.Tokens.RemoveRange(this.Tokens.Where(t => t.User == user));
+            this.Tokens.RemoveRange(t => t.User == user);
         });
     }
     
@@ -130,7 +130,7 @@ public partial class GameDatabaseContext // Tokens
     {
         this.Write(() =>
         {
-            this.Tokens.RemoveRange(this.Tokens.Where(t => t.User == user && t._TokenType == (int)type));
+            this.Tokens.RemoveRange(t => t.User == user && t._TokenType == (int)type);
         });
     }
     
@@ -143,13 +143,14 @@ public partial class GameDatabaseContext // Tokens
     {
         GameIpVerificationRequest request = new()
         {
+            User = user,
             IpAddress = ipAddress,
             CreatedAt = this._time.Now,
         };
 
         this.Write(() =>
         {
-            user.IpVerificationRequests.Add(request);
+            this.GameIpVerificationRequests.Add(request);
         });
     }
 
@@ -158,22 +159,18 @@ public partial class GameDatabaseContext // Tokens
         this.Write(() =>
         {
             user.CurrentVerifiedIp = ipAddress;
-            user.IpVerificationRequests.Clear();
+            this.GameIpVerificationRequests.RemoveRange(r => r.User == user);
         });
     }
 
     public void DenyIpVerificationRequest(GameUser user, string ipAddress)
     {
-        IEnumerable<GameIpVerificationRequest> requests = user.IpVerificationRequests.Where(r => r.IpAddress == ipAddress);
         this.Write(() =>
         {
-            foreach (GameIpVerificationRequest request in requests)
-            {
-                user.IpVerificationRequests.Remove(request);
-            }
+            this.GameIpVerificationRequests.RemoveRange(r => r.IpAddress == ipAddress && r.User == user);
         });
     }
 
     public DatabaseList<GameIpVerificationRequest> GetIpVerificationRequestsForUser(GameUser user, int count, int skip) 
-        => new(user.IpVerificationRequests, skip, count);
+        => new(this.GameIpVerificationRequests.Where(r => r.User == user), skip, count);
 }

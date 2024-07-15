@@ -43,6 +43,7 @@ public partial class GameDatabaseContext : RealmDatabaseContext
     private RealmDbSet<GameAsset> GameAssets => new(this._realm);
     private RealmDbSet<GameNotification> GameNotifications => new(this._realm);
     private RealmDbSet<GamePhoto> GamePhotos => new(this._realm);
+    private RealmDbSet<GameIpVerificationRequest> GameIpVerificationRequests => new(this._realm);
     private RealmDbSet<GameAnnouncement> GameAnnouncements => new(this._realm);
     private RealmDbSet<QueuedRegistration> QueuedRegistrations => new(this._realm);
     private RealmDbSet<EmailVerificationCode> EmailVerificationCodes => new(this._realm);
@@ -120,6 +121,14 @@ public partial class GameDatabaseContext : RealmDatabaseContext
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     private void Write(Action callback)
     {
+        // if already in a write transaction, include this within that write transaction
+        // throws RealmInvalidTransactionException without this
+        if (this._realm.IsInTransaction)
+        {
+            callback();
+            return;
+        }
+        
         this._realm.Write(callback);
     }
 

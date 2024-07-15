@@ -9,6 +9,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RefreshTests.GameServer", "
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Refresh.Common", "Refresh.Common\Refresh.Common.csproj", "{A3D76B31-8732-4134-907B-F36773DF70D3}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Refresh.HttpsProxy", "Refresh.HttpsProxy\Refresh.HttpsProxy.csproj", "{3E0D28A4-3F63-4C3A-B12C-9AE2823ECE8E}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -37,6 +39,12 @@ Global
 		{A3D76B31-8732-4134-907B-F36773DF70D3}.Release|Any CPU.Build.0 = Release|Any CPU
 		{A3D76B31-8732-4134-907B-F36773DF70D3}.DebugLocalBunkum|Any CPU.ActiveCfg = Debug|Any CPU
 		{A3D76B31-8732-4134-907B-F36773DF70D3}.DebugLocalBunkum|Any CPU.Build.0 = Debug|Any CPU
+		{3E0D28A4-3F63-4C3A-B12C-9AE2823ECE8E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{3E0D28A4-3F63-4C3A-B12C-9AE2823ECE8E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{3E0D28A4-3F63-4C3A-B12C-9AE2823ECE8E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{3E0D28A4-3F63-4C3A-B12C-9AE2823ECE8E}.Release|Any CPU.Build.0 = Release|Any CPU
+		{3E0D28A4-3F63-4C3A-B12C-9AE2823ECE8E}.DebugLocalBunkum|Any CPU.ActiveCfg = Debug|Any CPU
+		{3E0D28A4-3F63-4C3A-B12C-9AE2823ECE8E}.DebugLocalBunkum|Any CPU.Build.0 = Debug|Any CPU
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
 	EndGlobalSection

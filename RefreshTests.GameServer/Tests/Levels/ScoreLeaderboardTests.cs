@@ -447,4 +447,36 @@ public class ScoreLeaderboardTests : GameServerTest
         
         Assert.That(testedSent && testedNotSent, Is.True);
     }
+
+    [Test]
+    public async Task GamePaginationSortsCorrectly()
+    {
+        using TestContext context = this.GetServer();
+        GameUser user = context.CreateUser();
+        GameLevel level = context.CreateLevel(user);
+        
+        using HttpClient client = context.GetAuthenticatedClient(TokenType.Game, user);
+        
+        context.FillLeaderboard(level, 4, 1);
+
+        HttpResponseMessage response = await client.GetAsync($"/lbp/topscores/user/{level.LevelId}/1?pageStart=1&pageSize=2");
+        SerializedScoreList firstPage = response.Content.ReadAsXML<SerializedScoreList>();
+        
+        Assert.Multiple(() =>
+        {
+            Assert.That(firstPage.Scores, Has.Count.EqualTo(2));
+            Assert.That(firstPage.Scores[0].Rank, Is.EqualTo(1));
+            Assert.That(firstPage.Scores[1].Rank, Is.EqualTo(2));
+        });
+        
+        response = await client.GetAsync($"/lbp/topscores/user/{level.LevelId}/1?pageStart=3&pageSize=2");
+        SerializedScoreList secondPage = response.Content.ReadAsXML<SerializedScoreList>();
+        
+        Assert.Multiple(() =>
+        {
+            Assert.That(secondPage.Scores, Has.Count.EqualTo(2));
+            Assert.That(secondPage.Scores[0].Rank, Is.EqualTo(3));
+            Assert.That(secondPage.Scores[1].Rank, Is.EqualTo(4)); 
+        });
+    }
 }

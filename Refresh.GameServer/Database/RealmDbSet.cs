@@ -43,4 +43,9 @@ public class RealmDbSet<T> : IQueryable<T> where T : IRealmObject
     {
         this._realm.RemoveRange(objs);
     }
+
+    public void RemoveRange(Expression<Func<T, bool>> predicate)
+    {
+        this._realm.RemoveRange(this._realm.All<T>().Where(predicate));
+    }
 }

@@ -7,7 +7,6 @@ using Refresh.GameServer.Endpoints.ApiV3.DataTypes.Request;
 using Refresh.GameServer.Endpoints.Game.Levels.FilterSettings;
 using Refresh.GameServer.Extensions;
 using Refresh.GameServer.Services;
-using Refresh.GameServer.Types;
 using Refresh.GameServer.Types.Activity;
 using Refresh.GameServer.Types.Levels;
 using Refresh.GameServer.Types.Matching;
@@ -127,22 +126,11 @@ public partial class GameDatabaseContext // Levels
             
             this.Events.RemoveRange(levelEvents);
 
-            #region This is so terrible it needs to be hidden away
-
-            IQueryable<FavouriteLevelRelation> favouriteLevelRelations = this.FavouriteLevelRelations.Where(r => r.Level == level);
-            this.FavouriteLevelRelations.RemoveRange(favouriteLevelRelations);
-            
-            IQueryable<PlayLevelRelation> playLevelRelations = this.PlayLevelRelations.Where(r => r.Level == level);
-            this.PlayLevelRelations.RemoveRange(playLevelRelations);
-            
-            IQueryable<QueueLevelRelation> queueLevelRelations = this.QueueLevelRelations.Where(r => r.Level == level);
-            this.QueueLevelRelations.RemoveRange(queueLevelRelations);
-            
-            IQueryable<RateLevelRelation> rateLevelRelations = this.RateLevelRelations.Where(r => r.Level == level);
-            this.RateLevelRelations.RemoveRange(rateLevelRelations);
-            
-            IQueryable<UniquePlayLevelRelation> uniquePlayLevelRelations = this.UniquePlayLevelRelations.Where(r => r.Level == level);
-            this.UniquePlayLevelRelations.RemoveRange(uniquePlayLevelRelations);
+            this.FavouriteLevelRelations.RemoveRange(r => r.Level == level);
+            this.PlayLevelRelations.RemoveRange(r => r.Level == level);
+            this.QueueLevelRelations.RemoveRange(r => r.Level == level);
+            this.RateLevelRelations.RemoveRange(r => r.Level == level);
+            this.UniquePlayLevelRelations.RemoveRange(r => r.Level == level);
             
             IQueryable<GameSubmittedScore> scores = this.GameSubmittedScores.Where(r => r.Level == level);
             
@@ -154,9 +142,6 @@ public partial class GameDatabaseContext // Levels
             }
             
             this.GameSubmittedScores.RemoveRange(scores);
-
-            #endregion
-            
         });
 
         //do in separate transaction in a vain attempt to fix Weirdness with favourite level relations having missing levels
@@ -391,6 +376,9 @@ public partial class GameDatabaseContext // Levels
                 return null;
         }
     }
+
+    public GameLevel? GetLevelByRootResource(string rootResource) =>
+        this.GameLevels.FirstOrDefault(level => level.RootResource == rootResource);
     
     [Pure]
     public GameLevel? GetLevelById(int id) => this.GameLevels.FirstOrDefault(l => l.LevelId == id);
