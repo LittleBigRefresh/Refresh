@@ -5,7 +5,7 @@ using Refresh.GameServer.Types.UserData;
 
 namespace Refresh.GameServer.Types.Comments;
 
-public partial class GameComment : IRealmObject, ISequentialId
+public partial class GameComment : IRealmObject, IGameComment, ISequentialId
 {
     [PrimaryKey] public int SequentialId { get; set; }
 
