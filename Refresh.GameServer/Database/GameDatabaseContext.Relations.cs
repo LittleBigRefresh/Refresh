@@ -203,7 +203,7 @@ public partial class GameDatabaseContext // Relations
 
             return;
         }
-        // swap rating
+        // If the relation already exists, simply set the new rating
         if (this.ReviewRatingExistsByUser(user, review))
         {
             RateReviewRelation rel = this.RateReviewRelations.First(relation => relation.Review == review && relation.User == user);
