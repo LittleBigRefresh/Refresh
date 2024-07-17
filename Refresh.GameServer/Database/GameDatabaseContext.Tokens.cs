@@ -171,6 +171,15 @@ public partial class GameDatabaseContext // Tokens
         });
     }
 
+    public void SetTokenDigestInfo(Token token, string digest, bool isHmacDigest)
+    {
+        this.Write(() =>
+        {
+            token.Digest = digest;
+            token.IsHmacDigest = isHmacDigest;
+        });
+    }
+
     public DatabaseList<GameIpVerificationRequest> GetIpVerificationRequestsForUser(GameUser user, int count, int skip) 
         => new(this.GameIpVerificationRequests.Where(r => r.User == user), skip, count);
 }
