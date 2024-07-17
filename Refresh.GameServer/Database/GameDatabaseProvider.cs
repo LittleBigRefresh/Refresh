@@ -358,8 +358,6 @@ public class GameDatabaseProvider : RealmDatabaseProvider<GameDatabaseContext>
                     oldSubjects.Add(new GamePhotoSubject(user, subject.DisplayName, bounds));
                 }
 
-                Console.WriteLine(JsonConvert.SerializeObject(oldSubjects));
-                
                 newPhoto.Subjects = oldSubjects;
             }
         }
