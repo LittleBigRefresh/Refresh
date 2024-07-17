@@ -55,6 +55,8 @@ public class SerializedGameReview : IDataConvertableFrom<SerializedGameReview, G
         if (review == null) 
             return null;
         
+        ReviewRating reviewRating = dataContext.Database.GetRatingForReview(review);
+        
         // TODO: fill in review.YourThumb
         return new SerializedGameReview
         {
@@ -71,8 +73,8 @@ public class SerializedGameReview : IDataConvertableFrom<SerializedGameReview, G
             DeletedBy = ReviewDeletedBy.None,
             Text = review.Content,
             Thumb = dataContext.Database.GetRatingByUser(review.Level, dataContext.User!)?.ToDPad() ?? 0,
-            ThumbsUp = 0,
-            ThumbsDown = 0,
+            ThumbsUp = reviewRating.PostiveRating,
+            ThumbsDown = reviewRating.NegativeRating,
             YourThumb = 0,
         };
     }
