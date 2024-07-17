@@ -125,7 +125,7 @@ public class ReviewEndpoints : EndpointGroup
         return OK;
     }
     
-    [GameEndpoint("rateReview/user/{levelId}/{userName}", HttpMethods.Post)]
+    [GameEndpoint("rateReview/user/{levelId}/{username}", HttpMethods.Post)]
     public Response SubmitReviewRating(RequestContext request, GameDatabaseContext db, GameUser user, int levelId, string username)
     {
         GameUser? reviewer = db.GetUserByUsername(username);
