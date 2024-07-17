@@ -196,7 +196,7 @@ public partial class GameDatabaseContext // Relations
     {
         RateReviewRelation reviewRelation = new()
         {
-            _RatingType = (int)rt,
+            RatingType = rt,
             Review = review,
         };
 
@@ -204,7 +204,6 @@ public partial class GameDatabaseContext // Relations
         {
             this.RateReviewRelations.Add(reviewRelation);
         });
-        
     }
 
     public ReviewRating GetRatingForReview(GameReview review)
@@ -214,17 +213,27 @@ public partial class GameDatabaseContext // Relations
 
         foreach (RateReviewRelation rel in relations)
         {
-            if (rel._RatingType == -1)
+            if (rel.RatingType == RatingType.Yay)
             {
-                rating.NegativeRating++;
+                rating.PostiveRating++;
             }
             else
             {
-                rating.PostiveRating++;
+                rating.NegativeRating++;
             }
         }
 
         return rating;
+    }
+
+    public GameReview GetReviewByUsernameForLevelId(string userName, int levelId)
+    {
+        GameLevel level = this.GameLevels.First(gameLevel => gameLevel.LevelId == levelId);
+        GameUser user = this.GameUsers.First(gameUser => gameUser.Username == userName);
+        
+        GameReview review = this.GameReviews.First((gameReview => gameReview.Publisher == user && gameReview.Level == level));
+        
+        return review;
     }
     
     private RateLevelRelation? GetRateRelationByUser(GameLevel level, GameUser user)

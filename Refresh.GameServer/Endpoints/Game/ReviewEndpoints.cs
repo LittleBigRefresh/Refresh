@@ -124,4 +124,18 @@ public class ReviewEndpoints : EndpointGroup
 
         return OK;
     }
+    
+    [GameEndpoint("rateReview/user/{levelId}/{userName}?rating={ratingType}")]
+    public Response RateReview(RequestContext request, GameDatabaseContext db, int levelId, string userName, int ratingType)
+    {   
+        GameReview review = db.GetReviewByUsernameForLevelId(userName, levelId);
+
+        if (ratingType > 1 || ratingType < -1)
+        {
+            return BadRequest;
+        }
+        db.RateReview(review, (RatingType) ratingType);
+
+        return OK;
+    }
 }
