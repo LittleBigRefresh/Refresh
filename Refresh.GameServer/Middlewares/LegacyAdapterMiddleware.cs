@@ -1,23 +1,24 @@
 using Bunkum.Listener.Request;
 using Bunkum.Core.Database;
 using Bunkum.Core.Endpoints.Middlewares;
+using Refresh.GameServer.Endpoints;
 
 namespace Refresh.GameServer.Middlewares;
 
 public class LegacyAdapterMiddleware : IMiddleware
 {
-    private const string OldUrl = "/LITTLEBIGPLANETPS3_XML";
-    private const string NewUrl = "/lbp";
+    public const string OldBaseRoute = "/LITTLEBIGPLANETPS3_XML/";
+    private const string NewBaseRoute = GameEndpointAttribute.BaseRoute;
     
     public void HandleRequest(ListenerContext context, Lazy<IDatabaseContext> database, Action next)
     {
-        if (!context.Uri.AbsolutePath.StartsWith(OldUrl))
+        if (!context.Uri.AbsolutePath.StartsWith(OldBaseRoute))
         {
             next();
             return;
         }
 
-        context.Uri = new Uri(context.Uri, context.Uri.AbsolutePath.Replace(OldUrl, NewUrl));
+        context.Uri = new Uri(context.Uri, string.Concat(NewBaseRoute, context.Uri.AbsolutePath.AsSpan()[OldBaseRoute.Length..]));
 
         next();
     }
