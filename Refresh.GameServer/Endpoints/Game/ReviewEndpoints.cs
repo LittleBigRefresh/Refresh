@@ -135,12 +135,12 @@ public class ReviewEndpoints : EndpointGroup
         sbyte ratingType = sbyte.Parse(ratingString);
         
         // rating can only be 1, 0 or -1
-        if (ratingType > 1 || ratingType < -1)
+        if (ratingType is > 1 or < -1)
         {
             return BadRequest;
         }
-
-        if (db.ReviewRatingExistsByUserWithSameRating(user, review, (RatingType) ratingType))
+        
+        if (db.ReviewRatingExists(user, review, (RatingType) ratingType))
         {
             return BadRequest;
         }

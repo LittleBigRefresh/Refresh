@@ -258,28 +258,12 @@ public partial class GameDatabaseContext // Relations
 
     public bool ReviewRatingExistsByUser(GameUser user, GameReview review)
     {
-        RateReviewRelation? rel =
-            this.RateReviewRelations.FirstOrDefault(relation => relation.Review == review && relation.User == user);
-
-        if (rel == null)
-        {
-            return false;
-        }
-        
-        return true;
+        return this.RateReviewRelations.Any(relation => relation.Review == review && relation.User == user);
     }
     
-    public bool ReviewRatingExistsByUserWithSameRating(GameUser user, GameReview review, RatingType newRating)
+    public bool ReviewRatingExists(GameUser user, GameReview review, RatingType newRating)
     {
-        RateReviewRelation? rel =
-            this.RateReviewRelations.FirstOrDefault(relation => relation.Review == review && relation.User == user && relation._ReviewRatingType == (int) newRating);
-        
-        if (rel == null)
-        {
-            return false;
-        }
-        
-        return true;
+        return this.RateReviewRelations.Any(relation => relation.Review == review && relation.User == user && relation._ReviewRatingType == (int) newRating);
     }
 
     
