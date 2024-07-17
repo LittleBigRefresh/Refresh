@@ -125,16 +125,26 @@ public class ReviewEndpoints : EndpointGroup
         return OK;
     }
     
-    [GameEndpoint("rateReview/user/{levelId}/{userName}?rating={ratingType}")]
-    public Response RateReview(RequestContext request, GameDatabaseContext db, int levelId, string userName, int ratingType)
+    [GameEndpoint("rateReview/user/{levelId}/{userName}", HttpMethods.Post)]
+    public Response SubmitReviewRating(RequestContext request, GameDatabaseContext db, GameUser user, int levelId, string userName)
     {   
         GameReview review = db.GetReviewByUsernameForLevelId(userName, levelId);
-
+        int ratingType = Int32.Parse(request.QueryString.Get("rating"));
+        
+        Console.WriteLine($"Debugging: levelId: {levelId}, username of reviewer: {userName}, username of rater: {user.Username}, ratingType: {ratingType}");
+        
+        // rating can only be 1, 0 or -1
         if (ratingType > 1 || ratingType < -1)
         {
             return BadRequest;
         }
-        db.RateReview(review, (RatingType) ratingType);
+
+        if (db.ReviewRatingExistsByUserWithSameRating(user, review, (RatingType) ratingType))
+        {
+            return BadRequest;
+        }
+        
+        db.RateReview(review, (RatingType) ratingType, user);
 
         return OK;
     }

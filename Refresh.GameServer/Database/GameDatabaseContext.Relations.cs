@@ -192,12 +192,32 @@ public partial class GameDatabaseContext // Relations
 
     #region Rating and Reviewing
 
-    public void RateReview(GameReview review, RatingType rt)
+    public void RateReview(GameReview review, RatingType rt, GameUser user)
     {
+        // if rating type is neutral, remove previous review rating by user 
+        if (rt == RatingType.Neutral && this.ReviewRatingExistsByUser(user, review))
+        {
+            RateReviewRelation rel =
+                this.RateReviewRelations.First(relation => relation.Review == review && relation.User == user);
+            this.Write(() => this.RateReviewRelations.Remove(rel));
+
+            return;
+        }
+        // swap rating
+        if (this.ReviewRatingExistsByUser(user, review))
+        {
+            RateReviewRelation rel = this.RateReviewRelations.First(relation => relation.Review == review && relation.User == user);
+            
+            this.Write(() => rel.RatingType = rt);
+
+            return;
+        }
+        
         RateReviewRelation reviewRelation = new()
         {
             RatingType = rt,
             Review = review,
+            User = user,
         };
 
         this.Write(() =>
@@ -205,7 +225,7 @@ public partial class GameDatabaseContext // Relations
             this.RateReviewRelations.Add(reviewRelation);
         });
     }
-
+    
     public ReviewRating GetRatingForReview(GameReview review)
     {
         IQueryable<RateReviewRelation> relations = this.RateReviewRelations.Where((relation => relation.Review == review));
@@ -235,6 +255,33 @@ public partial class GameDatabaseContext // Relations
         
         return review;
     }
+
+    public bool ReviewRatingExistsByUser(GameUser user, GameReview review)
+    {
+        RateReviewRelation? rel =
+            this.RateReviewRelations.FirstOrDefault(relation => relation.Review == review && relation.User == user);
+
+        if (rel == null)
+        {
+            return false;
+        }
+        
+        return true;
+    }
+    
+    public bool ReviewRatingExistsByUserWithSameRating(GameUser user, GameReview review, RatingType newRating)
+    {
+        RateReviewRelation? rel =
+            this.RateReviewRelations.FirstOrDefault(relation => relation.Review == review && relation.User == user && relation._ReviewRatingType == (int) newRating);
+        
+        if (rel == null)
+        {
+            return false;
+        }
+        
+        return true;
+    }
+
     
     private RateLevelRelation? GetRateRelationByUser(GameLevel level, GameUser user)
         => this.RateLevelRelations.FirstOrDefault(r => r.User == user && r.Level == level);
