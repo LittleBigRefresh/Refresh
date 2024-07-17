@@ -129,9 +129,10 @@ public class ReviewEndpoints : EndpointGroup
     public Response SubmitReviewRating(RequestContext request, GameDatabaseContext db, GameUser user, int levelId, string userName)
     {   
         GameReview review = db.GetReviewByUsernameForLevelId(userName, levelId);
-        int ratingType = Int32.Parse(request.QueryString.Get("rating"));
         
-        Console.WriteLine($"Debugging: levelId: {levelId}, username of reviewer: {userName}, username of rater: {user.Username}, ratingType: {ratingType}");
+        string ratingString = request.QueryString.Get("rating") ?? "0";
+        
+        sbyte ratingType = sbyte.Parse(ratingString);
         
         // rating can only be 1, 0 or -1
         if (ratingType > 1 || ratingType < -1)
