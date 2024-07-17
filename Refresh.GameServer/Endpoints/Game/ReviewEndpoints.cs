@@ -126,15 +126,15 @@ public class ReviewEndpoints : EndpointGroup
     }
     
     [GameEndpoint("rateReview/user/{levelId}/{username}", HttpMethods.Post)]
-    public Response SubmitReviewRating(RequestContext request, GameDatabaseContext db, GameUser user, int levelId, string username)
+    public Response SubmitReviewRating(RequestContext request, GameDatabaseContext database, GameUser user, int levelId, string username)
     {
-        GameUser? reviewer = db.GetUserByUsername(username);
-        GameLevel? reviewedLevel = db.GetLevelById(levelId);
+        GameUser? reviewer = database.GetUserByUsername(username);
+        GameLevel? reviewedLevel = database.GetLevelById(levelId);
         
         if (reviewer == null) return BadRequest;
         if (reviewedLevel == null) return BadRequest;
         
-        GameReview? review = db.GetReviewByUserForLevel(reviewer, reviewedLevel);
+        GameReview? review = database.GetReviewByUserForLevel(reviewer, reviewedLevel);
 
         if (review == null) return NotFound;
         
@@ -148,12 +148,12 @@ public class ReviewEndpoints : EndpointGroup
             return BadRequest;
         }
         
-        if (db.ReviewRatingExists(user, review, (RatingType) ratingType))
+        if (database.ReviewRatingExists(user, review, (RatingType) ratingType))
         {
             return BadRequest;
         }
         
-        db.RateReview(review, (RatingType) ratingType, user);
+        database.RateReview(review, (RatingType) ratingType, user);
 
         return OK;
     }
