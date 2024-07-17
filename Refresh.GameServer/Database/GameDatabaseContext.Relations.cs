@@ -192,6 +192,41 @@ public partial class GameDatabaseContext // Relations
 
     #region Rating and Reviewing
 
+    public void RateReview(GameReview review, RatingType rt)
+    {
+        RateReviewRelation reviewRelation = new()
+        {
+            _RatingType = (int)rt,
+            Review = review,
+        };
+
+        this.Write(() =>
+        {
+            this.RateReviewRelations.Add(reviewRelation);
+        });
+        
+    }
+
+    public ReviewRating GetRatingForReview(GameReview review)
+    {
+        IQueryable<RateReviewRelation> relations = this.RateReviewRelations.Where((relation => relation.Review == review));
+        ReviewRating rating = new();
+
+        foreach (RateReviewRelation rel in relations)
+        {
+            if (rel._RatingType == -1)
+            {
+                rating.NegativeRating++;
+            }
+            else
+            {
+                rating.PostiveRating++;
+            }
+        }
+
+        return rating;
+    }
+    
     private RateLevelRelation? GetRateRelationByUser(GameLevel level, GameUser user)
         => this.RateLevelRelations.FirstOrDefault(r => r.User == user && r.Level == level);
 
