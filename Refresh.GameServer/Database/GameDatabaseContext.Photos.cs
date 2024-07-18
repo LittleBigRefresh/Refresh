@@ -49,6 +49,8 @@ public partial class GameDatabaseContext // Photos
         newPhoto.Subjects = gameSubjects;
 
         this.AddSequentialObject(newPhoto);
+        
+        this.CreatePhotoUploadEvent(publisher, newPhoto);
     }
 
     public void RemovePhoto(GamePhoto photo)

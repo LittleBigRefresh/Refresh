@@ -1,5 +1,6 @@
 using Refresh.GameServer.Types.Activity;
 using Refresh.GameServer.Types.Levels;
+using Refresh.GameServer.Types.Photos;
 using Refresh.GameServer.Types.Relations;
 using Refresh.GameServer.Types.UserData;
 using Refresh.GameServer.Types.UserData.Leaderboard;
@@ -202,6 +203,21 @@ public partial class GameDatabaseContext // ActivityWrite
             StoredObjectId = score.ScoreId,
         };
 
+        this.Write(() => this.Events.Add(e));
+        return e;
+    }
+
+    public Event CreatePhotoUploadEvent(GameUser userFrom, GamePhoto photo)
+    {
+        Event e = new()
+        {
+            EventType = EventType.PhotoUpload,
+            StoredDataType = EventDataType.Photo,
+            Timestamp = this._time.TimestampMilliseconds,
+            User = userFrom,
+            StoredSequentialId = photo.PhotoId,
+        };
+        
         this.Write(() => this.Events.Add(e));
         return e;
     }

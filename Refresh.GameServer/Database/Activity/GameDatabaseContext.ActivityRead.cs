@@ -1,6 +1,7 @@
 using System.Diagnostics;
 using Refresh.GameServer.Types.Activity;
 using Refresh.GameServer.Types.Levels;
+using Refresh.GameServer.Types.Photos;
 using Refresh.GameServer.Types.Relations;
 using Refresh.GameServer.Types.UserData;
 using Refresh.GameServer.Types.UserData.Leaderboard;
@@ -39,6 +40,16 @@ public partial class GameDatabaseContext // ActivityRead
         return this.GetScoreByObjectId(e.StoredObjectId);
     }
 
+    public GamePhoto? GetPhotoFromEvent(Event e)
+    {
+        if (e.StoredDataType != EventDataType.Photo)
+            throw new InvalidOperationException($"Event does not store the correct data type (expected {nameof(EventDataType.Photo)})");
+
+        Debug.Assert(e.StoredSequentialId != null);
+
+        return this.GetPhotoById(e.StoredSequentialId.Value);
+    }
+    
     public RateLevelRelation? GetRateLevelRelationFromEvent(Event e)
     {
         if (e.StoredDataType != EventDataType.RateLevelRelation)

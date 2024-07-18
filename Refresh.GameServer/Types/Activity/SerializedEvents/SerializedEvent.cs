@@ -9,6 +9,7 @@ namespace Refresh.GameServer.Types.Activity.SerializedEvents;
 [XmlInclude(typeof(SerializedLevelUploadEvent))]
 [XmlInclude(typeof(SerializedLevelPlayEvent))]
 [XmlInclude(typeof(SerializedScoreSubmitEvent))]
+[XmlInclude(typeof(SerializedPhotoUploadEvent))]
 public abstract class SerializedEvent
 {
     [XmlAttribute("type")]
