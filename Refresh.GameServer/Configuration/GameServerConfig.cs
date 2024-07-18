@@ -9,7 +9,7 @@ namespace Refresh.GameServer.Configuration;
 [SuppressMessage("ReSharper", "RedundantDefaultMemberInitializer")]
 public class GameServerConfig : Config
 {
-    public override int CurrentConfigVersion => 16;
+    public override int CurrentConfigVersion => 17;
     public override int Version { get; set; } = 0;
 
     protected override void Migrate(int oldVer, dynamic oldConfig) {}
@@ -49,4 +49,7 @@ public class GameServerConfig : Config
     /// Whether to print the room state whenever a `FindBestRoom` match returns no results
     /// </summary>
     public bool PrintRoomStateWhenNoFoundRooms { get; set; } = true;
+
+    public string[] Sha1DigestKeys = ["CustomServerDigest"];
+    public string[] HmacDigestKeys = ["CustomServerDigest"];
 }
