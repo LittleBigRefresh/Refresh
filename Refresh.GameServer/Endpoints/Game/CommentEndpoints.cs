@@ -19,7 +19,7 @@ namespace Refresh.GameServer.Endpoints.Game;
 public class CommentEndpoints : EndpointGroup
 {
     [GameEndpoint("postUserComment/{username}", ContentType.Xml, HttpMethods.Post)]
-    public Response PostProfileComment(RequestContext context, GameDatabaseContext database, string username, GameComment body, GameUser user, IDateTimeProvider timeProvider)
+    public Response PostProfileComment(RequestContext context, GameDatabaseContext database, string username, SerializedComment body, GameUser user, IDateTimeProvider timeProvider)
     {
         if (body.Content.Length > 4096)
         {
@@ -43,10 +43,7 @@ public class CommentEndpoints : EndpointGroup
         
         (int skip, int count) = context.GetPageData();
 
-        List<GameComment> comments = database.GetProfileComments(profile, count, skip).ToList();
-        foreach (GameComment comment in comments) comment.PrepareForSerialization(user, dataContext);
-
-        return new SerializedCommentList(comments);
+        return new SerializedCommentList(SerializedComment.FromOldList(database.GetProfileComments(profile, count, skip), dataContext));
     }
 
     [GameEndpoint("deleteUserComment/{username}", HttpMethods.Post)]
@@ -57,7 +54,7 @@ public class CommentEndpoints : EndpointGroup
         GameUser? profile = database.GetUserByUsername(username);
         if (profile == null) return NotFound;
 
-        GameComment? comment = profile.ProfileComments.FirstOrDefault(comment => comment.SequentialId == commentId);
+        GameProfileComment? comment = database.GetProfileCommentById(commentId);
         if (comment == null) return BadRequest;
 
         //Validate someone doesnt try to delete someone elses comment
@@ -73,7 +70,7 @@ public class CommentEndpoints : EndpointGroup
     }
 
     [GameEndpoint("postComment/{slotType}/{id}", ContentType.Xml, HttpMethods.Post)]
-    public Response PostLevelComment(RequestContext context, GameDatabaseContext database, string slotType, int id, GameComment body, GameUser user)
+    public Response PostLevelComment(RequestContext context, GameDatabaseContext database, string slotType, int id, SerializedComment body, GameUser user)
     {
         if (body.Content.Length > 4096)
         {
@@ -98,10 +95,7 @@ public class CommentEndpoints : EndpointGroup
 
         (int skip, int count) = context.GetPageData();
 
-        List<GameComment> comments = database.GetLevelComments(level, count, skip).ToList();
-        foreach(GameComment comment in comments) comment.PrepareForSerialization(user, dataContext);
-
-        return new SerializedCommentList(comments);
+        return new SerializedCommentList(SerializedComment.FromOldList(database.GetLevelComments(level, count, skip), dataContext));
     }
 
     [GameEndpoint("deleteComment/{slotType}/{id}", HttpMethods.Post)]
@@ -111,8 +105,8 @@ public class CommentEndpoints : EndpointGroup
         
         GameLevel? level = database.GetLevelByIdAndType(slotType, id);
         if (level == null) return NotFound;
-        
-        GameComment? comment = level.LevelComments.FirstOrDefault(comment => comment.SequentialId == commentId);
+
+        GameLevelComment? comment = database.GetLevelCommentById(commentId);
         if (comment == null) return BadRequest;
         
         //Validate someone doesnt try to delete someone else's comment
@@ -126,20 +120,35 @@ public class CommentEndpoints : EndpointGroup
         
         return OK;
     }
-
-    [GameEndpoint("rateComment/user/{content}", HttpMethods.Post)] // `user` level comments
-    [GameEndpoint("rateComment/developer/{content}", HttpMethods.Post)] // `developer` level comments
+    
     [GameEndpoint("rateUserComment/{content}", HttpMethods.Post)] // profile comments
-    public Response RateComment(RequestContext context, GameDatabaseContext database, GameUser user, string content)
+    public Response RateProfileComment(RequestContext context, GameDatabaseContext database, GameUser user, string content)
     {
         if (!int.TryParse(context.QueryString["commentId"], out int commentId)) return BadRequest;
         if (!Enum.TryParse(context.QueryString["rating"], out RatingType ratingType)) return BadRequest;
 
-        GameComment? comment = database.GetCommentById(commentId);
+        GameProfileComment? comment = database.GetProfileCommentById(commentId);
         if (comment == null)
             return NotFound;
 
-        if (!database.RateComment(user, comment, ratingType))
+        if (!database.RateProfileComment(user, comment, ratingType))
+            return BadRequest;
+
+        return OK;
+    }
+    
+    [GameEndpoint("rateComment/user/{content}", HttpMethods.Post)] // `user` level comments
+    [GameEndpoint("rateComment/developer/{content}", HttpMethods.Post)] // `developer` level comments
+    public Response RateLevelComment(RequestContext context, GameDatabaseContext database, GameUser user, string content)
+    {
+        if (!int.TryParse(context.QueryString["commentId"], out int commentId)) return BadRequest;
+        if (!Enum.TryParse(context.QueryString["rating"], out RatingType ratingType)) return BadRequest;
+
+        GameLevelComment? comment = database.GetLevelCommentById(commentId);
+        if (comment == null)
+            return NotFound;
+
+        if (!database.RateLevelComment(user, comment, ratingType))
             return BadRequest;
 
         return OK;

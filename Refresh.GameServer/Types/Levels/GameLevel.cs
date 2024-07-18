@@ -92,8 +92,6 @@ public partial class GameLevel : IRealmObject, ISequentialId
     public float Score { get; set; }
 
 #nullable disable
-    public IList<GameComment> LevelComments { get; }
-    
     // ILists can't be serialized to XML, and Lists/Arrays cannot be stored in realm,
     // hence _SkillRewards and SkillRewards both existing
     // ReSharper disable once InconsistentNaming

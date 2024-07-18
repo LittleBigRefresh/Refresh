@@ -8,6 +8,7 @@ using Bunkum.RealmDatabase;
 using Refresh.GameServer.Time;
 using Refresh.GameServer.Types.Activity;
 using Refresh.GameServer.Types.Assets;
+using Refresh.GameServer.Types.Comments.Relations;
 using Refresh.GameServer.Types.Contests;
 using Refresh.GameServer.Types.Levels.SkillRewards;
 using Refresh.GameServer.Types.Notifications;
@@ -32,7 +33,7 @@ public class GameDatabaseProvider : RealmDatabaseProvider<GameDatabaseContext>
         this._time = time;
     }
 
-    protected override ulong SchemaVersion => 134;
+    protected override ulong SchemaVersion => 135;
 
     protected override string Filename => "refreshGameServer.realm";
     
@@ -43,8 +44,10 @@ public class GameDatabaseProvider : RealmDatabaseProvider<GameDatabaseContext>
         typeof(Token),
         typeof(GameLevel),
         typeof(GameSkillReward),
-        typeof(GameComment),
-        typeof(CommentRelation),
+        typeof(GameProfileComment),
+        typeof(GameLevelComment),
+        typeof(ProfileCommentRelation),
+        typeof(LevelCommentRelation),
         typeof(FavouriteLevelRelation),
         typeof(QueueLevelRelation),
         typeof(FavouriteUserRelation),
@@ -181,6 +184,30 @@ public class GameDatabaseProvider : RealmDatabaseProvider<GameDatabaseContext>
                 newUser.LocationX = (int)oldUser.Location.X;
                 newUser.LocationY = (int)oldUser.Location.Y;
             }
+            
+            // In version 134, we split GameComments into multiple tables.
+            // This migration creates GameProfileComments
+            if (oldVersion < 134)
+            {
+                foreach (dynamic comment in oldUser.ProfileComments)
+                {
+                    GameUser? author = comment.Author != null ? migration.NewRealm.Find<GameUser>(comment.Author.UserId) : null;
+                    if (author == null)
+                    {
+                        Console.WriteLine($"Skipping migration for profile comment id {comment.SequentialId} due to missing author");
+                        continue;
+                    }
+
+                    migration.NewRealm.Add(new GameProfileComment
+                    {
+                        SequentialId = (int)comment.SequentialId,
+                        Author = author,
+                        Profile = newUser,
+                        Content = comment.Content,
+                        Timestamp = comment.Timestamp,
+                    });
+                }
+            }
         }
 
         IQueryable<dynamic>? oldLevels = migration.OldRealm.DynamicApi.All("GameLevel");
@@ -248,6 +275,30 @@ public class GameDatabaseProvider : RealmDatabaseProvider<GameDatabaseContext>
                 newLevel.LocationX = (int)oldLevel.Location.X;
                 newLevel.LocationY = (int)oldLevel.Location.Y;
             }
+            
+            // In version 134, we split GameComments into multiple tables.
+            // This migration creates GameLevelComments
+            if (oldVersion < 134)
+            {
+                foreach (dynamic comment in oldLevel.LevelComments)
+                {
+                    GameUser? author = comment.Author != null ? migration.NewRealm.Find<GameUser>(comment.Author.UserId) : null;
+                    if (author == null)
+                    {
+                        Console.WriteLine($"Skipping migration for level comment id {comment.SequentialId} due to missing author");
+                        continue;
+                    }
+
+                    migration.NewRealm.Add(new GameLevelComment
+                    {
+                        SequentialId = (int)comment.SequentialId,
+                        Author = author,
+                        Level = newLevel,
+                        Content = comment.Content,
+                        Timestamp = comment.Timestamp,
+                    });
+                }
+            }
         }
 
         // In version 22, tokens added expiry and types so just wipe them all
@@ -307,21 +358,6 @@ public class GameDatabaseProvider : RealmDatabaseProvider<GameDatabaseContext>
             Token newToken = newTokens.ElementAt(i);
 
             if (oldVersion < 36) newToken.LoginDate = DateTimeOffset.FromUnixTimeMilliseconds(timestampMilliseconds);
-        }
-        
-        IQueryable<dynamic>? oldComments = migration.OldRealm.DynamicApi.All("GameComment");
-        IQueryable<GameComment>? newComments = migration.NewRealm.All<GameComment>();
-
-        for (int i = 0; i < newComments.Count(); i++)
-        {
-            dynamic oldComment = oldComments.ElementAt(i);
-            GameComment newComment = newComments.ElementAt(i);
-
-            // In version 40, we switched to Realm source generators which requires some values to be reset
-            if (oldVersion < 40)
-            {
-                newComment.Content = oldComment.Content;
-            }
         }
         
         IQueryable<dynamic>? oldPhotos = migration.OldRealm.DynamicApi.All("GamePhoto");

@@ -7,67 +7,75 @@ namespace Refresh.GameServer.Database;
 
 public partial class GameDatabaseContext // Comments
 {
-    public GameComment? GetCommentById(int id) =>
-        this.GameComments.FirstOrDefault(c => c.SequentialId == id);
-    public GameComment PostCommentToProfile(GameUser profile, GameUser author, string content)
+    public GameProfileComment? GetProfileCommentById(int id) =>
+        this.GameProfileComments.FirstOrDefault(c => c.SequentialId == id);
+    
+    public GameProfileComment PostCommentToProfile(GameUser profile, GameUser author, string content)
     {
-        GameComment comment = new()
+        GameProfileComment comment = new()
         {
             Author = author,
+            Profile = profile,
             Content = content,
             Timestamp = this._time.TimestampMilliseconds,
         };
         
-        this.AddSequentialObject(comment, profile.ProfileComments);
+        this.AddSequentialObject(comment);
         return comment;
     }
 
-    public IEnumerable<GameComment> GetProfileComments(GameUser profile, int count, int skip) =>
-        profile.ProfileComments
+    public IEnumerable<GameProfileComment> GetProfileComments(GameUser profile, int count, int skip) =>
+        this.GameProfileComments
+            .Where(c => c.Profile == profile)
             .OrderByDescending(c => c.Timestamp)
             .AsEnumerable()
             .Skip(skip)
             .Take(count);
     
     [Pure]
-    public int GetTotalCommentsForProfile(GameUser profile) => profile.ProfileComments.Count;
+    public int GetTotalCommentsForProfile(GameUser profile) => this.GameProfileComments.Count(c => c.Profile == profile);
 
-    public void DeleteProfileComment(GameComment comment, GameUser profile)
+    public void DeleteProfileComment(GameProfileComment comment, GameUser profile)
     {
         this.Write(() =>
         {
-            profile.ProfileComments.Remove(comment);
+            this.GameProfileComments.Remove(comment);
         });
     }
+    
+    public GameLevelComment? GetLevelCommentById(int id) =>
+        this.GameLevelComments.FirstOrDefault(c => c.SequentialId == id);
 
-    public GameComment PostCommentToLevel(GameLevel level, GameUser author, string content)
+    public GameLevelComment PostCommentToLevel(GameLevel level, GameUser author, string content)
         {
-            GameComment comment = new()
+            GameLevelComment comment = new()
             {
                 Author = author,
+                Level = level,
                 Content = content,
                 Timestamp = this._time.TimestampMilliseconds,
             };
             
-            this.AddSequentialObject(comment, level.LevelComments);
+            this.AddSequentialObject(comment);
             return comment;
         }
 
-    public IEnumerable<GameComment> GetLevelComments(GameLevel level, int count, int skip) =>
-        level.LevelComments
-             .OrderByDescending(c => c.Timestamp)
-             .AsEnumerable()
-             .Skip(skip)
-             .Take(count);
+    public IEnumerable<GameLevelComment> GetLevelComments(GameLevel level, int count, int skip) =>
+        this.GameLevelComments
+            .Where(c => c.Level == level)
+            .OrderByDescending(c => c.Timestamp)
+            .AsEnumerable()
+            .Skip(skip)
+            .Take(count);
     
     [Pure]
-    public int GetTotalCommentsForLevel(GameLevel level) => level.LevelComments.Count;
+    public int GetTotalCommentsForLevel(GameLevel level) => this.GameLevelComments.Count(c => c.Level == level);
 
-    public void DeleteLevelComment(GameComment comment, GameLevel level)
+    public void DeleteLevelComment(GameLevelComment comment, GameLevel level)
     {
         this.Write(() =>
         {
-            level.LevelComments.Remove(comment);
+            this.GameLevelComments.Remove(comment);
         });
     }
 }

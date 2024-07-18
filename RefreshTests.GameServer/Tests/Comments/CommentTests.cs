@@ -9,7 +9,7 @@ namespace RefreshTests.GameServer.Tests.Comments;
 
 public class CommentTests : GameServerTest
 {
-    public static void RateComment(TestContext context, GameUser user, GameComment comment, string rateCommentUrl, string getCommentsUrl)
+    public static void RateComment(TestContext context, GameUser user, IGameComment comment, string rateCommentUrl, string getCommentsUrl)
     {
         using HttpClient client = context.GetAuthenticatedClient(TokenType.Game, user);
 
@@ -24,7 +24,7 @@ public class CommentTests : GameServerTest
         
             HttpResponseMessage response = client.GetAsync(getCommentsUrl).Result;
             SerializedCommentList userComments = response.Content.ReadAsXML<SerializedCommentList>();
-            comment = userComments.Items.First();
+            SerializedComment serializedComment = userComments.Items.First();
 
             int expectedThumbsUp, expectedThumbsDown;
             
@@ -48,9 +48,9 @@ public class CommentTests : GameServerTest
             
             Assert.Multiple(() =>
             {
-                Assert.That(comment.YourThumb, Is.EqualTo(ratingType.ToDPad()));
-                Assert.That(comment.ThumbsUp, Is.EqualTo(expectedThumbsUp));
-                Assert.That(comment.ThumbsDown, Is.EqualTo(expectedThumbsDown));
+                Assert.That(serializedComment.YourThumb, Is.EqualTo(ratingType.ToDPad()));
+                Assert.That(serializedComment.ThumbsUp, Is.EqualTo(expectedThumbsUp));
+                Assert.That(serializedComment.ThumbsDown, Is.EqualTo(expectedThumbsDown));
             });
         }
         

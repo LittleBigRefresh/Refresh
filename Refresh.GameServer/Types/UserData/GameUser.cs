@@ -61,10 +61,6 @@ public partial class GameUser : IRealmObject, IRateLimitUser
     
     public DateTimeOffset JoinDate { get; set; }
     public UserPins Pins { get; set; } = new();
-    
-    #nullable disable
-    public IList<GameComment> ProfileComments { get; }
-    #nullable restore
 
     public string BetaPlanetsHash { get; set; } = "0";
     public string Lbp2PlanetsHash { get; set; } = "0";

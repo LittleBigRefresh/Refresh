@@ -1,9 +1,11 @@
 using System.Diagnostics.Contracts;
+using Realms;
 using Refresh.GameServer.Authentication;
 using Refresh.GameServer.Endpoints.Game.Levels.FilterSettings;
 using Refresh.GameServer.Extensions;
 using Refresh.GameServer.Types;
 using Refresh.GameServer.Types.Comments;
+using Refresh.GameServer.Types.Comments.Relations;
 using Refresh.GameServer.Types.Levels;
 using Refresh.GameServer.Types.Relations;
 using Refresh.GameServer.Types.Reviews;
@@ -414,33 +416,52 @@ public partial class GameDatabaseContext // Relations
 
     #region Comments
 
-    private CommentRelation? GetCommentRelationByUser(GameComment comment, GameUser user) => this.CommentRelations
+    private ProfileCommentRelation? GetProfileCommentRelationByUser(GameProfileComment comment, GameUser user) => this.ProfileCommentRelations
+        .FirstOrDefault(r => r.Comment == comment && r.User == user);
+    
+    private LevelCommentRelation? GetLevelCommentRelationByUser(GameLevelComment comment, GameUser user) => this.LevelCommentRelations
         .FirstOrDefault(r => r.Comment == comment && r.User == user);
     
     /// <summary>
-    /// Get a user's rating on a particular comment.
+    /// Get a user's rating on a particular profile comment.
     /// A null return value means a user has not set a rating.
     /// </summary>
     /// <param name="comment">The comment to check</param>
     /// <param name="user">The user to check</param>
     /// <returns>The rating if found</returns>
     [Pure]
-    public RatingType? GetRatingByUser(GameComment comment, GameUser user) 
-        => this.GetCommentRelationByUser(comment, user)?.RatingType;
+    public RatingType? GetProfileCommentRatingByUser(GameProfileComment comment, GameUser user) 
+        => this.GetProfileCommentRelationByUser(comment, user)?.RatingType;
     
-    public int GetTotalRatingsForComment(GameComment comment, RatingType type) =>
-        this.CommentRelations.Count(r => r.Comment == comment && r._RatingType == (int)type);
+    /// <summary>
+    /// Get a user's rating on a particular level comment.
+    /// A null return value means a user has not set a rating.
+    /// </summary>
+    /// <param name="comment">The comment to check</param>
+    /// <param name="user">The user to check</param>
+    /// <returns>The rating if found</returns>
+    [Pure]
+    public RatingType? GetLevelCommentRatingByUser(GameLevelComment comment, GameUser user) 
+        => this.GetLevelCommentRelationByUser(comment, user)?.RatingType;
     
-    public bool RateComment(GameUser user, GameComment comment, RatingType ratingType)
+    public int GetTotalRatingsForProfileComment(GameProfileComment comment, RatingType type) =>
+        this.ProfileCommentRelations.Count(r => r.Comment == comment && r._RatingType == (int)type);
+    
+    public int GetTotalRatingsForLevelComment(GameLevelComment comment, RatingType type) =>
+        this.LevelCommentRelations.Count(r => r.Comment == comment && r._RatingType == (int)type);
+
+    private bool RateComment<TComment, TCommentRelation>(GameUser user, TComment comment, RatingType ratingType, RealmDbSet<TCommentRelation> list)
+        where TComment : class, IGameComment
+        where TCommentRelation : class, ICommentRelation<TComment>, new()
     {
         if (ratingType == RatingType.Neutral)
             return false;
         
-        CommentRelation? relation = GetCommentRelationByUser(comment, user);
-
+        TCommentRelation? relation = list.FirstOrDefault(r => r.Comment == comment && r.User == user);
+        
         if (relation == null)
         {
-            relation = new CommentRelation
+            relation = new TCommentRelation
             {
                 User = user,
                 Comment = comment,
@@ -450,7 +471,7 @@ public partial class GameDatabaseContext // Relations
             
             this.Write(() =>
             {
-                this.CommentRelations.Add(relation);
+                list.Add(relation);
             });
         }
         else
@@ -464,6 +485,12 @@ public partial class GameDatabaseContext // Relations
 
         return true;
     }
+    
+    public bool RateProfileComment(GameUser user, GameProfileComment comment, RatingType ratingType)
+        => this.RateComment(user, comment, ratingType, this.ProfileCommentRelations);
+
+    public bool RateLevelComment(GameUser user, GameLevelComment comment, RatingType ratingType)
+        => this.RateComment(user, comment, ratingType, this.LevelCommentRelations);
 
     #endregion
 }
