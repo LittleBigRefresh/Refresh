@@ -9,7 +9,7 @@ public class DigestMiddlewareTests : GameServerTest
     public void DoesntIncludeDigestWhenOutsideOfGame()
     {
         using TestContext context = this.GetServer();
-        context.Server.Value.Server.AddMiddleware<DigestMiddleware>();
+        context.Server.Value.Server.AddMiddleware(new DigestMiddleware(context.Server.Value.GameServerConfig));
 
         HttpResponseMessage response =  context.Http.GetAsync("/api/v3/instance").Result;
         
@@ -25,7 +25,7 @@ public class DigestMiddlewareTests : GameServerTest
     {
         using TestContext context = this.GetServer();
         context.Server.Value.Server.AddEndpointGroup<TestEndpoints>();
-        context.Server.Value.Server.AddMiddleware<DigestMiddleware>();
+        context.Server.Value.Server.AddMiddleware(new DigestMiddleware(context.Server.Value.GameServerConfig));
 
         HttpResponseMessage response =  context.Http.GetAsync("/lbp/eula").Result;
         
@@ -36,21 +36,26 @@ public class DigestMiddlewareTests : GameServerTest
         });
     }
     
-    [Test]
-    public void DigestIsCorrect()
+    [TestCase(false)]
+    [TestCase(true)]
+    public void DigestIsCorrect(bool isHmac)
     {
         using TestContext context = this.GetServer();
         context.Server.Value.Server.AddEndpointGroup<TestEndpoints>();
-        context.Server.Value.Server.AddMiddleware<DigestMiddleware>();
+        context.Server.Value.Server.AddMiddleware(new DigestMiddleware(context.Server.Value.GameServerConfig));
 
         const string endpoint = "/lbp/test";
         const string expectedResultStr = "test";
         
         using MemoryStream blankMs = new();
         using MemoryStream expectedResultMs = new(Encoding.ASCII.GetBytes(expectedResultStr));
+
+        string digest = isHmac
+            ? context.Server.Value.GameServerConfig.HmacDigestKeys[0]
+            : context.Server.Value.GameServerConfig.Sha1DigestKeys[0];
         
-        string serverDigest = DigestMiddleware.CalculateDigest(endpoint, expectedResultMs, "", null, null);
-        string clientDigest = DigestMiddleware.CalculateDigest(endpoint, blankMs, "", null, null);
+        string serverDigest = DigestMiddleware.CalculateDigest(digest, endpoint, expectedResultMs, "", null, false, isHmac);
+        string clientDigest = DigestMiddleware.CalculateDigest(digest, endpoint, blankMs, "", null, false, isHmac);
 
         context.Http.DefaultRequestHeaders.Add("X-Digest-A", clientDigest);
         HttpResponseMessage response =  context.Http.GetAsync(endpoint).Result;
@@ -67,12 +72,13 @@ public class DigestMiddlewareTests : GameServerTest
         });
     }
     
-    [Test]
-    public void PspDigestIsCorrect()
+    [TestCase(false)]
+    [TestCase(true)]
+    public void PspDigestIsCorrect(bool isHmac)
     {
         using TestContext context = this.GetServer();
         context.Server.Value.Server.AddEndpointGroup<TestEndpoints>();
-        context.Server.Value.Server.AddMiddleware<DigestMiddleware>();
+        context.Server.Value.Server.AddMiddleware(new DigestMiddleware(context.Server.Value.GameServerConfig));
 
         const string endpoint = "/lbp/test";
         const string expectedResultStr = "test";
@@ -80,8 +86,12 @@ public class DigestMiddlewareTests : GameServerTest
         using MemoryStream blankMs = new();
         using MemoryStream expectedResultMs = new(Encoding.ASCII.GetBytes(expectedResultStr));
         
-        string serverDigest = DigestMiddleware.CalculateDigest(endpoint, expectedResultMs, "", null, null);
-        string clientDigest = DigestMiddleware.CalculateDigest(endpoint, blankMs, "", 205, 5);
+        string digest = isHmac
+            ? context.Server.Value.GameServerConfig.HmacDigestKeys[0]
+            : context.Server.Value.GameServerConfig.Sha1DigestKeys[0];
+        
+        string serverDigest = DigestMiddleware.CalculateDigest(digest, endpoint, expectedResultMs, "", null, false, isHmac);
+        string clientDigest = DigestMiddleware.CalculateDigest(digest, endpoint, blankMs, "", new DigestMiddleware.PspVersionInfo(205, 5), false, isHmac);
 
         context.Http.DefaultRequestHeaders.Add("X-Digest-A", clientDigest);
         context.Http.DefaultRequestHeaders.Add("X-data-v", "5");
@@ -98,18 +108,5 @@ public class DigestMiddlewareTests : GameServerTest
             Assert.That(response.Headers.GetValues("X-Digest-A").First(), Is.EqualTo(serverDigest));
             Assert.That(response.Headers.GetValues("X-Digest-B").First(), Is.EqualTo(clientDigest));
         });
-    }
-
-    [Test]
-    public void FailsWhenDigestIsBad()
-    {
-        using TestContext context = this.GetServer();
-        context.Server.Value.Server.AddEndpointGroup<TestEndpoints>();
-        context.Server.Value.Server.AddMiddleware<DigestMiddleware>();
-        
-        context.Http.DefaultRequestHeaders.Add("X-Digest-A", "asdf");
-        HttpResponseMessage response =  context.Http.GetAsync("/lbp/eula").Result;
-        
-        Assert.Pass(); // TODO: we have no way of detecting a failed digest check
     }
 }
