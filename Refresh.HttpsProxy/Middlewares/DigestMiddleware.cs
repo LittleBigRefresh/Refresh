@@ -8,8 +8,15 @@ using Refresh.HttpsProxy.Config;
 
 namespace Refresh.HttpsProxy.Middlewares;
 
-public class DigestMiddleware(ProxyConfig config) : IMiddleware
+public class DigestMiddleware : IMiddleware
 {
+    private readonly ProxyConfig _config;
+
+    public DigestMiddleware(ProxyConfig config)
+    {
+        this._config = config;
+    }
+
     public string CalculatePs3Digest(string route, Stream body, string auth, bool isUpload)
     {
         using MemoryStream ms = new();
@@ -23,7 +30,7 @@ public class DigestMiddleware(ProxyConfig config) : IMiddleware
         
         ms.WriteString(auth);
         ms.WriteString(route);
-        ms.WriteString(config.Ps3Digest);
+        ms.WriteString(this._config.Ps3Digest);
 
         ms.Position = 0;
         using SHA1 sha = SHA1.Create();
@@ -48,7 +55,7 @@ public class DigestMiddleware(ProxyConfig config) : IMiddleware
 
         ms.Position = 0;
         
-        using HMACSHA1 hmac = new(Encoding.UTF8.GetBytes(config.Ps4Digest));
+        using HMACSHA1 hmac = new(Encoding.UTF8.GetBytes(this._config.Ps4Digest));
         string digestResponse = Convert.ToHexString(hmac.ComputeHash(ms)).ToLower();
 
         return digestResponse;

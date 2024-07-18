@@ -69,6 +69,7 @@ public class GameDatabaseProvider : RealmDatabaseProvider<GameDatabaseContext>
         typeof(AssetDependencyRelation),
         typeof(GameReview),
         typeof(DisallowedUser),
+        typeof(RateReviewRelation),
     };
 
     public override void Warmup()
@@ -394,8 +395,6 @@ public class GameDatabaseProvider : RealmDatabaseProvider<GameDatabaseContext>
                     oldSubjects.Add(new GamePhotoSubject(user, subject.DisplayName, bounds));
                 }
 
-                Console.WriteLine(JsonConvert.SerializeObject(oldSubjects));
-                
                 newPhoto.Subjects = oldSubjects;
             }
         }
