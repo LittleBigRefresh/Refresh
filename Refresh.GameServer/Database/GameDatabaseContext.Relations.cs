@@ -2,6 +2,7 @@ using System.Diagnostics.Contracts;
 using Refresh.GameServer.Authentication;
 using Refresh.GameServer.Endpoints.Game.Levels.FilterSettings;
 using Refresh.GameServer.Extensions;
+using Refresh.GameServer.Types;
 using Refresh.GameServer.Types.Comments;
 using Refresh.GameServer.Types.Levels;
 using Refresh.GameServer.Types.Relations;
@@ -191,6 +192,69 @@ public partial class GameDatabaseContext // Relations
     #endregion
 
     #region Rating and Reviewing
+
+    public void RateReview(GameReview review, RatingType ratingType, GameUser user)
+    {
+        // If the rating type is neutral, remove the previous review rating by user 
+        if (ratingType == RatingType.Neutral && this.ReviewRatingExistsByUser(user, review))
+        {
+            RateReviewRelation relation =
+                this.RateReviewRelations.First(r => r.Review == review && r.User == user);
+            this.Write(() => this.RateReviewRelations.Remove(relation));
+
+            return;
+        }
+        
+        // If the relation already exists, set the new rating
+        if (this.ReviewRatingExistsByUser(user, review))
+        {
+            RateReviewRelation relation = this.RateReviewRelations.First(r => r.Review == review && r.User == user);
+            
+            this.Write(() => relation.RatingType = ratingType);
+
+            return;
+        }
+        
+        RateReviewRelation reviewRelation = new()
+        {
+            RatingType = ratingType,
+            Review = review,
+            User = user,
+        };
+
+        this.Write(() =>
+        {
+            this.RateReviewRelations.Add(reviewRelation);
+        });
+    }
+    
+    public DatabaseRating GetRatingForReview(GameReview review)
+    {
+        IQueryable<RateReviewRelation> relations = this.RateReviewRelations.Where(r => r.Review == review);
+        DatabaseRating rating = new();
+
+        foreach (RateReviewRelation relation in relations)
+        {
+            if (relation.RatingType == RatingType.Yay)
+                rating.PositiveRating++;
+            else
+                rating.NegativeRating++;
+        }
+
+        return rating;
+    }
+
+    public GameReview? GetReviewByUserForLevel(GameUser user, GameLevel level)
+        => this.GameReviews.FirstOrDefault(gameReview => gameReview.Publisher == user && gameReview.Level == level);
+
+    public bool ReviewRatingExistsByUser(GameUser user, GameReview review)
+        => this.RateReviewRelations.Any(relation => relation.Review == review && relation.User == user);
+
+    public RateReviewRelation? GetRateReviewRelationForReview(GameUser user, GameReview review)
+        => this.RateReviewRelations.FirstOrDefault(relation => relation.User == user && relation.Review == review);
+    
+    public bool ReviewRatingExists(GameUser user, GameReview review, RatingType rating)
+        => this.RateReviewRelations.Any(r => r.Review == review && r.User == user && r._ReviewRatingType == (int)rating);
 
     private RateLevelRelation? GetRateRelationByUser(GameLevel level, GameUser user)
         => this.RateLevelRelations.FirstOrDefault(r => r.User == user && r.Level == level);
