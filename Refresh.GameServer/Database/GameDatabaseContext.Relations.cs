@@ -250,6 +250,9 @@ public partial class GameDatabaseContext // Relations
     public bool ReviewRatingExistsByUser(GameUser user, GameReview review)
         => this.RateReviewRelations.Any(relation => relation.Review == review && relation.User == user);
 
+    public RateReviewRelation? GetRateReviewRelationForReview(GameUser user, GameReview review)
+        => this.RateReviewRelations.FirstOrDefault(relation => relation.User == user && relation.Review == review);
+    
     public bool ReviewRatingExists(GameUser user, GameReview review, RatingType rating)
         => this.RateReviewRelations.Any(r => r.Review == review && r.User == user && r._ReviewRatingType == (int)rating);
 

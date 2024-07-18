@@ -3,6 +3,7 @@ using Refresh.GameServer.Database;
 using Refresh.GameServer.Endpoints.ApiV3.DataTypes;
 using Refresh.GameServer.Types.Data;
 using Refresh.GameServer.Types.Levels;
+using Refresh.GameServer.Types.Relations;
 using Refresh.GameServer.Types.UserData;
 
 namespace Refresh.GameServer.Types.Reviews;
@@ -48,16 +49,30 @@ public class SerializedGameReview : IDataConvertableFrom<SerializedGameReview, G
     public int ThumbsDown { get; set; }
     
     [XmlElement("yourthumb")]
-    public RatingType YourThumb { get; set; }
+    public int YourThumb { get; set; }
 
     public static SerializedGameReview? FromOld(GameReview? review, DataContext dataContext)
     {
         if (review == null) 
             return null;
         
-        DatabaseRating reviewRating = dataContext.Database.GetRatingForReview(review);
+        DatabaseRating reviewRatings = dataContext.Database.GetRatingForReview(review);
+
+        bool isRated = dataContext.Database.ReviewRatingExistsByUser(dataContext.User!, review);
+        // neutral by default
+        RatingType userRatingType = RatingType.Neutral;
         
-        // TODO: fill in review.YourThumb
+        // if it is rated by current user
+        // then get that rating and set YourThumb to that
+
+        if (isRated) {
+            // the review rating already exists hence the ! ignores
+            RateReviewRelation? reviewRating =
+                dataContext.Database.GetRateReviewRelationForReview(dataContext.User!, review);
+
+            userRatingType = reviewRating!.RatingType;
+        }
+        
         return new SerializedGameReview
         {
             Id = review.ReviewId,
@@ -73,9 +88,9 @@ public class SerializedGameReview : IDataConvertableFrom<SerializedGameReview, G
             DeletedBy = ReviewDeletedBy.None,
             Text = review.Content,
             Thumb = dataContext.Database.GetRatingByUser(review.Level, dataContext.User!)?.ToDPad() ?? 0,
-            ThumbsUp = reviewRating.PositiveRating,
-            ThumbsDown = reviewRating.NegativeRating,
-            YourThumb = 0,
+            ThumbsUp = reviewRatings.PositiveRating,
+            ThumbsDown = reviewRatings.NegativeRating,
+            YourThumb = (int) userRatingType,
         };
     }
     
