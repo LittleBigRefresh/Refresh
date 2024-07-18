@@ -58,20 +58,7 @@ public class SerializedGameReview : IDataConvertableFrom<SerializedGameReview, G
         
         DatabaseRating reviewRatings = dataContext.Database.GetRatingForReview(review);
 
-        bool isRated = dataContext.Database.ReviewRatingExistsByUser(dataContext.User!, review);
-        // neutral by default
-        RatingType userRatingType = RatingType.Neutral;
-        
-        // if it is rated by current user
-        // then get that rating and set YourThumb to that
-
-        if (isRated) {
-            // the review rating already exists hence the ! ignores
-            RateReviewRelation? reviewRating =
-                dataContext.Database.GetRateReviewRelationForReview(dataContext.User!, review);
-
-            userRatingType = reviewRating!.RatingType;
-        }
+        RatingType userRatingType = dataContext.Database.GetRateReviewRelationForReview(dataContext.User!, review)?.RatingType ?? RatingType.Neutral;
         
         return new SerializedGameReview
         {
