@@ -138,22 +138,21 @@ public class ReviewEndpoints : EndpointGroup
 
         if (review == null) return NotFound;
         
-        string ratingString = request.QueryString.Get("rating") ?? "0";
-        
-        sbyte ratingType = sbyte.Parse(ratingString);
+        string ratingStr = request.QueryString.Get("rating") ?? "0";
+        RatingType ratingType = (RatingType)sbyte.Parse(ratingStr);
         
         // rating can only be 1, 0 or -1
-        if (ratingType is > 1 or < -1)
+        if(!Enum.IsDefined(ratingType))
         {
             return BadRequest;
         }
         
-        if (database.ReviewRatingExists(user, review, (RatingType) ratingType))
+        if (database.ReviewRatingExists(user, review, ratingType))
         {
             return BadRequest;
         }
         
-        database.RateReview(review, (RatingType) ratingType, user);
+        database.RateReview(review, ratingType, user);
 
         return OK;
     }
