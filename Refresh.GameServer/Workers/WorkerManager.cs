@@ -1,6 +1,8 @@
 using Bunkum.Core.Storage;
 using NotEnoughLogs;
 using Refresh.GameServer.Database;
+using Refresh.GameServer.Services;
+using Refresh.GameServer.Types.Data;
 
 namespace Refresh.GameServer.Workers;
 
@@ -9,12 +11,14 @@ public class WorkerManager
     private readonly Logger _logger;
     private readonly IDataStore _dataStore;
     private readonly GameDatabaseProvider _databaseProvider;
+    private readonly MatchService _matchService;
 
-    public WorkerManager(Logger logger, IDataStore dataStore, GameDatabaseProvider databaseProvider)
+    public WorkerManager(Logger logger, IDataStore dataStore, GameDatabaseProvider databaseProvider, MatchService matchService)
     {
         this._dataStore = dataStore;
         this._databaseProvider = databaseProvider;
         this._logger = logger;
+        this._matchService = matchService;
     }
 
     private Thread? _thread = null;
@@ -35,6 +39,15 @@ public class WorkerManager
 
     private void RunWorkCycle()
     {
+        Lazy<DataContext> dataContext = new(() => new DataContext
+        {
+            Database = this._databaseProvider.GetContext(),
+            Logger = this._logger,
+            DataStore = this._dataStore,
+            Match = this._matchService,
+            Token = null,
+        });
+        
         foreach (IWorker worker in this._workers)
         {
             long now = DateTimeOffset.Now.ToUnixTimeMilliseconds();
@@ -50,7 +63,7 @@ public class WorkerManager
             }
             
             this._logger.LogTrace(RefreshContext.Worker, "Running work cycle for " + worker.GetType().Name);
-            worker.DoWork(this._logger, this._dataStore, this._databaseProvider.GetContext());
+            worker.DoWork(dataContext.Value);
         }
     }
 

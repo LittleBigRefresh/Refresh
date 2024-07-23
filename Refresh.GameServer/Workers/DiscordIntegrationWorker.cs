@@ -1,15 +1,12 @@
-using Bunkum.Core.Storage;
 using Discord;
 using Discord.Webhook;
-using NotEnoughLogs;
-using Refresh.GameServer.Authentication;
 using Refresh.GameServer.Configuration;
 using Refresh.GameServer.Database;
+using Refresh.GameServer.Endpoints.ApiV3.DataTypes.Response.Levels;
+using Refresh.GameServer.Endpoints.ApiV3.DataTypes.Response.Users;
+using Refresh.GameServer.Endpoints.ApiV3.DataTypes.Response.Users.Photos;
 using Refresh.GameServer.Types.Activity;
-using Refresh.GameServer.Types.Levels;
-using Refresh.GameServer.Types.Photos;
-using Refresh.GameServer.Types.UserData;
-using Refresh.GameServer.Types.UserData.Leaderboard;
+using Refresh.GameServer.Types.Data;
 
 namespace Refresh.GameServer.Workers;
 
@@ -44,14 +41,22 @@ public class DiscordIntegrationWorker : IWorker
         return $"{this._externalUrl}/api/v3/assets/{hash}/image";
     }
 
-    private Embed? GenerateEmbedFromEvent(Event @event, GameDatabaseContext database)
+    private Embed? GenerateEmbedFromEvent(Event @event, DataContext context)
     {
         EmbedBuilder embed = new();
 
-        GameLevel? level = @event.StoredDataType == EventDataType.Level ? database.GetLevelById(@event.StoredSequentialId!.Value) : null;
-        GameUser? user = @event.StoredDataType == EventDataType.User ? database.GetUserByObjectId(@event.StoredObjectId) : null;
-        GameSubmittedScore? score = @event.StoredDataType == EventDataType.Score ? database.GetScoreByObjectId(@event.StoredObjectId) : null;
-        GamePhoto? photo = @event.StoredDataType == EventDataType.Photo ? database.GetPhotoFromEvent(@event) : null;
+        ApiGameLevelResponse? level = @event.StoredDataType == EventDataType.Level ? 
+            ApiGameLevelResponse.FromOld(context.Database.GetLevelById(@event.StoredSequentialId!.Value), context)
+            : null;
+        ApiGameUserResponse? user = @event.StoredDataType == EventDataType.User ? 
+            ApiGameUserResponse.FromOld(context.Database.GetUserByObjectId(@event.StoredObjectId), context)
+            : null;
+        ApiGameScoreResponse? score = @event.StoredDataType == EventDataType.Score ? 
+            ApiGameScoreResponse.FromOld(context.Database.GetScoreByObjectId(@event.StoredObjectId), context)
+            : null;
+        ApiGamePhotoResponse? photo = @event.StoredDataType == EventDataType.Photo ? 
+            ApiGamePhotoResponse.FromOld(context.Database.GetPhotoFromEvent(@event), context)
+            : null;
         
         if (photo != null)
             level = photo.Level;
@@ -85,15 +90,11 @@ public class DiscordIntegrationWorker : IWorker
         embed.WithDescription($"[{@event.User.Username}]({this._externalUrl}/u/{@event.User.UserId}) {description}");
 
         if (photo != null)
-        {
-            embed.WithImageUrl(this.GetAssetUrl(photo.LargeAsset.IsPSP ? $"psp/{photo.LargeAsset.AssetHash}" : photo.LargeAsset.AssetHash));
-        } else if (level != null)
-        {
-            embed.WithThumbnailUrl(this.GetAssetUrl(level.GameVersion == TokenGame.LittleBigPlanetPSP ? $"psp/{level.IconHash}" : level.IconHash));
-        } else if (user != null)
-        {
+            embed.WithImageUrl(this.GetAssetUrl(photo.LargeHash));
+        else if (level != null) 
+            embed.WithThumbnailUrl(this.GetAssetUrl(level.IconHash));
+        else if (user != null)
             embed.WithThumbnailUrl(this.GetAssetUrl(user.IconHash));
-        }
         
         embed.WithTimestamp(DateTimeOffset.FromUnixTimeMilliseconds(@event.Timestamp));
         embed.WithAuthor(@event.User.Username, this.GetAssetUrl(@event.User.IconHash), $"{this._externalUrl}/u/{@event.UserId}");
@@ -101,14 +102,14 @@ public class DiscordIntegrationWorker : IWorker
         return embed.Build();
     }
 
-    public void DoWork(Logger logger, IDataStore dataStore, GameDatabaseContext database)
+    public void DoWork(DataContext context)
     {
         if (this._firstCycle)
         {
             this.DoFirstCycle();
         }
 
-        DatabaseList<Event> activity = database.GetGlobalRecentActivity(new ActivityQueryParameters
+        DatabaseList<Event> activity = context.Database.GetGlobalRecentActivity(new ActivityQueryParameters
         {
             Timestamp = Now,
             EndTimestamp = this._lastTimestamp,
@@ -123,7 +124,7 @@ public class DiscordIntegrationWorker : IWorker
 
         IEnumerable<Embed> embeds = activity.Items
             .Reverse() // events are descending
-            .Select(e => this.GenerateEmbedFromEvent(e, database))
+            .Select(e => this.GenerateEmbedFromEvent(e, context))
             .Where(e => e != null)
             .ToList()!;
 
@@ -132,6 +133,6 @@ public class DiscordIntegrationWorker : IWorker
         ulong id = this._client.SendMessageAsync(embeds: embeds, 
             username: this._config.DiscordNickname, avatarUrl: this._config.DiscordAvatarUrl).Result;
         
-        logger.LogInfo(RefreshContext.Worker, $"Posted webhook containing {activity.Items.Count()} events with id {id}");
+        context.Logger.LogInfo(RefreshContext.Worker, $"Posted webhook containing {activity.Items.Count()} events with id {id}");
     }
 }
