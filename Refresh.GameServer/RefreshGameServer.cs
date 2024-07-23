@@ -36,6 +36,7 @@ public class RefreshGameServer : RefreshServer
     
     protected readonly GameDatabaseProvider _databaseProvider;
     protected readonly IDataStore _dataStore;
+    protected MatchService _matchService = null!;
     
     protected GameServerConfig? _config;
     protected IntegrationConfig? _integrationConfig;
@@ -63,7 +64,6 @@ public class RefreshGameServer : RefreshServer
             GameDatabaseProvider provider = databaseProvider.Invoke();
 
             this.WorkerManager?.Stop();
-            this.WorkerManager = new WorkerManager(this.Logger, this._dataStore, provider);
             
             authProvider ??= new GameAuthenticationProvider(this._config!);
 
@@ -114,7 +114,7 @@ public class RefreshGameServer : RefreshServer
         this.Server.AddService<TimeProviderService>(this.GetTimeProvider());
         this.Server.AddRateLimitService(new RateLimitSettings(60, 400, 30, "global"));
         this.Server.AddService<CategoryService>();
-        this.Server.AddService<MatchService>();
+        this.Server.AddService(this._matchService = new MatchService(this.Server.Logger));
         this.Server.AddService<ImportService>();
         this.Server.AddService<DocumentationService>();
         this.Server.AddService<GuidCheckerService>();
@@ -147,7 +147,7 @@ public class RefreshGameServer : RefreshServer
 
     protected virtual void SetupWorkers()
     {
-        if (this.WorkerManager == null) return;
+        this.WorkerManager = new WorkerManager(this.Logger, this._dataStore, this._databaseProvider, this._matchService);
         
         this.WorkerManager.AddWorker<PunishmentExpiryWorker>();
         this.WorkerManager.AddWorker<ExpiredObjectWorker>();

@@ -15,8 +15,8 @@ public class DataContextService : Service
     private readonly StorageService _storageService;
     private readonly MatchService _matchService;
     private readonly AuthenticationService _authService;
-    
-    internal DataContextService(StorageService storage, MatchService match, AuthenticationService auth, Logger logger) : base(logger)
+
+    public DataContextService(StorageService storage, MatchService match, AuthenticationService auth, Logger logger) : base(logger)
     {
         this._storageService = storage;
         this._matchService = match;

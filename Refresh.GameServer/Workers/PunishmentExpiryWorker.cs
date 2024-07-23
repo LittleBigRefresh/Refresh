@@ -1,6 +1,7 @@
 using Bunkum.Core.Storage;
 using NotEnoughLogs;
 using Refresh.GameServer.Database;
+using Refresh.GameServer.Types.Data;
 using Refresh.GameServer.Types.Roles;
 using Refresh.GameServer.Types.UserData;
 
@@ -13,25 +14,25 @@ public class PunishmentExpiryWorker : IWorker
 {
     public int WorkInterval => 60_000; // 1 minute
 
-    public void DoWork(Logger logger, IDataStore dataStore, GameDatabaseContext database)
+    public void DoWork(DataContext context)
     {
-        DatabaseList<GameUser> bannedUsers = database.GetAllUsersWithRole(GameUserRole.Banned);
-        DatabaseList<GameUser> restrictedUsers = database.GetAllUsersWithRole(GameUserRole.Restricted);
+        DatabaseList<GameUser> bannedUsers = context.Database.GetAllUsersWithRole(GameUserRole.Banned);
+        DatabaseList<GameUser> restrictedUsers = context.Database.GetAllUsersWithRole(GameUserRole.Restricted);
 
         foreach (GameUser user in bannedUsers.Items)
         {
-            if (database.IsUserBanned(user)) continue;
+            if (context.Database.IsUserBanned(user)) continue;
             
-            logger.LogInfo(RefreshContext.Worker, $"Unbanned {user.Username} since their punishment has expired");
-            database.SetUserRole(user, GameUserRole.User);
+            context.Logger.LogInfo(RefreshContext.Worker, $"Unbanned {user.Username} since their punishment has expired");
+            context.Database.SetUserRole(user, GameUserRole.User);
         }
 
         foreach (GameUser user in restrictedUsers.Items)
         {
-            if (database.IsUserRestricted(user)) continue;
+            if (context.Database.IsUserRestricted(user)) continue;
             
-            logger.LogInfo(RefreshContext.Worker, $"Unrestricted {user.Username} since their punishment has expired");
-            database.SetUserRole(user, GameUserRole.User);
+            context.Logger.LogInfo(RefreshContext.Worker, $"Unrestricted {user.Username} since their punishment has expired");
+            context.Database.SetUserRole(user, GameUserRole.User);
         }
     }
 }

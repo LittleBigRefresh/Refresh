@@ -1,6 +1,7 @@
 using Bunkum.Core.Storage;
 using NotEnoughLogs;
 using Refresh.GameServer.Database;
+using Refresh.GameServer.Types.Data;
 using TrackingService = Refresh.GameServer.Services.RequestStatisticTrackingService;
 
 namespace Refresh.GameServer.Workers;
@@ -9,11 +10,11 @@ public class RequestStatisticSubmitWorker : IWorker
 {
     public int WorkInterval => 5_000;
     
-    public void DoWork(Logger logger, IDataStore dataStore, GameDatabaseContext database)
+    public void DoWork(DataContext context)
     {
         (int game, int api) = TrackingService.SubmitAndClearRequests();
         
-        database.IncrementGameRequests(game);
-        database.IncrementApiRequests(api);
+        context.Database.IncrementGameRequests(game);
+        context.Database.IncrementApiRequests(api);
     }
 }

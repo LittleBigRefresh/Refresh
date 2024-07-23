@@ -1,10 +1,14 @@
+using Bunkum.Core;
 using Bunkum.Core.Services;
+using Bunkum.Core.Storage;
 using Bunkum.Protocols.Http.Direct;
 using JetBrains.Annotations;
 using Refresh.GameServer.Authentication;
 using Refresh.GameServer.Database;
+using Refresh.GameServer.Services;
 using Refresh.GameServer.Types;
 using Refresh.GameServer.Types.Contests;
+using Refresh.GameServer.Types.Data;
 using Refresh.GameServer.Types.Levels;
 using Refresh.GameServer.Types.Roles;
 using Refresh.GameServer.Types.UserData;
@@ -150,6 +154,19 @@ public class TestContext : IDisposable
 
     [Pure]
     public TService GetService<TService>() where TService : Service => this.Server.Value.GetService<TService>();
+
+    public DataContext GetDataContext(Token? token = null)
+    {
+        return new DataContext
+        {
+            Database = this.Database,
+            Logger = this.Server.Value.Logger,
+            DataStore = (IDataStore)this.GetService<StorageService>()
+                .AddParameterToEndpoint(null!, new BunkumParameterInfo(typeof(IDataStore), ""), null!)!,
+            Match = this.GetService<MatchService>(),
+            Token = token,
+        };
+    }
 
     public void Dispose()
     {
