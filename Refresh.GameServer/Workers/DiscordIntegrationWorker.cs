@@ -7,6 +7,7 @@ using Refresh.GameServer.Configuration;
 using Refresh.GameServer.Database;
 using Refresh.GameServer.Types.Activity;
 using Refresh.GameServer.Types.Levels;
+using Refresh.GameServer.Types.Photos;
 using Refresh.GameServer.Types.UserData;
 using Refresh.GameServer.Types.UserData.Leaderboard;
 
@@ -50,6 +51,10 @@ public class DiscordIntegrationWorker : IWorker
         GameLevel? level = @event.StoredDataType == EventDataType.Level ? database.GetLevelById(@event.StoredSequentialId!.Value) : null;
         GameUser? user = @event.StoredDataType == EventDataType.User ? database.GetUserByObjectId(@event.StoredObjectId) : null;
         GameSubmittedScore? score = @event.StoredDataType == EventDataType.Score ? database.GetScoreByObjectId(@event.StoredObjectId) : null;
+        GamePhoto? photo = @event.StoredDataType == EventDataType.Photo ? database.GetPhotoFromEvent(@event) : null;
+        
+        if (photo != null)
+            level = photo.Level;
 
         if (score != null) level = score.Level;
 
@@ -72,13 +77,17 @@ public class DiscordIntegrationWorker : IWorker
             EventType.LevelReview => null,
             EventType.LevelScore => $"got {score!.Score:N0} points on {levelLink}",
             EventType.UserFirstLogin => "logged in for the first time",
+            EventType.PhotoUpload => $"uploaded a photo{(photo is { Level: not null } ? $" on {levelLink}" : "")}",
             _ => null,
         };
 
         if (description == null) return null;
         embed.WithDescription($"[{@event.User.Username}]({this._externalUrl}/u/{@event.User.UserId}) {description}");
 
-        if (level != null)
+        if (photo != null)
+        {
+            embed.WithImageUrl(this.GetAssetUrl(photo.LargeAsset.IsPSP ? $"psp/{photo.LargeAsset.AssetHash}" : photo.LargeAsset.AssetHash));
+        } else if (level != null)
         {
             embed.WithThumbnailUrl(this.GetAssetUrl(level.GameVersion == TokenGame.LittleBigPlanetPSP ? $"psp/{level.IconHash}" : level.IconHash));
         } else if (user != null)

@@ -81,4 +81,16 @@ public class PhotoEndpoints : EndpointGroup
     [MinimumRole(GameUserRole.Restricted)]
     public Response PhotosByUser(RequestContext context, GameDatabaseContext database, DataContext dataContext) 
         => GetPhotos(context, database, dataContext, database.GetPhotosByUser);
+
+    [GameEndpoint("photo/{id}", ContentType.Xml)]
+    [NullStatusCode(NotFound)]
+    public SerializedPhoto? GetPhotoById(RequestContext context, DataContext dataContext, int id)
+    {
+        GamePhoto? photo = dataContext.Database.GetPhotoById(id);
+
+        if (photo == null) 
+            return null;
+        
+        return SerializedPhoto.FromGamePhoto(photo, dataContext);
+    }
 }
