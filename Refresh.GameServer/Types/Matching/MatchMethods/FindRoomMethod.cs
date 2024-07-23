@@ -99,26 +99,35 @@ public class FindRoomMethod : IMatchMethod
         // Now that we've done all our filtering, lets convert it to a list, so we can index it quickly.
         List<GameRoom> foundRooms = rooms.ToList();
         
-        // If there's no rooms, dump an "overview" of the global room state, to help debug matching issues
-        if (foundRooms.Count <= 0 && gameServerConfig.PrintRoomStateWhenNoFoundRooms)
+        // If there are no rooms, return a 404 status code
+        if (foundRooms.Count <= 0)
         {
             if (allRooms.Count == 0)
             {
-                dataContext.Logger.LogDebug(BunkumCategory.Matching,
+                dataContext.Logger.LogInfo(BunkumCategory.Matching,
                     "Room search by {0} on {1} ({2}) returned no results due to there being no open rooms on the game/platform.",
                     dataContext.User.Username, dataContext.Game, dataContext.Platform);
             }
-            else
+            // If we failed to find a match, but there are other rooms, dump an "overview" of the global room state, to help debug matching issues
+            else if(gameServerConfig.PrintRoomStateWhenNoFoundRooms)
             {
-                dataContext.Logger.LogDebug(BunkumCategory.Matching,
+                dataContext.Logger.LogInfo(BunkumCategory.Matching,
                     "Room search by {0} on {1} ({2}) returned no results, dumping list of possible rooms.",
                     dataContext.User.Username, dataContext.Game, dataContext.Platform);
 
                 foreach (GameRoom logRoom in allRooms)
-                    dataContext.Logger.LogDebug(BunkumCategory.Matching, "Room {0}: Nat Type {1}, Level {2} ({3}), Build Version {4}",
-                        logRoom.RoomId, logRoom.NatType, logRoom.LevelId, logRoom.LevelType, logRoom.BuildVersion ?? 0);
+                    dataContext.Logger.LogInfo(BunkumCategory.Matching,
+                        "Room {0}: Nat Type {1}, Level {2} ({3}), Build Version {4}",
+                        logRoom.RoomId, logRoom.NatType, logRoom.LevelId, logRoom.LevelType,
+                        logRoom.BuildVersion ?? 0);
             }
-            
+            else
+            {
+                dataContext.Logger.LogInfo(BunkumCategory.Matching,
+                    "Room search by {0} on {1} ({2}) returned no results, could not find a valid room to match the user into.",
+                    dataContext.User.Username, dataContext.Game, dataContext.Platform); 
+            }
+
             // Return a 404 status code if there's no rooms to match them to
             return new Response(new List<object> { new SerializedStatusCodeMatchResponse(404), }, ContentType.Json);
         }
