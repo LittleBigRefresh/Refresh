@@ -25,24 +25,24 @@ public class DigestMiddleware : IMiddleware
     public static string CalculateDigest(
         string digest, 
         string route,
-        Stream body,
+        ReadOnlySpan<byte> body,
         string auth, 
         PspVersionInfo? pspVersionInfo, 
         bool isUpload, 
         bool hmacDigest)
     {
-        // Init a MemoryStream with the known final capacity capacity
-        using MemoryStream ms = new((int)(auth.Length + route.Length + digest.Length + (isUpload ? 0 : body.Length)) + (pspVersionInfo == null ? 0 : 4));
+        IncrementalHash hash = hmacDigest
+            ? IncrementalHash.CreateHMAC(HashAlgorithmName.SHA1, Encoding.UTF8.GetBytes(digest))
+            : IncrementalHash.CreateHash(HashAlgorithmName.SHA1);
 
         // If this is not an upload endpoint, then we need to copy the body of the request into the digest calculation
         if (!isUpload)
         {
-            body.CopyTo(ms);
-            body.Seek(0, SeekOrigin.Begin);
+            hash.AppendData(body);
         }
-        
-        ms.WriteString(auth);
-        ms.WriteString(route);
+
+        hash.WriteString(auth);
+        hash.WriteString(route);
         if (pspVersionInfo != null)
         {
             Span<byte> bytes = stackalloc byte[2];
@@ -51,27 +51,19 @@ public class DigestMiddleware : IMiddleware
             // If we are on a big endian system, we need to flip the bytes
             if(!BitConverter.IsLittleEndian)
                 bytes.Reverse();
-            ms.Write(bytes);
+            hash.AppendData(bytes);
             
             BitConverter.TryWriteBytes(bytes, pspVersionInfo.DataVersion);
             // If we are on a big endian system, we need to flip the bytes
             if(!BitConverter.IsLittleEndian)
                 bytes.Reverse();
-            ms.Write(bytes);
+            hash.AppendData(bytes);
         }
+        
         if(!hmacDigest)
-            ms.WriteString(digest);
+            hash.WriteString(digest);
 
-        ms.Position = 0;
-
-        if (hmacDigest)
-        {
-            using HMACSHA1 hmac = new(Encoding.UTF8.GetBytes(digest));
-            return Convert.ToHexString(hmac.ComputeHash(ms)).ToLower();
-        }
-
-        using SHA1 sha = SHA1.Create();
-        return Convert.ToHexString(sha.ComputeHash(ms)).ToLower();
+        return Convert.ToHexString(hash.GetCurrentHash()).ToLower();
     }
     
     public void HandleRequest(ListenerContext context, Lazy<IDatabaseContext> database, Action next)
@@ -107,25 +99,28 @@ public class DigestMiddleware : IMiddleware
 
         Token? token = gameDatabase.GetTokenFromTokenData(auth, TokenType.Game);
         
+        byte[] responseBody = context.ResponseStream.ToArray();
+        byte[] requestBody = context.InputStream.ToArray();
+        
         // Make sure the digest calculation reads the whole response stream
         context.ResponseStream.Seek(0, SeekOrigin.Begin);
 
         // If the digest is already saved on the token, use the token's digest
         if (token is { Digest: not null })
         {
-            SetDigestResponse(context, CalculateDigest(token.Digest, route, context.ResponseStream, auth, null, isUpload, token.IsHmacDigest));
+            SetDigestResponse(context, CalculateDigest(token.Digest, route, responseBody, auth, null, isUpload, token.IsHmacDigest));
             return;
         }
 
-        (string digest, bool hmac)? foundDigest = this.FindBestKey(clientDigest, route, context.InputStream, auth, pspVersionInfo, isUpload, false) ??
-                                                  this.FindBestKey(clientDigest, route, context.InputStream, auth, pspVersionInfo, isUpload, true);
+        (string digest, bool hmac)? foundDigest = this.FindBestKey(clientDigest, route, requestBody, auth, pspVersionInfo, isUpload, false) ??
+                                                  this.FindBestKey(clientDigest, route, requestBody, auth, pspVersionInfo, isUpload, true);
 
         if (foundDigest != null)
         {
             string digest = foundDigest.Value.digest;
             bool hmac = foundDigest.Value.hmac;
             
-            SetDigestResponse(context, CalculateDigest(digest, route, context.ResponseStream, auth, null, isUpload, hmac));
+            SetDigestResponse(context, CalculateDigest(digest, route, responseBody, auth, null, isUpload, hmac));
         
             if(token != null)
                 gameDatabase.SetTokenDigestInfo(token, digest, hmac); 
@@ -137,20 +132,20 @@ public class DigestMiddleware : IMiddleware
             bool isPs4 = context.RequestHeaders["User-Agent"] == "MM CHTTPClient LBP3 01.26";
             string firstDigest = isPs4 ? this._config.HmacDigestKeys[0] : this._config.Sha1DigestKeys[0];
         
-            SetDigestResponse(context, CalculateDigest(firstDigest, route, context.ResponseStream, auth, null, isUpload, isPs4));
+            SetDigestResponse(context, CalculateDigest(firstDigest, route, responseBody, auth, null, isUpload, isPs4));
         
             if(token != null)
                 gameDatabase.SetTokenDigestInfo(token, firstDigest, isPs4);
         }
     }
 
-    private (string digest, bool hmac)? FindBestKey(string clientDigest, string route, MemoryStream inputStream, string auth, PspVersionInfo? pspVersionInfo, bool isUpload, bool hmac)
+    private (string digest, bool hmac)? FindBestKey(string clientDigest, string route, ReadOnlySpan<byte> requestData, string auth, PspVersionInfo? pspVersionInfo, bool isUpload, bool hmac)
     {
         string[] keys = hmac ? this._config.HmacDigestKeys : this._config.Sha1DigestKeys;
         
         foreach (string digest in keys)
         {
-            string calculatedClientDigest = CalculateDigest(digest, route, inputStream, auth, pspVersionInfo, isUpload, hmac);
+            string calculatedClientDigest = CalculateDigest(digest, route, requestData, auth, pspVersionInfo, isUpload, hmac);
 
             // If the calculated client digest is invalid, then this isn't the digest the game is using, so check the next one
             if (calculatedClientDigest != clientDigest) 

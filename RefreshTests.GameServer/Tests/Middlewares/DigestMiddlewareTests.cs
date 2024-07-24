@@ -46,16 +46,13 @@ public class DigestMiddlewareTests : GameServerTest
 
         const string endpoint = "/lbp/test";
         const string expectedResultStr = "test";
-        
-        using MemoryStream blankMs = new();
-        using MemoryStream expectedResultMs = new(Encoding.ASCII.GetBytes(expectedResultStr));
 
         string digest = isHmac
             ? context.Server.Value.GameServerConfig.HmacDigestKeys[0]
             : context.Server.Value.GameServerConfig.Sha1DigestKeys[0];
         
-        string serverDigest = DigestMiddleware.CalculateDigest(digest, endpoint, expectedResultMs, "", null, false, isHmac);
-        string clientDigest = DigestMiddleware.CalculateDigest(digest, endpoint, blankMs, "", null, false, isHmac);
+        string serverDigest = DigestMiddleware.CalculateDigest(digest, endpoint, Encoding.ASCII.GetBytes(expectedResultStr), "", null, false, isHmac);
+        string clientDigest = DigestMiddleware.CalculateDigest(digest, endpoint, [], "", null, false, isHmac);
 
         context.Http.DefaultRequestHeaders.Add("X-Digest-A", clientDigest);
         HttpResponseMessage response =  context.Http.GetAsync(endpoint).Result;
@@ -83,15 +80,12 @@ public class DigestMiddlewareTests : GameServerTest
         const string endpoint = "/lbp/test";
         const string expectedResultStr = "test";
         
-        using MemoryStream blankMs = new();
-        using MemoryStream expectedResultMs = new(Encoding.ASCII.GetBytes(expectedResultStr));
-        
         string digest = isHmac
             ? context.Server.Value.GameServerConfig.HmacDigestKeys[0]
             : context.Server.Value.GameServerConfig.Sha1DigestKeys[0];
         
-        string serverDigest = DigestMiddleware.CalculateDigest(digest, endpoint, expectedResultMs, "", null, false, isHmac);
-        string clientDigest = DigestMiddleware.CalculateDigest(digest, endpoint, blankMs, "", new DigestMiddleware.PspVersionInfo(205, 5), false, isHmac);
+        string serverDigest = DigestMiddleware.CalculateDigest(digest, endpoint, Encoding.ASCII.GetBytes(expectedResultStr), "", null, false, isHmac);
+        string clientDigest = DigestMiddleware.CalculateDigest(digest, endpoint, [], "", new DigestMiddleware.PspVersionInfo(205, 5), false, isHmac);
 
         context.Http.DefaultRequestHeaders.Add("X-Digest-A", clientDigest);
         context.Http.DefaultRequestHeaders.Add("X-data-v", "5");
