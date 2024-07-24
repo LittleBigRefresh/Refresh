@@ -2,14 +2,12 @@ using System.Xml;
 using System.Xml.Serialization;
 using Bunkum.Core;
 using Bunkum.Core.Endpoints;
-using Bunkum.Core.Endpoints.Debugging;
 using Bunkum.Core.Responses;
 using Bunkum.Listener.Protocol;
+using Bunkum.Protocols.Http;
 using Refresh.GameServer.Authentication;
 using Refresh.GameServer.Database;
 using Refresh.GameServer.Endpoints.Game.Levels.FilterSettings;
-using Refresh.GameServer.Extensions;
-using Refresh.GameServer.Services;
 using Refresh.GameServer.Time;
 using Refresh.GameServer.Types.Activity;
 using Refresh.GameServer.Types.Data;
@@ -23,6 +21,7 @@ namespace Refresh.GameServer.Endpoints.Game;
 public class ActivityEndpoints : EndpointGroup
 {
     [GameEndpoint("stream", ContentType.Xml)]
+    [GameEndpoint("stream", ContentType.Xml, HttpMethods.Post)]
     [NullStatusCode(BadRequest)]
     [MinimumRole(GameUserRole.Restricted)]
     public ActivityPage? GetRecentActivity(RequestContext context, GameDatabaseContext database, GameUser? user,
