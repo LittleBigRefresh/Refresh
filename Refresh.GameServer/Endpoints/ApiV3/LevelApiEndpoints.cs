@@ -9,7 +9,6 @@ using Refresh.GameServer.Documentation.Attributes;
 using Refresh.GameServer.Endpoints.ApiV3.ApiTypes;
 using Refresh.GameServer.Endpoints.ApiV3.ApiTypes.Errors;
 using Refresh.GameServer.Endpoints.ApiV3.DataTypes.Request;
-using Refresh.GameServer.Endpoints.ApiV3.DataTypes.Response;
 using Refresh.GameServer.Endpoints.ApiV3.DataTypes.Response.Levels;
 using Refresh.GameServer.Endpoints.Game.Levels.FilterSettings;
 using Refresh.GameServer.Extensions;
@@ -106,17 +105,20 @@ public class LevelApiEndpoints : EndpointGroup
     [DocSummary("Edits a level by the level's numerical ID")]
     [DocError(typeof(ApiNotFoundError), ApiNotFoundError.LevelMissingErrorWhen)]
     [DocError(typeof(ApiAuthenticationError), ApiAuthenticationError.NoPermissionsForObjectWhen)]
-    public ApiResponse<ApiGameLevelResponse> EditLevelById(RequestContext context, GameDatabaseContext database,
-        GameUser user, IDataStore dataStore,
+    public ApiResponse<ApiGameLevelResponse> EditLevelById(RequestContext context,
         [DocSummary("The ID of the level")] int id, ApiEditLevelRequest body, DataContext dataContext)
     {
-        GameLevel? level = database.GetLevelById(id);
+        GameLevel? level = dataContext.Database.GetLevelById(id);
         if (level == null) return ApiNotFoundError.LevelMissingError;
         
-        if (level.Publisher?.UserId != user.UserId) 
+        if (level.Publisher?.UserId != dataContext.User!.UserId) 
             return ApiAuthenticationError.NoPermissionsForObject;
 
-        level = database.UpdateLevel(body, level);
+        if (body.IconHash != null && body.IconHash.StartsWith('g') &&
+            !dataContext.GuidChecker.IsTextureGuid(level.GameVersion, long.Parse(body.IconHash)))
+            return ApiValidationError.InvalidTextureGuidError;
+        
+        level = dataContext.Database.UpdateLevel(body, level);
 
         return ApiGameLevelResponse.FromOld(level, dataContext);
     }

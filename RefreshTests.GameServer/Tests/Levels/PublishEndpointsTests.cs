@@ -1,3 +1,4 @@
+using Refresh.Common.Constants;
 using Refresh.GameServer.Authentication;
 using Refresh.GameServer.Database;
 using Refresh.GameServer.Endpoints.Game.DataTypes.Request;
@@ -80,7 +81,7 @@ public class PublishEndpointsTests : GameServerTest
     }
     
     [Test]
-    public void CantPublishLevelWithInvalidTitle()
+    public void LevelWithLongTitleGetsTruncated()
     {
         using TestContext context = this.GetServer();
         GameUser user = context.CreateUser();
@@ -90,7 +91,7 @@ public class PublishEndpointsTests : GameServerTest
         GameLevelRequest level = new()
         {
             LevelId = 0,
-            Title = new string('*', 500),
+            Title = new string('*', UgcConstantLimits.TitleLimit * 2),
             IconHash = "g0",
             Description = "Normal length",
             Location = new GameLocation(),
@@ -102,18 +103,23 @@ public class PublishEndpointsTests : GameServerTest
             MaxPlayers = 0,
             EnforceMinMaxPlayers = false,
             SameScreenGame = false,
-            SkillRewards = new List<GameSkillReward>(),
+            SkillRewards = [],
         };
 
         HttpResponseMessage message = client.PostAsync("/lbp/startPublish", new StringContent(level.AsXML())).Result;
-        Assert.That(message.StatusCode, Is.EqualTo(BadRequest));
+        Assert.That(message.StatusCode, Is.EqualTo(OK));
+        
+        //Upload our """level"""
+        message = client.PostAsync($"/lbp/upload/{TEST_ASSET_HASH}", new ReadOnlyMemoryContent("LVLb"u8.ToArray())).Result;
+        Assert.That(message.StatusCode, Is.EqualTo(OK));
         
         message = client.PostAsync("/lbp/publish", new StringContent(level.AsXML())).Result;
-        Assert.That(message.StatusCode, Is.EqualTo(BadRequest));
+        Assert.That(message.StatusCode, Is.EqualTo(OK));
+        Assert.That(message.Content.ReadAsXML<GameLevelResponse>().Title.Length, Is.EqualTo(UgcConstantLimits.TitleLimit));
     }
     
     [Test]
-    public void CantPublishLevelWithInvalidDescription()
+    public void LevelWithLongDescriptionGetsTruncated()
     {
         using TestContext context = this.GetServer();
         GameUser user = context.CreateUser();
@@ -125,7 +131,7 @@ public class PublishEndpointsTests : GameServerTest
             LevelId = 0,
             Title = "Normal Title!",
             IconHash = "g0",
-            Description = new string('=', 5000),
+            Description = new string('=', UgcConstantLimits.DescriptionLimit * 2),
             Location = new GameLocation(),
             GameVersion = 0,
             RootResource = TEST_ASSET_HASH,
@@ -139,10 +145,15 @@ public class PublishEndpointsTests : GameServerTest
         };
 
         HttpResponseMessage message = client.PostAsync("/lbp/startPublish", new StringContent(level.AsXML())).Result;
-        Assert.That(message.StatusCode, Is.EqualTo(BadRequest));
+        Assert.That(message.StatusCode, Is.EqualTo(OK));
+
+        //Upload our """level"""
+        message = client.PostAsync($"/lbp/upload/{TEST_ASSET_HASH}", new ReadOnlyMemoryContent("LVLb"u8.ToArray())).Result;
+        Assert.That(message.StatusCode, Is.EqualTo(OK));
         
         message = client.PostAsync("/lbp/publish", new StringContent(level.AsXML())).Result;
-        Assert.That(message.StatusCode, Is.EqualTo(BadRequest));
+        Assert.That(message.StatusCode, Is.EqualTo(OK));
+        Assert.That(message.Content.ReadAsXML<GameLevelResponse>().Description.Length, Is.EqualTo(UgcConstantLimits.DescriptionLimit));
     }
     
     [Test]

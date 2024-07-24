@@ -13,6 +13,7 @@ public class DataContext
     public required Logger Logger;
     public required IDataStore DataStore;
     public required MatchService Match;
+    public required GuidCheckerService GuidChecker;
     
     public required Token? Token;
     public GameUser? User => this.Token?.User;

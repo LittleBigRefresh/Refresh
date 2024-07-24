@@ -40,6 +40,7 @@ public class MatchingTests : GameServerTest
             Logger = context.Server.Value.Logger,
             DataStore = null!, //this isn't accessed by matching
             Match = match,
+            GuidChecker = null!,
             Token = token1,
         }, context.Server.Value.GameServerConfig);
         match.ExecuteMethod("CreateRoom", roomData, new DataContext
@@ -49,6 +50,7 @@ public class MatchingTests : GameServerTest
             DataStore = null!,
             Match = match,
             Token = token2,
+            GuidChecker = null!,
         }, context.Server.Value.GameServerConfig);
         
         Assert.Multiple(() =>
@@ -92,6 +94,7 @@ public class MatchingTests : GameServerTest
         {
             Database = context.Database,
             Logger = context.Server.Value.Logger,
+            GuidChecker = null!,
             DataStore = null!, //this isn't accessed by matching
             Match = match,
             Token = token1,
@@ -108,6 +111,7 @@ public class MatchingTests : GameServerTest
         {
             Database = context.Database,
             Logger = context.Server.Value.Logger,
+            GuidChecker = null!,
             DataStore = null!, //this isn't accessed by matching
             Match = match,
             Token = token1,
@@ -152,6 +156,7 @@ public class MatchingTests : GameServerTest
             Logger = context.Server.Value.Logger,
             DataStore = null!, //this isn't accessed by matching
             Match = match,
+            GuidChecker = null!,
             Token = token1,
         }, context.Server.Value.GameServerConfig);
         match.ExecuteMethod("CreateRoom", roomData, new DataContext
@@ -161,6 +166,7 @@ public class MatchingTests : GameServerTest
             DataStore = null!,
             Match = match,
             Token = token2,
+            GuidChecker = null!,
         }, context.Server.Value.GameServerConfig);
         
         // Tell user2 to try to find a room
@@ -169,6 +175,7 @@ public class MatchingTests : GameServerTest
             Logger = context.Server.Value.Logger,
             DataStore = null!,
             Match = match,
+            GuidChecker = null!,
             Token = token2,
         }, context.Server.Value.GameServerConfig);
         
@@ -221,6 +228,7 @@ public class MatchingTests : GameServerTest
             DataStore = null!, //this isn't accessed by matching
             Match = match,
             Token = token1,
+            GuidChecker = null!,
         }, context.Server.Value.GameServerConfig);
         match.ExecuteMethod("CreateRoom", roomData2, new DataContext
         {
@@ -228,7 +236,8 @@ public class MatchingTests : GameServerTest
             Logger = context.Server.Value.Logger,
             DataStore = null!,
             Match = match,
-            Token = token2,
+            Token = token2, 
+            GuidChecker = null!,
         }, context.Server.Value.GameServerConfig);
         
         // Tell user2 to try to find a room
@@ -244,6 +253,7 @@ public class MatchingTests : GameServerTest
             DataStore = null!, //this isn't accessed by matching
             Match = match,
             Token = token2,
+            GuidChecker = null!,
         }, context.Server.Value.GameServerConfig);
         Assert.That(response.StatusCode, Is.EqualTo(OK));
     }
@@ -278,6 +288,7 @@ public class MatchingTests : GameServerTest
             DataStore = null!, //this isn't accessed by matching
             Match = match,
             Token = token1,
+            GuidChecker = null!,
         }, context.Server.Value.GameServerConfig);
         match.ExecuteMethod("CreateRoom", roomData, new DataContext
         {
@@ -286,6 +297,7 @@ public class MatchingTests : GameServerTest
             DataStore = null!,
             Match = match,
             Token = token2,
+            GuidChecker = null!,
         }, context.Server.Value.GameServerConfig);
         
         // Tell user2 to try to find a room
@@ -301,6 +313,7 @@ public class MatchingTests : GameServerTest
             DataStore = null!, //this isn't accessed by matching
             Match = match,
             Token = token2,
+            GuidChecker = null!,
         }, context.Server.Value.GameServerConfig);
         Assert.That(response.StatusCode, Is.EqualTo(OK));
     }
@@ -335,6 +348,7 @@ public class MatchingTests : GameServerTest
             DataStore = null!, //this isn't accessed by matching
             Match = match,
             Token = token1,
+            GuidChecker = null!,
         }, context.Server.Value.GameServerConfig);
         match.ExecuteMethod("CreateRoom", roomData, new DataContext
         {
@@ -343,6 +357,7 @@ public class MatchingTests : GameServerTest
             DataStore = null!,
             Match = match,
             Token = token2,
+            GuidChecker = null!,
         }, context.Server.Value.GameServerConfig);
         
         // Get user1 and user2 in the same room
@@ -359,6 +374,7 @@ public class MatchingTests : GameServerTest
             DataStore = null!, //this isn't accessed by matching
             Match = match,
             Token = token1,
+            GuidChecker = null!,
         }, context.Server.Value.GameServerConfig);
         GameRoom? room = match.RoomAccessor.GetRoomByUser(user1);
         Assert.Multiple(() =>
@@ -400,6 +416,7 @@ public class MatchingTests : GameServerTest
             DataStore = null!, //this isn't accessed by matching
             Match = match,
             Token = token1,
+            GuidChecker = null!,
         }, context.Server.Value.GameServerConfig);
         match.ExecuteMethod("CreateRoom", roomData, new DataContext
         {
@@ -408,6 +425,7 @@ public class MatchingTests : GameServerTest
             DataStore = null!,
             Match = match,
             Token = token2,
+            GuidChecker = null!,
         }, context.Server.Value.GameServerConfig);
         
         // Get user1 and user2 in the same room
@@ -425,6 +443,7 @@ public class MatchingTests : GameServerTest
                 DataStore = null!, //this isn't accessed by matching
                 Match = match,
                 Token = token1,
+                GuidChecker = null!,
             }, context.Server.Value.GameServerConfig);
             GameRoom? user1Room = match.RoomAccessor.GetRoomByUser(user1);
             Assert.That(user1Room, Is.Not.Null);
@@ -439,6 +458,7 @@ public class MatchingTests : GameServerTest
                 DataStore = null!, //this isn't accessed by matching
                 Match = match,
                 Token = token2,
+                GuidChecker = null!,
             }, context.Server.Value.GameServerConfig);
             GameRoom? user1Room = match.RoomAccessor.GetRoomByUser(user1);
             GameRoom? user2Room = match.RoomAccessor.GetRoomByUser(user2);

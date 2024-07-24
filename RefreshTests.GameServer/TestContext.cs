@@ -165,6 +165,7 @@ public class TestContext : IDisposable
                 .AddParameterToEndpoint(null!, new BunkumParameterInfo(typeof(IDataStore), ""), null!)!,
             Match = this.GetService<MatchService>(),
             Token = token,
+            GuidChecker = this.GetService<GuidCheckerService>(),
         };
     }
 

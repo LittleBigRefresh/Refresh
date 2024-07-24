@@ -2,8 +2,10 @@ using System.Diagnostics;
 using System.Reflection;
 using JetBrains.Annotations;
 using Realms;
+using Refresh.Common.Constants;
 using Refresh.GameServer.Authentication;
 using Refresh.GameServer.Endpoints.ApiV3.DataTypes.Request;
+using Refresh.GameServer.Endpoints.Game.Levels;
 using Refresh.GameServer.Endpoints.Game.Levels.FilterSettings;
 using Refresh.GameServer.Extensions;
 using Refresh.GameServer.Services;
@@ -18,8 +20,14 @@ namespace Refresh.GameServer.Database;
 
 public partial class GameDatabaseContext // Levels
 {
-    public void AddLevel(GameLevel level)
+    public bool AddLevel(GameLevel level)
     {
+        if (level.Title is { Length: > UgcConstantLimits.TitleLimit })
+            level.Title = level.Title[..UgcConstantLimits.TitleLimit];
+
+        if (level.Description is { Length: > UgcConstantLimits.DescriptionLimit })
+            level.Description = level.Description[..UgcConstantLimits.DescriptionLimit];
+        
         if (level.Publisher == null) throw new InvalidOperationException("Cannot create a level without a publisher");
 
         long timestamp = this._time.TimestampMilliseconds;
@@ -28,6 +36,8 @@ public partial class GameDatabaseContext // Levels
             level.PublishDate = timestamp;
             level.UpdateDate = timestamp;
         });
+
+        return true;
     }
 
     public GameLevel GetStoryLevelById(int id)
@@ -58,6 +68,12 @@ public partial class GameDatabaseContext // Levels
 
     public GameLevel? UpdateLevel(GameLevel newLevel, GameUser author)
     {
+        if (newLevel.Title is { Length: > UgcConstantLimits.TitleLimit })
+            newLevel.Title = newLevel.Title[..UgcConstantLimits.TitleLimit];
+
+        if (newLevel.Description is { Length: > UgcConstantLimits.DescriptionLimit })
+            newLevel.Description = newLevel.Description[..UgcConstantLimits.DescriptionLimit];
+        
         // Verify if this level is able to be republished
         GameLevel? oldLevel = this.GetLevelById(newLevel.LevelId);
         if (oldLevel == null) return null;
@@ -92,9 +108,15 @@ public partial class GameDatabaseContext // Levels
 
         return oldLevel;
     }
-
-    public GameLevel UpdateLevel(ApiEditLevelRequest body, GameLevel level)
+    
+    public GameLevel? UpdateLevel(ApiEditLevelRequest body, GameLevel level)
     {
+        if (body.Title is { Length: > UgcConstantLimits.TitleLimit })
+            body.Title = body.Title[..UgcConstantLimits.TitleLimit];
+
+        if (body.Description is { Length: > UgcConstantLimits.DescriptionLimit })
+            body.Description = body.Description[..UgcConstantLimits.DescriptionLimit];
+        
         this.Write(() =>
         {
             PropertyInfo[] userProps = body.GetType().GetProperties();
@@ -108,7 +130,7 @@ public partial class GameDatabaseContext // Levels
                 PropertyInfo? gameLevelProp = level.GetType().GetProperty(prop.Name);
                 Debug.Assert(gameLevelProp != null, $"Invalid property {prop.Name} on {nameof(ApiEditLevelRequest)}");
                 
-                 gameLevelProp.SetValue(level, prop.GetValue(body));
+                gameLevelProp.SetValue(level, prop.GetValue(body));
             }
             
             level.UpdateDate = this._time.TimestampMilliseconds;
