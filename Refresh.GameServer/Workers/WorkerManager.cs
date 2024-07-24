@@ -12,13 +12,15 @@ public class WorkerManager
     private readonly IDataStore _dataStore;
     private readonly GameDatabaseProvider _databaseProvider;
     private readonly MatchService _matchService;
+    private readonly GuidCheckerService _guidCheckerService;
 
-    public WorkerManager(Logger logger, IDataStore dataStore, GameDatabaseProvider databaseProvider, MatchService matchService)
+    public WorkerManager(Logger logger, IDataStore dataStore, GameDatabaseProvider databaseProvider, MatchService matchService, GuidCheckerService guidCheckerService)
     {
         this._dataStore = dataStore;
         this._databaseProvider = databaseProvider;
         this._logger = logger;
         this._matchService = matchService;
+        this._guidCheckerService = guidCheckerService;
     }
 
     private Thread? _thread = null;
@@ -46,6 +48,7 @@ public class WorkerManager
             DataStore = this._dataStore,
             Match = this._matchService,
             Token = null,
+            GuidChecker = this._guidCheckerService,
         });
         
         foreach (IWorker worker in this._workers)

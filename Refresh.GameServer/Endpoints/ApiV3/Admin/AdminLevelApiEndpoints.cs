@@ -52,6 +52,10 @@ public class AdminLevelApiEndpoints : EndpointGroup
         GameLevel? level = database.GetLevelById(id);
         if (level == null) return ApiNotFoundError.LevelMissingError;
 
+        if (body.IconHash != null && body.IconHash.StartsWith('g') &&
+            !dataContext.GuidChecker.IsTextureGuid(level.GameVersion, long.Parse(body.IconHash)))
+            return ApiValidationError.InvalidTextureGuidError;
+        
         level = database.UpdateLevel(body, level);
 
         return ApiGameLevelResponse.FromOld(level, dataContext);

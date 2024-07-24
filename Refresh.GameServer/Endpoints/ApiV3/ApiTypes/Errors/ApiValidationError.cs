@@ -35,5 +35,8 @@ public class ApiValidationError : ApiError
     public const string ResourceExistsErrorWhen = "The resource you are attempting to create already exists.";
     public static readonly ApiValidationError ResourceExistsError = new(ResourceExistsErrorWhen);
     
+    public const string InvalidTextureGuidErrorWhen = "The passed GUID is not a valid texture GUID for the specified game.";
+    public static readonly ApiValidationError InvalidTextureGuidError = new(InvalidTextureGuidErrorWhen);
+    
     public ApiValidationError(string message) : base(message) {}
 }

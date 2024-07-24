@@ -37,6 +37,7 @@ public class RefreshGameServer : RefreshServer
     protected readonly GameDatabaseProvider _databaseProvider;
     protected readonly IDataStore _dataStore;
     protected MatchService _matchService = null!;
+    protected GuidCheckerService _guidCheckerService = null!;
     
     protected GameServerConfig? _config;
     protected IntegrationConfig? _integrationConfig;
@@ -117,7 +118,7 @@ public class RefreshGameServer : RefreshServer
         this.Server.AddService(this._matchService = new MatchService(this.Server.Logger));
         this.Server.AddService<ImportService>();
         this.Server.AddService<DocumentationService>();
-        this.Server.AddService<GuidCheckerService>();
+        this.Server.AddService(this._guidCheckerService = new GuidCheckerService(this._config!, this.Server.Logger));
         this.Server.AddAutoDiscover(serverBrand: $"{this._config!.InstanceName} (Refresh)",
             baseEndpoint: GameEndpointAttribute.BaseRoute.Substring(0, GameEndpointAttribute.BaseRoute.Length - 1),
             usesCustomDigestKey: true,
@@ -147,7 +148,7 @@ public class RefreshGameServer : RefreshServer
 
     protected virtual void SetupWorkers()
     {
-        this.WorkerManager = new WorkerManager(this.Logger, this._dataStore, this._databaseProvider, this._matchService);
+        this.WorkerManager = new WorkerManager(this.Logger, this._dataStore, this._databaseProvider, this._matchService, this._guidCheckerService);
         
         this.WorkerManager.AddWorker<PunishmentExpiryWorker>();
         this.WorkerManager.AddWorker<ExpiredObjectWorker>();
