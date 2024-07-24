@@ -63,6 +63,9 @@ public class ProxyMiddleware(ProxyConfig config) : IMiddleware
             requestMessage.Headers.TryAddWithoutValidation(key, value);
         }
 
+        requestMessage.Headers.Add("Refresh-Ps3-Digest-Index", config.Ps3DigestIndex.ToString());
+        requestMessage.Headers.Add("Refresh-Ps4-Digest-Index", config.Ps4DigestIndex.ToString());
+
         // Send our HTTP request
         HttpResponseMessage response = client.Send(requestMessage);
 
