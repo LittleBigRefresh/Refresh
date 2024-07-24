@@ -1,6 +1,4 @@
-﻿// See https://aka.ms/new-console-template for more information
-
-using Bunkum.Core;
+﻿using Bunkum.Core;
 using Bunkum.Core.Configuration;
 using Bunkum.Protocols.Http;
 using Bunkum.Protocols.Https;
@@ -30,13 +28,11 @@ ProxyConfig config = Config.LoadFromJsonFile<ProxyConfig>("proxy.json", httpsSer
 httpsServer.Initialize = s =>
 {
     s.AddMiddleware(new ProxyMiddleware(config));
-    s.AddMiddleware(new DigestMiddleware(config));
 };
 
 httpServer.Initialize = s =>
 {
     s.AddMiddleware(new ProxyMiddleware(config));
-    s.AddMiddleware(new DigestMiddleware(config));
 };
 
 // Start the server in multi-threaded mode, and let Bunkum manage the rest.
