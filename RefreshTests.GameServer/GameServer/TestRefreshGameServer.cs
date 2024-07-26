@@ -74,6 +74,7 @@ public class TestRefreshGameServer : RefreshGameServer
         this.Server.AddService<LevelListOverrideService>();
         this.Server.AddService<CommandService>();
         this.Server.AddService<GuidCheckerService>();
+        this.Server.AddService<SmtpService>();
         
         // Must always be last, see comment in RefreshGameServer
         this.Server.AddService<DataContextService>();
