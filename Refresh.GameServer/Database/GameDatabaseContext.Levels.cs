@@ -180,17 +180,17 @@ public partial class GameDatabaseContext // Levels
     [Pure]
     public DatabaseList<GameLevel> GetLevelsByUser(GameUser user, int count, int skip, LevelFilterSettings levelFilterSettings, GameUser? accessor)
     {
-        if (user.Username == DeletedUser.Username)
+        if (user.Username == FakeUserConstants.DeletedUserName)
         {
             return new DatabaseList<GameLevel>(this.GetLevelsByGameVersion(levelFilterSettings.GameVersion).FilterByLevelFilterSettings(accessor, levelFilterSettings).Where(l => l.Publisher == null), skip, count);
         }
 
-        if (user.Username == "!Unknown")
+        if (user.Username == FakeUserConstants.UnknownUserName)
         {
             return new DatabaseList<GameLevel>(this.GetLevelsByGameVersion(levelFilterSettings.GameVersion).FilterByLevelFilterSettings(null, levelFilterSettings).Where(l => l.IsReUpload && String.IsNullOrEmpty(l.OriginalPublisher)), skip, count);
         }
         
-        if (user.Username.StartsWith("!"))
+        if (user.Username.StartsWith(FakeUserConstants.Prefix))
         {
             string withoutPrefix = user.Username[1..];
             return new DatabaseList<GameLevel>(this.GetLevelsByGameVersion(levelFilterSettings.GameVersion).FilterByLevelFilterSettings(accessor, levelFilterSettings).Where(l => l.OriginalPublisher == withoutPrefix), skip, count);

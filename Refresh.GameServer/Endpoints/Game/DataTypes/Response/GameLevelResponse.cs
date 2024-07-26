@@ -1,18 +1,14 @@
-using System.Diagnostics;
 using System.Xml.Serialization;
-using Bunkum.Core.Storage;
+using Refresh.Common.Constants;
 using Refresh.GameServer.Authentication;
-using Refresh.GameServer.Database;
 using Refresh.GameServer.Endpoints.ApiV3.DataTypes;
 using Refresh.GameServer.Extensions;
-using Refresh.GameServer.Services;
 using Refresh.GameServer.Types;
 using Refresh.GameServer.Types.Assets;
 using Refresh.GameServer.Types.Data;
 using Refresh.GameServer.Types.Levels;
 using Refresh.GameServer.Types.Levels.SkillRewards;
 using Refresh.GameServer.Types.Matching;
-using Refresh.GameServer.Types.Relations;
 using Refresh.GameServer.Types.Reviews;
 using Refresh.GameServer.Types.UserData;
 
@@ -190,8 +186,8 @@ public class GameLevelResponse : IDataConvertableFrom<GameLevelResponse, GameLev
                 publisher = "!DeletedUser";
             else
                 publisher = string.IsNullOrEmpty(old.OriginalPublisher)
-                    ? "!Unknown"
-                    : "!" + old.OriginalPublisher;
+                    ? FakeUserConstants.UnknownUserName
+                    : FakeUserConstants.Prefix + old.OriginalPublisher;
             
             response.Handle = new SerializedUserHandle
             {

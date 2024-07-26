@@ -1,5 +1,6 @@
 using JetBrains.Annotations;
 using MongoDB.Bson;
+using Refresh.Common.Constants;
 using Refresh.GameServer.Authentication;
 using Refresh.GameServer.Endpoints.ApiV3.DataTypes.Request;
 using Refresh.GameServer.Types;
@@ -13,32 +14,46 @@ namespace Refresh.GameServer.Database;
 
 public partial class GameDatabaseContext // Users
 {
-    private static readonly GameUser DeletedUser = new()
-    {
-        Username = "!DeletedUser",
-        Description = "I'm a fake user that represents deleted users for levels.",
-        FakeUser = true,
-    };
-    
     [Pure]
-    [ContractAnnotation("null => null; notnull => canbenull")]
+    [ContractAnnotation("username:null => null; username:notnull => canbenull")]
     public GameUser? GetUserByUsername(string? username, bool caseSensitive = true)
     {
-        if (username == null) return null;
-        if (username == "!DeletedUser")
-            return DeletedUser;
-        if (username.StartsWith("!"))
-            return new()
+        if (username == null) 
+            return null;
+        
+        // Try the first pass to get the user
+        GameUser? user = caseSensitive
+            ? this.GameUsers.FirstOrDefault(u => u.Username == username)
+            : this.GameUsers.FirstOrDefault(u => u.Username.Equals(username, StringComparison.OrdinalIgnoreCase));
+        
+        // If that failed and the username is the deleted user, then we need to create the backing deleted user
+        if (username == FakeUserConstants.DeletedUserName && user == null)
+        {
+            this.Write(() =>
             {
-                Username = username,
-                Description = "I'm a fake user that represents a non existent publisher for re-published levels.",
-                FakeUser = true,
-            };
+                this.GameUsers.Add(user = new GameUser
+                {
+                    Username = FakeUserConstants.DeletedUserName,
+                    Description = "I'm a fake user that represents deleted users for levels.",
+                    FakeUser = true,
+                });
+            });
+        } 
+        // If that failed and the username is a fake re-upload user, then we need to create the backing fake user
+        else if (username.StartsWith(FakeUserConstants.Prefix) && user == null)
+        {
+            this.Write(() =>
+            {
+                this.GameUsers.Add(user = new GameUser
+                {
+                    Username = username,
+                    Description = "I'm a fake user that represents a non existent publisher for re-published levels.",
+                    FakeUser = true,
+                });
+            });
+        }
         
-        if (!caseSensitive)
-            return this.GameUsers.FirstOrDefault(u => u.Username.Equals(username, StringComparison.OrdinalIgnoreCase));
-        
-        return this.GameUsers.FirstOrDefault(u => u.Username == username);
+        return user;
     }
     
     [Pure]
