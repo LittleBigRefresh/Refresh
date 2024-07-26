@@ -47,7 +47,8 @@ public class GameMinimalLevelResponse : IDataConvertableFrom<GameMinimalLevelRes
     [XmlElement("initiallyLocked")] public bool IsLocked { get; set; }
     [XmlElement("isSubLevel")] public bool IsSubLevel { get; set; }
     [XmlElement("shareable")] public int IsCopyable { get; set; }
-    
+    [XmlElement("tags")] public string Tags { get; set; } = "";
+ 
     private GameMinimalLevelResponse() {}
     
     /// <summary>
@@ -99,6 +100,7 @@ public class GameMinimalLevelResponse : IDataConvertableFrom<GameMinimalLevelRes
             IsSubLevel = level.IsSubLevel,
             IsCopyable = level.IsCopyable,
             PlayerCount = dataContext.Match.GetPlayerCountForLevel(RoomSlotType.Online, level.LevelId),
+            Tags = level.Tags,
         };
     }
 

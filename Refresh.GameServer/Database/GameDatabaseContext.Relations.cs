@@ -1,5 +1,4 @@
 using System.Diagnostics.Contracts;
-using Realms;
 using Refresh.GameServer.Authentication;
 using Refresh.GameServer.Endpoints.Game.Levels.FilterSettings;
 using Refresh.GameServer.Extensions;
@@ -492,5 +491,37 @@ public partial class GameDatabaseContext // Relations
     public bool RateLevelComment(GameUser user, GameLevelComment comment, RatingType ratingType)
         => this.RateComment(user, comment, ratingType, this.LevelCommentRelations);
 
+    #endregion
+
+    #region Tags
+
+    public void AddTagRelation(GameUser user, GameLevel level, Tag tag)
+    {
+        this.Write(() =>
+        {
+            // Remove any old tags from this user on this level
+            this.TagLevelRelations.RemoveRange(this.TagLevelRelations.Where(t => t.User == user && t.Level == level));
+            
+            this.TagLevelRelations.Add(new TagLevelRelation
+            {
+                Tag = tag,
+                User = user,
+                Level = level,
+            });
+        });
+    }
+
+    public IEnumerable<TagLevelRelation> GetTagsForLevel(GameLevel level)
+    {
+        IQueryable<TagLevelRelation> levelTags = this.TagLevelRelations.Where(t => t.Level == level);
+ 
+        IOrderedEnumerable<TagLevelRelation> tags = levelTags
+            .AsEnumerable()
+            .DistinctBy(t => t._Tag)
+            .OrderByDescending(t => levelTags.Count(levelTag => levelTag._Tag == t._Tag));
+
+        return tags;
+    }
+    
     #endregion
 }
