@@ -4,10 +4,10 @@ using Bunkum.Core.Responses;
 using Bunkum.Core.Storage;
 using Bunkum.Listener.Protocol;
 using Bunkum.Protocols.Http;
-using Refresh.GameServer.Authentication;
 using Refresh.GameServer.Database;
 using Refresh.GameServer.Extensions;
 using Refresh.GameServer.Types.Data;
+using Refresh.GameServer.Types.Levels;
 using Refresh.GameServer.Types.Lists;
 using Refresh.GameServer.Types.Photos;
 using Refresh.GameServer.Types.Roles;
@@ -82,6 +82,22 @@ public class PhotoEndpoints : EndpointGroup
     [MinimumRole(GameUserRole.Restricted)]
     public Response PhotosByUser(RequestContext context, GameDatabaseContext database, DataContext dataContext) 
         => GetPhotos(context, database, dataContext, database.GetPhotosByUser);
+
+    [GameEndpoint("photos/{slotType}/{levelId}", ContentType.Xml)]
+    public Response GetPhotosOnLevel(RequestContext context, DataContext dataContext, string slotType, int levelId)
+    {
+        GameLevel? level = dataContext.Database.GetLevelByIdAndType(slotType, levelId);
+        if (level == null)
+            return NotFound;
+        
+        (int skip, int count) = context.GetPageData();
+
+        // count not used ingame
+        IEnumerable<SerializedPhoto> photos = dataContext.Database.GetPhotosInLevel(level, count, skip).Items
+            .Select(photo => SerializedPhoto.FromGamePhoto(photo, dataContext));
+
+        return new Response(new SerializedPhotoList(photos), ContentType.Xml);
+    }
 
     [GameEndpoint("photo/{id}", ContentType.Xml)]
     [NullStatusCode(NotFound)]
