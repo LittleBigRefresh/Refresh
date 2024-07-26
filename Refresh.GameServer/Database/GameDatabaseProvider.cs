@@ -70,6 +70,7 @@ public class GameDatabaseProvider : RealmDatabaseProvider<GameDatabaseContext>
         typeof(GameReview),
         typeof(DisallowedUser),
         typeof(RateReviewRelation),
+        typeof(TagLevelRelation),
     };
 
     public override void Warmup()

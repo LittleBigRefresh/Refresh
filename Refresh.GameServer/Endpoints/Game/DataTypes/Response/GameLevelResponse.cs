@@ -79,6 +79,7 @@ public class GameLevelResponse : IDataConvertableFrom<GameLevelResponse, GameLev
     [XmlElement("reviewsEnabled")] public bool ReviewsEnabled { get; set; } = true;
     [XmlElement("commentCount")] public int CommentCount { get; set; } = 0;
     [XmlElement("commentsEnabled")] public bool CommentsEnabled { get; set; } = true;
+    [XmlElement("tags")] public string Tags { get; set; } = "";
     
     /// <summary>
     /// Provides a unique level ID for ~1.1 billion hashed levels, uses the hash directly, so this is deterministic
@@ -174,6 +175,7 @@ public class GameLevelResponse : IDataConvertableFrom<GameLevelResponse, GameLev
             AverageStarRating = old.CalculateAverageStarRating(dataContext.Database),
             ReviewCount = old.Reviews.Count,
             CommentCount = dataContext.Database.GetTotalCommentsForLevel(old),
+            Tags = string.Join(',', dataContext.Database.GetTagsForLevel(old).Select(t => t.Tag.ToLbpString())) ,
         };
 
         response.Type = "user";

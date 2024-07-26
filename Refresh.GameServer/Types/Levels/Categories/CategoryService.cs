@@ -28,6 +28,7 @@ public class CategoryService : EndpointService
         new QueuedLevelsByUserCategory(),
 
         new SearchLevelCategory(),
+        new ByTagCategory(),
         new DeveloperLevelsCategory(),
         new ContestCategory(),
     ];

@@ -124,4 +124,27 @@ public class RelationEndpoints : EndpointGroup
         database.ClearQueue(user);
         return OK;
     }
+    
+    [GameEndpoint("tag/{slotType}/{id}", HttpMethods.Post)]
+    public Response SubmitTagsForLevel(RequestContext context, GameDatabaseContext database, GameUser user, string slotType, int id, string body)
+    {
+        GameLevel? level = database.GetLevelByIdAndType(slotType, id);
+        
+        if (level == null)
+            return NotFound;
+
+        // The format of the POST body is `t=TAG_Name`, so assert this is followed
+        if (!body.StartsWith("t="))
+            return BadRequest;
+
+        Tag? tag = TagExtensions.FromLbpString(body[2..]);
+
+        // If it was an invalid tag, return BadRequest
+        if (tag == null)
+            return BadRequest;
+        
+        database.AddTagRelation(user, level, tag.Value);
+        
+        return OK;
+    }
 }

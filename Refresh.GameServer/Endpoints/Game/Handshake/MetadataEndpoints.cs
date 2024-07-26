@@ -1,4 +1,3 @@
-using System.Xml.Serialization;
 using Bunkum.Core;
 using Bunkum.Core.Endpoints;
 using Bunkum.Core.Endpoints.Debugging;
@@ -7,8 +6,8 @@ using Bunkum.Listener.Protocol;
 using Bunkum.Protocols.Http;
 using Refresh.GameServer.Database;
 using Refresh.GameServer.Time;
-using Refresh.GameServer.Types;
 using Refresh.GameServer.Types.Challenges;
+using Refresh.GameServer.Types.Levels;
 using Refresh.GameServer.Types.Roles;
 using Refresh.GameServer.Types.UserData;
 
@@ -191,4 +190,7 @@ public class MetadataEndpoints : EndpointGroup
             Challenges = [],
         };
     }
+
+    [GameEndpoint("tags")]
+    public string Tags(RequestContext context) => TagExtensions.AllTags;
 }

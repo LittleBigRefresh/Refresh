@@ -56,6 +56,7 @@ public partial class GameDatabaseContext : RealmDatabaseContext
     private RealmDbSet<GameReview> GameReviews => new(this._realm);
     private RealmDbSet<DisallowedUser> DisallowedUsers => new(this._realm);
     private RealmDbSet<RateReviewRelation> RateReviewRelations => new(this._realm);
+    private RealmDbSet<TagLevelRelation> TagLevelRelations => new(this._realm);
     
     internal GameDatabaseContext(IDateTimeProvider time)
     {

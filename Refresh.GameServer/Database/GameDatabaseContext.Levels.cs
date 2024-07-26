@@ -153,6 +153,7 @@ public partial class GameDatabaseContext // Levels
             this.QueueLevelRelations.RemoveRange(r => r.Level == level);
             this.RateLevelRelations.RemoveRange(r => r.Level == level);
             this.UniquePlayLevelRelations.RemoveRange(r => r.Level == level);
+            this.TagLevelRelations.RemoveRange(r => r.Level == level);
             
             IQueryable<GameSubmittedScore> scores = this.GameSubmittedScores.Where(r => r.Level == level);
             
@@ -239,6 +240,24 @@ public partial class GameDatabaseContext // Levels
             .FilterByGameVersion(levelFilterSettings.GameVersion);
 
         return new DatabaseList<GameLevel>(mostHeartedLevels, skip, count);
+    }
+    
+    [Pure]
+    public DatabaseList<GameLevel> GetLevelsByTag(int count, int skip, GameUser? user, Tag tag, LevelFilterSettings levelFilterSettings)
+    {
+        IQueryable<TagLevelRelation> tagRelations = this.TagLevelRelations;
+        
+        IEnumerable<GameLevel> filteredTaggedLevels = tagRelations
+            .Where(x => x._Tag == (int)tag)
+            .AsEnumerable()
+            .Select(x => x.Level)
+            .Distinct()
+            .Where(l => l._Source == (int)GameLevelSource.User)
+            .OrderByDescending(l => l.PublishDate)
+            .FilterByLevelFilterSettings(user, levelFilterSettings)
+            .FilterByGameVersion(levelFilterSettings.GameVersion);
+
+        return new DatabaseList<GameLevel>(filteredTaggedLevels, skip, count);
     }
     
     [Pure]
