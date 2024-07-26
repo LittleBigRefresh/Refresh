@@ -1,5 +1,6 @@
 using Bunkum.Core;
 using Bunkum.Core.Services;
+using DnsClient;
 using MailKit.Net.Smtp;
 using MailKit.Security;
 using MimeKit;
@@ -101,5 +102,20 @@ public class SmtpService : EndpointService
              Best regards,
                  The {this._gameConfig.InstanceName} Team
              """);
+    }
+
+    public bool CheckEmailDomainValidity(string emailAddress)
+    {
+        if (this._integrationConfig is not { SmtpVerifyDomain: true, SmtpEnabled: true })
+            return true;
+        
+        string domain = emailAddress[(emailAddress.IndexOf('@') + 1)..];
+        this.Logger.LogDebug(BunkumCategory.Authentication, $"Checking validity of email {emailAddress} (domain: {domain})");
+        
+        LookupClient dns = new();
+        IDnsQueryResponse? records = dns.Query(domain, QueryType.MX);
+        if (records == null) return false;
+
+        return records.Answers.MxRecords().Any();
     }
 }

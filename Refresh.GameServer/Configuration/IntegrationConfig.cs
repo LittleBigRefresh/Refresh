@@ -7,7 +7,7 @@ namespace Refresh.GameServer.Configuration;
 /// </summary>
 public class IntegrationConfig : Config
 {
-    public override int CurrentConfigVersion => 3;
+    public override int CurrentConfigVersion => 4;
     public override int Version { get; set; }
     protected override void Migrate(int oldVer, dynamic oldConfig)
     {
@@ -23,6 +23,7 @@ public class IntegrationConfig : Config
     public bool SmtpTlsEnabled { get; set; } = true;
     public string SmtpUsername { get; set; } = "username@example.com";
     public string SmtpPassword { get; set; } = "P4$$w0rd";
+    public bool SmtpVerifyDomain { get; set; } = true;
 
     #endregion
 

@@ -19,6 +19,7 @@ namespace Refresh.GameServer.Endpoints.Game;
 public class CommentEndpoints : EndpointGroup
 {
     [GameEndpoint("postUserComment/{username}", ContentType.Xml, HttpMethods.Post)]
+    [RequireEmailVerified]
     public Response PostProfileComment(RequestContext context, GameDatabaseContext database, string username, SerializedComment body, GameUser user, IDateTimeProvider timeProvider)
     {
         if (body.Content.Length > 4096)
@@ -70,6 +71,7 @@ public class CommentEndpoints : EndpointGroup
     }
 
     [GameEndpoint("postComment/{slotType}/{id}", ContentType.Xml, HttpMethods.Post)]
+    [RequireEmailVerified]
     public Response PostLevelComment(RequestContext context, GameDatabaseContext database, string slotType, int id, SerializedComment body, GameUser user)
     {
         if (body.Content.Length > 4096)

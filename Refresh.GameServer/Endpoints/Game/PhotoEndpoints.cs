@@ -18,6 +18,7 @@ namespace Refresh.GameServer.Endpoints.Game;
 public class PhotoEndpoints : EndpointGroup
 {
     [GameEndpoint("uploadPhoto", HttpMethods.Post, ContentType.Xml)]
+    [RequireEmailVerified]
     public Response UploadPhoto(RequestContext context, SerializedPhoto body, GameDatabaseContext database, GameUser user, IDataStore dataStore)
     {
         if (!dataStore.ExistsInStore(body.SmallHash) ||

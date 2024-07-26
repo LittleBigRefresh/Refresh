@@ -43,6 +43,7 @@ public class ModerationEndpoints : EndpointGroup
     /// <param name="database">The database. Used for commands</param>
     /// <returns>The string shown in-game.</returns>
     [GameEndpoint("filter", HttpMethods.Post)]
+    [RequireEmailVerified]
     [AllowEmptyBody]
     public string Filter(RequestContext context, CommandService commandService, string body, GameUser user, Token token, GameDatabaseContext database)
     {
@@ -90,6 +91,7 @@ public class ModerationEndpoints : EndpointGroup
     }
 
     [GameEndpoint("filter/batch", HttpMethods.Post, ContentType.Xml)]
+    [RequireEmailVerified]
     public SerializedTextList BatchFilter(RequestContext context, SerializedTextList body)
     {
         return new SerializedTextList

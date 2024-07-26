@@ -42,6 +42,10 @@ public class RoleService : Service
         if (user.Role < minimumRole)
             return Unauthorized;
 
+        RequireEmailVerifiedAttribute? emailAttrib = method.GetCustomAttribute<RequireEmailVerifiedAttribute>();
+        if (emailAttrib != null && !user.EmailAddressVerified)
+            return Unauthorized;
+
         return null;
     }
 

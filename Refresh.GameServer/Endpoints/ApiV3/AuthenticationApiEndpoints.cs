@@ -3,7 +3,6 @@ using AttribDoc.Attributes;
 using Bunkum.Core;
 using Bunkum.Core.Endpoints;
 using Bunkum.Core.RateLimit;
-using Bunkum.Listener.Protocol;
 using Bunkum.Protocols.Http;
 using Refresh.GameServer.Authentication;
 using Refresh.GameServer.Configuration;
@@ -12,7 +11,6 @@ using Refresh.GameServer.Endpoints.ApiV3.ApiTypes;
 using Refresh.GameServer.Endpoints.ApiV3.ApiTypes.Errors;
 using Refresh.GameServer.Endpoints.ApiV3.DataTypes;
 using Refresh.GameServer.Endpoints.ApiV3.DataTypes.Request.Authentication;
-using Refresh.GameServer.Endpoints.ApiV3.DataTypes.Response;
 using Refresh.GameServer.Endpoints.ApiV3.DataTypes.Response.Users;
 using Refresh.GameServer.Extensions;
 using Refresh.GameServer.Services;
@@ -243,6 +241,9 @@ public class AuthenticationApiEndpoints : EndpointGroup
 
         if (!CommonPatterns.EmailAddressRegex().IsMatch(body.EmailAddress))
             return new ApiValidationError("The email address given is invalid.");
+        
+        if (!smtpService.CheckEmailDomainValidity(body.EmailAddress))
+            return ApiValidationError.EmailDoesNotActuallyExistError;
         
         if (database.IsUserDisallowed(body.Username))
             return new ApiAuthenticationError("This username is disallowed from being registered.");

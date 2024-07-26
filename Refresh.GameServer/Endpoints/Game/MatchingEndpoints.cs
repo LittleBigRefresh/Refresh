@@ -17,6 +17,7 @@ public class MatchingEndpoints : EndpointGroup
     // [FindBestRoom,["Players":["VitaGamer128"],"Reservations":["0"],"NAT":[2],"Slots":[[5,0]],"Location":[0x17257bc9,0x17257bf2],"Language":1,"BuildVersion":289,"Search":"","RoomState":3]]
     [GameEndpoint("match", HttpMethods.Post, ContentType.Json)]
     [DebugRequestBody, DebugResponseBody]
+    [RequireEmailVerified]
     public Response Match(
         RequestContext context, 
         string body, 
