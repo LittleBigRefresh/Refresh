@@ -31,9 +31,11 @@ public class RefreshDocumentationGenerator : DocumentationGenerator
         {
             MinimumRoleAttribute? roleAttribute = method.GetCustomAttribute<MinimumRoleAttribute>();
             if (roleAttribute != null)
-            {
                 route.ExtraProperties["minimumRole"] = roleAttribute.MinimumRole;
-            }   
+
+            RequireEmailVerifiedAttribute? emailAttribute = method.GetCustomAttribute<RequireEmailVerifiedAttribute>();
+            if(emailAttribute != null)
+                route.ExtraProperties["emailRequired"] = true;
         }
     }
 }
