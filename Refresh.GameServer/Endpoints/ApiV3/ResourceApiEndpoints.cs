@@ -147,6 +147,7 @@ public class ResourceApiEndpoints : EndpointGroup
         string hash, DataContext dataContext) => this.GetAssetInfo(context, database, dataStore, $"psp/{hash}", dataContext);
 
     [ApiV3Endpoint("assets/{hash}", HttpMethods.Post)]
+    [RequireEmailVerified]
     [DocSummary("Uploads an image (PNG/JPEG) asset")]
     [DocError(typeof(ApiValidationError), ApiValidationError.HashMissingErrorWhen)]
     [DocError(typeof(ApiValidationError), ApiValidationError.BodyTooLongErrorWhen)]

@@ -93,6 +93,7 @@ public class ReviewEndpoints : EndpointGroup
     }
 
     [GameEndpoint("postReview/{slotType}/{id}", ContentType.Xml, HttpMethods.Post)]
+    [RequireEmailVerified]
     public Response PostReviewForLevel(
         RequestContext context,
         GameDatabaseContext database,

@@ -22,7 +22,7 @@ public class LeaderboardEndpoints : EndpointGroup
     private const int MaxRequestAmount = 250;
     private const int RequestBlockDuration = 300;
     private const string BucketName = "score";
-    
+
     [GameEndpoint("play/{slotType}/{id}", ContentType.Xml, HttpMethods.Post)]
     public Response PlayLevel(RequestContext context, GameUser user, GameDatabaseContext database, string slotType, int id)
     {
@@ -69,6 +69,7 @@ public class LeaderboardEndpoints : EndpointGroup
     
     [GameEndpoint("scoreboard/{slotType}/{id}", ContentType.Xml, HttpMethods.Post)]
     [RateLimitSettings(RequestTimeoutDuration, MaxRequestAmount, RequestBlockDuration, BucketName)]
+    [RequireEmailVerified]
     public Response SubmitScore(RequestContext context, GameUser user, GameDatabaseContext database, string slotType, int id, SerializedScore body, Token token)
     {
         GameLevel? level = database.GetLevelByIdAndType(slotType, id);
