@@ -90,9 +90,12 @@ public class AnnouncementEndpoints : EndpointGroup
         if (!user.EmailAddressVerified)
         {
             return $"Your account doesn't have a verified email address. If this is a new account, there should be a verification code in your inbox.\n\n" +
+                   
                    $"You can still play online without a verified email address if you wish, " +
                    $"but you might miss out on 'share' features like level uploading, and you will not be able to dive in.\n\n" +
+                   
                    $"If you didn't receive it, try checking your spam folder. You can also opt to resend the code on the website.\n\n" +
+                   
                    $"For more information, sign into the site at {config.WebExternalUrl}.";
         }
         
