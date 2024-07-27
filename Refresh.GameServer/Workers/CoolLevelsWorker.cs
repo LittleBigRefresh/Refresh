@@ -67,7 +67,7 @@ public class CoolLevelsWorker : IWorker
             context.Database.SetLevelScores(scoresToSet);
             
             // Load the next page
-            levels = context.Database.GetUserLevelsChunk(levels.Items.Count(), pageSize);
+            levels = context.Database.GetUserLevelsChunk(levels.NextPageIndex - 1, pageSize);
         }
         
         stopwatch.Stop();
