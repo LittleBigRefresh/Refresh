@@ -35,6 +35,11 @@ public partial class GameDatabaseContext // AssetConfiguration
         => this.AssetDependencyRelations.Where(a => a.Dependent == asset.AssetHash)
             .AsEnumerable()
             .Select(a => a.Dependency);
+    
+    public IEnumerable<string> GetAssetDependents(GameAsset asset) 
+        => this.AssetDependencyRelations.Where(a => a.Dependency == asset.AssetHash)
+            .AsEnumerable()
+            .Select(a => a.Dependent);
 
     public void AddOrOverwriteAssetDependencyRelations(string dependent, IEnumerable<string> dependencies)
     {
