@@ -12,10 +12,10 @@ public class CreateRoomMethod : IMatchMethod
     public Response Execute(DataContext dataContext, SerializedRoomData body, GameServerConfig gameServerConfig)
     {
         NatType natType = body.NatType == null ? NatType.Open : body.NatType[0];
-        GameRoom room = dataContext.Match.GetOrCreateRoomByPlayer(dataContext.User!, dataContext.Platform, dataContext.Game, natType, body.BuildVersion, body.PassedNoJoinPoint);
+        GameRoom room = dataContext.Match.GetOrCreateRoomByPlayer(dataContext.User!, dataContext.Platform, dataContext.Game, natType, body.PassedNoJoinPoint);
         if (room.HostId.Id != dataContext.User!.UserId)
         {
-            room = dataContext.Match.SplitUserIntoNewRoom(dataContext.User, dataContext.Platform, dataContext.Game, natType, body.BuildVersion, body.PassedNoJoinPoint);
+            room = dataContext.Match.SplitUserIntoNewRoom(dataContext.User, dataContext.Platform, dataContext.Game, natType, body.PassedNoJoinPoint);
         }
 
         if (body.RoomState != null) room.RoomState = body.RoomState.Value;

@@ -98,17 +98,17 @@ public interface IRoomAccessor
     /// <param name="platform">The platform to check for</param>
     /// <param name="game">The game to check for</param>
     /// <returns>The found room, or null if not found</returns>
-    public GameRoom? GetRoomByUser(GameUser user, TokenPlatform? platform = null, TokenGame? game = null, int? buildVersion = null) => this.GetRoomByUserUuid(user.UserId, platform, game, buildVersion);
+    public GameRoom? GetRoomByUser(GameUser user, TokenPlatform? platform = null, TokenGame? game = null) => this.GetRoomByUserUuid(user.UserId, platform, game);
     /// <summary>
     /// Gets a room by a user's UUID.
     /// </summary>
     /// <param name="uuid">The user UUID to search for</param>
     /// <returns>The found room, or null if not found</returns>
-    public GameRoom? GetRoomByUserUuid(ObjectId uuid, TokenPlatform? platform = null, TokenGame? game = null, int? buildVersion = null);
+    public GameRoom? GetRoomByUserUuid(ObjectId uuid, TokenPlatform? platform = null, TokenGame? game = null);
     /// <summary>
     /// Gets a room by a user's username.
     /// </summary>
     /// <param name="username">The username to search for</param>
     /// <returns>The found room, or null if not found</returns>
-    public GameRoom? GetRoomByUsername(string username, TokenPlatform? platform = null, TokenGame? game = null, int? buildVersion = null);
+    public GameRoom? GetRoomByUsername(string username, TokenPlatform? platform = null, TokenGame? game = null);
 }
