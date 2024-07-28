@@ -71,8 +71,6 @@ public class LeaderboardEndpoints : EndpointGroup
 
     [GameEndpoint("scoreboard/friends/{slotType}/{id}", HttpMethods.Post, ContentType.Xml)]
     [RateLimitSettings(RequestTimeoutDuration, MaxRequestAmount, RequestBlockDuration, BucketName)]
-    [DebugRequestBody]
-    [DebugResponseBody]
     [NullStatusCode(NotFound)]
     public SerializedScoreLeaderboardList? GetLevelFriendLeaderboard(
         RequestContext context, 
