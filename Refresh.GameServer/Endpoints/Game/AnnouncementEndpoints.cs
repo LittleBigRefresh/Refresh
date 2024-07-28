@@ -9,6 +9,7 @@ using Refresh.GameServer.Authentication;
 using Refresh.GameServer.Configuration;
 using Refresh.GameServer.Database;
 using Refresh.GameServer.Services;
+using Refresh.GameServer.Time;
 using Refresh.GameServer.Types.Contests;
 using Refresh.GameServer.Types.Matching;
 using Refresh.GameServer.Types.Notifications;
@@ -75,12 +76,15 @@ public class AnnouncementEndpoints : EndpointGroup
     [GameEndpoint("announce")]
     [MinimumRole(GameUserRole.Restricted)]
     [SuppressMessage("ReSharper", "RedundantAssignment")]
-    public string Announce(RequestContext context, GameServerConfig config, GameUser user, GameDatabaseContext database, Token token)
+    public string Announce(RequestContext context, GameServerConfig config, GameUser user, GameDatabaseContext database, Token token, IDateTimeProvider timeProvider)
     {
         if (user.Role == GameUserRole.Restricted)
         {
-            return """
+            return $"""
                    Your account is currently in restricted mode.
+                   
+                   Reason: {user.BanReason ?? "No reason given."}
+                   Remaining: ~{(user.BanExpiryDate! - timeProvider.Now).Value.Days} days
                    
                    You can still play, but you won't be able to publish levels, post comments, or otherwise interact with the community.
                    For more information, please contact an administrator.
