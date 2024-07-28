@@ -1,6 +1,7 @@
 using System.Diagnostics;
 using Bunkum.Core;
 using Bunkum.Core.Endpoints;
+using Bunkum.Core.Endpoints.Debugging;
 using Bunkum.Core.RateLimit;
 using Bunkum.Core.Responses;
 using Bunkum.Listener.Protocol;
@@ -11,6 +12,7 @@ using Refresh.GameServer.Extensions;
 using Refresh.GameServer.Types.Levels;
 using Refresh.GameServer.Types.Lists;
 using Refresh.GameServer.Types.Roles;
+using Refresh.GameServer.Types.Scores;
 using Refresh.GameServer.Types.UserData;
 using Refresh.GameServer.Types.UserData.Leaderboard;
 
@@ -65,6 +67,23 @@ public class LeaderboardEndpoints : EndpointGroup
         MultiLeaderboard multiLeaderboard = new(database, level, token.TokenGame);
         
         return new Response(SerializedMultiLeaderboardResponse.FromOld(multiLeaderboard), ContentType.Xml);
+    }
+
+    [GameEndpoint("scoreboard/friends/{slotType}/{id}", HttpMethods.Post, ContentType.Xml)]
+    [RateLimitSettings(RequestTimeoutDuration, MaxRequestAmount, RequestBlockDuration, BucketName)]
+    [NullStatusCode(NotFound)]
+    public SerializedScoreLeaderboardList? GetLevelFriendLeaderboard(
+        RequestContext context, 
+        GameUser user, 
+        GameDatabaseContext database, 
+        string slotType, 
+        int id, 
+        FriendScoresRequest body)
+    {
+        GameLevel? level = database.GetLevelByIdAndType(slotType, id);
+        if (level == null) return null;
+        
+        return SerializedScoreLeaderboardList.FromSubmittedEnumerable(database.GetLevelTopScoresByFriends(user, level, 10, body.Type));
     }
     
     [GameEndpoint("scoreboard/{slotType}/{id}", ContentType.Xml, HttpMethods.Post)]

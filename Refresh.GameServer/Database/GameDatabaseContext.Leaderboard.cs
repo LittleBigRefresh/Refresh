@@ -60,8 +60,6 @@ public partial class GameDatabaseContext // Leaderboard
         return newScore;
     }
     
-    [UsedImplicitly] private record ScoreLevelWithPlayer(GameLevel Level, GameUser Player);
-
     public DatabaseList<GameSubmittedScore> GetTopScoresForLevel(GameLevel level, int count, int skip, byte type, bool showDuplicates = false)
     {
         IEnumerable<GameSubmittedScore> scores = this.GameSubmittedScores
@@ -70,7 +68,7 @@ public partial class GameDatabaseContext // Leaderboard
             .AsEnumerable();
 
         if (!showDuplicates)
-            scores = scores.DistinctBy(s => new ScoreLevelWithPlayer(s.Level, s.Players[0]));
+            scores = scores.DistinctBy(s => s.Players[0]);
 
         return new DatabaseList<GameSubmittedScore>(scores, skip, count);
     }
@@ -86,12 +84,29 @@ public partial class GameDatabaseContext // Leaderboard
             .AsEnumerable()
             .ToList();
 
-        scores = scores.DistinctBy(s => new ScoreLevelWithPlayer(s.Level, s.Players[0]))
+        scores = scores.DistinctBy(s => s.Players[0])
             .ToList();
 
         return scores.Select((s, i) => new ScoreWithRank(s, i + 1))
             .Skip(Math.Min(scores.Count, scores.IndexOf(score) - count / 2)) // center user's score around other scores
             .Take(count);
+    }
+    
+    public IEnumerable<ScoreWithRank> GetLevelTopScoresByFriends(GameUser user, GameLevel level, int count, byte type)
+    {
+        IEnumerable<GameUser> mutuals = this.GetUsersMutuals(user);
+        
+        IEnumerable<GameSubmittedScore> scores = this.GameSubmittedScores
+            .Where(s => s.ScoreType == type && s.Level == level)
+            .OrderByDescending(s => s.Score)
+            .AsEnumerable()
+            .DistinctBy(s => s.Players[0].UserId)
+            //TODO: THIS CALL IS EXTREMELY INEFFECIENT!!! once we are in postgres land, figure out a way to do this effeciently
+            .Where(s => s.Players.Any(p => p.UserId == user.UserId || mutuals.Contains(p)))
+            .Take(10)
+            .ToList();
+
+        return scores.Select((s, i) => new ScoreWithRank(s, i + 1));
     }
 
     [Pure]
