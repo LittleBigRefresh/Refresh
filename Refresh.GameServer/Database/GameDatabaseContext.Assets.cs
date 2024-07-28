@@ -1,8 +1,9 @@
 using Refresh.GameServer.Types.Assets;
+using Refresh.GameServer.Types.UserData;
 
 namespace Refresh.GameServer.Database;
 
-public partial class GameDatabaseContext // AssetConfiguration
+public partial class GameDatabaseContext // Assets
 {
     public GameAsset? GetAssetFromHash(string hash)
     {
@@ -11,7 +12,13 @@ public partial class GameDatabaseContext // AssetConfiguration
         return this.GameAssets
             .FirstOrDefault(a => a.AssetHash == hash);
     }
+
+    public DatabaseList<GameAsset> GetAssetsUploadedByUser(GameUser? user, int skip, int count)
+        => new(this.GameAssets.Where(a => a.OriginalUploader == user), skip, count);
     
+    public DatabaseList<GameAsset> GetAssetsUploadedByUser(GameUser? user, int skip, int count, GameAssetType type)
+        => new(this.GameAssets.Where(a => a.OriginalUploader == user && a._AssetType == (int)type), skip, count);
+
     public GameAssetType? GetConvertedType(string hash)
     {
         IQueryable<GameAsset> assets = this.GameAssets;
@@ -35,6 +42,11 @@ public partial class GameDatabaseContext // AssetConfiguration
         => this.AssetDependencyRelations.Where(a => a.Dependent == asset.AssetHash)
             .AsEnumerable()
             .Select(a => a.Dependency);
+    
+    public IEnumerable<string> GetAssetDependents(GameAsset asset) 
+        => this.AssetDependencyRelations.Where(a => a.Dependency == asset.AssetHash)
+            .AsEnumerable()
+            .Select(a => a.Dependent);
 
     public void AddOrOverwriteAssetDependencyRelations(string dependent, IEnumerable<string> dependencies)
     {

@@ -7,9 +7,8 @@ namespace Refresh.GameServer.Extensions;
 public static class RequestContextExtensions
 {
     [Pure]
-    public static (int, int) GetPageData(this RequestContext context)
+    public static (int, int) GetPageData(this RequestContext context, int maxCount = 100)
     {
-        const int maxCount = 100;
         bool api = context.IsApi();
         
         bool parsed = int.TryParse(context.QueryString[api ? "skip" : "pageStart"], out int skip);

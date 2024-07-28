@@ -43,20 +43,8 @@ public class DatabaseList<TObject> where TObject : class
         this.TotalItems = oldTotalItems;
         this.NextPageIndex = oldNextPageIndex;
     }
-
-    // public static DatabaseList<TObject> FromOldList<TObjectOld>(DatabaseList<TObjectOld> oldList, Func<TObjectOld, TObject> selector) where TObjectOld : class
-    // {
-    //     List<TObjectOld> oldItems = oldList.Items.ToList();
-    //     
-    //     List<TObject> items = new(oldItems.Count);
-    //     items.AddRange(oldItems.Select(selector.Invoke));
-    //
-    //     DatabaseList<TObject> newList = new(oldList.TotalItems, oldList.NextPageIndex, items);
-    //     return newList;
-    // }
     
-    public static DatabaseList<TNewObject> FromOldList<TNewObject, TOldObject>(DatabaseList<TOldObject> oldList,
-        DataContext dataContext)
+    public static DatabaseList<TNewObject> FromOldList<TNewObject, TOldObject>(DatabaseList<TOldObject> oldList, DataContext dataContext)
         where TNewObject : class, IDataConvertableFrom<TNewObject, TOldObject>
         where TOldObject : class
     {

@@ -7,7 +7,7 @@ namespace Refresh.GameServer.Endpoints.ApiV3.ApiTypes;
 /// A response from the API containing information about a list and part of it's contents.
 /// </summary>
 [JsonObject(MemberSerialization.OptIn, ItemNullValueHandling = NullValueHandling.Ignore, NamingStrategyType = typeof(CamelCaseNamingStrategy))]
-public class ApiListResponse<TData> : ApiResponse<List<TData>> where TData : class, IApiResponse
+public class ApiListResponse<TData> : ApiResponse<List<TData>> where TData : class
 {
     /// <summary>
     /// Empty constructor for serialization. Do not use.
