@@ -1,8 +1,9 @@
 using Refresh.GameServer.Types.Assets;
+using Refresh.GameServer.Types.UserData;
 
 namespace Refresh.GameServer.Database;
 
-public partial class GameDatabaseContext // AssetConfiguration
+public partial class GameDatabaseContext // Assets
 {
     public GameAsset? GetAssetFromHash(string hash)
     {
@@ -11,7 +12,10 @@ public partial class GameDatabaseContext // AssetConfiguration
         return this.GameAssets
             .FirstOrDefault(a => a.AssetHash == hash);
     }
-    
+
+    public DatabaseList<GameAsset> GetAssetsUploadedByUser(GameUser? user, int skip, int count)
+        => new(this.GameAssets.Where(a => a.OriginalUploader == user), skip, count);
+
     public GameAssetType? GetConvertedType(string hash)
     {
         IQueryable<GameAsset> assets = this.GameAssets;
