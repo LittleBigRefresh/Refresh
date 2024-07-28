@@ -15,6 +15,9 @@ public partial class GameDatabaseContext // Assets
 
     public DatabaseList<GameAsset> GetAssetsUploadedByUser(GameUser? user, int skip, int count)
         => new(this.GameAssets.Where(a => a.OriginalUploader == user), skip, count);
+    
+    public DatabaseList<GameAsset> GetAssetsUploadedByUser(GameUser? user, int skip, int count, GameAssetType type)
+        => new(this.GameAssets.Where(a => a.OriginalUploader == user && a._AssetType == (int)type), skip, count);
 
     public GameAssetType? GetConvertedType(string hash)
     {
