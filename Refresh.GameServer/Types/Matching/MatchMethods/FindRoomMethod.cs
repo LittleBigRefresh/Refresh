@@ -69,9 +69,7 @@ public class FindRoomMethod : IMatchMethod
                 (userLevelIds.Count == 0 || r.LevelType != RoomSlotType.Online || userLevelIds.Contains(r.LevelId)) &&
                 (developerLevelIds.Count == 0 || r.LevelType != RoomSlotType.Story || developerLevelIds.Contains(r.LevelId)) &&
                 // Make sure that we don't try to match the player into a full room, or a room which won't fit the user's current room
-                usersRoom.PlayerIds.Count + r.PlayerIds.Count <= 4 &&
-                // Match the build version of the rooms, or dont match build versions if the game doesnt specify it
-                (body.BuildVersion == null || (r.BuildVersion ?? 0) == body.BuildVersion))
+                usersRoom.PlayerIds.Count + r.PlayerIds.Count <= 4)
             // Shuffle the rooms around before sorting, this is because the selection is based on a weighted average towards the top of the range,
             // so there would be a bias towards longer lasting rooms without this shuffle
             .OrderBy(r => Random.Shared.Next())
@@ -117,9 +115,8 @@ public class FindRoomMethod : IMatchMethod
 
                 foreach (GameRoom logRoom in allRooms)
                     dataContext.Logger.LogInfo(BunkumCategory.Matching,
-                        "Room {0}: Nat Type {1}, Level {2} ({3}), Build Version {4}",
-                        logRoom.RoomId, logRoom.NatType, logRoom.LevelId, logRoom.LevelType,
-                        logRoom.BuildVersion ?? 0);
+                        "Room {0}: Nat Type {1}, Level {2} ({3})",
+                        logRoom.RoomId, logRoom.NatType, logRoom.LevelId, logRoom.LevelType);
             }
             else
             {

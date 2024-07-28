@@ -11,7 +11,7 @@ public class UpdateRoomDataMethod : IMatchMethod
 
     public Response Execute(DataContext dataContext, SerializedRoomData body, GameServerConfig gameServerConfig)
     {
-        GameRoom room = dataContext.Match.GetOrCreateRoomByPlayer(dataContext.User!, dataContext.Platform, dataContext.Game, body.NatType == null ? NatType.Open : body.NatType[0], body.BuildVersion, body.PassedNoJoinPoint);
+        GameRoom room = dataContext.Match.GetOrCreateRoomByPlayer(dataContext.User!, dataContext.Platform, dataContext.Game, body.NatType == null ? NatType.Open : body.NatType[0], body.PassedNoJoinPoint);
         if (room.HostId.Id != dataContext.User!.UserId) return Unauthorized;
 
         if (body.RoomState != null) room.RoomState = body.RoomState.Value;
