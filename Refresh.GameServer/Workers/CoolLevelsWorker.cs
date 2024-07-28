@@ -82,20 +82,18 @@ public class CoolLevelsWorker : IWorker
 
     private static float CalculateLevelDecayMultiplier(Logger logger, long now, GameLevel level)
     {
-        const int decayMonths = 2;
-        const int decaySeconds = decayMonths * 30 * 24 * 3600;
-        const float minimumMultiplier = 0.1f;
+        const int secondsPerMonth = 30 * 24 * 3600;
         
-        // Use seconds. Lets us not worry about float stuff
-        long publishDate = level.PublishDate / 1000;
-        long elapsed = now - publishDate;
+        // Use months
+        double publishDate = level.PublishDate / 1000d / secondsPerMonth;
+        double elapsedMonths = ((double)now / secondsPerMonth) - publishDate;
 
-        // Get a scale from 0.0f to 1.0f, the percent of decay
-        float multiplier = 1.0f - Math.Min(1.0f, (float)elapsed / decaySeconds);
-        multiplier = Math.Max(minimumMultiplier, multiplier); // Clamp to minimum multiplier
+        // Get a scale from 0.0f to 1.0f, the percent of decay, using an exponential decay function
+        // https://www.desmos.com/calculator/87wbuh1gcy
+        double multiplier = Math.Pow(Math.E, -elapsedMonths);
         
         Log(logger, LogLevel.Trace, "Decay multiplier is {0}", multiplier);
-        return multiplier;
+        return (float)multiplier;
     }
 
     private static float CalculatePositiveScore(GameLevel level, DataContext context)
