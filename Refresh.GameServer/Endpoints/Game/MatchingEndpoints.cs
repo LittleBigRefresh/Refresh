@@ -1,3 +1,4 @@
+using System.Text;
 using Bunkum.Core;
 using Bunkum.Core.Endpoints;
 using Bunkum.Core.Endpoints.Debugging;
@@ -14,6 +15,55 @@ namespace Refresh.GameServer.Endpoints.Game;
 
 public class MatchingEndpoints : EndpointGroup
 {
+    public static string FixupLocationData(string body)
+    {
+        StringBuilder jsonBodyBuilder = new();
+
+        const string locationStart = "\"Location\":[";
+        const string corruptedStr = "\"0.0.0.0\"";
+        
+        int locationIndex = body.IndexOf(locationStart, StringComparison.InvariantCulture) + locationStart.Length;
+        // Append the start of the "location" mess
+        jsonBodyBuilder.Append(body.AsSpan()[..locationIndex]);
+        ReadOnlySpan<char> pastLocationStart = body.AsSpan()[locationIndex..];
+
+        for (int i = 0; i < pastLocationStart.Length;)
+        {
+            ReadOnlySpan<char> slice = pastLocationStart[i..];
+
+            int corruptedStart = slice.IndexOf(corruptedStr);
+            // If theres no more corrupted strings, then we are done fixing it up
+            if (corruptedStart == -1)
+            {
+                jsonBodyBuilder.Append(slice);
+                break;
+            }
+
+            int corruptedEnd = corruptedStart + corruptedStr.Length;
+            char charAfterCorruption = slice[corruptedEnd];
+
+            switch (charAfterCorruption)
+            {
+                // If this is the start to a string, then we know that a `,` was corrupted
+                case '\"':
+                    jsonBodyBuilder.Append(slice[..corruptedEnd]);
+                    jsonBodyBuilder.Append(',');
+                    i += corruptedEnd;
+                    continue;
+                // If this is a comma, then we know that a ']' was corrupted
+                case ',':
+                    jsonBodyBuilder.Append(slice[..corruptedEnd]);
+                    jsonBodyBuilder.Append(']');
+                    i += corruptedEnd;
+                    continue;
+            }
+            
+            i++;
+        }
+
+        return jsonBodyBuilder.ToString();
+    }
+    
     // [FindBestRoom,["Players":["VitaGamer128"],"Reservations":["0"],"NAT":[2],"Slots":[[5,0]],"Location":[0x17257bc9,0x17257bf2],"Language":1,"BuildVersion":289,"Search":"","RoomState":3]]
     [GameEndpoint("match", HttpMethods.Post, ContentType.Json)]
     [DebugRequestBody, DebugResponseBody]
@@ -24,9 +74,12 @@ public class MatchingEndpoints : EndpointGroup
         DataContext dataContext,
         GameServerConfig gameServerConfig)
     {
-        (string method, string jsonBody) = MatchService.ExtractMethodAndBodyFromJson(body);
+        (string method, string rawJsonBody) = MatchService.ExtractMethodAndBodyFromJson(body);
+
+        string jsonBody = FixupLocationData(rawJsonBody);
+
         context.Logger.LogInfo(BunkumCategory.Matching, $"Received {method} match request, data: {jsonBody}");
-        
+
         JsonSerializer serializer = new();
         using StringReader reader = new(jsonBody);
         using JsonTextReader jsonReader = new(reader);
