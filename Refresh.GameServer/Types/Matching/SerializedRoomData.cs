@@ -47,8 +47,8 @@ public class SerializedRoomData
     [JsonProperty("Language")]
     public byte? Language { get; set; }
 
-    [JsonProperty("BuildVersion")]
-    public int? BuildVersion { get; set; }
+    // [JsonProperty("BuildVersion")]
+    // public int? BuildVersion { get; set; }
 
     [JsonProperty("Search")]
     public string? Search { get; set; }
