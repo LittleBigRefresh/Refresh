@@ -42,7 +42,9 @@ public partial class GameLevel : IRealmObject, ISequentialId
     public bool EnforceMinMaxPlayers { get; set; }
     
     public bool SameScreenGame { get; set; }
-    public bool TeamPicked { get; set; }
+    [Ignored]
+    public bool TeamPicked => this.DateTeamPicked != null;
+    public DateTimeOffset? DateTeamPicked { get; set; }
     
     /// <summary>
     /// The GUID of the background, this seems to only be used by LBP PSP
