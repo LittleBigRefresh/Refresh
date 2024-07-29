@@ -3,6 +3,7 @@ using Refresh.GameServer.Authentication;
 using Refresh.GameServer.Database;
 using Refresh.GameServer.Endpoints.Game.Levels.FilterSettings;
 using Refresh.GameServer.Services;
+using Refresh.GameServer.Types.Data;
 using Refresh.GameServer.Types.UserData;
 
 namespace Refresh.GameServer.Types.Levels.Categories;
@@ -18,7 +19,7 @@ public class CurrentlyPlayingCategory : LevelCategory
     }
 
     public override DatabaseList<GameLevel>? Fetch(RequestContext context, int skip, int count,
-        MatchService matchService, GameDatabaseContext database, GameUser? accessor,
+        DataContext dataContext,
         LevelFilterSettings levelFilterSettings, GameUser? _) 
-        => database.GetBusiestLevels(count, skip, matchService, accessor, levelFilterSettings);
+        => dataContext.Database.GetBusiestLevels(count, skip, dataContext.Match, dataContext.User, levelFilterSettings);
 }

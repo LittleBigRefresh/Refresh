@@ -2,6 +2,7 @@ using Bunkum.Core;
 using Refresh.GameServer.Database;
 using Refresh.GameServer.Endpoints.Game.Levels.FilterSettings;
 using Refresh.GameServer.Services;
+using Refresh.GameServer.Types.Data;
 using Refresh.GameServer.Types.UserData;
 
 namespace Refresh.GameServer.Types.Levels.Categories;
@@ -16,9 +17,9 @@ public class CoolLevelsCategory : LevelCategory
         this.IconHash = "g820625";
     }
 
-    public override DatabaseList<GameLevel>? Fetch(RequestContext context, int skip, int count, MatchService matchService,
-        GameDatabaseContext database, GameUser? accessor, LevelFilterSettings levelFilterSettings, GameUser? _)
+    public override DatabaseList<GameLevel>? Fetch(RequestContext context, int skip, int count, DataContext dataContext,
+        LevelFilterSettings levelFilterSettings, GameUser? _)
     {
-        return database.GetCoolLevels(count, skip, accessor, levelFilterSettings);
+        return dataContext.Database.GetCoolLevels(count, skip, dataContext.User, levelFilterSettings);
     }
 }

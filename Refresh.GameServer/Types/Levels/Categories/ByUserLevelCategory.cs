@@ -3,6 +3,7 @@ using Refresh.GameServer.Authentication;
 using Refresh.GameServer.Database;
 using Refresh.GameServer.Endpoints.Game.Levels.FilterSettings;
 using Refresh.GameServer.Services;
+using Refresh.GameServer.Types.Data;
 using Refresh.GameServer.Types.UserData;
 
 namespace Refresh.GameServer.Types.Levels.Categories;
@@ -19,15 +20,15 @@ public class ByUserLevelCategory : LevelCategory
     }
 
     public override DatabaseList<GameLevel>? Fetch(RequestContext context, int skip, int count,
-        MatchService matchService, GameDatabaseContext database, GameUser? accessor, 
+        DataContext dataContext,
         LevelFilterSettings levelFilterSettings, GameUser? user)
     {
         // Prefer username from query, but fallback to user passed into this category if it's missing
         string? username = context.QueryString["u"];
-        if (username != null) user = database.GetUserByUsername(username);
+        if (username != null) user = dataContext.Database.GetUserByUsername(username);
 
         if (user == null) return null;
         
-        return database.GetLevelsByUser(user, count, skip, levelFilterSettings, accessor);
+        return dataContext.Database.GetLevelsByUser(user, count, skip, levelFilterSettings, dataContext.User);
     }
 }

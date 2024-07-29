@@ -25,11 +25,9 @@ public class LevelEndpoints : EndpointGroup
     public SerializedMinimalLevelList? GetLevels(RequestContext context,
         GameDatabaseContext database,
         CategoryService categoryService,
-        MatchService matchService,
         LevelListOverrideService overrideService,
         GameUser user,
         Token token,
-        IDataStore dataStore,
         DataContext dataContext,
         string route)
     {
@@ -63,7 +61,7 @@ public class LevelEndpoints : EndpointGroup
 
         DatabaseList<GameLevel>? levels = categoryService.Categories
             .FirstOrDefault(c => c.GameRoutes.Any(r => r.StartsWith(route)))?
-            .Fetch(context, skip, count, matchService, database, user, new LevelFilterSettings(context, token.TokenGame), user);
+            .Fetch(context, skip, count, dataContext, new LevelFilterSettings(context, token.TokenGame), user);
 
         if (levels == null) return null;
         
@@ -79,10 +77,8 @@ public class LevelEndpoints : EndpointGroup
     public SerializedMinimalLevelList? GetLevelsWithPlayer(RequestContext context,
         GameDatabaseContext database,
         CategoryService categories,
-        MatchService matchService,
         LevelListOverrideService overrideService,
         Token token,
-        IDataStore dataStore,
         DataContext dataContext,
         string route,
         string username)
@@ -90,14 +86,14 @@ public class LevelEndpoints : EndpointGroup
         GameUser? user = database.GetUserByUsername(username);
         if (user == null) return null;
         
-        return this.GetLevels(context, database, categories, matchService, overrideService, user, token, dataStore, dataContext, route);
+        return this.GetLevels(context, database, categories, overrideService, user, token, dataContext, route);
     }
 
     [GameEndpoint("s/{slotType}/{id}", ContentType.Xml)]
     [NullStatusCode(NotFound)]
     [MinimumRole(GameUserRole.Restricted)]
-    public GameLevelResponse? LevelById(RequestContext context, GameDatabaseContext database, MatchService matchService,
-        GameUser user, string slotType, int id, IDataStore dataStore, Token token,
+    public GameLevelResponse? LevelById(RequestContext context, GameDatabaseContext database, Token token,
+        string slotType, int id,
         LevelListOverrideService overrideService, DataContext dataContext)
     {
         // If the user has had a hash override in the past, and the level id they requested matches the level ID associated with that hash
@@ -112,12 +108,12 @@ public class LevelEndpoints : EndpointGroup
     [NullStatusCode(BadRequest)]
     [MinimumRole(GameUserRole.Restricted)]
     public SerializedLevelList? GetMultipleLevels(RequestContext context, GameDatabaseContext database,
-        MatchService matchService, GameUser user, IDataStore dataStore, Token token, DataContext dataContext)
+        GameUser user, Token token, DataContext dataContext)
     {
         string[]? levelIds = context.QueryString.GetValues("s");
         if (levelIds == null) return null;
 
-        List<GameLevelResponse> levels = new();
+        List<GameLevelResponse> levels = [];
         
         foreach (string levelIdStr in levelIds)
         {
@@ -140,15 +136,13 @@ public class LevelEndpoints : EndpointGroup
     [GameEndpoint("searches", ContentType.Xml)]
     [GameEndpoint("genres", ContentType.Xml)]
     [MinimumRole(GameUserRole.Restricted)]
-    public SerializedCategoryList GetModernCategories(RequestContext context, GameDatabaseContext database,
-        CategoryService categoryService, MatchService matchService, GameUser user, Token token, IDataStore dataStore,
-        DataContext dataContext)
+    public SerializedCategoryList GetModernCategories(RequestContext context, CategoryService categoryService, DataContext dataContext)
     {
         (int skip, int count) = context.GetPageData();
 
         IEnumerable<SerializedCategory> categories = categoryService.Categories
             .Where(c => !c.Hidden)
-            .Select(c => SerializedCategory.FromLevelCategory(c, context, database, dataStore, user, token, matchService, dataContext, 0, 1))
+            .Select(c => SerializedCategory.FromLevelCategory(c, context, dataContext, 0, 1))
             .ToList();
 
         int total = categories.Count();
@@ -163,15 +157,14 @@ public class LevelEndpoints : EndpointGroup
 
     [GameEndpoint("searches/{apiRoute}", ContentType.Xml)]
     [MinimumRole(GameUserRole.Restricted)]
-    public SerializedMinimalLevelResultsList GetLevelsFromCategory(RequestContext context, GameDatabaseContext database,
-        CategoryService categories, MatchService matchService, GameUser user, Token token, IDataStore dataStore,
-        string apiRoute, DataContext dataContext)
+    public SerializedMinimalLevelResultsList GetLevelsFromCategory(RequestContext context,
+        CategoryService categories, GameUser user, Token token, string apiRoute, DataContext dataContext)
     {
         (int skip, int count) = context.GetPageData();
 
         DatabaseList<GameLevel>? levels = categories.Categories
             .FirstOrDefault(c => c.ApiRoute.StartsWith(apiRoute))?
-            .Fetch(context, skip, count, matchService, database, user, new LevelFilterSettings(context, token.TokenGame), user);
+            .Fetch(context, skip, count, dataContext, new LevelFilterSettings(context, token.TokenGame), user);
         
         return new SerializedMinimalLevelResultsList(levels?.Items
             .Select(l => GameMinimalLevelResponse.FromOld(l, dataContext))!, levels?.TotalItems ?? 0, skip + count);
@@ -192,7 +185,7 @@ public class LevelEndpoints : EndpointGroup
         IDataStore dataStore,
         Token token,
         DataContext dataContext) 
-        => this.GetLevels(context, database, categories, matchService, overrideService, user, token, dataStore, dataContext, "newest");
+        => this.GetLevels(context, database, categories, overrideService, user, token, dataContext, "newest");
 
     [GameEndpoint("favouriteSlots/{username}", ContentType.Xml)]
     [NullStatusCode(NotFound)]
@@ -210,7 +203,7 @@ public class LevelEndpoints : EndpointGroup
         GameUser? user = database.GetUserByUsername(username);
         if (user == null) return null;
         
-        SerializedMinimalLevelList? levels = this.GetLevels(context, database, categories, matchService, overrideService, user, token, dataStore, dataContext, "favouriteSlots");
+        SerializedMinimalLevelList? levels = this.GetLevels(context, database, categories, overrideService, user, token, dataContext, "favouriteSlots");
         
         return new SerializedMinimalFavouriteLevelList(levels);
     }
