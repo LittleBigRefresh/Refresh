@@ -85,11 +85,11 @@ public partial class GameDatabaseContext // Levels
         newLevel.Publisher = author;
         newLevel.PublishDate = oldLevel.PublishDate;
         newLevel.UpdateDate = this._time.TimestampMilliseconds; // Set the last modified date
+        newLevel.TeamPicked = oldLevel.TeamPicked;
         
         // If the actual contents of the level haven't changed, extract some extra information
         if (oldLevel.RootResource == newLevel.RootResource)
         {
-            newLevel.TeamPicked = oldLevel.TeamPicked;
             newLevel.GameVersion = oldLevel.GameVersion;
         }
         
