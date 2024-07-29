@@ -1,5 +1,6 @@
 using System.Security.Cryptography;
 using Refresh.GameServer.Authentication;
+using Refresh.GameServer.Configuration;
 using Refresh.GameServer.Services;
 using Refresh.GameServer.Types.Assets;
 using Refresh.GameServer.Types.Lists;
@@ -147,8 +148,17 @@ public class AssetUploadTests : GameServerTest
     {
         using TestContext context = this.GetServer();
         context.Server.Value.Server.AddService<ImportService>();
-        context.Server.Value.GameServerConfig.MaximumAssetSafetyLevel = AssetSafetyLevel.Safe;
-        context.Server.Value.GameServerConfig.MaximumAssetSafetyLevelForTrustedUsers = AssetSafetyLevel.SafeMedia;
+        context.Server.Value.GameServerConfig.BlockedAssetFlags = new ConfigAssetFlags
+        {
+            Modded = true,
+            Media = true,
+            Dangerous = true,
+        };
+        context.Server.Value.GameServerConfig.BlockedAssetFlagsForTrustedUsers = new ConfigAssetFlags
+        {
+            Dangerous = true,
+            Modded = true,
+        };
         
         GameUser user = context.CreateUser();
         context.Database.SetUserRole(user, GameUserRole.Trusted);
@@ -170,9 +180,18 @@ public class AssetUploadTests : GameServerTest
     {
         using TestContext context = this.GetServer();
         context.Server.Value.Server.AddService<ImportService>();
-        context.Server.Value.GameServerConfig.MaximumAssetSafetyLevel = AssetSafetyLevel.Safe;
-        context.Server.Value.GameServerConfig.MaximumAssetSafetyLevelForTrustedUsers = AssetSafetyLevel.SafeMedia;
-        
+        context.Server.Value.GameServerConfig.BlockedAssetFlags = new ConfigAssetFlags
+        {
+            Dangerous = true,
+            Modded = true,
+            Media = true,
+        };
+        context.Server.Value.GameServerConfig.BlockedAssetFlagsForTrustedUsers = new ConfigAssetFlags
+        {
+            Dangerous = true,
+            Modded = true,
+            Media = true,
+        };        
         GameUser user = context.CreateUser();
         
         using HttpClient client = context.GetAuthenticatedClient(TokenType.Game, user);
@@ -192,7 +211,12 @@ public class AssetUploadTests : GameServerTest
     {
         using TestContext context = this.GetServer();
         context.Server.Value.Server.AddService<ImportService>();
-        context.Server.Value.GameServerConfig.MaximumAssetSafetyLevel = AssetSafetyLevel.Safe;
+        context.Server.Value.GameServerConfig.BlockedAssetFlags = new ConfigAssetFlags
+        {
+            Dangerous = true,
+            Modded = true,
+            Media = true,
+        };
         
         GameUser user = context.CreateUser();
         
@@ -214,7 +238,12 @@ public class AssetUploadTests : GameServerTest
     {
         using TestContext context = this.GetServer();
         context.Server.Value.Server.AddService<ImportService>();
-        context.Server.Value.GameServerConfig.MaximumAssetSafetyLevel = AssetSafetyLevel.Safe;
+        context.Server.Value.GameServerConfig.BlockedAssetFlags = new ConfigAssetFlags
+        {
+            Dangerous = true,
+            Modded = true,
+            Media = true,
+        };
         
         GameUser user = context.CreateUser();
         

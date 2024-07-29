@@ -1,6 +1,6 @@
 using System.Diagnostics.CodeAnalysis;
 using Bunkum.Core.Configuration;
-using Refresh.GameServer.Types.Assets;
+using Microsoft.CSharp.RuntimeBinder;
 using Refresh.GameServer.Types.Roles;
 
 namespace Refresh.GameServer.Configuration;
@@ -9,16 +9,52 @@ namespace Refresh.GameServer.Configuration;
 [SuppressMessage("ReSharper", "RedundantDefaultMemberInitializer")]
 public class GameServerConfig : Config
 {
-    public override int CurrentConfigVersion => 17;
+    public override int CurrentConfigVersion => 18;
     public override int Version { get; set; } = 0;
-
-    protected override void Migrate(int oldVer, dynamic oldConfig) {}
+    
+    protected override void Migrate(int oldVer, dynamic oldConfig)
+    {
+        if (oldVer < 18)
+        {
+            int oldSafetyLevel = (int)oldConfig.MaximumAssetSafetyLevel;
+            this.BlockedAssetFlags = new ConfigAssetFlags
+            {
+                Dangerous = oldSafetyLevel < 3,
+                Modded = oldSafetyLevel < 2,
+                Media = oldSafetyLevel < 1,
+            };
+            
+            // There was no version bump for trusted users being added, so we just have to catch this error :/
+            try
+            {
+                int oldTrustedSafetyLevel = (int)oldConfig.MaximumAssetSafetyLevelForTrustedUsers;
+                this.BlockedAssetFlagsForTrustedUsers = new ConfigAssetFlags
+                {
+                    Dangerous = oldTrustedSafetyLevel < 3,
+                    Modded = oldTrustedSafetyLevel < 2,
+                    Media = oldTrustedSafetyLevel < 1,
+                };
+            }
+            catch (RuntimeBinderException)
+            {
+                this.BlockedAssetFlagsForTrustedUsers = this.BlockedAssetFlags;
+            }
+        }
+    }
 
     public string LicenseText { get; set; } = "Welcome to Refresh!";
 
-    public AssetSafetyLevel MaximumAssetSafetyLevel { get; set; } = AssetSafetyLevel.SafeMedia;
+    public ConfigAssetFlags BlockedAssetFlags { get; set; } = new()
+    {
+        Dangerous = true,
+        Modded = true,
+    };
     /// <seealso cref="GameUserRole.Trusted"/>
-    public AssetSafetyLevel MaximumAssetSafetyLevelForTrustedUsers { get; set; } = AssetSafetyLevel.SafeMedia;
+    public ConfigAssetFlags BlockedAssetFlagsForTrustedUsers { get; set; } = new()
+    {
+        Dangerous = true,
+        Modded = true,
+    };
     public bool AllowUsersToUseIpAuthentication { get; set; } = false;
     public bool UseTicketVerification { get; set; } = true;
     public bool RegistrationEnabled { get; set; } = true;

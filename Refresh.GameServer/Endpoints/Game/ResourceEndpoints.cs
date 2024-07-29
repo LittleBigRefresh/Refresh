@@ -68,21 +68,21 @@ public class ResourceEndpoints : EndpointGroup
 
         gameAsset.UploadDate = DateTimeOffset.FromUnixTimeSeconds(Math.Clamp(gameAsset.UploadDate.ToUnixTimeSeconds(), timeProvider.EarliestDate, timeProvider.TimestampSeconds));
 
-        AssetSafetyLevel safetyLevel = config.MaximumAssetSafetyLevel;
+        AssetFlags blockedAssetFlags = config.BlockedAssetFlags.ToAssetFlags();
         if (user.Role >= GameUserRole.Trusted)
-            safetyLevel = config.MaximumAssetSafetyLevelForTrustedUsers;
+            blockedAssetFlags = config.BlockedAssetFlagsForTrustedUsers.ToAssetFlags();
        
-        // Dont block any assets uploaded from PSP, and block any unwanted assets,
-        // for example, if asset safety level is Dangerous (2) and maximum is configured as Safe (0), return 401
-        // if asset safety is Safe (0), and maximum is configured as Safe (0), proceed
-        if (gameAsset.SafetyLevel > safetyLevel && !isPSP)
+        // Don't block any assets uploaded from PSP, else block any unwanted assets,
+        // For example, if the "blocked asset flags" has the "Media" bit set, and so does the asset,
+        // then that bit will be set after the AND operation, and we know to block it.
+        if ((gameAsset.AssetFlags & blockedAssetFlags) != 0 && !isPSP)
         {
             context.Logger.LogWarning(BunkumCategory.UserContent, $"{gameAsset.AssetType} {hash} by {user} is above configured safety limit " +
-                                                                 $"({gameAsset.SafetyLevel} > {safetyLevel})");
+                                                                 $"({gameAsset.AssetFlags} is blocked by {blockedAssetFlags})");
             return Unauthorized;
         }
 
-        if (isPSP && gameAsset.SafetyLevel == AssetSafetyLevel.SafeMedia && safetyLevel < AssetSafetyLevel.SafeMedia)
+        if (isPSP && gameAsset.AssetFlags.HasFlag(AssetFlags.Media) && blockedAssetFlags.HasFlag(AssetFlags.Media))
         {
             context.Logger.LogWarning(BunkumCategory.UserContent, $"{gameAsset.AssetType} {hash} by {user} cannot be uploaded because media is disabled");
             return Unauthorized;

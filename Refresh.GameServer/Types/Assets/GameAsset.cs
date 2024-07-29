@@ -19,7 +19,18 @@ public partial class GameAsset : IRealmObject
     // ReSharper disable once InconsistentNaming
     internal int _AssetType { get; set; }
 
-    [Ignored] public AssetSafetyLevel SafetyLevel => AssetSafetyLevelExtensions.FromAssetType(this.AssetType);
+    [Ignored] public GameAssetFormat AssetFormat
+    {
+        get => (GameAssetFormat)this._AssetSerializationMethod;
+        set => this._AssetSerializationMethod = (int)value;
+    }
+    
+    // ReSharper disable once InconsistentNaming
+    internal int _AssetSerializationMethod { get; set; }
+    
+    public IList<string> Dependencies { get; } = null!;
+
+    [Ignored] public AssetFlags AssetFlags => AssetSafetyLevelExtensions.FromAssetType(this.AssetType, this.AssetFormat);
 
     public string? AsMainlineIconHash { get; set; }
     public string? AsMipIconHash { get; set; }
