@@ -44,6 +44,7 @@ public class ApiGameLevelResponse : IApiResponse, IDataConvertableFrom<ApiGameLe
     
     public required int UniquePlays { get; set; }
     public required bool TeamPicked { get; set; }
+    public required DateTimeOffset? DateTeamPicked { get; set; }
     public required GameLevelType LevelType { get; set; }
     public required bool IsLocked { get; set; }
     public required bool IsSubLevel { get; set; }
@@ -77,6 +78,7 @@ public class ApiGameLevelResponse : IApiResponse, IDataConvertableFrom<ApiGameLe
             Hearts = dataContext.Database.GetFavouriteCountForLevel(level),
             UniquePlays = dataContext.Database.GetUniquePlaysForLevel(level),
             TeamPicked = level.TeamPicked,
+            DateTeamPicked = level.DateTeamPicked,
             RootLevelHash = level.RootResource,
             GameVersion = level.GameVersion,
             LevelType = level.LevelType,

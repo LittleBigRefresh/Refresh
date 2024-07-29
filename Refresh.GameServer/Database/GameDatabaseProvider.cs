@@ -33,7 +33,7 @@ public class GameDatabaseProvider : RealmDatabaseProvider<GameDatabaseContext>
         this._time = time;
     }
 
-    protected override ulong SchemaVersion => 136;
+    protected override ulong SchemaVersion => 137;
 
     protected override string Filename => "refreshGameServer.realm";
     
@@ -299,6 +299,16 @@ public class GameDatabaseProvider : RealmDatabaseProvider<GameDatabaseContext>
                         Timestamp = comment.Timestamp,
                     });
                 }
+            }
+
+            // In version 137 we started storing the date at which levels were picked instead of just that they are picked.
+            // Since this is new information, let's set this to the date of the last update. 
+            if (oldVersion < 137)
+            {
+                if (oldLevel.TeamPicked)
+                    newLevel.DateTeamPicked = DateTimeOffset.FromUnixTimeMilliseconds(oldLevel.UpdateDate);
+                else
+                    newLevel.DateTeamPicked = null;
             }
         }
 

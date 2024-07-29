@@ -85,7 +85,7 @@ public partial class GameDatabaseContext // Levels
         newLevel.Publisher = author;
         newLevel.PublishDate = oldLevel.PublishDate;
         newLevel.UpdateDate = this._time.TimestampMilliseconds; // Set the last modified date
-        newLevel.TeamPicked = oldLevel.TeamPicked;
+        newLevel.DateTeamPicked = oldLevel.DateTeamPicked;
         
         // If the actual contents of the level haven't changed, extract some extra information
         if (oldLevel.RootResource == newLevel.RootResource)
@@ -319,9 +319,9 @@ public partial class GameDatabaseContext // Levels
     [Pure]
     public DatabaseList<GameLevel> GetTeamPickedLevels(int count, int skip, GameUser? user, LevelFilterSettings levelFilterSettings) =>
         new(this.GetLevelsByGameVersion(levelFilterSettings.GameVersion)
-            .Where(l => l.TeamPicked)
+            .Where(l => l.DateTeamPicked != null)
             .FilterByLevelFilterSettings(user, levelFilterSettings)
-            .OrderByDescending(l => l.PublishDate), skip, count);
+            .OrderByDescending(l => l.DateTeamPicked), skip, count);
 
     [Pure]
     public DatabaseList<GameLevel> GetDeveloperLevels(int count, int skip, LevelFilterSettings levelFilterSettings) =>
@@ -424,16 +424,21 @@ public partial class GameDatabaseContext // Levels
     [Pure]
     public GameLevel? GetLevelById(int id) => this.GameLevels.FirstOrDefault(l => l.LevelId == id);
 
-    private void SetLevelPickStatus(GameLevel level, bool status)
+    public void AddTeamPickToLevel(GameLevel level)
     {
         this.Write(() =>
         {
-            level.TeamPicked = status;
+            level.DateTeamPicked = this._time.Now;
         });
     }
 
-    public void AddTeamPickToLevel(GameLevel level) => this.SetLevelPickStatus(level, true);
-    public void RemoveTeamPickFromLevel(GameLevel level) => this.SetLevelPickStatus(level, false);
+    public void RemoveTeamPickFromLevel(GameLevel level)
+    {
+        this.Write(() =>
+        {
+            level.DateTeamPicked = null;
+        });
+    }
 
     public void SetLevelScores(Dictionary<GameLevel, float> scoresToSet)
     {
