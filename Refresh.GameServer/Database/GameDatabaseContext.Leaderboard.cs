@@ -1,6 +1,7 @@
 using JetBrains.Annotations;
 using MongoDB.Bson;
 using Refresh.GameServer.Authentication;
+using Refresh.GameServer.Types.Activity;
 using Refresh.GameServer.Types.Levels;
 using Refresh.GameServer.Types.UserData;
 using Refresh.GameServer.Types.UserData.Leaderboard;
@@ -25,12 +26,12 @@ public partial class GameDatabaseContext // Leaderboard
             Platform = platform,
         };
 
-        this._realm.Write(() =>
+        this.Write(() =>
         {
-            this._realm.Add(newScore);
+            this.GameSubmittedScores.Add(newScore);
         });
 
-        this.CreateSubmittedScoreCreateEvent(user, newScore);
+        this.CreateLevelScoreEvent(user, newScore);
 
         #region Notifications
         
@@ -59,17 +60,15 @@ public partial class GameDatabaseContext // Leaderboard
         return newScore;
     }
     
-    [UsedImplicitly] private record ScoreLevelWithPlayer(GameLevel Level, GameUser Player);
-
     public DatabaseList<GameSubmittedScore> GetTopScoresForLevel(GameLevel level, int count, int skip, byte type, bool showDuplicates = false)
     {
-        IEnumerable<GameSubmittedScore> scores = this._realm.All<GameSubmittedScore>()
+        IEnumerable<GameSubmittedScore> scores = this.GameSubmittedScores
             .Where(s => s.ScoreType == type && s.Level == level)
             .OrderByDescending(s => s.Score)
             .AsEnumerable();
 
         if (!showDuplicates)
-            scores = scores.DistinctBy(s => new ScoreLevelWithPlayer(s.Level, s.Players[0]));
+            scores = scores.DistinctBy(s => s.Players[0]);
 
         return new DatabaseList<GameSubmittedScore>(scores, skip, count);
     }
@@ -80,17 +79,34 @@ public partial class GameDatabaseContext // Leaderboard
         
         // this is probably REALLY fucking slow, and i probably shouldn't be trusted with LINQ anymore
 
-        List<GameSubmittedScore> scores = this._realm.All<GameSubmittedScore>().Where(s => s.ScoreType == score.ScoreType && s.Level == score.Level)
+        List<GameSubmittedScore> scores = this.GameSubmittedScores.Where(s => s.ScoreType == score.ScoreType && s.Level == score.Level)
             .OrderByDescending(s => s.Score)
             .AsEnumerable()
             .ToList();
 
-        scores = scores.DistinctBy(s => new ScoreLevelWithPlayer(s.Level, s.Players[0]))
+        scores = scores.DistinctBy(s => s.Players[0])
             .ToList();
 
         return scores.Select((s, i) => new ScoreWithRank(s, i + 1))
             .Skip(Math.Min(scores.Count, scores.IndexOf(score) - count / 2)) // center user's score around other scores
             .Take(count);
+    }
+    
+    public IEnumerable<ScoreWithRank> GetLevelTopScoresByFriends(GameUser user, GameLevel level, int count, byte type)
+    {
+        IEnumerable<GameUser> mutuals = this.GetUsersMutuals(user);
+        
+        IEnumerable<GameSubmittedScore> scores = this.GameSubmittedScores
+            .Where(s => s.ScoreType == type && s.Level == level)
+            .OrderByDescending(s => s.Score)
+            .AsEnumerable()
+            .DistinctBy(s => s.Players[0].UserId)
+            //TODO: THIS CALL IS EXTREMELY INEFFECIENT!!! once we are in postgres land, figure out a way to do this effeciently
+            .Where(s => s.Players.Any(p => p.UserId == user.UserId || mutuals.Contains(p)))
+            .Take(10)
+            .ToList();
+
+        return scores.Select((s, i) => new ScoreWithRank(s, i + 1));
     }
 
     [Pure]
@@ -99,7 +115,7 @@ public partial class GameDatabaseContext // Leaderboard
     {
         if (uuid == null) return null;
         if(!ObjectId.TryParse(uuid, out ObjectId objectId)) return null;
-        return this._realm.All<GameSubmittedScore>().FirstOrDefault(u => u.ScoreId == objectId);
+        return this.GameSubmittedScores.FirstOrDefault(u => u.ScoreId == objectId);
     }
     
     [Pure]
@@ -107,6 +123,41 @@ public partial class GameDatabaseContext // Leaderboard
     public GameSubmittedScore? GetScoreByObjectId(ObjectId? id)
     {
         if (id == null) return null;
-        return this._realm.All<GameSubmittedScore>().FirstOrDefault(u => u.ScoreId == id);
+        return this.GameSubmittedScores.FirstOrDefault(u => u.ScoreId == id);
+    }
+    
+    public void DeleteScore(GameSubmittedScore score)
+    {
+        IQueryable<Event> scoreEvents = this.Events
+            .Where(e => e._StoredDataType == (int)EventDataType.Score && e.StoredObjectId == score.ScoreId);
+        
+        this.Write(() =>
+        {
+            this.Events.RemoveRange(scoreEvents);
+            this.GameSubmittedScores.Remove(score);
+        });
+    }
+    
+    public void DeleteScoresSetByUser(GameUser user)
+    {
+        IEnumerable<GameSubmittedScore> scores = this.GameSubmittedScores
+            // FIXME: Realm (ahem, I mean the atlas device sdk *rolls eyes*) is a fucking joke.
+            // Realm doesn't support .Contains on IList<T>. Yes, really.
+            // This means we are forced to iterate over EVERY SCORE.
+            // I can't wait for Postgres.
+            .AsEnumerable()
+            .Where(s => s.Players.Contains(user));
+        
+        this.Write(() =>
+        {
+            foreach (GameSubmittedScore score in scores)
+            {
+                IQueryable<Event> scoreEvents = this.Events
+                    .Where(e => e._StoredDataType == (int)EventDataType.Score && e.StoredObjectId == score.ScoreId);
+                
+                this.Events.RemoveRange(scoreEvents);
+                this.GameSubmittedScores.Remove(score);
+            }
+        });
     }
 }

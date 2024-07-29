@@ -1,20 +1,27 @@
 using Refresh.GameServer.Types.Assets;
+using Refresh.GameServer.Types.UserData;
 
 namespace Refresh.GameServer.Database;
 
-public partial class GameDatabaseContext // AssetConfiguration
+public partial class GameDatabaseContext // Assets
 {
     public GameAsset? GetAssetFromHash(string hash)
     {
         if (hash == "0" || hash.StartsWith('g')) return null;
         
-        return this._realm.All<GameAsset>()
+        return this.GameAssets
             .FirstOrDefault(a => a.AssetHash == hash);
     }
+
+    public DatabaseList<GameAsset> GetAssetsUploadedByUser(GameUser? user, int skip, int count)
+        => new(this.GameAssets.Where(a => a.OriginalUploader == user), skip, count);
     
+    public DatabaseList<GameAsset> GetAssetsUploadedByUser(GameUser? user, int skip, int count, GameAssetType type)
+        => new(this.GameAssets.Where(a => a.OriginalUploader == user && a._AssetType == (int)type), skip, count);
+
     public GameAssetType? GetConvertedType(string hash)
     {
-        IQueryable<GameAsset> assets = this._realm.All<GameAsset>();
+        IQueryable<GameAsset> assets = this.GameAssets;
         
         foreach (GameAsset asset in assets)
         {
@@ -30,37 +37,63 @@ public partial class GameDatabaseContext // AssetConfiguration
         
         return null;
     }
+
+    public IEnumerable<string> GetAssetDependencies(GameAsset asset) 
+        => this.AssetDependencyRelations.Where(a => a.Dependent == asset.AssetHash)
+            .AsEnumerable()
+            .Select(a => a.Dependency);
+    
+    public IEnumerable<string> GetAssetDependents(GameAsset asset) 
+        => this.AssetDependencyRelations.Where(a => a.Dependency == asset.AssetHash)
+            .AsEnumerable()
+            .Select(a => a.Dependent);
+
+    public void AddOrOverwriteAssetDependencyRelations(string dependent, IEnumerable<string> dependencies)
+    {
+        this.Write(() =>
+        {
+            // delete all existing relations. ensures duplicates won't exist when reprocessing
+            this.AssetDependencyRelations.RemoveRange(a => a.Dependent == dependent);
+            
+            foreach (string dependency in dependencies)
+                this.AssetDependencyRelations.Add(new AssetDependencyRelation
+                {
+                    Dependent = dependent,
+                    Dependency = dependency,
+                });
+        });
+    }
     
     public IEnumerable<GameAsset> GetAssetsByType(GameAssetType type) =>
-        this._realm.All<GameAsset>()
+        this.GameAssets
             .Where(a => a._AssetType == (int)type);
 
     public void AddAssetToDatabase(GameAsset asset) =>
-        this._realm.Write(() =>
+        this.Write(() =>
         {
-            this._realm.Add(asset);
+            this.GameAssets.Add(asset);
         });
 
     public void AddOrUpdateAssetsInDatabase(IEnumerable<GameAsset> assets) =>
-        this._realm.Write(() =>
+        this.Write(() =>
         {
-            this._realm.Add(assets, true);
+            this.GameAssets.AddRange(assets, true);
         });
 
     public void SetMainlineIconHash(GameAsset asset, string hash) =>
-        this._realm.Write(() =>
+        this.Write(() =>
         {
             asset.AsMainlineIconHash = hash;
         });
     
     public void SetMipIconHash(GameAsset asset, string hash) =>
-        this._realm.Write(() =>
+        this.Write(() =>
         {
             asset.AsMipIconHash = hash;
         });
     
     public void SetMainlinePhotoHash(GameAsset asset, string hash) =>
-        this._realm.Write(() =>
+        this.Write(() =>
         {
             asset.AsMainlinePhotoHash = hash;
         });

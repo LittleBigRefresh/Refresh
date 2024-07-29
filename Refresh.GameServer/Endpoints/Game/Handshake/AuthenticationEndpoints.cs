@@ -12,6 +12,7 @@ using NPTicket.Verification.Keys;
 using Refresh.GameServer.Authentication;
 using Refresh.GameServer.Configuration;
 using Refresh.GameServer.Database;
+using Refresh.GameServer.Extensions;
 using Refresh.GameServer.Services;
 using Refresh.GameServer.Types.Matching;
 using Refresh.GameServer.Types.Roles;
@@ -161,7 +162,7 @@ public class AuthenticationEndpoints : EndpointGroup
         if (game == TokenGame.LittleBigPlanetVita && platform == TokenPlatform.PS3) platform = TokenPlatform.Vita;
         else if (game == TokenGame.LittleBigPlanetPSP && platform == TokenPlatform.PS3) platform = TokenPlatform.PSP;
 
-        Token token = database.GenerateTokenForUser(user, TokenType.Game, game.Value, platform.Value, GameDatabaseContext.GameTokenExpirySeconds); // 4 hours
+        Token token = database.GenerateTokenForUser(user, TokenType.Game, game.Value, platform.Value, context.RemoteIp(), GameDatabaseContext.GameTokenExpirySeconds); // 4 hours
 
         //Clear the user's force match
         database.ClearForceMatch(user);
@@ -219,7 +220,7 @@ public class AuthenticationEndpoints : EndpointGroup
             return false;
         }
         
-        string address = ((IPEndPoint)context.RemoteEndpoint).Address.ToString();
+        string address = context.RemoteIp();
         if (address == user.CurrentVerifiedIp) return true;
 
         database.AddIpVerificationRequest(user, address);

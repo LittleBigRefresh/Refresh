@@ -1,114 +1,183 @@
-using System.Diagnostics;
 using System.Security.Cryptography;
+using System.Text;
 using Bunkum.Listener.Request;
 using Bunkum.Core.Database;
 using Bunkum.Core.Endpoints.Middlewares;
+using Refresh.Common.Extensions;
+using Refresh.GameServer.Authentication;
+using Refresh.GameServer.Configuration;
+using Refresh.GameServer.Database;
 using Refresh.GameServer.Endpoints;
-using Refresh.GameServer.Extensions;
 
 namespace Refresh.GameServer.Middlewares;
 
 public class DigestMiddleware : IMiddleware
 {
-    // Should be 19 characters (or less maybe?)
-    // Length was taken from PS3 and PS4 digest keys
-    private const string DigestKey = "CustomServerDigest";
+    private readonly GameServerConfig _config;
 
-    public static string CalculateDigest(string url, Stream body, string auth, short? exeVersion, short? dataVersion)
+    public DigestMiddleware(GameServerConfig config)
     {
-        using MemoryStream ms = new();
-        
-        if (!url.StartsWith($"{GameEndpointAttribute.BaseRoute}upload/"))
+        this._config = config;
+    }
+
+    public record PspVersionInfo(short ExeVersion, short DataVersion) {}
+    
+    public static string CalculateDigest(
+        string digest, 
+        string route,
+        ReadOnlySpan<byte> body,
+        string auth, 
+        PspVersionInfo? pspVersionInfo, 
+        bool isUpload, 
+        bool hmacDigest)
+    {
+        IncrementalHash hash = hmacDigest
+            ? IncrementalHash.CreateHMAC(HashAlgorithmName.SHA1, Encoding.UTF8.GetBytes(digest))
+            : IncrementalHash.CreateHash(HashAlgorithmName.SHA1);
+
+        // If this is not an upload endpoint, then we need to copy the body of the request into the digest calculation
+        if (!isUpload)
         {
-            // get request body
-            body.CopyTo(ms);
-            body.Seek(0, SeekOrigin.Begin);
+            hash.AppendData(body);
+        }
+
+        hash.WriteString(auth);
+        hash.WriteString(route);
+        if (pspVersionInfo != null)
+        {
+            Span<byte> bytes = stackalloc byte[2];
+            
+            BitConverter.TryWriteBytes(bytes, pspVersionInfo.ExeVersion);
+            // If we are on a big endian system, we need to flip the bytes
+            if(!BitConverter.IsLittleEndian)
+                bytes.Reverse();
+            hash.AppendData(bytes);
+            
+            BitConverter.TryWriteBytes(bytes, pspVersionInfo.DataVersion);
+            // If we are on a big endian system, we need to flip the bytes
+            if(!BitConverter.IsLittleEndian)
+                bytes.Reverse();
+            hash.AppendData(bytes);
         }
         
-        ms.WriteString(auth);
-        ms.WriteString(url);
-        if (exeVersion.HasValue)
-        {
-            byte[] bytes = BitConverter.GetBytes(exeVersion.Value);
-            if(!BitConverter.IsLittleEndian)
-                Array.Reverse(bytes);
-            ms.Write(bytes);
-        } 
-        if (dataVersion.HasValue)
-        {
-            byte[] bytes = BitConverter.GetBytes(dataVersion.Value);
-            if(!BitConverter.IsLittleEndian)
-                Array.Reverse(bytes);
-            ms.Write(bytes);
-        }  
-        ms.WriteString(DigestKey);
+        if(!hmacDigest)
+            hash.WriteString(digest);
 
-        ms.Position = 0;
-        using SHA1 sha = SHA1.Create();
-        string digestResponse = Convert.ToHexString(sha.ComputeHash(ms)).ToLower();
-
-        return digestResponse;
+        return Convert.ToHexString(hash.GetCurrentHash()).ToLower();
     }
     
-    // Referenced from Project Lighthouse
-    // https://github.com/LBPUnion/ProjectLighthouse/blob/d16132f67f82555ef636c0dabab5aabf36f57556/ProjectLighthouse.Servers.GameServer/Middlewares/DigestMiddleware.cs
-    // https://github.com/LBPUnion/ProjectLighthouse/blob/19ea44e0e2ff5f2ebae8d9dfbaf0f979720bd7d9/ProjectLighthouse/Helpers/CryptoHelper.cs#L35
-    private bool VerifyDigestRequest(ListenerContext context, short? exeVersion, short? dataVersion)
-    {
-        string url = context.Uri.AbsolutePath;
-        string auth = context.Cookies["MM_AUTH"] ?? string.Empty;
-
-        bool isUpload = url.StartsWith($"{GameEndpointAttribute.BaseRoute}upload/");
-
-        MemoryStream body = isUpload ? new MemoryStream(0) : context.InputStream;
-        string digestHeader = isUpload ? "X-Digest-B" : "X-Digest-A";
-        string clientDigest = context.RequestHeaders[digestHeader] ?? string.Empty;
-
-        string expectedDigest = CalculateDigest(url, body, auth, isUpload ? null : exeVersion, isUpload ? null : dataVersion);
-        
-        context.ResponseHeaders["X-Digest-B"] = expectedDigest;
-        if (clientDigest == expectedDigest) return true;
-        
-        return false;
-    }
-    
-    private void SetDigestResponse(ListenerContext context)
-    {
-        string url = context.Uri.AbsolutePath;
-        string auth = context.Cookies["MM_AUTH"] ?? string.Empty;
-    
-        string digestResponse = CalculateDigest(url, context.ResponseStream, auth, null, null);
-        
-        context.ResponseHeaders["X-Digest-A"] = digestResponse;
-    }
-
     public void HandleRequest(ListenerContext context, Lazy<IDatabaseContext> database, Action next)
     {
+        string route = context.Uri.AbsolutePath;
+        
         //If this isn't an LBP endpoint, dont do digest
-        if (!context.Uri.AbsolutePath.StartsWith(GameEndpointAttribute.BaseRoute))
+        if (!route.StartsWith(GameEndpointAttribute.BaseRoute) && !route.StartsWith(LegacyAdapterMiddleware.OldBaseRoute))
         {
             next();
             return;
         }
 
-        short? exeVersion = null;
-        short? dataVersion = null;
-        if (short.TryParse(context.RequestHeaders["X-Exe-V"], out short exeVer))
-        {
-            exeVersion = exeVer;
-        }
-        if (short.TryParse(context.RequestHeaders["X-Data-V"], out short dataVer))
-        {
-            dataVersion = dataVer;
-        }
+        // TODO: once we have PS4 support, check if the token is a PS4 token
+        bool isPs4 = context.RequestHeaders["User-Agent"]?.Contains("MM CHTTPClient LBP3 01.26") ?? false;
+        
+        PspVersionInfo? pspVersionInfo = null;
+        // Try to acquire the exe and data version, this is only accounted for in the client digests, not the server digests
+        if (short.TryParse(context.RequestHeaders["X-Exe-V"], out short exeVer) &&
+            short.TryParse(context.RequestHeaders["X-Data-V"], out short dataVer))
+            pspVersionInfo = new PspVersionInfo(exeVer, dataVer);
 
-        this.VerifyDigestRequest(context, exeVersion, dataVersion);
-        Debug.Assert(context.InputStream.Position == 0); // should be at position 0 before we pass down the pipeline
+        string auth = context.Cookies["MM_AUTH"] ?? string.Empty;
+        bool isUpload = route.StartsWith($"{LegacyAdapterMiddleware.OldBaseRoute}upload/") || route.StartsWith($"{GameEndpointAttribute.BaseRoute}upload/");
+
+        // For upload requests, the X-Digest-B header is in use instead by the client
+        string digestHeader = isUpload ? "X-Digest-B" : "X-Digest-A";
+        string clientDigest = context.RequestHeaders[digestHeader] ?? string.Empty;
+        
+        // Pass through the client's digest right back to the digest B response
+        context.ResponseHeaders["X-Digest-B"] = clientDigest;
         
         next();
 
-        // should be at position 0 before we try to set digest
+        GameDatabaseContext gameDatabase = (GameDatabaseContext)database.Value;
+
+        Token? token = gameDatabase.GetTokenFromTokenData(auth, TokenType.Game);
+        
+        byte[] responseBody = context.ResponseStream.ToArray();
+        byte[] requestBody = context.InputStream.ToArray();
+        
+        // Make sure the digest calculation reads the whole response stream
         context.ResponseStream.Seek(0, SeekOrigin.Begin);
-        this.SetDigestResponse(context);
+
+        // If the digest is already saved on the token, use the token's digest
+        if (token is { Digest: not null })
+        {
+            SetDigestResponse(context, CalculateDigest(token.Digest, route, responseBody, auth, null, isUpload, token.IsHmacDigest));
+            return;
+        }
+
+        // If the client asks for a particular digest index, use that digest
+        if (int.TryParse(context.RequestHeaders["Refresh-Ps3-Digest-Index"], out int ps3DigestIndex) && 
+            int.TryParse(context.RequestHeaders["Refresh-Ps4-Digest-Index"], out int ps4DigestIndex))
+        {
+            string digest = isPs4
+                ? this._config.HmacDigestKeys[ps4DigestIndex]
+                : this._config.Sha1DigestKeys[ps3DigestIndex];
+            
+            SetDigestResponse(context, CalculateDigest(digest, route, responseBody, auth, null, isUpload, isPs4));
+            
+            if(token != null)
+                gameDatabase.SetTokenDigestInfo(token, digest, isPs4);
+
+            return;
+        }
+
+        (string digest, bool hmac)? foundDigest = this.FindBestKey(clientDigest, route, requestBody, auth, pspVersionInfo, isUpload, false) ??
+                                                  this.FindBestKey(clientDigest, route, requestBody, auth, pspVersionInfo, isUpload, true);
+
+        if (foundDigest != null)
+        {
+            string digest = foundDigest.Value.digest;
+            bool hmac = foundDigest.Value.hmac;
+            
+            SetDigestResponse(context, CalculateDigest(digest, route, responseBody, auth, null, isUpload, hmac));
+        
+            if(token != null)
+                gameDatabase.SetTokenDigestInfo(token, digest, hmac); 
+        }
+        else
+        {
+            // If we were unable to find any digests, just use the first one specified as a backup
+            string firstDigest = isPs4 ? this._config.HmacDigestKeys[0] : this._config.Sha1DigestKeys[0];
+        
+            SetDigestResponse(context, CalculateDigest(firstDigest, route, responseBody, auth, null, isUpload, isPs4));
+        
+            // If theres no token, or the client didnt provide any client digest, lock the token into the found digest
+            // The second condition is to make sure that we dont lock in a digest for endpoints which send no client digest,
+            // but expect a server digest.
+            if(token != null && !string.IsNullOrEmpty(clientDigest))
+                gameDatabase.SetTokenDigestInfo(token, firstDigest, isPs4);
+        }
     }
+
+    private (string digest, bool hmac)? FindBestKey(string clientDigest, string route, ReadOnlySpan<byte> requestData, string auth, PspVersionInfo? pspVersionInfo, bool isUpload, bool hmac)
+    {
+        string[] keys = hmac ? this._config.HmacDigestKeys : this._config.Sha1DigestKeys;
+        
+        foreach (string digest in keys)
+        {
+            string calculatedClientDigest = CalculateDigest(digest, route, requestData, auth, pspVersionInfo, isUpload, hmac);
+
+            // If the calculated client digest is invalid, then this isn't the digest the game is using, so check the next one
+            if (calculatedClientDigest != clientDigest) 
+                continue;
+
+            // If they match, we found the client's digest
+            return (digest, hmac);
+        }
+
+        return null;
+    }
+
+    private static void SetDigestResponse(ListenerContext context, string calculatedDigest)
+        => context.ResponseHeaders["X-Digest-A"] = calculatedDigest;
 }

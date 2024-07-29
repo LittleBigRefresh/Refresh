@@ -40,7 +40,17 @@ public class RoleService : Service
         
         // if the user's role is lower than the minimum role for this endpoint, then return unauthorized
         if (user.Role < minimumRole)
+        {
+            this._authService.RemoveTokenFromCache();
             return Unauthorized;
+        }
+
+        RequireEmailVerifiedAttribute? emailAttrib = method.GetCustomAttribute<RequireEmailVerifiedAttribute>();
+        if (emailAttrib != null && !user.EmailAddressVerified)
+        {
+            this._authService.RemoveTokenFromCache();
+            return Unauthorized;
+        }
 
         return null;
     }
@@ -55,7 +65,11 @@ public class RoleService : Service
 
         // If user isn't an admin, then stop the request here, ignoring all
         if (user.Role != GameUserRole.Admin)
+        {
+            this._authService.RemoveTokenFromCache();
             return Forbidden;
+        }
+        
 
         return null;
     }

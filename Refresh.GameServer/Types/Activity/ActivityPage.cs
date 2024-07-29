@@ -1,12 +1,12 @@
 using System.Xml.Serialization;
 using Refresh.GameServer.Database;
 using Refresh.GameServer.Endpoints.Game.DataTypes.Response;
-using Refresh.GameServer.Services;
 using Refresh.GameServer.Types.Activity.Groups;
 using Refresh.GameServer.Types.Activity.SerializedEvents;
 using Refresh.GameServer.Types.Data;
 using Refresh.GameServer.Types.Levels;
 using Refresh.GameServer.Types.Lists;
+using Refresh.GameServer.Types.Photos;
 using Refresh.GameServer.Types.UserData;
 using Refresh.GameServer.Types.UserData.Leaderboard;
 
@@ -94,7 +94,7 @@ public class ActivityPage
 
         this.Scores = scores;
 
-        this.Groups = generateGroups ? this.GenerateGroups(users, scores) : new ActivityGroups();
+        this.Groups = generateGroups ? this.GenerateGroups(users, scores, database) : new ActivityGroups();
 
         this.Groups.Groups = this.Groups.Groups
             .OrderByDescending(g => g.Timestamp)
@@ -177,7 +177,7 @@ public class ActivityPage
         return page;
     }
     
-    private ActivityGroups GenerateGroups(IReadOnlyCollection<GameUser> users, IReadOnlyCollection<GameSubmittedScore> scores)
+    private ActivityGroups GenerateGroups(IReadOnlyCollection<GameUser> users, IReadOnlyCollection<GameSubmittedScore> scores, GameDatabaseContext database)
     {
         ActivityGroups groups = new();
         
@@ -189,13 +189,16 @@ public class ActivityPage
                     this.GenerateUserGroups(groups, users);
                     break;
                 case EventDataType.Level:
-                    this.GenerateLevelGroups(groups);
+                    this.GenerateLevelGroups(groups, database);
                     break;
                 case EventDataType.Score:
                     this.GenerateScoreGroups(groups, scores);
                     break;
                 case EventDataType.RateLevelRelation:
                     // TODO
+                    break;
+                case EventDataType.Photo:
+                    // This case is handled by the `Level` part, since the game expects photos to appear in the level groups
                     break;
                 default:
                     throw new ArgumentOutOfRangeException();
@@ -205,13 +208,22 @@ public class ActivityPage
         return groups;
     }
 
-    private void GenerateLevelGroups(ActivityGroups groups)
+    private void GenerateLevelGroups(ActivityGroups groups, GameDatabaseContext database)
     {
-        foreach (Event @event in this.Events.Where(e => e.StoredDataType == EventDataType.Level))
+        foreach (Event @event in this.Events.Where(e => e.StoredDataType is EventDataType.Level or EventDataType.Photo))
         {
+            GamePhoto? photo = null;
+            int levelId = @event.StoredSequentialId!.Value;
+
+            if (@event.StoredDataType == EventDataType.Photo)
+            {
+                photo = database.GetPhotoFromEvent(@event)!;
+                levelId = photo.LevelId;
+            }
+            
             SerializedLevelId id = new()
             {
-                LevelId = @event.StoredSequentialId!.Value,
+                LevelId = levelId,
                 Type = "user",
             };
 
@@ -232,8 +244,9 @@ public class ActivityPage
             // You will waste 30 seconds of your time if you don't.
             levelEvent = @event.EventType switch
             {
-                EventType.Level_Upload => SerializedLevelUploadEvent.FromSerializedLevelEvent(levelEvent),
-                EventType.Level_Play => SerializedLevelPlayEvent.FromSerializedLevelEvent(levelEvent),
+                EventType.LevelUpload => SerializedLevelUploadEvent.FromSerializedLevelEvent(levelEvent),
+                EventType.LevelPlay => SerializedLevelPlayEvent.FromSerializedLevelEvent(levelEvent),
+                EventType.PhotoUpload => SerializedPhotoUploadEvent.FromSerializedLevelEvent(levelEvent, photo!),
                 _ => levelEvent,
             };
 
@@ -241,25 +254,24 @@ public class ActivityPage
             {
                 LevelId = id,
                 Timestamp = timestamp,
-                Subgroups = new Subgroups(new List<ActivityGroup>
-                {
+                Subgroups = new Subgroups([
                     new UserActivityGroup
                     {
                         Username = @event.User.Username,
                         Timestamp = timestamp,
-                        Events = new Events(new List<SerializedEvent>
-                        {
+                        Events = new Events([
                             levelEvent,
-                        }),
+                        ]),
                     },
-                }),
+
+                ]),
             });
         }
     }
     
     private void GenerateScoreGroups(ActivityGroups groups, IReadOnlyCollection<GameSubmittedScore> scores)
     {
-        foreach (Event @event in this.Events.Where(e => e.EventType == EventType.SubmittedScore_Create))
+        foreach (Event @event in this.Events.Where(e => e.EventType == EventType.LevelScore))
         {
             GameSubmittedScore score = scores.First(u => u.ScoreId == @event.StoredObjectId);
             
@@ -285,18 +297,17 @@ public class ActivityPage
             {
                 LevelId = id,
                 Timestamp = timestamp,
-                Subgroups = new Subgroups(new List<ActivityGroup>
-                {
+                Subgroups = new Subgroups([
                     new UserActivityGroup
                     {
                         Username = @event.User.Username,
                         Timestamp = timestamp,
-                        Events = new Events(new List<SerializedEvent>
-                        {
+                        Events = new Events([
                             scoreEvent,
-                        }),
+                        ]),
                     },
-                }),
+
+                ]),
             });
         }
     }
@@ -321,18 +332,17 @@ public class ActivityPage
             {
                 Username = user.Username,
                 Timestamp = timestamp,
-                Subgroups = new Subgroups(new List<ActivityGroup>
-                {
+                Subgroups = new Subgroups([
                     new UserActivityGroup
                     {
                         Username = @event.User.Username,
                         Timestamp = timestamp,
-                        Events = new Events(new List<SerializedEvent>
-                        {
+                        Events = new Events([
                             userEvent,
-                        }),
+                        ]),
                     },
-                }),
+
+                ]),
             });
         }
     }

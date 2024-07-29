@@ -1,3 +1,5 @@
+using Refresh.GameServer.Types;
+
 namespace Refresh.GameServer.Endpoints.ApiV3.DataTypes.Request;
 
 [JsonObject(NamingStrategyType = typeof(CamelCaseNamingStrategy))]
@@ -9,9 +11,11 @@ public class ApiUpdateUserRequest
     
     public bool? PsnAuthenticationAllowed { get; set; }
     public bool? RpcnAuthenticationAllowed { get; set; }
-    
-    public bool? RedirectGriefReportsToPhotos { get; set; }
+
     public bool? UnescapeXmlSequences { get; set; }
     
     public string? EmailAddress { get; set; }
+    
+    public Visibility? LevelVisibility { get; set; }
+    public Visibility? ProfileVisibility { get; set; }
 }

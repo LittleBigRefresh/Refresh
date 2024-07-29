@@ -23,11 +23,11 @@ public class SerializedRoomData
     private List<int>? _Slot { get; set; }
     
     [JsonProperty("Slots")]
-    private List<int>? _Slots { get; set; }
+    private List<List<int>>? _Slots { get; set; }
     // ReSharper restore InconsistentNaming
 
     [JsonIgnore]
-    public List<int>? Slots => this._Slot ?? this._Slots;
+    public List<List<int>> Slots => this._Slot != null ? [this._Slot] : this._Slots ?? [];
     
     [JsonProperty("RoomState")]
     public RoomState? RoomState { get; set; }
@@ -47,8 +47,8 @@ public class SerializedRoomData
     [JsonProperty("Language")]
     public byte? Language { get; set; }
 
-    [JsonProperty("BuildVersion")]
-    public int? BuildVersion { get; set; }
+    // [JsonProperty("BuildVersion")]
+    // public int? BuildVersion { get; set; }
 
     [JsonProperty("Search")]
     public string? Search { get; set; }

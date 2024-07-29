@@ -6,13 +6,13 @@ public partial class GameDatabaseContext // Statistics
 {
     public RequestStatistics GetRequestStatistics()
     {
-        RequestStatistics? statistics = this._realm.All<RequestStatistics>().FirstOrDefault();
+        RequestStatistics? statistics = this.RequestStatistics.FirstOrDefault();
         if (statistics != null) return statistics;
 
         statistics = new RequestStatistics();
-        this._realm.Write(() =>
+        this.Write(() =>
         {
-            this._realm.Add(statistics);
+            this.RequestStatistics.Add(statistics);
         });
 
         return statistics;
@@ -21,7 +21,7 @@ public partial class GameDatabaseContext // Statistics
     public void IncrementApiRequests(int count)
     {
         RequestStatistics statistics = this.GetRequestStatistics();
-        this._realm.Write(() => {
+        this.Write(() => {
             statistics.TotalRequests += count;
             statistics.ApiRequests += count;
         });
@@ -30,7 +30,7 @@ public partial class GameDatabaseContext // Statistics
     public void IncrementGameRequests(int count)
     {
         RequestStatistics statistics = this.GetRequestStatistics();
-        this._realm.Write(() => {
+        this.Write(() => {
             statistics.TotalRequests += count;
             statistics.GameRequests += count;
         });

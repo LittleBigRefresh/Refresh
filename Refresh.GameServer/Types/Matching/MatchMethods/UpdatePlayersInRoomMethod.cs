@@ -1,8 +1,6 @@
 using Bunkum.Core.Responses;
-using NotEnoughLogs;
-using Refresh.GameServer.Authentication;
-using Refresh.GameServer.Database;
-using Refresh.GameServer.Services;
+using Refresh.GameServer.Configuration;
+using Refresh.GameServer.Types.Data;
 using Refresh.GameServer.Types.UserData;
 
 namespace Refresh.GameServer.Types.Matching.MatchMethods;
@@ -11,22 +9,19 @@ public class UpdatePlayersInRoomMethod : IMatchMethod
 {
     public IEnumerable<string> MethodNames => new[] { "UpdatePlayersInRoom" };
 
-    public Response Execute(MatchService service, Logger logger, GameDatabaseContext database,
-        GameUser user,
-        Token token,
-        SerializedRoomData body)
+    public Response Execute(DataContext dataContext, SerializedRoomData body, GameServerConfig gameServerConfig)
     {
         if (body.Players == null) return BadRequest;
-        GameRoom room = service.GetOrCreateRoomByPlayer(user, token.TokenPlatform, token.TokenGame, body.NatType == null ? NatType.Open : body.NatType[0]);
+        GameRoom room = dataContext.Match.GetOrCreateRoomByPlayer(dataContext.User!, dataContext.Platform, dataContext.Game, body.NatType == null ? NatType.Open : body.NatType[0], body.PassedNoJoinPoint);
         
         foreach (string playerUsername in body.Players)
         {
-            GameUser? player = database.GetUserByUsername(playerUsername);
+            GameUser? player = dataContext.Database.GetUserByUsername(playerUsername);
             
             if (player != null)
-                service.AddPlayerToRoom(player, room, token.TokenPlatform, token.TokenGame);
+                dataContext.Match.AddPlayerToRoom(player, room, dataContext.Platform, dataContext.Game);
             else
-                service.AddPlayerToRoom(playerUsername, room);
+                dataContext.Match.AddPlayerToRoom(playerUsername, room);
         }
 
         return OK;

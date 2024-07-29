@@ -1,10 +1,14 @@
+using Bunkum.Core;
 using Bunkum.Core.Services;
+using Bunkum.Core.Storage;
 using Bunkum.Protocols.Http.Direct;
 using JetBrains.Annotations;
 using Refresh.GameServer.Authentication;
 using Refresh.GameServer.Database;
+using Refresh.GameServer.Services;
 using Refresh.GameServer.Types;
 using Refresh.GameServer.Types.Contests;
+using Refresh.GameServer.Types.Data;
 using Refresh.GameServer.Types.Levels;
 using Refresh.GameServer.Types.Roles;
 using Refresh.GameServer.Types.UserData;
@@ -35,21 +39,24 @@ public class TestContext : IDisposable
 
     public HttpClient GetAuthenticatedClient(TokenType type,
         GameUser? user = null,
-        int tokenExpirySeconds = GameDatabaseContext.DefaultTokenExpirySeconds)
+        int tokenExpirySeconds = GameDatabaseContext.DefaultTokenExpirySeconds,
+        string? ipAddress = null)
     {
-        return this.GetAuthenticatedClient(type, out _, user, tokenExpirySeconds);
+        return this.GetAuthenticatedClient(type, out _, user, tokenExpirySeconds, ipAddress);
     }
     
     public HttpClient GetAuthenticatedClient(TokenType type, TokenGame game, TokenPlatform platform,
         GameUser? user = null,
-        int tokenExpirySeconds = GameDatabaseContext.DefaultTokenExpirySeconds)
+        int tokenExpirySeconds = GameDatabaseContext.DefaultTokenExpirySeconds,
+        string? ipAddress = null)
     {
-        return this.GetAuthenticatedClient(type, game, platform, out _, user, tokenExpirySeconds);
+        return this.GetAuthenticatedClient(type, game, platform, out _, user, tokenExpirySeconds, ipAddress);
     }
 
     public HttpClient GetAuthenticatedClient(TokenType type, out string tokenData,
         GameUser? user = null,
-        int tokenExpirySeconds = GameDatabaseContext.DefaultTokenExpirySeconds)
+        int tokenExpirySeconds = GameDatabaseContext.DefaultTokenExpirySeconds,
+        string? ipAddress = null)
     {
         user ??= this.CreateUser();
 
@@ -65,16 +72,17 @@ public class TestContext : IDisposable
             _ => TokenPlatform.Website,
         };
 
-        return this.GetAuthenticatedClient(type, game, platform, out tokenData, user, tokenExpirySeconds);
+        return this.GetAuthenticatedClient(type, game, platform, out tokenData, user, tokenExpirySeconds, ipAddress);
     }
     
     public HttpClient GetAuthenticatedClient(TokenType type, TokenGame game, TokenPlatform platform, out string tokenData,
         GameUser? user = null,
-        int tokenExpirySeconds = GameDatabaseContext.DefaultTokenExpirySeconds)
+        int tokenExpirySeconds = GameDatabaseContext.DefaultTokenExpirySeconds, 
+        string? ipAddress = null)
     {
         user ??= this.CreateUser();
 
-        Token token = this.Database.GenerateTokenForUser(user, type, game, platform, tokenExpirySeconds);
+        Token token = this.Database.GenerateTokenForUser(user, type, game, platform, ipAddress ?? "0.0.0.0", tokenExpirySeconds);
         tokenData = token.TokenData;
         
         HttpClient client = this.Listener.GetClient();
@@ -91,22 +99,19 @@ public class TestContext : IDisposable
         return client;
     }
 
-    public GameUser CreateUser(string? username = null)
+    public GameUser CreateUser(string? username = null, GameUserRole role = GameUserRole.User)
     {
         username ??= this.UserIncrement.ToString();
-        return this.Database.CreateUser(username, $"{username}@{username}.local");
-    }
+        
+        GameUser user = this.Database.CreateUser(username, $"{username}@{username}.local");
+        if (role != GameUserRole.User) this.Database.SetUserRole(user, role);
 
-    public GameUser CreateAdmin(string? username = null)
-    {
-        GameUser user = this.CreateUser(username);
-        this.Database.SetUserRole(user, GameUserRole.Admin);
         return user;
     }
 
     public Token CreateToken(GameUser user, TokenType type = TokenType.Game, TokenGame game = TokenGame.LittleBigPlanet2, TokenPlatform platform = TokenPlatform.PS3)
     {
-        return this.Database.GenerateTokenForUser(user, type, game, platform);
+        return this.Database.GenerateTokenForUser(user, type, game, platform, "0.0.0.0");
     }
     
     public GameLevel CreateLevel(GameUser author, string title = "Level", TokenGame gameVersion = TokenGame.LittleBigPlanet1)
@@ -115,7 +120,6 @@ public class TestContext : IDisposable
         {
             Title = title,
             Publisher = author,
-            Location = GameLocation.Zero,
             Source = GameLevelSource.User,
             GameVersion = gameVersion,
         };
@@ -150,6 +154,20 @@ public class TestContext : IDisposable
 
     [Pure]
     public TService GetService<TService>() where TService : Service => this.Server.Value.GetService<TService>();
+
+    public DataContext GetDataContext(Token? token = null)
+    {
+        return new DataContext
+        {
+            Database = this.Database,
+            Logger = this.Server.Value.Logger,
+            DataStore = (IDataStore)this.GetService<StorageService>()
+                .AddParameterToEndpoint(null!, new BunkumParameterInfo(typeof(IDataStore), ""), null!)!,
+            Match = this.GetService<MatchService>(),
+            Token = token,
+            GuidChecker = this.GetService<GuidCheckerService>(),
+        };
+    }
 
     public void Dispose()
     {

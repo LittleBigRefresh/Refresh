@@ -35,6 +35,9 @@ internal class CommandLineManager
         [Option("set-trusted", HelpText = "Gives the user the Trusted role. Username or Email options are required if this is set.")]
         public bool SetTrusted { get; set; }
         
+        [Option("set-curator", HelpText = "Gives the user the Curator role. Username or Email options are required if this is set.")]
+        public bool SetCurator { get; set; }
+        
         [Option("set-default", HelpText = "Gives the user the default role. Username or Email options are required if this is set.")]
         public bool SetDefault { get; set; }
         
@@ -58,12 +61,27 @@ internal class CommandLineManager
         
         [Option("rename-user", HelpText = "Changes a user's username. (old) username or Email option is required if this is set.")]
         public string? RenameUser { get; set; }
+        
+        [Option("delete-user", HelpText = "Deletes a user's account, removing their data but keeping a record of their sign up.")]
+        public bool DeleteUser { get; set; }
+        
+        [Option("fully-delete-user", HelpText = "Fully deletes a user, entirely removing the row and allowing people to register with that username once again. Not recommended.")]
+        public bool FullyDeleteUser { get; set; }
     }
 
     internal void StartWithArgs(string[] args)
     {
-        Parser.Default.ParseArguments<Options>(args)
-            .WithParsed(this.StartWithOptions);
+        try
+        {
+            Parser.Default.ParseArguments<Options>(args)
+                .WithParsed(this.StartWithOptions);
+        }
+        catch (Exception e)
+        {
+            Fail($"An internal error occurred: {e}", 139);
+        }
+        
+        Console.WriteLine("The operation completed successfully.");
     }
 
     [DoesNotReturn]
@@ -73,7 +91,7 @@ internal class CommandLineManager
         
         Console.ForegroundColor = ConsoleColor.Red;
         Console.WriteLine(reason);
-        Console.WriteLine($"Failed with exit code {code}");
+        Console.WriteLine($"The operation failed with exit code {code}");
         Console.ForegroundColor = oldColor;
         
         Environment.Exit(code);
@@ -131,6 +149,11 @@ internal class CommandLineManager
             GameUser user = this.GetUserOrFail(options);
             this._server.SetUserAsRole(user, GameUserRole.Trusted);
         }
+        else if (options.SetCurator)
+        {
+            GameUser user = this.GetUserOrFail(options);
+            this._server.SetUserAsRole(user, GameUserRole.Curator);
+        }
         else if (options.SetDefault)
         {
             GameUser user = this.GetUserOrFail(options);
@@ -161,6 +184,16 @@ internal class CommandLineManager
             
             GameUser user = this.GetUserOrFail(options);
             this._server.RenameUser(user, options.RenameUser);
+        }
+        else if (options.DeleteUser)
+        {
+            GameUser user = this.GetUserOrFail(options);
+            this._server.DeleteUser(user);
+        }
+        else if (options.FullyDeleteUser)
+        {
+            GameUser user = this.GetUserOrFail(options);
+            this._server.FullyDeleteUser(user);
         }
     }
 }

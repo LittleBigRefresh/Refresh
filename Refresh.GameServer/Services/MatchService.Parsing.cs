@@ -11,10 +11,6 @@ public partial class MatchService // Parsing
         // skip until after second open bracket, replace with JSON object brackets
         int start = 3 + method.Length;
         body = string.Concat("{", body.AsSpan(start, body.Length - 2 - start), "}");
-        
-        // Fix double arrays
-        body = body.Replace("[[", "[")
-            .Replace("]]", "]");
 
         body = ReplaceHexValuesInStringWithIpAddresses(body);
 
@@ -28,7 +24,7 @@ public partial class MatchService // Parsing
         int hexIndex;
         while ((hexIndex = body.IndexOf("0x", StringComparison.Ordinal)) != -1)
         {
-            string hex = body.Substring(hexIndex, hexValueLength);
+            ReadOnlySpan<char> hex = body.AsSpan().Slice(hexIndex, hexValueLength);
             string ip = ConvertHexadecimalIpAddressToString(hex);
             body = string.Concat(body.AsSpan(0, hexIndex), '\"' + ip + '\"', body.AsSpan(hexIndex + hexValueLength));
         }
@@ -37,7 +33,7 @@ public partial class MatchService // Parsing
     }
 
     // should serialize "0x17257bc9" into "23.39.123.201"
-    public static string ConvertHexadecimalIpAddressToString(string hex)
+    public static string ConvertHexadecimalIpAddressToString(ReadOnlySpan<char> hex)
     {
         // parse hex string as uint, stripping 0x header, if it fails, return 0.0.0.0
         if (!uint.TryParse(hex[2..], NumberStyles.HexNumber, null, out uint ip)) return "0.0.0.0";

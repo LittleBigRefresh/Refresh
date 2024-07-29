@@ -8,15 +8,14 @@ using Bunkum.RealmDatabase;
 using Refresh.GameServer.Time;
 using Refresh.GameServer.Types.Activity;
 using Refresh.GameServer.Types.Assets;
+using Refresh.GameServer.Types.Comments.Relations;
 using Refresh.GameServer.Types.Contests;
 using Refresh.GameServer.Types.Levels.SkillRewards;
 using Refresh.GameServer.Types.Notifications;
 using Refresh.GameServer.Types.Relations;
-using Refresh.GameServer.Types.Report;
 using Refresh.GameServer.Types.Reviews;
 using Refresh.GameServer.Types.UserData.Leaderboard;
-using GamePhoto = Refresh.GameServer.Types.Photos.GamePhoto;
-using GamePhotoSubject = Refresh.GameServer.Types.Photos.GamePhotoSubject;
+using Refresh.GameServer.Types.Photos;
 
 namespace Refresh.GameServer.Database;
 
@@ -34,20 +33,21 @@ public class GameDatabaseProvider : RealmDatabaseProvider<GameDatabaseContext>
         this._time = time;
     }
 
-    protected override ulong SchemaVersion => 125;
+    protected override ulong SchemaVersion => 136;
 
     protected override string Filename => "refreshGameServer.realm";
     
     protected override List<Type> SchemaTypes { get; } = new()
     {
         typeof(GameUser),
-        typeof(GameLocation),
         typeof(UserPins),
         typeof(Token),
         typeof(GameLevel),
         typeof(GameSkillReward),
-        typeof(GameComment),
-        typeof(CommentRelation),
+        typeof(GameProfileComment),
+        typeof(GameLevelComment),
+        typeof(ProfileCommentRelation),
+        typeof(LevelCommentRelation),
         typeof(FavouriteLevelRelation),
         typeof(QueueLevelRelation),
         typeof(FavouriteUserRelation),
@@ -59,7 +59,6 @@ public class GameDatabaseProvider : RealmDatabaseProvider<GameDatabaseContext>
         typeof(GameAsset),
         typeof(GameNotification),
         typeof(GamePhoto),
-        typeof(GamePhotoSubject),
         typeof(GameIpVerificationRequest),
         typeof(GameAnnouncement),
         typeof(QueuedRegistration),
@@ -67,17 +66,11 @@ public class GameDatabaseProvider : RealmDatabaseProvider<GameDatabaseContext>
         typeof(RequestStatistics),
         typeof(SequentialIdStorage),
         typeof(GameContest),
-        //grief report items
-        typeof(GameReport),
-        typeof(InfoBubble),
-        typeof(Marqee),
-        typeof(Player),
-        typeof(Rect),
-        typeof(ScreenElements),
-        typeof(ScreenRect),
-        typeof(Slot),
+        typeof(AssetDependencyRelation),
         typeof(GameReview),
         typeof(DisallowedUser),
+        typeof(RateReviewRelation),
+        typeof(TagLevelRelation),
     };
 
     public override void Warmup()
@@ -112,7 +105,8 @@ public class GameDatabaseProvider : RealmDatabaseProvider<GameDatabaseContext>
             if (oldVersion < 3)
             {
                 newUser.Description = "";
-                newUser.Location = new GameLocation { X = 0, Y = 0, };
+                newUser.LocationX = 0;
+                newUser.LocationY = 0;
             }
 
             //In version 4, GameLocation went from TopLevel -> Embedded, and UserPins was added
@@ -166,9 +160,6 @@ public class GameDatabaseProvider : RealmDatabaseProvider<GameDatabaseContext>
                 newUser.VitaPlanetsHash = "0";
             }
 
-            // In version 94, we added an option to redirect grief reports to photos
-            if (oldVersion < 94) newUser.RedirectGriefReportsToPhotos = false;
-
             // In version 100, we started enforcing lowercase email addresses
             if (oldVersion < 100) newUser.EmailAddress = oldUser.EmailAddress?.ToLowerInvariant();
 
@@ -185,6 +176,38 @@ public class GameDatabaseProvider : RealmDatabaseProvider<GameDatabaseContext>
                     .AsEnumerable()
                     .Where(a => a.OriginalUploader?.UserId == newUser.UserId)
                     .Sum(a => a.SizeInBytes);
+            }
+            
+            // In version 129, we split locations from an embedded object out to two fields
+            if (oldVersion < 129)
+            {
+                // cast required because apparently they're stored as longs???
+                newUser.LocationX = (int)oldUser.Location.X;
+                newUser.LocationY = (int)oldUser.Location.Y;
+            }
+            
+            // In version 134, we split GameComments into multiple tables.
+            // This migration creates GameProfileComments
+            if (oldVersion < 134)
+            {
+                foreach (dynamic comment in oldUser.ProfileComments)
+                {
+                    GameUser? author = comment.Author != null ? migration.NewRealm.Find<GameUser>(comment.Author.UserId) : null;
+                    if (author == null)
+                    {
+                        Console.WriteLine($"Skipping migration for profile comment id {comment.SequentialId} due to missing author");
+                        continue;
+                    }
+
+                    migration.NewRealm.Add(new GameProfileComment
+                    {
+                        SequentialId = (int)comment.SequentialId,
+                        Author = author,
+                        Profile = newUser,
+                        Content = comment.Content,
+                        Timestamp = comment.Timestamp,
+                    });
+                }
             }
         }
 
@@ -246,6 +269,37 @@ public class GameDatabaseProvider : RealmDatabaseProvider<GameDatabaseContext>
             {
                 newLevel._Source = (int)GameLevelSource.User;
             }
+            
+            // In version 129, we split locations from an embedded object out to two fields
+            if (oldVersion < 129)
+            {
+                newLevel.LocationX = (int)oldLevel.Location.X;
+                newLevel.LocationY = (int)oldLevel.Location.Y;
+            }
+            
+            // In version 134, we split GameComments into multiple tables.
+            // This migration creates GameLevelComments
+            if (oldVersion < 134)
+            {
+                foreach (dynamic comment in oldLevel.LevelComments)
+                {
+                    GameUser? author = comment.Author != null ? migration.NewRealm.Find<GameUser>(comment.Author.UserId) : null;
+                    if (author == null)
+                    {
+                        Console.WriteLine($"Skipping migration for level comment id {comment.SequentialId} due to missing author");
+                        continue;
+                    }
+
+                    migration.NewRealm.Add(new GameLevelComment
+                    {
+                        SequentialId = (int)comment.SequentialId,
+                        Author = author,
+                        Level = newLevel,
+                        Content = comment.Content,
+                        Timestamp = comment.Timestamp,
+                    });
+                }
+            }
         }
 
         // In version 22, tokens added expiry and types so just wipe them all
@@ -278,6 +332,12 @@ public class GameDatabaseProvider : RealmDatabaseProvider<GameDatabaseContext>
                 GameSubmittedScore? score = migration.NewRealm.All<GameSubmittedScore>().FirstOrDefault(s => s.ScoreId == newEvent.StoredObjectId);
                 if(score == null) eventsToNuke.Add(newEvent);
             }
+            
+            // In version 131 we removed the LevelPlay event
+            if (oldVersion < 131 && newEvent.EventType == EventType.LevelPlay)
+            {
+                eventsToNuke.Add(newEvent);
+            }
         }
         
         // realm won't let you use an IEnumerable in RemoveRange. too bad!
@@ -285,6 +345,10 @@ public class GameDatabaseProvider : RealmDatabaseProvider<GameDatabaseContext>
         {
             migration.NewRealm.Remove(eventToNuke);
         }
+        
+        // In version 126, we started tracking token IP, there's no way for us to acquire this after the fact, so lets just clear all the tokens
+        if (oldVersion < 126) 
+            migration.NewRealm.RemoveAll<Token>();
         
         // IQueryable<dynamic>? oldTokens = migration.OldRealm.DynamicApi.All("Token");
         IQueryable<Token>? newTokens = migration.NewRealm.All<Token>();
@@ -295,21 +359,6 @@ public class GameDatabaseProvider : RealmDatabaseProvider<GameDatabaseContext>
             Token newToken = newTokens.ElementAt(i);
 
             if (oldVersion < 36) newToken.LoginDate = DateTimeOffset.FromUnixTimeMilliseconds(timestampMilliseconds);
-        }
-        
-        IQueryable<dynamic>? oldComments = migration.OldRealm.DynamicApi.All("GameComment");
-        IQueryable<GameComment>? newComments = migration.NewRealm.All<GameComment>();
-
-        for (int i = 0; i < newComments.Count(); i++)
-        {
-            dynamic oldComment = oldComments.ElementAt(i);
-            GameComment newComment = newComments.ElementAt(i);
-
-            // In version 40, we switched to Realm source generators which requires some values to be reset
-            if (oldVersion < 40)
-            {
-                newComment.Content = oldComment.Content;
-            }
         }
         
         IQueryable<dynamic>? oldPhotos = migration.OldRealm.DynamicApi.All("GamePhoto");
@@ -332,6 +381,23 @@ public class GameDatabaseProvider : RealmDatabaseProvider<GameDatabaseContext>
                 newPhoto.MediumAsset = migration.NewRealm.Find<GameAsset>(oldPhoto.MediumHash.StartsWith("psp/") ? oldPhoto.MediumHash.Substring(4) : oldPhoto.MediumHash);
                 newPhoto.SmallAsset = migration.NewRealm.Find<GameAsset>(oldPhoto.SmallHash.StartsWith("psp/") ? oldPhoto.SmallHash.Substring(4) : oldPhoto.SmallHash);
             }
+
+            // In version 133, we removed GamePhotoSubject from the schema entirely, and instead we put 4 'unrolled' sets of fields in the GamePhoto.
+            // This makes things chaotic code-wise, but is significantly more compatible with Postgres.
+            if (oldVersion < 133)
+            {
+                List<GamePhotoSubject> oldSubjects = new(oldPhoto.Subjects.Count);
+                foreach(dynamic subject in oldPhoto.Subjects)
+                {
+                    List<float> bounds = new(4);
+                    foreach (float bound in subject.Bounds) bounds.Add(bound);
+
+                    GameUser? user = subject.User != null ? migration.NewRealm.Find<GameUser>(subject.User.UserId) : null;
+                    oldSubjects.Add(new GamePhotoSubject(user, subject.DisplayName, bounds));
+                }
+
+                newPhoto.Subjects = oldSubjects;
+            }
         }
         
         IQueryable<dynamic>? oldAssets = migration.OldRealm.DynamicApi.All("GameAsset");
@@ -349,9 +415,24 @@ public class GameDatabaseProvider : RealmDatabaseProvider<GameDatabaseContext>
                 // and PSP is the only game to upload TGA files.
                 newAsset.IsPSP = newAsset.AssetType == GameAssetType.Tga;
             }
+
+            // In version 128 assets were moved from a list on the asset to a separate "relations" table
+            if (oldVersion < 128)
+            {
+                IList<string> dependencies = oldAsset.Dependencies;
+                
+                foreach (string dependency in dependencies)
+                {
+                    migration.NewRealm.Add(new AssetDependencyRelation
+                    {
+                        Dependent = oldAsset.AssetHash,
+                        Dependency = dependency,
+                    });
+                }
+            }
             
-            // In version 125, we started tracking asset types differently, so we need to convert to the new system
-            if (oldVersion < 125)
+            // In version 136, we started tracking asset types differently, so we need to convert to the new system
+            if (oldVersion < 136)
             {
                 newAsset.AssetType = (int)oldAsset._AssetType switch
                 {

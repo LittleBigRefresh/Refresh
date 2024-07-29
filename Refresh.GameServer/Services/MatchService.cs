@@ -6,7 +6,8 @@ using System.Reflection;
 using Bunkum.Core.Responses;
 using Bunkum.Listener.Protocol;
 using Refresh.GameServer.Authentication;
-using Refresh.GameServer.Database;
+using Refresh.GameServer.Configuration;
+using Refresh.GameServer.Types.Data;
 using Refresh.GameServer.Types.Matching;
 using Refresh.GameServer.Types.Matching.MatchMethods;
 using Refresh.GameServer.Types.Matching.Responses;
@@ -21,30 +22,45 @@ public partial class MatchService(Logger logger) : EndpointService(logger)
 
     public IRoomAccessor RoomAccessor { get; private set; } = null!; //initialized in Initialize()
     
-    public GameRoom GetOrCreateRoomByPlayer(GameUser player, TokenPlatform platform, TokenGame game, NatType natType)
+    public GameRoom GetOrCreateRoomByPlayer(
+        GameUser player, 
+        TokenPlatform platform, 
+        TokenGame game, 
+        NatType natType,
+        bool? passedNoJoinPoint = null)
     {
         GameRoom? room = this.RoomAccessor.GetRoomByUser(player, platform, game);
         
         // ReSharper disable once ConvertIfStatementToNullCoalescingExpression
         if (room == null)
-            room = this.CreateRoomByPlayer(player, platform, game, natType);
+            room = this.CreateRoomByPlayer(player, platform, game, natType, passedNoJoinPoint);
 
         return room;
     }
 
-    public GameRoom CreateRoomByPlayer(GameUser player, TokenPlatform platform, TokenGame game, NatType natType)
+    public GameRoom CreateRoomByPlayer(
+        GameUser player, 
+        TokenPlatform platform, 
+        TokenGame game, 
+        NatType natType,
+        bool? passedNoJoinPoint = null)
     {
-        GameRoom room = new(player, platform, game, natType);
+        GameRoom room = new(player, platform, game, natType, passedNoJoinPoint);
         this.RoomAccessor.AddRoom(room);
         return room;
     }
 
-    public GameRoom SplitUserIntoNewRoom(GameUser player, TokenPlatform platform, TokenGame game, NatType natType)
+    public GameRoom SplitUserIntoNewRoom(
+        GameUser player, 
+        TokenPlatform platform, 
+        TokenGame game, 
+        NatType natType,
+        bool? passedNoJoinPoint = null)
     {
         GameRoom? room = this.RoomAccessor.GetRoomByUser(player, platform, game);
         if (room == null)
         {
-            return this.CreateRoomByPlayer(player, platform, game, natType);
+            return this.CreateRoomByPlayer(player, platform, game, natType, passedNoJoinPoint);
         }
         
         // Remove player from old room
@@ -52,7 +68,7 @@ public partial class MatchService(Logger logger) : EndpointService(logger)
         // Update the room on the room accessor
         this.RoomAccessor.UpdateRoom(room);
         
-        return this.CreateRoomByPlayer(player, platform, game, natType);
+        return this.CreateRoomByPlayer(player, platform, game, natType, passedNoJoinPoint);
     }
     
     public int GetPlayerCountForLevel(RoomSlotType type, int id)
@@ -113,12 +129,12 @@ public partial class MatchService(Logger logger) : EndpointService(logger)
     private IMatchMethod? TryGetMatchMethod(string method) 
         => this._matchMethods.FirstOrDefault(m => m.MethodNames.Contains(method));
 
-    public Response ExecuteMethod(string methodStr, SerializedRoomData roomData, GameDatabaseContext database, GameUser user, Token token)
+    public Response ExecuteMethod(string methodStr, SerializedRoomData roomData, DataContext dataContext, GameServerConfig gameServerConfig)
     {
         IMatchMethod? method = this.TryGetMatchMethod(methodStr);
         if (method == null) return BadRequest;
         
-        Response response = method.Execute(this, this.Logger, database, user, token, roomData);
+        Response response = method.Execute(dataContext, roomData, gameServerConfig);
         
         // If there's a response data specified, then there's nothing more we need to do
         if (response.Data.Length != 0) 

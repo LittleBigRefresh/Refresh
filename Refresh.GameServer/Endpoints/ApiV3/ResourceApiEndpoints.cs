@@ -147,6 +147,7 @@ public class ResourceApiEndpoints : EndpointGroup
         string hash, DataContext dataContext) => this.GetAssetInfo(context, database, dataStore, $"psp/{hash}", dataContext);
 
     [ApiV3Endpoint("assets/{hash}", HttpMethods.Post)]
+    [RequireEmailVerified]
     [DocSummary("Uploads an image (PNG/JPEG) asset")]
     [DocError(typeof(ApiValidationError), ApiValidationError.HashMissingErrorWhen)]
     [DocError(typeof(ApiValidationError), ApiValidationError.BodyTooLongErrorWhen)]
@@ -185,7 +186,7 @@ public class ResourceApiEndpoints : EndpointGroup
             return new ApiValidationError($"The asset must be under 2MB. Your file was {body.Length:N0} bytes.");
         }
 
-        GameAsset? gameAsset = importer.ReadAndVerifyAsset(hash, body, TokenPlatform.Website);
+        GameAsset? gameAsset = importer.ReadAndVerifyAsset(hash, body, TokenPlatform.Website, database);
         if (gameAsset == null)
             return ApiValidationError.CannotReadAssetError;
 

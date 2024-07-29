@@ -4,10 +4,10 @@ using Bunkum.Core.Responses;
 using Bunkum.Core.Storage;
 using Bunkum.Listener.Protocol;
 using Bunkum.Protocols.Http;
-using Refresh.GameServer.Authentication;
 using Refresh.GameServer.Database;
 using Refresh.GameServer.Extensions;
 using Refresh.GameServer.Types.Data;
+using Refresh.GameServer.Types.Levels;
 using Refresh.GameServer.Types.Lists;
 using Refresh.GameServer.Types.Photos;
 using Refresh.GameServer.Types.Roles;
@@ -18,6 +18,7 @@ namespace Refresh.GameServer.Endpoints.Game;
 public class PhotoEndpoints : EndpointGroup
 {
     [GameEndpoint("uploadPhoto", HttpMethods.Post, ContentType.Xml)]
+    [RequireEmailVerified]
     public Response UploadPhoto(RequestContext context, SerializedPhoto body, GameDatabaseContext database, GameUser user, IDataStore dataStore)
     {
         if (!dataStore.ExistsInStore(body.SmallHash) ||
@@ -81,4 +82,32 @@ public class PhotoEndpoints : EndpointGroup
     [MinimumRole(GameUserRole.Restricted)]
     public Response PhotosByUser(RequestContext context, GameDatabaseContext database, DataContext dataContext) 
         => GetPhotos(context, database, dataContext, database.GetPhotosByUser);
+
+    [GameEndpoint("photos/{slotType}/{levelId}", ContentType.Xml)]
+    public Response GetPhotosOnLevel(RequestContext context, DataContext dataContext, string slotType, int levelId)
+    {
+        GameLevel? level = dataContext.Database.GetLevelByIdAndType(slotType, levelId);
+        if (level == null)
+            return NotFound;
+        
+        (int skip, int count) = context.GetPageData();
+
+        // count not used ingame
+        IEnumerable<SerializedPhoto> photos = dataContext.Database.GetPhotosInLevel(level, count, skip).Items
+            .Select(photo => SerializedPhoto.FromGamePhoto(photo, dataContext));
+
+        return new Response(new SerializedPhotoList(photos), ContentType.Xml);
+    }
+
+    [GameEndpoint("photo/{id}", ContentType.Xml)]
+    [NullStatusCode(NotFound)]
+    public SerializedPhoto? GetPhotoById(RequestContext context, DataContext dataContext, int id)
+    {
+        GamePhoto? photo = dataContext.Database.GetPhotoById(id);
+
+        if (photo == null) 
+            return null;
+        
+        return SerializedPhoto.FromGamePhoto(photo, dataContext);
+    }
 }

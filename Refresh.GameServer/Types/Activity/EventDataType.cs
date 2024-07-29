@@ -6,4 +6,5 @@ public enum EventDataType
     Level = 1,
     Score = 2,
     RateLevelRelation = 3,
+    Photo = 4,
 }

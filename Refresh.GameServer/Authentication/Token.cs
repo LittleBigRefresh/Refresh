@@ -1,5 +1,6 @@
 using System.Xml.Serialization;
 using Bunkum.Core.Authentication;
+using JetBrains.Annotations;
 using MongoDB.Bson;
 using Realms;
 using Refresh.GameServer.Types.UserData;
@@ -43,6 +44,14 @@ public partial class Token : IRealmObject, IToken<GameUser>
 
     public DateTimeOffset ExpiresAt { get; set; }
     public DateTimeOffset LoginDate { get; set; }
+    
+    public string IpAddress { get; set; }
 
     public GameUser User { get; set; }
+    
+    /// <summary>
+    /// The digest key to use with this token, determined from the first game request created by this token
+    /// </summary>
+    [CanBeNull] public string Digest { get; set; }
+    public bool IsHmacDigest { get; set; }
 }

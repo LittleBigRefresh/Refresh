@@ -1,10 +1,7 @@
 using Bunkum.Core;
 using Bunkum.Core.Responses;
-using NotEnoughLogs;
-using Refresh.GameServer.Authentication;
-using Refresh.GameServer.Database;
-using Refresh.GameServer.Services;
-using Refresh.GameServer.Types.UserData;
+using Refresh.GameServer.Configuration;
+using Refresh.GameServer.Types.Data;
 
 namespace Refresh.GameServer.Types.Matching.MatchMethods;
 
@@ -12,34 +9,44 @@ public class UpdateRoomDataMethod : IMatchMethod
 {
     public IEnumerable<string> MethodNames => new[] { "UpdateMyPlayerData" };
 
-    public Response Execute(MatchService service, Logger logger,
-        GameDatabaseContext database, GameUser user, Token token, SerializedRoomData body)
+    public Response Execute(DataContext dataContext, SerializedRoomData body, GameServerConfig gameServerConfig)
     {
-        GameRoom room = service.GetOrCreateRoomByPlayer(user, token.TokenPlatform, token.TokenGame, body.NatType == null ? NatType.Open : body.NatType[0]);
-        if (room.HostId.Id != user.UserId) return Unauthorized;
+        GameRoom room = dataContext.Match.GetOrCreateRoomByPlayer(dataContext.User!, dataContext.Platform, dataContext.Game, body.NatType == null ? NatType.Open : body.NatType[0], body.PassedNoJoinPoint);
+        if (room.HostId.Id != dataContext.User!.UserId) return Unauthorized;
 
         if (body.RoomState != null) room.RoomState = body.RoomState.Value;
-
-        // LBP likes to send both Slot and Slots interchangeably, handle that case here
-        if (body.Slots != null)
+        
+        // Players cannot be in multiple levels at once
+        if (body.Slots.Count > 1)
         {
-            if (body.Slots.Count != 2)
+            dataContext.Logger.LogWarning(BunkumCategory.Matching, "Received update room request with multiple slots, rejecting");
+            return BadRequest;
+        }
+        
+        foreach(List<int> slot in body.Slots)
+        {
+            if (slot.Count != 2)
             {
-                logger.LogWarning(BunkumCategory.Matching, "Received request with invalid amount of slots, rejecting.");
+                dataContext.Logger.LogWarning(BunkumCategory.Matching, "Received request with invalid slot, rejecting.");
                 return BadRequest;
             }
 
-            room.LevelType = (RoomSlotType)body.Slots[0];
-            room.LevelId = body.Slots[1];
+            room.LevelType = (RoomSlotType)slot[0];
+            room.LevelId = slot[1];
         }
-
+        
         byte? mood = body.HostMood ?? body.Mood;
         if (mood != null)
         {
             room.RoomMood = (RoomMood)mood;
         }
         
-        service.RoomAccessor.UpdateRoom(room);
+        if (body.PassedNoJoinPoint != null)
+        {
+            room.PassedNoJoinPoint = body.PassedNoJoinPoint.Value;
+        }
+        
+        dataContext.Match.RoomAccessor.UpdateRoom(room);
 
         return OK;
     }

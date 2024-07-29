@@ -10,6 +10,7 @@ using System.Diagnostics;
 using Bunkum.Core.Storage;
 using NotEnoughLogs;
 using Refresh.GameServer.Database;
+using Refresh.GameServer.Types.Data;
 using Refresh.GameServer.Types.Levels;
 using Refresh.GameServer.Types.Reviews;
 using Refresh.GameServer.Types.Roles;
@@ -19,10 +20,10 @@ namespace Refresh.GameServer.Workers;
 public class CoolLevelsWorker : IWorker
 {
     public int WorkInterval => 600_000; // Every 10 minutes
-    public void DoWork(Logger logger, IDataStore dataStore, GameDatabaseContext database)
+    public void DoWork(DataContext context)
     {
         const int pageSize = 1000;
-        DatabaseList<GameLevel> levels = database.GetUserLevelsChunk(0, pageSize);
+        DatabaseList<GameLevel> levels = context.Database.GetUserLevelsChunk(0, pageSize);
         
         // Don't do anything if there are no levels to process.
         if (levels.TotalItems <= 0) return;
@@ -43,13 +44,13 @@ public class CoolLevelsWorker : IWorker
             
             foreach (GameLevel level in levels.Items)
             {
-                Log(logger, LogLevel.Trace, "Calculating score for '{0}' ({1})", level.Title, level.LevelId);
-                float decayMultiplier = CalculateLevelDecayMultiplier(logger, now, level);
+                Log(context.Logger, LogLevel.Trace, "Calculating score for '{0}' ({1})", level.Title, level.LevelId);
+                float decayMultiplier = CalculateLevelDecayMultiplier(context.Logger, now, level);
                 
                 // Calculate positive & negative score separately so we don't run into issues with
                 // the multiplier having an opposite effect with the negative score as time passes
-                float positiveScore = CalculatePositiveScore(logger, level);
-                float negativeScore = CalculateNegativeScore(logger, level);
+                float positiveScore = CalculatePositiveScore(level, context);
+                float negativeScore = CalculateNegativeScore(level, context);
                 
                 // Increase to tweak how little negative score gets affected by decay
                 const int negativeScoreDecayMultiplier = 2;
@@ -57,20 +58,20 @@ public class CoolLevelsWorker : IWorker
                 // Weigh everything with the multiplier and set a final score
                 float finalScore = (positiveScore * decayMultiplier) - (negativeScore * Math.Min(1.0f, decayMultiplier * negativeScoreDecayMultiplier));
                 
-                Log(logger, LogLevel.Debug, "Score for '{0}' ({1}) is {2}", level.Title, level.LevelId, finalScore);
+                Log(context.Logger, LogLevel.Debug, "Score for '{0}' ({1}) is {2}", level.Title, level.LevelId, finalScore);
                 scoresToSet.Add(level, finalScore);
                 remaining--;
             }
             
             // Commit scores to database. This method lets us use a dictionary so we can batch everything in one write
-            database.SetLevelScores(scoresToSet);
+            context.Database.SetLevelScores(scoresToSet);
             
             // Load the next page
-            levels = database.GetUserLevelsChunk(levels.Items.Count(), pageSize);
+            levels = context.Database.GetUserLevelsChunk(levels.NextPageIndex - 1, pageSize);
         }
         
         stopwatch.Stop();
-        logger.LogInfo(RefreshContext.CoolLevels,  "Calculated scores for {0} levels in {1}ms", levels.TotalItems, stopwatch.ElapsedMilliseconds);
+        context.Logger.LogInfo(RefreshContext.CoolLevels,  "Calculated scores for {0} levels in {1}ms", levels.TotalItems, stopwatch.ElapsedMilliseconds);
     }
     
     [Conditional("COOL_DEBUG")]
@@ -81,23 +82,21 @@ public class CoolLevelsWorker : IWorker
 
     private static float CalculateLevelDecayMultiplier(Logger logger, long now, GameLevel level)
     {
-        const int decayMonths = 2;
-        const int decaySeconds = decayMonths * 30 * 24 * 3600;
-        const float minimumMultiplier = 0.1f;
+        const int secondsPerMonth = 30 * 24 * 3600;
         
-        // Use seconds. Lets us not worry about float stuff
-        long publishDate = level.PublishDate / 1000;
-        long elapsed = now - publishDate;
+        // Use months
+        double publishDate = level.PublishDate / 1000d / secondsPerMonth;
+        double elapsedMonths = ((double)now / secondsPerMonth) - publishDate;
 
-        // Get a scale from 0.0f to 1.0f, the percent of decay
-        float multiplier = 1.0f - Math.Min(1.0f, (float)elapsed / decaySeconds);
-        multiplier = Math.Max(minimumMultiplier, multiplier); // Clamp to minimum multiplier
+        // Get a scale from 0.0f to 1.0f, the percent of decay, using an exponential decay function
+        // https://www.desmos.com/calculator/87wbuh1gcy
+        double multiplier = Math.Pow(Math.E, -elapsedMonths);
         
         Log(logger, LogLevel.Trace, "Decay multiplier is {0}", multiplier);
-        return multiplier;
+        return (float)multiplier;
     }
 
-    private static float CalculatePositiveScore(Logger logger, GameLevel level)
+    private static float CalculatePositiveScore(GameLevel level, DataContext context)
     {
         // Start levels off with a few points to prevent one dislike from bombing the level
         // Don't apply this bonus to reuploads to discourage a flood of 15CR levels.
@@ -111,13 +110,13 @@ public class CoolLevelsWorker : IWorker
         if (level.TeamPicked)
             score += 50;
         
-        int positiveRatings = level.Ratings.Count(r => r._RatingType == (int)RatingType.Yay);
-        int negativeRatings = level.Ratings.Count(r => r._RatingType == (int)RatingType.Boo);
-        int uniquePlays = level.UniquePlays.Count();
+        int positiveRatings = context.Database.GetTotalRatingsForLevel(level, RatingType.Yay);
+        int negativeRatings = context.Database.GetTotalRatingsForLevel(level, RatingType.Boo);
+        int uniquePlays = context.Database.GetUniquePlaysForLevel(level);
         
         score += positiveRatings * positiveRatingPoints;
         score += uniquePlays * uniquePlayPoints;
-        score += level.FavouriteRelations.Count() * heartPoints;
+        score += context.Database.GetFavouriteCountForLevel(level) * heartPoints;
         
         // Reward for a good ratio between plays and yays
         float ratingRatio = (positiveRatings - negativeRatings) / (float)uniquePlays;
@@ -129,11 +128,11 @@ public class CoolLevelsWorker : IWorker
         if (level.Publisher?.Role == GameUserRole.Trusted)
             score += trustedAuthorPoints;
 
-        Log(logger, LogLevel.Trace, "positiveScore is {0}", score);
+        Log(context.Logger, LogLevel.Trace, "positiveScore is {0}", score);
         return score;
     }
 
-    private static float CalculateNegativeScore(Logger logger, GameLevel level)
+    private static float CalculateNegativeScore(GameLevel level, DataContext context)
     {
         float penalty = 0;
         const float negativeRatingPenalty = 5;
@@ -144,7 +143,7 @@ public class CoolLevelsWorker : IWorker
         // The percentage of how much penalty should be applied at the end of the calculation.
         const float penaltyMultiplier = 0.75f;
         
-        penalty += level.Ratings.Count(r => r._RatingType == (int)RatingType.Boo) * negativeRatingPenalty;
+        penalty += context.Database.GetTotalRatingsForLevel(level, RatingType.Boo) * negativeRatingPenalty;
         
         if (level.Publisher == null)
             penalty += noAuthorPenalty;
@@ -153,7 +152,7 @@ public class CoolLevelsWorker : IWorker
         else if (level.Publisher?.Role == GameUserRole.Banned)
             penalty += bannedAuthorPenalty;
 
-        Log(logger, LogLevel.Trace, "negativeScore is {0}", penalty);
+        Log(context.Logger, LogLevel.Trace, "negativeScore is {0}", penalty);
         return penalty * penaltyMultiplier;
     }
 }

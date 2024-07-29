@@ -9,6 +9,7 @@ using Refresh.GameServer.Authentication;
 using Refresh.GameServer.Configuration;
 using Refresh.GameServer.Database;
 using Refresh.GameServer.Services;
+using Refresh.GameServer.Time;
 using Refresh.GameServer.Types.Contests;
 using Refresh.GameServer.Types.Matching;
 using Refresh.GameServer.Types.Notifications;
@@ -75,16 +76,31 @@ public class AnnouncementEndpoints : EndpointGroup
     [GameEndpoint("announce")]
     [MinimumRole(GameUserRole.Restricted)]
     [SuppressMessage("ReSharper", "RedundantAssignment")]
-    public string Announce(RequestContext context, GameServerConfig config, GameUser user, GameDatabaseContext database, Token token)
+    public string Announce(RequestContext context, GameServerConfig config, GameUser user, GameDatabaseContext database, Token token, IDateTimeProvider timeProvider)
     {
         if (user.Role == GameUserRole.Restricted)
         {
-            return """
+            return $"""
                    Your account is currently in restricted mode.
+                   
+                   Reason: {user.BanReason ?? "No reason given."}
+                   Remaining: ~{(user.BanExpiryDate! - timeProvider.Now).Value.Days} days
                    
                    You can still play, but you won't be able to publish levels, post comments, or otherwise interact with the community.
                    For more information, please contact an administrator.
                    """;
+        }
+
+        if (!user.EmailAddressVerified)
+        {
+            return $"Your account doesn't have a verified email address. If this is a new account, there should be a verification code in your inbox.\n\n" +
+                   
+                   $"You can still play online without a verified email address if you wish, " +
+                   $"but you might miss out on 'share' features like level uploading, and you will not be able to dive in.\n\n" +
+                   
+                   $"If you didn't receive it, try checking your spam folder. You can also opt to resend the code on the website.\n\n" +
+                   
+                   $"For more information, sign into the site at {config.WebExternalUrl}.";
         }
         
         // ReSharper disable once JoinDeclarationAndInitializer (makes it easier to follow)

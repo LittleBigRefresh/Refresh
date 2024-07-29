@@ -1,4 +1,3 @@
-using System.Xml.Serialization;
 using Bunkum.Core;
 using Bunkum.Core.Endpoints;
 using Bunkum.Core.Endpoints.Debugging;
@@ -7,8 +6,8 @@ using Bunkum.Listener.Protocol;
 using Bunkum.Protocols.Http;
 using Refresh.GameServer.Database;
 using Refresh.GameServer.Time;
-using Refresh.GameServer.Types;
 using Refresh.GameServer.Types.Challenges;
+using Refresh.GameServer.Types.Levels;
 using Refresh.GameServer.Types.Roles;
 using Refresh.GameServer.Types.UserData;
 
@@ -18,15 +17,22 @@ public class MetadataEndpoints : EndpointGroup
 {
     [GameEndpoint("privacySettings", ContentType.Xml)]
     [MinimumRole(GameUserRole.Restricted)]
-    public PrivacySettings GetPrivacySettings(RequestContext context)
+    public SerializedPrivacySettings GetPrivacySettings(RequestContext context, GameUser user)
     {
-        return new PrivacySettings();
+        return new SerializedPrivacySettings
+        {
+            LevelVisibility = user.LevelVisibility,
+            ProfileVisibility = user.ProfileVisibility,
+        };
     }
     
     [GameEndpoint("privacySettings", ContentType.Xml, HttpMethods.Post)]
-    public PrivacySettings SetPrivacySettings(RequestContext context)
+    [MinimumRole(GameUserRole.Restricted)]
+    public SerializedPrivacySettings SetPrivacySettings(RequestContext context, SerializedPrivacySettings body, GameDatabaseContext database, GameUser user)
     {
-        return new PrivacySettings();
+        database.SetPrivacySettings(user, body);
+        
+        return body;
     }
 
     [GameEndpoint("npdata", ContentType.Xml, HttpMethods.Post)]
@@ -43,16 +49,6 @@ public class MetadataEndpoints : EndpointGroup
         return OK;
     }
 
-    [XmlType("privacySettings")]
-    [XmlRoot("privacySettings")]
-    public class PrivacySettings
-    {
-        [XmlElement("levelVisibility")]
-        public Visibility LevelVisibility { get; set; } = Visibility.All;
-        [XmlElement("profileVisibility")]
-        public Visibility ProfileVisibility { get; set; } = Visibility.All;
-    }
-    
     private static readonly Lazy<string?> NetworkSettingsFile
         = new(() => 
         {
@@ -194,4 +190,7 @@ public class MetadataEndpoints : EndpointGroup
             Challenges = [],
         };
     }
+
+    [GameEndpoint("tags")]
+    public string Tags(RequestContext context) => TagExtensions.AllTags;
 }

@@ -1,16 +1,23 @@
 using System.Xml.Serialization;
-using Realms;
 using Refresh.GameServer.Types.UserData;
 
 namespace Refresh.GameServer.Types.Photos;
 
 [XmlRoot("subject")]
 [XmlType("subject")]
-public partial class GamePhotoSubject : IEmbeddedObject
+public class GamePhotoSubject
 {
-    public GameUser? User { get; set; }
+    public GamePhotoSubject() {}
 
-#nullable disable
+    public GamePhotoSubject(GameUser? user, string displayName, IList<float> bounds)
+    {
+        this.User = user;
+        this.DisplayName = displayName;
+        this.Bounds = bounds;
+    }
+
+    public GameUser? User { get; set; }
+    
     public string DisplayName { get; set; }
     public IList<float> Bounds { get; }
 }

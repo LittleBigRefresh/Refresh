@@ -1,18 +1,14 @@
-using System.Diagnostics;
 using System.Xml.Serialization;
-using Bunkum.Core.Storage;
+using Refresh.Common.Constants;
 using Refresh.GameServer.Authentication;
-using Refresh.GameServer.Database;
 using Refresh.GameServer.Endpoints.ApiV3.DataTypes;
 using Refresh.GameServer.Extensions;
-using Refresh.GameServer.Services;
 using Refresh.GameServer.Types;
 using Refresh.GameServer.Types.Assets;
 using Refresh.GameServer.Types.Data;
 using Refresh.GameServer.Types.Levels;
 using Refresh.GameServer.Types.Levels.SkillRewards;
 using Refresh.GameServer.Types.Matching;
-using Refresh.GameServer.Types.Relations;
 using Refresh.GameServer.Types.Reviews;
 using Refresh.GameServer.Types.UserData;
 
@@ -79,6 +75,7 @@ public class GameLevelResponse : IDataConvertableFrom<GameLevelResponse, GameLev
     [XmlElement("reviewsEnabled")] public bool ReviewsEnabled { get; set; } = true;
     [XmlElement("commentCount")] public int CommentCount { get; set; } = 0;
     [XmlElement("commentsEnabled")] public bool CommentsEnabled { get; set; } = true;
+    [XmlElement("tags")] public string Tags { get; set; } = "";
     
     /// <summary>
     /// Provides a unique level ID for ~1.1 billion hashed levels, uses the hash directly, so this is deterministic
@@ -143,19 +140,13 @@ public class GameLevelResponse : IDataConvertableFrom<GameLevelResponse, GameLev
     {
         if (old == null) return null;
 
-        int totalPlayCount = 0;
-        foreach (PlayLevelRelation playLevelRelation in old.AllPlays)
-        {
-            totalPlayCount += playLevelRelation.Count;
-        }
-        
         GameLevelResponse response = new()
         {
             LevelId = old.LevelId,
             Title = old.Title,
             IconHash = old.IconHash,
             Description = old.Description,
-            Location = old.Location,
+            Location = new GameLocation(old.LocationX, old.LocationY),
             GameVersion = old.GameVersion.ToSerializedGame(),
             RootResource = old.RootResource,
             PublishDate = old.PublishDate,
@@ -164,11 +155,11 @@ public class GameLevelResponse : IDataConvertableFrom<GameLevelResponse, GameLev
             MaxPlayers = old.MaxPlayers,
             EnforceMinMaxPlayers = old.EnforceMinMaxPlayers,
             SameScreenGame = old.SameScreenGame,
-            HeartCount = old.FavouriteRelations.Count(),
-            TotalPlayCount = totalPlayCount,
-            UniquePlayCount = old.UniquePlays.Count(),
-            YayCount = old.Ratings.Count(r => r._RatingType == (int)RatingType.Yay),
-            BooCount = old.Ratings.Count(r => r._RatingType == (int)RatingType.Boo),
+            HeartCount = dataContext.Database.GetFavouriteCountForLevel(old),
+            TotalPlayCount = dataContext.Database.GetTotalPlaysForLevel(old),
+            UniquePlayCount = dataContext.Database.GetUniquePlaysForLevel(old),
+            YayCount = dataContext.Database.GetTotalRatingsForLevel(old, RatingType.Yay),
+            BooCount = dataContext.Database.GetTotalRatingsForLevel(old, RatingType.Boo),
             SkillRewards = old.SkillRewards.ToList(),
             TeamPicked = old.TeamPicked,
             LevelType = old.LevelType.ToGameString(),
@@ -177,9 +168,10 @@ public class GameLevelResponse : IDataConvertableFrom<GameLevelResponse, GameLev
             IsSubLevel = old.IsSubLevel,
             BackgroundGuid = old.BackgroundGuid,
             Links = "",
-            AverageStarRating = old.CalculateAverageStarRating(),
+            AverageStarRating = old.CalculateAverageStarRating(dataContext.Database),
             ReviewCount = old.Reviews.Count,
-            CommentCount = old.LevelComments.Count,
+            CommentCount = dataContext.Database.GetTotalCommentsForLevel(old),
+            Tags = string.Join(',', dataContext.Database.GetTagsForLevel(old).Select(t => t.Tag.ToLbpString())) ,
         };
 
         response.Type = "user";
@@ -194,8 +186,8 @@ public class GameLevelResponse : IDataConvertableFrom<GameLevelResponse, GameLev
                 publisher = "!DeletedUser";
             else
                 publisher = string.IsNullOrEmpty(old.OriginalPublisher)
-                    ? "!Unknown"
-                    : "!" + old.OriginalPublisher;
+                    ? FakeUserConstants.UnknownUserName
+                    : FakeUserConstants.Prefix + old.OriginalPublisher;
             
             response.Handle = new SerializedUserHandle
             {
@@ -210,7 +202,7 @@ public class GameLevelResponse : IDataConvertableFrom<GameLevelResponse, GameLev
             
             response.YourRating = rating?.ToDPad() ?? (int)RatingType.Neutral;
             response.YourStarRating = rating?.ToLBP1() ?? 0;
-            response.YourLbp2PlayCount = old.AllPlays.Count(p => p.User == dataContext.User);
+            response.YourLbp2PlayCount = dataContext.Database.GetTotalPlaysForLevelByUser(old, dataContext.User);
         }
         
         response.PlayerCount = dataContext.Match.GetPlayerCountForLevel(RoomSlotType.Online, response.LevelId);
@@ -227,7 +219,7 @@ public class GameLevelResponse : IDataConvertableFrom<GameLevelResponse, GameLev
         
         response.IconHash = dataContext.Database.GetAssetFromHash(old.IconHash)?.GetAsIcon(dataContext.Game, dataContext) ?? response.IconHash;
         
-        response.CommentCount = old.LevelComments.Count;
+        response.CommentCount = dataContext.Database.GetTotalCommentsForLevel(old);
         
         return response;
     }

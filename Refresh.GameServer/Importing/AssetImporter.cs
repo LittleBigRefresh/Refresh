@@ -38,7 +38,7 @@ public class AssetImporter : Importer
             
             byte[] data = dataStore.GetDataFromStore(path);
             
-            GameAsset? newAsset = this.ReadAndVerifyAsset(hash, data, isPsp ? TokenPlatform.PSP : null);
+            GameAsset? newAsset = this.ReadAndVerifyAsset(hash, data, isPsp ? TokenPlatform.PSP : null, database);
             if (newAsset == null) continue;
 
             GameAsset? oldAsset = database.GetAssetFromHash(hash);
@@ -90,7 +90,7 @@ public class AssetImporter : Importer
 
 
     [Pure]
-    public GameAsset? ReadAndVerifyAsset(string hash, byte[] data, TokenPlatform? platform)
+    public GameAsset? ReadAndVerifyAsset(string hash, byte[] data, TokenPlatform? platform, GameDatabaseContext database)
     {
         string checkedHash = BytesToHexString(SHA1.HashData(data));
 
@@ -99,7 +99,7 @@ public class AssetImporter : Importer
             this.Warn($"{hash} is actually hashed as {checkedHash} - this asset is likely corrupt.");
             return null;
         }
-        
+
         (GameAssetType assetType, GameAssetFormat assetFormat) = this.DetermineAssetType(data, platform);
         
         GameAsset asset = new()
@@ -118,10 +118,7 @@ public class AssetImporter : Importer
             try
             {
                 List<string> dependencies = this.ParseAssetDependencies(data);
-                foreach (string dependency in dependencies)
-                {
-                    asset.Dependencies.Add(dependency);
-                }
+                database.AddOrOverwriteAssetDependencyRelations(hash, dependencies);
             }
             catch (Exception e)
             {

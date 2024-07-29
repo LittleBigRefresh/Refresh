@@ -9,7 +9,7 @@ namespace Refresh.GameServer.Configuration;
 [SuppressMessage("ReSharper", "RedundantDefaultMemberInitializer")]
 public class GameServerConfig : Config
 {
-    public override int CurrentConfigVersion => 16;
+    public override int CurrentConfigVersion => 18;
     public override int Version { get; set; } = 0;
     
     protected override void Migrate(int oldVer, dynamic oldConfig)
@@ -43,7 +43,7 @@ public class GameServerConfig : Config
     }
 
     public string LicenseText { get; set; } = "Welcome to Refresh!";
-    
+
     public ConfigAssetFlags BlockedAssetFlags { get; set; } = new()
     {
         Dangerous = true,
@@ -70,7 +70,6 @@ public class GameServerConfig : Config
     public string WebExternalUrl { get; set; } = "https://refresh.example.com";
     /// <summary>
     /// The base URL that LBP3 uses to grab config files like `network_settings.nws`.
-    /// URL must point to a HTTPS capable server with TLSv1.2 connectivity, the game will automatically correct HTTP to HTTPS. 
     /// </summary>
     public string GameConfigStorageUrl { get; set; } = "https://refresh.example.com/lbp";
     public bool AllowInvalidTextureGuids { get; set; } = false;
@@ -81,4 +80,11 @@ public class GameServerConfig : Config
     /// The amount of data the user is allowed to upload before all resource uploads get blocked, defaults to 100mb.
     /// </summary>
     public int UserFilesizeQuota { get; set; } = 100 * 1_048_576;
+    /// <summary>
+    /// Whether to print the room state whenever a `FindBestRoom` match returns no results
+    /// </summary>
+    public bool PrintRoomStateWhenNoFoundRooms { get; set; } = true;
+
+    public string[] Sha1DigestKeys = ["CustomServerDigest"];
+    public string[] HmacDigestKeys = ["CustomServerDigest"];
 }

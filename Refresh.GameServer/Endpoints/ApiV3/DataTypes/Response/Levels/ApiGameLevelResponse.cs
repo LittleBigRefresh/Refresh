@@ -1,6 +1,7 @@
 using Refresh.GameServer.Authentication;
 using Refresh.GameServer.Endpoints.ApiV3.DataTypes.Response.Data;
 using Refresh.GameServer.Endpoints.ApiV3.DataTypes.Response.Users;
+using Refresh.GameServer.Types;
 using Refresh.GameServer.Types.Data;
 using Refresh.GameServer.Types.Levels;
 using Refresh.GameServer.Types.Reviews;
@@ -48,6 +49,7 @@ public class ApiGameLevelResponse : IApiResponse, IDataConvertableFrom<ApiGameLe
     public required bool IsSubLevel { get; set; }
     public required bool IsCopyable { get; set; }
     public required float Score { get; set; }
+    public required IEnumerable<Tag> Tags { get; set; }
 
     public static ApiGameLevelResponse? FromOld(GameLevel? level, DataContext dataContext)
     {
@@ -62,7 +64,7 @@ public class ApiGameLevelResponse : IApiResponse, IDataConvertableFrom<ApiGameLe
             LevelId = level.LevelId,
             IconHash = GetIconHash(level, dataContext),
             Description = level.Description,
-            Location = ApiGameLocationResponse.FromGameLocation(level.Location)!,
+            Location = ApiGameLocationResponse.FromLocation(level.LocationX, level.LocationY)!,
             PublishDate = DateTimeOffset.FromUnixTimeMilliseconds(level.PublishDate),
             UpdateDate = DateTimeOffset.FromUnixTimeMilliseconds(level.UpdateDate),
             MinPlayers = level.MinPlayers,
@@ -70,10 +72,10 @@ public class ApiGameLevelResponse : IApiResponse, IDataConvertableFrom<ApiGameLe
             EnforceMinMaxPlayers = level.EnforceMinMaxPlayers,
             SameScreenGame = level.SameScreenGame,
             SkillRewards = ApiGameSkillRewardResponse.FromOldList(level.SkillRewards, dataContext),
-            YayRatings = level.Ratings.Count(r => r._RatingType == (int)RatingType.Yay),
-            BooRatings = level.Ratings.Count(r => r._RatingType == (int)RatingType.Boo),
-            Hearts = level.FavouriteRelations.Count(),
-            UniquePlays = level.UniquePlays.Count(),
+            YayRatings = dataContext.Database.GetTotalRatingsForLevel(level, RatingType.Yay),
+            BooRatings = dataContext.Database.GetTotalRatingsForLevel(level, RatingType.Boo),
+            Hearts = dataContext.Database.GetFavouriteCountForLevel(level),
+            UniquePlays = dataContext.Database.GetUniquePlaysForLevel(level),
             TeamPicked = level.TeamPicked,
             RootLevelHash = level.RootResource,
             GameVersion = level.GameVersion,
@@ -85,6 +87,7 @@ public class ApiGameLevelResponse : IApiResponse, IDataConvertableFrom<ApiGameLe
             PhotosTaken = dataContext.Database.GetTotalPhotosInLevel(level),
             LevelComments = dataContext.Database.GetTotalCommentsForLevel(level),
             Reviews = dataContext.Database.GetTotalReviewsForLevel(level),
+            Tags = dataContext.Database.GetTagsForLevel(level).Select(t => t.Tag),
         };
     }
     

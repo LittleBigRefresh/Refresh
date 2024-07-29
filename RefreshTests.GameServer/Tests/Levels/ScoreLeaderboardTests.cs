@@ -333,7 +333,7 @@ public class ScoreLeaderboardTests : GameServerTest
 
         context.Database.Refresh();
 
-        Assert.That(level.AllPlays.Count(), Is.EqualTo(1));
+        Assert.That(context.Database.GetTotalPlaysForLevel(level), Is.EqualTo(1));
     }
     
     [Test]
@@ -363,7 +363,7 @@ public class ScoreLeaderboardTests : GameServerTest
         
         context.Database.Refresh();
 
-        Assert.That(level.AllPlays.AsEnumerable().Sum(p => p.Count), Is.EqualTo(2));
+        Assert.That(context.Database.GetTotalPlaysForLevel(level), Is.EqualTo(2));
     }
     
     [Test]
@@ -415,8 +415,7 @@ public class ScoreLeaderboardTests : GameServerTest
 
         for (int i = 0; i < users.Count; i++)
         {
-            GameSubmittedScore? lastBestScore = level
-                .Scores.OrderByDescending(s => s.Score).FirstOrDefault();
+            GameSubmittedScore? lastBestScore = context.Database.GetTopScoresForLevel(level, 1, 0, 1, true).Items.FirstOrDefault();
             
             GameUser user = users[i];
             context.SubmitScore(i, 1, level, user, TokenGame.LittleBigPlanet2, TokenPlatform.PS3);
@@ -440,12 +439,44 @@ public class ScoreLeaderboardTests : GameServerTest
             }
 
             // Check that notification was not sent to people who weren't previously #1
-            if (level.Scores.Count() <= 2) continue;
+            if (context.Database.GetTotalPlaysForLevel(level) <= 2) continue;
             
             notificationRecipient = users[i - 2];
             Assert.That(context.Database.GetNotificationCountByUser(notificationRecipient), Is.Zero);
         }
         
         Assert.That(testedSent && testedNotSent, Is.True);
+    }
+
+    [Test]
+    public async Task GamePaginationSortsCorrectly()
+    {
+        using TestContext context = this.GetServer();
+        GameUser user = context.CreateUser();
+        GameLevel level = context.CreateLevel(user);
+        
+        using HttpClient client = context.GetAuthenticatedClient(TokenType.Game, user);
+        
+        context.FillLeaderboard(level, 4, 1);
+
+        HttpResponseMessage response = await client.GetAsync($"/lbp/topscores/user/{level.LevelId}/1?pageStart=1&pageSize=2");
+        SerializedScoreList firstPage = response.Content.ReadAsXML<SerializedScoreList>();
+        
+        Assert.Multiple(() =>
+        {
+            Assert.That(firstPage.Scores, Has.Count.EqualTo(2));
+            Assert.That(firstPage.Scores[0].Rank, Is.EqualTo(1));
+            Assert.That(firstPage.Scores[1].Rank, Is.EqualTo(2));
+        });
+        
+        response = await client.GetAsync($"/lbp/topscores/user/{level.LevelId}/1?pageStart=3&pageSize=2");
+        SerializedScoreList secondPage = response.Content.ReadAsXML<SerializedScoreList>();
+        
+        Assert.Multiple(() =>
+        {
+            Assert.That(secondPage.Scores, Has.Count.EqualTo(2));
+            Assert.That(secondPage.Scores[0].Rank, Is.EqualTo(3));
+            Assert.That(secondPage.Scores[1].Rank, Is.EqualTo(4)); 
+        });
     }
 }

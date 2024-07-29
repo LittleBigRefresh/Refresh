@@ -59,11 +59,11 @@ public class GameUserResponse : IDataConvertableFrom<GameUserResponse, GameUser>
         GameUserResponse response = new()
         {
             Description = old.Description,
-            Location = old.Location,
+            Location = new GameLocation(old.LocationX, old.LocationY),
             PlanetsHash = "0",
             
             Handle = SerializedUserHandle.FromUser(old, dataContext),
-            CommentCount = old.ProfileComments.Count,
+            CommentCount = dataContext.Database.GetTotalCommentsForProfile(old),
             CommentsEnabled = true,
             FavouriteLevelCount = old.IsManaged ? dataContext.Database.GetTotalLevelsFavouritedByUser(old) : 0,
             FavouriteUserCount = old.IsManaged ? dataContext.Database.GetTotalUsersFavouritedByUser(old) : 0,

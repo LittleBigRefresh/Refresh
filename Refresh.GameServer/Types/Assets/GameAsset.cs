@@ -18,7 +18,7 @@ public partial class GameAsset : IRealmObject
 
     // ReSharper disable once InconsistentNaming
     internal int _AssetType { get; set; }
-    
+
     [Ignored] public GameAssetFormat AssetFormat
     {
         get => (GameAssetFormat)this._AssetSerializationMethod;

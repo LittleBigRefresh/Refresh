@@ -25,6 +25,7 @@ public class ResourceEndpoints : EndpointGroup
     //NOTE: type does nothing here, but it's sent by LBP so we have to accept it
     [GameEndpoint("upload/{hash}/{type}", HttpMethods.Post)]
     [GameEndpoint("upload/{hash}", HttpMethods.Post)]
+    [RequireEmailVerified]
     [SuppressMessage("ReSharper", "ConvertIfStatementToReturnStatement")]
     public Response UploadAsset(RequestContext context, string hash, string type, byte[] body, IDataStore dataStore,
         GameDatabaseContext database, GameUser user, AssetImporter importer, GameServerConfig config, IDateTimeProvider timeProvider, Token token)
@@ -61,7 +62,7 @@ public class ResourceEndpoints : EndpointGroup
             return RequestEntityTooLarge;
         }
         
-        GameAsset? gameAsset = importer.ReadAndVerifyAsset(hash, body, token.TokenPlatform);
+        GameAsset? gameAsset = importer.ReadAndVerifyAsset(hash, body, token.TokenPlatform, database);
         if (gameAsset == null)
             return BadRequest;
 

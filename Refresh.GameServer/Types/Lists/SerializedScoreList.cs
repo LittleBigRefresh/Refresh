@@ -9,11 +9,11 @@ public class SerializedScoreList
     [XmlElement("playRecord")]
     public List<SerializedLeaderboardScore> Scores { get; set; } = new();
 
-    public static SerializedScoreList FromSubmittedEnumerable(IEnumerable<GameSubmittedScore> list)
+    public static SerializedScoreList FromSubmittedEnumerable(IEnumerable<GameSubmittedScore> list, int skip)
     {
         SerializedScoreList value = new();
 
-        int i = 0;
+        int i = skip;
         foreach (GameSubmittedScore score in list)
         {
             i++;

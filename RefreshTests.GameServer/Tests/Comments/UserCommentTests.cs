@@ -17,10 +17,12 @@ public class UserCommentTests : GameServerTest
 
         using HttpClient client = context.GetAuthenticatedClient(TokenType.Game, user1);
 
-        GameComment comment = new()
+        SerializedComment comment = new()
         {
-            Author = user1,
             Content = "This is a test comment!",
+            CommentId = 0,
+            Timestamp = 0,
+            Handle = null,
         };
 
         HttpResponseMessage response = client.PostAsync($"/lbp/postUserComment/{user2.Username}", new StringContent(comment.AsXML())).Result;
@@ -31,7 +33,7 @@ public class UserCommentTests : GameServerTest
         Assert.That(userComments.Items, Has.Count.EqualTo(1));
         Assert.That(userComments.Items[0].Content, Is.EqualTo(comment.Content));
         
-        response = client.PostAsync($"/lbp/deleteUserComment/{user2.Username}?commentId={userComments.Items[0].SequentialId}", new ByteArrayContent(Array.Empty<byte>())).Result;
+        response = client.PostAsync($"/lbp/deleteUserComment/{user2.Username}?commentId={userComments.Items[0].CommentId}", new ByteArrayContent(Array.Empty<byte>())).Result;
         Assert.That(response.StatusCode, Is.EqualTo(OK));
         
         response = client.GetAsync($"/lbp/userComments/{user2.Username}").Result;
@@ -48,10 +50,12 @@ public class UserCommentTests : GameServerTest
 
         using HttpClient client = context.GetAuthenticatedClient(TokenType.Game, user1);
 
-        GameComment comment = new()
+        SerializedComment comment = new()
         {
-            Author = user1,
             Content = new string('S', 5000),
+            CommentId = 0,
+            Timestamp = 0,
+            Handle = null,
         };
 
         HttpResponseMessage response = client.PostAsync($"/lbp/postUserComment/{user2.Username}", new StringContent(comment.AsXML())).Result;
@@ -66,10 +70,12 @@ public class UserCommentTests : GameServerTest
 
         using HttpClient client = context.GetAuthenticatedClient(TokenType.Game, user);
 
-        GameComment comment = new()
+        SerializedComment comment = new()
         {
-            Author = user,
-            Content = "This is a test comment",
+            Content = "This is a test comment!",
+            CommentId = 0,
+            Timestamp = 0,
+            Handle = null,
         };
 
         HttpResponseMessage response = client.PostAsync($"/lbp/postUserComment/I_AM_NOT_REAL", new StringContent(comment.AsXML())).Result;
@@ -134,10 +140,12 @@ public class UserCommentTests : GameServerTest
         using HttpClient client1 = context.GetAuthenticatedClient(TokenType.Game, user1);
         using HttpClient client2 = context.GetAuthenticatedClient(TokenType.Game, user2);
 
-        GameComment comment = new()
+        SerializedComment comment = new()
         {
-            Author = user1,
             Content = "This is a test comment!",
+            CommentId = 0,
+            Timestamp = 0,
+            Handle = null,
         };
 
         HttpResponseMessage response = client1.PostAsync($"/lbp/postUserComment/{user2.Username}", new StringContent(comment.AsXML())).Result;
@@ -148,7 +156,7 @@ public class UserCommentTests : GameServerTest
         Assert.That(userComments.Items, Has.Count.EqualTo(1));
         Assert.That(userComments.Items[0].Content, Is.EqualTo(comment.Content));
         
-        response = client2.PostAsync($"/lbp/deleteUserComment/{user2.Username}?commentId={userComments.Items[0].SequentialId}", new ByteArrayContent(Array.Empty<byte>())).Result;
+        response = client2.PostAsync($"/lbp/deleteUserComment/{user2.Username}?commentId={userComments.Items[0].CommentId}", new ByteArrayContent(Array.Empty<byte>())).Result;
         Assert.That(response.StatusCode, Is.EqualTo(Unauthorized));
     }
     
@@ -157,7 +165,7 @@ public class UserCommentTests : GameServerTest
     {
         using TestContext context = this.GetServer();
         GameUser user = context.CreateUser();
-        GameComment comment = context.Database.PostCommentToProfile(user, user, "This is a test comment!");
+        GameProfileComment comment = context.Database.PostCommentToProfile(user, user, "This is a test comment!");
         
         CommentTests.RateComment(context, user, comment, $"/lbp/rateUserComment/{user.Username}", $"/lbp/userComments/{user.Username}");
     }

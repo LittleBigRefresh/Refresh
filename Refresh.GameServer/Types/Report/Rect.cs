@@ -4,7 +4,7 @@ using Realms;
 namespace Refresh.GameServer.Types.Report;
 
 [XmlRoot("rect")]
-public partial class Rect : IEmbeddedObject 
+public class Rect
 { 
     [XmlAttribute(AttributeName="t")] 
     public long Top { get; set; } 

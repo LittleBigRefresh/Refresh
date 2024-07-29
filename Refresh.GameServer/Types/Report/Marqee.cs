@@ -6,7 +6,7 @@ namespace Refresh.GameServer.Types.Report;
 #nullable disable
 
 [XmlRoot("marqee")]
-public partial class Marqee : IEmbeddedObject 
+public class Marqee
 { 
     [XmlElement("rect")] 
     public Rect Rect { get; set; } 

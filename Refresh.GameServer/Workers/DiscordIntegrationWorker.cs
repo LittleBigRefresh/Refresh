@@ -1,14 +1,12 @@
-using Bunkum.Core.Storage;
 using Discord;
 using Discord.Webhook;
-using NotEnoughLogs;
-using Refresh.GameServer.Authentication;
 using Refresh.GameServer.Configuration;
 using Refresh.GameServer.Database;
+using Refresh.GameServer.Endpoints.ApiV3.DataTypes.Response.Levels;
+using Refresh.GameServer.Endpoints.ApiV3.DataTypes.Response.Users;
+using Refresh.GameServer.Endpoints.ApiV3.DataTypes.Response.Users.Photos;
 using Refresh.GameServer.Types.Activity;
-using Refresh.GameServer.Types.Levels;
-using Refresh.GameServer.Types.UserData;
-using Refresh.GameServer.Types.UserData.Leaderboard;
+using Refresh.GameServer.Types.Data;
 
 namespace Refresh.GameServer.Workers;
 
@@ -43,13 +41,25 @@ public class DiscordIntegrationWorker : IWorker
         return $"{this._externalUrl}/api/v3/assets/{hash}/image";
     }
 
-    private Embed? GenerateEmbedFromEvent(Event @event, GameDatabaseContext database)
+    private Embed? GenerateEmbedFromEvent(Event @event, DataContext context)
     {
         EmbedBuilder embed = new();
 
-        GameLevel? level = @event.StoredDataType == EventDataType.Level ? database.GetLevelById(@event.StoredSequentialId!.Value) : null;
-        GameUser? user = @event.StoredDataType == EventDataType.User ? database.GetUserByObjectId(@event.StoredObjectId) : null;
-        GameSubmittedScore? score = @event.StoredDataType == EventDataType.Score ? database.GetScoreByObjectId(@event.StoredObjectId) : null;
+        ApiGameLevelResponse? level = @event.StoredDataType == EventDataType.Level ? 
+            ApiGameLevelResponse.FromOld(context.Database.GetLevelById(@event.StoredSequentialId!.Value), context)
+            : null;
+        ApiGameUserResponse? user = @event.StoredDataType == EventDataType.User ? 
+            ApiGameUserResponse.FromOld(context.Database.GetUserByObjectId(@event.StoredObjectId), context)
+            : null;
+        ApiGameScoreResponse? score = @event.StoredDataType == EventDataType.Score ? 
+            ApiGameScoreResponse.FromOld(context.Database.GetScoreByObjectId(@event.StoredObjectId), context)
+            : null;
+        ApiGamePhotoResponse? photo = @event.StoredDataType == EventDataType.Photo ? 
+            ApiGamePhotoResponse.FromOld(context.Database.GetPhotoFromEvent(@event), context)
+            : null;
+        
+        if (photo != null)
+            level = photo.Level;
 
         if (score != null) level = score.Level;
 
@@ -60,31 +70,31 @@ public class DiscordIntegrationWorker : IWorker
 
         string? description = @event.EventType switch
         {
-            EventType.Level_Upload => $"uploaded the level {levelLink}",
-            EventType.Level_Favourite => $"gave {levelLink} a heart",
-            EventType.Level_Unfavourite => null,
-            EventType.User_Favourite => $"hearted {userLink}",
-            EventType.User_Unfavourite => null,
-            EventType.Level_Play => null,
-            EventType.Level_Tag => null,
-            EventType.Level_TeamPick => $"team picked {levelLink}",
-            EventType.RateLevelRelation_Create => null,
-            EventType.Level_Review => null,
-            EventType.SubmittedScore_Create => $"got {score!.Score:N0} points on {levelLink}",
-            EventType.User_FirstLogin => "logged in for the first time",
+            EventType.LevelUpload => $"uploaded the level {levelLink}",
+            EventType.LevelFavourite => $"gave {levelLink} a heart",
+            EventType.LevelUnfavourite => null,
+            EventType.UserFavourite => $"hearted {userLink}",
+            EventType.UserUnfavourite => null,
+            EventType.LevelPlay => null,
+            EventType.LevelTag => null,
+            EventType.LevelTeamPick => $"team picked {levelLink}",
+            EventType.LevelRate => null,
+            EventType.LevelReview => null,
+            EventType.LevelScore => $"got {score!.Score:N0} points on {levelLink}",
+            EventType.UserFirstLogin => "logged in for the first time",
+            EventType.PhotoUpload => $"uploaded a photo{(photo is { Level: not null } ? $" on {levelLink}" : "")}",
             _ => null,
         };
 
         if (description == null) return null;
         embed.WithDescription($"[{@event.User.Username}]({this._externalUrl}/u/{@event.User.UserId}) {description}");
 
-        if (level != null)
-        {
-            embed.WithThumbnailUrl(this.GetAssetUrl(level.GameVersion == TokenGame.LittleBigPlanetPSP ? $"psp/{level.IconHash}" : level.IconHash));
-        } else if (user != null)
-        {
+        if (photo != null)
+            embed.WithImageUrl(this.GetAssetUrl(photo.LargeHash));
+        else if (level != null) 
+            embed.WithThumbnailUrl(this.GetAssetUrl(level.IconHash));
+        else if (user != null)
             embed.WithThumbnailUrl(this.GetAssetUrl(user.IconHash));
-        }
         
         embed.WithTimestamp(DateTimeOffset.FromUnixTimeMilliseconds(@event.Timestamp));
         embed.WithAuthor(@event.User.Username, this.GetAssetUrl(@event.User.IconHash), $"{this._externalUrl}/u/{@event.UserId}");
@@ -92,14 +102,14 @@ public class DiscordIntegrationWorker : IWorker
         return embed.Build();
     }
 
-    public void DoWork(Logger logger, IDataStore dataStore, GameDatabaseContext database)
+    public void DoWork(DataContext context)
     {
         if (this._firstCycle)
         {
             this.DoFirstCycle();
         }
 
-        DatabaseList<Event> activity = database.GetGlobalRecentActivity(new ActivityQueryParameters
+        DatabaseList<Event> activity = context.Database.GetGlobalRecentActivity(new ActivityQueryParameters
         {
             Timestamp = Now,
             EndTimestamp = this._lastTimestamp,
@@ -114,7 +124,7 @@ public class DiscordIntegrationWorker : IWorker
 
         IEnumerable<Embed> embeds = activity.Items
             .Reverse() // events are descending
-            .Select(e => this.GenerateEmbedFromEvent(e, database))
+            .Select(e => this.GenerateEmbedFromEvent(e, context))
             .Where(e => e != null)
             .ToList()!;
 
@@ -123,6 +133,6 @@ public class DiscordIntegrationWorker : IWorker
         ulong id = this._client.SendMessageAsync(embeds: embeds, 
             username: this._config.DiscordNickname, avatarUrl: this._config.DiscordAvatarUrl).Result;
         
-        logger.LogInfo(RefreshContext.Worker, $"Posted webhook containing {activity.Items.Count()} events with id {id}");
+        context.Logger.LogInfo(RefreshContext.Worker, $"Posted webhook containing {activity.Items.Count()} events with id {id}");
     }
 }

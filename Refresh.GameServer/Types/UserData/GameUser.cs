@@ -55,16 +55,12 @@ public partial class GameUser : IRealmObject, IRateLimitUser
     public int FilesizeQuotaUsage { get; set; }
 
     public string Description { get; set; } = "";
-    public GameLocation Location { get; set; } = GameLocation.Zero;
+
+    public int LocationX { get; set; }
+    public int LocationY { get; set; }
     
     public DateTimeOffset JoinDate { get; set; }
     public UserPins Pins { get; set; } = new();
-    
-    #nullable disable
-    public IList<GameComment> ProfileComments { get; }
-
-    public IList<GameIpVerificationRequest> IpVerificationRequests { get; }
-    #nullable restore
 
     public string BetaPlanetsHash { get; set; } = "0";
     public string Lbp2PlanetsHash { get; set; } = "0";
@@ -82,10 +78,29 @@ public partial class GameUser : IRealmObject, IRateLimitUser
     public bool RpcnAuthenticationAllowed { get; set; }
     public bool PsnAuthenticationAllowed { get; set; }
     
+    private int _ProfileVisibility { get; set; } = (int)Visibility.All;
+    private int _LevelVisibility { get; set; } = (int)Visibility.All;
+    
     /// <summary>
-    /// If `true`, turn all grief reports into photo uploads
+    /// Whether the user's profile is displayed on the website
     /// </summary>
-    public bool RedirectGriefReportsToPhotos { get; set; }
+    [Ignored]
+    public Visibility ProfileVisibility
+    {
+        get => (Visibility)this._ProfileVisibility;
+        set => this._ProfileVisibility = (int)value;
+    }
+    
+    /// <summary>
+    /// Whether the user's levels are displayed on the website
+    /// </summary>
+    [Ignored]
+    public Visibility LevelVisibility
+    {
+        get => (Visibility)this._LevelVisibility;
+        set => this._LevelVisibility = (int)value;
+    }
+
     /// <summary>
     /// If `true`, unescape XML tags sent to /filter
     /// </summary>

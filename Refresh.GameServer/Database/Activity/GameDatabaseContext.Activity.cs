@@ -1,9 +1,7 @@
 using JetBrains.Annotations;
 using MongoDB.Bson;
-using Refresh.GameServer.Services;
 using Refresh.GameServer.Types.Activity;
 using Refresh.GameServer.Types.Levels;
-using Refresh.GameServer.Types.Relations;
 using Refresh.GameServer.Types.UserData;
 
 namespace Refresh.GameServer.Database;
@@ -28,8 +26,8 @@ public partial class GameDatabaseContext // Activity
                 userFriends.Contains(e.User.UserId) ||
                 userFriends.Contains(e.StoredObjectId) ||
                 this.GetLevelById(e.StoredSequentialId ?? int.MaxValue)?.Publisher?.UserId == parameters.User.UserId ||
-                e.EventType == EventType.Level_TeamPick ||
-                e.EventType == EventType.User_FirstLogin
+                e.EventType == EventType.LevelTeamPick ||
+                e.EventType == EventType.UserFirstLogin
             );
         }
         
@@ -41,34 +39,35 @@ public partial class GameDatabaseContext // Activity
         if (parameters.Timestamp == 0) 
             parameters.Timestamp = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
         
-        IEnumerable<Event> query = this._realm.All<Event>()
+        IEnumerable<Event> query = this.Events
             .Where(e => e.Timestamp < parameters.Timestamp && e.Timestamp >= parameters.EndTimestamp)
             .AsEnumerable();
 
         if (parameters is { ExcludeMyLevels: true, User: not null })
         {
             //Filter the query to events which either arent level related, or which the level publisher doesnt contain the user
-            query = query.Where(e => this.GetLevelById(e.StoredSequentialId ?? int.MaxValue)?.Publisher?.UserId != parameters.User.UserId);
+            query = query.Where(e => e.StoredDataType != EventDataType.Level || this.GetLevelById(e.StoredSequentialId ?? int.MaxValue)?.Publisher?.UserId != parameters.User.UserId);
         }
         
         if (parameters is { ExcludeFriends: true, User: not null })
         {
             List<ObjectId?> userFriends = this.GetUsersMutuals(parameters.User).Select(u => (ObjectId?)u.UserId).ToList();
 
-            query = query.Where(e => !userFriends.Contains(e.StoredObjectId) &&
-                                     !userFriends.Contains(e.User.UserId));
+            // Filter the query to events which do not contain friends
+            query = query.Where(e => (e.StoredDataType != EventDataType.User || !userFriends.Contains(e.StoredObjectId)) &&
+                                                                               !userFriends.Contains(e.User.UserId));
         }
 
         if (parameters is { ExcludeFavouriteUsers: true, User: not null })
         {
             List<GameUser> favouriteUsers = this.GetUsersFavouritedByUser(parameters.User, 1000, 0).ToList();
             
-            query = query.Where(e => favouriteUsers.All(r => r.UserId != e.User.UserId && r.UserId != e.StoredObjectId)); 
+            query = query.Where(e => favouriteUsers.All(r => r.UserId != e.User.UserId && (e.StoredDataType != EventDataType.User || r.UserId != e.StoredObjectId))); 
         }
 
         if (parameters is { ExcludeMyself: true, User: not null })
         {
-            query = query.Where(e => e.User.UserId != parameters.User.UserId && e.StoredObjectId != parameters.User.UserId);  
+            query = query.Where(e => e.User.UserId != parameters.User.UserId && (e.StoredDataType != EventDataType.User || e.StoredObjectId != parameters.User.UserId));  
         }
 
         return query;
@@ -91,5 +90,5 @@ public partial class GameDatabaseContext // Activity
             .OrderByDescending(e => e.Timestamp), parameters.Skip, parameters.Count);
     }
 
-    public int GetTotalEventCount() => this._realm.All<Event>().Count();
+    public int GetTotalEventCount() => this.Events.Count();
 }

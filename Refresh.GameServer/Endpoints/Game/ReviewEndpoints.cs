@@ -93,6 +93,7 @@ public class ReviewEndpoints : EndpointGroup
     }
 
     [GameEndpoint("postReview/{slotType}/{id}", ContentType.Xml, HttpMethods.Post)]
+    [RequireEmailVerified]
     public Response PostReviewForLevel(
         RequestContext context,
         GameDatabaseContext database,
@@ -121,6 +122,38 @@ public class ReviewEndpoints : EndpointGroup
             Labels = body.Labels,
             Content = body.Text,
         }, level);
+
+        return OK;
+    }
+    
+    [GameEndpoint("rateReview/user/{levelId}/{username}", HttpMethods.Post)]
+    public Response SubmitReviewRating(RequestContext request, GameDatabaseContext database, GameUser user, int levelId, string username)
+    {
+        GameUser? reviewer = database.GetUserByUsername(username);
+        GameLevel? reviewedLevel = database.GetLevelById(levelId);
+        
+        if (reviewer == null) return BadRequest;
+        if (reviewedLevel == null) return BadRequest;
+        
+        GameReview? review = database.GetReviewByUserForLevel(reviewer, reviewedLevel);
+
+        if (review == null) return NotFound;
+        
+        string ratingStr = request.QueryString.Get("rating") ?? "0";
+        RatingType ratingType = (RatingType)sbyte.Parse(ratingStr);
+        
+        // rating can only be 1, 0 or -1
+        if(!Enum.IsDefined(ratingType))
+        {
+            return BadRequest;
+        }
+        
+        if (database.ReviewRatingExists(user, review, ratingType))
+        {
+            return BadRequest;
+        }
+        
+        database.RateReview(review, ratingType, user);
 
         return OK;
     }

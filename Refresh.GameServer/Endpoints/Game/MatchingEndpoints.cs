@@ -1,3 +1,4 @@
+using System.Text;
 using Bunkum.Core;
 using Bunkum.Core.Endpoints;
 using Bunkum.Core.Endpoints.Debugging;
@@ -5,23 +6,80 @@ using Bunkum.Core.Responses;
 using Bunkum.Listener.Protocol;
 using Bunkum.Protocols.Http;
 using Refresh.GameServer.Authentication;
-using Refresh.GameServer.Database;
+using Refresh.GameServer.Configuration;
 using Refresh.GameServer.Services;
+using Refresh.GameServer.Types.Data;
 using Refresh.GameServer.Types.Matching;
-using Refresh.GameServer.Types.UserData;
 
 namespace Refresh.GameServer.Endpoints.Game;
 
 public class MatchingEndpoints : EndpointGroup
 {
+    public static string FixupLocationData(string body)
+    {
+        StringBuilder jsonBodyBuilder = new();
+
+        const string locationStart = "\"Location\":[";
+        const string corruptedStr = "\"0.0.0.0\"";
+        
+        int locationIndex = body.IndexOf(locationStart, StringComparison.InvariantCulture) + locationStart.Length;
+        // Append the start of the "location" mess
+        jsonBodyBuilder.Append(body.AsSpan()[..locationIndex]);
+        ReadOnlySpan<char> pastLocationStart = body.AsSpan()[locationIndex..];
+
+        for (int i = 0; i < pastLocationStart.Length;)
+        {
+            ReadOnlySpan<char> slice = pastLocationStart[i..];
+
+            int corruptedStart = slice.IndexOf(corruptedStr);
+            // If theres no more corrupted strings, then we are done fixing it up
+            if (corruptedStart == -1)
+            {
+                jsonBodyBuilder.Append(slice);
+                break;
+            }
+
+            int corruptedEnd = corruptedStart + corruptedStr.Length;
+            char charAfterCorruption = slice[corruptedEnd];
+
+            switch (charAfterCorruption)
+            {
+                // If this is the start to a string, then we know that a `,` was corrupted
+                case '\"':
+                    jsonBodyBuilder.Append(slice[..corruptedEnd]);
+                    jsonBodyBuilder.Append(',');
+                    i += corruptedEnd;
+                    continue;
+                // If this is a comma, then we know that a ']' was corrupted
+                case ',':
+                    jsonBodyBuilder.Append(slice[..corruptedEnd]);
+                    jsonBodyBuilder.Append(']');
+                    i += corruptedEnd;
+                    continue;
+            }
+            
+            i++;
+        }
+
+        return jsonBodyBuilder.ToString();
+    }
+    
     // [FindBestRoom,["Players":["VitaGamer128"],"Reservations":["0"],"NAT":[2],"Slots":[[5,0]],"Location":[0x17257bc9,0x17257bf2],"Language":1,"BuildVersion":289,"Search":"","RoomState":3]]
     [GameEndpoint("match", HttpMethods.Post, ContentType.Json)]
     [DebugRequestBody, DebugResponseBody]
-    public Response Match(RequestContext context, GameDatabaseContext database, GameUser user, Token token, MatchService service, string body)
+    [RequireEmailVerified]
+    public Response Match(
+        RequestContext context, 
+        string body, 
+        DataContext dataContext,
+        GameServerConfig gameServerConfig)
     {
-        (string method, string jsonBody) = MatchService.ExtractMethodAndBodyFromJson(body);
+        (string method, string rawJsonBody) = MatchService.ExtractMethodAndBodyFromJson(body);
+
+        string jsonBody = FixupLocationData(rawJsonBody);
+
         context.Logger.LogInfo(BunkumCategory.Matching, $"Received {method} match request, data: {jsonBody}");
-        
+
         JsonSerializer serializer = new();
         using StringReader reader = new(jsonBody);
         using JsonTextReader jsonReader = new(reader);
@@ -35,7 +93,7 @@ public class MatchingEndpoints : EndpointGroup
             return BadRequest;
         }
         
-        return service.ExecuteMethod(method, roomData, database, user, token);
+        return dataContext.Match.ExecuteMethod(method, roomData, dataContext, gameServerConfig);
     }
     
     // Sent by LBP1 to notify the server it has entered a level.
@@ -45,7 +103,7 @@ public class MatchingEndpoints : EndpointGroup
     [GameEndpoint("enterLevel/{slotType}/{id}", HttpMethods.Post)]
     public Response EnterLevel(RequestContext context, Token token, MatchService matchService, string slotType, int id)
     {
-        GameRoom room = matchService.GetOrCreateRoomByPlayer(token.User, token.TokenPlatform, token.TokenGame, NatType.Strict);
+        GameRoom room = matchService.GetOrCreateRoomByPlayer(token.User, token.TokenPlatform, token.TokenGame, NatType.Strict, false);
         
         // User slot ID of 0 means pod/moon level
         if (id == 0 && slotType == "user")

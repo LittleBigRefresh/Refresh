@@ -36,6 +36,8 @@ public class RefreshGameServer : RefreshServer
     
     protected readonly GameDatabaseProvider _databaseProvider;
     protected readonly IDataStore _dataStore;
+    protected MatchService _matchService = null!;
+    protected GuidCheckerService _guidCheckerService = null!;
     
     protected GameServerConfig? _config;
     protected IntegrationConfig? _integrationConfig;
@@ -63,7 +65,6 @@ public class RefreshGameServer : RefreshServer
             GameDatabaseProvider provider = databaseProvider.Invoke();
 
             this.WorkerManager?.Stop();
-            this.WorkerManager = new WorkerManager(this.Logger, this._dataStore, provider);
             
             authProvider ??= new GameAuthenticationProvider(this._config!);
 
@@ -86,12 +87,13 @@ public class RefreshGameServer : RefreshServer
 
     protected override void SetupMiddlewares()
     {
-        this.Server.AddMiddleware<LegacyAdapterMiddleware>();
         this.Server.AddMiddleware<WebsiteMiddleware>();
         this.Server.AddMiddleware(new DeflateMiddleware(this._config!));
-        this.Server.AddMiddleware<DigestMiddleware>();
+        // Digest middleware must be run before LegacyAdapterMiddleware, because digest is based on the raw route, not the fixed route
+        this.Server.AddMiddleware(new DigestMiddleware(this._config!));
         this.Server.AddMiddleware<CrossOriginMiddleware>();
         this.Server.AddMiddleware<PspVersionMiddleware>();
+        this.Server.AddMiddleware<LegacyAdapterMiddleware>();
     }
 
     protected override void SetupConfiguration()
@@ -113,10 +115,10 @@ public class RefreshGameServer : RefreshServer
         this.Server.AddService<TimeProviderService>(this.GetTimeProvider());
         this.Server.AddRateLimitService(new RateLimitSettings(60, 400, 30, "global"));
         this.Server.AddService<CategoryService>();
-        this.Server.AddService<MatchService>();
+        this.Server.AddService(this._matchService = new MatchService(this.Server.Logger));
         this.Server.AddService<ImportService>();
         this.Server.AddService<DocumentationService>();
-        this.Server.AddService<GuidCheckerService>();
+        this.Server.AddService(this._guidCheckerService = new GuidCheckerService(this._config!, this.Server.Logger));
         this.Server.AddAutoDiscover(serverBrand: $"{this._config!.InstanceName} (Refresh)",
             baseEndpoint: GameEndpointAttribute.BaseRoute.Substring(0, GameEndpointAttribute.BaseRoute.Length - 1),
             usesCustomDigestKey: true,
@@ -146,7 +148,7 @@ public class RefreshGameServer : RefreshServer
 
     protected virtual void SetupWorkers()
     {
-        if (this.WorkerManager == null) return;
+        this.WorkerManager = new WorkerManager(this.Logger, this._dataStore, this._databaseProvider, this._matchService, this._guidCheckerService);
         
         this.WorkerManager.AddWorker<PunishmentExpiryWorker>();
         this.WorkerManager.AddWorker<ExpiredObjectWorker>();
@@ -236,6 +238,18 @@ public class RefreshGameServer : RefreshServer
     {
         using GameDatabaseContext context = this.GetContext();
         context.RenameUser(user, newUsername);
+    }
+    
+    public void DeleteUser(GameUser user)
+    {
+        using GameDatabaseContext context = this.GetContext();
+        context.DeleteUser(user);
+    }
+    
+    public void FullyDeleteUser(GameUser user)
+    {
+        using GameDatabaseContext context = this.GetContext();
+        context.FullyDeleteUser(user);
     }
 
     public override void Dispose()

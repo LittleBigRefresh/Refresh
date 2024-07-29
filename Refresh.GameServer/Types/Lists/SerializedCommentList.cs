@@ -9,11 +9,11 @@ public class SerializedCommentList
 {
     public SerializedCommentList() {}
     
-    public SerializedCommentList(IEnumerable<GameComment> comments)
+    public SerializedCommentList(IEnumerable<SerializedComment> comments)
     {
         this.Items = comments.ToList();
     }
 
     [XmlElement("comment")]
-    public List<GameComment> Items { get; set; } = new();
+    public List<SerializedComment> Items { get; set; } = [];
 }
