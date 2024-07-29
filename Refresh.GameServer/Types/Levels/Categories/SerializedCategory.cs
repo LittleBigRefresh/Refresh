@@ -1,10 +1,8 @@
 using System.Xml.Serialization;
 using Bunkum.Core;
-using Bunkum.Core.Storage;
 using Refresh.GameServer.Authentication;
 using Refresh.GameServer.Database;
 using Refresh.GameServer.Endpoints.Game.Levels.FilterSettings;
-using Refresh.GameServer.Services;
 using Refresh.GameServer.Types.Data;
 using Refresh.GameServer.Types.Lists;
 using Refresh.GameServer.Types.UserData;
@@ -46,18 +44,14 @@ public class SerializedCategory
 
     public static SerializedCategory FromLevelCategory(LevelCategory levelCategory,
         RequestContext context,
-        GameDatabaseContext database,
-        IDataStore dataStore,
-        GameUser user,
-        Token token,
-        MatchService matchService,
         DataContext dataContext,
         int skip = 0,
         int count = 20)
     {
         SerializedCategory category = FromLevelCategory(levelCategory);
-        
-        DatabaseList<GameLevel> categoryLevels = levelCategory.Fetch(context, skip, count, matchService, database, user, new LevelFilterSettings(context, token.TokenGame), user);
+
+        LevelFilterSettings filterSettings = new(context, dataContext.Token!.TokenGame);
+        DatabaseList<GameLevel> categoryLevels = levelCategory.Fetch(context, skip, count, dataContext, filterSettings, dataContext.User);
         
         IEnumerable<GameMinimalLevelResponse> levels = categoryLevels?.Items
             .Select(l => GameMinimalLevelResponse.FromOld(l, dataContext)) ?? Array.Empty<GameMinimalLevelResponse>();

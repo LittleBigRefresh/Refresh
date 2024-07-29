@@ -3,6 +3,7 @@ using Refresh.GameServer.Authentication;
 using Refresh.GameServer.Database;
 using Refresh.GameServer.Endpoints.Game.Levels.FilterSettings;
 using Refresh.GameServer.Services;
+using Refresh.GameServer.Types.Data;
 using Refresh.GameServer.Types.UserData;
 
 namespace Refresh.GameServer.Types.Levels.Categories;
@@ -21,13 +22,13 @@ public class SearchLevelCategory : LevelCategory
     }
 
     public override DatabaseList<GameLevel>? Fetch(RequestContext context, int skip, int count,
-        MatchService matchService, GameDatabaseContext database, GameUser? accessor, 
+        DataContext dataContext,
         LevelFilterSettings levelFilterSettings, GameUser? _)
     {
         string? query = context.QueryString["query"]
                         ?? context.QueryString["textFilter"]; // LBP3 sends this instead of query
         if (query == null) return null;
 
-        return database.SearchForLevels(count, skip, accessor, levelFilterSettings, query);
+        return dataContext.Database.SearchForLevels(count, skip, dataContext.User, levelFilterSettings, query);
     }
 }
