@@ -14,7 +14,7 @@ public class GameServerConfig : Config
     
     protected override void Migrate(int oldVer, dynamic oldConfig)
     {
-        if (oldVer < 16)
+        if (oldVer < 18)
         {
             int oldSafetyLevel = (int)oldConfig.MaximumAssetSafetyLevel;
             this.BlockedAssetFlags = new ConfigAssetFlags
