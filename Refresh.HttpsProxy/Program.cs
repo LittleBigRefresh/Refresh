@@ -23,17 +23,14 @@ BunkumServer httpsServer = new BunkumHttpsServer(loggerConfiguration);
 // Initialize a Bunkum server for HTTP
 BunkumServer httpServer = new BunkumHttpServer(loggerConfiguration);
 
-ProxyConfig config = Config.LoadFromJsonFile<ProxyConfig>("proxy.json", httpsServer.Logger);
-
-httpsServer.Initialize = s =>
+Action<BunkumServer> initialize = s =>
 {
+    ProxyConfig config = Config.LoadFromJsonFile<ProxyConfig>("proxy.json", s.Logger);
     s.AddMiddleware(new ProxyMiddleware(config));
 };
 
-httpServer.Initialize = s =>
-{
-    s.AddMiddleware(new ProxyMiddleware(config));
-};
+httpsServer.Initialize = initialize;
+httpServer.Initialize = initialize;
 
 // Start the server in multi-threaded mode, and let Bunkum manage the rest.
 httpsServer.Start();
