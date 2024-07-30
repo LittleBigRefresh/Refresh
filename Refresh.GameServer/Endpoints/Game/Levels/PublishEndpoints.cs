@@ -59,8 +59,6 @@ public class PublishEndpoints : EndpointGroup
 
     [GameEndpoint("startPublish", ContentType.Xml, HttpMethods.Post)]
     [NullStatusCode(BadRequest)]
-    [DebugRequestBody]
-    [DebugResponseBody]
     [RequireEmailVerified]
     public SerializedLevelResources? StartPublish(RequestContext context,
         GameLevelRequest body,
