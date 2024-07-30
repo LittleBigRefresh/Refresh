@@ -399,7 +399,7 @@ public partial class GameDatabaseContext // Levels
             .Count(r => r.Publisher == user && r._GameVersion == (int)game);
     
     [Pure]
-    public int GetTotalTeamPickCount(TokenGame game) => this.GameLevels.FilterByGameVersion(game).Count(l => l.TeamPicked);
+    public int GetTotalTeamPickCount(TokenGame game) => this.GameLevels.FilterByGameVersion(game).Count(l => l.DateTeamPicked != null);
 
     [Pure]
     public GameLevel? GetLevelByIdAndType(string slotType, int id)
