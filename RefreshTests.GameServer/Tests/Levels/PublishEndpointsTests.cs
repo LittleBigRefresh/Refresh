@@ -28,6 +28,7 @@ public class PublishEndpointsTests : GameServerTest
         GameLevelRequest level = new()
         {
             LevelId = 0,
+            IsAdventure = false,
             Title = "TEST LEVEL",
             IconHash = "g719",
             Description = "DESCRIPTION",
@@ -91,6 +92,7 @@ public class PublishEndpointsTests : GameServerTest
         GameLevelRequest level = new()
         {
             LevelId = 0,
+            IsAdventure = false,
             Title = new string('*', UgcConstantLimits.TitleLimit * 2),
             IconHash = "g0",
             Description = "Normal length",
@@ -129,6 +131,7 @@ public class PublishEndpointsTests : GameServerTest
         GameLevelRequest level = new()
         {
             LevelId = 0,
+            IsAdventure = false,
             Title = "Normal Title!",
             IconHash = "g0",
             Description = new string('=', UgcConstantLimits.DescriptionLimit * 2),
@@ -167,6 +170,7 @@ public class PublishEndpointsTests : GameServerTest
         GameLevelRequest level = new()
         {
             LevelId = 0,
+            IsAdventure = false,
             Title = "Normal Title!",
             IconHash = "g0",
             Description = "Normal Description",
@@ -200,6 +204,7 @@ public class PublishEndpointsTests : GameServerTest
         GameLevelRequest level = new()
         {
             LevelId = 0,
+            IsAdventure = false,
             Title = "Normal Title!",
             IconHash = "g0",
             Description = "Normal Description",
@@ -233,6 +238,7 @@ public class PublishEndpointsTests : GameServerTest
         GameLevelRequest level = new()
         {
             LevelId = 0,
+            IsAdventure = false,
             Title = "Normal Title!",
             IconHash = "g0",
             Description = "Normal Description",
@@ -269,6 +275,7 @@ public class PublishEndpointsTests : GameServerTest
         GameLevelRequest level = new()
         {
             LevelId = 0,
+            IsAdventure = false,
             Title = "Normal Title!",
             IconHash = "g0",
             Description = "Normal Description",
@@ -301,6 +308,7 @@ public class PublishEndpointsTests : GameServerTest
         GameLevelRequest level = new()
         {
             LevelId = 0,
+            IsAdventure = false,
             Title = "Normal Title!",
             IconHash = "g0",
             Description = "Normal Description",
@@ -334,6 +342,7 @@ public class PublishEndpointsTests : GameServerTest
         GameLevelRequest level = new()
         {
             LevelId = 0,
+            IsAdventure = false,
             Title = "Normal Title!",
             IconHash = "g719",
             Description = "Normal Description",
@@ -369,6 +378,7 @@ public class PublishEndpointsTests : GameServerTest
         GameLevelRequest level = new()
         {
             LevelId = 0,
+            IsAdventure = false,
             Title = "TEST LEVEL",
             IconHash = "g719",
             Description = "DESCRIPTION",
@@ -425,6 +435,7 @@ public class PublishEndpointsTests : GameServerTest
         GameLevelRequest level = new()
         {
             LevelId = 0,
+            IsAdventure = false,
             Title = "TEST LEVEL",
             IconHash = "g719",
             Description = "DESCRIPTION",

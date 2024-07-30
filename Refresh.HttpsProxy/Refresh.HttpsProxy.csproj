@@ -8,7 +8,7 @@
     </PropertyGroup>
 
     <ItemGroup>
-      <PackageReference Include="Bunkum.Protocols.Https" Version="4.7.1" />
+      <PackageReference Include="Bunkum.Protocols.Https" Version="4.8.1" />
     </ItemGroup>
 
     <ItemGroup>

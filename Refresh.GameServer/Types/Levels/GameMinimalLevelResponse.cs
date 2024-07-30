@@ -17,6 +17,7 @@ public class GameMinimalLevelResponse : IDataConvertableFrom<GameMinimalLevelRes
     //NOTE: THIS MUST BE AT THE TOP OF THE XML RESPONSE OR ELSE LBP PSP WILL CRASH
     [XmlElement("id")] public required int LevelId { get; set; }
     
+    [XmlElement("isAdventurePlanet")] public required bool IsAdventure { get; set; }
     [XmlElement("name")] public required string Title { get; set; } = string.Empty;
     [XmlElement("icon")] public required string IconHash { get; set; } = string.Empty;
     [XmlElement("game")] public required int GameVersion { get; set; }
@@ -76,6 +77,7 @@ public class GameMinimalLevelResponse : IDataConvertableFrom<GameMinimalLevelRes
         return new GameMinimalLevelResponse
         {
             Title = level.Title,
+            IsAdventure = level.IsAdventure,
             IconHash = dataContext.Database.GetAssetFromHash(level.IconHash)?.GetAsIcon(dataContext.Game, dataContext) ?? level.IconHash,
             GameVersion = level.GameVersion,
             RootResource = level.RootResource,
