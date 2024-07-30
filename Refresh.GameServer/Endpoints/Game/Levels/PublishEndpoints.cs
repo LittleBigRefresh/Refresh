@@ -76,7 +76,7 @@ public class PublishEndpoints : EndpointGroup
         {
             foreach (GameLevelRequest innerLevel in body.Slots)
             {
-                if (VerifyLevel(body, dataContext)) continue;
+                if (VerifyLevel(innerLevel, dataContext)) continue;
 
                 context.Logger.LogInfo(RefreshContext.Publishing, "Failed to verify inner level {0}", innerLevel.LevelId);
                 return null;
