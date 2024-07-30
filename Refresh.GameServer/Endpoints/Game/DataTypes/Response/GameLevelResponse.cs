@@ -19,6 +19,8 @@ namespace Refresh.GameServer.Endpoints.Game.DataTypes.Response;
 public class GameLevelResponse : IDataConvertableFrom<GameLevelResponse, GameLevel>
 {
     [XmlElement("id")] public required int LevelId { get; set; }
+    
+    [XmlElement("isAdventurePlanet")] public required bool IsAdventure { get; set; }
 
     [XmlElement("name")] public required string Title { get; set; }
     [XmlElement("icon")] public required string IconHash { get; set; }
@@ -96,6 +98,7 @@ public class GameLevelResponse : IDataConvertableFrom<GameLevelResponse, GameLev
         return new GameLevelResponse
         {
             LevelId = dataContext.Game == TokenGame.LittleBigPlanet3 ? LevelIdFromHash(hash) : int.MaxValue,
+            IsAdventure = false,
             Title = $"Hashed Level - {hash}",
             IconHash = "0",
             GameVersion = 0,
@@ -143,6 +146,7 @@ public class GameLevelResponse : IDataConvertableFrom<GameLevelResponse, GameLev
         GameLevelResponse response = new()
         {
             LevelId = old.LevelId,
+            IsAdventure = old.IsAdventure,
             Title = old.Title,
             IconHash = old.IconHash,
             Description = old.Description,

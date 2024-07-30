@@ -16,6 +16,7 @@ public class ApiGameLevelResponse : IApiResponse, IDataConvertableFrom<ApiGameLe
     public required bool IsReUpload { get; set; }
     public required string? OriginalPublisher { get; set; }
 
+    public required bool IsAdventure { get; set; }
     public required string Title { get; set; }
     public required string IconHash { get; set; }
     public required string Description { get; set; }
@@ -58,6 +59,7 @@ public class ApiGameLevelResponse : IApiResponse, IDataConvertableFrom<ApiGameLe
         
         return new ApiGameLevelResponse
         {
+            IsAdventure = level.IsAdventure,
             Title = level.Title,
             Publisher = ApiGameUserResponse.FromOld(level.Publisher, dataContext),
             OriginalPublisher = level.OriginalPublisher,

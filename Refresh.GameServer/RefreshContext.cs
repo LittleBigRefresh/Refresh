@@ -8,4 +8,5 @@ public enum RefreshContext
     PasswordReset,
     LevelListOverride,
     CoolLevels,
+    Publishing,
 }

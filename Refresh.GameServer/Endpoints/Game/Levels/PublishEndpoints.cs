@@ -1,14 +1,17 @@
 using Bunkum.Core;
 using Bunkum.Core.Endpoints;
+using Bunkum.Core.Endpoints.Debugging;
 using Bunkum.Core.Responses;
 using Bunkum.Listener.Protocol;
 using Bunkum.Protocols.Http;
 using Refresh.Common.Constants;
+using Refresh.GameServer.Authentication;
 using Refresh.GameServer.Database;
 using Refresh.GameServer.Endpoints.Game.DataTypes.Request;
 using Refresh.GameServer.Endpoints.Game.DataTypes.Response;
 using Refresh.GameServer.Extensions;
 using Refresh.GameServer.Services;
+using Refresh.GameServer.Types.Assets;
 using Refresh.GameServer.Types.Data;
 using Refresh.GameServer.Types.Levels;
 using Refresh.GameServer.Types.UserData;
@@ -33,12 +36,13 @@ public class PublishEndpoints : EndpointGroup
             body.Description = body.Description[..UgcConstantLimits.DescriptionLimit];
             
         if (body.MaxPlayers is > 4 or < 0 || body.MinPlayers is > 4 or < 0)
-        {
             return false;
-        }
 
-        //If the icon hash is a GUID hash, verify its a valid texture GUID
+        //If the icon hash is a GUID hash, verify that its a valid texture GUID
         if (body.IconHash.StartsWith('g') && !dataContext.GuidChecker.IsTextureGuid(dataContext.Game, long.Parse(body.IconHash.AsSpan()[1..]))) 
+            return false;
+
+        if (body.IsAdventure && dataContext.Game != TokenGame.LittleBigPlanet3)
             return false;
 
         GameLevel? existingLevel = dataContext.Database.GetLevelByRootResource(body.RootResource);
@@ -62,13 +66,28 @@ public class PublishEndpoints : EndpointGroup
         DataContext dataContext)
     {
         //If verifying the request fails, return null
-        if (!VerifyLevel(body, dataContext)) return null;
+        if (!VerifyLevel(body, dataContext))
+        {
+            context.Logger.LogInfo(RefreshContext.Publishing, "Failed to verify root level");
+            return null;
+        }
+
+        if (body.Slots != null)
+        {
+            foreach (GameLevelRequest innerLevel in body.Slots)
+            {
+                if (VerifyLevel(innerLevel, dataContext)) continue;
+
+                context.Logger.LogInfo(RefreshContext.Publishing, "Failed to verify inner level {0}", innerLevel.LevelId);
+                return null;
+            }
+        }
 
         List<string> hashes =
         [
-            .. body.XmlResources,
+            ..body.XmlResources,
             body.RootResource,
-            body.IconHash
+            body.IconHash,
         ];
 
         //Remove all invalid or GUID assets
@@ -111,6 +130,23 @@ public class PublishEndpoints : EndpointGroup
         //Make sure the root resource exists in the data store
         if (!dataContext.DataStore.ExistsInStore(rootResourcePath)) return NotFound;
 
+        GameAsset? asset = dataContext.Database.GetAssetFromHash(level.RootResource);
+        if (asset != null)
+        {
+            // ReSharper disable once ConvertIfStatementToSwitchStatement
+            if (level.IsAdventure && asset.AssetType != GameAssetType.AdventureCreateProfile)
+            {
+                dataContext.Database.AddPublishFailNotification("The uploaded adventure data was corrupted.", level, dataContext.User!);
+                return BadRequest;
+            }
+
+            if (!level.IsAdventure && asset.AssetType != GameAssetType.Level)
+            {
+                dataContext.Database.AddPublishFailNotification("The uploaded level data was corrupted.", level, dataContext.User!);
+                return BadRequest;
+            }
+        }
+
         if (level.LevelId != default) // Republish requests contain the id of the old level
         {
             context.Logger.LogInfo(BunkumCategory.UserContent, "Republishing level id {0}", level.LevelId);
@@ -122,7 +158,7 @@ public class PublishEndpoints : EndpointGroup
                 return new Response(GameLevelResponse.FromOld(newBody, dataContext)!, ContentType.Xml);
             }
 
-            dataContext.Database.AddPublishFailNotification("You may not republish another user's level.", level, dataContext.User);
+            dataContext.Database.AddPublishFailNotification("You may not republish another user's level.", level, dataContext.User!);
             return BadRequest;
         }
 

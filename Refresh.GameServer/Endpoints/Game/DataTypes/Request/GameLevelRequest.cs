@@ -11,6 +11,8 @@ namespace Refresh.GameServer.Endpoints.Game.DataTypes.Request;
 public class GameLevelRequest
 {
     [XmlElement("id")] public required int LevelId { get; set; }
+    
+    [XmlElement("isAdventurePlanet")] public required bool IsAdventure { get; set; }
 
     [XmlElement("name")] public required string Title { get; set; }
     [XmlElement("icon")] public required string IconHash { get; set; }
@@ -46,10 +48,13 @@ public class GameLevelRequest
     
     [XmlElement("backgroundGUID")] public string? BackgroundGuid { get; set; }
     
+    [XmlArray("slots")] public GameLevelRequest[]? Slots { get; set; }
+    
     public GameLevel ToGameLevel(GameUser publisher) =>
         new()
         {
             LevelId = this.LevelId,
+            IsAdventure = this.IsAdventure,
             Title = this.Title,
             IconHash = this.IconHash,
             Description = this.Description,

@@ -16,6 +16,8 @@ namespace Refresh.GameServer.Types.Levels;
 public partial class GameLevel : IRealmObject, ISequentialId
 {
     [PrimaryKey] public int LevelId { get; set; }
+    
+    public bool IsAdventure { get; set; }
 
     [Indexed(IndexType.FullText)]
     public string Title { get; set; } = "";

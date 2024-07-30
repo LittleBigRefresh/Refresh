@@ -4,7 +4,7 @@ namespace Refresh.GameServer.Types.Levels;
 
 #nullable disable
 
-[XmlRoot("slot")]
+[XmlRoot("slot"), XmlType("slot")]
 public class SerializedLevelResources
 {
     [XmlElement("resource")] public string[] Resources { get; set; }

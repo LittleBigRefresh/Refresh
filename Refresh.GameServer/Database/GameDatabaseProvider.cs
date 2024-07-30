@@ -33,7 +33,7 @@ public class GameDatabaseProvider : RealmDatabaseProvider<GameDatabaseContext>
         this._time = time;
     }
 
-    protected override ulong SchemaVersion => 137;
+    protected override ulong SchemaVersion => 138;
 
     protected override string Filename => "refreshGameServer.realm";
     
@@ -309,6 +309,12 @@ public class GameDatabaseProvider : RealmDatabaseProvider<GameDatabaseContext>
                     newLevel.DateTeamPicked = DateTimeOffset.FromUnixTimeMilliseconds(oldLevel.UpdateDate);
                 else
                     newLevel.DateTeamPicked = null;
+            }
+            
+            // In version 138 we added support for Adventures in LBP3. Set their status to false by default.
+            if (oldVersion < 138)
+            {
+                newLevel.IsAdventure = false;
             }
         }
 
