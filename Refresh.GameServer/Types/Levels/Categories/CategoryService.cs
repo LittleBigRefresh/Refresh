@@ -31,6 +31,7 @@ public class CategoryService : EndpointService
         new ByTagCategory(),
         new DeveloperLevelsCategory(),
         new ContestCategory(),
+        new AdventureCategory(),
     ];
 
     internal CategoryService(Logger logger) : base(logger)
