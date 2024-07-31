@@ -2,13 +2,9 @@ using Bunkum.Core;
 using Bunkum.Core.Responses;
 using Bunkum.Listener.Protocol;
 using MongoDB.Bson;
-using NotEnoughLogs;
 using Refresh.GameServer.Authentication;
 using Refresh.GameServer.Configuration;
-using Refresh.GameServer.Database;
-using Refresh.GameServer.Services;
 using Refresh.GameServer.Types.Data;
-using Refresh.GameServer.Types.Levels;
 using Refresh.GameServer.Types.Matching.Responses;
 using Refresh.GameServer.Types.UserData;
 
@@ -20,6 +16,8 @@ public class FindRoomMethod : IMatchMethod
 
     public Response Execute(DataContext dataContext, SerializedRoomData body, GameServerConfig gameServerConfig)
     {
+        SerializedStatusCodeMatchResponse status = new(OK);
+        
         GameRoom? usersRoom = dataContext.Match.RoomAccessor.GetRoomByUser(dataContext.User!, dataContext.Platform, dataContext.Game);
         if (usersRoom == null) return BadRequest; // user should already have a room.
         
@@ -126,7 +124,8 @@ public class FindRoomMethod : IMatchMethod
             }
 
             // Return a 404 status code if there's no rooms to match them to
-            return new Response(new List<object> { new SerializedStatusCodeMatchResponse(404), }, ContentType.Json);
+            status.StatusCode = NotFound;
+            return new Response(new List<object> {status}, ContentType.Json, status.StatusCode);
         }
 
         // If the user has a forced match and we found a room
@@ -174,14 +173,6 @@ public class FindRoomMethod : IMatchMethod
             roomMatch.Players.Add(new SerializedRoomPlayer(roomUser.Username, 1));
         }
 
-        SerializedStatusCodeMatchResponse status = new(200);
-
-        List<object> response =
-        [
-            status,
-            roomMatch,
-        ];
-
-        return new Response(response, ContentType.Json);
+        return new Response(new List<object> {status, roomMatch}, ContentType.Json, status.StatusCode);
     }
 }

@@ -141,7 +141,7 @@ public partial class MatchService(Logger logger) : EndpointService(logger)
             return response;
         
         // If there's no response body, then we need to make our own using the status code
-        SerializedStatusCodeMatchResponse status = new((int)response.StatusCode);
+        SerializedStatusCodeMatchResponse status = new(response.StatusCode);
         
         List<object> responseData = [status];
         

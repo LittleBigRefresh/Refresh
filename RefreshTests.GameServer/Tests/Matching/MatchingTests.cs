@@ -123,8 +123,8 @@ public class MatchingTests : GameServerTest
 
         //Make sure the only result is a 404 object
         Assert.That(responseObjects, Has.Count.EqualTo(1));
-        Assert.That(response.StatusCode, Is.EqualTo(OK));
-        Assert.That(responseObjects[0].StatusCode, Is.EqualTo(404));
+        Assert.That(response.StatusCode, Is.EqualTo(NotFound));
+        Assert.That(responseObjects[0].StatusCode, Is.EqualTo(NotFound));
     }
 
     [Test]
@@ -185,8 +185,8 @@ public class MatchingTests : GameServerTest
 
         //Make sure the only result is a 404 object
         Assert.That(responseObjects, Has.Count.EqualTo(1));
-        Assert.That(response.StatusCode, Is.EqualTo(OK));
-        Assert.That(responseObjects[0].StatusCode, Is.EqualTo(404));
+        Assert.That(response.StatusCode, Is.EqualTo(NotFound));
+        Assert.That(responseObjects[0].StatusCode, Is.EqualTo(NotFound));
     }
     
     [Test]
@@ -468,5 +468,51 @@ public class MatchingTests : GameServerTest
             Assert.That(user2Room!.PlayerIds.First().Id, Is.EqualTo(user2.UserId));
         }
 
+    }
+    
+    [Test]
+    public void DoesntMatchIfLookingForLevelWhenPod()
+    {
+        using TestContext context = this.GetServer(false);
+        MatchService match = new(Logger);
+        match.Initialize();
+        
+        SerializedRoomData roomData = new()
+        {
+            Mood = (byte)RoomMood.AllowingAll, // Tells their rooms that they can be matched with each other
+            NatType = new List<NatType>
+            {
+                NatType.Open,
+            },
+            _Slot =
+            [
+                (int)RoomSlotType.Pod,
+                0,
+            ],
+        };
+        
+        // Setup rooms
+        GameUser user1 = context.CreateUser();
+        GameUser user2 = context.CreateUser();
+        
+        Token token1 = context.CreateToken(user1);
+        Token token2 = context.CreateToken(user2);
+
+        match.ExecuteMethod("CreateRoom", roomData, context.GetDataContext(token1), context.Server.Value.GameServerConfig);
+        match.ExecuteMethod("CreateRoom", roomData, context.GetDataContext(token2), context.Server.Value.GameServerConfig);
+        
+        // Tell user2 to try to find a room
+        Response response = match.ExecuteMethod("FindBestRoom", new SerializedRoomData
+        {
+            NatType = new List<NatType> {
+                NatType.Open,
+            },
+            _Slot =
+            [
+                (int)RoomSlotType.Online,
+                1337,
+            ],
+        }, context.GetDataContext(token2), context.Server.Value.GameServerConfig);
+        Assert.That(response.StatusCode, Is.EqualTo(NotFound));
     }
 }
