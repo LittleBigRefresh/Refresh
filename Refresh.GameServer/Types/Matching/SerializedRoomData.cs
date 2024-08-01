@@ -20,10 +20,10 @@ public class SerializedRoomData
     // ReSharper disable InconsistentNaming
     // LBP has two of the same thing sometimes, have both properties to handle both cases
     [JsonProperty("Slot")]
-    private List<int>? _Slot { get; set; }
+    public List<int>? _Slot { private get; set; }
     
     [JsonProperty("Slots")]
-    private List<List<int>>? _Slots { get; set; }
+    public List<List<int>>? _Slots { private get; set; }
     // ReSharper restore InconsistentNaming
 
     [JsonIgnore]
