@@ -131,7 +131,7 @@ public class PublishEndpoints : EndpointGroup
         if (!dataContext.DataStore.ExistsInStore(rootResourcePath)) return NotFound;
 
         GameAsset? asset = dataContext.Database.GetAssetFromHash(level.RootResource);
-        if (asset != null)
+        if (asset != null && dataContext.Game != TokenGame.LittleBigPlanetPSP)
         {
             // ReSharper disable once ConvertIfStatementToSwitchStatement
             if (level.IsAdventure && asset.AssetType != GameAssetType.AdventureCreateProfile)
