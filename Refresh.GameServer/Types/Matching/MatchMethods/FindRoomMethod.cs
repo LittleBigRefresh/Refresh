@@ -64,8 +64,8 @@ public class FindRoomMethod : IMatchMethod
         
         IEnumerable<GameRoom> rooms = allRooms.Where(r =>
                 // If the level id isn't specified, or is 0, then we don't want to try to match against level IDs, else only match the user to people who are playing that level
-                (userLevelIds.Count == 0 || r.LevelType != RoomSlotType.Online || userLevelIds.Contains(r.LevelId)) &&
-                (developerLevelIds.Count == 0 || r.LevelType != RoomSlotType.Story || developerLevelIds.Contains(r.LevelId)) &&
+                (userLevelIds.Count == 0 || (r.LevelType == RoomSlotType.Online && userLevelIds.Contains(r.LevelId))) &&
+                (developerLevelIds.Count == 0 || (r.LevelType == RoomSlotType.Story && developerLevelIds.Contains(r.LevelId))) &&
                 // Make sure that we don't try to match the player into a full room, or a room which won't fit the user's current room
                 usersRoom.PlayerIds.Count + r.PlayerIds.Count <= 4)
             // Shuffle the rooms around before sorting, this is because the selection is based on a weighted average towards the top of the range,
