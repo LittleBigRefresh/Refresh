@@ -67,6 +67,9 @@ internal class CommandLineManager
         
         [Option("fully-delete-user", HelpText = "Fully deletes a user, entirely removing the row and allowing people to register with that username once again. Not recommended.")]
         public bool FullyDeleteUser { get; set; }
+        
+        [Option("mark-all-reuploads", HelpText = "Marks all levels uploaded by a user as re-uploaded. Username or Email options are required if this is set.")]
+        public bool MarkAllReuploads { get; set; }
     }
 
     internal void StartWithArgs(string[] args)
@@ -194,6 +197,11 @@ internal class CommandLineManager
         {
             GameUser user = this.GetUserOrFail(options);
             this._server.FullyDeleteUser(user);
+        }
+        else if (options.MarkAllReuploads)
+        {
+            GameUser user = this.GetUserOrFail(options);
+            this._server.MarkAllReuploads(user);
         }
     }
 }

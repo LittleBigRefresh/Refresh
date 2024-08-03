@@ -110,13 +110,13 @@ public class CoolLevelsWorker : IWorker
         if (level.TeamPicked)
             score += 50;
         
-        int positiveRatings = context.Database.GetTotalRatingsForLevel(level, RatingType.Yay);
-        int negativeRatings = context.Database.GetTotalRatingsForLevel(level, RatingType.Boo);
-        int uniquePlays = context.Database.GetUniquePlaysForLevel(level);
+        int positiveRatings = context.Database.GetTotalRatingsForLevel(level, RatingType.Yay, false);
+        int negativeRatings = context.Database.GetTotalRatingsForLevel(level, RatingType.Boo, false);
+        int uniquePlays = context.Database.GetUniquePlaysForLevel(level, false);
         
         score += positiveRatings * positiveRatingPoints;
         score += uniquePlays * uniquePlayPoints;
-        score += context.Database.GetFavouriteCountForLevel(level) * heartPoints;
+        score += context.Database.GetFavouriteCountForLevel(level, false) * heartPoints;
         
         // Reward for a good ratio between plays and yays
         float ratingRatio = (positiveRatings - negativeRatings) / (float)uniquePlays;
@@ -143,7 +143,7 @@ public class CoolLevelsWorker : IWorker
         // The percentage of how much penalty should be applied at the end of the calculation.
         const float penaltyMultiplier = 0.75f;
         
-        penalty += context.Database.GetTotalRatingsForLevel(level, RatingType.Boo) * negativeRatingPenalty;
+        penalty += context.Database.GetTotalRatingsForLevel(level, RatingType.Boo, false) * negativeRatingPenalty;
         
         if (level.Publisher == null)
             penalty += noAuthorPenalty;
