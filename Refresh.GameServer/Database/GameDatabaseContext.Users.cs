@@ -413,4 +413,20 @@ public partial class GameDatabaseContext // Users
                 user.ProfileVisibility = settings.ProfileVisibility.Value;
         });            
     }
+
+    public void MarkAllReuploads(GameUser user)
+    {
+        IQueryable<GameLevel> levels = this.GameLevels.Where(l => l.Publisher == user);
+            
+        this.Write(() =>
+        {
+            foreach (GameLevel level in levels)
+            {
+                level.IsReUpload = true;
+                // normally, we'd also set the original publisher when marking a reupload.
+                // but since were doing this blindly, we shouldn't because the level might already be a reupload.
+                // we'd be setting it to null here, which could be loss of information.
+            }
+        });
+    }
 }

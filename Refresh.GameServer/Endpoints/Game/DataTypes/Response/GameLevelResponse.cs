@@ -187,7 +187,7 @@ public class GameLevelResponse : IDataConvertableFrom<GameLevelResponse, GameLev
         {
             string publisher;
             if (!old.IsReUpload)
-                publisher = "!DeletedUser";
+                publisher = FakeUserConstants.DeletedUserName;
             else
                 publisher = string.IsNullOrEmpty(old.OriginalPublisher)
                     ? FakeUserConstants.UnknownUserName
