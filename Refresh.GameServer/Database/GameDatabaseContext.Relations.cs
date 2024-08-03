@@ -60,9 +60,9 @@ public partial class GameDatabaseContext // Relations
         return true;
     }
     
-    public int GetFavouriteCountForLevel(GameLevel level) => this.FavouriteLevelRelations
-        .Count(r => r.Level == level);
-    
+    public int GetFavouriteCountForLevel(GameLevel level, bool includingAuthor = true) => this.FavouriteLevelRelations
+            .Count(r => r.Level == level && (includingAuthor || r.User != level.Publisher));
+
     #endregion
 
     #region Favouriting Users
@@ -301,8 +301,11 @@ public partial class GameDatabaseContext // Relations
         return true;
     }
     
-    public int GetTotalRatingsForLevel(GameLevel level, RatingType type) =>
-        this.RateLevelRelations.Count(r => r.Level == level && r._RatingType == (int)type);
+    public int GetTotalRatingsForLevel(GameLevel level, RatingType type, bool includingAuthor = true) =>
+        this.RateLevelRelations.Count(r =>
+            r.Level == level &&
+            r._RatingType == (int)type && 
+            (includingAuthor || r.User != level.Publisher));
     
     /// <summary>
     /// Adds a review to the database, deleting any old ones by the user on that level.
@@ -408,8 +411,8 @@ public partial class GameDatabaseContext // Relations
     public int GetTotalPlaysForLevelByUser(GameLevel level, GameUser user) =>
         this.GetAllPlaysForLevelByUser(level, user).Sum(playLevelRelation => playLevelRelation.Count);
     
-    public int GetUniquePlaysForLevel(GameLevel level) =>
-        this.UniquePlayLevelRelations.Count(r => r.Level == level);
+    public int GetUniquePlaysForLevel(GameLevel level, bool includingAuthor = true) =>
+        this.UniquePlayLevelRelations.Count(r => r.Level == level && (includingAuthor || r.User != level.Publisher));
 
     #endregion
 
