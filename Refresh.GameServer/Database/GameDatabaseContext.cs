@@ -79,7 +79,9 @@ public partial class GameDatabaseContext : RealmDatabaseContext
         storage = new SequentialIdStorage
         {
             TypeName = name,
-            SequentialId = this._realm.All<T>().Count() * 2, // skip over a bunch of ids incase table is broken
+            SequentialId = this._realm.All<T>()
+                .AsEnumerable() // because realm.
+                .Max(t => t.SequentialId) + 1,
         };
 
         // no need to do write block, this should only be called in a write transaction

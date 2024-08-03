@@ -23,6 +23,7 @@ public partial class GameReview : IRealmObject, ISequentialId
     
     public int SequentialId
     {
+        get => this.ReviewId;
         set => this.ReviewId = value;
     }
 }

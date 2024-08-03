@@ -139,6 +139,7 @@ public partial class GamePhoto : IRealmObject, ISequentialId
     
     [JsonIgnore] public int SequentialId
     {
+        get => this.PhotoId;
         set => this.PhotoId = value;
     }
 }

@@ -127,6 +127,7 @@ public partial class GameLevel : IRealmObject, ISequentialId
     
     public int SequentialId
     {
+        get => this.LevelId;
         set => this.LevelId = value;
     }
 
