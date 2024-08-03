@@ -154,6 +154,7 @@ public partial class GameDatabaseContext // Levels
             this.RateLevelRelations.RemoveRange(r => r.Level == level);
             this.UniquePlayLevelRelations.RemoveRange(r => r.Level == level);
             this.TagLevelRelations.RemoveRange(r => r.Level == level);
+            this.GameReviews.RemoveRange(r => r.Level == level);
             
             IQueryable<GameSubmittedScore> scores = this.GameSubmittedScores.Where(r => r.Level == level);
             

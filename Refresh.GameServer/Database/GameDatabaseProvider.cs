@@ -33,7 +33,7 @@ public class GameDatabaseProvider : RealmDatabaseProvider<GameDatabaseContext>
         this._time = time;
     }
 
-    protected override ulong SchemaVersion => 138;
+    protected override ulong SchemaVersion => 139;
 
     protected override string Filename => "refreshGameServer.realm";
     
@@ -557,5 +557,8 @@ public class GameDatabaseProvider : RealmDatabaseProvider<GameDatabaseContext>
                 newPlayLevelRelation.Count = 1;
             }
         }
+
+        // We weren't deleting reviews when a level was deleted. Version 139 fixes this.
+        if (oldVersion < 139) migration.NewRealm.RemoveRange(migration.NewRealm.All<GameReview>().Where(r => r.Level == null));
     }
 }
