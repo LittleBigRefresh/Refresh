@@ -75,14 +75,20 @@ public partial class GameDatabaseContext : RealmDatabaseContext
             storage.SequentialId += 1;
             return storage.SequentialId;
         }
+
+        int objectCount = this._realm.All<T>().Count();
         
         storage = new SequentialIdStorage
         {
             TypeName = name,
-            SequentialId = this._realm.All<T>()
-                .AsEnumerable() // because realm.
-                .Max(t => t.SequentialId) + 1,
         };
+
+        if (objectCount != 0)
+            storage.SequentialId = this._realm.All<T>()
+                .AsEnumerable() // because realm.
+                .Max(t => t.SequentialId) + 1;
+        else
+            storage.SequentialId = 0;
 
         // no need to do write block, this should only be called in a write transaction
         this.SequentialIdStorage.Add(storage);
