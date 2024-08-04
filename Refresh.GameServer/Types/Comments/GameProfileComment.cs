@@ -20,5 +20,5 @@ public partial class GameProfileComment : IRealmObject, IGameComment, ISequentia
     public string Content { get; set; } = string.Empty;
     
     /// <inheritdoc/>
-    public long Timestamp { get; set; } 
+    public DateTimeOffset Timestamp { get; set; } 
 }

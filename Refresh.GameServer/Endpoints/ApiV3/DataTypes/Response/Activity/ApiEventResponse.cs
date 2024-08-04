@@ -23,7 +23,7 @@ public class ApiEventResponse : IApiResponse, IDataConvertableFrom<ApiEventRespo
             EventId = old.EventId.ToString()!,
             EventType = (int)old.EventType,
             UserId = old.User.UserId.ToString()!,
-            OccurredAt = DateTimeOffset.FromUnixTimeMilliseconds(old.Timestamp),
+            OccurredAt = old.Timestamp,
             StoredDataType = old.StoredDataType,
             StoredSequentialId = old.StoredSequentialId,
             StoredObjectId = old.StoredObjectId?.ToString(),

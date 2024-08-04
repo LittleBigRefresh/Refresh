@@ -82,11 +82,11 @@ public class CoolLevelsWorker : IWorker
 
     private static float CalculateLevelDecayMultiplier(Logger logger, long now, GameLevel level)
     {
-        const int secondsPerMonth = 30 * 24 * 3600;
+        const double secondsPerMonth = 30 * 24 * 3600;
         
         // Use months
-        double publishDate = level.PublishDate / 1000d / secondsPerMonth;
-        double elapsedMonths = ((double)now / secondsPerMonth) - publishDate;
+        double publishDate = level.PublishDate.ToUnixTimeSeconds() / secondsPerMonth;
+        double elapsedMonths = now / secondsPerMonth - publishDate;
 
         // Get a scale from 0.0f to 1.0f, the percent of decay, using an exponential decay function
         // https://www.desmos.com/calculator/87wbuh1gcy

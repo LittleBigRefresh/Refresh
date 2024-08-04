@@ -38,9 +38,12 @@ public partial class GameDatabaseContext // Activity
     {
         if (parameters.Timestamp == 0) 
             parameters.Timestamp = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
+
+        DateTimeOffset timestamp = DateTimeOffset.FromUnixTimeMilliseconds(parameters.Timestamp);
+        DateTimeOffset endTimestamp = DateTimeOffset.FromUnixTimeMilliseconds(parameters.EndTimestamp);
         
         IEnumerable<Event> query = this.Events
-            .Where(e => e.Timestamp < parameters.Timestamp && e.Timestamp >= parameters.EndTimestamp)
+            .Where(e => e.Timestamp < timestamp && e.Timestamp >= endTimestamp)
             .AsEnumerable();
 
         if (parameters is { ExcludeMyLevels: true, User: not null })

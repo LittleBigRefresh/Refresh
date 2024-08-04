@@ -19,5 +19,5 @@ public interface IGameComment
     /// <summary>
     /// Timestamp in Unix milliseconds
     /// </summary>
-    long Timestamp { get; set; }
+    DateTimeOffset Timestamp { get; set; }
 }
