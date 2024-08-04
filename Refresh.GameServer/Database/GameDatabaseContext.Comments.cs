@@ -17,7 +17,7 @@ public partial class GameDatabaseContext // Comments
             Author = author,
             Profile = profile,
             Content = content,
-            Timestamp = this._time.TimestampMilliseconds,
+            Timestamp = this._time.Now,
         };
         
         this.AddSequentialObject(comment);
@@ -53,7 +53,7 @@ public partial class GameDatabaseContext // Comments
                 Author = author,
                 Level = level,
                 Content = content,
-                Timestamp = this._time.TimestampMilliseconds,
+                Timestamp = this._time.Now,
             };
             
             this.AddSequentialObject(comment);

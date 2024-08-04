@@ -17,7 +17,7 @@ public class EditApiTests : GameServerTest
         GameUser user = context.CreateUser();
         GameLevel level = context.CreateLevel(user, "Not updated");
 
-        long oldUpdate = level.UpdateDate;
+        DateTimeOffset oldUpdate = level.UpdateDate;
 
         ApiEditLevelRequest payload = new()
         {
@@ -35,7 +35,7 @@ public class EditApiTests : GameServerTest
         {
             Assert.That(level.Title, Is.EqualTo("Updated"));
             Assert.That(level.UpdateDate, Is.Not.EqualTo(oldUpdate));
-            Assert.That(level.UpdateDate, Is.EqualTo(context.Time.TimestampMilliseconds));
+            Assert.That(level.UpdateDate, Is.EqualTo(context.Time.Now));
         });
     }
     
@@ -73,7 +73,7 @@ public class EditApiTests : GameServerTest
         GameUser admin = context.CreateUser(role: role);
         GameLevel level = context.CreateLevel(user, "Not updated");
 
-        long oldUpdate = level.UpdateDate;
+        DateTimeOffset oldUpdate = level.UpdateDate;
 
         ApiAdminEditLevelRequest payload = new()
         {
@@ -93,7 +93,7 @@ public class EditApiTests : GameServerTest
             Assert.That(level.Title, Is.EqualTo("Updated"));
             Assert.That(level.GameVersion, Is.EqualTo(TokenGame.LittleBigPlanetPSP));
             Assert.That(level.UpdateDate, Is.Not.EqualTo(oldUpdate));
-            Assert.That(level.UpdateDate, Is.EqualTo(context.Time.TimestampMilliseconds));
+            Assert.That(level.UpdateDate, Is.EqualTo(context.Time.Now));
         });
     }
     
@@ -130,8 +130,8 @@ public class EditApiTests : GameServerTest
         GameLevel level = context.CreateLevel(author);
         Assert.Multiple(() =>
         {
-            Assert.That(level.PublishDate, Is.EqualTo(1));
-            Assert.That(level.UpdateDate, Is.EqualTo(1));
+            Assert.That(level.PublishDate.ToUnixTimeMilliseconds(), Is.EqualTo(1));
+            Assert.That(level.UpdateDate.ToUnixTimeMilliseconds(), Is.EqualTo(1));
         });
 
         GameLevel newLevel = (GameLevel)level.Clone();
@@ -143,8 +143,8 @@ public class EditApiTests : GameServerTest
         context.Database.UpdateLevel(newLevel, author);
         Assert.Multiple(() =>
         {
-            Assert.That(level.PublishDate, Is.EqualTo(1));
-            Assert.That(level.UpdateDate, Is.EqualTo(2));
+            Assert.That(level.PublishDate.ToUnixTimeMilliseconds(), Is.EqualTo(1));
+            Assert.That(level.UpdateDate.ToUnixTimeMilliseconds(), Is.EqualTo(2));
         });
     }
 }

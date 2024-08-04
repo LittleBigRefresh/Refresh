@@ -30,7 +30,7 @@ public class SerializedComment : IDataConvertableFrom<SerializedComment, GamePro
         {
             CommentId = comment.SequentialId,
             Content = comment.Content,
-            Timestamp = comment.Timestamp,
+            Timestamp = comment.Timestamp.ToUnixTimeMilliseconds(),
             Handle = comment.Author.Username,
         };
 

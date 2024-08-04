@@ -227,7 +227,7 @@ public class ActivityPage
                 Type = "user",
             };
 
-            long timestamp = @event.Timestamp;
+            long timestamp = @event.Timestamp.ToUnixTimeMilliseconds();
 
             SerializedLevelEvent levelEvent = new()
             {
@@ -281,7 +281,7 @@ public class ActivityPage
                 Type = "user",
             };
 
-            long timestamp = @event.Timestamp;
+            long timestamp = @event.Timestamp.ToUnixTimeMilliseconds();
 
             SerializedScoreSubmitEvent scoreEvent = new()
             {
@@ -316,7 +316,7 @@ public class ActivityPage
     {
         foreach (Event @event in this.Events.Where(e => e.StoredDataType == EventDataType.User))
         {
-            long timestamp = @event.Timestamp;
+            long timestamp = @event.Timestamp.ToUnixTimeMilliseconds();
 
             GameUser user = users.First(u => u.UserId == @event.StoredObjectId);
 

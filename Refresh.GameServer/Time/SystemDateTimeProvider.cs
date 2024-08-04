@@ -7,5 +7,5 @@ public class SystemDateTimeProvider : IDateTimeProvider
 
     public long EarliestDate => new DateTimeOffset(2007, 1, 1, 0, 0, 0, TimeSpan.Zero).ToUnixTimeSeconds();
 
-    public DateTimeOffset Now => DateTimeOffset.Now;
+    public DateTimeOffset Now => DateTimeOffset.UtcNow;
 }

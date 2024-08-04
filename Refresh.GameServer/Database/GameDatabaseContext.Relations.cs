@@ -369,7 +369,7 @@ public partial class GameDatabaseContext // Relations
         {
             Level = level,
             User = user,
-            Timestamp = this._time.TimestampMilliseconds,
+            Timestamp = this._time.Now,
             Count = count,
         };
         
@@ -387,7 +387,7 @@ public partial class GameDatabaseContext // Relations
                 {
                     Level = level,
                     User = user,
-                    Timestamp = this._time.TimestampMilliseconds,
+                    Timestamp = this._time.Now,
                 });
 
                 this.CreateLevelPlayEvent(user, level);
