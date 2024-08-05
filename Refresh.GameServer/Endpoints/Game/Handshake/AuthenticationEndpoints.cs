@@ -14,6 +14,7 @@ using Refresh.GameServer.Configuration;
 using Refresh.GameServer.Database;
 using Refresh.GameServer.Extensions;
 using Refresh.GameServer.Services;
+using Refresh.GameServer.Time;
 using Refresh.GameServer.Types.Matching;
 using Refresh.GameServer.Types.Roles;
 using Refresh.GameServer.Types.UserData;
@@ -32,7 +33,8 @@ public class AuthenticationEndpoints : EndpointGroup
         Stream body,
         GameServerConfig config,
         IntegrationConfig integrationConfig,
-        SmtpService smtpService)
+        SmtpService smtpService,
+        IDateTimeProvider timeProvider)
     {
         Ticket ticket;
         try
@@ -114,7 +116,7 @@ public class AuthenticationEndpoints : EndpointGroup
                 return null;
             }
             
-            ticketVerified = VerifyTicket(context, (MemoryStream)body, ticket);
+            ticketVerified = VerifyTicket(context, (MemoryStream)body, ticket, timeProvider);
             if (!ticketVerified)
             {
                 SendVerificationFailureNotification(database, user, config);
@@ -185,7 +187,7 @@ public class AuthenticationEndpoints : EndpointGroup
         };
     }
 
-    private static bool VerifyTicket(RequestContext context, MemoryStream body, Ticket ticket)
+    private static bool VerifyTicket(RequestContext context, MemoryStream body, Ticket ticket, IDateTimeProvider timeProvider)
     {
         ITicketSigningKey signingKey;
 
@@ -200,6 +202,10 @@ public class AuthenticationEndpoints : EndpointGroup
             context.Logger.LogDebug(BunkumCategory.Authentication, "Using PSN LBP ticket key");
             signingKey = LbpSigningKey.Instance;
         }
+
+        // Dont allow use of expired tickets
+        if (timeProvider.Now > ticket.ExpiryDate)
+            return false;
             
         // Pass this information into a new ticket verifier
         // TODO: make this into a service?
