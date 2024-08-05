@@ -16,28 +16,36 @@ public class GameServerConfig : Config
     {
         if (oldVer < 18)
         {
-            int oldSafetyLevel = (int)oldConfig.MaximumAssetSafetyLevel;
-            this.BlockedAssetFlags = new ConfigAssetFlags
+            // Asset safety level was added in config version 2, so dont try to migrate if we are coming from an older version than that
+            if (oldVer >= 2)
             {
-                Dangerous = oldSafetyLevel < 3,
-                Modded = oldSafetyLevel < 2,
-                Media = oldSafetyLevel < 1,
-            };
-            
-            // There was no version bump for trusted users being added, so we just have to catch this error :/
-            try
-            {
-                int oldTrustedSafetyLevel = (int)oldConfig.MaximumAssetSafetyLevelForTrustedUsers;
-                this.BlockedAssetFlagsForTrustedUsers = new ConfigAssetFlags
+                int oldSafetyLevel = (int)oldConfig.MaximumAssetSafetyLevel;
+                this.BlockedAssetFlags = new ConfigAssetFlags
                 {
-                    Dangerous = oldTrustedSafetyLevel < 3,
-                    Modded = oldTrustedSafetyLevel < 2,
-                    Media = oldTrustedSafetyLevel < 1,
+                    Dangerous = oldSafetyLevel < 3,
+                    Modded = oldSafetyLevel < 2,
+                    Media = oldSafetyLevel < 1,
                 };
             }
-            catch (RuntimeBinderException)
+
+            // Asset safety level for trusted users was added in config version 12, so dont try to migrate if we are coming from a version older than that
+            if (oldVer >= 12)
             {
-                this.BlockedAssetFlagsForTrustedUsers = this.BlockedAssetFlags;
+                // There was no version bump for trusted users being added, so we just have to catch this error :/
+                try
+                {
+                    int oldTrustedSafetyLevel = (int)oldConfig.MaximumAssetSafetyLevelForTrustedUsers;
+                    this.BlockedAssetFlagsForTrustedUsers = new ConfigAssetFlags
+                    {
+                        Dangerous = oldTrustedSafetyLevel < 3,
+                        Modded = oldTrustedSafetyLevel < 2,
+                        Media = oldTrustedSafetyLevel < 1,
+                    };
+                }
+                catch (RuntimeBinderException)
+                {
+                    this.BlockedAssetFlagsForTrustedUsers = this.BlockedAssetFlags;
+                }
             }
         }
     }
