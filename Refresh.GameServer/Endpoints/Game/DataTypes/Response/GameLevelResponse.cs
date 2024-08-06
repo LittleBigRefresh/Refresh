@@ -153,8 +153,8 @@ public class GameLevelResponse : IDataConvertableFrom<GameLevelResponse, GameLev
             Location = new GameLocation(old.LocationX, old.LocationY),
             GameVersion = old.GameVersion.ToSerializedGame(),
             RootResource = old.RootResource,
-            PublishDate = old.PublishDate,
-            UpdateDate = old.UpdateDate,
+            PublishDate = old.PublishDate.ToUnixTimeMilliseconds(),
+            UpdateDate = old.UpdateDate.ToUnixTimeMilliseconds(),
             MinPlayers = old.MinPlayers,
             MaxPlayers = old.MaxPlayers,
             EnforceMinMaxPlayers = old.EnforceMinMaxPlayers,
@@ -187,7 +187,7 @@ public class GameLevelResponse : IDataConvertableFrom<GameLevelResponse, GameLev
         {
             string publisher;
             if (!old.IsReUpload)
-                publisher = "!DeletedUser";
+                publisher = FakeUserConstants.DeletedUserName;
             else
                 publisher = string.IsNullOrEmpty(old.OriginalPublisher)
                     ? FakeUserConstants.UnknownUserName

@@ -10,6 +10,6 @@ public partial class PlayLevelRelation : IRealmObject
 {
     public GameLevel Level { get; set; }
     public GameUser User { get; set; }
-    public long Timestamp { get; set; }
+    public DateTimeOffset Timestamp { get; set; }
     public int Count { get; set; }
 }

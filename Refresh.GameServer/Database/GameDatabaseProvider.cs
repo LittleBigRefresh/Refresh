@@ -33,7 +33,7 @@ public class GameDatabaseProvider : RealmDatabaseProvider<GameDatabaseContext>
         this._time = time;
     }
 
-    protected override ulong SchemaVersion => 138;
+    protected override ulong SchemaVersion => 140;
 
     protected override string Filename => "refreshGameServer.realm";
     
@@ -205,7 +205,7 @@ public class GameDatabaseProvider : RealmDatabaseProvider<GameDatabaseContext>
                         Author = author,
                         Profile = newUser,
                         Content = comment.Content,
-                        Timestamp = comment.Timestamp,
+                        Timestamp = DateTimeOffset.FromUnixTimeMilliseconds(comment.Timestamp),
                     });
                 }
             }
@@ -229,8 +229,8 @@ public class GameDatabaseProvider : RealmDatabaseProvider<GameDatabaseContext>
             if (oldVersion < 11)
             {
                 // Since we dont have a reference point for when the level was actually uploaded, default to now
-                newLevel.PublishDate = timestampSeconds;
-                newLevel.UpdateDate = timestampSeconds;
+                newLevel.PublishDate = DateTimeOffset.Now;
+                newLevel.UpdateDate = DateTimeOffset.Now;
             }
 
             // In version 14, level timestamps were fixed
@@ -316,6 +316,13 @@ public class GameDatabaseProvider : RealmDatabaseProvider<GameDatabaseContext>
             {
                 newLevel.IsAdventure = false;
             }
+            
+            // In version 140, we migrated from unix milliseconds timestamps to DateTimeOffsets
+            if (oldVersion < 140)
+            {
+                newLevel.PublishDate = DateTimeOffset.FromUnixTimeMilliseconds(oldLevel.PublishDate);
+                newLevel.UpdateDate = DateTimeOffset.FromUnixTimeMilliseconds(oldLevel.UpdateDate);
+            }
         }
 
         // In version 22, tokens added expiry and types so just wipe them all
@@ -324,23 +331,23 @@ public class GameDatabaseProvider : RealmDatabaseProvider<GameDatabaseContext>
         // In version 35, tokens added platforms and games
         if (oldVersion < 35) migration.NewRealm.RemoveAll<Token>();
 
-        // IQueryable<dynamic>? oldEvents = migration.OldRealm.DynamicApi.All("Event");
+        IQueryable<dynamic>? oldEvents = migration.OldRealm.DynamicApi.All("Event");
         IQueryable<Event>? newEvents = migration.NewRealm.All<Event>();
 
         List<Event> eventsToNuke = new();
         for (int i = 0; i < newEvents.Count(); i++)
         {
-            // dynamic oldEvent = oldEvents.ElementAt(i);
+            dynamic oldEvent = oldEvents.ElementAt(i);
             Event newEvent = newEvents.ElementAt(i);
 
             // In version 30, events were given timestamps
-            if (oldVersion < 30) newEvent.Timestamp = timestampSeconds;
-
-            // Fixes events with broken timestamps
-            if (oldVersion < 32 && newEvent.Timestamp == 0) newEvent.Timestamp = timestampSeconds;
+            // Version 32 fixes events with broken timestamps
+            if (oldVersion < 30 || oldVersion < 32 && newEvent.Timestamp.ToUnixTimeMilliseconds() == 0)
+                newEvent.Timestamp = DateTimeOffset.Now;
 
             // Converts events to use millisecond timestamps
-            if (oldVersion < 33 && newEvent.Timestamp < 1000000000000) newEvent.Timestamp *= 1000;
+            if (oldVersion < 33 && newEvent.Timestamp.ToUnixTimeMilliseconds() < 1000000000000)
+                newEvent.Timestamp = DateTimeOffset.FromUnixTimeMilliseconds(oldEvent.Timestamp * 1000);
 
             // fixup for dumb bad code not clearing score events when levels are deleted
             if (oldVersion < 96 && newEvent.StoredDataType == EventDataType.Score)
@@ -349,11 +356,13 @@ public class GameDatabaseProvider : RealmDatabaseProvider<GameDatabaseContext>
                 if(score == null) eventsToNuke.Add(newEvent);
             }
             
-            // In version 131 we removed the LevelPlay event
+            // In version 131, we removed the LevelPlay event
             if (oldVersion < 131 && newEvent.EventType == EventType.LevelPlay)
-            {
                 eventsToNuke.Add(newEvent);
-            }
+            
+            // In version 140, we migrated from unix milliseconds timestamps to DateTimeOffsets
+            if (oldVersion < 140)
+                newEvent.Timestamp = DateTimeOffset.FromUnixTimeMilliseconds(oldEvent.Timestamp);
         }
         
         // realm won't let you use an IEnumerable in RemoveRange. too bad!
@@ -362,7 +371,7 @@ public class GameDatabaseProvider : RealmDatabaseProvider<GameDatabaseContext>
             migration.NewRealm.Remove(eventToNuke);
         }
         
-        // In version 126, we started tracking token IP, there's no way for us to acquire this after the fact, so lets just clear all the tokens
+        // In version 126, we started tracking token IP; there's no way for us to acquire this after the fact, so let's just clear all the tokens
         if (oldVersion < 126) 
             migration.NewRealm.RemoveAll<Token>();
         
@@ -556,6 +565,53 @@ public class GameDatabaseProvider : RealmDatabaseProvider<GameDatabaseContext>
             {
                 newPlayLevelRelation.Count = 1;
             }
+            
+            // In version 140, we migrated from unix milliseconds timestamps to DateTimeOffsets
+            if (oldVersion < 140)
+                newPlayLevelRelation.Timestamp = DateTimeOffset.FromUnixTimeMilliseconds(oldPlayLevelRelation.Timestamp);
+        }
+
+        // We weren't deleting reviews when a level was deleted. Version 139 fixes this.
+        if (oldVersion < 139)
+            migration.NewRealm.RemoveRange(migration.NewRealm.All<GameReview>().Where(r => r.Level == null));
+        
+        IQueryable<dynamic>? oldLevelComments = migration.OldRealm.DynamicApi.All("GameLevelComment");
+        IQueryable<GameLevelComment>? newLevelComments = migration.NewRealm.All<GameLevelComment>();
+
+        for (int i = 0; i < newLevelComments.Count(); i++)
+        {
+            dynamic oldLevelComment = oldLevelComments.ElementAt(i);
+            GameLevelComment newLevelComment = newLevelComments.ElementAt(i);
+
+            // In version 140, we migrated from unix milliseconds timestamps to DateTimeOffsets
+            if (oldVersion < 140)
+                newLevelComment.Timestamp = DateTimeOffset.FromUnixTimeMilliseconds(oldLevelComment.Timestamp);
+        }
+        
+        IQueryable<dynamic>? oldProfileComments = migration.OldRealm.DynamicApi.All("GameProfileComment");
+        IQueryable<GameProfileComment>? newProfileComments = migration.NewRealm.All<GameProfileComment>();
+
+        for (int i = 0; i < newProfileComments.Count(); i++)
+        {
+            dynamic oldProfileComment = oldProfileComments.ElementAt(i);
+            GameProfileComment newProfileComment = newProfileComments.ElementAt(i);
+
+            // In version 140, we migrated from unix milliseconds timestamps to DateTimeOffsets
+            if (oldVersion < 140)
+                newProfileComment.Timestamp = DateTimeOffset.FromUnixTimeMilliseconds(oldProfileComment.Timestamp);
+        }
+        
+        IQueryable<dynamic>? oldUniquePlayLevelRelations = migration.OldRealm.DynamicApi.All("UniquePlayLevelRelation");
+        IQueryable<UniquePlayLevelRelation>? newUniquePlayLevelRelations = migration.NewRealm.All<UniquePlayLevelRelation>();
+
+        for (int i = 0; i < newUniquePlayLevelRelations.Count(); i++)
+        {
+            dynamic oldUniquePlayLevelRelation = oldUniquePlayLevelRelations.ElementAt(i);
+            UniquePlayLevelRelation newUniquePlayLevelRelation = newUniquePlayLevelRelations.ElementAt(i);
+            
+            // In version 140, we migrated from unix milliseconds timestamps to DateTimeOffsets
+            if (oldVersion < 140)
+                newUniquePlayLevelRelation.Timestamp = DateTimeOffset.FromUnixTimeMilliseconds(oldUniquePlayLevelRelation.Timestamp);
         }
     }
 }

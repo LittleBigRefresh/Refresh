@@ -30,7 +30,7 @@ public partial class GameDatabaseContext // Levels
         
         if (level.Publisher == null) throw new InvalidOperationException("Cannot create a level without a publisher");
 
-        long timestamp = this._time.TimestampMilliseconds;
+        DateTimeOffset timestamp = this._time.Now;
         this.AddSequentialObject(level, () =>
         {
             level.PublishDate = timestamp;
@@ -56,7 +56,7 @@ public partial class GameDatabaseContext // Levels
         };
             
         //Add the new story level to the database
-        long timestamp = this._time.TimestampMilliseconds;
+        DateTimeOffset timestamp = this._time.Now;
         this.AddSequentialObject(level, () =>
         {
             level.PublishDate = timestamp;
@@ -84,7 +84,7 @@ public partial class GameDatabaseContext // Levels
         // All checks passed, let's start by retaining some information from the old level
         newLevel.Publisher = author;
         newLevel.PublishDate = oldLevel.PublishDate;
-        newLevel.UpdateDate = this._time.TimestampMilliseconds; // Set the last modified date
+        newLevel.UpdateDate = this._time.Now; // Set the last modified date
         newLevel.DateTeamPicked = oldLevel.DateTeamPicked;
         
         // If the actual contents of the level haven't changed, extract some extra information
@@ -133,7 +133,7 @@ public partial class GameDatabaseContext // Levels
                 gameLevelProp.SetValue(level, prop.GetValue(body));
             }
             
-            level.UpdateDate = this._time.TimestampMilliseconds;
+            level.UpdateDate = this._time.Now;
         });
 
         return level;
@@ -154,6 +154,7 @@ public partial class GameDatabaseContext // Levels
             this.RateLevelRelations.RemoveRange(r => r.Level == level);
             this.UniquePlayLevelRelations.RemoveRange(r => r.Level == level);
             this.TagLevelRelations.RemoveRange(r => r.Level == level);
+            this.GameReviews.RemoveRange(r => r.Level == level);
             
             IQueryable<GameSubmittedScore> scores = this.GameSubmittedScores.Where(r => r.Level == level);
             

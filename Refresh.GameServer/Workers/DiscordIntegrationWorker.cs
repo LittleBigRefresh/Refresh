@@ -96,7 +96,7 @@ public class DiscordIntegrationWorker : IWorker
         else if (user != null)
             embed.WithThumbnailUrl(this.GetAssetUrl(user.IconHash));
         
-        embed.WithTimestamp(DateTimeOffset.FromUnixTimeMilliseconds(@event.Timestamp));
+        embed.WithTimestamp(@event.Timestamp);
         embed.WithAuthor(@event.User.Username, this.GetAssetUrl(@event.User.IconHash), $"{this._externalUrl}/u/{@event.UserId}");
 
         return embed.Build();
@@ -119,7 +119,7 @@ public class DiscordIntegrationWorker : IWorker
         if (!activity.Items.Any()) return;
 
         this._lastTimestamp = activity.Items
-            .Select(e => e.Timestamp)
+            .Select(e => e.Timestamp.ToUnixTimeMilliseconds())
             .Max() + 1;
 
         IEnumerable<Embed> embeds = activity.Items

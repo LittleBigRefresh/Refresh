@@ -18,7 +18,7 @@ public partial class GameDatabaseContext // ActivityWrite
         {
             EventType = EventType.LevelUpload,
             StoredDataType = EventDataType.Level,
-            Timestamp = this._time.TimestampMilliseconds,
+            Timestamp = this._time.Now,
             User = userFrom,
             StoredSequentialId = level.LevelId,
         };
@@ -36,7 +36,7 @@ public partial class GameDatabaseContext // ActivityWrite
         {
             EventType = EventType.LevelFavourite,
             StoredDataType = EventDataType.Level,
-            Timestamp = this._time.TimestampMilliseconds,
+            Timestamp = this._time.Now,
             User = userFrom,
             StoredSequentialId = level.LevelId,
         };
@@ -54,7 +54,7 @@ public partial class GameDatabaseContext // ActivityWrite
         {
             EventType = EventType.LevelUnfavourite,
             StoredDataType = EventDataType.Level,
-            Timestamp = this._time.TimestampMilliseconds,
+            Timestamp = this._time.Now,
             User = userFrom,
             StoredSequentialId = level.LevelId,
         };
@@ -72,7 +72,7 @@ public partial class GameDatabaseContext // ActivityWrite
         {
             EventType = EventType.UserFavourite,
             StoredDataType = EventDataType.User,
-            Timestamp = this._time.TimestampMilliseconds,
+            Timestamp = this._time.Now,
             User = userFrom,
             StoredObjectId = user.UserId,
         };
@@ -90,7 +90,7 @@ public partial class GameDatabaseContext // ActivityWrite
         {
             EventType = EventType.UserUnfavourite,
             StoredDataType = EventDataType.User,
-            Timestamp = this._time.TimestampMilliseconds,
+            Timestamp = this._time.Now,
             User = userFrom,
             StoredObjectId = user.UserId,
         };
@@ -108,7 +108,7 @@ public partial class GameDatabaseContext // ActivityWrite
         {
             EventType = EventType.LevelPlay,
             StoredDataType = EventDataType.Level,
-            Timestamp = this._time.TimestampMilliseconds,
+            Timestamp = this._time.Now,
             User = userFrom,
             StoredSequentialId = level.LevelId,
         };
@@ -126,7 +126,7 @@ public partial class GameDatabaseContext // ActivityWrite
         {
             EventType = EventType.LevelTag,
             StoredDataType = EventDataType.Level,
-            Timestamp = this._time.TimestampMilliseconds,
+            Timestamp = this._time.Now,
             User = userFrom,
             StoredSequentialId = level.LevelId,
         };
@@ -144,7 +144,7 @@ public partial class GameDatabaseContext // ActivityWrite
         {
             EventType = EventType.LevelTeamPick,
             StoredDataType = EventDataType.Level,
-            Timestamp = this._time.TimestampMilliseconds,
+            Timestamp = this._time.Now,
             User = userFrom,
             StoredSequentialId = level.LevelId,
         };
@@ -162,7 +162,7 @@ public partial class GameDatabaseContext // ActivityWrite
         {
             EventType = EventType.LevelRate,
             StoredDataType = EventDataType.RateLevelRelation,
-            Timestamp = this._time.TimestampMilliseconds,
+            Timestamp = this._time.Now,
             User = userFrom,
             StoredObjectId = relation.RateLevelRelationId,
         };
@@ -180,7 +180,7 @@ public partial class GameDatabaseContext // ActivityWrite
         {
             EventType = EventType.LevelReview,
             StoredDataType = EventDataType.Level,
-            Timestamp = this._time.TimestampMilliseconds,
+            Timestamp = this._time.Now,
             User = userFrom,
             StoredSequentialId = level.LevelId,
         };
@@ -198,7 +198,7 @@ public partial class GameDatabaseContext // ActivityWrite
         {
             EventType = EventType.LevelScore,
             StoredDataType = EventDataType.Score,
-            Timestamp = this._time.TimestampMilliseconds,
+            Timestamp = this._time.Now,
             User = userFrom,
             StoredObjectId = score.ScoreId,
         };
@@ -213,7 +213,7 @@ public partial class GameDatabaseContext // ActivityWrite
         {
             EventType = EventType.PhotoUpload,
             StoredDataType = EventDataType.Photo,
-            Timestamp = this._time.TimestampMilliseconds,
+            Timestamp = this._time.Now,
             User = userFrom,
             StoredSequentialId = photo.PhotoId,
         };
@@ -231,7 +231,7 @@ public partial class GameDatabaseContext // ActivityWrite
         {
             EventType = EventType.UserFirstLogin,
             StoredDataType = EventDataType.User,
-            Timestamp = this._time.TimestampMilliseconds,
+            Timestamp = this._time.Now,
             User = userFrom,
             StoredObjectId = user.UserId,
         };

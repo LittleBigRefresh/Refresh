@@ -2,5 +2,5 @@ namespace Refresh.GameServer.Database;
 
 public interface ISequentialId
 {
-    int SequentialId { set; }
+    int SequentialId { get; set; }
 }

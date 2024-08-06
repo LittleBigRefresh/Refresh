@@ -33,11 +33,11 @@ public partial class GameLevel : IRealmObject, ISequentialId
     /// <summary>
     /// When the level was first published in unix milliseconds
     /// </summary>
-    public long PublishDate { get; set; }
+    public DateTimeOffset PublishDate { get; set; }
     /// <summary>
     /// When the level was last updated in unix milliseconds
     /// </summary>
-    public long UpdateDate { get; set; }
+    public DateTimeOffset UpdateDate { get; set; }
     
     public int MinPlayers { get; set; }
     public int MaxPlayers { get; set; }
@@ -127,6 +127,7 @@ public partial class GameLevel : IRealmObject, ISequentialId
     
     public int SequentialId
     {
+        get => this.LevelId;
         set => this.LevelId = value;
     }
 

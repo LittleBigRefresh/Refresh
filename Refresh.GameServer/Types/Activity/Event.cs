@@ -50,7 +50,7 @@ public partial class Event : IRealmObject
     public bool IsPrivate { get; set; }
     
     [XmlElement("timestamp")]
-    public long Timestamp { get; set; }
+    public DateTimeOffset Timestamp { get; set; }
     
     /// <summary>
     /// The type of data that this event is referencing.
