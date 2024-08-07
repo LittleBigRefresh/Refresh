@@ -58,6 +58,13 @@ public partial class GameDatabaseContext // Photos
     {
         this.Write(() =>
         {
+            IQueryable<Event> photoEvents = this.Events
+                .Where(e => e._StoredDataType == (int)EventDataType.Photo && e.StoredSequentialId == photo.PhotoId);
+                
+            // Remove all events referencing the photo
+            this.Events.RemoveRange(photoEvents);
+            
+            // Remove the photo
             this.GamePhotos.Remove(photo);
         });
     }
@@ -116,11 +123,7 @@ public partial class GameDatabaseContext // Photos
         {
             foreach (GamePhoto photo in photos)
             {
-                IQueryable<Event> photoEvents = this.Events
-                    .Where(e => e._StoredDataType == (int)EventDataType.Photo && e.StoredSequentialId == photo.PhotoId);
-                
-                this.Events.RemoveRange(photoEvents);
-                this.GamePhotos.Remove(photo);
+                this.RemovePhoto(photo);
             }
         });
     }
