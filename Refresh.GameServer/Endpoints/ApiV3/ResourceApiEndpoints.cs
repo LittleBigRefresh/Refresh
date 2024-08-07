@@ -61,7 +61,8 @@ public class ResourceApiEndpoints : EndpointGroup
     [DocError(typeof(ApiValidationError), ApiValidationError.HashMissingErrorWhen)]
     [RateLimitSettings(RequestTimeoutDuration, MaxRequestAmount, RequestBlockDuration, BucketName)]
     public Response DownloadPspGameAsset(RequestContext context, IDataStore dataStore,
-        [DocSummary("The SHA1 hash of the asset")] string hash) => DownloadGameAsset(context, dataStore, $"psp/{hash}");
+        [DocSummary("The SHA1 hash of the asset")] string hash)
+        => this.DownloadGameAsset(context, dataStore, $"psp/{hash}");
     
     [ApiV3Endpoint("assets/{hash}/image", ContentType.Png), Authentication(false)]
     [ClientCacheResponse(9204111)] // 1 week, data may or may not change
@@ -70,7 +71,7 @@ public class ResourceApiEndpoints : EndpointGroup
     [DocError(typeof(ApiInternalError), ApiInternalError.CouldNotGetAssetErrorWhen)]
     [DocError(typeof(ApiValidationError), ApiValidationError.HashMissingErrorWhen)]
     public Response DownloadGameAssetAsImage(RequestContext context, IDataStore dataStore, GameDatabaseContext database,
-        [DocSummary("The SHA1 hash of the asset")] string hash, ImageImporter importer)
+        [DocSummary("The SHA1 hash of the asset")] string hash, ImageImporter imageImport, AssetImporter assetImport)
     {
         bool isPspAsset = hash.StartsWith("psp/");
 
@@ -87,16 +88,14 @@ public class ResourceApiEndpoints : EndpointGroup
             if (convertedType != null)
             {
                 //Import the converted hash from the data store
-                importer.ImportAsset(realHash, isPspAsset, convertedType.Value, dataStore);
+                imageImport.ImportAsset(realHash, isPspAsset, convertedType.Value, dataStore);
             }
             //If not,
             else
             {
                 //Import the asset as normal
                 GameAsset? asset = database.GetAssetFromHash(realHash);
-                if (asset == null) return ApiInternalError.CouldNotGetAssetDatabaseError;
-
-                importer.ImportAsset(asset.AssetHash, asset.IsPSP, asset.AssetType, dataStore);
+                imageImport.ImportAsset(realHash, isPspAsset, asset?.AssetType, dataStore);
             }
         }
 
@@ -113,7 +112,8 @@ public class ResourceApiEndpoints : EndpointGroup
     [DocError(typeof(ApiInternalError), ApiInternalError.CouldNotGetAssetErrorWhen)]
     [DocError(typeof(ApiValidationError), ApiValidationError.HashMissingErrorWhen)]
     public Response DownloadPspGameAssetAsImage(RequestContext context, IDataStore dataStore, GameDatabaseContext database,
-        [DocSummary("The SHA1 hash of the asset")] string hash, ImageImporter importer) => this.DownloadGameAssetAsImage(context, dataStore, database, $"psp/{hash}", importer);
+        [DocSummary("The SHA1 hash of the asset")] string hash, ImageImporter imageImport, AssetImporter assetImport) 
+        => this.DownloadGameAssetAsImage(context, dataStore, database, $"psp/{hash}", imageImport, assetImport);
 
     [ApiV3Endpoint("assets/{hash}"), Authentication(false)]
     [DocSummary("Gets information from the database about a particular hash. Includes user who uploaded, dependencies, timestamps, etc.")]
