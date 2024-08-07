@@ -1,4 +1,5 @@
 using JetBrains.Annotations;
+using Refresh.GameServer.Types.Activity;
 using Refresh.GameServer.Types.Levels;
 using Refresh.GameServer.Types.Photos;
 using Refresh.GameServer.Types.UserData;
@@ -57,6 +58,13 @@ public partial class GameDatabaseContext // Photos
     {
         this.Write(() =>
         {
+            IQueryable<Event> photoEvents = this.Events
+                .Where(e => e._StoredDataType == (int)EventDataType.Photo && e.StoredSequentialId == photo.PhotoId);
+                
+            // Remove all events referencing the photo
+            this.Events.RemoveRange(photoEvents);
+            
+            // Remove the photo
             this.GamePhotos.Remove(photo);
         });
     }
@@ -106,4 +114,17 @@ public partial class GameDatabaseContext // Photos
     [Pure]
     public int GetTotalPhotosInLevel(GameLevel level)
         => this.GamePhotos.Count(p => p.LevelId == level.LevelId);
+    
+    public void DeletePhotosPostedByUser(GameUser user)
+    {
+        IEnumerable<GamePhoto> photos = this.GamePhotos.Where(s => s.Publisher == user);
+        
+        this.Write(() =>
+        {
+            foreach (GamePhoto photo in photos)
+            {
+                this.RemovePhoto(photo);
+            }
+        });
+    }
 }
