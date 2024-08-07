@@ -59,6 +59,9 @@ public class RefreshGameServer : RefreshServer
         DryArchiveConfig dryConfig = Config.LoadFromJsonFile<DryArchiveConfig>("dry.json", this.Logger);
         if (dryConfig.Enabled)
             this._dataStore = new AggregateDataStore(dataStore, new DryDataStore(dryConfig));
+
+        // Uncomment if you want to use production refresh as a source for assets
+        // this._dataStore = new AggregateDataStore(dataStore, new RemoteRefreshDataStore());
         
         this.SetupInitializer(() =>
         {

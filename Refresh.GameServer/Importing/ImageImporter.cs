@@ -1,6 +1,7 @@
 using System.Collections.Concurrent;
 using Bunkum.Core.Storage;
 using NotEnoughLogs;
+using Refresh.GameServer.Authentication;
 using Refresh.GameServer.Database;
 using Refresh.GameServer.Extensions;
 using Refresh.GameServer.Resources;
@@ -68,9 +69,19 @@ public partial class ImageImporter : Importer
         this._runningCount--;
     }
 
-    public void ImportAsset(string hash, bool isPsp, GameAssetType type, IDataStore dataStore)
+    public void ImportAsset(string hash, bool isPsp, GameAssetType? type, IDataStore dataStore)
     {
         string dataStorePath = isPsp ? $"psp/{hash}" : hash;
+
+        if (type == null)
+        {
+            using Stream typeStream = dataStore.GetStreamFromStore(dataStorePath);
+            Span<byte> span = stackalloc byte[16];
+            _ = typeStream.Read(span);
+
+            (GameAssetType type, GameAssetFormat) assetType = this.DetermineAssetType(span, isPsp ? TokenPlatform.PSP : TokenPlatform.Website);
+            type = assetType.type;
+        }
         
         using Stream stream = dataStore.GetStreamFromStore(dataStorePath);
         using Stream writeStream = dataStore.OpenWriteStream($"png/{hash}");

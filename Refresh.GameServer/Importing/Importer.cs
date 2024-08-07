@@ -4,6 +4,7 @@ using System.Runtime.CompilerServices;
 using System.Security.Cryptography;
 using System.Text;
 using Bunkum.Core;
+using JetBrains.Annotations;
 using NotEnoughLogs;
 using Refresh.GameServer.Authentication;
 using Refresh.GameServer.Resources;
@@ -181,6 +182,7 @@ public abstract class Importer
         return true;
     }
 
+    [Pure]
     protected (GameAssetType, GameAssetFormat) DetermineAssetType(Span<byte> data, TokenPlatform? tokenPlatform)
     {
         GameAssetType? lbpAssetType = GameAssetTypeExtensions.LbpMagicToGameAssetType(data.Slice(0, 3));
