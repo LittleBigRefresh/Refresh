@@ -21,20 +21,19 @@ public partial class GameDatabaseContext // Assets
 
     public GameAssetType? GetConvertedType(string hash)
     {
-        IQueryable<GameAsset> assets = this.GameAssets;
-        
-        foreach (GameAsset asset in assets)
-        {
-            //If the asset hash is the requested hash, its not a converted file
-            if (asset.AssetHash == hash) return null;
+        GameAsset? asset = this.GameAssets.FirstOrDefault(a => a.AssetHash == hash ||
+                                                                           a.AsMainlineIconHash == hash ||
+                                                                           a.AsMipIconHash == hash);
+        //If the asset hash is the requested hash, its not a converted file
+        if (asset == null || asset.AssetHash == hash)
+            return null;
             
-            if (asset.AsMainlineIconHash == hash)
-                return GameAssetType.Png;
+        if (asset.AsMainlineIconHash == hash)
+            return GameAssetType.Png;
 
-            if (asset.AsMipIconHash == hash)
-                return GameAssetType.Mip;
-        }
-        
+        if (asset.AsMipIconHash == hash)
+            return GameAssetType.Mip;
+
         return null;
     }
 
