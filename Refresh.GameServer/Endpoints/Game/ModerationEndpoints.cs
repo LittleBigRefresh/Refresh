@@ -43,7 +43,6 @@ public class ModerationEndpoints : EndpointGroup
     /// <param name="database">The database. Used for commands</param>
     /// <returns>The string shown in-game.</returns>
     [GameEndpoint("filter", HttpMethods.Post)]
-    [RequireEmailVerified]
     [AllowEmptyBody]
     public string Filter(RequestContext context, CommandService commandService, string body, GameUser user, Token token, GameDatabaseContext database)
     {
@@ -67,8 +66,8 @@ public class ModerationEndpoints : EndpointGroup
         {
             context.Logger.LogInfo(BunkumCategory.Filter, $"<{user}>: {body}");
 
-            //If the text starts with a `/`, its a command
-            if (body.StartsWith('/'))
+            //If the text starts with a `/`, its a command, also only allow verified users to use commands
+            if (body.StartsWith('/') && user.EmailAddressVerified)
             {
                 try
                 {
