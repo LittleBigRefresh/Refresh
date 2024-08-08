@@ -17,6 +17,7 @@ namespace Refresh.GameServer.Endpoints.Game;
 public class ReviewEndpoints : EndpointGroup
 {
     [GameEndpoint("dpadrate/{slotType}/{id}", HttpMethods.Post)]
+    [RequireEmailVerified]
     public Response SubmitRating(RequestContext context, GameDatabaseContext database, GameUser user, string slotType, int id)
     {
         GameLevel? level = database.GetLevelByIdAndType(slotType, id);
@@ -127,6 +128,7 @@ public class ReviewEndpoints : EndpointGroup
     }
     
     [GameEndpoint("rateReview/user/{levelId}/{username}", HttpMethods.Post)]
+    [RequireEmailVerified]
     public Response SubmitReviewRating(RequestContext request, GameDatabaseContext database, GameUser user, int levelId, string username)
     {
         GameUser? reviewer = database.GetUserByUsername(username);

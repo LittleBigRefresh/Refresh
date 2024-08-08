@@ -19,6 +19,7 @@ namespace Refresh.GameServer.Endpoints.Game;
 public class RelationEndpoints : EndpointGroup
 {
     [GameEndpoint("favourite/slot/{slotType}/{id}", HttpMethods.Post)]
+    [RequireEmailVerified]
     public Response FavouriteLevel(RequestContext context, GameDatabaseContext database, GameUser user, string slotType, int id)
     {
         GameLevel? level = database.GetLevelByIdAndType(slotType, id);
@@ -34,6 +35,7 @@ public class RelationEndpoints : EndpointGroup
     }
     
     [GameEndpoint("unfavourite/slot/{slotType}/{id}", HttpMethods.Post)]
+    [RequireEmailVerified]
     public Response UnfavouriteLevel(RequestContext context, GameDatabaseContext database, GameUser user, string slotType, int id)
     {
         GameLevel? level = database.GetLevelByIdAndType(slotType, id);
@@ -49,6 +51,7 @@ public class RelationEndpoints : EndpointGroup
     }
     
     [GameEndpoint("favourite/user/{username}", HttpMethods.Post)]
+    [RequireEmailVerified]
     public Response FavouriteUser(RequestContext context, GameDatabaseContext database, GameUser user, string username)
     {
         GameUser? userToFavourite = database.GetUserByUsername(username);
@@ -64,6 +67,7 @@ public class RelationEndpoints : EndpointGroup
     }
     
     [GameEndpoint("unfavourite/user/{username}", HttpMethods.Post)]
+    [RequireEmailVerified]
     public Response UnfavouriteUser(RequestContext context, GameDatabaseContext database, GameUser user, string username)
     {
         GameUser? userToFavourite = database.GetUserByUsername(username);
@@ -126,6 +130,7 @@ public class RelationEndpoints : EndpointGroup
     }
     
     [GameEndpoint("tag/{slotType}/{id}", HttpMethods.Post)]
+    [RequireEmailVerified]
     public Response SubmitTagsForLevel(RequestContext context, GameDatabaseContext database, GameUser user, string slotType, int id, string body)
     {
         GameLevel? level = database.GetLevelByIdAndType(slotType, id);
