@@ -1,5 +1,6 @@
 using Refresh.GameServer.Endpoints.ApiV3.DataTypes.Response.Levels;
 using Refresh.GameServer.Endpoints.ApiV3.DataTypes.Response.Users;
+using Refresh.GameServer.Endpoints.ApiV3.DataTypes.Response.Users.Photos;
 using Refresh.GameServer.Types.Activity;
 using Refresh.GameServer.Types.Data;
 
@@ -12,6 +13,7 @@ public class ApiActivityPageResponse : IApiResponse, IDataConvertableFrom<ApiAct
     public required IEnumerable<ApiGameUserResponse> Users { get; set; }
     public required IEnumerable<ApiGameLevelResponse> Levels { get; set; }
     public required IEnumerable<ApiGameScoreResponse> Scores { get; set; }
+    public required IEnumerable<ApiGamePhotoResponse> Photos { get; set; }
     
     public static ApiActivityPageResponse? FromOld(ActivityPage? old, DataContext dataContext)
     {
@@ -23,6 +25,7 @@ public class ApiActivityPageResponse : IApiResponse, IDataConvertableFrom<ApiAct
             Users = ApiGameUserResponse.FromOldList(old.Users, dataContext),
             Levels = ApiGameLevelResponse.FromOldList(old.Levels, dataContext),
             Scores = ApiGameScoreResponse.FromOldList(old.Scores, dataContext),
+            Photos = ApiGamePhotoResponse.FromOldList(old.Photos, dataContext),
         };
     }
 
