@@ -26,7 +26,7 @@ public class PublishEndpoints : EndpointGroup
     /// </summary>
     /// <param name="body">The level to verify</param>
     /// <param name="dataContext">The data context associated with the request</param>
-    /// <returns>Whether or not validation succeeded</returns>
+    /// <returns>Whether validation succeeded</returns>
     private static bool VerifyLevel(GameLevelRequest body, DataContext dataContext)
     {
         if (body.Title.Length > UgcConstantLimits.TitleLimit) 
@@ -46,8 +46,12 @@ public class PublishEndpoints : EndpointGroup
             return false;
 
         GameLevel? existingLevel = dataContext.Database.GetLevelByRootResource(body.RootResource);
-        // If there is an existing level with this root hash, and this isn't an update request, block the upload
-        if (existingLevel != null && body.LevelId != existingLevel.LevelId)
+        // If all are true:
+        // - there is an existing level with this root hash
+        // - this isn't an update request
+        // - we're not the author of the other level
+        // then block the upload
+        if (existingLevel != null && body.LevelId != existingLevel.LevelId && existingLevel.Publisher?.UserId != dataContext.User!.UserId)
         {
             dataContext.Database.AddPublishFailNotification("The level you tried to publish has already been uploaded by another user.", body.ToGameLevel(dataContext.User!), dataContext.User!);
 
