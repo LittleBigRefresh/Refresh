@@ -22,11 +22,11 @@ public partial class GameDatabaseContext // Levels
 {
     public bool AddLevel(GameLevel level)
     {
-        if (level.Title is { Length: > UgcConstantLimits.TitleLimit })
-            level.Title = level.Title[..UgcConstantLimits.TitleLimit];
+        if (level.Title is { Length: > UgcLimits.TitleLimit })
+            level.Title = level.Title[..UgcLimits.TitleLimit];
 
-        if (level.Description is { Length: > UgcConstantLimits.DescriptionLimit })
-            level.Description = level.Description[..UgcConstantLimits.DescriptionLimit];
+        if (level.Description is { Length: > UgcLimits.DescriptionLimit })
+            level.Description = level.Description[..UgcLimits.DescriptionLimit];
         
         if (level.Publisher == null) throw new InvalidOperationException("Cannot create a level without a publisher");
 
@@ -68,11 +68,11 @@ public partial class GameDatabaseContext // Levels
 
     public GameLevel? UpdateLevel(GameLevel newLevel, GameUser author)
     {
-        if (newLevel.Title is { Length: > UgcConstantLimits.TitleLimit })
-            newLevel.Title = newLevel.Title[..UgcConstantLimits.TitleLimit];
+        if (newLevel.Title is { Length: > UgcLimits.TitleLimit })
+            newLevel.Title = newLevel.Title[..UgcLimits.TitleLimit];
 
-        if (newLevel.Description is { Length: > UgcConstantLimits.DescriptionLimit })
-            newLevel.Description = newLevel.Description[..UgcConstantLimits.DescriptionLimit];
+        if (newLevel.Description is { Length: > UgcLimits.DescriptionLimit })
+            newLevel.Description = newLevel.Description[..UgcLimits.DescriptionLimit];
         
         // Verify if this level is able to be republished
         GameLevel? oldLevel = this.GetLevelById(newLevel.LevelId);
@@ -111,11 +111,11 @@ public partial class GameDatabaseContext // Levels
     
     public GameLevel? UpdateLevel(ApiEditLevelRequest body, GameLevel level)
     {
-        if (body.Title is { Length: > UgcConstantLimits.TitleLimit })
-            body.Title = body.Title[..UgcConstantLimits.TitleLimit];
+        if (body.Title is { Length: > UgcLimits.TitleLimit })
+            body.Title = body.Title[..UgcLimits.TitleLimit];
 
-        if (body.Description is { Length: > UgcConstantLimits.DescriptionLimit })
-            body.Description = body.Description[..UgcConstantLimits.DescriptionLimit];
+        if (body.Description is { Length: > UgcLimits.DescriptionLimit })
+            body.Description = body.Description[..UgcLimits.DescriptionLimit];
         
         this.Write(() =>
         {
@@ -181,17 +181,17 @@ public partial class GameDatabaseContext // Levels
     [Pure]
     public DatabaseList<GameLevel> GetLevelsByUser(GameUser user, int count, int skip, LevelFilterSettings levelFilterSettings, GameUser? accessor)
     {
-        if (user.Username == FakeUserConstants.DeletedUserName)
+        if (user.Username == SystemUsers.DeletedUserName)
         {
             return new DatabaseList<GameLevel>(this.GetLevelsByGameVersion(levelFilterSettings.GameVersion).FilterByLevelFilterSettings(accessor, levelFilterSettings).Where(l => l.Publisher == null), skip, count);
         }
 
-        if (user.Username == FakeUserConstants.UnknownUserName)
+        if (user.Username == SystemUsers.UnknownUserName)
         {
             return new DatabaseList<GameLevel>(this.GetLevelsByGameVersion(levelFilterSettings.GameVersion).FilterByLevelFilterSettings(null, levelFilterSettings).Where(l => l.IsReUpload && String.IsNullOrEmpty(l.OriginalPublisher)), skip, count);
         }
         
-        if (user.Username.StartsWith(FakeUserConstants.Prefix))
+        if (user.Username.StartsWith(SystemUsers.SystemPrefix))
         {
             string withoutPrefix = user.Username[1..];
             return new DatabaseList<GameLevel>(this.GetLevelsByGameVersion(levelFilterSettings.GameVersion).FilterByLevelFilterSettings(accessor, levelFilterSettings).Where(l => l.OriginalPublisher == withoutPrefix), skip, count);

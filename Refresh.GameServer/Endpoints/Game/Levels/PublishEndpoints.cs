@@ -29,11 +29,11 @@ public class PublishEndpoints : EndpointGroup
     /// <returns>Whether or not validation succeeded</returns>
     private static bool VerifyLevel(GameLevelRequest body, DataContext dataContext)
     {
-        if (body.Title.Length > UgcConstantLimits.TitleLimit) 
-            body.Title = body.Title[..UgcConstantLimits.TitleLimit];
+        if (body.Title.Length > UgcLimits.TitleLimit) 
+            body.Title = body.Title[..UgcLimits.TitleLimit];
 
-        if (body.Description.Length > UgcConstantLimits.DescriptionLimit)
-            body.Description = body.Description[..UgcConstantLimits.DescriptionLimit];
+        if (body.Description.Length > UgcLimits.DescriptionLimit)
+            body.Description = body.Description[..UgcLimits.DescriptionLimit];
             
         if (body.MaxPlayers is > 4 or < 0 || body.MinPlayers is > 4 or < 0)
             return false;

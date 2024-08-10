@@ -1,4 +1,5 @@
 using System.Xml.Serialization;
+using Refresh.Common.Constants;
 using Refresh.GameServer.Authentication;
 using Refresh.GameServer.Endpoints.ApiV3.DataTypes;
 using Refresh.GameServer.Endpoints.Game.Levels.FilterSettings;
@@ -13,8 +14,6 @@ namespace Refresh.GameServer.Endpoints.Game.DataTypes.Response;
 [XmlRoot("user")]
 public class GameUserResponse : IDataConvertableFrom<GameUserResponse, GameUser>
 {
-    public const int MaximumLevels = 9_999;
-    
     [XmlAttribute("type")] public string Type { get; set; } = "user";
     [XmlElement("biography")] public required string Description { get; set; }
     [XmlElement("location")] public required GameLocation Location { get; set; }
@@ -72,9 +71,9 @@ public class GameUserResponse : IDataConvertableFrom<GameUserResponse, GameUser>
             PhotosByMeCount = old.IsManaged ? dataContext.Database.GetTotalPhotosByUser(old) : 0,
             PhotosWithMeCount = old.IsManaged ? dataContext.Database.GetTotalPhotosWithUser(old) : 0,
             
-            EntitledSlots = MaximumLevels,
-            EntitledSlotsLBP2 = MaximumLevels,
-            EntitledSlotsLBP3 = MaximumLevels,
+            EntitledSlots = UgcLimits.MaximumLevels,
+            EntitledSlotsLBP2 = UgcLimits.MaximumLevels,
+            EntitledSlotsLBP3 = UgcLimits.MaximumLevels,
             UsedSlots = 0,
             UsedSlotsLBP2 = 0,
             UsedSlotsLBP3 = 0,
@@ -110,21 +109,21 @@ public class GameUserResponse : IDataConvertableFrom<GameUserResponse, GameUser>
             case TokenGame.LittleBigPlanet3: {
                 //Match all LBP3 levels
                 response.UsedSlotsLBP3 = dataContext.Database.GetTotalLevelsPublishedByUser(old, TokenGame.LittleBigPlanet3);
-                response.FreeSlotsLBP3 = MaximumLevels - response.UsedSlotsLBP3;
+                response.FreeSlotsLBP3 = UgcLimits.MaximumLevels - response.UsedSlotsLBP3;
                 //Fill out LBP2/LBP1 levels
                 goto case TokenGame.LittleBigPlanet2;
             }
             case TokenGame.LittleBigPlanet2: {
                 //Match all LBP2 levels
                 response.UsedSlotsLBP2 = dataContext.Database.GetTotalLevelsPublishedByUser(old, TokenGame.LittleBigPlanet2);
-                response.FreeSlotsLBP2 = MaximumLevels - response.UsedSlotsLBP2;
+                response.FreeSlotsLBP2 = UgcLimits.MaximumLevels - response.UsedSlotsLBP2;
                 //Fill out LBP1 levels
                 goto case TokenGame.LittleBigPlanet1;
             }
             case TokenGame.LittleBigPlanetVita: { 
                 //Match all LBP Vita levels
                 response.UsedSlotsLBP2 = dataContext.Database.GetTotalLevelsPublishedByUser(old, TokenGame.LittleBigPlanetVita);
-                response.FreeSlotsLBP2 = MaximumLevels - response.UsedSlotsLBP2;
+                response.FreeSlotsLBP2 = UgcLimits.MaximumLevels - response.UsedSlotsLBP2;
 
                 //Apply Vita-specific icon hash
                 response.Handle.IconHash = old.VitaIconHash;
@@ -133,13 +132,13 @@ public class GameUserResponse : IDataConvertableFrom<GameUserResponse, GameUser>
             case TokenGame.LittleBigPlanet1: {
                 //Match all LBP1 levels
                 response.UsedSlots = dataContext.Database.GetTotalLevelsPublishedByUser(old, TokenGame.LittleBigPlanet1);
-                response.FreeSlots = MaximumLevels - response.UsedSlots;
+                response.FreeSlots = UgcLimits.MaximumLevels - response.UsedSlots;
                 break;
             }
             case TokenGame.LittleBigPlanetPSP: {
                 //Match all LBP PSP levels
                 response.UsedSlots = dataContext.Database.GetTotalLevelsPublishedByUser(old, TokenGame.LittleBigPlanetPSP);
-                response.FreeSlots = MaximumLevels - response.UsedSlots;
+                response.FreeSlots = UgcLimits.MaximumLevels - response.UsedSlots;
                 
                 // Apply PSP-specific icon hash
                 response.Handle.IconHash = old.PspIconHash;
@@ -161,7 +160,7 @@ public class GameUserResponse : IDataConvertableFrom<GameUserResponse, GameUser>
             {
                 // only beta levels
                 response.UsedSlots = dataContext.Database.GetTotalLevelsPublishedByUser(old, TokenGame.BetaBuild);
-                response.FreeSlots = MaximumLevels - response.UsedSlotsLBP2;
+                response.FreeSlots = UgcLimits.MaximumLevels - response.UsedSlotsLBP2;
                 
                 // use the same values for LBP3 and LBP2 since they're all shared under one count
                 response.UsedSlotsLBP3 = response.UsedSlots;

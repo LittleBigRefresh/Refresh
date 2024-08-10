@@ -27,27 +27,27 @@ public partial class GameDatabaseContext // Users
             : this.GameUsers.FirstOrDefault(u => u.Username.Equals(username, StringComparison.OrdinalIgnoreCase));
         
         // If that failed and the username is the deleted user, then we need to create the backing deleted user
-        if (username == FakeUserConstants.DeletedUserName && user == null)
+        if (username == SystemUsers.DeletedUserName && user == null)
         {
             this.Write(() =>
             {
                 this.GameUsers.Add(user = new GameUser
                 {
-                    Username = FakeUserConstants.DeletedUserName,
-                    Description = "I'm a fake user that represents deleted users for levels.",
+                    Username = SystemUsers.DeletedUserName,
+                    Description = SystemUsers.DeletedUserDescription,
                     FakeUser = true,
                 });
             });
         } 
         // If that failed and the username is a fake re-upload user, then we need to create the backing fake user
-        else if (username.StartsWith(FakeUserConstants.Prefix) && user == null)
+        else if (username.StartsWith(SystemUsers.SystemPrefix) && user == null)
         {
             this.Write(() =>
             {
                 this.GameUsers.Add(user = new GameUser
                 {
                     Username = username,
-                    Description = "I'm a fake user that represents a non existent publisher for re-published levels.",
+                    Description = SystemUsers.UnknownUserDescription,
                     FakeUser = true,
                 });
             });
