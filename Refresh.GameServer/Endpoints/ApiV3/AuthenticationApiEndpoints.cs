@@ -113,6 +113,7 @@ public class AuthenticationApiEndpoints : EndpointGroup
         GameUser user = refreshToken.User;
 
         Token token = database.GenerateTokenForUser(user, TokenType.Api, TokenGame.Website, TokenPlatform.Website, context.RemoteIp());
+        database.ResetApiRefreshTokenExpiry(refreshToken);
         
         context.Logger.LogInfo(BunkumCategory.Authentication, $"{user} successfully refreshed their token through the API");
 

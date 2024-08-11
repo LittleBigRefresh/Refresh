@@ -138,6 +138,17 @@ public partial class GameDatabaseContext // Tokens
     
     public DatabaseList<Token> GetAllTokens()
         => new(this.Tokens);
+    
+    public void ResetApiRefreshTokenExpiry(Token token)
+    {
+        if (token.TokenType != TokenType.ApiRefresh)
+            throw new InvalidOperationException("Cannot update a non-refresh token's expiry date");
+        
+        this.Write(() =>
+        {
+            token.ExpiresAt = this._time.Now.AddSeconds(RefreshTokenExpirySeconds);
+        });
+    }
 
     public void AddIpVerificationRequest(GameUser user, string ipAddress)
     {
