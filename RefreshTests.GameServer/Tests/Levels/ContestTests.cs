@@ -225,4 +225,36 @@ public class ContestTests : GameServerTest
         oldestContest = context.Database.GetNewestActiveContest();
         Assert.That(oldestContest, Is.Null);
     }
+    
+    [Test]
+    public void LastActiveContestIsCorrectOne()
+    {
+        using TestContext context = this.GetServer(false);
+        // contests end after 10ms
+        context.Time.TimestampMilliseconds = 0; // start at 0ms
+        this.CreateContest(context, id: "0");
+        
+        // should return null during an active contest
+        GameContest? oldestContest = context.Database.GetLatestCompletedContest();
+        Assert.That(oldestContest, Is.Null);
+        
+        context.Time.TimestampMilliseconds = 5; // advance 5ms, create a new contest.
+        this.CreateContest(context, id: "5");
+        
+        // jump to 14ms, after 0 has ended
+        context.Time.TimestampMilliseconds = 14;
+        
+        // 0 should be the last active contest
+        oldestContest = context.Database.GetLatestCompletedContest();
+        Assert.That(oldestContest, Is.Not.Null);
+        Assert.That(oldestContest!.ContestId, Is.EqualTo("0"));
+        
+        // jump to 15ms, 5 should be dead
+        context.Time.TimestampMilliseconds = 15;
+        
+        // the last active contest should be 5
+        oldestContest = context.Database.GetLatestCompletedContest();
+        Assert.That(oldestContest, Is.Not.Null);
+        Assert.That(oldestContest!.ContestId, Is.EqualTo("5"));
+    }
 }

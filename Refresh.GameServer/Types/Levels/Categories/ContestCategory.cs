@@ -25,8 +25,11 @@ public class ContestCategory : LevelCategory
         string? contestId = context.QueryString["contest"];
         GameContest? contest = dataContext.Database.GetContestById(contestId);
         
-        // if we cant find one by a query param try getting an active contest instead
+        // if we can't find one by a query param, try getting an active contest instead
         contest ??= dataContext.Database.GetNewestActiveContest();
+
+        // if there's no active contest, then try to use the last one that ended
+        contest ??= dataContext.Database.GetLatestCompletedContest();
         
         // if not, then fail
         if (contest == null)
