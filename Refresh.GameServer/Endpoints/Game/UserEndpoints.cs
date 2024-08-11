@@ -4,6 +4,7 @@ using Bunkum.Core.Endpoints;
 using Bunkum.Core.Storage;
 using Bunkum.Listener.Protocol;
 using Bunkum.Protocols.Http;
+using Refresh.Common.Constants;
 using Refresh.GameServer.Authentication;
 using Refresh.GameServer.Database;
 using Refresh.GameServer.Endpoints.Game.DataTypes.Response;
@@ -129,10 +130,9 @@ public class UserEndpoints : EndpointGroup
             return null;
         }
 
-        const int maxDescriptionLength = 4096;
-        if (data.Description is { Length: > maxDescriptionLength })
+        if (data.Description is { Length: > UgcLimits.DescriptionLimit })
         {
-            database.AddErrorNotification("Profile update failed", $"Your profile failed to update because the description was too long. The max length is {maxDescriptionLength}.", user);
+            database.AddErrorNotification("Profile update failed", $"Your profile failed to update because the description was too long. The max length is {UgcLimits.DescriptionLimit} characters.", user);
             return null;
         }
         

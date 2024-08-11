@@ -93,7 +93,7 @@ public class PublishEndpointsTests : GameServerTest
         {
             LevelId = 0,
             IsAdventure = false,
-            Title = new string('*', UgcConstantLimits.TitleLimit * 2),
+            Title = new string('*', UgcLimits.TitleLimit * 2),
             IconHash = "g0",
             Description = "Normal length",
             Location = new GameLocation(),
@@ -117,7 +117,7 @@ public class PublishEndpointsTests : GameServerTest
         
         message = client.PostAsync("/lbp/publish", new StringContent(level.AsXML())).Result;
         Assert.That(message.StatusCode, Is.EqualTo(OK));
-        Assert.That(message.Content.ReadAsXML<GameLevelResponse>().Title.Length, Is.EqualTo(UgcConstantLimits.TitleLimit));
+        Assert.That(message.Content.ReadAsXML<GameLevelResponse>().Title.Length, Is.EqualTo(UgcLimits.TitleLimit));
     }
     
     [Test]
@@ -134,7 +134,7 @@ public class PublishEndpointsTests : GameServerTest
             IsAdventure = false,
             Title = "Normal Title!",
             IconHash = "g0",
-            Description = new string('=', UgcConstantLimits.DescriptionLimit * 2),
+            Description = new string('=', UgcLimits.DescriptionLimit * 2),
             Location = new GameLocation(),
             GameVersion = 0,
             RootResource = TEST_ASSET_HASH,
@@ -156,7 +156,7 @@ public class PublishEndpointsTests : GameServerTest
         
         message = client.PostAsync("/lbp/publish", new StringContent(level.AsXML())).Result;
         Assert.That(message.StatusCode, Is.EqualTo(OK));
-        Assert.That(message.Content.ReadAsXML<GameLevelResponse>().Description.Length, Is.EqualTo(UgcConstantLimits.DescriptionLimit));
+        Assert.That(message.Content.ReadAsXML<GameLevelResponse>().Description.Length, Is.EqualTo(UgcLimits.DescriptionLimit));
     }
     
     [Test]
