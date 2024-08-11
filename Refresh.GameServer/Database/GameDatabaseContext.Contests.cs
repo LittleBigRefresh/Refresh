@@ -52,7 +52,7 @@ public partial class GameDatabaseContext // Contests
             .FirstOrDefault();
     }
     
-    public GameContest? GetLastActiveContest()
+    public GameContest? GetLatestCompletedContest()
     {
         DateTimeOffset now = this._time.Now;
         return this.GameContests

@@ -235,7 +235,7 @@ public class ContestTests : GameServerTest
         this.CreateContest(context, id: "0");
         
         // should return null during an active contest
-        GameContest? oldestContest = context.Database.GetLastActiveContest();
+        GameContest? oldestContest = context.Database.GetLatestCompletedContest();
         Assert.That(oldestContest, Is.Null);
         
         context.Time.TimestampMilliseconds = 5; // advance 5ms, create a new contest.
@@ -245,7 +245,7 @@ public class ContestTests : GameServerTest
         context.Time.TimestampMilliseconds = 14;
         
         // 0 should be the last active contest
-        oldestContest = context.Database.GetLastActiveContest();
+        oldestContest = context.Database.GetLatestCompletedContest();
         Assert.That(oldestContest, Is.Not.Null);
         Assert.That(oldestContest!.ContestId, Is.EqualTo("0"));
         
@@ -253,7 +253,7 @@ public class ContestTests : GameServerTest
         context.Time.TimestampMilliseconds = 15;
         
         // the last active contest should be 5
-        oldestContest = context.Database.GetLastActiveContest();
+        oldestContest = context.Database.GetLatestCompletedContest();
         Assert.That(oldestContest, Is.Not.Null);
         Assert.That(oldestContest!.ContestId, Is.EqualTo("5"));
     }

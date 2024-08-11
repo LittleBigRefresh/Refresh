@@ -29,7 +29,7 @@ public class ContestCategory : LevelCategory
         contest ??= dataContext.Database.GetNewestActiveContest();
 
         // if there's no active contest, then try to use the last one that ended
-        contest ??= dataContext.Database.GetLastActiveContest();
+        contest ??= dataContext.Database.GetLatestCompletedContest();
         
         // if not, then fail
         if (contest == null)
