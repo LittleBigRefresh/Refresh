@@ -67,6 +67,10 @@ public partial class GameUser : IRealmObject, IRateLimitUser
     public string Lbp3PlanetsHash { get; set; } = "0";
     public string VitaPlanetsHash { get; set; } = "0";
 
+    public string YayFaceHash { get; set; } = "0";
+    public string BooFaceHash { get; set; } = "0";
+    public string MehFaceHash { get; set; } = "0";
+
     public bool AllowIpAuthentication { get; set; }
     public string? CurrentVerifiedIp { get; set; }
     

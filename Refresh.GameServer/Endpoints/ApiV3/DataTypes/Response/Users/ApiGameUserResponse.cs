@@ -17,6 +17,10 @@ public class ApiGameUserResponse : IApiResponse, IDataConvertableFrom<ApiGameUse
     public required string UserId { get; set; }
     public required string Username { get; set; }
     public required string IconHash { get; set; }
+
+    public required string YayFaceHash { get; set; }
+    public required string BooFaceHash { get; set; }
+    public required string MehFaceHash { get; set; }
     public required string Description { get; set; }
     public required ApiGameLocationResponse Location { get; set; }
     public required DateTimeOffset JoinDate { get; set; }
@@ -35,7 +39,12 @@ public class ApiGameUserResponse : IApiResponse, IDataConvertableFrom<ApiGameUse
         {
             UserId = user.UserId.ToString()!,
             Username = user.Username,
-            IconHash = dataContext.Database.GetAssetFromHash(user.IconHash)?.GetAsIcon(TokenGame.Website, dataContext) ?? user.IconHash,
+
+            IconHash = dataContext.GetIconFromHash(user.IconHash),
+            YayFaceHash = dataContext.GetIconFromHash(user.YayFaceHash),
+            BooFaceHash = dataContext.GetIconFromHash(user.BooFaceHash),
+            MehFaceHash = dataContext.GetIconFromHash(user.MehFaceHash),
+
             Description = user.Description,
             Location = ApiGameLocationResponse.FromLocation(user.LocationX, user.LocationY)!,
             JoinDate = user.JoinDate,

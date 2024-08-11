@@ -154,6 +154,13 @@ public partial class GameDatabaseContext // Users
                         user.BetaIconHash = data.IconHash;
                         break;
                 }
+            
+            if (data.YayFaceHash != null)
+                user.YayFaceHash = data.YayFaceHash;
+            if (data.BooFaceHash != null)
+                user.BooFaceHash = data.BooFaceHash;
+            if (data.MehFaceHash != null)
+                user.MehFaceHash = data.MehFaceHash;
         });
     }
     

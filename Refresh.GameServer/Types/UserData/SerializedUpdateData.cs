@@ -23,4 +23,13 @@ public class SerializedUpdateData
     
     [XmlElement("icon")]
     public string? IconHash { get; set; }
+    
+    [XmlElement("yay2")]
+    public string? YayFaceHash { get; set; }
+    
+    [XmlElement("boo2")]
+    public string? BooFaceHash { get; set; }
+
+    [XmlElement("meh2")]
+    public string? MehFaceHash { get; set; }
 }
