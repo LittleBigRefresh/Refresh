@@ -9,6 +9,7 @@ using Bunkum.Protocols.Http;
 using NPTicket;
 using NPTicket.Verification;
 using NPTicket.Verification.Keys;
+using Refresh.Common.Verification;
 using Refresh.GameServer.Authentication;
 using Refresh.GameServer.Configuration;
 using Refresh.GameServer.Database;
@@ -18,7 +19,6 @@ using Refresh.GameServer.Time;
 using Refresh.GameServer.Types.Matching;
 using Refresh.GameServer.Types.Roles;
 using Refresh.GameServer.Types.UserData;
-using Refresh.GameServer.Verification;
 
 namespace Refresh.GameServer.Endpoints.Game.Handshake;
 

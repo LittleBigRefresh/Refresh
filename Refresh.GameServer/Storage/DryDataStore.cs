@@ -1,7 +1,7 @@
 using System.Text;
 using Bunkum.Core.Storage;
 using JetBrains.Annotations;
-using Refresh.GameServer.Verification;
+using Refresh.Common.Verification;
 
 namespace Refresh.GameServer.Storage;
 
