@@ -84,13 +84,18 @@ public partial class GameDatabaseContext // Levels
         // All checks passed, let's start by retaining some information from the old level
         newLevel.Publisher = author;
         newLevel.PublishDate = oldLevel.PublishDate;
-        newLevel.UpdateDate = this._time.Now; // Set the last modified date
         newLevel.DateTeamPicked = oldLevel.DateTeamPicked;
         
         // If the actual contents of the level haven't changed, extract some extra information
         if (oldLevel.RootResource == newLevel.RootResource)
         {
             newLevel.GameVersion = oldLevel.GameVersion;
+            newLevel.UpdateDate = oldLevel.UpdateDate;
+        }
+        // If we're changing the actual level, update other things
+        else
+        {
+            newLevel.UpdateDate = this._time.Now; // Set the last modified date
         }
         
         // Now newLevel is set up to replace oldLevel.
