@@ -44,6 +44,9 @@ public class ActivityPage
     
     [XmlIgnore, JsonIgnore]
     public List<GameSubmittedScore> Scores { get; set; }
+    
+    [XmlIgnore, JsonIgnore]
+    public List<GamePhoto> Photos { get; set; }
 
     public ActivityPage()
     {
@@ -52,6 +55,7 @@ public class ActivityPage
         this.SerializedLevels = new SerializedLevelList();
         this.SerializedUsers = new SerializedUserList();
         this.Scores = new List<GameSubmittedScore>();
+        this.Photos = new List<GamePhoto>();
     }
 
     private void FillInInfo(GameDatabaseContext database, bool generateGroups, ActivityQueryParameters parameters,
@@ -93,6 +97,14 @@ public class ActivityPage
             .ToList()!;
 
         this.Scores = scores;
+        
+        List<GamePhoto> photos = this.Events
+            .Where(e => e.StoredDataType == EventDataType.Photo)
+            .DistinctBy(e => e.StoredSequentialId)
+            .Select(e => database.GetPhotoById(e.StoredSequentialId!.Value))
+            .ToList()!;
+
+        this.Photos = photos;
 
         this.Groups = generateGroups ? this.GenerateGroups(users, scores, database) : new ActivityGroups();
 
