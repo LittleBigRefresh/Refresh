@@ -1,6 +1,6 @@
 using System.Text.RegularExpressions;
 
-namespace Refresh.GameServer.Verification;
+namespace Refresh.Common.Verification;
 
 public static partial class CommonPatterns
 {

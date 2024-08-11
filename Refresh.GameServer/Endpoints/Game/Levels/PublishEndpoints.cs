@@ -5,6 +5,7 @@ using Bunkum.Core.Responses;
 using Bunkum.Listener.Protocol;
 using Bunkum.Protocols.Http;
 using Refresh.Common.Constants;
+using Refresh.Common.Verification;
 using Refresh.GameServer.Authentication;
 using Refresh.GameServer.Database;
 using Refresh.GameServer.Endpoints.Game.DataTypes.Request;
@@ -15,7 +16,6 @@ using Refresh.GameServer.Types.Assets;
 using Refresh.GameServer.Types.Data;
 using Refresh.GameServer.Types.Levels;
 using Refresh.GameServer.Types.UserData;
-using Refresh.GameServer.Verification;
 
 namespace Refresh.GameServer.Endpoints.Game.Levels;
 

@@ -1,9 +1,9 @@
 using System.Security.Cryptography;
 using MongoDB.Bson;
+using Refresh.Common.Verification;
 using Refresh.GameServer.Authentication;
 using Refresh.GameServer.Extensions;
 using Refresh.GameServer.Types.UserData;
-using Refresh.GameServer.Verification;
 
 namespace Refresh.GameServer.Database;
 

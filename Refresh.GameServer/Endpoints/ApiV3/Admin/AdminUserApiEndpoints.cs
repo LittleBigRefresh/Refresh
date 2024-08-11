@@ -4,6 +4,7 @@ using Bunkum.Core.Endpoints;
 using Bunkum.Core.Storage;
 using Bunkum.Listener.Protocol;
 using Bunkum.Protocols.Http;
+using Refresh.Common.Verification;
 using Refresh.GameServer.Database;
 using Refresh.GameServer.Documentation.Attributes;
 using Refresh.GameServer.Endpoints.ApiV3.ApiTypes;
@@ -16,7 +17,6 @@ using Refresh.GameServer.Extensions;
 using Refresh.GameServer.Types.Data;
 using Refresh.GameServer.Types.Roles;
 using Refresh.GameServer.Types.UserData;
-using Refresh.GameServer.Verification;
 
 namespace Refresh.GameServer.Endpoints.ApiV3.Admin;
 

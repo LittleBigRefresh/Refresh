@@ -1,6 +1,6 @@
 using NPTicket.Verification.Keys;
 
-namespace Refresh.GameServer.Verification;
+namespace Refresh.Common.Verification;
 
 public class LbpSigningKey : PsnSigningKey
 {
