@@ -53,9 +53,10 @@ public class GameLevelResponse : IDataConvertableFrom<GameLevelResponse, GameLev
     [XmlElement("thumbsup")] public required int YayCount { get; set; }
     [XmlElement("thumbsdown")] public required int BooCount { get; set; }
     [XmlElement("yourRating")] public int YourStarRating { get; set; }
-    
-    // 1 by default since this will break reviews if set to 0 for GameLevelResponses that do not have extra data being filled in
-    [XmlElement("yourlbp2PlayCount")] public int YourLbp2PlayCount { get; set; } = 1;
+
+    [XmlElement("yourlbp1PlayCount")] public int YourLbp1PlayCount { get; set; }
+    [XmlElement("yourlbp2PlayCount")] public int YourLbp2PlayCount { get; set; }
+    [XmlElement("yourlbp3PlayCount")] public int YourLbp3PlayCount { get; set; }
     
     [XmlArray("customRewards")]
     [XmlArrayItem("customReward")]
@@ -206,10 +207,16 @@ public class GameLevelResponse : IDataConvertableFrom<GameLevelResponse, GameLev
         if (dataContext.User != null)
         {
             RatingType? rating = dataContext.Database.GetRatingByUser(old, dataContext.User);
-            
+
             response.YourRating = rating?.ToDPad() ?? (int)RatingType.Neutral;
             response.YourStarRating = rating?.ToLBP1() ?? 0;
-            response.YourLbp2PlayCount = dataContext.Database.GetTotalPlaysForLevelByUser(old, dataContext.User);
+
+            // this is technically invalid, but specifying this for all games ensures they all have the capacity to review if played.
+            // we don't store the game's version in play relations, so this is the best we can do
+            int plays = dataContext.Database.GetTotalPlaysForLevelByUser(old, dataContext.User);
+            response.YourLbp1PlayCount = plays;
+            response.YourLbp2PlayCount = plays;
+            response.YourLbp3PlayCount = plays;
         }
         
         response.PlayerCount = dataContext.Match.GetPlayerCountForLevel(RoomSlotType.Online, response.LevelId);
