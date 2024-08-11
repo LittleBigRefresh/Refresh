@@ -52,6 +52,15 @@ public partial class GameDatabaseContext // Contests
             .FirstOrDefault();
     }
     
+    public GameContest? GetLastActiveContest()
+    {
+        DateTimeOffset now = this._time.Now;
+        return this.GameContests
+            .Where(c => c.EndDate <= now)
+            .OrderByDescending(c => c.EndDate)
+            .FirstOrDefault();
+    }
+    
     public GameContest UpdateContest(ApiContestRequest body, GameContest contest, GameUser? newOrganizer = null)
     {
         this.Write(() =>
