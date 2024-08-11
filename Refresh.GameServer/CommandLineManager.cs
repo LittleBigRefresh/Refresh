@@ -70,6 +70,9 @@ internal class CommandLineManager
         
         [Option("mark-all-reuploads", HelpText = "Marks all levels uploaded by a user as re-uploaded. Username or Email options are required if this is set.")]
         public bool MarkAllReuploads { get; set; }
+        
+        [Option("ask-for-verification", HelpText = "Sends a verification code to confirm a user's identity over an untrusted channel. Username or Email options are required if this is set.")]
+        public bool AskUserForVerification { get; set; }
     }
 
     internal void StartWithArgs(string[] args)
@@ -202,6 +205,16 @@ internal class CommandLineManager
         {
             GameUser user = this.GetUserOrFail(options);
             this._server.MarkAllReuploads(user);
+        }
+        else if (options.AskUserForVerification)
+        {
+            GameUser user = this.GetUserOrFail(options);
+            string code = this._server.AskUserForVerification(user);
+            Console.WriteLine($"The code has been sent to {user.Username}'s notifications.");
+            Console.WriteLine();
+            Console.WriteLine($"\tCode: {code}");
+            Console.WriteLine();
+            Console.WriteLine("If the user does not reply to you with *exactly* this code, assume the worst.");
         }
     }
 }

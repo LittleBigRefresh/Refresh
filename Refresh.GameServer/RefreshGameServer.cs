@@ -11,6 +11,7 @@ using Bunkum.HealthChecks;
 using Bunkum.HealthChecks.RealmDatabase;
 using Bunkum.Protocols.Http;
 using Refresh.Common;
+using Refresh.Common.Verification;
 using Refresh.GameServer.Authentication;
 using Refresh.GameServer.Configuration;
 using Refresh.GameServer.Database;
@@ -259,6 +260,20 @@ public class RefreshGameServer : RefreshServer
     {
         using GameDatabaseContext context = this.GetContext();
         context.MarkAllReuploads(user);
+    }
+
+    public string AskUserForVerification(GameUser user)
+    {
+        using GameDatabaseContext context = this.GetContext();
+        string code = CodeHelper.GenerateDigitCode();
+
+        string text = $"An admin is requesting a code to verify that you currently have access to your account. " +
+                      $"Please share the code '{code}' with the admin you're currently speaking with. " +
+                      "If you're not in contact with any such staff member, please report this immediately.";
+        
+        context.AddNotification("Admin Verification Request (Action Required)", text, user, "shield");
+
+        return code;
     }
 
     public override void Dispose()
