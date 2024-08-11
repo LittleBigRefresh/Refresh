@@ -414,6 +414,9 @@ public partial class GameDatabaseContext // Relations
     public int GetUniquePlaysForLevel(GameLevel level, bool includingAuthor = true) =>
         this.UniquePlayLevelRelations.Count(r => r.Level == level && (includingAuthor || r.User != level.Publisher));
 
+    public int GetTotalCompletionsForLevel(GameLevel level) =>
+        this.GameSubmittedScores.Count(s => s.Level == level);
+
     #endregion
 
     #region Comments
