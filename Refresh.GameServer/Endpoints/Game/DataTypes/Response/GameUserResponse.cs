@@ -19,6 +19,10 @@ public class GameUserResponse : IDataConvertableFrom<GameUserResponse, GameUser>
     [XmlElement("location")] public required GameLocation Location { get; set; }
     [XmlElement("planets")] public required string PlanetsHash { get; set; }
     
+    [XmlElement("yay2")] public required string YayFaceHash { get; set; }
+    [XmlElement("boo2")] public required string BooFaceHash { get; set; }
+    [XmlElement("meh2")] public required string MehFaceHash { get; set; }
+    
     [XmlElement("npHandle")] public required SerializedUserHandle Handle { get; set; }
     [XmlElement("commentCount")] public int CommentCount { get; set; }
     [XmlElement("commentsEnabled")] public bool CommentsEnabled { get; set; }
@@ -60,6 +64,10 @@ public class GameUserResponse : IDataConvertableFrom<GameUserResponse, GameUser>
             Description = old.Description,
             Location = new GameLocation(old.LocationX, old.LocationY),
             PlanetsHash = "0",
+            
+            YayFaceHash = dataContext.GetIconFromHash(old.YayFaceHash),
+            BooFaceHash = dataContext.GetIconFromHash(old.BooFaceHash),
+            MehFaceHash = dataContext.GetIconFromHash(old.MehFaceHash),
             
             Handle = SerializedUserHandle.FromUser(old, dataContext),
             CommentCount = dataContext.Database.GetTotalCommentsForProfile(old),
