@@ -26,7 +26,8 @@ public partial class GameDatabaseContext // Relations
         .AsEnumerable()
         .Select(r => r.Level)
         .FilterByLevelFilterSettings(accessor, levelFilterSettings)
-        .FilterByGameVersion(levelFilterSettings.GameVersion), skip, count);
+        .FilterByGameVersion(levelFilterSettings.GameVersion)
+        .OrderByDescending(l => l.PublishDate), skip, count);
     
     public int GetTotalLevelsFavouritedByUser(GameUser user) 
         => this.FavouriteLevelRelations
@@ -152,7 +153,8 @@ public partial class GameDatabaseContext // Relations
         .AsEnumerable()
         .Select(r => r.Level)
         .FilterByLevelFilterSettings(accessor, levelFilterSettings)
-        .FilterByGameVersion(levelFilterSettings.GameVersion), skip, count);
+        .FilterByGameVersion(levelFilterSettings.GameVersion)
+        .OrderByDescending(l => l.PublishDate), skip, count);
     
     [Pure]
     public int GetTotalLevelsQueuedByUser(GameUser user) 
