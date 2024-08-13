@@ -1,12 +1,11 @@
 using Refresh.GameServer.Types.Assets;
 
-namespace Refresh.GameServer.Configuration;
+namespace Refresh.GameServer.Endpoints.ApiV3.DataTypes.Response.Data;
 
-public class ConfigAssetFlags
+[JsonObject(NamingStrategyType = typeof(CamelCaseNamingStrategy))]
+public class ApiAssetFlags
 {
-    public ConfigAssetFlags() {}
-    
-    public ConfigAssetFlags(AssetFlags flags)
+    public ApiAssetFlags(AssetFlags flags)
     {
         this.Dangerous = (flags & AssetFlags.Dangerous) != 0;
         this.Media = (flags & AssetFlags.Media) != 0;
@@ -27,11 +26,4 @@ public class ConfigAssetFlags
     /// This asset will only ever be created by mods.
     /// </summary>
     public bool Modded { get; set; }
-    
-    public AssetFlags ToAssetFlags()
-    {
-        return (this.Dangerous ? AssetFlags.Dangerous : AssetFlags.None) |
-               (this.Modded ? AssetFlags.Modded : AssetFlags.None) |
-               (this.Media ? AssetFlags.Media : AssetFlags.None);
-    }
 }

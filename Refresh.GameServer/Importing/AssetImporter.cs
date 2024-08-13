@@ -1,3 +1,4 @@
+using System.Collections.Concurrent;
 using System.Security.Cryptography;
 using Bunkum.Core.Storage;
 using JetBrains.Annotations;
@@ -19,53 +20,74 @@ public class AssetImporter : Importer
         this._timeProvider = timeProvider;
     }
 
-    public void ImportFromDataStore(GameDatabaseContext database, IDataStore dataStore)
+    public void ImportFromDataStore(GameDatabaseProvider databaseProvider, IDataStore dataStore)
     {
         int updatedAssets = 0;
         int newAssets = 0;
+        int processed = 0;
         this.Stopwatch.Start();
         
-        IEnumerable<string> assetHashes = dataStore.GetKeysFromStore();
+        string[] assetHashes = dataStore.GetKeysFromStore();
 
-        List<GameAsset> assets = new(assetHashes.Count());
-        foreach (string path in assetHashes)
-        {
-            bool isPsp = path.StartsWith("psp/");
-            //If the hash has a `/` and it doesnt start with `psp/`, then its an invalid asset
-            if (path.Contains('/') && !isPsp) continue;
+        ConcurrentBag<string> hashesToProcess = new(assetHashes);
 
-            string hash = isPsp ? path[4..] : path;
-            
-            byte[] data = dataStore.GetDataFromStore(path);
-            
-            GameAsset? newAsset = this.ReadAndVerifyAsset(hash, data, isPsp ? TokenPlatform.PSP : null, database);
-            if (newAsset == null) continue;
-
-            GameAsset? oldAsset = database.GetAssetFromHash(hash);
-
-            if (oldAsset != null)
-            {
-                newAsset.OriginalUploader = oldAsset.OriginalUploader;
-                newAsset.UploadDate = oldAsset.UploadDate;
-                updatedAssets++;
-            }
-            else
-            {
-                newAssets++;
-            }
-
-            assets.Add(newAsset);
-            this.Info($"Processed {newAsset.AssetType} asset {hash} ({AssetSafetyLevelExtensions.FromAssetType(newAsset.AssetType, newAsset.AssetFormat)})");
-        }
+        int threadCount = Environment.ProcessorCount * 2;
         
-        database.AddOrUpdateAssetsInDatabase(assets);
+        bool[] tasksDone = new bool[threadCount];
+        
+        for (int i = 0; i < threadCount; i++)
+        {
+            int threadId = i;
+            new Thread(() =>
+            {
+                GameDatabaseContext database = databaseProvider.GetContext();
 
+                List<GameAsset> assets = new(assetHashes.Length / threadCount);
+
+                while (hashesToProcess.TryTake(out string? path))
+                {
+                    bool isPsp = path.StartsWith("psp/");
+                    //If the hash has a `/` and it doesnt start with `psp/`, then its an invalid asset
+                    if (path.Contains('/') && !isPsp) continue;
+
+                    string hash = isPsp ? path[4..] : path;
+            
+                    byte[] data = dataStore.GetDataFromStore(path);
+            
+                    GameAsset? newAsset = this.ReadAndVerifyAsset(hash, data, isPsp ? TokenPlatform.PSP : null, database);
+                    if (newAsset == null) continue;
+
+                    GameAsset? oldAsset = database.GetAssetFromHash(hash);
+
+                    if (oldAsset != null)
+                    {
+                        newAsset.OriginalUploader = oldAsset.OriginalUploader;
+                        newAsset.UploadDate = oldAsset.UploadDate;
+                        Interlocked.Increment(ref updatedAssets);
+                    }
+                    else
+                    {
+                        Interlocked.Increment(ref newAssets);
+                    }
+                    
+                    assets.Add(newAsset);
+                    this.Info($"[{Interlocked.Increment(ref processed)}/{assetHashes.Length}] Processed {newAsset.AssetType} asset {hash} ({AssetSafetyLevelExtensions.FromAssetType(newAsset.AssetType, newAsset.AssetFormat)})");
+                }
+                
+                database.AddOrUpdateAssetsInDatabase(assets);
+
+                tasksDone[threadId] = true;
+            }).Start();
+        }
+
+        SpinWait.SpinUntil(() => tasksDone.All(done => done));
+        
         int hashCount = newAssets + updatedAssets;
         
-        this.Info($"Successfully imported {assets.Count}/{hashCount} assets ({newAssets} new, {updatedAssets} updated) into database");
-        if (assets.Count < hashCount)
+        this.Info($"Successfully imported {hashCount}/{assetHashes.Length} assets ({newAssets} new, {updatedAssets} updated) into database");
+        if (hashCount < assetHashes.Length)
         {
-            this.Warn($"{hashCount - assets.Count} assets were not imported");
+            this.Warn($"{assetHashes.Length - hashCount} assets were not imported");
         }
     }
     

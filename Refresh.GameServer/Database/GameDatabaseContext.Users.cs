@@ -327,6 +327,7 @@ public partial class GameDatabaseContext // Users
                 foreach (GamePhotoSubject subject in photo.Subjects.Where(s => s.User?.UserId == user.UserId))
                     subject.User = null;
             
+            this.GameSubmittedScores.RemoveRange(s => s.Players[0] == user);
             this.FavouriteLevelRelations.RemoveRange(r => r.User == user);
             this.FavouriteUserRelations.RemoveRange(r => r.UserToFavourite == user);
             this.FavouriteUserRelations.RemoveRange(r => r.UserFavouriting == user);

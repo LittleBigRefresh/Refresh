@@ -1,6 +1,7 @@
 using System.Diagnostics.CodeAnalysis;
 using Bunkum.Core.Configuration;
 using Microsoft.CSharp.RuntimeBinder;
+using Refresh.GameServer.Types.Assets;
 using Refresh.GameServer.Types.Roles;
 
 namespace Refresh.GameServer.Configuration;
@@ -52,17 +53,9 @@ public class GameServerConfig : Config
 
     public string LicenseText { get; set; } = "Welcome to Refresh!";
 
-    public ConfigAssetFlags BlockedAssetFlags { get; set; } = new()
-    {
-        Dangerous = true,
-        Modded = true,
-    };
+    public ConfigAssetFlags BlockedAssetFlags { get; set; } = new(AssetFlags.Dangerous | AssetFlags.Modded);
     /// <seealso cref="GameUserRole.Trusted"/>
-    public ConfigAssetFlags BlockedAssetFlagsForTrustedUsers { get; set; } = new()
-    {
-        Dangerous = true,
-        Modded = true,
-    };
+    public ConfigAssetFlags BlockedAssetFlagsForTrustedUsers { get; set; } = new(AssetFlags.Dangerous | AssetFlags.Modded);
     public bool AllowUsersToUseIpAuthentication { get; set; } = false;
     public bool UseTicketVerification { get; set; } = true;
     public bool RegistrationEnabled { get; set; } = true;

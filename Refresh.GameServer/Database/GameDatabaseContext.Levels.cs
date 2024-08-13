@@ -5,11 +5,11 @@ using Realms;
 using Refresh.Common.Constants;
 using Refresh.GameServer.Authentication;
 using Refresh.GameServer.Endpoints.ApiV3.DataTypes.Request;
-using Refresh.GameServer.Endpoints.Game.Levels;
 using Refresh.GameServer.Endpoints.Game.Levels.FilterSettings;
 using Refresh.GameServer.Extensions;
 using Refresh.GameServer.Services;
 using Refresh.GameServer.Types.Activity;
+using Refresh.GameServer.Types.Assets;
 using Refresh.GameServer.Types.Levels;
 using Refresh.GameServer.Types.Matching;
 using Refresh.GameServer.Types.Relations;
@@ -211,6 +211,10 @@ public partial class GameDatabaseContext // Levels
     public DatabaseList<GameLevel> GetUserLevelsChunk(int skip, int count)
         => new(this.GameLevels.Where(l => l._Source == (int)GameLevelSource.User), skip, count);
 
+    [Pure]
+    public IQueryable<GameLevel> GetAllUserLevels()
+        => this.GameLevels.Where(l => l._Source == (int)GameLevelSource.User);
+    
     [Pure]
     public DatabaseList<GameLevel> GetNewestLevels(int count, int skip, GameUser? user, LevelFilterSettings levelFilterSettings) =>
         new(this.GetLevelsByGameVersion(levelFilterSettings.GameVersion)
@@ -460,6 +464,45 @@ public partial class GameDatabaseContext // Levels
             foreach ((GameLevel level, float score) in scoresToSet)
             {
                 level.Score = score;
+            }
+        });
+    }
+
+    public void UpdateLevelModdedStatus(GameLevel level)
+    {
+        this.SetLevelModdedStatus(level, this.GetLevelModdedStatus(level));
+    }
+    
+    public bool GetLevelModdedStatus(GameLevel level)
+    {
+        bool modded = false;
+
+        GameAsset? rootAsset = this.GetAssetFromHash(level.RootResource);
+        
+        rootAsset?.TraverseDependenciesRecursively(this, (s, asset) =>
+        {
+            if (asset != null && (asset.AssetFlags & AssetFlags.Modded) != 0)
+                modded = true;
+        });
+        
+        return modded;
+    }
+    
+    public void SetLevelModdedStatus(GameLevel level, bool modded)
+    {
+        this.Write(() =>
+        {
+            level.Modded = modded;
+        });
+    }
+    
+    public void SetLevelModdedStatuses(Dictionary<GameLevel, bool> levels)
+    {
+        this.Write(() =>
+        {
+            foreach ((GameLevel? level, bool modded) in levels)
+            {
+                level.Modded = modded;
             }
         });
     }

@@ -49,6 +49,11 @@ public partial class GameLevel : IRealmObject, ISequentialId
     public DateTimeOffset? DateTeamPicked { get; set; }
     
     /// <summary>
+    /// Whether any asset in the dependency tree is considered "modded"
+    /// </summary>
+    public bool Modded { get; set; }
+    
+    /// <summary>
     /// The GUID of the background, this seems to only be used by LBP PSP
     /// </summary>
     public string? BackgroundGuid { get; set; }
