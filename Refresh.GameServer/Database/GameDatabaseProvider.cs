@@ -33,7 +33,7 @@ public class GameDatabaseProvider : RealmDatabaseProvider<GameDatabaseContext>
         this._time = time;
     }
 
-    protected override ulong SchemaVersion => 143;
+    protected override ulong SchemaVersion => 145;
 
     protected override string Filename => "refreshGameServer.realm";
     
@@ -97,8 +97,8 @@ public class GameDatabaseProvider : RealmDatabaseProvider<GameDatabaseContext>
         IQueryable<dynamic>? oldUsers = migration.OldRealm.DynamicApi.All("GameUser");
         IQueryable<GameUser>? newUsers = migration.NewRealm.All<GameUser>();
 
-        // only run all this if old version < 134, since thats the last time these were changed (update this accordingly)
-        if (oldVersion < 134)
+        // only run all this if old version < 145, since thats the last time these were changed (update this accordingly)
+        if (oldVersion < 145)
             for (int i = 0; i < newUsers.Count(); i++)
             {
                 dynamic oldUser = oldUsers.ElementAt(i);
@@ -216,6 +216,9 @@ public class GameDatabaseProvider : RealmDatabaseProvider<GameDatabaseContext>
                         });
                     }
                 }
+
+                if (oldVersion < 145)
+                    newUser.ShowModdedContent = true;
             }
 
         IQueryable<dynamic>? oldLevels = migration.OldRealm.DynamicApi.All("GameLevel");

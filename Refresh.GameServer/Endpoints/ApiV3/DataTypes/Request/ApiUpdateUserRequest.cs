@@ -16,6 +16,8 @@ public class ApiUpdateUserRequest
     
     public string? EmailAddress { get; set; }
     
+    public bool? ShowModdedContent { get; set; }
+    
     public Visibility? LevelVisibility { get; set; }
     public Visibility? ProfileVisibility { get; set; }
 }

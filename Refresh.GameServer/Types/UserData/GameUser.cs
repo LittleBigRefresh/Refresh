@@ -116,6 +116,11 @@ public partial class GameUser : IRealmObject, IRateLimitUser
         set => this._Role = (byte)value;
     }
 
+    /// <summary>
+    /// Whether or not modded content should be shown in level listings
+    /// </summary>
+    public bool ShowModdedContent { get; set; } = true;
+
     // ReSharper disable once InconsistentNaming
     internal byte _Role { get; set; }
 

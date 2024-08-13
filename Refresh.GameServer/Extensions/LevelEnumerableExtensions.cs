@@ -38,6 +38,9 @@ public static class LevelEnumerableExtensions
         if (levelFilterSettings.ExcludeMyLevels && user != null)
             levels = levels.Where(l => l.Publisher != user);
 
+        if (user is { ShowModdedContent: false })
+            levels = levels.Where(l => !l.Modded);
+
         // Don't allow beta builds to use this filtering option
         // If the client specifies this option then it will filter out *all* levels.
         if (levelFilterSettings.GameVersion != TokenGame.BetaBuild)
@@ -81,6 +84,9 @@ public static class LevelEnumerableExtensions
         if (levelFilterSettings.ExcludeMyLevels && user != null)
             levels = levels.Where(l => l.Publisher != user);
 
+        if (user is { ShowModdedContent: false })
+            levels = levels.Where(l => !l.Modded);
+        
         // Don't allow beta builds to use this filtering option
         // If the client specifies this option then it will filter out *all* levels.
         if (levelFilterSettings.GameVersion != TokenGame.BetaBuild)

@@ -201,6 +201,9 @@ public partial class GameDatabaseContext // Users
             
             if (data.ProfileVisibility != null)
                 user.ProfileVisibility = data.ProfileVisibility.Value;
+
+            if (data.ShowModdedContent != null)
+                user.ShowModdedContent = data.ShowModdedContent.Value;
         });
     }
 
@@ -367,6 +370,14 @@ public partial class GameDatabaseContext // Users
         this.Write(() =>
         {
             user.UnescapeXmlSequences = value;
+        });
+    }
+
+    public void SetShowModdedContent(GameUser user, bool value)
+    {
+        this.Write(() =>
+        {
+            user.ShowModdedContent = value;
         });
     }
 

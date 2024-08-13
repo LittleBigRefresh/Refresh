@@ -406,7 +406,10 @@ public partial class GameDatabaseContext // Levels
     
     [Pure]
     public int GetTotalLevelCount() => this.GameLevels.Count(l => l._Source == (int)GameLevelSource.User);
-    
+
+    [Pure]
+    public int GetModdedLevelCount() => this.GameLevels.Count(l => l._Source == (int)GameLevelSource.User && l.Modded);
+
     public int GetTotalLevelsPublishedByUser(GameUser user)
         => this.GameLevels
             .Count(r => r.Publisher == user);
