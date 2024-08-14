@@ -85,7 +85,9 @@
     <ItemGroup>
       <None Remove="Resources\lbp3.txt" />
       <EmbeddedResource Include="Resources\lbp3.txt" />
-      <None Remove="Resources\lbpv.txt" />
-      <EmbeddedResource Include="Resources\lbpv.txt" />
+        <None Remove="Resources\lbpv.txt" />
+        <EmbeddedResource Include="Resources\lbpv.txt" />
+        <None Remove="Resources\all_hashes.txt" />
+        <EmbeddedResource Include="Resources\all_hashes.txt" />
     </ItemGroup>
 </Project>

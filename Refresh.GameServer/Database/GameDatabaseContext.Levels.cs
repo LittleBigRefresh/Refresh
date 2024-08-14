@@ -482,7 +482,7 @@ public partial class GameDatabaseContext // Levels
 
         GameAsset? rootAsset = this.GetAssetFromHash(level.RootResource);
         
-        rootAsset?.TraverseDependenciesRecursively(this, (s, asset) =>
+        rootAsset?.TraverseDependenciesRecursively(this, (hash, asset) =>
         {
             if (asset != null && (asset.AssetFlags & AssetFlags.Modded) != 0)
                 modded = true;

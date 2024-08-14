@@ -4,6 +4,7 @@ using Bunkum.Listener.Request;
 using Bunkum.Core.Database;
 using Bunkum.Core.Endpoints.Middlewares;
 using Refresh.Common.Extensions;
+using Refresh.Common.Helpers;
 using Refresh.GameServer.Authentication;
 using Refresh.GameServer.Configuration;
 using Refresh.GameServer.Database;
@@ -63,7 +64,7 @@ public class DigestMiddleware : IMiddleware
         if(!hmacDigest)
             hash.WriteString(digest);
 
-        return Convert.ToHexString(hash.GetCurrentHash()).ToLower();
+        return HexHelper.BytesToHexString(hash.GetCurrentHash());
     }
     
     public void HandleRequest(ListenerContext context, Lazy<IDatabaseContext> database, Action next)

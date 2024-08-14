@@ -3,6 +3,7 @@ using System.Security.Cryptography;
 using Bunkum.Core.Storage;
 using JetBrains.Annotations;
 using NotEnoughLogs;
+using Refresh.Common.Helpers;
 using Refresh.GameServer.Authentication;
 using Refresh.GameServer.Database;
 using Refresh.GameServer.Time;
@@ -91,30 +92,10 @@ public class AssetImporter : Importer
         }
     }
     
-    public static string BytesToHexString(ReadOnlySpan<byte> data)
-    {
-        Span<char> hexChars = stackalloc char[data.Length * 2];
-
-        for (int i = 0; i < data.Length; i++)
-        {
-            byte b = data[i];
-            hexChars[i * 2] = GetHexChar(b >> 4); // High bits
-            hexChars[i * 2 + 1] = GetHexChar(b & 0x0F); // Low bits
-        }
-
-        return new string(hexChars);
-
-        static char GetHexChar(int value)
-        {
-            return (char)(value < 10 ? '0' + value : 'a' + value - 10);
-        }
-    }
-
-
     [Pure]
     public GameAsset? ReadAndVerifyAsset(string hash, byte[] data, TokenPlatform? platform, GameDatabaseContext database)
     {
-        string checkedHash = BytesToHexString(SHA1.HashData(data));
+        string checkedHash = HexHelper.BytesToHexString(SHA1.HashData(data));
 
         if (checkedHash != hash)
         {
@@ -183,7 +164,7 @@ public class AssetImporter : Importer
             if ((flags & 0x1) != 0) // UGC/SHA1
             {
                 ms.ReadExactly(hashBuffer);
-                dependencies.Add(BytesToHexString(hashBuffer));
+                dependencies.Add(HexHelper.BytesToHexString(hashBuffer));
             }
             else if ((flags & 0x2) != 0) reader.ReadUInt32(); // Skip GUID
                 

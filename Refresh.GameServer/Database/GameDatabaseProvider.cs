@@ -33,7 +33,7 @@ public class GameDatabaseProvider : RealmDatabaseProvider<GameDatabaseContext>
         this._time = time;
     }
 
-    protected override ulong SchemaVersion => 145;
+    protected override ulong SchemaVersion => 148;
 
     protected override string Filename => "refreshGameServer.realm";
     
@@ -224,8 +224,8 @@ public class GameDatabaseProvider : RealmDatabaseProvider<GameDatabaseContext>
         IQueryable<dynamic>? oldLevels = migration.OldRealm.DynamicApi.All("GameLevel");
         IQueryable<GameLevel>? newLevels = migration.NewRealm.All<GameLevel>();
 
-        // only run all this if old version < 143, since thats the last time these were changed (update this accordingly)
-        if (oldVersion < 143)
+        // only run all this if old version < 148, since thats the last time these were changed (update this accordingly)
+        if (oldVersion < 148)
             for (int i = 0; i < newLevels.Count(); i++)
             {
                 dynamic oldLevel = oldLevels.ElementAt(i);
@@ -339,8 +339,8 @@ public class GameDatabaseProvider : RealmDatabaseProvider<GameDatabaseContext>
                     newLevel.UpdateDate = DateTimeOffset.FromUnixTimeMilliseconds(oldLevel.UpdateDate);
                 }
 
-                // In version 143, we added a "Modded" tag to levels
-                if (oldVersion < 143)
+                // In version 148, we added a "Modded" tag to levels
+                if (oldVersion < 148)
                 {
                     if (!newLevel.RootResource.StartsWith('g'))
                     {
@@ -365,9 +365,9 @@ public class GameDatabaseProvider : RealmDatabaseProvider<GameDatabaseContext>
                         if (asset != null)
                         {
                             bool modded = false;
-                            TraverseDependenciesRecursively(asset, (s, gameAsset) =>
+                            TraverseDependenciesRecursively(asset, (hash, gameAsset) =>
                             {
-                                if (gameAsset != null && (gameAsset.AssetFlags & AssetFlags.Modded) != 0) 
+                                if (gameAsset != null && (gameAsset.AssetFlags & AssetFlags.Modded) != 0)
                                     modded = true;
                             });
                             newLevel.Modded = modded;

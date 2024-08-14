@@ -1,4 +1,5 @@
 using Realms;
+using Refresh.GameServer.Services;
 using Refresh.GameServer.Types.UserData;
 
 namespace Refresh.GameServer.Types.Assets;
@@ -30,7 +31,20 @@ public partial class GameAsset : IRealmObject
     
     public IList<string> Dependencies { get; } = null!;
 
-    [Ignored] public AssetFlags AssetFlags => AssetSafetyLevelExtensions.FromAssetType(this.AssetType, this.AssetFormat);
+    [Ignored] 
+    public AssetFlags AssetFlags
+    {
+        get
+        {
+            AssetFlags flags = AssetSafetyLevelExtensions.FromAssetType(this.AssetType, this.AssetFormat);
+
+            // If the hash is a vanilla game hash, strip the modded flag
+            if (VanillaHashChecker.IsVanillaHash(this.AssetHash))
+                flags &= ~AssetFlags.Modded;
+            
+            return flags;
+        }
+    }
 
     public string? AsMainlineIconHash { get; set; }
     public string? AsMipIconHash { get; set; }

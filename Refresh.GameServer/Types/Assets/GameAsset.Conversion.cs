@@ -1,5 +1,6 @@
 using System.Security.Cryptography;
 using Bunkum.Core.Storage;
+using Refresh.Common.Helpers;
 using Refresh.GameServer.Authentication;
 using Refresh.GameServer.Database;
 using Refresh.GameServer.Importing;
@@ -102,7 +103,7 @@ public partial class GameAsset
                 byte[] data = ms.ToArray();
 
                 //Get the hash of the converted asset
-                string convertedHash = AssetImporter.BytesToHexString(SHA1.HashData(data));
+                string convertedHash = HexHelper.BytesToHexString(SHA1.HashData(data));
 
                 //Write the data to the store
                 dataStore.WriteToStore(convertedHash, data);
@@ -124,7 +125,7 @@ public partial class GameAsset
                 byte[] encryptedData = ResourceHelper.PspEncrypt(data, Importer.PSPKey.Value);
 
                 //Get the hash
-                string convertedHash = AssetImporter.BytesToHexString(SHA1.HashData(encryptedData));
+                string convertedHash = HexHelper.BytesToHexString(SHA1.HashData(encryptedData));
 
                 dataStore.WriteToStore($"psp/{convertedHash}", encryptedData);
 

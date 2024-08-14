@@ -8,7 +8,6 @@ namespace Refresh.GameServer.Services;
 
 public class GuidCheckerService : EndpointService
 {
-    
     private readonly GameServerConfig _config;
     private readonly HashSet<long> _validMainlineTextureGuids= [];
     private readonly HashSet<long> _validVitaTextureGuids = [];
