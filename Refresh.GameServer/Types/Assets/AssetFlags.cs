@@ -67,7 +67,7 @@ public static class AssetSafetyLevelExtensions
             // Dangerous modded assets
             GameAssetType.Script => AssetFlags.Dangerous | AssetFlags.Modded,
             
-            // Media types which have no reason to be referenced as hashed assets
+            // Asset types which have no reason to be referenced as hashed assets
             GameAssetType.GuidSubstitution => AssetFlags.Dangerous | AssetFlags.Modded,
             GameAssetType.DownloadableContent => AssetFlags.Dangerous | AssetFlags.Modded,
             GameAssetType.GameConstants => AssetFlags.Dangerous | AssetFlags.Modded,
