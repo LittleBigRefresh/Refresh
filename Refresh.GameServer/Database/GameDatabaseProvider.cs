@@ -97,7 +97,6 @@ public class GameDatabaseProvider : RealmDatabaseProvider<GameDatabaseContext>
         IQueryable<dynamic>? oldUsers = migration.OldRealm.DynamicApi.All("GameUser");
         IQueryable<GameUser>? newUsers = migration.NewRealm.All<GameUser>();
 
-        // only run all this if old version < 145, since thats the last time these were changed (update this accordingly)
         if (oldVersion < 145)
             for (int i = 0; i < newUsers.Count(); i++)
             {
@@ -224,7 +223,6 @@ public class GameDatabaseProvider : RealmDatabaseProvider<GameDatabaseContext>
         IQueryable<dynamic>? oldLevels = migration.OldRealm.DynamicApi.All("GameLevel");
         IQueryable<GameLevel>? newLevels = migration.NewRealm.All<GameLevel>();
 
-        // only run all this if old version < 148, since thats the last time these were changed (update this accordingly)
         if (oldVersion < 148)
             for (int i = 0; i < newLevels.Count(); i++)
             {
@@ -378,7 +376,7 @@ public class GameDatabaseProvider : RealmDatabaseProvider<GameDatabaseContext>
 
         // In version 22, tokens added expiry and types so just wipe them all
         if (oldVersion < 22) migration.NewRealm.RemoveAll<Token>();
-
+                
         // In version 35, tokens added platforms and games
         if (oldVersion < 35) migration.NewRealm.RemoveAll<Token>();
 
@@ -386,7 +384,6 @@ public class GameDatabaseProvider : RealmDatabaseProvider<GameDatabaseContext>
         IQueryable<Event>? newEvents = migration.NewRealm.All<Event>();
 
         List<Event> eventsToNuke = new();
-        // only run all this if old version < 140, since thats the last time these were changed (update this accordingly)
         if (oldVersion < 140)
             for (int i = 0; i < newEvents.Count(); i++)
             {
@@ -424,15 +421,14 @@ public class GameDatabaseProvider : RealmDatabaseProvider<GameDatabaseContext>
         {
             migration.NewRealm.Remove(eventToNuke);
         }
-
+        
         // In version 126, we started tracking token IP; there's no way for us to acquire this after the fact, so let's just clear all the tokens
-        if (oldVersion < 126)
+        if (oldVersion < 126) 
             migration.NewRealm.RemoveAll<Token>();
-
+        
         // IQueryable<dynamic>? oldTokens = migration.OldRealm.DynamicApi.All("Token");
         IQueryable<Token>? newTokens = migration.NewRealm.All<Token>();
 
-        // only run all this if old version < 36, since thats the last time these were changed (update this accordingly)
         if (oldVersion < 36)
             for (int i = 0; i < newTokens.Count(); i++)
             {
@@ -446,7 +442,6 @@ public class GameDatabaseProvider : RealmDatabaseProvider<GameDatabaseContext>
         IQueryable<dynamic>? oldPhotos = migration.OldRealm.DynamicApi.All("GamePhoto");
         IQueryable<GamePhoto>? newPhotos = migration.NewRealm.All<GamePhoto>();
 
-        // only run all this if old version < 133, since thats the last time these were changed (update this accordingly)
         if (oldVersion < 133)
             for (int i = 0; i < oldPhotos.Count(); i++)
             {
@@ -495,7 +490,6 @@ public class GameDatabaseProvider : RealmDatabaseProvider<GameDatabaseContext>
         IQueryable<dynamic>? oldAssets = migration.OldRealm.DynamicApi.All("GameAsset");
         IQueryable<GameAsset>? newAssets = migration.NewRealm.All<GameAsset>();
 
-        // only run all this if old version < 136, since thats the last time these were changed (update this accordingly)
         if (oldVersion < 136)
             for (int i = 0; i < newAssets.Count(); i++)
             {
@@ -598,7 +592,6 @@ public class GameDatabaseProvider : RealmDatabaseProvider<GameDatabaseContext>
         IQueryable<dynamic>? oldScores = migration.OldRealm.DynamicApi.All("GameSubmittedScore");
         IQueryable<GameSubmittedScore>? newScores = migration.NewRealm.All<GameSubmittedScore>();
 
-        // only run all this if old version < 104, since thats the last time scores were changed (update this accordingly)
         if (oldVersion < 104)
             for (int i = 0; i < newScores.Count(); i++)
             {
@@ -634,7 +627,6 @@ public class GameDatabaseProvider : RealmDatabaseProvider<GameDatabaseContext>
         IQueryable<dynamic>? oldPlayLevelRelations = migration.OldRealm.DynamicApi.All("PlayLevelRelation");
         IQueryable<PlayLevelRelation>? newPlayLevelRelations = migration.NewRealm.All<PlayLevelRelation>();
 
-        // only run all this if old version < 140, since thats the last time these were changed (update this accordingly)
         if (oldVersion < 140)
             for (int i = 0; i < newPlayLevelRelations.Count(); i++)
             {
@@ -656,11 +648,10 @@ public class GameDatabaseProvider : RealmDatabaseProvider<GameDatabaseContext>
         // We weren't deleting reviews when a level was deleted. Version 139 fixes this.
         if (oldVersion < 139)
             migration.NewRealm.RemoveRange(migration.NewRealm.All<GameReview>().Where(r => r.Level == null));
-
+        
         IQueryable<dynamic>? oldLevelComments = migration.OldRealm.DynamicApi.All("GameLevelComment");
         IQueryable<GameLevelComment>? newLevelComments = migration.NewRealm.All<GameLevelComment>();
 
-        // only run all this if old version < 140, since thats the last time these were changed (update this accordingly)
         if (oldVersion < 140)
             for (int i = 0; i < newLevelComments.Count(); i++)
             {
@@ -675,7 +666,6 @@ public class GameDatabaseProvider : RealmDatabaseProvider<GameDatabaseContext>
         IQueryable<dynamic>? oldProfileComments = migration.OldRealm.DynamicApi.All("GameProfileComment");
         IQueryable<GameProfileComment>? newProfileComments = migration.NewRealm.All<GameProfileComment>();
 
-        // only run all this if old version < 140, since thats the last time these were changed (update this accordingly)
         if (oldVersion < 140)
             for (int i = 0; i < newProfileComments.Count(); i++)
             {
@@ -688,10 +678,8 @@ public class GameDatabaseProvider : RealmDatabaseProvider<GameDatabaseContext>
             }
 
         IQueryable<dynamic>? oldUniquePlayLevelRelations = migration.OldRealm.DynamicApi.All("UniquePlayLevelRelation");
-        IQueryable<UniquePlayLevelRelation>? newUniquePlayLevelRelations =
-            migration.NewRealm.All<UniquePlayLevelRelation>();
+        IQueryable<UniquePlayLevelRelation>? newUniquePlayLevelRelations = migration.NewRealm.All<UniquePlayLevelRelation>();
 
-        // only run all this if old version < 140, since thats the last time these were changed (update this accordingly)
         if (oldVersion < 140)
             for (int i = 0; i < newUniquePlayLevelRelations.Count(); i++)
             {
