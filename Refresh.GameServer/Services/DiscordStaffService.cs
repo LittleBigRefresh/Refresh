@@ -70,6 +70,6 @@ public class DiscordStaffService : EndpointService
             builder.AddField(tagFormatted, confidenceFormatted, true);
         }
         
-        this.PostMessage($"Prediction result for {author.Username}:", [builder.Build()]);
+        this.PostMessage($"Prediction result for {asset.AssetHash} ({author.Username}):", [builder.Build()]);
     }
 }
