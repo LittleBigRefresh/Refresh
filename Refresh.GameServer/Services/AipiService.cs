@@ -126,7 +126,6 @@ public class AipiService : EndpointService
 
         // import the asset as png
         bool isPspAsset = asset.AssetHash.StartsWith("psp/");
-        string hash = isPspAsset ? "psp/" + asset.AssetHash : asset.AssetHash;
 
         if (!context.DataStore.ExistsInStore("png/" + asset.AssetHash))
         {
