@@ -1,4 +1,3 @@
-using System.Reflection;
 using Bunkum.Core;
 using Bunkum.Listener.Request;
 using Bunkum.Core.Database;
@@ -12,20 +11,20 @@ public class ImportService : Service
 {
     internal ImportService(Logger logger, TimeProviderService timeProvider) : base(logger)
     {
-        this._assetImporter = new AssetImporter(logger, timeProvider.TimeProvider);
-        this._imageImporter = new ImageImporter(logger);
+        this.AssetImporter = new AssetImporter(logger, timeProvider.TimeProvider);
+        this.ImageImporter = new ImageImporter(logger);
     }
 
-    private readonly AssetImporter _assetImporter;
-    private readonly ImageImporter _imageImporter;
+    internal readonly AssetImporter AssetImporter;
+    internal readonly ImageImporter ImageImporter;
 
     public override object? AddParameterToEndpoint(ListenerContext context, BunkumParameterInfo paramInfo, Lazy<IDatabaseContext> database)
     {
         if (paramInfo.ParameterType == typeof(AssetImporter))
-            return this._assetImporter;
+            return this.AssetImporter;
 
         if (paramInfo.ParameterType == typeof(ImageImporter))
-            return this._imageImporter;
+            return this.ImageImporter;
 
         return base.AddParameterToEndpoint(context, paramInfo, database);
     }

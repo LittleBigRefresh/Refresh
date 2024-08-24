@@ -9,4 +9,5 @@ public enum RefreshContext
     LevelListOverride,
     CoolLevels,
     Publishing,
+    Aipi,
 }
