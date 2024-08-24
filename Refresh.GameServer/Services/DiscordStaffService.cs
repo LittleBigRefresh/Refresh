@@ -37,7 +37,7 @@ public class DiscordStaffService : EndpointService
     
     private string GetAssetInfoUrl(string hash)
     {
-        return $"{this._externalUrl}/api/v3/assets/{hash}/image";
+        return $"{this._externalUrl}/api/v3/assets/{hash}";
     }
 
     private void PostMessage(string? message = null, IEnumerable<Embed>? embeds = null!)
