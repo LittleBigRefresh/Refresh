@@ -15,6 +15,7 @@ using Refresh.GameServer.Endpoints.ApiV3.ApiTypes.Errors;
 using Refresh.GameServer.Endpoints.ApiV3.DataTypes.Response;
 using Refresh.GameServer.Endpoints.ApiV3.DataTypes.Response.Data;
 using Refresh.GameServer.Importing;
+using Refresh.GameServer.Services;
 using Refresh.GameServer.Types.Assets;
 using Refresh.GameServer.Types.Data;
 using Refresh.GameServer.Types.Roles;
@@ -158,7 +159,11 @@ public class ResourceApiEndpoints : EndpointGroup
         IDataStore dataStore, AssetImporter importer, GameServerConfig config,
         [DocSummary("The SHA1 hash of the asset")]
         string hash,
-        byte[] body, GameUser user, DataContext dataContext)
+        byte[] body, GameUser user, DataContext dataContext,
+        AipiService? aipi,
+        DiscordStaffService? discord,
+        IntegrationConfig integration
+        )
     {
         // If we're blocking asset uploads, throw unless the user is an admin.
         // We also have the ability to block asset uploads for trusted users (when they would normally bypass this)
@@ -197,6 +202,12 @@ public class ResourceApiEndpoints : EndpointGroup
             return ApiInternalError.CouldNotWriteAssetError;
         
         gameAsset.OriginalUploader = user;
+        
+        if (aipi != null && aipi.ScanAndHandleAsset(dataContext, gameAsset))
+        {
+            return ApiModerationError.Instance;
+        }
+        
         database.AddAssetToDatabase(gameAsset);
 
         return new ApiResponse<ApiGameAssetResponse>(ApiGameAssetResponse.FromOld(gameAsset, dataContext)!, Created);

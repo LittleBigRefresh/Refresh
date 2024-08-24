@@ -7,7 +7,7 @@ namespace Refresh.GameServer.Configuration;
 /// </summary>
 public class IntegrationConfig : Config
 {
-    public override int CurrentConfigVersion => 4;
+    public override int CurrentConfigVersion => 5;
     public override int Version { get; set; }
     protected override void Migrate(int oldVer, dynamic oldConfig)
     {
@@ -31,10 +31,31 @@ public class IntegrationConfig : Config
 
     public bool DiscordWebhookEnabled { get; set; }
     public string DiscordWebhookUrl { get; set; } = "https://discord.com/api/webhooks/id/key";
+
+    public bool DiscordStaffWebhookEnabled { get; set; }
+    public string DiscordStaffWebhookUrl { get; set; } = "https://discord.com/api/webhooks/id/key";
     public int DiscordWorkerFrequencySeconds { get; set; } = 60;
     public string DiscordNickname { get; set; } = "Refresh";
     public string DiscordAvatarUrl { get; set; } = "https://raw.githubusercontent.com/LittleBigRefresh/Branding/main/icons/refresh_512x.png";
 
+    #endregion
+    
+    #region AIPI
+    
+    public bool AipiEnabled { get; set; } = false;
+    public string AipiBaseUrl { get; set; } = "http://localhost:5000";
+    
+    /// <summary>
+    /// The threshold at which tags are discarded during EVA2 prediction.
+    /// </summary>
+    public float AipiThreshold { get; set; } = 0.85f;
+    
+    // in DO we store this statically, but this exposing this as a config option allows us to obscure which tags
+    // are being blocked, because refresh is FOSS and DT could probably just look at it.
+    public string[] AipiBannedTags { get; set; } = [];
+
+    public bool AipiRestrictAccountOnDetection { get; set; } = false;
+    
     #endregion
     
     public string? GrafanaDashboardUrl { get; set; }
