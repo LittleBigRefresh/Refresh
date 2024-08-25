@@ -6,6 +6,8 @@ using Bunkum.Listener.Protocol;
 using Bunkum.Protocols.Http;
 using Refresh.GameServer.Database;
 using Refresh.GameServer.Extensions;
+using Refresh.GameServer.Services;
+using Refresh.GameServer.Types.Assets;
 using Refresh.GameServer.Types.Data;
 using Refresh.GameServer.Types.Levels;
 using Refresh.GameServer.Types.Lists;
@@ -19,7 +21,8 @@ public class PhotoEndpoints : EndpointGroup
 {
     [GameEndpoint("uploadPhoto", HttpMethods.Post, ContentType.Xml)]
     [RequireEmailVerified]
-    public Response UploadPhoto(RequestContext context, SerializedPhoto body, GameDatabaseContext database, GameUser user, IDataStore dataStore)
+    public Response UploadPhoto(RequestContext context, SerializedPhoto body, GameDatabaseContext database, GameUser user, IDataStore dataStore,
+        DataContext dataContext, AipiService aipi)
     {
         if (!dataStore.ExistsInStore(body.SmallHash) ||
             !dataStore.ExistsInStore(body.MediumHash) ||
@@ -34,6 +37,15 @@ public class PhotoEndpoints : EndpointGroup
         {
             context.Logger.LogWarning(BunkumCategory.UserContent, $"Too many subjects in photo, rejecting photo upload. Uploader: {user.UserId}");
             return BadRequest;
+        }
+
+        List<string> hashes = [body.LargeHash, body.MediumHash, body.SmallHash];
+        foreach (string hash in hashes.Distinct())
+        {
+            GameAsset? gameAsset = database.GetAssetFromHash(hash);
+            if(gameAsset == null) continue;
+            if (aipi != null && aipi.ScanAndHandleAsset(dataContext, gameAsset))
+                return Unauthorized;
         }
 
         database.UploadPhoto(body, user);

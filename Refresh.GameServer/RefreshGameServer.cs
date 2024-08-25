@@ -140,6 +140,10 @@ public class RefreshGameServer : RefreshServer
         this.Server.AddService<RequestStatisticTrackingService>();
         this.Server.AddService<LevelListOverrideService>();
         this.Server.AddService<CommandService>();
+        this.Server.AddService<DiscordStaffService>();
+        
+        if(this._integrationConfig!.AipiEnabled)
+            this.Server.AddService<AipiService>();
         
         #if DEBUG
         this.Server.AddService<DebugService>();
