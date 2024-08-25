@@ -32,7 +32,7 @@ public static class HexHelper
     [MethodImpl(MethodImplOptions.AggressiveOptimization)]
     public static byte[] HexStringToBytes(string hex) {
         if (hex.Length % 2 != 0)
-            throw new Exception("The hex string must have an even number of bytes");
+            throw new FormatException("The hex string is invalid as it contains an odd number of bytes.");
         
         // Two hex digits per byte
         byte[] arr = new byte[hex.Length / 2];

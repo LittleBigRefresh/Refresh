@@ -115,12 +115,12 @@ public class CommandService : EndpointService
                 database.SetUnescapeXmlSequences(user, false);
                 break;
             }
-            case "showmoddedcontent":
+            case "showmods":
             {
                 database.SetShowModdedContent(user, true);
                 break;
             }
-            case "hidemoddedcontent":
+            case "hidemods":
             {
                 database.SetShowModdedContent(user, false);
                 break;
