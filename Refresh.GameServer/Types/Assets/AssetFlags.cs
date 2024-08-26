@@ -24,6 +24,7 @@ public static class AssetSafetyLevelExtensions
     {
         AssetFlags flags = type switch
         {
+            // Common asset types created by the game
             GameAssetType.Level => AssetFlags.None,
             GameAssetType.StreamingLevelChunk => AssetFlags.None,
             GameAssetType.Plan => AssetFlags.None,
@@ -34,6 +35,7 @@ public static class AssetSafetyLevelExtensions
             GameAssetType.AdventureSharedData => AssetFlags.None,
             GameAssetType.AdventureCreateProfile => AssetFlags.None,
             
+            // Common media types created by the game
             GameAssetType.VoiceRecording => AssetFlags.Media,
             GameAssetType.Painting => AssetFlags.Media,
             GameAssetType.Texture => AssetFlags.Media,
@@ -42,15 +44,19 @@ public static class AssetSafetyLevelExtensions
             GameAssetType.Tga => AssetFlags.Media,
             GameAssetType.Mip => AssetFlags.Media,
             
+            // Uncommon, but still vanilla assets created by the game in niche scenarios 
+            GameAssetType.GfxMaterial => AssetFlags.Media, // while not image/audio data like the other media types, this is marked as media because this file can contain full PS3 shaders
+            GameAssetType.Material => AssetFlags.None,
+            GameAssetType.Bevel => AssetFlags.None,
+            
+            // Modded media types
             GameAssetType.GameDataTexture => AssetFlags.Media | AssetFlags.Modded,
             GameAssetType.AnimatedTexture => AssetFlags.Media | AssetFlags.Modded,
             
-            GameAssetType.GfxMaterial => AssetFlags.Modded,
-            GameAssetType.Material => AssetFlags.Modded,
+            // Normal modded assets
             GameAssetType.Mesh => AssetFlags.Modded,
             GameAssetType.Palette => AssetFlags.Modded,
             GameAssetType.SoftPhysicsSettings => AssetFlags.Modded,
-            GameAssetType.Bevel => AssetFlags.Modded,
             GameAssetType.Animation => AssetFlags.Modded,
             GameAssetType.SettingsCharacter => AssetFlags.Modded,
             GameAssetType.Joint => AssetFlags.Modded,
@@ -58,9 +64,10 @@ public static class AssetSafetyLevelExtensions
             GameAssetType.StaticMesh => AssetFlags.Modded,
             GameAssetType.PaintBrush => AssetFlags.Modded,
             
+            // Dangerous modded assets
             GameAssetType.Script => AssetFlags.Dangerous | AssetFlags.Modded,
             
-            // All of these types have no purpose when referenced as hashed assets
+            // Asset types which have no reason to be referenced as hashed assets
             GameAssetType.GuidSubstitution => AssetFlags.Dangerous | AssetFlags.Modded,
             GameAssetType.DownloadableContent => AssetFlags.Dangerous | AssetFlags.Modded,
             GameAssetType.GameConstants => AssetFlags.Dangerous | AssetFlags.Modded,

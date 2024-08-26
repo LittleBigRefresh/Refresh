@@ -6,8 +6,8 @@ using System.Text;
 using Bunkum.Core;
 using JetBrains.Annotations;
 using NotEnoughLogs;
+using Refresh.Common.Helpers;
 using Refresh.GameServer.Authentication;
-using Refresh.GameServer.Resources;
 using Refresh.GameServer.Types.Assets;
 
 namespace Refresh.GameServer.Importing;
@@ -185,6 +185,10 @@ public abstract class Importer
     [Pure]
     protected (GameAssetType, GameAssetFormat) DetermineAssetType(Span<byte> data, TokenPlatform? tokenPlatform)
     {
+        // MATT is a special format constructed by the game when making a grief report. It does not follow standard serialization rules, so it's not caught by the below lines
+        if (MatchesMagic(data, "MATT"u8)) 
+            return (GameAssetType.GriefSongState, GameAssetFormat.Unknown);
+        
         GameAssetType? lbpAssetType = GameAssetTypeExtensions.LbpMagicToGameAssetType(data.Slice(0, 3));
         
         if (lbpAssetType != null)
@@ -197,10 +201,6 @@ public abstract class Importer
             this.Warn($"Unknown asset format for game asset [0x{Convert.ToHexString(data[..4])}] [str: {Encoding.ASCII.GetString(data[..4])}]");
             return (GameAssetType.Unknown, GameAssetFormat.Unknown);
         }
-        
-        // MATT is a special format constructed by the game when making a grief report. It does not follow standard serialization rules, so it's not caught by the above lines
-        if (MatchesMagic(data, "MATT"u8)) 
-            return (GameAssetType.GriefSongState, GameAssetFormat.Unknown);
         
         // Traditional files
         // Good reference for magics: https://en.wikipedia.org/wiki/List_of_file_signatures

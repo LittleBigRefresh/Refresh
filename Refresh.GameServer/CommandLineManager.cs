@@ -26,6 +26,9 @@ internal class CommandLineManager
         [Option("convert-images", HelpText = "Convert all images in the database to .PNGs. Otherwise, images will be converted as they are used.")]
         public bool ImportImages { get; set; }
         
+        [Option("flag-modded-levels", HelpText = "Go through all uploaded levels and update the modded status of each level.")]
+        public bool FlagModdedLevels { get; set; }
+        
         [Option("generate-docs", HelpText = "Generates documentation for API V3 endpoints.")]
         public bool GenerateDocumentation { get; set; }
         
@@ -127,6 +130,10 @@ internal class CommandLineManager
         else if (options.ImportImages)
         {
             this._server.ImportImages();
+        }
+        else if (options.FlagModdedLevels)
+        {
+            this._server.FlagModdedLevels();
         }
         else if (options.GenerateDocumentation)
         {

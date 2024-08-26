@@ -172,6 +172,12 @@ public class PublishEndpoints : EndpointGroup
         level.Publisher = dataContext.User;
 
         dataContext.Database.AddLevel(level);
+
+        // Update the modded status of the level
+        // NOTE: this wont do anything if the slot is uploaded before the level resource,
+        //       so we also do this same operation inside of ResourceEndpoints.UploadAsset to catch that case aswell
+        dataContext.Database.UpdateLevelModdedStatus(level);
+        
         dataContext.Database.CreateLevelUploadEvent(dataContext.User, level);
 
         context.Logger.LogInfo(BunkumCategory.UserContent, "User {0} (id: {1}) uploaded level id {2}", user.Username, user.UserId, level.LevelId);

@@ -37,6 +37,8 @@ public class ApiExtendedGameUserResponse : IApiResponse, IDataConvertableFrom<Ap
     public required bool ShouldResetPassword { get; set; }
     public required bool AllowIpAuthentication { get; set; }
     
+    public required bool ShowModdedContent { get; set; }
+    
     public required Visibility LevelVisibility { get; set; }
     public required Visibility ProfileVisibility { get; set; }
     
@@ -74,6 +76,7 @@ public class ApiExtendedGameUserResponse : IApiResponse, IDataConvertableFrom<Ap
             ActiveRoom = ApiGameRoomResponse.FromOld(dataContext.Match.RoomAccessor.GetRoomByUser(user), dataContext),
             LevelVisibility = user.LevelVisibility,
             ProfileVisibility = user.ProfileVisibility,
+            ShowModdedContent = user.ShowModdedContent,
         };
     }
 

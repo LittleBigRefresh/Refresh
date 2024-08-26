@@ -1,6 +1,6 @@
 using System.Reflection;
+using Refresh.Common.Helpers;
 using Refresh.GameServer.Authentication;
-using Refresh.GameServer.Resources;
 using Refresh.GameServer.Types.Levels;
 using Refresh.GameServer.Types.Lists;
 using Refresh.GameServer.Types.Photos;

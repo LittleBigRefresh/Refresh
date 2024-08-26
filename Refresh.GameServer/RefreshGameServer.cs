@@ -23,6 +23,7 @@ using Refresh.GameServer.Services;
 using Refresh.GameServer.Storage;
 using Refresh.GameServer.Time;
 using Refresh.GameServer.Types.Data;
+using Refresh.GameServer.Types.Levels;
 using Refresh.GameServer.Types.Levels.Categories;
 using Refresh.GameServer.Types.Roles;
 using Refresh.GameServer.Types.UserData;
@@ -201,10 +202,8 @@ public class RefreshGameServer : RefreshServer
 
     public void ImportAssets(bool force = false)
     {
-        using GameDatabaseContext context = this.GetContext();
-        
         AssetImporter importer = new();
-        importer.ImportFromDataStore(context, this._dataStore);
+        importer.ImportFromDataStore(this._databaseProvider, this._dataStore);
     }
 
     public void ImportImages()
@@ -215,6 +214,27 @@ public class RefreshGameServer : RefreshServer
         importer.ImportFromDataStore(context, this._dataStore);
     }
 
+    public void FlagModdedLevels()
+    {
+        using GameDatabaseContext context = this.GetContext();
+
+        // Iterate over all levels
+        GameLevel[] allLevels = context.GetAllUserLevels().ToArray();
+        Dictionary<GameLevel, bool> statuses = new(allLevels.Length);
+        int i = 0;
+        foreach (GameLevel level in allLevels)
+        {
+            bool modded = context.GetLevelModdedStatus(level);
+            
+            statuses[level] = modded;
+
+            i++;
+            this.Logger.LogInfo(RefreshContext.Worker, "[{3}/{4}] Marked level {0} ({1}) as {2}", level.Title, level.LevelId, modded ? "modded" : "vanilla", i, allLevels.Length);
+        }
+        
+        context.SetLevelModdedStatuses(statuses);
+    }
+    
     public void CreateUser(string username, string emailAddress)
     {
         using GameDatabaseContext context = this.GetContext();

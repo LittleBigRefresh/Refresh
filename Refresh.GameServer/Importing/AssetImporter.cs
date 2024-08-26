@@ -1,7 +1,9 @@
+using System.Collections.Concurrent;
 using System.Security.Cryptography;
 using Bunkum.Core.Storage;
 using JetBrains.Annotations;
 using NotEnoughLogs;
+using Refresh.Common.Helpers;
 using Refresh.GameServer.Authentication;
 using Refresh.GameServer.Database;
 using Refresh.GameServer.Time;
@@ -19,80 +21,80 @@ public class AssetImporter : Importer
         this._timeProvider = timeProvider;
     }
 
-    public void ImportFromDataStore(GameDatabaseContext database, IDataStore dataStore)
+    public void ImportFromDataStore(GameDatabaseProvider databaseProvider, IDataStore dataStore)
     {
         int updatedAssets = 0;
         int newAssets = 0;
+        int processed = 0;
         this.Stopwatch.Start();
         
-        IEnumerable<string> assetHashes = dataStore.GetKeysFromStore();
+        string[] assetHashes = dataStore.GetKeysFromStore();
 
-        List<GameAsset> assets = new(assetHashes.Count());
-        foreach (string path in assetHashes)
-        {
-            bool isPsp = path.StartsWith("psp/");
-            //If the hash has a `/` and it doesnt start with `psp/`, then its an invalid asset
-            if (path.Contains('/') && !isPsp) continue;
+        ConcurrentBag<string> hashesToProcess = new(assetHashes);
 
-            string hash = isPsp ? path[4..] : path;
-            
-            byte[] data = dataStore.GetDataFromStore(path);
-            
-            GameAsset? newAsset = this.ReadAndVerifyAsset(hash, data, isPsp ? TokenPlatform.PSP : null, database);
-            if (newAsset == null) continue;
-
-            GameAsset? oldAsset = database.GetAssetFromHash(hash);
-
-            if (oldAsset != null)
-            {
-                newAsset.OriginalUploader = oldAsset.OriginalUploader;
-                newAsset.UploadDate = oldAsset.UploadDate;
-                updatedAssets++;
-            }
-            else
-            {
-                newAssets++;
-            }
-
-            assets.Add(newAsset);
-            this.Info($"Processed {newAsset.AssetType} asset {hash} ({AssetSafetyLevelExtensions.FromAssetType(newAsset.AssetType, newAsset.AssetFormat)})");
-        }
+        int taskCount = Environment.ProcessorCount * 2;
         
-        database.AddOrUpdateAssetsInDatabase(assets);
+        Task[] tasks = new Task[taskCount];
+        
+        for (int i = 0; i < taskCount; i++)
+        {
+            tasks[i] = Task.Factory.StartNew(() =>
+            {
+                GameDatabaseContext database = databaseProvider.GetContext();
 
+                List<GameAsset> assets = new(assetHashes.Length / taskCount);
+
+                while (hashesToProcess.TryTake(out string? path))
+                {
+                    bool isPsp = path.StartsWith("psp/");
+                    //If the hash has a `/` and it doesnt start with `psp/`, then its an invalid asset
+                    if (path.Contains('/') && !isPsp) continue;
+
+                    string hash = isPsp ? path[4..] : path;
+            
+                    byte[] data = dataStore.GetDataFromStore(path);
+            
+                    GameAsset? newAsset = this.ReadAndVerifyAsset(hash, data, isPsp ? TokenPlatform.PSP : null, database);
+                    if (newAsset == null) continue;
+
+                    GameAsset? oldAsset = database.GetAssetFromHash(hash);
+
+                    if (oldAsset != null)
+                    {
+                        newAsset.OriginalUploader = oldAsset.OriginalUploader;
+                        newAsset.UploadDate = oldAsset.UploadDate;
+                        Interlocked.Increment(ref updatedAssets);
+                    }
+                    else
+                    {
+                        Interlocked.Increment(ref newAssets);
+                    }
+                    
+                    assets.Add(newAsset);
+                    this.Info($"[{Interlocked.Increment(ref processed)}/{assetHashes.Length}] Processed {newAsset.AssetType} asset {hash} ({AssetSafetyLevelExtensions.FromAssetType(newAsset.AssetType, newAsset.AssetFormat)})");
+                }
+                
+                database.AddOrUpdateAssetsInDatabase(assets);
+                
+                return Task.CompletedTask;
+            }, TaskCreationOptions.LongRunning);
+        }
+
+        Task.WaitAll(tasks);
+        
         int hashCount = newAssets + updatedAssets;
         
-        this.Info($"Successfully imported {assets.Count}/{hashCount} assets ({newAssets} new, {updatedAssets} updated) into database");
-        if (assets.Count < hashCount)
+        this.Info($"Successfully imported {hashCount}/{assetHashes.Length} assets ({newAssets} new, {updatedAssets} updated) into database");
+        if (hashCount < assetHashes.Length)
         {
-            this.Warn($"{hashCount - assets.Count} assets were not imported");
+            this.Warn($"{assetHashes.Length - hashCount} assets were not imported");
         }
     }
     
-    public static string BytesToHexString(ReadOnlySpan<byte> data)
-    {
-        Span<char> hexChars = stackalloc char[data.Length * 2];
-
-        for (int i = 0; i < data.Length; i++)
-        {
-            byte b = data[i];
-            hexChars[i * 2] = GetHexChar(b >> 4); // High bits
-            hexChars[i * 2 + 1] = GetHexChar(b & 0x0F); // Low bits
-        }
-
-        return new string(hexChars);
-
-        static char GetHexChar(int value)
-        {
-            return (char)(value < 10 ? '0' + value : 'a' + value - 10);
-        }
-    }
-
-
     [Pure]
     public GameAsset? ReadAndVerifyAsset(string hash, byte[] data, TokenPlatform? platform, GameDatabaseContext database)
     {
-        string checkedHash = BytesToHexString(SHA1.HashData(data));
+        string checkedHash = HexHelper.BytesToHexString(SHA1.HashData(data));
 
         if (checkedHash != hash)
         {
@@ -161,7 +163,7 @@ public class AssetImporter : Importer
             if ((flags & 0x1) != 0) // UGC/SHA1
             {
                 ms.ReadExactly(hashBuffer);
-                dependencies.Add(BytesToHexString(hashBuffer));
+                dependencies.Add(HexHelper.BytesToHexString(hashBuffer));
             }
             else if ((flags & 0x2) != 0) reader.ReadUInt32(); // Skip GUID
                 

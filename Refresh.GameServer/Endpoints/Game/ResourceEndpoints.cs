@@ -14,6 +14,7 @@ using Refresh.GameServer.Extensions;
 using Refresh.GameServer.Importing;
 using Refresh.GameServer.Time;
 using Refresh.GameServer.Types.Assets;
+using Refresh.GameServer.Types.Levels;
 using Refresh.GameServer.Types.Lists;
 using Refresh.GameServer.Types.Roles;
 using Refresh.GameServer.Types.UserData;
@@ -95,6 +96,11 @@ public class ResourceEndpoints : EndpointGroup
         database.AddAssetToDatabase(gameAsset);
         
         database.IncrementUserFilesizeQuota(user, body.Length);
+
+        GameLevel? level = database.GetLevelByRootResource(hash);
+        // If there is a level with this root resource, update the modded status of the level
+        // This is catching the case where the level resource was uploaded after the slot was published.
+        if (level != null) database.UpdateLevelModdedStatus(level);
         
         context.Logger.LogInfo(BunkumCategory.UserContent, $"{user} uploaded a {gameAsset.AssetType} ({body.Length / 1024f:F1} KB)");
         return OK;

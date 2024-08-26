@@ -27,6 +27,7 @@ public class InstanceApiEndpoints : EndpointGroup
         return new ApiStatisticsResponse
         {
             TotalLevels = database.GetTotalLevelCount(),
+            ModdedLevels = database.GetModdedLevelCount(),
             TotalUsers = database.GetTotalUserCount(),
             ActiveUsers = database.GetActiveUserCount(),
             TotalPhotos = database.GetTotalPhotoCount(),

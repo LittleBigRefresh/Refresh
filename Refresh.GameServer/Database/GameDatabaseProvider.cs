@@ -33,7 +33,7 @@ public class GameDatabaseProvider : RealmDatabaseProvider<GameDatabaseContext>
         this._time = time;
     }
 
-    protected override ulong SchemaVersion => 141;
+    protected override ulong SchemaVersion => 149;
 
     protected override string Filename => "refreshGameServer.realm";
     
@@ -97,7 +97,7 @@ public class GameDatabaseProvider : RealmDatabaseProvider<GameDatabaseContext>
         IQueryable<dynamic>? oldUsers = migration.OldRealm.DynamicApi.All("GameUser");
         IQueryable<GameUser>? newUsers = migration.NewRealm.All<GameUser>();
 
-        if (oldVersion < 134)
+        if (oldVersion < 145)
             for (int i = 0; i < newUsers.Count(); i++)
             {
                 dynamic oldUser = oldUsers.ElementAt(i);
@@ -215,12 +215,15 @@ public class GameDatabaseProvider : RealmDatabaseProvider<GameDatabaseContext>
                         });
                     }
                 }
+
+                if (oldVersion < 145)
+                    newUser.ShowModdedContent = true;
             }
 
         IQueryable<dynamic>? oldLevels = migration.OldRealm.DynamicApi.All("GameLevel");
         IQueryable<GameLevel>? newLevels = migration.NewRealm.All<GameLevel>();
 
-        if (oldVersion < 140)
+        if (oldVersion < 149)
             for (int i = 0; i < newLevels.Count(); i++)
             {
                 dynamic oldLevel = oldLevels.ElementAt(i);
@@ -332,6 +335,12 @@ public class GameDatabaseProvider : RealmDatabaseProvider<GameDatabaseContext>
                 {
                     newLevel.PublishDate = DateTimeOffset.FromUnixTimeMilliseconds(oldLevel.PublishDate);
                     newLevel.UpdateDate = DateTimeOffset.FromUnixTimeMilliseconds(oldLevel.UpdateDate);
+                }
+
+                // Version 148 is when `Modded` was added, and in 149 we renamed `Modded` to `IsModded`
+                if (oldVersion >= 148 && oldVersion < 149)
+                {
+                    newLevel.IsModded = oldLevel.Modded;
                 }
             }
 
@@ -541,8 +550,15 @@ public class GameDatabaseProvider : RealmDatabaseProvider<GameDatabaseContext>
             }
 
         // Remove all scores with a null level, as in version 92 we started tracking story leaderboards differently
-        if (oldVersion < 92) migration.NewRealm.RemoveRange(migration.NewRealm.All<GameSubmittedScore>().Where(s => s.Level == null));
-        
+        if (oldVersion < 92)
+            migration.NewRealm.RemoveRange(migration.NewRealm.All<GameSubmittedScore>().Where(s => s.Level == null));
+
+        // fuck realm.
+        if (oldVersion < 142)
+            foreach (GameSubmittedScore score in migration.NewRealm.All<GameSubmittedScore>().AsEnumerable()
+                         .Where(s => !s.Players.Any()).ToList())
+                migration.NewRealm.Remove(score);
+
         IQueryable<dynamic>? oldScores = migration.OldRealm.DynamicApi.All("GameSubmittedScore");
         IQueryable<GameSubmittedScore>? newScores = migration.NewRealm.All<GameSubmittedScore>();
 

@@ -4,6 +4,15 @@ namespace Refresh.GameServer.Configuration;
 
 public class ConfigAssetFlags
 {
+    public ConfigAssetFlags() {}
+    
+    public ConfigAssetFlags(AssetFlags flags)
+    {
+        this.Dangerous = (flags & AssetFlags.Dangerous) != 0;
+        this.Media = (flags & AssetFlags.Media) != 0;
+        this.Modded = (flags & AssetFlags.Modded) != 0;
+    }
+    
     /// <summary>
     /// This asset can be dangerous to end users.
     /// </summary>

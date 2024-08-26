@@ -115,6 +115,16 @@ public class CommandService : EndpointService
                 database.SetUnescapeXmlSequences(user, false);
                 break;
             }
+            case "showmods":
+            {
+                database.SetShowModdedContent(user, true);
+                break;
+            }
+            case "hidemods":
+            {
+                database.SetShowModdedContent(user, false);
+                break;
+            }
             case "play":
             {
                 if (CommonPatterns.Sha1Regex().IsMatch(command.Arguments))

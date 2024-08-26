@@ -14,6 +14,7 @@ public class ApiGameLevelResponse : IApiResponse, IDataConvertableFrom<ApiGameLe
     public required int LevelId { get; set; }
     public required ApiGameUserResponse? Publisher { get; set; }
     public required bool IsReUpload { get; set; }
+    public required bool IsModded { get; set; }
     public required string? OriginalPublisher { get; set; }
 
     public required bool IsAdventure { get; set; }
@@ -92,6 +93,7 @@ public class ApiGameLevelResponse : IApiResponse, IDataConvertableFrom<ApiGameLe
             LevelComments = dataContext.Database.GetTotalCommentsForLevel(level),
             Reviews = dataContext.Database.GetTotalReviewsForLevel(level),
             Tags = dataContext.Database.GetTagsForLevel(level).Select(t => t.Tag),
+            IsModded = level.IsModded,
         };
     }
     
