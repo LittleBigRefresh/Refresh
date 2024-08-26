@@ -177,7 +177,7 @@ public class LevelFilterSettings
             this.Seed = seed;
         }
 
-        string? moddedFilter = context.QueryString.Get("showModdedLevels");
+        string? moddedFilter = context.QueryString.Get("includeModded");
 
         if (moddedFilter != null)
         {
