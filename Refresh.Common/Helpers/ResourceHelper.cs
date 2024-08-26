@@ -6,13 +6,13 @@ using System.Security.Cryptography;
 using FastAes;
 using IronCompress;
 
-namespace Refresh.GameServer.Resources;
+namespace Refresh.Common.Helpers;
 
 public static class ResourceHelper
 {
     public static Stream StreamFromResource(string name, Assembly? assembly = null)
     {
-        assembly ??= Assembly.GetExecutingAssembly();
+        assembly ??= Assembly.GetCallingAssembly();
         return assembly.GetManifestResourceStream(name)!;
     }
 

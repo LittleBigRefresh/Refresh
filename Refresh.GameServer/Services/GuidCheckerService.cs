@@ -1,8 +1,8 @@
 using Bunkum.Core.Services;
 using NotEnoughLogs;
+using Refresh.Common.Helpers;
 using Refresh.GameServer.Authentication;
 using Refresh.GameServer.Configuration;
-using Refresh.GameServer.Resources;
 
 namespace Refresh.GameServer.Services;
 

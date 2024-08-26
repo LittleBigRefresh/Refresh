@@ -9,7 +9,13 @@
     <ItemGroup>
       <PackageReference Include="Bunkum" Version="4.8.1" />
       <PackageReference Include="Bunkum.Protocols.Http" Version="4.8.1" />
+      <PackageReference Include="FastAes" Version="1.0.1" />
+      <PackageReference Include="IronCompress" Version="1.5.2" />
       <PackageReference Include="NPTicket" Version="3.1.0" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <EmbeddedResource Include="Resources\all_hashes.txt" />
     </ItemGroup>
 
 </Project>

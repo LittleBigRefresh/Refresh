@@ -39,7 +39,7 @@ public static class LevelEnumerableExtensions
             levels = levels.Where(l => l.Publisher != user);
 
         if (user is { ShowModdedContent: false })
-            levels = levels.Where(l => !l.Modded);
+            levels = levels.Where(l => !l.IsModded);
 
         // Don't allow beta builds to use this filtering option
         // If the client specifies this option then it will filter out *all* levels.
@@ -85,7 +85,7 @@ public static class LevelEnumerableExtensions
             levels = levels.Where(l => l.Publisher != user);
 
         if (user is { ShowModdedContent: false })
-            levels = levels.Where(l => !l.Modded);
+            levels = levels.Where(l => !l.IsModded);
         
         // Don't allow beta builds to use this filtering option
         // If the client specifies this option then it will filter out *all* levels.

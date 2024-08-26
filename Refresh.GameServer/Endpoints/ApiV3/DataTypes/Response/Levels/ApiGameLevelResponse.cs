@@ -14,6 +14,7 @@ public class ApiGameLevelResponse : IApiResponse, IDataConvertableFrom<ApiGameLe
     public required int LevelId { get; set; }
     public required ApiGameUserResponse? Publisher { get; set; }
     public required bool IsReUpload { get; set; }
+    public required bool IsModded { get; set; }
     public required string? OriginalPublisher { get; set; }
 
     public required bool IsAdventure { get; set; }
@@ -52,7 +53,6 @@ public class ApiGameLevelResponse : IApiResponse, IDataConvertableFrom<ApiGameLe
     public required bool IsCopyable { get; set; }
     public required float Score { get; set; }
     public required IEnumerable<Tag> Tags { get; set; }
-    public required bool Modded { get; set; }
 
     public static ApiGameLevelResponse? FromOld(GameLevel? level, DataContext dataContext)
     {
@@ -93,7 +93,7 @@ public class ApiGameLevelResponse : IApiResponse, IDataConvertableFrom<ApiGameLe
             LevelComments = dataContext.Database.GetTotalCommentsForLevel(level),
             Reviews = dataContext.Database.GetTotalReviewsForLevel(level),
             Tags = dataContext.Database.GetTagsForLevel(level).Select(t => t.Tag),
-            Modded = level.Modded,
+            IsModded = level.IsModded,
         };
     }
     

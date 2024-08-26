@@ -408,7 +408,7 @@ public partial class GameDatabaseContext // Levels
     public int GetTotalLevelCount() => this.GameLevels.Count(l => l._Source == (int)GameLevelSource.User);
 
     [Pure]
-    public int GetModdedLevelCount() => this.GameLevels.Count(l => l._Source == (int)GameLevelSource.User && l.Modded);
+    public int GetModdedLevelCount() => this.GameLevels.Count(l => l._Source == (int)GameLevelSource.User && l.IsModded);
 
     public int GetTotalLevelsPublishedByUser(GameUser user)
         => this.GameLevels
@@ -495,7 +495,7 @@ public partial class GameDatabaseContext // Levels
     {
         this.Write(() =>
         {
-            level.Modded = modded;
+            level.IsModded = modded;
         });
     }
     
@@ -505,7 +505,7 @@ public partial class GameDatabaseContext // Levels
         {
             foreach ((GameLevel? level, bool modded) in levels)
             {
-                level.Modded = modded;
+                level.IsModded = modded;
             }
         });
     }

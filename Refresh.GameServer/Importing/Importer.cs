@@ -6,8 +6,8 @@ using System.Text;
 using Bunkum.Core;
 using JetBrains.Annotations;
 using NotEnoughLogs;
+using Refresh.Common.Helpers;
 using Refresh.GameServer.Authentication;
-using Refresh.GameServer.Resources;
 using Refresh.GameServer.Types.Assets;
 
 namespace Refresh.GameServer.Importing;

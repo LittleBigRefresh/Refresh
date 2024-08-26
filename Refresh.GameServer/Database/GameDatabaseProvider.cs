@@ -33,7 +33,7 @@ public class GameDatabaseProvider : RealmDatabaseProvider<GameDatabaseContext>
         this._time = time;
     }
 
-    protected override ulong SchemaVersion => 148;
+    protected override ulong SchemaVersion => 149;
 
     protected override string Filename => "refreshGameServer.realm";
     
@@ -223,7 +223,7 @@ public class GameDatabaseProvider : RealmDatabaseProvider<GameDatabaseContext>
         IQueryable<dynamic>? oldLevels = migration.OldRealm.DynamicApi.All("GameLevel");
         IQueryable<GameLevel>? newLevels = migration.NewRealm.All<GameLevel>();
 
-        if (oldVersion < 148)
+        if (oldVersion < 149)
             for (int i = 0; i < newLevels.Count(); i++)
             {
                 dynamic oldLevel = oldLevels.ElementAt(i);
@@ -368,9 +368,15 @@ public class GameDatabaseProvider : RealmDatabaseProvider<GameDatabaseContext>
                                 if (gameAsset != null && (gameAsset.AssetFlags & AssetFlags.Modded) != 0)
                                     modded = true;
                             });
-                            newLevel.Modded = modded;
+                            newLevel.IsModded = modded;
                         }
                     }
+                }
+
+                // Version 148 is when `Modded` was added, and in 149 we renamed `Modded` to `IsModded`
+                if (oldVersion >= 148 && oldVersion < 149)
+                {
+                    newLevel.IsModded = oldLevel.Modded;
                 }
             }
 

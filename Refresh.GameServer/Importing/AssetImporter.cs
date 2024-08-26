@@ -32,18 +32,17 @@ public class AssetImporter : Importer
 
         ConcurrentBag<string> hashesToProcess = new(assetHashes);
 
-        int threadCount = Environment.ProcessorCount * 2;
+        int taskCount = Environment.ProcessorCount * 2;
         
-        bool[] tasksDone = new bool[threadCount];
+        Task[] tasks = new Task[taskCount];
         
-        for (int i = 0; i < threadCount; i++)
+        for (int i = 0; i < taskCount; i++)
         {
-            int threadId = i;
-            new Thread(() =>
+            tasks[i] = Task.Factory.StartNew(() =>
             {
                 GameDatabaseContext database = databaseProvider.GetContext();
 
-                List<GameAsset> assets = new(assetHashes.Length / threadCount);
+                List<GameAsset> assets = new(assetHashes.Length / taskCount);
 
                 while (hashesToProcess.TryTake(out string? path))
                 {
@@ -76,12 +75,12 @@ public class AssetImporter : Importer
                 }
                 
                 database.AddOrUpdateAssetsInDatabase(assets);
-
-                tasksDone[threadId] = true;
-            }).Start();
+                
+                return Task.CompletedTask;
+            }, TaskCreationOptions.LongRunning);
         }
 
-        SpinWait.SpinUntil(() => tasksDone.All(done => done));
+        Task.WaitAll(tasks);
         
         int hashCount = newAssets + updatedAssets;
         

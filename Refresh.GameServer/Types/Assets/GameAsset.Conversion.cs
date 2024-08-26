@@ -5,7 +5,6 @@ using Refresh.GameServer.Authentication;
 using Refresh.GameServer.Database;
 using Refresh.GameServer.Importing;
 using Refresh.GameServer.Importing.Mip;
-using Refresh.GameServer.Resources;
 using Refresh.GameServer.Types.Data;
 using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.PixelFormats;
