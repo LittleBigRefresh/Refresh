@@ -61,6 +61,11 @@ public class LevelFilterSettings
     public TokenGame GameVersion;
 
     /// <summary>
+    /// Whether or not to force showing/hiding modded content.
+    /// </summary>
+    public bool? ShowModdedLevels;
+    
+    /// <summary>
     /// The seed used for lucky dip/random levels.
     /// </summary>
     /// <seealso cref="RandomLevelsCategory"/>
@@ -170,6 +175,16 @@ public class LevelFilterSettings
         if (seedStr != null && int.TryParse(seedStr, out int seed))
         {
             this.Seed = seed;
+        }
+
+        string? moddedFilter = context.QueryString.Get("showModdedLevels");
+
+        if (moddedFilter != null)
+        {
+            if (!bool.TryParse(moddedFilter, out bool showModdedLevels))
+                throw new FormatException("Could not parse modded filter setting because the boolean was invalid.");
+
+            this.ShowModdedLevels = showModdedLevels;
         }
     }
 }

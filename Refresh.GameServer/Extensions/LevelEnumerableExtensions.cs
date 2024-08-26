@@ -38,7 +38,8 @@ public static class LevelEnumerableExtensions
         if (levelFilterSettings.ExcludeMyLevels && user != null)
             levels = levels.Where(l => l.Publisher != user);
 
-        if (user is { ShowModdedContent: false })
+        // If the user has it disabled globally and the filter doesnt enable it, or the filter disables it, disable modded content from being shown
+        if ((user is { ShowModdedContent: false } && levelFilterSettings.ShowModdedLevels != true) || levelFilterSettings.ShowModdedLevels == false)
             levels = levels.Where(l => !l.IsModded);
 
         // Don't allow beta builds to use this filtering option
@@ -84,7 +85,8 @@ public static class LevelEnumerableExtensions
         if (levelFilterSettings.ExcludeMyLevels && user != null)
             levels = levels.Where(l => l.Publisher != user);
 
-        if (user is { ShowModdedContent: false })
+        // If the user has it disabled globally and the filter doesnt enable it, or the filter disables it, disable modded content from being shown
+        if ((user is { ShowModdedContent: false } && levelFilterSettings.ShowModdedLevels != true) || levelFilterSettings.ShowModdedLevels == false)
             levels = levels.Where(l => !l.IsModded);
         
         // Don't allow beta builds to use this filtering option
