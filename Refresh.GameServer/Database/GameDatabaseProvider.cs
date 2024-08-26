@@ -337,42 +337,6 @@ public class GameDatabaseProvider : RealmDatabaseProvider<GameDatabaseContext>
                     newLevel.UpdateDate = DateTimeOffset.FromUnixTimeMilliseconds(oldLevel.UpdateDate);
                 }
 
-                // In version 148, we added a "Modded" tag to levels
-                if (oldVersion < 148)
-                {
-                    if (!newLevel.RootResource.StartsWith('g'))
-                    {
-                        void TraverseDependenciesRecursively(GameAsset asset, Action<string, GameAsset?> callback)
-                        {
-                            callback(asset.AssetHash, asset);
-                            foreach (string internalAssetHash in migration.NewRealm.All<AssetDependencyRelation>().Where(d => d.Dependent == asset.AssetHash).AsEnumerable().Select(d => d.Dependency))
-                            {
-                                GameAsset? internalAsset = migration.NewRealm.Find<GameAsset>(internalAssetHash);
-            
-                                // Only run this if this is null, since the next recursion will trigger its own callback
-                                if(internalAsset == null)
-                                    callback(internalAssetHash, internalAsset);
-
-                                if(internalAsset != null)
-                                    TraverseDependenciesRecursively(internalAsset, callback);
-                            }
-                        }
-                        
-                        GameAsset? asset = migration.NewRealm.Find<GameAsset>(newLevel.RootResource);
-
-                        if (asset != null)
-                        {
-                            bool modded = false;
-                            TraverseDependenciesRecursively(asset, (hash, gameAsset) =>
-                            {
-                                if (gameAsset != null && (gameAsset.AssetFlags & AssetFlags.Modded) != 0)
-                                    modded = true;
-                            });
-                            newLevel.IsModded = modded;
-                        }
-                    }
-                }
-
                 // Version 148 is when `Modded` was added, and in 149 we renamed `Modded` to `IsModded`
                 if (oldVersion >= 148 && oldVersion < 149)
                 {
