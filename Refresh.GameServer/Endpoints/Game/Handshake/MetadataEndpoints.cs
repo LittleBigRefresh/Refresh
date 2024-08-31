@@ -4,6 +4,7 @@ using Bunkum.Core.Endpoints.Debugging;
 using Bunkum.Core.Responses;
 using Bunkum.Listener.Protocol;
 using Bunkum.Protocols.Http;
+using Refresh.GameServer.Configuration;
 using Refresh.GameServer.Database;
 using Refresh.GameServer.Time;
 using Refresh.GameServer.Types.Challenges;
@@ -60,6 +61,7 @@ public class MetadataEndpoints : EndpointGroup
     [GameEndpoint("network_settings.nws")]
     [MinimumRole(GameUserRole.Restricted)]
     public string NetworkSettings(RequestContext context)
+    public string NetworkSettings(RequestContext context, GameServerConfig config)
     {
         bool created = NetworkSettingsFile.IsValueCreated;
         
@@ -72,8 +74,27 @@ public class MetadataEndpoints : EndpointGroup
                                                               "If everything works the way you like, you can safely ignore this warning.");
 
         // EnableHackChecks being false fixes the "There was a problem with the level you were playing on that forced a return to your Pod." error that LBP3 tends to show in the pod.
-        // EnableDiveIn being true enables dive in for LBP3
-        networkSettings ??= "ShowLevelBoos true\nAllowOnlineCreate true\nEnableDiveIn true\nEnableHackChecks false\n";
+        // AlexDB enables the "Web Privacy Settings" option on LBP1, and is required for Playlists to function
+        // OverheatingThreshholdDisallowMidgameJoin is set to >1.0 so that it never triggers
+        // EnableCommunityDecorations, EnablePlayedFilter, EnableDiveIn enable various game features
+        // DisableDLCPublishCheck disables the game's DLC publish check.
+        networkSettings ??= $"""
+                            AllowOnlineCreate true
+                            ShowErrorNumbers true
+                            AllowModeratedLevels false
+                            AllowModeratedPoppetItems false
+                            ShowLevelBoos true
+                            CDNHostName {config.GameConfigStorageUrl}
+                            TelemetryServer {config.GameConfigStorageUrl}
+                            OverheatingThresholdDisallowMidgameJoin 2.0
+                            EnableCommunityDecorations true
+                            EnablePlayedFilter true
+                            EnableDiveIn true
+                            EnableHackChecks false
+                            DisableDLCPublishCheck true
+                            AlexDB true
+
+                            """;
         
         return networkSettings;
     }
@@ -87,6 +108,7 @@ public class MetadataEndpoints : EndpointGroup
         });
 
     [GameEndpoint("t_conf")]
+    [MinimumRole(GameUserRole.Restricted)]
     [NullStatusCode(Gone)]
     [MinimumRole(GameUserRole.Restricted)]
     public string? TelemetryConfig(RequestContext context) 
@@ -175,6 +197,7 @@ public class MetadataEndpoints : EndpointGroup
     public string GameState(RequestContext context) => "VALID";
     
     [GameEndpoint("ChallengeConfig.xml", ContentType.Xml)]
+    [MinimumRole(GameUserRole.Restricted)]
     public SerializedGameChallengeList ChallengeConfig(RequestContext context, IDateTimeProvider timeProvider)
     {
         //TODO: allow this to be controlled by the server owner, right now lets just send the game 0 challenges,
@@ -192,5 +215,6 @@ public class MetadataEndpoints : EndpointGroup
     }
 
     [GameEndpoint("tags")]
+    [MinimumRole(GameUserRole.Restricted)]
     public string Tags(RequestContext context) => TagExtensions.AllTags;
 }

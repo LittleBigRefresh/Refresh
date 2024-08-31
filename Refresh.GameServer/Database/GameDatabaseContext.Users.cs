@@ -3,10 +3,9 @@ using MongoDB.Bson;
 using Refresh.Common.Constants;
 using Refresh.GameServer.Authentication;
 using Refresh.GameServer.Endpoints.ApiV3.DataTypes.Request;
-using Refresh.GameServer.Types;
 using Refresh.GameServer.Types.Levels;
 using Refresh.GameServer.Types.Photos;
-using Refresh.GameServer.Types.Relations;
+using Refresh.GameServer.Types.Playlists;
 using Refresh.GameServer.Types.Roles;
 using Refresh.GameServer.Types.UserData;
 
@@ -446,6 +445,14 @@ public partial class GameDatabaseContext // Users
                 // but since were doing this blindly, we shouldn't because the level might already be a reupload.
                 // we'd be setting it to null here, which could be loss of information.
             }
+        });
+    }
+
+    public void SetUserRootPlaylist(GameUser user, GamePlaylist playlist)
+    {
+        this.Write(() =>
+        {
+            user.RootPlaylist = playlist;
         });
     }
 }

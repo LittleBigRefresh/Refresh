@@ -1,12 +1,8 @@
 using System.Xml.Serialization;
 using MongoDB.Bson;
 using Realms;
-using Refresh.GameServer.Types.Comments;
 using Bunkum.Core.RateLimit;
-using Refresh.GameServer.Types.Levels;
-using Refresh.GameServer.Types.Notifications;
-using Refresh.GameServer.Types.Photos;
-using Refresh.GameServer.Types.Relations;
+using Refresh.GameServer.Types.Playlists;
 using Refresh.GameServer.Types.Roles;
 
 namespace Refresh.GameServer.Types.UserData;
@@ -86,7 +82,13 @@ public partial class GameUser : IRealmObject, IRateLimitUser
     private int _LevelVisibility { get; set; } = (int)Visibility.All;
     
     /// <summary>
-    /// Whether the user's profile is displayed on the website
+    /// The user's root playlist. This playlist contains all the user's playlists, and optionally other slots as well,
+    /// although the game does not expose the ability to do this normally.
+    /// </summary>
+    public GamePlaylist? RootPlaylist { get; set; }
+    
+    /// <summary>
+    /// Whether the user's profile information is exposed in the public API.
     /// </summary>
     [Ignored]
     public Visibility ProfileVisibility
@@ -96,7 +98,7 @@ public partial class GameUser : IRealmObject, IRateLimitUser
     }
     
     /// <summary>
-    /// Whether the user's levels are displayed on the website
+    /// Whether the user's levels are exposed in the public API.
     /// </summary>
     [Ignored]
     public Visibility LevelVisibility

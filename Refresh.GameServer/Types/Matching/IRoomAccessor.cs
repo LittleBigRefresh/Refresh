@@ -70,8 +70,8 @@ public interface IRoomAccessor
     public IEnumerable<GameRoom> GetRoomsInLevel(GameLevel level) => this.GetRoomsInLevel(
         level.Source switch
         {
-            GameLevelSource.User => RoomSlotType.Online,
-            GameLevelSource.Story => RoomSlotType.Story,
+            GameSlotType.User => RoomSlotType.Online,
+            GameSlotType.Story => RoomSlotType.Story,
             _ => throw new ArgumentOutOfRangeException(),
         },
         level.LevelId

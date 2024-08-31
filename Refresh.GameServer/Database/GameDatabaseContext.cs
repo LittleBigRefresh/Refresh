@@ -13,6 +13,7 @@ using Refresh.GameServer.Types.Contests;
 using Refresh.GameServer.Types.Levels;
 using Refresh.GameServer.Types.Notifications;
 using Refresh.GameServer.Types.Photos;
+using Refresh.GameServer.Types.Playlists;
 using Refresh.GameServer.Types.Relations;
 using Refresh.GameServer.Types.Reviews;
 using Refresh.GameServer.Types.UserData;
@@ -57,6 +58,9 @@ public partial class GameDatabaseContext : RealmDatabaseContext
     private RealmDbSet<DisallowedUser> DisallowedUsers => new(this._realm);
     private RealmDbSet<RateReviewRelation> RateReviewRelations => new(this._realm);
     private RealmDbSet<TagLevelRelation> TagLevelRelations => new(this._realm);
+    private RealmDbSet<GamePlaylist> GamePlaylists => new(this._realm);
+    private RealmDbSet<LevelPlaylistRelation> LevelPlaylistRelations => new(this._realm);
+    private RealmDbSet<SubPlaylistRelation> SubPlaylistRelations => new(this._realm);
     
     internal GameDatabaseContext(IDateTimeProvider time)
     {

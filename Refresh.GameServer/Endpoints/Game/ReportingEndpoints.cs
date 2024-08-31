@@ -83,8 +83,8 @@ public class ReportingEndpoints : EndpointGroup
                 LevelId = level.LevelId,
                 Title = level.Title,
                 Type = level.Source switch {
-                    GameLevelSource.User => "user",
-                    GameLevelSource.Story => "developer",
+                    GameSlotType.User => "user",
+                    GameSlotType.Story => "developer",
                     _ => throw new ArgumentOutOfRangeException(),
                 },
             },

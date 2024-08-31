@@ -76,9 +76,14 @@ public partial class GameLevel : IRealmObject, ISequentialId
     // ReSharper disable once InconsistentNaming
     internal int _LevelType { get; set; }
 
-    [Ignored] public GameLevelSource Source
+    /// <summary>
+    /// The source slot type that a level has come from.
+    ///
+    /// The only valid values of this are `User` or `Story`.
+    /// </summary>
+    [Ignored] public GameSlotType Source
     {
-        get => (GameLevelSource)this._Source;
+        get => (GameSlotType)this._Source;
         set => this._Source = (int)value;
     }
 

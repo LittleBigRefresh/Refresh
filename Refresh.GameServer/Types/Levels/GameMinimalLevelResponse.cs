@@ -1,18 +1,15 @@
-using System.Diagnostics;
 using System.Xml.Serialization;
-using Bunkum.Core.Storage;
 using Refresh.GameServer.Authentication;
-using Refresh.GameServer.Database;
 using Refresh.GameServer.Endpoints.ApiV3.DataTypes;
 using Refresh.GameServer.Endpoints.Game.DataTypes.Response;
-using Refresh.GameServer.Services;
 using Refresh.GameServer.Types.Data;
 using Refresh.GameServer.Types.Matching;
+using Refresh.GameServer.Types.Playlists;
 using Refresh.GameServer.Types.UserData;
 
 namespace Refresh.GameServer.Types.Levels;
 
-public class GameMinimalLevelResponse : IDataConvertableFrom<GameMinimalLevelResponse, GameLevel>, IDataConvertableFrom<GameMinimalLevelResponse, GameLevelResponse>
+public class GameMinimalLevelResponse : IDataConvertableFrom<GameMinimalLevelResponse, GameLevel>, IDataConvertableFrom<GameMinimalLevelResponse, GamePlaylist>, IDataConvertableFrom<GameMinimalLevelResponse, GameLevelResponse>
 {
     //NOTE: THIS MUST BE AT THE TOP OF THE XML RESPONSE OR ELSE LBP PSP WILL CRASH
     [XmlElement("id")] public required int LevelId { get; set; }
@@ -105,9 +102,53 @@ public class GameMinimalLevelResponse : IDataConvertableFrom<GameMinimalLevelRes
             Tags = level.Tags,
         };
     }
+    
+    public static GameMinimalLevelResponse? FromOld(GamePlaylist? old, DataContext dataContext)
+    {
+        if (old == null)
+            return null;
+        
+        return new GameMinimalLevelResponse
+        {
+            LevelId = old.PlaylistId,
+            IsAdventure = false,
+            Title = old.Name,
+            IconHash = dataContext.GetIconFromHash(old.Icon),
+            Description = old.Description,
+            Type = GameSlotType.Playlist.ToGameType(),
+            Location = new GameLocation(old.LocationX, old.LocationY),
+            // Playlists are only ever serialized like this in LBP1-like builds, so we can assume LBP1
+            GameVersion = TokenGame.LittleBigPlanet1.ToSerializedGame(),
+            RootResource = "0",
+            MinPlayers = 0,
+            MaxPlayers = 0,
+            HeartCount = 0, 
+            TotalPlayCount = 0,
+            UniquePlayCount = 0,
+            YayCount = 0, 
+            BooCount = 0,
+            AverageStarRating = 0,
+            YourStarRating = 0,
+            YourRating = 0,
+            PlayerCount = 0,
+            ReviewsEnabled = true,
+            ReviewCount = 0,
+            CommentsEnabled = true,
+            CommentCount = 0,
+            IsLocked = false,
+            IsSubLevel = false,
+            IsCopyable = 0,
+            Tags = string.Empty, 
+            TeamPicked = false, 
+            Handle = SerializedUserHandle.FromUser(old.Creator, dataContext),
+        };
+    }
 
     public static IEnumerable<GameMinimalLevelResponse> FromOldList(IEnumerable<GameLevel> oldList,
         DataContext dataContext) => oldList.Select(old => FromOld(old, dataContext)).ToList()!;
     public static IEnumerable<GameMinimalLevelResponse> FromOldList(IEnumerable<GameLevelResponse> oldList,
         DataContext dataContext) => oldList.Select(old => FromOld(old, dataContext)).ToList()!;
+    public static IEnumerable<GameMinimalLevelResponse> FromOldList(IEnumerable<GamePlaylist> oldList, 
+        DataContext dataContext) => oldList.Select(old => FromOld(old, dataContext)).ToList()!;
+
 }

@@ -16,6 +16,7 @@ using Refresh.GameServer.Types.Relations;
 using Refresh.GameServer.Types.Reviews;
 using Refresh.GameServer.Types.UserData.Leaderboard;
 using Refresh.GameServer.Types.Photos;
+using Refresh.GameServer.Types.Playlists;
 
 namespace Refresh.GameServer.Database;
 
@@ -33,45 +34,66 @@ public class GameDatabaseProvider : RealmDatabaseProvider<GameDatabaseContext>
         this._time = time;
     }
 
-    protected override ulong SchemaVersion => 149;
+    protected override ulong SchemaVersion => 154;
 
     protected override string Filename => "refreshGameServer.realm";
     
-    protected override List<Type> SchemaTypes { get; } = new()
-    {
-        typeof(GameUser),
-        typeof(UserPins),
-        typeof(Token),
-        typeof(GameLevel),
-        typeof(GameSkillReward),
-        typeof(GameProfileComment),
-        typeof(GameLevelComment),
-        typeof(ProfileCommentRelation),
-        typeof(LevelCommentRelation),
-        typeof(FavouriteLevelRelation),
-        typeof(QueueLevelRelation),
-        typeof(FavouriteUserRelation),
-        typeof(PlayLevelRelation),
-        typeof(UniquePlayLevelRelation),
-        typeof(RateLevelRelation),
-        typeof(Event),
-        typeof(GameSubmittedScore),
-        typeof(GameAsset),
-        typeof(GameNotification),
-        typeof(GamePhoto),
-        typeof(GameIpVerificationRequest),
-        typeof(GameAnnouncement),
-        typeof(QueuedRegistration),
-        typeof(EmailVerificationCode),
+    protected override List<Type> SchemaTypes { get; } =
+    [
         typeof(RequestStatistics),
         typeof(SequentialIdStorage),
+
+        // recent activity
+        typeof(Event),
+
+        // announcements
+        typeof(GameAnnouncement),
+
+        // contests
         typeof(GameContest),
-        typeof(AssetDependencyRelation),
-        typeof(GameReview),
-        typeof(DisallowedUser),
-        typeof(RateReviewRelation),
+
+        // photos
+        typeof(GamePhoto),
+
+        // levels
+        typeof(GameLevel),
+        typeof(GameSkillReward),
         typeof(TagLevelRelation),
-    };
+        typeof(GameLevelComment),
+        typeof(LevelCommentRelation),
+        typeof(RateLevelRelation),
+        typeof(FavouriteLevelRelation),
+        typeof(PlayLevelRelation),
+        typeof(UniquePlayLevelRelation),
+        typeof(QueueLevelRelation),
+        typeof(GameSubmittedScore),
+
+        // reviews
+        typeof(GameReview),
+        typeof(RateReviewRelation),
+
+        // users
+        typeof(GameUser),
+        typeof(Token),
+        typeof(UserPins),
+        typeof(GameProfileComment),
+        typeof(FavouriteUserRelation),
+        typeof(DisallowedUser),
+        typeof(GameNotification),
+        typeof(ProfileCommentRelation),
+        typeof(EmailVerificationCode),
+        typeof(QueuedRegistration),
+        typeof(GameIpVerificationRequest),
+
+        // assets
+        typeof(GameAsset),
+        typeof(AssetDependencyRelation),
+        
+        // playlists
+        typeof(GamePlaylist),
+        typeof(LevelPlaylistRelation),
+        typeof(SubPlaylistRelation),
+    ];
 
     public override void Warmup()
     {
@@ -86,14 +108,6 @@ public class GameDatabaseProvider : RealmDatabaseProvider<GameDatabaseContext>
 
     protected override void Migrate(Migration migration, ulong oldVersion)
     {
-        // Get the current unix timestamp for when we add timestamps to objects
-        long timestampMilliseconds = this._time.TimestampMilliseconds;
-
-        // DO NOT USE FOR NEW MIGRATIONS! LBP almost never actually uses seconds for timestamps.
-        // This is from a mistake made early in development where this was not understood by me.
-        // Unless you are certain second timestamps are used, use the millisecond timestamps set above.
-        long timestampSeconds = this._time.TimestampSeconds;
-
         IQueryable<dynamic>? oldUsers = migration.OldRealm.DynamicApi.All("GameUser");
         IQueryable<GameUser>? newUsers = migration.NewRealm.All<GameUser>();
 
@@ -277,7 +291,7 @@ public class GameDatabaseProvider : RealmDatabaseProvider<GameDatabaseContext>
                 // Set all existing levels to user levels, since that's what has existed up until now.
                 if (oldVersion < 92)
                 {
-                    newLevel._Source = (int)GameLevelSource.User;
+                    newLevel._Source = (int)GameSlotType.User;
                 }
 
                 // In version 129, we split locations from an embedded object out to two fields
@@ -406,7 +420,7 @@ public class GameDatabaseProvider : RealmDatabaseProvider<GameDatabaseContext>
                 Token newToken = newTokens.ElementAt(i);
 
                 if (oldVersion < 36)
-                    newToken.LoginDate = DateTimeOffset.FromUnixTimeMilliseconds(timestampMilliseconds);
+                    newToken.LoginDate = DateTimeOffset.UtcNow;
             }
 
         IQueryable<dynamic>? oldPhotos = migration.OldRealm.DynamicApi.All("GamePhoto");
@@ -554,7 +568,7 @@ public class GameDatabaseProvider : RealmDatabaseProvider<GameDatabaseContext>
             migration.NewRealm.RemoveRange(migration.NewRealm.All<GameSubmittedScore>().Where(s => s.Level == null));
 
         // fuck realm.
-        if (oldVersion < 142)
+        if (oldVersion < 152)
             foreach (GameSubmittedScore score in migration.NewRealm.All<GameSubmittedScore>().AsEnumerable()
                          .Where(s => !s.Players.Any()).ToList())
                 migration.NewRealm.Remove(score);
