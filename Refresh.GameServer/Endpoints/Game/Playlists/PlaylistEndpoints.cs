@@ -65,8 +65,6 @@ public class PlaylistEndpoints : EndpointGroup
     public SerializedMinimalLevelList? GetPlaylistSlots(RequestContext context, DataContext dataContext, int id)
     {
         GamePlaylist? playlist = dataContext.Database.GetPlaylistById(id);
-
-        // Handle an invalid playlist ID
         if (playlist == null)
             return null;
         
@@ -106,10 +104,7 @@ public class PlaylistEndpoints : EndpointGroup
         // Allow the author to be unspecified
         if (authorName != null)
         {
-            // Get the user
             author = dataContext.Database.GetUserByUsername(authorName);
-        
-            // Handle when the provided username does not exist on the server
             if (author == null)
                 return null;
         }
@@ -120,7 +115,6 @@ public class PlaylistEndpoints : EndpointGroup
         if (slotType == "playlist")
         {
             GamePlaylist? playlist = dataContext.Database.GetPlaylistById(slotId);
-
             if (playlist == null)
                 return null;
 
@@ -131,7 +125,6 @@ public class PlaylistEndpoints : EndpointGroup
         else
         {
             GameLevel? level = dataContext.Database.GetLevelByIdAndType(slotType, slotId);
-
             if (level == null)
                 return null;
             
@@ -157,8 +150,6 @@ public class PlaylistEndpoints : EndpointGroup
     public Response UpdatePlaylistMetadata(RequestContext context, GameDatabaseContext database, GameUser user, int id, SerializedPlaylist body)
     {
         GamePlaylist? playlist = database.GetPlaylistById(id);
-
-        // Handle a bad playlist ID
         if (playlist == null)
             return NotFound;
 
@@ -176,8 +167,6 @@ public class PlaylistEndpoints : EndpointGroup
     public Response DeletePlaylist(RequestContext context, GameDatabaseContext database, GameUser user, int id)
     {
         GamePlaylist? playlist = database.GetPlaylistById(id);
-
-        // Handle a bad playlist ID
         if (playlist == null)
             return NotFound;
 
@@ -194,18 +183,14 @@ public class PlaylistEndpoints : EndpointGroup
     [RequireEmailVerified]
     public Response AddSlotToPlaylist(RequestContext context, GameDatabaseContext database, GameUser user, int playlistId)
     {
-        // Extract the slot type, ensuring its set
         string? slotType = context.QueryString["slot_type"];
         if (slotType == null)
             return BadRequest;
         
-        // Extract the slot ID ensuring its valid
         if (!int.TryParse(context.QueryString["slot_id"], out int slotId))
             return BadRequest;
 
         GamePlaylist? parentPlaylist = database.GetPlaylistById(playlistId);
-
-        // If the parent doesn't exist, exit gracefully
         if (parentPlaylist == null)
             return NotFound;
 
@@ -213,7 +198,7 @@ public class PlaylistEndpoints : EndpointGroup
         if (parentPlaylist.Creator.UserId != user.UserId)
             return Unauthorized;
 
-        // Special handling for playlists
+        // Adding a playlist to a playlist requires a special case, since we use `SubPlaylistRelation` internally to record child playlists.
         if (slotType == "playlist")
         {
             GamePlaylist? childPlaylist = database.GetPlaylistById(slotId);
@@ -249,12 +234,9 @@ public class PlaylistEndpoints : EndpointGroup
         else
         {
             GameLevel? level = database.GetLevelByIdAndType(slotType, slotId);
-
-            // If the level doesn't exist, exit gracefully
             if (level == null)
                 return NotFound;
-
-            // Add the level to the playlist    
+ 
             database.AddLevelToPlaylist(level, parentPlaylist);
             
             return OK;
@@ -266,18 +248,14 @@ public class PlaylistEndpoints : EndpointGroup
     public Response RemoveSlotFromPlaylist(RequestContext context, GameDatabaseContext database, GameUser user,
         int playlistId)
     {
-        // Extract the slot type, ensuring its set
         string? slotType = context.QueryString["slot_type"];
         if (slotType == null)
             return BadRequest;
         
-        // Extract the slot ID, ensuring its valid
         if (!int.TryParse(context.QueryString["slot_id"], out int slotId))
             return BadRequest;
 
         GamePlaylist? parentPlaylist = database.GetPlaylistById(playlistId);
-
-        // If the parent doesn't exist, exit gracefully
         if (parentPlaylist == null)
             return NotFound;
 
@@ -285,16 +263,14 @@ public class PlaylistEndpoints : EndpointGroup
         if (parentPlaylist.Creator.UserId != user.UserId)
             return Unauthorized;
 
-        // Special handling for playlists
+        // Removing a playlist from a playlist requires a special case, since we use `SubPlaylistRelation` internally to record child playlists.
         if (slotType == "playlist")
         {
             GamePlaylist? childPlaylist = database.GetPlaylistById(slotId);
-
-            // If the child doesn't exist, exit gracefully
             if (childPlaylist == null)
                 return NotFound;
             
-            // Remove the playlist from the parent
+
             database.RemovePlaylistFromPlaylist(childPlaylist, parentPlaylist);
 
             // ReSharper disable once ExtractCommonBranchingCode see like 3 lines below (line count subject to change)
@@ -306,12 +282,9 @@ public class PlaylistEndpoints : EndpointGroup
         else
         {
             GameLevel? level = database.GetLevelByIdAndType(slotType, slotId);
-
-            // If the level doesn't exist, exit gracefully
             if (level == null)
                 return NotFound;
 
-            // Remove the level from the playlist
             database.RemoveLevelFromPlaylist(level, parentPlaylist);
             
             return OK;
