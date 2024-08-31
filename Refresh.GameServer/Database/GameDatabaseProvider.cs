@@ -151,7 +151,7 @@ public class GameDatabaseProvider : RealmDatabaseProvider<GameDatabaseContext>
                 if (oldVersion < 67) newUser.JoinDate = DateTimeOffset.FromUnixTimeMilliseconds(oldUser.JoinDate);
 
                 // In version 69 (nice), users were given last login dates. For now, we'll set that to now.
-                if (oldVersion < 69 /*nice*/) newUser.LastLoginDate = DateTimeOffset.Now;
+                if (oldVersion < 69 /*nice*/) newUser.LastLoginDate = this._time.Now;
 
                 // In version 72, users got settings for permissions regarding certain platforms.
                 // To avoid breakage, we set them to true for existing users.
@@ -253,8 +253,8 @@ public class GameDatabaseProvider : RealmDatabaseProvider<GameDatabaseContext>
                 if (oldVersion < 11)
                 {
                     // Since we dont have a reference point for when the level was actually uploaded, default to now
-                    newLevel.PublishDate = DateTimeOffset.Now;
-                    newLevel.UpdateDate = DateTimeOffset.Now;
+                    newLevel.PublishDate = this._time.Now;
+                    newLevel.UpdateDate = this._time.Now;
                 }
 
                 // In version 14, level timestamps were fixed
@@ -377,7 +377,7 @@ public class GameDatabaseProvider : RealmDatabaseProvider<GameDatabaseContext>
                 // In version 30, events were given timestamps
                 // Version 32 fixes events with broken timestamps
                 if (oldVersion < 30 || oldVersion < 32 && newEvent.Timestamp.ToUnixTimeMilliseconds() == 0)
-                    newEvent.Timestamp = DateTimeOffset.Now;
+                    newEvent.Timestamp = this._time.Now;
 
                 // Converts events to use millisecond timestamps
                 if (oldVersion < 33 && newEvent.Timestamp.ToUnixTimeMilliseconds() < 1000000000000)
@@ -420,7 +420,7 @@ public class GameDatabaseProvider : RealmDatabaseProvider<GameDatabaseContext>
                 Token newToken = newTokens.ElementAt(i);
 
                 if (oldVersion < 36)
-                    newToken.LoginDate = DateTimeOffset.UtcNow;
+                    newToken.LoginDate = this._time.Now;
             }
 
         IQueryable<dynamic>? oldPhotos = migration.OldRealm.DynamicApi.All("GamePhoto");
