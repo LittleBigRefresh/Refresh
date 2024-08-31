@@ -43,16 +43,9 @@ public class GameDatabaseProvider : RealmDatabaseProvider<GameDatabaseContext>
         typeof(RequestStatistics),
         typeof(SequentialIdStorage),
 
-        // recent activity
         typeof(Event),
-
-        // announcements
         typeof(GameAnnouncement),
-
-        // contests
         typeof(GameContest),
-
-        // photos
         typeof(GamePhoto),
 
         // levels
