@@ -15,9 +15,9 @@ public partial class GamePlaylist : IRealmObject, ISequentialId
     [PrimaryKey] public int PlaylistId { get; set; }
     
     /// <summary>
-    /// The user who created the playlist
+    /// The user who published the playlist
     /// </summary>
-    public GameUser Creator { get; set; }
+    public GameUser Publisher { get; set; }
     
     /// <summary>
     /// The name of the playlist
@@ -31,7 +31,7 @@ public partial class GamePlaylist : IRealmObject, ISequentialId
     /// <summary>
     /// The playlist's icon, either a GUID or Hashed asset
     /// </summary>
-    public string Icon { get; set; }
+    public string IconHash { get; set; }
     
     public int LocationX { get; set; }
     public int LocationY { get; set; }
@@ -48,7 +48,7 @@ public partial class GamePlaylist : IRealmObject, ISequentialId
     /// <summary>
     /// Whether or not this playlist is a root playlist. This is to let us hide the root playlists when we 
     /// </summary>
-    public bool RootPlaylist { get; set; }
+    public bool IsRoot { get; set; }
     
     public int SequentialId
     {

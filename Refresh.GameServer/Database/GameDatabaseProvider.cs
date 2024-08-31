@@ -34,7 +34,7 @@ public class GameDatabaseProvider : RealmDatabaseProvider<GameDatabaseContext>
         this._time = time;
     }
 
-    protected override ulong SchemaVersion => 154;
+    protected override ulong SchemaVersion => 155;
 
     protected override string Filename => "refreshGameServer.realm";
     
@@ -667,6 +667,56 @@ public class GameDatabaseProvider : RealmDatabaseProvider<GameDatabaseContext>
                 if (oldVersion < 140)
                     newUniquePlayLevelRelation.Timestamp =
                         DateTimeOffset.FromUnixTimeMilliseconds(oldUniquePlayLevelRelation.Timestamp);
+            }
+        
+        IQueryable<dynamic>? oldGamePlaylists = migration.OldRealm.DynamicApi.All("GamePlaylist");
+        IQueryable<GamePlaylist>? newGamePlaylists = migration.NewRealm.All<GamePlaylist>();
+        
+        if (oldVersion < 155)
+            for (int i = 0; i < newGamePlaylists.Count(); i++)
+            {
+                dynamic oldGamePlaylist = oldGamePlaylists.ElementAt(i);
+                GamePlaylist newGamePlaylist = newGamePlaylists.ElementAt(i);
+
+                // In version 155 some fields got renamed
+                if (oldVersion < 155)
+                {
+                    newGamePlaylist.IconHash = oldGamePlaylist.Icon;
+                    newGamePlaylist.Publisher = migration.NewRealm.Find<GameUser>(oldGamePlaylist.Creator.UserId);
+                    newGamePlaylist.IsRoot = oldGamePlaylist.RootPlaylist;
+                }
+            }
+        
+        IQueryable<dynamic>? oldLevelPlaylistRelations = migration.OldRealm.DynamicApi.All("LevelPlaylistRelation");
+        IQueryable<LevelPlaylistRelation>? newLevelPlaylistRelations = migration.NewRealm.All<LevelPlaylistRelation>();
+        
+        if (oldVersion < 155)
+            for (int i = 0; i < newGamePlaylists.Count(); i++)
+            {
+                dynamic oldLevelPlaylistRelation = oldLevelPlaylistRelations.ElementAt(i);
+                LevelPlaylistRelation newLevelPlaylistRelation = newLevelPlaylistRelations.ElementAt(i);
+
+                // In version 155, id was moved to direct reference
+                if (oldVersion < 155)
+                {
+                    newLevelPlaylistRelation.Playlist = migration.NewRealm.Find<GamePlaylist>(oldLevelPlaylistRelation.PlaylistId);
+                }
+            }
+        
+        IQueryable<dynamic>? oldSubPlaylistRelations = migration.OldRealm.DynamicApi.All("SubPlaylistRelation");
+        IQueryable<SubPlaylistRelation>? newSubPlaylistRelations = migration.NewRealm.All<SubPlaylistRelation>();
+        
+        if (oldVersion < 155)
+            for (int i = 0; i < newGamePlaylists.Count(); i++)
+            {
+                dynamic oldSubPlaylistRelation = oldSubPlaylistRelations.ElementAt(i);
+                SubPlaylistRelation newSubPlaylistRelation = newSubPlaylistRelations.ElementAt(i);
+
+                // In version 155, id was moved to direct reference
+                if (oldVersion < 155)
+                {
+                    newSubPlaylistRelation.Playlist = migration.NewRealm.Find<GamePlaylist>(oldSubPlaylistRelation.PlaylistId);
+                }
             }
     }
 }

@@ -35,7 +35,7 @@ public class PlaylistEndpoints : EndpointGroup
                 return BadRequest;
             
             // Dont let you create a sub-playlist of someone else's playlist
-            if (user.UserId != parent.Creator.UserId)
+            if (user.UserId != parent.Publisher.UserId)
                 return Unauthorized;
 
             // If the user has no root playlist, but they are trying to create a sub-playlist, something has gone wrong.
@@ -51,7 +51,7 @@ public class PlaylistEndpoints : EndpointGroup
             dataContext.Database.AddPlaylistToPlaylist(playlist, parent);
 
         // If this new playlist is the root playlist, mark the user's root playlist as it
-        if (playlist.RootPlaylist)
+        if (playlist.IsRoot)
             dataContext.Database.SetUserRootPlaylist(user, playlist);
         
         // Create the new playlist, returning the data
@@ -154,7 +154,7 @@ public class PlaylistEndpoints : EndpointGroup
             return NotFound;
 
         // Dont allow the wrong user to update playlists
-        if (playlist.Creator.UserId != user.UserId)
+        if (playlist.Publisher.UserId != user.UserId)
             return Unauthorized;
         
         database.UpdatePlaylist(playlist, body);
@@ -171,7 +171,7 @@ public class PlaylistEndpoints : EndpointGroup
             return NotFound;
 
         // Dont allow the wrong user to delete playlists
-        if (playlist.Creator.UserId != user.UserId)
+        if (playlist.Publisher.UserId != user.UserId)
             return Unauthorized;
 
         database.DeletePlaylist(playlist);
@@ -195,7 +195,7 @@ public class PlaylistEndpoints : EndpointGroup
             return NotFound;
 
         // Dont let people add slots to other's playlists
-        if (parentPlaylist.Creator.UserId != user.UserId)
+        if (parentPlaylist.Publisher.UserId != user.UserId)
             return Unauthorized;
 
         // Adding a playlist to a playlist requires a special case, since we use `SubPlaylistRelation` internally to record child playlists.
@@ -260,7 +260,7 @@ public class PlaylistEndpoints : EndpointGroup
             return NotFound;
 
         // Dont let people remove slots from other's playlists
-        if (parentPlaylist.Creator.UserId != user.UserId)
+        if (parentPlaylist.Publisher.UserId != user.UserId)
             return Unauthorized;
 
         // Removing a playlist from a playlist requires a special case, since we use `SubPlaylistRelation` internally to record child playlists.

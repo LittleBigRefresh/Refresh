@@ -11,7 +11,7 @@ public partial class LevelPlaylistRelation : IRealmObject
     /// <summary>
     /// The playlist the level is contained in
     /// </summary>
-    public int PlaylistId { get; set; }
+    public GamePlaylist Playlist { get; set; }
     /// <summary>
     /// The level contained within the playlist
     /// </summary>

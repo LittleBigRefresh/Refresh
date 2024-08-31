@@ -113,7 +113,7 @@ public class GameMinimalLevelResponse : IDataConvertableFrom<GameMinimalLevelRes
             LevelId = old.PlaylistId,
             IsAdventure = false,
             Title = old.Name,
-            IconHash = dataContext.GetIconFromHash(old.Icon),
+            IconHash = dataContext.GetIconFromHash(old.IconHash),
             Description = old.Description,
             Type = GameSlotType.Playlist.ToGameType(),
             Location = new GameLocation(old.LocationX, old.LocationY),
@@ -140,7 +140,7 @@ public class GameMinimalLevelResponse : IDataConvertableFrom<GameMinimalLevelRes
             IsCopyable = 0,
             Tags = string.Empty, 
             TeamPicked = false, 
-            Handle = SerializedUserHandle.FromUser(old.Creator, dataContext),
+            Handle = SerializedUserHandle.FromUser(old.Publisher, dataContext),
         };
     }
 

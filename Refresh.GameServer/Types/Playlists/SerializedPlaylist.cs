@@ -31,7 +31,7 @@ public class SerializedPlaylist : IDataConvertableFrom<SerializedPlaylist, GameP
             Id = old.PlaylistId,
             Name = old.Name,
             Description = old.Description,
-            Icon = old.Icon,
+            Icon = old.IconHash,
             Location = new GameLocation(old.LocationX, old.LocationY),
         };
     }

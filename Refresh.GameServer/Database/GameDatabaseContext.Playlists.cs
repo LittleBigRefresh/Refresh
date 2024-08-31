@@ -12,13 +12,13 @@ public partial class GameDatabaseContext // Playlists
     {
         GamePlaylist playlist = new()
         {
-            Creator = user, 
+            Publisher = user, 
             Name = createInfo.Name,
             Description = createInfo.Description, 
-            Icon = createInfo.Icon, 
+            IconHash = createInfo.Icon, 
             LocationX = createInfo.Location.X, 
             LocationY = createInfo.Location.Y,
-            RootPlaylist = rootPlaylist,
+            IsRoot = rootPlaylist,
         };
         
         this.Write(() =>
@@ -38,7 +38,7 @@ public partial class GameDatabaseContext // Playlists
         {
             playlist.Name = updateInfo.Name;
             playlist.Description = updateInfo.Description;
-            playlist.Icon = updateInfo.Icon;
+            playlist.IconHash = updateInfo.Icon;
             playlist.LocationX = updateInfo.Location.X;
             playlist.LocationY = updateInfo.Location.Y;
         });
@@ -49,8 +49,8 @@ public partial class GameDatabaseContext // Playlists
         this.Write(() =>
         {
             // Remove all relations relating to this playlist
-            this.LevelPlaylistRelations.RemoveRange(l => l.PlaylistId == playlist.PlaylistId);
-            this.SubPlaylistRelations.RemoveRange(l => l.PlaylistId == playlist.PlaylistId || l.SubPlaylist == playlist);
+            this.LevelPlaylistRelations.RemoveRange(l => l.Playlist == playlist);
+            this.SubPlaylistRelations.RemoveRange(l => l.Playlist == playlist || l.SubPlaylist == playlist);
             
             // Remove the playlist object
             this.GamePlaylists.Remove(playlist);
@@ -62,13 +62,13 @@ public partial class GameDatabaseContext // Playlists
         this.Write(() =>
         {
             // Make sure to not create a duplicate object
-            if (this.SubPlaylistRelations.Any(p => p.SubPlaylist == child && p.PlaylistId == parent.PlaylistId))
+            if (this.SubPlaylistRelations.Any(p => p.SubPlaylist == child && p.Playlist == parent))
                 return;
             
             // Add the relation
             this.SubPlaylistRelations.Add(new SubPlaylistRelation
             {
-                PlaylistId = parent.PlaylistId,
+                Playlist = parent,
                 SubPlaylist = child,
             });
         });
@@ -79,7 +79,7 @@ public partial class GameDatabaseContext // Playlists
         this.Write(() =>
         {
             SubPlaylistRelation? relation =
-                this.SubPlaylistRelations.FirstOrDefault(r => r.SubPlaylist == child && r.PlaylistId == parent.PlaylistId);
+                this.SubPlaylistRelations.FirstOrDefault(r => r.SubPlaylist == child && r.Playlist == parent);
 
             if (relation == null)
                 return;
@@ -93,14 +93,14 @@ public partial class GameDatabaseContext // Playlists
         this.Write(() =>
         {
             // Make sure to not create a duplicate object
-            if (this.LevelPlaylistRelations.Any(p => p.Level == level && p.PlaylistId == parent.PlaylistId))
+            if (this.LevelPlaylistRelations.Any(p => p.Level == level && p.Playlist == parent))
                 return;
             
             // Add the relation
             this.LevelPlaylistRelations.Add(new LevelPlaylistRelation
             {
                 Level = level,
-                PlaylistId = parent.PlaylistId,
+                Playlist = parent,
             });
         });
     }
@@ -110,7 +110,7 @@ public partial class GameDatabaseContext // Playlists
         this.Write(() =>
         {
             LevelPlaylistRelation? relation =
-                this.LevelPlaylistRelations.FirstOrDefault(r => r.Level == level && r.PlaylistId == parent.PlaylistId);
+                this.LevelPlaylistRelations.FirstOrDefault(r => r.Level == level && r.Playlist == parent);
 
             if (relation == null)
                 return;
@@ -122,33 +122,33 @@ public partial class GameDatabaseContext // Playlists
     public IEnumerable<GamePlaylist> GetPlaylistsContainingPlaylist(GamePlaylist playlist)
         // TODO: with postgres this can be IQueryable
         => this.SubPlaylistRelations.Where(p => p.SubPlaylist == playlist).AsEnumerable()
-            .Select(r => this.GamePlaylists.First(p => p.PlaylistId == r.PlaylistId))
-            .Where(p => !p.RootPlaylist);
+            .Select(r => this.GamePlaylists.First(p => p == r.Playlist))
+            .Where(p => !p.IsRoot);
 
     public IEnumerable<GamePlaylist> GetPlaylistsByAuthorContainingPlaylist(GameUser user, GamePlaylist playlist)
         // TODO: with postgres this can be IQueryable
         => this.SubPlaylistRelations.Where(p => p.SubPlaylist == playlist).AsEnumerable()
-            .Select(r => this.GamePlaylists.First(p => p.PlaylistId == r.PlaylistId))
-            .Where(p => p.Creator.UserId == user.UserId)
-            .Where(p => !p.RootPlaylist);
+            .Select(r => this.GamePlaylists.First(p => p == r.Playlist))
+            .Where(p => p.Publisher.UserId == user.UserId)
+            .Where(p => !p.IsRoot);
 
     public IEnumerable<GameLevel> GetLevelsInPlaylist(GamePlaylist playlist, TokenGame game) =>
         // TODO: When we have postgres, remove the `AsEnumerable` call for performance. 
-        this.LevelPlaylistRelations.Where(l => l.PlaylistId == playlist.PlaylistId).AsEnumerable()
+        this.LevelPlaylistRelations.Where(l => l.Playlist == playlist).AsEnumerable()
             .Select(l => l.Level).FilterByGameVersion(game);
 
     public IEnumerable<GamePlaylist> GetPlaylistsInPlaylist(GamePlaylist playlist)
         // TODO: When we have postgres, remove the `AsEnumerable` call for performance. 
-        => this.SubPlaylistRelations.Where(p => p.PlaylistId == playlist.PlaylistId).AsEnumerable().Select(l => l.SubPlaylist);
+        => this.SubPlaylistRelations.Where(p => p.Playlist == playlist).AsEnumerable().Select(l => l.SubPlaylist);
 
     public IEnumerable<GamePlaylist> GetPlaylistsByAuthorContainingLevel(GameUser author, GameLevel level)
         // TODO: When we have postgres, remove the `AsEnumerable` call for performance. 
         => this.LevelPlaylistRelations.Where(p => p.Level == level).AsEnumerable()
-            .Select(r => this.GamePlaylists.First(p => p.PlaylistId == r.PlaylistId))
-            .Where(p => p.Creator.UserId == author.UserId);
+            .Select(r => this.GamePlaylists.First(p => p == r.Playlist))
+            .Where(p => p.Publisher.UserId == author.UserId);
     
     public IEnumerable<GamePlaylist> GetPlaylistsContainingLevel(GameLevel level)
         // TODO: When we have postgres, remove the `AsEnumerable` call for performance. 
         => this.LevelPlaylistRelations.Where(p => p.Level == level).AsEnumerable()
-            .Select(r => this.GamePlaylists.First(p => p.PlaylistId == r.PlaylistId));
+            .Select(r => this.GamePlaylists.First(p => p == r.Playlist));
 }
