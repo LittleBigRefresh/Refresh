@@ -181,7 +181,7 @@ public class GameLevelResponse : IDataConvertableFrom<GameLevelResponse, GameLev
             ReviewCount = old.Reviews.Count,
             CommentCount = dataContext.Database.GetTotalCommentsForLevel(old),
             Tags = string.Join(',', dataContext.Database.GetTagsForLevel(old).Select(t => t.Tag.ToLbpString())) ,
-            Type = old.Source.ToGameType(),
+            Type = old.SlotType.ToGameType(),
         };
         
         if (old is { Publisher: not null, IsReUpload: false })

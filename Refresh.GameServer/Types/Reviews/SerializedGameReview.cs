@@ -65,7 +65,7 @@ public class SerializedGameReview : IDataConvertableFrom<SerializedGameReview, G
             Id = review.ReviewId,
             Slot = new GameReviewSlot
             {
-                SlotType = review.Level.Source.ToGameType(),
+                SlotType = review.Level.SlotType.ToGameType(),
                 SlotId = review.Level.LevelId,
             },
             Reviewer = review.Publisher.Username,

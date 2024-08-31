@@ -68,7 +68,7 @@ public interface IRoomAccessor
     /// <param name="level">The level to check</param>
     /// <returns>The found rooms</returns>
     public IEnumerable<GameRoom> GetRoomsInLevel(GameLevel level) => this.GetRoomsInLevel(
-        level.Source switch
+        level.SlotType switch
         {
             GameSlotType.User => RoomSlotType.Online,
             GameSlotType.Story => RoomSlotType.Story,

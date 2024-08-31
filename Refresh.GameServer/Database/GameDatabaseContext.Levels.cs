@@ -51,7 +51,6 @@ public partial class GameDatabaseContext // Levels
         {
             Title = $"Story level #{id}",
             Publisher = null,
-            Source = GameSlotType.Story,
             StoryId = id,
         };
             
@@ -180,8 +179,11 @@ public partial class GameDatabaseContext // Levels
         });
     }
 
+    
     private IQueryable<GameLevel> GetLevelsByGameVersion(TokenGame gameVersion) 
-        => this.GameLevels.Where(l => l._Source == (int)GameSlotType.User).FilterByGameVersion(gameVersion);
+        => this.GameLevels
+            .Where(l => l.StoryId == 0) // Filter out any user levels
+            .FilterByGameVersion(gameVersion);
 
     [Pure]
     public DatabaseList<GameLevel> GetLevelsByUser(GameUser user, int count, int skip, LevelFilterSettings levelFilterSettings, GameUser? accessor)
@@ -193,7 +195,7 @@ public partial class GameDatabaseContext // Levels
 
         if (user.Username == SystemUsers.UnknownUserName)
         {
-            return new DatabaseList<GameLevel>(this.GetLevelsByGameVersion(levelFilterSettings.GameVersion).FilterByLevelFilterSettings(null, levelFilterSettings).Where(l => l.IsReUpload && String.IsNullOrEmpty(l.OriginalPublisher)), skip, count);
+            return new DatabaseList<GameLevel>(this.GetLevelsByGameVersion(levelFilterSettings.GameVersion).FilterByLevelFilterSettings(null, levelFilterSettings).Where(l => l.IsReUpload && string.IsNullOrEmpty(l.OriginalPublisher)), skip, count);
         }
         
         if (user.Username.StartsWith(SystemUsers.SystemPrefix))
@@ -209,11 +211,11 @@ public partial class GameDatabaseContext // Levels
     
     [Pure]
     public DatabaseList<GameLevel> GetUserLevelsChunk(int skip, int count)
-        => new(this.GameLevels.Where(l => l._Source == (int)GameSlotType.User), skip, count);
+        => new(this.GameLevels.Where(l => l.StoryId == 0), skip, count);
 
     [Pure]
     public IQueryable<GameLevel> GetAllUserLevels()
-        => this.GameLevels.Where(l => l._Source == (int)GameSlotType.User);
+        => this.GameLevels.Where(l => l.StoryId == 0);
     
     [Pure]
     public DatabaseList<GameLevel> GetNewestLevels(int count, int skip, GameUser? user, LevelFilterSettings levelFilterSettings) =>
@@ -245,7 +247,7 @@ public partial class GameDatabaseContext // Levels
             .OrderByDescending(x => x.Count)
             .Select(x => x.Level)
             .Where(l => l != null)
-            .Where(l => l._Source == (int)GameSlotType.User)
+            .Where(l => l.StoryId == 0)
             .FilterByLevelFilterSettings(user, levelFilterSettings)
             .FilterByGameVersion(levelFilterSettings.GameVersion);
 
@@ -262,7 +264,7 @@ public partial class GameDatabaseContext // Levels
             .AsEnumerable()
             .Select(x => x.Level)
             .Distinct()
-            .Where(l => l._Source == (int)GameSlotType.User)
+            .Where(l => l.StoryId == 0)
             .OrderByDescending(l => l.PublishDate)
             .FilterByLevelFilterSettings(user, levelFilterSettings)
             .FilterByGameVersion(levelFilterSettings.GameVersion);
@@ -282,7 +284,7 @@ public partial class GameDatabaseContext // Levels
             .OrderByDescending(x => x.Count)
             .Select(x => x.Level)
             .Where(l => l != null)
-            .Where(l => l._Source == (int)GameSlotType.User)
+            .Where(l => l.StoryId == 0)
             .FilterByLevelFilterSettings(user, levelFilterSettings)
             .FilterByGameVersion(levelFilterSettings.GameVersion);
 
@@ -319,7 +321,7 @@ public partial class GameDatabaseContext // Levels
             .OrderByDescending(x => x.Karma) // reddit moment
             .Select(x => x.Level)
             .Where(l => l != null)
-            .Where(l => l._Source == (int)GameSlotType.User)
+            .Where(l => l.StoryId == 0)
             .FilterByLevelFilterSettings(user, levelFilterSettings)
             .FilterByGameVersion(levelFilterSettings.GameVersion);
 
@@ -336,7 +338,7 @@ public partial class GameDatabaseContext // Levels
     [Pure]
     public DatabaseList<GameLevel> GetDeveloperLevels(int count, int skip, LevelFilterSettings levelFilterSettings) =>
         new(this.GameLevels
-            .Where(l => l._Source == (int)GameSlotType.Story)
+            .Where(l => l.StoryId != 0) // filter to only levels with a story ID set
             .FilterByLevelFilterSettings(null, levelFilterSettings)
             .OrderByDescending(l => l.Title), skip, count);
 
@@ -349,7 +351,7 @@ public partial class GameDatabaseContext // Levels
             .OrderBy(r => r.Sum(room => room.PlayerIds.Count));
 
         return new DatabaseList<GameLevel>(rooms.Select(r => r.Key)
-            .Where(l => l != null && l._Source == (int)GameSlotType.User)!
+            .Where(l => l != null && l.StoryId == 0)!
             .FilterByLevelFilterSettings(user, levelFilterSettings)
             .FilterByGameVersion(levelFilterSettings.GameVersion), skip, count);
     }
@@ -402,13 +404,13 @@ public partial class GameDatabaseContext // Levels
     }
 
     [Pure]
-    public int GetTotalLevelCount(TokenGame game) => this.GameLevels.FilterByGameVersion(game).Count(l => l._Source == (int)GameSlotType.User);
+    public int GetTotalLevelCount(TokenGame game) => this.GameLevels.FilterByGameVersion(game).Count(l => l.StoryId == 0);
     
     [Pure]
-    public int GetTotalLevelCount() => this.GameLevels.Count(l => l._Source == (int)GameSlotType.User);
+    public int GetTotalLevelCount() => this.GameLevels.Count(l => l.StoryId == 0);
 
     [Pure]
-    public int GetModdedLevelCount() => this.GameLevels.Count(l => l._Source == (int)GameSlotType.User && l.IsModded);
+    public int GetModdedLevelCount() => this.GameLevels.Count(l => l.StoryId == 0 && l.IsModded);
 
     public int GetTotalLevelsPublishedByUser(GameUser user)
         => this.GameLevels

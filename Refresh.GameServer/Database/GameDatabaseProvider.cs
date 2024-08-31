@@ -34,7 +34,7 @@ public class GameDatabaseProvider : RealmDatabaseProvider<GameDatabaseContext>
         this._time = time;
     }
 
-    protected override ulong SchemaVersion => 155;
+    protected override ulong SchemaVersion => 156;
 
     protected override string Filename => "refreshGameServer.realm";
     
@@ -278,13 +278,6 @@ public class GameDatabaseProvider : RealmDatabaseProvider<GameDatabaseContext>
                 if (oldVersion < 79)
                 {
                     newLevel._GameVersion = (int)TokenGame.LittleBigPlanet2;
-                }
-
-                // In version 92, we started storing both user and story levels.
-                // Set all existing levels to user levels, since that's what has existed up until now.
-                if (oldVersion < 92)
-                {
-                    newLevel._Source = (int)GameSlotType.User;
                 }
 
                 // In version 129, we split locations from an embedded object out to two fields
