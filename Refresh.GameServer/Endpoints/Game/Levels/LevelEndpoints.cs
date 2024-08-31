@@ -87,6 +87,7 @@ public class LevelEndpoints : EndpointGroup
                 // While this does technically return more slot results than the game is expecting,
                 // because we tell the game exactly what the "next page index" is (its not based on count sent),
                 // pagination still seems to work perfectly fine in LBP1!
+                // The injected items are basically just fake slots which "follow" the current page.
                 injectedAmount += playlists.Count;
             }
         }   
