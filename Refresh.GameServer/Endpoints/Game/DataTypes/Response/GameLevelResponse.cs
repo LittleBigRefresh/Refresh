@@ -253,8 +253,7 @@ public class GameLevelResponse : IDataConvertableFrom<GameLevelResponse, GameLev
             Title = old.Name,
             IconHash = old.Icon,
             Description = old.Description,
-            Location = new GameLocation(old.LocationX,
-                old.LocationY),
+            Location = new GameLocation(old.LocationX, old.LocationY),
             // Playlists are only ever serialized like this in LBP1-like builds
             GameVersion = TokenGame.LittleBigPlanet1.ToSerializedGame(),
             Type = GameSlotType.Playlist.ToGameType(),
