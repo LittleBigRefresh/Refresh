@@ -49,7 +49,7 @@ public class UploadTests : GameServerTest
             Title = "This is a level",
             Description = "incredible",
             Publisher = user,
-            Source = GameLevelSource.User,
+            Source = GameSlotType.User,
         };
         
         context.Database.AddLevel(level);
@@ -60,7 +60,7 @@ public class UploadTests : GameServerTest
             Title = "This is a better level",
             Description = "incredible.",
             Publisher = user,
-            Source = GameLevelSource.User,
+            Source = GameSlotType.User,
         };
 
         GameLevel? updatedLevel = context.Database.UpdateLevel(levelUpdate, user);

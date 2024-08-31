@@ -60,7 +60,6 @@ public class MetadataEndpoints : EndpointGroup
     
     [GameEndpoint("network_settings.nws")]
     [MinimumRole(GameUserRole.Restricted)]
-    public string NetworkSettings(RequestContext context)
     public string NetworkSettings(RequestContext context, GameServerConfig config)
     {
         bool created = NetworkSettingsFile.IsValueCreated;
@@ -110,7 +109,6 @@ public class MetadataEndpoints : EndpointGroup
     [GameEndpoint("t_conf")]
     [MinimumRole(GameUserRole.Restricted)]
     [NullStatusCode(Gone)]
-    [MinimumRole(GameUserRole.Restricted)]
     public string? TelemetryConfig(RequestContext context) 
     {
         bool created = TelemetryConfigFile.IsValueCreated;
