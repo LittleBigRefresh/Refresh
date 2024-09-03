@@ -91,15 +91,13 @@ public class LevelListOverrideService : EndpointService
     } 
     
     public void AddIdOverridesForUser(GameUser user, GameLevel level) 
-        => this.AddIdOverridesForUser(user, new[] { level });
+        => this.AddIdOverridesForUser(user, [level]);
     
     public void AddIdOverridesForUser(GameUser user, IEnumerable<GameLevel> levels)
     {
-        Debug.Assert(!this.UserHasLevelIdOverrides(user), "User already has overrides");
-        
         List<int> ids = levels.Select(l => l.LevelId).ToList();
         this.Logger.LogDebug(RefreshContext.LevelListOverride, "Adding level id overrides for {0}: [{1}]", user.Username, string.Join(", ", ids));
-        this._userIdsToLevelList.Add(user.UserId, ids);
+        this._userIdsToLevelList[user.UserId] = ids;
     }
 
     public bool GetIdOverridesForUser(Token token, GameDatabaseContext database, out IEnumerable<GameLevel> outLevels)
