@@ -10,4 +10,5 @@ public enum RefreshContext
     CoolLevels,
     Publishing,
     Aipi,
+    Presence,
 }

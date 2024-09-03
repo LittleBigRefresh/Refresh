@@ -13,6 +13,7 @@ using Bunkum.Protocols.Http;
 using Refresh.Common;
 using Refresh.Common.Verification;
 using Refresh.GameServer.Authentication;
+using Refresh.GameServer.Authentication.Presence;
 using Refresh.GameServer.Configuration;
 using Refresh.GameServer.Database;
 using Refresh.GameServer.Documentation;
@@ -99,6 +100,7 @@ public class RefreshGameServer : RefreshServer
         this.Server.AddMiddleware<CrossOriginMiddleware>();
         this.Server.AddMiddleware<PspVersionMiddleware>();
         this.Server.AddMiddleware<LegacyAdapterMiddleware>();
+        this.Server.AddMiddleware(new PresenceAuthenticationMiddleware(this._integrationConfig!));
     }
 
     protected override void SetupConfiguration()
@@ -142,6 +144,8 @@ public class RefreshGameServer : RefreshServer
         this.Server.AddService<CommandService>();
         this.Server.AddService<DiscordStaffService>();
         
+        this.Server.AddService<PresenceService>();
+
         if(this._integrationConfig!.AipiEnabled)
             this.Server.AddService<AipiService>();
         

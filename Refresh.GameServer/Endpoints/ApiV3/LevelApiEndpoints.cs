@@ -144,13 +144,20 @@ public class LevelApiEndpoints : EndpointGroup
     [ApiV3Endpoint("levels/id/{id}/setAsOverride", HttpMethods.Post)]
     [DocSummary("Marks the level to show in the next slot list gotten from the game")]
     [DocError(typeof(ApiNotFoundError), ApiNotFoundError.LevelMissingErrorWhen)]
-    public ApiOkResponse SetLevelAsOverrideById(RequestContext context, GameDatabaseContext database, GameUser user, LevelListOverrideService service,
+    public ApiOkResponse SetLevelAsOverrideById(RequestContext context, 
+        GameDatabaseContext database, 
+        GameUser user, 
+        LevelListOverrideService overrideService,
+        PresenceService presenceService,
         [DocSummary("The ID of the level")] int id)
     {
         GameLevel? level = database.GetLevelById(id);
         if (level == null) return ApiNotFoundError.LevelMissingError;
-        
-        service.AddIdOverridesForUser(user, level);
+
+        // If the user isn't on the presence server, or it's unavailable, fallback to a slot override
+        // TODO: return whether or not the presence server was used
+        if (!presenceService.PlayLevel(user, id))
+            overrideService.AddIdOverridesForUser(user, level);
         
         return new ApiOkResponse();
     }
