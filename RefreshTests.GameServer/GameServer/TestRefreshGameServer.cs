@@ -28,7 +28,7 @@ public class TestRefreshGameServer : RefreshGameServer
     {
         this.Server.AddConfig(this._config = new GameServerConfig());
         this.Server.AddConfig(new RichPresenceConfig());
-        this.Server.AddConfig(new IntegrationConfig());
+        this.Server.AddConfig(this._integrationConfig = new IntegrationConfig());
         this.Server.AddConfig(new ContactInfoConfig());
     }
 
@@ -78,6 +78,7 @@ public class TestRefreshGameServer : RefreshGameServer
         
         // Must always be last, see comment in RefreshGameServer
         this.Server.AddService<DataContextService>();
+        this.Server.AddService(new PresenceService(this.Logger, this._integrationConfig!));
     }
     
     [Pure]
