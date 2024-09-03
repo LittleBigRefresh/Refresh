@@ -13,7 +13,6 @@ using Bunkum.Protocols.Http;
 using Refresh.Common;
 using Refresh.Common.Verification;
 using Refresh.GameServer.Authentication;
-using Refresh.GameServer.Authentication.Presence;
 using Refresh.GameServer.Configuration;
 using Refresh.GameServer.Database;
 using Refresh.GameServer.Documentation;
