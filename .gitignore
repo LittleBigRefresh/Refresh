@@ -360,4 +360,4 @@ MigrationBackup/
 *.realm
 *.lock
 *.json
-*.gitignore
+dataStore/
