@@ -354,3 +354,10 @@ MigrationBackup/
 
 # Docker data
 /data/
+
+# db & settings
+
+*.realm
+*.lock
+*.json
+*.gitignore
