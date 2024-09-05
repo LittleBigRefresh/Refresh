@@ -122,33 +122,35 @@ public partial class GameDatabaseContext // Playlists
     public IEnumerable<GamePlaylist> GetPlaylistsContainingPlaylist(GamePlaylist playlist)
         // TODO: with postgres this can be IQueryable
         => this.SubPlaylistRelations.Where(p => p.SubPlaylist == playlist).AsEnumerable()
-            .Select(r => this.GamePlaylists.First(p => p == r.Playlist))
+            .Select(r => this.GamePlaylists.First(p => p.PlaylistId == r.Playlist.PlaylistId))
             .Where(p => !p.IsRoot);
 
     public IEnumerable<GamePlaylist> GetPlaylistsByAuthorContainingPlaylist(GameUser user, GamePlaylist playlist)
         // TODO: with postgres this can be IQueryable
         => this.SubPlaylistRelations.Where(p => p.SubPlaylist == playlist).AsEnumerable()
-            .Select(r => this.GamePlaylists.First(p => p == r.Playlist))
+            .Select(r => this.GamePlaylists.First(p => p.PlaylistId == r.Playlist.PlaylistId))
             .Where(p => p.Publisher.UserId == user.UserId)
             .Where(p => !p.IsRoot);
 
     public IEnumerable<GameLevel> GetLevelsInPlaylist(GamePlaylist playlist, TokenGame game) =>
         // TODO: When we have postgres, remove the `AsEnumerable` call for performance. 
         this.LevelPlaylistRelations.Where(l => l.Playlist == playlist).AsEnumerable()
-            .Select(l => l.Level).FilterByGameVersion(game);
+            .Select(l => l.Level)
+            .FilterByGameVersion(game);
 
     public IEnumerable<GamePlaylist> GetPlaylistsInPlaylist(GamePlaylist playlist)
         // TODO: When we have postgres, remove the `AsEnumerable` call for performance. 
-        => this.SubPlaylistRelations.Where(p => p.Playlist == playlist).AsEnumerable().Select(l => l.SubPlaylist);
+        => this.SubPlaylistRelations.Where(p => p.Playlist == playlist).AsEnumerable()
+            .Select(l => l.SubPlaylist);
 
     public IEnumerable<GamePlaylist> GetPlaylistsByAuthorContainingLevel(GameUser author, GameLevel level)
         // TODO: When we have postgres, remove the `AsEnumerable` call for performance. 
         => this.LevelPlaylistRelations.Where(p => p.Level == level).AsEnumerable()
-            .Select(r => this.GamePlaylists.First(p => p == r.Playlist))
+            .Select(r => this.GamePlaylists.First(p => p.PlaylistId == r.Playlist.PlaylistId))
             .Where(p => p.Publisher.UserId == author.UserId);
     
     public IEnumerable<GamePlaylist> GetPlaylistsContainingLevel(GameLevel level)
         // TODO: When we have postgres, remove the `AsEnumerable` call for performance. 
         => this.LevelPlaylistRelations.Where(p => p.Level == level).AsEnumerable()
-            .Select(r => this.GamePlaylists.First(p => p == r.Playlist));
+            .Select(r => this.GamePlaylists.First(p => p.PlaylistId == r.Playlist.PlaylistId));
 }
