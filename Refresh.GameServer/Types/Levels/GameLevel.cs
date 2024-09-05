@@ -76,19 +76,14 @@ public partial class GameLevel : IRealmObject, ISequentialId
     // ReSharper disable once InconsistentNaming
     internal int _LevelType { get; set; }
 
-    [Ignored] public GameLevelSource Source
-    {
-        get => (GameLevelSource)this._Source;
-        set => this._Source = (int)value;
-    }
-
-    // ReSharper disable once InconsistentNaming
-    internal int _Source { get; set; }
-    
     /// <summary>
-    /// The associated ID for the developer level, this is only relevant if Source == Story
+    /// The associated ID for the developer level.
+    /// Set to 0 for user generated levels, since slot IDs of zero are invalid ingame.
     /// </summary>
     [Indexed] public int StoryId { get; set; }
+
+    public GameSlotType SlotType 
+        => this.StoryId == 0 ? GameSlotType.User : GameSlotType.Story;
     
     public bool IsLocked { get; set; }
     public bool IsSubLevel { get; set; }

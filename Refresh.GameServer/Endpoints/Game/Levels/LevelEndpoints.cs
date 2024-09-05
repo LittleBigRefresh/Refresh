@@ -13,6 +13,7 @@ using Refresh.GameServer.Types.Data;
 using Refresh.GameServer.Types.Levels;
 using Refresh.GameServer.Types.Levels.Categories;
 using Refresh.GameServer.Types.Lists;
+using Refresh.GameServer.Types.Playlists;
 using Refresh.GameServer.Types.Roles;
 using Refresh.GameServer.Types.UserData;
 
@@ -66,9 +67,32 @@ public class LevelEndpoints : EndpointGroup
         if (levels == null) return null;
         
         IEnumerable<GameMinimalLevelResponse> category = levels.Items
-            .Select(l => GameMinimalLevelResponse.FromOld(l, dataContext))!;
+            .Select(l => GameMinimalLevelResponse.FromOld(l, dataContext)!);
+
+        int injectedAmount = 0;
         
-        return new SerializedMinimalLevelList(category, levels.TotalItems, skip + count);
+        // Special case the `by` route for LBP1 requests, to inject the user's playlist info
+        if (route == "by" && dataContext.Game == TokenGame.LittleBigPlanet1)
+        {
+            // Get the requested user's root playlist
+            GamePlaylist? playlist = database.GetUserByUsername(context.QueryString.Get("u"))?.RootPlaylist;
+
+            // If it was found, inject it into the response info
+            if (playlist != null)
+            {
+                // TODO: with postgres this can be IQueryable
+                List<GamePlaylist> playlists = database.GetPlaylistsInPlaylist(playlist).ToList();
+                
+                category = GameMinimalLevelResponse.FromOldList(playlists, dataContext).Concat(category);
+                // While this does technically return more slot results than the game is expecting,
+                // because we tell the game exactly what the "next page index" is (its not based on count sent),
+                // pagination still seems to work perfectly fine in LBP1!
+                // The injected items are basically just fake slots which "follow" the current page.
+                injectedAmount += playlists.Count;
+            }
+        }   
+
+        return new SerializedMinimalLevelList(category, levels.TotalItems + injectedAmount, skip + count);
     }
 
     [GameEndpoint("slots/{route}/{username}", ContentType.Xml)]

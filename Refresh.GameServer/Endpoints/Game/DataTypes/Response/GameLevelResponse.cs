@@ -9,6 +9,7 @@ using Refresh.GameServer.Types.Data;
 using Refresh.GameServer.Types.Levels;
 using Refresh.GameServer.Types.Levels.SkillRewards;
 using Refresh.GameServer.Types.Matching;
+using Refresh.GameServer.Types.Playlists;
 using Refresh.GameServer.Types.Reviews;
 using Refresh.GameServer.Types.UserData;
 
@@ -16,7 +17,7 @@ namespace Refresh.GameServer.Endpoints.Game.DataTypes.Response;
 
 [XmlRoot("slot")]
 [XmlType("slot")]
-public class GameLevelResponse : IDataConvertableFrom<GameLevelResponse, GameLevel>
+public class GameLevelResponse : IDataConvertableFrom<GameLevelResponse, GameLevel>, IDataConvertableFrom<GameLevelResponse, GamePlaylist>
 {
     [XmlElement("id")] public required int LevelId { get; set; }
     
@@ -39,7 +40,7 @@ public class GameLevelResponse : IDataConvertableFrom<GameLevelResponse, GameLev
     
     [XmlElement("sameScreenGame")] public required bool SameScreenGame { get; set; }
 
-    [XmlAttribute("type")] public string Type { get; set; } = "user";
+    [XmlAttribute("type")] public string? Type { get; set; } = GameSlotType.User.ToGameType();
 
     [XmlElement("npHandle")] public SerializedUserHandle Handle { get; set; } = null!;
     
@@ -112,7 +113,7 @@ public class GameLevelResponse : IDataConvertableFrom<GameLevelResponse, GameLev
                 Username = $"!Hashed",
                 IconHash = "0",
             },
-            Type = "user",
+            Type = GameSlotType.User.ToGameType(),
             TeamPicked = false,
             MinPlayers = 1,
             MaxPlayers = 4,
@@ -180,9 +181,9 @@ public class GameLevelResponse : IDataConvertableFrom<GameLevelResponse, GameLev
             ReviewCount = old.Reviews.Count,
             CommentCount = dataContext.Database.GetTotalCommentsForLevel(old),
             Tags = string.Join(',', dataContext.Database.GetTagsForLevel(old).Select(t => t.Tag.ToLbpString())) ,
+            Type = old.SlotType.ToGameType(),
         };
-
-        response.Type = "user";
+        
         if (old is { Publisher: not null, IsReUpload: false })
         {
             response.Handle = SerializedUserHandle.FromUser(old.Publisher, dataContext);
@@ -239,4 +240,61 @@ public class GameLevelResponse : IDataConvertableFrom<GameLevelResponse, GameLev
     }
 
     public static IEnumerable<GameLevelResponse> FromOldList(IEnumerable<GameLevel> oldList, DataContext dataContext) => oldList.Select(old => FromOld(old, dataContext)).ToList()!;
+    
+    public static GameLevelResponse? FromOld(GamePlaylist? old, DataContext dataContext)
+    {
+        if (old == null)
+            return null;
+        
+        return new GameLevelResponse
+        {
+            LevelId = old.PlaylistId,
+            IsAdventure = false,
+            Title = old.Name,
+            IconHash = old.IconHash,
+            Description = old.Description,
+            Location = new GameLocation(old.LocationX, old.LocationY),
+            // Playlists are only ever serialized like this in LBP1-like builds
+            GameVersion = TokenGame.LittleBigPlanet1.ToSerializedGame(),
+            Type = GameSlotType.Playlist.ToGameType(),
+            Handle = SerializedUserHandle.FromUser(old.Publisher, dataContext),
+            RootResource = "0",
+            PublishDate = old.CreationDate.ToUnixTimeMilliseconds(),
+            UpdateDate = old.LastUpdateDate.ToUnixTimeMilliseconds(),
+            MinPlayers = 0,
+            MaxPlayers = 0,
+            EnforceMinMaxPlayers = false,
+            SameScreenGame = false,
+            HeartCount = 0, 
+            TotalPlayCount = 0,
+            CompletionCount = 0,
+            UniquePlayCount = 0,
+            YourRating = 0,
+            YayCount = 0, 
+            BooCount = 0,
+            YourStarRating = 0,
+            YourLbp1PlayCount = 0,
+            YourLbp2PlayCount = 0,
+            YourLbp3PlayCount = 0, 
+            SkillRewards = [],
+            TeamPicked = false, 
+            XmlResources = [],
+            PlayerCount = 0, 
+            LevelType = GameLevelType.Normal.ToGameString(),
+            IsLocked = false,
+            IsSubLevel = false,
+            IsCopyable = 0,
+            BackgroundGuid = null,
+            Links = null,
+            AverageStarRating = 0,
+            SizeOfResourcesInBytes = 0,
+            ReviewCount = 0,
+            ReviewsEnabled = true,
+            CommentCount = 0,
+            CommentsEnabled = true,
+            Tags = string.Empty,
+        };
+    }
+
+    public static IEnumerable<GameLevelResponse> FromOldList(IEnumerable<GamePlaylist> oldList, DataContext dataContext) => oldList.Select(old => FromOld(old, dataContext)).ToList()!;
 }

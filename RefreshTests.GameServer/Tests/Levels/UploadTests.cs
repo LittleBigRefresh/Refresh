@@ -16,7 +16,6 @@ public class UploadTests : GameServerTest
             Title = "This is a level",
             Description = "incredible",
             Publisher = user,
-            Source = GameLevelSource.User,
         };
         
         context.Database.AddLevel(level);
@@ -32,7 +31,6 @@ public class UploadTests : GameServerTest
         {
             Title = "I AM AN ORPHAN!!!!",
             Publisher = null,
-            Source = GameLevelSource.User,
         };
         
         Assert.That(() => context.Database.AddLevel(level), Throws.InvalidOperationException);
@@ -49,7 +47,6 @@ public class UploadTests : GameServerTest
             Title = "This is a level",
             Description = "incredible",
             Publisher = user,
-            Source = GameLevelSource.User,
         };
         
         context.Database.AddLevel(level);
@@ -60,7 +57,6 @@ public class UploadTests : GameServerTest
             Title = "This is a better level",
             Description = "incredible.",
             Publisher = user,
-            Source = GameLevelSource.User,
         };
 
         GameLevel? updatedLevel = context.Database.UpdateLevel(levelUpdate, user);
@@ -87,7 +83,6 @@ public class UploadTests : GameServerTest
             LevelId = level.LevelId,
             RootResource = "Malware",
             Publisher = baddie,
-            Source = GameLevelSource.User,
         };
 
         GameLevel? updatedLevel = context.Database.UpdateLevel(levelUpdate, baddie);
@@ -110,7 +105,6 @@ public class UploadTests : GameServerTest
         {
             LevelId = 69696969,
             Publisher = author,
-            Source = GameLevelSource.User,
         };
 
         GameLevel? updatedLevel = context.Database.UpdateLevel(levelUpdate, author);

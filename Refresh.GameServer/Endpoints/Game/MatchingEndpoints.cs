@@ -50,8 +50,9 @@ public class MatchingEndpoints : EndpointGroup
                     jsonBodyBuilder.Append(',');
                     i += corruptedEnd;
                     continue;
-                // If this is a comma, then we know that a ']' was corrupted
+                // If this is a comma or end brace, then we know that a ']' was corrupted
                 case ',':
+                case '}':
                     jsonBodyBuilder.Append(slice[..corruptedEnd]);
                     jsonBodyBuilder.Append(']');
                     i += corruptedEnd;
