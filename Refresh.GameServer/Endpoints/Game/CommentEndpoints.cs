@@ -30,9 +30,9 @@ public class CommentEndpoints : EndpointGroup
         GameUser? profile = database.GetUserByUsername(username);
         if (profile == null) return NotFound;
         
-        
-        int count = database.GetNotificationCountByUser(profile);
-        if (!profile.Equals(user) && count < 10) {
+        // TODO: include a check for if the user wants to receive these types of notifications 
+        if (!profile.Equals(user)) 
+        {
             database.AddNotification("New comment", $"{user.Username} left a comment on your profile!", profile);
         }
 
@@ -88,10 +88,9 @@ public class CommentEndpoints : EndpointGroup
         GameLevel? level = database.GetLevelByIdAndType(slotType, id);
         if (level == null) return NotFound;
 
-        
-        int count = database.GetNotificationCountByUser(level.Publisher);
-        if (!level.Publisher.Equals(user) && count < 10) {
-            database.AddNotification("New level comment", $"{user.Username} left a comment on your level: '{level.Title}!'", level.Publisher);
+        if (!level.Publisher.Equals(user)) 
+        {
+            database.AddNotification("New comment", $"{user.Username} left a comment on your level: '{level.Title}!'", level.Publisher);
         }
 
         database.PostCommentToLevel(level, user, body.Content);

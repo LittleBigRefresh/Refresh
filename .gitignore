@@ -356,8 +356,13 @@ MigrationBackup/
 /data/
 
 # db & settings
-
 *.realm
 *.lock
-*.json
+dry.json
+global.json
+integrations.json
+rpc.json
+refreshGameServer.json
+bunkum.json
+contactInfo.json
 dataStore/
