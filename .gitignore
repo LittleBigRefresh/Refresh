@@ -354,15 +354,3 @@ MigrationBackup/
 
 # Docker data
 /data/
-
-# db & settings
-*.realm
-*.lock
-dry.json
-global.json
-integrations.json
-rpc.json
-refreshGameServer.json
-bunkum.json
-contactInfo.json
-dataStore/
