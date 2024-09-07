@@ -30,6 +30,12 @@ public class CommentEndpoints : EndpointGroup
         GameUser? profile = database.GetUserByUsername(username);
         if (profile == null) return NotFound;
         
+        // TODO: include a check for if the user wants to receive these types of notifications 
+        if (!profile.Equals(user)) 
+        {
+            database.AddNotification("New comment", $"{user.Username} left a comment on your profile!", profile);
+        }
+
         database.PostCommentToProfile(profile, user, body.Content);
         return OK;
     }
@@ -81,6 +87,11 @@ public class CommentEndpoints : EndpointGroup
         
         GameLevel? level = database.GetLevelByIdAndType(slotType, id);
         if (level == null) return NotFound;
+
+        if (!level.Publisher.Equals(user)) 
+        {
+            database.AddNotification("New comment", $"{user.Username} left a comment on your level: '{level.Title}!'", level.Publisher);
+        }
 
         database.PostCommentToLevel(level, user, body.Content);
         return OK;
