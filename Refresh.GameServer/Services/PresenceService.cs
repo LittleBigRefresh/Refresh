@@ -34,6 +34,8 @@ public class PresenceService : EndpointService
         if (!this._config.PresenceEnabled || user.PresenceServerAuthToken == null)
             return false;
         
+        this.Logger.LogInfo(RefreshContext.Presence, $"Sending live play now for level ID {levelId} to {user}");
+        
         HttpResponseMessage result = this._client.PostAsync($"/api/playLevel/{levelId}", new StringContent(user.PresenceServerAuthToken)).Result;
 
         if (result.IsSuccessStatusCode)

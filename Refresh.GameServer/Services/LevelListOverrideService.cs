@@ -41,11 +41,11 @@ public class LevelListOverrideService : EndpointService
     public bool UserHasOverrides(GameUser user) 
         => this.UserHasLevelHashOverride(user) || this.UserHasLevelIdOverrides(user);
     
-    public void AddHashOverrideForUser(GameUser user, string hash)
+    public void AddHashOverrideForUser(GameUser user, string hash, bool accessed = false)
     {
         this.Logger.LogDebug(RefreshContext.LevelListOverride, "Adding level hash override for {0}: [{1}]", user.Username, hash);
         
-        this._userIdsToLevelHash[user.UserId] = (false, hash);
+        this._userIdsToLevelHash[user.UserId] = (accessed, hash);
     }
     
     public bool GetLastHashOverrideForUser(Token token, out string hash)

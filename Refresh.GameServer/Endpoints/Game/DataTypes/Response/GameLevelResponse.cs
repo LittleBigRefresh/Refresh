@@ -110,7 +110,7 @@ public class GameLevelResponse : IDataConvertableFrom<GameLevelResponse, GameLev
             Location = new GameLocation(),
             Handle = new SerializedUserHandle
             {
-                Username = $"!Hashed",
+                Username = SystemUsers.HashedUserName,
                 IconHash = "0",
             },
             Type = GameSlotType.User.ToGameType(),

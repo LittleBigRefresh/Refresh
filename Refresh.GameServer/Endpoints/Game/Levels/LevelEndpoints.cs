@@ -1,8 +1,8 @@
 using Bunkum.Core;
 using Bunkum.Core.Endpoints;
-using Bunkum.Core.Endpoints.Debugging;
 using Bunkum.Core.Storage;
 using Bunkum.Listener.Protocol;
+using Refresh.Common.Constants;
 using Refresh.GameServer.Authentication;
 using Refresh.GameServer.Database;
 using Refresh.GameServer.Endpoints.Game.DataTypes.Response;
@@ -47,7 +47,7 @@ public class LevelEndpoints : EndpointGroup
         
         // If we are getting the levels by a user, and that user is "!Hashed", then we pull that user's overrides
         if (route == "by" 
-            && (context.QueryString.Get("u") == "!Hashed" || user.Username == "!Hashed") 
+            && (context.QueryString.Get("u") == SystemUsers.HashedUserName || user.Username == SystemUsers.HashedUserName) 
             && overrideService.GetLastHashOverrideForUser(token, out string hash))
         {
             return new SerializedMinimalLevelList
