@@ -46,8 +46,9 @@ public class ApiExtendedGameUserResponse : IApiResponse, IDataConvertableFrom<Ap
     
     public required ApiGameUserStatisticsResponse Statistics { get; set; }
     public required ApiGameRoomResponse? ActiveRoom { get; set; }
+    public required bool ConnectedToPresenceServer { get; set; }
     
-    [ContractAnnotation("null => null; notnull => notnull")]
+    [ContractAnnotation("user:null => null; user:notnull => notnull")]
     public static ApiExtendedGameUserResponse? FromOld(GameUser? user, DataContext dataContext)
     {
         if (user == null) return null;
@@ -77,6 +78,7 @@ public class ApiExtendedGameUserResponse : IApiResponse, IDataConvertableFrom<Ap
             LevelVisibility = user.LevelVisibility,
             ProfileVisibility = user.ProfileVisibility,
             ShowModdedContent = user.ShowModdedContent,
+            ConnectedToPresenceServer = user.PresenceServerAuthToken != null,
         };
     }
 
