@@ -34,7 +34,7 @@ public class PresenceService : EndpointService
         if (!this._config.PresenceEnabled || user.PresenceServerAuthToken == null)
             return false;
         
-        this.Logger.LogInfo(RefreshContext.Presence, $"Sending live play now for level ID {levelId} to {user}");
+        this.Logger.LogInfo(RefreshContext.Presence, $"Sending presence request for level ID {levelId} to {user}");
         
         HttpResponseMessage result = this._client.PostAsync($"/api/playLevel/{levelId}", new StringContent(user.PresenceServerAuthToken)).Result;
 
@@ -44,7 +44,7 @@ public class PresenceService : EndpointService
         if(result.StatusCode == NotFound)
             return false;
 
-        this.Logger.LogWarning(RefreshContext.Presence, "Unknown error {0} trying to communicate with presence server.", result.StatusCode);
+        this.Logger.LogWarning(RefreshContext.Presence, "Received status code {0} {1} while trying to communicate with the presence server.", (int)result.StatusCode, result.StatusCode);
         
         return false;
     }

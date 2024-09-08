@@ -17,8 +17,13 @@ public class RefreshPresenceApiClient : IDisposable
         this._config = config;
         this._logger = logger;
 
+        UriBuilder baseAddress = new(this._config.GameServerUrl)
+        {
+            Path = EndpointRoutes.PresenceBaseRoute,
+        };
+
         this._client = new HttpClient();
-        this._client.BaseAddress = new Uri(this._config.GameServerUrl);
+        this._client.BaseAddress = baseAddress.Uri;
         this._client.DefaultRequestHeaders.Authorization = AuthenticationHeaderValue.Parse(this._config.SharedSecret);
     }
 
@@ -26,25 +31,25 @@ public class RefreshPresenceApiClient : IDisposable
     {
         try
         {
-            HttpResponseMessage result = await this._client.PostAsync(EndpointRoutes.PresenceBaseRoute + "test", new ByteArrayContent([]));
+            HttpResponseMessage result = await this._client.PostAsync("test", new ByteArrayContent([]));
 
             switch (result.StatusCode)
             {
                 case NotFound:
-                    throw new Exception("Unable to access presence endpoint! Are you sure Refresh is up to date?");
+                    throw new Exception("The presence endpoint wasn't found. This likely means Refresh.GameServer is out of date.");
                 case NotImplemented:
-                    throw new Exception("Presence integration is not enabled in Refresh!");
+                    throw new Exception("Presence integration is disabled in Refresh.GameServer");
                 case Unauthorized:
-                    throw new Exception("Presence shared secret does not match!");
+                    throw new Exception("Our shared secret does not match the server's shared secret. Please check the config files in both Refresh.PresenceServer and Refresh.GameServer.");
                 default:
-                    throw new Exception($"Unexpected status code {result.StatusCode} when accessing presence API!");
+                    throw new Exception($"Unexpected status code {(int)result.StatusCode} {result.StatusCode} when accessing presence API");
                 case OK:
                     return;
             }
         }
-        catch(Exception)
+        catch(Exception e)
         {
-            this._logger.LogWarning(PresenceCategory.Startup, "Unable to access Refresh game server! Are you sure it is configured correctly?");   
+            this._logger.LogError(PresenceCategory.Startup, "Unable to access Refresh gameserver: {0}", e);   
         }
     }
 
@@ -52,8 +57,7 @@ public class RefreshPresenceApiClient : IDisposable
     {
         try
         {
-            HttpResponseMessage result = await this._client.PostAsync(EndpointRoutes.PresenceBaseRoute + "informConnection",
-                new StringContent(token));
+            HttpResponseMessage result = await this._client.PostAsync("informConnection", new StringContent(token));
 
             switch (result.StatusCode)
             {
@@ -63,12 +67,12 @@ public class RefreshPresenceApiClient : IDisposable
                     this._logger.LogWarning(PresenceCategory.Connections, $"Unknown user ({token}) tried to connect to presence server, disconnecting.");
                     return false;
                 default:
-                    throw new Exception($"Unexpected status code {result.StatusCode} when accessing presence API!");
+                    throw new Exception($"Unexpected status code {(int)result.StatusCode} {result.StatusCode} when accessing presence API");
             }
         }
         catch (Exception)
         {
-            this._logger.LogWarning(PresenceCategory.Connections, "Unable to connect to Refresh to inform about a connection.");
+            this._logger.LogError(PresenceCategory.Connections, "Unable to connect to Refresh to inform about a connection.");
             return false;
         }
     }
@@ -77,13 +81,11 @@ public class RefreshPresenceApiClient : IDisposable
     {
         try
         {
-            HttpResponseMessage result = await this._client.PostAsync(EndpointRoutes.PresenceBaseRoute + "informDisconnection",
-                new StringContent(token));
+            HttpResponseMessage result = await this._client.PostAsync("informDisconnection", new StringContent(token));
 
             switch (result.StatusCode)
             {
                 case OK:
-                // this can happen if a `goodbye` request comes to the gameserver before our request makes it to Refresh, or maybe they get banned. Something of the sort.
                 case NotFound: 
                     return;
                 default:
@@ -92,7 +94,7 @@ public class RefreshPresenceApiClient : IDisposable
         }
         catch (Exception)
         {
-            this._logger.LogWarning(PresenceCategory.Connections, "Unable to connect to Refresh to inform about a disconnection.");
+            this._logger.LogError(PresenceCategory.Connections, "Unable to connect to Refresh to inform about a disconnection.");
         }
     }
 

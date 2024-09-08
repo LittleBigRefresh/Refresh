@@ -108,7 +108,7 @@ public class PresenceServer
                 }
                 catch(Exception ex)
                 {
-                    this._logger.LogWarning(PresenceCategory.Connections, "Failed to accept client. Reason {0}", ex);
+                    this._logger.LogError(PresenceCategory.Connections, "Failed to accept client. Reason {0}", ex);
                 }
             }
 
@@ -160,7 +160,7 @@ public class PresenceServer
                         catch(Exception ex)
                         {
                             this._logger.LogWarning(PresenceCategory.Connections,
-                                "Failed to send packet data to {0}, reason {1}", client.IpAddress, ex);
+                                "Failed to send packet data to {0}: {1}", client.IpAddress, ex);
 
                             // If we get any error, just disconnect the client
                             client.TcpClient.Close();

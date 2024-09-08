@@ -4,6 +4,7 @@ using NotEnoughLogs;
 using NotEnoughLogs.Behaviour;
 using Refresh.PresenceServer.ApiClient;
 using Refresh.PresenceServer.ApiServer.Endpoints;
+using Refresh.PresenceServer.ApiServer.Middlewares;
 using Refresh.PresenceServer.Server.Config;
 
 namespace Refresh.PresenceServer;
@@ -35,6 +36,8 @@ internal class Program
 
                 server.DiscoverEndpointsFromAssembly(typeof(ApiEndpoints).Assembly);
                 server.AddConfig(config);
+                
+                server.AddMiddleware(new SecretMiddleware(config));
             },
         };
 
