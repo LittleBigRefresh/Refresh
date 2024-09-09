@@ -71,6 +71,7 @@ public class TestRefreshGameServer : RefreshGameServer
         this.Server.AddService<CategoryService>();
         this.Server.AddService<MatchService>();
         this.Server.AddService<ImportService>();
+        this.Server.AddService(new PresenceService(this.Logger, this._integrationConfig!));
         this.Server.AddService<PlayNowService>();
         this.Server.AddService<CommandService>();
         this.Server.AddService<GuidCheckerService>();
@@ -78,7 +79,6 @@ public class TestRefreshGameServer : RefreshGameServer
         
         // Must always be last, see comment in RefreshGameServer
         this.Server.AddService<DataContextService>();
-        this.Server.AddService(new PresenceService(this.Logger, this._integrationConfig!));
     }
     
     [Pure]
