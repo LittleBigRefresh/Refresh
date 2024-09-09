@@ -26,7 +26,7 @@ public class LevelEndpoints : EndpointGroup
     public SerializedMinimalLevelList? GetLevels(RequestContext context,
         GameDatabaseContext database,
         CategoryService categoryService,
-        LevelListOverrideService overrideService,
+        PlayNowService overrideService,
         GameUser user,
         Token token,
         DataContext dataContext,
@@ -101,7 +101,7 @@ public class LevelEndpoints : EndpointGroup
     public SerializedMinimalLevelList? GetLevelsWithPlayer(RequestContext context,
         GameDatabaseContext database,
         CategoryService categories,
-        LevelListOverrideService overrideService,
+        PlayNowService overrideService,
         Token token,
         DataContext dataContext,
         string route,
@@ -118,7 +118,7 @@ public class LevelEndpoints : EndpointGroup
     [MinimumRole(GameUserRole.Restricted)]
     public GameLevelResponse? LevelById(RequestContext context, GameDatabaseContext database, Token token,
         string slotType, int id,
-        LevelListOverrideService overrideService, DataContext dataContext)
+        PlayNowService overrideService, DataContext dataContext)
     {
         // If the user has had a hash override in the past, and the level id they requested matches the level ID associated with that hash
         if (overrideService.GetLastHashOverrideForUser(token, out string hash) && GameLevelResponse.LevelIdFromHash(hash) == id)
@@ -204,7 +204,7 @@ public class LevelEndpoints : EndpointGroup
         GameDatabaseContext database,
         CategoryService categories,
         MatchService matchService,
-        LevelListOverrideService overrideService,
+        PlayNowService overrideService,
         GameUser user,
         IDataStore dataStore,
         Token token,
@@ -218,7 +218,7 @@ public class LevelEndpoints : EndpointGroup
         GameDatabaseContext database,
         CategoryService categories,
         MatchService matchService,
-        LevelListOverrideService overrideService,
+        PlayNowService overrideService,
         Token token,
         IDataStore dataStore,
         DataContext dataContext,

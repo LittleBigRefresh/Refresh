@@ -1,4 +1,5 @@
 using NotEnoughLogs;
+using Refresh.GameServer.Configuration;
 using Refresh.GameServer.Services;
 using Refresh.GameServer.Types.Commands;
 using RefreshTests.GameServer.Logging;
@@ -19,8 +20,8 @@ public class CommandParseTests : GameServerTest
 	[Test]
 	public void ParsingTest()
 	{
-		using Logger logger = new(new []{ new NUnitSink() });
-		CommandService service = new(logger, new MatchService(logger), new LevelListOverrideService(logger));
+		using Logger logger = new([new NUnitSink()]);
+		CommandService service = new(logger, new MatchService(logger), new PlayNowService(logger, new PresenceService(logger, new IntegrationConfig())));
         
 		ParseTest(service, "/parse test", "parse", "test");
 		ParseTest(service, "/noargs", "noargs", "");
@@ -30,8 +31,8 @@ public class CommandParseTests : GameServerTest
 	[Test]
 	public void NoSlashThrows()
 	{
-		using Logger logger = new(new []{ new NUnitSink() });
-		CommandService service = new(logger, new MatchService(logger), new LevelListOverrideService(logger));
+		using Logger logger = new([new NUnitSink()]);
+		CommandService service = new(logger, new MatchService(logger), new PlayNowService(logger, new PresenceService(logger, new IntegrationConfig())));
 
 		Assert.That(() => _ = service.ParseCommand("parse test"), Throws.InstanceOf<FormatException>());
 	}
@@ -39,8 +40,8 @@ public class CommandParseTests : GameServerTest
 	[Test]
 	public void BlankCommandThrows()
 	{
-		using Logger logger = new(new []{ new NUnitSink() });
-		CommandService service = new(logger, new MatchService(logger), new LevelListOverrideService(logger));
+		using Logger logger = new([new NUnitSink()]);
+		CommandService service = new(logger, new MatchService(logger), new PlayNowService(logger, new PresenceService(logger, new IntegrationConfig())));
 
 		Assert.That(() => _ = service.ParseCommand("/ test"), Throws.InstanceOf<FormatException>());
 	}

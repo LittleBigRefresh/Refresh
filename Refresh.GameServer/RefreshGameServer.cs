@@ -139,7 +139,7 @@ public class RefreshGameServer : RefreshServer
         this.Server.AddService<RoleService>();
         this.Server.AddService<SmtpService>();
         this.Server.AddService<RequestStatisticTrackingService>();
-        this.Server.AddService<LevelListOverrideService>();
+        this.Server.AddService<PlayNowService>();
         this.Server.AddService<CommandService>();
         this.Server.AddService<DiscordStaffService>();
         

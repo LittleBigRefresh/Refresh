@@ -71,7 +71,7 @@ public class TestRefreshGameServer : RefreshGameServer
         this.Server.AddService<CategoryService>();
         this.Server.AddService<MatchService>();
         this.Server.AddService<ImportService>();
-        this.Server.AddService<LevelListOverrideService>();
+        this.Server.AddService<PlayNowService>();
         this.Server.AddService<CommandService>();
         this.Server.AddService<GuidCheckerService>();
         this.Server.AddService<SmtpService>();
