@@ -37,7 +37,7 @@ internal class Program
                 server.DiscoverEndpointsFromAssembly(typeof(ApiEndpoints).Assembly);
                 server.AddConfig(config);
                 
-                server.AddMiddleware(new SecretMiddleware(config));
+                server.AddMiddleware(new SharedSecretAuthMiddleware(config));
             },
         };
 

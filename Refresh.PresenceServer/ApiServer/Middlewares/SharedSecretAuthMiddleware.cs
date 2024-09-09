@@ -5,11 +5,11 @@ using Refresh.PresenceServer.Server.Config;
 
 namespace Refresh.PresenceServer.ApiServer.Middlewares;
 
-public class SecretMiddleware : IMiddleware
+public class SharedSecretAuthMiddleware : IMiddleware
 {
     private readonly PresenceServerConfig _config;
 
-    public SecretMiddleware(PresenceServerConfig config)
+    public SharedSecretAuthMiddleware(PresenceServerConfig config)
     {
         this._config = config;
     }
