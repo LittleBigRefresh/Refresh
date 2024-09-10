@@ -46,13 +46,8 @@ public class AuthenticationEndpoints : EndpointGroup
             context.Logger.LogWarning(BunkumCategory.Authentication, "Could not read ticket: " + e);
             return null;
         }
-        
-        TokenPlatform? platform = ticket.IssuerId switch
-        {
-            0x100 => TokenPlatform.PS3,
-            0x33333333 => TokenPlatform.RPCS3,
-            _ => null,
-        };
+
+        TokenPlatform? platform = ticket.DeterminePlatform();
         
         GameUser? user = database.GetUserByUsername(ticket.Username);
         if (user == null)
@@ -104,6 +99,14 @@ public class AuthenticationEndpoints : EndpointGroup
             context.Logger.LogWarning(BunkumCategory.Authentication, $"Rejecting {user}'s login because server is in maintenance mode");
             return null;
         }
+        
+        if (platform == null)
+        {
+            database.AddLoginFailNotification("The server could not determine what platform you were trying to connect from.", user);
+            context.Logger.LogWarning(BunkumCategory.Authentication, $"Could not determine platform from ticket. " +
+                                                                     $"IssuerID: {ticket.IssuerId}, SignatureIdentifier: {ticket.SignatureIdentifier}");
+            return null;
+        }
 
         bool ticketVerified = false;
         if (config.UseTicketVerification)
@@ -116,7 +119,7 @@ public class AuthenticationEndpoints : EndpointGroup
                 return null;
             }
             
-            ticketVerified = VerifyTicket(context, (MemoryStream)body, ticket, timeProvider);
+            ticketVerified = VerifyTicket(context, (MemoryStream)body, ticket, platform.Value, timeProvider);
             if (!ticketVerified)
             {
                 SendVerificationFailureNotification(database, user, config);
@@ -137,25 +140,11 @@ public class AuthenticationEndpoints : EndpointGroup
             }
         }
 
-        TokenGame? game = null;
-
-        // check if we're connecting from a beta build
-        bool parsedBeta = byte.TryParse(context.QueryString.Get("beta"), out byte isBeta);
-        if (parsedBeta && isBeta == 1) game = TokenGame.BetaBuild;
-
-        game ??= TokenGameUtility.FromTitleId(ticket.TitleId);
-
-        if (platform == null)
-        {
-            database.AddLoginFailNotification("The server could not determine what platform you were trying to connect from.", user);
-            context.Logger.LogWarning(BunkumCategory.Authentication, $"Could not determine platform from ticket.\n" +
-                                                                    $"Missing IssuerID: {ticket.IssuerId}");
-            return null;
-        }
+        TokenGame? game = ticket.DetermineGame(context);
 
         if (game == null)
         {
-            database.AddLoginFailNotification("The server could not determine what game you were trying to connect from.", user);
+            database.AddLoginFailNotification($"The server could not determine what game you were trying to connect from. Give this ID to a developer: {ticket.TitleId}", user);
             context.Logger.LogWarning(BunkumCategory.Authentication, $"Could not determine game from ticket.\n" +
                                                                     $"Missing TitleID: {ticket.TitleId}");
             return null;
@@ -190,20 +179,26 @@ public class AuthenticationEndpoints : EndpointGroup
         };
     }
 
-    private static bool VerifyTicket(RequestContext context, MemoryStream body, Ticket ticket, IDateTimeProvider timeProvider)
+    private static bool VerifyTicket(RequestContext context, MemoryStream body, Ticket ticket, TokenPlatform platform, IDateTimeProvider timeProvider)
     {
         ITicketSigningKey signingKey;
 
-        // Determine the correct key to use
-        if (ticket.IssuerId == 0x33333333)
+        switch (platform)
         {
-            context.Logger.LogDebug(BunkumCategory.Authentication, "Using RPCN ticket key");
-            signingKey = RpcnSigningKey.Instance;
-        }
-        else
-        {
-            context.Logger.LogDebug(BunkumCategory.Authentication, "Using PSN LBP ticket key");
-            signingKey = LbpSigningKey.Instance;
+            // Determine the correct key to use
+            case TokenPlatform.RPCS3:
+                context.Logger.LogDebug(BunkumCategory.Authentication, "Using RPCN ticket key");
+                signingKey = RpcnSigningKey.Instance;
+                break;
+            case TokenPlatform.PS3:
+            case TokenPlatform.Vita:
+            case TokenPlatform.PSP:
+                context.Logger.LogDebug(BunkumCategory.Authentication, "Using PSN LBP ticket key");
+                signingKey = LbpSigningKey.Instance;
+                break;
+            case TokenPlatform.Website:
+            default:
+                throw new ArgumentOutOfRangeException(nameof(platform));
         }
 
         // Dont allow use of expired tickets
