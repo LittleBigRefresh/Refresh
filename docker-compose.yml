@@ -1,4 +1,3 @@
-version: '3'
 services:
   gameserver:
     image: refresh:latest
@@ -16,4 +15,32 @@ services:
       interval: 5s
       retries: 5
     volumes:
-      - "./data:/refresh/data:z"
+      - "./data/gameserver:/refresh/data:z"
+  httpsproxy:
+    image: refresh-httpsproxy:latest
+    container_name: refresh-httpsproxy
+    build:
+      context: .
+      dockerfile: HttpsProxy.Dockerfile
+    restart: unless-stopped
+    ports:
+      - "10061:10061"
+    environment:
+      BUNKUM_DATA_FOLDER: /refresh/data
+    volumes:
+      - "./data/httpsproxy:/refresh/data:z"
+    profiles: ["optional-services"]
+  presenceserver:
+    image: refresh-presenceserver:latest
+    container_name: refresh-presenceserver
+    build:
+      context: .
+      dockerfile: PresenceServer.Dockerfile
+    restart: unless-stopped
+    ports:
+      - "10072:10072"
+    environment:
+      BUNKUM_DATA_FOLDER: /refresh/data
+    volumes:
+      - "./data/presenceserver:/refresh/data:z"
+    profiles: ["optional-services"]

@@ -1,5 +1,5 @@
 # Build stage
-FROM mcr.microsoft.com/dotnet/sdk:8.0.401-1-bookworm-slim AS build
+FROM mcr.microsoft.com/dotnet/sdk:8.0.401-1-alpine3.20 AS build
 WORKDIR /build
 
 COPY *.sln ./
@@ -15,20 +15,18 @@ RUN dotnet restore --use-current-runtime
 
 COPY . .
 
-RUN dotnet publish Refresh.GameServer -c Release --property:OutputPath=/build/publish/ --no-restore --no-self-contained
+RUN dotnet publish Refresh.PresenceServer -c Release --property:OutputPath=/build/publish/ --no-restore --no-self-contained
 
 # Final running container
 
-FROM mcr.microsoft.com/dotnet/runtime:8.0.8-bookworm-slim AS final
+FROM mcr.microsoft.com/dotnet/runtime:8.0.8-alpine3.20 AS final
 
 # Add non-root user
 RUN set -eux && \
-apt update && \
-apt install -y gosu curl && \
-rm -rf /var/lib/apt/lists/* && \
-gosu nobody true && \
-groupadd -g 1001 refresh && \
-useradd -m --home /refresh -u 1001 -g refresh refresh &&\
+apk add --no-cache su-exec && \
+su-exec nobody true && \
+addgroup -g 1001 refresh && \
+adduser -D -h /refresh -u 1001 -G refresh refresh && \
 mkdir -p /refresh/data && \
 mkdir -p /refresh/app
 
@@ -38,7 +36,7 @@ COPY --from=build /build/scripts/docker-entrypoint.sh /refresh
 RUN chown -R refresh:refresh /refresh && \
 chmod +x /refresh/docker-entrypoint.sh 
 
-ENV PRIV_CMD gosu
-ENV PRIV_USER refresh
+ENV PRIV_CMD su-exec
+ENV PRIV_USER refresh:refresh
 
-ENTRYPOINT ["/refresh/docker-entrypoint.sh", "GameServer"]
+ENTRYPOINT ["/refresh/docker-entrypoint.sh", "PresenceServer"]
