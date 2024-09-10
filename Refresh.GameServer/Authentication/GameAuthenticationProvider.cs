@@ -21,6 +21,10 @@ public class GameAuthenticationProvider : IAuthenticationProvider<Token>
 
     public Token? AuthenticateToken(ListenerContext request, Lazy<IDatabaseContext> db)
     {
+        // Dont attempt to authenticate presence endpoints, as authentication is handled by PresenceAuthenticationMiddleware
+        if (request.Uri.AbsolutePath.StartsWith(PresenceEndpointAttribute.BaseRoute))
+            return null;
+        
         // First try to grab game token data from MM_AUTH
         string? tokenData = request.Cookies["MM_AUTH"];
         TokenType tokenType = TokenType.Game;

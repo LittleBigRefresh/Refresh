@@ -7,7 +7,7 @@ namespace Refresh.GameServer.Configuration;
 /// </summary>
 public class IntegrationConfig : Config
 {
-    public override int CurrentConfigVersion => 5;
+    public override int CurrentConfigVersion => 6;
     public override int Version { get; set; }
     protected override void Migrate(int oldVer, dynamic oldConfig)
     {
@@ -56,6 +56,16 @@ public class IntegrationConfig : Config
 
     public bool AipiRestrictAccountOnDetection { get; set; } = false;
     
+    #endregion
+
+    #region Presence
+
+    public bool PresenceEnabled { get; set; } = false;
+
+    public string PresenceBaseUrl { get; set; } = "http://localhost:10073";
+    
+    public string PresenceSharedSecret { get; set; } = "SHARED_SECRET";
+
     #endregion
     
     public string? GrafanaDashboardUrl { get; set; }

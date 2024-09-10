@@ -11,6 +11,7 @@ using Refresh.GameServer.Endpoints.ApiV3.ApiTypes;
 using Refresh.GameServer.Endpoints.ApiV3.ApiTypes.Errors;
 using Refresh.GameServer.Endpoints.ApiV3.DataTypes.Request;
 using Refresh.GameServer.Endpoints.ApiV3.DataTypes.Response.Levels;
+using Refresh.GameServer.Endpoints.Game.DataTypes.Response;
 using Refresh.GameServer.Endpoints.Game.Levels.FilterSettings;
 using Refresh.GameServer.Extensions;
 using Refresh.GameServer.Services;
@@ -144,13 +145,17 @@ public class LevelApiEndpoints : EndpointGroup
     [ApiV3Endpoint("levels/id/{id}/setAsOverride", HttpMethods.Post)]
     [DocSummary("Marks the level to show in the next slot list gotten from the game")]
     [DocError(typeof(ApiNotFoundError), ApiNotFoundError.LevelMissingErrorWhen)]
-    public ApiOkResponse SetLevelAsOverrideById(RequestContext context, GameDatabaseContext database, GameUser user, LevelListOverrideService service,
+    public ApiOkResponse SetLevelAsOverrideById(RequestContext context, 
+        GameDatabaseContext database, 
+        GameUser user, 
+        PlayNowService overrideService,
         [DocSummary("The ID of the level")] int id)
     {
         GameLevel? level = database.GetLevelById(id);
         if (level == null) return ApiNotFoundError.LevelMissingError;
-        
-        service.AddIdOverridesForUser(user, level);
+
+        // TODO: return whether or not the presence server was used
+        overrideService.PlayNowLevel(user, level);
         
         return new ApiOkResponse();
     }
@@ -159,12 +164,13 @@ public class LevelApiEndpoints : EndpointGroup
     [DocSummary("Marks the level hash to show in the next slot list gotten from the game")]
     [DocError(typeof(ApiValidationError), ApiValidationError.HashInvalidErrorWhen)]
     public ApiOkResponse SetLevelAsOverrideByHash(RequestContext context, GameDatabaseContext database, GameUser user,
-        LevelListOverrideService service, [DocSummary("The hash of level root resource")] string hash)
+        PlayNowService service, PresenceService presenceService, [DocSummary("The hash of level root resource")] string hash)
     {
         if (!CommonPatterns.Sha1Regex().IsMatch(hash)) 
             return ApiValidationError.HashInvalidError;
-        
-        service.AddHashOverrideForUser(user, hash);
+
+        // TODO: return whether presence/hash play now was used
+        service.PlayNowHash(user, hash);
         
         return new ApiOkResponse();
     }

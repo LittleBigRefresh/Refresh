@@ -4,15 +4,20 @@ using MongoDB.Bson;
 using NotEnoughLogs;
 using Refresh.GameServer.Authentication;
 using Refresh.GameServer.Database;
+using Refresh.GameServer.Endpoints.Game.DataTypes.Response;
 using Refresh.GameServer.Types.Levels;
 using Refresh.GameServer.Types.UserData;
 
 namespace Refresh.GameServer.Services;
 
-public class LevelListOverrideService : EndpointService
+public class PlayNowService : EndpointService
 {
-    public LevelListOverrideService(Logger logger) : base(logger)
-    {}
+    private PresenceService _presence;
+    
+    public PlayNowService(Logger logger, PresenceService presence) : base(logger)
+    {
+        this._presence = presence;
+    }
 
     private readonly Dictionary<ObjectId, List<int>> _userIdsToLevelList = new(1);
     private readonly Dictionary<ObjectId, (bool accessed, string hash)> _userIdsToLevelHash = new(1);
@@ -41,11 +46,16 @@ public class LevelListOverrideService : EndpointService
     public bool UserHasOverrides(GameUser user) 
         => this.UserHasLevelHashOverride(user) || this.UserHasLevelIdOverrides(user);
     
-    public void AddHashOverrideForUser(GameUser user, string hash)
+    public bool PlayNowHash(GameUser user, string hash)
     {
         this.Logger.LogDebug(RefreshContext.LevelListOverride, "Adding level hash override for {0}: [{1}]", user.Username, hash);
+
+        bool presenceUsed = this._presence.PlayLevel(user, GameLevelResponse.LevelIdFromHash(hash));
         
-        this._userIdsToLevelHash[user.UserId] = (false, hash);
+        // Set the hash override, but mark it as already accessed if presence was used
+        this._userIdsToLevelHash[user.UserId] = (presenceUsed, hash);
+
+        return presenceUsed;
     }
     
     public bool GetLastHashOverrideForUser(Token token, out string hash)
@@ -88,18 +98,22 @@ public class LevelListOverrideService : EndpointService
         this._userIdsToLevelHash[user.UserId] = (true, overrides.hash);
         
         return true;
-    } 
-    
-    public void AddIdOverridesForUser(GameUser user, GameLevel level) 
-        => this.AddIdOverridesForUser(user, new[] { level });
+    }
+
+    public bool PlayNowLevel(GameUser user, GameLevel level)
+    {
+        if (this._presence.PlayLevel(user, level.LevelId)) 
+            return true;
+        
+        this.AddIdOverridesForUser(user, [level]);
+        return false;
+    }
     
     public void AddIdOverridesForUser(GameUser user, IEnumerable<GameLevel> levels)
     {
-        Debug.Assert(!this.UserHasLevelIdOverrides(user), "User already has overrides");
-        
         List<int> ids = levels.Select(l => l.LevelId).ToList();
         this.Logger.LogDebug(RefreshContext.LevelListOverride, "Adding level id overrides for {0}: [{1}]", user.Username, string.Join(", ", ids));
-        this._userIdsToLevelList.Add(user.UserId, ids);
+        this._userIdsToLevelList[user.UserId] = ids;
     }
 
     public bool GetIdOverridesForUser(Token token, GameDatabaseContext database, out IEnumerable<GameLevel> outLevels)

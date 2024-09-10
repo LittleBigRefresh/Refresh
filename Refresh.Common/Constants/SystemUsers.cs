@@ -17,4 +17,7 @@ public static class SystemUsers
 
     public const string UnknownUserName = "!Unknown";
     public const string UnknownUserDescription = "I'm a fake user that represents a non existent publisher for re-published levels.";
+    
+    public const string HashedUserName = "!Hashed";
+    public const string HashedUserDescription = "I'm a fake user that represents an unknown publisher for hashed levels.";
 }

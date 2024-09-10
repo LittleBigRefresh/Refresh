@@ -15,9 +15,9 @@ namespace Refresh.GameServer.Services;
 public class CommandService : EndpointService
 {
     private readonly MatchService _match;
-    private readonly LevelListOverrideService _levelListService;
+    private readonly PlayNowService _levelListService;
     
-    public CommandService(Logger logger, MatchService match, LevelListOverrideService levelListService) : base(logger) {
+    public CommandService(Logger logger, MatchService match, PlayNowService levelListService) : base(logger) {
         this._match = match;
         this._levelListService = levelListService;
     }
@@ -129,7 +129,7 @@ public class CommandService : EndpointService
             {
                 if (CommonPatterns.Sha1Regex().IsMatch(command.Arguments))
                 {
-                    this._levelListService.AddHashOverrideForUser(user, command.Arguments.ToString());
+                    this._levelListService.PlayNowHash(user, command.Arguments.ToString());
                 }
                 else
                 {
@@ -137,7 +137,7 @@ public class CommandService : EndpointService
                     GameLevel? level = database.GetLevelById(int.Parse(command.Arguments));
                     if (level != null)
                     {
-                        this._levelListService.AddIdOverridesForUser(user, level);
+                        this._levelListService.PlayNowLevel(user, level);
                     }
                 }
                 

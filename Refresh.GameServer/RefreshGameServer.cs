@@ -99,6 +99,7 @@ public class RefreshGameServer : RefreshServer
         this.Server.AddMiddleware<CrossOriginMiddleware>();
         this.Server.AddMiddleware<PspVersionMiddleware>();
         this.Server.AddMiddleware<LegacyAdapterMiddleware>();
+        this.Server.AddMiddleware(new PresenceAuthenticationMiddleware(this._integrationConfig!));
     }
 
     protected override void SetupConfiguration()
@@ -138,10 +139,11 @@ public class RefreshGameServer : RefreshServer
         this.Server.AddService<RoleService>();
         this.Server.AddService<SmtpService>();
         this.Server.AddService<RequestStatisticTrackingService>();
-        this.Server.AddService<LevelListOverrideService>();
+        this.Server.AddService<PresenceService>();
+        this.Server.AddService<PlayNowService>();
         this.Server.AddService<CommandService>();
         this.Server.AddService<DiscordStaffService>();
-        
+
         if(this._integrationConfig!.AipiEnabled)
             this.Server.AddService<AipiService>();
         

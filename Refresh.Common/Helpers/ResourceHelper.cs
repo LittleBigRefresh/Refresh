@@ -2,6 +2,8 @@ using System.Buffers;
 using System.Buffers.Binary;
 using System.IO.Compression;
 using System.Reflection;
+using System.Runtime.CompilerServices;
+using System.Runtime.InteropServices;
 using System.Security.Cryptography;
 using FastAes;
 using IronCompress;
@@ -106,5 +108,113 @@ public static class ResourceHelper
 
         //Return a copy of the decompressed data
         return decompressed.AsSpan().ToArray();
+    }
+    
+    static int XXTEA_DELTA = Unsafe.BitCast<uint, int>(0x9e3779b9);
+
+    /// <summary>
+    /// In-place encrypts byte data using big endian XXTEA.
+    ///
+    /// Due to how XXTEA data works, you must pad the data to a multiple of 4 bytes.
+    /// </summary>
+    /// <param name="byteData">The data to encrypt</param>
+    /// <param name="key">The key used to encrypt the data</param>
+    /// <exception cref="ArgumentException">The input is not a multiple of 4 bytes</exception>
+    /// <remarks>
+    /// Referenced from https://github.com/ennuo/toolkit/blob/dc82bee57ab58e9f4bf35993d405529d4cbc7d00/lib/cwlib/src/main/java/cwlib/util/Crypto.java#L97
+    /// </remarks>
+    public static void XxteaEncrypt(Span<byte> byteData, Span<int> key)
+    {
+        if (byteData.Length % 4 != 0)
+            throw new ArgumentException("Data must be padded to a multiple of 4 bytes.", nameof(byteData));
+
+        // Alias the byte data as integers
+        Span<int> data = MemoryMarshal.Cast<byte, int>(byteData);
+
+        // endian swap from BE so the math happens in LE space
+        BinaryPrimitives.ReverseEndianness(data, data);
+
+        int n = data.Length - 1;
+        if (n < 1)
+        {
+            BinaryPrimitives.ReverseEndianness(data, data);
+
+            return; 
+        }
+
+        int p, q = 6 + 52 / (n + 1);
+
+        int z = data[n], y, sum = 0, e;
+        while (q-- > 0)
+        {
+            sum += XXTEA_DELTA;
+            e = sum >>> 2 & 3;
+            for (p = 0; p < n; p++)
+            {
+                y = data[p + 1];
+                z =
+                    data[p] += ((z >>> 5 ^ y << 2) + (y >>> 3 ^ z << 4) ^ (sum ^ y) + (key[p & 3 ^ e] ^ z));
+            }
+
+            y = data[0];
+            z =
+                data[n] += ((z >>> 5 ^ y << 2) + (y >>> 3 ^ z << 4) ^ (sum ^ y) + (key[p & 3 ^ e] ^ z));
+        }
+
+        // endian swap so the final data is in LE again
+        BinaryPrimitives.ReverseEndianness(data, data);
+    }
+
+    /// <summary>
+    /// In-place decrypts byte data using big endian XXTEA.
+    ///
+    /// Due to how XXTEA data works, you must pad the data to a multiple of 4 bytes.
+    /// </summary>
+    /// <param name="byteData">The data to decrypt</param>
+    /// <param name="key">The key used to decrypt the data</param>
+    /// <exception cref="ArgumentException">The input is not a multiple of 4 bytes</exception>
+    /// <remarks>
+    /// Referenced from https://github.com/ennuo/toolkit/blob/dc82bee57ab58e9f4bf35993d405529d4cbc7d00/lib/cwlib/src/main/java/cwlib/util/Crypto.java#L97
+    /// </remarks>
+    public static void XxteaDecrypt(Span<byte> byteData, Span<int> key)
+    {
+        if (byteData.Length % 4 != 0)
+            throw new ArgumentException("Data must be padded to 4 bytes.", nameof(byteData));
+
+        // Alias the byte data as integers
+        Span<int> data = MemoryMarshal.Cast<byte, int>(byteData);
+
+        // endian swap from BE so the math happens in LE space
+        BinaryPrimitives.ReverseEndianness(data, data);
+
+        int n = data.Length - 1;
+        if (n < 1)
+        {
+            BinaryPrimitives.ReverseEndianness(data, data);
+
+            return; 
+        }
+
+        int p, q = 6 + 52 / (n + 1);
+
+        int z, y = data[0], sum = q * XXTEA_DELTA, e;
+        while (sum != 0)
+        {
+            e = sum >>> 2 & 3;
+            for (p = n; p > 0; p--)
+            {
+                z = data[p - 1];
+                y = data[p] -=
+                    ((z >>> 5 ^ y << 2) + (y >>> 3 ^ z << 4) ^ (sum ^ y) + (key[p & 3 ^ e] ^ z));
+            }
+
+            z = data[n];
+            y =
+                data[0] -= ((z >>> 5 ^ y << 2) + (y >>> 3 ^ z << 4) ^ (sum ^ y) + (key[p & 3 ^ e] ^ z));
+            sum -= XXTEA_DELTA;
+        }
+
+        // endian swap so the final data is in LE again
+        BinaryPrimitives.ReverseEndianness(data, data);
     }
 }

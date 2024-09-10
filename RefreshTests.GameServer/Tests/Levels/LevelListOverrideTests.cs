@@ -1,6 +1,7 @@
 using MongoDB.Bson;
 using NotEnoughLogs;
 using Refresh.GameServer.Authentication;
+using Refresh.GameServer.Configuration;
 using Refresh.GameServer.Services;
 using Refresh.GameServer.Types.Levels;
 using Refresh.GameServer.Types.Lists;
@@ -15,8 +16,8 @@ public class LevelListOverrideUnitTests
     [Test]
     public void CanOverrideLevel()
     {
-        using Logger logger = new(new []{ new NUnitSink() });
-        LevelListOverrideService service = new(logger);
+        using Logger logger = new([new NUnitSink()]);
+        PlayNowService service = new(logger, new PresenceService(logger, new IntegrationConfig()));
         GameUser user = new()
         {
             UserId = new ObjectId("64ea5a8a7c412d18ab640fd1"),
@@ -28,7 +29,7 @@ public class LevelListOverrideUnitTests
             LevelId = 1,
         };
         
-        service.AddIdOverridesForUser(user, new []{level});
+        service.PlayNowLevel(user, level);
     }
 }
 
@@ -52,11 +53,11 @@ public class LevelListOverrideIntegrationTests : GameServerTest
         Assert.That(levelList.Items, Is.Empty);
 
         //Make sure we dont have an override set
-        LevelListOverrideService overrideService = context.GetService<LevelListOverrideService>();
+        PlayNowService overrideService = context.GetService<PlayNowService>();
         Assert.That(overrideService.UserHasOverrides(user), Is.False);
 
         //Set a level as the override
-        message = apiClient.PostAsync($"/api/v3/levels/id/{level.LevelId}/setAsOverride", new ByteArrayContent(Array.Empty<byte>())).Result;
+        message = apiClient.PostAsync($"/api/v3/levels/id/{level.LevelId}/setAsOverride", new ByteArrayContent([])).Result;
         Assert.That(message.StatusCode, Is.EqualTo(OK));
         
         context.Database.Refresh();
