@@ -455,4 +455,12 @@ public partial class GameDatabaseContext // Users
             user.RootPlaylist = playlist;
         });
     }
+
+    public void SetUserPresenceAuthToken(GameUser user, string? token)
+    {
+        this.Write(() =>
+        {
+            user.PresenceServerAuthToken = token;
+        });
+    }
 }

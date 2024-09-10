@@ -28,7 +28,7 @@ public class TestRefreshGameServer : RefreshGameServer
     {
         this.Server.AddConfig(this._config = new GameServerConfig());
         this.Server.AddConfig(new RichPresenceConfig());
-        this.Server.AddConfig(new IntegrationConfig());
+        this.Server.AddConfig(this._integrationConfig = new IntegrationConfig());
         this.Server.AddConfig(new ContactInfoConfig());
     }
 
@@ -71,7 +71,8 @@ public class TestRefreshGameServer : RefreshGameServer
         this.Server.AddService<CategoryService>();
         this.Server.AddService<MatchService>();
         this.Server.AddService<ImportService>();
-        this.Server.AddService<LevelListOverrideService>();
+        this.Server.AddService(new PresenceService(this.Logger, this._integrationConfig!));
+        this.Server.AddService<PlayNowService>();
         this.Server.AddService<CommandService>();
         this.Server.AddService<GuidCheckerService>();
         this.Server.AddService<SmtpService>();

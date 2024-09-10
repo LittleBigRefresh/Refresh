@@ -25,7 +25,12 @@ public class WebsiteMiddleware : IMiddleware
 
         string uri = context.Uri.AbsolutePath;
 
-        if (uri.StartsWith(GameEndpointAttribute.BaseRoute) || uri.StartsWith("/api") || uri == "/autodiscover" || uri == "/_health" || uri.StartsWith("/gameAssets")) return false;
+        if (uri.StartsWith(GameEndpointAttribute.BaseRoute) ||
+            uri.StartsWith(PresenceEndpointAttribute.BaseRoute) ||
+            uri.StartsWith("/api") ||
+            uri == "/autodiscover" ||
+            uri == "/_health" ||
+            uri.StartsWith("/gameAssets")) return false;
 
         if (uri == "/" || (context.RequestHeaders["Accept"] ?? "").Contains("text/html"))
             uri = "/index.html";

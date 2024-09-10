@@ -82,6 +82,11 @@ public partial class GameUser : IRealmObject, IRateLimitUser
     private int _LevelVisibility { get; set; } = (int)Visibility.All;
     
     /// <summary>
+    /// The auth token the presence server knows this user by, null if not connected to the presence server
+    /// </summary>
+    public string? PresenceServerAuthToken { get; set; }
+    
+    /// <summary>
     /// The user's root playlist. This playlist contains all the user's playlists, and optionally other slots as well,
     /// although the game does not expose the ability to do this normally.
     /// </summary>

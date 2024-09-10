@@ -166,8 +166,11 @@ public class AuthenticationEndpoints : EndpointGroup
 
         Token token = database.GenerateTokenForUser(user, TokenType.Game, game.Value, platform.Value, context.RemoteIp(), GameDatabaseContext.GameTokenExpirySeconds); // 4 hours
 
-        //Clear the user's force match
+        // Clear the user's force match
         database.ClearForceMatch(user);
+        
+        // Mark the user as disconnected from the presence server
+        database.SetUserPresenceAuthToken(user, null);
         
         context.Logger.LogInfo(BunkumCategory.Authentication, $"{user} successfully logged in on {game} via {platform}");
         
@@ -278,6 +281,8 @@ public class AuthenticationEndpoints : EndpointGroup
         
         // Revoke the token
         database.RevokeToken(token);
+        // Mark them as disconnected from the presence server
+        database.SetUserPresenceAuthToken(user, null);
         
         context.Logger.LogInfo(BunkumCategory.Authentication, $"{user} logged out");
         return OK;

@@ -1,8 +1,8 @@
 using Bunkum.Core;
 using Bunkum.Core.Endpoints;
-using Bunkum.Core.Endpoints.Debugging;
 using Bunkum.Core.Storage;
 using Bunkum.Listener.Protocol;
+using Refresh.Common.Constants;
 using Refresh.GameServer.Authentication;
 using Refresh.GameServer.Database;
 using Refresh.GameServer.Endpoints.Game.DataTypes.Response;
@@ -26,7 +26,7 @@ public class LevelEndpoints : EndpointGroup
     public SerializedMinimalLevelList? GetLevels(RequestContext context,
         GameDatabaseContext database,
         CategoryService categoryService,
-        LevelListOverrideService overrideService,
+        PlayNowService overrideService,
         GameUser user,
         Token token,
         DataContext dataContext,
@@ -47,7 +47,7 @@ public class LevelEndpoints : EndpointGroup
         
         // If we are getting the levels by a user, and that user is "!Hashed", then we pull that user's overrides
         if (route == "by" 
-            && (context.QueryString.Get("u") == "!Hashed" || user.Username == "!Hashed") 
+            && (context.QueryString.Get("u") == SystemUsers.HashedUserName || user.Username == SystemUsers.HashedUserName) 
             && overrideService.GetLastHashOverrideForUser(token, out string hash))
         {
             return new SerializedMinimalLevelList
@@ -101,7 +101,7 @@ public class LevelEndpoints : EndpointGroup
     public SerializedMinimalLevelList? GetLevelsWithPlayer(RequestContext context,
         GameDatabaseContext database,
         CategoryService categories,
-        LevelListOverrideService overrideService,
+        PlayNowService overrideService,
         Token token,
         DataContext dataContext,
         string route,
@@ -118,7 +118,7 @@ public class LevelEndpoints : EndpointGroup
     [MinimumRole(GameUserRole.Restricted)]
     public GameLevelResponse? LevelById(RequestContext context, GameDatabaseContext database, Token token,
         string slotType, int id,
-        LevelListOverrideService overrideService, DataContext dataContext)
+        PlayNowService overrideService, DataContext dataContext)
     {
         // If the user has had a hash override in the past, and the level id they requested matches the level ID associated with that hash
         if (overrideService.GetLastHashOverrideForUser(token, out string hash) && GameLevelResponse.LevelIdFromHash(hash) == id)
@@ -204,7 +204,7 @@ public class LevelEndpoints : EndpointGroup
         GameDatabaseContext database,
         CategoryService categories,
         MatchService matchService,
-        LevelListOverrideService overrideService,
+        PlayNowService overrideService,
         GameUser user,
         IDataStore dataStore,
         Token token,
@@ -218,7 +218,7 @@ public class LevelEndpoints : EndpointGroup
         GameDatabaseContext database,
         CategoryService categories,
         MatchService matchService,
-        LevelListOverrideService overrideService,
+        PlayNowService overrideService,
         Token token,
         IDataStore dataStore,
         DataContext dataContext,
