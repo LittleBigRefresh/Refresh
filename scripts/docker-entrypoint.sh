@@ -4,8 +4,7 @@
 # so it must be changed again during the entrypoint
 chown -R refresh:refresh /refresh/data
 
-cd /refresh/data
+cd /refresh/data || exit $?
 
-exec gosu refresh /refresh/app/Refresh.GameServer
-
+exec $PRIV_CMD "$PRIV_USER" "/refresh/app/Refresh.$1"
 exit $? # Expose error code
