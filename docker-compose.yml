@@ -39,6 +39,7 @@ services:
     restart: unless-stopped
     ports:
       - "10072:10072"
+      - "10061:10061"
     environment:
       BUNKUM_DATA_FOLDER: /refresh/data
     volumes:
