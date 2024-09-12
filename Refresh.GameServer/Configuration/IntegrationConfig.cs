@@ -7,7 +7,7 @@ namespace Refresh.GameServer.Configuration;
 /// </summary>
 public class IntegrationConfig : Config
 {
-    public override int CurrentConfigVersion => 6;
+    public override int CurrentConfigVersion => 8;
     public override int Version { get; set; }
     protected override void Migrate(int oldVer, dynamic oldConfig)
     {
@@ -37,6 +37,28 @@ public class IntegrationConfig : Config
     public int DiscordWorkerFrequencySeconds { get; set; } = 60;
     public string DiscordNickname { get; set; } = "Refresh";
     public string DiscordAvatarUrl { get; set; } = "https://raw.githubusercontent.com/LittleBigRefresh/Branding/main/icons/refresh_512x.png";
+
+    #endregion
+
+    #region Discord OAuth2
+
+    /// <summary>
+    /// Whether to enable discord OAuth2 support for account linking
+    /// </summary>
+    public bool DiscordOAuth2Enabled { get; set; }
+
+    /// <summary>
+    /// The redirect URL to use for Discord OAuth2 requests, ex. `https://lbp.littlebigrefresh.com/api/v3/oauth2/discord/authenticate`
+    /// </summary>
+    public string DiscordOAuth2RedirectUrl { get; set; }
+    /// <summary>
+    /// The client ID of the application
+    /// </summary>
+    public string DiscordOAuth2ClientId { get; set; } = "";
+    /// <summary>
+    /// The client secret of the application
+    /// </summary>
+    public string DiscordOAuth2ClientSecret { get; set; } = "";
 
     #endregion
     

@@ -2,7 +2,9 @@ using Bunkum.Core.Storage;
 using NotEnoughLogs;
 using Refresh.GameServer.Authentication;
 using Refresh.GameServer.Database;
+using Refresh.GameServer.Time;
 using Refresh.GameServer.Types.Data;
+using Refresh.GameServer.Types.OAuth2.Discord;
 using Refresh.GameServer.Types.UserData;
 
 namespace Refresh.GameServer.Workers;
@@ -35,5 +37,7 @@ public class ExpiredObjectWorker : IWorker
             context.Logger.LogInfo(RefreshContext.Worker, $"Removed {token.User}'s {token.TokenType} token since it has expired {DateTimeOffset.Now - token.ExpiresAt} ago");
             context.Database.RevokeToken(token);
         }
+        
+        context.Database.RemoveAllExpiredDiscordOAuth2Requests(context.TimeProvider);
     }
 }

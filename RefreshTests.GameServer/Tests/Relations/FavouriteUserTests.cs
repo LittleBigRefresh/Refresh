@@ -1,3 +1,4 @@
+using Refresh.Common.Extensions;
 using Refresh.GameServer.Authentication;
 using Refresh.GameServer.Types.Levels;
 using Refresh.GameServer.Types.Lists;
@@ -25,7 +26,7 @@ public class FavouriteUserTests : GameServerTest
         message = client.GetAsync($"/lbp/favouriteUsers/{user1.Username}").Result;
         Assert.That(message.StatusCode, Is.EqualTo(OK));
         //Make sure the only entry is the user we favourited
-        SerializedFavouriteUserList result = message.Content.ReadAsXML<SerializedFavouriteUserList>();
+        SerializedFavouriteUserList result = message.Content.ReadAsXml<SerializedFavouriteUserList>();
         Assert.That(result.Items, Has.Count.EqualTo(1));
         Assert.That(result.Items.First().Handle.Username, Is.EqualTo(user2.Username));
 
@@ -37,7 +38,7 @@ public class FavouriteUserTests : GameServerTest
         message = client.GetAsync($"/lbp/favouriteUsers/{user1.Username}").Result;
         Assert.That(message.StatusCode, Is.EqualTo(OK));
         //Make sure its now empty
-        result = message.Content.ReadAsXML<SerializedFavouriteUserList>();
+        result = message.Content.ReadAsXml<SerializedFavouriteUserList>();
         Assert.That(result.Items, Has.Count.EqualTo(0));
     }
 
@@ -60,7 +61,7 @@ public class FavouriteUserTests : GameServerTest
         message = client.GetAsync($"/lbp/favouriteUsers/{user.Username}").Result;
         Assert.That(message.StatusCode, Is.EqualTo(OK));
         //Make sure it is empty
-        SerializedFavouriteUserList result = message.Content.ReadAsXML<SerializedFavouriteUserList>();
+        SerializedFavouriteUserList result = message.Content.ReadAsXml<SerializedFavouriteUserList>();
         Assert.That(result.Items, Has.Count.EqualTo(0)); 
     }
     
@@ -105,7 +106,7 @@ public class FavouriteUserTests : GameServerTest
         message = client.GetAsync($"/lbp/favouriteUsers/{user1.Username}").Result;
         Assert.That(message.StatusCode, Is.EqualTo(OK));
         //Make sure it has the user
-        SerializedFavouriteUserList result = message.Content.ReadAsXML<SerializedFavouriteUserList>();
+        SerializedFavouriteUserList result = message.Content.ReadAsXml<SerializedFavouriteUserList>();
         Assert.That(result.Items, Has.Count.EqualTo(1)); 
         Assert.That(result.Items.First().Handle.Username, Is.EqualTo(user2.Username));
     }

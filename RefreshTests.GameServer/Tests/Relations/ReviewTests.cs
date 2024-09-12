@@ -1,3 +1,4 @@
+using Refresh.Common.Extensions;
 using Refresh.GameServer.Authentication;
 using Refresh.GameServer.Types.Levels;
 using Refresh.GameServer.Types.Reviews;
@@ -37,7 +38,7 @@ public class ReviewTests : GameServerTest
         HttpResponseMessage response = reviewerClient.GetAsync($"/lbp/reviewsFor/{slotType}/{levelId}").Result;
         Assert.That(response.StatusCode, Is.EqualTo(OK));
 
-        SerializedGameReviewResponse levelReviews = response.Content.ReadAsXML<SerializedGameReviewResponse>();
+        SerializedGameReviewResponse levelReviews = response.Content.ReadAsXml<SerializedGameReviewResponse>();
         Assert.That(levelReviews.Items, Has.Count.EqualTo(1));
         Assert.That(levelReviews.Items[0].Text, Is.EqualTo(review.Text));
         Assert.That(levelReviews.Items[0].Labels, Is.EqualTo(review.Labels));
@@ -45,7 +46,7 @@ public class ReviewTests : GameServerTest
         response = reviewerClient.GetAsync($"/lbp/reviewsBy/{reviewPublisher.Username}").Result;
         Assert.That(response.StatusCode, Is.EqualTo(OK));
 
-        levelReviews = response.Content.ReadAsXML<SerializedGameReviewResponse>();
+        levelReviews = response.Content.ReadAsXml<SerializedGameReviewResponse>();
         Assert.That(levelReviews.Items, Has.Count.EqualTo(1));
         Assert.That(levelReviews.Items[0].Text, Is.EqualTo(review.Text));
         Assert.That(levelReviews.Items[0].Labels, Is.EqualTo(review.Labels));

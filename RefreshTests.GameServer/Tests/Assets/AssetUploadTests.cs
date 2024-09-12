@@ -1,4 +1,5 @@
 using System.Security.Cryptography;
+using Refresh.Common.Extensions;
 using Refresh.GameServer.Authentication;
 using Refresh.GameServer.Configuration;
 using Refresh.GameServer.Services;
@@ -415,7 +416,7 @@ public class AssetUploadTests : GameServerTest
         HttpResponseMessage response = client.PostAsync("/lbp/filterResources", new StringContent(new SerializedResourceList(new[] { hash }).AsXML())).Result;
         Assert.That(response.StatusCode, Is.EqualTo(OK));
 
-        SerializedResourceList missingList = response.Content.ReadAsXML<SerializedResourceList>();
+        SerializedResourceList missingList = response.Content.ReadAsXml<SerializedResourceList>();
         Assert.That(missingList.Items, Has.Count.EqualTo(1));
         Assert.That(missingList.Items[0], Is.EqualTo(hash));
         
@@ -427,7 +428,7 @@ public class AssetUploadTests : GameServerTest
         response = client.PostAsync("/lbp/filterResources", new StringContent(new SerializedResourceList(new[] { hash }).AsXML())).Result;
         Assert.That(response.StatusCode, Is.EqualTo(OK));
 
-        missingList = response.Content.ReadAsXML<SerializedResourceList>();
+        missingList = response.Content.ReadAsXml<SerializedResourceList>();
         Assert.That(missingList.Items, Has.Count.EqualTo(0));
     }
     

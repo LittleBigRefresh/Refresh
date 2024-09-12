@@ -78,9 +78,6 @@ public partial class GameUser : IRealmObject, IRateLimitUser
     public bool RpcnAuthenticationAllowed { get; set; }
     public bool PsnAuthenticationAllowed { get; set; }
     
-    private int _ProfileVisibility { get; set; } = (int)Visibility.All;
-    private int _LevelVisibility { get; set; } = (int)Visibility.All;
-    
     /// <summary>
     /// The auth token the presence server knows this user by, null if not connected to the presence server
     /// </summary>
@@ -91,6 +88,10 @@ public partial class GameUser : IRealmObject, IRateLimitUser
     /// although the game does not expose the ability to do this normally.
     /// </summary>
     public GamePlaylist? RootPlaylist { get; set; }
+    
+    private int _ProfileVisibility { get; set; } = (int)Visibility.All;
+    private int _LevelVisibility { get; set; } = (int)Visibility.All;
+    private int _DiscordProfileVisibility { get; set; } = (int)Visibility.LoggedInUsers;
     
     /// <summary>
     /// Whether the user's profile information is exposed in the public API.
@@ -110,6 +111,16 @@ public partial class GameUser : IRealmObject, IRateLimitUser
     {
         get => (Visibility)this._LevelVisibility;
         set => this._LevelVisibility = (int)value;
+    }
+    
+    /// <summary>
+    /// Whether the user's discord profile is exposed in the public API
+    /// </summary>
+    [Ignored]
+    public Visibility DiscordProfileVisibility
+    {
+        get => (Visibility)this._DiscordProfileVisibility;
+        set => this._DiscordProfileVisibility = (int)value;
     }
 
     /// <summary>

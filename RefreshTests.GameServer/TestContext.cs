@@ -161,10 +161,15 @@ public class TestContext : IDisposable
             Database = this.Database,
             Logger = this.Server.Value.Logger,
             DataStore = (IDataStore)this.GetService<StorageService>()
-                .AddParameterToEndpoint(null!, new BunkumParameterInfo(typeof(IDataStore), ""), null!)!,
+                .AddParameterToEndpoint(null!,
+                    new BunkumParameterInfo(typeof(IDataStore),
+                        ""),
+                    null!)!,
             Match = this.GetService<MatchService>(),
             Token = token,
             GuidChecker = this.GetService<GuidCheckerService>(),
+            TimeProvider = this.Time,
+            DiscordOAuth2 = this.GetService<DiscordOAuth2Service>(),
         };
     }
 

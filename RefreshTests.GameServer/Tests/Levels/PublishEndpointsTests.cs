@@ -1,4 +1,5 @@
 using Refresh.Common.Constants;
+using Refresh.Common.Extensions;
 using Refresh.GameServer.Authentication;
 using Refresh.GameServer.Database;
 using Refresh.GameServer.Endpoints.Game.DataTypes.Request;
@@ -47,7 +48,7 @@ public class PublishEndpointsTests : GameServerTest
         HttpResponseMessage message = client.PostAsync("/lbp/startPublish", new StringContent(level.AsXML())).Result;
         Assert.That(message.StatusCode, Is.EqualTo(OK));
 
-        SerializedLevelResources resourcesToUpload = message.Content.ReadAsXML<SerializedLevelResources>();
+        SerializedLevelResources resourcesToUpload = message.Content.ReadAsXml<SerializedLevelResources>();
         Assert.That(resourcesToUpload.Resources, Has.Length.EqualTo(1));
         Assert.That(resourcesToUpload.Resources[0], Is.EqualTo(TEST_ASSET_HASH));
 
@@ -58,7 +59,7 @@ public class PublishEndpointsTests : GameServerTest
         message = client.PostAsync("/lbp/publish", new StringContent(level.AsXML())).Result;
         Assert.That(message.StatusCode, Is.EqualTo(OK));
 
-        GameLevelResponse response = message.Content.ReadAsXML<GameLevelResponse>();
+        GameLevelResponse response = message.Content.ReadAsXml<GameLevelResponse>();
         Assert.That(response.Title, Is.EqualTo(level.Title));
         Assert.That(response.Description, Is.EqualTo(level.Description));
 
@@ -70,13 +71,13 @@ public class PublishEndpointsTests : GameServerTest
         Assert.That(message.StatusCode, Is.EqualTo(OK));
 
         //Since theres no new assets, the XML deserializer will deserialize the resources list into null
-        resourcesToUpload = message.Content.ReadAsXML<SerializedLevelResources>();
+        resourcesToUpload = message.Content.ReadAsXml<SerializedLevelResources>();
         Assert.That(resourcesToUpload.Resources, Is.EqualTo(null));
 
         message = client.PostAsync("/lbp/publish", new StringContent(level.AsXML())).Result;
         Assert.That(message.StatusCode, Is.EqualTo(OK));
         
-        response = message.Content.ReadAsXML<GameLevelResponse>();
+        response = message.Content.ReadAsXml<GameLevelResponse>();
         Assert.That(response.Title, Is.EqualTo(level.Title));
         Assert.That(response.Description, Is.EqualTo(level.Description));
     }
@@ -117,7 +118,7 @@ public class PublishEndpointsTests : GameServerTest
         
         message = client.PostAsync("/lbp/publish", new StringContent(level.AsXML())).Result;
         Assert.That(message.StatusCode, Is.EqualTo(OK));
-        Assert.That(message.Content.ReadAsXML<GameLevelResponse>().Title.Length, Is.EqualTo(UgcLimits.TitleLimit));
+        Assert.That(message.Content.ReadAsXml<GameLevelResponse>().Title.Length, Is.EqualTo(UgcLimits.TitleLimit));
     }
     
     [Test]
@@ -156,7 +157,7 @@ public class PublishEndpointsTests : GameServerTest
         
         message = client.PostAsync("/lbp/publish", new StringContent(level.AsXML())).Result;
         Assert.That(message.StatusCode, Is.EqualTo(OK));
-        Assert.That(message.Content.ReadAsXML<GameLevelResponse>().Description.Length, Is.EqualTo(UgcLimits.DescriptionLimit));
+        Assert.That(message.Content.ReadAsXml<GameLevelResponse>().Description.Length, Is.EqualTo(UgcLimits.DescriptionLimit));
     }
     
     [Test]
@@ -397,7 +398,7 @@ public class PublishEndpointsTests : GameServerTest
         HttpResponseMessage message = client1.PostAsync("/lbp/startPublish", new StringContent(level.AsXML())).Result;
         Assert.That(message.StatusCode, Is.EqualTo(OK));
 
-        SerializedLevelResources resourcesToUpload = message.Content.ReadAsXML<SerializedLevelResources>();
+        SerializedLevelResources resourcesToUpload = message.Content.ReadAsXml<SerializedLevelResources>();
         Assert.That(resourcesToUpload.Resources, Has.Length.EqualTo(1));
         Assert.That(resourcesToUpload.Resources[0], Is.EqualTo(TEST_ASSET_HASH));
 
@@ -409,7 +410,7 @@ public class PublishEndpointsTests : GameServerTest
         message = client1.PostAsync("/lbp/publish", new StringContent(level.AsXML())).Result;
         Assert.That(message.StatusCode, Is.EqualTo(OK));
 
-        GameLevelResponse response = message.Content.ReadAsXML<GameLevelResponse>();
+        GameLevelResponse response = message.Content.ReadAsXml<GameLevelResponse>();
         Assert.That(response.Title, Is.EqualTo(level.Title));
         Assert.That(response.Description, Is.EqualTo(level.Description));
 
@@ -454,7 +455,7 @@ public class PublishEndpointsTests : GameServerTest
         HttpResponseMessage message = client1.PostAsync("/lbp/startPublish", new StringContent(level.AsXML())).Result;
         Assert.That(message.StatusCode, Is.EqualTo(OK));
 
-        SerializedLevelResources resourcesToUpload = message.Content.ReadAsXML<SerializedLevelResources>();
+        SerializedLevelResources resourcesToUpload = message.Content.ReadAsXml<SerializedLevelResources>();
         Assert.That(resourcesToUpload.Resources, Has.Length.EqualTo(1));
         Assert.That(resourcesToUpload.Resources[0], Is.EqualTo(TEST_ASSET_HASH));
 
@@ -466,7 +467,7 @@ public class PublishEndpointsTests : GameServerTest
         message = client1.PostAsync("/lbp/publish", new StringContent(level.AsXML())).Result;
         Assert.That(message.StatusCode, Is.EqualTo(OK));
 
-        GameLevelResponse response = message.Content.ReadAsXML<GameLevelResponse>();
+        GameLevelResponse response = message.Content.ReadAsXml<GameLevelResponse>();
         Assert.That(response.Title, Is.EqualTo(level.Title));
         Assert.That(response.Description, Is.EqualTo(level.Description));
 

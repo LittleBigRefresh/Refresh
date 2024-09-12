@@ -1,3 +1,4 @@
+using Refresh.Common.Extensions;
 using Refresh.GameServer.Authentication;
 using Refresh.GameServer.Types.Levels;
 using Refresh.GameServer.Types.Lists;
@@ -27,7 +28,7 @@ public class ListTests : GameServerTest
         while (true)
         {
             HttpResponseMessage message = await client.GetAsync($"/lbp/slots/newest?pageStart={(pageSize * page) + 1}&pageSize={pageSize}");
-            SerializedMinimalLevelList levelList = message.Content.ReadAsXML<SerializedMinimalLevelList>();
+            SerializedMinimalLevelList levelList = message.Content.ReadAsXml<SerializedMinimalLevelList>();
 
             if (pageSize * page >= levelList.Total) break;
             Assert.Multiple(() =>

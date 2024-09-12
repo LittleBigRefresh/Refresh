@@ -1,3 +1,4 @@
+using Refresh.Common.Extensions;
 using Refresh.GameServer.Authentication;
 using Refresh.GameServer.Endpoints.Game.DataTypes.Response;
 using Refresh.GameServer.Types.Levels;
@@ -22,7 +23,7 @@ public class LevelTests : GameServerTest
         HttpResponseMessage message = client.GetAsync($"/lbp/slots/newest").Result;
         Assert.That(message.StatusCode, Is.EqualTo(OK));
 
-        SerializedMinimalLevelList result = message.Content.ReadAsXML<SerializedMinimalLevelList>();
+        SerializedMinimalLevelList result = message.Content.ReadAsXml<SerializedMinimalLevelList>();
         Assert.That(result.Items, Has.Count.EqualTo(1));
         Assert.That(result.Items.First().LevelId, Is.EqualTo(level.LevelId));
         
@@ -30,7 +31,7 @@ public class LevelTests : GameServerTest
         message = client.GetAsync($"/lbp/slots").Result;
         Assert.That(message.StatusCode, Is.EqualTo(OK));
 
-        result = message.Content.ReadAsXML<SerializedMinimalLevelList>();
+        result = message.Content.ReadAsXml<SerializedMinimalLevelList>();
         Assert.That(result.Items, Has.Count.EqualTo(1));
         Assert.That(result.Items.First().LevelId, Is.EqualTo(level.LevelId));
     }
@@ -56,7 +57,7 @@ public class LevelTests : GameServerTest
                 HttpResponseMessage message = client.GetAsync($"/lbp/slots/lbp2luckydip?seed={seed}").Result;
                 Assert.That(message.StatusCode, Is.EqualTo(OK));
 
-                SerializedMinimalLevelList result = message.Content.ReadAsXML<SerializedMinimalLevelList>();
+                SerializedMinimalLevelList result = message.Content.ReadAsXml<SerializedMinimalLevelList>();
                 Assert.That(result.Items, Has.Count.EqualTo(3));
                 Assert.That(result.Items.First().LevelId, Is.EqualTo(expectedLevel.LevelId));
             }
@@ -81,7 +82,7 @@ public class LevelTests : GameServerTest
         HttpResponseMessage message = client.GetAsync($"/lbp/slots/lolcatftw").Result;
         Assert.That(message.StatusCode, Is.EqualTo(OK));
 
-        SerializedMinimalLevelList result = message.Content.ReadAsXML<SerializedMinimalLevelList>();
+        SerializedMinimalLevelList result = message.Content.ReadAsXml<SerializedMinimalLevelList>();
         Assert.That(result.Items, Has.Count.EqualTo(0));
         
         //Add the level to the queue
@@ -92,7 +93,7 @@ public class LevelTests : GameServerTest
         message = client.GetAsync($"/lbp/slots/lolcatftw").Result;
         Assert.That(message.StatusCode, Is.EqualTo(OK));
 
-        result = message.Content.ReadAsXML<SerializedMinimalLevelList>();
+        result = message.Content.ReadAsXml<SerializedMinimalLevelList>();
         Assert.That(result.Items, Has.Count.EqualTo(1));
         Assert.That(result.Items.First().LevelId, Is.EqualTo(level.LevelId));
         
@@ -104,7 +105,7 @@ public class LevelTests : GameServerTest
         message = client.GetAsync($"/lbp/slots/lolcatftw").Result;
         Assert.That(message.StatusCode, Is.EqualTo(OK));
 
-        result = message.Content.ReadAsXML<SerializedMinimalLevelList>();
+        result = message.Content.ReadAsXml<SerializedMinimalLevelList>();
         Assert.That(result.Items, Has.Count.EqualTo(0));
     }
     
@@ -121,7 +122,7 @@ public class LevelTests : GameServerTest
         HttpResponseMessage message = client.GetAsync($"/lbp/slots/favouriteSlots").Result;
         Assert.That(message.StatusCode, Is.EqualTo(OK));
         //Make sure its empty
-        SerializedMinimalLevelList result = message.Content.ReadAsXML<SerializedMinimalLevelList>();
+        SerializedMinimalLevelList result = message.Content.ReadAsXml<SerializedMinimalLevelList>();
         Assert.That(result.Items, Has.Count.EqualTo(0));
 
         //Favourite the level
@@ -132,7 +133,7 @@ public class LevelTests : GameServerTest
         message = client.GetAsync($"/lbp/slots/favouriteSlots").Result;
         Assert.That(message.StatusCode, Is.EqualTo(OK));
         //Make sure the only entry is the level
-        result = message.Content.ReadAsXML<SerializedMinimalLevelList>();
+        result = message.Content.ReadAsXml<SerializedMinimalLevelList>();
         Assert.That(result.Items, Has.Count.EqualTo(1));
         Assert.That(result.Items.First().LevelId, Is.EqualTo(level.LevelId));
 
@@ -144,7 +145,7 @@ public class LevelTests : GameServerTest
         message = client.GetAsync($"/lbp/slots/favouriteSlots").Result;
         Assert.That(message.StatusCode, Is.EqualTo(OK));
         //Make sure its now empty
-        result = message.Content.ReadAsXML<SerializedMinimalLevelList>();
+        result = message.Content.ReadAsXml<SerializedMinimalLevelList>();
         Assert.That(result.Items, Has.Count.EqualTo(0));
     }
     
@@ -161,7 +162,7 @@ public class LevelTests : GameServerTest
         HttpResponseMessage message = client.GetAsync($"/lbp/favouriteSlots/{user.Username}").Result;
         Assert.That(message.StatusCode, Is.EqualTo(OK));
         //Make sure its empty
-        SerializedMinimalFavouriteLevelList result = message.Content.ReadAsXML<SerializedMinimalFavouriteLevelList>();
+        SerializedMinimalFavouriteLevelList result = message.Content.ReadAsXml<SerializedMinimalFavouriteLevelList>();
         Assert.That(result.Items, Has.Count.EqualTo(0));
 
         //Favourite the level
@@ -172,7 +173,7 @@ public class LevelTests : GameServerTest
         message = client.GetAsync($"/lbp/favouriteSlots/{user.Username}").Result;
         Assert.That(message.StatusCode, Is.EqualTo(OK));
         //Make sure the only entry is the level
-        result = message.Content.ReadAsXML<SerializedMinimalFavouriteLevelList>();
+        result = message.Content.ReadAsXml<SerializedMinimalFavouriteLevelList>();
         Assert.That(result.Items, Has.Count.EqualTo(1));
         Assert.That(result.Items.First().LevelId, Is.EqualTo(level.LevelId));
 
@@ -184,7 +185,7 @@ public class LevelTests : GameServerTest
         message = client.GetAsync($"/lbp/favouriteSlots/{user.Username}").Result;
         Assert.That(message.StatusCode, Is.EqualTo(OK));
         //Make sure its now empty
-        result = message.Content.ReadAsXML<SerializedMinimalFavouriteLevelList>();
+        result = message.Content.ReadAsXml<SerializedMinimalFavouriteLevelList>();
         Assert.That(result.Items, Has.Count.EqualTo(0));
     }
 
@@ -217,7 +218,7 @@ public class LevelTests : GameServerTest
         HttpResponseMessage message = client.GetAsync($"/lbp/slots/mostHearted").Result;
         Assert.That(message.StatusCode, Is.EqualTo(OK));
 
-        SerializedMinimalLevelList result = message.Content.ReadAsXML<SerializedMinimalLevelList>();
+        SerializedMinimalLevelList result = message.Content.ReadAsXml<SerializedMinimalLevelList>();
         Assert.That(result.Items, Has.Count.EqualTo(0));
 
         context.Database.FavouriteLevel(level, user1);
@@ -227,7 +228,7 @@ public class LevelTests : GameServerTest
         message = client.GetAsync($"/lbp/slots/mostHearted").Result;
         Assert.That(message.StatusCode, Is.EqualTo(OK));
 
-        result = message.Content.ReadAsXML<SerializedMinimalLevelList>();
+        result = message.Content.ReadAsXml<SerializedMinimalLevelList>();
         Assert.That(result.Items, Has.Count.EqualTo(2));
         Assert.That(result.Items[0].LevelId, Is.EqualTo(level.LevelId));
         Assert.That(result.Items[1].LevelId, Is.EqualTo(level2.LevelId));
@@ -238,7 +239,7 @@ public class LevelTests : GameServerTest
         message = client.GetAsync($"/lbp/slots/mostHearted").Result;
         Assert.That(message.StatusCode, Is.EqualTo(OK));
 
-        result = message.Content.ReadAsXML<SerializedMinimalLevelList>();
+        result = message.Content.ReadAsXml<SerializedMinimalLevelList>();
         Assert.That(result.Items, Has.Count.EqualTo(2));
         Assert.That(result.Items[0].LevelId, Is.EqualTo(level2.LevelId));
         Assert.That(result.Items[1].LevelId, Is.EqualTo(level.LevelId));
@@ -268,7 +269,7 @@ public class LevelTests : GameServerTest
         HttpResponseMessage message = client.GetAsync($"/lbp/slots/highestRated").Result;
         Assert.That(message.StatusCode, Is.EqualTo(OK));
 
-        SerializedMinimalLevelList result = message.Content.ReadAsXML<SerializedMinimalLevelList>();
+        SerializedMinimalLevelList result = message.Content.ReadAsXml<SerializedMinimalLevelList>();
         Assert.That(result.Items, Has.Count.EqualTo(0));
 
         bool a = context.Database.RateLevel(level, user, RatingType.Yay);
@@ -278,7 +279,7 @@ public class LevelTests : GameServerTest
         message = client.GetAsync($"/lbp/slots/highestRated").Result;
         Assert.That(message.StatusCode, Is.EqualTo(OK));
 
-        result = message.Content.ReadAsXML<SerializedMinimalLevelList>();
+        result = message.Content.ReadAsXml<SerializedMinimalLevelList>();
         Assert.That(result.Items, Has.Count.EqualTo(2));
         Assert.That(result.Items[0].LevelId, Is.EqualTo(level.LevelId));
         Assert.That(result.Items[1].LevelId, Is.EqualTo(level2.LevelId));
@@ -289,7 +290,7 @@ public class LevelTests : GameServerTest
         message = client.GetAsync($"/lbp/slots/highestRated").Result;
         Assert.That(message.StatusCode, Is.EqualTo(OK));
 
-        result = message.Content.ReadAsXML<SerializedMinimalLevelList>();
+        result = message.Content.ReadAsXml<SerializedMinimalLevelList>();
         Assert.That(result.Items, Has.Count.EqualTo(2));
         Assert.That(result.Items[0].LevelId, Is.EqualTo(level2.LevelId));
         Assert.That(result.Items[1].LevelId, Is.EqualTo(level.LevelId));
@@ -312,7 +313,7 @@ public class LevelTests : GameServerTest
         HttpResponseMessage message = client.GetAsync($"/lbp/slots/mostUniquePlays").Result;
         Assert.That(message.StatusCode, Is.EqualTo(OK));
 
-        SerializedMinimalLevelList result = message.Content.ReadAsXML<SerializedMinimalLevelList>();
+        SerializedMinimalLevelList result = message.Content.ReadAsXml<SerializedMinimalLevelList>();
         Assert.That(result.Items, Has.Count.EqualTo(0));
         
         context.Database.PlayLevel(level, user, 1);
@@ -324,7 +325,7 @@ public class LevelTests : GameServerTest
         message = client.GetAsync($"/lbp/slots/mostUniquePlays").Result;
         Assert.That(message.StatusCode, Is.EqualTo(OK));
 
-        result = message.Content.ReadAsXML<SerializedMinimalLevelList>();
+        result = message.Content.ReadAsXml<SerializedMinimalLevelList>();
         Assert.That(result.Items, Has.Count.EqualTo(2));
         Assert.That(result.Items[0].LevelId, Is.EqualTo(level.LevelId));
         Assert.That(result.Items[1].LevelId, Is.EqualTo(level2.LevelId));
@@ -347,7 +348,7 @@ public class LevelTests : GameServerTest
         HttpResponseMessage message = client.GetAsync($"/lbp/slots/mostPlays").Result;
         Assert.That(message.StatusCode, Is.EqualTo(OK));
 
-        SerializedMinimalLevelList result = message.Content.ReadAsXML<SerializedMinimalLevelList>();
+        SerializedMinimalLevelList result = message.Content.ReadAsXml<SerializedMinimalLevelList>();
         Assert.That(result.Items, Has.Count.EqualTo(0));
         
         context.Database.PlayLevel(level, user, 1);
@@ -359,7 +360,7 @@ public class LevelTests : GameServerTest
         message = client.GetAsync($"/lbp/slots/mostPlays").Result;
         Assert.That(message.StatusCode, Is.EqualTo(OK));
 
-        result = message.Content.ReadAsXML<SerializedMinimalLevelList>();
+        result = message.Content.ReadAsXml<SerializedMinimalLevelList>();
         Assert.That(result.Items, Has.Count.EqualTo(2));
         Assert.That(result.Items[0].LevelId, Is.EqualTo(level2.LevelId));
         Assert.That(result.Items[1].LevelId, Is.EqualTo(level.LevelId));
@@ -377,7 +378,7 @@ public class LevelTests : GameServerTest
         HttpResponseMessage message = client.GetAsync($"/lbp/slots/mmpicks").Result;
         Assert.That(message.StatusCode, Is.EqualTo(OK));
 
-        SerializedMinimalLevelList result = message.Content.ReadAsXML<SerializedMinimalLevelList>();
+        SerializedMinimalLevelList result = message.Content.ReadAsXml<SerializedMinimalLevelList>();
         Assert.That(result.Items, Has.Count.EqualTo(0));
         
         context.Database.AddTeamPickToLevel(level);
@@ -385,7 +386,7 @@ public class LevelTests : GameServerTest
         message = client.GetAsync($"/lbp/slots/mmpicks").Result;
         Assert.That(message.StatusCode, Is.EqualTo(OK));
 
-        result = message.Content.ReadAsXML<SerializedMinimalLevelList>();
+        result = message.Content.ReadAsXml<SerializedMinimalLevelList>();
         Assert.That(result.Items, Has.Count.EqualTo(1));
         Assert.That(result.Items[0].LevelId, Is.EqualTo(level.LevelId));
     }
@@ -401,7 +402,7 @@ public class LevelTests : GameServerTest
         HttpResponseMessage message = client.GetAsync($"/lbp/slots/by/{publisher.Username}").Result;
         Assert.That(message.StatusCode, Is.EqualTo(OK));
 
-        SerializedMinimalLevelList result = message.Content.ReadAsXML<SerializedMinimalLevelList>();
+        SerializedMinimalLevelList result = message.Content.ReadAsXml<SerializedMinimalLevelList>();
         Assert.That(result.Items, Has.Count.EqualTo(0));
 
         GameLevel level = context.CreateLevel(publisher);
@@ -409,7 +410,7 @@ public class LevelTests : GameServerTest
         message = client.GetAsync($"/lbp/slots/by/{publisher.Username}").Result;
         Assert.That(message.StatusCode, Is.EqualTo(OK));
 
-        result = message.Content.ReadAsXML<SerializedMinimalLevelList>();
+        result = message.Content.ReadAsXml<SerializedMinimalLevelList>();
         Assert.That(result.Items, Has.Count.EqualTo(1));
         Assert.That(result.Items[0].LevelId, Is.EqualTo(level.LevelId));
         
@@ -429,7 +430,7 @@ public class LevelTests : GameServerTest
         HttpResponseMessage message = client.GetAsync($"/lbp/s/user/{level.LevelId}").Result;
         Assert.That(message.StatusCode, Is.EqualTo(OK));
 
-        GameLevelResponse result = message.Content.ReadAsXML<GameLevelResponse>();
+        GameLevelResponse result = message.Content.ReadAsXml<GameLevelResponse>();
         Assert.That(result.LevelId, Is.EqualTo(level.LevelId));
 
         message = client.GetAsync($"/lbp/s/user/{int.MaxValue}").Result;
@@ -449,7 +450,7 @@ public class LevelTests : GameServerTest
         HttpResponseMessage message = client.GetAsync($"/lbp/slotList?s={level.LevelId}&s={level2.LevelId}").Result;
         Assert.That(message.StatusCode, Is.EqualTo(OK));
 
-        SerializedLevelList result = message.Content.ReadAsXML<SerializedLevelList>();
+        SerializedLevelList result = message.Content.ReadAsXml<SerializedLevelList>();
         Assert.That(result.Items, Has.Count.EqualTo(2));
         Assert.That(result.Items[0].LevelId, Is.EqualTo(level.LevelId));
         Assert.That(result.Items[1].LevelId, Is.EqualTo(level2.LevelId));
@@ -468,7 +469,7 @@ public class LevelTests : GameServerTest
         HttpResponseMessage message = client.GetAsync($"/lbp/searches/newest").Result;
         Assert.That(message.StatusCode, Is.EqualTo(OK));
 
-        SerializedMinimalLevelResultsList result = message.Content.ReadAsXML<SerializedMinimalLevelResultsList>();
+        SerializedMinimalLevelResultsList result = message.Content.ReadAsXml<SerializedMinimalLevelResultsList>();
         Assert.That(result.Items, Has.Count.EqualTo(2));
         Assert.That(result.Items[0].LevelId, Is.EqualTo(level.LevelId));
         Assert.That(result.Items[1].LevelId, Is.EqualTo(level2.LevelId));
@@ -508,7 +509,7 @@ public class LevelTests : GameServerTest
 
         HttpResponseMessage message = client.GetAsync($"/lbp/slotList?s={int.MaxValue}").Result;
         Assert.That(message.StatusCode, Is.EqualTo(OK));
-        SerializedLevelList result = message.Content.ReadAsXML<SerializedLevelList>();
+        SerializedLevelList result = message.Content.ReadAsXml<SerializedLevelList>();
         Assert.That(result.Items, Has.Count.EqualTo(0));
     }
     
@@ -524,13 +525,13 @@ public class LevelTests : GameServerTest
         Assert.That(message.StatusCode, Is.EqualTo(OK));
         
         //Just throw away the value, but at least make sure it parses
-        _ = message.Content.ReadAsXML<SerializedCategoryList>();
+        _ = message.Content.ReadAsXml<SerializedCategoryList>();
         
         message = client.GetAsync($"/lbp/searches").Result;
         Assert.That(message.StatusCode, Is.EqualTo(OK));
         
         //Just throw away the value, but at least make sure it parses
-        _ = message.Content.ReadAsXML<SerializedCategoryList>();
+        _ = message.Content.ReadAsXml<SerializedCategoryList>();
     }
 
     [Test]
