@@ -36,5 +36,7 @@ public class PresenceAuthenticationMiddleware : IMiddleware
             context.ResponseCode = Unauthorized;
             return;
         }
+
+        next();
     }
 }
