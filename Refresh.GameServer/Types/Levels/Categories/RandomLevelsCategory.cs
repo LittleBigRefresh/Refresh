@@ -10,7 +10,7 @@ namespace Refresh.GameServer.Types.Levels.Categories;
 
 public class RandomLevelsCategory : LevelCategory
 {
-    internal RandomLevelsCategory() : base("random", "lbp2luckydip", false)
+    internal RandomLevelsCategory() : base("random", ["lbp2luckydip", "luckydip"], false)
     {
         this.Name = "Lucky Dip";
         this.Description = "A random assortment of levels!";
