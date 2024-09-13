@@ -73,7 +73,11 @@ public class MetadataEndpoints : EndpointGroup
                                                               "If everything works the way you like, you can safely ignore this warning.");
 
         // EnableHackChecks being false fixes the "There was a problem with the level you were playing on that forced a return to your Pod." error that LBP3 tends to show in the pod.
-        // AlexDB enables the "Web Privacy Settings" option on LBP1, and is required for Playlists to function
+        // AlexDB
+        //  - Enables the "Web Privacy Settings" option on LBP1
+        //  - Enables in-game queuing on LBP1
+        //  - Part of the check for enabling LBP1 Playlists
+        //  - Adds "Mm Picks" and "Lucky Dip" search options on LBP1
         // OverheatingThreshholdDisallowMidgameJoin is set to >1.0 so that it never triggers
         // EnableCommunityDecorations, EnablePlayedFilter, EnableDiveIn enable various game features
         // DisableDLCPublishCheck disables the game's DLC publish check.
