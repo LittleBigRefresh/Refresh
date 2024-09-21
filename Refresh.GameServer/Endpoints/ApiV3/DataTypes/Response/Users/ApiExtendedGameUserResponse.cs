@@ -41,6 +41,7 @@ public class ApiExtendedGameUserResponse : IApiResponse, IDataConvertableFrom<Ap
     
     public required Visibility LevelVisibility { get; set; }
     public required Visibility ProfileVisibility { get; set; }
+    public required Visibility DiscordProfileVisibility { get; set; }
     
     public required int FilesizeQuotaUsage { get; set; }
     
@@ -77,6 +78,7 @@ public class ApiExtendedGameUserResponse : IApiResponse, IDataConvertableFrom<Ap
             ActiveRoom = ApiGameRoomResponse.FromOld(dataContext.Match.RoomAccessor.GetRoomByUser(user), dataContext),
             LevelVisibility = user.LevelVisibility,
             ProfileVisibility = user.ProfileVisibility,
+            DiscordProfileVisibility = user.DiscordProfileVisibility,
             ShowModdedContent = user.ShowModdedContent,
             ConnectedToPresenceServer = user.PresenceServerAuthToken != null,
         };

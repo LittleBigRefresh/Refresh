@@ -20,4 +20,5 @@ public class ApiUpdateUserRequest
     
     public Visibility? LevelVisibility { get; set; }
     public Visibility? ProfileVisibility { get; set; }
+    public Visibility? DiscordProfileVisibility { get; set; }
 }

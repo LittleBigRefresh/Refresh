@@ -203,6 +203,9 @@ public partial class GameDatabaseContext // Users
 
             if (data.ShowModdedContent != null)
                 user.ShowModdedContent = data.ShowModdedContent.Value;
+            
+            if (data.DiscordProfileVisibility != null)
+                user.DiscordProfileVisibility = data.DiscordProfileVisibility.Value;
         });
     }
 
