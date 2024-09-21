@@ -48,7 +48,7 @@ public class IntegrationConfig : Config
     public bool DiscordOAuthEnabled { get; set; }
 
     /// <summary>
-    /// The redirect URL to use for Discord OAuth requests, ex. `https://lbp.littlebigrefresh.com/api/v3/oauth2/discord/authenticate`
+    /// The redirect URL to use for Discord OAuth requests, ex. `https://lbp.littlebigrefresh.com/api/v3/oauth/authenticate`
     /// </summary>
     public string DiscordOAuthRedirectUrl { get; set; }
     /// <summary>
