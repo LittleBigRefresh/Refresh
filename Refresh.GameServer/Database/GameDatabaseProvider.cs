@@ -89,7 +89,7 @@ public class GameDatabaseProvider : RealmDatabaseProvider<GameDatabaseContext>
         typeof(LevelPlaylistRelation),
         typeof(SubPlaylistRelation),
         
-        // oauth2
+        // oauth
         typeof(OAuthRequest),
         typeof(OAuthTokenRelation),
     ];
