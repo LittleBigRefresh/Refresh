@@ -91,7 +91,7 @@ public class InMemoryRoomAccessor(Logger logger) : IRoomAccessor
             return new RoomStatistics
             {
                 PlayerCount = (ushort)this._rooms.Sum(r => r.PlayerIds.Count),
-                PlayersInPodCount = (ushort)this._rooms.Count(r => r.LevelType == RoomSlotType.Pod),
+                PlayersInPodCount = (ushort)this._rooms.Where(r => r.LevelType == RoomSlotType.Pod).Sum(r => r.PlayerIds.Count),
                 RoomCount = (ushort)this._rooms.Count,
                 PerGame = perGame,
                 PerPlatform = perPlatform,
