@@ -21,6 +21,7 @@ public class DiscordOAuthEndpoints : EndpointGroup
     [DocSummary("Gets information about the current user's linked discord account")]
     [DocError(typeof(ApiNotSupportedError), ApiNotSupportedError.OAuthProviderDisabledErrorWhen)]
     [DocError(typeof(ApiNotFoundError), ApiNotFoundError.OAuthTokenMissingErrorWhen)]
+    [DocResponseBody(typeof(ApiDiscordUserResponse))]
     public ApiResponse<ApiDiscordUserResponse> CurrentUserInformation(
         RequestContext context,
         GameDatabaseContext database,

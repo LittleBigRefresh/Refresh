@@ -22,7 +22,8 @@ public class OAuthEndpoints : EndpointGroup
     [ApiV3Endpoint("oauth/{providerStr}/beginAuthentication")]
     [DocSummary("Begins the OAuth authentication process with the specified provider.")]
     [DocError(typeof(ApiNotFoundError), ApiNotFoundError.OAuthProviderMissingErrorWhen)]
-    [DocError(typeof(ApiNotSupportedError), ApiNotFoundError.OAuthProviderMissingErrorWhen)]
+    [DocError(typeof(ApiNotSupportedError), ApiNotSupportedError.OAuthProviderDisabledErrorWhen)]
+    [DocResponseBody(typeof(ApiOAuthBeginAuthenticationResponse))]
     public ApiResponse<ApiOAuthBeginAuthenticationResponse> BeginAuthentication(
         RequestContext context, 
         GameUser user, 
@@ -87,7 +88,9 @@ public class OAuthEndpoints : EndpointGroup
     [ApiV3Endpoint("oauth/{providerStr}/revokeToken", HttpMethods.Post)]
     [DocSummary("Revokes the current user's OAuth token for the specified provider")]
     [DocError(typeof(ApiNotFoundError), ApiNotFoundError.OAuthProviderMissingErrorWhen)]
-    [DocError(typeof(ApiNotSupportedError), ApiNotFoundError.OAuthProviderMissingErrorWhen)]
+    [DocError(typeof(ApiNotFoundError), ApiNotFoundError.OAuthTokenMissingErrorWhen)]
+    [DocError(typeof(ApiNotSupportedError), ApiNotSupportedError.OAuthProviderTokenRevocationUnsupportedErrorWhen)]
+    [DocError(typeof(ApiNotSupportedError), ApiNotSupportedError.OAuthProviderDisabledErrorWhen)]
     public ApiResponse<ApiEmptyResponse> RevokeToken(RequestContext context,
         GameDatabaseContext database,
         OAuthService oAuthService,
@@ -98,7 +101,7 @@ public class OAuthEndpoints : EndpointGroup
             return ApiNotFoundError.OAuthProviderMissingError;
         
         if (!oAuthService.GetOAuthClient(provider, out OAuthClient? client))
-            return ApiNotSupportedError.OAuthProviderTokenRevocationUnsupportedError;
+            return ApiNotSupportedError.OAuthProviderDisabledError;
 
         if (!client.TokenRevocationSupported)
             return ApiNotSupportedError.OAuthProviderTokenRevocationUnsupportedError;
