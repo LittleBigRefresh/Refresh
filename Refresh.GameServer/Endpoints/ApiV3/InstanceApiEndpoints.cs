@@ -66,6 +66,7 @@ public class InstanceApiEndpoints : EndpointGroup
                 gameConfig,
                 richConfig), dataContext)!,
             GrafanaDashboardUrl = integrationConfig.GrafanaDashboardUrl,
+            DiscordOAuthEnabled = integrationConfig.DiscordOAuthEnabled,
             
             ContactInfo = new ApiContactInfoResponse
             {

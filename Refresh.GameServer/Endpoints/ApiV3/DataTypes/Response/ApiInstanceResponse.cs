@@ -44,6 +44,7 @@ public class ApiInstanceResponse : IApiResponse
     
     public required IEnumerable<ApiGameAnnouncementResponse> Announcements { get; set; }
     public required ApiRichPresenceConfigurationResponse RichPresenceConfiguration { get; set; }
+    public required bool DiscordOAuthEnabled { get; set; }
     
     public required bool MaintenanceModeEnabled { get; set; }
     public required string? GrafanaDashboardUrl { get; set; }

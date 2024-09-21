@@ -6,8 +6,7 @@ using JetBrains.Annotations;
 using Refresh.GameServer.Authentication;
 using Refresh.GameServer.Database;
 using Refresh.GameServer.Services;
-using Refresh.GameServer.Types;
-using Refresh.GameServer.Types.Contests;
+using Refresh.GameServer.Services.OAuth2;
 using Refresh.GameServer.Types.Data;
 using Refresh.GameServer.Types.Levels;
 using Refresh.GameServer.Types.Roles;
@@ -169,7 +168,7 @@ public class TestContext : IDisposable
             Token = token,
             GuidChecker = this.GetService<GuidCheckerService>(),
             TimeProvider = this.Time,
-            DiscordOAuth2 = this.GetService<DiscordOAuth2Service>(),
+            OAuth = this.GetService<OAuthService>(),
         };
     }
 

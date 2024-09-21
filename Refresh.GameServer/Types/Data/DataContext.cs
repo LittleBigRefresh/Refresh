@@ -3,6 +3,7 @@ using NotEnoughLogs;
 using Refresh.GameServer.Authentication;
 using Refresh.GameServer.Database;
 using Refresh.GameServer.Services;
+using Refresh.GameServer.Services.OAuth2;
 using Refresh.GameServer.Time;
 using Refresh.GameServer.Types.UserData;
 
@@ -16,7 +17,7 @@ public class DataContext
     public required MatchService Match;
     public required GuidCheckerService GuidChecker;
     public required IDateTimeProvider TimeProvider;
-    public required DiscordOAuth2Service? DiscordOAuth2;
+    public required OAuthService OAuth;
     
     public required Token? Token;
     public GameUser? User => this.Token?.User;

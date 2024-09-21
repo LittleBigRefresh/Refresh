@@ -12,6 +12,7 @@ using Refresh.GameServer.Types.Comments.Relations;
 using Refresh.GameServer.Types.Contests;
 using Refresh.GameServer.Types.Levels.SkillRewards;
 using Refresh.GameServer.Types.Notifications;
+using Refresh.GameServer.Types.OAuth2;
 using Refresh.GameServer.Types.OAuth2.Discord;
 using Refresh.GameServer.Types.Relations;
 using Refresh.GameServer.Types.Reviews;
@@ -35,7 +36,7 @@ public class GameDatabaseProvider : RealmDatabaseProvider<GameDatabaseContext>
         this._time = time;
     }
 
-    protected override ulong SchemaVersion => 160;
+    protected override ulong SchemaVersion => 161;
 
     protected override string Filename => "refreshGameServer.realm";
     
@@ -89,8 +90,8 @@ public class GameDatabaseProvider : RealmDatabaseProvider<GameDatabaseContext>
         typeof(SubPlaylistRelation),
         
         // oauth2
-        typeof(DiscordOAuthRequest),
-        typeof(DiscordOAuthTokenRelation),
+        typeof(OAuthRequest),
+        typeof(OAuthTokenRelation),
     ];
 
     public override void Warmup()

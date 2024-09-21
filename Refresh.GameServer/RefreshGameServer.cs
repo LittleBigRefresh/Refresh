@@ -20,6 +20,7 @@ using Refresh.GameServer.Endpoints;
 using Refresh.GameServer.Importing;
 using Refresh.GameServer.Middlewares;
 using Refresh.GameServer.Services;
+using Refresh.GameServer.Services.OAuth2;
 using Refresh.GameServer.Storage;
 using Refresh.GameServer.Time;
 using Refresh.GameServer.Types.Data;
@@ -40,7 +41,7 @@ public class RefreshGameServer : RefreshServer
     protected readonly IDataStore _dataStore;
     protected MatchService _matchService = null!;
     protected GuidCheckerService _guidCheckerService = null!;
-    protected DiscordOAuth2Service _discordOAuth2Service;
+    protected OAuthService OAuthService = null!;
     
     protected GameServerConfig? _config;
     protected IntegrationConfig? _integrationConfig;
@@ -131,11 +132,10 @@ public class RefreshGameServer : RefreshServer
             usesCustomDigestKey: true,
             serverDescription: this._config.InstanceDescription,
             bannerImageUrl: "https://github.com/LittleBigRefresh/Branding/blob/main/logos/refresh_type.png?raw=true");
-        
-        this.Server.AddHealthCheckService(this._databaseProvider, new []
-        {
+
+        this.Server.AddHealthCheckService(this._databaseProvider, [
             typeof(RealmDatabaseHealthCheck),
-        });
+        ]);
         
         this.Server.AddService<RoleService>();
         this.Server.AddService<SmtpService>();
@@ -148,8 +148,7 @@ public class RefreshGameServer : RefreshServer
         if(this._integrationConfig!.AipiEnabled)
             this.Server.AddService<AipiService>();
         
-        if(this._integrationConfig.DiscordOAuth2Enabled)
-            this.Server.AddService(this._discordOAuth2Service = new DiscordOAuth2Service(this.Server.Logger, this._integrationConfig));
+        this.Server.AddService(this.OAuthService = new OAuthService(this.Logger, this._integrationConfig));
         
         #if DEBUG
         this.Server.AddService<DebugService>();
@@ -164,7 +163,7 @@ public class RefreshGameServer : RefreshServer
     protected virtual void SetupWorkers()
     {
         this.WorkerManager = new WorkerManager(this.Logger, this._dataStore, this._databaseProvider, this._matchService,
-            this._guidCheckerService, this.GetTimeProvider(), this._discordOAuth2Service);
+            this._guidCheckerService, this.GetTimeProvider(), this.OAuthService);
         
         this.WorkerManager.AddWorker<PunishmentExpiryWorker>();
         this.WorkerManager.AddWorker<ExpiredObjectWorker>();

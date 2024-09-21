@@ -37,7 +37,9 @@ public class ExpiredObjectWorker : IWorker
             context.Logger.LogInfo(RefreshContext.Worker, $"Removed {token.User}'s {token.TokenType} token since it has expired {DateTimeOffset.Now - token.ExpiresAt} ago");
             context.Database.RevokeToken(token);
         }
-        
-        context.Database.RemoveAllExpiredDiscordOAuth2Requests(context.TimeProvider);
+
+        int expiredOAuthRequests = context.Database.RemoveAllExpiredOAuthRequests(context.TimeProvider);
+        if(expiredOAuthRequests > 0)
+            context.Logger.LogInfo(RefreshContext.Worker, "Removed {0} OAuth requests, since they have expired", expiredOAuthRequests);
     }
 }

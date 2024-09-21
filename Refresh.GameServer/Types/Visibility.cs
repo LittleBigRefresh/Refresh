@@ -30,6 +30,13 @@ public enum Visibility
 
 public static class VisibilityExtensions
 {
+    /// <summary>
+    /// Filters the passed object depending on the passed DataContext and intended visibility
+    /// </summary>
+    /// <param name="visibility">The intended visibility of the object</param>
+    /// <param name="dataContext">The data context of the request asking for the object</param>
+    /// <param name="obj">The object to filter</param>
+    /// <returns>The filtered object</returns>
     public static T? Filter<T>(this Visibility visibility, DataContext dataContext, T? obj) where T : class
     {
         switch (visibility)

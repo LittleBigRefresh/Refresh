@@ -4,7 +4,7 @@ using Refresh.GameServer.Types.OAuth2.Discord.Api;
 namespace Refresh.GameServer.Endpoints.ApiV3.DataTypes.Response.OAuth2.Discord;
 
 [JsonObject(NamingStrategyType = typeof(CamelCaseNamingStrategy))]
-public class ApiDiscordOAuth2UserResponse : IApiResponse, IDataConvertableFrom<ApiDiscordOAuth2UserResponse, DiscordApiUserResponse>
+public class ApiDiscordOAuthUserResponse : IApiResponse, IDataConvertableFrom<ApiDiscordOAuthUserResponse, DiscordApiUserResponse>
 {
     /// <summary>
     /// The user's ID, as a snowflake
@@ -35,12 +35,12 @@ public class ApiDiscordOAuth2UserResponse : IApiResponse, IDataConvertableFrom<A
     /// </summary>
     public required uint? AccentColor { get; set; }
     
-    public static ApiDiscordOAuth2UserResponse? FromOld(DiscordApiUserResponse? old, DataContext dataContext)
+    public static ApiDiscordOAuthUserResponse? FromOld(DiscordApiUserResponse? old, DataContext dataContext)
     {
         if (old == null)
             return null;
 
-        return new ApiDiscordOAuth2UserResponse
+        return new ApiDiscordOAuthUserResponse
         {
             Id = old.Id,
             Username = old.Username,
@@ -52,6 +52,6 @@ public class ApiDiscordOAuth2UserResponse : IApiResponse, IDataConvertableFrom<A
         };
     }
 
-    public static IEnumerable<ApiDiscordOAuth2UserResponse> FromOldList(IEnumerable<DiscordApiUserResponse> oldList,
+    public static IEnumerable<ApiDiscordOAuthUserResponse> FromOldList(IEnumerable<DiscordApiUserResponse> oldList,
         DataContext dataContext) => oldList.Select(d => FromOld(d, dataContext)!);
 }
