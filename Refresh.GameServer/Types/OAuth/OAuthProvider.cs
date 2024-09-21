@@ -1,4 +1,4 @@
-namespace Refresh.GameServer.Types.OAuth2;
+namespace Refresh.GameServer.Types.OAuth;
 
 public enum OAuthProvider
 {

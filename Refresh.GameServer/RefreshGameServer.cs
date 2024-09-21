@@ -20,7 +20,7 @@ using Refresh.GameServer.Endpoints;
 using Refresh.GameServer.Importing;
 using Refresh.GameServer.Middlewares;
 using Refresh.GameServer.Services;
-using Refresh.GameServer.Services.OAuth2;
+using Refresh.GameServer.Services.OAuth;
 using Refresh.GameServer.Storage;
 using Refresh.GameServer.Time;
 using Refresh.GameServer.Types.Data;

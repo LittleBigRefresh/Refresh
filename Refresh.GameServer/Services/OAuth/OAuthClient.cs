@@ -2,9 +2,9 @@ using NotEnoughLogs;
 using Refresh.Common.Extensions;
 using Refresh.GameServer.Database;
 using Refresh.GameServer.Time;
-using Refresh.GameServer.Types.OAuth2;
+using Refresh.GameServer.Types.OAuth;
 
-namespace Refresh.GameServer.Services.OAuth2;
+namespace Refresh.GameServer.Services.OAuth;
 
 /// <summary>
 /// A minimal implementation of the OAuth2 API (RFC 6749),
@@ -52,7 +52,7 @@ public abstract class OAuthClient : IDisposable
     /// </summary>
     /// <param name="state">The `state` parameter of the authorization</param>
     /// <returns>The authorization URL to redirect the user to</returns>
-    public abstract string GetOAuth2AuthorizationUrl(string state);
+    public abstract string GetOAuthAuthorizationUrl(string state);
     
     /// <summary>
     /// Acquires an access and refresh token using the provided authorization code

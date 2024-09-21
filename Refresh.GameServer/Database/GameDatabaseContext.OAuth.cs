@@ -1,9 +1,9 @@
 using Refresh.Common.Helpers;
 using Refresh.GameServer.Time;
-using Refresh.GameServer.Types.OAuth2;
-using Refresh.GameServer.Types.OAuth2.Discord;
-using Refresh.GameServer.Types.OAuth2.Discord.Api;
+using Refresh.GameServer.Types.OAuth;
 using Refresh.GameServer.Types.UserData;
+using OAuthRequest = Refresh.GameServer.Types.OAuth.Discord.OAuthRequest;
+using OAuthTokenRelation = Refresh.GameServer.Types.OAuth.OAuthTokenRelation;
 
 namespace Refresh.GameServer.Database;
 
@@ -27,10 +27,13 @@ public partial class GameDatabaseContext // oauth
         return state;
     }
 
-    public bool OAuthRequestExists(string state, OAuthProvider provider)
-    {
-        return this.OAuthRequests.Any(d => d.State == state && d._Provider == (int)provider);
-    }
+    /// <summary>
+    /// Returns the OAuthProvider used in a request
+    /// </summary>
+    /// <param name="state">The OAuth request state</param>
+    /// <returns>The provider, or null if no request was found with that state</returns>
+    public OAuthProvider? OAuthGetProviderForRequest(string state) 
+        => this.OAuthRequests.FirstOrDefault(d => d.State == state)?.Provider;
 
     public GameUser SaveOAuthToken(string state, OAuth2AccessTokenResponse tokenResponse, IDateTimeProvider timeProvider)
     {

@@ -3,10 +3,10 @@ using System.Diagnostics.CodeAnalysis;
 using Bunkum.Core.Services;
 using NotEnoughLogs;
 using Refresh.GameServer.Configuration;
-using Refresh.GameServer.Services.OAuth2.Clients;
-using Refresh.GameServer.Types.OAuth2;
+using Refresh.GameServer.Services.OAuth.Clients;
+using Refresh.GameServer.Types.OAuth;
 
-namespace Refresh.GameServer.Services.OAuth2;
+namespace Refresh.GameServer.Services.OAuth;
 
 public class OAuthService : EndpointService
 {

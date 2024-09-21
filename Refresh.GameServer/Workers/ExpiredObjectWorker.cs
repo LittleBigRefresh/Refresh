@@ -4,7 +4,6 @@ using Refresh.GameServer.Authentication;
 using Refresh.GameServer.Database;
 using Refresh.GameServer.Time;
 using Refresh.GameServer.Types.Data;
-using Refresh.GameServer.Types.OAuth2.Discord;
 using Refresh.GameServer.Types.UserData;
 
 namespace Refresh.GameServer.Workers;

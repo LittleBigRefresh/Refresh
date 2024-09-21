@@ -43,20 +43,20 @@ public class IntegrationConfig : Config
     #region Discord OAuth
 
     /// <summary>
-    /// Whether to enable discord OAuth2 support for account linking
+    /// Whether to enable discord OAuth support for account linking
     /// </summary>
     public bool DiscordOAuthEnabled { get; set; }
 
     /// <summary>
-    /// The redirect URL to use for Discord OAuth2 requests, ex. `https://lbp.littlebigrefresh.com/api/v3/oauth2/discord/authenticate`
+    /// The redirect URL to use for Discord OAuth requests, ex. `https://lbp.littlebigrefresh.com/api/v3/oauth2/discord/authenticate`
     /// </summary>
     public string DiscordOAuthRedirectUrl { get; set; }
     /// <summary>
-    /// The client ID of the application
+    /// The client ID of the OAuth application
     /// </summary>
     public string DiscordOAuthClientId { get; set; } = "";
     /// <summary>
-    /// The client secret of the application
+    /// The client secret of the OAuth application
     /// </summary>
     public string DiscordOAuthClientSecret { get; set; } = "";
 

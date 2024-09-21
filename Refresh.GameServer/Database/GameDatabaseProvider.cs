@@ -12,13 +12,13 @@ using Refresh.GameServer.Types.Comments.Relations;
 using Refresh.GameServer.Types.Contests;
 using Refresh.GameServer.Types.Levels.SkillRewards;
 using Refresh.GameServer.Types.Notifications;
-using Refresh.GameServer.Types.OAuth2;
-using Refresh.GameServer.Types.OAuth2.Discord;
 using Refresh.GameServer.Types.Relations;
 using Refresh.GameServer.Types.Reviews;
 using Refresh.GameServer.Types.UserData.Leaderboard;
 using Refresh.GameServer.Types.Photos;
 using Refresh.GameServer.Types.Playlists;
+using OAuthRequest = Refresh.GameServer.Types.OAuth.Discord.OAuthRequest;
+using OAuthTokenRelation = Refresh.GameServer.Types.OAuth.OAuthTokenRelation;
 
 namespace Refresh.GameServer.Database;
 

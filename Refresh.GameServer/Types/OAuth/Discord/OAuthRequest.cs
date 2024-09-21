@@ -1,8 +1,7 @@
-using MongoDB.Bson;
 using Realms;
 using Refresh.GameServer.Types.UserData;
 
-namespace Refresh.GameServer.Types.OAuth2.Discord;
+namespace Refresh.GameServer.Types.OAuth.Discord;
 
 public partial class OAuthRequest : IRealmObject
 {

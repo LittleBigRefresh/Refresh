@@ -1,4 +1,4 @@
-namespace Refresh.GameServer.Endpoints.ApiV3.DataTypes.Response.OAuth2.Discord;
+namespace Refresh.GameServer.Endpoints.ApiV3.DataTypes.Response.OAuth;
 
 public class ApiOAuthBeginAuthenticationResponse : IApiResponse
 {

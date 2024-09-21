@@ -3,21 +3,21 @@ using Bunkum.Core.Endpoints;
 using Refresh.GameServer.Database;
 using Refresh.GameServer.Endpoints.ApiV3.ApiTypes;
 using Refresh.GameServer.Endpoints.ApiV3.ApiTypes.Errors;
-using Refresh.GameServer.Endpoints.ApiV3.DataTypes.Response.OAuth2.Discord;
-using Refresh.GameServer.Services.OAuth2;
-using Refresh.GameServer.Services.OAuth2.Clients;
+using Refresh.GameServer.Endpoints.ApiV3.DataTypes.Response.OAuth.Discord;
+using Refresh.GameServer.Services.OAuth;
+using Refresh.GameServer.Services.OAuth.Clients;
 using Refresh.GameServer.Time;
 using Refresh.GameServer.Types.Data;
-using Refresh.GameServer.Types.OAuth2;
-using Refresh.GameServer.Types.OAuth2.Discord.Api;
+using Refresh.GameServer.Types.OAuth;
+using Refresh.GameServer.Types.OAuth.Discord.Api;
 using Refresh.GameServer.Types.UserData;
 
 namespace Refresh.GameServer.Endpoints.ApiV3.OAuth.Discord;
 
 public class DiscordOAuthEndpoints : EndpointGroup
 {
-    [ApiV3Endpoint("oauth2/discord/currentUserInformation")]
-    public ApiResponse<ApiDiscordOAuthUserResponse> CurrentUserInformation(
+    [ApiV3Endpoint("oauth/discord/currentUserInformation")]
+    public ApiResponse<ApiDiscordUserResponse> CurrentUserInformation(
         RequestContext context,
         GameDatabaseContext database,
         OAuthService oAuthService,
@@ -33,6 +33,6 @@ public class DiscordOAuthEndpoints : EndpointGroup
         if (userInformation == null)
             return ApiNotFoundError.DiscordOAuthTokenMissingError;
         
-        return ApiDiscordOAuthUserResponse.FromOld(userInformation, dataContext);
+        return ApiDiscordUserResponse.FromOld(userInformation, dataContext);
     }
 }

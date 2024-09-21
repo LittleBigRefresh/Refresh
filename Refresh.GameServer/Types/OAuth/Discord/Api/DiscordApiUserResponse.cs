@@ -1,4 +1,4 @@
-namespace Refresh.GameServer.Types.OAuth2.Discord.Api;
+namespace Refresh.GameServer.Types.OAuth.Discord.Api;
 
 [JsonObject(NamingStrategyType = typeof(SnakeCaseNamingStrategy))]
 public class DiscordApiUserResponse

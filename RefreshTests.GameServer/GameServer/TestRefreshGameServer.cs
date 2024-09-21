@@ -11,6 +11,7 @@ using Refresh.GameServer;
 using Refresh.GameServer.Configuration;
 using Refresh.GameServer.Database;
 using Refresh.GameServer.Services;
+using Refresh.GameServer.Services.OAuth;
 using Refresh.GameServer.Time;
 using Refresh.GameServer.Types.Data;
 using Refresh.GameServer.Types.Levels.Categories;
@@ -76,6 +77,7 @@ public class TestRefreshGameServer : RefreshGameServer
         this.Server.AddService<CommandService>();
         this.Server.AddService<GuidCheckerService>();
         this.Server.AddService<SmtpService>();
+        this.Server.AddService<OAuthService>();
         
         // Must always be last, see comment in RefreshGameServer
         this.Server.AddService<DataContextService>();

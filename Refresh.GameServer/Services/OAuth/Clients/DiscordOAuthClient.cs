@@ -5,11 +5,11 @@ using Refresh.Common.Extensions;
 using Refresh.GameServer.Configuration;
 using Refresh.GameServer.Database;
 using Refresh.GameServer.Time;
-using Refresh.GameServer.Types.OAuth2;
-using Refresh.GameServer.Types.OAuth2.Discord.Api;
+using Refresh.GameServer.Types.OAuth;
+using Refresh.GameServer.Types.OAuth.Discord.Api;
 using Refresh.GameServer.Types.UserData;
 
-namespace Refresh.GameServer.Services.OAuth2.Clients;
+namespace Refresh.GameServer.Services.OAuth.Clients;
 
 public class DiscordOAuthClient : OAuthClient
 {
@@ -31,7 +31,7 @@ public class DiscordOAuthClient : OAuthClient
     protected override string RedirectUri => this._integrationConfig.DiscordOAuthRedirectUrl;
     
     /// <inheritdoc />
-    public override string GetOAuth2AuthorizationUrl(string state)
+    public override string GetOAuthAuthorizationUrl(string state)
     {
         NameValueCollection queryParams = new()
         {
@@ -60,6 +60,8 @@ public class DiscordOAuthClient : OAuthClient
         if (token == null)
             return null;
 
+        // TODO: this token refresh logic needs to be made generic so that it doesn't have to be copied to any and all API request methods for all clients
+        
         // If we have passed the revocation time, and refreshing the token has failed, then revoke the token and bail out.
         if (timeProvider.Now >= token.AccessTokenRevocationTime && !this.RefreshToken(database, token, timeProvider))
         {

@@ -6,7 +6,7 @@ using JetBrains.Annotations;
 using Refresh.GameServer.Authentication;
 using Refresh.GameServer.Database;
 using Refresh.GameServer.Services;
-using Refresh.GameServer.Services.OAuth2;
+using Refresh.GameServer.Services.OAuth;
 using Refresh.GameServer.Types.Data;
 using Refresh.GameServer.Types.Levels;
 using Refresh.GameServer.Types.Roles;

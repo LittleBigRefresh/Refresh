@@ -1,6 +1,6 @@
 using JetBrains.Annotations;
 
-namespace Refresh.GameServer.Types.OAuth2;
+namespace Refresh.GameServer.Types.OAuth;
 
 #nullable disable
 

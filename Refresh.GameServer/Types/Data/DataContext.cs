@@ -3,7 +3,7 @@ using NotEnoughLogs;
 using Refresh.GameServer.Authentication;
 using Refresh.GameServer.Database;
 using Refresh.GameServer.Services;
-using Refresh.GameServer.Services.OAuth2;
+using Refresh.GameServer.Services.OAuth;
 using Refresh.GameServer.Time;
 using Refresh.GameServer.Types.UserData;
 
