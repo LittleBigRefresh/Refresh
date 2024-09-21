@@ -1,3 +1,4 @@
+using AttribDoc.Attributes;
 using Bunkum.Core;
 using Bunkum.Core.Endpoints;
 using Refresh.GameServer.Database;
@@ -17,6 +18,9 @@ namespace Refresh.GameServer.Endpoints.ApiV3.OAuth.Discord;
 public class DiscordOAuthEndpoints : EndpointGroup
 {
     [ApiV3Endpoint("oauth/discord/currentUserInformation")]
+    [DocSummary("Gets information about the current user's linked discord account")]
+    [DocError(typeof(ApiNotSupportedError), ApiNotSupportedError.OAuthProviderDisabledErrorWhen)]
+    [DocError(typeof(ApiNotFoundError), ApiNotFoundError.OAuthTokenMissingErrorWhen)]
     public ApiResponse<ApiDiscordUserResponse> CurrentUserInformation(
         RequestContext context,
         GameDatabaseContext database,
@@ -26,12 +30,12 @@ public class DiscordOAuthEndpoints : EndpointGroup
         DataContext dataContext)
     {
         if (!oAuthService.GetOAuthClient<DiscordOAuthClient>(OAuthProvider.Discord, out DiscordOAuthClient? client))
-            return ApiNotFoundError.OAuthProviderMissingError;
+            return ApiNotSupportedError.OAuthProviderDisabledError;
         
         DiscordApiUserResponse? userInformation = client.GetUserInformation(database, timeProvider, user);
         
         if (userInformation == null)
-            return ApiNotFoundError.DiscordOAuthTokenMissingError;
+            return ApiNotFoundError.OAuthTokenMissingError;
         
         return ApiDiscordUserResponse.FromOld(userInformation, dataContext);
     }

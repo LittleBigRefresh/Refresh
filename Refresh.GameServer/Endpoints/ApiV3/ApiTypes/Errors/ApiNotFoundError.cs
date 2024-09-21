@@ -22,10 +22,10 @@ public class ApiNotFoundError : ApiError
     public const string ContestMissingErrorWhen = "The contest could not be found";
     public static readonly ApiNotFoundError ContestMissingError = new(ContestMissingErrorWhen);
 
-    public const string DiscordOAuthTokenMissingErrorWhen = "A discord OAuth token for this user could not be found";
-    public static readonly ApiNotFoundError DiscordOAuthTokenMissingError = new(DiscordOAuthTokenMissingErrorWhen);
+    public const string OAuthTokenMissingErrorWhen = "An OAuth token for this user could not be found";
+    public static readonly ApiNotFoundError OAuthTokenMissingError = new(OAuthTokenMissingErrorWhen);
     
-    public const string OAuthProviderMissingErrorWhen = "The OAuth provider could not be found, or is disabled";
+    public const string OAuthProviderMissingErrorWhen = "The OAuth provider could not be found";
     public static readonly ApiNotFoundError OAuthProviderMissingError = new(OAuthProviderMissingErrorWhen);
 
     private ApiNotFoundError() : base("The requested resource was not found", NotFound)

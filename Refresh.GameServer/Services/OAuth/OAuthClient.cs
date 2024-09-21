@@ -146,9 +146,11 @@ public abstract class OAuthClient : IDisposable
             throw new NotSupportedException("Revocation is not supported by this OAuth client!");
         
         // NOTE: As per https://datatracker.ietf.org/doc/html/rfc7009#autoid-5, revocation of an invalid token returns a 200 OK response, so 
-        HttpResponseMessage result = this.Client.PostAsync(this.TokenEndpoint, new FormUrlEncodedContent([
+        HttpResponseMessage result = this.Client.PostAsync(this.TokenRevocationEndpoint, new FormUrlEncodedContent([
             new KeyValuePair<string, string>("token", token.RefreshToken),
             new KeyValuePair<string, string>("token_type_hint", "refresh_token"),
+            new KeyValuePair<string, string>("client_id", this.ClientId),
+            new KeyValuePair<string, string>("client_secret", this.ClientSecret),
         ])).Result;
         
         // https://datatracker.ietf.org/doc/html/rfc6749#section-5.2
@@ -156,7 +158,7 @@ public abstract class OAuthClient : IDisposable
         {
             OAuth2ErrorResponse errorResponse = result.Content.ReadAsJson<OAuth2ErrorResponse>()!;
 
-            throw new Exception($"Unexpected error {errorResponse.Error} when refreshing token! Description: {errorResponse.ErrorDescription}, URI: {errorResponse.ErrorUri}");
+            throw new Exception($"Unexpected error {errorResponse.Error} when revoking token! Description: {errorResponse.ErrorDescription}, URI: {errorResponse.ErrorUri}");
         }
 
         if (result.StatusCode != OK)
