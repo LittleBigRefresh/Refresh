@@ -1,9 +1,8 @@
 using Refresh.Common.Helpers;
 using Refresh.GameServer.Time;
 using Refresh.GameServer.Types.OAuth;
+using Refresh.GameServer.Types.OAuth.Discord;
 using Refresh.GameServer.Types.UserData;
-using OAuthRequest = Refresh.GameServer.Types.OAuth.Discord.OAuthRequest;
-using OAuthTokenRelation = Refresh.GameServer.Types.OAuth.OAuthTokenRelation;
 
 namespace Refresh.GameServer.Database;
 
