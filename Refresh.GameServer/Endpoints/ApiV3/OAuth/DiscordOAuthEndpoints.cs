@@ -18,7 +18,7 @@ namespace Refresh.GameServer.Endpoints.ApiV3.OAuth;
 public class DiscordOAuthEndpoints : EndpointGroup
 {
     [ApiV3Endpoint("oauth/discord/currentUserInformation")]
-    [DocSummary("Gets information about the current user's linked discord account")]
+    [DocSummary("Gets information about the current user's linked Discord account")]
     [DocError(typeof(ApiNotSupportedError), ApiNotSupportedError.OAuthProviderDisabledErrorWhen)]
     [DocError(typeof(ApiNotFoundError), ApiNotFoundError.OAuthTokenMissingErrorWhen)]
     [DocResponseBody(typeof(ApiDiscordUserResponse))]
