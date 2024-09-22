@@ -2,6 +2,8 @@ using Bunkum.Core.Storage;
 using NotEnoughLogs;
 using Refresh.GameServer.Database;
 using Refresh.GameServer.Services;
+using Refresh.GameServer.Services.OAuth;
+using Refresh.GameServer.Time;
 using Refresh.GameServer.Types.Data;
 
 namespace Refresh.GameServer.Workers;
@@ -13,14 +15,20 @@ public class WorkerManager
     private readonly GameDatabaseProvider _databaseProvider;
     private readonly MatchService _matchService;
     private readonly GuidCheckerService _guidCheckerService;
+    private readonly IDateTimeProvider _timeProvider;
+    private readonly OAuthService _oAuthService;
 
-    public WorkerManager(Logger logger, IDataStore dataStore, GameDatabaseProvider databaseProvider, MatchService matchService, GuidCheckerService guidCheckerService)
+    public WorkerManager(Logger logger, IDataStore dataStore, GameDatabaseProvider databaseProvider,
+        MatchService matchService, GuidCheckerService guidCheckerService, IDateTimeProvider timeProvider,
+        OAuthService oAuthService)
     {
         this._dataStore = dataStore;
         this._databaseProvider = databaseProvider;
         this._logger = logger;
         this._matchService = matchService;
         this._guidCheckerService = guidCheckerService;
+        this._timeProvider = timeProvider;
+        this._oAuthService = oAuthService;
     }
 
     private Thread? _thread = null;
@@ -49,6 +57,8 @@ public class WorkerManager
             Match = this._matchService,
             Token = null,
             GuidChecker = this._guidCheckerService,
+            TimeProvider = this._timeProvider,
+            OAuth = this._oAuthService,
         });
         
         foreach (IWorker worker in this._workers)

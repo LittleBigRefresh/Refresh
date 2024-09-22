@@ -1,3 +1,4 @@
+using Refresh.Common.Extensions;
 using Refresh.GameServer.Authentication;
 using Refresh.GameServer.Types.Comments;
 using Refresh.GameServer.Types.Lists;
@@ -29,7 +30,7 @@ public class UserCommentTests : GameServerTest
         Assert.That(response.StatusCode, Is.EqualTo(OK));
 
         response = client.GetAsync($"/lbp/userComments/{user2.Username}").Result;
-        SerializedCommentList userComments = response.Content.ReadAsXML<SerializedCommentList>();
+        SerializedCommentList userComments = response.Content.ReadAsXml<SerializedCommentList>();
         Assert.That(userComments.Items, Has.Count.EqualTo(1));
         Assert.That(userComments.Items[0].Content, Is.EqualTo(comment.Content));
         
@@ -37,7 +38,7 @@ public class UserCommentTests : GameServerTest
         Assert.That(response.StatusCode, Is.EqualTo(OK));
         
         response = client.GetAsync($"/lbp/userComments/{user2.Username}").Result;
-        userComments = response.Content.ReadAsXML<SerializedCommentList>();
+        userComments = response.Content.ReadAsXml<SerializedCommentList>();
         Assert.That(userComments.Items, Has.Count.EqualTo(0));
     }
     
@@ -152,7 +153,7 @@ public class UserCommentTests : GameServerTest
         Assert.That(response.StatusCode, Is.EqualTo(OK));
 
         response = client1.GetAsync($"/lbp/userComments/{user2.Username}").Result;
-        SerializedCommentList userComments = response.Content.ReadAsXML<SerializedCommentList>();
+        SerializedCommentList userComments = response.Content.ReadAsXml<SerializedCommentList>();
         Assert.That(userComments.Items, Has.Count.EqualTo(1));
         Assert.That(userComments.Items[0].Content, Is.EqualTo(comment.Content));
         

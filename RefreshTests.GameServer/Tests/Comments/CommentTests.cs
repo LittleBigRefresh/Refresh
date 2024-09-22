@@ -1,4 +1,5 @@
-﻿using Refresh.GameServer.Types.Comments;
+﻿using Refresh.Common.Extensions;
+using Refresh.GameServer.Types.Comments;
 using Refresh.GameServer.Types.Lists;
 using Refresh.GameServer.Types.Reviews;
 using Refresh.GameServer.Types.UserData;
@@ -23,7 +24,7 @@ public class CommentTests : GameServerTest
             }
         
             HttpResponseMessage response = client.GetAsync(getCommentsUrl).Result;
-            SerializedCommentList userComments = response.Content.ReadAsXML<SerializedCommentList>();
+            SerializedCommentList userComments = response.Content.ReadAsXml<SerializedCommentList>();
             SerializedComment serializedComment = userComments.Items.First();
 
             int expectedThumbsUp, expectedThumbsDown;

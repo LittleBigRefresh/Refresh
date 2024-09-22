@@ -1,3 +1,4 @@
+using Refresh.Common.Extensions;
 using Refresh.GameServer.Authentication;
 using Refresh.GameServer.Types.Levels;
 using Refresh.GameServer.Types.News;
@@ -23,7 +24,7 @@ public class ActivityEndpointsTests : GameServerTest
         HttpResponseMessage message = client.GetAsync("/lbp/news").Result;
         Assert.That(message.StatusCode, Is.EqualTo(OK));
 
-        GameNewsResponse response = message.Content.ReadAsXML<GameNewsResponse>();
+        GameNewsResponse response = message.Content.ReadAsXml<GameNewsResponse>();
         Assert.That(response.Subcategory.Items, Has.Count.EqualTo(1));
         Assert.That(response.Subcategory.Items[0].Subject, Is.EqualTo("Team Pick"));
     }

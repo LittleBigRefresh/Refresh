@@ -21,7 +21,13 @@ public class ApiNotFoundError : ApiError
     
     public const string ContestMissingErrorWhen = "The contest could not be found";
     public static readonly ApiNotFoundError ContestMissingError = new(ContestMissingErrorWhen);
+
+    public const string OAuthTokenMissingErrorWhen = "An OAuth token for this user could not be found";
+    public static readonly ApiNotFoundError OAuthTokenMissingError = new(OAuthTokenMissingErrorWhen);
     
+    public const string OAuthProviderMissingErrorWhen = "The OAuth provider could not be found";
+    public static readonly ApiNotFoundError OAuthProviderMissingError = new(OAuthProviderMissingErrorWhen);
+
     private ApiNotFoundError() : base("The requested resource was not found", NotFound)
     {}
     

@@ -1,5 +1,6 @@
 using System.Security.Cryptography;
 using JetBrains.Annotations;
+using Refresh.Common.Helpers;
 using Refresh.GameServer.Authentication;
 using Refresh.GameServer.Types.UserData;
 
@@ -23,16 +24,6 @@ public partial class GameDatabaseContext // Tokens
         GameCookieLength = (int)Math.Floor((MaxGameCookieLength - GameCookieHeader.Length - MaxBase64Padding) * 3 / 4.0);
     }
     
-    private static string GetTokenString(int length)
-    {
-        byte[] tokenData = new byte[length];
-        
-        using RandomNumberGenerator rng = RandomNumberGenerator.Create();
-        rng.GetBytes(tokenData);
-
-        return Convert.ToBase64String(tokenData);
-    }
-    
     public Token GenerateTokenForUser(GameUser user, TokenType type, TokenGame game, TokenPlatform platform, string ipAddress, int tokenExpirySeconds = DefaultTokenExpirySeconds)
     {
         // TODO: JWT (JSON Web Tokens) for TokenType.Api
@@ -42,7 +33,7 @@ public partial class GameDatabaseContext // Tokens
         Token token = new()
         {
             User = user,
-            TokenData = GetTokenString(cookieLength),
+            TokenData = CryptoHelper.GetRandomBase64String(cookieLength),
             TokenType = type,
             TokenGame = game,
             TokenPlatform = platform,

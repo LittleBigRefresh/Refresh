@@ -1,4 +1,5 @@
 using System.Reflection;
+using Refresh.Common.Extensions;
 using Refresh.Common.Helpers;
 using Refresh.GameServer.Authentication;
 using Refresh.GameServer.Types.Levels;
@@ -60,7 +61,7 @@ public class PhotoEndpointsTests : GameServerTest
         message = client.GetAsync($"/lbp/photos/by?user={user.Username}").Result;
         Assert.That(message.StatusCode, Is.EqualTo(OK));
 
-        SerializedPhotoList response = message.Content.ReadAsXML<SerializedPhotoList>();
+        SerializedPhotoList response = message.Content.ReadAsXml<SerializedPhotoList>();
         Assert.That(response.Items, Has.Count.EqualTo(1));
         Assert.That(response.Items[0].LargeHash, Is.EqualTo(TEST_ASSET_HASH));
         
@@ -68,7 +69,7 @@ public class PhotoEndpointsTests : GameServerTest
         message = client.GetAsync($"/lbp/photos/with?user={user.Username}").Result;
         Assert.That(message.StatusCode, Is.EqualTo(OK));
 
-        response = message.Content.ReadAsXML<SerializedPhotoList>();
+        response = message.Content.ReadAsXml<SerializedPhotoList>();
         Assert.That(response.Items, Has.Count.EqualTo(1));
         Assert.That(response.Items[0].LargeHash, Is.EqualTo(TEST_ASSET_HASH));
         
@@ -80,7 +81,7 @@ public class PhotoEndpointsTests : GameServerTest
         message = client.GetAsync($"/lbp/photos/by?user={user.Username}").Result;
         Assert.That(message.StatusCode, Is.EqualTo(OK));
 
-        response = message.Content.ReadAsXML<SerializedPhotoList>();
+        response = message.Content.ReadAsXml<SerializedPhotoList>();
         Assert.That(response.Items, Has.Count.EqualTo(0));
     }
     
@@ -280,7 +281,7 @@ public class PhotoEndpointsTests : GameServerTest
         message = client1.GetAsync($"/lbp/photos/by?user={user1.Username}").Result;
         Assert.That(message.StatusCode, Is.EqualTo(OK));
 
-        SerializedPhotoList response = message.Content.ReadAsXML<SerializedPhotoList>();
+        SerializedPhotoList response = message.Content.ReadAsXml<SerializedPhotoList>();
         Assert.That(response.Items, Has.Count.EqualTo(1));
         Assert.That(response.Items[0].LargeHash, Is.EqualTo(TEST_ASSET_HASH));
         
@@ -292,7 +293,7 @@ public class PhotoEndpointsTests : GameServerTest
         message = client1.GetAsync($"/lbp/photos/by?user={user1.Username}").Result;
         Assert.That(message.StatusCode, Is.EqualTo(OK));
 
-        response = message.Content.ReadAsXML<SerializedPhotoList>();
+        response = message.Content.ReadAsXml<SerializedPhotoList>();
         Assert.That(response.Items, Has.Count.EqualTo(1));
     }
 }

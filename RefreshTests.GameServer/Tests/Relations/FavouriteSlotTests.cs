@@ -1,3 +1,4 @@
+using Refresh.Common.Extensions;
 using Refresh.GameServer.Authentication;
 using Refresh.GameServer.Types.Levels;
 using Refresh.GameServer.Types.Lists;
@@ -25,7 +26,7 @@ public class FavouriteSlotTests : GameServerTest
         message = client.GetAsync($"/lbp/favouriteSlots/{user.Username}").Result;
         Assert.That(message.StatusCode, Is.EqualTo(OK));
         //Make sure the only entry is the level
-        SerializedMinimalFavouriteLevelList result = message.Content.ReadAsXML<SerializedMinimalFavouriteLevelList>();
+        SerializedMinimalFavouriteLevelList result = message.Content.ReadAsXml<SerializedMinimalFavouriteLevelList>();
         Assert.That(result.Items, Has.Count.EqualTo(1));
         Assert.That(result.Items.First().LevelId, Is.EqualTo(level.LevelId));
 
@@ -37,7 +38,7 @@ public class FavouriteSlotTests : GameServerTest
         message = client.GetAsync($"/lbp/favouriteSlots/{user.Username}").Result;
         Assert.That(message.StatusCode, Is.EqualTo(OK));
         //Make sure its now empty
-        result = message.Content.ReadAsXML<SerializedMinimalFavouriteLevelList>();
+        result = message.Content.ReadAsXml<SerializedMinimalFavouriteLevelList>();
         Assert.That(result.Items, Has.Count.EqualTo(0));
     }
 
@@ -60,7 +61,7 @@ public class FavouriteSlotTests : GameServerTest
         message = client.GetAsync($"/lbp/favouriteSlots/{user.Username}").Result;
         Assert.That(message.StatusCode, Is.EqualTo(OK));
         //Make sure its now empty
-        SerializedMinimalFavouriteLevelList result = message.Content.ReadAsXML<SerializedMinimalFavouriteLevelList>();
+        SerializedMinimalFavouriteLevelList result = message.Content.ReadAsXml<SerializedMinimalFavouriteLevelList>();
         Assert.That(result.Items, Has.Count.EqualTo(0)); 
     }
     
@@ -104,7 +105,7 @@ public class FavouriteSlotTests : GameServerTest
         message = client.GetAsync($"/lbp/favouriteSlots/{user.Username}").Result;
         Assert.That(message.StatusCode, Is.EqualTo(OK));
         //Make sure it has the level
-        SerializedMinimalFavouriteLevelList result = message.Content.ReadAsXML<SerializedMinimalFavouriteLevelList>();
+        SerializedMinimalFavouriteLevelList result = message.Content.ReadAsXml<SerializedMinimalFavouriteLevelList>();
         Assert.That(result.Items, Has.Count.EqualTo(1)); 
         Assert.That(result.Items.First().LevelId, Is.EqualTo(level.LevelId));
     }

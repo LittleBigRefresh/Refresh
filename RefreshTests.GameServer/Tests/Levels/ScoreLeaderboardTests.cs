@@ -1,4 +1,5 @@
 using MongoDB.Bson;
+using Refresh.Common.Extensions;
 using Refresh.GameServer.Authentication;
 using Refresh.GameServer.Types.Levels;
 using Refresh.GameServer.Types.Lists;
@@ -33,7 +34,7 @@ public class ScoreLeaderboardTests : GameServerTest
         message = client.GetAsync($"/lbp/topscores/user/{level.LevelId}/1").Result;
         Assert.That(message.StatusCode, Is.EqualTo(OK));
         
-        SerializedScoreList scores = message.Content.ReadAsXML<SerializedScoreList>();
+        SerializedScoreList scores = message.Content.ReadAsXml<SerializedScoreList>();
         Assert.That(scores.Scores, Has.Count.EqualTo(1));
         Assert.That(scores.Scores[0].Player, Is.EqualTo(user.Username));
         Assert.That(scores.Scores[0].Score, Is.EqualTo(5));
@@ -41,7 +42,7 @@ public class ScoreLeaderboardTests : GameServerTest
         message = client.GetAsync($"/lbp/scoreboard/user/{level.LevelId}").Result;
         Assert.That(message.StatusCode, Is.EqualTo(OK));
         
-        SerializedMultiLeaderboardResponse scoresMulti = message.Content.ReadAsXML<SerializedMultiLeaderboardResponse>();
+        SerializedMultiLeaderboardResponse scoresMulti = message.Content.ReadAsXml<SerializedMultiLeaderboardResponse>();
         SerializedPlayerLeaderboardResponse singleplayerScores = scoresMulti.Scoreboards.First(s => s.PlayerCount == 1);
         Assert.That(singleplayerScores.Scores, Has.Count.EqualTo(1));
         Assert.That(singleplayerScores.Scores[0].Player, Is.EqualTo(user.Username));
@@ -71,7 +72,7 @@ public class ScoreLeaderboardTests : GameServerTest
         message = client.GetAsync($"/lbp/topscores/developer/1/1").Result;
         Assert.That(message.StatusCode, Is.EqualTo(OK));
         
-        SerializedScoreList scores = message.Content.ReadAsXML<SerializedScoreList>();
+        SerializedScoreList scores = message.Content.ReadAsXml<SerializedScoreList>();
         Assert.That(scores.Scores, Has.Count.EqualTo(1));
         Assert.That(scores.Scores[0].Player, Is.EqualTo(user.Username));
         Assert.That(scores.Scores[0].Score, Is.EqualTo(5));
@@ -79,7 +80,7 @@ public class ScoreLeaderboardTests : GameServerTest
         message = client.GetAsync($"/lbp/scoreboard/developer/1").Result;
         Assert.That(message.StatusCode, Is.EqualTo(OK));
         
-        SerializedMultiLeaderboardResponse scoresMulti = message.Content.ReadAsXML<SerializedMultiLeaderboardResponse>();
+        SerializedMultiLeaderboardResponse scoresMulti = message.Content.ReadAsXml<SerializedMultiLeaderboardResponse>();
         SerializedPlayerLeaderboardResponse singleplayerScores = scoresMulti.Scoreboards.First(s => s.PlayerCount == 1);
         Assert.That(singleplayerScores.Scores, Has.Count.EqualTo(1));
         Assert.That(singleplayerScores.Scores[0].Player, Is.EqualTo(user.Username));
@@ -460,7 +461,7 @@ public class ScoreLeaderboardTests : GameServerTest
         context.FillLeaderboard(level, 4, 1);
 
         HttpResponseMessage response = await client.GetAsync($"/lbp/topscores/user/{level.LevelId}/1?pageStart=1&pageSize=2");
-        SerializedScoreList firstPage = response.Content.ReadAsXML<SerializedScoreList>();
+        SerializedScoreList firstPage = response.Content.ReadAsXml<SerializedScoreList>();
         
         Assert.Multiple(() =>
         {
@@ -470,7 +471,7 @@ public class ScoreLeaderboardTests : GameServerTest
         });
         
         response = await client.GetAsync($"/lbp/topscores/user/{level.LevelId}/1?pageStart=3&pageSize=2");
-        SerializedScoreList secondPage = response.Content.ReadAsXML<SerializedScoreList>();
+        SerializedScoreList secondPage = response.Content.ReadAsXml<SerializedScoreList>();
         
         Assert.Multiple(() =>
         {

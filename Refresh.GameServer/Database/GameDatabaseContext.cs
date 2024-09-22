@@ -12,12 +12,15 @@ using Refresh.GameServer.Types.Comments.Relations;
 using Refresh.GameServer.Types.Contests;
 using Refresh.GameServer.Types.Levels;
 using Refresh.GameServer.Types.Notifications;
+using Refresh.GameServer.Types.OAuth;
+using Refresh.GameServer.Types.OAuth.Discord;
 using Refresh.GameServer.Types.Photos;
 using Refresh.GameServer.Types.Playlists;
 using Refresh.GameServer.Types.Relations;
 using Refresh.GameServer.Types.Reviews;
 using Refresh.GameServer.Types.UserData;
 using Refresh.GameServer.Types.UserData.Leaderboard;
+using OAuthRequest = Refresh.GameServer.Types.OAuth.OAuthRequest;
 
 namespace Refresh.GameServer.Database;
 
@@ -61,6 +64,8 @@ public partial class GameDatabaseContext : RealmDatabaseContext
     private RealmDbSet<GamePlaylist> GamePlaylists => new(this._realm);
     private RealmDbSet<LevelPlaylistRelation> LevelPlaylistRelations => new(this._realm);
     private RealmDbSet<SubPlaylistRelation> SubPlaylistRelations => new(this._realm);
+    private RealmDbSet<OAuthRequest> OAuthRequests => new(this._realm);
+    private RealmDbSet<OAuthTokenRelation> OAuthTokenRelations => new(this._realm);
     
     internal GameDatabaseContext(IDateTimeProvider time)
     {

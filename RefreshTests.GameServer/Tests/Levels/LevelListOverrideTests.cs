@@ -1,5 +1,6 @@
 using MongoDB.Bson;
 using NotEnoughLogs;
+using Refresh.Common.Extensions;
 using Refresh.GameServer.Authentication;
 using Refresh.GameServer.Configuration;
 using Refresh.GameServer.Services;
@@ -49,7 +50,7 @@ public class LevelListOverrideIntegrationTests : GameServerTest
         // This can be any endpoint that doesnt return all levels but I chose mmpicks
         HttpResponseMessage message = client.GetAsync("/lbp/slots/mmpicks").Result;
         Assert.That(message.StatusCode, Is.EqualTo(OK));
-        SerializedMinimalLevelList levelList = message.Content.ReadAsXML<SerializedMinimalLevelList>();
+        SerializedMinimalLevelList levelList = message.Content.ReadAsXml<SerializedMinimalLevelList>();
         Assert.That(levelList.Items, Is.Empty);
 
         //Make sure we dont have an override set
@@ -68,14 +69,14 @@ public class LevelListOverrideIntegrationTests : GameServerTest
         //Get the slots, and make sure it contains the level we set as the override
         message = client.GetAsync("/lbp/slots/mmpicks").Result;
         Assert.That(message.StatusCode, Is.EqualTo(OK));
-        levelList = message.Content.ReadAsXML<SerializedMinimalLevelList>();
+        levelList = message.Content.ReadAsXml<SerializedMinimalLevelList>();
         Assert.That(levelList.Items, Has.Count.EqualTo(1));
         Assert.That(levelList.Items[0].LevelId, Is.EqualTo(level.LevelId));
         
         //Verify the team picks slot list has stopped pointing to the user override
         message = client.GetAsync("/lbp/slots/mmpicks").Result;
         Assert.That(message.StatusCode, Is.EqualTo(OK));
-        levelList = message.Content.ReadAsXML<SerializedMinimalLevelList>();
+        levelList = message.Content.ReadAsXml<SerializedMinimalLevelList>();
         Assert.That(levelList.Items, Is.Empty);
     }
 }
