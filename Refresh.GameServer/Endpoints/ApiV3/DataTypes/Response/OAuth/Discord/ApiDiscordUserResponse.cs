@@ -29,7 +29,7 @@ public class ApiDiscordUserResponse : IApiResponse, IDataConvertableFrom<ApiDisc
     /// <summary>
     /// The hash of the user's banner
     /// </summary>
-    public required string? Banner { get; set; }
+    public required string? BannerUrl { get; set; }
     /// <summary>
     /// The user's accent colour
     /// </summary>
@@ -46,8 +46,12 @@ public class ApiDiscordUserResponse : IApiResponse, IDataConvertableFrom<ApiDisc
             Username = old.Username,
             Discriminator = old.Discriminator,
             GlobalName = old.GlobalName,
-            AvatarUrl = $"https://cdn.discordapp.com/avatars/{old.Id}/{old.Avatar}?size=512",
-            Banner = old.Banner,
+            AvatarUrl = old.Avatar == null 
+                ? "https://cdn.discordapp.com/embed/avatars/0.png" 
+                : $"https://cdn.discordapp.com/avatars/{old.Id}/{old.Avatar}?size=512",
+            BannerUrl = old.Banner == null 
+                ? null 
+                : $"https://cdn.discordapp.com/banners/{old.Id}/{old.Banner}?size=512",
             AccentColor = old.AccentColor,
         };
     }
