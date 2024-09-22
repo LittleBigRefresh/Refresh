@@ -1,3 +1,4 @@
+using JetBrains.Annotations;
 using Realms;
 using Refresh.GameServer.Types.UserData;
 
@@ -30,5 +31,5 @@ public partial class OAuthTokenRelation : IRealmObject
     /// <summary>
     /// The refresh token used to get a new access token
     /// </summary>
-    public string RefreshToken { get; set; }
+    [CanBeNull] public string RefreshToken { get; set; }
 }

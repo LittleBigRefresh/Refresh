@@ -11,21 +11,28 @@ namespace Refresh.GameServer.Services.OAuth;
 public class OAuthService : EndpointService
 {
     private readonly IntegrationConfig _integrationConfig;
-
-    private Dictionary<OAuthProvider, OAuthClient> _clients;
+    
+    private readonly Dictionary<OAuthProvider, OAuthClient> _clients;
     
     public OAuthService(Logger logger, IntegrationConfig integrationConfig) : base(logger)
     {
         this._integrationConfig = integrationConfig;
-
         this._clients = new Dictionary<OAuthProvider, OAuthClient>();
-        if (integrationConfig.DiscordOAuthEnabled)
-            this._clients[OAuthProvider.Discord] = new DiscordOAuthClient(logger, integrationConfig);
+    }
+
+    public override void Initialize()
+    {
+        base.Initialize();
+        
+        if (this._integrationConfig.DiscordOAuthEnabled)
+            this._clients[OAuthProvider.Discord] = new DiscordOAuthClient(this.Logger, this._integrationConfig);
+        if (this._integrationConfig.GitHubOAuthEnabled)
+            this._clients[OAuthProvider.GitHub] = new GitHubOAuthClient(this.Logger, this._integrationConfig);
         
         // Initialize all the OAuth clients
         foreach ((OAuthProvider provider, OAuthClient? client) in this._clients)
         {
-            logger.LogInfo(RefreshContext.Startup, "Initializing OAuth client {0}", provider);
+            this.Logger.LogInfo(RefreshContext.Startup, "Initializing {0} OAuth client", provider);
             client.Initialize();
         }
     }
@@ -45,4 +52,7 @@ public class OAuthService : EndpointService
 
     public T? GetOAuthClient<T>(OAuthProvider provider) where T : class 
         => this._clients.GetValueOrDefault(provider) as T;
+    
+    public OAuthClient? GetOAuthClient(OAuthProvider provider)
+        => this._clients.GetValueOrDefault(provider);
 }

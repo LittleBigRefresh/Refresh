@@ -3,6 +3,7 @@ using Refresh.GameServer.Time;
 using Refresh.GameServer.Types.OAuth;
 using Refresh.GameServer.Types.OAuth.Discord;
 using Refresh.GameServer.Types.UserData;
+using OAuthRequest = Refresh.GameServer.Types.OAuth.OAuthRequest;
 
 namespace Refresh.GameServer.Database;
 
@@ -34,17 +35,14 @@ public partial class GameDatabaseContext // oauth
     public OAuthProvider? OAuthGetProviderForRequest(string state) 
         => this.OAuthRequests.FirstOrDefault(d => d.State == state)?.Provider;
 
-    public GameUser SaveOAuthToken(string state, OAuth2AccessTokenResponse tokenResponse, IDateTimeProvider timeProvider)
+    public GameUser SaveOAuthToken(string state, OAuth2AccessTokenResponse tokenResponse, IDateTimeProvider timeProvider, OAuthProvider provider)
     {
-        if (tokenResponse.RefreshToken == null) 
-            throw new ArgumentException("Token response is missing refresh token!", nameof(tokenResponse));
-
         OAuthRequest request = this.OAuthRequests.First(d => d.State == state);
         GameUser user = request.User;
         
         this.Write(() =>
         {
-            OAuthTokenRelation? relation = this.OAuthTokenRelations.FirstOrDefault(d => d.User == request.User);
+            OAuthTokenRelation? relation = this.OAuthTokenRelations.FirstOrDefault(d => d.User == request.User && d._Provider == (int)provider);
             if (relation == null)
             {
                 this.OAuthTokenRelations.Add(relation = new OAuthTokenRelation
@@ -68,7 +66,8 @@ public partial class GameDatabaseContext // oauth
         {
             token.AccessToken = tokenResponse.AccessToken;
             token.RefreshToken = tokenResponse.RefreshToken;
-            token.AccessTokenRevocationTime = timeProvider.Now + TimeSpan.FromSeconds(tokenResponse.ExpiresIn);
+            // If we don't have a revocation date, then we assume it never expires, and will just handle a revoked token at request time
+            token.AccessTokenRevocationTime = tokenResponse.ExpiresIn == null ? DateTimeOffset.MaxValue : timeProvider.Now + TimeSpan.FromSeconds(tokenResponse.ExpiresIn.Value);
         });
     }
 

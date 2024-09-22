@@ -92,6 +92,7 @@ public partial class GameUser : IRealmObject, IRateLimitUser
     private int _ProfileVisibility { get; set; } = (int)Visibility.All;
     private int _LevelVisibility { get; set; } = (int)Visibility.All;
     private int _DiscordProfileVisibility { get; set; } = (int)Visibility.LoggedInUsers;
+    private int _GitHubProfileVisibility { get; set; } = (int)Visibility.LoggedInUsers;
     
     /// <summary>
     /// Whether the user's profile information is exposed in the public API.
@@ -123,6 +124,16 @@ public partial class GameUser : IRealmObject, IRateLimitUser
         set => this._DiscordProfileVisibility = (int)value;
     }
 
+    /// <summary>
+    /// Whether the user's discord profile is exposed in the public API
+    /// </summary>
+    [Ignored]
+    public Visibility GitHubProfileVisibility
+    {
+        get => (Visibility)this._GitHubProfileVisibility;
+        set => this._GitHubProfileVisibility = (int)value;
+    }
+    
     /// <summary>
     /// If `true`, unescape XML tags sent to /filter
     /// </summary>

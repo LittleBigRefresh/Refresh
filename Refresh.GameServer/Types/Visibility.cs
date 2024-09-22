@@ -2,6 +2,7 @@ using System.Xml.Serialization;
 using Refresh.GameServer.Authentication;
 using Refresh.GameServer.Endpoints.Game.Handshake;
 using Refresh.GameServer.Types.Data;
+using Refresh.GameServer.Types.UserData;
 
 namespace Refresh.GameServer.Types;
 
@@ -34,11 +35,15 @@ public static class VisibilityExtensions
     /// Filters the passed object depending on the passed DataContext and intended visibility
     /// </summary>
     /// <param name="visibility">The intended visibility of the object</param>
+    /// <param name="visibility">The intended visibility of the object</param>
     /// <param name="dataContext">The data context of the request asking for the object</param>
     /// <param name="obj">The object to filter</param>
     /// <returns>The filtered object</returns>
-    public static T? Filter<T>(this Visibility visibility, DataContext dataContext, T? obj) where T : class
+    public static T? Filter<T>(this Visibility visibility, GameUser owner, DataContext dataContext, T? obj) where T : class
     {
+        if (dataContext.User?.UserId == owner.UserId)
+            return obj;
+        
         switch (visibility)
         {
             case Visibility.Game when dataContext.Game != TokenGame.Website:

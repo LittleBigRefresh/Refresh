@@ -7,7 +7,7 @@ namespace Refresh.GameServer.Configuration;
 /// </summary>
 public class IntegrationConfig : Config
 {
-    public override int CurrentConfigVersion => 8;
+    public override int CurrentConfigVersion => 9;
     public override int Version { get; set; }
     protected override void Migrate(int oldVer, dynamic oldConfig)
     {
@@ -50,7 +50,7 @@ public class IntegrationConfig : Config
     /// <summary>
     /// The redirect URL to use for Discord OAuth requests, ex. `https://lbp.littlebigrefresh.com/api/v3/oauth/authenticate`
     /// </summary>
-    public string DiscordOAuthRedirectUrl { get; set; }
+    public string DiscordOAuthRedirectUrl { get; set; } = "http://localhost:10061/api/v3/oauth/authenticate";
     /// <summary>
     /// The client ID of the OAuth application
     /// </summary>
@@ -60,6 +60,28 @@ public class IntegrationConfig : Config
     /// </summary>
     public string DiscordOAuthClientSecret { get; set; } = "";
 
+    #endregion
+
+    #region GitHub OAuth
+
+    /// <summary>
+    /// Whether to enable GitHub OAuth support for account linking
+    /// </summary>
+    public bool GitHubOAuthEnabled { get; set; }
+    
+    /// <summary>
+    /// The redirect URL to use for GitHub OAuth requests, ex. `https://lbp.littlebigrefresh.com/api/v3/oauth/authenticate`
+    /// </summary>
+    public string GitHubOAuthRedirectUrl { get; set; } = "http://localhost:10061/api/v3/oauth/authenticate";
+    /// <summary>
+    /// The client ID of the OAuth application
+    /// </summary>
+    public string GitHubOAuthClientId { get; set; } = "";
+    /// <summary>
+    /// The client secret of the OAuth application
+    /// </summary>
+    public string GitHubOAuthClientSecret { get; set; } = "";
+    
     #endregion
     
     #region AIPI

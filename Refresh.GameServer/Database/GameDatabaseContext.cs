@@ -20,6 +20,7 @@ using Refresh.GameServer.Types.Relations;
 using Refresh.GameServer.Types.Reviews;
 using Refresh.GameServer.Types.UserData;
 using Refresh.GameServer.Types.UserData.Leaderboard;
+using OAuthRequest = Refresh.GameServer.Types.OAuth.OAuthRequest;
 
 namespace Refresh.GameServer.Database;
 

@@ -19,6 +19,7 @@ using Refresh.GameServer.Types.Reviews;
 using Refresh.GameServer.Types.UserData.Leaderboard;
 using Refresh.GameServer.Types.Photos;
 using Refresh.GameServer.Types.Playlists;
+using OAuthRequest = Refresh.GameServer.Types.OAuth.OAuthRequest;
 
 namespace Refresh.GameServer.Database;
 
@@ -36,7 +37,7 @@ public class GameDatabaseProvider : RealmDatabaseProvider<GameDatabaseContext>
         this._time = time;
     }
 
-    protected override ulong SchemaVersion => 161;
+    protected override ulong SchemaVersion => 162;
 
     protected override string Filename => "refreshGameServer.realm";
     

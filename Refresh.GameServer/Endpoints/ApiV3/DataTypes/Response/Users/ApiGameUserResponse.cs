@@ -1,9 +1,8 @@
 using JetBrains.Annotations;
-using Refresh.GameServer.Authentication;
 using Refresh.GameServer.Endpoints.ApiV3.DataTypes.Response.Data;
 using Refresh.GameServer.Endpoints.ApiV3.DataTypes.Response.OAuth.Discord;
+using Refresh.GameServer.Endpoints.ApiV3.DataTypes.Response.OAuth.GitHub;
 using Refresh.GameServer.Endpoints.ApiV3.DataTypes.Response.Users.Rooms;
-using Refresh.GameServer.Services;
 using Refresh.GameServer.Services.OAuth.Clients;
 using Refresh.GameServer.Types;
 using Refresh.GameServer.Types.Data;
@@ -35,6 +34,7 @@ public class ApiGameUserResponse : IApiResponse, IDataConvertableFrom<ApiGameUse
     public required ApiGameUserStatisticsResponse Statistics { get; set; }
     public required ApiGameRoomResponse? ActiveRoom { get; set; }
     public required ApiDiscordUserResponse? DiscordProfileInfo { get; set; }
+    public required ApiGitHubUserResponse? GitHubProfileInfo { get; set; }
 
     [ContractAnnotation("user:null => null; user:notnull => notnull")]
     public static ApiGameUserResponse? FromOld(GameUser? user, DataContext dataContext)
@@ -60,9 +60,17 @@ public class ApiGameUserResponse : IApiResponse, IDataConvertableFrom<ApiGameUse
             ActiveRoom = ApiGameRoomResponse.FromOld(dataContext.Match.RoomAccessor.GetRoomByUser(user), dataContext),
             //TODO: this data should be cached
             DiscordProfileInfo = user.DiscordProfileVisibility.Filter(
+                user,
                 dataContext,
                 ApiDiscordUserResponse.FromOld(dataContext.OAuth
                     .GetOAuthClient<DiscordOAuthClient>(OAuthProvider.Discord)
+                    ?.GetUserInformation(dataContext.Database, dataContext.TimeProvider, user), dataContext)
+            ),
+            GitHubProfileInfo = user.GitHubProfileVisibility.Filter(
+                user,
+                dataContext,
+                ApiGitHubUserResponse.FromOld(dataContext.OAuth
+                    .GetOAuthClient<GitHubOAuthClient>(OAuthProvider.GitHub)
                     ?.GetUserInformation(dataContext.Database, dataContext.TimeProvider, user), dataContext)
             ),
         };

@@ -70,13 +70,13 @@ public class OAuthEndpoints : EndpointGroup
         if (provider == null)
             return BadRequest;
 
-        OAuthClient? client = oAuthService.GetOAuthClient<DiscordOAuthClient>(provider.Value);
+        OAuthClient? client = oAuthService.GetOAuthClient(provider.Value);
         Debug.Assert(client != null);
         
         OAuth2AccessTokenResponse response = client.AcquireTokenFromAuthorizationCode(authCode);
 
         // Save the OAuth token to the database
-        GameUser user = database.SaveOAuthToken(state, response, timeProvider);
+        GameUser user = database.SaveOAuthToken(state, response, timeProvider, provider.Value);
         
         context.ResponseHeaders["Location"] = config.WebExternalUrl;
         

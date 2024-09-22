@@ -25,7 +25,7 @@ public class ApiDiscordUserResponse : IApiResponse, IDataConvertableFrom<ApiDisc
     /// <summary>
     /// The hash of the user's avatar
     /// </summary>
-    public required string? Avatar { get; set; }
+    public required string? AvatarUrl { get; set; }
     /// <summary>
     /// The hash of the user's banner
     /// </summary>
@@ -46,7 +46,7 @@ public class ApiDiscordUserResponse : IApiResponse, IDataConvertableFrom<ApiDisc
             Username = old.Username,
             Discriminator = old.Discriminator,
             GlobalName = old.GlobalName,
-            Avatar = old.Avatar,
+            AvatarUrl = $"https://cdn.discordapp.com/avatars/{old.Id}/{old.Avatar}?size=512",
             Banner = old.Banner,
             AccentColor = old.AccentColor,
         };
