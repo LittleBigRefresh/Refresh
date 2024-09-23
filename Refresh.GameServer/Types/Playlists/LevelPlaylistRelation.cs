@@ -3,6 +3,8 @@ using Refresh.GameServer.Types.Levels;
 
 namespace Refresh.GameServer.Types.Playlists;
 
+#nullable disable
+
 /// <summary>
 /// A mapping of playlist -> sub-level
 /// </summary>
