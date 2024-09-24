@@ -24,6 +24,7 @@ services:
       dockerfile: HttpsProxy.Dockerfile
     restart: unless-stopped
     ports:
+      - "10060:10060"
       - "10061:10061"
     environment:
       BUNKUM_DATA_FOLDER: /refresh/data
