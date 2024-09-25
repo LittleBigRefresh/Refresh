@@ -123,16 +123,13 @@ public class DigestMiddlewareTests : GameServerTest
         
         string serverDigest = DigestMiddleware.CalculateDigest(digest, endpoint, Encoding.ASCII.GetBytes(expectedResultStr), "", null, false, isHmac);
         
-        context.Http.DefaultRequestHeaders.Add("Refresh-Ps3-Digest-Index", "1");
-        context.Http.DefaultRequestHeaders.Add("Refresh-Ps4-Digest-Index", "1");
-        
         // TODO: once we model PS4 clients in our tokens, make the request come from an authenticated PS4 client.
         if(isHmac)
             context.Http.DefaultRequestHeaders.TryAddWithoutValidation("User-Agent", "MM CHTTPClient LBP3 01.26");
 
         // send a blank digest to make it have to guess
         context.Http.DefaultRequestHeaders.Add("X-Digest-A", "");
-        HttpResponseMessage response =  context.Http.GetAsync(endpoint).Result;
+        HttpResponseMessage response =  context.Http.GetAsync(endpoint + "?force_ps3_digest=1&force_ps4_digest=1").Result;
         
         Assert.Multiple(() =>
         {
