@@ -27,7 +27,8 @@ public static class NameValueCollectionExtensions
             if(val != null)
                 builder.Append(HttpUtility.UrlEncode(val));
             
-            builder.Append('&');
+            if(i < queryParams.Count - 1)
+                builder.Append('&');
         }
         
         return builder.ToString();
