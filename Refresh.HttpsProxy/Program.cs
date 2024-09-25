@@ -26,7 +26,7 @@ BunkumServer httpServer = new BunkumHttpServer(loggerConfiguration);
 Action<BunkumServer> initialize = s =>
 {
     ProxyConfig config = Config.LoadFromJsonFile<ProxyConfig>("proxy.json", s.Logger);
-    s.AddMiddleware(new ProxyMiddleware(config));
+    s.AddMiddleware(new RedirectMiddleware(config));
 };
 
 httpsServer.Initialize = initialize;
