@@ -117,9 +117,15 @@ public class DigestMiddleware : IMiddleware
         }
 
         // If the client asks for a particular digest index, use that digest
-        if (int.TryParse(context.RequestHeaders["Refresh-Ps3-Digest-Index"], out int ps3DigestIndex) && 
-            int.TryParse(context.RequestHeaders["Refresh-Ps4-Digest-Index"], out int ps4DigestIndex))
+        if (int.TryParse(context.Query["force_ps3_digest"], out int ps3DigestIndex) && 
+            int.TryParse(context.Query["force_ps4_digest"], out int ps4DigestIndex))
         {
+            if (ps3DigestIndex >= this._config.Sha1DigestKeys.Length)
+                ps3DigestIndex = 0;
+
+            if (ps4DigestIndex >= this._config.HmacDigestKeys.Length)
+                ps4DigestIndex = 0;
+            
             string digest = isPs4
                 ? this._config.HmacDigestKeys[ps4DigestIndex]
                 : this._config.Sha1DigestKeys[ps3DigestIndex];
@@ -128,7 +134,7 @@ public class DigestMiddleware : IMiddleware
             
             if(token != null)
                 gameDatabase.SetTokenDigestInfo(token, digest, isPs4);
-
+        
             return;
         }
 
