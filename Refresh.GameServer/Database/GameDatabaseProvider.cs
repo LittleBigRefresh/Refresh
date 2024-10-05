@@ -34,7 +34,7 @@ public class GameDatabaseProvider : RealmDatabaseProvider<GameDatabaseContext>
         this._time = time;
     }
 
-    protected override ulong SchemaVersion => 159;
+    protected override ulong SchemaVersion => 160;
 
     protected override string Filename => "refreshGameServer.realm";
     
@@ -666,28 +666,32 @@ public class GameDatabaseProvider : RealmDatabaseProvider<GameDatabaseContext>
         // IQueryable<GamePlaylist>? newGamePlaylists = migration.NewRealm.All<GamePlaylist>();
         
         // if (oldVersion < 155)
-            // for (int i = 0; i < newGamePlaylists.Count(); i++)
-            // {
-                // dynamic oldGamePlaylist = oldGamePlaylists.ElementAt(i);
-                // GamePlaylist newGamePlaylist = newGamePlaylists.ElementAt(i);
-            // }
+        //     for (int i = 0; i < newGamePlaylists.Count(); i++)
+        //     {
+        //         dynamic oldGamePlaylist = oldGamePlaylists.ElementAt(i);
+        //         GamePlaylist newGamePlaylist = newGamePlaylists.ElementAt(i);
+        //     }
+            
+        // We weren't deleting level playlist relations when a level was deleted. Version 160 fixes this.
+        if (oldVersion < 160)
+            migration.NewRealm.RemoveRange(migration.NewRealm.All<LevelPlaylistRelation>().Where(r => r.Level == null));
         
         // IQueryable<dynamic>? oldLevelPlaylistRelations = migration.OldRealm.DynamicApi.All("LevelPlaylistRelation");
         // IQueryable<LevelPlaylistRelation>? newLevelPlaylistRelations = migration.NewRealm.All<LevelPlaylistRelation>();
         // if (oldVersion < 155)
-            // for (int i = 0; i < newGamePlaylists.Count(); i++)
-            // {
-                // dynamic oldLevelPlaylistRelation = oldLevelPlaylistRelations.ElementAt(i);
-                // LevelPlaylistRelation newLevelPlaylistRelation = newLevelPlaylistRelations.ElementAt(i);
-            // }
+        //     for (int i = 0; i < newLevelPlaylistRelations.Count(); i++)
+        //     {
+        //         dynamic oldLevelPlaylistRelation = oldLevelPlaylistRelations.ElementAt(i);
+        //         LevelPlaylistRelation newLevelPlaylistRelation = newLevelPlaylistRelations.ElementAt(i);
+        //     }
 
         // IQueryable<dynamic>? oldSubPlaylistRelations = migration.OldRealm.DynamicApi.All("SubPlaylistRelation");
         // IQueryable<SubPlaylistRelation>? newSubPlaylistRelations = migration.NewRealm.All<SubPlaylistRelation>();
         // if (oldVersion < 155)
-            // for (int i = 0; i < newGamePlaylists.Count(); i++)
-            // {
-                // dynamic oldSubPlaylistRelation = oldSubPlaylistRelations.ElementAt(i);
-                // SubPlaylistRelation newSubPlaylistRelation = newSubPlaylistRelations.ElementAt(i);
-            // }
+        //     for (int i = 0; i < newSubPlaylistRelations.Count(); i++)
+        //     {
+        //         dynamic oldSubPlaylistRelation = oldSubPlaylistRelations.ElementAt(i);
+        //         SubPlaylistRelation newSubPlaylistRelation = newSubPlaylistRelations.ElementAt(i);
+        //     }
     }
 }
