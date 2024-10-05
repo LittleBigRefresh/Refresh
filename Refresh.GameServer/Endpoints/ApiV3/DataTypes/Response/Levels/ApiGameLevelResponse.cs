@@ -53,11 +53,16 @@ public class ApiGameLevelResponse : IApiResponse, IDataConvertableFrom<ApiGameLe
     public required bool IsCopyable { get; set; }
     public required float Score { get; set; }
     public required IEnumerable<Tag> Tags { get; set; }
+    public bool IsHeartedByUser { get; set; }
+    public bool IsQueuedByUser { get; set; }
 
     public static ApiGameLevelResponse? FromOld(GameLevel? level, DataContext dataContext)
     {
         if (level == null) return null;
-        
+
+        // if dataContext contains a token with a username, set level relation info accordingly
+        bool includeRelations = dataContext.User != null;
+
         return new ApiGameLevelResponse
         {
             IsAdventure = level.IsAdventure,
@@ -94,6 +99,9 @@ public class ApiGameLevelResponse : IApiResponse, IDataConvertableFrom<ApiGameLe
             Reviews = dataContext.Database.GetTotalReviewsForLevel(level),
             Tags = dataContext.Database.GetTagsForLevel(level).Select(t => t.Tag),
             IsModded = level.IsModded,
+            // Relation info
+            IsHeartedByUser = includeRelations && dataContext.Database.IsLevelFavouritedByUser(level, dataContext.User),
+            IsQueuedByUser = includeRelations && dataContext.Database.IsLevelQueuedByUser(level, dataContext.User)
         };
     }
     

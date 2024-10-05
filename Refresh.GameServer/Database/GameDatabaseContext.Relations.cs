@@ -16,7 +16,7 @@ public partial class GameDatabaseContext // Relations
 {
     #region Favouriting Levels
     [Pure]
-    private bool IsLevelFavouritedByUser(GameLevel level, GameUser user) => this.FavouriteLevelRelations
+    public bool IsLevelFavouritedByUser(GameLevel level, GameUser user) => this.FavouriteLevelRelations
         .FirstOrDefault(r => r.Level == level && r.User == user) != null;
 
     [Pure]
@@ -143,7 +143,7 @@ public partial class GameDatabaseContext // Relations
 
     #region Queueing
     [Pure]
-    private bool IsLevelQueuedByUser(GameLevel level, GameUser user) => this.QueueLevelRelations
+    public bool IsLevelQueuedByUser(GameLevel level, GameUser user) => this.QueueLevelRelations
         .FirstOrDefault(r => r.Level == level && r.User == user) != null;
 
     [Pure]
