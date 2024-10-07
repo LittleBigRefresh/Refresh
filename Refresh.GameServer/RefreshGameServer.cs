@@ -94,11 +94,11 @@ public class RefreshGameServer : RefreshServer
     {
         this.Server.AddMiddleware<WebsiteMiddleware>();
         this.Server.AddMiddleware(new DeflateMiddleware(this._config!));
+        this.Server.AddMiddleware<LegacyAdapterMiddleware>();
         // Digest middleware must be run before LegacyAdapterMiddleware, because digest is based on the raw route, not the fixed route
         this.Server.AddMiddleware(new DigestMiddleware(this._config!));
         this.Server.AddMiddleware<CrossOriginMiddleware>();
         this.Server.AddMiddleware<PspVersionMiddleware>();
-        this.Server.AddMiddleware<LegacyAdapterMiddleware>();
         this.Server.AddMiddleware(new PresenceAuthenticationMiddleware(this._integrationConfig!));
     }
 
