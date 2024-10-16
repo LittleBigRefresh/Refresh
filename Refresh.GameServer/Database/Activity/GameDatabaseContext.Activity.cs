@@ -1,3 +1,4 @@
+using System.Diagnostics;
 using JetBrains.Annotations;
 using MongoDB.Bson;
 using Refresh.GameServer.Types.Activity;
@@ -90,6 +91,15 @@ public partial class GameDatabaseContext // Activity
     {
         return new DatabaseList<Event>(this.GetRecentActivity(parameters)
             .Where(e => e._StoredDataType == 1 && e.StoredSequentialId == level.LevelId)
+            .OrderByDescending(e => e.Timestamp), parameters.Skip, parameters.Count);
+    }
+    
+    [Pure]
+    public DatabaseList<Event> GetRecentActivityFromUser(ActivityQueryParameters parameters)
+    {
+        Debug.Assert(parameters.User != null);
+        return new DatabaseList<Event>(this.GetRecentActivity(parameters)
+            .Where(e => e.User?.UserId == parameters.User.UserId)
             .OrderByDescending(e => e.Timestamp), parameters.Skip, parameters.Count);
     }
 

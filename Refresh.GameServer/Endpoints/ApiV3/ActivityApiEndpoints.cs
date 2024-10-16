@@ -63,7 +63,65 @@ public class ActivityApiEndpoints : EndpointGroup
         
         (int skip, int count) = context.GetPageData();
         
-        ActivityPage page = ActivityPage.ApiLevelActivity(database, level, new ActivityQueryParameters
+        ActivityPage page = ActivityPage.ApiForLevelActivity(database, level, new ActivityQueryParameters
+        {
+            Timestamp = timestamp,
+            Skip = skip,
+            Count = count,
+            User = user,
+        }, dataContext, false);
+        return ApiActivityPageResponse.FromOld(page, dataContext);
+    }
+    
+    [ApiV3Endpoint("users/uuid/{uuid}/activity"), Authentication(false)]
+    [DocUsesPageData, DocSummary("Fetch a list of recent happenings for a particular user")]
+    [DocQueryParam("timestamp", "A timestamp in unix seconds, used to search backwards")]
+    [DocError(typeof(ApiValidationError), ApiValidationError.NumberParseErrorWhen)]
+    [DocError(typeof(ApiNotFoundError), "The user could not be found")]
+    public ApiResponse<ApiActivityPageResponse> GetRecentActivityForUserUuid(RequestContext context,
+        GameDatabaseContext database, IDataStore dataStore,
+        [DocSummary("The UUID of the user")] string uuid, DataContext dataContext)
+    {
+        long timestamp = 0;
+
+        string? tsStr = context.QueryString["timestamp"];
+        if (tsStr != null && !long.TryParse(tsStr, out timestamp)) return ApiValidationError.NumberParseError;
+        
+        GameUser? user = database.GetUserByUuid(uuid);
+        if (user == null) return ApiNotFoundError.Instance;
+        
+        (int skip, int count) = context.GetPageData();
+        
+        ActivityPage page = ActivityPage.ApiFromUserActivity(database, new ActivityQueryParameters
+        {
+            Timestamp = timestamp,
+            Skip = skip,
+            Count = count,
+            User = user,
+        }, dataContext, false);
+        return ApiActivityPageResponse.FromOld(page, dataContext);
+    }
+    
+    [ApiV3Endpoint("users/name/{username}/activity"), Authentication(false)]
+    [DocUsesPageData, DocSummary("Fetch a list of recent happenings for a particular user")]
+    [DocQueryParam("timestamp", "A timestamp in unix seconds, used to search backwards")]
+    [DocError(typeof(ApiValidationError), ApiValidationError.NumberParseErrorWhen)]
+    [DocError(typeof(ApiNotFoundError), "The user could not be found")]
+    public ApiResponse<ApiActivityPageResponse> GetRecentActivityForUserUsername(RequestContext context,
+        GameDatabaseContext database, IDataStore dataStore,
+        [DocSummary("The username of the user")] string username, DataContext dataContext)
+    {
+        long timestamp = 0;
+
+        string? tsStr = context.QueryString["timestamp"];
+        if (tsStr != null && !long.TryParse(tsStr, out timestamp)) return ApiValidationError.NumberParseError;
+        
+        GameUser? user = database.GetUserByUsername(username);
+        if (user == null) return ApiNotFoundError.Instance;
+        
+        (int skip, int count) = context.GetPageData();
+        
+        ActivityPage page = ActivityPage.ApiFromUserActivity(database, new ActivityQueryParameters
         {
             Timestamp = timestamp,
             Skip = skip,
