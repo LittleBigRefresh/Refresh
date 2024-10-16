@@ -119,7 +119,7 @@ public class ActivityPage
         } 
     }
 
-    public static ActivityPage GameLevelActivity(GameDatabaseContext database,
+    public static ActivityPage GameForLevelActivity(GameDatabaseContext database,
         GameLevel level,
         ActivityQueryParameters parameters, DataContext dataContext)
     {
@@ -137,7 +137,7 @@ public class ActivityPage
         return page;
     }
     
-    public static ActivityPage ApiLevelActivity(GameDatabaseContext database,
+    public static ActivityPage ApiForLevelActivity(GameDatabaseContext database,
         GameLevel level,
         ActivityQueryParameters parameters,
         DataContext dataContext,
@@ -155,7 +155,41 @@ public class ActivityPage
         return page;
     }
     
-    public static ActivityPage UserActivity(GameDatabaseContext database,
+    public static ActivityPage ApiFromUserActivity(GameDatabaseContext database,
+        ActivityQueryParameters parameters,
+        DataContext dataContext,
+        bool generateGroups = true)
+    {
+        DatabaseList<Event> events = database.GetRecentActivityFromUser(parameters);
+
+        ActivityPage page = new()
+        {
+            Events = events.Items,
+        };
+        
+        page.FillInInfo(database, generateGroups, parameters, dataContext);
+        
+        return page;
+    }
+    
+    public static ActivityPage GameFromUserActivity(GameDatabaseContext database,
+        ActivityQueryParameters parameters, DataContext dataContext)
+    {
+        DatabaseList<Event> events = database.GetRecentActivityFromUser(parameters);
+
+        ActivityPage page = new()
+        {
+            Events = events.Items,
+        };
+        
+        page.FillInInfo(database, true, parameters, dataContext);
+        
+        page.Groups.Groups = page.Groups.Groups.SelectMany(group => group.Subgroups?.Items ?? []).ToList();
+        
+        return page;
+    }
+    
+    public static ActivityPage GameUserActivity(GameDatabaseContext database,
         ActivityQueryParameters parameters,
         DataContext dataContext,
         bool generateGroups = true)
