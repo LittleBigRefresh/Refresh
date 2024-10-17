@@ -42,7 +42,7 @@ public class ActivityEndpoints : EndpointGroup
 
         if (endTimestamp == 0) endTimestamp = timestamp - 86400000 * 7; // 1 week
 
-        return ActivityPage.UserActivity(database, new ActivityQueryParameters
+        return ActivityPage.GameUserActivity(database, new ActivityQueryParameters
         {
             Timestamp = timestamp,
             EndTimestamp = endTimestamp,
@@ -77,7 +77,7 @@ public class ActivityEndpoints : EndpointGroup
 
         if (endTimestamp == 0) endTimestamp = timestamp - 86400000 * 7; // 1 week
 
-        ActivityPage page = ActivityPage.GameLevelActivity(database, level, new ActivityQueryParameters
+        ActivityPage page = ActivityPage.GameForLevelActivity(database, level, new ActivityQueryParameters
         {
             Count = 20,
             Skip = 0,
@@ -95,7 +95,7 @@ public class ActivityEndpoints : EndpointGroup
     [GameEndpoint("stream/user2/{username}", ContentType.Xml)]
     [NullStatusCode(BadRequest)]
     [MinimumRole(GameUserRole.Restricted)]
-    public Response GetRecentActivityForUser(RequestContext context, GameDatabaseContext database, string username,
+    public Response GetRecentActivityFromUser(RequestContext context, GameDatabaseContext database, string username,
         DataContext dataContext)
     {
         GameUser? user = database.GetUserByUsername(username);
@@ -119,7 +119,7 @@ public class ActivityEndpoints : EndpointGroup
 
         if (endTimestamp == 0) endTimestamp = timestamp - 86400000 * 7; // 1 week
 
-        return new Response(ActivityPage.UserActivity(database, new ActivityQueryParameters
+        return new Response(ActivityPage.GameFromUserActivity(database, new ActivityQueryParameters
         {
             Timestamp = timestamp,
             EndTimestamp = endTimestamp,
