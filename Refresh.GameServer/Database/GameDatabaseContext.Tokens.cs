@@ -1,6 +1,8 @@
 using System.Security.Cryptography;
 using JetBrains.Annotations;
 using Refresh.GameServer.Authentication;
+using Refresh.GameServer.Time;
+using Refresh.GameServer.Types.Relations;
 using Refresh.GameServer.Types.UserData;
 
 namespace Refresh.GameServer.Database;
@@ -165,14 +167,26 @@ public partial class GameDatabaseContext // Tokens
         });
     }
 
-    public void SetApprovedIp(GameUser user, string ipAddress)
+    public void AddVerifiedIp(GameUser user, string ipAddress, IDateTimeProvider timeProvider)
     {
         this.Write(() =>
         {
-            user.CurrentVerifiedIp = ipAddress;
-            this.GameIpVerificationRequests.RemoveRange(r => r.User == user);
+            this.GameUserVerifiedIpRelations.Add(new GameUserVerifiedIpRelation
+            {
+                User = user,
+                IpAddress = ipAddress,
+                VerifiedAt = timeProvider.Now,
+            });
+            
+            this.GameIpVerificationRequests.RemoveRange(r => r.User == user && r.IpAddress == ipAddress);
         });
     }
+
+    public DatabaseList<GameUserVerifiedIpRelation> GetVerifiedIps(GameUser user, int skip, int count) 
+        => new(this.GameUserVerifiedIpRelations.Where(r => r.User == user), skip, count);
+
+    public bool IsIpVerified(GameUser user, string ipAddress) 
+        => this.GameUserVerifiedIpRelations.Any(r => r.User == user && r.IpAddress == ipAddress);
 
     public void DenyIpVerificationRequest(GameUser user, string ipAddress)
     {
