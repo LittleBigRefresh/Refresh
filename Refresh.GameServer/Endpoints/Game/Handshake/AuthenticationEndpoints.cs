@@ -269,10 +269,9 @@ public class AuthenticationEndpoints : EndpointGroup
 
     private static void SendIpNotVerifiedNotification(GameDatabaseContext database, GameUser user, string ipAddress)
     {
-        database.AddLoginFailNotification($"An authentication was made from {ipAddress}, " +
-                                          $"but that IP is not verified. If this was not you, " +
-                                          $"deny {ipAddress} in settings. If this was you, " +
-                                          $"verify {ipAddress} in settings.", user);
+        database.AddLoginFailNotification($"A login attempt was detected from IP '{ipAddress}'. " +
+                                          "To authorize this IP, please verify it in your settings. " +
+                                          "If this wasn't you, please reject the request.", user);
     }
 
     /// <summary>
