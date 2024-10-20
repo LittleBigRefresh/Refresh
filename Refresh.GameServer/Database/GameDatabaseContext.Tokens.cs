@@ -196,6 +196,22 @@ public partial class GameDatabaseContext // Tokens
         });
     }
 
+    public bool RemoveVerifiedIp(GameUser user, string ipAddress)
+    {
+        GameUserVerifiedIpRelation? verifiedIp =
+            this.GameUserVerifiedIpRelations.FirstOrDefault(r => r.User == user && r.IpAddress == ipAddress);
+
+        if (verifiedIp == null)
+            return false;
+        
+        this.Write(() =>
+        {
+            this.GameUserVerifiedIpRelations.Remove(verifiedIp);
+        });
+
+        return true;
+    }
+
     public DatabaseList<GameUserVerifiedIpRelation> GetVerifiedIps(GameUser user, int skip, int count) 
         => new(this.GameUserVerifiedIpRelations.Where(r => r.User == user), skip, count);
 

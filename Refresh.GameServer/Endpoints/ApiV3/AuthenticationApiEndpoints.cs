@@ -208,6 +208,28 @@ public class AuthenticationApiEndpoints : EndpointGroup
             .FromOldList<ApiGameUserVerifiedIpResponse, GameUserVerifiedIpRelation>(verifiedIps, dataContext);
     }
 
+    [ApiV3Endpoint("removeVerifiedIp", HttpMethods.Delete), MinimumRole(GameUserRole.Restricted)]
+    [DocSummary("Removes the specified IP from the list of approved IP addresses")]
+    [DocError(typeof(ApiValidationError), ApiValidationError.IpAddressParseErrorWhen)]
+    [DocError(typeof(ApiNotFoundError), ApiNotFoundError.VerifiedIpMissingErrorWhen)]
+    [DocRequestBody("127.0.0.1")]
+    public ApiOkResponse RemoveVerifiedIp(
+        RequestContext context, 
+        GameDatabaseContext database, 
+        GameUser user,
+        string body)
+    {
+        string ipAddress = body.Trim();
+        
+        if (!IPAddress.TryParse(ipAddress, out _)) 
+            return ApiValidationError.IpAddressParseError;
+
+        if (!database.RemoveVerifiedIp(user, ipAddress))
+            return ApiNotFoundError.VerifiedIpMissingError;
+
+        return new ApiOkResponse();
+    }
+
     [ApiV3Endpoint("verificationRequests/approve", HttpMethods.Put), MinimumRole(GameUserRole.Restricted)]
     [DocSummary("Approves a given IP, and clears all remaining verification requests. Send the IP in the body.")]
     [DocError(typeof(ApiValidationError), ApiValidationError.IpAddressParseErrorWhen)]
