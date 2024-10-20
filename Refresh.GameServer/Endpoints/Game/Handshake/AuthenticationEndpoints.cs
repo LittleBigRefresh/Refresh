@@ -163,7 +163,10 @@ public class AuthenticationEndpoints : EndpointGroup
         
         // Mark the user as disconnected from the presence server
         database.SetUserPresenceAuthToken(user, null);
-        
+
+        if (!database.IsIpVerified(user, ipAddress)) 
+            database.AddVerifiedIp(user, ipAddress, timeProvider);
+
         context.Logger.LogInfo(BunkumCategory.Authentication, $"{user} successfully logged in on {game} via {platform}");
         
         if (game == TokenGame.LittleBigPlanetPSP)
