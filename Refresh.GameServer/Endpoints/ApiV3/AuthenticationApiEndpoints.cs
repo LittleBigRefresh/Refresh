@@ -15,7 +15,9 @@ using Refresh.GameServer.Endpoints.ApiV3.DataTypes.Request.Authentication;
 using Refresh.GameServer.Endpoints.ApiV3.DataTypes.Response.Users;
 using Refresh.GameServer.Extensions;
 using Refresh.GameServer.Services;
+using Refresh.GameServer.Time;
 using Refresh.GameServer.Types.Data;
+using Refresh.GameServer.Types.Relations;
 using Refresh.GameServer.Types.Roles;
 using Refresh.GameServer.Types.UserData;
 
@@ -193,30 +195,53 @@ public class AuthenticationApiEndpoints : EndpointGroup
                 (database.GetIpVerificationRequestsForUser(user, count, skip), dataContext);
     }
 
-    [ApiV3Endpoint("verificationRequests/approve", HttpMethods.Put)]
+    [ApiV3Endpoint("verifiedIps"), MinimumRole(GameUserRole.Restricted)]
+    [DocSummary("Retrieves the list of IP addresses that have been verified by the logged in user.")]
+    public ApiListResponse<ApiGameUserVerifiedIpResponse> GetVerifiedIps(RequestContext context,
+        GameDatabaseContext database, DataContext dataContext, GameUser user)
+    {
+        (int skip, int count) = context.GetPageData();
+
+        DatabaseList<GameUserVerifiedIpRelation> verifiedIps = database.GetVerifiedIps(user, skip, count);
+
+        return DatabaseList<ApiGameUserVerifiedIpResponse>
+            .FromOldList<ApiGameUserVerifiedIpResponse, GameUserVerifiedIpRelation>(verifiedIps, dataContext);
+    }
+
+    [ApiV3Endpoint("verificationRequests/approve", HttpMethods.Put), MinimumRole(GameUserRole.Restricted)]
     [DocSummary("Approves a given IP, and clears all remaining verification requests. Send the IP in the body.")]
     [DocError(typeof(ApiValidationError), ApiValidationError.IpAddressParseErrorWhen)]
     [DocRequestBody("127.0.0.1")]
-    public ApiOkResponse ApproveVerificationRequest(RequestContext context, GameDatabaseContext database, GameUser user, string body)
+    public ApiOkResponse ApproveVerificationRequest(
+        RequestContext context,
+        GameDatabaseContext database,
+        IDateTimeProvider timeProvider,
+        GameUser user,
+        string body)
     {
-        bool parsed = IPAddress.TryParse(body, out _);
-        if (!parsed) return ApiValidationError.IpAddressParseError;
+        string ipAddress = body.Trim();
+        
+        if (!IPAddress.TryParse(ipAddress, out _)) 
+            return ApiValidationError.IpAddressParseError;
 
-        database.SetApprovedIp(user, body.Trim());
+        if (!database.IsIpVerified(user, ipAddress))
+            database.AddVerifiedIp(user, ipAddress, timeProvider);
         
         return new ApiOkResponse();
     }
-    
+
     [ApiV3Endpoint("verificationRequests/deny", HttpMethods.Put)]
     [DocSummary("Denies all verification requests matching a given IP. Send the IP in the body.")]
     [DocError(typeof(ApiValidationError), ApiValidationError.IpAddressParseErrorWhen)]
     [DocRequestBody("127.0.0.1")]
     public ApiOkResponse DenyVerificationRequest(RequestContext context, GameDatabaseContext database, GameUser user, string body)
     {
-        bool parsed = IPAddress.TryParse(body, out _);
-        if (!parsed) return ApiValidationError.IpAddressParseError;
+        string ipAddress = body.Trim();
+        
+        if (!IPAddress.TryParse(ipAddress, out _)) 
+            return ApiValidationError.IpAddressParseError;
 
-        database.DenyIpVerificationRequest(user, body.Trim());
+        database.DenyIpVerificationRequest(user, ipAddress);
         
         return new ApiOkResponse();
     }
