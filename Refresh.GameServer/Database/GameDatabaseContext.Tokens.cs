@@ -169,8 +169,22 @@ public partial class GameDatabaseContext // Tokens
 
     public void AddVerifiedIp(GameUser user, string ipAddress, IDateTimeProvider timeProvider)
     {
+        const int maxVerifiedIps = 3;
+        
+        int count = this.GameUserVerifiedIpRelations.Count(r => r.User == user);
+        int toRemove = count >= maxVerifiedIps ? count - maxVerifiedIps + 1 : 0;
+        
         this.Write(() =>
         {
+            // Remove the oldest verified IPs if the user has too many (or will have too many after this one)
+            if (toRemove > 0)
+                this.GameUserVerifiedIpRelations.RemoveRange(
+                    this.GameUserVerifiedIpRelations
+                        .Where(r => r.User == user)
+                        .OrderBy(r => r.VerifiedAt)
+                        .AsEnumerable()
+                        .Take(toRemove));
+            
             this.GameUserVerifiedIpRelations.Add(new GameUserVerifiedIpRelation
             {
                 User = user,
