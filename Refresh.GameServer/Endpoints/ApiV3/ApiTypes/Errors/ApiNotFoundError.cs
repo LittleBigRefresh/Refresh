@@ -22,6 +22,9 @@ public class ApiNotFoundError : ApiError
     public const string ContestMissingErrorWhen = "The contest could not be found";
     public static readonly ApiNotFoundError ContestMissingError = new(ContestMissingErrorWhen);
     
+    public const string VerifiedIpMissingErrorWhen = "The verified IP could not be found";
+    public static readonly ApiNotFoundError VerifiedIpMissingError = new(VerifiedIpMissingErrorWhen);
+    
     private ApiNotFoundError() : base("The requested resource was not found", NotFound)
     {}
     
