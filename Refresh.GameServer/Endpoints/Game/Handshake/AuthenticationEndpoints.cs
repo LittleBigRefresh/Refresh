@@ -47,6 +47,8 @@ public class AuthenticationEndpoints : EndpointGroup
             return null;
         }
 
+        string ipAddress = context.RemoteIp();
+        
         TokenPlatform? platform = ticket.DeterminePlatform();
         
         GameUser? user = database.GetUserByUsername(ticket.Username);
@@ -135,7 +137,8 @@ public class AuthenticationEndpoints : EndpointGroup
         {
             if (!HandleIpAuthentication(context, user, database, !config.UseTicketVerification))
             {
-                context.Logger.LogWarning(BunkumCategory.Authentication, $"Rejecting {user}'s login because their IP was not whitelisted");
+                context.Logger.LogWarning(BunkumCategory.Authentication, $"Rejecting {user}'s login from {ipAddress} because the IP was not whitelisted");
+                SendIpNotVerifiedNotification(database, user, ipAddress);
                 return null;
             }
         }
@@ -153,14 +156,17 @@ public class AuthenticationEndpoints : EndpointGroup
         if (game == TokenGame.LittleBigPlanetVita && platform == TokenPlatform.PS3) platform = TokenPlatform.Vita;
         else if (game == TokenGame.LittleBigPlanetPSP && platform == TokenPlatform.PS3) platform = TokenPlatform.PSP;
 
-        Token token = database.GenerateTokenForUser(user, TokenType.Game, game.Value, platform.Value, context.RemoteIp(), GameDatabaseContext.GameTokenExpirySeconds); // 4 hours
+        Token token = database.GenerateTokenForUser(user, TokenType.Game, game.Value, platform.Value, ipAddress, GameDatabaseContext.GameTokenExpirySeconds); // 4 hours
 
         // Clear the user's force match
         database.ClearForceMatch(user);
         
         // Mark the user as disconnected from the presence server
         database.SetUserPresenceAuthToken(user, null);
-        
+
+        if (!database.IsIpVerified(user, ipAddress)) 
+            database.AddVerifiedIp(user, ipAddress, timeProvider);
+
         context.Logger.LogInfo(BunkumCategory.Authentication, $"{user} successfully logged in on {game} via {platform}");
         
         if (game == TokenGame.LittleBigPlanetPSP)
@@ -225,7 +231,9 @@ public class AuthenticationEndpoints : EndpointGroup
         }
         
         string address = context.RemoteIp();
-        if (address == user.CurrentVerifiedIp) return true;
+        
+        if (database.IsIpVerified(user, address)) 
+            return true;
 
         database.AddIpVerificationRequest(user, address);
         return false;
@@ -257,9 +265,16 @@ public class AuthenticationEndpoints : EndpointGroup
 
     private static void SendPlatformNotAllowedNotification(GameDatabaseContext database, GameUser user, TokenPlatform platform)
     {
-        database.AddLoginFailNotification($"An authentication attempt was attempted to be made from {platform}, " +
+        database.AddLoginFailNotification($"An authentication attempt was made from {platform}, " +
                                           $"but the respective option for it was disabled. To allow authentication from " +
                                           $"{platform}, enable '{platform} Authentication' in settings.", user);
+    }
+
+    private static void SendIpNotVerifiedNotification(GameDatabaseContext database, GameUser user, string ipAddress)
+    {
+        database.AddLoginFailNotification($"A login attempt was detected from IP '{ipAddress}'. " +
+                                          "To authorize this IP, please verify it in your settings. " +
+                                          "If this wasn't you, please reject the request.", user);
     }
 
     /// <summary>

@@ -43,6 +43,12 @@ public class RealmDbSet<T> : IQueryable<T> where T : IRealmObject
     {
         this._realm.RemoveRange(objs);
     }
+    
+    public void RemoveRange(IEnumerable<T> objs)
+    {
+        foreach (T obj in objs) 
+            this._realm.Remove(obj);
+    }
 
     public void RemoveRange(Expression<Func<T, bool>> predicate)
     {

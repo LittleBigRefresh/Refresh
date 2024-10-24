@@ -34,7 +34,7 @@ public class GameDatabaseProvider : RealmDatabaseProvider<GameDatabaseContext>
         this._time = time;
     }
 
-    protected override ulong SchemaVersion => 160;
+    protected override ulong SchemaVersion => 161;
 
     protected override string Filename => "refreshGameServer.realm";
     
@@ -77,6 +77,7 @@ public class GameDatabaseProvider : RealmDatabaseProvider<GameDatabaseContext>
         typeof(EmailVerificationCode),
         typeof(QueuedRegistration),
         typeof(GameIpVerificationRequest),
+        typeof(GameUserVerifiedIpRelation),
 
         // assets
         typeof(GameAsset),
@@ -103,8 +104,7 @@ public class GameDatabaseProvider : RealmDatabaseProvider<GameDatabaseContext>
     {
         IQueryable<dynamic>? oldUsers = migration.OldRealm.DynamicApi.All("GameUser");
         IQueryable<GameUser>? newUsers = migration.NewRealm.All<GameUser>();
-
-        if (oldVersion < 145)
+        if (oldVersion < 161)
             for (int i = 0; i < newUsers.Count(); i++)
             {
                 dynamic oldUser = oldUsers.ElementAt(i);
@@ -225,6 +225,17 @@ public class GameDatabaseProvider : RealmDatabaseProvider<GameDatabaseContext>
 
                 if (oldVersion < 145)
                     newUser.ShowModdedContent = true;
+
+                // In version 161, we allowed users to set multiple verified IPs
+                if (oldVersion < 161 && newUser.AllowIpAuthentication && oldUser.CurrentVerifiedIp != null)
+                {
+                    migration.NewRealm.Add(new GameUserVerifiedIpRelation
+                    {
+                        User = newUser,
+                        IpAddress = oldUser.CurrentVerifiedIp, 
+                        VerifiedAt = this._time.Now,
+                    });
+                }
             }
 
         IQueryable<dynamic>? oldLevels = migration.OldRealm.DynamicApi.All("GameLevel");

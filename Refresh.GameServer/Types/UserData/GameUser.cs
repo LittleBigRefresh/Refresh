@@ -68,7 +68,6 @@ public partial class GameUser : IRealmObject, IRateLimitUser
     public string MehFaceHash { get; set; } = "0";
 
     public bool AllowIpAuthentication { get; set; }
-    public string? CurrentVerifiedIp { get; set; }
     
     public string? BanReason { get; set; }
     public DateTimeOffset? BanExpiryDate { get; set; }
