@@ -181,19 +181,19 @@ public class LevelApiEndpoints : EndpointGroup
     [DocSummary("Gets a list of hearted levels by a user by their username")]
     [DocError(typeof(ApiNotFoundError), ApiNotFoundError.UserMissingErrorWhen)]
     public ApiListResponse<ApiGameLevelResponse> GetLevelsHeartedByUsername(RequestContext context, GameDatabaseContext database, IDataStore dataStore, 
-        [DocSummary("The username of the user")] string username, DataContext dataContext) 
+        [DocSummary("The username of the user")] string username, DataContext dataContext, GameUser? accessingUser) 
     {
         GameUser? user = database.GetUserByUsername(username);
         if(user == null) return ApiNotFoundError.UserMissingError;
 
         (int skip, int count) = context.GetPageData();
-        DatabaseList<GameLevel> levels = database.GetLevelsFavouritedByUser(user, count, skip, new LevelFilterSettings(context, TokenGame.Website), user);
+        DatabaseList<GameLevel> levels = database.GetLevelsFavouritedByUser(user, count, skip, new LevelFilterSettings(context, TokenGame.Website), accessingUser);
 
         DatabaseList<ApiGameLevelResponse> response = DatabaseList<ApiGameLevelResponse>.FromOldList<ApiGameLevelResponse, GameLevel>(levels, dataContext);
         return response;
     } 
 
-    [ApiV3Endpoint("levels/hearted"), Authentication(false)]
+    [ApiV3Endpoint("levels/hearted"), MinimumRole(GameUserRole.Restricted)]
     [DocSummary("Gets a list of your own hearted levels")]
     public ApiListResponse<ApiGameLevelResponse> GetLevelsHeartedByMe(RequestContext context, GameDatabaseContext database,
         IDataStore dataStore, GameUser user, DataContext dataContext) 
