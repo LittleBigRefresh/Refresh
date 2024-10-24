@@ -321,7 +321,6 @@ public partial class GameDatabaseContext // Users
             user.IconHash = "0";
             user.AllowIpAuthentication = false;
             user.EmailAddressVerified = false;
-            user.CurrentVerifiedIp = null;
             user.PsnAuthenticationAllowed = false;
             user.RpcnAuthenticationAllowed = false;
             
@@ -335,7 +334,8 @@ public partial class GameDatabaseContext // Users
             this.FavouriteUserRelations.RemoveRange(r => r.UserFavouriting == user);
             this.QueueLevelRelations.RemoveRange(r => r.User == user);
             this.GamePhotos.RemoveRange(p => p.Publisher == user);
-
+            this.GameUserVerifiedIpRelations.RemoveRange(p => p.User == user);
+            
             foreach (GameLevel level in this.GameLevels.Where(l => l.Publisher == user))
             {
                 level.Publisher = null;
