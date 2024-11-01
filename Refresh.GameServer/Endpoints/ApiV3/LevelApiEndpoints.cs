@@ -193,18 +193,6 @@ public class LevelApiEndpoints : EndpointGroup
         return response;
     } 
 
-    [ApiV3Endpoint("levels/hearted"), MinimumRole(GameUserRole.Restricted)]
-    [DocSummary("Gets a list of your own hearted levels")]
-    public ApiListResponse<ApiGameLevelResponse> GetLevelsHeartedByMe(RequestContext context, GameDatabaseContext database,
-        IDataStore dataStore, GameUser user, DataContext dataContext) 
-    {
-        (int skip, int count) = context.GetPageData();
-        DatabaseList<GameLevel> levels = database.GetLevelsFavouritedByUser(user, count, skip, new LevelFilterSettings(context, TokenGame.Website), user);
-
-        DatabaseList<ApiGameLevelResponse> response = DatabaseList<ApiGameLevelResponse>.FromOldList<ApiGameLevelResponse, GameLevel>(levels, dataContext);
-        return response;
-    } 
-
     [ApiV3Endpoint("levels/id/{id}/heart", HttpMethods.Post)]
     [DocSummary("Adds a specific level by it's ID to your hearted levels")]
     [DocError(typeof(ApiNotFoundError), ApiNotFoundError.LevelMissingErrorWhen)]
@@ -230,18 +218,6 @@ public class LevelApiEndpoints : EndpointGroup
         database.UnfavouriteLevel(level, user);
         return new ApiOkResponse();
     }
-
-    [ApiV3Endpoint("levels/queued"), MinimumRole(GameUserRole.Restricted)]
-    [DocSummary("Gets a list of your queued levels")]
-    public ApiListResponse<ApiGameLevelResponse> GetQueuedLevels(RequestContext context, GameDatabaseContext database,
-        IDataStore dataStore, GameUser user, DataContext dataContext) 
-    {
-        (int skip, int count) = context.GetPageData();
-        DatabaseList<GameLevel> levels = database.GetLevelsQueuedByUser(user, count, skip, new LevelFilterSettings(context, TokenGame.Website), user);
-
-        DatabaseList<ApiGameLevelResponse> response = DatabaseList<ApiGameLevelResponse>.FromOldList<ApiGameLevelResponse, GameLevel>(levels, dataContext);
-        return response;
-    } 
 
     [ApiV3Endpoint("levels/queued/clear", HttpMethods.Post)]
     [DocSummary("Clears your level queue")]
