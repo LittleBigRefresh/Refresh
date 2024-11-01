@@ -177,6 +177,23 @@ public class LevelApiEndpoints : EndpointGroup
     }
 
 
+    [ApiV3Endpoint("levels/id/{id}/relations"), MinimumRole(GameUserRole.Restricted)]
+    [DocSummary("Gets your relations to a level by it's ID")]
+    [DocError(typeof(ApiNotFoundError), ApiNotFoundError.LevelMissingErrorWhen)]
+    public ApiResponse<ApiGameLevelRelationsResponse> GetLevelRelationsOfUser(RequestContext context, GameDatabaseContext database, GameUser user,
+        [DocSummary("The ID of the level")] int id)
+    {
+        GameLevel? level = database.GetLevelById(id);
+        if (level == null) return ApiNotFoundError.LevelMissingError;
+
+        return new ApiGameLevelRelationsResponse
+        {
+            IsHearted = database.IsLevelFavouritedByUser(level, user),
+            IsQueued = database.IsLevelQueuedByUser(level, user),
+            MyPlaysCount = database.GetTotalPlaysForLevelByUser(level, user)
+        };
+    }
+
     [ApiV3Endpoint("levels/hearted/username/{username}"), Authentication(false)]
     [DocSummary("Gets a list of hearted levels by a user by their username")]
     [DocError(typeof(ApiNotFoundError), ApiNotFoundError.UserMissingErrorWhen)]

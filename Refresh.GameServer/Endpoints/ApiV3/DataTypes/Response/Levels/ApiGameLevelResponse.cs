@@ -61,8 +61,6 @@ public class ApiGameLevelResponse : IApiResponse, IDataConvertableFrom<ApiGameLe
     {
         if (level == null) return null;
 
-        bool includeRelations = dataContext.User != null;
-
         return new ApiGameLevelResponse
         {
             IsAdventure = level.IsAdventure,
@@ -100,9 +98,6 @@ public class ApiGameLevelResponse : IApiResponse, IDataConvertableFrom<ApiGameLe
             Reviews = dataContext.Database.GetTotalReviewsForLevel(level),
             Tags = dataContext.Database.GetTagsForLevel(level).Select(t => t.Tag),
             IsModded = level.IsModded,
-            // Relation info
-            IsHearted = includeRelations && dataContext.Database.IsLevelFavouritedByUser(level, dataContext.User),
-            IsQueued = includeRelations && dataContext.Database.IsLevelQueuedByUser(level, dataContext.User)
         };
     }
     
