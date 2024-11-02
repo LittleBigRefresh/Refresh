@@ -54,8 +54,6 @@ public class ApiGameLevelResponse : IApiResponse, IDataConvertableFrom<ApiGameLe
     public required bool IsCopyable { get; set; }
     public required float Score { get; set; }
     public required IEnumerable<Tag> Tags { get; set; }
-    public bool IsHearted { get; set; }
-    public bool IsQueued { get; set; }
 
     public static ApiGameLevelResponse? FromOld(GameLevel? level, DataContext dataContext)
     {
