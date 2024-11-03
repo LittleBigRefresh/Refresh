@@ -21,6 +21,10 @@ public class FavouriteSlotsByUserCategory : LevelCategory
     public override DatabaseList<GameLevel>? Fetch(RequestContext context, int skip, int count, DataContext dataContext,
         LevelFilterSettings levelFilterSettings, GameUser? user)
     {
+        // Prefer username from query, but fallback to user passed into this category if it's missing
+        string? username = context.QueryString["username"];
+        if (username != null) user = dataContext.Database.GetUserByUsername(username);
+
         if (user == null) return null;
         
         return dataContext.Database.GetLevelsFavouritedByUser(user, count, skip, levelFilterSettings, dataContext.User);
