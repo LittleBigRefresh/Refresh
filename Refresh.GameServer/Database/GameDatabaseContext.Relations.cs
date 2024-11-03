@@ -332,6 +332,19 @@ public partial class GameDatabaseContext // Relations
         
         this.AddSequentialObject(review, level.Reviews);
     }
+    
+    public void DeleteReviewsPostedByUser(GameUser user)
+    {
+        IEnumerable<GameReview> reviews = this.GameReviews.Where(s => s.Publisher == user);
+        
+        this.Write(() =>
+        {
+            foreach (GameReview review in reviews)
+            {
+                this.DeleteReview(review);
+            }
+        });
+    }
 
     public DatabaseList<GameReview> GetReviewsByUser(GameUser user, int count, int skip)
     {
