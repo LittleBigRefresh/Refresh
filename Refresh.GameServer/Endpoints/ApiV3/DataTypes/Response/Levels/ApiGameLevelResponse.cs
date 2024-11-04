@@ -48,6 +48,7 @@ public class ApiGameLevelResponse : IApiResponse, IDataConvertableFrom<ApiGameLe
     public required bool TeamPicked { get; set; }
     public required DateTimeOffset? DateTeamPicked { get; set; }
     public required GameLevelType LevelType { get; set; }
+    public required GameSlotType SlotType { get; set; }
     public required bool IsLocked { get; set; }
     public required bool IsSubLevel { get; set; }
     public required bool IsCopyable { get; set; }
@@ -57,7 +58,7 @@ public class ApiGameLevelResponse : IApiResponse, IDataConvertableFrom<ApiGameLe
     public static ApiGameLevelResponse? FromOld(GameLevel? level, DataContext dataContext)
     {
         if (level == null) return null;
-        
+
         return new ApiGameLevelResponse
         {
             IsAdventure = level.IsAdventure,
@@ -85,6 +86,7 @@ public class ApiGameLevelResponse : IApiResponse, IDataConvertableFrom<ApiGameLe
             RootLevelHash = level.RootResource,
             GameVersion = level.GameVersion,
             LevelType = level.LevelType,
+            SlotType = level.SlotType,
             IsCopyable = level.IsCopyable,
             IsLocked = level.IsLocked,
             IsSubLevel = level.IsSubLevel,

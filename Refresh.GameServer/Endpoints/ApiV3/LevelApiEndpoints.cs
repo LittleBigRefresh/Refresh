@@ -19,6 +19,7 @@ using Refresh.GameServer.Types.Data;
 using Refresh.GameServer.Types.Levels;
 using Refresh.GameServer.Types.Levels.Categories;
 using Refresh.GameServer.Types.UserData;
+using Refresh.GameServer.Types.Roles;
 
 namespace Refresh.GameServer.Endpoints.ApiV3;
 
@@ -52,6 +53,8 @@ public class LevelApiEndpoints : EndpointGroup
     [DocQueryParam("game", "Filters levels to a specific game version. Allowed values: lbp1-3, vita, psp, beta")]
     [DocQueryParam("seed", "The random seed to use for randomization. Uses 0 if not specified.")]
     [DocQueryParam("players", "Filters levels to those accommodating the specified number of players.")]
+    [DocQueryParam("username", "If set, certain categories like 'hearted' or 'byUser' will return the levels of " + 
+                               "the user with this username instead of your own. Optional.")]
     public ApiListResponse<ApiGameLevelResponse> GetLevels(RequestContext context, GameDatabaseContext database,
         MatchService matchService, CategoryService categories, GameUser? user, IDataStore dataStore,
         [DocSummary("The name of the category you'd like to retrieve levels from. " +
@@ -172,6 +175,85 @@ public class LevelApiEndpoints : EndpointGroup
         // TODO: return whether presence/hash play now was used
         service.PlayNowHash(user, hash);
         
+        return new ApiOkResponse();
+    }
+
+
+    [ApiV3Endpoint("levels/id/{id}/relations"), MinimumRole(GameUserRole.Restricted)]
+    [DocSummary("Gets your relations to a level by it's ID")]
+    [DocError(typeof(ApiNotFoundError), ApiNotFoundError.LevelMissingErrorWhen)]
+    public ApiResponse<ApiGameLevelRelationsResponse> GetLevelRelationsOfUser(RequestContext context, GameDatabaseContext database, GameUser user,
+        [DocSummary("The ID of the level")] int id)
+    {
+        GameLevel? level = database.GetLevelById(id);
+        if (level == null) return ApiNotFoundError.LevelMissingError;
+
+        return new ApiGameLevelRelationsResponse
+        {
+            IsHearted = database.IsLevelFavouritedByUser(level, user),
+            IsQueued = database.IsLevelQueuedByUser(level, user),
+            MyPlaysCount = database.GetTotalPlaysForLevelByUser(level, user)
+        };
+    }
+
+    [ApiV3Endpoint("levels/id/{id}/heart", HttpMethods.Post)]
+    [DocSummary("Adds a specific level by it's ID to your hearted levels")]
+    [DocError(typeof(ApiNotFoundError), ApiNotFoundError.LevelMissingErrorWhen)]
+    public ApiOkResponse FavouriteLevel(RequestContext context, GameDatabaseContext database, GameUser user,
+        [DocSummary("The ID of the level")] int id) 
+    {
+        GameLevel? level = database.GetLevelById(id);
+        if (level == null) return ApiNotFoundError.LevelMissingError;
+
+        database.FavouriteLevel(level, user);
+        return new ApiOkResponse();
+    }
+
+    [ApiV3Endpoint("levels/id/{id}/unheart", HttpMethods.Post)]
+    [DocSummary("Removes a specific level by it's ID from your hearted levels")]
+    [DocError(typeof(ApiNotFoundError), ApiNotFoundError.LevelMissingErrorWhen)]
+    public ApiOkResponse UnheartLevel(RequestContext context, GameDatabaseContext database, GameUser user,
+        [DocSummary("The ID of the level")] int id) 
+    {
+        GameLevel? level = database.GetLevelById(id);
+        if (level == null) return ApiNotFoundError.LevelMissingError;
+
+        database.UnfavouriteLevel(level, user);
+        return new ApiOkResponse();
+    }
+
+    [ApiV3Endpoint("levels/id/{id}/queue", HttpMethods.Post)]
+    [DocSummary("Adds a specific level by it's ID to your queue")]
+    [DocError(typeof(ApiNotFoundError), ApiNotFoundError.LevelMissingErrorWhen)]
+    public ApiOkResponse QueueLevel(RequestContext context, GameDatabaseContext database, GameUser user,
+        [DocSummary("The ID of the level")] int id) 
+    {
+        GameLevel? level = database.GetLevelById(id);
+        if (level == null) return ApiNotFoundError.LevelMissingError;
+
+        database.QueueLevel(level, user);
+        return new ApiOkResponse();
+    }
+
+    [ApiV3Endpoint("levels/id/{id}/dequeue", HttpMethods.Post)]
+    [DocSummary("Removes a specific level by it's ID from your queue")]
+    [DocError(typeof(ApiNotFoundError), ApiNotFoundError.LevelMissingErrorWhen)]
+    public ApiOkResponse DequeueLevel(RequestContext context, GameDatabaseContext database, GameUser user,
+        [DocSummary("The ID of the level")] int id) 
+    {
+        GameLevel? level = database.GetLevelById(id);
+        if (level == null) return ApiNotFoundError.LevelMissingError;
+
+        database.DequeueLevel(level, user);
+        return new ApiOkResponse();
+    }
+
+    [ApiV3Endpoint("levels/queued/clear", HttpMethods.Post)]
+    [DocSummary("Clears your level queue")]
+    public ApiOkResponse ClearQueuedLevels(RequestContext context, GameDatabaseContext database,
+        IDataStore dataStore, GameUser user, DataContext dataContext) 
+    {
+        database.ClearQueue(user);
         return new ApiOkResponse();
     }
 }
