@@ -22,7 +22,7 @@ public class FavouriteSlotsByUserCategory : LevelCategory
         LevelFilterSettings levelFilterSettings, GameUser? user)
     {
         // Prefer username from query, but fallback to user passed into this category if it's missing
-        string? username = context.QueryString["username"];
+        string? username = context.QueryString["u"] ?? context.QueryString["username"];
         if (username != null) user = dataContext.Database.GetUserByUsername(username);
 
         if (user == null) return null;
