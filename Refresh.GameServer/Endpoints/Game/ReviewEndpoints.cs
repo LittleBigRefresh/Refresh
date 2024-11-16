@@ -80,7 +80,7 @@ public class ReviewEndpoints : EndpointGroup
     
     [GameEndpoint("reviewsBy/{username}", ContentType.Xml)]
     [AllowEmptyBody]
-    public Response GetReviewsForLevel(RequestContext context, GameDatabaseContext database, string username,
+    public Response GetReviewsByUser(RequestContext context, GameDatabaseContext database, string username,
         DataContext dataContext)
     {
         GameUser? user = database.GetUserByUsername(username);
