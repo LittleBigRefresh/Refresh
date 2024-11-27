@@ -2,6 +2,7 @@ using Refresh.GameServer.Authentication;
 using Refresh.GameServer.Extensions;
 using Refresh.GameServer.Types.Levels;
 using Refresh.GameServer.Types.Playlists;
+using Refresh.GameServer.Types.Relations;
 using Refresh.GameServer.Types.UserData;
 
 namespace Refresh.GameServer.Database;
@@ -21,12 +22,37 @@ public partial class GameDatabaseContext // Playlists
             IsRoot = rootPlaylist,
         };
         
-        this.Write(() =>
-        {
-            this.AddSequentialObject(playlist);
-        });
+        this.CreatePlaylist(playlist);
         
         return playlist;
+    }
+
+    public GamePlaylist CreatePlaylist(GameUser user, SerializedLbp3Playlist createInfo, bool rootPlaylist)
+    {
+        Random random = new();
+
+        GamePlaylist playlist = new()
+        {
+            Publisher = user, 
+            Name = createInfo.Name ?? "",
+            Description = createInfo.Description ?? "", 
+            IconHash = "g30477",  // Mr Molecule sticker
+            LocationX = random.Next(25000), 
+            LocationY = random.Next(25000),
+            IsRoot = rootPlaylist,
+        };
+        
+        this.CreatePlaylist(playlist);
+        
+        return playlist;
+    }
+
+    public void CreatePlaylist(GamePlaylist createInfo)
+    {
+        this.Write(() =>
+        {
+            this.AddSequentialObject(createInfo);
+        });
     }
 
     public GamePlaylist? GetPlaylistById(int playlistId) 
@@ -44,6 +70,15 @@ public partial class GameDatabaseContext // Playlists
         });
     }
 
+    public void UpdatePlaylist(GamePlaylist playlist, SerializedLbp3Playlist updateInfo)
+    {
+        this.Write(() =>
+        {
+            if (updateInfo.Name != null) playlist.Name = updateInfo.Name;
+            if (updateInfo.Description != null) playlist.Description = updateInfo.Description;
+        });
+    }
+
     public void DeletePlaylist(GamePlaylist playlist)
     {
         this.Write(() =>
@@ -51,6 +86,7 @@ public partial class GameDatabaseContext // Playlists
             // Remove all relations relating to this playlist
             this.LevelPlaylistRelations.RemoveRange(l => l.Playlist == playlist);
             this.SubPlaylistRelations.RemoveRange(l => l.Playlist == playlist || l.SubPlaylist == playlist);
+            this.FavouritePlaylistRelations.RemoveRange(l => l.Playlist == playlist);
             
             // Remove the playlist object
             this.GamePlaylists.Remove(playlist);
@@ -138,10 +174,21 @@ public partial class GameDatabaseContext // Playlists
             .Select(l => l.Level)
             .FilterByGameVersion(game);
 
+    public int GetTotalLevelsInPlaylistCount(GamePlaylist playlist, TokenGame game) => 
+        this.LevelPlaylistRelations.Where(l => l.Playlist == playlist).AsEnumerable()
+            .Select(l => l.Level)
+            .FilterByGameVersion(game)
+            .Count();
+
     public IEnumerable<GamePlaylist> GetPlaylistsInPlaylist(GamePlaylist playlist)
         // TODO: When we have postgres, remove the `AsEnumerable` call for performance. 
         => this.SubPlaylistRelations.Where(p => p.Playlist == playlist).AsEnumerable()
             .Select(l => l.SubPlaylist);
+
+    public IEnumerable<GamePlaylist> GetPlaylistsByAuthor(GameUser author)
+        // TODO: When we have postgres, remove the `AsEnumerable` call for performance. 
+        => this.GamePlaylists.Where(p => p.Publisher == author)
+            .Where(p => !p.IsRoot);
 
     public IEnumerable<GamePlaylist> GetPlaylistsByAuthorContainingLevel(GameUser author, GameLevel level)
         // TODO: When we have postgres, remove the `AsEnumerable` call for performance. 
@@ -153,4 +200,41 @@ public partial class GameDatabaseContext // Playlists
         // TODO: When we have postgres, remove the `AsEnumerable` call for performance. 
         => this.LevelPlaylistRelations.Where(p => p.Level == level).AsEnumerable()
             .Select(r => this.GamePlaylists.First(p => p.PlaylistId == r.Playlist.PlaylistId));
+
+    public bool IsPlaylistFavouritedByUser(GamePlaylist playlist, GameUser user)
+        => this.FavouritePlaylistRelations.FirstOrDefault(r => r.Playlist == playlist && r.User == user) != null;
+
+    public IEnumerable<GamePlaylist> GetPlaylistsFavouritedByUser(GameUser user) => this.FavouritePlaylistRelations
+        .Where(r => r.User == user)
+        .Select(r => r.Playlist);
+
+    public int GetFavouriteCountForPlaylist(GamePlaylist playlist)
+        => this.FavouritePlaylistRelations
+            .Count(r => r.Playlist == playlist);
+
+    public bool FavouritePlaylist(GamePlaylist playlist, GameUser user)
+    {
+        if (this.IsPlaylistFavouritedByUser(playlist, user)) return false;
+
+        FavouritePlaylistRelation relation = new()
+        {
+            Playlist = playlist,
+            User = user, 
+        };
+        this.Write(() => this.FavouritePlaylistRelations.Add(relation));
+
+        return true;
+    }
+
+    public bool UnfavouritePlaylist(GamePlaylist playlist, GameUser user)
+    {
+        FavouritePlaylistRelation? relation = this.FavouritePlaylistRelations
+            .FirstOrDefault(r => r.Playlist == playlist && r.User == user);
+
+        if (relation == null) return false;
+
+        this.Write(() => this.FavouritePlaylistRelations.Remove(relation));
+
+        return true;
+    }
 }

@@ -61,6 +61,7 @@ public partial class GameDatabaseContext : RealmDatabaseContext
     private RealmDbSet<GamePlaylist> GamePlaylists => new(this._realm);
     private RealmDbSet<LevelPlaylistRelation> LevelPlaylistRelations => new(this._realm);
     private RealmDbSet<SubPlaylistRelation> SubPlaylistRelations => new(this._realm);
+    private RealmDbSet<FavouritePlaylistRelation> FavouritePlaylistRelations => new(this._realm);
     private RealmDbSet<GameUserVerifiedIpRelation> GameUserVerifiedIpRelations => new(this._realm);
     
     internal GameDatabaseContext(IDateTimeProvider time)

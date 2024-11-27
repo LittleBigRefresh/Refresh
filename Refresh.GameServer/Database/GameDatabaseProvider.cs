@@ -87,6 +87,7 @@ public class GameDatabaseProvider : RealmDatabaseProvider<GameDatabaseContext>
         typeof(GamePlaylist),
         typeof(LevelPlaylistRelation),
         typeof(SubPlaylistRelation),
+        typeof(FavouritePlaylistRelation)
     ];
 
     public override void Warmup()
