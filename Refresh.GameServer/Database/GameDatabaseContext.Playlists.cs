@@ -187,7 +187,7 @@ public partial class GameDatabaseContext // Playlists
 
     public IEnumerable<GamePlaylist> GetPlaylistsByAuthor(GameUser author)
         // TODO: When we have postgres, remove the `AsEnumerable` call for performance. 
-        => this.GamePlaylists.Where(p => p.Publisher == author)
+        => this.GamePlaylists.Where(p => p.Publisher == author).AsEnumerable()
             .Where(p => !p.IsRoot);
 
     public IEnumerable<GamePlaylist> GetPlaylistsByAuthorContainingLevel(GameUser author, GameLevel level)
@@ -205,7 +205,7 @@ public partial class GameDatabaseContext // Playlists
         => this.FavouritePlaylistRelations.FirstOrDefault(r => r.Playlist == playlist && r.User == user) != null;
 
     public IEnumerable<GamePlaylist> GetPlaylistsFavouritedByUser(GameUser user) => this.FavouritePlaylistRelations
-        .Where(r => r.User == user)
+        .Where(r => r.User == user).AsEnumerable()
         .Select(r => r.Playlist);
 
     public int GetFavouriteCountForPlaylist(GamePlaylist playlist)

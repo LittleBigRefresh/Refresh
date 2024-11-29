@@ -14,8 +14,8 @@ public class SerializedLbp3PlaylistList : SerializedList<SerializedLbp3Playlist>
 
     public SerializedLbp3PlaylistList(IEnumerable<SerializedLbp3Playlist> list, int total, int skip) 
     {
-        this.Total = total;
         this.Items = list.ToList();
+        this.Total = total;
         this.NextPageStart = skip + 1;
     }
 
