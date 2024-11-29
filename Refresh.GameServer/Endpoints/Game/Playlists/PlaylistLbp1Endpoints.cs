@@ -15,7 +15,7 @@ using Refresh.GameServer.Types.UserData;
 
 namespace Refresh.GameServer.Endpoints.Game.Playlists;
 
-public class PlaylistEndpoints : EndpointGroup
+public class PlaylistLbp1Endpoints : EndpointGroup
 {
     // Creates a playlist, with an optional parent ID
     [GameEndpoint("createPlaylist", HttpMethods.Post, ContentType.Xml)]
@@ -42,6 +42,8 @@ public class PlaylistEndpoints : EndpointGroup
             if (user.RootPlaylist == null)
                 return BadRequest;
         }
+
+
 
         // Create the playlist, marking it as the root playlist if the user does not have one set already
         GamePlaylist playlist = dataContext.Database.CreatePlaylist(user, body, user.RootPlaylist == null);
