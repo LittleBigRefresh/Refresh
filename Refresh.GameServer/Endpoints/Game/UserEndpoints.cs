@@ -7,6 +7,7 @@ using Bunkum.Protocols.Http;
 using Refresh.Common.Constants;
 using Refresh.GameServer.Authentication;
 using Refresh.GameServer.Database;
+using Refresh.GameServer.Endpoints.Game.DataTypes.Request;
 using Refresh.GameServer.Endpoints.Game.DataTypes.Response;
 using Refresh.GameServer.Services;
 using Refresh.GameServer.Types.Data;
@@ -63,6 +64,8 @@ public class UserEndpoints : EndpointGroup
     public string? UpdateUser(RequestContext context, GameDatabaseContext database, GameUser user, string body, IDataStore dataStore, Token token, GuidCheckerService guidChecker)
     {
         SerializedUpdateData? data = null;
+
+        context.Logger.LogInfo(BunkumCategory.UserContent, body);
         
         // This stupid shit is caused by LBP sending two different root elements for this endpoint
         // LBP is just fantastic man
@@ -121,6 +124,15 @@ public class UserEndpoints : EndpointGroup
                     database.AddErrorNotification("Profile update failed", "Your avatar failed to update because the asset was missing on the server.", user);
                     return null;
                 } 
+            }
+        }
+
+        if(data.Levels != null)
+        {
+            // since you can only update level's locations through this endpoint, update their locations
+            foreach(GameLevelRequest Level in data.Levels)
+            {
+                database.UpdateLevelLocation(Level, user);
             }
         }
         
