@@ -1,7 +1,6 @@
 using System.Xml.Serialization;
 using Realms;
 using Refresh.GameServer.Endpoints.Game.DataTypes.Request;
-using Refresh.GameServer.Types.Levels;
 
 namespace Refresh.GameServer.Types.UserData;
 

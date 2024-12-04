@@ -64,8 +64,6 @@ public class UserEndpoints : EndpointGroup
     public string? UpdateUser(RequestContext context, GameDatabaseContext database, GameUser user, string body, IDataStore dataStore, Token token, GuidCheckerService guidChecker)
     {
         SerializedUpdateData? data = null;
-
-        context.Logger.LogInfo(BunkumCategory.UserContent, body);
         
         // This stupid shit is caused by LBP sending two different root elements for this endpoint
         // LBP is just fantastic man
