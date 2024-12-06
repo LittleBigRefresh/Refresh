@@ -126,15 +126,15 @@ public class UserEndpoints : EndpointGroup
             }
         }
 
-        if(data.Levels != null)
+        if (data.Levels != null)
         {
             int failedLevelUpdates = 0;
 
             // Since you can only update level's locations through this endpoint, update their locations
-            foreach(GameLevelRequest LevelRequest in data.Levels)
+            foreach (GameLevelRequest LevelRequest in data.Levels)
             {
                 // Incase there is no location data provided for this level for some reason
-                if(LevelRequest.Location == null) 
+                if (LevelRequest.Location == null) 
                 {
                     failedLevelUpdates++;
                     continue;
@@ -157,7 +157,7 @@ public class UserEndpoints : EndpointGroup
                 database.UpdateLevelLocation(Level, LevelRequest.Location);
             }
 
-            if(failedLevelUpdates > 0) database.AddErrorNotification("Level update failed", $"Failed to update {failedLevelUpdates} out of {data.Levels.Count} level locations.", user);
+            if (failedLevelUpdates > 0) database.AddErrorNotification("Level update failed", $"Failed to update {failedLevelUpdates} out of {data.Levels.Count} level locations.", user);
         }
         
         if (data.PlanetsHash != null && !dataStore.ExistsInStore(data.PlanetsHash))
