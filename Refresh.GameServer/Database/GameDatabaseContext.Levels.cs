@@ -8,6 +8,7 @@ using Refresh.GameServer.Endpoints.ApiV3.DataTypes.Request;
 using Refresh.GameServer.Endpoints.Game.Levels.FilterSettings;
 using Refresh.GameServer.Extensions;
 using Refresh.GameServer.Services;
+using Refresh.GameServer.Types;
 using Refresh.GameServer.Types.Activity;
 using Refresh.GameServer.Types.Assets;
 using Refresh.GameServer.Types.Levels;
@@ -138,6 +139,17 @@ public partial class GameDatabaseContext // Levels
             }
             
             level.UpdateDate = this._time.Now;
+        });
+
+        return level;
+    }
+
+    public GameLevel? UpdateLevelLocation(GameLevel level, GameLocation location)
+    {
+        this.Write(() =>
+        {
+            level.LocationX = location.X;
+            level.LocationY = location.Y;
         });
 
         return level;

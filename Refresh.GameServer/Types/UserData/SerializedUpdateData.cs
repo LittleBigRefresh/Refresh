@@ -1,5 +1,6 @@
 using System.Xml.Serialization;
 using Realms;
+using Refresh.GameServer.Endpoints.Game.DataTypes.Request;
 
 namespace Refresh.GameServer.Types.UserData;
 
@@ -32,4 +33,7 @@ public class SerializedUpdateData
 
     [XmlElement("meh2")]
     public string? MehFaceHash { get; set; }
+
+    [XmlArray("slots")]
+    public List<GameLevelRequest>? Levels { get; set; }
 }
