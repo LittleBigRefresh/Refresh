@@ -5,7 +5,6 @@ using Realms;
 using Refresh.Common.Constants;
 using Refresh.GameServer.Authentication;
 using Refresh.GameServer.Endpoints.ApiV3.DataTypes.Request;
-using Refresh.GameServer.Endpoints.Game.DataTypes.Request;
 using Refresh.GameServer.Endpoints.Game.Levels.FilterSettings;
 using Refresh.GameServer.Extensions;
 using Refresh.GameServer.Services;
@@ -145,22 +144,15 @@ public partial class GameDatabaseContext // Levels
         return level;
     }
 
-    public GameLevel? UpdateLevelLocation(GameLevelRequest levelRequest, GameUser author)
+    public GameLevel? UpdateLevelLocation(GameLevel level, GameLocation location)
     {
-        // Verify if this level can be updated
-        GameLevel? Level = this.GetLevelById(levelRequest.LevelId);
-        if (Level == null) return null;
-
-        Debug.Assert(Level.Publisher != null);
-        if (Level.Publisher.UserId != author.UserId) return null;
-
         this.Write(() =>
         {
-            Level.LocationX = levelRequest.Location.X;
-            Level.LocationY = levelRequest.Location.Y;
+            level.LocationX = location.X;
+            level.LocationY = location.Y;
         });
 
-        return Level;
+        return level;
     }
 
     public void DeleteLevel(GameLevel level)

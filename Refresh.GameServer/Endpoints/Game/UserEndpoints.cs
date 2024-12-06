@@ -11,6 +11,7 @@ using Refresh.GameServer.Endpoints.Game.DataTypes.Request;
 using Refresh.GameServer.Endpoints.Game.DataTypes.Response;
 using Refresh.GameServer.Services;
 using Refresh.GameServer.Types.Data;
+using Refresh.GameServer.Types.Levels;
 using Refresh.GameServer.Types.Lists;
 using Refresh.GameServer.Types.Roles;
 using Refresh.GameServer.Types.UserData;
@@ -127,11 +128,36 @@ public class UserEndpoints : EndpointGroup
 
         if(data.Levels != null)
         {
-            // since you can only update level's locations through this endpoint, update their locations
-            foreach(GameLevelRequest Level in data.Levels)
+            int failedLevelUpdates = 0;
+
+            // Since you can only update level's locations through this endpoint, update their locations
+            foreach(GameLevelRequest LevelRequest in data.Levels)
             {
-                database.UpdateLevelLocation(Level, user);
+                // Incase there is no location data provided for this level for some reason
+                if(LevelRequest.Location == null) 
+                {
+                    failedLevelUpdates++;
+                    continue;
+                }
+
+                // Verify if this level can be updated
+                GameLevel? Level = database.GetLevelById(LevelRequest.LevelId);
+                if (Level == null)
+                {
+                    failedLevelUpdates++;
+                    continue;
+                }
+
+                if (Level.Publisher == null || Level.Publisher.UserId != user.UserId)
+                {
+                    failedLevelUpdates++;
+                    continue;
+                } 
+
+                database.UpdateLevelLocation(Level, LevelRequest.Location);
             }
+
+            if(failedLevelUpdates > 0) database.AddErrorNotification("Level update failed", $"Failed to update {failedLevelUpdates} out of {data.Levels.Count} level locations.", user);
         }
         
         if (data.PlanetsHash != null && !dataStore.ExistsInStore(data.PlanetsHash))
