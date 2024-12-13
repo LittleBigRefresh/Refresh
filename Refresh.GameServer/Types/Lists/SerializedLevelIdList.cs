@@ -10,5 +10,5 @@ public class SerializedLevelIdList
         this.LevelIds = levelIds;
     }
 
-    [XmlElement("level_id")] public List<int> LevelIds = [];
+    [XmlElement("level_id")] public List<int> LevelIds { get; set; } = [];
 }

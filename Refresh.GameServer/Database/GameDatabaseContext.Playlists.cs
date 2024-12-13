@@ -1,5 +1,6 @@
 using Refresh.GameServer.Authentication;
 using Refresh.GameServer.Extensions;
+using Refresh.GameServer.Types;
 using Refresh.GameServer.Types.Levels;
 using Refresh.GameServer.Types.Playlists;
 using Refresh.GameServer.Types.Relations;
@@ -29,7 +30,7 @@ public partial class GameDatabaseContext // Playlists
 
     public GamePlaylist CreatePlaylist(GameUser user, SerializedLbp3Playlist createInfo, bool rootPlaylist)
     {
-        Random random = new();
+        GameLocation randomLocation = GameLocation.GetRandomLocation();
 
         GamePlaylist playlist = new()
         {
@@ -37,8 +38,8 @@ public partial class GameDatabaseContext // Playlists
             Name = createInfo.Name ?? "",
             Description = createInfo.Description ?? "", 
             IconHash = "g30477",  // Mr Molecule sticker
-            LocationX = random.Next(25000), 
-            LocationY = random.Next(25000),
+            LocationX = randomLocation.X, 
+            LocationY = randomLocation.Y,
             IsRoot = rootPlaylist,
         };
         

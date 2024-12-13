@@ -141,7 +141,7 @@ public class LevelEndpoints : EndpointGroup
         
         foreach (string levelIdStr in levelIds)
         {
-            if (!int.TryParse(levelIdStr, out int levelId)) return null;
+            if (!int.TryParse(levelIdStr.StartsWith('d') ? levelIdStr[1..] : levelIdStr, out int levelId)) return null;
             GameLevel? level = database.GetLevelById(levelId);
 
             if (level == null) continue;

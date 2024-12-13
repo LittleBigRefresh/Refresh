@@ -29,12 +29,12 @@ public class PlaylistLbp3Endpoints : EndpointGroup
         if (user.RootPlaylist == null)
         {
             // create a SerializedLbp3Playlist to reuse random location assignment from CreatePlaylist()
-            SerializedLbp3Playlist RootPlaylistOld = new()
+            SerializedLbp3Playlist rootPlaylist = new()
             {
                 Name = "My Playlists"
             };
 
-            GamePlaylist RootPlaylist = dataContext.Database.CreatePlaylist(user, RootPlaylistOld, true);
+            GamePlaylist RootPlaylist = dataContext.Database.CreatePlaylist(user, rootPlaylist, true);
             dataContext.Database.SetUserRootPlaylist(user, RootPlaylist);
         }
 
@@ -155,9 +155,9 @@ public class PlaylistLbp3Endpoints : EndpointGroup
 
         return new SerializedLbp3PlaylistList 
         (
-            SerializedLbp3Playlist.FromOldList(playlists.Skip(skip).Take(count), dataContext).ToList(),
+            SerializedLbp3Playlist.FromOldList(playlists.Skip(skip).Take(count), dataContext),
             playlists.Count(),
-            skip + 1
+            skip
         );
     }
 
@@ -172,11 +172,16 @@ public class PlaylistLbp3Endpoints : EndpointGroup
         (int skip, int count) = context.GetPageData();
         IEnumerable<GamePlaylist> playlists = dataContext.Database.GetPlaylistsFavouritedByUser(user);
 
-        return new SerializedLbp3PlaylistList
+        foreach(GamePlaylist playlist in playlists)
+        {
+            dataContext.Logger.LogInfo(BunkumCategory.UserContent, $"Playlist {playlist.Name} is in the hearted playlists list");
+        }
+
+        return new SerializedLbp3FavouritePlaylistList
         (
             SerializedLbp3Playlist.FromOldList(playlists.Skip(skip).Take(count), dataContext),
             playlists.Count(),
-            skip + 1
+            skip
         );
     }
 
