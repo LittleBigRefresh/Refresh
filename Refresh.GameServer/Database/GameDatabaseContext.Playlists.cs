@@ -10,7 +10,7 @@ namespace Refresh.GameServer.Database;
 
 public partial class GameDatabaseContext // Playlists
 {
-    public GamePlaylist CreatePlaylist(GameUser user, SerializedPlaylist createInfo, bool rootPlaylist)
+    public GamePlaylist CreatePlaylist(GameUser user, SerializedLbp1Playlist createInfo, bool rootPlaylist)
     {
         GamePlaylist playlist = GamePlaylist.ToGamePlaylist(createInfo, user, rootPlaylist);
         this.CreatePlaylist(playlist);
@@ -37,7 +37,7 @@ public partial class GameDatabaseContext // Playlists
     public GamePlaylist? GetPlaylistById(int playlistId) 
         => this.GamePlaylists.FirstOrDefault(p => p.PlaylistId == playlistId);
 
-    public void UpdatePlaylist(GamePlaylist playlist, SerializedPlaylist updateInfo)
+    public void UpdatePlaylist(GamePlaylist playlist, SerializedLbp1Playlist updateInfo)
     {
         this.Write(() =>
         {

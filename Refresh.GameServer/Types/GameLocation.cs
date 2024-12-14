@@ -29,8 +29,8 @@ public class GameLocation
         
         return new GameLocation
         (
-            random.Next(30000), 
-            random.Next(65000)
+            random.Next(65535), 
+            random.Next(65535)
         );
     }
 }

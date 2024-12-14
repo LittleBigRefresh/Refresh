@@ -57,7 +57,7 @@ public partial class GamePlaylist : IRealmObject, ISequentialId
         set => this.PlaylistId = value;
     }
 
-    public static GamePlaylist ToGamePlaylist(SerializedPlaylist oldPlaylist, GameUser user, bool rootPlaylist)
+    public static GamePlaylist ToGamePlaylist(SerializedLbp1Playlist oldPlaylist, GameUser user, bool rootPlaylist)
     {
         return new GamePlaylist
         {
