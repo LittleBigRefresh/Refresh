@@ -55,4 +55,39 @@ public partial class GamePlaylist : IRealmObject, ISequentialId
         get => this.PlaylistId;
         set => this.PlaylistId = value;
     }
+
+    public static GamePlaylist ToGamePlaylist(SerializedPlaylist oldPlaylist, GameUser user, bool rootPlaylist)
+    {
+        return new GamePlaylist
+        {
+            Publisher = user, 
+            Name = oldPlaylist.Name,
+            Description = oldPlaylist.Description, 
+            IconHash = oldPlaylist.Icon, 
+            LocationX = oldPlaylist.Location.X, 
+            LocationY = oldPlaylist.Location.Y,
+            IsRoot = rootPlaylist,
+        };
+    }
+
+    public static GamePlaylist ToGamePlaylist(SerializedLbp3Playlist oldPlaylist, GameUser user, bool isRoot)
+    {
+        return ToGamePlaylist(oldPlaylist.Name, oldPlaylist.Description, user, isRoot);
+    }
+
+    public static GamePlaylist ToGamePlaylist(string? name, string? description, GameUser user, bool isRoot)
+    {
+        GameLocation randomLocation = GameLocation.GetRandomLocation();
+            
+        return new GamePlaylist
+        {
+            Publisher = user, 
+            Name = name ?? "",
+            Description = description ?? "", 
+            IconHash = "g30477",  // Mr Molecule sticker
+            LocationX = randomLocation.X, 
+            LocationY = randomLocation.Y,
+            IsRoot = isRoot,
+        };
+    }
 }

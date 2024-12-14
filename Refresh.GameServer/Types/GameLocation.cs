@@ -23,7 +23,7 @@ public class GameLocation
     [XmlElement("y")] public int X { get; set; }
     [XmlElement("x")] public int Y { get; set; }
 
-    public static GameLocation GetRandomLocation()
+    public static GameLocation GetRandomLocation() 
     {
         Random random = new();
         

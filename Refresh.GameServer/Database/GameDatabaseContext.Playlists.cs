@@ -12,39 +12,15 @@ public partial class GameDatabaseContext // Playlists
 {
     public GamePlaylist CreatePlaylist(GameUser user, SerializedPlaylist createInfo, bool rootPlaylist)
     {
-        GamePlaylist playlist = new()
-        {
-            Publisher = user, 
-            Name = createInfo.Name,
-            Description = createInfo.Description, 
-            IconHash = createInfo.Icon, 
-            LocationX = createInfo.Location.X, 
-            LocationY = createInfo.Location.Y,
-            IsRoot = rootPlaylist,
-        };
-        
+        GamePlaylist playlist = GamePlaylist.ToGamePlaylist(createInfo, user, rootPlaylist);
         this.CreatePlaylist(playlist);
-        
         return playlist;
     }
 
     public GamePlaylist CreatePlaylist(GameUser user, SerializedLbp3Playlist createInfo, bool rootPlaylist)
     {
-        GameLocation randomLocation = GameLocation.GetRandomLocation();
-
-        GamePlaylist playlist = new()
-        {
-            Publisher = user, 
-            Name = createInfo.Name ?? "",
-            Description = createInfo.Description ?? "", 
-            IconHash = "g30477",  // Mr Molecule sticker
-            LocationX = randomLocation.X, 
-            LocationY = randomLocation.Y,
-            IsRoot = rootPlaylist,
-        };
-        
+        GamePlaylist playlist = GamePlaylist.ToGamePlaylist(createInfo, user, rootPlaylist);
         this.CreatePlaylist(playlist);
-        
         return playlist;
     }
 
@@ -53,6 +29,8 @@ public partial class GameDatabaseContext // Playlists
         this.Write(() =>
         {
             this.AddSequentialObject(createInfo);
+            createInfo.CreationDate = this._time.Now;
+            createInfo.LastUpdateDate = this._time.Now;
         });
     }
 
@@ -68,6 +46,7 @@ public partial class GameDatabaseContext // Playlists
             playlist.IconHash = updateInfo.Icon;
             playlist.LocationX = updateInfo.Location.X;
             playlist.LocationY = updateInfo.Location.Y;
+            playlist.LastUpdateDate = this._time.Now;
         });
     }
 
@@ -77,6 +56,7 @@ public partial class GameDatabaseContext // Playlists
         {
             if (updateInfo.Name != null) playlist.Name = updateInfo.Name;
             if (updateInfo.Description != null) playlist.Description = updateInfo.Description;
+            playlist.LastUpdateDate = this._time.Now;
         });
     }
 
