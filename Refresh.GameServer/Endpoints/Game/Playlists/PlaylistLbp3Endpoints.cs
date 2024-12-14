@@ -24,8 +24,6 @@ public class PlaylistLbp3Endpoints : EndpointGroup
     [RequireEmailVerified]
     public Response CreatePlaylist(RequestContext context, DataContext dataContext, GameUser user, SerializedLbp3Playlist body)
     {
-        dataContext.Logger.LogInfo(BunkumCategory.UserContent, $"body: '{body}'");
-        
         // if the player has no root playlist yet, create a new one first
         if (user.RootPlaylist == null)
         {
@@ -45,10 +43,9 @@ public class PlaylistLbp3Endpoints : EndpointGroup
     [RequireEmailVerified]
     public Response UpdatePlaylist(RequestContext context, DataContext dataContext, GameUser user, SerializedLbp3Playlist body, int playlistId)
     {
-        dataContext.Logger.LogInfo(BunkumCategory.UserContent, $"Playlist Name: {body.Name}, Description: {body.Description}");
-
         GamePlaylist? playlist = dataContext.Database.GetPlaylistById(playlistId);
-        if (playlist == null) return NotFound;
+        if (playlist == null) 
+            return NotFound;
 
         // Dont allow the wrong user to update playlists
         if (playlist.Publisher.UserId != user.UserId)
@@ -66,7 +63,8 @@ public class PlaylistLbp3Endpoints : EndpointGroup
     public Response DeletePlaylist(RequestContext context, DataContext dataContext, GameUser user, int playlistId)
     {
         GamePlaylist? playlist = dataContext.Database.GetPlaylistById(playlistId);
-        if (playlist == null) return NotFound;
+        if (playlist == null) 
+            return NotFound;
 
         // Dont allow the wrong user to delete playlists
         if (playlist.Publisher.UserId != user.UserId)
@@ -84,7 +82,8 @@ public class PlaylistLbp3Endpoints : EndpointGroup
     public SerializedLevelList? GetPlaylistLevels(RequestContext context, DataContext dataContext, GameUser user, int playlistId)
     {
         GamePlaylist? playlist = dataContext.Database.GetPlaylistById(playlistId);
-        if (playlist == null) return null;
+        if (playlist == null)
+            return null;
 
         (int skip, int count) = context.GetPageData();
         IEnumerable<GameLevel> levels = dataContext.Database.GetLevelsInPlaylist(playlist, dataContext.Game);
@@ -101,20 +100,19 @@ public class PlaylistLbp3Endpoints : EndpointGroup
     [RequireEmailVerified]
     public Response AddLevelsToPlaylist(RequestContext context, DataContext dataContext, SerializedLevelIdList body, GameUser user, int playlistId)
     {
-        dataContext.Logger.LogInfo(BunkumCategory.UserContent, $"body: '{body.ToJson()}'");
-
         GamePlaylist? playlist = dataContext.Database.GetPlaylistById(playlistId);
-        if (playlist == null) return NotFound;
+        if (playlist == null) 
+            return NotFound;
 
         // Dont let people add levels to other's playlists
-        if (playlist.Publisher.UserId != user.UserId)
+        if (playlist.Publisher.UserId != user.UserId) 
             return Unauthorized;
 
-        foreach(int levelId in body.LevelIds)
+        foreach (int levelId in body.LevelIds)
         {
             GameLevel? level = dataContext.Database.GetLevelById(levelId);
-            if (level != null) dataContext.Database.AddLevelToPlaylist(level, playlist);
-            // if (level == null) dataContext.Logger.LogInfo(BunkumCategory.UserContent, $"Level ID '{levelId}' is null");
+            if (level == null) continue;
+            dataContext.Database.AddLevelToPlaylist(level, playlist);
         }
 
         return OK;
@@ -141,10 +139,12 @@ public class PlaylistLbp3Endpoints : EndpointGroup
     public Response RemoveLevelFromPlaylist(RequestContext context, DataContext dataContext, GameUser user, int playlistId, int levelId)
     {
         GamePlaylist? playlist = dataContext.Database.GetPlaylistById(playlistId);
-        if (playlist == null) return NotFound;
+        if (playlist == null) 
+            return NotFound;
 
         GameLevel? level = dataContext.Database.GetLevelById(levelId);
-        if (level == null) return NotFound;
+        if (level == null) 
+            return NotFound;
 
         // Dont let people remove levels from other's playlists
         if (playlist.Publisher.UserId != user.UserId)
@@ -160,7 +160,8 @@ public class PlaylistLbp3Endpoints : EndpointGroup
     public SerializedLbp3PlaylistList? GetPlaylistsByUser(RequestContext context, DataContext dataContext, string username)
     {
         GameUser? user = dataContext.Database.GetUserByUsername(username);
-        if (user == null) return null;
+        if (user == null) 
+            return null;
 
         (int skip, int count) = context.GetPageData();
         IEnumerable<GamePlaylist> playlists = dataContext.Database.GetPlaylistsByAuthor(user);
@@ -179,15 +180,11 @@ public class PlaylistLbp3Endpoints : EndpointGroup
     public SerializedLbp3PlaylistList? GetFavouritedPlaylists(RequestContext context, DataContext dataContext, string username)
     {
         GameUser? user = dataContext.Database.GetUserByUsername(username);
-        if (user == null) return null;
+        if (user == null) 
+            return null;
 
         (int skip, int count) = context.GetPageData();
         IEnumerable<GamePlaylist> playlists = dataContext.Database.GetPlaylistsFavouritedByUser(user);
-
-        foreach(GamePlaylist playlist in playlists)
-        {
-            dataContext.Logger.LogInfo(BunkumCategory.UserContent, $"Playlist {playlist.Name} is in the hearted playlists list");
-        }
 
         return new SerializedLbp3FavouritePlaylistList
         (
@@ -202,7 +199,8 @@ public class PlaylistLbp3Endpoints : EndpointGroup
     public Response FavouritePlaylist(RequestContext context, DataContext dataContext, GameUser user, int playlistId)
     {
         GamePlaylist? playlist = dataContext.Database.GetPlaylistById(playlistId);
-        if (playlist == null) return NotFound;
+        if (playlist == null) 
+            return NotFound;
 
         dataContext.Database.FavouritePlaylist(playlist, user);
         return OK;
@@ -213,7 +211,8 @@ public class PlaylistLbp3Endpoints : EndpointGroup
     public Response UnfavouritePlaylist(RequestContext context, DataContext dataContext, GameUser user, int playlistId)
     {
         GamePlaylist? playlist = dataContext.Database.GetPlaylistById(playlistId);
-        if (playlist == null) return NotFound;
+        if (playlist == null) 
+            return NotFound;
 
         dataContext.Database.UnfavouritePlaylist(playlist, user);
         return OK;

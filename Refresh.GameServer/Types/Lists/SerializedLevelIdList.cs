@@ -1,5 +1,7 @@
 using System.Xml.Serialization;
 
+namespace Refresh.GameServer.Types.Lists;
+
 [XmlRoot("levels")]
 [XmlType("levels")]
 public class SerializedLevelIdList
