@@ -54,8 +54,8 @@ public partial class GameDatabaseContext // Playlists
     {
         this.Write(() =>
         {
-            if (updateInfo.Name != null) playlist.Name = updateInfo.Name;
-            if (updateInfo.Description != null) playlist.Description = updateInfo.Description;
+            if (!string.IsNullOrEmpty(updateInfo.Name)) playlist.Name = updateInfo.Name;
+            if (!string.IsNullOrEmpty(updateInfo.Description)) playlist.Description = updateInfo.Description;
             playlist.LastUpdateDate = this._time.Now;
         });
     }

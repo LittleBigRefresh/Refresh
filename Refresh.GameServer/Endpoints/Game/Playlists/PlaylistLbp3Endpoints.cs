@@ -38,7 +38,7 @@ public class PlaylistLbp3Endpoints : EndpointGroup
         GamePlaylist playlist = dataContext.Database.CreatePlaylist(user, body, false);
         dataContext.Database.AddPlaylistToPlaylist(playlist, user.RootPlaylist!);
 
-        return OK;
+        return new Response(SerializedLbp3Playlist.FromOld(playlist, dataContext), ContentType.Xml);
     }
 
     [GameEndpoint("playlists/{playlistId}", HttpMethods.Post, ContentType.Xml)]
@@ -56,7 +56,9 @@ public class PlaylistLbp3Endpoints : EndpointGroup
         
         dataContext.Database.UpdatePlaylist(playlist, body);
         
-        return OK;
+        // get playlist from database a second time to respond with it in its updated state
+        GamePlaylist? newPlaylist = dataContext.Database.GetPlaylistById(playlistId);
+        return new Response(SerializedLbp3Playlist.FromOld(newPlaylist, dataContext), ContentType.Xml);
     }
 
     [GameEndpoint("playlists/{playlistId}/delete", HttpMethods.Post, ContentType.Xml)]
