@@ -34,7 +34,7 @@ public class GameDatabaseProvider : RealmDatabaseProvider<GameDatabaseContext>
         this._time = time;
     }
 
-    protected override ulong SchemaVersion => 162;
+    protected override ulong SchemaVersion => 163;
 
     protected override string Filename => "refreshGameServer.realm";
     
@@ -687,7 +687,7 @@ public class GameDatabaseProvider : RealmDatabaseProvider<GameDatabaseContext>
         // We weren't deleting level playlist relations when a level was deleted. Version 160 fixes this.
         if (oldVersion < 160)
             migration.NewRealm.RemoveRange(migration.NewRealm.All<LevelPlaylistRelation>().Where(r => r.Level == null));
-        
+
         // IQueryable<dynamic>? oldLevelPlaylistRelations = migration.OldRealm.DynamicApi.All("LevelPlaylistRelation");
         // IQueryable<LevelPlaylistRelation>? newLevelPlaylistRelations = migration.NewRealm.All<LevelPlaylistRelation>();
         // if (oldVersion < 155)
@@ -705,5 +705,20 @@ public class GameDatabaseProvider : RealmDatabaseProvider<GameDatabaseContext>
         //         dynamic oldSubPlaylistRelation = oldSubPlaylistRelations.ElementAt(i);
         //         SubPlaylistRelation newSubPlaylistRelation = newSubPlaylistRelations.ElementAt(i);
         //     }
+
+        // Version 163 added indices for LevelPlaylistRelations for custom playlist level order in LBP3
+        IQueryable<dynamic>? oldLevelPlaylistRelations = migration.OldRealm.DynamicApi.All("LevelPlaylistRelation");
+        IQueryable<LevelPlaylistRelation>? newLevelPlaylistRelations = migration.NewRealm.All<LevelPlaylistRelation>();
+        if (oldVersion < 163)
+            for (int i = 0; i < newLevelPlaylistRelations.Count(); i++)
+            {
+                dynamic oldLevelPlaylistRelation = oldLevelPlaylistRelations.ElementAt(i);
+                LevelPlaylistRelation newLevelPlaylistRelation = newLevelPlaylistRelations.ElementAt(i);
+
+                if (oldVersion < 163)
+                {
+                    newLevelPlaylistRelation.Index = 0;
+                }
+            }
     }
 }

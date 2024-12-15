@@ -118,21 +118,51 @@ public partial class GameDatabaseContext // Playlists
             {
                 Level = level,
                 Playlist = parent,
+                // Currently only LBP3 cares about custom playlist level order anyway
+                Index = this.GetLevelsInPlaylist(parent, TokenGame.LittleBigPlanet3).Count(),
             });
         });
     }
     
     public void RemoveLevelFromPlaylist(GameLevel level, GamePlaylist parent)
     {
+        LevelPlaylistRelation? relation =
+            this.LevelPlaylistRelations.FirstOrDefault(r => r.Level == level && r.Playlist == parent);
+
+        if (relation == null)
+            return;
+
+        // decrease index of every playlist level after this one by 1
+        this.DecreasePlaylistLevelIndicesAfterIndex(parent, relation.Index);
+        
         this.Write(() =>
         {
-            LevelPlaylistRelation? relation =
-                this.LevelPlaylistRelations.FirstOrDefault(r => r.Level == level && r.Playlist == parent);
-
-            if (relation == null)
-                return;
-            
             this.LevelPlaylistRelations.Remove(relation);
+        });
+    }
+
+    private void DecreasePlaylistLevelIndicesAfterIndex(GamePlaylist playlist, int index)
+    {
+        IEnumerable<LevelPlaylistRelation> relations = this.LevelPlaylistRelations
+            .Where(r => r.Playlist == playlist && r.Index >= index)
+            .AsEnumerable();
+
+        
+        foreach(LevelPlaylistRelation relation in relations)
+        {
+            this.Write(() => {
+                relation.Index--;
+            });
+        }
+    }
+
+    public void SetPlaylistLevelIndex(GamePlaylist playlist, GameLevel level, int newIndex)
+    {
+        LevelPlaylistRelation relation = this.LevelPlaylistRelations
+            .First(r => r.Playlist == playlist && r.Level == level);
+
+        this.Write(() => {
+            relation.Index = newIndex;
         });
     }
 
@@ -149,11 +179,18 @@ public partial class GameDatabaseContext // Playlists
             .Where(p => p.Publisher.UserId == user.UserId)
             .Where(p => !p.IsRoot);
 
-    public IEnumerable<GameLevel> GetLevelsInPlaylist(GamePlaylist playlist, TokenGame game) =>
+    public IEnumerable<GameLevel> GetLevelsInPlaylist(GamePlaylist playlist, TokenGame game)
+    {
         // TODO: When we have postgres, remove the `AsEnumerable` call for performance. 
-        this.LevelPlaylistRelations.Where(l => l.Playlist == playlist).AsEnumerable()
-            .Select(l => l.Level)
-            .FilterByGameVersion(game);
+        IEnumerable<LevelPlaylistRelation> relations = this.LevelPlaylistRelations
+            .Where(l => l.Playlist == playlist).AsEnumerable();
+
+        // Only sort by order if needed, to improve performance
+        if (game == TokenGame.LittleBigPlanet3)
+            relations = relations.OrderBy(r => r.Index);
+
+        return relations.Select(l => l.Level).FilterByGameVersion(game);
+    }
 
     public int GetTotalLevelsInPlaylistCount(GamePlaylist playlist, TokenGame game) => 
         this.LevelPlaylistRelations.Where(l => l.Playlist == playlist).AsEnumerable()

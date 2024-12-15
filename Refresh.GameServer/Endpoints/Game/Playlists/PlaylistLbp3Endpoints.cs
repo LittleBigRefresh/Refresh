@@ -36,6 +36,7 @@ public class PlaylistLbp3Endpoints : EndpointGroup
         GamePlaylist playlist = dataContext.Database.CreatePlaylist(user, body, false);
         dataContext.Database.AddPlaylistToPlaylist(playlist, user.RootPlaylist!);
 
+        // return the playlist we just created to have the game open to it immediately
         return new Response(SerializedLbp3Playlist.FromOld(playlist, dataContext), ContentType.Xml);
     }
 
@@ -54,7 +55,8 @@ public class PlaylistLbp3Endpoints : EndpointGroup
         dataContext.Database.UpdatePlaylist(playlist, body);
         
         // get playlist from database a second time to respond with it in its updated state
-        GamePlaylist? newPlaylist = dataContext.Database.GetPlaylistById(playlistId);
+        // to have it immediately update in-game
+        GamePlaylist newPlaylist = dataContext.Database.GetPlaylistById(playlistId)!;
         return new Response(SerializedLbp3Playlist.FromOld(newPlaylist, dataContext), ContentType.Xml);
     }
 
@@ -112,6 +114,7 @@ public class PlaylistLbp3Endpoints : EndpointGroup
         {
             GameLevel? level = dataContext.Database.GetLevelById(levelId);
             if (level == null) continue;
+
             dataContext.Database.AddLevelToPlaylist(level, playlist);
         }
 
@@ -120,7 +123,7 @@ public class PlaylistLbp3Endpoints : EndpointGroup
 
     [GameEndpoint("playlists/{playlistId}/order_slots", HttpMethods.Post, ContentType.Xml)]
     [RequireEmailVerified]
-    public Response ReorderPlaylistLevels(RequestContext context, DataContext dataContext, GameUser user, int playlistId)
+    public Response ReorderPlaylistLevels(RequestContext context, DataContext dataContext, SerializedLevelIdList body, GameUser user, int playlistId)
     {
         GamePlaylist? playlist = dataContext.Database.GetPlaylistById(playlistId);
         if (playlist == null)
@@ -130,8 +133,17 @@ public class PlaylistLbp3Endpoints : EndpointGroup
         if (playlist.Publisher.UserId != user.UserId)
             return Unauthorized;
 
-        // custom level order in playlists is not being tracked rn
-        return NotImplemented;
+        int index = 0;
+        foreach (int levelId in body.LevelIds)
+        {
+            GameLevel? level = dataContext.Database.GetLevelById(levelId);
+            if (level == null) continue;
+
+            dataContext.Database.SetPlaylistLevelIndex(playlist, level, index);
+            index++;
+        }
+
+        return OK;
     }
 
     [GameEndpoint("playlists/{playlistId}/slots/{levelId}/delete", HttpMethods.Post, ContentType.Xml)]

@@ -14,11 +14,18 @@ public class SerializedLbp3Playlist : IDataConvertableFrom<SerializedLbp3Playlis
     [XmlElement("id")] public int Id { get; set; }
     [XmlElement("name")] public string? Name { get; set; }
     [XmlElement("description")] public string? Description { get; set; }
+    /// <summary>
+    /// Object containing the NpHandle (username) of who created this playlist
+    /// </summary>
     [XmlElement("author")] public SerializedAuthor? Author { get; set; }
+    /// <summary>
+    /// Amount of times this playlist has been hearted
+    /// </summary>
     [XmlElement("hearts")] public int HeartCount { get; set; }
-    [XmlElement("levels_quota")] public int PlaylistQuota { get; set; }  // maximum number of levels in a playlist
-
-    //[XmlArray("level_id")] public List<int> LevelIds { get; set; } = [];  // probably related to custom level order
+    /// <summary>
+    /// Maximum number of levels lbp3 will allow to be added into this playlist
+    /// </summary>
+    [XmlElement("levels_quota")] public int PlaylistQuota { get; set; }
 
     public static SerializedLbp3Playlist? FromOld(GamePlaylist? old, DataContext dataContext)
     {
