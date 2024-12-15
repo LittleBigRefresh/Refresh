@@ -118,8 +118,8 @@ public partial class GameDatabaseContext // Playlists
             {
                 Level = level,
                 Playlist = parent,
-                // Currently only LBP3 cares about custom playlist level order anyway
-                Index = this.GetLevelsInPlaylist(parent, TokenGame.LittleBigPlanet3).Count(),
+                // Setting TokenGame to LBP3 to get the true amount of levels in the playlist
+                Index = this.GetTotalLevelsInPlaylistCount(parent, TokenGame.LittleBigPlanet3),
             });
         });
     }
