@@ -86,8 +86,8 @@ public partial class GamePlaylist : IRealmObject, ISequentialId
             Name = name ?? "",
             Description = description ?? "", 
             // if this playlist is created in lbp3, set its icon to be lbp1 Star sticker (else lbp1 Mr Molecule sticker)
-            // so if people come across an empty playlist in lbp1, they could more easily tell whether the playlist has
-            // been made in lbp3 or not
+            // so that if people, for example, come across a (potentially empty) playlist with a default icon in lbp1, 
+            // they could more easily tell whether the playlist was made in lbp3 or not
             IconHash = (game == TokenGame.LittleBigPlanet3) ? "g18451" : "g30477",
             LocationX = randomLocation.X, 
             LocationY = randomLocation.Y,
