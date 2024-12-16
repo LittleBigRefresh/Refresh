@@ -26,11 +26,13 @@ public partial class GameDatabaseContext // Playlists
 
     public void CreatePlaylist(GamePlaylist createInfo)
     {
+        DateTimeOffset now = this._time.Now;
+
         this.Write(() =>
         {
+            createInfo.CreationDate = now;
+            createInfo.LastUpdateDate = now;
             this.AddSequentialObject(createInfo);
-            createInfo.CreationDate = this._time.Now;
-            createInfo.LastUpdateDate = this._time.Now;
         });
     }
 
@@ -39,24 +41,28 @@ public partial class GameDatabaseContext // Playlists
 
     public void UpdatePlaylist(GamePlaylist playlist, SerializedLbp1Playlist updateInfo)
     {
+        DateTimeOffset now = this._time.Now;
+
         this.Write(() =>
         {
+            playlist.LastUpdateDate = now;
             playlist.Name = updateInfo.Name;
             playlist.Description = updateInfo.Description;
             playlist.IconHash = updateInfo.Icon;
             playlist.LocationX = updateInfo.Location.X;
             playlist.LocationY = updateInfo.Location.Y;
-            playlist.LastUpdateDate = this._time.Now;
         });
     }
 
     public void UpdatePlaylist(GamePlaylist playlist, SerializedLbp3Playlist updateInfo)
     {
+        DateTimeOffset now = this._time.Now;
+
         this.Write(() =>
         {
+            playlist.LastUpdateDate = now;
             if (updateInfo.Name != null) playlist.Name = updateInfo.Name;
             if (updateInfo.Description != null) playlist.Description = updateInfo.Description;
-            playlist.LastUpdateDate = this._time.Now;
         });
     }
 
@@ -118,8 +124,8 @@ public partial class GameDatabaseContext // Playlists
             {
                 Level = level,
                 Playlist = parent,
-                // Setting TokenGame to LBP3 to get the true amount of levels in the playlist
-                Index = this.GetTotalLevelsInPlaylistCount(parent, TokenGame.LittleBigPlanet3),
+                // index of new relation = index of last relation + 1 = relation count (without new relation)
+                Index = this.GetTotalLevelsInPlaylistCount(parent),
             });
         });
     }
@@ -147,13 +153,12 @@ public partial class GameDatabaseContext // Playlists
             .Where(r => r.Playlist == playlist && r.Index >= index)
             .AsEnumerable();
 
-        
-        foreach(LevelPlaylistRelation relation in relations)
-        {
-            this.Write(() => {
+        this.Write(() => {
+            foreach(LevelPlaylistRelation relation in relations)
+            {
                 relation.Index--;
-            });
-        }
+            }
+        });
     }
 
     public void SetPlaylistLevelIndex(GamePlaylist playlist, GameLevel level, int newIndex)
@@ -196,6 +201,11 @@ public partial class GameDatabaseContext // Playlists
         this.LevelPlaylistRelations.Where(l => l.Playlist == playlist).AsEnumerable()
             .Select(l => l.Level)
             .FilterByGameVersion(game)
+            .Count();
+
+    public int GetTotalLevelsInPlaylistCount(GamePlaylist playlist) => 
+        this.LevelPlaylistRelations.Where(l => l.Playlist == playlist).AsEnumerable()
+            .Select(l => l.Level)
             .Count();
 
     public IEnumerable<GamePlaylist> GetPlaylistsInPlaylist(GamePlaylist playlist)
