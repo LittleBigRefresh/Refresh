@@ -77,7 +77,6 @@ public class PlaylistLbp3Endpoints : EndpointGroup
         return OK;
     }
 
-
     [GameEndpoint("playlists/{playlistId}/slots", HttpMethods.Get, ContentType.Xml)]
     [NullStatusCode(NotFound)]
     [MinimumRole(GameUserRole.Restricted)]

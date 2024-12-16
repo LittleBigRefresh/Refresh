@@ -229,16 +229,17 @@ public partial class GameDatabaseContext // Playlists
         => this.LevelPlaylistRelations.Where(p => p.Level == level).AsEnumerable()
             .Select(r => this.GamePlaylists.First(p => p.PlaylistId == r.Playlist.PlaylistId));
 
-    public bool IsPlaylistFavouritedByUser(GamePlaylist playlist, GameUser user)
-        => this.FavouritePlaylistRelations.FirstOrDefault(r => r.Playlist == playlist && r.User == user) != null;
-
-    public IEnumerable<GamePlaylist> GetPlaylistsFavouritedByUser(GameUser user) => this.FavouritePlaylistRelations
-        .Where(r => r.User == user).AsEnumerable()
-        .Select(r => r.Playlist);
-
     public int GetFavouriteCountForPlaylist(GamePlaylist playlist)
         => this.FavouritePlaylistRelations
             .Count(r => r.Playlist == playlist);
+
+    public bool IsPlaylistFavouritedByUser(GamePlaylist playlist, GameUser user)
+        => this.FavouritePlaylistRelations.FirstOrDefault(r => r.Playlist == playlist && r.User == user) != null;
+
+    public IEnumerable<GamePlaylist> GetPlaylistsFavouritedByUser(GameUser user) 
+        // TODO: When we have postgres, remove the `AsEnumerable` call for performance.
+        => this.FavouritePlaylistRelations.Where(r => r.User == user).AsEnumerable()
+            .Select(r => r.Playlist);
 
     public bool FavouritePlaylist(GamePlaylist playlist, GameUser user)
     {
