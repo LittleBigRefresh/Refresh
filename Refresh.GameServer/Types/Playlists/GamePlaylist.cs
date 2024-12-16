@@ -1,4 +1,5 @@
 using Realms;
+using Refresh.GameServer.Authentication;
 using Refresh.GameServer.Database;
 using Refresh.GameServer.Types.UserData;
 
@@ -54,5 +55,43 @@ public partial class GamePlaylist : IRealmObject, ISequentialId
     {
         get => this.PlaylistId;
         set => this.PlaylistId = value;
+    }
+
+    public static GamePlaylist ToGamePlaylist(SerializedLbp1Playlist oldPlaylist, GameUser user, bool rootPlaylist)
+    {
+        return new GamePlaylist
+        {
+            Publisher = user, 
+            Name = oldPlaylist.Name,
+            Description = oldPlaylist.Description, 
+            IconHash = oldPlaylist.Icon, 
+            LocationX = oldPlaylist.Location.X, 
+            LocationY = oldPlaylist.Location.Y,
+            IsRoot = rootPlaylist,
+        };
+    }
+
+    public static GamePlaylist ToGamePlaylist(SerializedLbp3Playlist oldPlaylist, GameUser user, bool rootPlaylist)
+    {
+        return ToGamePlaylist(oldPlaylist.Name, oldPlaylist.Description, user, rootPlaylist, TokenGame.LittleBigPlanet3);
+    }
+
+    public static GamePlaylist ToGamePlaylist(string? name, string? description, GameUser user, bool rootPlaylist, TokenGame game = TokenGame.LittleBigPlanet1)
+    {
+        GameLocation randomLocation = GameLocation.GetRandomLocation();
+            
+        return new GamePlaylist
+        {
+            Publisher = user, 
+            Name = name ?? "",
+            Description = description ?? "", 
+            // if this playlist is created in lbp3, set its icon to be lbp1 Star sticker (else lbp1 Mr Molecule sticker)
+            // so that if people, for example, come across a (potentially empty) playlist with a default icon in lbp1, 
+            // they could more easily tell whether the playlist was made in lbp3 or not
+            IconHash = (game == TokenGame.LittleBigPlanet3) ? "g18451" : "g30477",
+            LocationX = randomLocation.X, 
+            LocationY = randomLocation.Y,
+            IsRoot = rootPlaylist,
+        };
     }
 }
