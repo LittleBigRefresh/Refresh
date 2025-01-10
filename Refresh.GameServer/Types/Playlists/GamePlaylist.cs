@@ -57,24 +57,19 @@ public partial class GamePlaylist : IRealmObject, ISequentialId
         set => this.PlaylistId = value;
     }
 
-    public static GamePlaylist ToGamePlaylist(SerializedLbp1Playlist oldPlaylist, GameUser user, bool rootPlaylist)
+    public static GamePlaylist ToGamePlaylist(SerializedLbp1Playlist oldPlaylist, GameUser user, bool rootPlaylist) => new() 
     {
-        return new GamePlaylist
-        {
-            Publisher = user, 
-            Name = oldPlaylist.Name,
-            Description = oldPlaylist.Description, 
-            IconHash = oldPlaylist.Icon, 
-            LocationX = oldPlaylist.Location.X, 
-            LocationY = oldPlaylist.Location.Y,
-            IsRoot = rootPlaylist,
-        };
-    }
+        Publisher = user, 
+        Name = oldPlaylist.Name,
+        Description = oldPlaylist.Description, 
+        IconHash = oldPlaylist.Icon, 
+        LocationX = oldPlaylist.Location.X, 
+        LocationY = oldPlaylist.Location.Y,
+        IsRoot = rootPlaylist,
+    };
 
     public static GamePlaylist ToGamePlaylist(SerializedLbp3Playlist oldPlaylist, GameUser user, bool rootPlaylist)
-    {
-        return ToGamePlaylist(oldPlaylist.Name, oldPlaylist.Description, user, rootPlaylist, TokenGame.LittleBigPlanet3);
-    }
+        => ToGamePlaylist(oldPlaylist.Name, oldPlaylist.Description, user, rootPlaylist, TokenGame.LittleBigPlanet3);
 
     public static GamePlaylist ToGamePlaylist(string? name, string? description, GameUser user, bool rootPlaylist, TokenGame game = TokenGame.LittleBigPlanet1)
     {

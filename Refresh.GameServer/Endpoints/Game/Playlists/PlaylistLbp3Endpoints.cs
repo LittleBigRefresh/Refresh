@@ -1,14 +1,10 @@
 using Bunkum.Core;
 using Bunkum.Core.Endpoints;
-using Bunkum.Core.Endpoints.Debugging;
 using Bunkum.Core.Responses;
 using Bunkum.Listener.Protocol;
 using Bunkum.Protocols.Http;
-using MongoDB.Bson;
-using Refresh.GameServer.Database;
 using Refresh.GameServer.Endpoints.Game.DataTypes.Response;
 using Refresh.GameServer.Extensions;
-using Refresh.GameServer.Types;
 using Refresh.GameServer.Types.Data;
 using Refresh.GameServer.Types.Levels;
 using Refresh.GameServer.Types.Lists;
@@ -73,7 +69,6 @@ public class PlaylistLbp3Endpoints : EndpointGroup
             return Unauthorized;
 
         dataContext.Database.DeletePlaylist(playlist);
-            
         return OK;
     }
 

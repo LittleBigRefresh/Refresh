@@ -2,8 +2,6 @@ using System.Xml.Serialization;
 using Refresh.Common.Constants;
 using Refresh.GameServer.Endpoints.ApiV3.DataTypes;
 using Refresh.GameServer.Types.Data;
-using Refresh.GameServer.Types.Levels;
-using Refresh.GameServer.Types.Lists;
 
 namespace Refresh.GameServer.Types.Playlists;
 

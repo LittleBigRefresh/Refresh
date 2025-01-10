@@ -1,6 +1,5 @@
 using Refresh.GameServer.Authentication;
 using Refresh.GameServer.Extensions;
-using Refresh.GameServer.Types;
 using Refresh.GameServer.Types.Levels;
 using Refresh.GameServer.Types.Playlists;
 using Refresh.GameServer.Types.Relations;
@@ -185,17 +184,13 @@ public partial class GameDatabaseContext // Playlists
             .Where(p => !p.IsRoot);
 
     public IEnumerable<GameLevel> GetLevelsInPlaylist(GamePlaylist playlist, TokenGame game)
-    {
         // TODO: When we have postgres, remove the `AsEnumerable` call for performance. 
-        IEnumerable<LevelPlaylistRelation> relations = this.LevelPlaylistRelations
-            .Where(l => l.Playlist == playlist).AsEnumerable();
-
-        // Only sort by order if needed, to improve performance
-        if (game == TokenGame.LittleBigPlanet3)
-            relations = relations.OrderBy(r => r.Index);
-
-        return relations.Select(l => l.Level).FilterByGameVersion(game);
-    }
+        => this.LevelPlaylistRelations
+            .Where(l => l.Playlist == playlist)
+            .OrderBy(r => r.Index)
+            .AsEnumerable()
+            .Select(l => l.Level)
+            .FilterByGameVersion(game);
 
     public int GetTotalLevelsInPlaylistCount(GamePlaylist playlist, TokenGame game) => 
         this.LevelPlaylistRelations.Where(l => l.Playlist == playlist).AsEnumerable()

@@ -141,7 +141,8 @@ public class LevelEndpoints : EndpointGroup
         
         foreach (string levelIdStr in levelIds)
         {
-            // Sometimes (for example in playlists) LBP3 prepends a "d" to a developer level's id.
+            // Sometimes, in playlists for example, LBP3 refers to developer levels by taking their level (not story) id
+            // and prepending a 'd' to it.
             // We need to remove it in order to be able to parse the id and get the level.
             // If parsing fails anyway, skip over the level id and continue with the next one.
             if (!int.TryParse(levelIdStr.StartsWith('d') ? levelIdStr[1..] : levelIdStr, out int levelId)) continue;
