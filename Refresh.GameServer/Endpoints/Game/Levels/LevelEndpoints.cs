@@ -141,7 +141,11 @@ public class LevelEndpoints : EndpointGroup
         
         foreach (string levelIdStr in levelIds)
         {
-            if (!int.TryParse(levelIdStr, out int levelId)) return null;
+            // Sometimes, in playlists for example, LBP3 refers to developer levels by using their level (not story) id
+            // and prepending a 'd' to it.
+            // We need to remove it in order to be able to parse the id and get the level.
+            // If parsing fails anyway, skip over the level id and continue with the next one.
+            if (!int.TryParse(levelIdStr.StartsWith('d') ? levelIdStr[1..] : levelIdStr, out int levelId)) continue;
             GameLevel? level = database.GetLevelById(levelId);
 
             if (level == null) continue;

@@ -1,6 +1,5 @@
 using Bunkum.Core;
 using Bunkum.Core.Endpoints;
-using Bunkum.Core.Endpoints.Debugging;
 using Bunkum.Core.Responses;
 using Bunkum.Listener.Protocol;
 using Bunkum.Protocols.Http;
@@ -15,12 +14,12 @@ using Refresh.GameServer.Types.UserData;
 
 namespace Refresh.GameServer.Endpoints.Game.Playlists;
 
-public class PlaylistEndpoints : EndpointGroup
+public class Lbp1PlaylistEndpoints : EndpointGroup
 {
     // Creates a playlist, with an optional parent ID
     [GameEndpoint("createPlaylist", HttpMethods.Post, ContentType.Xml)]
     [RequireEmailVerified]
-    public Response CreatePlaylist(RequestContext context, DataContext dataContext, SerializedPlaylist body)
+    public Response CreatePlaylist(RequestContext context, DataContext dataContext, SerializedLbp1Playlist body)
     {
         GameUser user = dataContext.User!;
         
@@ -55,7 +54,7 @@ public class PlaylistEndpoints : EndpointGroup
             dataContext.Database.SetUserRootPlaylist(user, playlist);
         
         // Create the new playlist, returning the data
-        return new Response(SerializedPlaylist.FromOld(playlist, dataContext), ContentType.Xml);
+        return new Response(SerializedLbp1Playlist.FromOld(playlist, dataContext), ContentType.Xml);
     }
 
     // Gets the slots contained within a playlist
@@ -147,7 +146,7 @@ public class PlaylistEndpoints : EndpointGroup
 
     [GameEndpoint("setPlaylistMetaData/{id}", HttpMethods.Post, ContentType.Xml)]
     [RequireEmailVerified]
-    public Response UpdatePlaylistMetadata(RequestContext context, GameDatabaseContext database, GameUser user, int id, SerializedPlaylist body)
+    public Response UpdatePlaylistMetadata(RequestContext context, GameDatabaseContext database, GameUser user, int id, SerializedLbp1Playlist body)
     {
         GamePlaylist? playlist = database.GetPlaylistById(id);
         if (playlist == null)

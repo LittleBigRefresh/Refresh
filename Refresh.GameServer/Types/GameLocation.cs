@@ -22,4 +22,15 @@ public class GameLocation
 
     [XmlElement("y")] public int X { get; set; }
     [XmlElement("x")] public int Y { get; set; }
+
+    public static GameLocation RandomLocation() 
+    {
+        Random random = new();
+        
+        return new GameLocation
+        (
+            random.Next(65535), 
+            random.Next(65535)
+        );
+    }
 }

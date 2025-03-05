@@ -704,5 +704,20 @@ public class GameDatabaseProvider : RealmDatabaseProvider<GameDatabaseContext>
         //         dynamic oldSubPlaylistRelation = oldSubPlaylistRelations.ElementAt(i);
         //         SubPlaylistRelation newSubPlaylistRelation = newSubPlaylistRelations.ElementAt(i);
         //     }
+
+        // Version 163 added indices for LevelPlaylistRelations for custom playlist level ordering in LBP3
+        IQueryable<dynamic>? oldLevelPlaylistRelations = migration.OldRealm.DynamicApi.All("LevelPlaylistRelation");
+        IQueryable<LevelPlaylistRelation>? newLevelPlaylistRelations = migration.NewRealm.All<LevelPlaylistRelation>();
+        if (oldVersion < 163)
+            for (int i = 0; i < newLevelPlaylistRelations.Count(); i++)
+            {
+                dynamic oldLevelPlaylistRelation = oldLevelPlaylistRelations.ElementAt(i);
+                LevelPlaylistRelation newLevelPlaylistRelation = newLevelPlaylistRelations.ElementAt(i);
+
+                if (oldVersion < 163)
+                {
+                    newLevelPlaylistRelation.Index = 0;
+                }
+            }
     }
 }
