@@ -183,10 +183,27 @@ public partial class GameDatabaseContext // Playlists
 
         if (relation == null)
             return;
-        
+
+        // decrease index of every playlist level after this one by 1
+        this.DecreasePlaylistLevelIndicesAfterIndex(parent, relation.Index);
+
         this.Write(() =>
         {
             this.LevelPlaylistRelations.Remove(relation);
+        });
+    }
+
+    private void DecreasePlaylistLevelIndicesAfterIndex(GamePlaylist playlist, int startIndex)
+    {
+        IEnumerable<LevelPlaylistRelation> relations = this.LevelPlaylistRelations
+            .Where(r => r.Playlist == playlist && r.Index >= startIndex)
+            .AsEnumerable();
+
+        this.Write(() => {
+            foreach(LevelPlaylistRelation relation in relations)
+            {
+                relation.Index--;
+            }
         });
     }
 
