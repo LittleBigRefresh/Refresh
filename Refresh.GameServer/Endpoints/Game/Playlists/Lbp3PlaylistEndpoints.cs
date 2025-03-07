@@ -79,14 +79,13 @@ public class Lbp3PlaylistEndpoints : EndpointGroup
         if (playlist == null)
             return null;
 
-        (int skip, int count) = context.GetPageData();
         IEnumerable<GameLevel> levels = dataContext.Database.GetLevelsInPlaylist(playlist, dataContext.Game);
 
         return new SerializedLevelList
         {
             Items = GameLevelResponse.FromOldList(levels, dataContext).ToList(),
-            Total = levels.Count(),
-            NextPageStart = skip + 1
+            Total = 0,
+            NextPageStart = 0
         };
     }
 
@@ -167,15 +166,12 @@ public class Lbp3PlaylistEndpoints : EndpointGroup
         if (user == null) 
             return null;
 
-        (int skip, int count) = context.GetPageData();
         IEnumerable<GamePlaylist> playlists = dataContext.Database.GetPlaylistsByAuthor(user);
 
         return new SerializedLbp3PlaylistList 
-        (
-            SerializedLbp3Playlist.FromOldList(playlists.Skip(skip).Take(count), dataContext),
-            playlists.Count(),
-            skip
-        );
+        {
+            Items = SerializedLbp3Playlist.FromOldList(playlists, dataContext).ToList()
+        };
     }
 
     [GameEndpoint("favouritePlaylists/{username}", HttpMethods.Get, ContentType.Xml)]
@@ -191,11 +187,9 @@ public class Lbp3PlaylistEndpoints : EndpointGroup
         IEnumerable<GamePlaylist> playlists = dataContext.Database.GetPlaylistsFavouritedByUser(user);
 
         return new SerializedLbp3FavouritePlaylistList
-        (
-            SerializedLbp3Playlist.FromOldList(playlists.Skip(skip).Take(count), dataContext),
-            playlists.Count(),
-            skip
-        );
+        {
+            Items = SerializedLbp3Playlist.FromOldList(playlists.Skip(skip).Take(count), dataContext).ToList()
+        };
     }
 
     [GameEndpoint("favourite/playlist/{playlistId}", HttpMethods.Post, ContentType.Xml)]
