@@ -20,7 +20,7 @@ public class GameMinimalLevelResponse : IDataConvertableFrom<GameMinimalLevelRes
     [XmlElement("game")] public required int GameVersion { get; set; }
     [XmlElement("rootLevel")] public required string RootResource { get; set; } = string.Empty;
     [XmlElement("description")] public required string Description { get; set; } = string.Empty;
-    [XmlElement("location")] public required GameLocation Location { get; set; } = GameLocation.Zero;
+    [XmlElement("location")] public required GameLocation Location { get; set; } = GameLocation.ZeroLocation;
     [XmlElement("npHandle")] public required SerializedUserHandle? Handle { get; set; }
     [XmlAttribute("type")] public required string? Type { get; set; }
     [XmlElement("mmpick")] public required bool TeamPicked { get; set; }

@@ -13,9 +13,9 @@ public partial class GameDatabaseContext // Playlists
     /// <summary>
     /// Default icon used by playlists created in LBP3, through ApiV3 or similar
     /// </summary>
-    private readonly string defaultPlaylistIcon = "g18451"; // LBP1 star sticker
+    private const string defaultPlaylistIcon = "g18451"; // LBP1 star sticker
 
-    private void CreatePlaylist(GamePlaylist createInfo)
+    private void CreatePlaylistInternal(GamePlaylist createInfo)
     {
         DateTimeOffset now = this._time.Now;
 
@@ -39,47 +39,48 @@ public partial class GameDatabaseContext // Playlists
             IsRoot = rootPlaylist,
         };
 
-        this.CreatePlaylist(playlist);
+        this.CreatePlaylistInternal(playlist);
 
         return playlist;
     }
 
     public GamePlaylist CreatePlaylist(GameUser user, SerializedLbp3Playlist createInfo)
     {
-        GameLocation randomLocation = GameLocation.RandomLocation();
+        GameLocation randomLocation = GameLocation.RandomLocation;
 
         GamePlaylist playlist = new()
         {
             Publisher = user, 
             Name = createInfo.Name ?? "",
             Description = createInfo.Description ?? "", 
-            IconHash = this.defaultPlaylistIcon,
+            IconHash = defaultPlaylistIcon,
             LocationX = randomLocation.X, 
             LocationY = randomLocation.Y,
             IsRoot = false,
         };
 
-        this.CreatePlaylist(playlist);
+        this.CreatePlaylistInternal(playlist);
 
         return playlist;
     }
 
     public void CreateRootPlaylist(GameUser user)
     {
-        GameLocation randomLocation = GameLocation.RandomLocation();
+        GameLocation randomLocation = GameLocation.RandomLocation;
 
         GamePlaylist rootPlaylist = new()
         {
+            Publisher = user,
             Name = "My Playlists",
             Description = $"{user.Username}'s root playlist",
-            IconHash = this.defaultPlaylistIcon,
+            IconHash = defaultPlaylistIcon,
             LocationX = randomLocation.X,
             LocationY = randomLocation.Y,
             IsRoot = true
         };
 
+        this.CreatePlaylistInternal(rootPlaylist);
         this.SetUserRootPlaylist(user, rootPlaylist);
-        this.AddSequentialObject(rootPlaylist);
     }
 
     public GamePlaylist? GetPlaylistById(int playlistId) 
