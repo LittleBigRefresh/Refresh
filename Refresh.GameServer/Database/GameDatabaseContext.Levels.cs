@@ -65,6 +65,24 @@ public partial class GameDatabaseContext // Levels
         return level;
     }
 
+    public GameLevel UpdateLevelPublisher(GameLevel level, GameUser newAuthor)
+    {
+        // No need to change the level author if we haven't actually changed the author.
+        if (level.Publisher?.UserId == newAuthor.UserId)
+            return level;
+        
+        // this comment is not outdated.
+        this.Write(() =>
+        {
+            // Change the level's publisher, making sure we also unset OriginalPublisher
+            // if this level wasn't uploaded by an actual user originally.
+            level.Publisher = newAuthor;
+            level.OriginalPublisher = null;
+        });
+
+        return level;
+    }
+    
     public GameLevel? UpdateLevel(GameLevel newLevel, GameUser author)
     {
         if (newLevel.Title is { Length: > UgcLimits.TitleLimit })
