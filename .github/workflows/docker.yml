@@ -40,11 +40,11 @@ jobs:
       # See https://github.com/docker/metadata-action#basic
       - name: Extract metadata for ${{ matrix.service.name }}
         id: meta
-        uses: docker/metadata-action@v5.5.1
+        uses: docker/metadata-action@v5.6.0
         with:
           images: ghcr.io/${{ github.repository_owner }}/${{ matrix.service.container_id }}
       - name: Build and push ${{ matrix.service.name }}
-        uses: docker/build-push-action@v6.7.0
+        uses: docker/build-push-action@v6.15.0
         with:
           context: .
           file: ${{ matrix.service.dockerfile }}
