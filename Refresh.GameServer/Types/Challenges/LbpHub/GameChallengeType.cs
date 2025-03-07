@@ -6,5 +6,5 @@ public enum GameChallengeType : byte
     Score = 1,
     Multiplier = 2,
     Lives = 3,
-    Prizes = 4, // prize bubbles, to be more specific
+    PrizeBubbles = 4,
 }

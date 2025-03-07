@@ -23,6 +23,7 @@ public partial class GameChallenge : IRealmObject, ISequentialId
     /// <summary>
     /// Whether this is a score/time/lives etc challenge.
     /// </summary>
+    /// <seealso cref="GameChallengeType"/>
     public GameChallengeType Type
     {
         get => (GameChallengeType)this._Type;
