@@ -218,14 +218,15 @@ public partial class GameDatabaseContext // Playlists
 
     public IEnumerable<GamePlaylist> GetPlaylistsContainingPlaylist(GamePlaylist playlist)
         // TODO: with postgres this can be IQueryable
-        => this.SubPlaylistRelations.Where(p => p.SubPlaylist == playlist).AsEnumerable()
-            .OrderByDescending(r => r.Timestamp)
+        => this.SubPlaylistRelations.Where(p => p.SubPlaylist == playlist).OrderByDescending(r => r.Timestamp)
+            .AsEnumerable()
             .Select(r => this.GamePlaylists.First(p => p.PlaylistId == r.Playlist.PlaylistId))
             .Where(p => !p.IsRoot);
 
     public IEnumerable<GamePlaylist> GetPlaylistsByAuthorContainingPlaylist(GameUser user, GamePlaylist playlist)
         // TODO: with postgres this can be IQueryable
-        => this.SubPlaylistRelations.Where(p => p.SubPlaylist == playlist).AsEnumerable()
+        => this.SubPlaylistRelations.Where(p => p.SubPlaylist == playlist).OrderByDescending(r => r.Timestamp)
+            .AsEnumerable()
             .OrderByDescending(r => r.Timestamp)
             .Select(r => this.GamePlaylists.First(p => p.PlaylistId == r.Playlist.PlaylistId))
             .Where(p => p.Publisher.UserId == user.UserId)
@@ -251,49 +252,46 @@ public partial class GameDatabaseContext // Playlists
 
     public IEnumerable<GamePlaylist> GetPlaylistsInPlaylist(GamePlaylist playlist)
         // TODO: When we have postgres, remove the `AsEnumerable` call for performance. 
-        => this.SubPlaylistRelations.Where(p => p.Playlist == playlist).AsEnumerable()
-            .OrderByDescending(r => r.Timestamp)
+        => this.SubPlaylistRelations.Where(p => p.Playlist == playlist).OrderByDescending(r => r.Timestamp)
+            .AsEnumerable()
             .Select(l => l.SubPlaylist);
 
     public IEnumerable<GamePlaylist> GetPlaylistsByAuthor(GameUser author)
-        // TODO: When we have postgres, remove the `AsEnumerable` call for performance. 
-        => this.GamePlaylists.Where(p => p.Publisher == author).AsEnumerable()
+        => this.GamePlaylists.Where(p => p.Publisher == author)
             .Where(p => !p.IsRoot)
             .OrderByDescending(p => p.LastUpdateDate);
 
     public IEnumerable<GamePlaylist> GetPlaylistsByAuthorContainingLevel(GameUser author, GameLevel level)
         // TODO: When we have postgres, remove the `AsEnumerable` call for performance. 
-        => this.LevelPlaylistRelations.Where(p => p.Level == level).AsEnumerable()
-            .OrderByDescending(r => r.Timestamp)
+        => this.LevelPlaylistRelations.Where(p => p.Level == level).OrderByDescending(r => r.Timestamp)
+            .AsEnumerable()
             .Select(r => this.GamePlaylists.First(p => p.PlaylistId == r.Playlist.PlaylistId))
             .Where(p => p.Publisher.UserId == author.UserId);
     
     public IEnumerable<GamePlaylist> GetPlaylistsContainingLevel(GameLevel level)
         // TODO: When we have postgres, remove the `AsEnumerable` call for performance. 
-        => this.LevelPlaylistRelations.Where(p => p.Level == level).AsEnumerable()
-            .OrderByDescending(r => r.Timestamp)
+        => this.LevelPlaylistRelations.Where(p => p.Level == level).OrderByDescending(r => r.Timestamp)
+            .AsEnumerable()
             .Select(r => this.GamePlaylists.First(p => p.PlaylistId == r.Playlist.PlaylistId));
 
     public IEnumerable<GamePlaylist> GetNewestPlaylists()
-        // TODO: When we have postgres, remove the `AsEnumerable` call for performance. 
-        => this.GamePlaylists.AsEnumerable()
-            .Where(p => !p.IsRoot)
+        => this.GamePlaylists.Where(p => !p.IsRoot)
             .OrderByDescending(p => p.CreationDate);
 
     public IEnumerable<GamePlaylist> GetMostHeartedPlaylists() 
         // TODO: When we have postgres, remove the `AsEnumerable` call for performance.
         // TODO: reduce code duplication for getting most of x
-        => this.FavouritePlaylistRelations.AsEnumerable()
+        => this.FavouritePlaylistRelations
             .GroupBy(r => r.Playlist)
             .Select(g => new { Playlist = g.Key, Count = g.Count() })
-            .OrderByDescending(x => x.Count)
+            .OrderByDescending(x => x.Count).AsEnumerable()
             .Select(x => x.Playlist)
             .Where(p => p != null);
 
     public IEnumerable<GamePlaylist> GetPlaylistsFavouritedByUser(GameUser user) 
         // TODO: When we have postgres, remove the `AsEnumerable` call for performance.
-        => this.FavouritePlaylistRelations.Where(r => r.User == user).AsEnumerable()
-            .OrderByDescending(r => r.Timestamp)
+        => this.FavouritePlaylistRelations.Where(r => r.User == user)
+            .OrderByDescending(r => r.Timestamp).AsEnumerable()
             .Select(r => r.Playlist);
 
     public int GetFavouriteCountForPlaylist(GamePlaylist playlist)
