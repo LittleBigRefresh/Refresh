@@ -7,7 +7,7 @@ namespace Refresh.GameServer.Configuration;
 /// </summary>
 public class IntegrationConfig : Config
 {
-    public override int CurrentConfigVersion => 6;
+    public override int CurrentConfigVersion => 7;
     public override int Version { get; set; }
     protected override void Migrate(int oldVer, dynamic oldConfig)
     {
@@ -69,4 +69,6 @@ public class IntegrationConfig : Config
     #endregion
     
     public string? GrafanaDashboardUrl { get; set; }
+
+    public string WebsiteLogoUrl { get; set; } = "https://github.com/LittleBigRefresh/Branding/blob/main/icons/refresh_transparent.svg";
 }
