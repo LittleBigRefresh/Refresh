@@ -124,16 +124,7 @@ public class Lbp3PlaylistEndpoints : EndpointGroup
         if (playlist.Publisher.UserId != user.UserId)
             return Unauthorized;
 
-        int index = 0;
-        foreach (int levelId in body.LevelIds)
-        {
-            GameLevel? level = dataContext.Database.GetLevelById(levelId);
-            if (level == null) continue;
-
-            dataContext.Database.SetPlaylistLevelIndex(playlist, level, index);
-            index++;
-        }
-
+        dataContext.Database.UpdatePlaylistLevelOrder(playlist, body.LevelIds);
         return OK;
     }
 

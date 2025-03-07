@@ -206,13 +206,30 @@ public partial class GameDatabaseContext // Playlists
         });
     }
 
-    public void SetPlaylistLevelIndex(GamePlaylist playlist, GameLevel level, int newIndex)
+    public void UpdatePlaylistLevelOrder(GamePlaylist playlist, List<int> levelIds)
     {
-        LevelPlaylistRelation relation = this.LevelPlaylistRelations
-            .First(r => r.Playlist == playlist && r.Level == level);
+        IEnumerable<LevelPlaylistRelation> relations = this.LevelPlaylistRelations.Where(p => p.Playlist == playlist).OrderBy(r => r.Index);
+        int relationCount = relations.Count();
 
+        int newIndex = 0;
         this.Write(() => {
-            relation.Index = newIndex;
+            // overwrite the indices of relations whose level IDs appear in the given list, based on the order of these IDs
+            foreach (int levelId in levelIds)
+            {
+                LevelPlaylistRelation? relation = relations.FirstOrDefault(r => r.Level.LevelId == levelId);
+                if (relation != null)
+                {
+                    relation.Index = newIndex;
+                    newIndex++;
+                }
+            }
+
+            // now "append" the relations whose level IDs did not appear in the given list
+            while (newIndex < relationCount)
+            {
+                relations.ElementAt(newIndex).Index = newIndex;
+                newIndex++;
+            }
         });
     }
 
@@ -231,6 +248,14 @@ public partial class GameDatabaseContext // Playlists
             .Select(r => this.GamePlaylists.First(p => p.PlaylistId == r.Playlist.PlaylistId))
             .Where(p => p.Publisher.UserId == user.UserId)
             .Where(p => !p.IsRoot);
+
+    public IEnumerable<GameLevel> GetLevelsInPlaylist(GamePlaylist playlist)
+        // TODO: When we have postgres, remove the `AsEnumerable` call for performance. 
+        => this.LevelPlaylistRelations
+            .Where(l => l.Playlist == playlist)
+            .OrderBy(r => r.Index)
+            .AsEnumerable()
+            .Select(l => l.Level);
 
     public IEnumerable<GameLevel> GetLevelsInPlaylist(GamePlaylist playlist, TokenGame game)
         // TODO: When we have postgres, remove the `AsEnumerable` call for performance. 
