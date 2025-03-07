@@ -22,4 +22,5 @@ public partial class LevelPlaylistRelation : IRealmObject
     /// The place of this level in the playlist, starts from 0
     /// </summary>
     public int Index { get; set; } = 0;
+    public DateTimeOffset Timestamp { get; set; }
 }

@@ -9,4 +9,5 @@ public partial class FavouritePlaylistRelation : IRealmObject
 {
     public GamePlaylist Playlist { get; set; }
     public GameUser User { get; set; }
+    public DateTimeOffset Timestamp { get; set; }
 }
