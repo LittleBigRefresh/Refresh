@@ -70,5 +70,5 @@ public class IntegrationConfig : Config
     
     public string? GrafanaDashboardUrl { get; set; }
 
-    public string? WebsiteLogoUrl { get; set; }
+    public string WebsiteLogoUrl { get; set; } = "https://github.com/LittleBigRefresh/Branding/blob/main/icons/refresh_transparent.svg";
 }
