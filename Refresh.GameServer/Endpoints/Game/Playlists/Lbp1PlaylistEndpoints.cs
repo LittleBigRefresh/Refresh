@@ -66,26 +66,22 @@ public class Lbp1PlaylistEndpoints : EndpointGroup
         GamePlaylist? playlist = dataContext.Database.GetPlaylistById(id);
         if (playlist == null)
             return null;
-        
-        // TODO: when we get postgres, this can be IQueryable and we wont need ToList()
-        IList<GamePlaylist> subPlaylists = dataContext.Database.GetPlaylistsInPlaylist(playlist).ToList();
-        // TODO: when we get postgres, this can be IQueryable and we wont need ToList()
-        IList<GameLevel> levels = dataContext.Database.GetLevelsInPlaylist(playlist, dataContext.Game).ToList();                    
-                    
+
         (int skip, int count) = context.GetPageData();
         
-        int total = subPlaylists.Count + levels.Count;
+        // Divide count by 2 so the sum of subplaylists and levels is near the requested count
+        DatabaseList<GamePlaylist> subPlaylists = dataContext.Database.GetPlaylistsInPlaylist(playlist, skip, count / 2);
+        DatabaseList<GameLevel> levels = dataContext.Database.GetLevelsInPlaylist(playlist, dataContext.Game, skip, count / 2);                    
 
         // Concat together the playlist's sub-playlists and levels 
         IEnumerable<GameMinimalLevelResponse> slots =
-            GameMinimalLevelResponse.FromOldList(subPlaylists, dataContext) // the sub-playlists
-                .Concat(GameMinimalLevelResponse.FromOldList(levels, dataContext)) // the sub-levels
-                .Skip(skip).Take(count);
+            GameMinimalLevelResponse.FromOldList(subPlaylists.Items, dataContext) // the sub-playlists
+                .Concat(GameMinimalLevelResponse.FromOldList(levels.Items, dataContext)); // the sub-levels
         
         // Convert the GameLevelResponse list down to a GameMinimalLevelResponse
         return new SerializedMinimalLevelList(
             slots,
-            total,
+            subPlaylists.TotalItems + levels.TotalItems,
             skip
         );
     }
@@ -108,9 +104,11 @@ public class Lbp1PlaylistEndpoints : EndpointGroup
                 return null;
         }
 
+        (int skip, int count) = context.GetPageData();
+
         // Get the playlists which contain the level/playlist, and if we have an author specified, filter it down to only playlists which are created by the author
         // TODO: with postgres this can be IQueryable, and we dont need List
-        List<GamePlaylist> playlists;
+        DatabaseList<GamePlaylist> playlists;
         if (slotType == "playlist")
         {
             GamePlaylist? playlist = dataContext.Database.GetPlaylistById(slotId);
@@ -118,8 +116,8 @@ public class Lbp1PlaylistEndpoints : EndpointGroup
                 return null;
 
             playlists = author == null ? 
-                dataContext.Database.GetPlaylistsContainingPlaylist(playlist).ToList() : 
-                dataContext.Database.GetPlaylistsByAuthorContainingPlaylist(author, playlist).ToList();
+                dataContext.Database.GetPlaylistsContainingPlaylist(playlist, skip, count) : 
+                dataContext.Database.GetPlaylistsByAuthorContainingPlaylist(author, playlist, skip, count);
         }
         else
         {
@@ -128,18 +126,14 @@ public class Lbp1PlaylistEndpoints : EndpointGroup
                 return null;
             
             playlists = author == null ? 
-                dataContext.Database.GetPlaylistsContainingLevel(level).ToList() : 
-                dataContext.Database.GetPlaylistsByAuthorContainingLevel(author, level).ToList();
+                dataContext.Database.GetPlaylistsContainingLevel(level, skip, count) : 
+                dataContext.Database.GetPlaylistsByAuthorContainingLevel(author, level, skip, count);
         }
-        
-        int total = playlists.Count;
-        
-        (int skip, int count) = context.GetPageData();
 
         // Return the serialized playlists 
         return new SerializedMinimalLevelList(
-            GameMinimalLevelResponse.FromOldList(playlists.Skip(skip).Take(count), dataContext), 
-            total, 
+            GameMinimalLevelResponse.FromOldList(playlists.Items, dataContext), 
+            playlists.TotalItems, 
             skip
         );
     }
@@ -157,7 +151,6 @@ public class Lbp1PlaylistEndpoints : EndpointGroup
             return Unauthorized;
         
         database.UpdatePlaylist(playlist, body);
-        
         return OK;
     }
 
@@ -174,7 +167,6 @@ public class Lbp1PlaylistEndpoints : EndpointGroup
             return Unauthorized;
 
         database.DeletePlaylist(playlist);
-            
         return OK;
     }
 
@@ -251,7 +243,6 @@ public class Lbp1PlaylistEndpoints : EndpointGroup
                 return NotFound;
  
             database.AddLevelToPlaylist(level, parentPlaylist);
-            
             return OK;
         }
     }

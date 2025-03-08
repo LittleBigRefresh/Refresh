@@ -66,7 +66,7 @@ public class LevelEndpoints : EndpointGroup
 
         if (levels == null) return null;
         
-        IEnumerable<GameMinimalLevelResponse> category = levels.Items
+        IEnumerable<GameMinimalLevelResponse> slots = levels.Items
             .Select(l => GameMinimalLevelResponse.FromOld(l, dataContext)!);
 
         int injectedAmount = 0;
@@ -81,18 +81,18 @@ public class LevelEndpoints : EndpointGroup
             if (playlist != null)
             {
                 // TODO: with postgres this can be IQueryable
-                List<GamePlaylist> playlists = database.GetPlaylistsInPlaylist(playlist).ToList();
-                
-                category = GameMinimalLevelResponse.FromOldList(playlists, dataContext).Concat(category);
+                DatabaseList<GamePlaylist> playlists = database.GetPlaylistsInPlaylist(playlist, skip, count);
+                slots = GameMinimalLevelResponse.FromOldList(playlists.Items, dataContext).Concat(slots);
+
                 // While this does technically return more slot results than the game is expecting,
                 // because we tell the game exactly what the "next page index" is (its not based on count sent),
                 // pagination still seems to work perfectly fine in LBP1!
                 // The injected items are basically just fake slots which "follow" the current page.
-                injectedAmount += playlists.Count;
+                injectedAmount += playlists.TotalItems;
             }
         }   
 
-        return new SerializedMinimalLevelList(category, levels.TotalItems + injectedAmount, skip + count);
+        return new SerializedMinimalLevelList(slots, levels.TotalItems + injectedAmount, skip + count);
     }
 
     [GameEndpoint("slots/{route}/{username}", ContentType.Xml)]

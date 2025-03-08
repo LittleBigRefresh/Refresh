@@ -3,6 +3,7 @@ using Bunkum.Core.Endpoints;
 using Bunkum.Core.Responses;
 using Bunkum.Listener.Protocol;
 using Bunkum.Protocols.Http;
+using Refresh.GameServer.Database;
 using Refresh.GameServer.Endpoints.Game.DataTypes.Response;
 using Refresh.GameServer.Extensions;
 using Refresh.GameServer.Types.Data;
@@ -174,12 +175,13 @@ public class Lbp3PlaylistEndpoints : EndpointGroup
         if (user == null) 
             return null;
 
+        // The only LBP3 playlist endpoint so far which uses pagination
         (int skip, int count) = context.GetPageData();
-        IEnumerable<GamePlaylist> playlists = dataContext.Database.GetPlaylistsFavouritedByUser(user);
+        DatabaseList<GamePlaylist> playlists = dataContext.Database.GetPlaylistsFavouritedByUser(user, skip, count);
 
         return new SerializedLbp3FavouritePlaylistList
         {
-            Items = SerializedLbp3Playlist.FromOldList(playlists.Skip(skip).Take(count), dataContext).ToList()
+            Items = SerializedLbp3Playlist.FromOldList(playlists.Items, dataContext).ToList()
         };
     }
 

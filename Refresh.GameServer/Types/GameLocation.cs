@@ -13,8 +13,8 @@ public class GameLocation
 
     public static GameLocation RandomLocation => new()
     {
-        X = Random.Shared.Next(65535),
-        Y = Random.Shared.Next(65535),
+        X = Random.Shared.Next(ushort.MaxValue),
+        Y = Random.Shared.Next(ushort.MaxValue),
     };
 
     public GameLocation()
