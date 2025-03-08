@@ -78,13 +78,17 @@ public class AdminLevelApiEndpoints : EndpointGroup
     [DocSummary("Changes the author of a level. The new author must be an existing user on the server..")]
     [DocError(typeof(ApiNotFoundError), ApiNotFoundError.LevelMissingErrorWhen)]
     [DocError(typeof(ApiNotFoundError), ApiNotFoundError.UserMissingErrorWhen)]
+    [DocError(typeof(ApiValidationError), ApiValidationError.ObjectIdParseErrorWhen)]
     public ApiOkResponse SetLevelAuthor(RequestContext context, GameDatabaseContext database, GameUser user, int id, ApiSetLevelAuthorRequest body)
     {
+        if (!ObjectId.TryParse(body.AuthorId, out ObjectId authorId))
+            return ApiValidationError.ObjectIdParseError;
+        
         GameLevel? level = database.GetLevelById(id);
         if (level == null)
             return ApiNotFoundError.LevelMissingError;
         
-        GameUser? newAuthor = database.GetUserByUsername(body.AuthorName);
+        GameUser? newAuthor = database.GetUserByObjectId(authorId);
         if (newAuthor == null)
             return ApiNotFoundError.UserMissingError;
 
