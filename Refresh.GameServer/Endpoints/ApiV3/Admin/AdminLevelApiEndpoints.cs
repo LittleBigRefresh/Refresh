@@ -80,11 +80,11 @@ public class AdminLevelApiEndpoints : EndpointGroup
     [DocError(typeof(ApiNotFoundError), ApiNotFoundError.UserMissingErrorWhen)]
     public ApiOkResponse SetLevelAuthor(RequestContext context, GameDatabaseContext database, GameUser user, int id, ApiSetLevelAuthorRequest body)
     {
-        var level = database.GetLevelById(id);
+        GameLevel? level = database.GetLevelById(id);
         if (level == null)
             return ApiNotFoundError.LevelMissingError;
         
-        var newAuthor = database.GetUserByUsername(body.AuthorName);
+        GameUser? newAuthor = database.GetUserByUsername(body.AuthorName);
         if (newAuthor == null)
             return ApiNotFoundError.UserMissingError;
 
