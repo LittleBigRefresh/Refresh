@@ -67,11 +67,9 @@ public partial class GameDatabaseContext // Levels
 
     public GameLevel UpdateLevelPublisher(GameLevel level, GameUser newAuthor)
     {
-        // No need to change the level author if we haven't actually changed the author.
         if (level.Publisher?.UserId == newAuthor.UserId)
             return level;
         
-        // this comment is not outdated.
         this.Write(() =>
         {
             // Change the level's publisher, making sure we also unset OriginalPublisher
