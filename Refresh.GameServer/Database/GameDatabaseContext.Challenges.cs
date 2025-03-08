@@ -184,7 +184,8 @@ public partial class GameDatabaseContext // Challenges
         IEnumerable<GameChallengeScore> highScores = this.GameChallengeScores.Where(s => s.Challenge == challenge && s.GhostHash != null);
 
         // Ordering like this ensures we actually do get the first (oldest) score for the challenge
-        GameChallengeScore? firstScore = highScores.OrderBy(s => s.PublishDate)
+        GameChallengeScore? firstScore = highScores
+            .OrderBy(s => s.PublishDate)
             .FirstOrDefault();
         if (firstScore == null) return null;
 
@@ -203,7 +204,8 @@ public partial class GameDatabaseContext // Challenges
         IEnumerable<GameChallengeScore> highScores = this.GameChallengeScores.Where(s => s.Challenge == challenge && s.GhostHash != null);
 
         // Ordering like this ensures the high score we get is actually the (newest) high score of the user
-        GameChallengeScore? usersHighScore = highScores.OrderByDescending(s => s.PublishDate)
+        GameChallengeScore? usersHighScore = highScores
+            .OrderByDescending(s => s.PublishDate)
             .FirstOrDefault(s => s.Publisher.UserId == user.UserId);
         if (usersHighScore == null) return null;
 
@@ -225,7 +227,8 @@ public partial class GameDatabaseContext // Challenges
 
     public IEnumerable<GameChallengeScoreWithRank> GetRankedHighScoresForChallenge(GameChallenge challenge)
     {
-        IEnumerable<GameChallengeScore> highScores = this.GameChallengeScores.Where(s => s.Challenge == challenge && s.GhostHash != null)
+        IEnumerable<GameChallengeScore> highScores = this.GameChallengeScores
+            .Where(s => s.Challenge == challenge && s.GhostHash != null)
             .OrderByDescending(s => s.Score);
 
         return highScores.Select((s, i) => new GameChallengeScoreWithRank(s, i));
@@ -235,7 +238,8 @@ public partial class GameDatabaseContext // Challenges
     {
         IEnumerable<GameUser> mutuals = this.GetUsersMutuals(user);
 
-        IEnumerable<GameChallengeScore> mutualHighScores = this.GameChallengeScores.Where(s => s.Challenge == challenge && s.GhostHash != null)
+        IEnumerable<GameChallengeScore> mutualHighScores = this.GameChallengeScores
+            .Where(s => s.Challenge == challenge && s.GhostHash != null)
             .AsEnumerable()
             .Where(s => mutuals.Contains(s.Publisher))
             .OrderByDescending(s => s.Score);
@@ -254,7 +258,8 @@ public partial class GameDatabaseContext // Challenges
         if (count <= 0 || count % 2 != 1) 
             throw new ArgumentException("The number of scores must be odd and greater than 0.", nameof(count));
 
-        IEnumerable<GameChallengeScore> highScores = this.GameChallengeScores.Where(s => s.Challenge == score.Challenge && s.GhostHash != null)
+        IEnumerable<GameChallengeScore> highScores = this.GameChallengeScores
+            .Where(s => s.Challenge == score.Challenge && s.GhostHash != null)
             .OrderByDescending(s => s.Score);
 
         // If the given score is the highest score, take the first 3 scores
@@ -267,7 +272,8 @@ public partial class GameDatabaseContext // Challenges
 
         // Else return the given score with other scores around it
         else
-            return highScores.Select((s, i) => new GameChallengeScoreWithRank(s, i + 1))
+            return highScores
+                .Select((s, i) => new GameChallengeScoreWithRank(s, i + 1))
                 .Skip(Math.Min(highScores.Count(), highScores.ToList().IndexOf(score) - count / 2)) // center user's score around other scores
                 .Take(count)
                 .AsEnumerable();

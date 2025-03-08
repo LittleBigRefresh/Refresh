@@ -14,5 +14,5 @@ public class SerializedChallengeCriterion
     /// <summary>
     /// Appears to always be 0 when sent by the game, therefore we don't need to save it.
     /// </summary>
-    [XmlText] public long Value { get; set; }
+    [XmlText] public long Value { get; set; } = 0;
 }

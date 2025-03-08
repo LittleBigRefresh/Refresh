@@ -21,7 +21,7 @@ public class SerializedChallenge : IDataConvertableFrom<SerializedChallenge, Gam
     /// Always 0 when challenge is first uploaded by LBP hub, doesn't appear to affect anything if set to not 0 in the response.
     /// The actual first score of a challenge is sent seperately as a SerializedChallengeAttempt.
     /// </summary>
-    [XmlElement("score")] public long Score { get; set; }
+    [XmlElement("score")] public long Score { get; set; } = 0;
     /// <summary>
     /// The Uid of the checkpoint this challenge starts on.
     /// </summary>
@@ -66,7 +66,6 @@ public class SerializedChallenge : IDataConvertableFrom<SerializedChallenge, Gam
                 Title = old.Level.Title,  // achieves nothing if filled out
             },
             PublisherName = old.Publisher.Username,
-            Score = 0,
             StartCheckpointUid = old.StartCheckpointUid,
             FinishCheckpointUid = old.FinishCheckpointUid,
             PublishedAt = old.PublishDate.ToUnixTimeMilliseconds(),
@@ -76,8 +75,7 @@ public class SerializedChallenge : IDataConvertableFrom<SerializedChallenge, Gam
             [
                 new()
                 {
-                    Type = (byte)old.Type,
-                    Value = 0,
+                    Type = (byte)old.Type
                 }
             ],
         };
