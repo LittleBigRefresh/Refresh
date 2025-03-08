@@ -5,6 +5,7 @@ using Bunkum.Listener.Protocol;
 using Bunkum.Protocols.Http;
 using Refresh.GameServer.Types.Assets;
 using Refresh.GameServer.Types.Challenges.LbpHub;
+using Refresh.GameServer.Types.Challenges.LbpHub.Ghost;
 using Refresh.GameServer.Types.Data;
 using Refresh.GameServer.Types.Levels;
 using Refresh.GameServer.Types.Lists;
@@ -127,15 +128,15 @@ public class ChallengeEndpoints : EndpointGroup
         GameChallenge? challenge = dataContext.Database.GetChallengeById(challengeId);
         if (challenge == null) return NotFound;
 
-        bool isFirstScore = dataContext.Database.GetFirstScoreForChallenge(challenge) == null;
-        GameAsset? ghostAsset = body.GhostHash == null ? null : dataContext.Database.GetAssetFromHash(body.GhostHash);
+        bool isFirstScore = dataContext.Database.DoesChallengeHaveScores(challenge);
+        GameAsset? ghostAsset = dataContext.Database.GetAssetFromHash(body.GhostHash);
 
         // If there is no GameAsset in the database with the score's GhostHash, or the referred asset is not a ChallengeGhost for some reason,
         // reject the score.
         if (ghostAsset == null || ghostAsset.AssetType != GameAssetType.ChallengeGhost)
         {
-            // If this is the first score of the challenge and uploaded by the challenge publisher (usually alongside the challenge itself),
-            // also tell them about the state of the challenge's first score, otherwise only tell them why their score was rejected.
+            // If this is the first score of the challenge, tell it's uploader about the state of the challenge's first score, 
+            // else only tell them why their score was rejected.
             if (isFirstScore)
             {
                 dataContext.Database.AddErrorNotification(
@@ -193,7 +194,7 @@ public class ChallengeEndpoints : EndpointGroup
         if (challenge == null) return null;
 
         // Get and return the high scores (plus first score) of the challenge
-        IEnumerable<GameChallengeScoreWithRank> scores = dataContext.Database.GetRankedScoresForChallenge(challenge);
+        IEnumerable<GameChallengeScoreWithRank> scores = dataContext.Database.GetRankedHighScoresForChallenge(challenge);
         return new SerializedChallengeScoreList(SerializedChallengeScore.FromOldList(scores).ToList());
     }
 
@@ -201,6 +202,9 @@ public class ChallengeEndpoints : EndpointGroup
     /// Intended to return the high score of a user for a challenge. Return the challenge's first score if
     /// the player hasn't cleared this challenge yet, otherwise the requested user's high score.
     /// </summary>
+    // NOTE: When a player is about to play a challenge in a level and LBP Hub requests for a user's high score, if you send a score which is not actually the high score for that user,
+    //       the game will send one additional request to this endpoint and another one to GetContextualScoresForChallenge,
+    //       load the score we returned fine, but it will bug out and break the ghost asset's path replay
     [GameEndpoint("challenge/{challengeId}/scoreboard/{username}", HttpMethods.Get, ContentType.Xml)]
     [MinimumRole(GameUserRole.Restricted)]
     [NullStatusCode(NotFound)]
@@ -213,12 +217,13 @@ public class ChallengeEndpoints : EndpointGroup
         if (requestedUser == null) return null;
 
         // If there is no first score for this challenge, there are no scores at all.
+        // We want the first score's rank here aswell so we could respond with a SerializedChallengeScore of the first score below
         GameChallengeScoreWithRank? firstScore = dataContext.Database.GetRankedFirstScoreForChallenge(challenge);
         if (firstScore == null) return null;
 
-        // If the requesting user hasnt cleared the challenge yet and the requested user is the first score's uploader,
+        // If the requesting user has not cleared the challenge yet and the requested user is the first score's uploader,
         // return the first score, else the requested user's high score
-        if (dataContext.Database.GetTotalChallengeClearsByUser(challenge, requestingUser) < 1 && firstScore.score.Publisher.UserId == requestedUser.UserId)
+        if (!dataContext.Database.HasUserClearedChallenge(challenge, requestingUser) && firstScore.score.Publisher.UserId == requestedUser.UserId)
             return SerializedChallengeScore.FromOld(firstScore);
         else
             return SerializedChallengeScore.FromOld(dataContext.Database.GetRankedHighScoreByUserForChallenge(challenge, requestedUser));
@@ -236,18 +241,9 @@ public class ChallengeEndpoints : EndpointGroup
         GameChallenge? challenge = dataContext.Database.GetChallengeById(challengeId);
         if (challenge == null) return null;
 
-        IEnumerable<GameChallengeScoreWithRank> rankedScores = dataContext.Database.GetRankedScoresByUsersMutualsForChallenge(challenge, user);
+        IEnumerable<GameChallengeScoreWithRank> rankedScores = dataContext.Database.GetRankedHighScoresByUsersMutualsForChallenge(challenge, user);
         return new SerializedChallengeScoreList(SerializedChallengeScore.FromOldList(rankedScores).ToList());
     }
-
-    /// <summary>
-    /// Gets called together with the other GetContextualScoresForChallenge endpoint below, but it doesn't actually do anything in-game.
-    /// Stubbed to always return OK.
-    /// </summary>
-    [GameEndpoint("challenge/{challengeId}/scoreboard//contextual" /*typo is intentional*/, HttpMethods.Get, ContentType.Xml)]
-    [MinimumRole(GameUserRole.Restricted)]
-    public Response GetContextualScoresForChallenge(RequestContext context, DataContext dataContext, GameUser user, int challengeId) 
-        => OK;
 
     /// <summary>
     /// Gets called when a user finishes a challenge to show a 3 scores large fragment of it's leaderboard with the user's highscore preferrably being in the middle.
@@ -264,12 +260,21 @@ public class ChallengeEndpoints : EndpointGroup
         GameChallenge? challenge = dataContext.Database.GetChallengeById(challengeId);
         if (challenge == null) return null;
 
-        GameChallengeScoreWithRank? newestScore = dataContext.Database.GetRankedHighScoreByUserForChallenge(challenge, user);
-        if (newestScore == null) return null;
+        GameChallengeScore? highScore = dataContext.Database.GetHighScoreByUserForChallenge(challenge, user);
+        if (highScore == null) return null;
 
-        IEnumerable<GameChallengeScoreWithRank> rankedScores = dataContext.Database.GetRankedScoresAroundChallengeScore(newestScore.score, 3);
+        IEnumerable<GameChallengeScoreWithRank> rankedScores = dataContext.Database.GetRankedHighScoresAroundChallengeScore(highScore, 3);
         return new SerializedChallengeScoreList(SerializedChallengeScore.FromOldList(rankedScores));
-    } 
+    }
+
+    /// <summary>
+    /// Gets called together with the other GetContextualScoresForChallenge endpoint above, but it doesn't actually do anything in-game.
+    /// Stubbed to always return OK.
+    /// </summary>
+    [GameEndpoint("challenge/{challengeId}/scoreboard//contextual" /*typo is intentional*/, HttpMethods.Get, ContentType.Xml)]
+    [MinimumRole(GameUserRole.Restricted)]
+    public Response GetContextualScoresForChallenge(RequestContext context, DataContext dataContext, GameUser user, int challengeId) 
+        => OK;
 
     #endregion
 
@@ -280,13 +285,13 @@ public class ChallengeEndpoints : EndpointGroup
     [GameEndpoint("developer-challenges/scores", HttpMethods.Get, ContentType.Xml)]
     [MinimumRole(GameUserRole.Restricted)]
     public Response GetDeveloperChallengeScores(RequestContext context, DataContext dataContext)
-        => NotImplemented;
+        => NotImplemented; // LBP Hub handles this response well
 
     // developer-challenges/3/scores
     [GameEndpoint("developer-challenges/{challengeId}/scores", HttpMethods.Post, ContentType.Xml)]
     [RequireEmailVerified]
     public Response SubmitDeveloperChallengeScore(RequestContext context, DataContext dataContext, GameUser user, int challengeId, string body)
-        => NotImplemented;
+        => NotImplemented; // LBP Hub handles this response well
 
     #endregion
 }

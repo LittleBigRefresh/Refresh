@@ -27,7 +27,7 @@ public class SerializedChallengeGhost
         if (ghostHash == null)
             return null;
 
-        // try to get the ghost asset's contents as a string
+        // Try to get the ghost asset's contents as a string
         if (!dataStore.TryGetDataFromStore(ghostHash, out byte[]? ghostContentBytes) || ghostContentBytes == null)
             return null;
 

@@ -23,6 +23,7 @@ public partial class GameDatabaseContext // Challenges
             Type = (GameChallengeType)createInfo.Criteria[0].Type,
             PublishDate = now,
             LastUpdateDate = now,
+            // TODO: Command and ApiV3/Website toggle to override the received ammount of days until expiration with a custom value (0 for no expiration at all)
             ExpirationDate = now.AddDays(createInfo.ExpiresAt),
         };
         
@@ -72,23 +73,28 @@ public partial class GameDatabaseContext // Challenges
         DateTimeOffset now = this._time.Now;
         return status switch
         {
-            "active" => challenges.Where(c => c.ExpirationDate > now),
-            "expired" => challenges.Where(c => c.ExpirationDate <= now),
-            _ => challenges,
+            // Sort by soonest expiration first
+            "active" => challenges.Where(c => c.ExpirationDate > now).OrderBy(c => c.ExpirationDate),
+
+            // Sort by most recently expired first
+            "expired" => challenges.Where(c => c.ExpirationDate <= now).OrderByDescending(c => c.ExpirationDate),
+
+            // Sort by newest first
+            _ => challenges.OrderByDescending(c => c.PublishDate),
         };
     }
 
     public IEnumerable<GameChallenge> GetChallenges(string? filter = null)
-        => this.FilterChallengesByStatus(this.GameChallenges, filter).AsEnumerable();
+        => this.FilterChallengesByStatus(this.GameChallenges, filter);
 
     public IEnumerable<GameChallenge> GetChallengesNotByUser(GameUser user, string? filter = null)
-        => this.FilterChallengesByStatus(this.GameChallenges.Where(c => c.Publisher != user), filter).AsEnumerable(); 
+        => this.FilterChallengesByStatus(this.GameChallenges.Where(c => c.Publisher != user), filter); 
 
     public IEnumerable<GameChallenge> GetChallengesByUser(GameUser user, string? filter = null)
-        => this.FilterChallengesByStatus(this.GameChallenges.Where(c => c.Publisher == user), filter).AsEnumerable();
+        => this.FilterChallengesByStatus(this.GameChallenges.Where(c => c.Publisher == user), filter);
 
     public IEnumerable<GameChallenge> GetChallengesForLevel(GameLevel level, string? filter = null)
-        => this.FilterChallengesByStatus(this.GameChallenges.Where(c => c.Level == level), filter).AsEnumerable();
+        => this.FilterChallengesByStatus(this.GameChallenges.Where(c => c.Level == level), filter);
 
     #endregion
 
@@ -163,79 +169,106 @@ public partial class GameDatabaseContext // Challenges
         });
     }
 
+    public bool DoesChallengeHaveScores(GameChallenge challenge)
+        => this.GameChallengeScores.Any(s => s.Challenge == challenge);
+
     public GameChallengeScore? GetFirstScoreForChallenge(GameChallenge challenge)
-        => this.GameChallengeScores.FirstOrDefault(s => s.Challenge == challenge && s.GhostHash != null);
+        => this.GameChallengeScores.Where(s => s.Challenge == challenge && s.GhostHash != null)
+            // Ordering like this ensures we actually do get the first (oldest) score for the challenge
+            .OrderBy(s => s.PublishDate)
+            .FirstOrDefault();
 
     public GameChallengeScoreWithRank? GetRankedFirstScoreForChallenge(GameChallenge challenge)
     {
-        IEnumerable<GameChallengeScore> scores = this.GameChallengeScores.Where(s => s.Challenge == challenge && s.GhostHash != null);
-        GameChallengeScore? score = scores.FirstOrDefault();
+        // We need the high scores to be able to get the first score's rank among them
+        IEnumerable<GameChallengeScore> highScores = this.GameChallengeScores.Where(s => s.Challenge == challenge && s.GhostHash != null);
 
-        if (score == null) return null;
-        return new(score, scores.OrderByDescending(s => s.Score).ToList().IndexOf(score) + 1);
+        // Ordering like this ensures we actually do get the first (oldest) score for the challenge
+        GameChallengeScore? firstScore = highScores.OrderBy(s => s.PublishDate)
+            .FirstOrDefault();
+        if (firstScore == null) return null;
+
+        return new(firstScore, highScores.OrderByDescending(s => s.Score).ToList().IndexOf(firstScore) + 1);
     }
+
+    public GameChallengeScore? GetHighScoreByUserForChallenge(GameChallenge challenge, GameUser user)
+        => this.GameChallengeScores.Where(s => s.Challenge == challenge && s.GhostHash != null)
+            // Ordering like this ensures the high score we get is actually the (newest) high score of the user
+            .OrderByDescending(s => s.PublishDate)
+            .FirstOrDefault(s => s.Publisher.UserId == user.UserId);
 
     public GameChallengeScoreWithRank? GetRankedHighScoreByUserForChallenge(GameChallenge challenge, GameUser user)
     {
-        IEnumerable<GameChallengeScore> scores = this.GameChallengeScores.Where(s => s.Challenge == challenge && s.GhostHash != null);
-        GameChallengeScore? score = scores.LastOrDefault(s => s.Publisher.UserId == user.UserId);
-        
-        if (score == null) return null;
-        return new(score, scores.OrderByDescending(s => s.Score).ToList().IndexOf(score) + 1);
+        // We need the other high scores to be able to get the wanted high score's rank among them
+        IEnumerable<GameChallengeScore> highScores = this.GameChallengeScores.Where(s => s.Challenge == challenge && s.GhostHash != null);
+
+        // Ordering like this ensures the high score we get is actually the (newest) high score of the user
+        GameChallengeScore? usersHighScore = highScores.OrderByDescending(s => s.PublishDate)
+            .FirstOrDefault(s => s.Publisher.UserId == user.UserId);
+        if (usersHighScore == null) return null;
+
+        return new(usersHighScore, highScores.OrderByDescending(s => s.Score).ToList().IndexOf(usersHighScore) + 1);
     }
 
     /// <summary>
-    /// Returns how often a user has beaten the first score of a challenge (how often they have "cleared" the challenge).
+    /// Returns whether a user has "cleared" a challenge (how often they have beaten the challenge's first score).
     /// </summary>
-    public int GetTotalChallengeClearsByUser(GameChallenge challenge, GameUser user)
+    public bool HasUserClearedChallenge(GameChallenge challenge, GameUser user)
     {
         GameChallengeScore? firstScore = this.GetFirstScoreForChallenge(challenge);
-        if (firstScore == null) return 0;
-        // both higher and tied scores count as cleared/beaten (incase of a score which can't be beaten by a higher score for some reason)
-        return this.GameChallengeScores.Where(s => s.Challenge == challenge && s.Publisher == user && s.Score >= firstScore.Score).Count();
+
+        // If there is no first score, there are no scores at all
+        if (firstScore == null) return false;
+
+        return this.GameChallengeScores.Any(s => s.Challenge == challenge && s.Publisher == user && s.Score >= firstScore.Score);
     }
 
-    public IEnumerable<GameChallengeScoreWithRank> GetRankedScoresForChallenge(GameChallenge challenge)
+    public IEnumerable<GameChallengeScoreWithRank> GetRankedHighScoresForChallenge(GameChallenge challenge)
     {
-        IEnumerable<GameChallengeScore> scores = this.GameChallengeScores.Where(s => s.Challenge == challenge && s.GhostHash != null)
-            .OrderByDescending(s => s.Score)
-            .AsEnumerable();
-        IEnumerable<GameChallengeScoreWithRank> rankedScores = scores.Select((s, i) => new GameChallengeScoreWithRank(s, i));
-        return rankedScores;
+        IEnumerable<GameChallengeScore> highScores = this.GameChallengeScores.Where(s => s.Challenge == challenge && s.GhostHash != null)
+            .OrderByDescending(s => s.Score);
+
+        return highScores.Select((s, i) => new GameChallengeScoreWithRank(s, i));
     }
 
-    public IEnumerable<GameChallengeScoreWithRank> GetRankedScoresByUsersMutualsForChallenge(GameChallenge challenge, GameUser user)
+    public IEnumerable<GameChallengeScoreWithRank> GetRankedHighScoresByUsersMutualsForChallenge(GameChallenge challenge, GameUser user)
     {
         IEnumerable<GameUser> mutuals = this.GetUsersMutuals(user);
-        IEnumerable<GameChallengeScore> scores = this.GameChallengeScores.Where(s => s.Challenge == challenge && s.GhostHash != null);
-        scores = scores.Where(s => mutuals.Contains(s.Publisher))
+
+        IEnumerable<GameChallengeScore> mutualHighScores = this.GameChallengeScores.Where(s => s.Challenge == challenge && s.GhostHash != null)
+            .AsEnumerable()
+            .Where(s => mutuals.Contains(s.Publisher))
             .OrderByDescending(s => s.Score);
-        IEnumerable<GameChallengeScoreWithRank> rankedScores = scores.Select((s, i) => new GameChallengeScoreWithRank(s, i));
-        return rankedScores;
+
+        return mutualHighScores.Select((s, i) => new GameChallengeScoreWithRank(s, i));
     }
 
+    /// <summary>
+    /// Returns the given score aswell as the scores "around" it depending on the given count aswell as their ranks among the given score's challenge's high score.
+    /// If the given score is place 1, the scores below it will be returned; if it is last place, the scores above it will be returned.
+    /// The given count must be odd and greater than 0.
+    /// </summary>
     /// <seealso cref="GetRankedScoresAroundScore"/>
-    public IEnumerable<GameChallengeScoreWithRank> GetRankedScoresAroundChallengeScore(GameChallengeScore score, int count)
+    public IEnumerable<GameChallengeScoreWithRank> GetRankedHighScoresAroundChallengeScore(GameChallengeScore score, int count)
     {
         if (count <= 0 || count % 2 != 1) 
             throw new ArgumentException("The number of scores must be odd and greater than 0.", nameof(count));
 
-        IEnumerable<GameChallengeScore> scores = this.GameChallengeScores.Where(s => s.Challenge == score.Challenge)
-            .OrderByDescending(s => s.Score)
-            .AsEnumerable();
+        IEnumerable<GameChallengeScore> highScores = this.GameChallengeScores.Where(s => s.Challenge == score.Challenge && s.GhostHash != null)
+            .OrderByDescending(s => s.Score);
 
         // If the given score is the highest score, take the first 3 scores
-        if (scores.First().Equals(score))
-            return scores.Select((s, i) => new GameChallengeScoreWithRank(s, i + 1)).Take(count);
+        if (highScores.First().Equals(score))
+            return highScores.Select((s, i) => new GameChallengeScoreWithRank(s, i + 1)).Take(count);
 
         // If the given score is the lowest score, take the last 3 scores
-        else if (scores.Last().Equals(score))
-            return scores.Select((s, i) => new GameChallengeScoreWithRank(s, i + 1)).TakeLast(count);
+        else if (highScores.Last().Equals(score))
+            return highScores.Select((s, i) => new GameChallengeScoreWithRank(s, i + 1)).TakeLast(count);
 
         // Else return the given score with other scores around it
         else
-            return scores.Select((s, i) => new GameChallengeScoreWithRank(s, i + 1))
-                .Skip(Math.Min(scores.Count(), scores.ToList().IndexOf(score) - count / 2)) // center user's score around other scores
+            return highScores.Select((s, i) => new GameChallengeScoreWithRank(s, i + 1))
+                .Skip(Math.Min(highScores.Count(), highScores.ToList().IndexOf(score) - count / 2)) // center user's score around other scores
                 .Take(count)
                 .AsEnumerable();
     }

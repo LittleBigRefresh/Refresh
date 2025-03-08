@@ -3,7 +3,6 @@ using Refresh.Common.Constants;
 using Refresh.GameServer.Endpoints.ApiV3.DataTypes;
 using Refresh.GameServer.Types.Data;
 using Refresh.GameServer.Types.Levels;
-using Refresh.GameServer.Types.Photos;
 
 namespace Refresh.GameServer.Types.Challenges.LbpHub;
 
@@ -20,6 +19,7 @@ public class SerializedChallenge : IDataConvertableFrom<SerializedChallenge, Gam
     [XmlElement("author")] public string PublisherName { get; set; } = SystemUsers.UnknownUserName;
     /// <summary>
     /// Always 0 when challenge is first uploaded by LBP hub, doesn't appear to affect anything if set to not 0 in the response.
+    /// The actual first score of a challenge is sent seperately as a SerializedChallengeAttempt.
     /// </summary>
     [XmlElement("score")] public long Score { get; set; }
     /// <summary>
@@ -31,17 +31,17 @@ public class SerializedChallenge : IDataConvertableFrom<SerializedChallenge, Gam
     /// </summary>
     [XmlElement("end-checkpoint")] public int FinishCheckpointUid { get; set; }
     /// <summary>
-    /// Sent by the game as time in days, which is always 0.
+    /// Appears to always be 0 when sent by the game.
     /// </summary>
     /// <remarks>
-    /// But for the response we have to send the actual milliseconds of the creation date, else lbp hub will crash.
+    /// NOTE: For the response we have to send the actual unix milliseconds of the creation timestamp, else lbp hub will crash.
     /// </remarks>
     [XmlElement("published")] public long PublishedAt { get; set; }
     /// <summary>
-    /// Sent by the game as time in days, which is usually 3, 5 or 7 here, as those are the only selectable options ingame.
+    /// Sent by the game as time in days from creation to expiration, which is usually 3, 5 or 7 here, as those are the only selectable options in-game.
     /// </summary>
     /// <remarks>
-    /// But for the response we have to send the actual milliseconds of the expiration date, else lbp hub will crash.
+    /// NOTE: For the response we have to send the actual unix milliseconds of the expiration timestamp, else lbp hub will crash.
     /// </remarks>
     [XmlElement("expires")] public long ExpiresAt { get; set; }
     /// <summary>
