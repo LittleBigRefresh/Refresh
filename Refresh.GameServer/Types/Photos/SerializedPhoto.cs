@@ -1,6 +1,5 @@
 using System.Xml.Serialization;
 using Refresh.GameServer.Types.Data;
-using Refresh.GameServer.Types.Levels;
 
 namespace Refresh.GameServer.Types.Photos;
 
@@ -24,7 +23,7 @@ public class SerializedPhoto
     [XmlElement("large")] public string LargeHash { get; set; }
     [XmlElement("plan")] public string PlanHash { get; set; }
     
-    [XmlElement("slot")] public SerializedLevelIdTypeName Level { get; set; }
+    [XmlElement("slot")] public SerializedPhotoLevel Level { get; set; }
     
     [XmlArray("subjects")] public List<SerializedPhotoSubject> PhotoSubjects { get; set; }
 

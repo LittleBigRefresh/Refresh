@@ -15,7 +15,7 @@ public class SerializedChallenge : IDataConvertableFrom<SerializedChallenge, Gam
     /// <summary>
     /// This challenge's level's type (developer/user) and id (or story id if it is a developer level).
     /// </summary>
-    [XmlElement("slot")] public SerializedLevelIdTypeName Level { get; set; }
+    [XmlElement("slot")] public SerializedChallengeLevel Level { get; set; }
     [XmlElement("author")] public string PublisherName { get; set; } = SystemUsers.UnknownUserName;
     /// <summary>
     /// Always 0 when challenge is first uploaded by LBP hub, doesn't appear to affect anything if set to not 0 in the response.
@@ -59,11 +59,10 @@ public class SerializedChallenge : IDataConvertableFrom<SerializedChallenge, Gam
         {
             ChallengeId = old.ChallengeId,
             Name = old.Name,
-            Level = new SerializedLevelIdTypeName
+            Level = new SerializedChallengeLevel
             {
                 LevelId = old.Level.SlotType == GameSlotType.Story ? old.Level.StoryId : old.Level.LevelId,
                 Type = old.Level.SlotType.ToGameType(),
-                Title = old.Level.Title,  // achieves nothing if filled out
             },
             PublisherName = old.Publisher.Username,
             StartCheckpointUid = old.StartCheckpointUid,
