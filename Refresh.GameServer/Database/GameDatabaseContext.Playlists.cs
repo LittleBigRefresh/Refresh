@@ -46,7 +46,7 @@ public partial class GameDatabaseContext // Playlists
 
     public GamePlaylist CreatePlaylist(GameUser user, SerializedLbp3Playlist createInfo)
     {
-        GameLocation randomLocation = GameLocation.RandomLocation;
+        GameLocation randomLocation = GameLocation.Random;
 
         GamePlaylist playlist = new()
         {
@@ -66,7 +66,7 @@ public partial class GameDatabaseContext // Playlists
 
     public void CreateRootPlaylist(GameUser user)
     {
-        GameLocation randomLocation = GameLocation.RandomLocation;
+        GameLocation randomLocation = GameLocation.Random;
 
         GamePlaylist rootPlaylist = new()
         {

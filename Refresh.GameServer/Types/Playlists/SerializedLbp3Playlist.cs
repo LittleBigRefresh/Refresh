@@ -15,7 +15,7 @@ public class SerializedLbp3Playlist : IDataConvertableFrom<SerializedLbp3Playlis
     /// <summary>
     /// Object containing the NpHandle (username) of who created this playlist
     /// </summary>
-    [XmlElement("author")] public SerializedAuthor? Author { get; set; }
+    [XmlElement("author")] public SerializedLbp3PlaylistAuthor? Author { get; set; }
     /// <summary>
     /// Amount of times this playlist has been hearted
     /// </summary>
@@ -35,7 +35,10 @@ public class SerializedLbp3Playlist : IDataConvertableFrom<SerializedLbp3Playlis
             Id = old.PlaylistId,
             Name = old.Name,
             Description = old.Description,
-            Author = new SerializedAuthor(old.Publisher.Username),
+            Author = new SerializedLbp3PlaylistAuthor
+            {
+                Username = old.Publisher.Username
+            },
             HeartCount = dataContext.Database.GetFavouriteCountForPlaylist(old),
             PlaylistQuota = UgcLimits.MaximumLevels,
         };
@@ -43,18 +46,4 @@ public class SerializedLbp3Playlist : IDataConvertableFrom<SerializedLbp3Playlis
 
     public static IEnumerable<SerializedLbp3Playlist> FromOldList(IEnumerable<GamePlaylist> oldList, DataContext dataContext)
         => oldList.Select(p => FromOld(p, dataContext)!);
-
-        
-    // elbeppe 3 moment
-    [XmlRoot("author")]
-    [XmlType("author")]
-    public class SerializedAuthor
-    {
-        public SerializedAuthor() {}
-        public SerializedAuthor(string username)
-        {
-            this.Username = username;
-        }
-        [XmlElement("npHandle")] public string Username { get; set; } = SystemUsers.UnknownUserName;
-    }
 }

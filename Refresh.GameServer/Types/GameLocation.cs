@@ -5,16 +5,16 @@ namespace Refresh.GameServer.Types;
 [XmlType("location")]
 public class GameLocation
 {
-    public static GameLocation ZeroLocation => new()
+    public static GameLocation Zero => new()
     {
         X = 0,
         Y = 0,
     };
 
-    public static GameLocation RandomLocation => new()
+    public static GameLocation Random => new()
     {
-        X = Random.Shared.Next(ushort.MaxValue),
-        Y = Random.Shared.Next(ushort.MaxValue),
+        X = System.Random.Shared.Next(ushort.MaxValue),
+        Y = System.Random.Shared.Next(ushort.MaxValue),
     };
 
     public GameLocation()
