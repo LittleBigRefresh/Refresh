@@ -69,9 +69,8 @@ public class Lbp1PlaylistEndpoints : EndpointGroup
 
         (int skip, int count) = context.GetPageData();
         
-        // Divide count by 2 so the sum of subplaylists and levels is near the requested count
-        DatabaseList<GamePlaylist> subPlaylists = dataContext.Database.GetPlaylistsInPlaylist(playlist, skip, count / 2);
-        DatabaseList<GameLevel> levels = dataContext.Database.GetLevelsInPlaylist(playlist, dataContext.Game, skip, count / 2);                    
+        DatabaseList<GamePlaylist> subPlaylists = dataContext.Database.GetPlaylistsInPlaylist(playlist, skip, count);
+        DatabaseList<GameLevel> levels = dataContext.Database.GetLevelsInPlaylist(playlist, dataContext.Game, skip, count);                    
 
         // Concat together the playlist's sub-playlists and levels 
         IEnumerable<GameMinimalLevelResponse> slots =

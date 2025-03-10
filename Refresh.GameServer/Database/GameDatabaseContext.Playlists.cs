@@ -284,13 +284,17 @@ public partial class GameDatabaseContext // Playlists
     public int GetTotalLevelsInPlaylistCount(GamePlaylist playlist) => 
         this.LevelPlaylistRelations.Count(l => l.Playlist == playlist);
 
-    public DatabaseList<GamePlaylist> GetPlaylistsInPlaylist(GamePlaylist playlist, int skip, int count)
+    public IEnumerable<GamePlaylist> GetPlaylistsInPlaylist(GamePlaylist playlist)
         // TODO: When we have postgres, remove the `AsEnumerable` call for performance. 
-        => new(this.SubPlaylistRelations
+        => this.SubPlaylistRelations
             .Where(p => p.Playlist == playlist)
             .OrderByDescending(r => r.Timestamp)
             .AsEnumerable()
-            .Select(l => l.SubPlaylist), skip, count);
+            .Select(l => l.SubPlaylist);
+
+    public DatabaseList<GamePlaylist> GetPlaylistsInPlaylist(GamePlaylist playlist, int skip, int count)
+        // TODO: When we have postgres, remove the `AsEnumerable` call for performance. 
+        => new(this.GetPlaylistsInPlaylist(playlist), skip, count);
 
     public IEnumerable<GamePlaylist> GetPlaylistsByAuthor(GameUser author)
         => this.GamePlaylists
