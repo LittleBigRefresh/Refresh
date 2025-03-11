@@ -78,7 +78,7 @@ public class ReportingEndpoints : EndpointGroup
             LargeHash = hash,
             PlanHash = "0",
             //If the level id is 0 or we couldn't find the level null, dont fill out the `Level` field
-            Level = body.LevelId == 0 || level == null ? null : new SerializedLevelIdTypeName
+            Level = body.LevelId == 0 || level == null ? null : new SerializedPhotoLevel
             {
                 LevelId = level.LevelId,
                 Title = level.Title,

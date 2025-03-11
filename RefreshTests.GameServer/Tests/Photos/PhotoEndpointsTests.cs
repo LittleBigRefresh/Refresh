@@ -35,7 +35,7 @@ public class PhotoEndpointsTests : GameServerTest
             MediumHash = TEST_ASSET_HASH,
             LargeHash = TEST_ASSET_HASH,
             PlanHash = TEST_ASSET_HASH,
-            Level = new SerializedLevelIdTypeName
+            Level = new SerializedPhotoLevel
             {
                 LevelId = level.LevelId,
                 Title = level.Title,
@@ -101,7 +101,7 @@ public class PhotoEndpointsTests : GameServerTest
             MediumHash = TEST_ASSET_HASH,
             LargeHash = TEST_ASSET_HASH,
             PlanHash = TEST_ASSET_HASH,
-            Level = new SerializedLevelIdTypeName
+            Level = new SerializedPhotoLevel
             {
                 LevelId = level.LevelId,
                 Title = level.Title,
@@ -143,7 +143,7 @@ public class PhotoEndpointsTests : GameServerTest
             MediumHash = TEST_ASSET_HASH,
             LargeHash = TEST_ASSET_HASH,
             PlanHash = TEST_ASSET_HASH,
-            Level = new SerializedLevelIdTypeName
+            Level = new SerializedPhotoLevel
             {
                 LevelId = level.LevelId,
                 Title = level.Title,
@@ -255,7 +255,7 @@ public class PhotoEndpointsTests : GameServerTest
             MediumHash = TEST_ASSET_HASH,
             LargeHash = TEST_ASSET_HASH,
             PlanHash = TEST_ASSET_HASH,
-            Level = new SerializedLevelIdTypeName
+            Level = new SerializedPhotoLevel
             {
                 LevelId = level.LevelId,
                 Title = level.Title,

@@ -196,7 +196,7 @@ public partial class GameDatabaseContext // Challenges
         => this.GameChallengeScores.Where(s => s.Challenge == challenge && s.GhostHash != null)
             // Ordering like this ensures the high score we get is actually the (newest) high score of the user
             .OrderByDescending(s => s.PublishDate)
-            .FirstOrDefault(s => s.Publisher.UserId == user.UserId);
+            .FirstOrDefault(s => s.Publisher == user);
 
     public GameChallengeScoreWithRank? GetRankedHighScoreByUserForChallenge(GameChallenge challenge, GameUser user)
     {
