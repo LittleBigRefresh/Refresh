@@ -80,15 +80,14 @@ public class LevelEndpoints : EndpointGroup
             // If it was found, inject it into the response info
             if (playlist != null)
             {
-                // TODO: with postgres this can be IQueryable
-                IEnumerable<GamePlaylist> playlists = database.GetPlaylistsInPlaylist(playlist);
-                slots = GameMinimalLevelResponse.FromOldList(playlists, dataContext).Concat(slots);
+                DatabaseList<GamePlaylist> playlists = database.GetPlaylistsInPlaylist(playlist, skip, count);
+                slots = GameMinimalLevelResponse.FromOldList(playlists.Items, dataContext).Concat(slots);
 
                 // While this does technically return more slot results than the game is expecting,
                 // because we tell the game exactly what the "next page index" is (its not based on count sent),
                 // pagination still seems to work perfectly fine in LBP1!
                 // The injected items are basically just fake slots which "follow" the current page.
-                injectedAmount += playlists.Count();
+                injectedAmount += playlists.TotalItems;
             }
         }   
 
