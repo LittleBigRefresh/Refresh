@@ -128,7 +128,7 @@ public class ChallengeEndpoints : EndpointGroup
         GameChallenge? challenge = dataContext.Database.GetChallengeById(challengeId);
         if (challenge == null) return NotFound;
 
-        bool isFirstScore = dataContext.Database.DoesChallengeHaveScores(challenge);
+        bool isFirstScore = !dataContext.Database.DoesChallengeHaveScores(challenge);
         GameAsset? ghostAsset = dataContext.Database.GetAssetFromHash(body.GhostHash);
 
         // If there is no GameAsset in the database with the score's GhostHash, or the referred asset is not a ChallengeGhost for some reason,
