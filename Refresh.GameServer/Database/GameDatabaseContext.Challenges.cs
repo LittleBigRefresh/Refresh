@@ -23,7 +23,7 @@ public partial class GameDatabaseContext // Challenges
             Type = (GameChallengeType)createInfo.Criteria[0].Type,
             PublishDate = now,
             LastUpdateDate = now,
-            // TODO: Command and ApiV3/Website toggle to override the received ammount of days until expiration with a custom value (0 for no expiration at all)
+            // TODO: Command and ApiV3/Website toggle to override the received amount of days until expiration with a custom value (0 for no expiration at all)
             ExpirationDate = now.AddDays(createInfo.ExpiresAt),
         };
         
@@ -43,25 +43,17 @@ public partial class GameDatabaseContext // Challenges
         });
     }
 
-    public void RemoveChallengesByUser(GameUser user)
-    {
-        this.Write(() => {
-            // Remove Scores on challenges by the user
-            this.GameChallengeScores.RemoveRange(s => s.Challenge.Publisher == user);
-        
-            // Remove Challenges by the user
-            this.GameChallenges.RemoveRange(c => c.Publisher == user);
-        });
-    }
-
     public void RemoveChallengesForLevel(GameLevel level)
     {
         this.Write(() => {
-            // Remove Scores on challenges in the level
-            this.GameChallengeScores.RemoveRange(s => s.Challenge.Level == level);
+            // Realm weirdness, we're forced to iterate over every challenge of the given level to remove their scores
+            IEnumerable<GameChallenge> challenges = this.GameChallenges.Where(c => c.Level == level);
 
-            // Remove Challenges in the level
-            this.GameChallenges.RemoveRange(c => c.Level == level);
+            foreach (GameChallenge challenge in challenges)
+            {
+                this.GameChallengeScores.RemoveRange(s => s.Challenge == challenge);
+            }
+            this.GameChallenges.RemoveRange(challenges);
         });
     }
 
@@ -159,14 +151,6 @@ public partial class GameDatabaseContext // Challenges
             this.GameChallengeScores.Remove(score);
         });
         
-    }
-
-    public void RemoveChallengeScoresByUser(GameUser user)
-    {
-        this.Write(() => 
-        {
-            this.GameChallengeScores.RemoveRange(s => s.Publisher == user);
-        });
     }
 
     public bool DoesChallengeHaveScores(GameChallenge challenge)

@@ -4,9 +4,12 @@ using Refresh.GameServer.Types.UserData;
 
 namespace Refresh.GameServer.Types.Challenges.LbpHub;
 
+#nullable disable
+
 public partial class GameChallengeScore : IRealmObject, ISequentialId
 {
     [PrimaryKey] public int ScoreId { get; set; }
+    
     public GameChallenge Challenge { get; set; }
     public GameUser Publisher { get; set; }
     /// <summary>
@@ -17,6 +20,8 @@ public partial class GameChallengeScore : IRealmObject, ISequentialId
     /// The hash of the ghost asset for this score. We set it to null if this score is not the first score of
     /// its challenge and if it is not the high score of its publisher either.
     /// </summary>
+
+    #nullable enable
     public string? GhostHash { get; set; }
     /// <summary>
     /// How long it took the publisher to achieve this score. Calculated by subtracting the first checkpoint's activation time 

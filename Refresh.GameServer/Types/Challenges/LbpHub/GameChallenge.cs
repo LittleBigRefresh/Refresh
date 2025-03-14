@@ -10,7 +10,7 @@ public partial class GameChallenge : IRealmObject, ISequentialId
     [PrimaryKey] public int ChallengeId { get; set; }
     
     public string Name { get; set; } = "Unnamed Challenge";
-    public GameUser Publisher { get; set; }
+    public GameUser? Publisher { get; set; }
     public GameLevel Level { get; set; }
     /// <summary>
     /// The Uid of the checkpoint this challenge starts on.
