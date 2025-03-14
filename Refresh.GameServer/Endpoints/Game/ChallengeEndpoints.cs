@@ -29,15 +29,15 @@ public class ChallengeEndpoints : EndpointGroup
         
         if (body.Criteria.Count < 1) 
         {
-            dataContext.Logger.LogWarning(BunkumCategory.UserContent, $"Challenge does not have any criteria, rejecting");
+            dataContext.Logger.LogWarning(BunkumCategory.UserContent, $"Challenge by {user.Username} on level ID {level.LevelId} does not have any criteria, rejecting");
             return BadRequest;
         }
 
         if (body.Criteria.First().Value != 0)
-            dataContext.Logger.LogWarning(BunkumCategory.UserContent, $"Challenge's criterion value is not 0, but {body.Criteria.First().Value}. This is an unknown case, the value won't be saved.");
+            dataContext.Logger.LogWarning(BunkumCategory.UserContent, $"Challenge by {user.Username} on level ID {level.LevelId} has criterion value {body.Criteria.First().Value}, it won't be saved");
 
         if (body.Criteria.Count > 1)
-            dataContext.Logger.LogWarning(BunkumCategory.UserContent, $"Challenge has {body.Criteria.Count} criteria. This is an unknown case, only the first criterion's type will be saved.");
+            dataContext.Logger.LogWarning(BunkumCategory.UserContent, $"Challenge by {user.Username} on level ID {level.LevelId} has {body.Criteria.Count} criteria, only the first one will be saved");
 
         GameChallenge challenge = dataContext.Database.CreateChallenge(body, level, user);
 
