@@ -3,6 +3,7 @@ using Bunkum.Core.Endpoints;
 using Bunkum.Core.Responses;
 using Bunkum.Listener.Protocol;
 using Bunkum.Protocols.Http;
+using Refresh.GameServer.Database;
 using Refresh.GameServer.Types.Assets;
 using Refresh.GameServer.Types.Challenges.LbpHub;
 using Refresh.GameServer.Types.Challenges.LbpHub.Ghost;
@@ -182,23 +183,6 @@ public class ChallengeEndpoints : EndpointGroup
     }
 
     /// <summary>
-    /// This endpoint returns the scores of a challenge. Normally the game takes care of assigning rank numbers to scores.
-    /// </summary>
-    [GameEndpoint("challenge/{challengeId}/scoreboard/", HttpMethods.Get, ContentType.Xml)]  // Called in a level when playing a challenge
-    [GameEndpoint("challenge/{challengeId}/scoreboard", HttpMethods.Get, ContentType.Xml)]  // Called in the pod menu when viewing a challenge
-    [MinimumRole(GameUserRole.Restricted)]
-    [NullStatusCode(NotFound)]
-    public SerializedChallengeScoreList? GetScoresForChallenge(RequestContext context, DataContext dataContext, GameUser user, int challengeId)
-    {
-        GameChallenge? challenge = dataContext.Database.GetChallengeById(challengeId);
-        if (challenge == null) return null;
-
-        // Get and return the high scores (plus first score) of the challenge
-        IEnumerable<GameChallengeScoreWithRank> scores = dataContext.Database.GetRankedHighScoresForChallenge(challenge);
-        return new SerializedChallengeScoreList(SerializedChallengeScore.FromOldList(scores).ToList());
-    }
-
-    /// <summary>
     /// Intended to return the high score of a user for a challenge. Return the challenge's first score if
     /// the player hasn't cleared this challenge yet, otherwise the requested user's high score.
     /// </summary>
@@ -230,8 +214,27 @@ public class ChallengeEndpoints : EndpointGroup
     }
 
     /// <summary>
+    /// This endpoint returns the scores of a challenge. Normally the game takes care of assigning rank numbers to scores.
+    /// LBP Hub does not send any pagination parameters, but it does only ever show the first 10 scores.
+    /// </summary>
+    [GameEndpoint("challenge/{challengeId}/scoreboard/", HttpMethods.Get, ContentType.Xml)]  // Called in a level when playing a challenge
+    [GameEndpoint("challenge/{challengeId}/scoreboard", HttpMethods.Get, ContentType.Xml)]  // Called in the pod menu when viewing a challenge
+    [MinimumRole(GameUserRole.Restricted)]
+    [NullStatusCode(NotFound)]
+    public SerializedChallengeScoreList? GetScoresForChallenge(RequestContext context, DataContext dataContext, GameUser user, int challengeId)
+    {
+        GameChallenge? challenge = dataContext.Database.GetChallengeById(challengeId);
+        if (challenge == null) return null;
+
+        // Get and return the high scores (plus first score) of the challenge
+        DatabaseList<GameChallengeScoreWithRank> scores = dataContext.Database.GetRankedHighScoresForChallenge(challenge, 0, 10);
+        return new SerializedChallengeScoreList(SerializedChallengeScore.FromOldList(scores.Items).ToList());
+    }
+
+    /// <summary>
     /// Intended to return the scores of a challenge by a user's friends, specified by that user's username.
-    /// Return the scores by the requesting user's friends instead for privacy reasons.
+    /// Return the scores by the requesting user's mutuals instead for privacy reasons.
+    /// LBP Hub does not send any pagination parameters, but it does only ever show the first 10 scores.
     /// </summary>
     [GameEndpoint("challenge/{challengeId}/scoreboard/{username}/friends", HttpMethods.Get, ContentType.Xml)]
     [MinimumRole(GameUserRole.Restricted)]
@@ -241,8 +244,8 @@ public class ChallengeEndpoints : EndpointGroup
         GameChallenge? challenge = dataContext.Database.GetChallengeById(challengeId);
         if (challenge == null) return null;
 
-        IEnumerable<GameChallengeScoreWithRank> rankedScores = dataContext.Database.GetRankedHighScoresByUsersMutualsForChallenge(challenge, user);
-        return new SerializedChallengeScoreList(SerializedChallengeScore.FromOldList(rankedScores).ToList());
+        DatabaseList<GameChallengeScoreWithRank> rankedScores = dataContext.Database.GetRankedHighScoresByUsersMutualsForChallenge(challenge, user, 0, 10);
+        return new SerializedChallengeScoreList(SerializedChallengeScore.FromOldList(rankedScores.Items).ToList());
     }
 
     /// <summary>
@@ -260,11 +263,11 @@ public class ChallengeEndpoints : EndpointGroup
         GameChallenge? challenge = dataContext.Database.GetChallengeById(challengeId);
         if (challenge == null) return null;
 
-        GameChallengeScore? highScore = dataContext.Database.GetHighScoreByUserForChallenge(challenge, user);
+        GameChallengeScoreWithRank? highScore = dataContext.Database.GetRankedHighScoreByUserForChallenge(challenge, user);
         if (highScore == null) return null;
 
-        IEnumerable<GameChallengeScoreWithRank> rankedScores = dataContext.Database.GetRankedHighScoresAroundChallengeScore(highScore, 3);
-        return new SerializedChallengeScoreList(SerializedChallengeScore.FromOldList(rankedScores));
+        DatabaseList<GameChallengeScoreWithRank> rankedScores = dataContext.Database.GetRankedHighScoresAroundChallengeScore(highScore, 3);
+        return new SerializedChallengeScoreList(SerializedChallengeScore.FromOldList(rankedScores.Items));
     }
 
     /// <summary>
