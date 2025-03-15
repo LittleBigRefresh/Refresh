@@ -40,14 +40,14 @@ jobs:
           repo: LittleBigRefresh/refresh-web
           branch: legacy
           if_no_artifact_found: fail
-          path: "Refresh.GameServer/bin/Release/net8.0/linux-x64/publish/web"
+          path: "Refresh.GameServer/bin/Release/net9.0/linux-x64/publish/web"
 
       - name: Copy artifact to windows build directory
-        run: cp -r "Refresh.GameServer/bin/Release/net8.0/linux-x64/publish/web" "Refresh.GameServer/bin/Release/net8.0/win-x64/publish/"
+        run: cp -r "Refresh.GameServer/bin/Release/net9.0/linux-x64/publish/web" "Refresh.GameServer/bin/Release/net9.0/win-x64/publish/"
 
       - name: Create zip files
         run: |
-          cd Refresh.GameServer/bin/Release/net8.0/linux-x64/publish/
+          cd Refresh.GameServer/bin/Release/net9.0/linux-x64/publish/
           zip -r "../../../../../../Refresh_for_Linux_x64.zip" .
 
           cd ../../win-x64/publish/
