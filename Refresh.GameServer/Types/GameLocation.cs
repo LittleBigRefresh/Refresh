@@ -11,6 +11,12 @@ public class GameLocation
         Y = 0,
     };
 
+    public static GameLocation Random => new()
+    {
+        X = System.Random.Shared.Next(ushort.MaxValue),
+        Y = System.Random.Shared.Next(ushort.MaxValue),
+    };
+
     public GameLocation()
     {}
 

@@ -15,4 +15,5 @@ public partial class SubPlaylistRelation : IRealmObject
     /// The sub-playlist contained within the playlist
     /// </summary>
     public GamePlaylist SubPlaylist { get; set; }
+    public DateTimeOffset Timestamp { get; set; }
 }

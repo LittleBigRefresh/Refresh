@@ -66,7 +66,7 @@ public class LevelEndpoints : EndpointGroup
 
         if (levels == null) return null;
         
-        IEnumerable<GameMinimalLevelResponse> category = levels.Items
+        IEnumerable<GameMinimalLevelResponse> slots = levels.Items
             .Select(l => GameMinimalLevelResponse.FromOld(l, dataContext)!);
 
         int injectedAmount = 0;
@@ -80,19 +80,18 @@ public class LevelEndpoints : EndpointGroup
             // If it was found, inject it into the response info
             if (playlist != null)
             {
-                // TODO: with postgres this can be IQueryable
-                List<GamePlaylist> playlists = database.GetPlaylistsInPlaylist(playlist).ToList();
-                
-                category = GameMinimalLevelResponse.FromOldList(playlists, dataContext).Concat(category);
+                DatabaseList<GamePlaylist> playlists = database.GetPlaylistsInPlaylist(playlist, skip, count);
+                slots = GameMinimalLevelResponse.FromOldList(playlists.Items, dataContext).Concat(slots);
+
                 // While this does technically return more slot results than the game is expecting,
                 // because we tell the game exactly what the "next page index" is (its not based on count sent),
                 // pagination still seems to work perfectly fine in LBP1!
                 // The injected items are basically just fake slots which "follow" the current page.
-                injectedAmount += playlists.Count;
+                injectedAmount += playlists.TotalItems;
             }
         }   
 
-        return new SerializedMinimalLevelList(category, levels.TotalItems + injectedAmount, skip + count);
+        return new SerializedMinimalLevelList(slots, levels.TotalItems + injectedAmount, skip + count);
     }
 
     [GameEndpoint("slots/{route}/{username}", ContentType.Xml)]
@@ -141,7 +140,11 @@ public class LevelEndpoints : EndpointGroup
         
         foreach (string levelIdStr in levelIds)
         {
-            if (!int.TryParse(levelIdStr, out int levelId)) return null;
+            // Sometimes, in playlists for example, LBP3 refers to developer levels by using their level (not story) id
+            // and prepending a 'd' to it.
+            // We need to remove it in order to be able to parse the id and get the level.
+            // If parsing fails anyway, skip over the level id and continue with the next one.
+            if (!int.TryParse(levelIdStr.StartsWith('d') ? levelIdStr[1..] : levelIdStr, out int levelId)) continue;
             GameLevel? level = database.GetLevelById(levelId);
 
             if (level == null) continue;

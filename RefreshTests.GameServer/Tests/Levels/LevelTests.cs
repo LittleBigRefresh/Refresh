@@ -487,7 +487,7 @@ public class LevelTests : GameServerTest
     } 
     
     [Test]
-    public void DoesntGetSlotListWhenInvalidQuery()
+    public void GetSlotListWhenInvalidQuery()
     {
         using TestContext context = this.GetServer();
         GameUser publisher = context.CreateUser();
@@ -495,7 +495,9 @@ public class LevelTests : GameServerTest
         using HttpClient client = context.GetAuthenticatedClient(TokenType.Game, publisher);
         
         HttpResponseMessage message = client.GetAsync($"/lbp/slotList?s=NOT_A_NUMBER").Result;
-        Assert.That(message.StatusCode, Is.EqualTo(BadRequest));
+        Assert.That(message.StatusCode, Is.EqualTo(OK));
+        SerializedLevelList result = message.Content.ReadAsXML<SerializedLevelList>();
+        Assert.That(result.Items, Has.Count.EqualTo(0));
     }
 
     [Test]
