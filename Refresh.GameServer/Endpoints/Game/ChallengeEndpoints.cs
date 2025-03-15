@@ -105,8 +105,6 @@ public class ChallengeEndpoints : EndpointGroup
     [NullStatusCode(NotFound)]
     public SerializedChallengeList? GetJoinedChallenges(RequestContext context, DataContext dataContext, string username)
     {
-        // ignore username, since we're returning all challenges with the specified status for this
-
         string? status = context.QueryString.Get("status");
         IEnumerable<GameChallenge> challenges = dataContext.Database.GetChallenges(status)
             .OrderByDescending(c => c.ExpirationDate);;
@@ -116,7 +114,7 @@ public class ChallengeEndpoints : EndpointGroup
 
     #endregion
 
-    #region Challenge Scores
+    #region Scores
 
     /// <summary>
     /// Gets called when submitting a challenge score after either beating an opponent's challenge score or right after uploading a challenge.
@@ -129,40 +127,24 @@ public class ChallengeEndpoints : EndpointGroup
         GameChallenge? challenge = dataContext.Database.GetChallengeById(challengeId);
         if (challenge == null) return NotFound;
 
-        bool isFirstScore = !dataContext.Database.DoesChallengeHaveScores(challenge);
         GameAsset? ghostAsset = dataContext.Database.GetAssetFromHash(body.GhostHash);
 
         // If there is no GameAsset in the database with the score's GhostHash, or the referred asset is not a ChallengeGhost for some reason,
         // reject the score.
         if (ghostAsset == null || ghostAsset.AssetType != GameAssetType.ChallengeGhost)
         {
-            // If this is the first score of the challenge, tell it's uploader about the state of the challenge's first score, 
-            // else only tell them why their score was rejected.
-            if (isFirstScore)
-            {
-                dataContext.Database.AddErrorNotification(
-                    "Challenge Score upload failed", 
-                    $"Your score for challenge '{challenge.Name}' in level '{challenge.Level.Title}' "
-                    +"couldn't be uploaded because it's ghost data was missing. "
-                    +"Whoever uploads a valid score first will have it set as the first score to beat.",
-                    user
-                );
-            }
-            else
-            {
-                dataContext.Database.AddErrorNotification(
-                    "Challenge Score upload failed", 
-                    $"Your score for challenge '{challenge.Name}' in level '{challenge.Level.Title}' "
-                    +"couldn't be uploaded because it's ghost data was missing.",
-                    user
-                );
-            }
-
+            dataContext.Database.AddErrorNotification(
+                "Challenge Score upload failed", 
+                $"Your score for challenge '{challenge.Name}' in level '{challenge.Level.Title}' "
+                +"couldn't be uploaded because it's ghost data was missing.",
+                user
+            );
             dataContext.Logger.LogDebug(BunkumCategory.UserContent, $"Ghost asset with hash {body.GhostHash} was not found or is not a ChallengeGhost");
             return BadRequest;
         }
 
         SerializedChallengeGhost? serializedGhost = SerializedChallengeGhost.GetSerializedChallengeGhostFromDataStore(body.GhostHash, dataContext.DataStore);
+        bool isFirstScore = !dataContext.Database.DoesChallengeHaveScores(challenge);
         
         // If the ghost asset for this score is null or invalid, reject the score
         if (!SerializedChallengeGhost.IsGhostDataValid(serializedGhost, challenge, isFirstScore))
@@ -186,8 +168,8 @@ public class ChallengeEndpoints : EndpointGroup
     /// Intended to return the high score of a user for a challenge. Return the challenge's first score if
     /// the player hasn't cleared this challenge yet, otherwise the requested user's high score.
     /// </summary>
-    // NOTE: When a player is about to play a challenge in a level and LBP Hub requests for a user's high score, if you send a score which is not actually the high score for that user,
-    //       the game will send one additional request to this endpoint and another one to GetContextualScoresForChallenge,
+    // NOTE: When a player is about to play a challenge in a level and LBP Hub requests for a user's high score, if you send a score which is not actually
+    //       the high score for that user, the game will send one additional request to this endpoint and another one to GetContextualScoresForChallenge,
     //       load the score we returned fine, but it will bug out and break the ghost asset's path replay
     [GameEndpoint("challenge/{challengeId}/scoreboard/{username}", HttpMethods.Get, ContentType.Xml)]
     [MinimumRole(GameUserRole.Restricted)]

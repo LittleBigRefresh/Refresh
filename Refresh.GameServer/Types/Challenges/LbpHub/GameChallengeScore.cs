@@ -16,12 +16,13 @@ public partial class GameChallengeScore : IRealmObject, ISequentialId
     /// The publisher's achieved raw score. More always means better here, independent of challenge type.
     /// </summary>
     public long Score { get; set; }
+
+    #nullable enable
+
     /// <summary>
     /// The hash of the ghost asset for this score. We set it to null if this score is not the first score of
     /// its challenge and if it is not the high score of its publisher either.
     /// </summary>
-
-    #nullable enable
     public string? GhostHash { get; set; }
     /// <summary>
     /// How long it took the publisher to achieve this score. Calculated by subtracting the first checkpoint's activation time 

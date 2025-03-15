@@ -64,7 +64,7 @@ public class SerializedChallenge : IDataConvertableFrom<SerializedChallenge, Gam
                 LevelId = old.Level.SlotType == GameSlotType.Story ? old.Level.StoryId : old.Level.LevelId,
                 Type = old.Level.SlotType.ToGameType(),
             },
-            PublisherName = old.Publisher.Username,
+            PublisherName = old.Publisher?.Username ?? SystemUsers.DeletedUserName,
             StartCheckpointUid = old.StartCheckpointUid,
             FinishCheckpointUid = old.FinishCheckpointUid,
             PublishedAt = old.PublishDate.ToUnixTimeMilliseconds(),

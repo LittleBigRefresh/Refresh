@@ -1,3 +1,4 @@
+using Refresh.Common.Constants;
 using Refresh.GameServer.Types.Challenges.LbpHub;
 using Refresh.GameServer.Types.Levels;
 using Refresh.GameServer.Types.UserData;
@@ -6,7 +7,7 @@ namespace Refresh.GameServer.Database;
 
 public partial class GameDatabaseContext // Challenges
 {
-    #region Challenge
+    #region Challenges
 
     public GameChallenge CreateChallenge(SerializedChallenge createInfo, GameLevel level, GameUser user)
     {
@@ -80,17 +81,27 @@ public partial class GameDatabaseContext // Challenges
         => this.FilterChallengesByStatus(this.GameChallenges, filter);
 
     public IEnumerable<GameChallenge> GetChallengesNotByUser(GameUser user, string? filter = null)
-        => this.FilterChallengesByStatus(this.GameChallenges.Where(c => c.Publisher != user), filter); 
+    {
+        if (user.Username == SystemUsers.DeletedUserName)
+            return this.FilterChallengesByStatus(this.GameChallenges.Where(c => c.Publisher != null), filter);
+        else
+            return this.FilterChallengesByStatus(this.GameChallenges.Where(c => c.Publisher != user), filter);
+    }
 
     public IEnumerable<GameChallenge> GetChallengesByUser(GameUser user, string? filter = null)
-        => this.FilterChallengesByStatus(this.GameChallenges.Where(c => c.Publisher == user), filter);
+    {
+        if (user.Username == SystemUsers.DeletedUserName)
+            return this.FilterChallengesByStatus(this.GameChallenges.Where(c => c.Publisher == null), filter);
+        else
+            return this.FilterChallengesByStatus(this.GameChallenges.Where(c => c.Publisher == user), filter);
+    } 
 
     public IEnumerable<GameChallenge> GetChallengesForLevel(GameLevel level, string? filter = null)
         => this.FilterChallengesByStatus(this.GameChallenges.Where(c => c.Level == level), filter);
 
     #endregion
 
-    #region Score
+    #region Scores
 
     public GameChallengeScore CreateChallengeScore(SerializedChallengeAttempt attempt, GameChallenge challenge, GameUser user, long time)
     {
