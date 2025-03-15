@@ -172,12 +172,8 @@ public class PresenceServer
             IEnumerable<Task> receiveTasks = this._clients.Select(c => c.ReceiveTask).Where(t => t != null)!;
             IEnumerable<Task> sendTasks = this._clients.Select(c => c.SendTask).Where(t => t != null)!;
             
-#if NET9_0_OR_GREATER
-#error Please remove the ToArray call here!
-#endif
-            
             // Wait for all receive tasks to finish
-            Task.WaitAll(receiveTasks.Concat(sendTasks).ToArray());
+            Task.WaitAll(receiveTasks.Concat(sendTasks));
 
             // Clear out the receive task references
             foreach (GameClient client in this._clients) 
