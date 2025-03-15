@@ -11,7 +11,7 @@
       <PackageReference Include="Bunkum.Protocols.Http" Version="4.8.1" />
       <PackageReference Include="FastAes" Version="1.0.1" />
       <PackageReference Include="IronCompress" Version="1.6.3" />
-      <PackageReference Include="NPTicket" Version="3.1.0" />
+      <PackageReference Include="NPTicket" Version="3.1.1" />
     </ItemGroup>
 
     <ItemGroup>
