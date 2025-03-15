@@ -204,15 +204,11 @@ public class PresenceServer
             if (gameClient.TcpClient.Available == 0)
                 return;
 
-#if NET9_0_OR_GREATER
-#error Please clean this mess to use Span<T>!!!
-#endif
-
             int readAmount = await gameClient.TcpClient.Client.ReceiveAsync(gameClient.ReceiveBuffer);
             if (readAmount == 0)
                 return;
 
-            byte[] read = gameClient.ReceiveBuffer[..readAmount];
+            Span<byte> read = gameClient.ReceiveBuffer.AsSpan()[..readAmount];
 
             switch (read[0])
             {
@@ -220,10 +216,10 @@ public class PresenceServer
                 case 0x4c when read[1] == 0x0d && read[2] == 0x0a:
                 {
                     // Decrypt the body of the packet
-                    ResourceHelper.XxteaDecrypt(read.AsSpan()[3..][..128], this._key);
+                    ResourceHelper.XxteaDecrypt(read[3..][..128], this._key);
 
                     // Convert the auth token back into a string
-                    string authToken = Encoding.UTF8.GetString(read.AsSpan()[3..][..128]["MM_AUTH=".Length..]).TrimEnd('\0');
+                    string authToken = Encoding.UTF8.GetString(read[3..][..128]["MM_AUTH=".Length..]).TrimEnd('\0');
 
                     this._logger.LogInfo(PresenceCategory.Authentication, "{0} logged in", gameClient.IpAddress,
                         authToken);
