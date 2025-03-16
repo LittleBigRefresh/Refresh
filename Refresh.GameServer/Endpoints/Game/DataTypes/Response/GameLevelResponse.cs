@@ -78,6 +78,7 @@ public class GameLevelResponse : IDataConvertableFrom<GameLevelResponse, GameLev
     [XmlElement("sizeOfResources")] public int SizeOfResourcesInBytes { get; set; }
     [XmlElement("reviewCount")] public int ReviewCount { get; set; }
     [XmlElement("reviewsEnabled")] public bool ReviewsEnabled { get; set; } = true;
+    [XmlElement("yourReview")] public SerializedGameReview? YourReview { get; set; }
     [XmlElement("commentCount")] public int CommentCount { get; set; } = 0;
     [XmlElement("commentsEnabled")] public bool CommentsEnabled { get; set; } = true;
     [XmlElement("photoCount")] public int PhotoCount { get; set; }
@@ -219,6 +220,8 @@ public class GameLevelResponse : IDataConvertableFrom<GameLevelResponse, GameLev
 
             response.YourRating = rating?.ToDPad() ?? (int)RatingType.Neutral;
             response.YourStarRating = rating?.ToLBP1() ?? 0;
+
+            response.YourReview = SerializedGameReview.FromOld(dataContext.Database.GetReviewByLevelAndUser(old, dataContext.User), dataContext);
 
             // this is technically invalid, but specifying this for all games ensures they all have the capacity to review if played.
             // we don't store the game's version in play relations, so this is the best we can do
