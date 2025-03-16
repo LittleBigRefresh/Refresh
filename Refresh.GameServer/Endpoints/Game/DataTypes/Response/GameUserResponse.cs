@@ -154,15 +154,15 @@ public class GameUserResponse : IDataConvertableFrom<GameUserResponse, GameUser>
                 response.Handle.IconHash = old.PspIconHash;
 
                 //Fill out PSP favourite users
-                List<GameUser> users = dataContext.Database.GetUsersFavouritedByUser(old, 20, 0).ToList();
+                List<GameUser> users = dataContext.Database.GetUsersFavouritedByUser(old).ToList();
                 response.FavouriteUsers = new SerializedMinimalFavouriteUserList(users.Select(u => SerializedUserHandle.FromUser(u, dataContext)).ToList(), users.Count);
 
                 //Fill out PSP favourite levels
-                List<GameMinimalLevelResponse> favouriteLevels = dataContext.Database
+                List<SerializedMinimalLevelResponse> favouriteLevels = dataContext.Database
                     .GetLevelsFavouritedByUser(old, 20, 0, new LevelFilterSettings(dataContext.Game), dataContext.User)
                     .Items
                     .Where(l => l._GameVersion == (int)TokenGame.LittleBigPlanetPSP)
-                    .Select(l => GameMinimalLevelResponse.FromOld(l, dataContext)).ToList()!;
+                    .Select(l => SerializedMinimalLevelResponse.FromOld(l, dataContext)).ToList()!;
                 response.FavouriteLevels = new SerializedMinimalFavouriteLevelList(new SerializedMinimalLevelList(favouriteLevels, favouriteLevels.Count, favouriteLevels.Count));
                 break;
             }

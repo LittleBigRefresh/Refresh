@@ -96,19 +96,28 @@ public class PhotoEndpoints : EndpointGroup
         => GetPhotos(context, database, dataContext, database.GetPhotosByUser);
 
     [GameEndpoint("photos/{slotType}/{levelId}", ContentType.Xml)]
-    public Response GetPhotosOnLevel(RequestContext context, DataContext dataContext, string slotType, int levelId)
+    [NullStatusCode(NotFound)]
+    public SerializedPhotoList? GetPhotosOnLevel(RequestContext context, DataContext dataContext, string slotType, int levelId)
     {
         GameLevel? level = dataContext.Database.GetLevelByIdAndType(slotType, levelId);
-        if (level == null)
-            return NotFound;
-        
+        if (level == null) 
+            return null;
+
         (int skip, int count) = context.GetPageData();
+        
+        // if the game specifies whose photos to get which are uploaded for this level
+        string? username = context.QueryString.Get("by");
+        GameUser? user = dataContext.Database.GetUserByUsername(username);
+        
+        DatabaseList<GamePhoto> photos;
+        
+        if (user != null)
+            photos = dataContext.Database.GetPhotosInLevelByUser(level, user, count, skip);
+        else
+            photos = dataContext.Database.GetPhotosInLevel(level, count, skip);
 
         // count not used ingame
-        IEnumerable<SerializedPhoto> photos = dataContext.Database.GetPhotosInLevel(level, count, skip).Items
-            .Select(photo => SerializedPhoto.FromGamePhoto(photo, dataContext));
-
-        return new Response(new SerializedPhotoList(photos), ContentType.Xml);
+        return new SerializedPhotoList(photos.Items.Select(photo => SerializedPhoto.FromGamePhoto(photo, dataContext)));
     }
 
     [GameEndpoint("photo/{id}", ContentType.Xml)]

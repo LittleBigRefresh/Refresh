@@ -34,7 +34,7 @@ public class GameDatabaseProvider : RealmDatabaseProvider<GameDatabaseContext>
         this._time = time;
     }
 
-    protected override ulong SchemaVersion => 162;
+    protected override ulong SchemaVersion => 163;
 
     protected override string Filename => "refreshGameServer.realm";
     
@@ -353,6 +353,14 @@ public class GameDatabaseProvider : RealmDatabaseProvider<GameDatabaseContext>
                 if (oldVersion >= 148 && oldVersion < 149)
                 {
                     newLevel.IsModded = oldLevel.Modded;
+                }
+
+                // From version 163 on we track whether a level requires a move controller to play or not.
+                // We don't know what previous levels require one, so just set this to false;
+                // updating a level will update this information anyway.
+                if (oldVersion < 163)
+                {
+                    newLevel.RequiresMoveController = false;
                 }
             }
 

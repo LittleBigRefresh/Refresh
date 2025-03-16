@@ -23,8 +23,8 @@ public class ReviewEndpointsTests : GameServerTest
         HttpResponseMessage message = client.PostAsync($"/lbp/dpadrate/user/{level.LevelId}?rating={(sbyte)RatingType.Boo}", new ByteArrayContent(Array.Empty<byte>())).Result;
         Assert.That(message.StatusCode, Is.EqualTo(OK));
         context.Database.Refresh();
-        Assert.That(context.Database.GetRatingByUser(level, user1), Is.EqualTo(RatingType.Boo));
-        Assert.That(context.Database.GetRatingByUser(level, user2), Is.EqualTo(null));
+        Assert.That(context.Database.GetLevelRatingByUser(level, user1), Is.EqualTo(RatingType.Boo));
+        Assert.That(context.Database.GetLevelRatingByUser(level, user2), Is.EqualTo(null));
     } 
     
     [Test]
@@ -43,8 +43,8 @@ public class ReviewEndpointsTests : GameServerTest
         HttpResponseMessage message = client.PostAsync($"/lbp/dpadrate/user/{level.LevelId}?rating={(sbyte)RatingType.Neutral}", new ByteArrayContent(Array.Empty<byte>())).Result;
         Assert.That(message.StatusCode, Is.EqualTo(OK));
         context.Database.Refresh();
-        Assert.That(context.Database.GetRatingByUser(level, user1), Is.EqualTo(RatingType.Neutral));
-        Assert.That(context.Database.GetRatingByUser(level, user2), Is.EqualTo(null));
+        Assert.That(context.Database.GetLevelRatingByUser(level, user1), Is.EqualTo(RatingType.Neutral));
+        Assert.That(context.Database.GetLevelRatingByUser(level, user2), Is.EqualTo(null));
     } 
     
     [Test]
@@ -63,8 +63,8 @@ public class ReviewEndpointsTests : GameServerTest
         HttpResponseMessage message = client.PostAsync($"/lbp/dpadrate/user/{level.LevelId}?rating={(sbyte)RatingType.Yay}", new ByteArrayContent(Array.Empty<byte>())).Result;
         Assert.That(message.StatusCode, Is.EqualTo(OK));
         context.Database.Refresh();
-        Assert.That(context.Database.GetRatingByUser(level, user1), Is.EqualTo(RatingType.Yay));
-        Assert.That(context.Database.GetRatingByUser(level, user2), Is.EqualTo(null));
+        Assert.That(context.Database.GetLevelRatingByUser(level, user1), Is.EqualTo(RatingType.Yay));
+        Assert.That(context.Database.GetLevelRatingByUser(level, user2), Is.EqualTo(null));
     } 
     
     [Test]
@@ -83,14 +83,14 @@ public class ReviewEndpointsTests : GameServerTest
         HttpResponseMessage message = client.PostAsync($"/lbp/dpadrate/user/{level.LevelId}?rating={(sbyte)RatingType.Yay}", new ByteArrayContent(Array.Empty<byte>())).Result;
         Assert.That(message.StatusCode, Is.EqualTo(OK));
         context.Database.Refresh();
-        Assert.That(context.Database.GetRatingByUser(level, user1), Is.EqualTo(RatingType.Yay));
-        Assert.That(context.Database.GetRatingByUser(level, user2), Is.EqualTo(null));
+        Assert.That(context.Database.GetLevelRatingByUser(level, user1), Is.EqualTo(RatingType.Yay));
+        Assert.That(context.Database.GetLevelRatingByUser(level, user2), Is.EqualTo(null));
         
         message = client.PostAsync($"/lbp/dpadrate/user/{level.LevelId}?rating={(sbyte)RatingType.Neutral}", new ByteArrayContent(Array.Empty<byte>())).Result;
         Assert.That(message.StatusCode, Is.EqualTo(OK));
         context.Database.Refresh();
-        Assert.That(context.Database.GetRatingByUser(level, user1), Is.EqualTo(RatingType.Neutral));
-        Assert.That(context.Database.GetRatingByUser(level, user2), Is.EqualTo(null));
+        Assert.That(context.Database.GetLevelRatingByUser(level, user1), Is.EqualTo(RatingType.Neutral));
+        Assert.That(context.Database.GetLevelRatingByUser(level, user2), Is.EqualTo(null));
     } 
     
     [Test]
@@ -140,8 +140,8 @@ public class ReviewEndpointsTests : GameServerTest
         HttpResponseMessage message = client.PostAsync($"/lbp/rate/user/{level.LevelId}?rating=1", new ByteArrayContent(Array.Empty<byte>())).Result;
         Assert.That(message.StatusCode, Is.EqualTo(OK));
         context.Database.Refresh();
-        Assert.That(context.Database.GetRatingByUser(level, user1), Is.EqualTo(RatingType.Boo));
-        Assert.That(context.Database.GetRatingByUser(level, user2), Is.EqualTo(null));
+        Assert.That(context.Database.GetLevelRatingByUser(level, user1), Is.EqualTo(RatingType.Boo));
+        Assert.That(context.Database.GetLevelRatingByUser(level, user2), Is.EqualTo(null));
     } 
     
     [Test]
@@ -160,8 +160,8 @@ public class ReviewEndpointsTests : GameServerTest
         HttpResponseMessage message = client.PostAsync($"/lbp/rate/user/{level.LevelId}?rating=2", new ByteArrayContent(Array.Empty<byte>())).Result;
         Assert.That(message.StatusCode, Is.EqualTo(OK));
         context.Database.Refresh();
-        Assert.That(context.Database.GetRatingByUser(level, user1), Is.EqualTo(RatingType.Boo));
-        Assert.That(context.Database.GetRatingByUser(level, user2), Is.EqualTo(null));
+        Assert.That(context.Database.GetLevelRatingByUser(level, user1), Is.EqualTo(RatingType.Boo));
+        Assert.That(context.Database.GetLevelRatingByUser(level, user2), Is.EqualTo(null));
     } 
     
     [Test]
@@ -180,8 +180,8 @@ public class ReviewEndpointsTests : GameServerTest
         HttpResponseMessage message = client.PostAsync($"/lbp/rate/user/{level.LevelId}?rating=3", new ByteArrayContent(Array.Empty<byte>())).Result;
         Assert.That(message.StatusCode, Is.EqualTo(OK));
         context.Database.Refresh();
-        Assert.That(context.Database.GetRatingByUser(level, user1), Is.EqualTo(RatingType.Neutral));
-        Assert.That(context.Database.GetRatingByUser(level, user2), Is.EqualTo(null));
+        Assert.That(context.Database.GetLevelRatingByUser(level, user1), Is.EqualTo(RatingType.Neutral));
+        Assert.That(context.Database.GetLevelRatingByUser(level, user2), Is.EqualTo(null));
     } 
     
     [Test]
@@ -200,8 +200,8 @@ public class ReviewEndpointsTests : GameServerTest
         HttpResponseMessage message = client.PostAsync($"/lbp/rate/user/{level.LevelId}?rating=4", new ByteArrayContent(Array.Empty<byte>())).Result;
         Assert.That(message.StatusCode, Is.EqualTo(OK));
         context.Database.Refresh();
-        Assert.That(context.Database.GetRatingByUser(level, user1), Is.EqualTo(RatingType.Yay));
-        Assert.That(context.Database.GetRatingByUser(level, user2), Is.EqualTo(null));
+        Assert.That(context.Database.GetLevelRatingByUser(level, user1), Is.EqualTo(RatingType.Yay));
+        Assert.That(context.Database.GetLevelRatingByUser(level, user2), Is.EqualTo(null));
     } 
     
     [Test]
@@ -220,8 +220,8 @@ public class ReviewEndpointsTests : GameServerTest
         HttpResponseMessage message = client.PostAsync($"/lbp/rate/user/{level.LevelId}?rating=5", new ByteArrayContent(Array.Empty<byte>())).Result;
         Assert.That(message.StatusCode, Is.EqualTo(OK));
         context.Database.Refresh();
-        Assert.That(context.Database.GetRatingByUser(level, user1), Is.EqualTo(RatingType.Yay));
-        Assert.That(context.Database.GetRatingByUser(level, user2), Is.EqualTo(null));
+        Assert.That(context.Database.GetLevelRatingByUser(level, user1), Is.EqualTo(RatingType.Yay));
+        Assert.That(context.Database.GetLevelRatingByUser(level, user2), Is.EqualTo(null));
     } 
     
     [Test]

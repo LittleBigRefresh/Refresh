@@ -41,6 +41,7 @@ public class GameLevelResponse : IDataConvertableFrom<GameLevelResponse, GameLev
     [XmlElement("sameScreenGame")] public required bool SameScreenGame { get; set; }
 
     [XmlAttribute("type")] public string? Type { get; set; } = GameSlotType.User.ToGameType();
+    [XmlElement("leveltype")] public required string LevelType { get; set; }
 
     [XmlElement("npHandle")] public SerializedUserHandle Handle { get; set; } = null!;
     
@@ -67,11 +68,10 @@ public class GameLevelResponse : IDataConvertableFrom<GameLevelResponse, GameLev
     [XmlElement("resource")] public List<string> XmlResources { get; set; } = new();
     [XmlElement("playerCount")] public int PlayerCount { get; set; }
     
-    [XmlElement("leveltype")] public required string LevelType { get; set; }
-    
     [XmlElement("initiallyLocked")] public bool IsLocked { get; set; }
     [XmlElement("isSubLevel")] public bool IsSubLevel { get; set; }
     [XmlElement("shareable")] public int IsCopyable { get; set; }
+    [XmlElement("moveRequired")] public bool RequiresMoveController { get; set; }
     [XmlElement("backgroundGUID")] public string? BackgroundGuid { get; set; }
     [XmlElement("links")] public string? Links { get; set; }
     [XmlElement("averageRating")] public double AverageStarRating { get; set; }
@@ -80,6 +80,8 @@ public class GameLevelResponse : IDataConvertableFrom<GameLevelResponse, GameLev
     [XmlElement("reviewsEnabled")] public bool ReviewsEnabled { get; set; } = true;
     [XmlElement("commentCount")] public int CommentCount { get; set; } = 0;
     [XmlElement("commentsEnabled")] public bool CommentsEnabled { get; set; } = true;
+    [XmlElement("photoCount")] public int PhotoCount { get; set; }
+    [XmlElement("authorPhotoCount")] public int PublisherPhotoCount { get; set; }
     [XmlElement("tags")] public string Tags { get; set; } = "";
     
     /// <summary>
@@ -131,9 +133,12 @@ public class GameLevelResponse : IDataConvertableFrom<GameLevelResponse, GameLev
             ReviewCount = 0,
             CommentsEnabled = false,
             CommentCount = 0,
+            PhotoCount = 0,
+            PublisherPhotoCount = 0,
             IsLocked = false,
             IsSubLevel = false,
             IsCopyable = 0,
+            RequiresMoveController = false,
             PublishDate = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds(),
             UpdateDate = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds(),
             EnforceMinMaxPlayers = false,
@@ -175,11 +180,14 @@ public class GameLevelResponse : IDataConvertableFrom<GameLevelResponse, GameLev
             IsCopyable = old.IsCopyable ? 1 : 0,
             IsLocked = old.IsLocked,
             IsSubLevel = old.IsSubLevel,
+            RequiresMoveController = old.RequiresMoveController,
             BackgroundGuid = old.BackgroundGuid,
             Links = "",
             AverageStarRating = old.CalculateAverageStarRating(dataContext.Database),
             ReviewCount = old.Reviews.Count,
             CommentCount = dataContext.Database.GetTotalCommentsForLevel(old),
+            PhotoCount = dataContext.Database.GetTotalPhotosInLevel(old),
+            PublisherPhotoCount = old.Publisher == null ? 0 : dataContext.Database.GetTotalPhotosInLevelByUser(old, old.Publisher),
             Tags = string.Join(',', dataContext.Database.GetTagsForLevel(old).Select(t => t.Tag.ToLbpString())) ,
             Type = old.SlotType.ToGameType(),
         };
@@ -207,7 +215,7 @@ public class GameLevelResponse : IDataConvertableFrom<GameLevelResponse, GameLev
         
         if (dataContext.User != null)
         {
-            RatingType? rating = dataContext.Database.GetRatingByUser(old, dataContext.User);
+            RatingType? rating = dataContext.Database.GetLevelRatingByUser(old, dataContext.User);
 
             response.YourRating = rating?.ToDPad() ?? (int)RatingType.Neutral;
             response.YourStarRating = rating?.ToLBP1() ?? 0;
@@ -284,6 +292,7 @@ public class GameLevelResponse : IDataConvertableFrom<GameLevelResponse, GameLev
             IsLocked = false,
             IsSubLevel = false,
             IsCopyable = 0,
+            RequiresMoveController = false,
             BackgroundGuid = null,
             Links = null,
             AverageStarRating = 0,
@@ -292,6 +301,8 @@ public class GameLevelResponse : IDataConvertableFrom<GameLevelResponse, GameLev
             ReviewsEnabled = true,
             CommentCount = 0,
             CommentsEnabled = true,
+            PhotoCount = 0,
+            PublisherPhotoCount = 0,
             Tags = string.Empty,
         };
     }

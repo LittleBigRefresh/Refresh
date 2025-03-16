@@ -22,12 +22,12 @@ public partial class GameDatabaseContext // Relations
     [Pure]
     public DatabaseList<GameLevel> GetLevelsFavouritedByUser(GameUser user, int count, int skip, LevelFilterSettings levelFilterSettings, GameUser? accessor) 
         => new(this.FavouriteLevelRelations
-        .Where(r => r.User == user)
-        .AsEnumerable()
-        .Select(r => r.Level)
-        .FilterByLevelFilterSettings(accessor, levelFilterSettings)
-        .FilterByGameVersion(levelFilterSettings.GameVersion)
-        .OrderByDescending(l => l.PublishDate), skip, count);
+            .Where(r => r.User == user)
+            .OrderByDescending(r => r.Timestamp)
+            .AsEnumerable()
+            .Select(r => r.Level)
+            .FilterByLevelFilterSettings(accessor, levelFilterSettings)
+            .FilterByGameVersion(levelFilterSettings.GameVersion), skip, count);
     
     public int GetTotalLevelsFavouritedByUser(GameUser user) 
         => this.FavouriteLevelRelations
@@ -41,6 +41,7 @@ public partial class GameDatabaseContext // Relations
         {
             Level = level,
             User = user,
+            Timestamp = this._time.Now,
         };
         this.Write(() => this.FavouriteLevelRelations.Add(relation));
 
@@ -79,18 +80,21 @@ public partial class GameDatabaseContext // Relations
 
     [Pure]
     public IEnumerable<GameUser> GetUsersMutuals(GameUser user)
-    {
-        return this.GetUsersFavouritedByUser(user, 1000, 0).AsEnumerable()
+        => this.GetUsersFavouritedByUser(user)
+            .AsEnumerable()
             .Where(u => this.IsUserFavouritedByUser(user, u));
-    }
+    
     
     [Pure]
-    public IEnumerable<GameUser> GetUsersFavouritedByUser(GameUser user, int count, int skip) => this.FavouriteUserRelations
-        .Where(r => r.UserFavouriting == user)
-        .AsEnumerable()
-        .Select(r => r.UserToFavourite)
-        .Skip(skip)
-        .Take(count);
+    public IEnumerable<GameUser> GetUsersFavouritedByUser(GameUser user)
+        => this.FavouriteUserRelations
+            .Where(r => r.UserFavouriting == user)
+            .OrderByDescending(r => r.Timestamp)
+            .AsEnumerable()
+            .Select(r => r.UserToFavourite);
+    
+    public DatabaseList<GameUser> GetUsersFavouritedByUser(GameUser user, int count, int skip)
+        => new(this.GetUsersFavouritedByUser(user), skip, count);
     
     public int GetTotalUsersFavouritedByUser(GameUser user)
         => this.FavouriteUserRelations
@@ -108,6 +112,7 @@ public partial class GameDatabaseContext // Relations
         {
             UserToFavourite = userToFavourite,
             UserFavouriting = userFavouriting,
+            Timestamp = this._time.Now,
         };
         
         this.Write(() => this.FavouriteUserRelations.Add(relation));
@@ -149,12 +154,12 @@ public partial class GameDatabaseContext // Relations
     [Pure]
     public DatabaseList<GameLevel> GetLevelsQueuedByUser(GameUser user, int count, int skip, LevelFilterSettings levelFilterSettings, GameUser? accessor)
         => new(this.QueueLevelRelations
-        .Where(r => r.User == user)
-        .AsEnumerable()
-        .Select(r => r.Level)
-        .FilterByLevelFilterSettings(accessor, levelFilterSettings)
-        .FilterByGameVersion(levelFilterSettings.GameVersion)
-        .OrderByDescending(l => l.PublishDate), skip, count);
+            .Where(r => r.User == user)
+            .OrderByDescending(r => r.Timestamp)
+            .AsEnumerable()
+            .Select(r => r.Level)
+            .FilterByLevelFilterSettings(accessor, levelFilterSettings)
+            .FilterByGameVersion(levelFilterSettings.GameVersion), skip, count);
     
     [Pure]
     public int GetTotalLevelsQueuedByUser(GameUser user) 
@@ -169,6 +174,7 @@ public partial class GameDatabaseContext // Relations
         {
             Level = level,
             User = user,
+            Timestamp = this._time.Now,
         };
         this.Write(() => this.QueueLevelRelations.Add(relation));
 
@@ -223,6 +229,7 @@ public partial class GameDatabaseContext // Relations
             RatingType = ratingType,
             Review = review,
             User = user,
+            Timestamp = this._time.Now,
         };
 
         this.Write(() =>
@@ -247,6 +254,22 @@ public partial class GameDatabaseContext // Relations
         return rating;
     }
 
+    public int GetRawRatingForReview(GameReview review)
+    {
+        IQueryable<RateReviewRelation> relations = this.RateReviewRelations.Where(r => r.Review == review);
+        int rawRating = 0;
+
+        foreach (RateReviewRelation relation in relations)
+        {
+            if (relation.RatingType == RatingType.Yay)
+                rawRating++;
+            else
+                rawRating--;
+        }
+
+        return rawRating;
+    }
+
     public GameReview? GetReviewByUserForLevel(GameUser user, GameLevel level)
         => this.GameReviews.FirstOrDefault(gameReview => gameReview.Publisher == user && gameReview.Level == level);
 
@@ -259,7 +282,7 @@ public partial class GameDatabaseContext // Relations
     public bool ReviewRatingExists(GameUser user, GameReview review, RatingType rating)
         => this.RateReviewRelations.Any(r => r.Review == review && r.User == user && r._ReviewRatingType == (int)rating);
 
-    private RateLevelRelation? GetRateRelationByUser(GameLevel level, GameUser user)
+    private RateLevelRelation? GetLevelRateRelationByUser(GameLevel level, GameUser user)
         => this.RateLevelRelations.FirstOrDefault(r => r.User == user && r.Level == level);
 
     /// <summary>
@@ -272,14 +295,14 @@ public partial class GameDatabaseContext // Relations
     /// <param name="user">The user to check</param>
     /// <returns>The rating if found</returns>
     [Pure]
-    public RatingType? GetRatingByUser(GameLevel level, GameUser user) => this.GetRateRelationByUser(level, user)?.RatingType;
+    public RatingType? GetLevelRatingByUser(GameLevel level, GameUser user) => this.GetLevelRateRelationByUser(level, user)?.RatingType;
 
     public bool RateLevel(GameLevel level, GameUser user, RatingType type)
     {
         if (level.Publisher?.UserId == user.UserId) return false;
         if (level.GameVersion != TokenGame.LittleBigPlanetPSP && !this.HasUserPlayedLevel(level, user)) return false;
         
-        RateLevelRelation? rating = this.GetRateRelationByUser(level, user);
+        RateLevelRelation? rating = this.GetLevelRateRelationByUser(level, user);
         
         if (rating == null)
         {
@@ -347,10 +370,9 @@ public partial class GameDatabaseContext // Relations
     }
 
     public DatabaseList<GameReview> GetReviewsByUser(GameUser user, int count, int skip)
-    {
-        return new DatabaseList<GameReview>(this.GameReviews
-            .Where(r => r.Publisher == user), skip, count);
-    }
+        => new(this.GameReviews
+            .Where(r => r.Publisher == user)
+            .OrderByDescending(r => r.PostedAt), skip, count);
 
     public int GetTotalReviewsByUser(GameUser user)
         => this.GameReviews.Count(r => r.Publisher == user);
@@ -366,10 +388,10 @@ public partial class GameDatabaseContext // Relations
     }
 
     public DatabaseList<GameReview> GetReviewsForLevel(GameLevel level, int count, int skip)
-    {
-        return new DatabaseList<GameReview>(this.GameReviews
-            .Where(r => r.Level == level), skip, count);
-    }
+        => new(this.GameReviews
+            .Where(r => r.Level == level)
+            // Sort from most liked to most disliked
+            .OrderByDescending(this.GetRawRatingForReview), skip, count);
     
     public int GetTotalReviewsForLevel(GameLevel level)
         => this.GameReviews.Count(r => r.Level == level);
@@ -528,6 +550,7 @@ public partial class GameDatabaseContext // Relations
                 Tag = tag,
                 User = user,
                 Level = level,
+                Timestamp = this._time.Now,
             });
         });
     }

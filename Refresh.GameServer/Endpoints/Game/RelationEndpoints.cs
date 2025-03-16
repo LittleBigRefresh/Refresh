@@ -1,10 +1,8 @@
 using Bunkum.Core;
 using Bunkum.Core.Endpoints;
 using Bunkum.Core.Responses;
-using Bunkum.Core.Storage;
 using Bunkum.Listener.Protocol;
 using Bunkum.Protocols.Http;
-using Refresh.GameServer.Authentication;
 using Refresh.GameServer.Database;
 using Refresh.GameServer.Endpoints.Game.DataTypes.Response;
 using Refresh.GameServer.Extensions;
@@ -92,10 +90,9 @@ public class RelationEndpoints : EndpointGroup
         if (user == null) return null;
 
         (int skip, int count) = context.GetPageData();
-        List<GameUser> users = database.GetUsersFavouritedByUser(user, count, skip)
-            .ToList();
+        DatabaseList<GameUser> users = database.GetUsersFavouritedByUser(user, count, skip);
 
-        return new SerializedFavouriteUserList(GameUserResponse.FromOldList(users, dataContext).ToList(), users.Count, skip + count);
+        return new SerializedFavouriteUserList(GameUserResponse.FromOldList(users.Items, dataContext).ToList(), users.TotalItems, users.NextPageIndex);
     }
 
     [GameEndpoint("lolcatftw/add/{slotType}/{id}", HttpMethods.Post)]

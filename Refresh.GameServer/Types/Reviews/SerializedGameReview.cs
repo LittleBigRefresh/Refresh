@@ -1,10 +1,7 @@
 using System.Xml.Serialization;
-using Refresh.GameServer.Database;
 using Refresh.GameServer.Endpoints.ApiV3.DataTypes;
 using Refresh.GameServer.Types.Data;
 using Refresh.GameServer.Types.Levels;
-using Refresh.GameServer.Types.Relations;
-using Refresh.GameServer.Types.UserData;
 
 namespace Refresh.GameServer.Types.Reviews;
 
@@ -16,7 +13,7 @@ public class SerializedGameReview : IDataConvertableFrom<SerializedGameReview, G
     public int Id { get; set; }
     
     [XmlElement("slot_id")]
-    public GameReviewSlot Slot { get; set; }
+    public SerializedReviewSlot Slot { get; set; }
     
     [XmlElement("reviewer")]
     public string Reviewer { get; set; }
@@ -63,7 +60,7 @@ public class SerializedGameReview : IDataConvertableFrom<SerializedGameReview, G
         return new SerializedGameReview
         {
             Id = review.ReviewId,
-            Slot = new GameReviewSlot
+            Slot = new SerializedReviewSlot
             {
                 SlotType = review.Level.SlotType.ToGameType(),
                 SlotId = review.Level.LevelId,
@@ -74,7 +71,7 @@ public class SerializedGameReview : IDataConvertableFrom<SerializedGameReview, G
             Deleted = false,
             DeletedBy = ReviewDeletedBy.None,
             Text = review.Content,
-            Thumb = dataContext.Database.GetRatingByUser(review.Level, review.Publisher)?.ToDPad() ?? 0,
+            Thumb = dataContext.Database.GetLevelRatingByUser(review.Level, review.Publisher)?.ToDPad() ?? 0,
             ThumbsUp = reviewRatings.PositiveRating,
             ThumbsDown = reviewRatings.NegativeRating,
             YourThumb = (int) userRatingType,

@@ -5,6 +5,8 @@ using Refresh.GameServer.Types.UserData;
 
 namespace Refresh.GameServer.Types.Relations;
 
+#nullable disable
+
 public partial class RateReviewRelation : IRealmObject
 {
     // we could just reuse RatingType from GameLevel rating logic
@@ -20,4 +22,5 @@ public partial class RateReviewRelation : IRealmObject
     
     // for the purposes of checking if a positive/negative rating on a review has already been submitted by the user
     public GameUser User { get; set; }
+    public DateTimeOffset Timestamp { get; set; }
 }

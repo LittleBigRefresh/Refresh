@@ -1,13 +1,12 @@
 using System.Xml.Serialization;
-using Refresh.GameServer.Types.Matching;
 
 namespace Refresh.GameServer.Types.Reviews;
 
 [XmlRoot("slot")]
-public class GameReviewSlot 
+public class SerializedReviewSlot 
 {
     [XmlAttribute("type")]
-    public string SlotType { get; set; }
+    public string SlotType { get; set; } = "user";
 
     [XmlText]
     public int SlotId { get; set; }

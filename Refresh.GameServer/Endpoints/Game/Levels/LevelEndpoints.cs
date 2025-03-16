@@ -34,13 +34,13 @@ public class LevelEndpoints : EndpointGroup
     {
         if (overrideService.UserHasOverrides(user))
         {
-            List<GameMinimalLevelResponse> overrides = [];
+            List<SerializedMinimalLevelResponse> overrides = [];
             
             if (overrideService.GetIdOverridesForUser(token, database, out IEnumerable<GameLevel> levelOverrides))
-                overrides.AddRange(levelOverrides.Select(l => GameMinimalLevelResponse.FromOld(l, dataContext))!);
+                overrides.AddRange(levelOverrides.Select(l => SerializedMinimalLevelResponse.FromOld(l, dataContext))!);
             
             if (overrideService.GetHashOverrideForUser(token, out string hashOverride))
-                overrides.Add(GameMinimalLevelResponse.FromHash(hashOverride, dataContext));
+                overrides.Add(SerializedMinimalLevelResponse.FromHash(hashOverride, dataContext));
             
             return new SerializedMinimalLevelList(overrides, overrides.Count, overrides.Count);
         }
@@ -54,7 +54,7 @@ public class LevelEndpoints : EndpointGroup
             {
                 Total = 1,
                 NextPageStart = 1,
-                Items = [GameMinimalLevelResponse.FromHash(hash, dataContext)],
+                Items = [SerializedMinimalLevelResponse.FromHash(hash, dataContext)],
             };
         }
         
@@ -66,8 +66,8 @@ public class LevelEndpoints : EndpointGroup
 
         if (levels == null) return null;
         
-        IEnumerable<GameMinimalLevelResponse> slots = levels.Items
-            .Select(l => GameMinimalLevelResponse.FromOld(l, dataContext)!);
+        IEnumerable<SerializedMinimalLevelResponse> slots = levels.Items
+            .Select(l => SerializedMinimalLevelResponse.FromOld(l, dataContext)!);
 
         int injectedAmount = 0;
         
@@ -81,7 +81,7 @@ public class LevelEndpoints : EndpointGroup
             if (playlist != null)
             {
                 DatabaseList<GamePlaylist> playlists = database.GetPlaylistsInPlaylist(playlist, skip, count);
-                slots = GameMinimalLevelResponse.FromOldList(playlists.Items, dataContext).Concat(slots);
+                slots = SerializedMinimalLevelResponse.FromOldList(playlists.Items, dataContext).Concat(slots);
 
                 // While this does technically return more slot results than the game is expecting,
                 // because we tell the game exactly what the "next page index" is (its not based on count sent),
@@ -194,7 +194,7 @@ public class LevelEndpoints : EndpointGroup
             .Fetch(context, skip, count, dataContext, new LevelFilterSettings(context, token.TokenGame), user);
         
         return new SerializedMinimalLevelResultsList(levels?.Items
-            .Select(l => GameMinimalLevelResponse.FromOld(l, dataContext))!, levels?.TotalItems ?? 0, skip + count);
+            .Select(l => SerializedMinimalLevelResponse.FromOld(l, dataContext))!, levels?.TotalItems ?? 0, skip + count);
     }
 
     #region Quirk workarounds
