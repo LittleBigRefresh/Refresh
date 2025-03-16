@@ -1,6 +1,5 @@
 using System.Diagnostics;
 using System.Reflection;
-using Discord;
 using JetBrains.Annotations;
 using Realms;
 using Refresh.Common.Constants;
