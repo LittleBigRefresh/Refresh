@@ -50,6 +50,9 @@ public partial class GameUser : IRealmObject, IRateLimitUser
     /// </summary>
     public int FilesizeQuotaUsage { get; set; }
 
+    // Init to default to suppress potential null warn
+    public LevelUploads TimedLevelUploads { get; set; } = default;
+
     public string Description { get; set; } = "";
 
     public int LocationX { get; set; }

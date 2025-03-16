@@ -1,8 +1,10 @@
 using System.Diagnostics.CodeAnalysis;
+using System.Runtime.CompilerServices;
 using Bunkum.Core.Configuration;
 using Microsoft.CSharp.RuntimeBinder;
 using Refresh.GameServer.Types.Assets;
 using Refresh.GameServer.Types.Roles;
+using ZstdSharp.Unsafe;
 
 namespace Refresh.GameServer.Configuration;
 
@@ -81,6 +83,18 @@ public class GameServerConfig : Config
     /// The amount of data the user is allowed to upload before all resource uploads get blocked, defaults to 100mb.
     /// </summary>
     public int UserFilesizeQuota { get; set; } = 100 * 1_048_576;
+    /// <summary>
+    /// Whether to enable the timed level uploading limits
+    /// </summary>
+    public bool LevelUploadLimitsEnabled { get; set; } = false;
+    /// <summary>
+    /// The amount of time until level upload counts are reset in hours
+    /// </summary>
+    public int LevelUploadTimeSpan { get; set; } = 24;
+    /// <summary>
+    /// The amount of levels the user is allowed to upload in a day before level uploads are blocked
+    /// </summary>
+    public int LevelUploadQuota { get; set; } = 10;
     /// <summary>
     /// Whether to print the room state whenever a `FindBestRoom` match returns no results
     /// </summary>

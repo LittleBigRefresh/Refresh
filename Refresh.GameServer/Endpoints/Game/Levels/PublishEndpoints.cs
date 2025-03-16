@@ -7,6 +7,7 @@ using Bunkum.Protocols.Http;
 using Refresh.Common.Constants;
 using Refresh.Common.Verification;
 using Refresh.GameServer.Authentication;
+using Refresh.GameServer.Configuration;
 using Refresh.GameServer.Database;
 using Refresh.GameServer.Endpoints.Game.DataTypes.Request;
 using Refresh.GameServer.Endpoints.Game.DataTypes.Response;
@@ -114,7 +115,8 @@ public class PublishEndpoints : EndpointGroup
     public Response PublishLevel(RequestContext context,
         GameLevelRequest body,
         CommandService commandService,
-        DataContext dataContext)
+        DataContext dataContext,
+        GameServerConfig config)
     {
         //If verifying the request fails, return BadRequest
         if (!VerifyLevel(body, dataContext)) return BadRequest;
@@ -122,6 +124,18 @@ public class PublishEndpoints : EndpointGroup
         GameUser user = dataContext.User!;
         
         GameLevel level = body.ToGameLevel(user);
+
+        if (config.LevelUploadLimitsEnabled)
+        {
+            dataContext.Database.TryExpireLevelUploadCount(user);
+            if (user.TimedLevelUploads.Count > config.LevelUploadQuota)
+            {
+                dataContext.Database.AddPublishFailNotification("You have exceeded the daily level upload limit.",
+                    level, dataContext.User!);
+                return BadRequest;
+            }
+        }
+
         level.GameVersion = dataContext.Token!.TokenGame;
 
         level.MinPlayers = Math.Clamp(level.MinPlayers, 1, 4);
@@ -179,6 +193,10 @@ public class PublishEndpoints : EndpointGroup
         dataContext.Database.UpdateLevelModdedStatus(level);
         
         dataContext.Database.CreateLevelUploadEvent(dataContext.User, level);
+        
+        // Only increment if the level can be uploaded, don't want to increment for failed uploads
+        if (config.LevelUploadLimitsEnabled)
+            dataContext.Database.IncrementLevelUploadCount(user, config);
 
         context.Logger.LogInfo(BunkumCategory.UserContent, "User {0} (id: {1}) uploaded level id {2}", user.Username, user.UserId, level.LevelId);
 
