@@ -1,5 +1,6 @@
 using System.Xml.Serialization;
 using Realms;
+using Refresh.GameServer.Types.Levels;
 
 namespace Refresh.GameServer.Types.UserData;
 
@@ -16,7 +17,10 @@ public class SerializedUpdateData
     public string? Description { get; set; }
     
     [XmlElement("location")]
-    public GameLocation? Location { get; set; }
+    public GameLocation? UserLocation { get; set; }
+
+    [XmlArray("slots")]
+    public List<SerializedLevelLocation>? LevelLocations { get; set; }
     
     [XmlElement("planets")]
     public string? PlanetsHash { get; set; }

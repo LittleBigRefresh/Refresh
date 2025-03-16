@@ -32,6 +32,11 @@ public partial class GameDatabaseContext // Notifications
         this.AddNotification(title, text, user, "exclamation-circle");
     }
 
+    public void AddWarnNotification(string title, string text, GameUser user)
+    {
+        this.AddNotification(title, text, user, "warning");
+    }
+
     public void AddPublishFailNotification(string reason, GameLevel body, GameUser user)
     {
         this.AddErrorNotification("Publish failed", $"The level '{body.Title}' failed to publish. {reason}", user);

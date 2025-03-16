@@ -60,7 +60,7 @@ public class UserEndpoints : EndpointGroup
 
     [GameEndpoint("updateUser", HttpMethods.Post, ContentType.Xml)]
     [NullStatusCode(BadRequest)]
-    public string? UpdateUser(RequestContext context, GameDatabaseContext database, GameUser user, string body, IDataStore dataStore, Token token, GuidCheckerService guidChecker)
+    public string? UpdateUser(RequestContext context, DataContext dataContext, GameUser user, string body, IDataStore dataStore, Token token, GuidCheckerService guidChecker)
     {
         SerializedUpdateData? data = null;
         
@@ -94,7 +94,7 @@ public class UserEndpoints : EndpointGroup
         
         if (data == null)
         {
-            database.AddErrorNotification("Profile update failed", "Your profile failed to update because the data could not be read.", user);
+            dataContext.Database.AddErrorNotification("Profile update failed", "Your profile failed to update because the data could not be read.", user);
             return null;
         }
 
@@ -107,9 +107,9 @@ public class UserEndpoints : EndpointGroup
                 long guid = long.Parse(data.IconHash.AsSpan()[1..]);
                 
                 //If its not a valid GUID, block the request
-                if(data.IconHash.StartsWith('g') && !guidChecker.IsTextureGuid(token.TokenGame, guid))
+                if (data.IconHash.StartsWith('g') && !guidChecker.IsTextureGuid(token.TokenGame, guid))
                 {
-                    database.AddErrorNotification("Profile update failed", "Your avatar failed to update because the asset was an invalid GUID.", user);
+                    dataContext.Database.AddErrorNotification("Profile update failed", "Your avatar failed to update because the asset was an invalid GUID.", user);
                     return null; 
                 }
             }
@@ -118,25 +118,30 @@ public class UserEndpoints : EndpointGroup
                 //If the asset does not exist on the server, block the request
                 if (!dataStore.ExistsInStore(data.IconHash))
                 {
-                    database.AddErrorNotification("Profile update failed", "Your avatar failed to update because the asset was missing on the server.", user);
+                    dataContext.Database.AddErrorNotification("Profile update failed", "Your avatar failed to update because the asset was missing on the server.", user);
                     return null;
                 } 
             }
         }
-        
-        if (data.PlanetsHash != null && !dataStore.ExistsInStore(data.PlanetsHash))
+
+        if (data.LevelLocations != null && data.LevelLocations.Count > 0)
         {
-            database.AddErrorNotification("Profile update failed", "Your planets failed to update because the asset was missing on the server.", user);
+            dataContext.Database.UpdateLevelLocations(data.LevelLocations, user);
+        }
+        
+        if (data.PlanetsHash != null && data.PlanetsHash != "0" /* Empty planets */ && !dataStore.ExistsInStore(data.PlanetsHash))
+        {
+            dataContext.Database.AddErrorNotification("Profile update failed", "Your planets failed to update because the asset was missing on the server.", user);
             return null;
         }
 
         if (data.Description is { Length: > UgcLimits.DescriptionLimit })
         {
-            database.AddErrorNotification("Profile update failed", $"Your profile failed to update because the description was too long. The max length is {UgcLimits.DescriptionLimit} characters.", user);
+            dataContext.Database.AddErrorNotification("Profile update failed", $"Your profile failed to update because the description was too long. The max length is {UgcLimits.DescriptionLimit} characters.", user);
             return null;
         }
         
-        database.UpdateUserData(user, data, token.TokenGame);
+        dataContext.Database.UpdateUserData(user, data, token.TokenGame);
         return string.Empty;
     }
 
