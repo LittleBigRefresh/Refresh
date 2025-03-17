@@ -24,6 +24,7 @@ public partial class GameChallengeScore : IRealmObject, ISequentialId
     /// How long it took the publisher to achieve this score. Calculated by subtracting the first checkpoint's activation time 
     /// from the last checkpoint's activation time in the score's ghost asset.
     /// </summary>
+    /// <seealso cref="Endpoints.Game.ChallengeEndpoints.SubmitChallengeScore"/>
     public long Time { get; set; }
     public DateTimeOffset PublishDate { get; set; }
 

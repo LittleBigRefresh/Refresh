@@ -157,17 +157,17 @@ public class ChallengeEndpoints : EndpointGroup
             return BadRequest;
         }
 
-        dataContext.Database.CreateChallengeScore(body, challenge, user, serializedGhost!.Checkpoints.Last().Time - serializedGhost!.Checkpoints.First().Time);
+        // The time it took the player to achieve this score, independent of challenge criteria
+        long time = serializedGhost!.Checkpoints.Last().Time - serializedGhost!.Checkpoints.First().Time;
+        
+        dataContext.Database.CreateChallengeScore(body, challenge, user, time);
         return OK;
     }
 
-    /// <summary>
-    /// Intended to return the high score of a user for a challenge. Return the challenge's first score if
-    /// the player hasn't cleared this challenge yet, otherwise the requested user's high score.
-    /// </summary>
-    // NOTE: When a player is about to play a challenge in a level and LBP Hub requests for a user's high score, if you send a score which is not actually
-    //       the high score for that user, the game will send one additional request to this endpoint and another one to GetContextualScoresForChallenge,
-    //       load the score we returned fine, but it will bug out and break the ghost asset's path replay
+    
+    // NOTE: When a player is about to play a challenge in a level and LBP Hub requests for a user's high score, 
+    //       if you send a score which is not actually the high score for that user,
+    //       the game will bug out and break the ghost asset's path replay.
     [GameEndpoint("challenge/{challengeId}/scoreboard/{username}", HttpMethods.Get, ContentType.Xml)]
     [MinimumRole(GameUserRole.Restricted)]
     [NullStatusCode(NotFound)]
@@ -182,10 +182,6 @@ public class ChallengeEndpoints : EndpointGroup
         return SerializedChallengeScore.FromOld(dataContext.Database.GetRankedHighScoreByUserForChallenge(challenge, requestedUser));
     }
 
-    /// <summary>
-    /// This endpoint returns the scores of a challenge. Normally the game takes care of assigning rank numbers to scores.
-    /// LBP Hub does not send any pagination parameters, but it does only ever show the first 10 scores.
-    /// </summary>
     [GameEndpoint("challenge/{challengeId}/scoreboard/", HttpMethods.Get, ContentType.Xml)]  // Called in a level when playing a challenge
     [GameEndpoint("challenge/{challengeId}/scoreboard", HttpMethods.Get, ContentType.Xml)]  // Called in the pod menu when viewing a challenge
     [MinimumRole(GameUserRole.Restricted)]
@@ -203,7 +199,6 @@ public class ChallengeEndpoints : EndpointGroup
     /// <summary>
     /// Intended to return the scores of a challenge by a user's friends, specified by that user's username.
     /// Return the scores by the requesting user's mutuals instead for privacy reasons.
-    /// LBP Hub does not send any pagination parameters, but it does only ever show the first 10 scores.
     /// </summary>
     [GameEndpoint("challenge/{challengeId}/scoreboard/{username}/friends", HttpMethods.Get, ContentType.Xml)]
     [MinimumRole(GameUserRole.Restricted)]
