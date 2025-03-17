@@ -19,7 +19,7 @@ RUN dotnet publish Refresh.PresenceServer -c Release --property:OutputPath=/buil
 
 # Final running container
 
-FROM mcr.microsoft.com/dotnet/runtime:8.0.8-alpine3.20 AS final
+FROM mcr.microsoft.com/dotnet/runtime:9.0-alpine AS final
 
 # Add non-root user
 RUN set -eux && \

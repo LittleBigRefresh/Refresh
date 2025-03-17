@@ -1,5 +1,5 @@
 # Build stage
-FROM mcr.microsoft.com/dotnet/sdk:8.0.401-1-alpine3.20 AS build
+FROM mcr.microsoft.com/dotnet/sdk:9.0-alpine AS build
 WORKDIR /build
 
 COPY *.sln ./
@@ -19,7 +19,7 @@ RUN dotnet publish Refresh.HttpsProxy -c Release --property:OutputPath=/build/pu
 
 # Final running container
 
-FROM mcr.microsoft.com/dotnet/runtime:8.0.8-alpine3.20 AS final
+FROM mcr.microsoft.com/dotnet/runtime:9.0-alpine AS final
 
 # Add non-root user
 RUN set -eux && \
