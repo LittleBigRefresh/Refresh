@@ -164,7 +164,6 @@ public class ChallengeEndpoints : EndpointGroup
         return OK;
     }
 
-    
     // NOTE: When a player is about to play a challenge in a level and LBP Hub requests for a user's high score, 
     //       if you send a score which is not actually the high score for that user,
     //       the game will bug out and break the ghost asset's path replay.

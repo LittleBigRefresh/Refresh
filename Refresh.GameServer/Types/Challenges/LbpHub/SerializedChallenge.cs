@@ -14,14 +14,10 @@ public class SerializedChallenge : IDataConvertableFrom<SerializedChallenge, Gam
 {
     [XmlElement("id")] public int ChallengeId { get; set; }
     [XmlElement("name")] public string Name { get; set; } = "Unnamed Challenge";
-    /// <summary>
-    /// This challenge's level's type (developer/user) and id (or story id if it is a developer level).
-    /// </summary>
     [XmlElement("slot")] public SerializedChallengeLevel Level { get; set; }
     [XmlElement("author")] public string PublisherName { get; set; } = SystemUsers.DeletedUserName;
     /// <summary>
-    /// Always 0 when challenge is first uploaded by LBP hub, doesn't appear to affect anything if set to not 0 in the response.
-    /// The actual first score of a challenge is sent seperately as a SerializedChallengeAttempt.
+    /// Always 0, does not seem to affect anything.
     /// </summary>
     [XmlElement("score")] public long Score { get; set; } = 0;
     /// <summary>
@@ -41,10 +37,9 @@ public class SerializedChallenge : IDataConvertableFrom<SerializedChallenge, Gam
     [XmlElement("published")] public long PublishedAt { get; set; }
     /// <summary>
     /// Sent by the game as time in days from creation to expiration, which is usually 3, 5 or 7 here, as those are the only selectable options in-game.
+    /// For the response we have to send the actual unix milliseconds of the expiration timestamp, else lbp hub will not display the correct
+    /// amount of time until expiration
     /// </summary>
-    /// <remarks>
-    /// NOTE: For the response we have to send the actual unix milliseconds of the expiration timestamp, else lbp hub will crash.
-    /// </remarks>
     [XmlElement("expires")] public long ExpiresAt { get; set; }
     /// <summary>
     /// An array of criteria of a challenge. Appears to only ever have a single criterion.

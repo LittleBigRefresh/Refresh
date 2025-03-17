@@ -7,12 +7,12 @@ namespace Refresh.GameServer.Types.Challenges.LbpHub;
 public class SerializedChallengeCriterion
 {
     /// <summary>
-    /// The challenge's criterion type.
+    /// Whether this is a score/time/lives etc challenge.
     /// </summary>
     /// <seealso cref="GameChallengeType"/>
     [XmlAttribute("name")] public byte Type { get; set; } = 0;
     /// <summary>
-    /// Appears to always be 0 when sent by the game, therefore we don't need to save it.
+    /// Appears to always be 0 when sent by the game, does not affect anything either.
     /// </summary>
     [XmlText] public long Value { get; set; } = 0;
 }
