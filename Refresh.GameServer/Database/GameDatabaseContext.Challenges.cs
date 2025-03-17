@@ -24,7 +24,6 @@ public partial class GameDatabaseContext // Challenges
             Type = (GameChallengeType)createInfo.Criteria[0].Type,
             PublishDate = now,
             LastUpdateDate = now,
-            // TODO: Command and ApiV3/Website toggle to override the received amount of days until expiration with a custom value (0 for no expiration at all)
             ExpirationDate = now.AddDays(createInfo.ExpiresAt),
         };
         
