@@ -61,8 +61,7 @@ public class ChallengeEndpoints : EndpointGroup
         if (user == null) return null;
 
         string? status = context.QueryString.Get("status");
-        IEnumerable<GameChallenge> challenges = dataContext.Database.GetChallengesByUser(user, status)
-            .OrderByDescending(c => c.ExpirationDate);
+        IEnumerable<GameChallenge> challenges = dataContext.Database.GetChallengesByUser(user, status);
         
         return new SerializedChallengeList(SerializedChallenge.FromOldList(challenges, dataContext).ToList());
     }
@@ -85,11 +84,9 @@ public class ChallengeEndpoints : EndpointGroup
 
         IEnumerable<GameChallenge> challenges;
         if (user == null)
-            challenges = dataContext.Database.GetChallenges(status)
-                .OrderByDescending(c => c.ExpirationDate);
+            challenges = dataContext.Database.GetChallenges(status);
         else
-            challenges = dataContext.Database.GetChallengesNotByUser(user, status)
-                .OrderByDescending(c => c.ExpirationDate);
+            challenges = dataContext.Database.GetChallengesNotByUser(user, status);
 
         return new SerializedChallengeList(SerializedChallenge.FromOldList(challenges, dataContext).ToList());
     }
