@@ -6,17 +6,19 @@ using Refresh.GameServer.Types.Levels;
 
 namespace Refresh.GameServer.Types.Challenges.LbpHub;
 
+#nullable disable
+
 [XmlRoot("challenge")]
 [XmlType("challenge")]
 public class SerializedChallenge : IDataConvertableFrom<SerializedChallenge, GameChallenge>
 {
     [XmlElement("id")] public int ChallengeId { get; set; }
-    [XmlElement("name")] public string Name { get; set; }
+    [XmlElement("name")] public string Name { get; set; } = "Unnamed Challenge";
     /// <summary>
     /// This challenge's level's type (developer/user) and id (or story id if it is a developer level).
     /// </summary>
     [XmlElement("slot")] public SerializedChallengeLevel Level { get; set; }
-    [XmlElement("author")] public string PublisherName { get; set; } = SystemUsers.UnknownUserName;
+    [XmlElement("author")] public string PublisherName { get; set; } = SystemUsers.DeletedUserName;
     /// <summary>
     /// Always 0 when challenge is first uploaded by LBP hub, doesn't appear to affect anything if set to not 0 in the response.
     /// The actual first score of a challenge is sent seperately as a SerializedChallengeAttempt.
@@ -50,6 +52,7 @@ public class SerializedChallenge : IDataConvertableFrom<SerializedChallenge, Gam
     /// <seealso cref="SerializedChallengeCriterion"/>
     [XmlArray("criteria")] public List<SerializedChallengeCriterion> Criteria { get; set; } = [];
 
+    #nullable enable
     public static SerializedChallenge? FromOld(GameChallenge? old, DataContext dataContext)
     {
         if (old == null)

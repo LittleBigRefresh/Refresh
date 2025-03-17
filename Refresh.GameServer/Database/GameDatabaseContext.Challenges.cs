@@ -77,6 +77,17 @@ public partial class GameDatabaseContext // Challenges
         };
     }
 
+    public int GetTotalChallengeCount(string? status)
+    {
+        DateTimeOffset now = this._time.Now;
+        return status switch
+        {
+            "active" => this.GameChallenges.Count(c => c.ExpirationDate > now),
+            "expired" => this.GameChallenges.Count(c => c.ExpirationDate <= now),
+            _ => this.GameChallenges.Count(),
+        };
+    }
+
     public IEnumerable<GameChallenge> GetChallenges(string? filter = null)
         => this.FilterChallengesByStatus(this.GameChallenges, filter);
 
@@ -105,46 +116,13 @@ public partial class GameDatabaseContext // Challenges
 
     public GameChallengeScore CreateChallengeScore(SerializedChallengeAttempt attempt, GameChallenge challenge, GameUser user, long time)
     {
-        // Get the first score for this challenge
-        GameChallengeScore? firstScore = this.GetFirstScoreForChallenge(challenge);
-        bool newHighScore = true;
-
-        // Skip this step if there is no first score (and therefore no scores at all) for this challenge yet.
-        if (firstScore != null)
-        {
-            // Get all scores for this challenge by the user whose ghost hashes are not null
-            IEnumerable<GameChallengeScore> otherScores = 
-                this.GameChallengeScores.Where(s => s.Challenge == challenge && s.Publisher == user && s.GhostHash != null);
-
-            this.Write(() => {
-                foreach (GameChallengeScore otherScore in otherScores)
-                {
-                    // If the current score is not beaten by the new score (new score is lesser than current score),
-                    // don't touch the current score's GhostHash
-                    if (attempt.Score < otherScore.Score)
-                    {
-                        newHighScore = false;
-                        continue;
-                    }
-
-                    // If the current score is the first score for this challenge, don't touch its GhostHash
-                    if (otherScore.Equals(firstScore))
-                        continue;
-
-                    // Since the current score is lower than the new score and also not the first score,
-                    // set its ghost hash to null since it is not needed anymore
-                    otherScore.GhostHash = null;
-                }
-            });
-        }
-
         // Create new score
         GameChallengeScore score = new()
         {
             Challenge = challenge,
             Publisher = user,
             Score = attempt.Score,
-            GhostHash = newHighScore ? attempt.GhostHash : null,
+            GhostHash = attempt.GhostHash,
             Time = time,
             PublishDate = this._time.Now,
         };
@@ -161,71 +139,47 @@ public partial class GameDatabaseContext // Challenges
         {
             this.GameChallengeScores.Remove(score);
         });
-        
     }
 
     public bool DoesChallengeHaveScores(GameChallenge challenge)
         => this.GameChallengeScores.Any(s => s.Challenge == challenge);
-    
-    private IEnumerable<GameChallengeScore> GetHighScoresForChallenge(GameChallenge challenge)
-        => this.GameChallengeScores.Where(s => s.Challenge == challenge && s.GhostHash != null);
-
-    private GameChallengeScore? GetFirstScoreForChallenge(GameChallenge challenge)
-        => this.GetHighScoresForChallenge(challenge)
-            // Ordering like this ensures we actually do get the first (oldest) score for the challenge
-            .OrderBy(s => s.PublishDate)
-            .FirstOrDefault();
-
-    public GameChallengeScoreWithRank? GetRankedFirstScoreForChallenge(GameChallenge challenge)
-    {
-        // We need the high scores to be able to get the first score's rank among them
-        IEnumerable<GameChallengeScore> highScores = this.GetHighScoresForChallenge(challenge);
-
-        // Ordering like this ensures we actually do get the first (oldest) score for the challenge
-        GameChallengeScore? firstScore = highScores
-            .OrderBy(s => s.PublishDate)
-            .FirstOrDefault();
-        if (firstScore == null) return null;
-
-        return new(firstScore, highScores.OrderByDescending(s => s.Score).ToList().IndexOf(firstScore) + 1);
-    }
 
     public GameChallengeScoreWithRank? GetRankedHighScoreByUserForChallenge(GameChallenge challenge, GameUser user)
     {
-        // We need the other high scores to be able to get the wanted high score's rank among them
-        IEnumerable<GameChallengeScore> highScores = this.GetHighScoresForChallenge(challenge);
+        // We need the other high scores to be able to get the wanted high score's rank
+        IEnumerable<GameChallengeScore> scores = this.GetHighScoresForChallenge(challenge);
 
         // Ordering like this ensures the high score we get is actually the (newest) high score of the user
-        GameChallengeScore? usersHighScore = highScores
-            .OrderByDescending(s => s.PublishDate)
+        GameChallengeScore? usersScore = scores
             .FirstOrDefault(s => s.Publisher.UserId == user.UserId);
-        if (usersHighScore == null) return null;
 
-        return new(usersHighScore, highScores.OrderByDescending(s => s.Score).ToList().IndexOf(usersHighScore) + 1);
+        if (usersScore == null) return null;
+        return new(usersScore, scores.OrderByDescending(s => s.Score).ToList().IndexOf(usersScore) + 1);
     }
 
-    /// <summary>
-    /// Returns whether a user has "cleared" a challenge (how often they have beaten the challenge's first score).
-    /// </summary>
-    public bool HasUserClearedChallenge(GameChallenge challenge, GameUser user)
+    private IEnumerable<GameChallengeScore> GetHighScoresForChallenge(GameChallenge challenge, bool showDuplicates = false)
     {
-        GameChallengeScore? firstScore = this.GetFirstScoreForChallenge(challenge);
+        IEnumerable<GameChallengeScore> scores = this.GameChallengeScores
+            .Where(s => s.Challenge == challenge)
+            .OrderByDescending(s => s.Score);
+        
+        if (!showDuplicates)
+            scores = scores.DistinctBy(s => s.Publisher);
+        
+        return scores;
+    }
 
-        // If there is no first score, there are no scores at all
-        if (firstScore == null) return false;
+    public IEnumerable<GameChallengeScoreWithRank> GetRankedHighScoresForChallenge(GameChallenge challenge)
+    {
+        IEnumerable<GameChallengeScore> highScores = this.GetHighScoresForChallenge(challenge);
 
-        return this.GameChallengeScores.Any(s => s.Challenge == challenge && s.Publisher == user && s.Score >= firstScore.Score);
+        return highScores.Select((s, i) => new GameChallengeScoreWithRank(s, i));
     }
 
     public DatabaseList<GameChallengeScoreWithRank> GetRankedHighScoresForChallenge(GameChallenge challenge, int skip, int count)
-    {
-        IEnumerable<GameChallengeScore> highScores = this.GetHighScoresForChallenge(challenge)
-            .OrderByDescending(s => s.Score);
+        => new(this.GetRankedHighScoresForChallenge(challenge), skip, count);
 
-        return new(highScores.Select((s, i) => new GameChallengeScoreWithRank(s, i)), skip, count);
-    }
-
-    public DatabaseList<GameChallengeScoreWithRank> GetRankedHighScoresByUsersMutualsForChallenge(GameChallenge challenge, GameUser user, int skip, int count)
+    public IEnumerable<GameChallengeScoreWithRank> GetRankedHighScoresByUsersMutualsForChallenge(GameChallenge challenge, GameUser user)
     {
         IEnumerable<GameUser> mutuals = this.GetUsersMutuals(user);
 
@@ -234,8 +188,11 @@ public partial class GameDatabaseContext // Challenges
             .Where(s => mutuals.Contains(s.Publisher))
             .OrderByDescending(s => s.Score);
 
-        return new(mutualHighScores.Select((s, i) => new GameChallengeScoreWithRank(s, i)), skip, count);
+        return mutualHighScores.Select((s, i) => new GameChallengeScoreWithRank(s, i));
     }
+
+    public DatabaseList<GameChallengeScoreWithRank> GetRankedHighScoresByUsersMutualsForChallenge(GameChallenge challenge, GameUser user, int skip, int count)
+        => new(this.GetRankedHighScoresByUsersMutualsForChallenge(challenge, user), skip, count);
 
     /// <summary>
     /// Returns the given score aswell as the scores "around" it depending on the given count.

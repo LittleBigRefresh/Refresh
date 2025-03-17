@@ -156,7 +156,7 @@ public class ChallengeEndpoints : EndpointGroup
                 +"Try to submit another score!",
                 user
             );
-            dataContext.Logger.LogDebug(BunkumCategory.UserContent, $"Ghost asset with hash {body.GhostHash} is invalid");
+            dataContext.Logger.LogDebug(BunkumCategory.UserContent, $"Ghost asset with hash {body.GhostHash} is corrupt");
             return BadRequest;
         }
 
@@ -182,17 +182,7 @@ public class ChallengeEndpoints : EndpointGroup
         GameUser? requestedUser = dataContext.Database.GetUserByUsername(username);
         if (requestedUser == null) return null;
 
-        // If there is no first score for this challenge, there are no scores at all.
-        // We want the first score's rank here aswell so we could respond with a SerializedChallengeScore of the first score below
-        GameChallengeScoreWithRank? firstScore = dataContext.Database.GetRankedFirstScoreForChallenge(challenge);
-        if (firstScore == null) return null;
-
-        // If the requesting user has not cleared the challenge yet and the requested user is the first score's uploader,
-        // return the first score, else the requested user's high score
-        if (!dataContext.Database.HasUserClearedChallenge(challenge, requestingUser) && firstScore.score.Publisher.UserId == requestedUser.UserId)
-            return SerializedChallengeScore.FromOld(firstScore);
-        else
-            return SerializedChallengeScore.FromOld(dataContext.Database.GetRankedHighScoreByUserForChallenge(challenge, requestedUser));
+        return SerializedChallengeScore.FromOld(dataContext.Database.GetRankedHighScoreByUserForChallenge(challenge, requestedUser));
     }
 
     /// <summary>
@@ -209,8 +199,8 @@ public class ChallengeEndpoints : EndpointGroup
         if (challenge == null) return null;
 
         // Get and return the high scores (plus first score) of the challenge
-        DatabaseList<GameChallengeScoreWithRank> scores = dataContext.Database.GetRankedHighScoresForChallenge(challenge, 0, 10);
-        return new SerializedChallengeScoreList(SerializedChallengeScore.FromOldList(scores.Items).ToList());
+        IEnumerable<GameChallengeScoreWithRank> scores = dataContext.Database.GetRankedHighScoresForChallenge(challenge);
+        return new SerializedChallengeScoreList(SerializedChallengeScore.FromOldList(scores).ToList());
     }
 
     /// <summary>
@@ -226,13 +216,13 @@ public class ChallengeEndpoints : EndpointGroup
         GameChallenge? challenge = dataContext.Database.GetChallengeById(challengeId);
         if (challenge == null) return null;
 
-        DatabaseList<GameChallengeScoreWithRank> rankedScores = dataContext.Database.GetRankedHighScoresByUsersMutualsForChallenge(challenge, user, 0, 10);
-        return new SerializedChallengeScoreList(SerializedChallengeScore.FromOldList(rankedScores.Items).ToList());
+        IEnumerable<GameChallengeScoreWithRank> scores = dataContext.Database.GetRankedHighScoresByUsersMutualsForChallenge(challenge, user);
+        return new SerializedChallengeScoreList(SerializedChallengeScore.FromOldList(scores).ToList());
     }
 
     /// <summary>
-    /// Gets called when a user finishes a challenge to show a 3 scores large fragment of it's leaderboard with the user's highscore preferrably being in the middle.
-    /// Unlike in most other leaderboards, the game actually shows the score's ranks returned here.
+    /// Gets called when a user finishes a challenge to show a 3 scores large fragment of it's leaderboard with the user's highscore preferrably being in
+    /// the middle. Unlike in most other leaderboards, the game actually shows the score's ranks returned here.
     /// </summary>
     [GameEndpoint("challenge/{challengeId}/scoreboard/{username}/contextual", HttpMethods.Get, ContentType.Xml)]
     [MinimumRole(GameUserRole.Restricted)]
