@@ -88,6 +88,7 @@ public class GameDatabaseProvider : RealmDatabaseProvider<GameDatabaseContext>
         typeof(GamePlaylist),
         typeof(LevelPlaylistRelation),
         typeof(SubPlaylistRelation),
+        typeof(FavouritePlaylistRelation),
 
         // challenges
         typeof(GameChallenge),
@@ -692,14 +693,20 @@ public class GameDatabaseProvider : RealmDatabaseProvider<GameDatabaseContext>
         if (oldVersion < 160)
             migration.NewRealm.RemoveRange(migration.NewRealm.All<LevelPlaylistRelation>().Where(r => r.Level == null));
         
-        // IQueryable<dynamic>? oldLevelPlaylistRelations = migration.OldRealm.DynamicApi.All("LevelPlaylistRelation");
-        // IQueryable<LevelPlaylistRelation>? newLevelPlaylistRelations = migration.NewRealm.All<LevelPlaylistRelation>();
-        // if (oldVersion < 155)
-        //     for (int i = 0; i < newLevelPlaylistRelations.Count(); i++)
-        //     {
-        //         dynamic oldLevelPlaylistRelation = oldLevelPlaylistRelations.ElementAt(i);
-        //         LevelPlaylistRelation newLevelPlaylistRelation = newLevelPlaylistRelations.ElementAt(i);
-        //     }
+        // Version 162 added indices for LevelPlaylistRelations for custom playlist level ordering
+        IQueryable<dynamic>? oldLevelPlaylistRelations = migration.OldRealm.DynamicApi.All("LevelPlaylistRelation");
+        IQueryable<LevelPlaylistRelation>? newLevelPlaylistRelations = migration.NewRealm.All<LevelPlaylistRelation>();
+        if (oldVersion < 162)
+            for (int i = 0; i < newLevelPlaylistRelations.Count(); i++)
+            {
+                dynamic oldLevelPlaylistRelation = oldLevelPlaylistRelations.ElementAt(i);
+                LevelPlaylistRelation newLevelPlaylistRelation = newLevelPlaylistRelations.ElementAt(i);
+
+                if (oldVersion < 162)
+                {
+                    newLevelPlaylistRelation.Index = 0;
+                }
+            }
 
         // IQueryable<dynamic>? oldSubPlaylistRelations = migration.OldRealm.DynamicApi.All("SubPlaylistRelation");
         // IQueryable<SubPlaylistRelation>? newSubPlaylistRelations = migration.NewRealm.All<SubPlaylistRelation>();

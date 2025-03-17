@@ -1,6 +1,5 @@
 using Bunkum.Core;
 using Bunkum.Core.Endpoints;
-using Bunkum.Core.Endpoints.Debugging;
 using Bunkum.Core.Responses;
 using Bunkum.Listener.Protocol;
 using Bunkum.Protocols.Http;
@@ -15,12 +14,12 @@ using Refresh.GameServer.Types.UserData;
 
 namespace Refresh.GameServer.Endpoints.Game.Playlists;
 
-public class PlaylistEndpoints : EndpointGroup
+public class Lbp1PlaylistEndpoints : EndpointGroup
 {
     // Creates a playlist, with an optional parent ID
     [GameEndpoint("createPlaylist", HttpMethods.Post, ContentType.Xml)]
     [RequireEmailVerified]
-    public Response CreatePlaylist(RequestContext context, DataContext dataContext, SerializedPlaylist body)
+    public Response CreatePlaylist(RequestContext context, DataContext dataContext, SerializedLbp1Playlist body)
     {
         GameUser user = dataContext.User!;
         
@@ -55,7 +54,7 @@ public class PlaylistEndpoints : EndpointGroup
             dataContext.Database.SetUserRootPlaylist(user, playlist);
         
         // Create the new playlist, returning the data
-        return new Response(SerializedPlaylist.FromOld(playlist, dataContext), ContentType.Xml);
+        return new Response(SerializedLbp1Playlist.FromOld(playlist, dataContext), ContentType.Xml);
     }
 
     // Gets the slots contained within a playlist
@@ -67,26 +66,21 @@ public class PlaylistEndpoints : EndpointGroup
         GamePlaylist? playlist = dataContext.Database.GetPlaylistById(id);
         if (playlist == null)
             return null;
-        
-        // TODO: when we get postgres, this can be IQueryable and we wont need ToList()
-        IList<GamePlaylist> subPlaylists = dataContext.Database.GetPlaylistsInPlaylist(playlist).ToList();
-        // TODO: when we get postgres, this can be IQueryable and we wont need ToList()
-        IList<GameLevel> levels = dataContext.Database.GetLevelsInPlaylist(playlist, dataContext.Game).ToList();                    
-                    
+
         (int skip, int count) = context.GetPageData();
         
-        int total = subPlaylists.Count + levels.Count;
+        DatabaseList<GamePlaylist> subPlaylists = dataContext.Database.GetPlaylistsInPlaylist(playlist, skip, count);
+        DatabaseList<GameLevel> levels = dataContext.Database.GetLevelsInPlaylist(playlist, dataContext.Game, skip, count);                    
 
         // Concat together the playlist's sub-playlists and levels 
         IEnumerable<GameMinimalLevelResponse> slots =
-            GameMinimalLevelResponse.FromOldList(subPlaylists, dataContext) // the sub-playlists
-                .Concat(GameMinimalLevelResponse.FromOldList(levels, dataContext)) // the sub-levels
-                .Skip(skip).Take(count);
+            GameMinimalLevelResponse.FromOldList(subPlaylists.Items, dataContext) // the sub-playlists
+                .Concat(GameMinimalLevelResponse.FromOldList(levels.Items, dataContext)); // the sub-levels
         
         // Convert the GameLevelResponse list down to a GameMinimalLevelResponse
         return new SerializedMinimalLevelList(
             slots,
-            total,
+            subPlaylists.TotalItems + levels.TotalItems,
             skip
         );
     }
@@ -109,9 +103,11 @@ public class PlaylistEndpoints : EndpointGroup
                 return null;
         }
 
+        (int skip, int count) = context.GetPageData();
+
         // Get the playlists which contain the level/playlist, and if we have an author specified, filter it down to only playlists which are created by the author
         // TODO: with postgres this can be IQueryable, and we dont need List
-        List<GamePlaylist> playlists;
+        DatabaseList<GamePlaylist> playlists;
         if (slotType == "playlist")
         {
             GamePlaylist? playlist = dataContext.Database.GetPlaylistById(slotId);
@@ -119,8 +115,8 @@ public class PlaylistEndpoints : EndpointGroup
                 return null;
 
             playlists = author == null ? 
-                dataContext.Database.GetPlaylistsContainingPlaylist(playlist).ToList() : 
-                dataContext.Database.GetPlaylistsByAuthorContainingPlaylist(author, playlist).ToList();
+                dataContext.Database.GetPlaylistsContainingPlaylist(playlist, skip, count) : 
+                dataContext.Database.GetPlaylistsByAuthorContainingPlaylist(author, playlist, skip, count);
         }
         else
         {
@@ -129,25 +125,21 @@ public class PlaylistEndpoints : EndpointGroup
                 return null;
             
             playlists = author == null ? 
-                dataContext.Database.GetPlaylistsContainingLevel(level).ToList() : 
-                dataContext.Database.GetPlaylistsByAuthorContainingLevel(author, level).ToList();
+                dataContext.Database.GetPlaylistsContainingLevel(level, skip, count) : 
+                dataContext.Database.GetPlaylistsByAuthorContainingLevel(author, level, skip, count);
         }
-        
-        int total = playlists.Count;
-        
-        (int skip, int count) = context.GetPageData();
 
         // Return the serialized playlists 
         return new SerializedMinimalLevelList(
-            GameMinimalLevelResponse.FromOldList(playlists.Skip(skip).Take(count), dataContext), 
-            total, 
+            GameMinimalLevelResponse.FromOldList(playlists.Items, dataContext), 
+            playlists.TotalItems, 
             skip
         );
     }
 
     [GameEndpoint("setPlaylistMetaData/{id}", HttpMethods.Post, ContentType.Xml)]
     [RequireEmailVerified]
-    public Response UpdatePlaylistMetadata(RequestContext context, GameDatabaseContext database, GameUser user, int id, SerializedPlaylist body)
+    public Response UpdatePlaylistMetadata(RequestContext context, GameDatabaseContext database, GameUser user, int id, SerializedLbp1Playlist body)
     {
         GamePlaylist? playlist = database.GetPlaylistById(id);
         if (playlist == null)
@@ -158,7 +150,6 @@ public class PlaylistEndpoints : EndpointGroup
             return Unauthorized;
         
         database.UpdatePlaylist(playlist, body);
-        
         return OK;
     }
 
@@ -175,7 +166,6 @@ public class PlaylistEndpoints : EndpointGroup
             return Unauthorized;
 
         database.DeletePlaylist(playlist);
-            
         return OK;
     }
 
@@ -211,20 +201,34 @@ public class PlaylistEndpoints : EndpointGroup
             if (childPlaylist.PlaylistId == parentPlaylist.PlaylistId)
                 return BadRequest;
 
-            // If the parent contains the child in its parent tree, block the request to prevent recursive playlists
-            // This would be a `BadRequest`, but the game has a bug and will do this when creating sub-playlists,
-            // so lets not upset it and just return OK, I dont expect this to be a common problem for people to run into.
-            bool recursive = false;
-            parentPlaylist.TraverseParentsRecursively(database, delegate(GamePlaylist playlist)
-            {
-                if (playlist.PlaylistId == childPlaylist.PlaylistId)
-                    recursive = true;   
-            });
-            if (recursive) return OK;
-            
-            // Add the playlist to the parent   
+            // Add the child playlist to the parent before checking for recursive playlists below to catch cases where a loop would
+            // only happen once the child playlist is added to its new parent
             database.AddPlaylistToPlaylist(childPlaylist, parentPlaylist);
 
+            // If the parent contains the child in its parent tree, block the request to prevent recursive playlists
+            bool recursive = false;
+            IEnumerable<GamePlaylist> traversedPlaylists = [childPlaylist];
+            parentPlaylist.TraverseParentsRecursively(database, delegate(GamePlaylist playlist)
+            {
+                // If we have already traversed this playlist before, we have found a loop. Stop traversing in that case.
+                if (traversedPlaylists.Contains(playlist))
+                {
+                    recursive = true;
+                    return false;
+                }
+                else
+                {
+                    // Remember this playlist for loop detection
+                    traversedPlaylists = traversedPlaylists.Append(playlist);
+                    return true;
+                }
+            });
+            if (recursive) {
+                // If adding this playlist to its parent has caused a loop which was not there before, remove it from its parent
+                database.RemovePlaylistFromPlaylist(childPlaylist, parentPlaylist);
+                return BadRequest;
+            }
+            
             // ReSharper disable once ExtractCommonBranchingCode see like 3 lines below (line count subject to change)
             return OK;
         }
@@ -238,7 +242,6 @@ public class PlaylistEndpoints : EndpointGroup
                 return NotFound;
  
             database.AddLevelToPlaylist(level, parentPlaylist);
-            
             return OK;
         }
     }
