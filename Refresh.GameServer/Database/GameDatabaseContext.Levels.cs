@@ -90,19 +90,18 @@ public partial class GameDatabaseContext // Levels
         {
             foreach (SerializedLevelLocation location in locations)
             {
-                // You can't update the locations of developer levels
-                if (location.Type == "user")
-                {
-                    GameLevel? level = levelsByUser.FirstOrDefault(l => l.LevelId == location.LevelId);
+                // This gets the level to update while also verifying whether the user may even update its location
+                GameLevel? level = levelsByUser.FirstOrDefault(l => l.LevelId == location.LevelId);
 
-                    if (level != null)
-                    {
-                        level.LocationX = location.Location.X;
-                        level.LocationY = location.Location.Y;
-                    }
+                if (level != null)
+                {
+                    level.LocationX = location.Location.X;
+                    level.LocationY = location.Location.Y;
                 }
-                
-                failedUpdates++;
+                else 
+                {
+                    failedUpdates++;
+                }
             }
         });
 

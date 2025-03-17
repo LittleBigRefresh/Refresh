@@ -154,7 +154,7 @@ public class GameUserResponse : IDataConvertableFrom<GameUserResponse, GameUser>
                 response.Handle.IconHash = old.PspIconHash;
 
                 //Fill out PSP favourite users
-                List<GameUser> users = dataContext.Database.GetUsersFavouritedByUser(old).ToList();
+                List<GameUser> users = dataContext.Database.GetUsersFavouritedByUser(old, 20, 0).Items.ToList();
                 response.FavouriteUsers = new SerializedMinimalFavouriteUserList(users.Select(u => SerializedUserHandle.FromUser(u, dataContext)).ToList(), users.Count);
 
                 //Fill out PSP favourite levels
