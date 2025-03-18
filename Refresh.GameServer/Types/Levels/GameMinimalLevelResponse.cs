@@ -23,6 +23,7 @@ public class GameMinimalLevelResponse : IDataConvertableFrom<GameMinimalLevelRes
     [XmlElement("location")] public required GameLocation Location { get; set; } = GameLocation.Zero;
     [XmlElement("npHandle")] public required SerializedUserHandle? Handle { get; set; }
     [XmlAttribute("type")] public required string? Type { get; set; }
+    [XmlElement("leveltype")] public required string LevelType { get; set; }
     [XmlElement("mmpick")] public required bool TeamPicked { get; set; }
     [XmlElement("minPlayers")] public required int MinPlayers { get; set; }
     [XmlElement("maxPlayers")] public required int MaxPlayers { get; set; }
@@ -83,6 +84,7 @@ public class GameMinimalLevelResponse : IDataConvertableFrom<GameMinimalLevelRes
             LevelId = level.LevelId,
             Handle = level.Handle,
             Type = level.Type,
+            LevelType = level.LevelType,
             TeamPicked = level.TeamPicked,
             YayCount = level.YayCount,
             BooCount = level.BooCount,
@@ -116,6 +118,7 @@ public class GameMinimalLevelResponse : IDataConvertableFrom<GameMinimalLevelRes
             IconHash = dataContext.GetIconFromHash(old.IconHash),
             Description = old.Description,
             Type = GameSlotType.Playlist.ToGameType(),
+            LevelType = GameLevelType.Normal.ToGameString(),
             Location = new GameLocation(old.LocationX, old.LocationY),
             // Playlists are only ever serialized like this in LBP1-like builds, so we can assume LBP1
             GameVersion = TokenGame.LittleBigPlanet1.ToSerializedGame(),
