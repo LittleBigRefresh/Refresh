@@ -41,6 +41,7 @@ public partial class GameDatabaseContext // Relations
         {
             Level = level,
             User = user,
+            Timestamp = this._time.Now,
         };
         this.Write(() => this.FavouriteLevelRelations.Add(relation));
 
@@ -108,6 +109,7 @@ public partial class GameDatabaseContext // Relations
         {
             UserToFavourite = userToFavourite,
             UserFavouriting = userFavouriting,
+            Timestamp = this._time.Now,
         };
         
         this.Write(() => this.FavouriteUserRelations.Add(relation));
@@ -169,6 +171,7 @@ public partial class GameDatabaseContext // Relations
         {
             Level = level,
             User = user,
+            Timestamp = this._time.Now,
         };
         this.Write(() => this.QueueLevelRelations.Add(relation));
 
@@ -213,7 +216,10 @@ public partial class GameDatabaseContext // Relations
         {
             RateReviewRelation relation = this.RateReviewRelations.First(r => r.Review == review && r.User == user);
             
-            this.Write(() => relation.RatingType = ratingType);
+            this.Write(() => {
+                relation.RatingType = ratingType;
+                relation.Timestamp = this._time.Now;
+            });
 
             return;
         }
@@ -223,6 +229,7 @@ public partial class GameDatabaseContext // Relations
             RatingType = ratingType,
             Review = review,
             User = user,
+            Timestamp = this._time.Now,
         };
 
         this.Write(() =>
@@ -528,6 +535,7 @@ public partial class GameDatabaseContext // Relations
                 Tag = tag,
                 User = user,
                 Level = level,
+                Timestamp = this._time.Now,
             });
         });
     }
