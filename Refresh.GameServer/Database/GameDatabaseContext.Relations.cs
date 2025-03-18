@@ -383,6 +383,7 @@ public partial class GameDatabaseContext // Relations
     public DatabaseList<GameReview> GetReviewsForLevel(GameLevel level, int count, int skip)
         => new(this.GameReviews
             .Where(r => r.Level == level)
+            // Sort reviews from most liked to most disliked
             .OrderByDescending(this.GetRawRatingForReview), skip, count);
     
     public int GetTotalReviewsForLevel(GameLevel level)
