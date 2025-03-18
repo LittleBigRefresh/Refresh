@@ -247,6 +247,22 @@ public partial class GameDatabaseContext // Relations
         return rating;
     }
 
+    public int GetRawRatingForReview(GameReview review)
+    {
+        IQueryable<RateReviewRelation> relations = this.RateReviewRelations.Where(r => r.Review == review);
+        int rawRating = 0;
+
+        foreach (RateReviewRelation relation in relations)
+        {
+            if (relation.RatingType == RatingType.Yay)
+                rawRating++;
+            else
+                rawRating--;
+        }
+
+        return rawRating;
+    }
+
     public GameReview? GetReviewByUserForLevel(GameUser user, GameLevel level)
         => this.GameReviews.FirstOrDefault(gameReview => gameReview.Publisher == user && gameReview.Level == level);
 
@@ -347,10 +363,9 @@ public partial class GameDatabaseContext // Relations
     }
 
     public DatabaseList<GameReview> GetReviewsByUser(GameUser user, int count, int skip)
-    {
-        return new DatabaseList<GameReview>(this.GameReviews
-            .Where(r => r.Publisher == user), skip, count);
-    }
+        => new(this.GameReviews
+            .Where(r => r.Publisher == user)
+            .OrderByDescending(r => r.PostedAt), skip, count);
 
     public int GetTotalReviewsByUser(GameUser user)
         => this.GameReviews.Count(r => r.Publisher == user);
@@ -366,10 +381,9 @@ public partial class GameDatabaseContext // Relations
     }
 
     public DatabaseList<GameReview> GetReviewsForLevel(GameLevel level, int count, int skip)
-    {
-        return new DatabaseList<GameReview>(this.GameReviews
-            .Where(r => r.Level == level), skip, count);
-    }
+        => new(this.GameReviews
+            .Where(r => r.Level == level)
+            .OrderByDescending(r => this.GetRawRatingForReview(r)), skip, count);
     
     public int GetTotalReviewsForLevel(GameLevel level)
         => this.GameReviews.Count(r => r.Level == level);
