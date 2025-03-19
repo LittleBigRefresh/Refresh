@@ -23,6 +23,7 @@ public class GameMinimalLevelResponse : IDataConvertableFrom<GameMinimalLevelRes
     [XmlElement("location")] public required GameLocation Location { get; set; } = GameLocation.Zero;
     [XmlElement("npHandle")] public required SerializedUserHandle? Handle { get; set; }
     [XmlAttribute("type")] public required string? Type { get; set; }
+    [XmlElement("leveltype")] public required string LevelType { get; set; }
     [XmlElement("mmpick")] public required bool TeamPicked { get; set; }
     [XmlElement("minPlayers")] public required int MinPlayers { get; set; }
     [XmlElement("maxPlayers")] public required int MaxPlayers { get; set; }
@@ -45,6 +46,7 @@ public class GameMinimalLevelResponse : IDataConvertableFrom<GameMinimalLevelRes
     [XmlElement("initiallyLocked")] public bool IsLocked { get; set; }
     [XmlElement("isSubLevel")] public bool IsSubLevel { get; set; }
     [XmlElement("shareable")] public int IsCopyable { get; set; }
+    [XmlElement("moveRequired")] public bool RequiresMoveController { get; set; }
     [XmlElement("tags")] public string Tags { get; set; } = "";
  
     private GameMinimalLevelResponse() {}
@@ -83,6 +85,7 @@ public class GameMinimalLevelResponse : IDataConvertableFrom<GameMinimalLevelRes
             LevelId = level.LevelId,
             Handle = level.Handle,
             Type = level.Type,
+            LevelType = level.LevelType,
             TeamPicked = level.TeamPicked,
             YayCount = level.YayCount,
             BooCount = level.BooCount,
@@ -98,6 +101,7 @@ public class GameMinimalLevelResponse : IDataConvertableFrom<GameMinimalLevelRes
             IsLocked = level.IsLocked,
             IsSubLevel = level.IsSubLevel,
             IsCopyable = level.IsCopyable,
+            RequiresMoveController = level.RequiresMoveController,
             PlayerCount = dataContext.Match.GetPlayerCountForLevel(RoomSlotType.Online, level.LevelId),
             Tags = level.Tags,
         };
@@ -116,6 +120,7 @@ public class GameMinimalLevelResponse : IDataConvertableFrom<GameMinimalLevelRes
             IconHash = dataContext.GetIconFromHash(old.IconHash),
             Description = old.Description,
             Type = GameSlotType.Playlist.ToGameType(),
+            LevelType = GameLevelType.Normal.ToGameString(),
             Location = new GameLocation(old.LocationX, old.LocationY),
             // Playlists are only ever serialized like this in LBP1-like builds, so we can assume LBP1
             GameVersion = TokenGame.LittleBigPlanet1.ToSerializedGame(),
@@ -138,6 +143,7 @@ public class GameMinimalLevelResponse : IDataConvertableFrom<GameMinimalLevelRes
             IsLocked = false,
             IsSubLevel = false,
             IsCopyable = 0,
+            RequiresMoveController = false,
             Tags = string.Empty, 
             TeamPicked = false, 
             Handle = SerializedUserHandle.FromUser(old.Publisher, dataContext),
