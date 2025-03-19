@@ -45,6 +45,7 @@ public class GameLevelRequest
     [XmlElement("initiallyLocked")] public bool IsLocked { get; set; }
     [XmlElement("isSubLevel")] public bool IsSubLevel { get; set; }
     [XmlElement("shareable")] public int IsCopyable { get; set; }
+    [XmlElement("moveRequired")] public bool RequiresMoveController { get; set; }
     
     [XmlElement("backgroundGUID")] public string? BackgroundGuid { get; set; }
     
@@ -73,6 +74,7 @@ public class GameLevelRequest
             IsLocked = this.IsLocked,
             IsSubLevel = this.IsSubLevel,
             IsCopyable = this.IsCopyable == 1,
+            RequiresMoveController = this.RequiresMoveController,
             BackgroundGuid = this.BackgroundGuid,
         };
 }
