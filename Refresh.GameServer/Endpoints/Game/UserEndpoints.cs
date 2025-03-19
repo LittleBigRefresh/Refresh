@@ -60,7 +60,7 @@ public class UserEndpoints : EndpointGroup
 
     [GameEndpoint("updateUser", HttpMethods.Post, ContentType.Xml)]
     [NullStatusCode(BadRequest)]
-    public string? UpdateUser(RequestContext context, DataContext dataContext, GameUser user, string body, IDataStore dataStore, Token token, GuidCheckerService guidChecker)
+    public string? UpdateUser(RequestContext context, DataContext dataContext, GameUser user, string body, GuidCheckerService guidChecker)
     {
         SerializedUpdateData? data = null;
         
@@ -107,7 +107,7 @@ public class UserEndpoints : EndpointGroup
                 long guid = long.Parse(data.IconHash.AsSpan()[1..]);
                 
                 //If its not a valid GUID, block the request
-                if (data.IconHash.StartsWith('g') && !guidChecker.IsTextureGuid(token.TokenGame, guid))
+                if (data.IconHash.StartsWith('g') && !guidChecker.IsTextureGuid(dataContext.Game, guid))
                 {
                     dataContext.Database.AddErrorNotification("Profile update failed", "Your avatar failed to update because the asset was an invalid GUID.", user);
                     return null; 
@@ -116,7 +116,7 @@ public class UserEndpoints : EndpointGroup
             else
             {
                 //If the asset does not exist on the server, block the request
-                if (!dataStore.ExistsInStore(data.IconHash))
+                if (!dataContext.DataStore.ExistsInStore(data.IconHash))
                 {
                     dataContext.Database.AddErrorNotification("Profile update failed", "Your avatar failed to update because the asset was missing on the server.", user);
                     return null;
@@ -129,7 +129,7 @@ public class UserEndpoints : EndpointGroup
             dataContext.Database.UpdateLevelLocations(data.LevelLocations, user);
         }
         
-        if (data.PlanetsHash != null && data.PlanetsHash != "0" /* Empty planets */ && !dataStore.ExistsInStore(data.PlanetsHash))
+        if (data.PlanetsHash != null && data.PlanetsHash != "0" /* Empty planets */ && !dataContext.DataStore.ExistsInStore(data.PlanetsHash))
         {
             dataContext.Database.AddErrorNotification("Profile update failed", "Your planets failed to update because the asset was missing on the server.", user);
             return null;
@@ -141,7 +141,7 @@ public class UserEndpoints : EndpointGroup
             return null;
         }
         
-        dataContext.Database.UpdateUserData(user, data, token.TokenGame);
+        dataContext.Database.UpdateUserData(user, data, dataContext.Game);
         return string.Empty;
     }
 
