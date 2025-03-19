@@ -23,11 +23,11 @@ public partial class GameDatabaseContext // Relations
     public DatabaseList<GameLevel> GetLevelsFavouritedByUser(GameUser user, int count, int skip, LevelFilterSettings levelFilterSettings, GameUser? accessor) 
         => new(this.FavouriteLevelRelations
         .Where(r => r.User == user)
+        .OrderByDescending(r => r.Timestamp)
         .AsEnumerable()
         .Select(r => r.Level)
         .FilterByLevelFilterSettings(accessor, levelFilterSettings)
-        .FilterByGameVersion(levelFilterSettings.GameVersion)
-        .OrderByDescending(l => l.PublishDate), skip, count);
+        .FilterByGameVersion(levelFilterSettings.GameVersion), skip, count);
     
     public int GetTotalLevelsFavouritedByUser(GameUser user) 
         => this.FavouriteLevelRelations
@@ -41,6 +41,7 @@ public partial class GameDatabaseContext // Relations
         {
             Level = level,
             User = user,
+            Timestamp = this._time.Now,
         };
         this.Write(() => this.FavouriteLevelRelations.Add(relation));
 
@@ -87,6 +88,7 @@ public partial class GameDatabaseContext // Relations
     [Pure]
     public IEnumerable<GameUser> GetUsersFavouritedByUser(GameUser user, int count, int skip) => this.FavouriteUserRelations
         .Where(r => r.UserFavouriting == user)
+        .OrderByDescending(r => r.Timestamp)
         .AsEnumerable()
         .Select(r => r.UserToFavourite)
         .Skip(skip)
@@ -108,6 +110,7 @@ public partial class GameDatabaseContext // Relations
         {
             UserToFavourite = userToFavourite,
             UserFavouriting = userFavouriting,
+            Timestamp = this._time.Now,
         };
         
         this.Write(() => this.FavouriteUserRelations.Add(relation));
@@ -150,11 +153,11 @@ public partial class GameDatabaseContext // Relations
     public DatabaseList<GameLevel> GetLevelsQueuedByUser(GameUser user, int count, int skip, LevelFilterSettings levelFilterSettings, GameUser? accessor)
         => new(this.QueueLevelRelations
         .Where(r => r.User == user)
+        .OrderByDescending(r => r.Timestamp)
         .AsEnumerable()
         .Select(r => r.Level)
         .FilterByLevelFilterSettings(accessor, levelFilterSettings)
-        .FilterByGameVersion(levelFilterSettings.GameVersion)
-        .OrderByDescending(l => l.PublishDate), skip, count);
+        .FilterByGameVersion(levelFilterSettings.GameVersion), skip, count);
     
     [Pure]
     public int GetTotalLevelsQueuedByUser(GameUser user) 
@@ -169,6 +172,7 @@ public partial class GameDatabaseContext // Relations
         {
             Level = level,
             User = user,
+            Timestamp = this._time.Now,
         };
         this.Write(() => this.QueueLevelRelations.Add(relation));
 
@@ -213,7 +217,10 @@ public partial class GameDatabaseContext // Relations
         {
             RateReviewRelation relation = this.RateReviewRelations.First(r => r.Review == review && r.User == user);
             
-            this.Write(() => relation.RatingType = ratingType);
+            this.Write(() => {
+                relation.RatingType = ratingType;
+                relation.Timestamp = this._time.Now;
+            });
 
             return;
         }
@@ -223,6 +230,7 @@ public partial class GameDatabaseContext // Relations
             RatingType = ratingType,
             Review = review,
             User = user,
+            Timestamp = this._time.Now,
         };
 
         this.Write(() =>
@@ -543,6 +551,7 @@ public partial class GameDatabaseContext // Relations
                 Tag = tag,
                 User = user,
                 Level = level,
+                Timestamp = this._time.Now,
             });
         });
     }
