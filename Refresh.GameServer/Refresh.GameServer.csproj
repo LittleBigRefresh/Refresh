@@ -4,7 +4,7 @@
         <TargetFramework>net9.0</TargetFramework>
         <ImplicitUsings>enable</ImplicitUsings>
         <Nullable>enable</Nullable>
-        <Configurations>Debug;Release;DebugLocalBunkum</Configurations>
+        <Configurations>Debug;Release;DebugLocalBunkum;DebugPostgres</Configurations>
         <Platforms>AnyCPU</Platforms>
         <ServerGarbageCollection>true</ServerGarbageCollection>
     </PropertyGroup>
@@ -12,6 +12,11 @@
     <PropertyGroup Condition=" '$(Configuration)' == 'DebugLocalBunkum' ">
       <DefineConstants>TRACE;DEBUG</DefineConstants>
       <DebugSymbols>true</DebugSymbols>
+    </PropertyGroup>
+
+    <PropertyGroup Condition=" '$(Configuration)' == 'DebugPostgres' ">
+        <DefineConstants>TRACE;DEBUG;POSTGRES</DefineConstants>
+        <DebugSymbols>true</DebugSymbols>
     </PropertyGroup>
 
     <ItemGroup>
@@ -53,10 +58,8 @@
 
     <ItemGroup Condition="'$(Configuration)'!='DebugLocalBunkum'">
         <PackageReference Include="Bunkum" Version="4.8.1" />
-        <PackageReference Include="Bunkum.RealmDatabase" Version="4.8.1" />
         <PackageReference Include="Bunkum.AutoDiscover" Version="4.8.1" />
         <PackageReference Include="Bunkum.HealthChecks" Version="4.8.1" />
-        <PackageReference Include="Bunkum.HealthChecks.RealmDatabase" Version="4.8.1" />
         <PackageReference Include="Bunkum.Protocols.Http" Version="4.8.1" />
     </ItemGroup>
 
@@ -70,10 +73,24 @@
       <PackageReference Include="MailKit" Version="4.11.0" />
       <PackageReference Include="NPTicket" Version="3.1.1" />
       <PackageReference Include="Pfim" Version="0.11.3" />
-      <PackageReference Include="Realm" Version="20.1.0" />
       <PackageReference Include="SharpZipLib" Version="1.4.2" />
       <PackageReference Include="SixLabors.ImageSharp" Version="3.1.7" />
       <PackageReference Include="EasyHotReload" Version="1.0.0" />
+    </ItemGroup>
+    
+    <ItemGroup Condition="'$(Configuration)'!='DebugPostgres'">
+        <PackageReference Include="Bunkum.RealmDatabase" Version="4.8.1" />
+        <PackageReference Include="Bunkum.HealthChecks.RealmDatabase" Version="4.8.1" />
+        <PackageReference Include="Realm" Version="20.1.0" />
+    </ItemGroup>
+
+    <ItemGroup Condition="'$(Configuration)'=='DebugPostgres'">
+        <PackageReference Include="Microsoft.EntityFrameworkCore.Relational" Version="9.0.3" />
+        <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="9.0.4" />
+        <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="9.0.3">
+            <PrivateAssets>all</PrivateAssets>
+            <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+        </PackageReference>
     </ItemGroup>
 
     <ItemGroup>
