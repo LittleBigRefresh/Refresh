@@ -82,6 +82,8 @@ public class GameLevelResponse : IDataConvertableFrom<GameLevelResponse, GameLev
     [XmlElement("yourReview")] public SerializedGameReview? YourReview { get; set; }
     [XmlElement("commentCount")] public int CommentCount { get; set; } = 0;
     [XmlElement("commentsEnabled")] public bool CommentsEnabled { get; set; } = true;
+    [XmlElement("photoCount")] public int PhotoCount { get; set; }
+    [XmlElement("authorPhotoCount")] public int PublisherPhotoCount { get; set; }
     [XmlElement("tags")] public string Tags { get; set; } = "";
     
     /// <summary>
@@ -133,6 +135,8 @@ public class GameLevelResponse : IDataConvertableFrom<GameLevelResponse, GameLev
             ReviewCount = 0,
             CommentsEnabled = false,
             CommentCount = 0,
+            PhotoCount = 0,
+            PublisherPhotoCount = 0,
             IsLocked = false,
             IsSubLevel = false,
             IsCopyable = 0,
@@ -184,6 +188,8 @@ public class GameLevelResponse : IDataConvertableFrom<GameLevelResponse, GameLev
             AverageStarRating = old.CalculateAverageStarRating(dataContext.Database),
             ReviewCount = old.Reviews.Count,
             CommentCount = dataContext.Database.GetTotalCommentsForLevel(old),
+            PhotoCount = dataContext.Database.GetTotalPhotosInLevel(old),
+            PublisherPhotoCount = old.Publisher == null ? 0 : dataContext.Database.GetTotalPhotosInLevelByUser(old, old.Publisher),
             Tags = string.Join(',', dataContext.Database.GetTagsForLevel(old).Select(t => t.Tag.ToLbpString())) ,
             Type = old.SlotType.ToGameType(),
         };
@@ -299,6 +305,8 @@ public class GameLevelResponse : IDataConvertableFrom<GameLevelResponse, GameLev
             ReviewsEnabled = true,
             CommentCount = 0,
             CommentsEnabled = true,
+            PhotoCount = 0,
+            PublisherPhotoCount = 0,
             Tags = string.Empty,
         };
     }
