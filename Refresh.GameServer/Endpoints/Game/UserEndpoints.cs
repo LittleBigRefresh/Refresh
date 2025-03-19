@@ -129,7 +129,7 @@ public class UserEndpoints : EndpointGroup
             dataContext.Database.UpdateLevelLocations(data.LevelLocations, user);
         }
         
-        if (data.PlanetsHash != null && data.PlanetsHash != "0" /* Empty planets */ && !dataContext.DataStore.ExistsInStore(data.PlanetsHash))
+        if (!string.IsNullOrEmpty(data.PlanetsHash) && data.PlanetsHash != "0" /* Empty planets */ && !dataContext.DataStore.ExistsInStore(data.PlanetsHash))
         {
             dataContext.Database.AddErrorNotification("Profile update failed", "Your planets failed to update because the asset was missing on the server.", user);
             return null;
