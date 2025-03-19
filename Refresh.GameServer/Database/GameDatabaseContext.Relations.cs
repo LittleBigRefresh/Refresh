@@ -493,7 +493,13 @@ public partial class GameDatabaseContext // Relations
     public int GetTotalRatingsForLevelComment(GameLevelComment comment, RatingType type) =>
         this.LevelCommentRelations.Count(r => r.Comment == comment && r._RatingType == (int)type);
 
-    private bool RateComment<TComment, TCommentRelation>(GameUser user, TComment comment, RatingType ratingType, RealmDbSet<TCommentRelation> list)
+    private bool RateComment<TComment, TCommentRelation>(GameUser user, TComment comment, RatingType ratingType,
+        #if !POSTGRES
+        RealmDbSet<TCommentRelation> list
+        #else
+        DbSet<TCommentRelation> list
+        #endif
+        )
         where TComment : class, IGameComment
         where TCommentRelation : class, ICommentRelation<TComment>, new()
     {
