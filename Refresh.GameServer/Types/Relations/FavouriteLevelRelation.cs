@@ -9,4 +9,5 @@ public partial class FavouriteLevelRelation : IRealmObject
 {
     public GameLevel Level { get; set; }
     public GameUser User { get; set; }
+    public DateTimeOffset Timestamp { get; set; }
 }

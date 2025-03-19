@@ -88,7 +88,7 @@ public class CommentEndpoints : EndpointGroup
         GameLevel? level = database.GetLevelByIdAndType(slotType, id);
         if (level == null) return NotFound;
 
-        if (!level.Publisher.Equals(user)) 
+        if (level.Publisher != null && !level.Publisher.Equals(user)) 
         {
             database.AddNotification("New comment", $"{user.Username} left a comment on your level: '{level.Title}!'", level.Publisher);
         }
