@@ -17,4 +17,5 @@ public partial class TagLevelRelation : IRealmObject
     
     public GameUser User { get; set; }
     public GameLevel Level { get; set; }
+    public DateTimeOffset Timestamp { get; set; }
 }

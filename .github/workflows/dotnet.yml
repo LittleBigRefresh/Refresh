@@ -17,7 +17,7 @@ jobs:
     - name: Setup .NET
       uses: actions/setup-dotnet@v4
       with:
-        dotnet-version: 8.0.x
+        dotnet-version: 9.0.x
         
     - name: Set VERSION variable from tag (for tag pushes)
       if: ${{ contains(github.ref, 'refs/tags') }}
@@ -43,7 +43,7 @@ jobs:
       uses: actions/upload-artifact@v4
       with:
           name: "Refresh for Linux x64"
-          path: "Refresh.GameServer/bin/Release/net8.0/linux-x64/publish/"
+          path: "Refresh.GameServer/bin/Release/net9.0/linux-x64/publish/"
           if-no-files-found: error
           retention-days: 30
           
@@ -51,6 +51,6 @@ jobs:
       uses: actions/upload-artifact@v4
       with:
           name: "Refresh for Windows x64"
-          path: "Refresh.GameServer/bin/Release/net8.0/win-x64/publish/"
+          path: "Refresh.GameServer/bin/Release/net9.0/win-x64/publish/"
           if-no-files-found: error
           retention-days: 30
