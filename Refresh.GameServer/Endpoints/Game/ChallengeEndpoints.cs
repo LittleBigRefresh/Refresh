@@ -21,7 +21,6 @@ public class ChallengeEndpoints : EndpointGroup
 
     [GameEndpoint("challenge", HttpMethods.Post, ContentType.Xml)]
     [RequireEmailVerified]
-    [NullStatusCode(NotFound)]
     public Response UploadChallenge(RequestContext context, DataContext dataContext, GameUser user, SerializedChallenge body)
     {
         GameLevel? level = dataContext.Database.GetLevelByIdAndType(body.Level.Type, body.Level.LevelId);
@@ -199,7 +198,7 @@ public class ChallengeEndpoints : EndpointGroup
     /// </summary>
     [GameEndpoint("challenge/{challengeId}/scoreboard/{username}/friends", HttpMethods.Get, ContentType.Xml)]
     [MinimumRole(GameUserRole.Restricted)]
-    [NullStatusCode(NotImplemented)]
+    [NullStatusCode(NotFound)]
     public SerializedChallengeScoreList? GetScoresByUsersFriendsForChallenge(RequestContext context, DataContext dataContext, GameUser user, int challengeId)
     {
         GameChallenge? challenge = dataContext.Database.GetChallengeById(challengeId);
