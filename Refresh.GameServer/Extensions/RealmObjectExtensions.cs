@@ -1,8 +1,10 @@
+#if !POSTGRES
 using System.Diagnostics;
 using System.Reflection;
 using Realms;
 
 namespace Refresh.GameServer.Extensions;
+
 
 public static class RealmObjectExtensions
 {
@@ -32,3 +34,5 @@ public static class RealmObjectExtensions
         return clone;
     }
 }
+
+#endif
