@@ -7,9 +7,9 @@ namespace Refresh.GameServer.Types.Challenges.LbpHub;
 public class SerializedChallengeCriterion
 {
     /// <summary>
-    /// Whether this is a score/time/lives etc challenge.
+    /// The challenge's criteria type (time/score/lives etc).
     /// </summary>
-    /// <seealso cref="GameChallengeType"/>
+    /// <seealso cref="GameChallengeCriteriaType"/>
     [XmlAttribute("name")] public byte Type { get; set; } = 0;
     /// <summary>
     /// Appears to always be 0 when sent by the game, does not affect anything either.

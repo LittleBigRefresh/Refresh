@@ -11,7 +11,7 @@ namespace Refresh.GameServer.Types.Challenges.LbpHub;
 public class SerializedChallengeAttempt
 {
     /// <summary>
-    /// The publisher's achieved raw score. More always means better here, independent of challenge type.
+    /// The publisher's achieved raw score. More always means better here, independent of challenge criteria.
     /// </summary>
     [XmlElement("score")] public long Score { get; set; }
     /// <summary>

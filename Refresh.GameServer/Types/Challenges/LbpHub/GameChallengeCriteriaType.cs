@@ -1,6 +1,6 @@
 namespace Refresh.GameServer.Types.Challenges.LbpHub;
 
-public enum GameChallengeType : byte
+public enum GameChallengeCriteriaType : byte
 {
     Time = 0,
     Score = 1,

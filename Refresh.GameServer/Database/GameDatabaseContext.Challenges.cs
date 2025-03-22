@@ -21,7 +21,7 @@ public partial class GameDatabaseContext // Challenges
             StartCheckpointUid = createInfo.StartCheckpointUid,
             FinishCheckpointUid = createInfo.FinishCheckpointUid,
             // Take the type of the first (so far always only) criterion in the challenge criteria
-            Type = (GameChallengeType)createInfo.Criteria[0].Type,
+            Type = (GameChallengeCriteriaType)createInfo.Criteria[0].Type,
             PublishDate = now,
             LastUpdateDate = now,
             ExpirationDate = now.AddDays(createInfo.ExpiresAt),

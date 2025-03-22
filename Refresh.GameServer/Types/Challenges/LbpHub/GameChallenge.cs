@@ -25,12 +25,12 @@ public partial class GameChallenge : IRealmObject, ISequentialId
     /// </summary>
     public int FinishCheckpointUid { get; set; }
     /// <summary>
-    /// Whether this is a score/time/lives etc challenge.
+    /// The challenge's criteria type (time/score/lives etc).
     /// </summary>
-    /// <seealso cref="GameChallengeType"/>
-    public GameChallengeType Type
+    /// <seealso cref="GameChallengeCriteriaType"/>
+    public GameChallengeCriteriaType Type
     {
-        get => (GameChallengeType)this._Type;
+        get => (GameChallengeCriteriaType)this._Type;
         set => this._Type = (byte)value;
     }
     public byte _Type { get; set; }

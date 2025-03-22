@@ -13,7 +13,7 @@ public partial class GameChallengeScore : IRealmObject, ISequentialId
     public GameChallenge Challenge { get; set; }
     public GameUser Publisher { get; set; }
     /// <summary>
-    /// The publisher's achieved raw score. More always means better here, independent of challenge type.
+    /// The publisher's achieved raw score. More always means better here, independent of challenge criteria.
     /// </summary>
     public long Score { get; set; }
     /// <summary>
@@ -21,9 +21,10 @@ public partial class GameChallengeScore : IRealmObject, ISequentialId
     /// </summary>
     public string GhostHash { get; set; } = "";
     /// <summary>
-    /// How long it took the publisher to achieve this score. Calculated by subtracting the first checkpoint's activation time 
-    /// from the last checkpoint's activation time in the score's ghost asset.
+    /// The difference between this score's ghost asset's first checkpoint's and last checkpoint's activation time,
+    /// in whole seconds. Independent of challenge criteria.
     /// </summary>
+    /// <seealso cref="Ghost.SerializedChallengeCheckpoint"/>
     /// <seealso cref="Endpoints.Game.ChallengeEndpoints.SubmitChallengeScore"/>
     public long Time { get; set; }
     public DateTimeOffset PublishDate { get; set; }

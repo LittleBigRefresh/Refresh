@@ -156,7 +156,7 @@ public class ChallengeEndpoints : EndpointGroup
             return BadRequest;
         }
 
-        // The time it took the player to achieve this score, independent of challenge criteria
+        // The time (in whole seconds) it took the player to achieve this score, independent of challenge criteria
         long time = serializedGhost.Checkpoints.Last().Time - serializedGhost.Checkpoints.First().Time;
         
         dataContext.Database.CreateChallengeScore(body, challenge, user, time);
