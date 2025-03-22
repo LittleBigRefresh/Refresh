@@ -66,11 +66,12 @@ public class ChallengeEndpoints : EndpointGroup
     }
 
     /// <summary>
-    /// Intended to return challenges by the specified user's friends,
-    /// but since not that many people play LBP hub (considering its higher barrier to entry),
-    /// it makes more sense to just return all challenges for this endpoint instead.
-    /// Exclude challenges by the specified user (if found by the username in the route parameters) to not show duplicates in-game, 
-    /// since this endpoint usually gets called together with the GetChallengesByUser endpoint above.
+    /// Intended to return challenges by the specified user's friends.
+    /// Return all challenges except those by the specified user instead, as outside of the "Past Challenges" page in the pod, 
+    /// the game only ever uses this endpoint and the GetChallengesByUser endpoint above to get and display challenges, 
+    /// effectively only letting the player play their own and their friends' challenges.
+    /// Likely not many people play LBP Hub anyway, resulting in the number of potential challenges likely being low,
+    /// and making most of these challenges unplayable on top of that wouldn't be very smart.
     /// The query parameter "status" indicates whether to return "active" or "expired" challenges.
     /// </summary>
     [GameEndpoint("user/{username}/friends/challenges", HttpMethods.Get, ContentType.Xml)]
@@ -92,7 +93,7 @@ public class ChallengeEndpoints : EndpointGroup
 
     /// <summary>
     /// Most likely intended to get the specified user's and their friend's challenges.
-    /// Return all challenges instead, for the same reason described in GetChallengesByUsersFriends' summary. 
+    /// Return all challenges instead, for the same reason described in GetChallengesByUsersFriends' summary above. 
     /// Usually this endpoint only gets called when going to "Past Challenges" in the pod.
     /// The query parameter "status" indicates whether to return "active" or "expired" challenges.
     /// </summary>
@@ -158,7 +159,7 @@ public class ChallengeEndpoints : EndpointGroup
         // The time it took the player to achieve this score, independent of challenge criteria
         long time = serializedGhost.Checkpoints.Last().Time - serializedGhost.Checkpoints.First().Time;
         
-        GameChallengeScore newScore = dataContext.Database.CreateChallengeScore(body, challenge, user, time);
+        dataContext.Database.CreateChallengeScore(body, challenge, user, time);
         return OK;
     }
 
