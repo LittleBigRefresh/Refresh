@@ -131,8 +131,8 @@ public class ChallengeEndpoints : EndpointGroup
         {
             dataContext.Database.AddErrorNotification(
                 "Challenge Score upload failed", 
-                $"Your score for challenge '{challenge.Name}' in level '{challenge.Level.Title}' "
-                +"couldn't be uploaded because it's ghost data was missing.",
+                $"Your score for '{challenge.Name}' in '{challenge.Level.Title}' "
+                +"couldn't be submitted because the ghost data was missing.",
                 user
             );
             dataContext.Logger.LogDebug(BunkumCategory.UserContent, $"Ghost asset with hash {body.GhostHash} was not found or is not a ChallengeGhost");
@@ -147,8 +147,8 @@ public class ChallengeEndpoints : EndpointGroup
         {
             dataContext.Database.AddErrorNotification(
                 "Challenge Score upload failed", 
-                $"Your score for challenge '{challenge.Name}' in level '{challenge.Level.Title}' "
-                +"couldn't be uploaded because it's ghost data was corrupt. "
+                $"Your score for '{challenge.Name}' in '{challenge.Level.Title}' "
+                +"couldn't be submitted because the ghost data was corrupt. "
                 +"Try to submit another score!",
                 user
             );
