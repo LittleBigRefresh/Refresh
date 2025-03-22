@@ -210,6 +210,9 @@ public abstract class Importer
         // ReSharper disable once ConvertIfStatementToSwitchStatement
         if (tokenPlatform is null or TokenPlatform.PSP && IsPspTga(data)) return (GameAssetType.Tga, GameAssetFormat.Unknown);
         if (tokenPlatform is null or TokenPlatform.PSP && this.IsMip(data)) return (GameAssetType.Mip, GameAssetFormat.Unknown);
+
+        // Incase the asset is ghost data sent by LBP Hub
+        if (MatchesMagic(data, "<ghost>"u8)) return (GameAssetType.ChallengeGhost, GameAssetFormat.Unknown);
                     
         this.Warn($"Unknown asset header [0x{Convert.ToHexString(data[..4])}] [str: {Encoding.ASCII.GetString(data[..4])}]");
 
