@@ -138,11 +138,11 @@ public class ChallengeEndpoints : EndpointGroup
             return BadRequest;
         }
 
-        SerializedChallengeGhost? serializedGhost = SerializedChallengeGhost.GetSerializedChallengeGhostFromDataStore(body.GhostHash, dataContext.DataStore);
+        SerializedChallengeGhost? serializedGhost = SerializedChallengeGhost.FromDataStore(body.GhostHash, dataContext.DataStore, dataContext.Logger);
         bool isFirstScore = !dataContext.Database.DoesChallengeHaveScores(challenge);
         
         // If the ghost asset for this score is null or invalid, reject the score
-        if (!SerializedChallengeGhost.IsGhostDataValid(serializedGhost, challenge, isFirstScore))
+        if (serializedGhost == null || !SerializedChallengeGhost.IsGhostDataValid(serializedGhost, challenge, isFirstScore))
         {
             dataContext.Database.AddErrorNotification(
                 "Challenge Score upload failed", 
@@ -156,10 +156,10 @@ public class ChallengeEndpoints : EndpointGroup
         }
 
         // The time it took the player to achieve this score, independent of challenge criteria
-        long time = serializedGhost!.Checkpoints.Last().Time - serializedGhost!.Checkpoints.First().Time;
+        long time = serializedGhost.Checkpoints.Last().Time - serializedGhost.Checkpoints.First().Time;
         
         GameChallengeScore newScore = dataContext.Database.CreateChallengeScore(body, challenge, user, time);
-        return new Response(SerializedChallengeScore.FromOld(newScore, dataContext), ContentType.Xml);;
+        return OK;
     }
 
     // NOTE: When a player is about to play a challenge in a level and LBP Hub requests for a user's high score, 

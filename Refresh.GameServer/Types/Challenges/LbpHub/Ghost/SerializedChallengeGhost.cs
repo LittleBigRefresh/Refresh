@@ -1,6 +1,8 @@
 using System.Text;
 using System.Xml.Serialization;
+using Bunkum.Core;
 using Bunkum.Core.Storage;
+using NotEnoughLogs;
 
 namespace Refresh.GameServer.Types.Challenges.LbpHub.Ghost;
 
@@ -22,11 +24,8 @@ public class SerializedChallengeGhost
     /// Returns null if it fails to do so.
     /// This method assumes that if there is an asset found under that hash, it is a ChallengeGhost.
     /// </summary>
-    public static SerializedChallengeGhost? GetSerializedChallengeGhostFromDataStore(string? ghostHash, IDataStore dataStore)
+    public static SerializedChallengeGhost? FromDataStore(string ghostHash, IDataStore dataStore, Logger? logger = null)
     {
-        if (ghostHash == null)
-            return null;
-
         // Try to get the ghost asset's contents as a string
         if (!dataStore.TryGetDataFromStore(ghostHash, out byte[]? ghostContentBytes) || ghostContentBytes == null)
             return null;
@@ -56,8 +55,10 @@ public class SerializedChallengeGhost
 
             serializedGhost ??= output;
         }
-        catch
+        catch (Exception ex)
         {
+            // If a logger is passed to this method, log the exception
+            logger?.LogWarning(BunkumCategory.UserContent, $"Error deserializing ghost asset: {ex}");
             return null;
         }
 
@@ -69,9 +70,9 @@ public class SerializedChallengeGhost
     /// </summary>
     // There does not seem to be a way to catch all kinds of corruptions possible by LBP hub, neither is there a reliable way to 
     // correct corrupt ghost data either, so just try to do some easy checks on the given SerializedChallengeGhost.
-    public static bool IsGhostDataValid(SerializedChallengeGhost? challengeGhost, GameChallenge challenge, bool isFirstScore)
+    public static bool IsGhostDataValid(SerializedChallengeGhost challengeGhost, GameChallenge challenge, bool isFirstScore)
     {
-        if (challengeGhost == null || challengeGhost.Checkpoints.Count < 1)
+        if (challengeGhost.Checkpoints.Count < 1)
             return false;
 
         // Normally the game already takes care of this, but just in case
