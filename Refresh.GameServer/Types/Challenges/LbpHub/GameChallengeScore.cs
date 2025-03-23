@@ -1,14 +1,14 @@
+using MongoDB.Bson;
 using Realms;
-using Refresh.GameServer.Database;
 using Refresh.GameServer.Types.UserData;
 
 namespace Refresh.GameServer.Types.Challenges.LbpHub;
 
 #nullable disable
 
-public partial class GameChallengeScore : IRealmObject, ISequentialId
+public partial class GameChallengeScore : IRealmObject
 {
-    [PrimaryKey] public int ScoreId { get; set; }
+    [PrimaryKey] public ObjectId ScoreId { get; set; } = ObjectId.GenerateNewId();
 
     public GameChallenge Challenge { get; set; }
     public GameUser Publisher { get; set; }
@@ -28,10 +28,4 @@ public partial class GameChallengeScore : IRealmObject, ISequentialId
     /// <seealso cref="Endpoints.Game.ChallengeEndpoints.SubmitChallengeScore"/>
     public long Time { get; set; }
     public DateTimeOffset PublishDate { get; set; }
-
-    public int SequentialId
-    {
-        get => this.ScoreId;
-        set => this.ScoreId = value;
-    }
 }
