@@ -60,7 +60,7 @@ public class ChallengeEndpoints : EndpointGroup
         if (user == null) return null;
 
         string? status = context.QueryString.Get("status");
-        DatabaseList<GameChallenge> challenges = dataContext.Database.GetChallengesByUser(user, status);
+        DatabaseList<GameChallenge> challenges = dataContext.Database.GetChallengesByUser(user, 0, 100, status);
         
         return new SerializedChallengeList(SerializedChallenge.FromOldList(challenges.Items, dataContext).ToList());
     }
@@ -84,9 +84,9 @@ public class ChallengeEndpoints : EndpointGroup
 
         DatabaseList<GameChallenge> challenges;
         if (user == null)
-            challenges = dataContext.Database.GetChallenges(status);
+            challenges = dataContext.Database.GetChallenges(0, 1000, status);
         else
-            challenges = dataContext.Database.GetChallengesNotByUser(user, status);
+            challenges = dataContext.Database.GetChallengesNotByUser(user, 0, 1000, status);
 
         return new SerializedChallengeList(SerializedChallenge.FromOldList(challenges.Items, dataContext).ToList());
     }
@@ -104,7 +104,7 @@ public class ChallengeEndpoints : EndpointGroup
     {
         string? status = context.QueryString.Get("status");
 
-        DatabaseList<GameChallenge> challenges = dataContext.Database.GetChallenges(status);
+        DatabaseList<GameChallenge> challenges = dataContext.Database.GetChallenges(0, 1000, status);
         return new SerializedChallengeList(SerializedChallenge.FromOldList(challenges.Items, dataContext).ToList());
     }
 
@@ -189,8 +189,8 @@ public class ChallengeEndpoints : EndpointGroup
         GameChallenge? challenge = dataContext.Database.GetChallengeById(challengeId);
         if (challenge == null) return null;
 
-        DatabaseList<GameChallengeScoreWithRank> scores = dataContext.Database.GetRankedChallengeHighScores(challenge);
-        return new SerializedChallengeScoreList(SerializedChallengeScore.FromOldList(scores.Items).ToList());
+        DatabaseList<GameChallengeScoreWithRank> scores = dataContext.Database.GetRankedChallengeHighScores(challenge, 0, 1000);
+        return new SerializedChallengeScoreList(SerializedChallengeScore.FromOldList(scores.Items));
     }
 
     /// <summary>
@@ -205,8 +205,8 @@ public class ChallengeEndpoints : EndpointGroup
         GameChallenge? challenge = dataContext.Database.GetChallengeById(challengeId);
         if (challenge == null) return null;
 
-        DatabaseList<GameChallengeScoreWithRank> scores = dataContext.Database.GetRankedChallengeHighScoresByMutuals(challenge, user);
-        return new SerializedChallengeScoreList(SerializedChallengeScore.FromOldList(scores.Items).ToList());
+        DatabaseList<GameChallengeScoreWithRank> scores = dataContext.Database.GetRankedChallengeHighScoresByMutuals(challenge, user, 0, 1000);
+        return new SerializedChallengeScoreList(SerializedChallengeScore.FromOldList(scores.Items));
     }
 
     /// <summary>
