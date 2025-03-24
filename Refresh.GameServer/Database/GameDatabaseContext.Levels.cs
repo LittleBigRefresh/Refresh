@@ -197,27 +197,6 @@ public partial class GameDatabaseContext // Levels
             this.GameLevels.Remove(level);
         });
     }
-
-    public void IncrementLevelUploadCount(GameUser user, GameServerConfig config)
-    {
-        // Set ExpiryDate if the user has uploaded their first level within a day's length of time
-        if (user.TimedLevelUploads.Count == 0)
-        {
-            user.TimedLevelUploads.ExpiryDate = this._time.Now + TimeSpan.FromHours(config.LevelUploadTimeSpan);
-            user.TimedLevelUploads.DateIsExpired = false;
-        }
-
-        user.TimedLevelUploads.Count += 1;
-    }
-
-    public void TryExpireLevelUploadCount(GameUser user)
-    {
-        if (user.TimedLevelUploads.ExpiryDate >= this._time.Now) return;
-        
-        user.TimedLevelUploads.DateIsExpired = true;
-        user.TimedLevelUploads.Count = 0;
-    }
-
     
     private IQueryable<GameLevel> GetLevelsByGameVersion(TokenGame gameVersion) 
         => this.GameLevels

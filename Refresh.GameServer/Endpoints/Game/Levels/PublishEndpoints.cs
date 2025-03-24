@@ -127,7 +127,7 @@ public class PublishEndpoints : EndpointGroup
 
         if (config.LevelUploadLimitsEnabled)
         {
-            dataContext.Database.TryExpireLevelUploadCount(user);
+            user.TimedLevelUploads.TryExpireUploadCount();
             if (user.TimedLevelUploads.Count > config.LevelUploadQuota)
             {
                 dataContext.Database.AddPublishFailNotification("You have exceeded the daily level upload limit.",
@@ -196,7 +196,7 @@ public class PublishEndpoints : EndpointGroup
         
         // Only increment if the level can be uploaded, don't want to increment for failed uploads
         if (config.LevelUploadLimitsEnabled)
-            dataContext.Database.IncrementLevelUploadCount(user, config);
+            user.TimedLevelUploads.IncrementUploadCount(config);
 
         context.Logger.LogInfo(BunkumCategory.UserContent, "User {0} (id: {1}) uploaded level id {2}", user.Username, user.UserId, level.LevelId);
 
