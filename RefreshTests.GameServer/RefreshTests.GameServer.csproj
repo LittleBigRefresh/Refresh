@@ -6,7 +6,7 @@
         <Nullable>enable</Nullable>
         
         <IsTestProject>true</IsTestProject>
-        <Configurations>Debug;Release;DebugLocalBunkum</Configurations>
+        <Configurations>Debug;Release;DebugLocalBunkum;DebugPostgres</Configurations>
         <Platforms>AnyCPU</Platforms>
     </PropertyGroup>
 

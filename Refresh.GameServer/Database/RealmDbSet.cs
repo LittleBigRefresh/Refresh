@@ -1,7 +1,8 @@
+#if !POSTGRES
+
 using System.Collections;
 using System.Linq.Expressions;
 using JetBrains.Annotations;
-using Realms;
 
 namespace Refresh.GameServer.Database;
 
@@ -55,3 +56,5 @@ public class RealmDbSet<T> : IQueryable<T> where T : IRealmObject
         this._realm.RemoveRange(this._realm.All<T>().Where(predicate));
     }
 }
+
+#endif
