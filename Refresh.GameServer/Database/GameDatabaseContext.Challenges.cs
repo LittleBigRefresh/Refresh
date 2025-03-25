@@ -178,6 +178,8 @@ public partial class GameDatabaseContext // Challenges
 
     public DatabaseList<GameChallengeScoreWithRank> GetRankedChallengeHighScores(GameChallenge challenge, int skip, int count)
         => new(this.GetRankedChallengeHighScoresInternal(challenge), skip, count);
+    public DatabaseList<GameChallengeScoreWithRank> GetLowestRankedChallengeHighScores(GameChallenge challenge, int skip, int count)
+        => new(this.GetRankedChallengeHighScoresInternal(challenge).OrderBy(s => s.score.Score), skip, count);
 
     public DatabaseList<GameChallengeScoreWithRank> GetRankedChallengeHighScoresByMutuals(GameChallenge challenge, GameUser user, int skip, int count)
     {

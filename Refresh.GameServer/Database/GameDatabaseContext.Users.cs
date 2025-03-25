@@ -471,4 +471,12 @@ public partial class GameDatabaseContext // Users
             user.PresenceServerAuthToken = token;
         });
     }
+
+    public void SetUsersLastGhostAssetGottenTimestamp(GameUser user, DateTimeOffset? timestamp)
+    {
+        this.Write(() =>
+        {
+            user.LastGhostAssetGottenTimestamp = timestamp;
+        });
+    }
 }

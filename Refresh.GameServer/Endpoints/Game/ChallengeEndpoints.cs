@@ -4,6 +4,7 @@ using Bunkum.Core.Responses;
 using Bunkum.Listener.Protocol;
 using Bunkum.Protocols.Http;
 using Refresh.GameServer.Database;
+using Refresh.GameServer.Time;
 using Refresh.GameServer.Types.Assets;
 using Refresh.GameServer.Types.Challenges.LbpHub;
 using Refresh.GameServer.Types.Challenges.LbpHub.Ghost;
@@ -120,6 +121,9 @@ public class ChallengeEndpoints : EndpointGroup
     [RequireEmailVerified]
     public Response SubmitChallengeScore(RequestContext context, DataContext dataContext, GameUser user, SerializedChallengeAttempt body, int challengeId)
     {
+        if (user.LastGhostAssetGottenTimestamp != null)
+            dataContext.Database.SetUsersLastGhostAssetGottenTimestamp(user, null);
+
         GameChallenge? challenge = dataContext.Database.GetChallengeById(challengeId);
         if (challenge == null) return NotFound;
 
@@ -163,29 +167,35 @@ public class ChallengeEndpoints : EndpointGroup
         return OK;
     }
 
-    // NOTE: When a player is about to play a challenge in a level and LBP Hub requests for a user's high score, 
-    //       if you send a score which is not actually the high score for that user,
-    //       the game will bug out and break the ghost asset's path replay.
+    /// <param name="username">The username of the user to return the high score by. Can be empty sometimes, if it is, return NotFound.</param>
     [GameEndpoint("challenge/{challengeId}/scoreboard/{username}", HttpMethods.Get, ContentType.Xml)]
     [MinimumRole(GameUserRole.Restricted)]
     [NullStatusCode(NotFound)]
-    public SerializedChallengeScore? GetUsersHighScoreForChallenge(RequestContext context, DataContext dataContext, GameUser requestingUser, int challengeId, string username) 
+    public SerializedChallengeScore? GetUsersHighScoreForChallenge(RequestContext context, DataContext dataContext, GameUser user, GameUser requestingUser, int challengeId, string username) 
     {
+        if (user.LastGhostAssetGottenTimestamp != null)
+            dataContext.Database.SetUsersLastGhostAssetGottenTimestamp(user, null);
+
+        if (string.IsNullOrEmpty(username)) return null;
+
         GameChallenge? challenge = dataContext.Database.GetChallengeById(challengeId);
         if (challenge == null) return null;
-
+            
         GameUser? requestedUser = dataContext.Database.GetUserByUsername(username);
         if (requestedUser == null) return null;
-
-        return SerializedChallengeScore.FromOld(dataContext.Database.GetRankedChallengeHighScoreByUser(challenge, requestedUser));
+        
+        GameChallengeScoreWithRank? score = dataContext.Database.GetRankedChallengeHighScoreByUser(challenge, requestedUser);
+        return SerializedChallengeScore.FromOld(score);
     }
 
-    [GameEndpoint("challenge/{challengeId}/scoreboard/", HttpMethods.Get, ContentType.Xml)]  // Called in a level when playing a challenge
     [GameEndpoint("challenge/{challengeId}/scoreboard", HttpMethods.Get, ContentType.Xml)]  // Called in the pod menu when viewing a challenge
     [MinimumRole(GameUserRole.Restricted)]
     [NullStatusCode(NotFound)]
     public SerializedChallengeScoreList? GetScoresForChallenge(RequestContext context, DataContext dataContext, GameUser user, int challengeId)
     {
+        if (user.LastGhostAssetGottenTimestamp != null)
+            dataContext.Database.SetUsersLastGhostAssetGottenTimestamp(user, null);
+
         GameChallenge? challenge = dataContext.Database.GetChallengeById(challengeId);
         if (challenge == null) return null;
 
@@ -195,50 +205,58 @@ public class ChallengeEndpoints : EndpointGroup
 
     /// <summary>
     /// Intended to return the scores of a challenge by a user's friends, specified by that user's username.
-    /// Return the scores by the requesting user's mutuals instead for privacy reasons.
     /// </summary>
+    /// <remarks>
+    /// The response has to be an empty list, otherwise, after finishing a challenge, LBP Hub will hide the user's friends' (mutuals' in our case)
+    /// scores returned with <see cref="GetContextualScoresForChallenge"/> in a messy way.
+    /// </remarks>
     [GameEndpoint("challenge/{challengeId}/scoreboard/{username}/friends", HttpMethods.Get, ContentType.Xml)]
     [MinimumRole(GameUserRole.Restricted)]
     [NullStatusCode(NotFound)]
     public SerializedChallengeScoreList? GetScoresByUsersFriendsForChallenge(RequestContext context, DataContext dataContext, GameUser user, int challengeId)
     {
+        if (user.LastGhostAssetGottenTimestamp != null)
+            dataContext.Database.SetUsersLastGhostAssetGottenTimestamp(user, null);
+
         GameChallenge? challenge = dataContext.Database.GetChallengeById(challengeId);
         if (challenge == null) return null;
 
-        DatabaseList<GameChallengeScoreWithRank> scores = dataContext.Database.GetRankedChallengeHighScoresByMutuals(challenge, user, 0, 1000);
-        return new SerializedChallengeScoreList(SerializedChallengeScore.FromOldList(scores.Items));
+        return new SerializedChallengeScoreList();
     }
 
     /// <summary>
-    /// Gets called when a user finishes a challenge to show a 3 scores large fragment of it's leaderboard with the user's highscore preferrably being in
-    /// the middle. Unlike in most other leaderboards, the game actually shows the score's ranks returned here.
+    /// Gets called when a user finishes a challenge to show a 3 scores large fragment of it's leaderboard with the 
+    /// specified user's highscore preferrably being in the middle. The username of that user is sometimes empty, 
+    /// therefore only use the token's user for simplicity (the game never calls the contextual leaderboard of any other user).
+    /// Unlike in most other leaderboards, the game does actually show the scores' ranks returned here.
     /// </summary>
+    /// <remarks>
+    /// This endpoint is also used to get the next best score if the user's highscore for this challenge exists, but is not rank 1.
+    /// Unfortunately, instead of only getting the next score's ghost asset with <see cref="ResourceEndpoints.GetResource"/> afterwards, 
+    /// the game will then also try to get the ghost asset of every score in this endpoint's response, to then seemingly combine them into one asset,
+    /// completely breaking ghost replay. To work around this, we block all ghost asset requests to the GetResource endpoint past the first, correct one
+    /// using <see cref="GameUser.LastGhostAssetGottenTimestamp"/>
+    /// </remarks>
     [GameEndpoint("challenge/{challengeId}/scoreboard/{username}/contextual", HttpMethods.Get, ContentType.Xml)]
     [MinimumRole(GameUserRole.Restricted)]
     [NullStatusCode(NotFound)]
-    public SerializedChallengeScoreList? GetContextualScoresForChallenge(RequestContext context, DataContext dataContext, GameUser user, int challengeId, string username) 
+    public SerializedChallengeScoreList? GetContextualScoresForChallenge(RequestContext context, DataContext dataContext, IDateTimeProvider timeProvider, GameUser user, int challengeId) 
     {
-        GameUser? requestedUser = dataContext.Database.GetUserByUsername(username);
-        if (requestedUser == null) return null;
+        if (user.LastGhostAssetGottenTimestamp != null)
+            dataContext.Database.SetUsersLastGhostAssetGottenTimestamp(user, null);
 
         GameChallenge? challenge = dataContext.Database.GetChallengeById(challengeId);
         if (challenge == null) return null;
 
         GameChallengeScoreWithRank? highScore = dataContext.Database.GetRankedChallengeHighScoreByUser(challenge, user);
-        if (highScore == null) return null;
+        DatabaseList<GameChallengeScoreWithRank> scores = highScore == null  
+            // The user does not have a score on this challenge, return the lowest 3 scores of it
+            ? dataContext.Database.GetLowestRankedChallengeHighScores(challenge, 0, 3)
+            // The user does have a score on this challenge, return the scores around that score
+            : dataContext.Database.GetRankedHighScoresAroundChallengeScore(highScore, 3);
 
-        DatabaseList<GameChallengeScoreWithRank> rankedScores = dataContext.Database.GetRankedHighScoresAroundChallengeScore(highScore, 3);
-        return new SerializedChallengeScoreList(SerializedChallengeScore.FromOldList(rankedScores.Items));
+        return new SerializedChallengeScoreList(SerializedChallengeScore.FromOldList(scores.Items));
     }
-
-    /// <summary>
-    /// Gets called together with the other GetContextualScoresForChallenge endpoint above, but it doesn't actually do anything in-game.
-    /// Stubbed to always return OK.
-    /// </summary>
-    [GameEndpoint("challenge/{challengeId}/scoreboard//contextual" /*typo is intentional*/, HttpMethods.Get, ContentType.Xml)]
-    [MinimumRole(GameUserRole.Restricted)]
-    public Response GetContextualScoresForChallenge(RequestContext context, DataContext dataContext, GameUser user, int challengeId) 
-        => OK;
 
     #endregion
 

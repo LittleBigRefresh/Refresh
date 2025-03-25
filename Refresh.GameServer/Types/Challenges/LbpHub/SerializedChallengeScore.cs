@@ -22,19 +22,19 @@ public class SerializedChallengeScore : SerializedChallengeAttempt, IDataConvert
     #nullable enable
 
     public static SerializedChallengeScore? FromOld(GameChallengeScore? old, DataContext dataContext)
-        => FromOld(old);
+        => FromOld(old, 0);
     
     public static SerializedChallengeScore? FromOld(GameChallengeScoreWithRank? old)
         => old == null ? null : FromOld(old.score, old.rank);
 
-    public static SerializedChallengeScore? FromOld(GameChallengeScore? old, int rank = 0)
+    public static SerializedChallengeScore? FromOld(GameChallengeScore? old, int rank)
     {
         if (old == null)
             return null;
 
         return new SerializedChallengeScore
         {
-            GhostHash = old.GhostHash ?? "",
+            GhostHash = old.GhostHash,
             Score = old.Score,
             PublisherName = old.Publisher.Username,
             Rank = rank,
@@ -45,5 +45,5 @@ public class SerializedChallengeScore : SerializedChallengeAttempt, IDataConvert
         => oldList.Select((s, i) => FromOld(s, i + 1)!);
 
     public static IEnumerable<SerializedChallengeScore> FromOldList(IEnumerable<GameChallengeScoreWithRank> oldList)
-        => oldList.Select((s) => FromOld(s)!);
+        => oldList.Select(s => FromOld(s)!);
 }
