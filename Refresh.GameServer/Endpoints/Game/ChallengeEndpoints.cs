@@ -133,7 +133,8 @@ public class ChallengeEndpoints : EndpointGroup
         // reject the score.
         if (ghostAsset == null || ghostAsset.AssetType != GameAssetType.ChallengeGhost)
         {
-            dataContext.Database.AddErrorNotification(
+            dataContext.Database.AddErrorNotification
+            (
                 "Challenge Score upload failed", 
                 $"Your score for '{challenge.Name}' in '{challenge.Level.Title}' "
                 +"couldn't be submitted because the ghost data was missing.",
@@ -149,7 +150,8 @@ public class ChallengeEndpoints : EndpointGroup
         // If the ghost asset for this score is null or invalid, reject the score
         if (serializedGhost == null || !SerializedChallengeGhost.IsGhostDataValid(serializedGhost, challenge, isFirstScore))
         {
-            dataContext.Database.AddErrorNotification(
+            dataContext.Database.AddErrorNotification
+            (
                 "Challenge Score upload failed", 
                 $"Your score for '{challenge.Name}' in '{challenge.Level.Title}' "
                 +"couldn't be submitted because the ghost data was corrupt. "
@@ -171,7 +173,7 @@ public class ChallengeEndpoints : EndpointGroup
     [GameEndpoint("challenge/{challengeId}/scoreboard/{username}", HttpMethods.Get, ContentType.Xml)]
     [MinimumRole(GameUserRole.Restricted)]
     [NullStatusCode(NotFound)]
-    public SerializedChallengeScore? GetUsersHighScoreForChallenge(RequestContext context, DataContext dataContext, GameUser user, GameUser requestingUser, int challengeId, string username) 
+    public SerializedChallengeScore? GetUsersHighScoreForChallenge(RequestContext context, DataContext dataContext, GameUser user, int challengeId, string username) 
     {
         if (user.LastGhostAssetGottenTimestamp != null)
             dataContext.Database.SetUsersLastGhostAssetGottenTimestamp(user, null);
@@ -188,7 +190,7 @@ public class ChallengeEndpoints : EndpointGroup
         return SerializedChallengeScore.FromOld(score);
     }
 
-    [GameEndpoint("challenge/{challengeId}/scoreboard", HttpMethods.Get, ContentType.Xml)]  // Called in the pod menu when viewing a challenge
+    [GameEndpoint("challenge/{challengeId}/scoreboard", HttpMethods.Get, ContentType.Xml)]
     [MinimumRole(GameUserRole.Restricted)]
     [NullStatusCode(NotFound)]
     public SerializedChallengeScoreList? GetScoresForChallenge(RequestContext context, DataContext dataContext, GameUser user, int challengeId)
@@ -240,7 +242,7 @@ public class ChallengeEndpoints : EndpointGroup
     [GameEndpoint("challenge/{challengeId}/scoreboard/{username}/contextual", HttpMethods.Get, ContentType.Xml)]
     [MinimumRole(GameUserRole.Restricted)]
     [NullStatusCode(NotFound)]
-    public SerializedChallengeScoreList? GetContextualScoresForChallenge(RequestContext context, DataContext dataContext, IDateTimeProvider timeProvider, GameUser user, int challengeId) 
+    public SerializedChallengeScoreList? GetContextualScoresForChallenge(RequestContext context, DataContext dataContext, GameUser user, int challengeId) 
     {
         if (user.LastGhostAssetGottenTimestamp != null)
             dataContext.Database.SetUsersLastGhostAssetGottenTimestamp(user, null);

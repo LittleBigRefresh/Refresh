@@ -24,6 +24,8 @@ public class SerializedChallengeGhost
     /// Returns null if it fails to do so.
     /// This method assumes that if there is an asset found under that hash, it is a ChallengeGhost.
     /// </summary>
+    /// <param name="logger">Optional logger, which if passed, logs potential exceptions while the method actually deserializes
+    /// the ghost asset found in the given IDataStore</param>
     public static SerializedChallengeGhost? FromDataStore(string ghostHash, IDataStore dataStore, Logger? logger = null)
     {
         // Try to get the ghost asset's contents as a string
@@ -68,6 +70,7 @@ public class SerializedChallengeGhost
     /// <summary>
     /// Does some simple checks on the given SerializedChallengeGhost and returns whether they were successful or not.
     /// </summary>
+    /// <param name="isFirstScore">Whether the given SerializedChallengeGhost's score is the first one submitted to the given challenge.</param>
     // There does not seem to be a way to catch all kinds of corruptions possible by LBP hub, neither is there a reliable way to 
     // correct corrupt ghost data either, so just try to do some easy checks on the given SerializedChallengeGhost.
     public static bool IsGhostDataValid(SerializedChallengeGhost challengeGhost, GameChallenge challenge, bool isFirstScore)
