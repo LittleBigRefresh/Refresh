@@ -3,6 +3,7 @@ using MongoDB.Bson;
 using Refresh.Common.Constants;
 using Refresh.GameServer.Authentication;
 using Refresh.GameServer.Endpoints.ApiV3.DataTypes.Request;
+using Refresh.GameServer.Types.Challenges.LbpHub;
 using Refresh.GameServer.Types.Levels;
 using Refresh.GameServer.Types.Photos;
 using Refresh.GameServer.Types.Playlists;
@@ -340,6 +341,13 @@ public partial class GameDatabaseContext // Users
             {
                 level.Publisher = null;
             }
+
+            this.GameChallengeScores.RemoveRange(s => s.Publisher == user);
+
+            foreach (GameChallenge challenge in this.GameChallenges.Where(c => c.Publisher == user))
+            {
+                challenge.Publisher = null;
+            }
         });
     }
 
@@ -461,6 +469,14 @@ public partial class GameDatabaseContext // Users
         this.Write(() =>
         {
             user.PresenceServerAuthToken = token;
+        });
+    }
+
+    public void SetUsersLastGhostAssetGottenTimestamp(GameUser user, DateTimeOffset? timestamp)
+    {
+        this.Write(() =>
+        {
+            user.LastGhostAssetGottenTimestamp = timestamp;
         });
     }
 }

@@ -14,6 +14,7 @@ using Refresh.GameServer.Extensions;
 using Refresh.GameServer.Importing;
 using Refresh.GameServer.Time;
 using Refresh.GameServer.Types.Assets;
+using Refresh.GameServer.Types.Data;
 using Refresh.GameServer.Types.Levels;
 using Refresh.GameServer.Types.Lists;
 using Refresh.GameServer.Types.Roles;
@@ -108,7 +109,7 @@ public class ResourceEndpoints : EndpointGroup
 
     [GameEndpoint("r/{hash}")]
     [MinimumRole(GameUserRole.Restricted)]
-    public Response GetResource(RequestContext context, string hash, IDataStore dataStore, GameDatabaseContext database, Token token)
+    public Response GetResource(RequestContext context, GameUser user, string hash, DataContext dataContext, IDateTimeProvider timeProvider)
     {
         if (!CommonPatterns.Sha1Regex().IsMatch(hash)) return BadRequest;
         
@@ -119,10 +120,39 @@ public class ResourceEndpoints : EndpointGroup
             hash = $"psp/{hash}";
         }
         
-        if (!dataStore.ExistsInStore(hash))
+        if (!dataContext.DataStore.ExistsInStore(hash))
             return NotFound;
 
-        if (!dataStore.TryGetDataFromStore(hash, out byte[]? data))
+        // Part of a workaround to prevent LBP Hub from breaking challenge ghost replay
+        if (dataContext.Database.GetAssetFromHash(hash)?.AssetType == GameAssetType.ChallengeGhost)
+        {
+            if (user.LastGhostAssetGottenTimestamp != null)
+            {
+                // If the timeout has expired (last successful ghost asset download request was over 15 seconds ago),
+                // remove the timeout by resetting the timestamp and continue with the request as usual
+                if (user.LastGhostAssetGottenTimestamp.Value.AddSeconds(15) < timeProvider.Now)
+                {
+                    dataContext.Database.SetUsersLastGhostAssetGottenTimestamp(user, null);
+                }
+                // Else block this request
+                else
+                {
+                    // Lie to the game by returning OK without any actual content, as any other responses (even successful ones)
+                    // will prompt LBP Hub to try and get every ungiven ghost asset a second time before giving up, 
+                    // which makes the game slower and might also screw with timeout
+                    context.Logger.LogDebug(BunkumCategory.UserContent, $"OK with no content to deal with LBP Hub bugs");
+                    return OK;
+                }
+            }
+            // If the timestamp was not set to anything before,
+            // set the timestamp to now for future requests to this endpoint
+            else
+            {
+                dataContext.Database.SetUsersLastGhostAssetGottenTimestamp(user, timeProvider.Now);
+            }
+        }
+
+        if (!dataContext.DataStore.TryGetDataFromStore(hash, out byte[]? data))
             return InternalServerError;
 
         Debug.Assert(data != null);
