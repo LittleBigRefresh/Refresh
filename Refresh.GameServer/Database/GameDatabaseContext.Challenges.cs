@@ -120,7 +120,7 @@ public partial class GameDatabaseContext // Challenges
     public GameChallengeScore CreateChallengeScore(SerializedChallengeAttempt attempt, GameChallenge challenge, GameUser user, long time)
     {
         // Create new score
-        GameChallengeScore score = new()
+        GameChallengeScore newScore = new()
         {
             Challenge = challenge,
             Publisher = user,
@@ -130,13 +130,28 @@ public partial class GameDatabaseContext // Challenges
             PublishDate = this._time.Now,
         };
 
-        // Add the score and return it
+        // Add the score and then return it
         this.Write(() =>
         {
-            this.GameChallengeScores.Add(score);
+            this.GameChallengeScores.Add(newScore);
         });
+
+        // Notify the previous #1 Score publisher that their score has been overtaken
+        DatabaseList<GameChallengeScoreWithRank> topScores = this.GetRankedChallengeHighScores(challenge, 0, 2);
+        GameChallengeScoreWithRank? rankOne = topScores.Items.FirstOrDefault(s => s.rank == 1);
+        GameChallengeScoreWithRank? rankTwo = topScores.Items.FirstOrDefault(s => s.rank == 2);
+
+        if (rankOne != null && rankTwo != null && // if there even are atleast 2 scores
+            rankOne.score.ScoreId == newScore.ScoreId && // if the newly created score is now rank 1
+            rankTwo.score.Score > 0 // if the overtaken score is not 0
+        )
+        {
+            this.AddNotification("Challenge Score overtaken",
+                $"Your #1 score on '{challenge.Name}' in '{challenge.Level.Title}' has been overtaken by {user.Username}!",
+                rankTwo.score.Publisher, "medal");
+        }
         
-        return score;
+        return newScore;
     }
 
     public void RemoveChallengeScore(GameChallengeScore score)
