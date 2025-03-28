@@ -119,6 +119,20 @@ public partial class GameDatabaseContext // Challenges
 
     public GameChallengeScore CreateChallengeScore(SerializedChallengeAttempt attempt, GameChallenge challenge, GameUser user, long time)
     {
+        // Notify the previous #1 Score publisher that their score has been overtaken
+        GameChallengeScoreWithRank? prevRankOne = this.GetRankedChallengeHighScores(challenge, 0, 1).Items.FirstOrDefault();
+
+        if (prevRankOne != null && // If there already is atleast one score (which is also currently rank 1)
+            user.UserId != prevRankOne.score.Publisher.UserId && // That score was uploaded by someone else
+            attempt.Score > prevRankOne.score.Score && // The new score is higher than the current #1 score
+            prevRankOne.score.Score > 0 // The overtaken score is not 0
+        )
+        {
+            this.AddNotification("Challenge Score overtaken",
+                $"Your #1 score on '{challenge.Name}' in '{challenge.Level.Title}' has been overtaken by {user.Username}!",
+                prevRankOne.score.Publisher, "medal");
+        }
+
         // Create new score
         GameChallengeScore newScore = new()
         {
@@ -136,21 +150,6 @@ public partial class GameDatabaseContext // Challenges
             this.GameChallengeScores.Add(newScore);
         });
 
-        // Notify the previous #1 Score publisher that their score has been overtaken
-        DatabaseList<GameChallengeScoreWithRank> topScores = this.GetRankedChallengeHighScores(challenge, 0, 2);
-        GameChallengeScoreWithRank? rankOne = topScores.Items.FirstOrDefault(s => s.rank == 1);
-        GameChallengeScoreWithRank? rankTwo = topScores.Items.FirstOrDefault(s => s.rank == 2);
-
-        if (rankOne != null && rankTwo != null && // if there even are atleast 2 scores
-            rankOne.score.ScoreId == newScore.ScoreId && // if the newly created score is now rank 1
-            rankTwo.score.Score > 0 // if the overtaken score is not 0
-        )
-        {
-            this.AddNotification("Challenge Score overtaken",
-                $"Your #1 score on '{challenge.Name}' in '{challenge.Level.Title}' has been overtaken by {user.Username}!",
-                rankTwo.score.Publisher, "medal");
-        }
-        
         return newScore;
     }
 
