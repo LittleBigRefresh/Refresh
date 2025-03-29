@@ -26,11 +26,6 @@ public class ByUserPlaylistCategory : GamePlaylistCategory
 
         if (user == null) return null;
         
-        return new DatabaseList<GamePlaylist>
-        (
-            dataContext.Database.GetPlaylistsByAuthor(user), 
-            skip, 
-            count
-        );
+        return dataContext.Database.GetPlaylistsByAuthor(user, skip, count);
     }
 }
