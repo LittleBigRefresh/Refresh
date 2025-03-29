@@ -1,18 +1,17 @@
 using Bunkum.Core;
-using Refresh.GameServer.Authentication;
 using Refresh.GameServer.Database;
 using Refresh.GameServer.Endpoints.Game.Levels.FilterSettings;
-using Refresh.GameServer.Services;
 using Refresh.GameServer.Types.Data;
+using Refresh.GameServer.Types.Levels;
 using Refresh.GameServer.Types.UserData;
 
-namespace Refresh.GameServer.Types.Levels.Categories;
+namespace Refresh.GameServer.Types.Categories.Levels;
 
-public class QueuedLevelsByUserCategory : LevelCategory
+public class QueuedLevelsByUserCategory : GameLevelCategory
 {
     internal QueuedLevelsByUserCategory() : base("queued", "lolcatftw", true)
     {
-        this.Name = "My Queue";
+        this.Name = "Your Queue";
         this.Description = "Levels you'd like to play!";
         this.FontAwesomeIcon = "bell";
         this.IconHash = "g820614";
@@ -22,7 +21,6 @@ public class QueuedLevelsByUserCategory : LevelCategory
         LevelFilterSettings levelFilterSettings, GameUser? user)
     {
         if (user == null) return null;
-
         return dataContext.Database.GetLevelsQueuedByUser(user, count, skip, levelFilterSettings, dataContext.User);
     }
 }

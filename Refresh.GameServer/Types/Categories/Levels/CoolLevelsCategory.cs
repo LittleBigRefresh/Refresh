@@ -1,15 +1,15 @@
 using Bunkum.Core;
 using Refresh.GameServer.Database;
 using Refresh.GameServer.Endpoints.Game.Levels.FilterSettings;
-using Refresh.GameServer.Services;
 using Refresh.GameServer.Types.Data;
+using Refresh.GameServer.Types.Levels;
 using Refresh.GameServer.Types.UserData;
 
-namespace Refresh.GameServer.Types.Levels.Categories;
+namespace Refresh.GameServer.Types.Categories.Levels;
 
-public class CoolLevelsCategory : LevelCategory
+public class CoolLevelsCategory : GameLevelCategory
 {
-    public CoolLevelsCategory() : base("coolLevels", new []{"lbpcool", "lbp2cool", "cool"}, false)
+    public CoolLevelsCategory() : base("coolLevels", ["lbpcool", "lbp2cool", "cool"], false)
     {
         this.Name = "Cool Levels";
         this.Description = "Levels trending with players like you!";

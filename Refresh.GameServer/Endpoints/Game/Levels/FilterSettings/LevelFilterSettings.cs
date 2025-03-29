@@ -1,8 +1,6 @@
 using Bunkum.Core;
 using Refresh.GameServer.Authentication;
 using Refresh.GameServer.Extensions;
-using Refresh.GameServer.Services;
-using Refresh.GameServer.Types.Levels.Categories;
 
 namespace Refresh.GameServer.Endpoints.Game.Levels.FilterSettings;
 

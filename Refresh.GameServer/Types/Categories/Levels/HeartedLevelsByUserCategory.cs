@@ -1,18 +1,17 @@
 using Bunkum.Core;
-using Refresh.GameServer.Authentication;
 using Refresh.GameServer.Database;
 using Refresh.GameServer.Endpoints.Game.Levels.FilterSettings;
-using Refresh.GameServer.Services;
 using Refresh.GameServer.Types.Data;
+using Refresh.GameServer.Types.Levels;
 using Refresh.GameServer.Types.UserData;
 
-namespace Refresh.GameServer.Types.Levels.Categories;
+namespace Refresh.GameServer.Types.Categories.Levels;
 
-public class FavouriteSlotsByUserCategory : LevelCategory
+public class HeartedLevelsByUserCategory : GameLevelCategory
 {
-    internal FavouriteSlotsByUserCategory() : base("hearted", "favouriteSlots", true)
+    internal HeartedLevelsByUserCategory() : base("hearted", "favouriteSlots", true)
     {
-        this.Name = "My Favorites";
+        this.Name = "Your Favorites";
         this.Description = "Your personal list filled with your favourite levels!";
         this.FontAwesomeIcon = "heart";
         this.IconHash = "g820611";

@@ -12,8 +12,8 @@ using Refresh.GameServer.Configuration;
 using Refresh.GameServer.Database;
 using Refresh.GameServer.Services;
 using Refresh.GameServer.Time;
+using Refresh.GameServer.Types.Categories;
 using Refresh.GameServer.Types.Data;
-using Refresh.GameServer.Types.Levels.Categories;
 using RefreshTests.GameServer.Logging;
 using RefreshTests.GameServer.Time;
 
