@@ -331,10 +331,10 @@ public partial class GameDatabaseContext // Playlists
         // TODO: When we have postgres, remove the `AsEnumerable` call for performance.
         // TODO: reduce code duplication for getting most of x
         => new(this.FavouritePlaylistRelations
+            .AsEnumerable()
             .GroupBy(r => r.Playlist)
             .Select(g => new { Playlist = g.Key, Count = g.Count() })
             .OrderByDescending(x => x.Count)
-            .AsEnumerable()
             .Select(x => x.Playlist)
             .Where(p => p != null), skip, count);
 
