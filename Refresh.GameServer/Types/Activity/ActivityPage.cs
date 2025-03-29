@@ -72,7 +72,7 @@ public class ActivityPage
 
         this.SerializedUsers = new SerializedUserList
         {
-            Users = GameUserResponse.FromOldList(users, dataContext).ToList(),
+            Items = GameUserResponse.FromOldList(users, dataContext).ToList(),
         };
 
         this.Users = users;

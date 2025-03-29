@@ -1,7 +1,7 @@
 using System.Xml.Serialization;
 using Refresh.GameServer.Types.Levels;
 
-namespace Refresh.GameServer.Types.Lists;
+namespace Refresh.GameServer.Types.Lists.Results;
 
 [XmlRoot("results")]
 [XmlType("results")]
@@ -9,10 +9,10 @@ public class SerializedMinimalLevelResultsList : SerializedMinimalLevelList
 {
     public SerializedMinimalLevelResultsList() {}
     
-    public SerializedMinimalLevelResultsList(IEnumerable<GameMinimalLevelResponse>? list, int total, int skip)
+    public SerializedMinimalLevelResultsList(IEnumerable<GameMinimalLevelResponse>? list, int? nextPageIndex, int? totalItems)
     {
-        this.Total = total;
         this.Items = list?.ToList() ?? [];
-        this.NextPageStart = skip + 1;
+        this.NextPageStart = nextPageIndex ?? -1;
+        this.Total = totalItems ?? 0;
     }
 }
