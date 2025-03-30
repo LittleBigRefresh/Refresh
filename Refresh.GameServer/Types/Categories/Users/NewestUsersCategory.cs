@@ -12,7 +12,7 @@ public class NewestUsersCategory : GameUserCategory
     {
         this.Name = "Newest Users";
         this.Description = "Our newest users, joined recently!";
-        this.IconHash = "g820608";
+        this.IconHash = "g820623";
         this.FontAwesomeIcon = "calendar";
     }
     

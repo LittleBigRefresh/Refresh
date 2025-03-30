@@ -13,7 +13,7 @@ public class MutualsOfUserCategory : GameUserCategory
         this.Name = "Your Mutuals";
         this.Description = "Your mutuals; people who have hearted you and who you have hearted.";
         this.FontAwesomeIcon = "heart";
-        this.IconHash = "g820611";
+        this.IconHash = "g820610";
     }
     
     public override DatabaseList<GameUser>? Fetch(RequestContext context, int skip, int count, DataContext dataContext,

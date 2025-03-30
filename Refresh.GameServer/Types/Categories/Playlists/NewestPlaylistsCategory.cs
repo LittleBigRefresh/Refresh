@@ -13,7 +13,7 @@ public class NewestPlaylistsCategory : GamePlaylistCategory
     {
         this.Name = "Newest Playlists";
         this.Description = "Our newest playlists, put together by people like you.";
-        this.IconHash = "g820623";
+        this.IconHash = "g820615";
         this.FontAwesomeIcon = "calendar";
     }
     

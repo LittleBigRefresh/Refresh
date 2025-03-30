@@ -13,7 +13,7 @@ public class HeartedUsersByUserCategory : GameUserCategory
         this.Name = "Your Favourite Users";
         this.Description = "Users you like.";
         this.FontAwesomeIcon = "heart";
-        this.IconHash = "g820611";
+        this.IconHash = "g820612";
     }
     
     public override DatabaseList<GameUser>? Fetch(RequestContext context, int skip, int count, DataContext dataContext,

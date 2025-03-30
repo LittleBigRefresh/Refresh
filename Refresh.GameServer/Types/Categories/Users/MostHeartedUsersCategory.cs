@@ -12,7 +12,7 @@ public class MostHeartedUsersCategory : GameUserCategory
     {
         this.Name = "Most hearted Users";
         this.Description = "Our most beloved users!";
-        this.IconHash = "g820608";
+        this.IconHash = "g820627";
         this.FontAwesomeIcon = "calendar";
     }
     

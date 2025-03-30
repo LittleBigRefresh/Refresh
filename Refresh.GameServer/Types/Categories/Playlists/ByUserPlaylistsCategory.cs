@@ -14,7 +14,7 @@ public class ByUserPlaylistCategory : GamePlaylistCategory
         this.Name = "Your Playlists";
         this.Description = "Your own playlists.";
         this.FontAwesomeIcon = "heart";
-        this.IconHash = "g820611";
+        this.IconHash = "g820613";
     }
     
     public override DatabaseList<GamePlaylist>? Fetch(RequestContext context, int skip, int count, DataContext dataContext,

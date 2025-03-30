@@ -12,9 +12,9 @@ public class MostHeartedPlaylistsCategory : GamePlaylistCategory
     internal MostHeartedPlaylistsCategory() : base("mostHearted", [], false)
     {
         this.Name = "Most Hearted Playlists";
-        this.Description = "The most popular playlists!";
+        this.Description = "Our most popular playlists of all-time!";
         this.FontAwesomeIcon = "heart";
-        this.IconHash = "g820611";
+        this.IconHash = "g820607";
     }
     
     public override DatabaseList<GamePlaylist>? Fetch(RequestContext context, int skip, int count, DataContext dataContext,
