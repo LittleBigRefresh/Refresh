@@ -158,8 +158,11 @@ public class Lbp3PlaylistEndpoints : EndpointGroup
         if (user == null) 
             return null;
 
-        (int skip, int count) = context.GetPageData();
-        DatabaseList<GamePlaylist> playlists = dataContext.Database.GetPlaylistsByAuthor(user, skip, count);
+        // LBP3 only sends pagination parameters to this endpoint when actually looking through the playlists of a user on their profile,
+        // but even then it doesn't paginate the playlists anyway.
+        // For optimization and completeness, send 100 playlists when a page size is given, else send 10.
+        bool countGiven = int.TryParse(context.QueryString["pageSize"], out int _);
+        DatabaseList<GamePlaylist> playlists = dataContext.Database.GetPlaylistsByAuthor(user, 0, countGiven ? 100 : 10);
 
         return new SerializedLbp3PlaylistList 
         {
