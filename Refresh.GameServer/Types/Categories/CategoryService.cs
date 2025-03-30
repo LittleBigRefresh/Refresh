@@ -44,7 +44,7 @@ public class CategoryService : EndpointService
     // ReSharper disable once InconsistentNaming
     private readonly List<GamePlaylistCategory> _playlistCategories =
     [
-        new NewestPlaylistsCategory(),
+        new NewlyUpdatedPlaylistsCategory(),
         new HeartedPlaylistsByUserCategory(),
         new ByUserPlaylistCategory(),
         new MostHeartedPlaylistsCategory(),

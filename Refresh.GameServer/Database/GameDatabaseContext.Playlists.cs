@@ -125,12 +125,12 @@ public partial class GameDatabaseContext // Playlists
 
     public void AddPlaylistToPlaylist(GamePlaylist child, GamePlaylist parent)
     {
+        // Make sure to not create a duplicate object
+        if (this.SubPlaylistRelations.Any(p => p.SubPlaylist == child && p.Playlist == parent))
+            return;
+
         this.Write(() =>
         {
-            // Make sure to not create a duplicate object
-            if (this.SubPlaylistRelations.Any(p => p.SubPlaylist == child && p.Playlist == parent))
-                return;
-            
             // Add the relation
             this.SubPlaylistRelations.Add(new SubPlaylistRelation
             {
@@ -138,31 +138,37 @@ public partial class GameDatabaseContext // Playlists
                 SubPlaylist = child,
                 Timestamp = this._time.Now,
             });
+
+            // The parent playlist has been updated
+            parent.LastUpdateDate = this._time.Now;
         });
     }
     
     public void RemovePlaylistFromPlaylist(GamePlaylist child, GamePlaylist parent)
     {
+        SubPlaylistRelation? relation =
+            this.SubPlaylistRelations.FirstOrDefault(r => r.SubPlaylist == child && r.Playlist == parent);
+
+        if (relation == null)
+            return;
+
         this.Write(() =>
         {
-            SubPlaylistRelation? relation =
-                this.SubPlaylistRelations.FirstOrDefault(r => r.SubPlaylist == child && r.Playlist == parent);
-
-            if (relation == null)
-                return;
-            
             this.SubPlaylistRelations.Remove(relation);
+
+            // The parent playlist has been updated
+            parent.LastUpdateDate = this._time.Now;
         });
     }
     
     public void AddLevelToPlaylist(GameLevel level, GamePlaylist parent)
     {
+        // Make sure to not create a duplicate object
+        if (this.LevelPlaylistRelations.Any(p => p.Level == level && p.Playlist == parent))
+            return;
+
         this.Write(() =>
         {
-            // Make sure to not create a duplicate object
-            if (this.LevelPlaylistRelations.Any(p => p.Level == level && p.Playlist == parent))
-                return;
-            
             // Add the relation
             this.LevelPlaylistRelations.Add(new LevelPlaylistRelation
             {
@@ -172,6 +178,9 @@ public partial class GameDatabaseContext // Playlists
                 Index = this.GetTotalLevelsInPlaylistCount(parent),
                 Timestamp = this._time.Now,
             });
+
+            // The parent playlist has been updated
+            parent.LastUpdateDate = this._time.Now;
         });
     }
     
@@ -183,26 +192,12 @@ public partial class GameDatabaseContext // Playlists
         if (relation == null)
             return;
 
-        // decrease index of every playlist level after this one by 1
-        this.DecreasePlaylistLevelIndicesAfterIndex(parent, relation.Index);
-
         this.Write(() =>
         {
             this.LevelPlaylistRelations.Remove(relation);
-        });
-    }
 
-    private void DecreasePlaylistLevelIndicesAfterIndex(GamePlaylist playlist, int startIndex)
-    {
-        IEnumerable<LevelPlaylistRelation> relations = this.LevelPlaylistRelations
-            .Where(r => r.Playlist == playlist && r.Index >= startIndex)
-            .AsEnumerable();
-
-        this.Write(() => {
-            foreach(LevelPlaylistRelation relation in relations)
-            {
-                relation.Index--;
-            }
+            // The parent playlist has been updated
+            parent.LastUpdateDate = this._time.Now;
         });
     }
 
@@ -230,6 +225,9 @@ public partial class GameDatabaseContext // Playlists
                 relations.ElementAt(newIndex).Index = newIndex;
                 newIndex++;
             }
+
+            // The playlist has been "updated"
+            playlist.LastUpdateDate = this._time.Now;
         });
     }
 
@@ -311,10 +309,10 @@ public partial class GameDatabaseContext // Playlists
             .AsEnumerable()
             .Select(r => this.GamePlaylists.First(p => p.PlaylistId == r.Playlist.PlaylistId)), skip, count);
 
-    public DatabaseList<GamePlaylist> GetNewestPlaylists(int skip, int count)
+    public DatabaseList<GamePlaylist> GetMostRecentlyUpdatedPlaylists(int skip, int count)
         => new(this.GamePlaylists
             .Where(p => !p.IsRoot)
-            .OrderByDescending(p => p.CreationDate), skip, count);
+            .OrderByDescending(p => p.LastUpdateDate), skip, count);
 
     public DatabaseList<GamePlaylist> GetMostHeartedPlaylists(int skip, int count) 
         // TODO: When we have postgres, remove the `AsEnumerable` call for performance.
