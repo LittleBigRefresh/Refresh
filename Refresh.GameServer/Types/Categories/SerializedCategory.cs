@@ -5,7 +5,7 @@ namespace Refresh.GameServer.Types.Categories;
 #nullable disable
 
 [XmlType("category")]
-public abstract class SerializedCategory
+public class SerializedCategory
 {
     [XmlElement("name")] public string Name { get; set; }
     [XmlElement("description")] public string Description { get; set; }

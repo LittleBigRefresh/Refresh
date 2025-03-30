@@ -466,7 +466,7 @@ public class LevelTests : GameServerTest
         
         using HttpClient client = context.GetAuthenticatedClient(TokenType.Game, publisher);
         
-        HttpResponseMessage message = client.GetAsync($"/lbp/searches/newest").Result;
+        HttpResponseMessage message = client.GetAsync($"/lbp/searches/levels/newest").Result;
         Assert.That(message.StatusCode, Is.EqualTo(OK));
 
         SerializedMinimalLevelResultsList result = message.Content.ReadAsXML<SerializedMinimalLevelResultsList>();
