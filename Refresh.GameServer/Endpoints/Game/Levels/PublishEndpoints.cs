@@ -1,6 +1,5 @@
 using Bunkum.Core;
 using Bunkum.Core.Endpoints;
-using Bunkum.Core.Endpoints.Debugging;
 using Bunkum.Core.Responses;
 using Bunkum.Listener.Protocol;
 using Bunkum.Protocols.Http;
@@ -13,6 +12,7 @@ using Refresh.GameServer.Endpoints.Game.DataTypes.Request;
 using Refresh.GameServer.Endpoints.Game.DataTypes.Response;
 using Refresh.GameServer.Extensions;
 using Refresh.GameServer.Services;
+using Refresh.GameServer.Time;
 using Refresh.GameServer.Types.Assets;
 using Refresh.GameServer.Types.Data;
 using Refresh.GameServer.Types.Levels;
@@ -68,7 +68,9 @@ public class PublishEndpoints : EndpointGroup
     public SerializedLevelResources? StartPublish(RequestContext context,
         GameLevelRequest body,
         CommandService command,
-        DataContext dataContext)
+        DataContext dataContext,
+        GameServerConfig config,
+        IDateTimeProvider dateTimeProvider)
     {
         //If verifying the request fails, return null
         if (!VerifyLevel(body, dataContext))
@@ -76,6 +78,9 @@ public class PublishEndpoints : EndpointGroup
             context.Logger.LogInfo(RefreshContext.Publishing, "Failed to verify root level");
             return null;
         }
+
+        if (IsTimedLevelLimitReached(dataContext, dataContext.User!, body.Title, config.TimedLevelUploadLimits, dateTimeProvider.Now)) 
+            return null;
 
         if (body.Slots != null)
         {
@@ -109,6 +114,37 @@ public class PublishEndpoints : EndpointGroup
             Resources = hashes.Where(r => !dataContext.DataStore.ExistsInStore(r)).ToArray(),
         };
     }
+    
+    private static bool IsTimedLevelLimitReached(DataContext dataContext, GameUser user, string levelTitle, TimedLevelUploadLimitProperties properties, DateTimeOffset now)
+    {
+        if (properties.Enabled && user.TimedLevelUploads > 0 && user.TimedLevelUploadExpiryDate != null)
+        {
+            // If the expiration date has expired (less than now), reset user's limit and continue.
+            if (now >= user.TimedLevelUploadExpiryDate)
+            {
+                dataContext.Database.ResetTimedLevelLimit(user);
+                dataContext.Database.AddNotification
+                (
+                    "Timed level limit expired", 
+                    $"You may upload up to {properties.LevelQuota} levels per {properties.TimeSpanHours} hour(s) again!", 
+                    user
+                );
+            }
+            // If expiration date has not expired yet and the user has reached the limit, block.
+            else if (user.TimedLevelUploads >= properties.LevelQuota)
+            {
+                dataContext.Database.AddPublishFailNotification
+                (
+                    $"You have reached the timed level upload limit of {properties.LevelQuota} levels in {properties.TimeSpanHours} hours. ", 
+                    levelTitle, 
+                    user
+                );
+                return true;
+            }
+        }
+        
+        return false;
+    }
 
     [GameEndpoint("publish", ContentType.Xml, HttpMethods.Post)]
     [RequireEmailVerified]
@@ -116,25 +152,17 @@ public class PublishEndpoints : EndpointGroup
         GameLevelRequest body,
         CommandService commandService,
         DataContext dataContext,
-        GameServerConfig config)
+        GameServerConfig config,
+        IDateTimeProvider dateTimeProvider)
     {
         //If verifying the request fails, return BadRequest
         if (!VerifyLevel(body, dataContext)) return BadRequest;
 
         GameUser user = dataContext.User!;
-        
         GameLevel level = body.ToGameLevel(user);
 
-        if (config.LevelUploadLimitsEnabled)
-        {
-            user.TimedLevelUploads.TryExpireUploadCount();
-            if (user.TimedLevelUploads.Count > config.LevelUploadQuota)
-            {
-                dataContext.Database.AddPublishFailNotification("You have exceeded the daily level upload limit.",
-                    level, dataContext.User!);
-                return BadRequest;
-            }
-        }
+        if (IsTimedLevelLimitReached(dataContext, user, level.Title, config.TimedLevelUploadLimits, dateTimeProvider.Now))
+            return BadRequest;
 
         level.GameVersion = dataContext.Token!.TokenGame;
 
@@ -195,8 +223,10 @@ public class PublishEndpoints : EndpointGroup
         dataContext.Database.CreateLevelUploadEvent(dataContext.User, level);
         
         // Only increment if the level can be uploaded, don't want to increment for failed uploads
-        if (config.LevelUploadLimitsEnabled)
-            user.TimedLevelUploads.IncrementUploadCount(config);
+        if (config.TimedLevelUploadLimits.Enabled)
+        {
+            dataContext.Database.IncrementTimedLevelLimit(user, config.TimedLevelUploadLimits);
+        } 
 
         context.Logger.LogInfo(BunkumCategory.UserContent, "User {0} (id: {1}) uploaded level id {2}", user.Username, user.UserId, level.LevelId);
 

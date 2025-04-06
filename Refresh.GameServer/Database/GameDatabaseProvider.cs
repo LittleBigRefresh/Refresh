@@ -78,7 +78,6 @@ public class GameDatabaseProvider : RealmDatabaseProvider<GameDatabaseContext>
         typeof(QueuedRegistration),
         typeof(GameIpVerificationRequest),
         typeof(GameUserVerifiedIpRelation),
-        typeof(LevelUploads),
 
         // assets
         typeof(GameAsset),
