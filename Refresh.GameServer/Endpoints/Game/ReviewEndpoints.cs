@@ -124,6 +124,9 @@ public class ReviewEndpoints : EndpointGroup
             Content = body.Text,
         }, level);
 
+        // Update the user's rating
+        database.RateLevel(level, user, (RatingType)body.Thumb);
+
         return OK;
     }
     

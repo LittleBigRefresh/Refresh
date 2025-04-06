@@ -72,14 +72,18 @@ public class GameLevelResponse : IDataConvertableFrom<GameLevelResponse, GameLev
     [XmlElement("initiallyLocked")] public bool IsLocked { get; set; }
     [XmlElement("isSubLevel")] public bool IsSubLevel { get; set; }
     [XmlElement("shareable")] public int IsCopyable { get; set; }
+    [XmlElement("moveRequired")] public bool RequiresMoveController { get; set; }
     [XmlElement("backgroundGUID")] public string? BackgroundGuid { get; set; }
     [XmlElement("links")] public string? Links { get; set; }
     [XmlElement("averageRating")] public double AverageStarRating { get; set; }
     [XmlElement("sizeOfResources")] public int SizeOfResourcesInBytes { get; set; }
     [XmlElement("reviewCount")] public int ReviewCount { get; set; }
     [XmlElement("reviewsEnabled")] public bool ReviewsEnabled { get; set; } = true;
+    [XmlElement("yourReview")] public SerializedGameReview? YourReview { get; set; }
     [XmlElement("commentCount")] public int CommentCount { get; set; } = 0;
     [XmlElement("commentsEnabled")] public bool CommentsEnabled { get; set; } = true;
+    [XmlElement("photoCount")] public int PhotoCount { get; set; }
+    [XmlElement("authorPhotoCount")] public int PublisherPhotoCount { get; set; }
     [XmlElement("tags")] public string Tags { get; set; } = "";
     
     /// <summary>
@@ -131,9 +135,12 @@ public class GameLevelResponse : IDataConvertableFrom<GameLevelResponse, GameLev
             ReviewCount = 0,
             CommentsEnabled = false,
             CommentCount = 0,
+            PhotoCount = 0,
+            PublisherPhotoCount = 0,
             IsLocked = false,
             IsSubLevel = false,
             IsCopyable = 0,
+            RequiresMoveController = false,
             PublishDate = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds(),
             UpdateDate = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds(),
             EnforceMinMaxPlayers = false,
@@ -175,11 +182,14 @@ public class GameLevelResponse : IDataConvertableFrom<GameLevelResponse, GameLev
             IsCopyable = old.IsCopyable ? 1 : 0,
             IsLocked = old.IsLocked,
             IsSubLevel = old.IsSubLevel,
+            RequiresMoveController = old.RequiresMoveController,
             BackgroundGuid = old.BackgroundGuid,
             Links = "",
             AverageStarRating = old.CalculateAverageStarRating(dataContext.Database),
             ReviewCount = old.Reviews.Count,
             CommentCount = dataContext.Database.GetTotalCommentsForLevel(old),
+            PhotoCount = dataContext.Database.GetTotalPhotosInLevel(old),
+            PublisherPhotoCount = old.Publisher == null ? 0 : dataContext.Database.GetTotalPhotosInLevelByUser(old, old.Publisher),
             Tags = string.Join(',', dataContext.Database.GetTagsForLevel(old).Select(t => t.Tag.ToLbpString())) ,
             Type = old.SlotType.ToGameType(),
         };
@@ -211,6 +221,8 @@ public class GameLevelResponse : IDataConvertableFrom<GameLevelResponse, GameLev
 
             response.YourRating = rating?.ToDPad() ?? (int)RatingType.Neutral;
             response.YourStarRating = rating?.ToLBP1() ?? 0;
+            
+            response.YourReview = SerializedGameReview.FromOld(dataContext.Database.GetReviewByLevelAndUser(old, dataContext.User), dataContext);
 
             // this is technically invalid, but specifying this for all games ensures they all have the capacity to review if played.
             // we don't store the game's version in play relations, so this is the best we can do
@@ -284,6 +296,7 @@ public class GameLevelResponse : IDataConvertableFrom<GameLevelResponse, GameLev
             IsLocked = false,
             IsSubLevel = false,
             IsCopyable = 0,
+            RequiresMoveController = false,
             BackgroundGuid = null,
             Links = null,
             AverageStarRating = 0,
@@ -292,6 +305,8 @@ public class GameLevelResponse : IDataConvertableFrom<GameLevelResponse, GameLev
             ReviewsEnabled = true,
             CommentCount = 0,
             CommentsEnabled = true,
+            PhotoCount = 0,
+            PublisherPhotoCount = 0,
             Tags = string.Empty,
         };
     }

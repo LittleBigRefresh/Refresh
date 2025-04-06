@@ -2,12 +2,9 @@ using System.Xml.Serialization;
 using Realms;
 using Refresh.GameServer.Authentication;
 using Refresh.GameServer.Database;
-using Refresh.GameServer.Types.Comments;
 using Refresh.GameServer.Types.UserData;
 using Refresh.GameServer.Types.Levels.SkillRewards;
-using Refresh.GameServer.Types.Relations;
 using Refresh.GameServer.Types.Reviews;
-using Refresh.GameServer.Types.UserData.Leaderboard;
 using Refresh.GameServer.Workers;
 
 namespace Refresh.GameServer.Types.Levels;
@@ -88,6 +85,7 @@ public partial class GameLevel : IRealmObject, ISequentialId
     public bool IsLocked { get; set; }
     public bool IsSubLevel { get; set; }
     public bool IsCopyable { get; set; }
+    public bool RequiresMoveController { get; set; }
     
     /// <summary>
     /// The score, used for Cool Levels.

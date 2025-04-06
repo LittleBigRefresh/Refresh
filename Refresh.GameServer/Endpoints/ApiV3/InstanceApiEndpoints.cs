@@ -67,6 +67,7 @@ public class InstanceApiEndpoints : EndpointGroup
                 richConfig), dataContext)!,
             GrafanaDashboardUrl = integrationConfig.GrafanaDashboardUrl,
             WebsiteLogoUrl = integrationConfig.WebsiteLogoUrl,
+            WebsiteDefaultTheme = integrationConfig.WebsiteDefaultTheme,
             
             ContactInfo = new ApiContactInfoResponse
             {

@@ -49,6 +49,7 @@ public class ApiInstanceResponse : IApiResponse
     public required string? GrafanaDashboardUrl { get; set; }
     
     public required string WebsiteLogoUrl { get; set; }
+    public required string? WebsiteDefaultTheme { get; set; }
     
     public required ApiContactInfoResponse ContactInfo { get; set; }
     

@@ -92,10 +92,10 @@ public partial class GameDatabaseContext // Users
             if (data.Description != null)
                 user.Description = data.Description;
 
-            if (data.Location != null)
+            if (data.UserLocation != null)
             {
-                user.LocationX = data.Location.X;
-                user.LocationY = data.Location.Y;
+                user.LocationX = data.UserLocation.X;
+                user.LocationY = data.UserLocation.Y;
             }
 
             if (data.PlanetsHash != null)

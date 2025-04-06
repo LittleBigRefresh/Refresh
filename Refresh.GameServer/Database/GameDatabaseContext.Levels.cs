@@ -82,6 +82,37 @@ public partial class GameDatabaseContext // Levels
 
         return level;
     }
+
+    public void UpdateLevelLocations(IEnumerable<SerializedLevelLocation> locations, GameUser updatingUser)
+    {
+        IEnumerable<GameLevel> levelsByUser = this.GameLevels.Where(l => l.Publisher != null && l.Publisher == updatingUser);
+        int failedUpdates = 0;
+
+        this.Write(() => 
+        {
+            foreach (SerializedLevelLocation location in locations)
+            {
+                // This gets the level to update while also verifying whether the user may even update its location
+                GameLevel? level = levelsByUser.FirstOrDefault(l => l.LevelId == location.LevelId);
+
+                if (level != null)
+                {
+                    level.LocationX = location.Location.X;
+                    level.LocationY = location.Location.Y;
+                }
+                else 
+                {
+                    failedUpdates++;
+                }
+            }
+        });
+
+        // Notify the user about how many of the location updates have failed
+        if (failedUpdates > 0)
+        {
+            this.AddErrorNotification("Level updates failed", $"Failed to update {failedUpdates} out of {locations.Count()} level locations.", updatingUser);
+        }
+    }
     
     public GameLevel? UpdateLevel(GameLevel newLevel, GameUser author)
     {
@@ -206,23 +237,35 @@ public partial class GameDatabaseContext // Levels
     [Pure]
     public DatabaseList<GameLevel> GetLevelsByUser(GameUser user, int count, int skip, LevelFilterSettings levelFilterSettings, GameUser? accessor)
     {
+        IEnumerable<GameLevel> levels;
+
         if (user.Username == SystemUsers.DeletedUserName)
         {
-            return new DatabaseList<GameLevel>(this.GetLevelsByGameVersion(levelFilterSettings.GameVersion).FilterByLevelFilterSettings(accessor, levelFilterSettings).Where(l => l.Publisher == null), skip, count);
+            levels = this.GetLevelsByGameVersion(levelFilterSettings.GameVersion)
+                .FilterByLevelFilterSettings(accessor, levelFilterSettings)
+                .Where(l => l.Publisher == null);
         }
-
-        if (user.Username == SystemUsers.UnknownUserName)
+        else if (user.Username == SystemUsers.UnknownUserName)
         {
-            return new DatabaseList<GameLevel>(this.GetLevelsByGameVersion(levelFilterSettings.GameVersion).FilterByLevelFilterSettings(null, levelFilterSettings).Where(l => l.IsReUpload && string.IsNullOrEmpty(l.OriginalPublisher)), skip, count);
+            levels = this.GetLevelsByGameVersion(levelFilterSettings.GameVersion)
+                .FilterByLevelFilterSettings(null, levelFilterSettings)
+                .Where(l => l.IsReUpload && string.IsNullOrEmpty(l.OriginalPublisher));
         }
-        
-        if (user.Username.StartsWith(SystemUsers.SystemPrefix))
+        else if (user.Username.StartsWith(SystemUsers.SystemPrefix))
         {
             string withoutPrefix = user.Username[1..];
-            return new DatabaseList<GameLevel>(this.GetLevelsByGameVersion(levelFilterSettings.GameVersion).FilterByLevelFilterSettings(accessor, levelFilterSettings).Where(l => l.OriginalPublisher == withoutPrefix), skip, count);
+            levels = this.GetLevelsByGameVersion(levelFilterSettings.GameVersion)
+                .FilterByLevelFilterSettings(accessor, levelFilterSettings)
+                .Where(l => l.OriginalPublisher == withoutPrefix);
+        }
+        else
+        {
+            levels = this.GetLevelsByGameVersion(levelFilterSettings.GameVersion)
+                .FilterByLevelFilterSettings(accessor, levelFilterSettings)
+                .Where(l => l.Publisher == user);
         }
         
-        return new DatabaseList<GameLevel>(this.GetLevelsByGameVersion(levelFilterSettings.GameVersion).FilterByLevelFilterSettings(accessor, levelFilterSettings).Where(l => l.Publisher == user), skip, count);
+        return new(levels.OrderByDescending(l => l.UpdateDate), skip, count);
     }
     
     public int GetTotalLevelsByUser(GameUser user) => this.GameLevels.Count(l => l.Publisher == user);

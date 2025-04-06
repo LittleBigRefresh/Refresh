@@ -8,4 +8,5 @@ public partial class FavouriteUserRelation : IRealmObject
 {
     public GameUser UserToFavourite { get; set; }
     public GameUser UserFavouriting { get; set; }
+    public DateTimeOffset Timestamp { get; set; }
 }

@@ -34,7 +34,7 @@ public class GameDatabaseProvider : RealmDatabaseProvider<GameDatabaseContext>
         this._time = time;
     }
 
-    protected override ulong SchemaVersion => 162;
+    protected override ulong SchemaVersion => 164;
 
     protected override string Filename => "refreshGameServer.realm";
     
@@ -242,7 +242,7 @@ public class GameDatabaseProvider : RealmDatabaseProvider<GameDatabaseContext>
         IQueryable<dynamic>? oldLevels = migration.OldRealm.DynamicApi.All("GameLevel");
         IQueryable<GameLevel>? newLevels = migration.NewRealm.All<GameLevel>();
 
-        if (oldVersion < 149)
+        if (oldVersion < 163)
             for (int i = 0; i < newLevels.Count(); i++)
             {
                 dynamic oldLevel = oldLevels.ElementAt(i);
@@ -353,6 +353,13 @@ public class GameDatabaseProvider : RealmDatabaseProvider<GameDatabaseContext>
                 if (oldVersion >= 148 && oldVersion < 149)
                 {
                     newLevel.IsModded = oldLevel.Modded;
+                }
+
+                // From version 163 on, the move controller requirement of levels gets saved.
+                // There is no way to know which of the already uploaded levels require one, unless they get manually updated in-game.
+                if (oldVersion < 163)
+                {
+                    newLevel.RequiresMoveController = false;
                 }
             }
 

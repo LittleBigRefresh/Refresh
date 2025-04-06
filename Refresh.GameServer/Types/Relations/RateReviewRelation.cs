@@ -20,4 +20,5 @@ public partial class RateReviewRelation : IRealmObject
     
     // for the purposes of checking if a positive/negative rating on a review has already been submitted by the user
     public GameUser User { get; set; }
+    public DateTimeOffset Timestamp { get; set; }
 }
