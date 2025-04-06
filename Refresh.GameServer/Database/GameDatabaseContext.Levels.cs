@@ -6,7 +6,6 @@ using Refresh.Common.Constants;
 using Refresh.GameServer.Authentication;
 using Refresh.GameServer.Endpoints.ApiV3.DataTypes.Request;
 using Refresh.GameServer.Endpoints.Game.Levels.FilterSettings;
-using Refresh.GameServer.Configuration;
 using Refresh.GameServer.Extensions;
 using Refresh.GameServer.Services;
 using Refresh.GameServer.Types.Activity;
@@ -16,7 +15,6 @@ using Refresh.GameServer.Types.Matching;
 using Refresh.GameServer.Types.Relations;
 using Refresh.GameServer.Types.UserData;
 using Refresh.GameServer.Types.UserData.Leaderboard;
-using GameAsset = Refresh.GameServer.Types.Assets.GameAsset;
 
 namespace Refresh.GameServer.Database;
 
