@@ -79,8 +79,8 @@ public class PublishEndpoints : EndpointGroup
                 TimeSpan remainingTime = expiryDate - now;
                 dataContext.Database.AddPublishFailNotification
                 (
-                    $"You have reached the timed level upload limit of {config.LevelQuota} levels during {config.TimeSpanHours} hours. " +
-                    $"Your limit will expire in {remainingTime.Hours} hour(s) and {remainingTime.Minutes} minute(s). After that, try publishing your level again!", 
+                    $"You have reached the timed level upload limit of {config.LevelQuota} levels per {config.TimeSpanHours} hours. " +
+                    $"Your limit will expire in around {remainingTime.Hours} hours and {remainingTime.Minutes} minutes. After that, try publishing your level again!", 
                     levelTitle, 
                     user
                 );
@@ -101,15 +101,15 @@ public class PublishEndpoints : EndpointGroup
         GameServerConfig config,
         IDateTimeProvider dateTimeProvider)
     {
+        if (IsTimedLevelLimitReached(dataContext, dataContext.User!, body.Title, config.TimedLevelUploadLimits, dateTimeProvider.Now)) 
+            return null;
+
         //If verifying the request fails, return null
         if (!VerifyLevel(body, dataContext))
         {
             context.Logger.LogInfo(RefreshContext.Publishing, "Failed to verify root level");
             return null;
         }
-
-        if (IsTimedLevelLimitReached(dataContext, dataContext.User!, body.Title, config.TimedLevelUploadLimits, dateTimeProvider.Now)) 
-            return null;
 
         if (body.Slots != null)
         {
@@ -153,14 +153,15 @@ public class PublishEndpoints : EndpointGroup
         GameServerConfig config,
         IDateTimeProvider dateTimeProvider)
     {
+        GameUser user = dataContext.User!;
+        
+        if (IsTimedLevelLimitReached(dataContext, user, body.Title, config.TimedLevelUploadLimits, dateTimeProvider.Now))
+            return BadRequest;
+
         //If verifying the request fails, return BadRequest
         if (!VerifyLevel(body, dataContext)) return BadRequest;
 
-        GameUser user = dataContext.User!;
         GameLevel level = body.ToGameLevel(user);
-
-        if (IsTimedLevelLimitReached(dataContext, user, level.Title, config.TimedLevelUploadLimits, dateTimeProvider.Now))
-            return BadRequest;
 
         level.GameVersion = dataContext.Token!.TokenGame;
 
@@ -213,18 +214,19 @@ public class PublishEndpoints : EndpointGroup
 
         dataContext.Database.AddLevel(level);
 
+        // Only increment if the level can be uploaded (right after the previous checks + adding the level),
+        // don't want to increment for failed uploads
+        if (config.TimedLevelUploadLimits.Enabled)
+        {
+            dataContext.Database.IncrementTimedLevelLimit(user, config.TimedLevelUploadLimits);
+        }
+
         // Update the modded status of the level
         // NOTE: this wont do anything if the slot is uploaded before the level resource,
         //       so we also do this same operation inside of ResourceEndpoints.UploadAsset to catch that case aswell
         dataContext.Database.UpdateLevelModdedStatus(level);
         
         dataContext.Database.CreateLevelUploadEvent(dataContext.User, level);
-        
-        // Only increment if the level can be uploaded, don't want to increment for failed uploads
-        if (config.TimedLevelUploadLimits.Enabled)
-        {
-            dataContext.Database.IncrementTimedLevelLimit(user, config.TimedLevelUploadLimits);
-        } 
 
         context.Logger.LogInfo(BunkumCategory.UserContent, "User {0} (id: {1}) uploaded level id {2}", user.Username, user.UserId, level.LevelId);
 
