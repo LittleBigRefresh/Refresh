@@ -62,6 +62,35 @@ public class PublishEndpoints : EndpointGroup
         return true;
     }
 
+    private static bool IsTimedLevelLimitReached(DataContext dataContext, GameUser user, string levelTitle, TimedLevelUploadLimitConfig config, DateTimeOffset now)
+    {
+        if (config.Enabled && user.TimedLevelUploads > 0 && user.TimedLevelUploadExpiryDate != null)
+        {
+            DateTimeOffset expiryDate = (DateTimeOffset)user.TimedLevelUploadExpiryDate;
+
+            // If the expiration date has expired (less than now), reset user's limit and continue.
+            if (now >= expiryDate)
+            {
+                dataContext.Database.ResetTimedLevelLimit(user);
+            }
+            // If expiration date has not expired yet and the user has reached the limit, block.
+            else if (user.TimedLevelUploads >= config.LevelQuota)
+            {
+                TimeSpan remainingTime = expiryDate - now;
+                dataContext.Database.AddPublishFailNotification
+                (
+                    $"You have reached the timed level upload limit of {config.LevelQuota} levels during {config.TimeSpanHours} hours. " +
+                    $"Your limit will expire in {remainingTime.Hours} hour(s) and {remainingTime.Minutes} minute(s). After that, try publishing your level again!", 
+                    levelTitle, 
+                    user
+                );
+                return true;
+            }
+        }
+
+        return false;
+    }
+
     [GameEndpoint("startPublish", ContentType.Xml, HttpMethods.Post)]
     [NullStatusCode(BadRequest)]
     [RequireEmailVerified]
@@ -113,37 +142,6 @@ public class PublishEndpoints : EndpointGroup
         {
             Resources = hashes.Where(r => !dataContext.DataStore.ExistsInStore(r)).ToArray(),
         };
-    }
-    
-    private static bool IsTimedLevelLimitReached(DataContext dataContext, GameUser user, string levelTitle, TimedLevelUploadLimitProperties properties, DateTimeOffset now)
-    {
-        if (properties.Enabled && user.TimedLevelUploads > 0 && user.TimedLevelUploadExpiryDate != null)
-        {
-            // If the expiration date has expired (less than now), reset user's limit and continue.
-            if (now >= user.TimedLevelUploadExpiryDate)
-            {
-                dataContext.Database.ResetTimedLevelLimit(user);
-                dataContext.Database.AddNotification
-                (
-                    "Timed level limit expired", 
-                    $"You may upload up to {properties.LevelQuota} levels per {properties.TimeSpanHours} hour(s) again!", 
-                    user
-                );
-            }
-            // If expiration date has not expired yet and the user has reached the limit, block.
-            else if (user.TimedLevelUploads >= properties.LevelQuota)
-            {
-                dataContext.Database.AddPublishFailNotification
-                (
-                    $"You have reached the timed level upload limit of {properties.LevelQuota} levels in {properties.TimeSpanHours} hours. ", 
-                    levelTitle, 
-                    user
-                );
-                return true;
-            }
-        }
-        
-        return false;
     }
 
     [GameEndpoint("publish", ContentType.Xml, HttpMethods.Post)]

@@ -82,7 +82,7 @@ public class GameServerConfig : Config
     /// </summary>
     public int UserFilesizeQuota { get; set; } = 100 * 1_048_576;
 
-    public TimedLevelUploadLimitProperties TimedLevelUploadLimits { get; set; } = new()
+    public TimedLevelUploadLimitConfig TimedLevelUploadLimits { get; set; } = new()
     {
         Enabled = false,
         TimeSpanHours = 24,

@@ -465,12 +465,12 @@ public partial class GameDatabaseContext // Users
         });
     }
     
-    public void IncrementTimedLevelLimit(GameUser user, TimedLevelUploadLimitProperties properties)
+    public void IncrementTimedLevelLimit(GameUser user, TimedLevelUploadLimitConfig config)
     {
         this.Write(() => 
         {
             // Set expiry date if the timed limits have been reset previously
-            user.TimedLevelUploadExpiryDate ??= this._time.Now + TimeSpan.FromHours(properties.TimeSpanHours);
+            user.TimedLevelUploadExpiryDate ??= this._time.Now + TimeSpan.FromHours(config.TimeSpanHours);
             user.TimedLevelUploads++;
         });
     }
