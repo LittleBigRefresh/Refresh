@@ -1,7 +1,5 @@
 using System.Diagnostics.CodeAnalysis;
 using System.Runtime.CompilerServices;
-using Realms;
-using Bunkum.RealmDatabase;
 using Refresh.GameServer.Authentication;
 using Refresh.GameServer.Time;
 using Refresh.GameServer.Types;
@@ -23,12 +21,18 @@ using Refresh.GameServer.Types.Challenges.LbpHub;
 namespace Refresh.GameServer.Database;
 
 [SuppressMessage("ReSharper", "InconsistentlySynchronizedField")]
-public partial class GameDatabaseContext : RealmDatabaseContext
+public partial class GameDatabaseContext :
+    #if !POSTGRES
+    RealmDatabaseContext
+    #else
+    DbContext, IDatabaseContext
+    #endif
 {
     private static readonly object IdLock = new();
 
     private readonly IDateTimeProvider _time;
     
+    #if !POSTGRES
     private RealmDbSet<GameUser> GameUsers => new(this._realm);
     private RealmDbSet<Token> Tokens => new(this._realm);
     private RealmDbSet<GameLevel> GameLevels => new(this._realm);
@@ -66,6 +70,45 @@ public partial class GameDatabaseContext : RealmDatabaseContext
     private RealmDbSet<GameUserVerifiedIpRelation> GameUserVerifiedIpRelations => new(this._realm);
     private RealmDbSet<GameChallenge> GameChallenges => new(this._realm);
     private RealmDbSet<GameChallengeScore> GameChallengeScores => new(this._realm);
+    #else
+    private DbSet<GameUser> GameUsers { get; set; }
+    private DbSet<Token> Tokens { get; set; }
+    private DbSet<GameLevel> GameLevels { get; set; }
+    private DbSet<GameProfileComment> GameProfileComments { get; set; }
+    private DbSet<GameLevelComment> GameLevelComments { get; set; }
+    private DbSet<ProfileCommentRelation> ProfileCommentRelations { get; set; }
+    private DbSet<LevelCommentRelation> LevelCommentRelations { get; set; }
+    private DbSet<FavouriteLevelRelation> FavouriteLevelRelations { get; set; }
+    private DbSet<QueueLevelRelation> QueueLevelRelations { get; set; }
+    private DbSet<FavouriteUserRelation> FavouriteUserRelations { get; set; }
+    private DbSet<PlayLevelRelation> PlayLevelRelations { get; set; }
+    private DbSet<UniquePlayLevelRelation> UniquePlayLevelRelations { get; set; }
+    private DbSet<RateLevelRelation> RateLevelRelations { get; set; }
+    private DbSet<Event> Events { get; set; }
+    private DbSet<GameSubmittedScore> GameSubmittedScores { get; set; }
+    private DbSet<GameAsset> GameAssets { get; set; }
+    private DbSet<GameNotification> GameNotifications { get; set; }
+    private DbSet<GamePhoto> GamePhotos { get; set; }
+    private DbSet<GameIpVerificationRequest> GameIpVerificationRequests { get; set; }
+    private DbSet<GameAnnouncement> GameAnnouncements { get; set; }
+    private DbSet<QueuedRegistration> QueuedRegistrations { get; set; }
+    private DbSet<EmailVerificationCode> EmailVerificationCodes { get; set; }
+    private DbSet<RequestStatistics> RequestStatistics { get; set; }
+    private DbSet<SequentialIdStorage> SequentialIdStorage { get; set; }
+    private DbSet<GameContest> GameContests { get; set; }
+    private DbSet<AssetDependencyRelation> AssetDependencyRelations { get; set; }
+    private DbSet<GameReview> GameReviews { get; set; }
+    private DbSet<DisallowedUser> DisallowedUsers { get; set; }
+    private DbSet<RateReviewRelation> RateReviewRelations { get; set; }
+    private DbSet<TagLevelRelation> TagLevelRelations { get; set; }
+    private DbSet<GamePlaylist> GamePlaylists { get; set; }
+    private DbSet<LevelPlaylistRelation> LevelPlaylistRelations { get; set; }
+    private DbSet<SubPlaylistRelation> SubPlaylistRelations { get; set; }
+    private DbSet<FavouritePlaylistRelation> FavouritePlaylistRelations { get; set; }
+    private DbSet<GameUserVerifiedIpRelation> GameUserVerifiedIpRelations { get; set; }
+    private DbSet<GameChallenge> GameChallenges { get; set; }
+    private DbSet<GameChallengeScore> GameChallengeScores { get; set; }
+    #endif
     
     internal GameDatabaseContext(IDateTimeProvider time)
     {
@@ -139,6 +182,7 @@ public partial class GameDatabaseContext : RealmDatabaseContext
     private void AddSequentialObject<T>(T obj) where T : IRealmObject, ISequentialId 
         => this.AddSequentialObject(obj, null, null);
 
+    #if !POSTGRES
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     private void Write(Action callback)
     {
@@ -152,9 +196,24 @@ public partial class GameDatabaseContext : RealmDatabaseContext
         
         this._realm.Write(callback);
     }
+    #else
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    private void Write(Action callback)
+    {
+        callback();
+        this.SaveChanges();
+    }
+    #endif
 
+    #if !POSTGRES
     private void RemoveAll<T>() where T : IRealmObject
     {
         this._realm.RemoveAll<T>();
     }
+    #else
+    private void RemoveAll<TClass>() where TClass : class
+    {
+        this.RemoveRange(this.Set<TClass>());
+    }
+    #endif
 }

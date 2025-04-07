@@ -1,10 +1,8 @@
-using Realms;
 using Refresh.GameServer.Authentication;
 using Refresh.GameServer.Types;
 using Refresh.GameServer.Types.Comments;
 using Refresh.GameServer.Types.Levels;
 using Refresh.GameServer.Types.UserData;
-using Bunkum.RealmDatabase;
 using Refresh.GameServer.Time;
 using Refresh.GameServer.Types.Activity;
 using Refresh.GameServer.Types.Assets;
@@ -19,9 +17,18 @@ using Refresh.GameServer.Types.Photos;
 using Refresh.GameServer.Types.Playlists;
 using Refresh.GameServer.Types.Challenges.LbpHub;
 
+#if !POSTGRES
+using Bunkum.RealmDatabase;
+#endif
+
 namespace Refresh.GameServer.Database;
 
-public class GameDatabaseProvider : RealmDatabaseProvider<GameDatabaseContext>
+public class GameDatabaseProvider : 
+#if !POSTGRES
+    RealmDatabaseProvider<GameDatabaseContext>
+#else
+    IDatabaseProvider<GameDatabaseContext>
+#endif
 {
     private readonly IDateTimeProvider _time;
     
@@ -34,7 +41,16 @@ public class GameDatabaseProvider : RealmDatabaseProvider<GameDatabaseContext>
     {
         this._time = time;
     }
+    
+    #if POSTGRES
+    public void Initialize()
+    {
+        using GameDatabaseContext context = this.GetContext();
+        context.Database.Migrate();
+    }
+    #endif
 
+    #if !POSTGRES
     protected override ulong SchemaVersion => 164;
 
     protected override string Filename => "refreshGameServer.realm";
@@ -94,18 +110,28 @@ public class GameDatabaseProvider : RealmDatabaseProvider<GameDatabaseContext>
         typeof(GameChallenge),
         typeof(GameChallengeScore),
     ];
+    #endif
 
+    #if POSTGRES
+    public void Warmup()
+    #else
     public override void Warmup()
+    #endif
     {
         using GameDatabaseContext context = this.GetContext();
         _ = context.GetTotalLevelCount();
     }
 
+    #if POSTGRES
+    public GameDatabaseContext GetContext()
+    #else
     protected override GameDatabaseContext CreateContext()
+    #endif
     {
         return new GameDatabaseContext(this._time);
     }
 
+    #if !POSTGRES
     protected override void Migrate(Migration migration, ulong oldVersion)
     {
         IQueryable<dynamic>? oldUsers = migration.OldRealm.DynamicApi.All("GameUser");
@@ -741,5 +767,11 @@ public class GameDatabaseProvider : RealmDatabaseProvider<GameDatabaseContext>
         //         dynamic oldGameChallengeScore = oldGameChallengeScores.ElementAt(i);
         //         GameChallengeScore newGameChallengeScore = newGameChallengeScores.ElementAt(i);
         //     }
+    }
+    #endif
+    
+    public void Dispose()
+    {
+        GC.SuppressFinalize(this);
     }
 }
