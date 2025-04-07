@@ -145,13 +145,4 @@ public partial class GameUser : IRealmObject, IRateLimitUser
     #endregion
 
     [Ignored] public bool FakeUser { get; set; } = false;
-
-    /// <summary>
-    /// Part of a workaround to prevent LBP Hub from breaking challenge ghost replay.
-    /// If this property is not null, the <see cref="Endpoints.Game.ResourceEndpoints.GetResource"/> endpoint
-    /// blocks all ghost asset requests, unless this timestamp is set to a time over 15 seconds ago from now.
-    /// Saved in the database because this property's information needs to be persisted between multiple seperate requests.
-    /// </summary>
-    /// <seealso cref="Endpoints.Game.ChallengeEndpoints.GetContextualScoresForChallenge"/>
-    public DateTimeOffset? LastGhostAssetGottenTimestamp { get; set; }
 }

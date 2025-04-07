@@ -4,7 +4,7 @@ using Bunkum.Core.Responses;
 using Bunkum.Listener.Protocol;
 using Bunkum.Protocols.Http;
 using Refresh.GameServer.Database;
-using Refresh.GameServer.Time;
+using Refresh.GameServer.Services;
 using Refresh.GameServer.Types.Assets;
 using Refresh.GameServer.Types.Challenges.LbpHub;
 using Refresh.GameServer.Types.Challenges.LbpHub.Ghost;
@@ -119,10 +119,9 @@ public class ChallengeEndpoints : EndpointGroup
     /// </summary>
     [GameEndpoint("challenge/{challengeId}/scoreboard", HttpMethods.Post, ContentType.Xml)]
     [RequireEmailVerified]
-    public Response SubmitChallengeScore(RequestContext context, DataContext dataContext, GameUser user, SerializedChallengeAttempt body, int challengeId)
+    public Response SubmitChallengeScore(RequestContext context, DataContext dataContext, GameUser user, SerializedChallengeAttempt body, int challengeId, AssetService assetService)
     {
-        if (user.LastGhostAssetGottenTimestamp != null)
-            dataContext.Database.SetUsersLastGhostAssetGottenTimestamp(user, null);
+        assetService.RemoveUserFromChallengeGhostRateLimit(user.UserId);
 
         GameChallenge? challenge = dataContext.Database.GetChallengeById(challengeId);
         if (challenge == null) return NotFound;
@@ -173,10 +172,9 @@ public class ChallengeEndpoints : EndpointGroup
     [GameEndpoint("challenge/{challengeId}/scoreboard/{username}", HttpMethods.Get, ContentType.Xml)]
     [MinimumRole(GameUserRole.Restricted)]
     [NullStatusCode(NotFound)]
-    public SerializedChallengeScore? GetUsersHighScoreForChallenge(RequestContext context, DataContext dataContext, GameUser user, int challengeId, string username) 
+    public SerializedChallengeScore? GetUsersHighScoreForChallenge(RequestContext context, DataContext dataContext, GameUser user, int challengeId, string username, AssetService assetService) 
     {
-        if (user.LastGhostAssetGottenTimestamp != null)
-            dataContext.Database.SetUsersLastGhostAssetGottenTimestamp(user, null);
+        assetService.RemoveUserFromChallengeGhostRateLimit(user.UserId);
 
         if (string.IsNullOrEmpty(username)) return null;
 
@@ -193,10 +191,9 @@ public class ChallengeEndpoints : EndpointGroup
     [GameEndpoint("challenge/{challengeId}/scoreboard", HttpMethods.Get, ContentType.Xml)]
     [MinimumRole(GameUserRole.Restricted)]
     [NullStatusCode(NotFound)]
-    public SerializedChallengeScoreList? GetScoresForChallenge(RequestContext context, DataContext dataContext, GameUser user, int challengeId)
+    public SerializedChallengeScoreList? GetScoresForChallenge(RequestContext context, DataContext dataContext, GameUser user, int challengeId, AssetService assetService)
     {
-        if (user.LastGhostAssetGottenTimestamp != null)
-            dataContext.Database.SetUsersLastGhostAssetGottenTimestamp(user, null);
+        assetService.RemoveUserFromChallengeGhostRateLimit(user.UserId);
 
         GameChallenge? challenge = dataContext.Database.GetChallengeById(challengeId);
         if (challenge == null) return null;
@@ -215,10 +212,9 @@ public class ChallengeEndpoints : EndpointGroup
     [GameEndpoint("challenge/{challengeId}/scoreboard/{username}/friends", HttpMethods.Get, ContentType.Xml)]
     [MinimumRole(GameUserRole.Restricted)]
     [NullStatusCode(NotFound)]
-    public SerializedChallengeScoreList? GetScoresByUsersFriendsForChallenge(RequestContext context, DataContext dataContext, GameUser user, int challengeId)
+    public SerializedChallengeScoreList? GetScoresByUsersFriendsForChallenge(RequestContext context, DataContext dataContext, GameUser user, int challengeId, AssetService assetService)
     {
-        if (user.LastGhostAssetGottenTimestamp != null)
-            dataContext.Database.SetUsersLastGhostAssetGottenTimestamp(user, null);
+        assetService.RemoveUserFromChallengeGhostRateLimit(user.UserId);
 
         GameChallenge? challenge = dataContext.Database.GetChallengeById(challengeId);
         if (challenge == null) return null;
@@ -227,25 +223,23 @@ public class ChallengeEndpoints : EndpointGroup
     }
 
     /// <summary>
-    /// Gets called when a user finishes a challenge to show a 3 scores large fragment of it's leaderboard with the 
-    /// specified user's highscore preferrably being in the middle. The username of that user is sometimes empty, 
+    /// Gets called when a user finishes a challenge to show a 3 scores large fragment of it's leaderboard with scores
+    /// "around" the user's high score. The username of that user is sometimes empty, 
     /// therefore only use the token's user for simplicity (the game never calls the contextual leaderboard of any other user).
-    /// Unlike in most other leaderboards, the game does actually show the scores' ranks returned here.
     /// </summary>
     /// <remarks>
     /// This endpoint is also used to get the next best score if the user's highscore for this challenge exists, but is not rank 1.
     /// Unfortunately, instead of only getting the next score's ghost asset with <see cref="ResourceEndpoints.GetResource"/> afterwards, 
     /// the game will then also try to get the ghost asset of every score in this endpoint's response, to then seemingly combine them into one asset,
     /// completely breaking ghost replay. To work around this, we block all ghost asset requests to the GetResource endpoint past the first, correct one
-    /// using <see cref="GameUser.LastGhostAssetGottenTimestamp"/>
+    /// using <see cref="AssetService._challengeGhostRateLimitedUsers"/>
     /// </remarks>
     [GameEndpoint("challenge/{challengeId}/scoreboard/{username}/contextual", HttpMethods.Get, ContentType.Xml)]
     [MinimumRole(GameUserRole.Restricted)]
     [NullStatusCode(NotFound)]
-    public SerializedChallengeScoreList? GetContextualScoresForChallenge(RequestContext context, DataContext dataContext, GameUser user, int challengeId) 
+    public SerializedChallengeScoreList? GetContextualScoresForChallenge(RequestContext context, DataContext dataContext, GameUser user, int challengeId, AssetService assetService) 
     {
-        if (user.LastGhostAssetGottenTimestamp != null)
-            dataContext.Database.SetUsersLastGhostAssetGottenTimestamp(user, null);
+        assetService.RemoveUserFromChallengeGhostRateLimit(user.UserId);
 
         GameChallenge? challenge = dataContext.Database.GetChallengeById(challengeId);
         if (challenge == null) return null;

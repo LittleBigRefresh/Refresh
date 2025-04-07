@@ -142,6 +142,7 @@ public class RefreshGameServer : RefreshServer
         this.Server.AddService<PresenceService>();
         this.Server.AddService<PlayNowService>();
         this.Server.AddService<CommandService>();
+        this.Server.AddService<AssetService>();
         this.Server.AddService<DiscordStaffService>();
 
         if(this._integrationConfig!.AipiEnabled)
