@@ -3,6 +3,7 @@ using MongoDB.Bson;
 using Refresh.Common.Constants;
 using Refresh.GameServer.Authentication;
 using Refresh.GameServer.Endpoints.ApiV3.DataTypes.Request;
+using Refresh.GameServer.Types.Challenges.LbpHub;
 using Refresh.GameServer.Types.Levels;
 using Refresh.GameServer.Types.Photos;
 using Refresh.GameServer.Types.Playlists;
@@ -91,10 +92,10 @@ public partial class GameDatabaseContext // Users
             if (data.Description != null)
                 user.Description = data.Description;
 
-            if (data.Location != null)
+            if (data.UserLocation != null)
             {
-                user.LocationX = data.Location.X;
-                user.LocationY = data.Location.Y;
+                user.LocationX = data.UserLocation.X;
+                user.LocationY = data.UserLocation.Y;
             }
 
             if (data.PlanetsHash != null)
@@ -339,6 +340,13 @@ public partial class GameDatabaseContext // Users
             foreach (GameLevel level in this.GameLevels.Where(l => l.Publisher == user))
             {
                 level.Publisher = null;
+            }
+
+            this.GameChallengeScores.RemoveRange(s => s.Publisher == user);
+
+            foreach (GameChallenge challenge in this.GameChallenges.Where(c => c.Publisher == user))
+            {
+                challenge.Publisher = null;
             }
         });
     }

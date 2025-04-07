@@ -10,6 +10,7 @@ using Refresh.GameServer.Extensions;
 using Refresh.GameServer.Services;
 using Refresh.GameServer.Types.Activity;
 using Refresh.GameServer.Types.Assets;
+using Refresh.GameServer.Types.Challenges.LbpHub;
 using Refresh.GameServer.Types.Levels;
 using Refresh.GameServer.Types.Matching;
 using Refresh.GameServer.Types.Relations;
@@ -79,6 +80,37 @@ public partial class GameDatabaseContext // Levels
         });
 
         return level;
+    }
+
+    public void UpdateLevelLocations(IEnumerable<SerializedLevelLocation> locations, GameUser updatingUser)
+    {
+        IEnumerable<GameLevel> levelsByUser = this.GameLevels.Where(l => l.Publisher != null && l.Publisher == updatingUser);
+        int failedUpdates = 0;
+
+        this.Write(() => 
+        {
+            foreach (SerializedLevelLocation location in locations)
+            {
+                // This gets the level to update while also verifying whether the user may even update its location
+                GameLevel? level = levelsByUser.FirstOrDefault(l => l.LevelId == location.LevelId);
+
+                if (level != null)
+                {
+                    level.LocationX = location.Location.X;
+                    level.LocationY = location.Location.Y;
+                }
+                else 
+                {
+                    failedUpdates++;
+                }
+            }
+        });
+
+        // Notify the user about how many of the location updates have failed
+        if (failedUpdates > 0)
+        {
+            this.AddErrorNotification("Level updates failed", $"Failed to update {failedUpdates} out of {locations.Count()} level locations.", updatingUser);
+        }
     }
     
     public GameLevel? UpdateLevel(GameLevel newLevel, GameUser author)
@@ -176,6 +208,14 @@ public partial class GameDatabaseContext // Levels
             this.TagLevelRelations.RemoveRange(r => r.Level == level);
             this.GameReviews.RemoveRange(r => r.Level == level);
             this.LevelPlaylistRelations.RemoveRange(r => r.Level == level);
+            
+            IEnumerable<GameChallenge> challenges = this.GameChallenges.Where(c => c.Level == level);
+
+            foreach (GameChallenge challenge in challenges)
+            {
+                this.GameChallengeScores.RemoveRange(s => s.Challenge == challenge);
+            }
+            this.GameChallenges.RemoveRange(challenges);
             
             IQueryable<GameSubmittedScore> scores = this.GameSubmittedScores.Where(r => r.Level == level);
             

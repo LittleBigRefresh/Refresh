@@ -16,6 +16,7 @@ using Refresh.GameServer.Types.Relations;
 using Refresh.GameServer.Types.Reviews;
 using Refresh.GameServer.Types.UserData;
 using Refresh.GameServer.Types.UserData.Leaderboard;
+using Refresh.GameServer.Types.Challenges.LbpHub;
 
 namespace Refresh.GameServer.Database;
 
@@ -67,6 +68,8 @@ public partial class GameDatabaseContext :
     private RealmDbSet<SubPlaylistRelation> SubPlaylistRelations => new(this._realm);
     private RealmDbSet<FavouritePlaylistRelation> FavouritePlaylistRelations => new(this._realm);
     private RealmDbSet<GameUserVerifiedIpRelation> GameUserVerifiedIpRelations => new(this._realm);
+    private RealmDbSet<GameChallenge> GameChallenges => new(this._realm);
+    private RealmDbSet<GameChallengeScore> GameChallengeScores => new(this._realm);
     #else
     private DbSet<GameUser> GameUsers { get; set; }
     private DbSet<Token> Tokens { get; set; }
@@ -103,6 +106,8 @@ public partial class GameDatabaseContext :
     private DbSet<SubPlaylistRelation> SubPlaylistRelations { get; set; }
     private DbSet<FavouritePlaylistRelation> FavouritePlaylistRelations { get; set; }
     private DbSet<GameUserVerifiedIpRelation> GameUserVerifiedIpRelations { get; set; }
+    private DbSet<GameChallenge> GameChallenges { get; set; }
+    private DbSet<GameChallengeScore> GameChallengeScores { get; set; }
     #endif
     
     internal GameDatabaseContext(IDateTimeProvider time)
