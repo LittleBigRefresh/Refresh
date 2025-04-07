@@ -17,6 +17,7 @@ using Refresh.GameServer.Types.Reviews;
 using Refresh.GameServer.Types.UserData.Leaderboard;
 using Refresh.GameServer.Types.Photos;
 using Refresh.GameServer.Types.Playlists;
+using Refresh.GameServer.Types.Challenges.LbpHub;
 
 namespace Refresh.GameServer.Database;
 
@@ -88,6 +89,10 @@ public class GameDatabaseProvider : RealmDatabaseProvider<GameDatabaseContext>
         typeof(LevelPlaylistRelation),
         typeof(SubPlaylistRelation),
         typeof(FavouritePlaylistRelation),
+
+        // challenges
+        typeof(GameChallenge),
+        typeof(GameChallengeScore),
     ];
 
     public override void Warmup()
@@ -717,6 +722,24 @@ public class GameDatabaseProvider : RealmDatabaseProvider<GameDatabaseContext>
         //     {
         //         dynamic oldSubPlaylistRelation = oldSubPlaylistRelations.ElementAt(i);
         //         SubPlaylistRelation newSubPlaylistRelation = newSubPlaylistRelations.ElementAt(i);
+        //     }
+
+        // IQueryable<dynamic>? oldGameChallenges = migration.OldRealm.DynamicApi.All("GameChallenge");
+        // IQueryable<GameChallenge>? newGameChallenges = migration.NewRealm.All<GameChallenge>();
+        // if (oldVersion < 164)
+        //     for (int i = 0; i < newGameChallenges.Count(); i++)
+        //     {
+        //         dynamic oldGameChallenge = oldGameChallenge.ElementAt(i);
+        //         GameChallenge newGameChallenge = newGameChallenge.ElementAt(i);
+        //     }
+
+        // IQueryable<dynamic>? oldGameChallengeScores = migration.OldRealm.DynamicApi.All("GameChallengeScore");
+        // IQueryable<GameChallengeScore>? newGameChallengeScores = migration.NewRealm.All<GameChallengeScore>();
+        // if (oldVersion < 164)
+        //     for (int i = 0; i < newGameChallengeScores.Count(); i++)
+        //     {
+        //         dynamic oldGameChallengeScore = oldGameChallengeScores.ElementAt(i);
+        //         GameChallengeScore newGameChallengeScore = newGameChallengeScores.ElementAt(i);
         //     }
     }
 }

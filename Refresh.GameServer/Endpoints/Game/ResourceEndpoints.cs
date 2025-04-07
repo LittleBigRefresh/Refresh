@@ -12,8 +12,10 @@ using Refresh.GameServer.Configuration;
 using Refresh.GameServer.Database;
 using Refresh.GameServer.Extensions;
 using Refresh.GameServer.Importing;
+using Refresh.GameServer.Services;
 using Refresh.GameServer.Time;
 using Refresh.GameServer.Types.Assets;
+using Refresh.GameServer.Types.Data;
 using Refresh.GameServer.Types.Levels;
 using Refresh.GameServer.Types.Lists;
 using Refresh.GameServer.Types.Roles;
@@ -108,7 +110,7 @@ public class ResourceEndpoints : EndpointGroup
 
     [GameEndpoint("r/{hash}")]
     [MinimumRole(GameUserRole.Restricted)]
-    public Response GetResource(RequestContext context, string hash, IDataStore dataStore, GameDatabaseContext database, Token token)
+    public Response GetResource(RequestContext context, GameUser user, string hash, DataContext dataContext, ChallengeGhostRateLimitService ghostService)
     {
         if (!CommonPatterns.Sha1Regex().IsMatch(hash)) return BadRequest;
         
@@ -119,10 +121,28 @@ public class ResourceEndpoints : EndpointGroup
             hash = $"psp/{hash}";
         }
         
-        if (!dataStore.ExistsInStore(hash))
+        if (!dataContext.DataStore.ExistsInStore(hash))
             return NotFound;
 
-        if (!dataStore.TryGetDataFromStore(hash, out byte[]? data))
+        // Part of a workaround to prevent LBP Hub from breaking challenge ghost replay
+        if (dataContext.Database.GetAssetFromHash(hash)?.AssetType == GameAssetType.ChallengeGhost)
+        {
+            if (ghostService.IsUserChallengeGhostRateLimited(user.UserId))
+            {
+                // Lie to the game by returning OK without any actual content, as any other responses (even successful ones)
+                // will prompt LBP Hub to try and get every ungiven ghost asset a second time before giving up, 
+                // which makes the game slower and might also screw with this rate limit.
+                context.Logger.LogDebug(BunkumCategory.UserContent, $"OK with no content to deal with LBP Hub bugs");
+                return OK;
+            }
+            else
+            {
+                // Continue with request normally, but also add user to rate limit for requests in the near future
+                ghostService.AddUserToChallengeGhostRateLimit(user.UserId);
+            }
+        }
+
+        if (!dataContext.DataStore.TryGetDataFromStore(hash, out byte[]? data))
             return InternalServerError;
 
         Debug.Assert(data != null);
