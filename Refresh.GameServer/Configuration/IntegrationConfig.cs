@@ -7,7 +7,7 @@ namespace Refresh.GameServer.Configuration;
 /// </summary>
 public class IntegrationConfig : Config
 {
-    public override int CurrentConfigVersion => 7;
+    public override int CurrentConfigVersion => 8;
     public override int Version { get; set; }
     protected override void Migrate(int oldVer, dynamic oldConfig)
     {
@@ -69,6 +69,17 @@ public class IntegrationConfig : Config
     #endregion
     
     public string? GrafanaDashboardUrl { get; set; }
-
+    
+    /// <summary>
+    /// A link to a .SVG or .PNG containing the logo to use for branding.
+    /// </summary>
     public string WebsiteLogoUrl { get; set; } = "https://github.com/LittleBigRefresh/Branding/blob/main/icons/refresh_transparent.svg";
+
+    /// <summary>
+    /// The default theme the website should use. If null or blank, the website decides which theme to use.
+    /// </summary>
+    /// <remarks>
+    /// Themes are dependent on the web frontend used. They are not provided by the server.
+    /// </remarks>
+    public string? WebsiteDefaultTheme { get; set; }
 }

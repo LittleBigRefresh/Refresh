@@ -81,6 +81,37 @@ public partial class GameDatabaseContext // Levels
 
         return level;
     }
+
+    public void UpdateLevelLocations(IEnumerable<SerializedLevelLocation> locations, GameUser updatingUser)
+    {
+        IEnumerable<GameLevel> levelsByUser = this.GameLevels.Where(l => l.Publisher != null && l.Publisher == updatingUser);
+        int failedUpdates = 0;
+
+        this.Write(() => 
+        {
+            foreach (SerializedLevelLocation location in locations)
+            {
+                // This gets the level to update while also verifying whether the user may even update its location
+                GameLevel? level = levelsByUser.FirstOrDefault(l => l.LevelId == location.LevelId);
+
+                if (level != null)
+                {
+                    level.LocationX = location.Location.X;
+                    level.LocationY = location.Location.Y;
+                }
+                else 
+                {
+                    failedUpdates++;
+                }
+            }
+        });
+
+        // Notify the user about how many of the location updates have failed
+        if (failedUpdates > 0)
+        {
+            this.AddErrorNotification("Level updates failed", $"Failed to update {failedUpdates} out of {locations.Count()} level locations.", updatingUser);
+        }
+    }
     
     public GameLevel? UpdateLevel(GameLevel newLevel, GameUser author)
     {
