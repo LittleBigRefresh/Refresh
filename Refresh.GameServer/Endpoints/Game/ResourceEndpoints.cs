@@ -110,7 +110,7 @@ public class ResourceEndpoints : EndpointGroup
 
     [GameEndpoint("r/{hash}")]
     [MinimumRole(GameUserRole.Restricted)]
-    public Response GetResource(RequestContext context, GameUser user, string hash, DataContext dataContext, AssetService assetService)
+    public Response GetResource(RequestContext context, GameUser user, string hash, DataContext dataContext, ChallengeGhostRateLimitService ghostService)
     {
         if (!CommonPatterns.Sha1Regex().IsMatch(hash)) return BadRequest;
         
@@ -127,7 +127,7 @@ public class ResourceEndpoints : EndpointGroup
         // Part of a workaround to prevent LBP Hub from breaking challenge ghost replay
         if (dataContext.Database.GetAssetFromHash(hash)?.AssetType == GameAssetType.ChallengeGhost)
         {
-            if (assetService.IsUserChallengeGhostRateLimited(user.UserId))
+            if (ghostService.IsUserChallengeGhostRateLimited(user.UserId))
             {
                 // Lie to the game by returning OK without any actual content, as any other responses (even successful ones)
                 // will prompt LBP Hub to try and get every ungiven ghost asset a second time before giving up, 
@@ -138,7 +138,7 @@ public class ResourceEndpoints : EndpointGroup
             else
             {
                 // Continue with request normally, but also add user to rate limit for requests in the near future
-                assetService.AddUserToChallengeGhostRateLimit(user.UserId);
+                ghostService.AddUserToChallengeGhostRateLimit(user.UserId);
             }
         }
 

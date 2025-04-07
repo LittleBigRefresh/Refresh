@@ -119,9 +119,9 @@ public class ChallengeEndpoints : EndpointGroup
     /// </summary>
     [GameEndpoint("challenge/{challengeId}/scoreboard", HttpMethods.Post, ContentType.Xml)]
     [RequireEmailVerified]
-    public Response SubmitChallengeScore(RequestContext context, DataContext dataContext, GameUser user, SerializedChallengeAttempt body, int challengeId, AssetService assetService)
+    public Response SubmitChallengeScore(RequestContext context, DataContext dataContext, GameUser user, SerializedChallengeAttempt body, int challengeId, ChallengeGhostRateLimitService ghostService)
     {
-        assetService.RemoveUserFromChallengeGhostRateLimit(user.UserId);
+        ghostService.RemoveUserFromChallengeGhostRateLimit(user.UserId);
 
         GameChallenge? challenge = dataContext.Database.GetChallengeById(challengeId);
         if (challenge == null) return NotFound;
@@ -172,9 +172,9 @@ public class ChallengeEndpoints : EndpointGroup
     [GameEndpoint("challenge/{challengeId}/scoreboard/{username}", HttpMethods.Get, ContentType.Xml)]
     [MinimumRole(GameUserRole.Restricted)]
     [NullStatusCode(NotFound)]
-    public SerializedChallengeScore? GetUsersHighScoreForChallenge(RequestContext context, DataContext dataContext, GameUser user, int challengeId, string username, AssetService assetService) 
+    public SerializedChallengeScore? GetUsersHighScoreForChallenge(RequestContext context, DataContext dataContext, GameUser user, int challengeId, string username, ChallengeGhostRateLimitService ghostService) 
     {
-        assetService.RemoveUserFromChallengeGhostRateLimit(user.UserId);
+        ghostService.RemoveUserFromChallengeGhostRateLimit(user.UserId);
 
         if (string.IsNullOrEmpty(username)) return null;
 
@@ -191,9 +191,9 @@ public class ChallengeEndpoints : EndpointGroup
     [GameEndpoint("challenge/{challengeId}/scoreboard", HttpMethods.Get, ContentType.Xml)]
     [MinimumRole(GameUserRole.Restricted)]
     [NullStatusCode(NotFound)]
-    public SerializedChallengeScoreList? GetScoresForChallenge(RequestContext context, DataContext dataContext, GameUser user, int challengeId, AssetService assetService)
+    public SerializedChallengeScoreList? GetScoresForChallenge(RequestContext context, DataContext dataContext, GameUser user, int challengeId, ChallengeGhostRateLimitService ghostService)
     {
-        assetService.RemoveUserFromChallengeGhostRateLimit(user.UserId);
+        ghostService.RemoveUserFromChallengeGhostRateLimit(user.UserId);
 
         GameChallenge? challenge = dataContext.Database.GetChallengeById(challengeId);
         if (challenge == null) return null;
@@ -212,9 +212,9 @@ public class ChallengeEndpoints : EndpointGroup
     [GameEndpoint("challenge/{challengeId}/scoreboard/{username}/friends", HttpMethods.Get, ContentType.Xml)]
     [MinimumRole(GameUserRole.Restricted)]
     [NullStatusCode(NotFound)]
-    public SerializedChallengeScoreList? GetScoresByUsersFriendsForChallenge(RequestContext context, DataContext dataContext, GameUser user, int challengeId, AssetService assetService)
+    public SerializedChallengeScoreList? GetScoresByUsersFriendsForChallenge(RequestContext context, DataContext dataContext, GameUser user, int challengeId, ChallengeGhostRateLimitService ghostService)
     {
-        assetService.RemoveUserFromChallengeGhostRateLimit(user.UserId);
+        ghostService.RemoveUserFromChallengeGhostRateLimit(user.UserId);
 
         GameChallenge? challenge = dataContext.Database.GetChallengeById(challengeId);
         if (challenge == null) return null;
@@ -232,14 +232,14 @@ public class ChallengeEndpoints : EndpointGroup
     /// Unfortunately, instead of only getting the next score's ghost asset with <see cref="ResourceEndpoints.GetResource"/> afterwards, 
     /// the game will then also try to get the ghost asset of every score in this endpoint's response, to then seemingly combine them into one asset,
     /// completely breaking ghost replay. To work around this, we block all ghost asset requests to the GetResource endpoint past the first, correct one
-    /// using <see cref="AssetService._challengeGhostRateLimitedUsers"/>
+    /// using <see cref="ChallengeGhostRateLimitService._challengeGhostRateLimitedUsers"/>
     /// </remarks>
     [GameEndpoint("challenge/{challengeId}/scoreboard/{username}/contextual", HttpMethods.Get, ContentType.Xml)]
     [MinimumRole(GameUserRole.Restricted)]
     [NullStatusCode(NotFound)]
-    public SerializedChallengeScoreList? GetContextualScoresForChallenge(RequestContext context, DataContext dataContext, GameUser user, int challengeId, AssetService assetService) 
+    public SerializedChallengeScoreList? GetContextualScoresForChallenge(RequestContext context, DataContext dataContext, GameUser user, int challengeId, ChallengeGhostRateLimitService ghostService) 
     {
-        assetService.RemoveUserFromChallengeGhostRateLimit(user.UserId);
+        ghostService.RemoveUserFromChallengeGhostRateLimit(user.UserId);
 
         GameChallenge? challenge = dataContext.Database.GetChallengeById(challengeId);
         if (challenge == null) return null;

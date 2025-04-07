@@ -4,10 +4,11 @@ using NotEnoughLogs;
 
 namespace Refresh.GameServer.Services;
 
-public class AssetService : EndpointService
+public class ChallengeGhostRateLimitService : EndpointService
 {
-    public AssetService(Logger logger, TimeProviderService timeProviderService) : base(logger) {
-        _timeProviderService = timeProviderService;
+    public ChallengeGhostRateLimitService(Logger logger, TimeProviderService timeProviderService) : base(logger)
+    {
+        this._timeProviderService = timeProviderService;
     }
 
     private readonly TimeProviderService _timeProviderService;
