@@ -6,7 +6,6 @@ using Refresh.GameServer.Authentication;
 using Refresh.GameServer.Database;
 using Refresh.GameServer.Endpoints.Game.DataTypes.Response;
 using Refresh.GameServer.Endpoints.Game.Levels.FilterSettings;
-using Refresh.GameServer.Extensions;
 using Refresh.GameServer.Types.Categories;
 using Refresh.GameServer.Types.Categories.Levels;
 using Refresh.GameServer.Types.Categories.Playlists;
@@ -14,12 +13,11 @@ using Refresh.GameServer.Types.Categories.Users;
 using Refresh.GameServer.Types.Data;
 using Refresh.GameServer.Types.Levels;
 using Refresh.GameServer.Types.Lists;
-using Refresh.GameServer.Types.Lists.Results;
 using Refresh.GameServer.Types.Playlists;
 using Refresh.GameServer.Types.Roles;
 using Refresh.GameServer.Types.UserData;
 
-namespace Refresh.GameServer.Endpoints.Game.Levels;
+namespace Refresh.GameServer.Endpoints.Game;
 
 public class CategoryEndpoints : EndpointGroup
 {
@@ -62,7 +60,7 @@ public class CategoryEndpoints : EndpointGroup
 
     [GameEndpoint("searches/levels/{apiRoute}", ContentType.Xml)]
     [MinimumRole(GameUserRole.Restricted)]
-    public SerializedMinimalLevelResultsList GetLevelsFromCategory(RequestContext context,
+    public SerializedCategoryResultsList GetLevelsFromCategory(RequestContext context,
         CategoryService categories, GameUser user, Token token, string apiRoute, DataContext dataContext)
     {
         (int skip, int count) = context.GetPageData();
@@ -71,13 +69,17 @@ public class CategoryEndpoints : EndpointGroup
             .FirstOrDefault(c => c.ApiRoute.StartsWith(apiRoute))?
             .Fetch(context, skip, count, dataContext, new LevelFilterSettings(context, token.TokenGame), user);
         
-        return new SerializedMinimalLevelResultsList(levels?.Items
-            .Select(l => GameMinimalLevelResponse.FromOld(l, dataContext))!, levels?.TotalItems ?? 0, skip + count);
+        return new SerializedCategoryResultsList
+        (
+            levels?.Items.Select(l => GameMinimalLevelResponse.FromOld(l, dataContext))!,
+            levels?.TotalItems,
+            skip + count
+        );
     }
 
     [GameEndpoint("searches/playlists/{apiRoute}", ContentType.Xml)]
     [MinimumRole(GameUserRole.Restricted)]
-    public SerializedLbp3PlaylistResultsList GetPlaylistsFromCategory(RequestContext context,
+    public SerializedCategoryResultsList GetPlaylistsFromCategory(RequestContext context,
         CategoryService categories, GameUser user, Token token, string apiRoute, DataContext dataContext)
     {
         (int skip, int count) = context.GetPageData();
@@ -86,13 +88,17 @@ public class CategoryEndpoints : EndpointGroup
             .FirstOrDefault(c => c.ApiRoute.StartsWith(apiRoute))?
             .Fetch(context, skip, count, dataContext, new LevelFilterSettings(context, token.TokenGame), user);
         
-        return new SerializedLbp3PlaylistResultsList(playlists?.Items
-            .Select(p => SerializedLbp3Playlist.FromOld(p, dataContext))!, playlists?.TotalItems ?? 0, skip + count);
+        return new SerializedCategoryResultsList
+        (
+            playlists?.Items.Select(p => SerializedLbp3Playlist.FromOld(p, dataContext))!,
+            playlists?.TotalItems,
+            skip + count
+        );
     }
 
     [GameEndpoint("searches/users/{apiRoute}", ContentType.Xml)]
     [MinimumRole(GameUserRole.Restricted)]
-    public SerializedUserResultsList GetUsersFromCategory(RequestContext context,
+    public SerializedCategoryResultsList GetUsersFromCategory(RequestContext context,
         CategoryService categories, GameUser user, Token token, string apiRoute, DataContext dataContext)
     {
         (int skip, int count) = context.GetPageData();
@@ -101,7 +107,11 @@ public class CategoryEndpoints : EndpointGroup
             .FirstOrDefault(c => c.ApiRoute.StartsWith(apiRoute))?
             .Fetch(context, skip, count, dataContext, new LevelFilterSettings(context, token.TokenGame), user);
         
-        return new SerializedUserResultsList(users?.Items
-            .Select(u => GameUserResponse.FromOld(u, dataContext))!, users?.TotalItems ?? 0, skip + count);
+        return new SerializedCategoryResultsList
+        (
+            users?.Items.Select(u => GameUserResponse.FromOld(u, dataContext))!,
+            users?.TotalItems,
+            skip + count
+        );
     }
 }

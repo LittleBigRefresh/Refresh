@@ -2,7 +2,6 @@ using Refresh.GameServer.Authentication;
 using Refresh.GameServer.Endpoints.Game.DataTypes.Response;
 using Refresh.GameServer.Types.Levels;
 using Refresh.GameServer.Types.Lists;
-using Refresh.GameServer.Types.Lists.Results;
 using Refresh.GameServer.Types.Reviews;
 using Refresh.GameServer.Types.UserData;
 using RefreshTests.GameServer.Extensions;
@@ -469,10 +468,10 @@ public class LevelTests : GameServerTest
         HttpResponseMessage message = client.GetAsync($"/lbp/searches/levels/newest").Result;
         Assert.That(message.StatusCode, Is.EqualTo(OK));
 
-        SerializedMinimalLevelResultsList result = message.Content.ReadAsXML<SerializedMinimalLevelResultsList>();
-        Assert.That(result.Items, Has.Count.EqualTo(2));
-        Assert.That(result.Items[0].LevelId, Is.EqualTo(level.LevelId));
-        Assert.That(result.Items[1].LevelId, Is.EqualTo(level2.LevelId));
+        SerializedCategoryResultsList result = message.Content.ReadAsXML<SerializedCategoryResultsList>();
+        Assert.That(result.Levels, Has.Count.EqualTo(2));
+        Assert.That(result.Levels[0].LevelId, Is.EqualTo(level.LevelId));
+        Assert.That(result.Levels[1].LevelId, Is.EqualTo(level2.LevelId));
     }
     
     [Test]
