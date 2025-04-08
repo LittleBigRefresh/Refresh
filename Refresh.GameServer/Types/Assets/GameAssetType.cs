@@ -398,6 +398,14 @@ public enum GameAssetType
     /// </summary>
     /// <seealso cref="Refresh.GameServer.Importing.Importer.IsPspTga"/>
     Tga,
+
+    /// <summary>
+    /// LBP Hub ghost data, sent as XML.
+    /// </summary>
+    /// <remarks>
+    /// Magic: Opening tag for the root element, "ghost"
+    /// </remarks>
+    ChallengeGhost,
 }
 
 public static class GameAssetTypeExtensions
