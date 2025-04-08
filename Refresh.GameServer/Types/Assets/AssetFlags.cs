@@ -34,6 +34,7 @@ public static class AssetSafetyLevelExtensions
             GameAssetType.Quest => AssetFlags.None,
             GameAssetType.AdventureSharedData => AssetFlags.None,
             GameAssetType.AdventureCreateProfile => AssetFlags.None,
+            GameAssetType.ChallengeGhost => AssetFlags.None,
             
             // Common media types created by the game
             GameAssetType.VoiceRecording => AssetFlags.Media,
