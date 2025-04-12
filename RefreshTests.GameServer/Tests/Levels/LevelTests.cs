@@ -468,10 +468,10 @@ public class LevelTests : GameServerTest
         HttpResponseMessage message = client.GetAsync($"/lbp/searches/newest").Result;
         Assert.That(message.StatusCode, Is.EqualTo(OK));
 
-        SerializedMinimalLevelResultsList result = message.Content.ReadAsXML<SerializedMinimalLevelResultsList>();
-        Assert.That(result.Items, Has.Count.EqualTo(2));
-        Assert.That(result.Items[0].LevelId, Is.EqualTo(level.LevelId));
-        Assert.That(result.Items[1].LevelId, Is.EqualTo(level2.LevelId));
+        SerializedCategoryResultsList result = message.Content.ReadAsXML<SerializedCategoryResultsList>();
+        Assert.That(result.Levels, Has.Count.EqualTo(2));
+        Assert.That(result.Levels[0].LevelId, Is.EqualTo(level.LevelId));
+        Assert.That(result.Levels[1].LevelId, Is.EqualTo(level2.LevelId));
     }
     
     [Test]
