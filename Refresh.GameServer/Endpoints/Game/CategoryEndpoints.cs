@@ -1,4 +1,3 @@
-
 using Bunkum.Core;
 using Bunkum.Core.Endpoints;
 using Bunkum.Listener.Protocol;
@@ -28,12 +27,7 @@ public class CategoryEndpoints : EndpointGroup
             .Where(c => !c.Hidden)
             .Select(c => SerializedLevelCategory.FromLevelCategory(c, context, dataContext, 0, 1));
 
-        DatabaseList<SerializedCategory> serializedCategories = new
-        (
-            levelCategories,
-            skip,
-            count
-        );
+        DatabaseList<SerializedCategory> serializedCategories = new(levelCategories, skip, count);
 
         SearchLevelCategory searchCategory = (SearchLevelCategory)categoryService.LevelCategories
             .First(c => c is SearchLevelCategory);
@@ -47,9 +41,10 @@ public class CategoryEndpoints : EndpointGroup
     }
 
     [GameEndpoint("searches/levels/{apiRoute}", ContentType.Xml)]
+    [NullStatusCode(NotFound)]
     [MinimumRole(GameUserRole.Restricted)]
-    public SerializedCategoryResultsList GetLevelsFromCategory(RequestContext context,
-        CategoryService categories, GameUser user, Token token, string apiRoute, DataContext dataContext)
+    public SerializedCategoryResultsList? GetLevelsFromCategory(RequestContext context, CategoryService categories, GameUser user, 
+        Token token, string apiRoute, DataContext dataContext)
     {
         (int skip, int count) = context.GetPageData();
 
@@ -57,11 +52,13 @@ public class CategoryEndpoints : EndpointGroup
             .FirstOrDefault(c => c.ApiRoute.StartsWith(apiRoute))?
             .Fetch(context, skip, count, dataContext, new LevelFilterSettings(context, token.TokenGame), user);
         
+        if (levels == null) return null;
+        
         return new SerializedCategoryResultsList
         (
-            levels?.Items.Select(l => GameMinimalLevelResponse.FromOld(l, dataContext))!,
-            levels?.TotalItems,
-            skip + count
+            levels.Items.Select(l => GameMinimalLevelResponse.FromOld(l, dataContext))!,
+            levels.TotalItems,
+            levels.NextPageIndex
         );
     }
 }

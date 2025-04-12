@@ -9,11 +9,11 @@ public class SerializedCategoryResultsList : SerializedPaginationData
 {
     public SerializedCategoryResultsList() {}
 
-    public SerializedCategoryResultsList(IEnumerable<GameMinimalLevelResponse>? levels, int? nextPageIndex, int? totalItems)
+    public SerializedCategoryResultsList(IEnumerable<GameMinimalLevelResponse> levels, int nextPageIndex, int totalItems)
     {
-        this.Levels = levels?.ToList() ?? [];
-        this.NextPageStart = nextPageIndex ?? -1;
-        this.Total = totalItems ?? 0;
+        this.Levels = levels.ToList();
+        this.NextPageStart = nextPageIndex!;
+        this.Total = totalItems;
     }
 
     [XmlElement("slot")] public List<GameMinimalLevelResponse> Levels { get; set; } = [];
