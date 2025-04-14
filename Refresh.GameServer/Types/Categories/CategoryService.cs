@@ -1,15 +1,17 @@
 using System.Collections.Frozen;
 using Bunkum.Core.Services;
 using NotEnoughLogs;
+using Refresh.GameServer.Types.Categories.Levels;
 
-namespace Refresh.GameServer.Types.Levels.Categories;
+namespace Refresh.GameServer.Types.Categories;
 
 public class CategoryService : EndpointService
 {
-    public readonly FrozenSet<LevelCategory> Categories;
+    // Level Categories
+    public readonly FrozenSet<GameLevelCategory> LevelCategories;
 
     // ReSharper disable once InconsistentNaming
-    private readonly List<LevelCategory> _categories =
+    private readonly List<GameLevelCategory> _levelCategories =
     [
         new CoolLevelsCategory(),
         new TeamPickedLevelsCategory(),
@@ -24,7 +26,7 @@ public class CategoryService : EndpointService
         new MostReplayedLevelsCategory(),
 
         new ByUserLevelCategory(),
-        new FavouriteSlotsByUserCategory(),
+        new HeartedLevelsByUserCategory(),
         new QueuedLevelsByUserCategory(),
 
         new SearchLevelCategory(),
@@ -36,6 +38,6 @@ public class CategoryService : EndpointService
 
     internal CategoryService(Logger logger) : base(logger)
     {
-        this.Categories = this._categories.ToFrozenSet();
+        this.LevelCategories = this._levelCategories.ToFrozenSet();
     }
 }

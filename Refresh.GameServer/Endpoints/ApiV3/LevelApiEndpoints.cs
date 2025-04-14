@@ -11,15 +11,13 @@ using Refresh.GameServer.Endpoints.ApiV3.ApiTypes;
 using Refresh.GameServer.Endpoints.ApiV3.ApiTypes.Errors;
 using Refresh.GameServer.Endpoints.ApiV3.DataTypes.Request;
 using Refresh.GameServer.Endpoints.ApiV3.DataTypes.Response.Levels;
-using Refresh.GameServer.Endpoints.Game.DataTypes.Response;
 using Refresh.GameServer.Endpoints.Game.Levels.FilterSettings;
-using Refresh.GameServer.Extensions;
 using Refresh.GameServer.Services;
 using Refresh.GameServer.Types.Data;
 using Refresh.GameServer.Types.Levels;
-using Refresh.GameServer.Types.Levels.Categories;
 using Refresh.GameServer.Types.UserData;
 using Refresh.GameServer.Types.Roles;
+using Refresh.GameServer.Types.Categories;
 
 namespace Refresh.GameServer.Endpoints.ApiV3;
 
@@ -40,8 +38,8 @@ public class LevelApiEndpoints : EndpointGroup
         IEnumerable<ApiLevelCategoryResponse> resp;
 
         // ReSharper disable once ConvertIfStatementToConditionalTernaryExpression
-        if (includePreviews) resp = ApiLevelCategoryResponse.FromOldList(categories.Categories, context, dataContext);
-        else resp = ApiLevelCategoryResponse.FromOldList(categories.Categories, dataContext);
+        if (includePreviews) resp = ApiLevelCategoryResponse.FromOldList(categories.LevelCategories, context, dataContext);
+        else resp = ApiLevelCategoryResponse.FromOldList(categories.LevelCategories, dataContext);
         
         return new ApiListResponse<ApiLevelCategoryResponse>(resp);
     }
@@ -69,7 +67,7 @@ public class LevelApiEndpoints : EndpointGroup
         
         (int skip, int count) = context.GetPageData();
 
-        DatabaseList<GameLevel>? list = categories.Categories
+        DatabaseList<GameLevel>? list = categories.LevelCategories
             .FirstOrDefault(c => c.ApiRoute.StartsWith(route))?
             .Fetch(context, skip, count, dataContext, new LevelFilterSettings(context, TokenGame.Website), user);
 
