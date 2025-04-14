@@ -12,7 +12,4 @@ public class SerializedCategory
     [XmlElement("url")] public string Url { get; set; }
     [XmlElement("tag")] public string Tag { get; set; }
     [XmlElement("icon")] public string IconHash { get; set; }
-    
-    [XmlArray("types")] 
-    [XmlArrayItem("type")] public string[] Types { get; set; }
 }

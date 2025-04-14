@@ -22,11 +22,6 @@ public class SerializedLevelCategory : SerializedCategory
             Description = category.Description,
             Url = "/searches/levels/" + category.ApiRoute,
             Tag = category.ApiRoute,
-            Types = 
-            [
-                "slot",
-                "adventure",
-            ],
             IconHash = category.IconHash,
         };
 
