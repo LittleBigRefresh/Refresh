@@ -16,6 +16,7 @@ using Refresh.GameServer.Types.UserData.Leaderboard;
 using Refresh.GameServer.Types.Photos;
 using Refresh.GameServer.Types.Playlists;
 using Refresh.GameServer.Types.Challenges.LbpHub;
+using Refresh.GameServer.Types.Pins;
 
 #if !POSTGRES
 using Bunkum.RealmDatabase;
@@ -95,6 +96,10 @@ public class GameDatabaseProvider :
         typeof(QueuedRegistration),
         typeof(GameIpVerificationRequest),
         typeof(GameUserVerifiedIpRelation),
+
+        // pins
+        typeof(PinProgressRelation),
+        typeof(ProfilePinRelation),
 
         // assets
         typeof(GameAsset),

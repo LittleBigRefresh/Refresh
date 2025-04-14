@@ -1,0 +1,62 @@
+using Bunkum.Core;
+using NotEnoughLogs;
+
+namespace Refresh.GameServer.Types.Pins;
+
+#nullable disable
+public partial class SerializedPins
+{
+    /// <summary>
+    /// Pins which can have various progress values.
+    /// Follows the following pattern: progressType, progress value, progressType, progress value etc.
+    /// Can contain the same pins as AwardPins (equal progressType), if it does, the times awarded and progress value
+    /// is usually equal per pin (progressType).
+    /// </summary>
+	[JsonProperty(PropertyName = "progress")] public List<long> ProgressPins { get; }
+
+    /// <summary>
+    /// Pins which can be awarded multiple times.
+    /// Follows the following pattern: progressType, times awarded, progressType, times awarded etc.
+    /// Can contain the same pins as ProgressPins (equal progressType), if it does, the times awarded and progress value
+    /// is usually equal per pin (progressType).
+    /// </summary>
+	[JsonProperty(PropertyName = "awards")] public List<long> AwardPins { get; }
+
+    /// <summary>
+    /// The progressTypes of pins set to be shown on a user's profile for a certain game.
+    /// </summary>
+	[JsonProperty(PropertyName = "profile_pins")] public List<long> ProfilePins { get; }
+
+    #nullable enable
+
+    public static Dictionary<long, int> ToDictionary(List<long> rawPins, Logger? logger = null)
+    {
+        Dictionary<long, int> dictionary = [];
+
+        try
+        {
+            for (int i = 0; i < rawPins.Count; i += 2)
+            {
+                long progressType = rawPins[i];
+                int progress = (int)rawPins[i + 1];
+                
+                dictionary.Add(progressType, progress);
+            }
+        }
+        // Will likely be thrown if the list's length is odd or if a progress value can't be casted to int.
+        // Either way is a bad request and either rare or manipulated.
+        catch (Exception ex)
+        {
+            logger?.LogWarning(BunkumCategory.UserContent, $"Failed to convert pins from list to dictionary: {ex}");
+        }
+        
+        return dictionary;
+    }
+
+    public Dictionary<long, int> ToMergedDictionary(Logger? logger = null)
+        => ToDictionary(ProgressPins, logger)
+            .Concat(ToDictionary(AwardPins, logger))
+            .GroupBy(p => p.Key)
+            .Select(g => new KeyValuePair<long, int> (g.Key, g.Max(p => p.Value)))
+            .ToDictionary();
+}

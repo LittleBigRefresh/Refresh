@@ -17,6 +17,7 @@ using Refresh.GameServer.Types.Reviews;
 using Refresh.GameServer.Types.UserData;
 using Refresh.GameServer.Types.UserData.Leaderboard;
 using Refresh.GameServer.Types.Challenges.LbpHub;
+using Refresh.GameServer.Types.Pins;
 
 namespace Refresh.GameServer.Database;
 
@@ -70,6 +71,8 @@ public partial class GameDatabaseContext :
     private RealmDbSet<GameUserVerifiedIpRelation> GameUserVerifiedIpRelations => new(this._realm);
     private RealmDbSet<GameChallenge> GameChallenges => new(this._realm);
     private RealmDbSet<GameChallengeScore> GameChallengeScores => new(this._realm);
+    private RealmDbSet<PinProgressRelation> PinProgressRelations => new(this._realm);
+    private RealmDbSet<ProfilePinRelation> ProfilePinRelations => new(this._realm);
     #else
     private DbSet<GameUser> GameUsers { get; set; }
     private DbSet<Token> Tokens { get; set; }
@@ -108,6 +111,8 @@ public partial class GameDatabaseContext :
     private DbSet<GameUserVerifiedIpRelation> GameUserVerifiedIpRelations { get; set; }
     private DbSet<GameChallenge> GameChallenges { get; set; }
     private DbSet<GameChallengeScore> GameChallengeScores { get; set; }
+    private DbSet<PinProgressRelation> PinProgressRelations => new(this._realm);
+    private DbSet<ProfilePinRelation> ProfilePinRelations => new(this._realm);
     #endif
     
     internal GameDatabaseContext(IDateTimeProvider time)

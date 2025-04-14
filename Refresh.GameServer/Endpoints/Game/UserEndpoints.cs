@@ -11,6 +11,7 @@ using Refresh.GameServer.Endpoints.Game.DataTypes.Response;
 using Refresh.GameServer.Services;
 using Refresh.GameServer.Types.Data;
 using Refresh.GameServer.Types.Lists;
+using Refresh.GameServer.Types.Pins;
 using Refresh.GameServer.Types.Roles;
 using Refresh.GameServer.Types.UserData;
 
@@ -147,37 +148,16 @@ public class UserEndpoints : EndpointGroup
 
     [GameEndpoint("update_my_pins", HttpMethods.Post, ContentType.Json)]
     [NullStatusCode(BadRequest)]
-    public string? UpdatePins(RequestContext context, GameDatabaseContext database, GameUser user, Stream body)
+    public SerializedPins? UpdatePins(RequestContext context, GameDatabaseContext database, GameUser user, SerializedPins body)
     {
-        JsonSerializer serializer = new();
-
-        using StreamReader streamReader = new(body);
-        using JsonTextReader jsonReader = new(streamReader);
-
-        UserPins? updateUserPins = serializer.Deserialize<UserPins>(jsonReader);
-
-        //If the type is not correct, return null
-        if (updateUserPins is null)
-        {
-            database.AddErrorNotification("Pin sync failed", "Your pins failed to update because the data could not be read.", user);
-            return null;
-        }
-        
-        //NOTE: the returned value in the packet capture has a few higher values than the ones sent in the request,
-        //      so im not sure what we are supposed to return here, so im just passing it through with `profile_pins` nulled out
-        database.UpdateUserPins(user, updateUserPins);
-
-        //Dont serialize profile pins, the packet capture doesnt have them in the return
-        updateUserPins.ProfilePins?.Clear();
-
-        //Just return the same pins back to the client
-        return JsonConvert.SerializeObject(updateUserPins, new JsonSerializerSettings
-        {
-            NullValueHandling = NullValueHandling.Ignore,
-        });
+        return null;
     }
 
     [GameEndpoint("get_my_pins", HttpMethods.Get, ContentType.Json)]
+    [NullStatusCode(NotImplemented)]
     [MinimumRole(GameUserRole.Restricted)]
-    public UserPins GetPins(RequestContext context, GameUser user) => user.Pins;
+    public SerializedPins? GetPins(RequestContext context, GameUser user)
+    {
+        return null;
+    }
 }
