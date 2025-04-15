@@ -23,7 +23,7 @@ public partial class SerializedPins
 	[JsonProperty(PropertyName = "awards")] public List<long> AwardPins { get; }
 
     /// <summary>
-    /// The progressTypes of pins set to be shown on a user's profile for a certain game.
+    /// The progressTypes of pins set to be shown on a user's profile for a certain game, in the order set by the user.
     /// </summary>
 	[JsonProperty(PropertyName = "profile_pins")] public List<long> ProfilePins { get; }
 
@@ -53,9 +53,14 @@ public partial class SerializedPins
         return dictionary;
     }
 
+    /// <summary>
+    /// Converts the SerializedPin object's ProgressPins and AwardPins into Dictionaries using <see cref='ToDictionary'/>
+    /// and then concatenates them into one Directory, blending out duplicate KeyValuePairs with the same Key (pin's progressType)
+    /// and only leaving the ones with the highest Value (pin's progress).
+    /// </summary>
     public Dictionary<long, int> ToMergedDictionary(Logger? logger = null)
-        => ToDictionary(ProgressPins, logger)
-            .Concat(ToDictionary(AwardPins, logger))
+        => ToDictionary(this.ProgressPins, logger)
+            .Concat(ToDictionary(this.AwardPins, logger))
             .GroupBy(p => p.Key)
             .Select(g => new KeyValuePair<long, int> (g.Key, g.Max(p => p.Value)))
             .ToDictionary();
