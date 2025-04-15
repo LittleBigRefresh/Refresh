@@ -147,17 +147,23 @@ public class UserEndpoints : EndpointGroup
     }
 
     [GameEndpoint("update_my_pins", HttpMethods.Post, ContentType.Json)]
-    [NullStatusCode(BadRequest)]
-    public SerializedPins? UpdatePins(RequestContext context, GameDatabaseContext database, GameUser user, SerializedPins body)
+    [RequireEmailVerified]
+    public SerializedPins UpdatePins(RequestContext context, DataContext dataContext, GameUser user, SerializedPins body)
     {
-        return null;
+        // Update pin progress and profile pins
+        dataContext.Database.UpdatePinsForUser(body.ToMergedDictionary(context.Logger), body.ProfilePins, user, dataContext.Game);
+
+        // Return newly updated pins
+        return this.GetPins(context, dataContext, user);
     }
 
     [GameEndpoint("get_my_pins", HttpMethods.Get, ContentType.Json)]
-    [NullStatusCode(NotImplemented)]
     [MinimumRole(GameUserRole.Restricted)]
-    public SerializedPins? GetPins(RequestContext context, GameUser user)
-    {
-        return null;
-    }
+    public SerializedPins GetPins(RequestContext context, DataContext dataContext, GameUser user)
+        => SerializedPins.FromOld
+        (
+            dataContext.Database.GetPinProgressesByUser(user, dataContext.Game, 0, 999).Items,
+            dataContext.Database.GetProfilePinsByUser(user, dataContext.Game, 0, 3).Items,
+            context.Logger
+        );
 }

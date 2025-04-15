@@ -56,7 +56,6 @@ public partial class GameUser : IRealmObject, IRateLimitUser
     public int LocationY { get; set; }
     
     public DateTimeOffset JoinDate { get; set; }
-    public UserPins Pins { get; set; } = new();
 
     public string BetaPlanetsHash { get; set; } = "0";
     public string Lbp2PlanetsHash { get; set; } = "0";

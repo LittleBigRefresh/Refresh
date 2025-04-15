@@ -1,15 +1,13 @@
 using Refresh.GameServer.Authentication;
+using Refresh.GameServer.Types.UserData;
 
 namespace Refresh.GameServer.Types.Pins;
 
 #nullable disable
 public partial class ProfilePinRelation : IRealmObject
 {
-    /// <summary>
-    /// Contains both the pin to show, and the user to show under, ensuring the user
-    /// has at least some progress on this pin as a low bar
-    /// </summary>
-    public PinProgressRelation Pin { get; set; }
+    public long PinId { get; set; }
+    public GameUser Publisher { get; set; }
 
     /// <summary>
     /// Whether to show as first, second or third pin in-game

@@ -217,17 +217,6 @@ public partial class GameDatabaseContext // Users
         return this.GameUsers.Count(u => u.LastLoginDate > timeFrame);
     }
 
-    public void UpdateUserPins(GameUser user, UserPins pinsUpdate) 
-    {
-        this.Write(() => {
-            user.Pins = new UserPins();
-
-            foreach (long pinsAward in pinsUpdate.Awards) user.Pins.Awards.Add(pinsAward);
-            foreach (long pinsAward in pinsUpdate.Progress) user.Pins.Progress.Add(pinsAward);
-            foreach (long profilePins in pinsUpdate.ProfilePins) user.Pins.ProfilePins.Add(profilePins);
-        });
-    }
-
     public void SetUserRole(GameUser user, GameUserRole role)
     {
         if(role == GameUserRole.Banned) throw new InvalidOperationException($"Cannot ban a user with this method. Please use {nameof(this.BanUser)}().");
@@ -308,7 +297,6 @@ public partial class GameDatabaseContext // Users
         
         this.Write(() =>
         {
-            user.Pins = new UserPins();
             user.LocationX = 0;
             user.LocationY = 0;
             user.Description = deletedReason;

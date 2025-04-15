@@ -52,7 +52,7 @@ public class GameDatabaseProvider :
     #endif
 
     #if !POSTGRES
-    protected override ulong SchemaVersion => 164;
+    protected override ulong SchemaVersion => 165;
 
     protected override string Filename => "refreshGameServer.realm";
     
@@ -86,7 +86,6 @@ public class GameDatabaseProvider :
         // users
         typeof(GameUser),
         typeof(Token),
-        typeof(UserPins),
         typeof(GameProfileComment),
         typeof(FavouriteUserRelation),
         typeof(DisallowedUser),
@@ -155,7 +154,7 @@ public class GameDatabaseProvider :
                 }
 
                 //In version 4, GameLocation went from TopLevel -> Embedded, and UserPins was added
-                if (oldVersion < 4) newUser.Pins = new UserPins();
+                //if (oldVersion < 4) newUser.Pins = new UserPins();
 
                 // In version 12, users were given IconHashes
                 if (oldVersion < 12) newUser.IconHash = "0";
