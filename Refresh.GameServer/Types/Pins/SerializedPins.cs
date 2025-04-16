@@ -47,7 +47,7 @@ public partial class SerializedPins
             {
                 long progressType = rawPins[i];
                 int progress = (int)rawPins[i + 1];
-                logger?.LogDebug(BunkumCategory.UserContent, $"ToDictionary: progressType: {progressType}, progress: {progress}");
+                
                 dictionary.Add(progressType, progress);
             }
         }
