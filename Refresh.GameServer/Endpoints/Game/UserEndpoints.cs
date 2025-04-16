@@ -150,8 +150,10 @@ public class UserEndpoints : EndpointGroup
     [RequireEmailVerified]
     public SerializedPins UpdatePins(RequestContext context, DataContext dataContext, GameUser user, SerializedPins body)
     {
-        // Update pin progress and profile pins
-        dataContext.Database.UpdatePinsForUser(body.ToMergedDictionary(context.Logger), body.ProfilePins, user, dataContext.Game);
+        // Convert ProgressPins and AwardPins into something usable, merge them,
+        // and then update the user's pin progress and profile pins
+        Dictionary<long, int> pinProgresses = body.ToMergedDictionary(context.Logger);
+        dataContext.Database.UpdatePinsForUser(pinProgresses, body.ProfilePins, user, dataContext.Game);
 
         // Return newly updated pins
         return this.GetPins(context, dataContext, user);
@@ -163,7 +165,6 @@ public class UserEndpoints : EndpointGroup
         => SerializedPins.FromOld
         (
             dataContext.Database.GetPinProgressesByUser(user, dataContext.Game, 0, 999).Items,
-            dataContext.Database.GetProfilePinsByUser(user, dataContext.Game, 0, 3).Items,
-            context.Logger
+            dataContext.Database.GetProfilePinsByUser(user, dataContext.Game, 0, 3).Items
         );
 }

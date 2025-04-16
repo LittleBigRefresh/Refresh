@@ -1,5 +1,6 @@
 using Bunkum.Core;
 using NotEnoughLogs;
+using Refresh.GameServer.Types.Data;
 
 namespace Refresh.GameServer.Types.Pins;
 
@@ -29,7 +30,14 @@ public partial class SerializedPins
 
     #nullable enable
 
-    public static Dictionary<long, int> ToDictionary(List<long> rawPins, Logger? logger = null)
+    /// <param name="logger">
+    /// If set, caught exceptions while converting pins will be logged.
+    /// </param>
+    /// <param name="dataContext">
+    /// If set, and dataContext.User is also set, the user will be notified about failed pin conversions
+    /// in case an exception gets caught.
+    /// </param>
+    public static Dictionary<long, int> ToDictionary(List<long> rawPins, Logger? logger = null, DataContext? dataContext = null)
     {
         Dictionary<long, int> dictionary = [];
 
@@ -48,6 +56,14 @@ public partial class SerializedPins
         catch (Exception ex)
         {
             logger?.LogWarning(BunkumCategory.UserContent, $"Failed to convert pins from list to dictionary: {ex}");
+
+            if (dataContext?.User != null)
+                dataContext?.Database.AddErrorNotification
+                (
+                    "Failed to sync pin progress",
+                    $"Some of your uploaded pin progress data could not be read, only {dictionary.Count} out of {rawPins.Count / 2} pins will be saved.",
+                    dataContext.User
+                );
         }
         
         return dictionary;
@@ -58,14 +74,14 @@ public partial class SerializedPins
     /// and then concatenates them into one Directory, blending out duplicate KeyValuePairs with the same Key (pin's progressType)
     /// and only leaving the ones with the highest Value (pin's progress).
     /// </summary>
-    public Dictionary<long, int> ToMergedDictionary(Logger? logger = null)
-        => ToDictionary(this.ProgressPins, logger)
-            .Concat(ToDictionary(this.AwardPins, logger))
+    public Dictionary<long, int> ToMergedDictionary(Logger? logger = null, DataContext? dataContext = null)
+        => ToDictionary(this.ProgressPins, logger, dataContext)
+            .Concat(ToDictionary(this.AwardPins, logger, dataContext))
             .GroupBy(p => p.Key)
             .Select(g => new KeyValuePair<long, int> (g.Key, g.Max(p => p.Value)))
             .ToDictionary();
         
-    public static SerializedPins FromOld(IEnumerable<PinProgressRelation> pinProgresses, IEnumerable<ProfilePinRelation> profilePins, Logger? logger = null)
+    public static SerializedPins FromOld(IEnumerable<PinProgressRelation> pinProgresses, IEnumerable<ProfilePinRelation> profilePins)
     {
         // Convert pin progress relations (both progressTypes and progress values) back to a list
         List<long> rawPinList = [];
@@ -73,13 +89,6 @@ public partial class SerializedPins
         {
             rawPinList.Add(relation.PinId);
             rawPinList.Add(relation.Progress);
-        }
-
-        logger?.LogDebug(BunkumCategory.UserContent, $"FromOld: start");
-
-        foreach(long number in rawPinList)
-        {
-            logger?.LogDebug(BunkumCategory.UserContent, $"FromOld: number: {number}");
         }
 
         return new()
