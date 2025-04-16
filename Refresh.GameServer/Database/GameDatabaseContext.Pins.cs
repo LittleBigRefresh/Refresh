@@ -6,18 +6,14 @@ namespace Refresh.GameServer.Database;
 
 public partial class GameDatabaseContext // Pins
 {
-    public void UpdatePinsForUser(Dictionary<long, int> pinProgresses, List<long> profilePins, GameUser user, TokenGame game)
+    public void UpdateUserPinProgress(Dictionary<long, int> pinProgresses, GameUser user, TokenGame game)
     {
         DateTimeOffset now = this._time.Now;
         bool isBeta = game == TokenGame.BetaBuild;
-
         IEnumerable<PinProgressRelation> exProgresses = this.GetPinProgressesByUser(user, isBeta);
-        IEnumerable<ProfilePinRelation> exProfilePins = this.GetProfilePinsByUser(user, game);
-        int failedProfilePinUpdates = 0;
        
         this.Write(() => 
         {
-            // Update pin progress
             foreach (KeyValuePair<long, int> pinProgress in pinProgresses)
             {
                 PinProgressRelation? exRelation = exProgresses.FirstOrDefault(p => p.PinId == pinProgress.Key);
@@ -42,8 +38,19 @@ public partial class GameDatabaseContext // Pins
                     exRelation.LastUpdated = now;
                 }
             }
-            
-            // Update profile pins
+        });
+    }
+
+    public void UpdateUserProfilePins(List<long> profilePins, GameUser user, TokenGame game)
+    {
+        DateTimeOffset now = this._time.Now;
+        bool isBeta = game == TokenGame.BetaBuild;
+        IEnumerable<PinProgressRelation> exProgresses = this.GetPinProgressesByUser(user, isBeta);
+        IEnumerable<ProfilePinRelation> exProfilePins = this.GetProfilePinsByUser(user, game);
+        int failedProfilePinUpdates = 0;
+
+        this.Write(() => 
+        {
             for (int i = 0; i < profilePins.Count; i++)
             {
                 ProfilePinRelation? exRelation = exProfilePins.FirstOrDefault(p => p.Index == i);

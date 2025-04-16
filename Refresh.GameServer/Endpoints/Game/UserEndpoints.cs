@@ -150,12 +150,28 @@ public class UserEndpoints : EndpointGroup
     [RequireEmailVerified]
     public SerializedPins UpdatePins(RequestContext context, DataContext dataContext, GameUser user, SerializedPins body)
     {
-        // Convert ProgressPins and AwardPins into something usable, merge them,
-        // and then update the user's pin progress and profile pins
-        Dictionary<long, int> pinProgresses = body.ToMergedDictionary(context.Logger);
-        dataContext.Database.UpdatePinsForUser(pinProgresses, body.ProfilePins, user, dataContext.Game);
+        // Try to update pin progress
+        try
+        {
+            Dictionary<long, int> pinProgresses = body.ToMergedDictionary();
+            dataContext.Database.UpdateUserPinProgress(pinProgresses, user, dataContext.Game);
+        }
+        catch (Exception ex)
+        {
+            context.Logger.LogWarning(BunkumCategory.UserContent, $"Failed to convert pins from list to dictionary: {ex}");
+            dataContext.Database.AddErrorNotification
+            (
+                "Pin Update Failure",
+                $"Your pin progress couldn't be saved because the data couldn't be read",
+                user
+            );
+        }
+        
+        // Update profile pins
+        dataContext.Database.UpdateUserProfilePins(body.ProfilePins, user, dataContext.Game);
 
-        // Return newly updated pins
+        // Return newly updated pins (LBP2 and 3 update their pin progresses if there are higher progress values
+        // in the response, but seemingly ignore the profile pins in the response)
         return this.GetPins(context, dataContext, user);
     }
 

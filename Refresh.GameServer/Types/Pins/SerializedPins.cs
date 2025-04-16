@@ -30,53 +30,36 @@ public partial class SerializedPins
 
     #nullable enable
 
-    /// <param name="logger">
-    /// If set, caught exceptions while converting pins will be logged.
-    /// </param>
-    /// <param name="dataContext">
-    /// If set, and dataContext.User is also set, the user will be notified about failed pin conversions
-    /// in case an exception gets caught.
-    /// </param>
-    public static Dictionary<long, int> ToDictionary(List<long> rawPins, Logger? logger = null, DataContext? dataContext = null)
+    /// <remarks>
+    /// Can throw if either the rawPins list has an odd length or if a progress value from that list can't be casted to long.
+    /// Either would be a bad request.
+    /// </remarks>
+    public static Dictionary<long, int> ToDictionary(List<long> rawPins)
     {
         Dictionary<long, int> dictionary = [];
 
-        try
+        for (int i = 0; i < rawPins.Count; i += 2)
         {
-            for (int i = 0; i < rawPins.Count; i += 2)
-            {
-                long progressType = rawPins[i];
-                int progress = (int)rawPins[i + 1];
+            long progressType = rawPins[i];
+            int progress = (int)rawPins[i + 1];
                 
-                dictionary.Add(progressType, progress);
-            }
-        }
-        // Will likely be thrown if the list's length is odd or if a progress value can't be casted to int.
-        // Either way is a bad request and either rare or manipulated.
-        catch (Exception ex)
-        {
-            logger?.LogWarning(BunkumCategory.UserContent, $"Failed to convert pins from list to dictionary: {ex}");
-
-            if (dataContext?.User != null)
-                dataContext?.Database.AddErrorNotification
-                (
-                    "Failed to sync pin progress",
-                    $"Some of your uploaded pin progress data could not be read, only {dictionary.Count} out of {rawPins.Count / 2} pins will be saved.",
-                    dataContext.User
-                );
+            dictionary.Add(progressType, progress);
         }
         
         return dictionary;
     }
 
     /// <summary>
-    /// Converts the SerializedPin object's ProgressPins and AwardPins into Dictionaries using <see cref='ToDictionary'/>
-    /// and then concatenates them into one Directory, blending out duplicate KeyValuePairs with the same Key (pin's progressType)
-    /// and only leaving the ones with the highest Value (pin's progress).
+    /// Converts ProgressPins and AwardPins to Dictionaries (progressType as Key and progress value as Value) by using
+    /// <see cref="ToDictionary"/> and then merges them to one Dictionary, taking KeyValuePairs with the highest progress values
+    /// for pairs with duplicate progressTypes.
     /// </summary>
-    public Dictionary<long, int> ToMergedDictionary(Logger? logger = null, DataContext? dataContext = null)
-        => ToDictionary(this.ProgressPins, logger, dataContext)
-            .Concat(ToDictionary(this.AwardPins, logger, dataContext))
+    /// <remarks>
+    /// Since this method uses <see cref="ToDictionary"/>, it can throw for the same reasons as ToDictionary.
+    /// </remarks>
+    public Dictionary<long, int> ToMergedDictionary()
+        => ToDictionary(this.ProgressPins)
+            .Concat(ToDictionary(this.AwardPins))
             .GroupBy(p => p.Key)
             .Select(g => new KeyValuePair<long, int> (g.Key, g.Max(p => p.Value)))
             .ToDictionary();
