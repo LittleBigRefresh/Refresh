@@ -153,7 +153,11 @@ public class UserEndpoints : EndpointGroup
         // Try to update pin progress
         try
         {
-            Dictionary<long, int> pinProgresses = body.ToMergedDictionary();
+            Dictionary<long, int> pinProgresses = SerializedPins.ToMergedDictionary
+            ([
+                SerializedPins.ToDictionary(body.ProgressPins),
+                SerializedPins.ToDictionary(body.AwardPins),
+            ]);
             dataContext.Database.UpdateUserPinProgress(pinProgresses, user, dataContext.Game);
         }
         catch (Exception ex)

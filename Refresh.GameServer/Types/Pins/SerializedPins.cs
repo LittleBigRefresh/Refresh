@@ -34,7 +34,7 @@ public partial class SerializedPins
     /// Can throw if either the rawPins list has an odd length or if a progress value from that list can't be casted to long.
     /// Either would be a bad request.
     /// </remarks>
-    public static Dictionary<long, int> ToDictionary(List<long> rawPins)
+    public static Dictionary<long, int> ToDictionary(IList<long> rawPins)
     {
         Dictionary<long, int> dictionary = [];
 
@@ -49,20 +49,20 @@ public partial class SerializedPins
         return dictionary;
     }
 
-    /// <summary>
-    /// Converts ProgressPins and AwardPins to Dictionaries (progressType as Key and progress value as Value) by using
-    /// <see cref="ToDictionary"/> and then merges them to one Dictionary, taking KeyValuePairs with the highest progress values
-    /// for pairs with duplicate progressTypes.
-    /// </summary>
-    /// <remarks>
-    /// Since this method uses <see cref="ToDictionary"/>, it can throw for the same reasons as ToDictionary.
-    /// </remarks>
-    public Dictionary<long, int> ToMergedDictionary()
-        => ToDictionary(this.ProgressPins)
-            .Concat(ToDictionary(this.AwardPins))
+    public static Dictionary<long, int> ToMergedDictionary(IEnumerable<Dictionary<long, int>> dictionaries)
+    {
+        IEnumerable<KeyValuePair<long, int>> mergedDictionary = [];
+
+        foreach (Dictionary<long, int> dictionary in dictionaries)
+        {
+            mergedDictionary = mergedDictionary.Concat(dictionary);
+        }
+
+        return mergedDictionary
             .GroupBy(p => p.Key)
             .Select(g => new KeyValuePair<long, int> (g.Key, g.Max(p => p.Value)))
             .ToDictionary();
+    }
         
     public static SerializedPins FromOld(IEnumerable<PinProgressRelation> pinProgresses, IEnumerable<ProfilePinRelation> profilePins)
     {

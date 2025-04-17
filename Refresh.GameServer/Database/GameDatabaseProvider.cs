@@ -140,7 +140,7 @@ public class GameDatabaseProvider :
     {
         IQueryable<dynamic>? oldUsers = migration.OldRealm.DynamicApi.All("GameUser");
         IQueryable<GameUser>? newUsers = migration.NewRealm.All<GameUser>();
-        if (oldVersion < 161)
+        if (oldVersion < 165)
             for (int i = 0; i < newUsers.Count(); i++)
             {
                 dynamic oldUser = oldUsers.ElementAt(i);
@@ -152,9 +152,6 @@ public class GameDatabaseProvider :
                     newUser.LocationX = 0;
                     newUser.LocationY = 0;
                 }
-
-                //In version 4, GameLocation went from TopLevel -> Embedded, and UserPins was added
-                //if (oldVersion < 4) newUser.Pins = new UserPins();
 
                 // In version 12, users were given IconHashes
                 if (oldVersion < 12) newUser.IconHash = "0";
@@ -271,6 +268,82 @@ public class GameDatabaseProvider :
                         IpAddress = oldUser.CurrentVerifiedIp, 
                         VerifiedAt = this._time.Now,
                     });
+                }
+
+                // In version 165, the way user pins are stored was changed to use relational classes instead of 
+                // storing the game's most recent pin update request body as an embedded class in GameUser
+                // (which was introduced in version 4)
+                if (oldVersion >= 4 && oldVersion < 165)
+                {
+                    dynamic oldPins = oldUser.Pins;
+
+                    if (oldPins != null)
+                    {
+                        // Try to convert pin progress
+                        Dictionary<long, int> pinProgresses = [];
+                        try
+                        {
+                            pinProgresses = SerializedPins.ToMergedDictionary
+                            ([
+                                SerializedPins.ToDictionary(oldPins.Progress),
+                                SerializedPins.ToDictionary(oldPins.Awards),
+                            ]);
+                        }
+                        catch (Exception ex)
+                        {
+                            Console.WriteLine
+                            (
+                                $"Skipping pin progress migration for user {newUser.Username} (ID {newUser.UserId}) "+
+                                $"due to exception (possibly invalid formatting): {ex}"
+                            );
+                        }
+
+                        if (pinProgresses.Count > 0)
+                        {
+                            DateTimeOffset now = this._time.Now;
+
+                            // Migrate pin progress
+                            List<PinProgressRelation> userPinProgresses = [];
+                            foreach (KeyValuePair<long, int> pinProgress in pinProgresses)
+                            {
+                                PinProgressRelation newRelation = new()
+                                {
+                                    PinId = pinProgress.Key,
+                                    Progress = pinProgress.Value,
+                                    Publisher = newUser,
+                                    FirstPublished = now,
+                                    LastUpdated = now,
+                                    // This is just a guess and we can't really know, this can probably risk also having beta build
+                                    // pins marked as not beta for now, but if pin metadata importing gets implemented in the future,
+                                    // we can automatically correct this in a future migration
+                                    IsBeta = false,
+                                };
+                                migration.NewRealm.Add(newRelation);
+                                userPinProgresses.Add(newRelation);
+                            }
+
+                            // Migrate profile pins
+                            for (int p = 0; p < oldPins.ProfilePins.Count; p++)
+                            {
+                                long progressType = oldPins.ProfilePins[p];
+
+                                // Does the user even have any progress on this pin?
+                                if (userPinProgresses.Any(p => p.PinId == progressType))
+                                {
+                                    ProfilePinRelation newRelation = new()
+                                    {
+                                        PinId = progressType,
+                                        Publisher = newUser,
+                                        Index = p,
+                                        // LBP3 supports LBP2 and apparently most of Vita's pins alongside its own, so take LBP3 as safest guess
+                                        Game = TokenGame.LittleBigPlanet3,
+                                        Timestamp = now,
+                                    };
+                                    migration.NewRealm.Add(newRelation);
+                                }
+                            }
+                        }
+                    }
                 }
             }
 
