@@ -6,7 +6,7 @@ namespace Refresh.GameServer.Types.Pins;
 public partial class PinProgressRelation : IRealmObject
 {
     /// <summary>
-    /// Normally set to the pin's progressType, because this is the only identifier the game sends
+    /// Normally set to the pin's progressType, which is the only pin identifier the game sends
     /// </summary>
     public long PinId { get; set; }
     public int Progress { get; set; }

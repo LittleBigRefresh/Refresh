@@ -92,7 +92,7 @@ public partial class GameDatabaseContext // Pins
             (
                 "Profile pin update failed", 
                 $"Failed to update {failedProfilePinUpdates} out of {profilePins.Count} profile pins "+
-                $"for game {game} because we couldn't find your progress for these pins on the server",
+                $"for game {game} because we couldn't find your progress for these pins on the server.",
                 user
             );
         }
