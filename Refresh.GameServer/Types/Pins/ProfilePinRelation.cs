@@ -15,8 +15,7 @@ public partial class ProfilePinRelation : IRealmObject
     public int Index { get; set; }
 
     /// <summary>
-    /// The game to show this profile pin on, to allow different sets of profile pins
-    /// per game
+    /// The game to show this profile pin on, to allow different sets of profile pins per game
     /// </summary>
     public TokenGame Game
     {
@@ -25,8 +24,5 @@ public partial class ProfilePinRelation : IRealmObject
     }
     internal int _Game { get; set; }
 
-    /// <summary>
-    /// When this relation was created, aka when <see cref='Pin'/> and <see cref='Index'/> were last updated
-    /// </summary>
     public DateTimeOffset Timestamp { get; set; }
 }

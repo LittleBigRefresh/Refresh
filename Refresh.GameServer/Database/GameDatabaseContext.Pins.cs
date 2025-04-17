@@ -99,13 +99,17 @@ public partial class GameDatabaseContext // Pins
     }
 
     private IEnumerable<PinProgressRelation> GetPinProgressesByUser(GameUser user, bool isBeta)
-        => this.PinProgressRelations.Where(p => p.Publisher == user && p.IsBeta == isBeta);
+        => this.PinProgressRelations
+            .Where(p => p.Publisher == user && p.IsBeta == isBeta)
+            .OrderByDescending(p => p.LastUpdated);
     
     public DatabaseList<PinProgressRelation> GetPinProgressesByUser(GameUser user, TokenGame game, int skip, int count)
         => new(this.GetPinProgressesByUser(user, game == TokenGame.BetaBuild), skip, count);
 
     private IEnumerable<ProfilePinRelation> GetProfilePinsByUser(GameUser user, TokenGame game)
-        => this.ProfilePinRelations.Where(p => p.Publisher == user && p._Game == (int)game);
+        => this.ProfilePinRelations
+            .Where(p => p.Publisher == user && p._Game == (int)game)
+            .OrderBy(p => p.Index);
 
     public DatabaseList<ProfilePinRelation> GetProfilePinsByUser(GameUser user, TokenGame game, int skip, int count)
         => new(this.GetProfilePinsByUser(user, game), skip, count);
