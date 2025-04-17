@@ -6,21 +6,21 @@ public partial class SerializedPins
     /// <summary>
     /// Pins which can have various progress values.
     /// Follows the following pattern: progressType, progress value, progressType, progress value etc.
-    /// Can contain the same pins as AwardPins (equal progressType), if it does, the times awarded and progress value
+    /// Can contain the same pins as AwardPins (equal progressTypes), if it does, the times awarded and progress value
     /// is usually equal per pin (progressType).
     /// </summary>
 	[JsonProperty("progress")] public List<long> ProgressPins { get; set; }
 
     /// <summary>
-    /// Pins which can be awarded multiple times.
+    /// Pins which can be awarded once or multiple times.
     /// Follows the following pattern: progressType, times awarded, progressType, times awarded etc.
-    /// Can contain the same pins as ProgressPins (equal progressType), if it does, the times awarded and progress value
+    /// Can contain the same pins as ProgressPins (equal progressTypes), if it does, the times awarded and progress value
     /// is usually equal per pin (progressType).
     /// </summary>
 	[JsonProperty("awards")] public List<long> AwardPins { get; set; }
 
     /// <summary>
-    /// The progressTypes of pins set to be shown on a user's profile for a certain game, in the order set by the user.
+    /// The progressTypes of pins set to be shown on a user's profile for a certain game, in an order set by the user.
     /// </summary>
 	[JsonProperty("profile_pins")] public List<long> ProfilePins { get; set; }
 

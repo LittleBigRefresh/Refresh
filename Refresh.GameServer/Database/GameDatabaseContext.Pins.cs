@@ -44,8 +44,7 @@ public partial class GameDatabaseContext // Pins
     public void UpdateUserProfilePins(List<long> profilePins, GameUser user, TokenGame game)
     {
         DateTimeOffset now = this._time.Now;
-        bool isBeta = game == TokenGame.BetaBuild;
-        IEnumerable<PinProgressRelation> exProgresses = this.GetPinProgressesByUser(user, isBeta);
+        IEnumerable<PinProgressRelation> exProgresses = this.GetPinProgressesByUser(user, game == TokenGame.BetaBuild);
         IEnumerable<ProfilePinRelation> exProfilePins = this.GetProfilePinsByUser(user, game);
         int failedProfilePinUpdates = 0;
 
