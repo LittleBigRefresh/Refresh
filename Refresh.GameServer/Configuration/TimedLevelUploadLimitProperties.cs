@@ -1,8 +1,8 @@
 namespace Refresh.GameServer.Configuration;
 
-public class TimedLevelUploadLimitConfig
+public class TimedLevelUploadLimitProperties
 {
-    public TimedLevelUploadLimitConfig() {}
+    public TimedLevelUploadLimitProperties() {}
 
     /// <summary>
     /// Whether to enable the timed level uploading limits
