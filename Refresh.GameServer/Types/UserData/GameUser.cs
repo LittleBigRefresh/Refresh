@@ -50,6 +50,21 @@ public partial class GameUser : IRealmObject, IRateLimitUser
     /// </summary>
     public int FilesizeQuotaUsage { get; set; }
 
+    #region Timed Level Limit
+
+    /// <summary>
+    /// How many levels the user published/overwrote during the configured timed level limit,
+    /// if enabled.
+    /// </summary>
+    public int TimedLevelUploads { get; set; }
+    /// <summary>
+    /// The timestamp when this user's timed level limit will reset.
+    /// When that happens, set this property to null and reset TimedLevelUploads to 0.
+    /// </summary>
+    public DateTimeOffset? TimedLevelUploadExpiryDate { get; set; }
+
+    #endregion
+
     public string Description { get; set; } = "";
 
     public int LocationX { get; set; }

@@ -235,7 +235,6 @@ public partial class GameDatabaseContext // Levels
             this.GameLevels.Remove(level);
         });
     }
-
     
     private IQueryable<GameLevel> GetLevelsByGameVersion(TokenGame gameVersion) 
         => this.GameLevels

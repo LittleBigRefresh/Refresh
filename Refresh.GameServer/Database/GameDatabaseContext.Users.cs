@@ -2,6 +2,7 @@ using JetBrains.Annotations;
 using MongoDB.Bson;
 using Refresh.Common.Constants;
 using Refresh.GameServer.Authentication;
+using Refresh.GameServer.Configuration;
 using Refresh.GameServer.Endpoints.ApiV3.DataTypes.Request;
 using Refresh.GameServer.Types.Challenges.LbpHub;
 using Refresh.GameServer.Types.Levels;
@@ -469,6 +470,25 @@ public partial class GameDatabaseContext // Users
         this.Write(() =>
         {
             user.PresenceServerAuthToken = token;
+        });
+    }
+    
+    public void IncrementTimedLevelLimit(GameUser user, TimedLevelUploadLimitProperties config)
+    {
+        this.Write(() => 
+        {
+            // Set expiry date if the timed limits have been reset previously
+            user.TimedLevelUploadExpiryDate ??= this._time.Now + TimeSpan.FromHours(config.TimeSpanHours);
+            user.TimedLevelUploads++;
+        });
+    }
+
+    public void ResetTimedLevelLimit(GameUser user)
+    {
+        this.Write(() => 
+        {
+            user.TimedLevelUploadExpiryDate = null;
+            user.TimedLevelUploads = 0;
         });
     }
 }

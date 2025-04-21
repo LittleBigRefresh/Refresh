@@ -10,7 +10,7 @@ namespace Refresh.GameServer.Configuration;
 [SuppressMessage("ReSharper", "RedundantDefaultMemberInitializer")]
 public class GameServerConfig : Config
 {
-    public override int CurrentConfigVersion => 18;
+    public override int CurrentConfigVersion => 19;
     public override int Version { get; set; } = 0;
     
     protected override void Migrate(int oldVer, dynamic oldConfig)
@@ -81,6 +81,14 @@ public class GameServerConfig : Config
     /// The amount of data the user is allowed to upload before all resource uploads get blocked, defaults to 100mb.
     /// </summary>
     public int UserFilesizeQuota { get; set; } = 100 * 1_048_576;
+
+    public TimedLevelUploadLimitProperties TimedLevelUploadLimits { get; set; } = new()
+    {
+        Enabled = false,
+        TimeSpanHours = 24,
+        LevelQuota = 10,
+    };
+    
     /// <summary>
     /// Whether to print the room state whenever a `FindBestRoom` match returns no results
     /// </summary>

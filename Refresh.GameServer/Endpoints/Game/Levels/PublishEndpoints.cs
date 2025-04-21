@@ -1,17 +1,18 @@
 using Bunkum.Core;
 using Bunkum.Core.Endpoints;
-using Bunkum.Core.Endpoints.Debugging;
 using Bunkum.Core.Responses;
 using Bunkum.Listener.Protocol;
 using Bunkum.Protocols.Http;
 using Refresh.Common.Constants;
 using Refresh.Common.Verification;
 using Refresh.GameServer.Authentication;
+using Refresh.GameServer.Configuration;
 using Refresh.GameServer.Database;
 using Refresh.GameServer.Endpoints.Game.DataTypes.Request;
 using Refresh.GameServer.Endpoints.Game.DataTypes.Response;
 using Refresh.GameServer.Extensions;
 using Refresh.GameServer.Services;
+using Refresh.GameServer.Time;
 using Refresh.GameServer.Types.Assets;
 using Refresh.GameServer.Types.Data;
 using Refresh.GameServer.Types.Levels;
@@ -61,19 +62,57 @@ public class PublishEndpoints : EndpointGroup
         return true;
     }
 
+    private static bool IsTimedLevelLimitReached(DataContext dataContext, GameUser user, string levelTitle, TimedLevelUploadLimitProperties config, DateTimeOffset now)
+    {
+        if (!config.Enabled || user.TimedLevelUploads <= 0 || user.TimedLevelUploadExpiryDate == null)
+        {
+            return false;
+        }
+
+        DateTimeOffset expiryDate = user.TimedLevelUploadExpiryDate.Value;
+
+        // If the expiration date has expired (less than now), reset user's limit and continue.
+        if (now >= expiryDate)
+        {
+            dataContext.Database.ResetTimedLevelLimit(user);
+            return false;
+        }
+        // If expiration date has not expired yet and the user has reached the limit, block.
+        else if (user.TimedLevelUploads >= config.LevelQuota)
+        {
+            TimeSpan remainingTime = expiryDate - now;
+            dataContext.Database.AddPublishFailNotification
+            (
+                $"You have reached the timed level upload limit of {config.LevelQuota} levels per {config.TimeSpanHours} hours. " +
+                $"Your limit will expire in around {remainingTime.Hours} hours and {remainingTime.Minutes} minutes. After that, try publishing your level again!", 
+                levelTitle, 
+                user
+            );
+            return true;
+        }
+        else
+        {
+            return false;
+        }
+    }
+
     [GameEndpoint("startPublish", ContentType.Xml, HttpMethods.Post)]
-    [NullStatusCode(BadRequest)]
     [RequireEmailVerified]
-    public SerializedLevelResources? StartPublish(RequestContext context,
+    public Response StartPublish(RequestContext context,
         GameLevelRequest body,
         CommandService command,
-        DataContext dataContext)
+        DataContext dataContext,
+        GameServerConfig config,
+        IDateTimeProvider dateTimeProvider)
     {
-        //If verifying the request fails, return null
+        if (IsTimedLevelLimitReached(dataContext, dataContext.User!, body.Title, config.TimedLevelUploadLimits, dateTimeProvider.Now)) 
+            return Unauthorized;
+
+        //If verifying the request fails, return BadRequest
         if (!VerifyLevel(body, dataContext))
         {
             context.Logger.LogInfo(RefreshContext.Publishing, "Failed to verify root level");
-            return null;
+            return BadRequest;
         }
 
         if (body.Slots != null)
@@ -83,7 +122,7 @@ public class PublishEndpoints : EndpointGroup
                 if (VerifyLevel(innerLevel, dataContext)) continue;
 
                 context.Logger.LogInfo(RefreshContext.Publishing, "Failed to verify inner level {0}", innerLevel.LevelId);
-                return null;
+                return BadRequest;
             }
         }
 
@@ -98,15 +137,17 @@ public class PublishEndpoints : EndpointGroup
         hashes.RemoveAll(r => r == "0" || r.StartsWith('g') || string.IsNullOrWhiteSpace(r));
 
         //Verify all hashes are valid SHA1 hashes
-        if (hashes.Any(hash => !CommonPatterns.Sha1Regex().IsMatch(hash))) return null;
+        if (hashes.Any(hash => !CommonPatterns.Sha1Regex().IsMatch(hash))) return BadRequest;
 
         //Mark the user as publishing
         command.StartPublishing(dataContext.User!.UserId);
 
-        return new SerializedLevelResources
+        SerializedLevelResources response = new()
         {
-            Resources = hashes.Where(r => !dataContext.DataStore.ExistsInStore(r)).ToArray(),
+            Resources = hashes.Where(r => !dataContext.DataStore.ExistsInStore(r)).ToArray()
         };
+
+        return new Response(response, ContentType.Xml);
     }
 
     [GameEndpoint("publish", ContentType.Xml, HttpMethods.Post)]
@@ -114,14 +155,20 @@ public class PublishEndpoints : EndpointGroup
     public Response PublishLevel(RequestContext context,
         GameLevelRequest body,
         CommandService commandService,
-        DataContext dataContext)
+        DataContext dataContext,
+        GameServerConfig config,
+        IDateTimeProvider dateTimeProvider)
     {
+        GameUser user = dataContext.User!;
+        
+        if (IsTimedLevelLimitReached(dataContext, user, body.Title, config.TimedLevelUploadLimits, dateTimeProvider.Now))
+            return Unauthorized;
+
         //If verifying the request fails, return BadRequest
         if (!VerifyLevel(body, dataContext)) return BadRequest;
 
-        GameUser user = dataContext.User!;
-        
         GameLevel level = body.ToGameLevel(user);
+
         level.GameVersion = dataContext.Token!.TokenGame;
 
         level.MinPlayers = Math.Clamp(level.MinPlayers, 1, 4);
@@ -172,6 +219,13 @@ public class PublishEndpoints : EndpointGroup
         level.Publisher = dataContext.User;
 
         dataContext.Database.AddLevel(level);
+
+        // Only increment if the level can be uploaded (right after the previous checks + adding the level),
+        // don't want to increment for failed uploads
+        if (config.TimedLevelUploadLimits.Enabled)
+        {
+            dataContext.Database.IncrementTimedLevelLimit(user, config.TimedLevelUploadLimits);
+        }
 
         // Update the modded status of the level
         // NOTE: this wont do anything if the slot is uploaded before the level resource,
