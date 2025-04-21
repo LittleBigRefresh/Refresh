@@ -62,39 +62,43 @@ public class PublishEndpoints : EndpointGroup
         return true;
     }
 
-    private static bool IsTimedLevelLimitReached(DataContext dataContext, GameUser user, string levelTitle, TimedLevelUploadLimitConfig config, DateTimeOffset now)
+    private static bool IsTimedLevelLimitReached(DataContext dataContext, GameUser user, string levelTitle, TimedLevelUploadLimitProperties config, DateTimeOffset now)
     {
-        if (config.Enabled && user.TimedLevelUploads > 0 && user.TimedLevelUploadExpiryDate != null)
+        if (!config.Enabled || user.TimedLevelUploads <= 0 || user.TimedLevelUploadExpiryDate == null)
         {
-            DateTimeOffset expiryDate = (DateTimeOffset)user.TimedLevelUploadExpiryDate;
-
-            // If the expiration date has expired (less than now), reset user's limit and continue.
-            if (now >= expiryDate)
-            {
-                dataContext.Database.ResetTimedLevelLimit(user);
-            }
-            // If expiration date has not expired yet and the user has reached the limit, block.
-            else if (user.TimedLevelUploads >= config.LevelQuota)
-            {
-                TimeSpan remainingTime = expiryDate - now;
-                dataContext.Database.AddPublishFailNotification
-                (
-                    $"You have reached the timed level upload limit of {config.LevelQuota} levels per {config.TimeSpanHours} hours. " +
-                    $"Your limit will expire in around {remainingTime.Hours} hours and {remainingTime.Minutes} minutes. After that, try publishing your level again!", 
-                    levelTitle, 
-                    user
-                );
-                return true;
-            }
+            return false;
         }
 
-        return false;
+        DateTimeOffset expiryDate = user.TimedLevelUploadExpiryDate.Value;
+
+        // If the expiration date has expired (less than now), reset user's limit and continue.
+        if (now >= expiryDate)
+        {
+            dataContext.Database.ResetTimedLevelLimit(user);
+            return false;
+        }
+        // If expiration date has not expired yet and the user has reached the limit, block.
+        else if (user.TimedLevelUploads >= config.LevelQuota)
+        {
+            TimeSpan remainingTime = expiryDate - now;
+            dataContext.Database.AddPublishFailNotification
+            (
+                $"You have reached the timed level upload limit of {config.LevelQuota} levels per {config.TimeSpanHours} hours. " +
+                $"Your limit will expire in around {remainingTime.Hours} hours and {remainingTime.Minutes} minutes. After that, try publishing your level again!", 
+                levelTitle, 
+                user
+            );
+            return true;
+        }
+        else
+        {
+            return false;
+        }
     }
 
     [GameEndpoint("startPublish", ContentType.Xml, HttpMethods.Post)]
-    [NullStatusCode(BadRequest)]
     [RequireEmailVerified]
-    public SerializedLevelResources? StartPublish(RequestContext context,
+    public Response StartPublish(RequestContext context,
         GameLevelRequest body,
         CommandService command,
         DataContext dataContext,
@@ -102,13 +106,13 @@ public class PublishEndpoints : EndpointGroup
         IDateTimeProvider dateTimeProvider)
     {
         if (IsTimedLevelLimitReached(dataContext, dataContext.User!, body.Title, config.TimedLevelUploadLimits, dateTimeProvider.Now)) 
-            return null;
+            return Unauthorized;
 
-        //If verifying the request fails, return null
+        //If verifying the request fails, return BadRequest
         if (!VerifyLevel(body, dataContext))
         {
             context.Logger.LogInfo(RefreshContext.Publishing, "Failed to verify root level");
-            return null;
+            return BadRequest;
         }
 
         if (body.Slots != null)
@@ -118,7 +122,7 @@ public class PublishEndpoints : EndpointGroup
                 if (VerifyLevel(innerLevel, dataContext)) continue;
 
                 context.Logger.LogInfo(RefreshContext.Publishing, "Failed to verify inner level {0}", innerLevel.LevelId);
-                return null;
+                return BadRequest;
             }
         }
 
@@ -133,15 +137,17 @@ public class PublishEndpoints : EndpointGroup
         hashes.RemoveAll(r => r == "0" || r.StartsWith('g') || string.IsNullOrWhiteSpace(r));
 
         //Verify all hashes are valid SHA1 hashes
-        if (hashes.Any(hash => !CommonPatterns.Sha1Regex().IsMatch(hash))) return null;
+        if (hashes.Any(hash => !CommonPatterns.Sha1Regex().IsMatch(hash))) return BadRequest;
 
         //Mark the user as publishing
         command.StartPublishing(dataContext.User!.UserId);
 
-        return new SerializedLevelResources
+        SerializedLevelResources response = new()
         {
-            Resources = hashes.Where(r => !dataContext.DataStore.ExistsInStore(r)).ToArray(),
+            Resources = hashes.Where(r => !dataContext.DataStore.ExistsInStore(r)).ToArray()
         };
+
+        return new Response(response, ContentType.Xml);
     }
 
     [GameEndpoint("publish", ContentType.Xml, HttpMethods.Post)]
@@ -156,7 +162,7 @@ public class PublishEndpoints : EndpointGroup
         GameUser user = dataContext.User!;
         
         if (IsTimedLevelLimitReached(dataContext, user, body.Title, config.TimedLevelUploadLimits, dateTimeProvider.Now))
-            return BadRequest;
+            return Unauthorized;
 
         //If verifying the request fails, return BadRequest
         if (!VerifyLevel(body, dataContext)) return BadRequest;

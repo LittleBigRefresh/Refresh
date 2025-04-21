@@ -473,7 +473,7 @@ public partial class GameDatabaseContext // Users
         });
     }
     
-    public void IncrementTimedLevelLimit(GameUser user, TimedLevelUploadLimitConfig config)
+    public void IncrementTimedLevelLimit(GameUser user, TimedLevelUploadLimitProperties config)
     {
         this.Write(() => 
         {
