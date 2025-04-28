@@ -316,11 +316,9 @@ public class AuthenticationApiEndpoints : EndpointGroup
         {
             database.AddRegistrationToQueue(body.Username, body.EmailAddress, passwordBcrypt);
             return new ApiAuthenticationError(
-                "Your account has been registered, but it is not yet activated. " +
-                "To complete registration, patch your games to our servers and access online features in-game within an hour of making your registration, and your new account will be activated. " +
-                "You may be unable to access online features until you beat the first chapter of the game's story mode, so please complete that if you haven't. " +
-                "If you are unable to activate your account within an hour, your registration is cancelled and you will have to register again. " +
-                "You will be unable to sign in on the website until your account is fully activated. For more instructions on patching, please visit https://docs.littlebigrefresh.com", true);
+                "Account queued! Play a patched game online within the next hour to permanently register. " +
+                "If you wait longer than an hour, you’ll have to redo this process to reenter the queue. " +
+                "For more instructions on patching, please visit https://docs.littlebigrefresh.com", true);
         }
 
         GameUser user = database.CreateUser(body.Username, body.EmailAddress, true);
