@@ -33,15 +33,8 @@ public class ResourceEndpoints : EndpointGroup
     public Response UploadAsset(RequestContext context, string hash, string type, byte[] body, IDataStore dataStore,
         GameDatabaseContext database, GameUser user, AssetImporter importer, GameServerConfig config, IDateTimeProvider timeProvider, Token token)
     {
-        // If we're blocking asset uploads, throw unless the user is an admin.
-        // We also have the ability to block asset uploads for trusted users (when they would normally bypass this)
-        if (config.ReadOnlyMode && user.Role != GameUserRole.Admin)
-        {
-            if (user.Role < GameUserRole.Trusted || config.ReadonlyModeForTrustedUsers)
-            {
-                return Unauthorized;
-            }
-        }
+        if (user.IsWriteBlocked(config))
+            return Unauthorized;
         
         if (!CommonPatterns.Sha1Regex().IsMatch(hash)) return BadRequest;
         
