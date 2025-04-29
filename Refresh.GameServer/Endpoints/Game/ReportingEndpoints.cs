@@ -5,6 +5,7 @@ using Bunkum.Core.Responses;
 using Bunkum.Listener.Protocol;
 using Bunkum.Protocols.Http;
 using Refresh.GameServer.Authentication;
+using Refresh.GameServer.Configuration;
 using Refresh.GameServer.Database;
 using Refresh.GameServer.Extensions;
 using Refresh.GameServer.Time;
@@ -19,8 +20,12 @@ public class ReportingEndpoints : EndpointGroup
 {
     [GameEndpoint("grief", HttpMethods.Post, ContentType.Xml)]
     [RequireEmailVerified]
-    public Response UploadReport(RequestContext context, GameDatabaseContext database, GameReport body, GameUser user, IDateTimeProvider time, Token token)
+    public Response UploadReport(RequestContext context, GameDatabaseContext database, GameReport body, GameUser user,
+        IDateTimeProvider time, Token token, GameServerConfig config)
     {
+        if (user.IsWriteBlocked(config))
+            return Unauthorized;
+        
         GameLevel? level = database.GetLevelById(body.LevelId);
 
         Size imageSize;

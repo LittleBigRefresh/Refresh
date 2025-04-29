@@ -4,6 +4,7 @@ using Bunkum.Core.Responses;
 using Bunkum.Core.Storage;
 using Bunkum.Listener.Protocol;
 using Bunkum.Protocols.Http;
+using Refresh.GameServer.Configuration;
 using Refresh.GameServer.Database;
 using Refresh.GameServer.Extensions;
 using Refresh.GameServer.Services;
@@ -21,9 +22,13 @@ public class PhotoEndpoints : EndpointGroup
 {
     [GameEndpoint("uploadPhoto", HttpMethods.Post, ContentType.Xml)]
     [RequireEmailVerified]
-    public Response UploadPhoto(RequestContext context, SerializedPhoto body, GameDatabaseContext database, GameUser user, IDataStore dataStore,
-        DataContext dataContext, AipiService aipi)
+    public Response UploadPhoto(RequestContext context, SerializedPhoto body, GameDatabaseContext database,
+        GameUser user, IDataStore dataStore,
+        DataContext dataContext, AipiService aipi, GameServerConfig config)
     {
+        if (user.IsWriteBlocked(config))
+            return Unauthorized;
+        
         if (!dataStore.ExistsInStore(body.SmallHash) ||
             !dataStore.ExistsInStore(body.MediumHash) ||
             !dataStore.ExistsInStore(body.LargeHash) ||

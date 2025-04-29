@@ -105,6 +105,9 @@ public class PublishEndpoints : EndpointGroup
         GameServerConfig config,
         IDateTimeProvider dateTimeProvider)
     {
+        if (dataContext.User!.IsWriteBlocked(config))
+            return Unauthorized;
+        
         if (IsTimedLevelLimitReached(dataContext, dataContext.User!, body.Title, config.TimedLevelUploadLimits, dateTimeProvider.Now)) 
             return Unauthorized;
 
@@ -160,6 +163,9 @@ public class PublishEndpoints : EndpointGroup
         IDateTimeProvider dateTimeProvider)
     {
         GameUser user = dataContext.User!;
+        
+        if (user.IsWriteBlocked(config))
+            return Unauthorized;
         
         if (IsTimedLevelLimitReached(dataContext, user, body.Title, config.TimedLevelUploadLimits, dateTimeProvider.Now))
             return Unauthorized;

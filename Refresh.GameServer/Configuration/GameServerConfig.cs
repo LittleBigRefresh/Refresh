@@ -10,7 +10,7 @@ namespace Refresh.GameServer.Configuration;
 [SuppressMessage("ReSharper", "RedundantDefaultMemberInitializer")]
 public class GameServerConfig : Config
 {
-    public override int CurrentConfigVersion => 19;
+    public override int CurrentConfigVersion => 20;
     public override int Version { get; set; } = 0;
     
     protected override void Migrate(int oldVer, dynamic oldConfig)
@@ -74,9 +74,9 @@ public class GameServerConfig : Config
     /// </summary>
     public string GameConfigStorageUrl { get; set; } = "https://refresh.example.com/lbp";
     public bool AllowInvalidTextureGuids { get; set; } = false;
-    public bool BlockAssetUploads { get; set; } = false;
+    public bool ReadOnlyMode { get; set; } = false;
     /// <seealso cref="GameUserRole.Trusted"/>
-    public bool BlockAssetUploadsForTrustedUsers { get; set; } = false;
+    public bool ReadonlyModeForTrustedUsers { get; set; } = false;
     /// <summary>
     /// The amount of data the user is allowed to upload before all resource uploads get blocked, defaults to 100mb.
     /// </summary>
