@@ -75,6 +75,9 @@ public class MatchingEndpoints : EndpointGroup
         DataContext dataContext,
         GameServerConfig gameServerConfig)
     {
+        if (dataContext.User!.IsWriteBlocked(gameServerConfig))
+            return Unauthorized;
+        
         (string method, string rawJsonBody) = MatchService.ExtractMethodAndBodyFromJson(body);
 
         string jsonBody = FixupLocationData(rawJsonBody);

@@ -4,6 +4,7 @@ using Bunkum.Core.Endpoints.Debugging;
 using Bunkum.Core.Responses;
 using Bunkum.Listener.Protocol;
 using Bunkum.Protocols.Http;
+using Refresh.GameServer.Configuration;
 using Refresh.GameServer.Database;
 using Refresh.GameServer.Extensions;
 using Refresh.GameServer.Time;
@@ -18,8 +19,12 @@ public class ReviewEndpoints : EndpointGroup
 {
     [GameEndpoint("dpadrate/{slotType}/{id}", HttpMethods.Post)]
     [RequireEmailVerified]
-    public Response SubmitRating(RequestContext context, GameDatabaseContext database, GameUser user, string slotType, int id)
+    public Response SubmitRating(RequestContext context, GameDatabaseContext database, GameUser user, string slotType,
+        int id, GameServerConfig config)
     {
+        if (user.IsWriteBlocked(config))
+            return Unauthorized;
+
         GameLevel? level = database.GetLevelByIdAndType(slotType, id);
         if (level == null) return NotFound;
 
@@ -95,16 +100,17 @@ public class ReviewEndpoints : EndpointGroup
 
     [GameEndpoint("postReview/{slotType}/{id}", ContentType.Xml, HttpMethods.Post)]
     [RequireEmailVerified]
-    public Response PostReviewForLevel(
-        RequestContext context,
+    public Response PostReviewForLevel(RequestContext context,
         GameDatabaseContext database,
         string slotType,
         int id,
         SerializedGameReview body,
         GameUser user,
-        IDateTimeProvider timeProvider
-    )
+        IDateTimeProvider timeProvider,
+        GameServerConfig config)
     {
+        if (user.IsWriteBlocked(config))
+            return Unauthorized;
         GameLevel? level = database.GetLevelByIdAndType(slotType, id);
 
         if (level == null)
@@ -132,8 +138,12 @@ public class ReviewEndpoints : EndpointGroup
     
     [GameEndpoint("rateReview/user/{levelId}/{username}", HttpMethods.Post)]
     [RequireEmailVerified]
-    public Response SubmitReviewRating(RequestContext request, GameDatabaseContext database, GameUser user, int levelId, string username)
+    public Response SubmitReviewRating(RequestContext request, GameDatabaseContext database, GameUser user, int levelId,
+        string username, GameServerConfig config)
     {
+        if (user.IsWriteBlocked(config))
+            return Unauthorized;
+        
         GameUser? reviewer = database.GetUserByUsername(username);
         GameLevel? reviewedLevel = database.GetLevelById(levelId);
         

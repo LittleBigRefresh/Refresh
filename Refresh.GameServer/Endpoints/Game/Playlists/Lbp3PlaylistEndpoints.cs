@@ -3,6 +3,7 @@ using Bunkum.Core.Endpoints;
 using Bunkum.Core.Responses;
 using Bunkum.Listener.Protocol;
 using Bunkum.Protocols.Http;
+using Refresh.GameServer.Configuration;
 using Refresh.GameServer.Database;
 using Refresh.GameServer.Endpoints.Game.DataTypes.Response;
 using Refresh.GameServer.Extensions;
@@ -19,8 +20,11 @@ public class Lbp3PlaylistEndpoints : EndpointGroup
 {
     [GameEndpoint("playlists", HttpMethods.Post, ContentType.Xml)]
     [RequireEmailVerified]
-    public Response CreatePlaylist(RequestContext context, DataContext dataContext, GameUser user, SerializedLbp3Playlist body)
+    public Response CreatePlaylist(RequestContext context, GameServerConfig config, DataContext dataContext, GameUser user, SerializedLbp3Playlist body)
     {
+        if (user.IsWriteBlocked(config))
+            return Unauthorized;
+
         // if the player has no root playlist yet, create a new one first
         if (user.RootPlaylist == null)
         {
@@ -37,8 +41,11 @@ public class Lbp3PlaylistEndpoints : EndpointGroup
 
     [GameEndpoint("playlists/{playlistId}", HttpMethods.Post, ContentType.Xml)]
     [RequireEmailVerified]
-    public Response UpdatePlaylist(RequestContext context, DataContext dataContext, GameUser user, SerializedLbp3Playlist body, int playlistId)
+    public Response UpdatePlaylist(RequestContext context, GameServerConfig config, DataContext dataContext, GameUser user, SerializedLbp3Playlist body, int playlistId)
     {
+        if (user.IsWriteBlocked(config))
+            return Unauthorized;
+
         GamePlaylist? playlist = dataContext.Database.GetPlaylistById(playlistId);
         if (playlist == null) 
             return NotFound;
@@ -57,8 +64,11 @@ public class Lbp3PlaylistEndpoints : EndpointGroup
 
     [GameEndpoint("playlists/{playlistId}/delete", HttpMethods.Post, ContentType.Xml)]
     [RequireEmailVerified]
-    public Response DeletePlaylist(RequestContext context, DataContext dataContext, GameUser user, int playlistId)
+    public Response DeletePlaylist(RequestContext context, GameServerConfig config, DataContext dataContext, GameUser user, int playlistId)
     {
+        if (user.IsWriteBlocked(config))
+            return Unauthorized;
+
         GamePlaylist? playlist = dataContext.Database.GetPlaylistById(playlistId);
         if (playlist == null) 
             return NotFound;
@@ -92,8 +102,11 @@ public class Lbp3PlaylistEndpoints : EndpointGroup
 
     [GameEndpoint("playlists/{playlistId}/slots", HttpMethods.Post, ContentType.Xml)]
     [RequireEmailVerified]
-    public Response AddLevelsToPlaylist(RequestContext context, DataContext dataContext, SerializedLevelIdList body, GameUser user, int playlistId)
+    public Response AddLevelsToPlaylist(RequestContext context, GameServerConfig config, DataContext dataContext, SerializedLevelIdList body, GameUser user, int playlistId)
     {
+        if (user.IsWriteBlocked(config))
+            return Unauthorized;
+
         GamePlaylist? playlist = dataContext.Database.GetPlaylistById(playlistId);
         if (playlist == null) 
             return NotFound;
@@ -115,8 +128,11 @@ public class Lbp3PlaylistEndpoints : EndpointGroup
 
     [GameEndpoint("playlists/{playlistId}/order_slots", HttpMethods.Post, ContentType.Xml)]
     [RequireEmailVerified]
-    public Response ReorderPlaylistLevels(RequestContext context, DataContext dataContext, SerializedLevelIdList body, GameUser user, int playlistId)
+    public Response ReorderPlaylistLevels(RequestContext context, GameServerConfig config, DataContext dataContext, SerializedLevelIdList body, GameUser user, int playlistId)
     {
+        if (user.IsWriteBlocked(config))
+            return Unauthorized;
+
         GamePlaylist? playlist = dataContext.Database.GetPlaylistById(playlistId);
         if (playlist == null)
             return NotFound;
@@ -131,8 +147,11 @@ public class Lbp3PlaylistEndpoints : EndpointGroup
 
     [GameEndpoint("playlists/{playlistId}/slots/{levelId}/delete", HttpMethods.Post, ContentType.Xml)]
     [RequireEmailVerified]
-    public Response RemoveLevelFromPlaylist(RequestContext context, DataContext dataContext, GameUser user, int playlistId, int levelId)
+    public Response RemoveLevelFromPlaylist(RequestContext context, GameServerConfig config, DataContext dataContext, GameUser user, int playlistId, int levelId)
     {
+        if (user.IsWriteBlocked(config))
+            return Unauthorized;
+
         GamePlaylist? playlist = dataContext.Database.GetPlaylistById(playlistId);
         if (playlist == null) 
             return NotFound;
@@ -187,8 +206,11 @@ public class Lbp3PlaylistEndpoints : EndpointGroup
 
     [GameEndpoint("favourite/playlist/{playlistId}", HttpMethods.Post, ContentType.Xml)]
     [RequireEmailVerified]
-    public Response FavouritePlaylist(RequestContext context, DataContext dataContext, GameUser user, int playlistId)
+    public Response FavouritePlaylist(RequestContext context, GameServerConfig config, DataContext dataContext, GameUser user, int playlistId)
     {
+        if (user.IsWriteBlocked(config))
+            return Unauthorized;
+
         GamePlaylist? playlist = dataContext.Database.GetPlaylistById(playlistId);
         if (playlist == null) 
             return NotFound;
@@ -199,8 +221,11 @@ public class Lbp3PlaylistEndpoints : EndpointGroup
 
     [GameEndpoint("unfavourite/playlist/{playlistId}", HttpMethods.Post, ContentType.Xml)]
     [RequireEmailVerified]
-    public Response UnfavouritePlaylist(RequestContext context, DataContext dataContext, GameUser user, int playlistId)
+    public Response UnfavouritePlaylist(RequestContext context, GameServerConfig config, DataContext dataContext, GameUser user, int playlistId)
     {
+        if (user.IsWriteBlocked(config))
+            return Unauthorized;
+
         GamePlaylist? playlist = dataContext.Database.GetPlaylistById(playlistId);
         if (playlist == null) 
             return NotFound;
