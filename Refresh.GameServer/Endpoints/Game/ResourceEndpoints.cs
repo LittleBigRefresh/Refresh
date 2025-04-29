@@ -35,9 +35,9 @@ public class ResourceEndpoints : EndpointGroup
     {
         // If we're blocking asset uploads, throw unless the user is an admin.
         // We also have the ability to block asset uploads for trusted users (when they would normally bypass this)
-        if (config.BlockAssetUploads && user.Role != GameUserRole.Admin)
+        if (config.ReadOnlyMode && user.Role != GameUserRole.Admin)
         {
-            if (user.Role < GameUserRole.Trusted || config.BlockAssetUploadsForTrustedUsers)
+            if (user.Role < GameUserRole.Trusted || config.ReadonlyModeForTrustedUsers)
             {
                 return Unauthorized;
             }
