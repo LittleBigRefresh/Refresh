@@ -56,9 +56,8 @@ public class PublishEndpoints : EndpointGroup
         // If all are true:
         // - there is an existing level with this root hash
         // - this isn't an update request
-        // - we're not the author of the other level
         // then block the upload
-        if (existingLevel != null && body.LevelId != existingLevel.LevelId && existingLevel.Publisher?.UserId != dataContext.User!.UserId)
+        if (existingLevel != null && body.LevelId != existingLevel.LevelId)
         {
             dataContext.Database.AddPublishFailNotification("The level you tried to publish has already been uploaded by another user.", body.ToGameLevel(dataContext.User!), dataContext.User!);
 
