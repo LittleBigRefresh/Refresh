@@ -1,5 +1,6 @@
 using Bunkum.Core;
 using Bunkum.Core.Endpoints;
+using Bunkum.Core.RateLimit;
 using Bunkum.Core.Responses;
 using Bunkum.Listener.Protocol;
 using Bunkum.Protocols.Http;
@@ -22,6 +23,11 @@ namespace Refresh.GameServer.Endpoints.Game.Levels;
 
 public class PublishEndpoints : EndpointGroup
 {
+    private const int RequestTimeoutDuration = 900; // 15 minutes
+    private const int MaxRequestAmount = 15;
+    private const int RequestBlockDuration = RequestTimeoutDuration;
+    private const string BucketName = "level-publish";
+    
     /// <summary>
     /// Does basic verification on a level
     /// </summary>
@@ -155,6 +161,7 @@ public class PublishEndpoints : EndpointGroup
 
     [GameEndpoint("publish", ContentType.Xml, HttpMethods.Post)]
     [RequireEmailVerified]
+    [RateLimitSettings(RequestTimeoutDuration, MaxRequestAmount, RequestBlockDuration, BucketName)]
     public Response PublishLevel(RequestContext context,
         GameLevelRequest body,
         CommandService commandService,
