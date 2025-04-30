@@ -10,6 +10,7 @@ using Refresh.GameServer.Types.Photos;
 using Refresh.GameServer.Types.Playlists;
 using Refresh.GameServer.Types.Roles;
 using Refresh.GameServer.Types.UserData;
+using Refresh.GameServer.Types.UserData.Leaderboard;
 
 namespace Refresh.GameServer.Database;
 
@@ -330,13 +331,18 @@ public partial class GameDatabaseContext // Users
                 foreach (GamePhotoSubject subject in photo.Subjects.Where(s => s.User?.UserId == user.UserId))
                     subject.User = null;
             
-            this.GameSubmittedScores.RemoveRange(s => s.Players[0] == user);
             this.FavouriteLevelRelations.RemoveRange(r => r.User == user);
             this.FavouriteUserRelations.RemoveRange(r => r.UserToFavourite == user);
             this.FavouriteUserRelations.RemoveRange(r => r.UserFavouriting == user);
             this.QueueLevelRelations.RemoveRange(r => r.User == user);
             this.GamePhotos.RemoveRange(p => p.Publisher == user);
             this.GameUserVerifiedIpRelations.RemoveRange(p => p.User == user);
+            
+            foreach (GameSubmittedScore score in this.GameSubmittedScores.ToList())
+            {
+                if (!score.Players.Contains(user)) continue;
+                this.GameSubmittedScores.Remove(score);
+            }
             
             foreach (GameLevel level in this.GameLevels.Where(l => l.Publisher == user))
             {
