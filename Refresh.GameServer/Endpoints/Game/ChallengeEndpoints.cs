@@ -3,6 +3,7 @@ using Bunkum.Core.Endpoints;
 using Bunkum.Core.Responses;
 using Bunkum.Listener.Protocol;
 using Bunkum.Protocols.Http;
+using Refresh.GameServer.Configuration;
 using Refresh.GameServer.Database;
 using Refresh.GameServer.Services;
 using Refresh.GameServer.Types.Assets;
@@ -22,8 +23,11 @@ public class ChallengeEndpoints : EndpointGroup
 
     [GameEndpoint("challenge", HttpMethods.Post, ContentType.Xml)]
     [RequireEmailVerified]
-    public Response UploadChallenge(RequestContext context, DataContext dataContext, GameUser user, SerializedChallenge body)
+    public Response UploadChallenge(RequestContext context, DataContext dataContext, GameUser user, SerializedChallenge body, GameServerConfig config)
     {
+        if (user.IsWriteBlocked(config))
+            return Unauthorized;
+
         GameLevel? level = dataContext.Database.GetLevelByIdAndType(body.Level.Type, body.Level.LevelId);
         if (level == null) 
             return NotFound;
@@ -119,8 +123,13 @@ public class ChallengeEndpoints : EndpointGroup
     /// </summary>
     [GameEndpoint("challenge/{challengeId}/scoreboard", HttpMethods.Post, ContentType.Xml)]
     [RequireEmailVerified]
-    public Response SubmitChallengeScore(RequestContext context, DataContext dataContext, GameUser user, SerializedChallengeAttempt body, int challengeId, ChallengeGhostRateLimitService ghostService)
+    public Response SubmitChallengeScore(RequestContext context, DataContext dataContext, GameUser user,
+        SerializedChallengeAttempt body, int challengeId, ChallengeGhostRateLimitService ghostService,
+        GameServerConfig config)
     {
+        if (user.IsWriteBlocked(config))
+            return Unauthorized;
+
         ghostService.RemoveUserFromChallengeGhostRateLimit(user.UserId);
 
         GameChallenge? challenge = dataContext.Database.GetChallengeById(challengeId);

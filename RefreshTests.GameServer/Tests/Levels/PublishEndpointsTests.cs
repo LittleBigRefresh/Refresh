@@ -1,5 +1,6 @@
 using Refresh.Common.Constants;
 using Refresh.GameServer.Authentication;
+using Refresh.GameServer.Configuration;
 using Refresh.GameServer.Database;
 using Refresh.GameServer.Endpoints.Game.DataTypes.Request;
 using Refresh.GameServer.Endpoints.Game.DataTypes.Response;
@@ -7,6 +8,7 @@ using Refresh.GameServer.Endpoints.Game.Levels.FilterSettings;
 using Refresh.GameServer.Types;
 using Refresh.GameServer.Types.Levels;
 using Refresh.GameServer.Types.Levels.SkillRewards;
+using Refresh.GameServer.Types.Notifications;
 using Refresh.GameServer.Types.UserData;
 using RefreshTests.GameServer.Extensions;
 
@@ -522,4 +524,124 @@ public class PublishEndpointsTests : GameServerTest
         DatabaseList<GameLevel> levelsByUser = context.Database.GetLevelsByUser(user1, 1, 0, new LevelFilterSettings(TokenGame.LittleBigPlanet3), user1);
         Assert.That(levelsByUser.TotalItems, Is.EqualTo(1));
     }
+
+    [Test]
+    [TestCase(2, 2)]
+    [Ignore("needs to change lvl hash every iteration")] // TODO
+    public void CantPublishAfterExceedingTimedLevelLimit(int levelQuota, int uploadAttemptsAfterExceeding)
+    {
+        using TestContext context = this.GetServer();
+        GameUser user = context.CreateUser("thepublisher");
+
+        // Prepare config
+        GameServerConfig config = context.Server.Value.GameServerConfig;
+        config.TimedLevelUploadLimits = new()
+        {
+            Enabled = true,
+            LevelQuota = levelQuota,
+            TimeSpanHours = 1,
+        };
+
+        using HttpClient client = context.GetAuthenticatedClient(TokenType.Game, user);
+
+        // Upload level asset
+        HttpResponseMessage assetUploadMessage = client.PostAsync($"/lbp/upload/{TEST_ASSET_HASH}", new ReadOnlyMemoryContent("LVLb"u8.ToArray())).Result;
+        Assert.That(assetUploadMessage.StatusCode, Is.EqualTo(OK));
+
+        // Fill up quota
+        SpamSuccessfulUploads(config.TimedLevelUploadLimits.LevelQuota, client);
+        
+        // Try to upload more levels after exceeding quota
+        for (int i = 0; i < uploadAttemptsAfterExceeding; i++)
+        {
+            GameLevelRequest level = CreateValidTestLevel(i + 1);
+
+            HttpResponseMessage message = client.PostAsync("/lbp/startPublish", new StringContent(level.AsXML())).Result;
+            Assert.That(message.StatusCode, Is.EqualTo(Unauthorized));
+            message = client.PostAsync("/lbp/publish", new StringContent(level.AsXML())).Result;
+            Assert.That(message.StatusCode, Is.EqualTo(Unauthorized));
+        }
+
+        // Check amount of levels
+        DatabaseList<GameLevel> levelsByUser = context.Database.GetLevelsByUser(user, 1000, 0, new LevelFilterSettings(TokenGame.LittleBigPlanet3), user);
+        Assert.That(levelsByUser.TotalItems, Is.EqualTo(config.TimedLevelUploadLimits.LevelQuota));
+
+        // Ensure there were error notifications sent for each blocked request to both /startPublish and /publish
+        DatabaseList<GameNotification> newNotifications = context.Database.GetNotificationsByUser(user, 1000, 0);
+        Assert.That(newNotifications.TotalItems, Is.EqualTo(uploadAttemptsAfterExceeding * 2));
+    }
+
+    [Test]
+    [TestCase(2, 2)]
+    [Ignore("needs to change lvl hash every iteration")] // TODO
+    public void ResetTimedLevelLimitAfterExpiry(int levelQuota, int uploadAttemptsAfterExceeding)
+    {
+        using TestContext context = this.GetServer();
+        GameUser user = context.CreateUser("thepublisher");
+
+        // Prepare config
+        GameServerConfig config = context.Server.Value.GameServerConfig;
+        config.TimedLevelUploadLimits = new()
+        {
+            Enabled = true,
+            LevelQuota = levelQuota,
+            // Having this be 0 causes the server to always set the expiry date to now, making the expiry date be not null but always expired,
+            // causing both /startPublish and /publish to always reset the limit after setting it in a previous /publish request, and allowing publish requests
+            TimeSpanHours = 0,
+        };
+
+        using HttpClient client = context.GetAuthenticatedClient(TokenType.Game, user);
+
+        // Upload level asset
+        HttpResponseMessage message = client.PostAsync($"/lbp/upload/{TEST_ASSET_HASH}", new ReadOnlyMemoryContent("LVLb"u8.ToArray())).Result;
+        Assert.That(message.StatusCode, Is.EqualTo(OK));
+
+        // Fill up quota
+        SpamSuccessfulUploads(config.TimedLevelUploadLimits.LevelQuota, client);
+        
+        // Try to upload more levels after exceeding quota
+        SpamSuccessfulUploads(uploadAttemptsAfterExceeding, client);
+
+        // Check amount of levels
+        DatabaseList<GameLevel> levelsByUser = context.Database.GetLevelsByUser(user, 1000, 0, new LevelFilterSettings(TokenGame.LittleBigPlanet3), user);
+        Assert.That(levelsByUser.TotalItems, Is.EqualTo(config.TimedLevelUploadLimits.LevelQuota + uploadAttemptsAfterExceeding));
+
+        // Ensure there were no notifications sent
+        DatabaseList<GameNotification> newNotifications = context.Database.GetNotificationsByUser(user, 1000, 0);
+        Assert.That(newNotifications.TotalItems, Is.EqualTo(0));
+    }
+
+    private void SpamSuccessfulUploads(int uploads, HttpClient client)
+    {
+        for (int i = 0; i < uploads; i++)
+        {
+            GameLevelRequest level = CreateValidTestLevel(i + 1);
+
+            // Upload level
+            HttpResponseMessage message = client.PostAsync("/lbp/startPublish", new StringContent(level.AsXML())).Result;
+            Assert.That(message.StatusCode, Is.EqualTo(OK));
+            message = client.PostAsync("/lbp/publish", new StringContent(level.AsXML())).Result;
+            Assert.That(message.StatusCode, Is.EqualTo(OK));
+        }
+    }
+
+    private GameLevelRequest CreateValidTestLevel(int id)
+        => new()
+        {
+            LevelId = default,
+            IsAdventure = false,
+            Title = "Test level!",
+            IconHash = "g0",
+            Description = "Test description",
+            Location = new GameLocation(),
+            GameVersion = 0,
+            RootResource = TEST_ASSET_HASH,
+            PublishDate = 0,
+            UpdateDate = 0,
+            MinPlayers = 1,
+            MaxPlayers = 4,
+            EnforceMinMaxPlayers = false,
+            SameScreenGame = false,
+            SkillRewards = [],
+        };
 }

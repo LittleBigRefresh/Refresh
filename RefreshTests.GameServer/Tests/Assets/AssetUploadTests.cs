@@ -73,7 +73,7 @@ public class AssetUploadTests : GameServerTest
     {
         using TestContext context = this.GetServer();
 
-        context.Server.Value.GameServerConfig.BlockAssetUploads = true;
+        context.Server.Value.GameServerConfig.ReadOnlyMode = true;
             
         context.Server.Value.Server.AddService<ImportService>();
         GameUser user = context.CreateUser();
@@ -97,8 +97,8 @@ public class AssetUploadTests : GameServerTest
     {
         using TestContext context = this.GetServer();
         context.Server.Value.Server.AddService<ImportService>();
-        context.Server.Value.GameServerConfig.BlockAssetUploads = true;
-        context.Server.Value.GameServerConfig.BlockAssetUploadsForTrustedUsers = false;
+        context.Server.Value.GameServerConfig.ReadOnlyMode = true;
+        context.Server.Value.GameServerConfig.ReadonlyModeForTrustedUsers = false;
         
         GameUser user = context.CreateUser();
         context.Database.SetUserRole(user, GameUserRole.Trusted);
@@ -123,8 +123,8 @@ public class AssetUploadTests : GameServerTest
     {
         using TestContext context = this.GetServer();
         context.Server.Value.Server.AddService<ImportService>();
-        context.Server.Value.GameServerConfig.BlockAssetUploads = true;
-        context.Server.Value.GameServerConfig.BlockAssetUploadsForTrustedUsers = true;
+        context.Server.Value.GameServerConfig.ReadOnlyMode = true;
+        context.Server.Value.GameServerConfig.ReadonlyModeForTrustedUsers = true;
         
         GameUser user = context.CreateUser();
         context.Database.SetUserRole(user, GameUserRole.Admin);

@@ -7,6 +7,7 @@ using Bunkum.Core.Responses;
 using Bunkum.Listener.Protocol;
 using Bunkum.Protocols.Http;
 using Refresh.GameServer.Authentication;
+using Refresh.GameServer.Configuration;
 using Refresh.GameServer.Database;
 using Refresh.GameServer.Extensions;
 using Refresh.GameServer.Types.Levels;
@@ -89,8 +90,11 @@ public class LeaderboardEndpoints : EndpointGroup
     [GameEndpoint("scoreboard/{slotType}/{id}", ContentType.Xml, HttpMethods.Post)]
     [RateLimitSettings(RequestTimeoutDuration, MaxRequestAmount, RequestBlockDuration, BucketName)]
     [RequireEmailVerified]
-    public Response SubmitScore(RequestContext context, GameUser user, GameDatabaseContext database, string slotType, int id, SerializedScore body, Token token)
+    public Response SubmitScore(RequestContext context, GameUser user, GameServerConfig config, GameDatabaseContext database, string slotType, int id, SerializedScore body, Token token)
     {
+        if (user.IsWriteBlocked(config))
+            return Unauthorized;
+        
         GameLevel? level = database.GetLevelByIdAndType(slotType, id);
         if (level == null) return NotFound;
 

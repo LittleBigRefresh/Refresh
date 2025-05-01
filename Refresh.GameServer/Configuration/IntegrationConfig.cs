@@ -73,7 +73,7 @@ public class IntegrationConfig : Config
     /// <summary>
     /// A link to a .SVG or .PNG containing the logo to use for branding.
     /// </summary>
-    public string WebsiteLogoUrl { get; set; } = "https://github.com/LittleBigRefresh/Branding/blob/main/icons/refresh_transparent.svg";
+    public string WebsiteLogoUrl { get; set; } = "https://raw.githubusercontent.com/LittleBigRefresh/Branding/refs/heads/main/icons/refresh_transparent.svg";
 
     /// <summary>
     /// The default theme the website should use. If null or blank, the website decides which theme to use.
