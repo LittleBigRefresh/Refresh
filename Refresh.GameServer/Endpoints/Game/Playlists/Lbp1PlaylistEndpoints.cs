@@ -3,6 +3,7 @@ using Bunkum.Core.Endpoints;
 using Bunkum.Core.Responses;
 using Bunkum.Listener.Protocol;
 using Bunkum.Protocols.Http;
+using Refresh.GameServer.Configuration;
 using Refresh.GameServer.Database;
 using Refresh.GameServer.Extensions;
 using Refresh.GameServer.Types.Data;
@@ -19,9 +20,12 @@ public class Lbp1PlaylistEndpoints : EndpointGroup
     // Creates a playlist, with an optional parent ID
     [GameEndpoint("createPlaylist", HttpMethods.Post, ContentType.Xml)]
     [RequireEmailVerified]
-    public Response CreatePlaylist(RequestContext context, DataContext dataContext, SerializedLbp1Playlist body)
+    public Response CreatePlaylist(RequestContext context, DataContext dataContext, GameServerConfig config, SerializedLbp1Playlist body)
     {
         GameUser user = dataContext.User!;
+        
+        if (user.IsWriteBlocked(config))
+            return Unauthorized;
         
         GamePlaylist? parent = null;
         // If the parent ID is specified, try to parse that out
@@ -139,8 +143,11 @@ public class Lbp1PlaylistEndpoints : EndpointGroup
 
     [GameEndpoint("setPlaylistMetaData/{id}", HttpMethods.Post, ContentType.Xml)]
     [RequireEmailVerified]
-    public Response UpdatePlaylistMetadata(RequestContext context, GameDatabaseContext database, GameUser user, int id, SerializedLbp1Playlist body)
+    public Response UpdatePlaylistMetadata(RequestContext context, GameServerConfig config, GameDatabaseContext database, GameUser user, int id, SerializedLbp1Playlist body)
     {
+        if (user.IsWriteBlocked(config))
+            return Unauthorized;
+        
         GamePlaylist? playlist = database.GetPlaylistById(id);
         if (playlist == null)
             return NotFound;
@@ -155,8 +162,11 @@ public class Lbp1PlaylistEndpoints : EndpointGroup
 
     [GameEndpoint("deletePlaylist/{id}", HttpMethods.Post)]
     [RequireEmailVerified]
-    public Response DeletePlaylist(RequestContext context, GameDatabaseContext database, GameUser user, int id)
+    public Response DeletePlaylist(RequestContext context, GameServerConfig config, GameDatabaseContext database, GameUser user, int id)
     {
+        if (user.IsWriteBlocked(config))
+            return Unauthorized;
+        
         GamePlaylist? playlist = database.GetPlaylistById(id);
         if (playlist == null)
             return NotFound;
@@ -171,8 +181,11 @@ public class Lbp1PlaylistEndpoints : EndpointGroup
 
     [GameEndpoint("addToPlaylist/{playlistId}", HttpMethods.Post)]
     [RequireEmailVerified]
-    public Response AddSlotToPlaylist(RequestContext context, GameDatabaseContext database, GameUser user, int playlistId)
+    public Response AddSlotToPlaylist(RequestContext context, GameServerConfig config, GameDatabaseContext database, GameUser user, int playlistId)
     {
+        if (user.IsWriteBlocked(config))
+            return Unauthorized;
+        
         string? slotType = context.QueryString["slot_type"];
         if (slotType == null)
             return BadRequest;
@@ -248,9 +261,12 @@ public class Lbp1PlaylistEndpoints : EndpointGroup
 
     [GameEndpoint("removeFromPlaylist/{playlistId}", HttpMethods.Post)]
     [RequireEmailVerified]
-    public Response RemoveSlotFromPlaylist(RequestContext context, GameDatabaseContext database, GameUser user,
+    public Response RemoveSlotFromPlaylist(RequestContext context, GameServerConfig config, GameDatabaseContext database, GameUser user,
         int playlistId)
     {
+        if (user.IsWriteBlocked(config))
+            return Unauthorized;
+        
         string? slotType = context.QueryString["slot_type"];
         if (slotType == null)
             return BadRequest;
@@ -296,17 +312,17 @@ public class Lbp1PlaylistEndpoints : EndpointGroup
 
     [GameEndpoint("moveFromPlaylist/{from}", HttpMethods.Post, ContentType.Xml)]
     [RequireEmailVerified]
-    public Response MoveSlotFromPlaylist(RequestContext context, GameDatabaseContext database, GameUser user, int from)     
+    public Response MoveSlotFromPlaylist(RequestContext context, GameServerConfig config, GameDatabaseContext database, GameUser user, int from)     
     {
         if (!int.TryParse(context.QueryString["to"], out int to))
             return BadRequest;
 
         Response ret;
         
-        if ((ret = this.RemoveSlotFromPlaylist(context, database, user, from)).StatusCode != OK)
+        if ((ret = this.RemoveSlotFromPlaylist(context, config, database, user, from)).StatusCode != OK)
             return ret;
         
-        if ((ret = this.AddSlotToPlaylist(context, database, user, to)).StatusCode != OK)
+        if ((ret = this.AddSlotToPlaylist(context, config, database, user, to)).StatusCode != OK)
             return ret;
 
         return OK;

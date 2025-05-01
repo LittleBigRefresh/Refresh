@@ -3,6 +3,7 @@ using Bunkum.Core.Endpoints;
 using Bunkum.Core.Responses;
 using Bunkum.Listener.Protocol;
 using Bunkum.Protocols.Http;
+using Refresh.GameServer.Configuration;
 using Refresh.GameServer.Database;
 using Refresh.GameServer.Extensions;
 using Refresh.GameServer.Time;
@@ -20,8 +21,11 @@ public class CommentEndpoints : EndpointGroup
 {
     [GameEndpoint("postUserComment/{username}", ContentType.Xml, HttpMethods.Post)]
     [RequireEmailVerified]
-    public Response PostProfileComment(RequestContext context, GameDatabaseContext database, string username, SerializedComment body, GameUser user, IDateTimeProvider timeProvider)
+    public Response PostProfileComment(RequestContext context, GameDatabaseContext database, string username, SerializedComment body, GameUser user, IDateTimeProvider timeProvider, GameServerConfig config)
     {
+        if (user.IsWriteBlocked(config))
+            return Unauthorized;
+        
         if (body.Content.Length > 4096)
         {
             return BadRequest;
@@ -78,8 +82,12 @@ public class CommentEndpoints : EndpointGroup
 
     [GameEndpoint("postComment/{slotType}/{id}", ContentType.Xml, HttpMethods.Post)]
     [RequireEmailVerified]
-    public Response PostLevelComment(RequestContext context, GameDatabaseContext database, string slotType, int id, SerializedComment body, GameUser user)
+    public Response PostLevelComment(RequestContext context, GameDatabaseContext database, string slotType, int id,
+        SerializedComment body, GameUser user, GameServerConfig config)
     {
+        if (user.IsWriteBlocked(config))
+            return Unauthorized;
+
         if (body.Content.Length > 4096)
         {
             return BadRequest;

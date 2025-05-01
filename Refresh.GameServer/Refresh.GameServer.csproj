@@ -68,13 +68,13 @@
       <PackageReference Include="BCnEncoder.Net" Version="2.2.0" />
       <PackageReference Include="BCrypt.Net-Next" Version="4.0.3" />
       <PackageReference Include="CommandLineParser" Version="2.9.1" />
-      <PackageReference Include="Discord.Net.Webhook" Version="3.17.2" />
+      <PackageReference Include="Discord.Net.Webhook" Version="3.17.4" />
       <PackageReference Include="DnsClient" Version="1.8.0" />
       <PackageReference Include="MailKit" Version="4.11.0" />
       <PackageReference Include="NPTicket" Version="3.1.1" />
       <PackageReference Include="Pfim" Version="0.11.3" />
       <PackageReference Include="SharpZipLib" Version="1.4.2" />
-      <PackageReference Include="SixLabors.ImageSharp" Version="3.1.7" />
+      <PackageReference Include="SixLabors.ImageSharp" Version="3.1.8" />
       <PackageReference Include="EasyHotReload" Version="1.0.0" />
     </ItemGroup>
     

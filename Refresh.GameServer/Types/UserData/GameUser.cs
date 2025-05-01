@@ -2,6 +2,7 @@ using System.Xml.Serialization;
 using MongoDB.Bson;
 using Realms;
 using Bunkum.Core.RateLimit;
+using Refresh.GameServer.Configuration;
 using Refresh.GameServer.Types.Playlists;
 using Refresh.GameServer.Types.Roles;
 
@@ -49,6 +50,21 @@ public partial class GameUser : IRealmObject, IRateLimitUser
     /// The cumulative size of all the assets the user has uploaded
     /// </summary>
     public int FilesizeQuotaUsage { get; set; }
+
+    #region Timed Level Limit
+
+    /// <summary>
+    /// How many levels the user published/overwrote during the configured timed level limit,
+    /// if enabled.
+    /// </summary>
+    public int TimedLevelUploads { get; set; }
+    /// <summary>
+    /// The timestamp when this user's timed level limit will reset.
+    /// When that happens, set this property to null and reset TimedLevelUploads to 0.
+    /// </summary>
+    public DateTimeOffset? TimedLevelUploadExpiryDate { get; set; }
+
+    #endregion
 
     public string Description { get; set; } = "";
 

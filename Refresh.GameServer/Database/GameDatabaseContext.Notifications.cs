@@ -34,7 +34,12 @@ public partial class GameDatabaseContext // Notifications
 
     public void AddPublishFailNotification(string reason, GameLevel body, GameUser user)
     {
-        this.AddErrorNotification("Publish failed", $"The level '{body.Title}' failed to publish. {reason}", user);
+        this.AddPublishFailNotification(reason, body.Title, user);
+    }
+
+    public void AddPublishFailNotification(string reason, string levelTitle, GameUser user)
+    {
+        this.AddErrorNotification("Publish failed", $"The level '{levelTitle}' failed to publish. {reason}", user);
     }
     
     public void AddLoginFailNotification(string reason, GameUser user)
