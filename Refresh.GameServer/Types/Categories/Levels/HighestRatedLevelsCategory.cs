@@ -1,16 +1,15 @@
 using Bunkum.Core;
-using Refresh.GameServer.Authentication;
 using Refresh.GameServer.Database;
 using Refresh.GameServer.Endpoints.Game.Levels.FilterSettings;
-using Refresh.GameServer.Services;
 using Refresh.GameServer.Types.Data;
+using Refresh.GameServer.Types.Levels;
 using Refresh.GameServer.Types.UserData;
 
-namespace Refresh.GameServer.Types.Levels.Categories;
+namespace Refresh.GameServer.Types.Categories.Levels;
 
-public class HighestRatedLevelsCategory : LevelCategory
+public class HighestRatedLevelsCategory : GameLevelCategory
 {
-    internal HighestRatedLevelsCategory() : base("mostLiked", new[] { "thumbs", "highestRated" }, false)
+    internal HighestRatedLevelsCategory() : base("mostLiked", ["thumbs", "highestRated"], false)
     {
         this.Name = "Highest Rated";
         this.Description = "Levels with the most Yays!";

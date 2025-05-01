@@ -2,13 +2,14 @@ using Bunkum.Core;
 using Refresh.GameServer.Database;
 using Refresh.GameServer.Endpoints.Game.Levels.FilterSettings;
 using Refresh.GameServer.Types.Data;
+using Refresh.GameServer.Types.Levels;
 using Refresh.GameServer.Types.UserData;
 
-namespace Refresh.GameServer.Types.Levels.Categories;
+namespace Refresh.GameServer.Types.Categories.Levels;
 
-public class AdventureCategory : LevelCategory
+public class AdventureCategory : GameLevelCategory
 {
-    public AdventureCategory() : base("adventure", Array.Empty<string>(), false)
+    public AdventureCategory() : base("adventure", [], false)
     {
         this.Name = "Adventures";
         this.Description = "Storylines and other big projects by the community.";
