@@ -178,7 +178,7 @@ public class UserEndpoints : EndpointGroup
 
         if (body.ProfilePins.Count > 0)
         {
-            dataContext.Database.UpdateUserProfilePins(body.ProfilePins, user, dataContext.Game);
+            dataContext.Database.UpdateUserProfilePins(body.ProfilePins.Take(3).ToList(), user, dataContext.Game);
         }
 
         // Return newly updated pins (LBP2 and 3 update their pin progresses if there are higher progress values
