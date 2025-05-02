@@ -1,6 +1,6 @@
 using Refresh.GameServer.Endpoints.ApiV3.DataTypes.Response.Levels;
 using Refresh.GameServer.Types.Data;
-using Refresh.GameServer.Types.Photos;
+using Refresh.Database.Models.Photos;
 
 namespace Refresh.GameServer.Endpoints.ApiV3.DataTypes.Response.Users.Photos;
 

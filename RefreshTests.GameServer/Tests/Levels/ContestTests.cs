@@ -1,14 +1,13 @@
-using Refresh.GameServer.Authentication;
-using Refresh.GameServer.Database;
+using Refresh.Database.Query;
+using Refresh.Database.Models.Authentication;
+using Refresh.Database;
 using Refresh.GameServer.Endpoints.ApiV3.ApiTypes;
 using Refresh.GameServer.Endpoints.ApiV3.DataTypes.Request;
 using Refresh.GameServer.Endpoints.ApiV3.DataTypes.Response;
-using Refresh.GameServer.Endpoints.Game.Levels.FilterSettings;
-using Refresh.GameServer.Types.Contests;
-using Refresh.GameServer.Types.Levels;
-using Refresh.GameServer.Types.Roles;
-using Refresh.GameServer.Types.UserData;
+using Refresh.Database.Models.Contests;
+using Refresh.Database.Models.Users;
 using RefreshTests.GameServer.Extensions;
+using Refresh.Database.Models.Levels;
 
 namespace RefreshTests.GameServer.Tests.Levels;
 

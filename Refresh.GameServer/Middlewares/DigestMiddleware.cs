@@ -3,11 +3,10 @@ using System.Text;
 using Bunkum.Listener.Request;
 using Bunkum.Core.Database;
 using Bunkum.Core.Endpoints.Middlewares;
-using Refresh.Common.Extensions;
 using Refresh.Common.Helpers;
-using Refresh.GameServer.Authentication;
+using Refresh.Database.Models.Authentication;
 using Refresh.GameServer.Configuration;
-using Refresh.GameServer.Database;
+using Refresh.Database;
 using Refresh.GameServer.Endpoints;
 
 namespace Refresh.GameServer.Middlewares;

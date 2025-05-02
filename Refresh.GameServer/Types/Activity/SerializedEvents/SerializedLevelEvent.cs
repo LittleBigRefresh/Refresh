@@ -1,7 +1,7 @@
 using System.Xml.Serialization;
 using Refresh.GameServer.Types.Levels;
 
-namespace Refresh.GameServer.Types.Activity.SerializedEvents;
+namespace Refresh.Database.Models.Activity.SerializedEvents;
 
 public class SerializedLevelEvent : SerializedEvent
 {

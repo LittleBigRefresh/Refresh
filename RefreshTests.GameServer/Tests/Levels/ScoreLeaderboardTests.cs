@@ -1,11 +1,12 @@
 using MongoDB.Bson;
-using Refresh.GameServer.Authentication;
-using Refresh.GameServer.Types.Levels;
+using Refresh.Database.Models.Authentication;
 using Refresh.GameServer.Types.Lists;
-using Refresh.GameServer.Types.Notifications;
-using Refresh.GameServer.Types.UserData;
-using Refresh.GameServer.Types.UserData.Leaderboard;
+using Refresh.Database.Models.Users;
 using RefreshTests.GameServer.Extensions;
+using Refresh.Database.Models.Levels.Scores;
+using Refresh.Database.Models.Users.Leaderboard;
+using Refresh.Database.Models.Levels;
+using Refresh.Database.Models.Notifications;
 
 namespace RefreshTests.GameServer.Tests.Levels;
 

@@ -1,9 +1,10 @@
-using Refresh.GameServer.Types;
+using Refresh.Database.Models.Users;
+using Refresh.Database.Query;
 
 namespace Refresh.GameServer.Endpoints.ApiV3.DataTypes.Request;
 
 [JsonObject(NamingStrategyType = typeof(CamelCaseNamingStrategy))]
-public class ApiUpdateUserRequest
+public class ApiUpdateUserRequest : IApiEditUserRequest
 {
     public string? IconHash { get; set; }
     public string? Description { get; set; }

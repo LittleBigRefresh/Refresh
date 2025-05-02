@@ -1,10 +1,8 @@
 using System.Diagnostics.CodeAnalysis;
 using CommandLine;
-using NotEnoughLogs;
-using Refresh.GameServer.Database;
+using Refresh.Database;
 using Refresh.GameServer.Documentation;
-using Refresh.GameServer.Types.Roles;
-using Refresh.GameServer.Types.UserData;
+using Refresh.Database.Models.Users;
 
 namespace Refresh.GameServer;
 

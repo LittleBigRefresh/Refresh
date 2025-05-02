@@ -1,7 +1,7 @@
 using Bunkum.Core.Responses;
 using Refresh.GameServer.Configuration;
 using Refresh.GameServer.Types.Data;
-using Refresh.GameServer.Types.UserData;
+using Refresh.Database.Models.Users;
 
 namespace Refresh.GameServer.Types.Matching.MatchMethods;
 

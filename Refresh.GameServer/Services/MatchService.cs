@@ -5,14 +5,14 @@ using NotEnoughLogs;
 using System.Reflection;
 using Bunkum.Core.Responses;
 using Bunkum.Listener.Protocol;
-using Refresh.GameServer.Authentication;
+using Refresh.Database.Models.Authentication;
 using Refresh.GameServer.Configuration;
 using Refresh.GameServer.Types.Data;
 using Refresh.GameServer.Types.Matching;
 using Refresh.GameServer.Types.Matching.MatchMethods;
 using Refresh.GameServer.Types.Matching.Responses;
 using Refresh.GameServer.Types.Matching.RoomAccessors;
-using Refresh.GameServer.Types.UserData;
+using Refresh.Database.Models.Users;
 
 namespace Refresh.GameServer.Services;
 

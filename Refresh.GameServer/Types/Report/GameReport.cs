@@ -1,6 +1,4 @@
 using System.Xml.Serialization;
-using Realms;
-using Refresh.GameServer.Database;
 
 namespace Refresh.GameServer.Types.Report;
 

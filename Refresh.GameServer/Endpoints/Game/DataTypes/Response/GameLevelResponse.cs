@@ -1,17 +1,16 @@
 using System.Xml.Serialization;
 using Refresh.Common.Constants;
-using Refresh.GameServer.Authentication;
+using Refresh.Database.Models;
+using Refresh.Database.Models.Authentication;
 using Refresh.GameServer.Endpoints.ApiV3.DataTypes;
-using Refresh.GameServer.Extensions;
-using Refresh.GameServer.Types;
-using Refresh.GameServer.Types.Assets;
+using Refresh.Database.Models.Assets;
+using Refresh.Database.Models.Comments;
 using Refresh.GameServer.Types.Data;
-using Refresh.GameServer.Types.Levels;
-using Refresh.GameServer.Types.Levels.SkillRewards;
 using Refresh.GameServer.Types.Matching;
-using Refresh.GameServer.Types.Playlists;
 using Refresh.GameServer.Types.Reviews;
-using Refresh.GameServer.Types.UserData;
+using Refresh.Database.Models.Users;
+using Refresh.Database.Models.Levels;
+using Refresh.Database.Models.Playlists;
 
 namespace Refresh.GameServer.Endpoints.Game.DataTypes.Response;
 

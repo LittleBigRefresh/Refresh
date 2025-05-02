@@ -2,7 +2,7 @@ using System.Net.Http.Headers;
 using Bunkum.Core.Services;
 using NotEnoughLogs;
 using Refresh.GameServer.Configuration;
-using Refresh.GameServer.Types.UserData;
+using Refresh.Database.Models.Users;
 
 namespace Refresh.GameServer.Services;
 

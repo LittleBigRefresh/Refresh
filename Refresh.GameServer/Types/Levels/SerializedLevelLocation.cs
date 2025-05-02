@@ -1,4 +1,6 @@
 using System.Xml.Serialization;
+using Refresh.Database.Models;
+using Refresh.Database.Query;
 
 namespace Refresh.GameServer.Types.Levels;
 
@@ -6,7 +8,7 @@ namespace Refresh.GameServer.Types.Levels;
 
 [XmlRoot("slot")]
 [XmlType("slot")]
-public class SerializedLevelLocation
+public class SerializedLevelLocation : ISerializedEditLevelLocation
 {
     [XmlAttribute("type")] public string Type { get; set; } = "user";
     [XmlElement("id")] public int LevelId { get; set; }

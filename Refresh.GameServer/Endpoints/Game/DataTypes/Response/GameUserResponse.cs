@@ -1,13 +1,13 @@
 using System.Xml.Serialization;
 using Refresh.Common.Constants;
-using Refresh.GameServer.Authentication;
+using Refresh.Database.Models;
+using Refresh.Database.Query;
+using Refresh.Database.Models.Authentication;
 using Refresh.GameServer.Endpoints.ApiV3.DataTypes;
-using Refresh.GameServer.Endpoints.Game.Levels.FilterSettings;
-using Refresh.GameServer.Types;
 using Refresh.GameServer.Types.Data;
 using Refresh.GameServer.Types.Levels;
 using Refresh.GameServer.Types.Lists;
-using Refresh.GameServer.Types.UserData;
+using Refresh.Database.Models.Users;
 
 namespace Refresh.GameServer.Endpoints.Game.DataTypes.Response;
 
@@ -161,7 +161,7 @@ public class GameUserResponse : IDataConvertableFrom<GameUserResponse, GameUser>
                 List<GameMinimalLevelResponse> favouriteLevels = dataContext.Database
                     .GetLevelsFavouritedByUser(old, 20, 0, new LevelFilterSettings(dataContext.Game), dataContext.User)
                     .Items
-                    .Where(l => l._GameVersion == (int)TokenGame.LittleBigPlanetPSP)
+                    .Where(l => l.GameVersion == TokenGame.LittleBigPlanetPSP)
                     .Select(l => GameMinimalLevelResponse.FromOld(l, dataContext)).ToList()!;
                 response.FavouriteLevels = new SerializedMinimalFavouriteLevelList(new SerializedMinimalLevelList(favouriteLevels, favouriteLevels.Count, favouriteLevels.Count));
                 break;

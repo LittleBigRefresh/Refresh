@@ -1,6 +1,6 @@
+using Refresh.Database.Models.Comments;
 using Refresh.GameServer.Endpoints.ApiV3.DataTypes.Response.Users;
 using Refresh.GameServer.Types.Data;
-using Refresh.GameServer.Types.Reviews;
 
 namespace Refresh.GameServer.Endpoints.ApiV3.DataTypes.Response.Levels;
 

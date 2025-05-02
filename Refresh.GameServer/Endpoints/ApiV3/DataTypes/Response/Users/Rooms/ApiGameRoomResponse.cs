@@ -1,4 +1,4 @@
-using Refresh.GameServer.Authentication;
+using Refresh.Database.Models.Authentication;
 using Refresh.GameServer.Types.Data;
 using Refresh.GameServer.Types.Matching;
 

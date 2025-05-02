@@ -1,4 +1,3 @@
-using Refresh.GameServer.Importing.Gtf;
 using SixLabors.ImageSharp.Formats;
 
 namespace Refresh.GameServer.Importing.Mip;

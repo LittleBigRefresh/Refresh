@@ -1,3 +1,5 @@
+using Refresh.Database.Models.Authentication;
+
 namespace Refresh.GameServer.Authentication;
 
 public static class TokenGameUtility

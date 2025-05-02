@@ -1,5 +1,4 @@
-using Refresh.GameServer.Database;
-using Refresh.GameServer.Endpoints.ApiV3.DataTypes;
+using Refresh.Database;
 
 namespace Refresh.GameServer.Endpoints.ApiV3.ApiTypes;
 

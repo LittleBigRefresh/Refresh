@@ -1,7 +1,7 @@
 using MongoDB.Bson;
-using Refresh.GameServer.Authentication;
-using Refresh.GameServer.Types.Levels;
-using Refresh.GameServer.Types.UserData;
+using Refresh.Database.Models.Authentication;
+using Refresh.Database.Models.Users;
+using Refresh.Database.Models.Levels;
 
 namespace Refresh.GameServer.Types.Matching;
 

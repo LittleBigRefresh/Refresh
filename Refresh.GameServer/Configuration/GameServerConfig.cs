@@ -1,8 +1,8 @@
 using System.Diagnostics.CodeAnalysis;
 using Bunkum.Core.Configuration;
 using Microsoft.CSharp.RuntimeBinder;
-using Refresh.GameServer.Types.Assets;
-using Refresh.GameServer.Types.Roles;
+using Refresh.Database.Models.Assets;
+using Refresh.Database.Models.Users;
 
 namespace Refresh.GameServer.Configuration;
 

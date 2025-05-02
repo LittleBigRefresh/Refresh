@@ -2,16 +2,14 @@ using AttribDoc.Attributes;
 using Bunkum.Core;
 using Bunkum.Core.Endpoints;
 using Bunkum.Core.Storage;
-using Refresh.GameServer.Database;
+using Refresh.Database;
 using Refresh.GameServer.Documentation.Attributes;
 using Refresh.GameServer.Endpoints.ApiV3.ApiTypes;
 using Refresh.GameServer.Endpoints.ApiV3.ApiTypes.Errors;
-using Refresh.GameServer.Endpoints.ApiV3.DataTypes.Response;
 using Refresh.GameServer.Endpoints.ApiV3.DataTypes.Response.Levels;
-using Refresh.GameServer.Extensions;
 using Refresh.GameServer.Types.Data;
-using Refresh.GameServer.Types.Levels;
-using Refresh.GameServer.Types.UserData.Leaderboard;
+using Refresh.Database.Models.Levels.Scores;
+using Refresh.Database.Models.Levels;
 
 namespace Refresh.GameServer.Endpoints.ApiV3;
 
@@ -38,7 +36,7 @@ public class LeaderboardApiEndpoints : EndpointGroup
         if (!result) return ApiValidationError.BooleanParseError;
 
         DatabaseList<GameSubmittedScore> scores = database.GetTopScoresForLevel(level, count, skip, (byte)mode, showAll);
-        DatabaseList<ApiGameScoreResponse> ret = DatabaseList<ApiGameScoreResponse>.FromOldList<ApiGameScoreResponse, GameSubmittedScore>(scores, dataContext);
+        DatabaseList<ApiGameScoreResponse> ret = DatabaseListExtensions.FromOldList<ApiGameScoreResponse, GameSubmittedScore>(scores, dataContext);
         return ret;
     }
 

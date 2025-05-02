@@ -1,6 +1,6 @@
 using System.Xml.Serialization;
 
-namespace Refresh.GameServer.Types.Activity.SerializedEvents;
+namespace Refresh.Database.Models.Activity.SerializedEvents;
 
 public class SerializedLevelUploadEvent : SerializedLevelEvent
 {

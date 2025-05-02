@@ -1,8 +1,7 @@
 using System.Xml.Serialization;
-using Realms;
-using Refresh.GameServer.Types.Levels;
+using Refresh.Database.Query;
 
-namespace Refresh.GameServer.Types.UserData;
+namespace Refresh.Database.Models.Users;
 
 [XmlRoot("updateUser")]
 public class SerializedUpdateDataProfile : SerializedUpdateData {}
@@ -11,7 +10,7 @@ public class SerializedUpdateDataProfile : SerializedUpdateData {}
 public class SerializedUpdateDataPlanets : SerializedUpdateData {}
 
 [Ignored]
-public class SerializedUpdateData
+public class SerializedUpdateData : ISerializedEditUser
 {
     [XmlElement("biography")]
     public string? Description { get; set; }
@@ -20,7 +19,7 @@ public class SerializedUpdateData
     public GameLocation? UserLocation { get; set; }
 
     [XmlArray("slots")]
-    public List<SerializedLevelLocation>? LevelLocations { get; set; }
+    public List<ISerializedEditLevelLocation>? LevelLocations { get; set; }
     
     [XmlElement("planets")]
     public string? PlanetsHash { get; set; }

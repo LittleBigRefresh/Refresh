@@ -3,17 +3,15 @@ using Bunkum.Core;
 using Bunkum.Core.Endpoints;
 using Bunkum.Core.Storage;
 using Bunkum.Protocols.Http;
-using Refresh.GameServer.Database;
+using Refresh.Database;
 using Refresh.GameServer.Documentation.Attributes;
 using Refresh.GameServer.Endpoints.ApiV3.ApiTypes;
 using Refresh.GameServer.Endpoints.ApiV3.ApiTypes.Errors;
-using Refresh.GameServer.Endpoints.ApiV3.DataTypes.Response;
 using Refresh.GameServer.Endpoints.ApiV3.DataTypes.Response.Users.Photos;
-using Refresh.GameServer.Extensions;
 using Refresh.GameServer.Types.Data;
-using Refresh.GameServer.Types.Levels;
-using Refresh.GameServer.Types.Photos;
-using Refresh.GameServer.Types.UserData;
+using Refresh.Database.Models.Users;
+using Refresh.Database.Models.Levels;
+using Refresh.Database.Models.Photos;
 
 namespace Refresh.GameServer.Endpoints.ApiV3;
 
@@ -42,7 +40,7 @@ public class PhotoApiEndpoints : EndpointGroup
         (int skip, int count) = context.GetPageData();
 
         DatabaseList<GamePhoto> photos = database.GetPhotosByUser(user, count, skip);
-        DatabaseList<ApiGamePhotoResponse> photosResponse = DatabaseList<ApiGamePhotoResponse>.FromOldList<ApiGamePhotoResponse, GamePhoto>(photos, dataContext);
+        DatabaseList<ApiGamePhotoResponse> photosResponse = DatabaseListExtensions.FromOldList<ApiGamePhotoResponse, GamePhoto>(photos, dataContext);
         return photosResponse;
     }
     
@@ -53,7 +51,7 @@ public class PhotoApiEndpoints : EndpointGroup
         (int skip, int count) = context.GetPageData();
 
         DatabaseList<GamePhoto> photos = database.GetPhotosWithUser(user, count, skip);
-        DatabaseList<ApiGamePhotoResponse> photosResponse = DatabaseList<ApiGamePhotoResponse>.FromOldList<ApiGamePhotoResponse, GamePhoto>(photos, dataContext);
+        DatabaseList<ApiGamePhotoResponse> photosResponse = DatabaseListExtensions.FromOldList<ApiGamePhotoResponse, GamePhoto>(photos, dataContext);
         return photosResponse;
     }
     
@@ -64,7 +62,7 @@ public class PhotoApiEndpoints : EndpointGroup
         (int skip, int count) = context.GetPageData();
 
         DatabaseList<GamePhoto> photos = database.GetPhotosInLevel(level, count, skip);
-        DatabaseList<ApiGamePhotoResponse> photosResponse = DatabaseList<ApiGamePhotoResponse>.FromOldList<ApiGamePhotoResponse, GamePhoto>(photos, dataContext);
+        DatabaseList<ApiGamePhotoResponse> photosResponse = DatabaseListExtensions.FromOldList<ApiGamePhotoResponse, GamePhoto>(photos, dataContext);
         return photosResponse;
     }
     
@@ -118,7 +116,7 @@ public class PhotoApiEndpoints : EndpointGroup
         (int skip, int count) = context.GetPageData();
         DatabaseList<GamePhoto> photos = database.GetRecentPhotos(count, skip);
 
-        DatabaseList<ApiGamePhotoResponse> photosResponse = DatabaseList<ApiGamePhotoResponse>.FromOldList<ApiGamePhotoResponse, GamePhoto>(photos, dataContext);
+        DatabaseList<ApiGamePhotoResponse> photosResponse = DatabaseListExtensions.FromOldList<ApiGamePhotoResponse, GamePhoto>(photos, dataContext);
         return photosResponse;
     }
     

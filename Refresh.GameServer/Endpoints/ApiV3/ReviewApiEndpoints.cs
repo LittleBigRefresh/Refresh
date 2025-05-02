@@ -2,16 +2,14 @@ using AttribDoc.Attributes;
 using Bunkum.Core;
 using Bunkum.Core.Endpoints;
 using Bunkum.Core.Storage;
-using Refresh.GameServer.Database;
+using Refresh.Database;
+using Refresh.Database.Models.Comments;
 using Refresh.GameServer.Documentation.Attributes;
 using Refresh.GameServer.Endpoints.ApiV3.ApiTypes;
 using Refresh.GameServer.Endpoints.ApiV3.ApiTypes.Errors;
-using Refresh.GameServer.Endpoints.ApiV3.DataTypes.Response;
 using Refresh.GameServer.Endpoints.ApiV3.DataTypes.Response.Levels;
-using Refresh.GameServer.Extensions;
 using Refresh.GameServer.Types.Data;
-using Refresh.GameServer.Types.Levels;
-using Refresh.GameServer.Types.Reviews;
+using Refresh.Database.Models.Levels;
 
 namespace Refresh.GameServer.Endpoints.ApiV3;
 
@@ -30,7 +28,7 @@ public class ReviewApiEndpoints : EndpointGroup
         (int skip, int count) = context.GetPageData();
         
         DatabaseList<GameReview> reviews = database.GetReviewsForLevel(level, count, skip);
-        DatabaseList<ApiGameReviewResponse> ret = DatabaseList<ApiGameScoreResponse>.FromOldList<ApiGameReviewResponse, GameReview>(reviews, dataContext);
+        DatabaseList<ApiGameReviewResponse> ret = DatabaseListExtensions.FromOldList<ApiGameReviewResponse, GameReview>(reviews, dataContext);
 
         return ret;
     }

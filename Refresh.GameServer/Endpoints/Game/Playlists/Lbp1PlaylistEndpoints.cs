@@ -4,14 +4,14 @@ using Bunkum.Core.Responses;
 using Bunkum.Listener.Protocol;
 using Bunkum.Protocols.Http;
 using Refresh.GameServer.Configuration;
-using Refresh.GameServer.Database;
-using Refresh.GameServer.Extensions;
+using Refresh.Database;
 using Refresh.GameServer.Types.Data;
 using Refresh.GameServer.Types.Levels;
 using Refresh.GameServer.Types.Lists;
+using Refresh.Database.Models.Users;
+using Refresh.Database.Models.Levels;
+using Refresh.Database.Models.Playlists;
 using Refresh.GameServer.Types.Playlists;
-using Refresh.GameServer.Types.Roles;
-using Refresh.GameServer.Types.UserData;
 
 namespace Refresh.GameServer.Endpoints.Game.Playlists;
 

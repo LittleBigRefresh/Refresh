@@ -4,20 +4,19 @@ using Bunkum.Core.Endpoints;
 using Bunkum.Core.Storage;
 using Bunkum.Protocols.Http;
 using Refresh.Common.Verification;
-using Refresh.GameServer.Authentication;
-using Refresh.GameServer.Database;
+using Refresh.Database.Query;
+using Refresh.Database.Models.Authentication;
+using Refresh.Database;
 using Refresh.GameServer.Documentation.Attributes;
 using Refresh.GameServer.Endpoints.ApiV3.ApiTypes;
 using Refresh.GameServer.Endpoints.ApiV3.ApiTypes.Errors;
 using Refresh.GameServer.Endpoints.ApiV3.DataTypes.Request;
 using Refresh.GameServer.Endpoints.ApiV3.DataTypes.Response.Levels;
-using Refresh.GameServer.Endpoints.Game.Levels.FilterSettings;
 using Refresh.GameServer.Services;
 using Refresh.GameServer.Types.Data;
-using Refresh.GameServer.Types.Levels;
-using Refresh.GameServer.Types.UserData;
-using Refresh.GameServer.Types.Roles;
+using Refresh.Database.Models.Users;
 using Refresh.GameServer.Types.Categories;
+using Refresh.Database.Models.Levels;
 
 namespace Refresh.GameServer.Endpoints.ApiV3;
 
@@ -73,7 +72,7 @@ public class LevelApiEndpoints : EndpointGroup
 
         if (list == null) return ApiNotFoundError.Instance;
 
-        DatabaseList<ApiGameLevelResponse> levels = DatabaseList<ApiGameLevelResponse>.FromOldList<ApiGameLevelResponse, GameLevel>(list, dataContext);
+        DatabaseList<ApiGameLevelResponse> levels = DatabaseListExtensions.FromOldList<ApiGameLevelResponse, GameLevel>(list, dataContext);
         return levels;
     }
 

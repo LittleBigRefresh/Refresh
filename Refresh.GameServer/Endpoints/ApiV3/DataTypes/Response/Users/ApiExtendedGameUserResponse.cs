@@ -1,11 +1,9 @@
 using JetBrains.Annotations;
-using Refresh.GameServer.Authentication;
+using Refresh.Database.Models.Authentication;
 using Refresh.GameServer.Endpoints.ApiV3.DataTypes.Response.Data;
 using Refresh.GameServer.Endpoints.ApiV3.DataTypes.Response.Users.Rooms;
-using Refresh.GameServer.Types;
 using Refresh.GameServer.Types.Data;
-using Refresh.GameServer.Types.Roles;
-using Refresh.GameServer.Types.UserData;
+using Refresh.Database.Models.Users;
 
 namespace Refresh.GameServer.Endpoints.ApiV3.DataTypes.Response.Users;
 

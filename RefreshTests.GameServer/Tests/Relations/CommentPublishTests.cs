@@ -1,5 +1,5 @@
-using Refresh.GameServer.Types.Comments;
-using Refresh.GameServer.Types.UserData;
+using Refresh.Database.Models.Comments;
+using Refresh.Database.Models.Users;
 
 namespace RefreshTests.GameServer.Tests.Relations;
 
