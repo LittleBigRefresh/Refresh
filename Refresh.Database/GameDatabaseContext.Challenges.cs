@@ -118,7 +118,7 @@ public partial class GameDatabaseContext // Challenges
 
     #region Scores
 
-    public GameChallengeScore CreateChallengeScore(SerializedChallengeAttempt attempt, GameChallenge challenge, GameUser user, long time)
+    public GameChallengeScore CreateChallengeScore(ISerializedChallengeAttempt attempt, GameChallenge challenge, GameUser user, long time)
     {
         // Notify the previous #1 Score publisher that their score has been overtaken
         GameChallengeScoreWithRank? prevRankOne = this.GetRankedChallengeHighScores(challenge, 0, 1).Items.FirstOrDefault();

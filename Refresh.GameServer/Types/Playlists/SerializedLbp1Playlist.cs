@@ -1,4 +1,5 @@
 using System.Xml.Serialization;
+using Refresh.Database.Query;
 using Refresh.GameServer.Endpoints.ApiV3.DataTypes;
 using Refresh.GameServer.Types.Data;
 
@@ -6,7 +7,7 @@ namespace Refresh.GameServer.Types.Playlists;
 
 [XmlType("playlist")]
 [XmlRoot("playlist")]
-public class SerializedLbp1Playlist : IDataConvertableFrom<SerializedLbp1Playlist, GamePlaylist>
+public class SerializedLbp1Playlist : IDataConvertableFrom<SerializedLbp1Playlist, GamePlaylist>, ISerializedCreatePlaylistInfo
 {
     [XmlElement("id")]
     public int Id { get; set; }

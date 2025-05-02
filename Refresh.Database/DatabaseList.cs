@@ -1,7 +1,3 @@
-using Refresh.Database;
-using Refresh.GameServer.Endpoints.ApiV3.DataTypes;
-using Refresh.GameServer.Types.Data;
-
 namespace Refresh.GameServer.Database;
 
 public class DatabaseList<TObject> where TObject : class

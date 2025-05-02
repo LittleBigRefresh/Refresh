@@ -2,7 +2,6 @@ using System.Diagnostics;
 using System.Reflection;
 using JetBrains.Annotations;
 using Refresh.Database.Query;
-using Refresh.GameServer.Endpoints.ApiV3.DataTypes.Request;
 using Refresh.GameServer.Endpoints.Game.Levels.FilterSettings;
 using Refresh.GameServer.Extensions;
 using Refresh.GameServer.Types.Contests;

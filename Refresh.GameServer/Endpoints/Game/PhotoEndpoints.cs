@@ -83,7 +83,7 @@ public class PhotoEndpoints : EndpointGroup
 
         // count not used ingame
         IEnumerable<SerializedPhoto> photos = photoGetter.Invoke(user, count, skip).Items
-            .Select(photo => SerializedPhoto.FromGamePhoto(photo, dataContext));
+            .Select(photo => PhotoExtensions.FromGamePhoto(photo, dataContext));
 
         return new Response(new SerializedPhotoList(photos), ContentType.Xml);
     }
@@ -121,7 +121,7 @@ public class PhotoEndpoints : EndpointGroup
             photos = dataContext.Database.GetPhotosInLevel(level, count, skip);
 
         // count not used ingame
-        return new SerializedPhotoList(photos.Items.Select(photo => SerializedPhoto.FromGamePhoto(photo, dataContext)));
+        return new SerializedPhotoList(photos.Items.Select(photo => PhotoExtensions.FromGamePhoto(photo, dataContext)));
     }
 
     [GameEndpoint("photo/{id}", ContentType.Xml)]
@@ -133,6 +133,6 @@ public class PhotoEndpoints : EndpointGroup
         if (photo == null) 
             return null;
         
-        return SerializedPhoto.FromGamePhoto(photo, dataContext);
+        return PhotoExtensions.FromGamePhoto(photo, dataContext);
     }
 }

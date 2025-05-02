@@ -1,3 +1,4 @@
+using Refresh.Database.Query;
 using Refresh.GameServer.Authentication;
 using Refresh.GameServer.Extensions;
 using Refresh.GameServer.Types;
@@ -13,7 +14,7 @@ public partial class GameDatabaseContext // Playlists
     /// <summary>
     /// Default icon used by playlists created in LBP3, through ApiV3 or similar
     /// </summary>
-    private const string defaultPlaylistIcon = "g18451"; // LBP1 star sticker
+    private const string DefaultPlaylistIcon = "g18451"; // LBP1 star sticker
 
     private void CreatePlaylistInternal(GamePlaylist createInfo)
     {
@@ -26,37 +27,19 @@ public partial class GameDatabaseContext // Playlists
         });
     }
 
-    public GamePlaylist CreatePlaylist(GameUser user, SerializedLbp1Playlist createInfo, bool rootPlaylist = false)
+    public GamePlaylist CreatePlaylist(GameUser user, ISerializedCreatePlaylistInfo createInfo, bool rootPlaylist = false)
     {
+        GameLocation location = createInfo.Location ?? GameLocation.Random;
+        
         GamePlaylist playlist = new() 
         {
-            Publisher = user, 
+            Publisher = user,
             Name = createInfo.Name,
-            Description = createInfo.Description, 
-            IconHash = createInfo.Icon, 
-            LocationX = createInfo.Location.X, 
-            LocationY = createInfo.Location.Y,
+            Description = createInfo.Description,
+            IconHash = createInfo.Icon ?? DefaultPlaylistIcon,
+            LocationX = location.X,
+            LocationY = location.Y,
             IsRoot = rootPlaylist,
-        };
-
-        this.CreatePlaylistInternal(playlist);
-
-        return playlist;
-    }
-
-    public GamePlaylist CreatePlaylist(GameUser user, SerializedLbp3Playlist createInfo)
-    {
-        GameLocation randomLocation = GameLocation.Random;
-
-        GamePlaylist playlist = new()
-        {
-            Publisher = user, 
-            Name = createInfo.Name ?? "",
-            Description = createInfo.Description ?? "", 
-            IconHash = defaultPlaylistIcon,
-            LocationX = randomLocation.X, 
-            LocationY = randomLocation.Y,
-            IsRoot = false,
         };
 
         this.CreatePlaylistInternal(playlist);
@@ -73,10 +56,10 @@ public partial class GameDatabaseContext // Playlists
             Publisher = user,
             Name = "My Playlists",
             Description = $"{user.Username}'s root playlist",
-            IconHash = defaultPlaylistIcon,
+            IconHash = DefaultPlaylistIcon,
             LocationX = randomLocation.X,
             LocationY = randomLocation.Y,
-            IsRoot = true
+            IsRoot = true,
         };
 
         this.CreatePlaylistInternal(rootPlaylist);
@@ -86,25 +69,17 @@ public partial class GameDatabaseContext // Playlists
     public GamePlaylist? GetPlaylistById(int playlistId) 
         => this.GamePlaylists.FirstOrDefault(p => p.PlaylistId == playlistId);
 
-    public void UpdatePlaylist(GamePlaylist playlist, SerializedLbp1Playlist updateInfo)
+    public void UpdatePlaylist(GamePlaylist playlist, ISerializedCreatePlaylistInfo updateInfo)
     {
+        GameLocation location = updateInfo.Location ?? new GameLocation(playlist.LocationX, playlist.LocationY);
+        
         this.Write(() =>
         {
             playlist.Name = updateInfo.Name;
             playlist.Description = updateInfo.Description;
-            playlist.IconHash = updateInfo.Icon;
-            playlist.LocationX = updateInfo.Location.X;
-            playlist.LocationY = updateInfo.Location.Y;
-            playlist.LastUpdateDate = this._time.Now;
-        });
-    }
-
-    public void UpdatePlaylist(GamePlaylist playlist, SerializedLbp3Playlist updateInfo)
-    {
-        this.Write(() =>
-        {
-            if (updateInfo.Name != null) playlist.Name = updateInfo.Name;
-            if (updateInfo.Description != null) playlist.Description = updateInfo.Description;
+            playlist.IconHash = updateInfo.Icon ?? playlist.IconHash;
+            playlist.LocationX = location.X;
+            playlist.LocationY = location.Y;
             playlist.LastUpdateDate = this._time.Now;
         });
     }

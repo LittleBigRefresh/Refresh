@@ -1,19 +1,14 @@
 using System.Diagnostics;
 using System.Reflection;
 using JetBrains.Annotations;
-using Realms;
 using Refresh.Common.Constants;
 using Refresh.Database.Query;
 using Refresh.GameServer.Authentication;
-using Refresh.GameServer.Endpoints.ApiV3.DataTypes.Request;
 using Refresh.GameServer.Endpoints.Game.Levels.FilterSettings;
-using Refresh.GameServer.Extensions;
-using Refresh.GameServer.Services;
 using Refresh.GameServer.Types.Activity;
 using Refresh.GameServer.Types.Assets;
 using Refresh.GameServer.Types.Challenges.LbpHub;
 using Refresh.GameServer.Types.Levels;
-using Refresh.GameServer.Types.Matching;
 using Refresh.GameServer.Types.Relations;
 using Refresh.GameServer.Types.UserData;
 using Refresh.GameServer.Types.UserData.Leaderboard;
@@ -526,26 +521,6 @@ public partial class GameDatabaseContext // Levels
                 level.Score = score;
             }
         });
-    }
-
-    public void UpdateLevelModdedStatus(GameLevel level)
-    {
-        this.SetLevelModdedStatus(level, this.GetLevelModdedStatus(level));
-    }
-    
-    public bool GetLevelModdedStatus(GameLevel level)
-    {
-        bool modded = false;
-
-        GameAsset? rootAsset = this.GetAssetFromHash(level.RootResource);
-        
-        rootAsset?.TraverseDependenciesRecursively(this, (hash, asset) =>
-        {
-            if (asset != null && (asset.AssetFlags & AssetFlags.Modded) != 0)
-                modded = true;
-        });
-        
-        return modded;
     }
     
     public void SetLevelModdedStatus(GameLevel level, bool modded)

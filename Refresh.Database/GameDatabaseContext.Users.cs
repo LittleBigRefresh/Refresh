@@ -3,8 +3,6 @@ using MongoDB.Bson;
 using Refresh.Common.Constants;
 using Refresh.Database.Query;
 using Refresh.GameServer.Authentication;
-using Refresh.GameServer.Configuration;
-using Refresh.GameServer.Endpoints.ApiV3.DataTypes.Request;
 using Refresh.GameServer.Types.Challenges.LbpHub;
 using Refresh.GameServer.Types.Levels;
 using Refresh.GameServer.Types.Photos;

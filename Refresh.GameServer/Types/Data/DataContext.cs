@@ -10,11 +10,11 @@ namespace Refresh.GameServer.Types.Data;
 
 public class DataContext : IDataContext
 {
-    public required GameDatabaseContext Database;
-    public required Logger Logger;
-    public required IDataStore DataStore;
-    public required MatchService Match;
-    public required GuidCheckerService GuidChecker;
+    public required GameDatabaseContext Database { get; init; }
+    public required Logger Logger { get; init; }
+    public required IDataStore DataStore { get; init; }
+    public required MatchService Match { get; init; }
+    public required GuidCheckerService GuidChecker { get; init; }
     
     public required Token? Token;
     public GameUser? User => this.Token?.User;

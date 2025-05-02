@@ -1,4 +1,5 @@
 using JetBrains.Annotations;
+using Refresh.Database.Query;
 using Refresh.GameServer.Types.Activity;
 using Refresh.GameServer.Types.Levels;
 using Refresh.GameServer.Types.Photos;
