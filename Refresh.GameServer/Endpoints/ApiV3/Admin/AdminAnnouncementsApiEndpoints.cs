@@ -1,7 +1,6 @@
 using AttribDoc.Attributes;
 using Bunkum.Core;
 using Bunkum.Core.Endpoints;
-using Bunkum.Listener.Protocol;
 using Bunkum.Protocols.Http;
 using MongoDB.Bson;
 using Refresh.GameServer.Database;

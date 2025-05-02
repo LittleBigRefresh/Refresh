@@ -1,4 +1,3 @@
-using System.Diagnostics;
 using Bunkum.Core.Services;
 using MongoDB.Bson;
 using NotEnoughLogs;

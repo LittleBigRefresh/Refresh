@@ -1,6 +1,5 @@
 using System.Diagnostics.CodeAnalysis;
 using CommandLine;
-using NotEnoughLogs;
 using Refresh.GameServer.Database;
 using Refresh.GameServer.Documentation;
 using Refresh.GameServer.Types.Roles;

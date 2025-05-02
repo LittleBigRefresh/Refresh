@@ -1,4 +1,3 @@
-using System.Security.Cryptography;
 using MongoDB.Bson;
 using Refresh.Common.Verification;
 using Refresh.GameServer.Authentication;

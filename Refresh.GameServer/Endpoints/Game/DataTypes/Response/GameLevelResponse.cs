@@ -2,7 +2,6 @@ using System.Xml.Serialization;
 using Refresh.Common.Constants;
 using Refresh.GameServer.Authentication;
 using Refresh.GameServer.Endpoints.ApiV3.DataTypes;
-using Refresh.GameServer.Extensions;
 using Refresh.GameServer.Types;
 using Refresh.GameServer.Types.Assets;
 using Refresh.GameServer.Types.Data;

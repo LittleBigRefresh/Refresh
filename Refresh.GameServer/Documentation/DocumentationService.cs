@@ -2,7 +2,6 @@ using System.Collections.Frozen;
 using System.Reflection;
 using Bunkum.Core.Services;
 using NotEnoughLogs;
-using Refresh.GameServer.Endpoints.ApiV3.DataTypes.Response;
 using Refresh.GameServer.Endpoints.ApiV3.DataTypes.Response.Data;
 
 namespace Refresh.GameServer.Documentation;

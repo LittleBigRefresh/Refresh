@@ -1,4 +1,3 @@
-using MongoDB.Bson;
 using Refresh.GameServer.Authentication;
 using Refresh.GameServer.Types.Levels;
 using Refresh.GameServer.Types.Roles;

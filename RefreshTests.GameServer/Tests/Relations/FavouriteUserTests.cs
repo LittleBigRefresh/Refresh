@@ -1,5 +1,4 @@
 using Refresh.GameServer.Authentication;
-using Refresh.GameServer.Types.Levels;
 using Refresh.GameServer.Types.Lists;
 using Refresh.GameServer.Types.UserData;
 using RefreshTests.GameServer.Extensions;

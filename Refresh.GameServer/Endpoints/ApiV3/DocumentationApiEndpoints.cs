@@ -3,7 +3,6 @@ using Bunkum.Core;
 using Bunkum.Core.Endpoints;
 using Refresh.GameServer.Documentation;
 using Refresh.GameServer.Endpoints.ApiV3.ApiTypes;
-using Refresh.GameServer.Endpoints.ApiV3.DataTypes.Response;
 using Refresh.GameServer.Endpoints.ApiV3.DataTypes.Response.Data;
 
 namespace Refresh.GameServer.Endpoints.ApiV3;

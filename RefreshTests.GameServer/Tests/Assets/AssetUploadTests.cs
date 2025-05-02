@@ -2,7 +2,6 @@ using System.Security.Cryptography;
 using Refresh.GameServer.Authentication;
 using Refresh.GameServer.Configuration;
 using Refresh.GameServer.Services;
-using Refresh.GameServer.Types.Assets;
 using Refresh.GameServer.Types.Lists;
 using Refresh.GameServer.Types.Roles;
 using Refresh.GameServer.Types.UserData;

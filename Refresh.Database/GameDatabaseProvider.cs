@@ -19,7 +19,6 @@ using Refresh.GameServer.Types.Challenges.LbpHub;
 using Refresh.GameServer.Types.Pins;
 
 #if !POSTGRES
-using Bunkum.RealmDatabase;
 #endif
 
 namespace Refresh.GameServer.Database;

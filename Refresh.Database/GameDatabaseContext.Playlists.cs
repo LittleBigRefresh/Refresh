@@ -1,6 +1,5 @@
 using Refresh.Database.Query;
 using Refresh.GameServer.Authentication;
-using Refresh.GameServer.Extensions;
 using Refresh.GameServer.Types;
 using Refresh.GameServer.Types.Levels;
 using Refresh.GameServer.Types.Playlists;

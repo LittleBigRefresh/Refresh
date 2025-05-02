@@ -1,12 +1,10 @@
 using Bunkum.Core;
 using Bunkum.Core.Endpoints;
-using Bunkum.Core.Endpoints.Debugging;
 using Bunkum.Core.Responses;
 using Bunkum.Listener.Protocol;
 using Bunkum.Protocols.Http;
 using Refresh.GameServer.Configuration;
 using Refresh.GameServer.Database;
-using Refresh.GameServer.Extensions;
 using Refresh.GameServer.Time;
 using Refresh.GameServer.Types.Data;
 using Refresh.GameServer.Types.Levels;

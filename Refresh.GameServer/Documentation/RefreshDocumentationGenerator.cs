@@ -3,7 +3,6 @@ using AttribDoc;
 using Bunkum.Core.Endpoints;
 using Bunkum.Core.Extensions;
 using Refresh.GameServer.Endpoints;
-using Refresh.GameServer.Types.Roles;
 
 namespace Refresh.GameServer.Documentation;
 

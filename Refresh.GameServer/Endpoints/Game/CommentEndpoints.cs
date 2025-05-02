@@ -5,7 +5,6 @@ using Bunkum.Listener.Protocol;
 using Bunkum.Protocols.Http;
 using Refresh.GameServer.Configuration;
 using Refresh.GameServer.Database;
-using Refresh.GameServer.Extensions;
 using Refresh.GameServer.Time;
 using Refresh.GameServer.Types.Comments;
 using Refresh.GameServer.Types.Data;

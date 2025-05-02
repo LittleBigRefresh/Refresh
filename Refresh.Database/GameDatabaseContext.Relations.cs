@@ -1,7 +1,6 @@
 using System.Diagnostics.Contracts;
 using Refresh.GameServer.Authentication;
 using Refresh.GameServer.Endpoints.Game.Levels.FilterSettings;
-using Refresh.GameServer.Extensions;
 using Refresh.GameServer.Types;
 using Refresh.GameServer.Types.Comments;
 using Refresh.GameServer.Types.Comments.Relations;

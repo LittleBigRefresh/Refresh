@@ -1,5 +1,3 @@
-using Realms;
-
 namespace Refresh.GameServer.Types.UserData;
 
 public partial class DisallowedUser : IRealmObject

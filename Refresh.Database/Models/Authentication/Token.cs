@@ -2,7 +2,6 @@ using System.Xml.Serialization;
 using Bunkum.Core.Authentication;
 using JetBrains.Annotations;
 using MongoDB.Bson;
-using Realms;
 using Refresh.GameServer.Types.UserData;
 
 namespace Refresh.GameServer.Authentication;

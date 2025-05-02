@@ -1,5 +1,4 @@
 using JetBrains.Annotations;
-using Refresh.GameServer.Authentication;
 using Refresh.GameServer.Endpoints.ApiV3.DataTypes.Response.Data;
 using Refresh.GameServer.Endpoints.ApiV3.DataTypes.Response.Users.Rooms;
 using Refresh.GameServer.Types.Data;

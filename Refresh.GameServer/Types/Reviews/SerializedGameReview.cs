@@ -1,10 +1,7 @@
 using System.Xml.Serialization;
-using Refresh.GameServer.Database;
 using Refresh.GameServer.Endpoints.ApiV3.DataTypes;
 using Refresh.GameServer.Types.Data;
 using Refresh.GameServer.Types.Levels;
-using Refresh.GameServer.Types.Relations;
-using Refresh.GameServer.Types.UserData;
 
 namespace Refresh.GameServer.Types.Reviews;
 

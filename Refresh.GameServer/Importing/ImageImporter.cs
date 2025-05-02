@@ -4,7 +4,6 @@ using NotEnoughLogs;
 using Refresh.Common.Helpers;
 using Refresh.GameServer.Authentication;
 using Refresh.GameServer.Database;
-using Refresh.GameServer.Extensions;
 using Refresh.GameServer.Types.Assets;
 
 namespace Refresh.GameServer.Importing;

@@ -1,6 +1,4 @@
 using System.Diagnostics.CodeAnalysis;
-using System.Globalization;
-using System.Reflection;
 using Bunkum.AutoDiscover.Extensions;
 using Bunkum.Core.Authentication;
 using Bunkum.Core.Configuration;

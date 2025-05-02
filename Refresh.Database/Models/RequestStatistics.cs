@@ -1,5 +1,3 @@
-using Realms;
-
 namespace Refresh.GameServer.Types;
 
 public partial class RequestStatistics : IRealmObject

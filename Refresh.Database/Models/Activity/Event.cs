@@ -1,7 +1,6 @@
 using System.Diagnostics.CodeAnalysis;
 using System.Xml.Serialization;
 using MongoDB.Bson;
-using Realms;
 using Refresh.GameServer.Types.UserData;
 
 namespace Refresh.GameServer.Types.Activity;

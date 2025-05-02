@@ -1,5 +1,4 @@
 using Refresh.Database.Query;
-using Refresh.GameServer.Authentication;
 
 namespace Refresh.GameServer.Endpoints.ApiV3.DataTypes.Request;
 

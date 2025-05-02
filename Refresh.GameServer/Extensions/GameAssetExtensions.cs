@@ -1,7 +1,6 @@
 using System.Security.Cryptography;
 using Bunkum.Core.Storage;
 using Refresh.Common.Helpers;
-using Refresh.Database;
 using Refresh.GameServer.Authentication;
 using Refresh.GameServer.Database;
 using Refresh.GameServer.Importing;

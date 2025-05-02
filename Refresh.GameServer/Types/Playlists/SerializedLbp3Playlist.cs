@@ -1,7 +1,6 @@
 using System.Xml.Serialization;
 using Refresh.Common.Constants;
 using Refresh.Database.Query;
-using Refresh.GameServer.Database;
 using Refresh.GameServer.Endpoints.ApiV3.DataTypes;
 using Refresh.GameServer.Types.Data;
 

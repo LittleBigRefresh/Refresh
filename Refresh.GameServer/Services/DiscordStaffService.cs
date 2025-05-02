@@ -1,4 +1,3 @@
-using System.Diagnostics;
 using Bunkum.Core.Services;
 using Discord;
 using Discord.Webhook;

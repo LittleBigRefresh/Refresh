@@ -1,8 +1,4 @@
-using System.Diagnostics;
 using System.Xml.Serialization;
-using Bunkum.Core.Storage;
-using Refresh.GameServer.Authentication;
-using Refresh.GameServer.Database;
 using Refresh.GameServer.Types.Data;
 
 namespace Refresh.GameServer.Types.UserData;

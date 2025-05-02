@@ -4,7 +4,6 @@ using Bunkum.Core.Database;
 using Bunkum.Core.Endpoints;
 using Bunkum.Core.Responses;
 using Bunkum.Core.Services;
-using Bunkum.Protocols.Http;
 using NotEnoughLogs;
 using Refresh.GameServer.Configuration;
 using Refresh.GameServer.Endpoints;

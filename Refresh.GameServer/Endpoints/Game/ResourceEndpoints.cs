@@ -10,7 +10,6 @@ using Refresh.Common.Verification;
 using Refresh.GameServer.Authentication;
 using Refresh.GameServer.Configuration;
 using Refresh.GameServer.Database;
-using Refresh.GameServer.Extensions;
 using Refresh.GameServer.Importing;
 using Refresh.GameServer.Services;
 using Refresh.GameServer.Time;
