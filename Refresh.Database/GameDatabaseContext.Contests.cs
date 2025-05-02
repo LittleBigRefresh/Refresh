@@ -30,20 +30,20 @@ public partial class GameDatabaseContext // Contests
     public GameContest? GetContestById(string? id)
     {
         if (id == null) return null;
-        return Queryable.FirstOrDefault<GameContest>(this.GameContests, c => c.ContestId == id);
+        return this.GameContests.FirstOrDefault(c => c.ContestId == id);
     }
     
     public IEnumerable<GameContest> GetAllContests()
     {
-        return Queryable
-            .OrderBy<GameContest, DateTimeOffset>(this.GameContests, c => c.CreationDate);
+        return this.GameContests
+            .OrderBy(c => c.CreationDate);
     }
     
     public GameContest? GetNewestActiveContest()
     {
         DateTimeOffset now = this._time.Now;
-        return Queryable
-            .Where<GameContest>(this.GameContests, c => c.StartDate <= now && c.EndDate > now) // Filter active contests
+        return this.GameContests
+            .Where(c => c.StartDate <= now && c.EndDate > now) // Filter active contests
             .OrderByDescending(c => c.CreationDate)
             .FirstOrDefault();
     }
@@ -51,8 +51,8 @@ public partial class GameDatabaseContext // Contests
     public GameContest? GetLatestCompletedContest()
     {
         DateTimeOffset now = this._time.Now;
-        return Queryable
-            .Where<GameContest>(this.GameContests, c => c.EndDate <= now)
+        return this.GameContests
+            .Where(c => c.EndDate <= now)
             .OrderByDescending(c => c.EndDate)
             .FirstOrDefault();
     }
@@ -92,7 +92,7 @@ public partial class GameDatabaseContext // Contests
     [Pure]
     public DatabaseList<GameLevel> GetLevelsFromContest(GameContest contest, int count, int skip, GameUser? user, LevelFilterSettings levelFilterSettings)
     {
-        return new DatabaseList<GameLevel>(LevelEnumerableExtensions.FilterByLevelFilterSettings((IQueryable<GameLevel>)this.GetLevelsByGameVersion(levelFilterSettings.GameVersion), user, levelFilterSettings)
+        return new DatabaseList<GameLevel>(((IQueryable<GameLevel>)this.GetLevelsByGameVersion(levelFilterSettings.GameVersion)).FilterByLevelFilterSettings(user, levelFilterSettings)
             .Where(l => l.Title.Contains(contest.ContestTag))
             .Where(l => l.PublishDate >= contest.StartDate && l.PublishDate < contest.EndDate)
             .AsEnumerable() // This shouldn't be a noticeable performance hit, since levels that aren't for the contest have already been filtered out
