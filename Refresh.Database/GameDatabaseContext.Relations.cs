@@ -1,6 +1,6 @@
 using System.Diagnostics.Contracts;
+using Refresh.Database.Query;
 using Refresh.GameServer.Authentication;
-using Refresh.GameServer.Endpoints.Game.Levels.FilterSettings;
 using Refresh.GameServer.Types;
 using Refresh.GameServer.Types.Comments;
 using Refresh.GameServer.Types.Comments.Relations;
@@ -9,7 +9,7 @@ using Refresh.GameServer.Types.Relations;
 using Refresh.GameServer.Types.Reviews;
 using Refresh.GameServer.Types.UserData;
 
-namespace Refresh.GameServer.Database;
+namespace Refresh.Database;
 
 public partial class GameDatabaseContext // Relations
 {

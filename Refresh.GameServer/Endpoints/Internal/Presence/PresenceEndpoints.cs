@@ -3,8 +3,9 @@ using Bunkum.Core.Endpoints;
 using Bunkum.Core.Responses;
 using Bunkum.Protocols.Http;
 using Refresh.GameServer.Authentication;
-using Refresh.GameServer.Database;
+using Refresh.Database;
 using Refresh.GameServer.Types.UserData;
+using GameDatabaseContext = Refresh.Database.GameDatabaseContext;
 
 namespace Refresh.GameServer.Endpoints.Internal.Presence;
 

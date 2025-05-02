@@ -21,11 +21,11 @@ using Refresh.GameServer.Types.Pins;
 #if !POSTGRES
 #endif
 
-namespace Refresh.GameServer.Database;
+namespace Refresh.Database;
 
 public class GameDatabaseProvider : 
 #if !POSTGRES
-    RealmDatabaseProvider<GameDatabaseContext>
+    RealmDatabaseProvider<Refresh.Database.GameDatabaseContext>
 #else
     IDatabaseProvider<GameDatabaseContext>
 #endif
@@ -121,17 +121,17 @@ public class GameDatabaseProvider :
     public override void Warmup()
     #endif
     {
-        using GameDatabaseContext context = this.GetContext();
+        using Refresh.Database.GameDatabaseContext context = this.GetContext();
         _ = context.GetTotalLevelCount();
     }
 
     #if POSTGRES
     public GameDatabaseContext GetContext()
     #else
-    protected override GameDatabaseContext CreateContext()
+    protected override Refresh.Database.GameDatabaseContext CreateContext()
     #endif
     {
-        return new GameDatabaseContext(this._time);
+        return new Refresh.Database.GameDatabaseContext(this._time);
     }
 
     #if !POSTGRES

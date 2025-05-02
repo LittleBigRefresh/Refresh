@@ -2,7 +2,7 @@ using Refresh.GameServer.Authentication;
 using Refresh.GameServer.Types.Pins;
 using Refresh.GameServer.Types.UserData;
 
-namespace Refresh.GameServer.Database;
+namespace Refresh.Database;
 
 public partial class GameDatabaseContext // Pins
 {

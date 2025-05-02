@@ -1,6 +1,6 @@
+using Refresh.Database.Query;
 using Refresh.GameServer.Authentication;
-using Refresh.GameServer.Database;
-using Refresh.GameServer.Endpoints.Game.Levels.FilterSettings;
+using Refresh.Database;
 using Refresh.GameServer.Types.Levels;
 using Refresh.GameServer.Types.UserData;
 

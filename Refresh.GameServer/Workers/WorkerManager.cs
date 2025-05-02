@@ -1,6 +1,6 @@
 using Bunkum.Core.Storage;
 using NotEnoughLogs;
-using Refresh.GameServer.Database;
+using Refresh.Database;
 using Refresh.GameServer.Services;
 using Refresh.GameServer.Types.Data;
 

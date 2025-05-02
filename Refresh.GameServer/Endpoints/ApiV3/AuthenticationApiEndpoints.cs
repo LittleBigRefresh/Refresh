@@ -7,7 +7,7 @@ using Bunkum.Protocols.Http;
 using Refresh.Common.Verification;
 using Refresh.GameServer.Authentication;
 using Refresh.GameServer.Configuration;
-using Refresh.GameServer.Database;
+using Refresh.Database;
 using Refresh.GameServer.Endpoints.ApiV3.ApiTypes;
 using Refresh.GameServer.Endpoints.ApiV3.ApiTypes.Errors;
 using Refresh.GameServer.Endpoints.ApiV3.DataTypes;
@@ -19,6 +19,7 @@ using Refresh.GameServer.Types.Data;
 using Refresh.GameServer.Types.Relations;
 using Refresh.GameServer.Types.Roles;
 using Refresh.GameServer.Types.UserData;
+using GameDatabaseContext = Refresh.Database.GameDatabaseContext;
 
 namespace Refresh.GameServer.Endpoints.ApiV3;
 

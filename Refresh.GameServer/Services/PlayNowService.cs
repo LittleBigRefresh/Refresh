@@ -2,10 +2,11 @@ using Bunkum.Core.Services;
 using MongoDB.Bson;
 using NotEnoughLogs;
 using Refresh.GameServer.Authentication;
-using Refresh.GameServer.Database;
+using Refresh.Database;
 using Refresh.GameServer.Endpoints.Game.DataTypes.Response;
 using Refresh.GameServer.Types.Levels;
 using Refresh.GameServer.Types.UserData;
+using GameDatabaseContext = Refresh.Database.GameDatabaseContext;
 
 namespace Refresh.GameServer.Services;
 

@@ -1,5 +1,6 @@
 using System.Xml.Serialization;
-using Refresh.GameServer.Database;
+using Refresh.Database.Query;
+using Refresh.Database;
 using Refresh.GameServer.Endpoints.Game.DataTypes.Response;
 using Refresh.GameServer.Types.Activity.Groups;
 using Refresh.GameServer.Types.Activity.SerializedEvents;
@@ -9,6 +10,7 @@ using Refresh.GameServer.Types.Lists;
 using Refresh.GameServer.Types.Photos;
 using Refresh.GameServer.Types.UserData;
 using Refresh.GameServer.Types.UserData.Leaderboard;
+using GameDatabaseContext = Refresh.Database.GameDatabaseContext;
 
 namespace Refresh.GameServer.Types.Activity;
 

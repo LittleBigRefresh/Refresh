@@ -4,7 +4,7 @@ using Bunkum.Core.Responses;
 using Bunkum.Listener.Protocol;
 using Bunkum.Protocols.Http;
 using Refresh.GameServer.Configuration;
-using Refresh.GameServer.Database;
+using Refresh.Database;
 using Refresh.GameServer.Services;
 using Refresh.GameServer.Types.Assets;
 using Refresh.GameServer.Types.Challenges.LbpHub;

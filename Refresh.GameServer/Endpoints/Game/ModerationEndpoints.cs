@@ -3,11 +3,12 @@ using Bunkum.Core.Endpoints;
 using Bunkum.Listener.Protocol;
 using Bunkum.Protocols.Http;
 using Refresh.GameServer.Authentication;
-using Refresh.GameServer.Database;
+using Refresh.Database;
 using Refresh.GameServer.Services;
 using Refresh.GameServer.Types.Commands;
 using Refresh.GameServer.Types.UserData;
 using Refresh.GameServer.Types.UserData.Filtering;
+using GameDatabaseContext = Refresh.Database.GameDatabaseContext;
 
 namespace Refresh.GameServer.Endpoints.Game;
 

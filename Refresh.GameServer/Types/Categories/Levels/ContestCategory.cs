@@ -1,6 +1,6 @@
 using Bunkum.Core;
-using Refresh.GameServer.Database;
-using Refresh.GameServer.Endpoints.Game.Levels.FilterSettings;
+using Refresh.Database.Query;
+using Refresh.Database;
 using Refresh.GameServer.Types.Contests;
 using Refresh.GameServer.Types.Data;
 using Refresh.GameServer.Types.Levels;

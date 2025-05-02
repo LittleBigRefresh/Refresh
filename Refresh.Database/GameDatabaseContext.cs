@@ -19,7 +19,7 @@ using Refresh.GameServer.Types.UserData.Leaderboard;
 using Refresh.GameServer.Types.Challenges.LbpHub;
 using Refresh.GameServer.Types.Pins;
 
-namespace Refresh.GameServer.Database;
+namespace Refresh.Database;
 
 [SuppressMessage("ReSharper", "InconsistentlySynchronizedField")]
 public partial class GameDatabaseContext :

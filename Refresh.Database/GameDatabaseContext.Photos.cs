@@ -6,7 +6,7 @@ using Refresh.GameServer.Types.UserData;
 using GamePhoto = Refresh.GameServer.Types.Photos.GamePhoto;
 using GamePhotoSubject = Refresh.GameServer.Types.Photos.GamePhotoSubject;
 
-namespace Refresh.GameServer.Database;
+namespace Refresh.Database;
 
 public partial class GameDatabaseContext // Photos
 {

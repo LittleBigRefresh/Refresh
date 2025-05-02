@@ -4,7 +4,7 @@ using Refresh.GameServer.Authentication;
 using Refresh.GameServer.Extensions;
 using Refresh.GameServer.Types.UserData;
 
-namespace Refresh.GameServer.Database;
+namespace Refresh.Database;
 
 public partial class GameDatabaseContext // Registration
 {

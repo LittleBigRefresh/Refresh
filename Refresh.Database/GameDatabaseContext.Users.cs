@@ -11,7 +11,7 @@ using Refresh.GameServer.Types.Roles;
 using Refresh.GameServer.Types.UserData;
 using Refresh.GameServer.Types.UserData.Leaderboard;
 
-namespace Refresh.GameServer.Database;
+namespace Refresh.Database;
 
 public partial class GameDatabaseContext // Users
 {

@@ -5,7 +5,7 @@ using Bunkum.Core.Storage;
 using Bunkum.Listener.Protocol;
 using Bunkum.Protocols.Http;
 using Refresh.GameServer.Configuration;
-using Refresh.GameServer.Database;
+using Refresh.Database;
 using Refresh.GameServer.Services;
 using Refresh.GameServer.Types.Assets;
 using Refresh.GameServer.Types.Data;
@@ -14,6 +14,7 @@ using Refresh.GameServer.Types.Lists;
 using Refresh.GameServer.Types.Photos;
 using Refresh.GameServer.Types.Roles;
 using Refresh.GameServer.Types.UserData;
+using GameDatabaseContext = Refresh.Database.GameDatabaseContext;
 
 namespace Refresh.GameServer.Endpoints.Game;
 

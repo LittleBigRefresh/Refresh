@@ -1,4 +1,4 @@
-namespace Refresh.GameServer.Database;
+namespace Refresh.Database;
 
 public interface ISequentialId
 {

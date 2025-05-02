@@ -1,5 +1,6 @@
-using Refresh.GameServer.Database;
+using Refresh.Database;
 using Refresh.GameServer.Types.UserData;
+using GameDatabaseContext = Refresh.Database.GameDatabaseContext;
 
 namespace RefreshTests.GameServer.Tests.Users;
 

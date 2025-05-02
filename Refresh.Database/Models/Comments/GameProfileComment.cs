@@ -1,4 +1,4 @@
-using Refresh.GameServer.Database;
+using Refresh.Database;
 using Refresh.GameServer.Types.UserData;
 
 namespace Refresh.GameServer.Types.Comments;

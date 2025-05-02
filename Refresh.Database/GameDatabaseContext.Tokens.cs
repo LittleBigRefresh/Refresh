@@ -5,7 +5,7 @@ using Refresh.GameServer.Time;
 using Refresh.GameServer.Types.Relations;
 using Refresh.GameServer.Types.UserData;
 
-namespace Refresh.GameServer.Database;
+namespace Refresh.Database;
 
 public partial class GameDatabaseContext // Tokens
 {

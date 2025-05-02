@@ -1,5 +1,5 @@
 using System.Xml.Serialization;
-using Refresh.GameServer.Database;
+using Refresh.Database;
 
 namespace Refresh.GameServer.Types.UserData.Leaderboard;
 

@@ -1,4 +1,4 @@
-namespace Refresh.GameServer.Endpoints.Game.Levels.FilterSettings;
+namespace Refresh.Database.Query;
 
 /// <summary>
 /// What game to filter to, only relevant to LBP2

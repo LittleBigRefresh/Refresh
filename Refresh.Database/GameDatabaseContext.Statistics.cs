@@ -1,6 +1,6 @@
 using Refresh.GameServer.Types;
 
-namespace Refresh.GameServer.Database;
+namespace Refresh.Database;
 
 public partial class GameDatabaseContext // Statistics
 {

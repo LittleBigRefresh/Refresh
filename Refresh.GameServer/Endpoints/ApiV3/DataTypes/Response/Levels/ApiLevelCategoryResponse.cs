@@ -1,7 +1,7 @@
 using Bunkum.Core;
+using Refresh.Database.Query;
 using Refresh.GameServer.Authentication;
-using Refresh.GameServer.Database;
-using Refresh.GameServer.Endpoints.Game.Levels.FilterSettings;
+using Refresh.Database;
 using Refresh.GameServer.Types.Categories.Levels;
 using Refresh.GameServer.Types.Data;
 using Refresh.GameServer.Types.Levels;

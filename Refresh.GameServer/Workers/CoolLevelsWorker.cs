@@ -8,7 +8,7 @@
 
 using System.Diagnostics;
 using NotEnoughLogs;
-using Refresh.GameServer.Database;
+using Refresh.Database;
 using Refresh.GameServer.Types.Data;
 using Refresh.GameServer.Types.Levels;
 using Refresh.GameServer.Types.Reviews;

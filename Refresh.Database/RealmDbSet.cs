@@ -4,7 +4,7 @@ using System.Collections;
 using System.Linq.Expressions;
 using JetBrains.Annotations;
 
-namespace Refresh.GameServer.Database;
+namespace Refresh.Database;
 
 public class RealmDbSet<T> : IQueryable<T> where T : IRealmObject
 {

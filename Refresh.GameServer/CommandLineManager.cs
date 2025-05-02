@@ -1,9 +1,10 @@
 using System.Diagnostics.CodeAnalysis;
 using CommandLine;
-using Refresh.GameServer.Database;
+using Refresh.Database;
 using Refresh.GameServer.Documentation;
 using Refresh.GameServer.Types.Roles;
 using Refresh.GameServer.Types.UserData;
+using GameDatabaseContext = Refresh.Database.GameDatabaseContext;
 
 namespace Refresh.GameServer;
 

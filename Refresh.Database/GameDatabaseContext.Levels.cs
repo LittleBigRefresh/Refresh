@@ -4,7 +4,6 @@ using JetBrains.Annotations;
 using Refresh.Common.Constants;
 using Refresh.Database.Query;
 using Refresh.GameServer.Authentication;
-using Refresh.GameServer.Endpoints.Game.Levels.FilterSettings;
 using Refresh.GameServer.Types.Activity;
 using Refresh.GameServer.Types.Challenges.LbpHub;
 using Refresh.GameServer.Types.Levels;
@@ -12,7 +11,7 @@ using Refresh.GameServer.Types.Relations;
 using Refresh.GameServer.Types.UserData;
 using Refresh.GameServer.Types.UserData.Leaderboard;
 
-namespace Refresh.GameServer.Database;
+namespace Refresh.Database;
 
 public partial class GameDatabaseContext // Levels
 {

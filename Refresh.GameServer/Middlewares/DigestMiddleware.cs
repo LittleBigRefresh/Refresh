@@ -6,8 +6,9 @@ using Bunkum.Core.Endpoints.Middlewares;
 using Refresh.Common.Helpers;
 using Refresh.GameServer.Authentication;
 using Refresh.GameServer.Configuration;
-using Refresh.GameServer.Database;
+using Refresh.Database;
 using Refresh.GameServer.Endpoints;
+using GameDatabaseContext = Refresh.Database.GameDatabaseContext;
 
 namespace Refresh.GameServer.Middlewares;
 

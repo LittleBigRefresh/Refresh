@@ -4,7 +4,7 @@ using Bunkum.Core.Storage;
 using Bunkum.Protocols.Http.Direct;
 using JetBrains.Annotations;
 using Refresh.GameServer.Authentication;
-using Refresh.GameServer.Database;
+using Refresh.Database;
 using Refresh.GameServer.Services;
 using Refresh.GameServer.Types.Data;
 using Refresh.GameServer.Types.Levels;
@@ -12,6 +12,7 @@ using Refresh.GameServer.Types.Roles;
 using Refresh.GameServer.Types.UserData;
 using Refresh.GameServer.Types.UserData.Leaderboard;
 using RefreshTests.GameServer.Time;
+using GameDatabaseContext = Refresh.Database.GameDatabaseContext;
 
 namespace RefreshTests.GameServer;
 

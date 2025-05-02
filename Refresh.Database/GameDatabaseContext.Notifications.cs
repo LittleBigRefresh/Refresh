@@ -4,7 +4,7 @@ using Refresh.GameServer.Types.Levels;
 using Refresh.GameServer.Types.Notifications;
 using Refresh.GameServer.Types.UserData;
 
-namespace Refresh.GameServer.Database;
+namespace Refresh.Database;
 
 public partial class GameDatabaseContext // Notifications
 {

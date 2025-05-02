@@ -1,12 +1,13 @@
 using System.Diagnostics;
 using Bunkum.Listener.Request;
-using Refresh.GameServer.Database;
+using Refresh.Database;
 using Refresh.GameServer.Types.UserData;
 using Bunkum.Core.Authentication;
 using Bunkum.Core.Database;
 using Refresh.GameServer.Configuration;
 using Refresh.GameServer.Endpoints;
 using Refresh.GameServer.Types.Roles;
+using GameDatabaseContext = Refresh.Database.GameDatabaseContext;
 
 namespace Refresh.GameServer.Authentication;
 

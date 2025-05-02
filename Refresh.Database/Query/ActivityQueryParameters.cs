@@ -1,6 +1,6 @@
 using Refresh.GameServer.Types.UserData;
 
-namespace Refresh.GameServer.Types.Activity;
+namespace Refresh.Database.Query;
 
 public struct ActivityQueryParameters
 {

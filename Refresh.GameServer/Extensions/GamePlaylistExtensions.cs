@@ -1,5 +1,6 @@
-using Refresh.GameServer.Database;
+using Refresh.Database;
 using Refresh.GameServer.Types.Playlists;
+using GameDatabaseContext = Refresh.Database.GameDatabaseContext;
 
 namespace Refresh.GameServer.Extensions;
 

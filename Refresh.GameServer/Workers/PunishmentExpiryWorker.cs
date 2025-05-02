@@ -1,4 +1,4 @@
-using Refresh.GameServer.Database;
+using Refresh.Database;
 using Refresh.GameServer.Types.Data;
 using Refresh.GameServer.Types.Roles;
 using Refresh.GameServer.Types.UserData;
