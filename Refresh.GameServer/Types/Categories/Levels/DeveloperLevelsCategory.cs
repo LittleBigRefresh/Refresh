@@ -1,16 +1,15 @@
 using Bunkum.Core;
-using Refresh.GameServer.Authentication;
 using Refresh.GameServer.Database;
 using Refresh.GameServer.Endpoints.Game.Levels.FilterSettings;
-using Refresh.GameServer.Services;
 using Refresh.GameServer.Types.Data;
+using Refresh.GameServer.Types.Levels;
 using Refresh.GameServer.Types.UserData;
 
-namespace Refresh.GameServer.Types.Levels.Categories;
+namespace Refresh.GameServer.Types.Categories.Levels;
 
-public class DeveloperLevelsCategory : LevelCategory
+public class DeveloperLevelsCategory : GameLevelCategory
 {
-    internal DeveloperLevelsCategory() : base("developer", Array.Empty<string>(), false)
+    internal DeveloperLevelsCategory() : base("developer", [], false)
     {
         this.Name = "Story Levels";
         this.Description = "Levels from LittleBigPlanet's story mode.";
