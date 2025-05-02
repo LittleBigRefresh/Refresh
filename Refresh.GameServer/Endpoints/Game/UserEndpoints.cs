@@ -11,6 +11,7 @@ using Refresh.GameServer.Endpoints.Game.DataTypes.Response;
 using Refresh.GameServer.Services;
 using Refresh.GameServer.Types.Data;
 using Refresh.GameServer.Types.Lists;
+using Refresh.GameServer.Types.Pins;
 using Refresh.GameServer.Types.Roles;
 using Refresh.GameServer.Types.UserData;
 
@@ -146,38 +147,57 @@ public class UserEndpoints : EndpointGroup
     }
 
     [GameEndpoint("update_my_pins", HttpMethods.Post, ContentType.Json)]
+    [RequireEmailVerified]
     [NullStatusCode(BadRequest)]
-    public string? UpdatePins(RequestContext context, GameDatabaseContext database, GameUser user, Stream body)
+    public SerializedPins? UpdatePins(RequestContext context, DataContext dataContext, GameUser user, SerializedPins body)
     {
-        JsonSerializer serializer = new();
-
-        using StreamReader streamReader = new(body);
-        using JsonTextReader jsonReader = new(streamReader);
-
-        UserPins? updateUserPins = serializer.Deserialize<UserPins>(jsonReader);
-
-        //If the type is not correct, return null
-        if (updateUserPins is null)
+        // Try to convert pin progress
+        Dictionary<long, int> pinProgresses = [];
+        try
         {
-            database.AddErrorNotification("Pin sync failed", "Your pins failed to update because the data could not be read.", user);
+            pinProgresses = SerializedPins.ToMergedDictionary
+            ([
+                SerializedPins.ToDictionary(body.ProgressPins),
+                SerializedPins.ToDictionary(body.AwardPins),
+            ]);
+        }
+        catch (Exception ex)
+        {
+            context.Logger.LogWarning(BunkumCategory.UserContent, $"Failed to convert pins from list to dictionary: {ex}");
+            dataContext.Database.AddErrorNotification
+            (
+                "Pin progress update failed",
+                $"Your pin progress failed to get saved on the server because the data could not be read.",
+                user
+            );
             return null;
         }
-        
-        //NOTE: the returned value in the packet capture has a few higher values than the ones sent in the request,
-        //      so im not sure what we are supposed to return here, so im just passing it through with `profile_pins` nulled out
-        database.UpdateUserPins(user, updateUserPins);
 
-        //Dont serialize profile pins, the packet capture doesnt have them in the return
-        updateUserPins.ProfilePins?.Clear();
-
-        //Just return the same pins back to the client
-        return JsonConvert.SerializeObject(updateUserPins, new JsonSerializerSettings
+        if (pinProgresses.Count > 0)
         {
-            NullValueHandling = NullValueHandling.Ignore,
-        });
+            dataContext.Database.UpdateUserPinProgress(pinProgresses, user, dataContext.Game);
+        }
+
+        // Users can only have 3 pins set on their profile
+        if (body.ProfilePins.Count > 3)
+            return null;
+
+        if (body.ProfilePins.Count > 0)
+        {
+            dataContext.Database.UpdateUserProfilePins(body.ProfilePins, user, dataContext.Game);
+        }
+
+        // Return newly updated pins (LBP2 and 3 update their pin progresses if there are higher progress values
+        // in the response, but seemingly ignore the profile pins in the response)
+        return this.GetPins(context, dataContext, user);
     }
 
     [GameEndpoint("get_my_pins", HttpMethods.Get, ContentType.Json)]
     [MinimumRole(GameUserRole.Restricted)]
-    public UserPins GetPins(RequestContext context, GameUser user) => user.Pins;
+    public SerializedPins GetPins(RequestContext context, DataContext dataContext, GameUser user)
+        => SerializedPins.FromOld
+        (
+            dataContext.Database.GetPinProgressesByUser(user, dataContext.Game, 0, 999).Items,
+            dataContext.Database.GetProfilePinsByUser(user, dataContext.Game, 0, 3).Items
+        );
 }
