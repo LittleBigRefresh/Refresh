@@ -148,7 +148,8 @@ public class UserEndpoints : EndpointGroup
 
     [GameEndpoint("update_my_pins", HttpMethods.Post, ContentType.Json)]
     [RequireEmailVerified]
-    public SerializedPins UpdatePins(RequestContext context, DataContext dataContext, GameUser user, SerializedPins body)
+    [NullStatusCode(BadRequest)]
+    public SerializedPins? UpdatePins(RequestContext context, DataContext dataContext, GameUser user, SerializedPins body)
     {
         // Try to convert pin progress
         Dictionary<long, int> pinProgresses = [];
@@ -169,6 +170,7 @@ public class UserEndpoints : EndpointGroup
                 $"Your pin progress failed to get saved on the server because the data could not be read.",
                 user
             );
+            return null;
         }
 
         if (pinProgresses.Count > 0)
@@ -176,9 +178,13 @@ public class UserEndpoints : EndpointGroup
             dataContext.Database.UpdateUserPinProgress(pinProgresses, user, dataContext.Game);
         }
 
+        // Users can only have 3 pins set on their profile
+        if (body.ProfilePins.Count > 3)
+            return null;
+
         if (body.ProfilePins.Count > 0)
         {
-            dataContext.Database.UpdateUserProfilePins(body.ProfilePins.Take(3).ToList(), user, dataContext.Game);
+            dataContext.Database.UpdateUserProfilePins(body.ProfilePins, user, dataContext.Game);
         }
 
         // Return newly updated pins (LBP2 and 3 update their pin progresses if there are higher progress values
