@@ -1,3 +1,4 @@
+using Refresh.Database;
 using Refresh.GameServer.Endpoints.ApiV3.DataTypes;
 using Refresh.GameServer.Types.Data;
 
@@ -37,22 +38,15 @@ public class DatabaseList<TObject> where TObject : class
         this.NextPageIndex = -1;
     }
 
-    private DatabaseList(int oldTotalItems, int oldNextPageIndex, IEnumerable<TObject> items)
+    [Obsolete("For conversion use only.")]
+    public DatabaseList(int oldTotalItems, int oldNextPageIndex, IEnumerable<TObject> items)
     {
         this.Items = items.ToList();
         this.TotalItems = oldTotalItems;
         this.NextPageIndex = oldNextPageIndex;
     }
-    
-    public static DatabaseList<TNewObject> FromOldList<TNewObject, TOldObject>(DatabaseList<TOldObject> oldList, DataContext dataContext)
-        where TNewObject : class, IDataConvertableFrom<TNewObject, TOldObject>
-        where TOldObject : class
-    {
-        DatabaseList<TNewObject> newList = new(oldList.TotalItems, oldList.NextPageIndex, TNewObject.FromOldList(oldList.Items, dataContext));
-        return newList;
-    }
 
-    public static DatabaseList<TObject> Empty() => new(Array.Empty<TObject>());
+    public static DatabaseList<TObject> Empty() => new([]);
 
     public IEnumerable<TObject> Items { get; private init; }
     public int TotalItems { get; }

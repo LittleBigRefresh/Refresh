@@ -236,7 +236,7 @@ public class PublishEndpoints : EndpointGroup
         // don't want to increment for failed uploads
         if (config.TimedLevelUploadLimits.Enabled)
         {
-            dataContext.Database.IncrementTimedLevelLimit(user, config.TimedLevelUploadLimits);
+            dataContext.Database.IncrementTimedLevelLimit(user, config.TimedLevelUploadLimits.TimeSpanHours);
         }
 
         // Update the modded status of the level

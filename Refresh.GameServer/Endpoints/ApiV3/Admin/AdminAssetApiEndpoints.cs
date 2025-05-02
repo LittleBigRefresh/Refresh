@@ -45,6 +45,6 @@ public class AdminAssetApiEndpoints : EndpointGroup
             assets = database.GetAssetsUploadedByUser(user, skip, count, assetType);
         }
         
-        return DatabaseList<ApiMinimalGameAssetResponse>.FromOldList<ApiMinimalGameAssetResponse, GameAsset>(assets, dataContext);
+        return DatabaseListExtensions.FromOldList<ApiMinimalGameAssetResponse, GameAsset>(assets, dataContext);
     }
 }

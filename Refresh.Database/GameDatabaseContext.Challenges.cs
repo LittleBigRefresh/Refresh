@@ -1,4 +1,5 @@
 using Refresh.Common.Constants;
+using Refresh.Database.Query;
 using Refresh.GameServer.Types.Challenges.LbpHub;
 using Refresh.GameServer.Types.Levels;
 using Refresh.GameServer.Types.UserData;
@@ -9,7 +10,7 @@ public partial class GameDatabaseContext // Challenges
 {
     #region Challenges
 
-    public GameChallenge CreateChallenge(SerializedChallenge createInfo, GameLevel level, GameUser user)
+    public GameChallenge CreateChallenge(ICreateChallengeInfo createInfo, GameLevel level, GameUser user)
     {
         DateTimeOffset now = this._time.Now;
 
@@ -21,7 +22,7 @@ public partial class GameDatabaseContext // Challenges
             StartCheckpointUid = createInfo.StartCheckpointUid,
             FinishCheckpointUid = createInfo.FinishCheckpointUid,
             // Take the type of the first (so far always only) criterion in the challenge criteria
-            Type = (GameChallengeCriteriaType)createInfo.Criteria[0].Type,
+            Type = createInfo.CriteriaTypes.First(),
             PublishDate = now,
             LastUpdateDate = now,
             ExpirationDate = now.AddDays(createInfo.ExpiresAt),

@@ -38,7 +38,7 @@ public class LeaderboardApiEndpoints : EndpointGroup
         if (!result) return ApiValidationError.BooleanParseError;
 
         DatabaseList<GameSubmittedScore> scores = database.GetTopScoresForLevel(level, count, skip, (byte)mode, showAll);
-        DatabaseList<ApiGameScoreResponse> ret = DatabaseList<ApiGameScoreResponse>.FromOldList<ApiGameScoreResponse, GameSubmittedScore>(scores, dataContext);
+        DatabaseList<ApiGameScoreResponse> ret = DatabaseListExtensions.FromOldList<ApiGameScoreResponse, GameSubmittedScore>(scores, dataContext);
         return ret;
     }
 

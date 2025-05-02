@@ -1,9 +1,10 @@
+using Refresh.Database.Query;
 using Refresh.GameServer.Authentication;
 
 namespace Refresh.GameServer.Endpoints.ApiV3.DataTypes.Request;
 
 [JsonObject(NamingStrategyType = typeof(CamelCaseNamingStrategy))]
-public class ApiContestRequest
+public class ApiContestRequest : ICreateContestInfo
 {
     public string? OrganizerId { get; set; }
     public DateTimeOffset? StartDate { get; set; }

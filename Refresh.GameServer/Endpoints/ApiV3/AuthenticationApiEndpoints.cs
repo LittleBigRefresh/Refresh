@@ -191,7 +191,7 @@ public class AuthenticationApiEndpoints : EndpointGroup
     {
         (int skip, int count) = context.GetPageData();
 
-        return DatabaseList<ApiGameIpVerificationRequestResponse>.FromOldList<ApiGameIpVerificationRequestResponse, GameIpVerificationRequest>
+        return DatabaseListExtensions.FromOldList<ApiGameIpVerificationRequestResponse, GameIpVerificationRequest>
                 (database.GetIpVerificationRequestsForUser(user, count, skip), dataContext);
     }
 
@@ -204,8 +204,7 @@ public class AuthenticationApiEndpoints : EndpointGroup
 
         DatabaseList<GameUserVerifiedIpRelation> verifiedIps = database.GetVerifiedIps(user, skip, count);
 
-        return DatabaseList<ApiGameUserVerifiedIpResponse>
-            .FromOldList<ApiGameUserVerifiedIpResponse, GameUserVerifiedIpRelation>(verifiedIps, dataContext);
+        return DatabaseListExtensions.FromOldList<ApiGameUserVerifiedIpResponse, GameUserVerifiedIpRelation>(verifiedIps, dataContext);
     }
 
     [ApiV3Endpoint("removeVerifiedIp", HttpMethods.Delete), MinimumRole(GameUserRole.Restricted)]

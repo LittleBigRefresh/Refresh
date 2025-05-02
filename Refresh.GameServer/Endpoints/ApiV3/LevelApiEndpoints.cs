@@ -73,7 +73,7 @@ public class LevelApiEndpoints : EndpointGroup
 
         if (list == null) return ApiNotFoundError.Instance;
 
-        DatabaseList<ApiGameLevelResponse> levels = DatabaseList<ApiGameLevelResponse>.FromOldList<ApiGameLevelResponse, GameLevel>(list, dataContext);
+        DatabaseList<ApiGameLevelResponse> levels = DatabaseListExtensions.FromOldList<ApiGameLevelResponse, GameLevel>(list, dataContext);
         return levels;
     }
 

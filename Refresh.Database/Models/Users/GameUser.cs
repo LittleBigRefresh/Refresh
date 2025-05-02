@@ -2,7 +2,6 @@ using System.Xml.Serialization;
 using MongoDB.Bson;
 using Realms;
 using Bunkum.Core.RateLimit;
-using Refresh.GameServer.Configuration;
 using Refresh.GameServer.Types.Playlists;
 using Refresh.GameServer.Types.Roles;
 
@@ -155,7 +154,7 @@ public partial class GameUser : IRealmObject, IRateLimitUser
     }
 
     // Defined in authentication provider. Avoids Realm threading nonsense.
-    [Ignored] [XmlIgnore] public object RateLimitUserId { get; internal set; } = null!;
+    [Ignored] [XmlIgnore] public object RateLimitUserId { get; set; } = null!;
 
     #endregion
 

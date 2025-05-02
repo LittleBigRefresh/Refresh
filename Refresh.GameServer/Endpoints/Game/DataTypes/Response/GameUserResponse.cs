@@ -161,7 +161,7 @@ public class GameUserResponse : IDataConvertableFrom<GameUserResponse, GameUser>
                 List<GameMinimalLevelResponse> favouriteLevels = dataContext.Database
                     .GetLevelsFavouritedByUser(old, 20, 0, new LevelFilterSettings(dataContext.Game), dataContext.User)
                     .Items
-                    .Where(l => l._GameVersion == (int)TokenGame.LittleBigPlanetPSP)
+                    .Where(l => l.GameVersion == TokenGame.LittleBigPlanetPSP)
                     .Select(l => GameMinimalLevelResponse.FromOld(l, dataContext)).ToList()!;
                 response.FavouriteLevels = new SerializedMinimalFavouriteLevelList(new SerializedMinimalLevelList(favouriteLevels, favouriteLevels.Count, favouriteLevels.Count));
                 break;

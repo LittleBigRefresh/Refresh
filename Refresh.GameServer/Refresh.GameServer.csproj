@@ -77,25 +77,10 @@
       <PackageReference Include="SixLabors.ImageSharp" Version="3.1.8" />
       <PackageReference Include="EasyHotReload" Version="1.0.0" />
     </ItemGroup>
-    
-    <ItemGroup Condition="'$(Configuration)'!='DebugPostgres'">
-        <PackageReference Include="Bunkum.RealmDatabase" Version="4.8.1" />
-        <PackageReference Include="Bunkum.HealthChecks.RealmDatabase" Version="4.8.1" />
-        <PackageReference Include="Realm" Version="20.1.0" />
-    </ItemGroup>
-
-    <ItemGroup Condition="'$(Configuration)'=='DebugPostgres'">
-        <PackageReference Include="Microsoft.EntityFrameworkCore.Relational" Version="9.0.3" />
-        <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="9.0.4" />
-        <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="9.0.3">
-            <PrivateAssets>all</PrivateAssets>
-            <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
-        </PackageReference>
-        <PackageReference Include="MongoDB.Bson" Version="3.2.1" />
-    </ItemGroup>
 
     <ItemGroup>
         <ProjectReference Include="..\Refresh.Common\Refresh.Common.csproj" />
+        <ProjectReference Include="..\Refresh.Database\Refresh.Database.csproj" />
     </ItemGroup>
 
     <ItemGroup>

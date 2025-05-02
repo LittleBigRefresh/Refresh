@@ -30,7 +30,7 @@ public class ReviewApiEndpoints : EndpointGroup
         (int skip, int count) = context.GetPageData();
         
         DatabaseList<GameReview> reviews = database.GetReviewsForLevel(level, count, skip);
-        DatabaseList<ApiGameReviewResponse> ret = DatabaseList<ApiGameScoreResponse>.FromOldList<ApiGameReviewResponse, GameReview>(reviews, dataContext);
+        DatabaseList<ApiGameReviewResponse> ret = DatabaseListExtensions.FromOldList<ApiGameReviewResponse, GameReview>(reviews, dataContext);
 
         return ret;
     }

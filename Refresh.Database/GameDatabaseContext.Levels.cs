@@ -3,6 +3,7 @@ using System.Reflection;
 using JetBrains.Annotations;
 using Realms;
 using Refresh.Common.Constants;
+using Refresh.Database.Query;
 using Refresh.GameServer.Authentication;
 using Refresh.GameServer.Endpoints.ApiV3.DataTypes.Request;
 using Refresh.GameServer.Endpoints.Game.Levels.FilterSettings;
@@ -82,14 +83,14 @@ public partial class GameDatabaseContext // Levels
         return level;
     }
 
-    public void UpdateLevelLocations(IEnumerable<SerializedLevelLocation> locations, GameUser updatingUser)
+    public void UpdateLevelLocations(IEnumerable<ISerializedEditLevelLocation> locations, GameUser updatingUser)
     {
         IEnumerable<GameLevel> levelsByUser = this.GameLevels.Where(l => l.Publisher != null && l.Publisher == updatingUser);
         int failedUpdates = 0;
 
         this.Write(() => 
         {
-            foreach (SerializedLevelLocation location in locations)
+            foreach (ISerializedEditLevelLocation location in locations)
             {
                 // This gets the level to update while also verifying whether the user may even update its location
                 GameLevel? level = levelsByUser.FirstOrDefault(l => l.LevelId == location.LevelId);
@@ -161,7 +162,7 @@ public partial class GameDatabaseContext // Levels
         return oldLevel;
     }
     
-    public GameLevel? UpdateLevel(ApiEditLevelRequest body, GameLevel level)
+    public GameLevel? UpdateLevel(IApiEditLevelRequest body, GameLevel level)
     {
         if (body.Title is { Length: > UgcLimits.TitleLimit })
             body.Title = body.Title[..UgcLimits.TitleLimit];
@@ -180,7 +181,7 @@ public partial class GameDatabaseContext // Levels
                 if(propValue == null) continue;
 
                 PropertyInfo? gameLevelProp = level.GetType().GetProperty(prop.Name);
-                Debug.Assert(gameLevelProp != null, $"Invalid property {prop.Name} on {nameof(ApiEditLevelRequest)}");
+                Debug.Assert(gameLevelProp != null, $"Invalid property {prop.Name} on {nameof(IApiEditLevelRequest)}");
                 
                 gameLevelProp.SetValue(level, prop.GetValue(body));
             }
@@ -409,20 +410,6 @@ public partial class GameDatabaseContext // Levels
             .Where(l => l.StoryId != 0) // filter to only levels with a story ID set
             .FilterByLevelFilterSettings(null, levelFilterSettings)
             .OrderByDescending(l => l.Title), skip, count);
-
-    [Pure]
-    public DatabaseList<GameLevel> GetBusiestLevels(int count, int skip, MatchService service, GameUser? user, LevelFilterSettings levelFilterSettings)
-    {
-        IOrderedEnumerable<IGrouping<GameLevel?,GameRoom>> rooms = service.RoomAccessor.GetAllRooms()
-            .Where(r => r.LevelType == RoomSlotType.Online && r.HostId.Id != null) // if playing online level and host exists on server
-            .GroupBy(r => this.GetLevelById(r.LevelId))
-            .OrderBy(r => r.Sum(room => room.PlayerIds.Count));
-
-        return new DatabaseList<GameLevel>(rooms.Select(r => r.Key)
-            .Where(l => l != null && l.StoryId == 0)!
-            .FilterByLevelFilterSettings(user, levelFilterSettings)
-            .FilterByGameVersion(levelFilterSettings.GameVersion), skip, count);
-    }
     
     [Pure]
     public DatabaseList<GameLevel> GetCoolLevels(int count, int skip, GameUser? user, LevelFilterSettings levelFilterSettings) =>

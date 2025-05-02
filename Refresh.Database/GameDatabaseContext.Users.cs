@@ -1,6 +1,7 @@
 using JetBrains.Annotations;
 using MongoDB.Bson;
 using Refresh.Common.Constants;
+using Refresh.Database.Query;
 using Refresh.GameServer.Authentication;
 using Refresh.GameServer.Configuration;
 using Refresh.GameServer.Endpoints.ApiV3.DataTypes.Request;
@@ -87,7 +88,7 @@ public partial class GameDatabaseContext // Users
     public DatabaseList<GameUser> GetUsers(int count, int skip)
         => new(this.GameUsers.OrderByDescending(u => u.JoinDate), skip, count);
 
-    public void UpdateUserData(GameUser user, SerializedUpdateData data, TokenGame game)
+    public void UpdateUserData(GameUser user, ISerializedEditUser data, TokenGame game)
     {
         this.Write(() =>
         {
@@ -166,7 +167,7 @@ public partial class GameDatabaseContext // Users
         });
     }
     
-    public void UpdateUserData(GameUser user, ApiUpdateUserRequest data)
+    public void UpdateUserData(GameUser user, IApiEditUserRequest data)
     {
         this.Write(() =>
         {
@@ -423,7 +424,7 @@ public partial class GameDatabaseContext // Users
         });
     }
     
-    public void SetPrivacySettings(GameUser user, SerializedPrivacySettings settings) 
+    public void SetPrivacySettings(GameUser user, IEditUserPrivacySettings settings) 
     {
         this.Write(() =>
         {
@@ -467,12 +468,12 @@ public partial class GameDatabaseContext // Users
         });
     }
     
-    public void IncrementTimedLevelLimit(GameUser user, TimedLevelUploadLimitProperties config)
+    public void IncrementTimedLevelLimit(GameUser user, int hours)
     {
         this.Write(() => 
         {
             // Set expiry date if the timed limits have been reset previously
-            user.TimedLevelUploadExpiryDate ??= this._time.Now + TimeSpan.FromHours(config.TimeSpanHours);
+            user.TimedLevelUploadExpiryDate ??= this._time.Now + TimeSpan.FromHours(hours);
             user.TimedLevelUploads++;
         });
     }

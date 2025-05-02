@@ -1,5 +1,6 @@
 using Bunkum.Core.Storage;
 using NotEnoughLogs;
+using Refresh.Database;
 using Refresh.GameServer.Authentication;
 using Refresh.GameServer.Database;
 using Refresh.GameServer.Services;
@@ -7,7 +8,7 @@ using Refresh.GameServer.Types.UserData;
 
 namespace Refresh.GameServer.Types.Data;
 
-public class DataContext
+public class DataContext : IDataContext
 {
     public required GameDatabaseContext Database;
     public required Logger Logger;

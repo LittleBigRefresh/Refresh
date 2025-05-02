@@ -1,6 +1,7 @@
 using System.Security.Cryptography;
 using Bunkum.Core.Storage;
 using Refresh.Common.Helpers;
+using Refresh.Database;
 using Refresh.GameServer.Authentication;
 using Refresh.GameServer.Database;
 using Refresh.GameServer.Importing;
@@ -142,7 +143,7 @@ public partial class GameAsset
     /// <param name="database">The database</param>
     /// <param name="dataStore">The data store</param>
     /// <returns>The new hash of the converted asset, or null if no conversion has taken place</returns>
-    public string? GetAsPhoto(TokenGame game, DataContext dataContext)
+    public string? GetAsPhoto(TokenGame game, IDataContext dataContext)
     {
         return this.GetAsGeneric(
             game,
@@ -163,7 +164,7 @@ public partial class GameAsset
     /// <param name="database">The database</param>
     /// <param name="dataStore">The data store</param>
     /// <returns>The new hash of the converted asset, or null if no conversion has taken place</returns>
-    public string? GetAsIcon(TokenGame game, DataContext dataContext)
+    public string? GetAsIcon(TokenGame game, IDataContext dataContext)
     {
         return this.GetAsGeneric(
             game,

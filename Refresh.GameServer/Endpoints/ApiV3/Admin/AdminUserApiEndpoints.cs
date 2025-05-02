@@ -53,7 +53,7 @@ public class AdminUserApiEndpoints : EndpointGroup
         GameDatabaseContext database, IDataStore dataStore, DataContext dataContext)
     {
         (int skip, int count) = context.GetPageData();
-        DatabaseList<ApiExtendedGameUserResponse> list = DatabaseList<ApiExtendedGameUserResponse>.FromOldList<ApiExtendedGameUserResponse, GameUser>(database.GetUsers(count, skip), dataContext);
+        DatabaseList<ApiExtendedGameUserResponse> list = DatabaseListExtensions.FromOldList<ApiExtendedGameUserResponse, GameUser>(database.GetUsers(count, skip), dataContext);
         return list;
     }
 

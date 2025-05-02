@@ -3,7 +3,7 @@ using Refresh.GameServer.Endpoints.Game.Levels.FilterSettings;
 using Refresh.GameServer.Types.Levels;
 using Refresh.GameServer.Types.UserData;
 
-namespace Refresh.GameServer.Extensions;
+namespace Refresh.Database.Extensions;
 
 public static class LevelEnumerableExtensions
 {

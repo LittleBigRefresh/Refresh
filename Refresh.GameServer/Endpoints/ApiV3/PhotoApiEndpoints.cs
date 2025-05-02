@@ -42,7 +42,7 @@ public class PhotoApiEndpoints : EndpointGroup
         (int skip, int count) = context.GetPageData();
 
         DatabaseList<GamePhoto> photos = database.GetPhotosByUser(user, count, skip);
-        DatabaseList<ApiGamePhotoResponse> photosResponse = DatabaseList<ApiGamePhotoResponse>.FromOldList<ApiGamePhotoResponse, GamePhoto>(photos, dataContext);
+        DatabaseList<ApiGamePhotoResponse> photosResponse = DatabaseListExtensions.FromOldList<ApiGamePhotoResponse, GamePhoto>(photos, dataContext);
         return photosResponse;
     }
     
@@ -53,7 +53,7 @@ public class PhotoApiEndpoints : EndpointGroup
         (int skip, int count) = context.GetPageData();
 
         DatabaseList<GamePhoto> photos = database.GetPhotosWithUser(user, count, skip);
-        DatabaseList<ApiGamePhotoResponse> photosResponse = DatabaseList<ApiGamePhotoResponse>.FromOldList<ApiGamePhotoResponse, GamePhoto>(photos, dataContext);
+        DatabaseList<ApiGamePhotoResponse> photosResponse = DatabaseListExtensions.FromOldList<ApiGamePhotoResponse, GamePhoto>(photos, dataContext);
         return photosResponse;
     }
     
@@ -64,7 +64,7 @@ public class PhotoApiEndpoints : EndpointGroup
         (int skip, int count) = context.GetPageData();
 
         DatabaseList<GamePhoto> photos = database.GetPhotosInLevel(level, count, skip);
-        DatabaseList<ApiGamePhotoResponse> photosResponse = DatabaseList<ApiGamePhotoResponse>.FromOldList<ApiGamePhotoResponse, GamePhoto>(photos, dataContext);
+        DatabaseList<ApiGamePhotoResponse> photosResponse = DatabaseListExtensions.FromOldList<ApiGamePhotoResponse, GamePhoto>(photos, dataContext);
         return photosResponse;
     }
     
@@ -118,7 +118,7 @@ public class PhotoApiEndpoints : EndpointGroup
         (int skip, int count) = context.GetPageData();
         DatabaseList<GamePhoto> photos = database.GetRecentPhotos(count, skip);
 
-        DatabaseList<ApiGamePhotoResponse> photosResponse = DatabaseList<ApiGamePhotoResponse>.FromOldList<ApiGamePhotoResponse, GamePhoto>(photos, dataContext);
+        DatabaseList<ApiGamePhotoResponse> photosResponse = DatabaseListExtensions.FromOldList<ApiGamePhotoResponse, GamePhoto>(photos, dataContext);
         return photosResponse;
     }
     

@@ -1,12 +1,8 @@
 using System.Xml.Serialization;
-using Refresh.GameServer.Endpoints.Game.Handshake;
 
 namespace Refresh.GameServer.Types;
 
-/// <summary>
-/// Expected visibility settings for client
-/// </summary>
-/// <seealso cref="MetadataEndpoints"/>
+/// <seealso cref="Refresh.GameServer.Endpoints.Game.Handshake.MetadataEndpoints"/>
 public enum Visibility
 {
     /// <summary>

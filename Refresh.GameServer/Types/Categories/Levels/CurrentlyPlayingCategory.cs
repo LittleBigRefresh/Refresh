@@ -1,8 +1,10 @@
 using Bunkum.Core;
+using Refresh.Database.Extensions;
 using Refresh.GameServer.Database;
 using Refresh.GameServer.Endpoints.Game.Levels.FilterSettings;
 using Refresh.GameServer.Types.Data;
 using Refresh.GameServer.Types.Levels;
+using Refresh.GameServer.Types.Matching;
 using Refresh.GameServer.Types.UserData;
 
 namespace Refresh.GameServer.Types.Categories.Levels;
@@ -19,6 +21,16 @@ public class CurrentlyPlayingCategory : GameLevelCategory
 
     public override DatabaseList<GameLevel>? Fetch(RequestContext context, int skip, int count,
         DataContext dataContext,
-        LevelFilterSettings levelFilterSettings, GameUser? _) 
-        => dataContext.Database.GetBusiestLevels(count, skip, dataContext.Match, dataContext.User, levelFilterSettings);
+        LevelFilterSettings levelFilterSettings, GameUser? _)
+    {
+        IOrderedEnumerable<IGrouping<GameLevel?,GameRoom>> rooms = dataContext.Match.RoomAccessor.GetAllRooms()
+            .Where(r => r.LevelType == RoomSlotType.Online && r.HostId.Id != null) // if playing online level and host exists on server
+            .GroupBy(r => dataContext.Database.GetLevelById(r.LevelId))
+            .OrderBy(r => r.Sum(room => room.PlayerIds.Count));
+
+        return new DatabaseList<GameLevel>(rooms.Select(r => r.Key)
+            .Where(l => l != null && l.StoryId == 0)!
+            .FilterByLevelFilterSettings(dataContext.User, levelFilterSettings)
+            .FilterByGameVersion(levelFilterSettings.GameVersion), skip, count);
+    }
 }

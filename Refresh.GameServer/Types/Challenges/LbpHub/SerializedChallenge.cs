@@ -1,5 +1,6 @@
 using System.Xml.Serialization;
 using Refresh.Common.Constants;
+using Refresh.Database.Query;
 using Refresh.GameServer.Endpoints.ApiV3.DataTypes;
 using Refresh.GameServer.Types.Data;
 using Refresh.GameServer.Types.Levels;
@@ -10,7 +11,7 @@ namespace Refresh.GameServer.Types.Challenges.LbpHub;
 
 [XmlRoot("challenge")]
 [XmlType("challenge")]
-public class SerializedChallenge : IDataConvertableFrom<SerializedChallenge, GameChallenge>
+public class SerializedChallenge : IDataConvertableFrom<SerializedChallenge, GameChallenge>, ICreateChallengeInfo
 {
     [XmlElement("id")] public int ChallengeId { get; set; }
     [XmlElement("name")] public string Name { get; set; } = "Unnamed Challenge";
@@ -41,11 +42,15 @@ public class SerializedChallenge : IDataConvertableFrom<SerializedChallenge, Gam
     /// amount of time until expiration
     /// </summary>
     [XmlElement("expires")] public long ExpiresAt { get; set; }
+
     /// <summary>
     /// An array of criteria of a challenge. Appears to only ever have a single criterion.
     /// </summary>
     /// <seealso cref="SerializedChallengeCriterion"/>
     [XmlArray("criteria")] public List<SerializedChallengeCriterion> Criteria { get; set; } = [];
+
+    public IEnumerable<GameChallengeCriteriaType> CriteriaTypes 
+        => this.Criteria.Select(c => (GameChallengeCriteriaType)c.Type);
 
     #nullable enable
     public static SerializedChallenge? FromOld(GameChallenge? old, DataContext dataContext)

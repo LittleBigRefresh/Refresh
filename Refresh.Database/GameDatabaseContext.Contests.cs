@@ -1,6 +1,7 @@
 using System.Diagnostics;
 using System.Reflection;
 using JetBrains.Annotations;
+using Refresh.Database.Query;
 using Refresh.GameServer.Endpoints.ApiV3.DataTypes.Request;
 using Refresh.GameServer.Endpoints.Game.Levels.FilterSettings;
 using Refresh.GameServer.Extensions;
@@ -61,7 +62,7 @@ public partial class GameDatabaseContext // Contests
             .FirstOrDefault();
     }
     
-    public GameContest UpdateContest(ApiContestRequest body, GameContest contest, GameUser? newOrganizer = null)
+    public GameContest UpdateContest(ICreateContestInfo body, GameContest contest, GameUser? newOrganizer = null)
     {
         this.Write(() =>
         {

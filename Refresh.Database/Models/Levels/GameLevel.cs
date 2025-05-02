@@ -5,7 +5,6 @@ using Refresh.GameServer.Database;
 using Refresh.GameServer.Types.UserData;
 using Refresh.GameServer.Types.Levels.SkillRewards;
 using Refresh.GameServer.Types.Reviews;
-using Refresh.GameServer.Workers;
 
 namespace Refresh.GameServer.Types.Levels;
 

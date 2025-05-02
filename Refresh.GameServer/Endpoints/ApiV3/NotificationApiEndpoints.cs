@@ -27,7 +27,7 @@ public class NotificationApiEndpoints : EndpointGroup
     {
         (int skip, int count) = context.GetPageData();
         DatabaseList<GameNotification> notifications = database.GetNotificationsByUser(user, count, skip);
-        return DatabaseList<ApiGameNotificationResponse>.FromOldList<ApiGameNotificationResponse, GameNotification>(notifications, dataContext);
+        return DatabaseListExtensions.FromOldList<ApiGameNotificationResponse, GameNotification>(notifications, dataContext);
     }
 
     [ApiV3Endpoint("notifications/{uuid}"), MinimumRole(GameUserRole.Restricted)]

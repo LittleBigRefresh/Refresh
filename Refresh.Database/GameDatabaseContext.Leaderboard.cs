@@ -1,5 +1,6 @@
 using JetBrains.Annotations;
 using MongoDB.Bson;
+using Refresh.Database.Query;
 using Refresh.GameServer.Authentication;
 using Refresh.GameServer.Types.Activity;
 using Refresh.GameServer.Types.Levels;
@@ -10,10 +11,10 @@ namespace Refresh.GameServer.Database;
 
 public partial class GameDatabaseContext // Leaderboard
 {
-    public GameSubmittedScore SubmitScore(SerializedScore score, Token token, GameLevel level)
+    public GameSubmittedScore SubmitScore(ISerializedScore score, Token token, GameLevel level)
         => this.SubmitScore(score, token.User, level, token.TokenGame, token.TokenPlatform);
 
-    public GameSubmittedScore SubmitScore(SerializedScore score, GameUser user, GameLevel level, TokenGame game, TokenPlatform platform)
+    public GameSubmittedScore SubmitScore(ISerializedScore score, GameUser user, GameLevel level, TokenGame game, TokenPlatform platform)
     {
         GameSubmittedScore newScore = new()
         {

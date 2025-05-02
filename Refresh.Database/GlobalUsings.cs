@@ -1,10 +1,8 @@
-// Global using directives
-
-global using static System.Net.HttpStatusCode;
+﻿global using static System.Net.HttpStatusCode;
 global using Newtonsoft.Json;
 global using Newtonsoft.Json.Serialization;
 
-global using Refresh.GameServer.Extensions;
+global using Refresh.Database.Extensions;
 global using Refresh.Common.Extensions;
 
 #if !POSTGRES
