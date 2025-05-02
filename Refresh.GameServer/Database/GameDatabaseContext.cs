@@ -111,8 +111,8 @@ public partial class GameDatabaseContext :
     private DbSet<GameUserVerifiedIpRelation> GameUserVerifiedIpRelations { get; set; }
     private DbSet<GameChallenge> GameChallenges { get; set; }
     private DbSet<GameChallengeScore> GameChallengeScores { get; set; }
-    private DbSet<PinProgressRelation> PinProgressRelations => new(this._realm);
-    private DbSet<ProfilePinRelation> ProfilePinRelations => new(this._realm);
+    private DbSet<PinProgressRelation> PinProgressRelations { get; set; }
+    private DbSet<ProfilePinRelation> ProfilePinRelations { get; set; }
     #endif
     
     internal GameDatabaseContext(IDateTimeProvider time)
