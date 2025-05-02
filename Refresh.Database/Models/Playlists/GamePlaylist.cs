@@ -1,7 +1,6 @@
-using Refresh.Database;
-using Refresh.GameServer.Types.UserData;
+using Refresh.Database.Models.Users;
 
-namespace Refresh.GameServer.Types.Playlists;
+namespace Refresh.Database.Models.Playlists;
 
 /// <summary>
 /// A user-curated list of levels.

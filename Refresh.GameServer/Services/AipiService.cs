@@ -5,7 +5,7 @@ using JetBrains.Annotations;
 using NotEnoughLogs;
 using Refresh.GameServer.Configuration;
 using Refresh.GameServer.Importing;
-using Refresh.GameServer.Types.Assets;
+using Refresh.Database.Models.Assets;
 using Refresh.GameServer.Types.Data;
 using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.Formats;

@@ -1,10 +1,9 @@
 using System.Security.Cryptography;
-using Refresh.GameServer.Authentication;
+using Refresh.Database.Models.Authentication;
 using Refresh.GameServer.Configuration;
 using Refresh.GameServer.Services;
 using Refresh.GameServer.Types.Lists;
-using Refresh.GameServer.Types.Roles;
-using Refresh.GameServer.Types.UserData;
+using Refresh.Database.Models.Users;
 using RefreshTests.GameServer.Extensions;
 
 namespace RefreshTests.GameServer.Tests.Assets;

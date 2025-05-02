@@ -2,9 +2,9 @@ using System.Xml.Serialization;
 using Bunkum.Core.Authentication;
 using JetBrains.Annotations;
 using MongoDB.Bson;
-using Refresh.GameServer.Types.UserData;
+using Refresh.Database.Models.Users;
 
-namespace Refresh.GameServer.Authentication;
+namespace Refresh.Database.Models.Authentication;
 
 #nullable disable
 

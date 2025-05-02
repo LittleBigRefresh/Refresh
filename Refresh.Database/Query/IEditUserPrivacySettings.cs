@@ -1,4 +1,4 @@
-﻿using Refresh.GameServer.Types;
+﻿using Refresh.Database.Models.Users;
 
 namespace Refresh.Database.Query;
 

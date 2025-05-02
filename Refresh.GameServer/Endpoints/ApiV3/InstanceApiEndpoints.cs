@@ -9,7 +9,6 @@ using Refresh.GameServer.Services;
 using Refresh.GameServer.Types.Data;
 using Refresh.GameServer.Types.Matching;
 using Refresh.GameServer.Types.RichPresence;
-using GameDatabaseContext = Refresh.Database.GameDatabaseContext;
 
 namespace Refresh.GameServer.Endpoints.ApiV3;
 

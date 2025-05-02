@@ -2,12 +2,12 @@ using System.Diagnostics;
 using System.Text;
 using Bunkum.Core.Responses;
 using Newtonsoft.Json;
-using Refresh.GameServer.Authentication;
+using Refresh.Database.Models.Authentication;
 using Refresh.GameServer.Services;
 using Refresh.GameServer.Types.Data;
 using Refresh.GameServer.Types.Matching;
 using Refresh.GameServer.Types.Matching.Responses;
-using Refresh.GameServer.Types.UserData;
+using Refresh.Database.Models.Users;
 
 namespace RefreshTests.GameServer.Tests.Matching;
 

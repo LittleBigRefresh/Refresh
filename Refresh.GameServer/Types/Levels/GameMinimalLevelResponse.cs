@@ -1,15 +1,17 @@
 using System.Xml.Serialization;
-using Refresh.GameServer.Authentication;
+using Refresh.Database.Models;
+using Refresh.Database.Models.Authentication;
+using Refresh.Database.Models.Levels;
 using Refresh.GameServer.Endpoints.ApiV3.DataTypes;
 using Refresh.GameServer.Endpoints.Game.DataTypes.Response;
 using Refresh.GameServer.Types.Data;
 using Refresh.GameServer.Types.Matching;
-using Refresh.GameServer.Types.Playlists;
-using Refresh.GameServer.Types.UserData;
+using Refresh.Database.Models.Users;
+using Refresh.Database.Models.Playlists;
 
 namespace Refresh.GameServer.Types.Levels;
 
-public class GameMinimalLevelResponse : IDataConvertableFrom<GameMinimalLevelResponse, GameLevel>, IDataConvertableFrom<GameMinimalLevelResponse, GamePlaylist>, IDataConvertableFrom<GameMinimalLevelResponse, GameLevelResponse>
+public class GameMinimalLevelResponse : IDataConvertableFrom<GameMinimalLevelResponse, Database.Models.Levels.GameLevel>, IDataConvertableFrom<GameMinimalLevelResponse, GamePlaylist>, IDataConvertableFrom<GameMinimalLevelResponse, GameLevelResponse>
 {
     //NOTE: THIS MUST BE AT THE TOP OF THE XML RESPONSE OR ELSE LBP PSP WILL CRASH
     [XmlElement("id")] public required int LevelId { get; set; }
@@ -62,7 +64,7 @@ public class GameMinimalLevelResponse : IDataConvertableFrom<GameMinimalLevelRes
         return FromOld(GameLevelResponse.FromHash(hash, dataContext), dataContext)!;
     }
 
-    public static GameMinimalLevelResponse? FromOld(GameLevel? level, DataContext dataContext)
+    public static GameMinimalLevelResponse? FromOld(Database.Models.Levels.GameLevel? level, DataContext dataContext)
     {
         if(level == null) return null;
         return FromOld(GameLevelResponse.FromOld(level, dataContext), dataContext);
@@ -150,7 +152,7 @@ public class GameMinimalLevelResponse : IDataConvertableFrom<GameMinimalLevelRes
         };
     }
 
-    public static IEnumerable<GameMinimalLevelResponse> FromOldList(IEnumerable<GameLevel> oldList,
+    public static IEnumerable<GameMinimalLevelResponse> FromOldList(IEnumerable<Database.Models.Levels.GameLevel> oldList,
         DataContext dataContext) => oldList.Select(old => FromOld(old, dataContext)).ToList()!;
     public static IEnumerable<GameMinimalLevelResponse> FromOldList(IEnumerable<GameLevelResponse> oldList,
         DataContext dataContext) => oldList.Select(old => FromOld(old, dataContext)).ToList()!;

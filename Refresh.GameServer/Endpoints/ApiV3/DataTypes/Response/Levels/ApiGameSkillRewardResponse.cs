@@ -1,5 +1,5 @@
 ﻿using Refresh.GameServer.Types.Data;
-using Refresh.GameServer.Types.Levels.SkillRewards;
+using Refresh.Database.Models.Levels;
 
 namespace Refresh.GameServer.Endpoints.ApiV3.DataTypes.Response.Levels;
 

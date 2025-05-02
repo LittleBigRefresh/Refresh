@@ -5,7 +5,7 @@ using Bunkum.Core.Endpoints;
 using Bunkum.Core.RateLimit;
 using Bunkum.Protocols.Http;
 using Refresh.Common.Verification;
-using Refresh.GameServer.Authentication;
+using Refresh.Database.Models.Authentication;
 using Refresh.GameServer.Configuration;
 using Refresh.Database;
 using Refresh.GameServer.Endpoints.ApiV3.ApiTypes;
@@ -16,10 +16,8 @@ using Refresh.GameServer.Endpoints.ApiV3.DataTypes.Response.Users;
 using Refresh.GameServer.Services;
 using Refresh.GameServer.Time;
 using Refresh.GameServer.Types.Data;
-using Refresh.GameServer.Types.Relations;
-using Refresh.GameServer.Types.Roles;
-using Refresh.GameServer.Types.UserData;
-using GameDatabaseContext = Refresh.Database.GameDatabaseContext;
+using Refresh.Database.Models.Users;
+using Refresh.Database.Models.Relations;
 
 namespace Refresh.GameServer.Endpoints.ApiV3;
 

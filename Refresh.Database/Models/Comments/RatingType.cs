@@ -1,4 +1,4 @@
-namespace Refresh.GameServer.Types.Reviews;
+namespace Refresh.Database.Models.Comments;
 
 public enum RatingType : sbyte
 {

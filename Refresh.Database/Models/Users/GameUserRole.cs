@@ -1,4 +1,4 @@
-namespace Refresh.GameServer.Types.Roles;
+namespace Refresh.Database.Models.Users;
 
 /// <summary>
 /// The state of a user, defining their permissions.

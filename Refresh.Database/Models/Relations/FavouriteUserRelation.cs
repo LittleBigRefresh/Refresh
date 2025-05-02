@@ -1,6 +1,6 @@
-using Refresh.GameServer.Types.UserData;
+using Refresh.Database.Models.Users;
 
-namespace Refresh.GameServer.Types.Relations;
+namespace Refresh.Database.Models.Relations;
 #nullable disable
 
 public partial class FavouriteUserRelation : IRealmObject

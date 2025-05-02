@@ -1,9 +1,8 @@
-using Refresh.Database;
-using Refresh.GameServer.Types.Assets;
-using Refresh.GameServer.Types.Levels;
-using Refresh.GameServer.Types.UserData;
+using Refresh.Database.Models.Assets;
+using Refresh.Database.Models.Levels;
+using Refresh.Database.Models.Users;
 
-namespace Refresh.GameServer.Types.Photos;
+namespace Refresh.Database.Models.Photos;
 
 #nullable disable
 

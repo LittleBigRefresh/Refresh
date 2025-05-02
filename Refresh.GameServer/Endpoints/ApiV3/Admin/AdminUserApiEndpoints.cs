@@ -12,9 +12,7 @@ using Refresh.GameServer.Endpoints.ApiV3.DataTypes.Request;
 using Refresh.GameServer.Endpoints.ApiV3.DataTypes.Response.Admin;
 using Refresh.GameServer.Endpoints.ApiV3.DataTypes.Response.Users;
 using Refresh.GameServer.Types.Data;
-using Refresh.GameServer.Types.Roles;
-using Refresh.GameServer.Types.UserData;
-using GameDatabaseContext = Refresh.Database.GameDatabaseContext;
+using Refresh.Database.Models.Users;
 
 namespace Refresh.GameServer.Endpoints.ApiV3.Admin;
 

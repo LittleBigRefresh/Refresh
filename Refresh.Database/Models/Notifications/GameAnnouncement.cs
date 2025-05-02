@@ -1,6 +1,6 @@
 using MongoDB.Bson;
 
-namespace Refresh.GameServer.Types.Notifications;
+namespace Refresh.Database.Models.Notifications;
 
 #nullable disable
 

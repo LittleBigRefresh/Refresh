@@ -1,6 +1,6 @@
-using Refresh.GameServer.Authentication;
-using Refresh.GameServer.Types.Pins;
-using Refresh.GameServer.Types.UserData;
+using Refresh.Database.Models.Authentication;
+using Refresh.Database.Models.Users;
+using Refresh.Database.Models.Relations;
 
 namespace Refresh.Database;
 

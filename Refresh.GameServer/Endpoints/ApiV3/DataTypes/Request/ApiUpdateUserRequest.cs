@@ -1,5 +1,5 @@
+using Refresh.Database.Models.Users;
 using Refresh.Database.Query;
-using Refresh.GameServer.Types;
 
 namespace Refresh.GameServer.Endpoints.ApiV3.DataTypes.Request;
 

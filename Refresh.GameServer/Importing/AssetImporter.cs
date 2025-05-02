@@ -4,11 +4,10 @@ using Bunkum.Core.Storage;
 using JetBrains.Annotations;
 using NotEnoughLogs;
 using Refresh.Common.Helpers;
-using Refresh.GameServer.Authentication;
+using Refresh.Database.Models.Authentication;
 using Refresh.Database;
 using Refresh.GameServer.Time;
-using Refresh.GameServer.Types.Assets;
-using GameDatabaseContext = Refresh.Database.GameDatabaseContext;
+using Refresh.Database.Models.Assets;
 
 namespace Refresh.GameServer.Importing;
 

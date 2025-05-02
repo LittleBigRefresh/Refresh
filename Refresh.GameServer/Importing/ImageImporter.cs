@@ -2,10 +2,9 @@ using System.Collections.Concurrent;
 using Bunkum.Core.Storage;
 using NotEnoughLogs;
 using Refresh.Common.Helpers;
-using Refresh.GameServer.Authentication;
+using Refresh.Database.Models.Authentication;
 using Refresh.Database;
-using Refresh.GameServer.Types.Assets;
-using GameDatabaseContext = Refresh.Database.GameDatabaseContext;
+using Refresh.Database.Models.Assets;
 
 namespace Refresh.GameServer.Importing;
 

@@ -1,13 +1,11 @@
 using System.Diagnostics.Contracts;
+using Refresh.Database.Models;
 using Refresh.Database.Query;
-using Refresh.GameServer.Authentication;
-using Refresh.GameServer.Types;
-using Refresh.GameServer.Types.Comments;
-using Refresh.GameServer.Types.Comments.Relations;
-using Refresh.GameServer.Types.Levels;
-using Refresh.GameServer.Types.Relations;
-using Refresh.GameServer.Types.Reviews;
-using Refresh.GameServer.Types.UserData;
+using Refresh.Database.Models.Authentication;
+using Refresh.Database.Models.Comments;
+using Refresh.Database.Models.Users;
+using Refresh.Database.Models.Levels;
+using Refresh.Database.Models.Relations;
 
 namespace Refresh.Database;
 

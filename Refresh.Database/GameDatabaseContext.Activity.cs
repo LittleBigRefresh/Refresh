@@ -2,9 +2,9 @@ using System.Diagnostics;
 using JetBrains.Annotations;
 using MongoDB.Bson;
 using Refresh.Database.Query;
-using Refresh.GameServer.Types.Activity;
-using Refresh.GameServer.Types.Levels;
-using Refresh.GameServer.Types.UserData;
+using Refresh.Database.Models.Activity;
+using Refresh.Database.Models.Users;
+using Refresh.Database.Models.Levels;
 
 namespace Refresh.Database;
 

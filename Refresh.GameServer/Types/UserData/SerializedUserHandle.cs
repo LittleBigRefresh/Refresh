@@ -1,7 +1,7 @@
 using System.Xml.Serialization;
 using Refresh.GameServer.Types.Data;
 
-namespace Refresh.GameServer.Types.UserData;
+namespace Refresh.Database.Models.Users;
 
 [XmlRoot("npHandle")]
 [XmlType("npHandle")]

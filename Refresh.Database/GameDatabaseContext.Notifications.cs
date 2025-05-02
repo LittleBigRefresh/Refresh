@@ -1,8 +1,8 @@
 using JetBrains.Annotations;
 using MongoDB.Bson;
-using Refresh.GameServer.Types.Levels;
-using Refresh.GameServer.Types.Notifications;
-using Refresh.GameServer.Types.UserData;
+using Refresh.Database.Models.Users;
+using Refresh.Database.Models.Levels;
+using Refresh.Database.Models.Notifications;
 
 namespace Refresh.Database;
 

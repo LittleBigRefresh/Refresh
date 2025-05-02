@@ -7,11 +7,9 @@ using Refresh.GameServer.Configuration;
 using Refresh.Database;
 using Refresh.GameServer.Endpoints.Game.DataTypes.Response;
 using Refresh.GameServer.Types.Data;
-using Refresh.GameServer.Types.Levels;
 using Refresh.GameServer.Types.Lists;
-using Refresh.GameServer.Types.Roles;
-using Refresh.GameServer.Types.UserData;
-using GameDatabaseContext = Refresh.Database.GameDatabaseContext;
+using Refresh.Database.Models.Users;
+using Refresh.Database.Models.Levels;
 
 namespace Refresh.GameServer.Endpoints.Game;
 

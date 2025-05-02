@@ -1,5 +1,5 @@
 ﻿using Refresh.GameServer.Types.Data;
-using Refresh.GameServer.Types.Photos;
+using Refresh.Database.Models.Photos;
 
 namespace Refresh.GameServer.Extensions;
 

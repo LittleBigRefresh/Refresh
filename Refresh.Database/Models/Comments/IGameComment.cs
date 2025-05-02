@@ -1,6 +1,6 @@
-using Refresh.GameServer.Types.UserData;
+using Refresh.Database.Models.Users;
 
-namespace Refresh.GameServer.Types.Comments;
+namespace Refresh.Database.Models.Comments;
 
 public interface IGameComment
 {

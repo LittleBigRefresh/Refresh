@@ -1,9 +1,6 @@
-using Refresh.GameServer.Authentication;
-using Refresh.Database;
-using Refresh.GameServer.Types.Levels;
-using GameDatabaseContext = Refresh.Database.GameDatabaseContext;
+using Refresh.Database.Models.Authentication;
 
-namespace Refresh.GameServer.Types.UserData.Leaderboard;
+namespace Refresh.Database.Models.Levels.Scores;
 
 public class MultiLeaderboard
 {

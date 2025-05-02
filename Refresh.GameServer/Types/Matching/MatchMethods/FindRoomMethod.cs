@@ -2,11 +2,11 @@ using Bunkum.Core;
 using Bunkum.Core.Responses;
 using Bunkum.Listener.Protocol;
 using MongoDB.Bson;
-using Refresh.GameServer.Authentication;
+using Refresh.Database.Models.Authentication;
 using Refresh.GameServer.Configuration;
 using Refresh.GameServer.Types.Data;
 using Refresh.GameServer.Types.Matching.Responses;
-using Refresh.GameServer.Types.UserData;
+using Refresh.Database.Models.Users;
 
 namespace Refresh.GameServer.Types.Matching.MatchMethods;
 

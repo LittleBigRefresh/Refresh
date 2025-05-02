@@ -1,7 +1,7 @@
 using MongoDB.Bson;
-using Refresh.GameServer.Types.UserData;
+using Refresh.Database.Models.Users;
 
-namespace Refresh.GameServer.Types.Challenges.LbpHub;
+namespace Refresh.Database.Models.Levels.Challenges;
 
 #nullable disable
 

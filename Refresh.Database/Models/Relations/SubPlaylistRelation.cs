@@ -1,4 +1,6 @@
-namespace Refresh.GameServer.Types.Playlists;
+using Refresh.Database.Models.Playlists;
+
+namespace Refresh.Database.Models.Relations;
 
 /// <summary>
 /// A mapping of playlist -> sub-playlist

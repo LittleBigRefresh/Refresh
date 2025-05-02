@@ -1,11 +1,10 @@
 using System.Diagnostics;
-using Refresh.GameServer.Types.Activity;
-using Refresh.GameServer.Types.Levels;
-using Refresh.GameServer.Types.Photos;
-using Refresh.GameServer.Types.Relations;
-using Refresh.GameServer.Types.UserData;
-using Refresh.GameServer.Types.UserData.Leaderboard;
-
+using Refresh.Database.Models.Activity;
+using Refresh.Database.Models.Users;
+using Refresh.Database.Models.Levels.Scores;
+using Refresh.Database.Models.Levels;
+using Refresh.Database.Models.Photos;
+using Refresh.Database.Models.Relations;
 namespace Refresh.Database;
 
 public partial class GameDatabaseContext // ActivityRead

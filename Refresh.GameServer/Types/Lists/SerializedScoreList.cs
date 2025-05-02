@@ -1,5 +1,6 @@
 using System.Xml.Serialization;
-using Refresh.GameServer.Types.UserData.Leaderboard;
+using Refresh.Database.Models.Levels.Scores;
+using Refresh.Database.Models.Users.Leaderboard;
 
 namespace Refresh.GameServer.Types.Lists;
 

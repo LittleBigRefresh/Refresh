@@ -1,4 +1,4 @@
-﻿using Refresh.GameServer.Types.Challenges.LbpHub;
+﻿using Refresh.Database.Models.Levels.Challenges;
 
 namespace Refresh.Database.Query;
 

@@ -1,6 +1,5 @@
 ﻿using Bunkum.Core.Storage;
 using NotEnoughLogs;
-using Refresh.Database;
 
 namespace Refresh.Database;
 

@@ -9,9 +9,8 @@ using Refresh.GameServer.Endpoints.ApiV3.ApiTypes.Errors;
 using Refresh.GameServer.Endpoints.ApiV3.DataTypes.Request;
 using Refresh.GameServer.Endpoints.ApiV3.DataTypes.Response;
 using Refresh.GameServer.Types.Data;
-using Refresh.GameServer.Types.Notifications;
-using Refresh.GameServer.Types.Roles;
-using GameDatabaseContext = Refresh.Database.GameDatabaseContext;
+using Refresh.Database.Models.Notifications;
+using Refresh.Database.Models.Users;
 
 namespace Refresh.GameServer.Endpoints.ApiV3.Admin;
 

@@ -1,13 +1,13 @@
 using System.Xml.Serialization;
+using Refresh.Database.Models.Comments;
 using Refresh.GameServer.Endpoints.ApiV3.DataTypes;
 using Refresh.GameServer.Types.Data;
-using Refresh.GameServer.Types.Reviews;
 
 namespace Refresh.GameServer.Types.Comments;
 
 [XmlRoot("comment")]
 [XmlType("comment")]
-public class SerializedComment : IDataConvertableFrom<SerializedComment, GameProfileComment>, IDataConvertableFrom<SerializedComment, GameLevelComment>
+public class SerializedComment : IDataConvertableFrom<SerializedComment, Database.Models.Comments.GameProfileComment>, IDataConvertableFrom<SerializedComment, Database.Models.Comments.GameLevelComment>
 {
     [XmlElement("id")] public required int CommentId { get; set; }
     
@@ -34,7 +34,7 @@ public class SerializedComment : IDataConvertableFrom<SerializedComment, GamePro
             Handle = comment.Author.Username,
         };
 
-    public static SerializedComment? FromOld(GameProfileComment? old, DataContext dataContext)
+    public static SerializedComment? FromOld(Database.Models.Comments.GameProfileComment? old, DataContext dataContext)
     {
         if (old == null) return null;
 
@@ -45,7 +45,7 @@ public class SerializedComment : IDataConvertableFrom<SerializedComment, GamePro
         return comment;
     }
     
-    public static SerializedComment? FromOld(GameLevelComment? old, DataContext dataContext)
+    public static SerializedComment? FromOld(Database.Models.Comments.GameLevelComment? old, DataContext dataContext)
     {
         if (old == null) return null;
 
@@ -56,6 +56,6 @@ public class SerializedComment : IDataConvertableFrom<SerializedComment, GamePro
         return comment;
     }
 
-    public static IEnumerable<SerializedComment> FromOldList(IEnumerable<GameProfileComment> oldList, DataContext dataContext) => oldList.Select(old => FromOld(old, dataContext)).ToList()!;
-    public static IEnumerable<SerializedComment> FromOldList(IEnumerable<GameLevelComment> oldList, DataContext dataContext) => oldList.Select(old => FromOld(old, dataContext)).ToList()!;
+    public static IEnumerable<SerializedComment> FromOldList(IEnumerable<Database.Models.Comments.GameProfileComment> oldList, DataContext dataContext) => oldList.Select(old => FromOld(old, dataContext)).ToList()!;
+    public static IEnumerable<SerializedComment> FromOldList(IEnumerable<Database.Models.Comments.GameLevelComment> oldList, DataContext dataContext) => oldList.Select(old => FromOld(old, dataContext)).ToList()!;
 }

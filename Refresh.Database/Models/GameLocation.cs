@@ -1,6 +1,6 @@
 using System.Xml.Serialization;
 
-namespace Refresh.GameServer.Types;
+namespace Refresh.Database.Models;
 
 [XmlType("location")]
 public class GameLocation

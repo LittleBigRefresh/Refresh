@@ -1,7 +1,7 @@
 using System.Xml.Serialization;
 using Refresh.Database.Query;
 
-namespace Refresh.GameServer.Types.UserData;
+namespace Refresh.Database.Models.Users;
 
 [XmlRoot("updateUser")]
 public class SerializedUpdateDataProfile : SerializedUpdateData {}

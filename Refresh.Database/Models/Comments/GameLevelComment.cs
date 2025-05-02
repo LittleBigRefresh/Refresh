@@ -1,8 +1,7 @@
-using Refresh.Database;
-using Refresh.GameServer.Types.Levels;
-using Refresh.GameServer.Types.UserData;
+using Refresh.Database.Models.Users;
+using Refresh.Database.Models.Levels;
 
-namespace Refresh.GameServer.Types.Comments;
+namespace Refresh.Database.Models.Comments;
 
 public partial class GameLevelComment : IRealmObject, IGameComment, ISequentialId
 {

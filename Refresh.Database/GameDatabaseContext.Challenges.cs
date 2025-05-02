@@ -1,8 +1,8 @@
 using Refresh.Common.Constants;
+using Refresh.Database.Models.Levels.Challenges;
 using Refresh.Database.Query;
-using Refresh.GameServer.Types.Challenges.LbpHub;
-using Refresh.GameServer.Types.Levels;
-using Refresh.GameServer.Types.UserData;
+using Refresh.Database.Models.Users;
+using Refresh.Database.Models.Levels;
 
 namespace Refresh.Database;
 

@@ -1,10 +1,8 @@
 using JetBrains.Annotations;
-using Refresh.GameServer.Types.Activity;
-using Refresh.GameServer.Types.Levels;
-using Refresh.GameServer.Types.Photos;
-using Refresh.GameServer.Types.UserData;
-using GamePhoto = Refresh.GameServer.Types.Photos.GamePhoto;
-using GamePhotoSubject = Refresh.GameServer.Types.Photos.GamePhotoSubject;
+using Refresh.Database.Models.Activity;
+using Refresh.Database.Models.Users;
+using Refresh.Database.Models.Levels;
+using Refresh.Database.Models.Photos;
 
 namespace Refresh.Database;
 

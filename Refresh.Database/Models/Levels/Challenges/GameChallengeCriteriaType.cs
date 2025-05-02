@@ -1,4 +1,4 @@
-namespace Refresh.GameServer.Types.Challenges.LbpHub;
+namespace Refresh.Database.Models.Levels.Challenges;
 
 public enum GameChallengeCriteriaType : byte
 {

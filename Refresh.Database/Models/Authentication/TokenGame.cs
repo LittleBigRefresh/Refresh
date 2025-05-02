@@ -1,6 +1,6 @@
-using Refresh.GameServer.Types.Levels;
+using Refresh.Database.Models.Levels;
 
-namespace Refresh.GameServer.Authentication;
+namespace Refresh.Database.Models.Authentication;
 
 public enum TokenGame
 {

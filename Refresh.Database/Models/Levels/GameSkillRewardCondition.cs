@@ -1,6 +1,6 @@
 ﻿using System.Xml.Serialization;
 
-namespace Refresh.GameServer.Types.Levels.SkillRewards;
+namespace Refresh.Database.Models.Levels;
 
 public enum GameSkillRewardCondition
 {

@@ -5,10 +5,8 @@ using Bunkum.Protocols.Http;
 using Refresh.Database;
 using Refresh.GameServer.Endpoints.ApiV3.ApiTypes;
 using Refresh.GameServer.Endpoints.ApiV3.ApiTypes.Errors;
-using Refresh.GameServer.Types.Photos;
-using Refresh.GameServer.Types.Roles;
-using Refresh.GameServer.Types.UserData;
-using GameDatabaseContext = Refresh.Database.GameDatabaseContext;
+using Refresh.Database.Models.Users;
+using Refresh.Database.Models.Photos;
 
 namespace Refresh.GameServer.Endpoints.ApiV3.Admin;
 

@@ -1,4 +1,4 @@
-﻿using Refresh.GameServer.Authentication;
+﻿using Refresh.Database.Models.Authentication;
 
 namespace Refresh.Database.Query;
 

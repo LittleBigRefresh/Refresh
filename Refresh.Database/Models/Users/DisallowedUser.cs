@@ -1,4 +1,4 @@
-namespace Refresh.GameServer.Types.UserData;
+namespace Refresh.Database.Models.Users;
 
 public partial class DisallowedUser : IRealmObject
 {

@@ -1,4 +1,6 @@
-namespace Refresh.GameServer.Types.Pins;
+using Refresh.Database.Models.Relations;
+
+namespace Refresh.Database.Models.Pins;
 
 #nullable disable
 public partial class SerializedPins

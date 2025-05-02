@@ -1,7 +1,7 @@
 using System.Xml.Serialization;
 using Refresh.Database.Query;
 
-namespace Refresh.GameServer.Types.UserData.Leaderboard;
+namespace Refresh.Database.Models.Users.Leaderboard;
 
 [XmlRoot("playRecord")]
 [XmlType("playRecord")]

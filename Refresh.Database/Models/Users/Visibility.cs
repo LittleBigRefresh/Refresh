@@ -1,6 +1,6 @@
 using System.Xml.Serialization;
 
-namespace Refresh.GameServer.Types;
+namespace Refresh.Database.Models.Users;
 
 /// <seealso cref="Refresh.GameServer.Endpoints.Game.Handshake.MetadataEndpoints"/>
 public enum Visibility

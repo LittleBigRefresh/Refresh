@@ -1,7 +1,7 @@
 using System.Buffers.Binary;
 using Newtonsoft.Json.Converters;
 
-namespace Refresh.GameServer.Types.Assets;
+namespace Refresh.Database.Models.Assets;
 
 [JsonConverter(typeof(StringEnumConverter))]
 public enum GameAssetType

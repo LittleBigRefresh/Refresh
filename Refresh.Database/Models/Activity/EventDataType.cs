@@ -1,4 +1,4 @@
-namespace Refresh.GameServer.Types.Activity;
+namespace Refresh.Database.Models.Activity;
 
 public enum EventDataType
 {

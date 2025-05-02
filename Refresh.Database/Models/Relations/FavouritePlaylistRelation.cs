@@ -1,7 +1,7 @@
-using Refresh.GameServer.Types.Playlists;
-using Refresh.GameServer.Types.UserData;
+using Refresh.Database.Models.Playlists;
+using Refresh.Database.Models.Users;
 
-namespace Refresh.GameServer.Types.Relations;
+namespace Refresh.Database.Models.Relations;
 #nullable disable
 
 public partial class FavouritePlaylistRelation : IRealmObject

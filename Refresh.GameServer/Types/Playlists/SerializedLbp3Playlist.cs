@@ -1,5 +1,6 @@
 using System.Xml.Serialization;
 using Refresh.Common.Constants;
+using Refresh.Database.Models;
 using Refresh.Database.Query;
 using Refresh.GameServer.Endpoints.ApiV3.DataTypes;
 using Refresh.GameServer.Types.Data;
@@ -8,7 +9,7 @@ namespace Refresh.GameServer.Types.Playlists;
 
 [XmlRoot("playlist")]
 [XmlType("playlist")]
-public class SerializedLbp3Playlist : IDataConvertableFrom<SerializedLbp3Playlist, GamePlaylist>, ISerializedCreatePlaylistInfo
+public class SerializedLbp3Playlist : IDataConvertableFrom<SerializedLbp3Playlist, Database.Models.Playlists.GamePlaylist>, ISerializedCreatePlaylistInfo
 {
     [XmlElement("id")] public int Id { get; set; }
     [XmlElement("name")] public string? Name { get; set; }
@@ -30,7 +31,7 @@ public class SerializedLbp3Playlist : IDataConvertableFrom<SerializedLbp3Playlis
     public string? Icon => null;
     public GameLocation? Location => null;
 
-    public static SerializedLbp3Playlist? FromOld(GamePlaylist? old, DataContext dataContext)
+    public static SerializedLbp3Playlist? FromOld(Database.Models.Playlists.GamePlaylist? old, DataContext dataContext)
     {
         if (old == null) 
             return null;
@@ -49,6 +50,6 @@ public class SerializedLbp3Playlist : IDataConvertableFrom<SerializedLbp3Playlis
         };
     }
 
-    public static IEnumerable<SerializedLbp3Playlist> FromOldList(IEnumerable<GamePlaylist> oldList, DataContext dataContext)
+    public static IEnumerable<SerializedLbp3Playlist> FromOldList(IEnumerable<Database.Models.Playlists.GamePlaylist> oldList, DataContext dataContext)
         => oldList.Select(p => FromOld(p, dataContext)!);
 }

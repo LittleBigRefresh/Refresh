@@ -1,9 +1,8 @@
 using JetBrains.Annotations;
 using Refresh.Database.Query;
-using Refresh.Database;
-using Refresh.GameServer.Types.Contests;
-using Refresh.GameServer.Types.Levels;
-using Refresh.GameServer.Types.UserData;
+using Refresh.Database.Models.Contests;
+using Refresh.Database.Models.Users;
+using Refresh.Database.Models.Levels;
 
 namespace Refresh.Database;
 

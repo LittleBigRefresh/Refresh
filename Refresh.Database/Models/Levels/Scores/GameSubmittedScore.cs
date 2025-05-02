@@ -1,8 +1,8 @@
 using MongoDB.Bson;
-using Refresh.GameServer.Authentication;
-using Refresh.GameServer.Types.Levels;
+using Refresh.Database.Models.Authentication;
+using Refresh.Database.Models.Users;
 
-namespace Refresh.GameServer.Types.UserData.Leaderboard;
+namespace Refresh.Database.Models.Levels.Scores;
 
 #nullable disable
 

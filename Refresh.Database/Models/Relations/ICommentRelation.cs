@@ -1,8 +1,8 @@
 using MongoDB.Bson;
-using Refresh.GameServer.Types.Reviews;
-using Refresh.GameServer.Types.UserData;
+using Refresh.Database.Models.Comments;
+using Refresh.Database.Models.Users;
 
-namespace Refresh.GameServer.Types.Comments.Relations;
+namespace Refresh.Database.Models.Relations;
 
 public interface ICommentRelation<TComment> : IRealmObject
     where TComment : IGameComment

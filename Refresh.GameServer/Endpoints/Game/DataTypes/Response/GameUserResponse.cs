@@ -1,13 +1,13 @@
 using System.Xml.Serialization;
 using Refresh.Common.Constants;
+using Refresh.Database.Models;
 using Refresh.Database.Query;
-using Refresh.GameServer.Authentication;
+using Refresh.Database.Models.Authentication;
 using Refresh.GameServer.Endpoints.ApiV3.DataTypes;
-using Refresh.GameServer.Types;
 using Refresh.GameServer.Types.Data;
 using Refresh.GameServer.Types.Levels;
 using Refresh.GameServer.Types.Lists;
-using Refresh.GameServer.Types.UserData;
+using Refresh.Database.Models.Users;
 
 namespace Refresh.GameServer.Endpoints.Game.DataTypes.Response;
 

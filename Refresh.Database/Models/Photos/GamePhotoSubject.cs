@@ -1,7 +1,7 @@
 using System.Xml.Serialization;
-using Refresh.GameServer.Types.UserData;
+using Refresh.Database.Models.Users;
 
-namespace Refresh.GameServer.Types.Photos;
+namespace Refresh.Database.Models.Photos;
 
 [XmlRoot("subject")]
 [XmlType("subject")]

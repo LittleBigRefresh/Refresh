@@ -1,7 +1,7 @@
-using Refresh.GameServer.Types.Levels;
-using Refresh.GameServer.Types.UserData;
+using Refresh.Database.Models.Levels;
+using Refresh.Database.Models.Users;
 
-namespace Refresh.GameServer.Types.Relations;
+namespace Refresh.Database.Models.Relations;
 #nullable disable
 
 public partial class FavouriteLevelRelation : IRealmObject

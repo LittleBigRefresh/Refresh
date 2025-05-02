@@ -1,8 +1,6 @@
-using Refresh.Database;
-using Refresh.GameServer.Types.Levels;
-using Refresh.GameServer.Types.UserData;
+using Refresh.Database.Models.Users;
 
-namespace Refresh.GameServer.Types.Challenges.LbpHub;
+namespace Refresh.Database.Models.Levels.Challenges;
 
 public partial class GameChallenge : IRealmObject, ISequentialId
 {

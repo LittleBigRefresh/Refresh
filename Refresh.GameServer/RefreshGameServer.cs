@@ -11,6 +11,7 @@ using Bunkum.Protocols.Http;
 using Refresh.Common;
 using Refresh.Common.Verification;
 using Refresh.GameServer.Authentication;
+using Refresh.Database.Models.Authentication;
 using Refresh.GameServer.Configuration;
 using Refresh.Database;
 using Refresh.GameServer.Documentation;
@@ -22,11 +23,9 @@ using Refresh.GameServer.Storage;
 using Refresh.GameServer.Time;
 using Refresh.GameServer.Types.Categories;
 using Refresh.GameServer.Types.Data;
-using Refresh.GameServer.Types.Levels;
-using Refresh.GameServer.Types.Roles;
-using Refresh.GameServer.Types.UserData;
+using Refresh.Database.Models.Users;
 using Refresh.GameServer.Workers;
-using GameDatabaseContext = Refresh.Database.GameDatabaseContext;
+using Refresh.Database.Models.Levels;
 
 namespace Refresh.GameServer;
 

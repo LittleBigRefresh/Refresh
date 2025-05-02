@@ -1,23 +1,19 @@
-using Refresh.GameServer.Authentication;
-using Refresh.GameServer.Types;
-using Refresh.GameServer.Types.Comments;
-using Refresh.GameServer.Types.Levels;
-using Refresh.GameServer.Types.UserData;
+using Refresh.Database.Models.Authentication;
+using Refresh.Database.Models.Comments;
+using Refresh.Database.Models.Users;
 using Refresh.GameServer.Time;
-using Refresh.GameServer.Types.Activity;
-using Refresh.GameServer.Types.Assets;
-using Refresh.GameServer.Types.Comments.Relations;
-using Refresh.GameServer.Types.Contests;
-using Refresh.GameServer.Types.Levels.SkillRewards;
-using Refresh.GameServer.Types.Notifications;
-using Refresh.GameServer.Types.Relations;
-using Refresh.GameServer.Types.Reviews;
-using Refresh.GameServer.Types.UserData.Leaderboard;
-using Refresh.GameServer.Types.Photos;
-using Refresh.GameServer.Types.Playlists;
-using Refresh.GameServer.Types.Challenges.LbpHub;
-using Refresh.GameServer.Types.Pins;
-
+using Refresh.Database.Models.Activity;
+using Refresh.Database.Models.Assets;
+using Refresh.Database.Models.Contests;
+using Refresh.Database.Models.Levels.Challenges;
+using Refresh.Database.Models.Levels.Scores;
+using Refresh.Database.Models.Levels;
+using Refresh.Database.Models.Notifications;
+using Refresh.Database.Models.Photos;
+using Refresh.Database.Models.Pins;
+using Refresh.Database.Models.Playlists;
+using Refresh.Database.Models.Relations;
+using Refresh.Database.Models;
 #if !POSTGRES
 #endif
 
@@ -25,7 +21,7 @@ namespace Refresh.Database;
 
 public class GameDatabaseProvider : 
 #if !POSTGRES
-    RealmDatabaseProvider<Refresh.Database.GameDatabaseContext>
+    RealmDatabaseProvider<GameDatabaseContext>
 #else
     IDatabaseProvider<GameDatabaseContext>
 #endif
@@ -121,17 +117,17 @@ public class GameDatabaseProvider :
     public override void Warmup()
     #endif
     {
-        using Refresh.Database.GameDatabaseContext context = this.GetContext();
+        using GameDatabaseContext context = this.GetContext();
         _ = context.GetTotalLevelCount();
     }
 
     #if POSTGRES
     public GameDatabaseContext GetContext()
     #else
-    protected override Refresh.Database.GameDatabaseContext CreateContext()
+    protected override GameDatabaseContext CreateContext()
     #endif
     {
-        return new Refresh.Database.GameDatabaseContext(this._time);
+        return new GameDatabaseContext(this._time);
     }
 
     #if !POSTGRES

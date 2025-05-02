@@ -1,9 +1,9 @@
 using MongoDB.Bson;
-using Refresh.GameServer.Types.Levels;
-using Refresh.GameServer.Types.Reviews;
-using Refresh.GameServer.Types.UserData;
+using Refresh.Database.Models.Comments;
+using Refresh.Database.Models.Levels;
+using Refresh.Database.Models.Users;
 
-namespace Refresh.GameServer.Types.Relations;
+namespace Refresh.Database.Models.Relations;
 
 #nullable disable
 

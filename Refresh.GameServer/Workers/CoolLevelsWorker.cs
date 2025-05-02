@@ -9,10 +9,10 @@
 using System.Diagnostics;
 using NotEnoughLogs;
 using Refresh.Database;
+using Refresh.Database.Models.Comments;
 using Refresh.GameServer.Types.Data;
-using Refresh.GameServer.Types.Levels;
-using Refresh.GameServer.Types.Reviews;
-using Refresh.GameServer.Types.Roles;
+using Refresh.Database.Models.Levels;
+using Refresh.Database.Models.Users;
 
 namespace Refresh.GameServer.Workers;
 

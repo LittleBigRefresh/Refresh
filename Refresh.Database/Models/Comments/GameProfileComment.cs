@@ -1,7 +1,6 @@
-using Refresh.Database;
-using Refresh.GameServer.Types.UserData;
+using Refresh.Database.Models.Users;
 
-namespace Refresh.GameServer.Types.Comments;
+namespace Refresh.Database.Models.Comments;
 
 public partial class GameProfileComment : IRealmObject, IGameComment, ISequentialId
 {

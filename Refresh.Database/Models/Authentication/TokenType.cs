@@ -1,4 +1,4 @@
-namespace Refresh.GameServer.Authentication;
+namespace Refresh.Database.Models.Authentication;
 
 public enum TokenType
 {

@@ -1,4 +1,4 @@
-namespace Refresh.GameServer.Types;
+namespace Refresh.Database.Models;
 
 #nullable disable
 

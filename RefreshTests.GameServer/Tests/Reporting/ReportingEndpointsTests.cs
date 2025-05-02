@@ -1,12 +1,12 @@
 using System.Reflection;
 using Refresh.Common.Helpers;
-using Refresh.GameServer.Authentication;
+using Refresh.Database.Models.Authentication;
 using Refresh.Database;
-using Refresh.GameServer.Types.Levels;
-using Refresh.GameServer.Types.Photos;
 using Refresh.GameServer.Types.Report;
-using Refresh.GameServer.Types.UserData;
+using Refresh.Database.Models.Users;
 using RefreshTests.GameServer.Extensions;
+using Refresh.Database.Models.Levels;
+using Refresh.Database.Models.Photos;
 
 namespace RefreshTests.GameServer.Tests.Reporting;
 

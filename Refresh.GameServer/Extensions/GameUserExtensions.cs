@@ -1,6 +1,5 @@
 ﻿using Refresh.GameServer.Configuration;
-using Refresh.GameServer.Types.Roles;
-using Refresh.GameServer.Types.UserData;
+using Refresh.Database.Models.Users;
 
 namespace Refresh.GameServer.Extensions;
 

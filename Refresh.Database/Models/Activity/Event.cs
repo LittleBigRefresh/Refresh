@@ -1,9 +1,9 @@
 using System.Diagnostics.CodeAnalysis;
 using System.Xml.Serialization;
 using MongoDB.Bson;
-using Refresh.GameServer.Types.UserData;
+using Refresh.Database.Models.Users;
 
-namespace Refresh.GameServer.Types.Activity;
+namespace Refresh.Database.Models.Activity;
 
 #nullable disable
 

@@ -1,5 +1,5 @@
 using System.Xml.Serialization;
-using Refresh.GameServer.Types.UserData;
+using Refresh.Database.Models.Users;
 
 namespace Refresh.GameServer.Types.News;
 

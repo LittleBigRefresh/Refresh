@@ -1,23 +1,20 @@
 using System.Diagnostics.CodeAnalysis;
 using System.Runtime.CompilerServices;
-using Refresh.GameServer.Authentication;
+using Refresh.Database.Models.Authentication;
 using Refresh.GameServer.Time;
-using Refresh.GameServer.Types;
-using Refresh.GameServer.Types.Activity;
-using Refresh.GameServer.Types.Assets;
-using Refresh.GameServer.Types.Comments;
-using Refresh.GameServer.Types.Comments.Relations;
-using Refresh.GameServer.Types.Contests;
-using Refresh.GameServer.Types.Levels;
-using Refresh.GameServer.Types.Notifications;
-using Refresh.GameServer.Types.Photos;
-using Refresh.GameServer.Types.Playlists;
-using Refresh.GameServer.Types.Relations;
-using Refresh.GameServer.Types.Reviews;
-using Refresh.GameServer.Types.UserData;
-using Refresh.GameServer.Types.UserData.Leaderboard;
-using Refresh.GameServer.Types.Challenges.LbpHub;
-using Refresh.GameServer.Types.Pins;
+using Refresh.Database.Models.Activity;
+using Refresh.Database.Models.Assets;
+using Refresh.Database.Models.Comments;
+using Refresh.Database.Models.Contests;
+using Refresh.Database.Models.Users;
+using Refresh.Database.Models.Levels.Challenges;
+using Refresh.Database.Models.Levels.Scores;
+using Refresh.Database.Models.Levels;
+using Refresh.Database.Models.Notifications;
+using Refresh.Database.Models.Photos;
+using Refresh.Database.Models.Playlists;
+using Refresh.Database.Models.Relations;
+using Refresh.Database.Models;
 
 namespace Refresh.Database;
 

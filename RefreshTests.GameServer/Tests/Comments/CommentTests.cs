@@ -1,9 +1,9 @@
-﻿using Refresh.GameServer.Types.Comments;
+﻿using Refresh.Database.Models.Authentication;
+using Refresh.Database.Models.Comments;
+using Refresh.GameServer.Types.Comments;
 using Refresh.GameServer.Types.Lists;
-using Refresh.GameServer.Types.Reviews;
-using Refresh.GameServer.Types.UserData;
+using Refresh.Database.Models.Users;
 using RefreshTests.GameServer.Extensions;
-using TokenType = Refresh.GameServer.Authentication.TokenType;
 
 namespace RefreshTests.GameServer.Tests.Comments;
 

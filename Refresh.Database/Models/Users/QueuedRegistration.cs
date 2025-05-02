@@ -1,6 +1,6 @@
 using MongoDB.Bson;
 
-namespace Refresh.GameServer.Types.UserData;
+namespace Refresh.Database.Models.Users;
 
 #nullable disable
 

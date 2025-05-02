@@ -1,7 +1,7 @@
 using System.Xml.Serialization;
 using Newtonsoft.Json.Converters;
 
-namespace Refresh.GameServer.Types.Activity;
+namespace Refresh.Database.Models.Activity;
 
 [JsonConverter(typeof(StringEnumConverter))]
 public enum EventType : byte

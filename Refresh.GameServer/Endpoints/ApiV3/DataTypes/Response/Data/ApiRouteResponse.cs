@@ -1,6 +1,6 @@
 using AttribDoc;
+using Refresh.Database.Models.Users;
 using Refresh.GameServer.Endpoints.ApiV3.ApiTypes;
-using Refresh.GameServer.Types.Roles;
 
 namespace Refresh.GameServer.Endpoints.ApiV3.DataTypes.Response.Data;
 

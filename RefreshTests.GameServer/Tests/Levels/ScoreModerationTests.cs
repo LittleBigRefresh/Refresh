@@ -1,8 +1,7 @@
-using Refresh.GameServer.Authentication;
-using Refresh.GameServer.Types.Levels;
-using Refresh.GameServer.Types.Roles;
-using Refresh.GameServer.Types.UserData;
-using Refresh.GameServer.Types.UserData.Leaderboard;
+using Refresh.Database.Models.Authentication;
+using Refresh.Database.Models.Users;
+using Refresh.Database.Models.Levels.Scores;
+using Refresh.Database.Models.Levels;
 
 namespace RefreshTests.GameServer.Tests.Levels;
 

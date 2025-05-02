@@ -1,11 +1,9 @@
 using Bunkum.Core.Storage;
 using NotEnoughLogs;
 using Refresh.Database;
-using Refresh.GameServer.Authentication;
-using Refresh.Database;
+using Refresh.Database.Models.Authentication;
 using Refresh.GameServer.Services;
-using Refresh.GameServer.Types.UserData;
-using GameDatabaseContext = Refresh.Database.GameDatabaseContext;
+using Refresh.Database.Models.Users;
 
 namespace Refresh.GameServer.Types.Data;
 

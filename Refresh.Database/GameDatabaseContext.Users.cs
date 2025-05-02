@@ -2,14 +2,13 @@ using JetBrains.Annotations;
 using MongoDB.Bson;
 using Refresh.Common.Constants;
 using Refresh.Database.Query;
-using Refresh.GameServer.Authentication;
-using Refresh.GameServer.Types.Challenges.LbpHub;
-using Refresh.GameServer.Types.Levels;
-using Refresh.GameServer.Types.Photos;
-using Refresh.GameServer.Types.Playlists;
-using Refresh.GameServer.Types.Roles;
-using Refresh.GameServer.Types.UserData;
-using Refresh.GameServer.Types.UserData.Leaderboard;
+using Refresh.Database.Models.Authentication;
+using Refresh.Database.Models.Users;
+using Refresh.Database.Models.Levels.Challenges;
+using Refresh.Database.Models.Levels.Scores;
+using Refresh.Database.Models.Levels;
+using Refresh.Database.Models.Photos;
+using Refresh.Database.Models.Playlists;
 
 namespace Refresh.Database;
 

@@ -1,8 +1,8 @@
 using MongoDB.Bson;
 using Refresh.Common.Verification;
-using Refresh.GameServer.Authentication;
+using Refresh.Database.Models.Authentication;
 using Refresh.GameServer.Extensions;
-using Refresh.GameServer.Types.UserData;
+using Refresh.Database.Models.Users;
 
 namespace Refresh.Database;
 

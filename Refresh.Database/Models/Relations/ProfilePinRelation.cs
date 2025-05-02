@@ -1,7 +1,7 @@
-using Refresh.GameServer.Authentication;
-using Refresh.GameServer.Types.UserData;
+using Refresh.Database.Models.Authentication;
+using Refresh.Database.Models.Users;
 
-namespace Refresh.GameServer.Types.Pins;
+namespace Refresh.Database.Models.Relations;
 
 #nullable disable
 public partial class ProfilePinRelation : IRealmObject

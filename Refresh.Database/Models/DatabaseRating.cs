@@ -1,4 +1,4 @@
-﻿namespace Refresh.GameServer.Types;
+﻿namespace Refresh.Database.Models;
 
 /// <summary>
 /// This object is used to model anything in the game that requires a positive and negative rating. Some uses

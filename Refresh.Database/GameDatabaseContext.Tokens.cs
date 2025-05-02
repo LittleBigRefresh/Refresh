@@ -1,9 +1,9 @@
 using System.Security.Cryptography;
 using JetBrains.Annotations;
-using Refresh.GameServer.Authentication;
+using Refresh.Database.Models.Authentication;
 using Refresh.GameServer.Time;
-using Refresh.GameServer.Types.Relations;
-using Refresh.GameServer.Types.UserData;
+using Refresh.Database.Models.Users;
+using Refresh.Database.Models.Relations;
 
 namespace Refresh.Database;
 

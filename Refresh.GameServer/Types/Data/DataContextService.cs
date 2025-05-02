@@ -4,10 +4,9 @@ using Bunkum.Core.Services;
 using Bunkum.Core.Storage;
 using Bunkum.Listener.Request;
 using NotEnoughLogs;
-using Refresh.GameServer.Authentication;
+using Refresh.Database.Models.Authentication;
 using Refresh.Database;
 using Refresh.GameServer.Services;
-using GameDatabaseContext = Refresh.Database.GameDatabaseContext;
 
 namespace Refresh.GameServer.Types.Data;
 

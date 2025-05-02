@@ -1,6 +1,6 @@
 using System.Text;
 
-namespace Refresh.GameServer.Types.Levels;
+namespace Refresh.Database.Models.Levels;
 
 public enum Tag : byte
 {

@@ -6,14 +6,14 @@ using Bunkum.Protocols.Http;
 using Refresh.GameServer.Configuration;
 using Refresh.Database;
 using Refresh.GameServer.Services;
-using Refresh.GameServer.Types.Assets;
+using Refresh.Database.Models.Assets;
+using Refresh.Database.Models.Levels.Challenges;
 using Refresh.GameServer.Types.Challenges.LbpHub;
 using Refresh.GameServer.Types.Challenges.LbpHub.Ghost;
 using Refresh.GameServer.Types.Data;
-using Refresh.GameServer.Types.Levels;
 using Refresh.GameServer.Types.Lists;
-using Refresh.GameServer.Types.Roles;
-using Refresh.GameServer.Types.UserData;
+using Refresh.Database.Models.Users;
+using Refresh.Database.Models.Levels;
 
 namespace Refresh.GameServer.Endpoints.Game;
 

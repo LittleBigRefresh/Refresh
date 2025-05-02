@@ -1,4 +1,4 @@
-using Refresh.GameServer.Types.UserData;
+using Refresh.Database.Models.Users;
 
 namespace RefreshTests.GameServer.Tests.Relations;
 

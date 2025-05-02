@@ -1,6 +1,6 @@
-using Refresh.GameServer.Types.Levels;
+using Refresh.Database.Models.Levels;
 
-namespace Refresh.GameServer.Types.Playlists;
+namespace Refresh.Database.Models.Relations;
 
 #nullable disable
 
@@ -12,7 +12,7 @@ public partial class LevelPlaylistRelation : IRealmObject
     /// <summary>
     /// The playlist the level is contained in
     /// </summary>
-    public GamePlaylist Playlist { get; set; }
+    public Playlists.GamePlaylist Playlist { get; set; }
     /// <summary>
     /// The level contained within the playlist
     /// </summary>

@@ -1,7 +1,6 @@
 ﻿using Refresh.Database;
-using Refresh.GameServer.Types.Assets;
-using Refresh.GameServer.Types.Levels;
-using GameDatabaseContext = Refresh.Database.GameDatabaseContext;
+using Refresh.Database.Models.Assets;
+using Refresh.Database.Models.Levels;
 
 namespace Refresh.GameServer.Extensions;
 

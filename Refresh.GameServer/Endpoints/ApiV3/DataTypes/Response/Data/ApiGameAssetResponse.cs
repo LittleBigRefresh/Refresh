@@ -1,5 +1,5 @@
 using Refresh.GameServer.Endpoints.ApiV3.DataTypes.Response.Users;
-using Refresh.GameServer.Types.Assets;
+using Refresh.Database.Models.Assets;
 using Refresh.GameServer.Types.Data;
 
 namespace Refresh.GameServer.Endpoints.ApiV3.DataTypes.Response.Data;

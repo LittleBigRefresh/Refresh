@@ -1,10 +1,9 @@
 using System.Xml.Serialization;
 using MongoDB.Bson;
 using Bunkum.Core.RateLimit;
-using Refresh.GameServer.Types.Playlists;
-using Refresh.GameServer.Types.Roles;
+using Refresh.Database.Models.Playlists;
 
-namespace Refresh.GameServer.Types.UserData;
+namespace Refresh.Database.Models.Users;
 
 [JsonObject(MemberSerialization.OptIn)]
 public partial class GameUser : IRealmObject, IRateLimitUser

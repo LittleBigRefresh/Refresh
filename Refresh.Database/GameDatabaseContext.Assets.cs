@@ -1,6 +1,6 @@
-using Refresh.GameServer.Types.Assets;
-using Refresh.GameServer.Types.UserData;
-
+using Refresh.Database.Models.Assets;
+using Refresh.Database.Models.Users;
+using Refresh.Database.Models.Relations;
 namespace Refresh.Database;
 
 public partial class GameDatabaseContext // Assets

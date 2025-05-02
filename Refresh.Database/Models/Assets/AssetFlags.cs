@@ -1,4 +1,4 @@
-namespace Refresh.GameServer.Types.Assets;
+namespace Refresh.Database.Models.Assets;
 
 [Flags]
 public enum AssetFlags

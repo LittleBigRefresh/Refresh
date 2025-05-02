@@ -1,7 +1,7 @@
 using Refresh.GameServer.Endpoints.ApiV3.DataTypes.Response.Levels;
 using Refresh.GameServer.Endpoints.ApiV3.DataTypes.Response.Users;
 using Refresh.GameServer.Endpoints.ApiV3.DataTypes.Response.Users.Photos;
-using Refresh.GameServer.Types.Activity;
+using Refresh.Database.Models.Activity;
 using Refresh.GameServer.Types.Data;
 
 namespace Refresh.GameServer.Endpoints.ApiV3.DataTypes.Response.Activity;

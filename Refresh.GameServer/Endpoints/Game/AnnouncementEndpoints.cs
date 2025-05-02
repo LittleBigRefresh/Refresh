@@ -5,17 +5,16 @@ using Bunkum.Core;
 using Bunkum.Core.Endpoints;
 using Bunkum.Core.Responses.Serialization;
 using Bunkum.Listener.Protocol;
-using Refresh.GameServer.Authentication;
+using Refresh.Database.Models.Authentication;
 using Refresh.GameServer.Configuration;
 using Refresh.Database;
 using Refresh.GameServer.Services;
 using Refresh.GameServer.Time;
-using Refresh.GameServer.Types.Contests;
+using Refresh.Database.Models.Contests;
 using Refresh.GameServer.Types.Matching;
 using Refresh.GameServer.Types.Notifications;
-using Refresh.GameServer.Types.Roles;
-using Refresh.GameServer.Types.UserData;
-using GameDatabaseContext = Refresh.Database.GameDatabaseContext;
+using Refresh.Database.Models.Users;
+using Refresh.Database.Models.Notifications;
 
 namespace Refresh.GameServer.Endpoints.Game;
 

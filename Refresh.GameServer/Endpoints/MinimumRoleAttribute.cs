@@ -1,4 +1,4 @@
-using Refresh.GameServer.Types.Roles;
+using Refresh.Database.Models.Users;
 
 namespace Refresh.GameServer.Endpoints;
 

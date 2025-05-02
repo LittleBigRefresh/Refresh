@@ -1,7 +1,7 @@
 using MongoDB.Bson;
-using Refresh.GameServer.Types.UserData;
+using Refresh.Database.Models.Users;
 
-namespace Refresh.GameServer.Types.Notifications;
+namespace Refresh.Database.Models.Notifications;
 
 #nullable disable
 

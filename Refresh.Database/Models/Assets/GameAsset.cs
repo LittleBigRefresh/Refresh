@@ -1,7 +1,7 @@
 using Refresh.Common.Helpers;
-using Refresh.GameServer.Types.UserData;
+using Refresh.Database.Models.Users;
 
-namespace Refresh.GameServer.Types.Assets;
+namespace Refresh.Database.Models.Assets;
 
 public partial class GameAsset : IRealmObject
 {

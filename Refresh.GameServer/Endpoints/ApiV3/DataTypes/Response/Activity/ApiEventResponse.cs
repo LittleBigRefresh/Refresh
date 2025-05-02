@@ -1,4 +1,4 @@
-using Refresh.GameServer.Types.Activity;
+using Refresh.Database.Models.Activity;
 using Refresh.GameServer.Types.Data;
 
 namespace Refresh.GameServer.Endpoints.ApiV3.DataTypes.Response.Activity;
