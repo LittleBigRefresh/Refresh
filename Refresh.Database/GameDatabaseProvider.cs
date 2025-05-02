@@ -323,10 +323,9 @@ public class GameDatabaseProvider :
                             }
 
                             // Migrate profile pins
-                            List<long> profilePins = oldPins.ProfilePins.Take(3).ToList();
-                            for (int p = 0; p < profilePins.Count; p++)
+                            for (int p = 0; p < oldPins.ProfilePins.Count; p++)
                             {
-                                long progressType = profilePins[p];
+                                long progressType = oldPins.ProfilePins[p];
 
                                 // Does the user even have any progress on this pin?
                                 if (userPinProgresses.Any(p => p.PinId == progressType))
