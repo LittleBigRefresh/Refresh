@@ -6,24 +6,24 @@ namespace Refresh.GameServer.Database;
 
 public partial class GameDatabaseContext // Pins
 {
-    public void UpdateUserPinProgress(Dictionary<long, int> pinProgresses, GameUser user, TokenGame game)
+    public void UpdateUserPinProgress(Dictionary<long, int> pinProgressUpdates, GameUser user, TokenGame game)
     {
         DateTimeOffset now = this._time.Now;
         bool isBeta = game == TokenGame.BetaBuild;
-        IEnumerable<PinProgressRelation> exProgresses = this.GetPinProgressesByUser(user, isBeta);
+        IEnumerable<PinProgressRelation> existingProgresses = this.GetPinProgressesByUser(user, isBeta);
        
         this.Write(() => 
         {
-            foreach (KeyValuePair<long, int> pinProgress in pinProgresses)
+            foreach (KeyValuePair<long, int> pinProgressUpdate in pinProgressUpdates)
             {
-                PinProgressRelation? exRelation = exProgresses.FirstOrDefault(p => p.PinId == pinProgress.Key);
+                PinProgressRelation? existingProgress = existingProgresses.FirstOrDefault(p => p.PinId == pinProgressUpdate.Key);
 
-                if (exRelation == null)
+                if (existingProgress == null)
                 {
                     PinProgressRelation newRelation = new()
                     {
-                        PinId = pinProgress.Key,
-                        Progress = pinProgress.Value,
+                        PinId = pinProgressUpdate.Key,
+                        Progress = pinProgressUpdate.Value,
                         Publisher = user,
                         FirstPublished = now,
                         LastUpdated = now,
@@ -32,42 +32,42 @@ public partial class GameDatabaseContext // Pins
                     this.PinProgressRelations.Add(newRelation);
                 }
                 // Only update if the new progress is actually better
-                else if (pinProgress.Value > exRelation.Progress)
+                else if (pinProgressUpdate.Value > existingProgress.Progress)
                 {
-                    exRelation.Progress = pinProgress.Value;
-                    exRelation.LastUpdated = now;
+                    existingProgress.Progress = pinProgressUpdate.Value;
+                    existingProgress.LastUpdated = now;
                 }
             }
         });
     }
 
-    public void UpdateUserProfilePins(List<long> profilePins, GameUser user, TokenGame game)
+    public void UpdateUserProfilePins(List<long> profilePinUpdates, GameUser user, TokenGame game)
     {
         DateTimeOffset now = this._time.Now;
-        IEnumerable<PinProgressRelation> exProgresses = this.GetPinProgressesByUser(user, game == TokenGame.BetaBuild);
-        IEnumerable<ProfilePinRelation> exProfilePins = this.GetProfilePinsByUser(user, game);
+        IEnumerable<PinProgressRelation> existingProgresses = this.GetPinProgressesByUser(user, game == TokenGame.BetaBuild);
+        IEnumerable<ProfilePinRelation> existingProfilePins = this.GetProfilePinsByUser(user, game);
         int failedProfilePinUpdates = 0;
 
         this.Write(() => 
         {
-            for (int i = 0; i < profilePins.Count; i++)
+            for (int i = 0; i < profilePinUpdates.Count; i++)
             {
-                ProfilePinRelation? exRelation = exProfilePins.FirstOrDefault(p => p.Index == i);
-                long progressType = profilePins[i];
+                ProfilePinRelation? existingProfilePin = existingProfilePins.FirstOrDefault(p => p.Index == i);
+                long progressType = profilePinUpdates[i];
 
                 // If there is no profile pin at index i, or the existing profile pin at that index is
                 // referencing a different pin, overwrite it
-                if (exRelation == null || exRelation.PinId != progressType)
+                if (existingProfilePin == null || existingProfilePin.PinId != progressType)
                 {
                     // Does the user even have any progress on this pin?
-                    if (exProgresses.Any(p => p.PinId == progressType))
+                    if (existingProgresses.Any(p => p.PinId == progressType))
                     {
-                        if (exRelation != null) 
+                        if (existingProfilePin != null) 
                         {
-                            this.ProfilePinRelations.Remove(exRelation);
+                            this.ProfilePinRelations.Remove(existingProfilePin);
                         }
 
-                        ProfilePinRelation newRelation = new()
+                        ProfilePinRelation newProfilePin = new()
                         {
                             PinId = progressType,
                             Publisher = user,
@@ -75,7 +75,7 @@ public partial class GameDatabaseContext // Pins
                             Game = game,
                             Timestamp = now,
                         };
-                        this.ProfilePinRelations.Add(newRelation);
+                        this.ProfilePinRelations.Add(newProfilePin);
                     }
                     else
                     {
@@ -90,7 +90,7 @@ public partial class GameDatabaseContext // Pins
             this.AddErrorNotification
             (
                 "Profile pin update failed", 
-                $"Failed to update {failedProfilePinUpdates} out of {profilePins.Count} profile pins "+
+                $"Failed to update {failedProfilePinUpdates} out of {profilePinUpdates.Count} profile pins "+
                 $"for game {game} because we couldn't find your progress for these pins on the server.",
                 user
             );
