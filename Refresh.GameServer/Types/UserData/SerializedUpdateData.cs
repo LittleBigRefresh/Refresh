@@ -1,5 +1,6 @@
 using System.Xml.Serialization;
 using Refresh.Database.Query;
+using Refresh.GameServer.Types.Levels;
 
 namespace Refresh.Database.Models.Users;
 
@@ -19,7 +20,7 @@ public class SerializedUpdateData : ISerializedEditUser
     public GameLocation? UserLocation { get; set; }
 
     [XmlArray("slots")]
-    public List<ISerializedEditLevelLocation>? LevelLocations { get; set; }
+    public List<SerializedLevelLocation>? LevelLocations { get; set; }
     
     [XmlElement("planets")]
     public string? PlanetsHash { get; set; }
