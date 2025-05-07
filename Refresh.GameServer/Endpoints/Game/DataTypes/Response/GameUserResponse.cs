@@ -81,7 +81,7 @@ public class GameUserResponse : IDataConvertableFrom<GameUserResponse, GameUser>
             PhotosByMeCount = old.IsManaged ? dataContext.Database.GetTotalPhotosByUser(old) : 0,
             PhotosWithMeCount = old.IsManaged ? dataContext.Database.GetTotalPhotosWithUser(old) : 0,
             RootPlaylist = old.RootPlaylist?.PlaylistId.ToString(),
-            ProfilePins = dataContext.Database.GetProfilePinsByUser(old, dataContext.Game, 0, 3).Items.Select(p => p.PinId).ToList(),
+            ProfilePins = old.IsManaged ? dataContext.Database.GetProfilePinsByUser(old, dataContext.Game, 0, 3).Items.Select(p => p.PinId).ToList() : [],
             
             EntitledSlots = UgcLimits.MaximumLevels,
             EntitledSlotsLBP2 = UgcLimits.MaximumLevels,
