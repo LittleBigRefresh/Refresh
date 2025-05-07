@@ -46,6 +46,7 @@ public class GameUserResponse : IDataConvertableFrom<GameUserResponse, GameUser>
     [XmlElement("lbp2PurchasedSlots")] public int PurchasedSlotsLBP2 { get; set; }
     [XmlElement("lbp3PurchasedSlots")] public int PurchasedSlotsLBP3 { get; set; }
     [XmlElement("rootPlaylist")] public string? RootPlaylist { get; set; }
+    [XmlElement("pins")] public List<long> ProfilePins { get; set; } = [];
     
     /// <summary>
     /// The levels the user has favourited, only used by LBP PSP
@@ -80,6 +81,7 @@ public class GameUserResponse : IDataConvertableFrom<GameUserResponse, GameUser>
             PhotosByMeCount = old.IsManaged ? dataContext.Database.GetTotalPhotosByUser(old) : 0,
             PhotosWithMeCount = old.IsManaged ? dataContext.Database.GetTotalPhotosWithUser(old) : 0,
             RootPlaylist = old.RootPlaylist?.PlaylistId.ToString(),
+            ProfilePins = dataContext.Database.GetProfilePinsByUser(old, dataContext.Game, 0, 3).Items.Select(p => p.PinId).ToList(),
             
             EntitledSlots = UgcLimits.MaximumLevels,
             EntitledSlotsLBP2 = UgcLimits.MaximumLevels,
