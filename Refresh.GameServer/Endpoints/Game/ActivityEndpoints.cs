@@ -14,6 +14,7 @@ using Refresh.GameServer.Types.Data;
 using Refresh.GameServer.Types.News;
 using Refresh.Database.Models.Users;
 using Refresh.Database.Models.Levels;
+using Refresh.GameServer.Configuration;
 
 namespace Refresh.GameServer.Endpoints.Game;
 
@@ -23,9 +24,12 @@ public class ActivityEndpoints : EndpointGroup
     [GameEndpoint("stream", ContentType.Xml, HttpMethods.Post)]
     [NullStatusCode(BadRequest)]
     [MinimumRole(GameUserRole.Restricted)]
-    public ActivityPage? GetRecentActivity(RequestContext context, GameDatabaseContext database, GameUser? user,
+    public ActivityPage? GetRecentActivity(RequestContext context, GameServerConfig config, GameDatabaseContext database, GameUser? user,
         DataContext dataContext)
     {
+        if (!config.PermitShowingOnlineUsers)
+            return null;
+        
         long timestamp = 0;
         long endTimestamp = 0;
 
@@ -56,9 +60,12 @@ public class ActivityEndpoints : EndpointGroup
     [GameEndpoint("stream/slot/{type}/{id}", ContentType.Xml)]
     [NullStatusCode(BadRequest)]
     [MinimumRole(GameUserRole.Restricted)]
-    public Response GetRecentActivityForLevel(RequestContext context, GameDatabaseContext database, GameUser? user,
+    public Response GetRecentActivityForLevel(RequestContext context, GameServerConfig config, GameDatabaseContext database, GameUser? user,
         string type, int id, DataContext dataContext)
     {
+        if (!config.PermitShowingOnlineUsers)
+            return Unauthorized;
+        
         GameLevel? level = type == "developer" ? database.GetStoryLevelById(id) : database.GetLevelById(id);
         if (level == null) return NotFound;
         
@@ -94,9 +101,12 @@ public class ActivityEndpoints : EndpointGroup
     [GameEndpoint("stream/user2/{username}", ContentType.Xml)]
     [NullStatusCode(BadRequest)]
     [MinimumRole(GameUserRole.Restricted)]
-    public Response GetRecentActivityFromUser(RequestContext context, GameDatabaseContext database, string username,
+    public Response GetRecentActivityFromUser(RequestContext context, GameServerConfig config, GameDatabaseContext database, string username,
         DataContext dataContext)
     {
+        if (!config.PermitShowingOnlineUsers)
+            return Unauthorized;
+
         GameUser? user = database.GetUserByUsername(username);
         if (user == null) return NotFound;
 

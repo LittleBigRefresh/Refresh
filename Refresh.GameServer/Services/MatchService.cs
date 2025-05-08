@@ -16,11 +16,18 @@ using Refresh.Database.Models.Users;
 
 namespace Refresh.GameServer.Services;
 
-public partial class MatchService(Logger logger) : EndpointService(logger)
+public partial class MatchService : EndpointService
 {
     private FrozenSet<IMatchMethod> _matchMethods = null!; // initialized in Initialize()
 
+    public MatchService(Logger logger, GameServerConfig? config = null) : base(logger)
+    {
+        this._config = config ?? new GameServerConfig();
+    }
+
     public IRoomAccessor RoomAccessor { get; private set; } = null!; //initialized in Initialize()
+
+    private readonly GameServerConfig _config;
     
     public GameRoom GetOrCreateRoomByPlayer(
         GameUser player, 
@@ -123,7 +130,10 @@ public partial class MatchService(Logger logger) : EndpointService(logger)
         this._matchMethods = matchMethods.ToFrozenSet();
         this.Logger.LogDebug(BunkumCategory.Service, "Discovered {0} match method types", this._matchMethods.Count);
 
-        this.RoomAccessor = new InMemoryRoomAccessor(this.Logger);
+        if (this._config.PermitShowingOnlineUsers)
+            this.RoomAccessor = new InMemoryRoomAccessor(this.Logger);
+        else
+            this.RoomAccessor = new NullRoomAccessor();
     }
 
     private IMatchMethod? TryGetMatchMethod(string method) 

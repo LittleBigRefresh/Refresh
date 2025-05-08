@@ -10,7 +10,7 @@ namespace Refresh.GameServer.Configuration;
 [SuppressMessage("ReSharper", "RedundantDefaultMemberInitializer")]
 public class GameServerConfig : Config
 {
-    public override int CurrentConfigVersion => 20;
+    public override int CurrentConfigVersion => 23;
     public override int Version { get; set; } = 0;
     
     protected override void Migrate(int oldVer, dynamic oldConfig)
@@ -57,6 +57,14 @@ public class GameServerConfig : Config
     /// <seealso cref="GameUserRole.Trusted"/>
     public ConfigAssetFlags BlockedAssetFlagsForTrustedUsers { get; set; } = new(AssetFlags.Dangerous | AssetFlags.Modded);
     public bool AllowUsersToUseIpAuthentication { get; set; } = false;
+    public bool PermitPsnLogin { get; set; } = true;
+    public bool PermitRpcnLogin { get; set; } = true;
+    public bool PermitWebLogin { get; set; } = true;
+    /// <summary>
+    /// Secondary safety switch incase the PSN and RPCN toggles somehow fail.
+    /// </summary>
+    public bool PermitAllLogins { get; set; } = true;
+    
     public bool UseTicketVerification { get; set; } = true;
     public bool RegistrationEnabled { get; set; } = true;
     public string InstanceName { get; set; } = "Refresh";
@@ -96,4 +104,6 @@ public class GameServerConfig : Config
 
     public string[] Sha1DigestKeys = ["CustomServerDigest"];
     public string[] HmacDigestKeys = ["CustomServerDigest"];
+
+    public bool PermitShowingOnlineUsers { get; set; } = true;
 }
