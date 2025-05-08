@@ -60,7 +60,7 @@ public partial class GameDatabaseContext // Tokens
 
         this.Write(() =>
         {
-            user.LastLoginDate = this._time.Now;
+            // user.LastLoginDate = this._time.Now;
             this.Tokens.Add(token);
         });
         
