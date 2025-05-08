@@ -167,7 +167,7 @@ public class RefreshGameServer : RefreshServer
         this.WorkerManager.AddWorker<CoolLevelsWorker>();
         this.WorkerManager.AddWorker<RequestStatisticSubmitWorker>();
         
-        if ((this._integrationConfig?.DiscordWebhookEnabled ?? false) && this._config != null)
+        if ((this._integrationConfig?.DiscordWebhookEnabled ?? false) && this._config != null && this._config.PermitShowingOnlineUsers)
         {
             this.WorkerManager.AddWorker(new DiscordIntegrationWorker(this._integrationConfig, this._config));
         }

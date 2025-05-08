@@ -14,6 +14,15 @@ public class ApiActivityPageResponse : IApiResponse, IDataConvertableFrom<ApiAct
     public required IEnumerable<ApiGameLevelResponse> Levels { get; set; }
     public required IEnumerable<ApiGameScoreResponse> Scores { get; set; }
     public required IEnumerable<ApiGamePhotoResponse> Photos { get; set; }
+
+    public static ApiActivityPageResponse Empty => new()
+    {
+        Events = [],
+        Levels = [],
+        Photos = [],
+        Scores = [],
+        Users = [],
+    };
     
     public static ApiActivityPageResponse? FromOld(ActivityPage? old, DataContext dataContext)
     {
