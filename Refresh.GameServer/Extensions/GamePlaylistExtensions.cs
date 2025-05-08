@@ -1,5 +1,5 @@
-using Refresh.GameServer.Database;
-using Refresh.GameServer.Types.Playlists;
+using Refresh.Database;
+using Refresh.Database.Models.Playlists;
 
 namespace Refresh.GameServer.Extensions;
 

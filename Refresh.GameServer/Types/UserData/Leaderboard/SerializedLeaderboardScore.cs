@@ -1,6 +1,6 @@
 using System.Xml.Serialization;
 
-namespace Refresh.GameServer.Types.UserData.Leaderboard;
+namespace Refresh.Database.Models.Users.Leaderboard;
 
 #nullable disable
 
@@ -10,7 +10,7 @@ public class SerializedLeaderboardScore
     [XmlElement("score")] public int Score { get; set; }
     [XmlElement("rank")] public int Rank { get; set; }
 
-    public static SerializedLeaderboardScore FromOld(GameSubmittedScore score, int rank) => new()
+    public static SerializedLeaderboardScore FromOld(Database.Models.Levels.Scores.GameSubmittedScore score, int rank) => new()
     {
         Player = score.Players[0].Username,
         Score = score.Score,

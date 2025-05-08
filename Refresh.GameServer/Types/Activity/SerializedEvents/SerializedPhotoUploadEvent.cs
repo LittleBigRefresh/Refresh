@@ -1,7 +1,7 @@
 using System.Xml.Serialization;
-using Refresh.GameServer.Types.Photos;
+using Refresh.Database.Models.Photos;
 
-namespace Refresh.GameServer.Types.Activity.SerializedEvents;
+namespace Refresh.Database.Models.Activity.SerializedEvents;
 
 public class SerializedPhotoUploadEvent : SerializedLevelEvent
 {

@@ -1,8 +1,8 @@
 using MongoDB.Bson;
 using Newtonsoft.Json.Converters;
-using Refresh.GameServer.Authentication;
-using Refresh.GameServer.Database;
-using Refresh.GameServer.Types.UserData;
+using Refresh.Database.Models.Authentication;
+using Refresh.Database;
+using Refresh.Database.Models.Users;
 
 namespace Refresh.GameServer.Types.Matching;
 

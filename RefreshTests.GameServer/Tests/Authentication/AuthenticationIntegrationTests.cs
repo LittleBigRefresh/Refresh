@@ -1,13 +1,10 @@
-using System.Security.Cryptography;
-using System.Text;
 using Newtonsoft.Json;
-using Refresh.GameServer.Authentication;
-using Refresh.GameServer.Database;
+using Refresh.Database.Models.Authentication;
+using Refresh.Database;
 using Refresh.GameServer.Endpoints.ApiV3.ApiTypes;
 using Refresh.GameServer.Endpoints.ApiV3.DataTypes.Request.Authentication;
-using Refresh.GameServer.Endpoints.ApiV3.DataTypes.Response;
 using Refresh.GameServer.Endpoints.ApiV3.DataTypes.Response.Users;
-using Refresh.GameServer.Types.UserData;
+using Refresh.Database.Models.Users;
 
 namespace RefreshTests.GameServer.Tests.Authentication;
 

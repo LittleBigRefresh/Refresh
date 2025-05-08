@@ -13,6 +13,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Refresh.HttpsProxy", "Refre
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Refresh.PresenceServer", "Refresh.PresenceServer\Refresh.PresenceServer.csproj", "{833B3104-122C-45A6-BCBA-B6ED02A4C82E}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Refresh.Database", "Refresh.Database\Refresh.Database.csproj", "{BB124639-CC3E-462D-8F65-795260C0E56E}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -64,6 +66,14 @@ Global
 		{833B3104-122C-45A6-BCBA-B6ED02A4C82E}.DebugLocalBunkum|Any CPU.Build.0 = Debug|Any CPU
 		{833B3104-122C-45A6-BCBA-B6ED02A4C82E}.DebugPostgres|Any CPU.ActiveCfg = Debug|Any CPU
 		{833B3104-122C-45A6-BCBA-B6ED02A4C82E}.DebugPostgres|Any CPU.Build.0 = Debug|Any CPU
+		{BB124639-CC3E-462D-8F65-795260C0E56E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{BB124639-CC3E-462D-8F65-795260C0E56E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{BB124639-CC3E-462D-8F65-795260C0E56E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{BB124639-CC3E-462D-8F65-795260C0E56E}.Release|Any CPU.Build.0 = Release|Any CPU
+		{BB124639-CC3E-462D-8F65-795260C0E56E}.DebugLocalBunkum|Any CPU.ActiveCfg = Debug|Any CPU
+		{BB124639-CC3E-462D-8F65-795260C0E56E}.DebugLocalBunkum|Any CPU.Build.0 = Debug|Any CPU
+		{BB124639-CC3E-462D-8F65-795260C0E56E}.DebugPostgres|Any CPU.ActiveCfg = DebugPostgres|Any CPU
+		{BB124639-CC3E-462D-8F65-795260C0E56E}.DebugPostgres|Any CPU.Build.0 = DebugPostgres|Any CPU
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
 	EndGlobalSection

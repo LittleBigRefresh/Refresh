@@ -1,8 +1,8 @@
 using System.Xml.Serialization;
-using Realms;
+using Refresh.Database.Query;
 using Refresh.GameServer.Types.Levels;
 
-namespace Refresh.GameServer.Types.UserData;
+namespace Refresh.Database.Models.Users;
 
 [XmlRoot("updateUser")]
 public class SerializedUpdateDataProfile : SerializedUpdateData {}
@@ -11,7 +11,7 @@ public class SerializedUpdateDataProfile : SerializedUpdateData {}
 public class SerializedUpdateDataPlanets : SerializedUpdateData {}
 
 [Ignored]
-public class SerializedUpdateData
+public class SerializedUpdateData : ISerializedEditUser
 {
     [XmlElement("biography")]
     public string? Description { get; set; }

@@ -1,16 +1,16 @@
 using Bunkum.Core;
 using Bunkum.Core.Endpoints;
 using Bunkum.Listener.Protocol;
-using Refresh.GameServer.Authentication;
-using Refresh.GameServer.Database;
-using Refresh.GameServer.Endpoints.Game.Levels.FilterSettings;
+using Refresh.Database.Query;
+using Refresh.Database.Models.Authentication;
+using Refresh.Database;
 using Refresh.GameServer.Types.Categories;
 using Refresh.GameServer.Types.Categories.Levels;
 using Refresh.GameServer.Types.Data;
 using Refresh.GameServer.Types.Levels;
 using Refresh.GameServer.Types.Lists;
-using Refresh.GameServer.Types.Roles;
-using Refresh.GameServer.Types.UserData;
+using Refresh.Database.Models.Users;
+using Refresh.Database.Models.Levels;
 
 namespace Refresh.GameServer.Endpoints.Game;
 

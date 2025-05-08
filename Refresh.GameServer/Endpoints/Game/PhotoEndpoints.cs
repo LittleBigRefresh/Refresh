@@ -5,16 +5,14 @@ using Bunkum.Core.Storage;
 using Bunkum.Listener.Protocol;
 using Bunkum.Protocols.Http;
 using Refresh.GameServer.Configuration;
-using Refresh.GameServer.Database;
-using Refresh.GameServer.Extensions;
+using Refresh.Database;
 using Refresh.GameServer.Services;
-using Refresh.GameServer.Types.Assets;
+using Refresh.Database.Models.Assets;
 using Refresh.GameServer.Types.Data;
-using Refresh.GameServer.Types.Levels;
 using Refresh.GameServer.Types.Lists;
-using Refresh.GameServer.Types.Photos;
-using Refresh.GameServer.Types.Roles;
-using Refresh.GameServer.Types.UserData;
+using Refresh.Database.Models.Users;
+using Refresh.Database.Models.Levels;
+using Refresh.Database.Models.Photos;
 
 namespace Refresh.GameServer.Endpoints.Game;
 
@@ -83,7 +81,7 @@ public class PhotoEndpoints : EndpointGroup
 
         // count not used ingame
         IEnumerable<SerializedPhoto> photos = photoGetter.Invoke(user, count, skip).Items
-            .Select(photo => SerializedPhoto.FromGamePhoto(photo, dataContext));
+            .Select(photo => PhotoExtensions.FromGamePhoto(photo, dataContext));
 
         return new Response(new SerializedPhotoList(photos), ContentType.Xml);
     }
@@ -121,7 +119,7 @@ public class PhotoEndpoints : EndpointGroup
             photos = dataContext.Database.GetPhotosInLevel(level, count, skip);
 
         // count not used ingame
-        return new SerializedPhotoList(photos.Items.Select(photo => SerializedPhoto.FromGamePhoto(photo, dataContext)));
+        return new SerializedPhotoList(photos.Items.Select(photo => PhotoExtensions.FromGamePhoto(photo, dataContext)));
     }
 
     [GameEndpoint("photo/{id}", ContentType.Xml)]
@@ -133,6 +131,6 @@ public class PhotoEndpoints : EndpointGroup
         if (photo == null) 
             return null;
         
-        return SerializedPhoto.FromGamePhoto(photo, dataContext);
+        return PhotoExtensions.FromGamePhoto(photo, dataContext);
     }
 }

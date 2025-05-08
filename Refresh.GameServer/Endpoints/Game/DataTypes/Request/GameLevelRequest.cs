@@ -1,8 +1,7 @@
 using System.Xml.Serialization;
-using Refresh.GameServer.Types;
-using Refresh.GameServer.Types.Levels;
-using Refresh.GameServer.Types.Levels.SkillRewards;
-using Refresh.GameServer.Types.UserData;
+using Refresh.Database.Models;
+using Refresh.Database.Models.Users;
+using Refresh.Database.Models.Levels;
 
 namespace Refresh.GameServer.Endpoints.Game.DataTypes.Request;
 

@@ -4,11 +4,11 @@ using JetBrains.Annotations;
 using MongoDB.Bson;
 using NotEnoughLogs;
 using Refresh.Common.Verification;
-using Refresh.GameServer.Authentication;
-using Refresh.GameServer.Database;
+using Refresh.Database.Models.Authentication;
+using Refresh.Database;
 using Refresh.GameServer.Types.Commands;
-using Refresh.GameServer.Types.Levels;
-using Refresh.GameServer.Types.UserData;
+using Refresh.Database.Models.Users;
+using Refresh.Database.Models.Levels;
 
 namespace Refresh.GameServer.Services;
 

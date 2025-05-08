@@ -1,7 +1,6 @@
-using Refresh.GameServer.Authentication;
-using Refresh.GameServer.Types.Levels;
+using Refresh.Database.Models.Authentication;
 using Refresh.GameServer.Types.Lists;
-using Refresh.GameServer.Types.UserData;
+using Refresh.Database.Models.Users;
 using RefreshTests.GameServer.Extensions;
 
 namespace RefreshTests.GameServer.Tests.Relations;

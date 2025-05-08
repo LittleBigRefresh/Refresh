@@ -1,16 +1,15 @@
 using System.Xml.Serialization;
-using Refresh.GameServer.Database;
+using Refresh.Database.Models;
+using Refresh.Database.Models.Comments;
+using Refresh.Database.Models.Levels;
 using Refresh.GameServer.Endpoints.ApiV3.DataTypes;
 using Refresh.GameServer.Types.Data;
-using Refresh.GameServer.Types.Levels;
-using Refresh.GameServer.Types.Relations;
-using Refresh.GameServer.Types.UserData;
 
 namespace Refresh.GameServer.Types.Reviews;
 
 [XmlRoot("review")]
 [XmlType("review")]
-public class SerializedGameReview : IDataConvertableFrom<SerializedGameReview, GameReview>
+public class SerializedGameReview : IDataConvertableFrom<SerializedGameReview, Database.Models.Comments.GameReview>
 {
     [XmlElement("id")] 
     public int Id { get; set; }
@@ -51,7 +50,7 @@ public class SerializedGameReview : IDataConvertableFrom<SerializedGameReview, G
     [XmlElement("yourthumb")]
     public int YourThumb { get; set; }
 
-    public static SerializedGameReview? FromOld(GameReview? review, DataContext dataContext)
+    public static SerializedGameReview? FromOld(Database.Models.Comments.GameReview? review, DataContext dataContext)
     {
         if (review == null) 
             return null;
@@ -81,6 +80,6 @@ public class SerializedGameReview : IDataConvertableFrom<SerializedGameReview, G
         };
     }
     
-    public static IEnumerable<SerializedGameReview> FromOldList(IEnumerable<GameReview> oldList,
+    public static IEnumerable<SerializedGameReview> FromOldList(IEnumerable<Database.Models.Comments.GameReview> oldList,
         DataContext dataContext) => oldList.Select(old => FromOld(old, dataContext)).ToList()!;
 }

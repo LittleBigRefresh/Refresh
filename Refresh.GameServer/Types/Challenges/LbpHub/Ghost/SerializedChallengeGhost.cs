@@ -73,7 +73,7 @@ public class SerializedChallengeGhost
     /// <param name="isFirstScore">Whether the given SerializedChallengeGhost's score is the first one submitted to the given challenge.</param>
     // There does not seem to be a way to catch all kinds of corruptions possible by LBP hub, neither is there a reliable way to 
     // correct corrupt ghost data either, so just try to do some easy checks on the given SerializedChallengeGhost.
-    public static bool IsGhostDataValid(SerializedChallengeGhost challengeGhost, GameChallenge challenge, bool isFirstScore)
+    public static bool IsGhostDataValid(SerializedChallengeGhost challengeGhost, Database.Models.Levels.Challenges.GameChallenge challenge, bool isFirstScore)
     {
         if (challengeGhost.Checkpoints.Count < 1)
             return false;

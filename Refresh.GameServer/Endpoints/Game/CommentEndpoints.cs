@@ -4,16 +4,14 @@ using Bunkum.Core.Responses;
 using Bunkum.Listener.Protocol;
 using Bunkum.Protocols.Http;
 using Refresh.GameServer.Configuration;
-using Refresh.GameServer.Database;
-using Refresh.GameServer.Extensions;
+using Refresh.Database;
+using Refresh.Database.Models.Comments;
 using Refresh.GameServer.Time;
-using Refresh.GameServer.Types.Comments;
 using Refresh.GameServer.Types.Data;
-using Refresh.GameServer.Types.Levels;
 using Refresh.GameServer.Types.Lists;
-using Refresh.GameServer.Types.Reviews;
-using Refresh.GameServer.Types.Roles;
-using Refresh.GameServer.Types.UserData;
+using Refresh.Database.Models.Users;
+using Refresh.GameServer.Types.Comments;
+using Refresh.Database.Models.Levels;
 
 namespace Refresh.GameServer.Endpoints.Game;
 

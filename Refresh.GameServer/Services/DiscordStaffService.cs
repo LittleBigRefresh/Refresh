@@ -1,11 +1,10 @@
-using System.Diagnostics;
 using Bunkum.Core.Services;
 using Discord;
 using Discord.Webhook;
 using NotEnoughLogs;
 using Refresh.GameServer.Configuration;
-using Refresh.GameServer.Types.UserData;
-using GameAsset = Refresh.GameServer.Types.Assets.GameAsset;
+using Refresh.Database.Models.Users;
+using GameAsset = Refresh.Database.Models.Assets.GameAsset;
 
 namespace Refresh.GameServer.Services;
 

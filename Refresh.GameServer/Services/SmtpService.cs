@@ -6,7 +6,7 @@ using MailKit.Security;
 using MimeKit;
 using NotEnoughLogs;
 using Refresh.GameServer.Configuration;
-using Refresh.GameServer.Types.UserData;
+using Refresh.Database.Models.Users;
 
 namespace Refresh.GameServer.Services;
 

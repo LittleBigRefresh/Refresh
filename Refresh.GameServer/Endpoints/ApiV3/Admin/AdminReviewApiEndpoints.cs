@@ -2,11 +2,10 @@ using AttribDoc.Attributes;
 using Bunkum.Core;
 using Bunkum.Core.Endpoints;
 using Bunkum.Protocols.Http;
-using Refresh.GameServer.Database;
+using Refresh.Database;
 using Refresh.GameServer.Endpoints.ApiV3.ApiTypes;
 using Refresh.GameServer.Endpoints.ApiV3.ApiTypes.Errors;
-using Refresh.GameServer.Types.Roles;
-using Refresh.GameServer.Types.UserData;
+using Refresh.Database.Models.Users;
 
 namespace Refresh.GameServer.Endpoints.ApiV3.Admin;
 

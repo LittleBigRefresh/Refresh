@@ -1,16 +1,17 @@
 using System.Xml.Serialization;
-using Refresh.GameServer.Database;
+using Refresh.Database.Query;
 using Refresh.GameServer.Endpoints.Game.DataTypes.Response;
-using Refresh.GameServer.Types.Activity.Groups;
-using Refresh.GameServer.Types.Activity.SerializedEvents;
+using Refresh.Database.Models.Activity.Groups;
+using Refresh.Database.Models.Activity.SerializedEvents;
 using Refresh.GameServer.Types.Data;
 using Refresh.GameServer.Types.Levels;
 using Refresh.GameServer.Types.Lists;
-using Refresh.GameServer.Types.Photos;
-using Refresh.GameServer.Types.UserData;
-using Refresh.GameServer.Types.UserData.Leaderboard;
+using Refresh.Database.Models.Users;
+using Refresh.Database.Models.Levels.Scores;
+using Refresh.Database.Models.Levels;
+using Refresh.Database.Models.Photos;
 
-namespace Refresh.GameServer.Types.Activity;
+namespace Refresh.Database.Models.Activity;
 
 [Serializable]
 [XmlRoot("stream")]

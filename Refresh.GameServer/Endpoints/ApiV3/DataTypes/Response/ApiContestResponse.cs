@@ -1,7 +1,7 @@
-using Refresh.GameServer.Authentication;
+using Refresh.Database.Models.Authentication;
 using Refresh.GameServer.Endpoints.ApiV3.DataTypes.Response.Levels;
 using Refresh.GameServer.Endpoints.ApiV3.DataTypes.Response.Users;
-using Refresh.GameServer.Types.Contests;
+using Refresh.Database.Models.Contests;
 using Refresh.GameServer.Types.Data;
 
 namespace Refresh.GameServer.Endpoints.ApiV3.DataTypes.Response;

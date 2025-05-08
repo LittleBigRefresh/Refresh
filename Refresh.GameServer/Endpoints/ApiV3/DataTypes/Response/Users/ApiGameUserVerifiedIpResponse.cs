@@ -1,6 +1,5 @@
 using Refresh.GameServer.Types.Data;
-using Refresh.GameServer.Types.Relations;
-
+using Refresh.Database.Models.Relations;
 namespace Refresh.GameServer.Endpoints.ApiV3.DataTypes.Response.Users;
 
 [JsonObject(NamingStrategyType = typeof(CamelCaseNamingStrategy))]

@@ -1,10 +1,11 @@
 using System.Xml.Serialization;
 using Bunkum.Core;
-using Refresh.GameServer.Database;
-using Refresh.GameServer.Endpoints.Game.Levels.FilterSettings;
+using Refresh.Database.Query;
+using Refresh.Database;
 using Refresh.GameServer.Types.Data;
 using Refresh.GameServer.Types.Levels;
 using Refresh.GameServer.Types.Lists;
+using Refresh.Database.Models.Levels;
 
 namespace Refresh.GameServer.Types.Categories.Levels;
 

@@ -1,8 +1,8 @@
 using System.Text;
 using Bunkum.Core;
 using Bunkum.Core.Endpoints;
+using Refresh.Database.Models.Users;
 using Refresh.GameServer.Configuration;
-using Refresh.GameServer.Types.Roles;
 
 namespace Refresh.GameServer.Endpoints.Game.Handshake;
 

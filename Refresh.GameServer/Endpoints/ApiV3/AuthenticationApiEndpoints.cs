@@ -5,21 +5,19 @@ using Bunkum.Core.Endpoints;
 using Bunkum.Core.RateLimit;
 using Bunkum.Protocols.Http;
 using Refresh.Common.Verification;
-using Refresh.GameServer.Authentication;
+using Refresh.Database.Models.Authentication;
 using Refresh.GameServer.Configuration;
-using Refresh.GameServer.Database;
+using Refresh.Database;
 using Refresh.GameServer.Endpoints.ApiV3.ApiTypes;
 using Refresh.GameServer.Endpoints.ApiV3.ApiTypes.Errors;
 using Refresh.GameServer.Endpoints.ApiV3.DataTypes;
 using Refresh.GameServer.Endpoints.ApiV3.DataTypes.Request.Authentication;
 using Refresh.GameServer.Endpoints.ApiV3.DataTypes.Response.Users;
-using Refresh.GameServer.Extensions;
 using Refresh.GameServer.Services;
 using Refresh.GameServer.Time;
 using Refresh.GameServer.Types.Data;
-using Refresh.GameServer.Types.Relations;
-using Refresh.GameServer.Types.Roles;
-using Refresh.GameServer.Types.UserData;
+using Refresh.Database.Models.Users;
+using Refresh.Database.Models.Relations;
 
 namespace Refresh.GameServer.Endpoints.ApiV3;
 
@@ -197,7 +195,7 @@ public class AuthenticationApiEndpoints : EndpointGroup
     {
         (int skip, int count) = context.GetPageData();
 
-        return DatabaseList<ApiGameIpVerificationRequestResponse>.FromOldList<ApiGameIpVerificationRequestResponse, GameIpVerificationRequest>
+        return DatabaseListExtensions.FromOldList<ApiGameIpVerificationRequestResponse, GameIpVerificationRequest>
                 (database.GetIpVerificationRequestsForUser(user, count, skip), dataContext);
     }
 
@@ -210,8 +208,7 @@ public class AuthenticationApiEndpoints : EndpointGroup
 
         DatabaseList<GameUserVerifiedIpRelation> verifiedIps = database.GetVerifiedIps(user, skip, count);
 
-        return DatabaseList<ApiGameUserVerifiedIpResponse>
-            .FromOldList<ApiGameUserVerifiedIpResponse, GameUserVerifiedIpRelation>(verifiedIps, dataContext);
+        return DatabaseListExtensions.FromOldList<ApiGameUserVerifiedIpResponse, GameUserVerifiedIpRelation>(verifiedIps, dataContext);
     }
 
     [ApiV3Endpoint("removeVerifiedIp", HttpMethods.Delete), MinimumRole(GameUserRole.Restricted)]

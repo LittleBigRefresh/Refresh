@@ -1,8 +1,8 @@
 using NotEnoughLogs;
-using Refresh.GameServer.Types.UserData;
+using Refresh.Database.Models.Users;
 using Refresh.GameServer.Workers;
 using RefreshTests.GameServer.Logging;
-using static Refresh.GameServer.Types.Roles.GameUserRole;
+using static Refresh.Database.Models.Users.GameUserRole;
 
 namespace RefreshTests.GameServer.Tests.Workers;
 

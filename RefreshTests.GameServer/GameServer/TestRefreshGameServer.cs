@@ -9,7 +9,7 @@ using NotEnoughLogs.Behaviour;
 using NotEnoughLogs.Sinks;
 using Refresh.GameServer;
 using Refresh.GameServer.Configuration;
-using Refresh.GameServer.Database;
+using Refresh.Database;
 using Refresh.GameServer.Services;
 using Refresh.GameServer.Time;
 using Refresh.GameServer.Types.Categories;

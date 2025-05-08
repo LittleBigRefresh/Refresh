@@ -1,5 +1,5 @@
-using Refresh.GameServer.Types.Levels;
-using Refresh.GameServer.Types.UserData;
+using Refresh.Database.Models.Users;
+using Refresh.Database.Models.Levels;
 
 namespace RefreshTests.GameServer.Tests.Levels;
 

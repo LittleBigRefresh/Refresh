@@ -2,21 +2,17 @@ using AttribDoc.Attributes;
 using Bunkum.Core;
 using Bunkum.Core.Endpoints;
 using Bunkum.Core.Storage;
-using Bunkum.Listener.Protocol;
 using Bunkum.Protocols.Http;
 using Refresh.Common.Verification;
-using Refresh.GameServer.Database;
+using Refresh.Database;
 using Refresh.GameServer.Documentation.Attributes;
 using Refresh.GameServer.Endpoints.ApiV3.ApiTypes;
 using Refresh.GameServer.Endpoints.ApiV3.ApiTypes.Errors;
 using Refresh.GameServer.Endpoints.ApiV3.DataTypes.Request;
-using Refresh.GameServer.Endpoints.ApiV3.DataTypes.Response;
 using Refresh.GameServer.Endpoints.ApiV3.DataTypes.Response.Admin;
 using Refresh.GameServer.Endpoints.ApiV3.DataTypes.Response.Users;
-using Refresh.GameServer.Extensions;
 using Refresh.GameServer.Types.Data;
-using Refresh.GameServer.Types.Roles;
-using Refresh.GameServer.Types.UserData;
+using Refresh.Database.Models.Users;
 
 namespace Refresh.GameServer.Endpoints.ApiV3.Admin;
 
@@ -53,7 +49,7 @@ public class AdminUserApiEndpoints : EndpointGroup
         GameDatabaseContext database, IDataStore dataStore, DataContext dataContext)
     {
         (int skip, int count) = context.GetPageData();
-        DatabaseList<ApiExtendedGameUserResponse> list = DatabaseList<ApiExtendedGameUserResponse>.FromOldList<ApiExtendedGameUserResponse, GameUser>(database.GetUsers(count, skip), dataContext);
+        DatabaseList<ApiExtendedGameUserResponse> list = DatabaseListExtensions.FromOldList<ApiExtendedGameUserResponse, GameUser>(database.GetUsers(count, skip), dataContext);
         return list;
     }
 

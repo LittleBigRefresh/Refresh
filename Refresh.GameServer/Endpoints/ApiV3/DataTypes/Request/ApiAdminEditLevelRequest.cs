@@ -1,4 +1,4 @@
-using Refresh.GameServer.Authentication;
+using Refresh.Database.Models.Authentication;
 
 namespace Refresh.GameServer.Endpoints.ApiV3.DataTypes.Request;
 

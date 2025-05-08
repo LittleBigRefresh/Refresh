@@ -1,4 +1,4 @@
-using Refresh.GameServer.Types.Assets;
+using Refresh.Database.Models.Assets;
 
 namespace Refresh.GameServer.Configuration;
 

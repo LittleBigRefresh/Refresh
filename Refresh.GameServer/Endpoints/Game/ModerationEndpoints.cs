@@ -1,14 +1,13 @@
 using Bunkum.Core;
 using Bunkum.Core.Endpoints;
-using Bunkum.Core.Endpoints.Debugging;
 using Bunkum.Listener.Protocol;
 using Bunkum.Protocols.Http;
-using Refresh.GameServer.Authentication;
-using Refresh.GameServer.Database;
+using Refresh.Database.Models.Authentication;
+using Refresh.Database;
 using Refresh.GameServer.Services;
 using Refresh.GameServer.Types.Commands;
-using Refresh.GameServer.Types.UserData;
-using Refresh.GameServer.Types.UserData.Filtering;
+using Refresh.Database.Models.Users;
+using Refresh.Database.Models.Users.Filtering;
 
 namespace Refresh.GameServer.Endpoints.Game;
 

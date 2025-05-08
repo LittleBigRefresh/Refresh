@@ -3,17 +3,15 @@ using Bunkum.Core.Services;
 using Bunkum.Core.Storage;
 using Bunkum.Protocols.Http.Direct;
 using JetBrains.Annotations;
-using Refresh.GameServer.Authentication;
-using Refresh.GameServer.Database;
+using Refresh.Database.Models.Authentication;
+using Refresh.Database;
 using Refresh.GameServer.Services;
-using Refresh.GameServer.Types;
-using Refresh.GameServer.Types.Contests;
 using Refresh.GameServer.Types.Data;
-using Refresh.GameServer.Types.Levels;
-using Refresh.GameServer.Types.Roles;
-using Refresh.GameServer.Types.UserData;
-using Refresh.GameServer.Types.UserData.Leaderboard;
+using Refresh.Database.Models.Users;
 using RefreshTests.GameServer.Time;
+using Refresh.Database.Models.Levels.Scores;
+using Refresh.Database.Models.Users.Leaderboard;
+using Refresh.Database.Models.Levels;
 
 namespace RefreshTests.GameServer;
 

@@ -1,4 +1,3 @@
-using System.Net;
 using System.Xml.Serialization;
 using Bunkum.Core;
 using Bunkum.Core.Endpoints;
@@ -10,15 +9,13 @@ using NPTicket;
 using NPTicket.Verification;
 using NPTicket.Verification.Keys;
 using Refresh.Common.Verification;
-using Refresh.GameServer.Authentication;
+using Refresh.Database.Models.Authentication;
 using Refresh.GameServer.Configuration;
-using Refresh.GameServer.Database;
-using Refresh.GameServer.Extensions;
+using Refresh.Database;
 using Refresh.GameServer.Services;
 using Refresh.GameServer.Time;
 using Refresh.GameServer.Types.Matching;
-using Refresh.GameServer.Types.Roles;
-using Refresh.GameServer.Types.UserData;
+using Refresh.Database.Models.Users;
 
 namespace Refresh.GameServer.Endpoints.Game.Handshake;
 

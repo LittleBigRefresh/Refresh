@@ -1,4 +1,5 @@
 using System.Xml.Serialization;
+using Refresh.Database.Query;
 
 namespace Refresh.GameServer.Types.Challenges.LbpHub;
 
@@ -8,7 +9,7 @@ namespace Refresh.GameServer.Types.Challenges.LbpHub;
 //  </challenge-attempt>
 [XmlRoot("challenge-attempt")]
 [XmlType("challenge-attempt")]
-public class SerializedChallengeAttempt
+public class SerializedChallengeAttempt : ISerializedChallengeAttempt
 {
     /// <summary>
     /// The publisher's achieved raw score. More always means better here, independent of challenge criteria.
