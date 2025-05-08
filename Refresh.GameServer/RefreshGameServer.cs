@@ -121,7 +121,7 @@ public class RefreshGameServer : RefreshServer
         this.Server.AddService<TimeProviderService>(this.GetTimeProvider());
         this.Server.AddRateLimitService(new RateLimitSettings(60, 400, 30, "global"));
         this.Server.AddService<CategoryService>();
-        this.Server.AddService(this._matchService = new MatchService(this.Server.Logger));
+        this.Server.AddService(this._matchService = new MatchService(this.Server.Logger, this._config!));
         this.Server.AddService<ImportService>();
         this.Server.AddService<DocumentationService>();
         this.Server.AddService(this._guidCheckerService = new GuidCheckerService(this._config!, this.Server.Logger));

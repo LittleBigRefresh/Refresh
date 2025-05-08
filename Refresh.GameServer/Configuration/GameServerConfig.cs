@@ -10,7 +10,7 @@ namespace Refresh.GameServer.Configuration;
 [SuppressMessage("ReSharper", "RedundantDefaultMemberInitializer")]
 public class GameServerConfig : Config
 {
-    public override int CurrentConfigVersion => 21;
+    public override int CurrentConfigVersion => 22;
     public override int Version { get; set; } = 0;
     
     protected override void Migrate(int oldVer, dynamic oldConfig)
@@ -99,4 +99,6 @@ public class GameServerConfig : Config
 
     public string[] Sha1DigestKeys = ["CustomServerDigest"];
     public string[] HmacDigestKeys = ["CustomServerDigest"];
+
+    public bool PermitShowingOnlineUsers { get; set; } = false;
 }
