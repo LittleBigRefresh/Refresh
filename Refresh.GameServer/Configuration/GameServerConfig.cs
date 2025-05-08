@@ -105,5 +105,5 @@ public class GameServerConfig : Config
     public string[] Sha1DigestKeys = ["CustomServerDigest"];
     public string[] HmacDigestKeys = ["CustomServerDigest"];
 
-    public bool PermitShowingOnlineUsers { get; set; } = false;
+    public bool PermitShowingOnlineUsers { get; set; } = true;
 }
