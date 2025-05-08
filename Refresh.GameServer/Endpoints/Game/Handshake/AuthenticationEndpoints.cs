@@ -36,6 +36,11 @@ public class AuthenticationEndpoints : EndpointGroup
         SmtpService smtpService,
         IDateTimeProvider timeProvider)
     {
+        if (!config.PermitAllLogins)
+        {
+            return null;
+        }
+        
         Ticket ticket;
         try
         {

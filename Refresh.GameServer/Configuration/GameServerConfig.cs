@@ -10,7 +10,7 @@ namespace Refresh.GameServer.Configuration;
 [SuppressMessage("ReSharper", "RedundantDefaultMemberInitializer")]
 public class GameServerConfig : Config
 {
-    public override int CurrentConfigVersion => 22;
+    public override int CurrentConfigVersion => 23;
     public override int Version { get; set; } = 0;
     
     protected override void Migrate(int oldVer, dynamic oldConfig)
@@ -59,6 +59,11 @@ public class GameServerConfig : Config
     public bool AllowUsersToUseIpAuthentication { get; set; } = false;
     public bool PermitPsnLogin { get; set; } = true;
     public bool PermitRpcnLogin { get; set; } = true;
+    public bool PermitWebLogin { get; set; } = true;
+    /// <summary>
+    /// Secondary safety switch incase the PSN and RPCN toggles somehow fail.
+    /// </summary>
+    public bool PermitAllLogins { get; set; } = true;
     
     public bool UseTicketVerification { get; set; } = true;
     public bool RegistrationEnabled { get; set; } = true;
