@@ -44,6 +44,12 @@ public class AuthenticationApiEndpoints : EndpointGroup
     [RateLimitSettings(300, 10, 300, "auth")]
     public ApiResponse<IApiAuthenticationResponse> Authenticate(RequestContext context, GameDatabaseContext database, ApiAuthenticationRequest body, GameServerConfig config)
     {
+        if (!config.PermitWebLogin || !config.PermitAllLogins)
+        {
+            return new ApiAuthenticationError(
+                "The server is not allowing website logins right now.");
+        }
+        
         GameUser? user = database.GetUserByEmailAddress(body.EmailAddress);
         if (user == null)
         {
