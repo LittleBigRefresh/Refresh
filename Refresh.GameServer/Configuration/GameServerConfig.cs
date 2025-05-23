@@ -10,7 +10,7 @@ namespace Refresh.GameServer.Configuration;
 [SuppressMessage("ReSharper", "RedundantDefaultMemberInitializer")]
 public class GameServerConfig : Config
 {
-    public override int CurrentConfigVersion => 23;
+    public override int CurrentConfigVersion => 24;
     public override int Version { get; set; } = 0;
     
     protected override void Migrate(int oldVer, dynamic oldConfig)
@@ -64,6 +64,21 @@ public class GameServerConfig : Config
     /// Secondary safety switch incase the PSN and RPCN toggles somehow fail.
     /// </summary>
     public bool PermitAllLogins { get; set; } = true;
+
+    /// <summary>
+    /// Should all game logins be required to use Patchwork?
+    /// </summary>
+    public bool EnforcePatchwork { get; set; } = true;
+
+    /// <summary>
+    /// The minimum required major version of Patchwork on the client to be able to connect.
+    /// </summary>
+    public int RequiredPatchworkMajorVersion { get; set; } = 1;
+    
+    /// <summary>
+    /// The minimum required minor version of Patchwork on the client to be able to connect.
+    /// </summary>
+    public int RequiredPatchworkMinorVersion { get; set; } = 0;
     
     public bool UseTicketVerification { get; set; } = true;
     public bool RegistrationEnabled { get; set; } = true;

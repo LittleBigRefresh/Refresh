@@ -175,6 +175,19 @@ public class AuthenticationEndpoints : EndpointGroup
 
         if (game == TokenGame.LittleBigPlanetVita && platform == TokenPlatform.PS3) platform = TokenPlatform.Vita;
         else if (game == TokenGame.LittleBigPlanetPSP && platform == TokenPlatform.PS3) platform = TokenPlatform.PSP;
+        
+        // Check if client-side security patches are present.
+        // PSP is invulnerable to most exploits as it does not support multiplayer nor scripting.
+        if (game != TokenGame.LittleBigPlanetPSP && !context.IsPatchworkVersionValid(config.RequiredPatchworkMajorVersion, config.RequiredPatchworkMinorVersion))
+        {
+            database.AddLoginFailNotification("The server detected you are not using the latest version of Patchwork. Please update or install it.", user);
+            context.Logger.LogWarning(BunkumCategory.Authentication, $"{ticket.Username}'s Patchwork version is invalid: {context}");
+            return null;
+        }
+        
+        // !!
+        // Past this point, login is considered to be complete.
+        // !!
 
         Token token = database.GenerateTokenForUser(user, TokenType.Game, game.Value, platform.Value, ipAddress, GameDatabaseContext.GameTokenExpirySeconds); // 4 hours
 
