@@ -27,7 +27,7 @@ public class ActivityApiEndpoints : EndpointGroup
     public ApiResponse<ApiActivityPageResponse> GetRecentActivity(RequestContext context, GameServerConfig config, GameDatabaseContext database,
         IDataStore dataStore, DataContext dataContext)
     {
-        if (config.PermitShowingOnlineUsers)
+        if (!config.PermitShowingOnlineUsers)
             return ApiActivityPageResponse.Empty;
 
         long timestamp = 0;
@@ -55,7 +55,7 @@ public class ActivityApiEndpoints : EndpointGroup
         GameServerConfig config, GameDatabaseContext database, IDataStore dataStore, GameUser? user,
         [DocSummary("The ID of the level")] int id, DataContext dataContext)
     {
-        if (config.PermitShowingOnlineUsers)
+        if (!config.PermitShowingOnlineUsers)
             return ApiActivityPageResponse.Empty;
 
         long timestamp = 0;
@@ -87,7 +87,7 @@ public class ActivityApiEndpoints : EndpointGroup
         GameServerConfig config, GameDatabaseContext database, IDataStore dataStore,
         [DocSummary("The UUID of the user")] string uuid, DataContext dataContext)
     {
-        if (config.PermitShowingOnlineUsers)
+        if (!config.PermitShowingOnlineUsers)
             return ApiActivityPageResponse.Empty;
 
         long timestamp = 0;
@@ -119,7 +119,7 @@ public class ActivityApiEndpoints : EndpointGroup
         GameServerConfig config, GameDatabaseContext database, IDataStore dataStore,
         [DocSummary("The username of the user")] string username, DataContext dataContext)
     {
-        if (config.PermitShowingOnlineUsers)
+        if (!config.PermitShowingOnlineUsers)
             return ApiActivityPageResponse.Empty;
 
         long timestamp = 0;
