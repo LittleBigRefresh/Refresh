@@ -181,7 +181,7 @@ public class AuthenticationEndpoints : EndpointGroup
         if (game != TokenGame.LittleBigPlanetPSP && !context.IsPatchworkVersionValid(config.RequiredPatchworkMajorVersion, config.RequiredPatchworkMinorVersion))
         {
             database.AddLoginFailNotification("The server detected you are not using the latest version of Patchwork. Please update or install it.", user);
-            context.Logger.LogWarning(BunkumCategory.Authentication, $"{ticket.Username}'s Patchwork version is invalid: {context}");
+            context.Logger.LogWarning(BunkumCategory.Authentication, $"{ticket.Username}'s Patchwork version is invalid: {context.RequestHeaders["User-Agent"]}");
             return null;
         }
         
