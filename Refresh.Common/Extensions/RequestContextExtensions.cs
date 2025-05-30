@@ -43,6 +43,7 @@ public static class RequestContextExtensions
     {
         // example: PatchworkLBP2 1.0
         const string namePrefix = "PatchworkLBP";
+        int versionPos = namePrefix.Length + 2;
 
         // does the useragent even match patchwork's name?
         if (!userAgent.StartsWith(namePrefix))
@@ -53,12 +54,22 @@ public static class RequestContextExtensions
         if (gameVersion is not '1' and not '2' and not '3' and not 'V')
             return false;
 
-        ReadOnlySpan<char> versionString = userAgent[(namePrefix.Length + 2)..];
-        if (gameVersion == 'V') // HTTP library on vita adds extra data, handle that scenario here
+        // HTTP library on Vita adds extra data. Handle that scenario here
+        // example: PatchworkLBPV 1.0 libhttp/3.74 (PS Vita)
+        // I believe LBP3 PS4 also might do this, but we don't support that and I don't know the format.
+        ReadOnlySpan<char> versionString = userAgent[versionPos..];
+        if (gameVersion == 'V')
         {
             int spaceIndex = versionString.IndexOf(' ');
-            if (spaceIndex != -1)
-                versionString = versionString[..spaceIndex];
+            if (spaceIndex == -1)
+                return false;
+
+            versionString = versionString[..spaceIndex];
+
+            // validate libhttp string
+            ReadOnlySpan<char> libraryVersion = userAgent[(versionPos + spaceIndex)..];
+            if (!libraryVersion.StartsWith(" libhttp/") || !libraryVersion.EndsWith(" (PS Vita)"))
+                return false;
         }
 
         // does the version string parse out?
