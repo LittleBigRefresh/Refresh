@@ -53,8 +53,16 @@ public static class RequestContextExtensions
         if (gameVersion is not '1' and not '2' and not '3' and not 'V')
             return false;
 
+        ReadOnlySpan<char> versionString = userAgent[(namePrefix.Length + 2)..];
+        if (gameVersion == 'V') // HTTP library on vita adds extra data, handle that scenario here
+        {
+            int spaceIndex = versionString.IndexOf(' ');
+            if (spaceIndex != -1)
+                versionString = versionString[..spaceIndex];
+        }
+
         // does the version string parse out?
-        if (!Version.TryParse(userAgent[(namePrefix.Length + 2)..], out Version? version))
+        if (!Version.TryParse(versionString, out Version? version))
             return false;
 
         // are we on a supported version?

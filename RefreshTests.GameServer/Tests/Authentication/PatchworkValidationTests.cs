@@ -20,6 +20,10 @@ public class PatchworkValidationTests
     [TestCase(true, "PatchworkLBP3 1.0", 1, 0)]
     [TestCase(true, "PatchworkLBPV 1.0", 1, 0)]
     [TestCase(false, "PatchworkLBP4 1.0", 1, 0)]
+    // with extra data
+    [TestCase(true, "PatchworkLBPV 1.0 libhttp/4.20 (PS Vita)", 1, 0)]
+    [TestCase(true, "PatchworkLBPV 1.0 asdf", 1, 0)]
+    [TestCase(false, "PatchworkLBP1 1.0 asdf", 1, 0)]
     // invalid user agents
     [TestCase(false, "blah", 1, 0)]
     [TestCase(false, "Patchwork 1.0", 1, 0)]
