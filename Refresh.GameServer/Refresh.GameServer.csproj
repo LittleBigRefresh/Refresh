@@ -7,6 +7,7 @@
         <Configurations>Debug;Release;DebugLocalBunkum;DebugPostgres</Configurations>
         <Platforms>AnyCPU</Platforms>
         <ServerGarbageCollection>true</ServerGarbageCollection>
+        <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
     </PropertyGroup>
     
     <PropertyGroup Condition=" '$(Configuration)' == 'DebugLocalBunkum' ">

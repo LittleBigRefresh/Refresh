@@ -6,6 +6,8 @@ using Refresh.GameServer.Types.Data;
 
 namespace Refresh.GameServer.Types.Playlists;
 
+#nullable disable
+
 [XmlType("playlist")]
 [XmlRoot("playlist")]
 public class SerializedLbp1Playlist : IDataConvertableFrom<SerializedLbp1Playlist, Database.Models.Playlists.GamePlaylist>, ISerializedCreatePlaylistInfo
@@ -14,14 +16,16 @@ public class SerializedLbp1Playlist : IDataConvertableFrom<SerializedLbp1Playlis
     public int Id { get; set; }
     
     [XmlElement("name")]
-    public string Name { get; set; }
+    public string Name { get; set; } = null!;
     [XmlElement("description")]
-    public string Description { get; set; }
+    public string Description { get; set; } = null!;
     [XmlElement("icon")]
     public string Icon { get; set; }
     
     [XmlElement("location")]
     public GameLocation Location { get; set; }
+    
+    #nullable enable
 
     public static SerializedLbp1Playlist? FromOld(Database.Models.Playlists.GamePlaylist? old, DataContext dataContext)
     {

@@ -2,6 +2,8 @@ using Refresh.Database.Models.Users;
 
 namespace Refresh.Database.Models.Playlists;
 
+#nullable disable
+
 /// <summary>
 /// A user-curated list of levels.
 /// </summary>

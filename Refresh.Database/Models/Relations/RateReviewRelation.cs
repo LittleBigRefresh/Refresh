@@ -3,6 +3,8 @@ using Refresh.Database.Models.Users;
 
 namespace Refresh.Database.Models.Relations;
 
+#nullable disable
+
 public partial class RateReviewRelation : IRealmObject
 {
     // we could just reuse RatingType from GameLevel rating logic
@@ -13,6 +15,7 @@ public partial class RateReviewRelation : IRealmObject
         set => this._ReviewRatingType = (int)value;
     }
     
+    // ReSharper disable once InconsistentNaming
     public int _ReviewRatingType { get; set; }
     public GameReview Review { get; set; }
     

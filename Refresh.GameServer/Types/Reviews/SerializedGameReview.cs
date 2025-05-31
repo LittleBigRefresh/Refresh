@@ -7,9 +7,11 @@ using Refresh.GameServer.Types.Data;
 
 namespace Refresh.GameServer.Types.Reviews;
 
+#nullable disable
+
 [XmlRoot("review")]
 [XmlType("review")]
-public class SerializedGameReview : IDataConvertableFrom<SerializedGameReview, Database.Models.Comments.GameReview>
+public class SerializedGameReview : IDataConvertableFrom<SerializedGameReview, GameReview>
 {
     [XmlElement("id")] 
     public int Id { get; set; }
@@ -49,8 +51,10 @@ public class SerializedGameReview : IDataConvertableFrom<SerializedGameReview, D
     
     [XmlElement("yourthumb")]
     public int YourThumb { get; set; }
+    
+    #nullable enable
 
-    public static SerializedGameReview? FromOld(Database.Models.Comments.GameReview? review, DataContext dataContext)
+    public static SerializedGameReview? FromOld(GameReview? review, DataContext dataContext)
     {
         if (review == null) 
             return null;
@@ -80,6 +84,6 @@ public class SerializedGameReview : IDataConvertableFrom<SerializedGameReview, D
         };
     }
     
-    public static IEnumerable<SerializedGameReview> FromOldList(IEnumerable<Database.Models.Comments.GameReview> oldList,
+    public static IEnumerable<SerializedGameReview> FromOldList(IEnumerable<GameReview> oldList,
         DataContext dataContext) => oldList.Select(old => FromOld(old, dataContext)).ToList()!;
 }
