@@ -3,6 +3,8 @@ using Refresh.Database.Models.Levels;
 
 namespace Refresh.Database.Models.Comments;
 
+#nullable disable
+
 public partial class GameLevelComment : IRealmObject, IGameComment, ISequentialId
 {
     [PrimaryKey] public int SequentialId { get; set; }

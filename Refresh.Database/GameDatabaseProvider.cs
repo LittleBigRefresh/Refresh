@@ -841,9 +841,4 @@ public class GameDatabaseProvider :
         //     }
     }
     #endif
-    
-    public void Dispose()
-    {
-        GC.SuppressFinalize(this);
-    }
 }

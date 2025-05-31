@@ -86,7 +86,7 @@ public class CommandService : EndpointService
         {
             case "forcematch":
             {
-                if (command.Arguments == null)
+                if (command.Arguments.IsEmpty)
                 {
                     throw new Exception("User not provided for force match command");
                 }
