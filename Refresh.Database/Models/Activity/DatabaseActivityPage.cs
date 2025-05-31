@@ -1,4 +1,5 @@
-﻿using Refresh.Database.Models.Levels;
+﻿using System.Diagnostics;
+using Refresh.Database.Models.Levels;
 using Refresh.Database.Models.Levels.Scores;
 using Refresh.Database.Models.Photos;
 using Refresh.Database.Models.Users;
@@ -11,17 +12,23 @@ public class DatabaseActivityPage
     {
         this.StoreReferencedObjects(database, events);
         this.GenerateGroups(events);
+        
+        this.Cleanup();
     }
     
     public DateTimeOffset Start;
     public DateTimeOffset End;
     
     public readonly List<DatabaseActivityGroup> EventGroups = [];
+    private List<DatabaseActivityUserGroup>? UserEventGroups = [];
+    private List<DatabaseActivityLevelGroup>? LevelEventGroups = [];
 
     public readonly List<GameUser> Users = [];
     public readonly List<GameLevel> Levels = [];
     public readonly List<GameSubmittedScore> Scores = [];
     public readonly List<GamePhoto> Photos = [];
+
+    #region Generation
 
     private void StoreReferencedObjects(GameDatabaseContext database, IReadOnlyCollection<Event> events)
     {
@@ -97,18 +104,9 @@ public class DatabaseActivityPage
         foreach (Event @event in events.Where(e => e.StoredDataType == EventDataType.User))
         {
             GameUser user = this.Users.First(u => u.UserId == @event.StoredObjectId);
-
-            this.EventGroups.Add(new DatabaseActivityUserGroup(user)
-            {
-                Timestamp = @event.Timestamp,
-                Children = [
-                    new DatabaseActivityUserGroup(@event.User)
-                    {
-                        Timestamp = @event.Timestamp,
-                        Events = [@event],
-                    },
-                ],
-            });
+            
+            DatabaseActivityUserGroup group = GetOrCreateUserUserGroup(@event, user, @event.User);
+            group.Events.Add(@event);
         }
     }
     
@@ -127,28 +125,17 @@ public class DatabaseActivityPage
             GameLevel? level = this.Levels.FirstOrDefault(l => l.LevelId == levelId);
             if (level == null)
             {
-                this.EventGroups.Add(new DatabaseActivityUserGroup(@event.User)
-                {
-                    Events = [@event],
-                });
+                DatabaseActivityUserGroup userGroup = GetOrCreateUserGroup(@event);
+                userGroup.Events.Add(@event);
                 
                 continue;
             }
             
-            this.EventGroups.Add(new DatabaseActivityLevelGroup(level)
-            {
-                Timestamp = @event.Timestamp,
-                Children = [
-                    new DatabaseActivityUserGroup(@event.User)
-                    {
-                        Timestamp = @event.Timestamp,
-                        Events = [@event],
-                    },
-                ],
-            });
+            DatabaseActivityUserGroup group = GetOrCreateLevelUserGroup(@event, level);
+            group.Events.Add(@event);
         }
     }
-    
+
     private void GenerateScoreGroups(IReadOnlyCollection<Event> events)
     {
         foreach (Event @event in events.Where(e => e.EventType == EventType.LevelScore))
@@ -156,17 +143,111 @@ public class DatabaseActivityPage
             GameSubmittedScore score = this.Scores.First(u => u.ScoreId == @event.StoredObjectId);
             GameLevel level = score.Level;
 
-            this.EventGroups.Add(new DatabaseActivityLevelGroup(level)
-            {
-                Timestamp = @event.Timestamp,
-                Children = [
-                    new DatabaseActivityUserGroup(@event.User)
-                    {
-                        Timestamp = @event.Timestamp,
-                        Events = [@event],
-                    },
-                ],
-            });
+            DatabaseActivityUserGroup group = GetOrCreateLevelUserGroup(@event, level);
+            group.Events.Add(@event);
         }
     }
+
+    private void Cleanup()
+    {
+        foreach (DatabaseActivityGroup group in this.EventGroups)
+        {
+            group.Cleanup();
+        }
+        
+        this.UserEventGroups = null;
+        this.LevelEventGroups = null;
+    }
+
+    #endregion
+
+    #region Group Creation
+
+    private DatabaseActivityUserGroup GetOrCreateUserUserGroup(Event @event, GameUser user1, GameUser user2)
+    {
+        Debug.Assert(this.UserEventGroups != null);
+        
+        DatabaseActivityUserGroup? rootGroup = this.UserEventGroups.FirstOrDefault(u => u.User.UserId == user1.UserId);
+        if (rootGroup == null)
+        {
+            rootGroup = new DatabaseActivityUserGroup(user1)
+            {
+                Timestamp = @event.Timestamp,
+            };
+            this.EventGroups.Add(rootGroup);
+            this.UserEventGroups.Add(rootGroup);
+        }
+
+        Debug.Assert(rootGroup.UserChildren != null);
+        
+        DatabaseActivityUserGroup? subGroup = rootGroup.UserChildren.FirstOrDefault(u => u.User.UserId == user2.UserId);
+        if (subGroup == null)
+        {
+            subGroup = new DatabaseActivityUserGroup(user2)
+            {
+                Timestamp = @event.Timestamp,
+            };
+            rootGroup.Children.Add(subGroup);
+            rootGroup.UserChildren.Add(subGroup);
+        }
+
+        return subGroup;
+    }
+    
+    private DatabaseActivityUserGroup GetOrCreateUserGroup(Event @event, GameUser user)
+    {
+        Debug.Assert(this.UserEventGroups != null);
+        
+        DatabaseActivityUserGroup? rootGroup = this.UserEventGroups.FirstOrDefault(u => u.User.UserId == user.UserId);
+        if (rootGroup == null)
+        {
+            rootGroup = new DatabaseActivityUserGroup(user)
+            {
+                Timestamp = @event.Timestamp,
+            };
+            this.EventGroups.Add(rootGroup);
+            this.UserEventGroups.Add(rootGroup);
+        }
+
+        return rootGroup;
+    }
+    
+    private DatabaseActivityUserGroup GetOrCreateUserGroup(Event @event)
+        => this.GetOrCreateUserGroup(@event, @event.User);
+
+    private DatabaseActivityUserGroup GetOrCreateLevelUserGroup(Event @event,  GameLevel level, GameUser user)
+    {
+        Debug.Assert(this.LevelEventGroups != null);
+        
+        DatabaseActivityLevelGroup? rootGroup = this.LevelEventGroups.FirstOrDefault(u => u.Level.LevelId == level.LevelId);
+        if (rootGroup == null)
+        {
+            rootGroup = new DatabaseActivityLevelGroup(level)
+            {
+                Timestamp = @event.Timestamp,
+            };
+            this.EventGroups.Add(rootGroup);
+            this.LevelEventGroups.Add(rootGroup);
+        }
+
+        Debug.Assert(rootGroup.UserChildren != null);
+        
+        DatabaseActivityUserGroup? subGroup = rootGroup.UserChildren.FirstOrDefault(u => u.User.UserId == user.UserId);
+        if (subGroup == null)
+        {
+            subGroup = new DatabaseActivityUserGroup(user)
+            {
+                Timestamp = @event.Timestamp,
+            };
+            rootGroup.Children.Add(subGroup);
+            rootGroup.UserChildren.Add(subGroup);
+        }
+
+        return subGroup;
+    }
+
+    private DatabaseActivityUserGroup GetOrCreateLevelUserGroup(Event @event, GameLevel level)
+        => GetOrCreateLevelUserGroup(@event, level, @event.User);
+
+    #endregion
 }
