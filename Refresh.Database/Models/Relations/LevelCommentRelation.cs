@@ -4,6 +4,8 @@ using Refresh.Database.Models.Users;
 
 namespace Refresh.Database.Models.Relations;
 
+#nullable disable
+
 public partial class LevelCommentRelation : IRealmObject, ICommentRelation<GameLevelComment>
 {
     public ObjectId CommentRelationId { get; set; } = ObjectId.GenerateNewId();

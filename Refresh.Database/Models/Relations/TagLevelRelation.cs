@@ -3,6 +3,8 @@ using Refresh.Database.Models.Users;
 
 namespace Refresh.Database.Models.Relations;
 
+#nullable disable
+
 public partial class TagLevelRelation : IRealmObject
 {
     [Ignored]
@@ -12,6 +14,7 @@ public partial class TagLevelRelation : IRealmObject
         set => this._Tag = (byte)value;
     }
     
+    // ReSharper disable once InconsistentNaming
     public byte _Tag { get; set; }
     
     public GameUser User { get; set; }
