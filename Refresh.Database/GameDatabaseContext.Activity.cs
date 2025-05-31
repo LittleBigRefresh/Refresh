@@ -77,11 +77,29 @@ public partial class GameDatabaseContext // Activity
 
         return query;
     }
+
+    private DatabaseActivityPage GetRecentActivityPage(ActivityQueryParameters parameters)
+    {
+        if (parameters.Timestamp == 0) 
+            parameters.Timestamp = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
+        
+        List<Event> events = this.GetRecentActivity(parameters).ToList();
+
+        DatabaseActivityPage page = new(this, events);
+
+        return page;
+    }
     
     [Pure]
     public DatabaseList<Event> GetGlobalRecentActivity(ActivityQueryParameters parameters)
     {
         return new DatabaseList<Event>(this.GetRecentActivity(parameters).OrderByDescending(e => e.Timestamp), parameters.Skip, parameters.Count);
+    }
+
+    [Pure]
+    public DatabaseActivityPage GetGlobalRecentActivityPage(ActivityQueryParameters parameters)
+    {
+        return GetRecentActivityPage(parameters);
     }
 
     [Pure]
