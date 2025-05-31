@@ -34,17 +34,35 @@ public class DatabaseActivityPage
             .DistinctBy(e => e.StoredObjectId)
             .Select(e => database.GetUserFromEvent(e)!));
 
+        // Photos
+        this.Photos.AddRange(events
+            .Where(e => e.StoredDataType == EventDataType.Photo)
+            .DistinctBy(e => e.StoredSequentialId)
+            .Select(e => database.GetPhotoFromEvent(e)!));
+        
+        // Scores
+        this.Scores.AddRange(events
+            .Where(e => e.StoredDataType == EventDataType.Score)
+            .DistinctBy(e => e.StoredObjectId)
+            .Select(e => database.GetScoreFromEvent(e)!));
+        
         // Levels
         this.Levels.AddRange(events
             .Where(e => e.StoredDataType == EventDataType.Level)
             .DistinctBy(e => e.StoredSequentialId)
             .Select(e => database.GetLevelFromEvent(e)!));
         
-        // Photos
-        this.Photos.AddRange(events
-            .Where(e => e.StoredDataType == EventDataType.Photo)
-            .DistinctBy(e => e.StoredSequentialId)
-            .Select(e => database.GetPhotoFromEvent(e)!));
+        // Levels (from photos)
+        foreach (GamePhoto photo in this.Photos)
+        {
+            if(photo.Level == null)
+                continue;
+
+            if(this.Levels.Contains(photo.Level))
+               continue;
+            
+            this.Levels.Add(photo.Level);
+        }
     }
 
     private void GenerateGroups(IReadOnlyCollection<Event> events)
@@ -106,7 +124,16 @@ public class DatabaseActivityPage
                 levelId = photo.LevelId;
             }
 
-            GameLevel level = this.Levels.First(l => l.LevelId == levelId);
+            GameLevel? level = this.Levels.FirstOrDefault(l => l.LevelId == levelId);
+            if (level == null)
+            {
+                this.EventGroups.Add(new DatabaseActivityUserGroup(@event.User)
+                {
+                    Events = [@event],
+                });
+                
+                continue;
+            }
             
             this.EventGroups.Add(new DatabaseActivityLevelGroup(level)
             {

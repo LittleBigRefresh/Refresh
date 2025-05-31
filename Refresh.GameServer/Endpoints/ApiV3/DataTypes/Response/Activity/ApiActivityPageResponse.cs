@@ -28,10 +28,20 @@ public class ApiActivityPageResponse : IApiResponse, IDataConvertableFrom<ApiAct
     {
         if (old == null) return null;
 
+        List<Event> events = new();
+        
+        foreach (DatabaseActivityGroup group in old.EventGroups)
+        {
+            events.AddRange(group.Events);
+            foreach (DatabaseActivityGroup subGroup in group.Children)
+            {
+                events.AddRange(subGroup.Events);
+            }
+        }
+
         return new ApiActivityPageResponse
         {
-            // Events = ApiEventResponse.FromOldList(old.Events, dataContext),
-            Events = [],
+            Events = ApiEventResponse.FromOldList(events, dataContext),
             Users = ApiGameUserResponse.FromOldList(old.Users, dataContext),
             Levels = ApiGameLevelResponse.FromOldList(old.Levels, dataContext),
             Scores = ApiGameScoreResponse.FromOldList(old.Scores, dataContext),
