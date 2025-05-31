@@ -10,6 +10,7 @@ namespace Refresh.GameServer.Endpoints.ApiV3.DataTypes.Response.Activity;
 public class ApiActivityPageResponse : IApiResponse, IDataConvertableFrom<ApiActivityPageResponse, DatabaseActivityPage>, IDataConvertableFrom<ApiActivityPageResponse, ActivityPage>
 {
     public required IEnumerable<ApiEventResponse> Events { get; set; }
+    public required IEnumerable<ApiActivityGroupResponse> Groups { get; set; }
     public required IEnumerable<ApiGameUserResponse> Users { get; set; }
     public required IEnumerable<ApiGameLevelResponse> Levels { get; set; }
     public required IEnumerable<ApiGameScoreResponse> Scores { get; set; }
@@ -18,6 +19,7 @@ public class ApiActivityPageResponse : IApiResponse, IDataConvertableFrom<ApiAct
     public static ApiActivityPageResponse Empty => new()
     {
         Events = [],
+        Groups = [],
         Levels = [],
         Photos = [],
         Scores = [],
@@ -28,8 +30,7 @@ public class ApiActivityPageResponse : IApiResponse, IDataConvertableFrom<ApiAct
     {
         if (old == null) return null;
 
-        List<Event> events = new();
-        
+        List<Event> events = [];
         foreach (DatabaseActivityGroup group in old.EventGroups)
         {
             events.AddRange(group.Events);
@@ -42,6 +43,7 @@ public class ApiActivityPageResponse : IApiResponse, IDataConvertableFrom<ApiAct
         return new ApiActivityPageResponse
         {
             Events = ApiEventResponse.FromOldList(events, dataContext),
+            Groups = ApiActivityGroupResponse.FromOldList(old.EventGroups, dataContext),
             Users = ApiGameUserResponse.FromOldList(old.Users, dataContext),
             Levels = ApiGameLevelResponse.FromOldList(old.Levels, dataContext),
             Scores = ApiGameScoreResponse.FromOldList(old.Scores, dataContext),
@@ -52,6 +54,7 @@ public class ApiActivityPageResponse : IApiResponse, IDataConvertableFrom<ApiAct
     public static IEnumerable<ApiActivityPageResponse> FromOldList(IEnumerable<DatabaseActivityPage> oldList,
         DataContext dataContext) => oldList.Select(old => FromOld(old, dataContext)).ToList()!;
     
+    // legacy
     public static ApiActivityPageResponse? FromOld(ActivityPage? old, DataContext dataContext)
     {
         if (old == null) return null;
@@ -59,6 +62,7 @@ public class ApiActivityPageResponse : IApiResponse, IDataConvertableFrom<ApiAct
         return new ApiActivityPageResponse
         {
             Events = ApiEventResponse.FromOldList(old.Events, dataContext),
+            Groups = [],
             Users = ApiGameUserResponse.FromOldList(old.Users, dataContext),
             Levels = ApiGameLevelResponse.FromOldList(old.Levels, dataContext),
             Scores = ApiGameScoreResponse.FromOldList(old.Scores, dataContext),
