@@ -8,6 +8,7 @@
         <IsTestProject>true</IsTestProject>
         <Configurations>Debug;Release;DebugLocalBunkum;DebugPostgres</Configurations>
         <Platforms>AnyCPU</Platforms>
+        <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
     </PropertyGroup>
 
     <ItemGroup>
