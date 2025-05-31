@@ -1,6 +1,7 @@
 using System.Xml.Serialization;
+using Refresh.Database.Models.Activity;
 
-namespace Refresh.Database.Models.Activity.Groups;
+namespace Refresh.GameServer.Types.Activity.Groups;
 
 [XmlRoot("group")]
 [XmlType("group")]

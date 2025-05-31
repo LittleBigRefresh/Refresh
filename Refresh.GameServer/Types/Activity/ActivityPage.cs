@@ -1,7 +1,6 @@
 using System.Xml.Serialization;
 using Refresh.Database.Query;
 using Refresh.GameServer.Endpoints.Game.DataTypes.Response;
-using Refresh.Database.Models.Activity.Groups;
 using Refresh.Database.Models.Activity.SerializedEvents;
 using Refresh.GameServer.Types.Data;
 using Refresh.GameServer.Types.Levels;
@@ -10,6 +9,7 @@ using Refresh.Database.Models.Users;
 using Refresh.Database.Models.Levels.Scores;
 using Refresh.Database.Models.Levels;
 using Refresh.Database.Models.Photos;
+using Refresh.GameServer.Types.Activity.Groups;
 
 namespace Refresh.Database.Models.Activity;
 
