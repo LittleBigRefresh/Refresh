@@ -7,6 +7,12 @@ namespace Refresh.GameServer.Endpoints.ApiV3.DataTypes.Response.Activity;
 public class ApiActivityGroupResponse : IApiResponse, IDataConvertableFrom<ApiActivityGroupResponse, DatabaseActivityGroup>
 {
     public required string Type { get; set; }
+    
+    [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
+    public string? UserId { get; set; }
+    [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
+    public int? LevelId { get; set; }
+    
     public required DateTimeOffset Timestamp { get; set; }
     public required IEnumerable<ApiEventResponse> Events { get; set; }
     public required IEnumerable<ApiActivityGroupResponse> Children { get; set; }
@@ -16,13 +22,24 @@ public class ApiActivityGroupResponse : IApiResponse, IDataConvertableFrom<ApiAc
         if (old == null)
             return null;
 
-        return new ApiActivityGroupResponse
+        ApiActivityGroupResponse group = new()
         {
             Type = old.GroupType,
             Timestamp = old.Timestamp,
             Events = ApiEventResponse.FromOldList(old.Events, dataContext),
             Children = FromOldList(old.Children, dataContext),
         };
+
+        if (old is DatabaseActivityLevelGroup levelGroup)
+        {
+            group.LevelId = levelGroup.Level.LevelId;
+        }
+        else if (old is DatabaseActivityUserGroup userGroup)
+        {
+            group.UserId = userGroup.User.UserId.ToString();
+        }
+
+        return group;
     }
 
     public static IEnumerable<ApiActivityGroupResponse> FromOldList(IEnumerable<DatabaseActivityGroup> oldList, DataContext dataContext)
