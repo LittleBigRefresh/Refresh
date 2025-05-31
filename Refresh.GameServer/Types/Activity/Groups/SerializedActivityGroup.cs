@@ -75,7 +75,5 @@ public abstract class SerializedActivityGroup : IDataConvertableFrom<SerializedA
     }
 
     public static IEnumerable<SerializedActivityGroup> FromOldList(IEnumerable<DatabaseActivityGroup> oldList, DataContext dataContext)
-    {
-        throw new NotImplementedException();
-    }
+        => oldList.Select(old => FromOld(old, dataContext)).ToList()!;
 }

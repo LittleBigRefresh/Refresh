@@ -57,7 +57,5 @@ public class SerializedActivityPage : IDataConvertableFrom<SerializedActivityPag
     }
 
     public static IEnumerable<SerializedActivityPage> FromOldList(IEnumerable<DatabaseActivityPage> oldList, DataContext dataContext)
-    {
-        throw new NotImplementedException();
-    }
+        => oldList.Select(old => FromOld(old, dataContext)).ToList()!;
 }
