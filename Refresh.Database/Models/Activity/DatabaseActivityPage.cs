@@ -16,12 +16,12 @@ public class DatabaseActivityPage
     public DateTimeOffset Start;
     public DateTimeOffset End;
     
-    public List<DatabaseActivityGroup> EventGroups = [];
+    public readonly List<DatabaseActivityGroup> EventGroups = [];
 
-    public List<GameUser> Users = [];
-    public List<GameLevel> Levels = [];
-    public List<GameSubmittedScore> Scores = [];
-    public List<GamePhoto> Photos = [];
+    public readonly List<GameUser> Users = [];
+    public readonly List<GameLevel> Levels = [];
+    public readonly List<GameSubmittedScore> Scores = [];
+    public readonly List<GamePhoto> Photos = [];
 
     private void StoreReferencedObjects(GameDatabaseContext database, IReadOnlyCollection<Event> events)
     {
