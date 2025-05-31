@@ -7,7 +7,7 @@ namespace Refresh.Database.Models.Activity;
 [XmlType("events")]
 public class Events
 {
-    [XmlElement("event")] public IEnumerable<SerializedEvent> Items { get; set; } = [];
+    [XmlElement("event")] public List<SerializedEvent> Items { get; set; } = [];
 
     public Events(List<SerializedEvent> items)
     {

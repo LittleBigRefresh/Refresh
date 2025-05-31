@@ -35,12 +35,12 @@ public abstract class SerializedActivityGroup : IDataConvertableFrom<SerializedA
 
         Events events = new()
         {
-            Items = SerializedEvent.FromOldList(old.Events, dataContext),
+            Items = SerializedEvent.FromOldList(old.Events, dataContext).ToList(),
         };
 
         Subgroups subgroups = new()
         {
-            Items = FromOldList(old.Children, dataContext),
+            Items = FromOldList(old.Children, dataContext).ToList(),
         };
 
         if (old is DatabaseActivityLevelGroup levelOld)

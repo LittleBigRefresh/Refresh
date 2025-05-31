@@ -42,11 +42,11 @@ public class SerializedActivityPage : IDataConvertableFrom<SerializedActivityPag
             EndTimestamp = 0,
             Groups = new SerializedActivityGroups
             {
-                Groups = SerializedActivityGroup.FromOldList(old.EventGroups, dataContext),
+                Groups = SerializedActivityGroup.FromOldList(old.EventGroups, dataContext).ToList(),
             },
             Users = new SerializedUserList
             {
-                Users = GameUserResponse.FromOldList(old.Users, dataContext),
+                Users = GameUserResponse.FromOldList(old.Users, dataContext).ToList(),
             },
             Levels = new SerializedLevelList
             {

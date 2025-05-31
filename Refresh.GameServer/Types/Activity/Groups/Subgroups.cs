@@ -6,7 +6,7 @@ namespace Refresh.GameServer.Types.Activity.Groups;
 [XmlType("subgroups")]
 public class Subgroups
 {
-    [XmlElement("group")] public IEnumerable<SerializedActivityGroup> Items { get; set; } = [];
+    [XmlElement("group")] public List<SerializedActivityGroup> Items { get; set; } = [];
 
     public Subgroups(List<SerializedActivityGroup> items)
     {

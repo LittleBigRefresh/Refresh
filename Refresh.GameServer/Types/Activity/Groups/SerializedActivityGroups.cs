@@ -7,5 +7,5 @@ namespace Refresh.GameServer.Types.Activity.Groups;
 public class SerializedActivityGroups
 {
     [XmlElement("group")]
-    public IEnumerable<SerializedActivityGroup> Groups { get; set; } = [];
+    public List<SerializedActivityGroup> Groups { get; set; } = [];
 }
