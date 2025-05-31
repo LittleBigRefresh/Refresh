@@ -7,7 +7,7 @@ using Refresh.GameServer.Types.Data;
 namespace Refresh.GameServer.Endpoints.ApiV3.DataTypes.Response.Activity;
 
 [JsonObject(NamingStrategyType = typeof(CamelCaseNamingStrategy))]
-public class ApiActivityPageResponse : IApiResponse, IDataConvertableFrom<ApiActivityPageResponse, ActivityPage>
+public class ApiActivityPageResponse : IApiResponse, IDataConvertableFrom<ApiActivityPageResponse, DatabaseActivityPage>, IDataConvertableFrom<ApiActivityPageResponse, ActivityPage>
 {
     public required IEnumerable<ApiEventResponse> Events { get; set; }
     public required IEnumerable<ApiGameUserResponse> Users { get; set; }
@@ -23,6 +23,24 @@ public class ApiActivityPageResponse : IApiResponse, IDataConvertableFrom<ApiAct
         Scores = [],
         Users = [],
     };
+    
+    public static ApiActivityPageResponse? FromOld(DatabaseActivityPage? old, DataContext dataContext)
+    {
+        if (old == null) return null;
+
+        return new ApiActivityPageResponse
+        {
+            // Events = ApiEventResponse.FromOldList(old.Events, dataContext),
+            Events = [],
+            Users = ApiGameUserResponse.FromOldList(old.Users, dataContext),
+            Levels = ApiGameLevelResponse.FromOldList(old.Levels, dataContext),
+            Scores = ApiGameScoreResponse.FromOldList(old.Scores, dataContext),
+            Photos = ApiGamePhotoResponse.FromOldList(old.Photos, dataContext),
+        };
+    }
+
+    public static IEnumerable<ApiActivityPageResponse> FromOldList(IEnumerable<DatabaseActivityPage> oldList,
+        DataContext dataContext) => oldList.Select(old => FromOld(old, dataContext)).ToList()!;
     
     public static ApiActivityPageResponse? FromOld(ActivityPage? old, DataContext dataContext)
     {

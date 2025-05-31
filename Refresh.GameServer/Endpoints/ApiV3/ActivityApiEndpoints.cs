@@ -37,12 +37,12 @@ public class ActivityApiEndpoints : EndpointGroup
         
         (int skip, int count) = context.GetPageData();
 
-        ActivityPage page = ActivityPage.GlobalActivity(database, new ActivityQueryParameters
+        DatabaseActivityPage page = database.GetGlobalRecentActivityPage(new ActivityQueryParameters
         {
             Timestamp = timestamp,
             Count = count,
             Skip = skip,
-        }, dataContext, false);
+        });
         return ApiActivityPageResponse.FromOld(page, dataContext);
     }
     

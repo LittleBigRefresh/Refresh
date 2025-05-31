@@ -13,7 +13,7 @@ public partial class GameDatabaseContext // Activity
     [Pure]
     public DatabaseList<Event> GetUserRecentActivity(ActivityQueryParameters parameters)
     {
-        IEnumerable<Event> query = this.GetRecentActivity(parameters);
+        IEnumerable<Event> query = this.GetEvents(parameters);
 
         if (parameters.User != null)
         {
@@ -36,7 +36,7 @@ public partial class GameDatabaseContext // Activity
         return new DatabaseList<Event>(query.OrderByDescending(e => e.Timestamp), parameters.Skip, parameters.Count);
     }
 
-    private IEnumerable<Event> GetRecentActivity(ActivityQueryParameters parameters)
+    private IEnumerable<Event> GetEvents(ActivityQueryParameters parameters)
     {
         if (parameters.Timestamp == 0) 
             parameters.Timestamp = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
@@ -78,12 +78,16 @@ public partial class GameDatabaseContext // Activity
         return query;
     }
 
-    private DatabaseActivityPage GetRecentActivityPage(ActivityQueryParameters parameters)
+    private DatabaseActivityPage GetRecentActivity(IEnumerable<Event> eventQuery, ActivityQueryParameters parameters)
     {
         if (parameters.Timestamp == 0) 
             parameters.Timestamp = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
         
-        List<Event> events = this.GetRecentActivity(parameters).ToList();
+        List<Event> events = eventQuery
+            .OrderByDescending(e => e.Timestamp)
+            .Skip(parameters.Skip)
+            .Take(parameters.Count)
+            .ToList();
 
         DatabaseActivityPage page = new(this, events);
 
@@ -93,13 +97,13 @@ public partial class GameDatabaseContext // Activity
     [Pure]
     public DatabaseList<Event> GetGlobalRecentActivity(ActivityQueryParameters parameters)
     {
-        return new DatabaseList<Event>(this.GetRecentActivity(parameters).OrderByDescending(e => e.Timestamp), parameters.Skip, parameters.Count);
+        return new DatabaseList<Event>(this.GetEvents(parameters).OrderByDescending(e => e.Timestamp), parameters.Skip, parameters.Count);
     }
 
     [Pure]
     public DatabaseActivityPage GetGlobalRecentActivityPage(ActivityQueryParameters parameters)
     {
-        return GetRecentActivityPage(parameters);
+        return this.GetRecentActivity(this.GetEvents(parameters), parameters);
     }
 
     [Pure]
@@ -108,7 +112,7 @@ public partial class GameDatabaseContext // Activity
         ActivityQueryParameters parameters
     )
     {
-        return new DatabaseList<Event>(this.GetRecentActivity(parameters)
+        return new DatabaseList<Event>(this.GetEvents(parameters)
             .Where(e => e._StoredDataType == 1 && e.StoredSequentialId == level.LevelId)
             .OrderByDescending(e => e.Timestamp), parameters.Skip, parameters.Count);
     }
@@ -117,7 +121,7 @@ public partial class GameDatabaseContext // Activity
     public DatabaseList<Event> GetRecentActivityFromUser(ActivityQueryParameters parameters)
     {
         Debug.Assert(parameters.User != null);
-        return new DatabaseList<Event>(this.GetRecentActivity(parameters)
+        return new DatabaseList<Event>(this.GetEvents(parameters)
             .Where(e => e.User?.UserId == parameters.User.UserId)
             .OrderByDescending(e => e.Timestamp), parameters.Skip, parameters.Count);
     }
