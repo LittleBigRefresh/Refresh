@@ -10,32 +10,6 @@ namespace Refresh.Database;
 
 public partial class GameDatabaseContext // Activity
 {
-    [Pure]
-    public DatabaseList<Event> GetUserRecentActivity(ActivityQueryParameters parameters)
-    {
-        IEnumerable<Event> query = this.GetEvents(parameters);
-
-        if (parameters.User != null)
-        {
-            List<ObjectId?> favouriteUsers = this.GetUsersFavouritedByUser(parameters.User, 1000, 0).Select(f => (ObjectId?)f.UserId).ToList();
-            List<ObjectId?> userFriends = this.GetUsersMutuals(parameters.User).Select(u => (ObjectId?)u.UserId).ToList();
-
-            query = query.Where(e =>
-                e.User.UserId == parameters.User.UserId ||
-                e.StoredObjectId == parameters.User.UserId ||
-                favouriteUsers.Contains(e.User.UserId) ||
-                favouriteUsers.Contains(e.StoredObjectId) ||
-                userFriends.Contains(e.User.UserId) ||
-                userFriends.Contains(e.StoredObjectId) ||
-                this.GetLevelById(e.StoredSequentialId ?? int.MaxValue)?.Publisher?.UserId == parameters.User.UserId ||
-                e.EventType == EventType.LevelTeamPick ||
-                e.EventType == EventType.UserFirstLogin
-            );
-        }
-        
-        return new DatabaseList<Event>(query.OrderByDescending(e => e.Timestamp), parameters.Skip, parameters.Count);
-    }
-
     private IEnumerable<Event> GetEvents(ActivityQueryParameters parameters)
     {
         if (parameters.Timestamp == 0) 
@@ -105,25 +79,58 @@ public partial class GameDatabaseContext // Activity
     {
         return this.GetRecentActivity(this.GetEvents(parameters), parameters);
     }
+    
+    [Pure]
+    public DatabaseActivityPage GetUserRecentActivity(ActivityQueryParameters parameters)
+    {
+        IEnumerable<Event> query = this.GetEvents(parameters);
+
+        if (parameters.User != null)
+        {
+            List<ObjectId?> favouriteUsers = this.GetUsersFavouritedByUser(parameters.User, 1000, 0).Select(f => (ObjectId?)f.UserId).ToList();
+            List<ObjectId?> userFriends = this.GetUsersMutuals(parameters.User).Select(u => (ObjectId?)u.UserId).ToList();
+
+            query = query.Where(e =>
+                e.User.UserId == parameters.User.UserId ||
+                e.StoredObjectId == parameters.User.UserId ||
+                favouriteUsers.Contains(e.User.UserId) ||
+                favouriteUsers.Contains(e.StoredObjectId) ||
+                userFriends.Contains(e.User.UserId) ||
+                userFriends.Contains(e.StoredObjectId) ||
+                this.GetLevelById(e.StoredSequentialId ?? int.MaxValue)?.Publisher?.UserId == parameters.User.UserId ||
+                e.EventType == EventType.LevelTeamPick ||
+                e.EventType == EventType.UserFirstLogin
+            );
+        }
+
+        query = query.OrderByDescending(e => e.Timestamp);
+
+        return GetRecentActivity(query, parameters);
+    }
 
     [Pure]
-    public DatabaseList<Event> GetRecentActivityForLevel(
+    public DatabaseActivityPage GetRecentActivityForLevel(
         GameLevel level, 
         ActivityQueryParameters parameters
     )
     {
-        return new DatabaseList<Event>(this.GetEvents(parameters)
-            .Where(e => e._StoredDataType == 1 && e.StoredSequentialId == level.LevelId)
-            .OrderByDescending(e => e.Timestamp), parameters.Skip, parameters.Count);
+        IEnumerable<Event> events = this.GetEvents(parameters)
+            .Where(e => e._StoredDataType == (int)EventDataType.Level && e.StoredSequentialId == level.LevelId)
+            .OrderByDescending(e => e.Timestamp);
+
+        return GetRecentActivity(events, parameters);
     }
     
     [Pure]
-    public DatabaseList<Event> GetRecentActivityFromUser(ActivityQueryParameters parameters)
+    public DatabaseActivityPage GetRecentActivityFromUser(ActivityQueryParameters parameters)
     {
         Debug.Assert(parameters.User != null);
-        return new DatabaseList<Event>(this.GetEvents(parameters)
+
+        IEnumerable<Event> events = this.GetEvents(parameters)
             .Where(e => e.User?.UserId == parameters.User.UserId)
-            .OrderByDescending(e => e.Timestamp), parameters.Skip, parameters.Count);
+            .OrderByDescending(e => e.Timestamp);
+        
+        return GetRecentActivity(events, parameters);
     }
 
     public int GetTotalEventCount() => this.Events.Count();

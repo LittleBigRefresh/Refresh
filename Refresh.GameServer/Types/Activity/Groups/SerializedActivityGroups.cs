@@ -4,8 +4,8 @@ namespace Refresh.GameServer.Types.Activity.Groups;
 
 [XmlRoot("groups")]
 [XmlType("groups")]
-public class ActivityGroups
+public class SerializedActivityGroups
 {
     [XmlElement("group")]
-    public List<ActivityGroup> Groups { get; set; } = new();
+    public IEnumerable<SerializedActivityGroup> Groups { get; set; } = [];
 }

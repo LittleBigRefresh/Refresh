@@ -3,7 +3,7 @@ using Refresh.GameServer.Types.Levels;
 
 namespace Refresh.GameServer.Types.Activity.Groups;
 
-public class LevelActivityGroup : ActivityGroup
+public class LevelSerializedActivityGroup : SerializedActivityGroup
 {
     [XmlAttribute("type")]
     public override string Type { get; set; } = "level";

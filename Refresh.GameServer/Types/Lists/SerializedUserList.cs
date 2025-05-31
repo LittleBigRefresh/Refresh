@@ -7,5 +7,5 @@ namespace Refresh.GameServer.Types.Lists;
 public class SerializedUserList
 {
     [XmlElement("user")]
-    public List<GameUserResponse> Users { get; set; } = new();
+    public IEnumerable<GameUserResponse> Users { get; set; } = [];
 }
