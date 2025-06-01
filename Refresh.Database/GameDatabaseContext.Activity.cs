@@ -15,6 +15,9 @@ public partial class GameDatabaseContext // Activity
         if (parameters.Timestamp == 0) 
             parameters.Timestamp = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
 
+        if (parameters.EndTimestamp == 0)
+            parameters.EndTimestamp = DateTimeOffset.UtcNow.Subtract(TimeSpan.FromDays(30.5 * 6)).ToUnixTimeMilliseconds();
+
         DateTimeOffset timestamp = DateTimeOffset.FromUnixTimeMilliseconds(parameters.Timestamp);
         DateTimeOffset endTimestamp = DateTimeOffset.FromUnixTimeMilliseconds(parameters.EndTimestamp);
         
