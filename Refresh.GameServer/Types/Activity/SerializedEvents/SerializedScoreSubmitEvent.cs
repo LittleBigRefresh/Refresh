@@ -11,14 +11,20 @@ public class SerializedScoreSubmitEvent : SerializedLevelEvent
     [XmlElement("count")]
     public int ScoreType { get; set; }
     
-    public static SerializedScoreSubmitEvent FromSerializedLevelEvent(SerializedLevelEvent e, GameSubmittedScore score) => new()
+    public static SerializedScoreSubmitEvent? FromSerializedLevelEvent(SerializedLevelEvent? e, GameSubmittedScore? score)
     {
-        Actor = e.Actor,
-        LevelId = e.LevelId,
-        Timestamp = e.Timestamp,
-        Type = e.Type,
+        if (e == null || score == null)
+            return null;
         
-        Score = score.Score,
-        ScoreType = score.ScoreType,
-    };
+        return new SerializedScoreSubmitEvent
+        {
+            Actor = e.Actor,
+            LevelId = e.LevelId,
+            Timestamp = e.Timestamp,
+            Type = e.Type,
+
+            Score = score.Score,
+            ScoreType = score.ScoreType,
+        };
+    }
 }

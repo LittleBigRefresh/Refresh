@@ -10,13 +10,19 @@ public class SerializedLevelPlayEvent : SerializedLevelEvent
     [XmlElement("count")]
     public int ScoreType { get; set; }
     
-    public static SerializedLevelPlayEvent FromSerializedLevelEvent(SerializedLevelEvent e) => new()
+    public static SerializedLevelPlayEvent? FromSerializedLevelEvent(SerializedLevelEvent? e)
     {
-        ScoreType = 1,
-            
-        Actor = e.Actor,
-        LevelId = e.LevelId,
-        Timestamp = e.Timestamp,
-        Type = e.Type,
-    };
+        if (e == null)
+            return null;
+        
+        return new SerializedLevelPlayEvent
+        {
+            ScoreType = 1,
+
+            Actor = e.Actor,
+            LevelId = e.LevelId,
+            Timestamp = e.Timestamp,
+            Type = e.Type,
+        };
+    }
 }

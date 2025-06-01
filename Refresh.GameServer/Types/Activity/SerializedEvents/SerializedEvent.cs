@@ -88,8 +88,11 @@ public abstract class SerializedEvent : IDataConvertableFrom<SerializedEvent, Ev
         }
     }
 
-    private static SerializedLevelEvent FromOldLevelEvent(Event old, GameLevel level)
+    private static SerializedLevelEvent? FromOldLevelEvent(Event old, GameLevel? level)
     {
+        if (level == null)
+            return null;
+        
         return new SerializedLevelEvent
         {
             Timestamp = old.Timestamp.ToUnixTimeMilliseconds(),
@@ -103,8 +106,11 @@ public abstract class SerializedEvent : IDataConvertableFrom<SerializedEvent, Ev
         };
     }
     
-    private static SerializedUserEvent FromOldUserEvent(Event old, GameUser user)
+    private static SerializedUserEvent? FromOldUserEvent(Event old, GameUser? user)
     {
+        if (user == null)
+            return null;
+        
         return new SerializedUserEvent
         {
             Timestamp = old.Timestamp.ToUnixTimeMilliseconds(),

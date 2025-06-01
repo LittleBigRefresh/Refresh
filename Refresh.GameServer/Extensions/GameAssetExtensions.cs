@@ -253,7 +253,8 @@ public static class GameAssetExtensions
                         case TokenGame.LittleBigPlanet1:
                         case TokenGame.LittleBigPlanet2:
                         case TokenGame.LittleBigPlanet3:
-                        case TokenGame.LittleBigPlanetVita: {
+                        case TokenGame.LittleBigPlanetVita:
+                        {
                             //If the cached icon hash is already set, early return it.
                             if (getMainline() != null) return getMainline()!;
 
@@ -264,7 +265,8 @@ public static class GameAssetExtensions
                             //Return the new icon hash
                             return getMainline()!;
                         }
-                        case TokenGame.LittleBigPlanetPSP: {
+                        case TokenGame.LittleBigPlanetPSP:
+                        {
                             if (getMip() != null) return getMip()!;
 
                             string convertedHash = asset.TransformImage(game, dataStore, path => ImageImporter.LoadTex(dataStore.GetStreamFromStore(path)), transformImage);
@@ -273,7 +275,6 @@ public static class GameAssetExtensions
 
                             return getMip()!;
                         }
-                            ;
                         default:
                             throw new ArgumentOutOfRangeException(nameof(game), game, null);
                     }
@@ -295,7 +296,8 @@ public static class GameAssetExtensions
                             //Return the new icon hash
                             return getMainline()!;
                         }
-                        case TokenGame.LittleBigPlanetPSP: {
+                        case TokenGame.LittleBigPlanetPSP:
+                        {
                             if (getMip() != null) return getMip()!;
 
                             string convertedHash = asset.TransformImage(game, dataStore, path => ImageImporter.LoadGtf(dataStore.GetStreamFromStore(path)), transformImage);
@@ -304,7 +306,6 @@ public static class GameAssetExtensions
 
                             return getMip()!;
                         }
-                            ;
                         default:
                             throw new ArgumentOutOfRangeException(nameof(game), game, null);
                     }
