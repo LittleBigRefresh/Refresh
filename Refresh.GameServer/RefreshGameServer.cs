@@ -86,6 +86,7 @@ public class RefreshGameServer : RefreshServer
     {
         base.Initialize();
         this.Server.DiscoverEndpointsFromAssembly(typeof(ApiV3EndpointAttribute).Assembly);
+        this.Server.DiscoverEndpointsFromAssembly(typeof(GameEndpointAttribute).Assembly);
         this.SetupWorkers();
     }
 

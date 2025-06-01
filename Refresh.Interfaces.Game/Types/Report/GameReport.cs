@@ -10,7 +10,6 @@ public class GameReport
     [XmlIgnore]
     private List<InfoBubble> InternalInfoBubble { get; } = [];
     
-    [Ignored]
     [XmlElement("infoBubble")]
     public InfoBubble[] InfoBubble 
     {
@@ -62,7 +61,6 @@ public class GameReport
     [XmlIgnore]
     private List<Player> InternalPlayers { get; } = [];
 
-    [Ignored]
     [XmlElement("player")]
     public Player[] Players 
     {
@@ -83,11 +81,4 @@ public class GameReport
 
     [XmlElement("screenElements")]
     public ScreenElements ScreenElements { get; set; }
-
-    [PrimaryKey]
-    public int SequentialId 
-    {
-        get;
-        set;
-    }
 }

@@ -10,7 +10,6 @@ public class SerializedUpdateDataProfile : SerializedUpdateData {}
 [XmlRoot("user")]
 public class SerializedUpdateDataPlanets : SerializedUpdateData {}
 
-[Ignored]
 public class SerializedUpdateData : ISerializedEditUser
 {
     [XmlElement("biography")]
