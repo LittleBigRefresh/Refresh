@@ -67,11 +67,4 @@
         <ProjectReference Include="..\Refresh.Interfaces.APIv3\Refresh.Interfaces.APIv3.csproj" />
         <ProjectReference Include="..\Refresh.Interfaces.Game\Refresh.Interfaces.Game.csproj" />
     </ItemGroup>
-
-    <ItemGroup>
-      <None Remove="Resources\lbp3.txt" />
-      <EmbeddedResource Include="Resources\lbp3.txt" />
-        <None Remove="Resources\lbpv.txt" />
-        <EmbeddedResource Include="Resources\lbpv.txt" />
-    </ItemGroup>
 </Project>

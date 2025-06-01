@@ -85,6 +85,7 @@ public class RefreshGameServer : RefreshServer
     protected override void Initialize()
     {
         base.Initialize();
+        this.Server.DiscoverEndpointsFromAssembly(typeof(ApiV3EndpointAttribute).Assembly);
         this.SetupWorkers();
     }
 

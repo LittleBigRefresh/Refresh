@@ -31,4 +31,11 @@
         <Using Include="BCrypt.Net.BCrypt" Alias="BC" />
     </ItemGroup>
 
+    <ItemGroup>
+        <None Remove="Resources\lbp3.txt" />
+        <EmbeddedResource Include="Resources\lbp3.txt" />
+        <None Remove="Resources\lbpv.txt" />
+        <EmbeddedResource Include="Resources\lbpv.txt" />
+    </ItemGroup>
+
 </Project>

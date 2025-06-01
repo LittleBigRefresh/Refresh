@@ -16,8 +16,8 @@ public class GuidCheckerService : EndpointService
     {
         this._config = config;
         //Get the resource streams for the LBP3 and LBPV files
-        using Stream lbpStream = ResourceHelper.StreamFromResource("Refresh.GameServer.Resources.lbp3.txt");
-        using Stream vitaStream = ResourceHelper.StreamFromResource("Refresh.GameServer.Resources.lbpv.txt");
+        using Stream lbpStream = ResourceHelper.StreamFromResource("Refresh.Core.Resources.lbp3.txt");
+        using Stream vitaStream = ResourceHelper.StreamFromResource("Refresh.Core.Resources.lbpv.txt");
         
         //Read the files into their respective hash sets
         ReadStream(lbpStream, this._validMainlineTextureGuids);
