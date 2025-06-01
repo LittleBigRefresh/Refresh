@@ -15,12 +15,24 @@ public class DatabaseActivityPage
         this.GenerateGroups(events);
         
         this.Cleanup();
-
-        if (this.EventGroups.Count > 0)
+        
+        this.Start = DateTimeOffset.MaxValue;
+        this.End = DateTimeOffset.MinValue;
+        foreach (DatabaseActivityGroup group in this.EventGroups)
         {
-            this.Start = DateTimeOffset.FromUnixTimeMilliseconds(parameters.Timestamp);
-            this.End = DateTimeOffset.FromUnixTimeMilliseconds(parameters.EndTimestamp);
+            group.TraverseChildrenForEventsRecursively((e) =>
+            {
+                if (e.Timestamp > this.End)
+                    this.End = e.Timestamp;
+
+                if (e.Timestamp < this.Start)
+                    this.Start = e.Timestamp;
+            });
         }
+
+        // go back 1 week by default to look for next page
+        if(this.End != DateTimeOffset.MinValue)
+            this.End = this.End.Subtract(TimeSpan.FromDays(7));
     }
     
     public DateTimeOffset Start;

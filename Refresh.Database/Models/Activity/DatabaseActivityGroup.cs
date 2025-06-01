@@ -20,4 +20,17 @@ public abstract class DatabaseActivityGroup
 
         this.UserChildren = null;
     }
+    
+    public void TraverseChildrenForEventsRecursively(Action<Event> callback)
+    {
+        foreach (Event @event in this.Events)
+        {
+            callback(@event);
+        }
+
+        foreach (DatabaseActivityGroup group in this.Children)
+        {
+            group.TraverseChildrenForEventsRecursively(callback);
+        }
+    }
 }
