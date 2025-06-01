@@ -36,7 +36,7 @@ public class SerializedActivityPage : IDataConvertableFrom<SerializedActivityPag
         return new SerializedActivityPage
         {
             StartTimestamp = old.Start.ToUnixTimeMilliseconds(),
-            EndTimestamp = old.Start.ToUnixTimeMilliseconds(),
+            EndTimestamp = old.End.ToUnixTimeMilliseconds(),
             Groups = new SerializedActivityGroups
             {
                 Groups = SerializedActivityGroup.FromOldList(old.EventGroups, dataContext).ToList(),
