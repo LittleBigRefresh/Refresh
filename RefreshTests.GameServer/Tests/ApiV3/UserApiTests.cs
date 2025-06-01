@@ -58,9 +58,9 @@ public class UserApiTests : GameServerTest
             EmailAddress = "guy@lil.com",
             PasswordSha512 = "ee26b0dd4af7e749aa1a8ee3c10ae9923f618980772e473f8819a5d4940e0db27ac185f8a0e1d5f84f88bc887fd67b143732c304cc5fa9ad8e6f57f50028a8ff",
         });
-        Assert.That(response, Is.Not.EqualTo(null));
-        Assert.That(response.Error, Is.Not.EqualTo(null));
-        Assert.That(response.Error.Name, Is.EqualTo("ApiAuthenticationError"));
+        Assert.That(response, Is.Not.Null);
+        Assert.That(response!.Error, Is.Not.EqualTo(null));
+        Assert.That(response.Error!.Name, Is.EqualTo("ApiAuthenticationError"));
         
         context.Database.Refresh();
         Assert.That(context.Database.GetUserByUsername(username), Is.EqualTo(null));
@@ -80,8 +80,8 @@ public class UserApiTests : GameServerTest
             PasswordSha512 = "ee26b0dd4af7e749aa1a8ee3c10ae9923f618980772e473f8819a5d4940e0db27ac185f8a0e1d5f84f88bc887fd67b143732c304cc5fa9ad8e6f57f50028a8ff",
         });
         Assert.That(response, Is.Not.Null);
-        Assert.That(response.Error, Is.Not.Null);
-        Assert.That(response.Error.Name, Is.EqualTo("ApiValidationError"));
+        Assert.That(response!.Error, Is.Not.Null);
+        Assert.That(response.Error!.Name, Is.EqualTo("ApiValidationError"));
         
         context.Database.Refresh();
         Assert.That(context.Database.GetUserByUsername(username), Is.EqualTo(null));
