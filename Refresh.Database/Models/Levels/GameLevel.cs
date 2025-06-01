@@ -149,4 +149,18 @@ public partial class GameLevel : IRealmObject, ISequentialId
         
         return (double)((5 * yayCount) + (1 * booCount) + (3 * neutralCount)) / (yayCount + booCount + neutralCount);
     }
+    
+    /// <summary>
+    /// Provides a unique level ID for ~1.1 billion hashed levels, uses the hash directly, so this is deterministic
+    /// </summary>
+    /// <param name="hash"></param>
+    /// <returns></returns>
+    public static int LevelIdFromHash(string hash)
+    {
+        const int rangeStart = 1_000_000_000;
+        const int rangeEnd = int.MaxValue;
+        const int range = rangeEnd - rangeStart;
+        
+        return rangeStart + Math.Abs(hash.GetHashCode()) % range;
+    }
 }

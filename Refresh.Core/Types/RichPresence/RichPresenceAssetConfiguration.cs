@@ -1,9 +1,7 @@
-using Refresh.GameServer.Endpoints.ApiV3.DataTypes;
-
 namespace Refresh.GameServer.Types.RichPresence;
 
 [JsonObject(NamingStrategyType = typeof(CamelCaseNamingStrategy))]
-public class RichPresenceAssetConfiguration : IApiResponse
+public class RichPresenceAssetConfiguration
 {
     public required bool UseApplicationAssets { get; set; }
     public required string? PodAsset { get; set; }

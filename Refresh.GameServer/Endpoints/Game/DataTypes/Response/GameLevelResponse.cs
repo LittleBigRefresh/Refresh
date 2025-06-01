@@ -85,25 +85,11 @@ public class GameLevelResponse : IDataConvertableFrom<GameLevelResponse, GameLev
     [XmlElement("authorPhotoCount")] public int PublisherPhotoCount { get; set; }
     [XmlElement("tags")] public string Tags { get; set; } = "";
     
-    /// <summary>
-    /// Provides a unique level ID for ~1.1 billion hashed levels, uses the hash directly, so this is deterministic
-    /// </summary>
-    /// <param name="hash"></param>
-    /// <returns></returns>
-    public static int LevelIdFromHash(string hash)
-    {
-        const int rangeStart = 1_000_000_000;
-        const int rangeEnd = int.MaxValue;
-        const int range = rangeEnd - rangeStart;
-        
-        return rangeStart + Math.Abs(hash.GetHashCode()) % range;
-    }
-    
     public static GameLevelResponse FromHash(string hash, DataContext dataContext)
     {
         return new GameLevelResponse
         {
-            LevelId = dataContext.Game == TokenGame.LittleBigPlanet3 ? LevelIdFromHash(hash) : int.MaxValue,
+            LevelId = dataContext.Game == TokenGame.LittleBigPlanet3 ? GameLevel.LevelIdFromHash(hash) : int.MaxValue,
             IsAdventure = false,
             Title = $"Hashed Level - {hash}",
             IconHash = "0",

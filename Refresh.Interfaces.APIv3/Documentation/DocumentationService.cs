@@ -8,7 +8,7 @@ namespace Refresh.GameServer.Documentation;
 
 public class DocumentationService : EndpointService
 {
-    internal DocumentationService(Logger logger) : base(logger)
+    public DocumentationService(Logger logger) : base(logger)
     {}
 
     public override void Initialize()

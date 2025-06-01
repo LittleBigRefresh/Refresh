@@ -2,9 +2,9 @@ using System.Reflection;
 
 namespace Refresh.GameServer;
 
-internal static class VersionInformation
+public static class VersionInformation
 {
-    internal static readonly string Version;
+    public static readonly string Version;
 
     static VersionInformation()
     {

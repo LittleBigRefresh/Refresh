@@ -4,6 +4,7 @@ using Bunkum.Core;
 using Bunkum.Core.Endpoints;
 using Bunkum.Core.RateLimit;
 using Bunkum.Protocols.Http;
+using Org.BouncyCastle.Crypto.Generators;
 using Refresh.Common.Verification;
 using Refresh.Database.Models.Authentication;
 using Refresh.GameServer.Configuration;
@@ -20,6 +21,8 @@ using Refresh.Database.Models.Users;
 using Refresh.Database.Models.Relations;
 
 namespace Refresh.GameServer.Endpoints.ApiV3;
+
+using BC = BCrypt.Net.BCrypt;
 
 public class AuthenticationApiEndpoints : EndpointGroup
 {

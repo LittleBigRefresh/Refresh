@@ -12,7 +12,7 @@ public class GuidCheckerService : EndpointService
     private readonly HashSet<long> _validMainlineTextureGuids= [];
     private readonly HashSet<long> _validVitaTextureGuids = [];
 
-    internal GuidCheckerService(GameServerConfig config, Logger logger) : base(logger)
+    public GuidCheckerService(GameServerConfig config, Logger logger) : base(logger)
     {
         this._config = config;
         //Get the resource streams for the LBP3 and LBPV files

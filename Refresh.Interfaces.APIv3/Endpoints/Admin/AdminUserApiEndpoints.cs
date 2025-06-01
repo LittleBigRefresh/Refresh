@@ -16,6 +16,8 @@ using Refresh.Database.Models.Users;
 
 namespace Refresh.GameServer.Endpoints.ApiV3.Admin;
 
+using BC = BCrypt.Net.BCrypt;
+
 public class AdminUserApiEndpoints : EndpointGroup
 {
     [ApiV3Endpoint("admin/users/name/{username}"), MinimumRole(GameUserRole.Admin)]

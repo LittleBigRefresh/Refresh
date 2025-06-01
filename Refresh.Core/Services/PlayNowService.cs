@@ -3,7 +3,6 @@ using MongoDB.Bson;
 using NotEnoughLogs;
 using Refresh.Database.Models.Authentication;
 using Refresh.Database;
-using Refresh.GameServer.Endpoints.Game.DataTypes.Response;
 using Refresh.Database.Models.Users;
 using Refresh.Database.Models.Levels;
 
@@ -49,7 +48,7 @@ public class PlayNowService : EndpointService
     {
         this.Logger.LogDebug(RefreshContext.LevelListOverride, "Adding level hash override for {0}: [{1}]", user.Username, hash);
 
-        bool presenceUsed = this._presence.PlayLevel(user, GameLevelResponse.LevelIdFromHash(hash));
+        bool presenceUsed = this._presence.PlayLevel(user, GameLevel.LevelIdFromHash(hash));
         
         // Set the hash override, but mark it as already accessed if presence was used
         this._userIdsToLevelHash[user.UserId] = (presenceUsed, hash);

@@ -119,7 +119,7 @@ public class LevelEndpoints : EndpointGroup
         PlayNowService overrideService, DataContext dataContext)
     {
         // If the user has had a hash override in the past, and the level id they requested matches the level ID associated with that hash
-        if (overrideService.GetLastHashOverrideForUser(token, out string hash) && GameLevelResponse.LevelIdFromHash(hash) == id)
+        if (overrideService.GetLastHashOverrideForUser(token, out string hash) && GameLevel.LevelIdFromHash(hash) == id)
             // Return the hashed level info
             return GameLevelResponse.FromHash(hash, dataContext);
         
