@@ -1,10 +1,10 @@
 using Newtonsoft.Json;
 using Refresh.Database.Models.Authentication;
 using Refresh.Database;
-using Refresh.GameServer.Endpoints.ApiV3.ApiTypes;
-using Refresh.GameServer.Endpoints.ApiV3.DataTypes.Request.Authentication;
-using Refresh.GameServer.Endpoints.ApiV3.DataTypes.Response.Users;
 using Refresh.Database.Models.Users;
+using Refresh.Interfaces.APIv3.Endpoints.ApiTypes;
+using Refresh.Interfaces.APIv3.Endpoints.DataTypes.Request.Authentication;
+using Refresh.Interfaces.APIv3.Endpoints.DataTypes.Response.Users;
 
 namespace RefreshTests.GameServer.Tests.Authentication;
 

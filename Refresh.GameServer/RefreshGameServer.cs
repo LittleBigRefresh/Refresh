@@ -9,23 +9,29 @@ using Bunkum.HealthChecks;
 using Bunkum.HealthChecks.RealmDatabase;
 using Bunkum.Protocols.Http;
 using Refresh.Common;
+using Refresh.Common.Time;
 using Refresh.Common.Verification;
+using Refresh.Core;
+using Refresh.Core.Configuration;
+using Refresh.Core.Extensions;
+using Refresh.Core.Importing;
+using Refresh.Core.Services;
+using Refresh.Core.Storage;
+using Refresh.Core.Types.Categories;
+using Refresh.Core.Types.Data;
 using Refresh.GameServer.Authentication;
 using Refresh.Database.Models.Authentication;
-using Refresh.GameServer.Configuration;
 using Refresh.Database;
-using Refresh.GameServer.Documentation;
-using Refresh.GameServer.Endpoints;
-using Refresh.GameServer.Importing;
 using Refresh.GameServer.Middlewares;
-using Refresh.GameServer.Services;
-using Refresh.GameServer.Storage;
-using Refresh.GameServer.Time;
-using Refresh.GameServer.Types.Categories;
-using Refresh.GameServer.Types.Data;
 using Refresh.Database.Models.Users;
-using Refresh.GameServer.Workers;
 using Refresh.Database.Models.Levels;
+using Refresh.Interfaces.APIv3;
+using Refresh.Interfaces.APIv3.Documentation;
+using Refresh.Interfaces.Game;
+using Refresh.Interfaces.Internal;
+using Refresh.Interfaces.Workers;
+using Refresh.Interfaces.Workers.RequestTracking;
+using Refresh.Interfaces.Workers.Workers;
 
 namespace Refresh.GameServer;
 
@@ -85,6 +91,9 @@ public class RefreshGameServer : RefreshServer
     protected override void Initialize()
     {
         base.Initialize();
+        this.Server.DiscoverEndpointsFromAssembly(typeof(ApiV3EndpointAttribute).Assembly);
+        this.Server.DiscoverEndpointsFromAssembly(typeof(GameEndpointAttribute).Assembly);
+        this.Server.DiscoverEndpointsFromAssembly(typeof(PresenceEndpointAttribute).Assembly);
         this.SetupWorkers();
     }
 

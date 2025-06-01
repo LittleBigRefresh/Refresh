@@ -2,7 +2,7 @@
 using System.Diagnostics;
 using System.Reflection;
 
-namespace Refresh.GameServer.Extensions;
+namespace Refresh.Database.Extensions;
 
 
 public static class RealmObjectExtensions

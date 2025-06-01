@@ -1,11 +1,11 @@
 using System.Reflection;
 using Refresh.Common.Helpers;
 using Refresh.Database.Models.Authentication;
-using Refresh.GameServer.Types.Lists;
 using Refresh.Database.Models.Users;
 using RefreshTests.GameServer.Extensions;
 using Refresh.Database.Models.Levels;
 using Refresh.Database.Models.Photos;
+using Refresh.Interfaces.Game.Types.Lists;
 
 namespace RefreshTests.GameServer.Tests.Photos;
 

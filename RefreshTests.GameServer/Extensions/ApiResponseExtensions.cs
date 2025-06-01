@@ -1,4 +1,4 @@
-using Refresh.GameServer.Endpoints.ApiV3.ApiTypes;
+using Refresh.Interfaces.APIv3.Endpoints.ApiTypes;
 
 namespace RefreshTests.GameServer.Extensions;
 

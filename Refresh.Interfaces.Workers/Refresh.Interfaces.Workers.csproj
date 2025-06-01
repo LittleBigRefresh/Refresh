@@ -1,0 +1,15 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <TargetFramework>net9.0</TargetFramework>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <Nullable>enable</Nullable>
+        <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <ProjectReference Include="..\Refresh.Core\Refresh.Core.csproj" />
+        <ProjectReference Include="..\Refresh.Interfaces.APIv3\Refresh.Interfaces.APIv3.csproj" />
+    </ItemGroup>
+
+</Project>

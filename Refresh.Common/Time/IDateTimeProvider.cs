@@ -1,4 +1,4 @@
-namespace Refresh.GameServer.Time;
+namespace Refresh.Common.Time;
 
 public interface IDateTimeProvider
 {

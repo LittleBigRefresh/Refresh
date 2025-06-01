@@ -1,9 +1,9 @@
 using System.Net.Http.Json;
+using Refresh.Database.Extensions;
 using Refresh.Database.Models.Authentication;
-using Refresh.GameServer.Endpoints.ApiV3.DataTypes.Request;
-using Refresh.GameServer.Extensions;
 using Refresh.Database.Models.Users;
 using Refresh.Database.Models.Levels;
+using Refresh.Interfaces.APIv3.Endpoints.DataTypes.Request;
 
 namespace RefreshTests.GameServer.Tests.ApiV3;
 

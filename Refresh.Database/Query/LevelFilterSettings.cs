@@ -1,6 +1,5 @@
 using Bunkum.Core;
 using Refresh.Database.Models.Authentication;
-using Refresh.GameServer.Extensions;
 
 namespace Refresh.Database.Query;
 

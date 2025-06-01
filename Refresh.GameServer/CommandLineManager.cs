@@ -1,8 +1,8 @@
 using System.Diagnostics.CodeAnalysis;
 using CommandLine;
 using Refresh.Database;
-using Refresh.GameServer.Documentation;
 using Refresh.Database.Models.Users;
+using Refresh.Interfaces.APIv3.Documentation;
 
 namespace Refresh.GameServer;
 

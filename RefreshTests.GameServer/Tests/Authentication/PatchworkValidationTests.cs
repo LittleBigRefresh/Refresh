@@ -1,4 +1,4 @@
-﻿using Refresh.GameServer.Extensions;
+﻿using Refresh.Common.Extensions;
 
 namespace RefreshTests.GameServer.Tests.Authentication;
 

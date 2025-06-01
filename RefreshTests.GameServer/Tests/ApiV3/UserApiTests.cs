@@ -1,9 +1,9 @@
 using Refresh.Database.Models.Authentication;
-using Refresh.GameServer.Endpoints.ApiV3.ApiTypes;
-using Refresh.GameServer.Endpoints.ApiV3.ApiTypes.Errors;
-using Refresh.GameServer.Endpoints.ApiV3.DataTypes.Request.Authentication;
-using Refresh.GameServer.Endpoints.ApiV3.DataTypes.Response.Users;
 using Refresh.Database.Models.Users;
+using Refresh.Interfaces.APIv3.Endpoints.ApiTypes;
+using Refresh.Interfaces.APIv3.Endpoints.ApiTypes.Errors;
+using Refresh.Interfaces.APIv3.Endpoints.DataTypes.Request.Authentication;
+using Refresh.Interfaces.APIv3.Endpoints.DataTypes.Response.Users;
 using RefreshTests.GameServer.Extensions;
 
 namespace RefreshTests.GameServer.Tests.ApiV3;

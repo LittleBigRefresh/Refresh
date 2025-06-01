@@ -1,4 +1,4 @@
-using Refresh.GameServer.Time;
+using Refresh.Common.Time;
 
 namespace RefreshTests.GameServer.Time;
 

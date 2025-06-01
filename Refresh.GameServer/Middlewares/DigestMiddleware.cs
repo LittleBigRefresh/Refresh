@@ -4,10 +4,10 @@ using Bunkum.Listener.Request;
 using Bunkum.Core.Database;
 using Bunkum.Core.Endpoints.Middlewares;
 using Refresh.Common.Helpers;
+using Refresh.Core.Configuration;
 using Refresh.Database.Models.Authentication;
-using Refresh.GameServer.Configuration;
 using Refresh.Database;
-using Refresh.GameServer.Endpoints;
+using Refresh.Interfaces.Game;
 
 namespace Refresh.GameServer.Middlewares;
 

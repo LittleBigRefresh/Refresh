@@ -3,10 +3,12 @@ using Bunkum.Listener.Request;
 using Refresh.Database.Models.Users;
 using Bunkum.Core.Authentication;
 using Bunkum.Core.Database;
+using Refresh.Core.Configuration;
 using Refresh.Database.Models.Authentication;
-using Refresh.GameServer.Configuration;
-using Refresh.GameServer.Endpoints;
 using Refresh.Database;
+using Refresh.Interfaces.APIv3;
+using Refresh.Interfaces.Game;
+using Refresh.Interfaces.Internal;
 
 namespace Refresh.GameServer.Authentication;
 

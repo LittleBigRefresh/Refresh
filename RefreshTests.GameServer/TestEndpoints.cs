@@ -1,7 +1,8 @@
 using Bunkum.Core;
 using Bunkum.Core.Endpoints;
-using Refresh.GameServer.Endpoints;
-using Refresh.GameServer.Endpoints.ApiV3.ApiTypes;
+using Refresh.Interfaces.APIv3;
+using Refresh.Interfaces.APIv3.Endpoints.ApiTypes;
+using Refresh.Interfaces.Game;
 
 namespace RefreshTests.GameServer;
 
