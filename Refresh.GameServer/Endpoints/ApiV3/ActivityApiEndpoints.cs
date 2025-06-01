@@ -37,12 +37,12 @@ public class ActivityApiEndpoints : EndpointGroup
         
         (int skip, int count) = context.GetPageData();
 
-        ActivityPage page = ActivityPage.GlobalActivity(database, new ActivityQueryParameters
+        DatabaseActivityPage page = database.GetGlobalRecentActivityPage(new ActivityQueryParameters
         {
             Timestamp = timestamp,
             Count = count,
             Skip = skip,
-        }, dataContext, false);
+        });
         return ApiActivityPageResponse.FromOld(page, dataContext);
     }
     
@@ -67,14 +67,14 @@ public class ActivityApiEndpoints : EndpointGroup
         if (level == null) return ApiNotFoundError.Instance;
         
         (int skip, int count) = context.GetPageData();
-        
-        ActivityPage page = ActivityPage.ApiForLevelActivity(database, level, new ActivityQueryParameters
+
+        DatabaseActivityPage page = database.GetRecentActivityForLevel(level, new ActivityQueryParameters
         {
             Timestamp = timestamp,
             Skip = skip,
             Count = count,
             User = user,
-        }, dataContext, false);
+        });
         return ApiActivityPageResponse.FromOld(page, dataContext);
     }
     
@@ -99,14 +99,14 @@ public class ActivityApiEndpoints : EndpointGroup
         if (user == null) return ApiNotFoundError.Instance;
         
         (int skip, int count) = context.GetPageData();
-        
-        ActivityPage page = ActivityPage.ApiFromUserActivity(database, new ActivityQueryParameters
+
+        DatabaseActivityPage page = database.GetRecentActivityFromUser(new ActivityQueryParameters
         {
             Timestamp = timestamp,
             Skip = skip,
             Count = count,
             User = user,
-        }, dataContext, false);
+        });
         return ApiActivityPageResponse.FromOld(page, dataContext);
     }
     
@@ -131,14 +131,14 @@ public class ActivityApiEndpoints : EndpointGroup
         if (user == null) return ApiNotFoundError.Instance;
         
         (int skip, int count) = context.GetPageData();
-        
-        ActivityPage page = ActivityPage.ApiFromUserActivity(database, new ActivityQueryParameters
+
+        DatabaseActivityPage page = database.GetRecentActivityFromUser(new ActivityQueryParameters
         {
             Timestamp = timestamp,
             Skip = skip,
             Count = count,
             User = user,
-        }, dataContext, false);
+        });
         return ApiActivityPageResponse.FromOld(page, dataContext);
     }
 }

@@ -1,14 +1,14 @@
 using System.Xml.Serialization;
 
-namespace Refresh.Database.Models.Activity.Groups;
+namespace Refresh.GameServer.Types.Activity.Groups;
 
 [XmlRoot("subgroups")]
 [XmlType("subgroups")]
 public class Subgroups
 {
-    [XmlElement("group")] public List<ActivityGroup> Items { get; set; } = new();
+    [XmlElement("group")] public List<SerializedActivityGroup> Items { get; set; } = [];
 
-    public Subgroups(List<ActivityGroup> items)
+    public Subgroups(List<SerializedActivityGroup> items)
     {
         this.Items = items;
     }

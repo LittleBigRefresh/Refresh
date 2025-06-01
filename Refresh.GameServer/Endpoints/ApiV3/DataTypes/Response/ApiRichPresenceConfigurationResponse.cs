@@ -22,9 +22,6 @@ public class ApiRichPresenceConfigurationResponse : IApiResponse, IDataConvertab
         };
     }
 
-    public static IEnumerable<ApiRichPresenceConfigurationResponse> FromOldList(
-        IEnumerable<RichPresenceConfiguration> oldList, DataContext dataContext)
-    {
-        throw new NotImplementedException();
-    }
+    public static IEnumerable<ApiRichPresenceConfigurationResponse> FromOldList(IEnumerable<RichPresenceConfiguration> oldList, DataContext dataContext)
+        => oldList.Select(old => FromOld(old, dataContext)).ToList()!;
 }
