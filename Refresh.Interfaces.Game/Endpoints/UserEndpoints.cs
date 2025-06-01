@@ -5,16 +5,18 @@ using Bunkum.Core.Storage;
 using Bunkum.Listener.Protocol;
 using Bunkum.Protocols.Http;
 using Refresh.Common.Constants;
-using Refresh.Database.Models.Authentication;
+using Refresh.Core.Authentication.Permission;
+using Refresh.Core.Services;
+using Refresh.Core.Types.Data;
 using Refresh.Database;
-using Refresh.GameServer.Endpoints.Game.DataTypes.Response;
-using Refresh.GameServer.Services;
-using Refresh.GameServer.Types.Data;
-using Refresh.GameServer.Types.Lists;
-using Refresh.Database.Models.Users;
+using Refresh.Database.Models.Authentication;
 using Refresh.Database.Models.Pins;
+using Refresh.Database.Models.Users;
+using Refresh.Interfaces.Game.Endpoints.DataTypes.Response;
+using Refresh.Interfaces.Game.Types.Lists;
+using Refresh.Interfaces.Game.Types.UserData;
 
-namespace Refresh.GameServer.Endpoints.Game;
+namespace Refresh.Interfaces.Game.Endpoints;
 
 public class UserEndpoints : EndpointGroup
 {

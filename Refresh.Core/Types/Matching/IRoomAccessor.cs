@@ -1,9 +1,9 @@
 using MongoDB.Bson;
 using Refresh.Database.Models.Authentication;
-using Refresh.Database.Models.Users;
 using Refresh.Database.Models.Levels;
+using Refresh.Database.Models.Users;
 
-namespace Refresh.GameServer.Types.Matching;
+namespace Refresh.Core.Types.Matching;
 
 /// <summary>
 /// A simple transactional room accessor, rooms returned should be considered read only, and changes must be committed to the IRoomAccessor through UpdateRoom.

@@ -1,18 +1,17 @@
 using System.Xml.Serialization;
 using Refresh.Common.Constants;
+using Refresh.Core.Types.Data;
+using Refresh.Core.Types.Matching;
 using Refresh.Database.Models;
-using Refresh.Database.Models.Authentication;
-using Refresh.GameServer.Endpoints.ApiV3.DataTypes;
 using Refresh.Database.Models.Assets;
+using Refresh.Database.Models.Authentication;
 using Refresh.Database.Models.Comments;
-using Refresh.GameServer.Types.Data;
-using Refresh.GameServer.Types.Matching;
-using Refresh.GameServer.Types.Reviews;
-using Refresh.Database.Models.Users;
 using Refresh.Database.Models.Levels;
 using Refresh.Database.Models.Playlists;
+using Refresh.Interfaces.Game.Types.Reviews;
+using Refresh.Interfaces.Game.Types.UserData;
 
-namespace Refresh.GameServer.Endpoints.Game.DataTypes.Response;
+namespace Refresh.Interfaces.Game.Endpoints.DataTypes.Response;
 
 [XmlRoot("slot")]
 [XmlType("slot")]

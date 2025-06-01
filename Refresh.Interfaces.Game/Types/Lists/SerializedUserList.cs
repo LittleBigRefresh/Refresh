@@ -1,7 +1,7 @@
 using System.Xml.Serialization;
-using Refresh.GameServer.Endpoints.Game.DataTypes.Response;
+using Refresh.Interfaces.Game.Endpoints.DataTypes.Response;
 
-namespace Refresh.GameServer.Types.Lists;
+namespace Refresh.Interfaces.Game.Types.Lists;
 
 [XmlRoot("users")]
 public class SerializedUserList

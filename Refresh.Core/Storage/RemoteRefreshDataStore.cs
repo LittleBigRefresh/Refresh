@@ -1,7 +1,7 @@
 using Bunkum.Core.Storage;
 using JetBrains.Annotations;
 
-namespace Refresh.GameServer.Storage;
+namespace Refresh.Core.Storage;
 
 /// <summary>
 /// A datastore that uses production Refresh as a data source.

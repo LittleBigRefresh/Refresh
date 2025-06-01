@@ -4,17 +4,19 @@ using Bunkum.Core.Endpoints;
 using Bunkum.Core.Storage;
 using Bunkum.Protocols.Http;
 using Refresh.Common.Verification;
+using Refresh.Core.Authentication.Permission;
+using Refresh.Core.Types.Data;
 using Refresh.Database;
-using Refresh.GameServer.Documentation.Attributes;
-using Refresh.GameServer.Endpoints.ApiV3.ApiTypes;
-using Refresh.GameServer.Endpoints.ApiV3.ApiTypes.Errors;
-using Refresh.GameServer.Endpoints.ApiV3.DataTypes.Request;
-using Refresh.GameServer.Endpoints.ApiV3.DataTypes.Response.Admin;
-using Refresh.GameServer.Endpoints.ApiV3.DataTypes.Response.Users;
-using Refresh.GameServer.Types.Data;
 using Refresh.Database.Models.Users;
+using Refresh.Interfaces.APIv3.Documentation.Attributes;
+using Refresh.Interfaces.APIv3.Endpoints.ApiTypes;
+using Refresh.Interfaces.APIv3.Endpoints.ApiTypes.Errors;
+using Refresh.Interfaces.APIv3.Endpoints.DataTypes.Request;
+using Refresh.Interfaces.APIv3.Endpoints.DataTypes.Response.Admin;
+using Refresh.Interfaces.APIv3.Endpoints.DataTypes.Response.Users;
+using Refresh.Interfaces.APIv3.Extensions;
 
-namespace Refresh.GameServer.Endpoints.ApiV3.Admin;
+namespace Refresh.Interfaces.APIv3.Endpoints.Admin;
 
 using BC = BCrypt.Net.BCrypt;
 

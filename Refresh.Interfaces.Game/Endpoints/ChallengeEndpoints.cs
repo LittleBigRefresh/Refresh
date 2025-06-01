@@ -3,19 +3,20 @@ using Bunkum.Core.Endpoints;
 using Bunkum.Core.Responses;
 using Bunkum.Listener.Protocol;
 using Bunkum.Protocols.Http;
-using Refresh.GameServer.Configuration;
+using Refresh.Core.Authentication.Permission;
+using Refresh.Core.Configuration;
+using Refresh.Core.Services;
+using Refresh.Core.Types.Data;
 using Refresh.Database;
-using Refresh.GameServer.Services;
 using Refresh.Database.Models.Assets;
-using Refresh.Database.Models.Levels.Challenges;
-using Refresh.GameServer.Types.Challenges.LbpHub;
-using Refresh.GameServer.Types.Challenges.LbpHub.Ghost;
-using Refresh.GameServer.Types.Data;
-using Refresh.GameServer.Types.Lists;
-using Refresh.Database.Models.Users;
 using Refresh.Database.Models.Levels;
+using Refresh.Database.Models.Levels.Challenges;
+using Refresh.Database.Models.Users;
+using Refresh.Interfaces.Game.Types.Challenges.LbpHub;
+using Refresh.Interfaces.Game.Types.Challenges.LbpHub.Ghost;
+using Refresh.Interfaces.Game.Types.Lists;
 
-namespace Refresh.GameServer.Endpoints.Game;
+namespace Refresh.Interfaces.Game.Endpoints;
 
 public class ChallengeEndpoints : EndpointGroup
 {

@@ -1,9 +1,8 @@
 using System.Xml.Serialization;
+using Refresh.Core.Types.Data;
 using Refresh.Database.Models.Levels.Challenges;
-using Refresh.GameServer.Endpoints.ApiV3.DataTypes;
-using Refresh.GameServer.Types.Data;
 
-namespace Refresh.GameServer.Types.Challenges.LbpHub;
+namespace Refresh.Interfaces.Game.Types.Challenges.LbpHub;
 
 #nullable disable
 

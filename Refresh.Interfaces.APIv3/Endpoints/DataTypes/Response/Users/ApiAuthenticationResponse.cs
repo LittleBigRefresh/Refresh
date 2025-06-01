@@ -1,7 +1,7 @@
 #nullable disable
 using JetBrains.Annotations;
 
-namespace Refresh.GameServer.Endpoints.ApiV3.DataTypes.Response.Users;
+namespace Refresh.Interfaces.APIv3.Endpoints.DataTypes.Response.Users;
 
 [JsonObject(NamingStrategyType = typeof(CamelCaseNamingStrategy), ItemNullValueHandling = NullValueHandling.Ignore)]
 public class ApiAuthenticationResponse : IApiAuthenticationResponse

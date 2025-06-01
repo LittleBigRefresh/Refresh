@@ -5,18 +5,19 @@ using Bunkum.Core;
 using Bunkum.Core.Endpoints;
 using Bunkum.Core.Responses.Serialization;
 using Bunkum.Listener.Protocol;
-using Refresh.Database.Models.Authentication;
-using Refresh.GameServer.Configuration;
+using Refresh.Common.Time;
+using Refresh.Core.Authentication.Permission;
+using Refresh.Core.Configuration;
+using Refresh.Core.Services;
+using Refresh.Core.Types.Matching;
 using Refresh.Database;
-using Refresh.GameServer.Services;
-using Refresh.GameServer.Time;
+using Refresh.Database.Models.Authentication;
 using Refresh.Database.Models.Contests;
-using Refresh.GameServer.Types.Matching;
-using Refresh.GameServer.Types.Notifications;
-using Refresh.Database.Models.Users;
 using Refresh.Database.Models.Notifications;
+using Refresh.Database.Models.Users;
+using Refresh.Interfaces.Game.Types.Notifications;
 
-namespace Refresh.GameServer.Endpoints.Game;
+namespace Refresh.Interfaces.Game.Endpoints;
 
 public class AnnouncementEndpoints : EndpointGroup
 {

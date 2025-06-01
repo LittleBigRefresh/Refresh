@@ -1,16 +1,18 @@
 using AttribDoc.Attributes;
 using Bunkum.Core;
 using Bunkum.Core.Endpoints;
-using Refresh.GameServer.Configuration;
+using Refresh.Core;
+using Refresh.Core.Authentication.Permission;
+using Refresh.Core.Configuration;
+using Refresh.Core.Services;
+using Refresh.Core.Types.Data;
+using Refresh.Core.Types.Matching;
+using Refresh.Core.Types.RichPresence;
 using Refresh.Database;
-using Refresh.GameServer.Endpoints.ApiV3.ApiTypes;
-using Refresh.GameServer.Endpoints.ApiV3.DataTypes.Response;
-using Refresh.GameServer.Services;
-using Refresh.GameServer.Types.Data;
-using Refresh.GameServer.Types.Matching;
-using Refresh.GameServer.Types.RichPresence;
+using Refresh.Interfaces.APIv3.Endpoints.ApiTypes;
+using Refresh.Interfaces.APIv3.Endpoints.DataTypes.Response;
 
-namespace Refresh.GameServer.Endpoints.ApiV3;
+namespace Refresh.Interfaces.APIv3.Endpoints;
 
 public class InstanceApiEndpoints : EndpointGroup
 {

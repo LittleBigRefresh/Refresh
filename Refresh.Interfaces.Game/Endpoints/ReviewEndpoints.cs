@@ -3,16 +3,17 @@ using Bunkum.Core.Endpoints;
 using Bunkum.Core.Responses;
 using Bunkum.Listener.Protocol;
 using Bunkum.Protocols.Http;
-using Refresh.GameServer.Configuration;
+using Refresh.Common.Time;
+using Refresh.Core.Authentication.Permission;
+using Refresh.Core.Configuration;
+using Refresh.Core.Types.Data;
 using Refresh.Database;
 using Refresh.Database.Models.Comments;
-using Refresh.GameServer.Time;
-using Refresh.GameServer.Types.Data;
-using Refresh.GameServer.Types.Reviews;
-using Refresh.Database.Models.Users;
 using Refresh.Database.Models.Levels;
+using Refresh.Database.Models.Users;
+using Refresh.Interfaces.Game.Types.Reviews;
 
-namespace Refresh.GameServer.Endpoints.Game;
+namespace Refresh.Interfaces.Game.Endpoints;
 
 public class ReviewEndpoints : EndpointGroup
 {

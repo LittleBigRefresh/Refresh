@@ -4,7 +4,7 @@ using Bunkum.Core;
 using Bunkum.Core.Storage;
 using NotEnoughLogs;
 
-namespace Refresh.GameServer.Types.Challenges.LbpHub.Ghost;
+namespace Refresh.Interfaces.Game.Types.Challenges.LbpHub.Ghost;
 
 [XmlRoot("ghost")]
 [XmlType("ghost")]

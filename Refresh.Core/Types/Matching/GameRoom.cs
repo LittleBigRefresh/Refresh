@@ -1,10 +1,10 @@
 using MongoDB.Bson;
 using Newtonsoft.Json.Converters;
-using Refresh.Database.Models.Authentication;
 using Refresh.Database;
+using Refresh.Database.Models.Authentication;
 using Refresh.Database.Models.Users;
 
-namespace Refresh.GameServer.Types.Matching;
+namespace Refresh.Core.Types.Matching;
 
 public class GameRoom
 {

@@ -1,6 +1,6 @@
 using Bunkum.Core.Configuration;
 
-namespace Refresh.GameServer.Configuration;
+namespace Refresh.Core.Configuration;
 
 /// <summary>
 /// A configuration holding basic contact information for those operating this instance.

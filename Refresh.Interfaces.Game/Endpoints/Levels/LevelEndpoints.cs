@@ -3,20 +3,21 @@ using Bunkum.Core.Endpoints;
 using Bunkum.Core.Storage;
 using Bunkum.Listener.Protocol;
 using Refresh.Common.Constants;
-using Refresh.Database.Query;
-using Refresh.Database.Models.Authentication;
+using Refresh.Core.Authentication.Permission;
+using Refresh.Core.Services;
+using Refresh.Core.Types.Categories;
+using Refresh.Core.Types.Data;
 using Refresh.Database;
-using Refresh.GameServer.Endpoints.Game.DataTypes.Response;
-using Refresh.GameServer.Services;
-using Refresh.GameServer.Types.Categories;
-using Refresh.GameServer.Types.Data;
-using Refresh.GameServer.Types.Levels;
-using Refresh.GameServer.Types.Lists;
-using Refresh.Database.Models.Users;
+using Refresh.Database.Models.Authentication;
 using Refresh.Database.Models.Levels;
 using Refresh.Database.Models.Playlists;
+using Refresh.Database.Models.Users;
+using Refresh.Database.Query;
+using Refresh.Interfaces.Game.Endpoints.DataTypes.Response;
+using Refresh.Interfaces.Game.Types.Levels;
+using Refresh.Interfaces.Game.Types.Lists;
 
-namespace Refresh.GameServer.Endpoints.Game.Levels;
+namespace Refresh.Interfaces.Game.Endpoints.Levels;
 
 public class LevelEndpoints : EndpointGroup
 {

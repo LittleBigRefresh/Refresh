@@ -1,15 +1,14 @@
 using System.Xml.Serialization;
+using Refresh.Core.Types.Data;
+using Refresh.Core.Types.Matching;
 using Refresh.Database.Models;
 using Refresh.Database.Models.Authentication;
 using Refresh.Database.Models.Levels;
-using Refresh.GameServer.Endpoints.ApiV3.DataTypes;
-using Refresh.GameServer.Endpoints.Game.DataTypes.Response;
-using Refresh.GameServer.Types.Data;
-using Refresh.GameServer.Types.Matching;
-using Refresh.Database.Models.Users;
 using Refresh.Database.Models.Playlists;
+using Refresh.Interfaces.Game.Endpoints.DataTypes.Response;
+using Refresh.Interfaces.Game.Types.UserData;
 
-namespace Refresh.GameServer.Types.Levels;
+namespace Refresh.Interfaces.Game.Types.Levels;
 
 public class GameMinimalLevelResponse : IDataConvertableFrom<GameMinimalLevelResponse, GameLevel>, IDataConvertableFrom<GameMinimalLevelResponse, GamePlaylist>, IDataConvertableFrom<GameMinimalLevelResponse, GameLevelResponse>
 {

@@ -1,8 +1,8 @@
 using System.Xml.Serialization;
 using Refresh.Database.Models.Levels.Scores;
-using Refresh.Database.Models.Users.Leaderboard;
+using Refresh.Interfaces.Game.Types.UserData.Leaderboard;
 
-namespace Refresh.GameServer.Types.Lists;
+namespace Refresh.Interfaces.Game.Types.Lists;
 
 [XmlRoot("scores")]
 public class SerializedScoreList

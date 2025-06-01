@@ -1,7 +1,7 @@
-﻿using Refresh.GameServer.Configuration;
+﻿using Refresh.Core.Configuration;
 using Refresh.Database.Models.Users;
 
-namespace Refresh.GameServer.Extensions;
+namespace Refresh.Core.Extensions;
 
 public static class GameUserExtensions
 {

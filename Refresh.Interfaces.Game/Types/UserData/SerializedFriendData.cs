@@ -1,6 +1,6 @@
 using System.Xml.Serialization;
 
-namespace Refresh.Database.Models.Users;
+namespace Refresh.Interfaces.Game.Types.UserData;
 
 #nullable disable
 

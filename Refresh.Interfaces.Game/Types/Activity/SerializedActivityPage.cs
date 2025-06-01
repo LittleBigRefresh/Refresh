@@ -1,12 +1,11 @@
 using System.Xml.Serialization;
+using Refresh.Core.Types.Data;
 using Refresh.Database.Models.Activity;
-using Refresh.GameServer.Endpoints.ApiV3.DataTypes;
-using Refresh.GameServer.Endpoints.Game.DataTypes.Response;
-using Refresh.GameServer.Types.Activity.Groups;
-using Refresh.GameServer.Types.Data;
-using Refresh.GameServer.Types.Lists;
+using Refresh.Interfaces.Game.Endpoints.DataTypes.Response;
+using Refresh.Interfaces.Game.Types.Activity.Groups;
+using Refresh.Interfaces.Game.Types.Lists;
 
-namespace Refresh.GameServer.Types.Activity;
+namespace Refresh.Interfaces.Game.Types.Activity;
 
 [Serializable]
 [XmlRoot("stream")]

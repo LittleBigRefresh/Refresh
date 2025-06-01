@@ -1,11 +1,11 @@
 using Bunkum.Core;
-using Refresh.Database.Query;
+using Refresh.Core.Types.Data;
 using Refresh.Database;
-using Refresh.GameServer.Types.Data;
-using Refresh.Database.Models.Users;
 using Refresh.Database.Models.Levels;
+using Refresh.Database.Models.Users;
+using Refresh.Database.Query;
 
-namespace Refresh.GameServer.Types.Categories.Levels;
+namespace Refresh.Core.Types.Categories.Levels;
 
 public class HighestRatedLevelsCategory : GameLevelCategory
 {

@@ -2,7 +2,7 @@ using System.Net;
 using Bunkum.Core.Responses;
 using Bunkum.Listener.Protocol;
 
-namespace Refresh.GameServer.Endpoints.ApiV3.ApiTypes;
+namespace Refresh.Interfaces.APIv3.Endpoints.ApiTypes;
 
 /// <summary>
 /// An error indicating a problem with the server, your query, or anything else.

@@ -3,14 +3,16 @@ using Bunkum.Core.Endpoints;
 using Bunkum.Core.Responses;
 using Bunkum.Listener.Protocol;
 using Bunkum.Protocols.Http;
-using Refresh.GameServer.Configuration;
+using Refresh.Common.Time;
+using Refresh.Core.Authentication.Permission;
+using Refresh.Core.Configuration;
 using Refresh.Database;
-using Refresh.GameServer.Time;
-using Refresh.GameServer.Types.Challenges.Lbp3;
-using Refresh.Database.Models.Users;
 using Refresh.Database.Models.Levels;
+using Refresh.Database.Models.Users;
+using Refresh.Interfaces.Game.Types.Challenges.Lbp3;
+using Refresh.Interfaces.Game.Types.UserData;
 
-namespace Refresh.GameServer.Endpoints.Game.Handshake;
+namespace Refresh.Interfaces.Game.Endpoints.Handshake;
 
 public class MetadataEndpoints : EndpointGroup
 {

@@ -1,4 +1,4 @@
-namespace Refresh.GameServer.Endpoints.ApiV3.DataTypes;
+namespace Refresh.Interfaces.APIv3.Endpoints.DataTypes;
 
 public interface IApiResponse
 {

@@ -1,4 +1,4 @@
-namespace Refresh.GameServer.Types.Matching;
+namespace Refresh.Core.Types.Matching;
 
 public enum RoomMood : byte
 {

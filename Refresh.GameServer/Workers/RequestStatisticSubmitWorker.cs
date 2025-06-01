@@ -1,4 +1,4 @@
-using Refresh.GameServer.Types.Data;
+using Refresh.Core.Types.Data;
 using TrackingService = Refresh.GameServer.Services.RequestStatisticTrackingService;
 
 namespace Refresh.GameServer.Workers;

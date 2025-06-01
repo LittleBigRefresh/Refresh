@@ -1,15 +1,15 @@
 using System.Reflection;
-using Bunkum.Listener.Request;
 using Bunkum.Core.Database;
 using Bunkum.Core.Endpoints;
 using Bunkum.Core.Responses;
 using Bunkum.Core.Services;
+using Bunkum.Listener.Request;
 using NotEnoughLogs;
-using Refresh.GameServer.Configuration;
-using Refresh.GameServer.Endpoints;
+using Refresh.Core.Authentication.Permission;
+using Refresh.Core.Configuration;
 using Refresh.Database.Models.Users;
 
-namespace Refresh.GameServer.Services;
+namespace Refresh.Core.Services;
 
 /// <summary>
 /// A service that hooks into the AuthenticationService, adding extra checks for roles.

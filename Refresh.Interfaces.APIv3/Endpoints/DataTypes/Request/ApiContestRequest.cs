@@ -1,7 +1,7 @@
-using Refresh.Database.Query;
 using Refresh.Database.Models.Authentication;
+using Refresh.Database.Query;
 
-namespace Refresh.GameServer.Endpoints.ApiV3.DataTypes.Request;
+namespace Refresh.Interfaces.APIv3.Endpoints.DataTypes.Request;
 
 [JsonObject(NamingStrategyType = typeof(CamelCaseNamingStrategy))]
 public class ApiContestRequest : ICreateContestInfo

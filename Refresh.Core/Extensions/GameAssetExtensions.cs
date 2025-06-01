@@ -1,17 +1,17 @@
 using System.Security.Cryptography;
 using Bunkum.Core.Storage;
 using Refresh.Common.Helpers;
-using Refresh.Database.Models.Authentication;
+using Refresh.Core.Importing;
+using Refresh.Core.Importing.Mip;
+using Refresh.Core.Types.Data;
 using Refresh.Database;
-using Refresh.GameServer.Importing;
-using Refresh.GameServer.Importing.Mip;
 using Refresh.Database.Models.Assets;
-using Refresh.GameServer.Types.Data;
+using Refresh.Database.Models.Authentication;
 using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.PixelFormats;
 using SixLabors.ImageSharp.Processing;
 
-namespace Refresh.GameServer.Extensions;
+namespace Refresh.Core.Extensions;
 
 public static class GameAssetExtensions
 {

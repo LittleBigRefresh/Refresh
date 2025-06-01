@@ -1,6 +1,6 @@
 using System.Xml.Serialization;
 
-namespace Refresh.GameServer.Types.Categories;
+namespace Refresh.Interfaces.Game.Types.Categories;
 
 #nullable disable
 

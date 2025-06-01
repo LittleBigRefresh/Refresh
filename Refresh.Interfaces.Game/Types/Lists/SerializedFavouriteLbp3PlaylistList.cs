@@ -1,6 +1,6 @@
 using System.Xml.Serialization;
 
-namespace Refresh.GameServer.Types.Lists;
+namespace Refresh.Interfaces.Game.Types.Lists;
 
 [XmlRoot("favouritePlaylists")]
 public class SerializedLbp3FavouritePlaylistList : SerializedLbp3PlaylistList

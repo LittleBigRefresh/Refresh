@@ -1,8 +1,8 @@
 using Refresh.Database.Models.Authentication;
-using Refresh.GameServer.Types.Lists;
 using Refresh.Database.Models.Users;
 using RefreshTests.GameServer.Extensions;
 using Refresh.Database.Models.Levels;
+using Refresh.Interfaces.Game.Types.Lists;
 
 namespace RefreshTests.GameServer.Tests.Relations;
 

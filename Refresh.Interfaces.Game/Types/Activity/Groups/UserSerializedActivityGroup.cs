@@ -1,6 +1,6 @@
 using System.Xml.Serialization;
 
-namespace Refresh.GameServer.Types.Activity.Groups;
+namespace Refresh.Interfaces.Game.Types.Activity.Groups;
 
 #nullable disable
 

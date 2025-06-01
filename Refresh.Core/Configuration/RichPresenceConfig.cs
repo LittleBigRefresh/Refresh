@@ -1,6 +1,6 @@
 using Bunkum.Core.Configuration;
 
-namespace Refresh.GameServer.Configuration;
+namespace Refresh.Core.Configuration;
 
 public class RichPresenceConfig : Config
 {

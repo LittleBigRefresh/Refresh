@@ -3,17 +3,18 @@ using Bunkum.Core;
 using Bunkum.Core.Endpoints;
 using Bunkum.Core.Storage;
 using Bunkum.Protocols.Http;
+using Refresh.Core.Types.Data;
 using Refresh.Database;
-using Refresh.GameServer.Documentation.Attributes;
-using Refresh.GameServer.Endpoints.ApiV3.ApiTypes;
-using Refresh.GameServer.Endpoints.ApiV3.ApiTypes.Errors;
-using Refresh.GameServer.Endpoints.ApiV3.DataTypes.Response.Users.Photos;
-using Refresh.GameServer.Types.Data;
-using Refresh.Database.Models.Users;
 using Refresh.Database.Models.Levels;
 using Refresh.Database.Models.Photos;
+using Refresh.Database.Models.Users;
+using Refresh.Interfaces.APIv3.Documentation.Attributes;
+using Refresh.Interfaces.APIv3.Endpoints.ApiTypes;
+using Refresh.Interfaces.APIv3.Endpoints.ApiTypes.Errors;
+using Refresh.Interfaces.APIv3.Endpoints.DataTypes.Response.Users.Photos;
+using Refresh.Interfaces.APIv3.Extensions;
 
-namespace Refresh.GameServer.Endpoints.ApiV3;
+namespace Refresh.Interfaces.APIv3.Endpoints;
 
 public class PhotoApiEndpoints : EndpointGroup
 {

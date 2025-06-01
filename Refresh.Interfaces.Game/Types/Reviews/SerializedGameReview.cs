@@ -1,11 +1,10 @@
 using System.Xml.Serialization;
+using Refresh.Core.Types.Data;
 using Refresh.Database.Models;
 using Refresh.Database.Models.Comments;
 using Refresh.Database.Models.Levels;
-using Refresh.GameServer.Endpoints.ApiV3.DataTypes;
-using Refresh.GameServer.Types.Data;
 
-namespace Refresh.GameServer.Types.Reviews;
+namespace Refresh.Interfaces.Game.Types.Reviews;
 
 #nullable disable
 

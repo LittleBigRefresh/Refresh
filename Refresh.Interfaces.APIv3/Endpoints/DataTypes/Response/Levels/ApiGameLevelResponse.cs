@@ -1,11 +1,11 @@
+using Refresh.Core.Types.Data;
 using Refresh.Database.Models.Authentication;
 using Refresh.Database.Models.Comments;
-using Refresh.GameServer.Endpoints.ApiV3.DataTypes.Response.Data;
-using Refresh.GameServer.Endpoints.ApiV3.DataTypes.Response.Users;
-using Refresh.GameServer.Types.Data;
 using Refresh.Database.Models.Levels;
+using Refresh.Interfaces.APIv3.Endpoints.DataTypes.Response.Data;
+using Refresh.Interfaces.APIv3.Endpoints.DataTypes.Response.Users;
 
-namespace Refresh.GameServer.Endpoints.ApiV3.DataTypes.Response.Levels;
+namespace Refresh.Interfaces.APIv3.Endpoints.DataTypes.Response.Levels;
 
 [JsonObject(NamingStrategyType = typeof(CamelCaseNamingStrategy))]
 public class ApiGameLevelResponse : IApiResponse, IDataConvertableFrom<ApiGameLevelResponse, GameLevel>

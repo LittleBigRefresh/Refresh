@@ -4,23 +4,25 @@ using Bunkum.Core;
 using Bunkum.Core.Endpoints;
 using Bunkum.Core.RateLimit;
 using Bunkum.Protocols.Http;
-using Org.BouncyCastle.Crypto.Generators;
+using Refresh.Common.Time;
 using Refresh.Common.Verification;
-using Refresh.Database.Models.Authentication;
-using Refresh.GameServer.Configuration;
+using Refresh.Core;
+using Refresh.Core.Authentication.Permission;
+using Refresh.Core.Configuration;
+using Refresh.Core.Services;
+using Refresh.Core.Types.Data;
 using Refresh.Database;
-using Refresh.GameServer.Endpoints.ApiV3.ApiTypes;
-using Refresh.GameServer.Endpoints.ApiV3.ApiTypes.Errors;
-using Refresh.GameServer.Endpoints.ApiV3.DataTypes;
-using Refresh.GameServer.Endpoints.ApiV3.DataTypes.Request.Authentication;
-using Refresh.GameServer.Endpoints.ApiV3.DataTypes.Response.Users;
-using Refresh.GameServer.Services;
-using Refresh.GameServer.Time;
-using Refresh.GameServer.Types.Data;
-using Refresh.Database.Models.Users;
+using Refresh.Database.Models.Authentication;
 using Refresh.Database.Models.Relations;
+using Refresh.Database.Models.Users;
+using Refresh.Interfaces.APIv3.Endpoints.ApiTypes;
+using Refresh.Interfaces.APIv3.Endpoints.ApiTypes.Errors;
+using Refresh.Interfaces.APIv3.Endpoints.DataTypes;
+using Refresh.Interfaces.APIv3.Endpoints.DataTypes.Request.Authentication;
+using Refresh.Interfaces.APIv3.Endpoints.DataTypes.Response.Users;
+using Refresh.Interfaces.APIv3.Extensions;
 
-namespace Refresh.GameServer.Endpoints.ApiV3;
+namespace Refresh.Interfaces.APIv3.Endpoints;
 
 using BC = BCrypt.Net.BCrypt;
 

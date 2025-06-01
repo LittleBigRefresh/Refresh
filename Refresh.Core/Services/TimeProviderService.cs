@@ -1,11 +1,11 @@
 using Bunkum.Core;
-using Bunkum.Listener.Request;
 using Bunkum.Core.Database;
 using Bunkum.Core.Services;
+using Bunkum.Listener.Request;
 using NotEnoughLogs;
-using Refresh.GameServer.Time;
+using Refresh.Common.Time;
 
-namespace Refresh.GameServer.Services;
+namespace Refresh.Core.Services;
 
 public class TimeProviderService : Service
 {

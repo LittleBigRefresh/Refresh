@@ -1,10 +1,10 @@
 using JetBrains.Annotations;
-using Refresh.GameServer.Endpoints.ApiV3.DataTypes.Response.Data;
-using Refresh.GameServer.Endpoints.ApiV3.DataTypes.Response.Users.Rooms;
-using Refresh.GameServer.Types.Data;
+using Refresh.Core.Types.Data;
 using Refresh.Database.Models.Users;
+using Refresh.Interfaces.APIv3.Endpoints.DataTypes.Response.Data;
+using Refresh.Interfaces.APIv3.Endpoints.DataTypes.Response.Users.Rooms;
 
-namespace Refresh.GameServer.Endpoints.ApiV3.DataTypes.Response.Users;
+namespace Refresh.Interfaces.APIv3.Endpoints.DataTypes.Response.Users;
 
 [JsonObject(NamingStrategyType = typeof(CamelCaseNamingStrategy))]
 public class ApiGameUserResponse : IApiResponse, IDataConvertableFrom<ApiGameUserResponse, GameUser>

@@ -1,4 +1,4 @@
-namespace Refresh.GameServer.Endpoints.ApiV3.ApiTypes.Errors;
+namespace Refresh.Interfaces.APIv3.Endpoints.ApiTypes.Errors;
 
 /// <summary>
 /// An error indicating that a resource was not able to be found.

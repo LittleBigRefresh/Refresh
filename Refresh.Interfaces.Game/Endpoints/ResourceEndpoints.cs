@@ -6,20 +6,21 @@ using Bunkum.Core.Responses;
 using Bunkum.Core.Storage;
 using Bunkum.Listener.Protocol;
 using Bunkum.Protocols.Http;
+using Refresh.Common.Time;
 using Refresh.Common.Verification;
-using Refresh.Database.Models.Authentication;
-using Refresh.GameServer.Configuration;
+using Refresh.Core.Authentication.Permission;
+using Refresh.Core.Configuration;
+using Refresh.Core.Importing;
+using Refresh.Core.Services;
+using Refresh.Core.Types.Data;
 using Refresh.Database;
-using Refresh.GameServer.Importing;
-using Refresh.GameServer.Services;
-using Refresh.GameServer.Time;
 using Refresh.Database.Models.Assets;
-using Refresh.GameServer.Types.Data;
-using Refresh.GameServer.Types.Lists;
-using Refresh.Database.Models.Users;
+using Refresh.Database.Models.Authentication;
 using Refresh.Database.Models.Levels;
+using Refresh.Database.Models.Users;
+using Refresh.Interfaces.Game.Types.Lists;
 
-namespace Refresh.GameServer.Endpoints.Game;
+namespace Refresh.Interfaces.Game.Endpoints;
 
 public class ResourceEndpoints : EndpointGroup
 {

@@ -1,8 +1,9 @@
 using System.Xml.Serialization;
+using Refresh.Database.Models;
 using Refresh.Database.Query;
-using Refresh.GameServer.Types.Levels;
+using Refresh.Interfaces.Game.Types.Levels;
 
-namespace Refresh.Database.Models.Users;
+namespace Refresh.Interfaces.Game.Types.UserData;
 
 [XmlRoot("updateUser")]
 public class SerializedUpdateDataProfile : SerializedUpdateData {}

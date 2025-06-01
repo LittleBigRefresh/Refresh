@@ -2,13 +2,13 @@ using Bunkum.Core;
 using Bunkum.Core.Responses;
 using Bunkum.Listener.Protocol;
 using MongoDB.Bson;
+using Refresh.Core.Configuration;
+using Refresh.Core.Types.Data;
+using Refresh.Core.Types.Matching.Responses;
 using Refresh.Database.Models.Authentication;
-using Refresh.GameServer.Configuration;
-using Refresh.GameServer.Types.Data;
-using Refresh.GameServer.Types.Matching.Responses;
 using Refresh.Database.Models.Users;
 
-namespace Refresh.GameServer.Types.Matching.MatchMethods;
+namespace Refresh.Core.Types.Matching.MatchMethods;
 
 public class FindRoomMethod : IMatchMethod
 {

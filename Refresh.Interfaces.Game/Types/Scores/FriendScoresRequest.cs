@@ -1,6 +1,6 @@
 using System.Xml.Serialization;
 
-namespace Refresh.GameServer.Types.Scores;
+namespace Refresh.Interfaces.Game.Types.Scores;
 
 #nullable disable
 

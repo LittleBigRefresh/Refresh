@@ -1,4 +1,4 @@
-namespace Refresh.GameServer.Importing.Mip;
+namespace Refresh.Core.Importing.Mip;
 
 public class MipMetadata
 {

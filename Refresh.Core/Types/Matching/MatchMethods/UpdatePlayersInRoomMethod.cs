@@ -1,9 +1,9 @@
 using Bunkum.Core.Responses;
-using Refresh.GameServer.Configuration;
-using Refresh.GameServer.Types.Data;
+using Refresh.Core.Configuration;
+using Refresh.Core.Types.Data;
 using Refresh.Database.Models.Users;
 
-namespace Refresh.GameServer.Types.Matching.MatchMethods;
+namespace Refresh.Core.Types.Matching.MatchMethods;
 
 public class UpdatePlayersInRoomMethod : IMatchMethod
 {

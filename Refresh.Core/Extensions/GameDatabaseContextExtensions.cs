@@ -2,7 +2,7 @@
 using Refresh.Database.Models.Assets;
 using Refresh.Database.Models.Levels;
 
-namespace Refresh.GameServer.Extensions;
+namespace Refresh.Core.Extensions;
 
 public static class GameDatabaseContextExtensions
 {

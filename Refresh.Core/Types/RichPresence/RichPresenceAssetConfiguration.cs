@@ -1,4 +1,4 @@
-namespace Refresh.GameServer.Types.RichPresence;
+namespace Refresh.Core.Types.RichPresence;
 
 [JsonObject(NamingStrategyType = typeof(CamelCaseNamingStrategy))]
 public class RichPresenceAssetConfiguration

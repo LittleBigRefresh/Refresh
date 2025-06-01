@@ -7,19 +7,20 @@ using Bunkum.Core.Storage;
 using Bunkum.Listener.Protocol;
 using Bunkum.Protocols.Http;
 using Refresh.Common.Verification;
-using Refresh.Database.Models.Authentication;
-using Refresh.GameServer.Configuration;
+using Refresh.Core.Authentication.Permission;
+using Refresh.Core.Configuration;
+using Refresh.Core.Importing;
+using Refresh.Core.Services;
+using Refresh.Core.Types.Data;
 using Refresh.Database;
-using Refresh.GameServer.Endpoints.ApiV3.ApiTypes;
-using Refresh.GameServer.Endpoints.ApiV3.ApiTypes.Errors;
-using Refresh.GameServer.Endpoints.ApiV3.DataTypes.Response.Data;
-using Refresh.GameServer.Importing;
-using Refresh.GameServer.Services;
 using Refresh.Database.Models.Assets;
-using Refresh.GameServer.Types.Data;
+using Refresh.Database.Models.Authentication;
 using Refresh.Database.Models.Users;
+using Refresh.Interfaces.APIv3.Endpoints.ApiTypes;
+using Refresh.Interfaces.APIv3.Endpoints.ApiTypes.Errors;
+using Refresh.Interfaces.APIv3.Endpoints.DataTypes.Response.Data;
 
-namespace Refresh.GameServer.Endpoints.ApiV3;
+namespace Refresh.Interfaces.APIv3.Endpoints;
 
 public class ResourceApiEndpoints : EndpointGroup
 {

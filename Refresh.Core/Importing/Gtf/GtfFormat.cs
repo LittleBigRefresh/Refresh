@@ -1,6 +1,6 @@
 using SixLabors.ImageSharp.Formats;
 
-namespace Refresh.GameServer.Importing.Gtf;
+namespace Refresh.Core.Importing.Gtf;
 
 public class GtfFormat : IImageFormat<GtfMetadata>
 {

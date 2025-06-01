@@ -2,9 +2,9 @@ using System.Reflection;
 using AttribDoc;
 using Bunkum.Core.Endpoints;
 using Bunkum.Core.Extensions;
-using Refresh.GameServer.Endpoints;
+using Refresh.Core.Authentication.Permission;
 
-namespace Refresh.GameServer.Documentation;
+namespace Refresh.Interfaces.APIv3.Documentation;
 
 public class RefreshDocumentationGenerator : DocumentationGenerator
 {

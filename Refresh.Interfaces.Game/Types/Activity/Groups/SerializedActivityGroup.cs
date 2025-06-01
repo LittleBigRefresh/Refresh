@@ -1,12 +1,11 @@
 using System.Xml.Serialization;
+using Refresh.Core.Types.Data;
 using Refresh.Database.Models.Activity;
 using Refresh.Database.Models.Levels;
-using Refresh.GameServer.Endpoints.ApiV3.DataTypes;
-using Refresh.GameServer.Types.Activity.SerializedEvents;
-using Refresh.GameServer.Types.Data;
-using Refresh.GameServer.Types.Levels;
+using Refresh.Interfaces.Game.Types.Activity.SerializedEvents;
+using Refresh.Interfaces.Game.Types.Levels;
 
-namespace Refresh.GameServer.Types.Activity.Groups;
+namespace Refresh.Interfaces.Game.Types.Activity.Groups;
 
 [XmlRoot("group")]
 [XmlType("group")]

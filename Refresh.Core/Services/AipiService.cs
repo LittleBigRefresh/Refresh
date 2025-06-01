@@ -3,15 +3,15 @@ using System.Net.Http.Json;
 using Bunkum.Core.Services;
 using JetBrains.Annotations;
 using NotEnoughLogs;
-using Refresh.GameServer.Configuration;
-using Refresh.GameServer.Importing;
+using Refresh.Core.Configuration;
+using Refresh.Core.Importing;
+using Refresh.Core.Types.Data;
 using Refresh.Database.Models.Assets;
-using Refresh.GameServer.Types.Data;
 using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.Formats;
 using SixLabors.ImageSharp.Processing;
 
-namespace Refresh.GameServer.Services;
+namespace Refresh.Core.Services;
 
 // Referenced from DO.
 public class AipiService : EndpointService

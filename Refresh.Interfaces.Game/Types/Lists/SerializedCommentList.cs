@@ -1,7 +1,7 @@
 using System.Xml.Serialization;
-using Refresh.GameServer.Types.Comments;
+using Refresh.Interfaces.Game.Types.Comments;
 
-namespace Refresh.GameServer.Types.Lists;
+namespace Refresh.Interfaces.Game.Types.Lists;
 
 [XmlRoot("comments")]
 [XmlType("comments")]

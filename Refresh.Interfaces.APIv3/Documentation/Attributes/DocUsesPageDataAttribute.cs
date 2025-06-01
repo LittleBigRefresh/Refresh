@@ -2,7 +2,7 @@ using System.Reflection;
 using AttribDoc;
 using AttribDoc.Attributes;
 
-namespace Refresh.GameServer.Documentation.Attributes;
+namespace Refresh.Interfaces.APIv3.Documentation.Attributes;
 
 [AttributeUsage(AttributeTargets.Method)]
 public class DocUsesPageDataAttribute : DocAttribute

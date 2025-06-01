@@ -1,4 +1,4 @@
-namespace Refresh.GameServer.Types.Categories;
+namespace Refresh.Core.Types.Categories;
 
 [JsonObject(MemberSerialization.OptIn)]
 public abstract class GameCategory

@@ -5,10 +5,10 @@ using MailKit.Net.Smtp;
 using MailKit.Security;
 using MimeKit;
 using NotEnoughLogs;
-using Refresh.GameServer.Configuration;
+using Refresh.Core.Configuration;
 using Refresh.Database.Models.Users;
 
-namespace Refresh.GameServer.Services;
+namespace Refresh.Core.Services;
 
 public class SmtpService : EndpointService
 {

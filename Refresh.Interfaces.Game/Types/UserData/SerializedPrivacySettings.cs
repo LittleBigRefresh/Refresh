@@ -1,7 +1,8 @@
 using System.Xml.Serialization;
+using Refresh.Database.Models.Users;
 using Refresh.Database.Query;
 
-namespace Refresh.Database.Models.Users;
+namespace Refresh.Interfaces.Game.Types.UserData;
 
 [XmlType("privacySettings")]
 [XmlRoot("privacySettings")]

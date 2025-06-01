@@ -1,7 +1,7 @@
 using System.Xml.Serialization;
-using Refresh.GameServer.Types.Playlists;
+using Refresh.Interfaces.Game.Types.Playlists;
 
-namespace Refresh.GameServer.Types.Lists;
+namespace Refresh.Interfaces.Game.Types.Lists;
 
 [XmlRoot("playlists")]
 [XmlType("playlists")]

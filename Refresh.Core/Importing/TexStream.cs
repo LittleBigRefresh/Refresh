@@ -2,7 +2,7 @@ using System.Buffers.Binary;
 using System.Diagnostics;
 using ICSharpCode.SharpZipLib.Zip.Compression;
 
-namespace Refresh.GameServer.Importing;
+namespace Refresh.Core.Importing;
 
 /// <summary>
 /// Streams the data contained within a TEX file

@@ -4,16 +4,17 @@ using Bunkum.Core.Endpoints;
 using Bunkum.Core.Responses;
 using Bunkum.Listener.Protocol;
 using Bunkum.Protocols.Http;
-using Refresh.Database.Models.Authentication;
-using Refresh.GameServer.Configuration;
+using Refresh.Common.Time;
+using Refresh.Core.Authentication.Permission;
+using Refresh.Core.Configuration;
 using Refresh.Database;
-using Refresh.GameServer.Time;
-using Refresh.GameServer.Types.Report;
-using Refresh.Database.Models.Users;
+using Refresh.Database.Models.Authentication;
 using Refresh.Database.Models.Levels;
 using Refresh.Database.Models.Photos;
+using Refresh.Database.Models.Users;
+using Refresh.Interfaces.Game.Types.Report;
 
-namespace Refresh.GameServer.Endpoints.Game; 
+namespace Refresh.Interfaces.Game.Endpoints; 
 
 public class ReportingEndpoints : EndpointGroup 
 {

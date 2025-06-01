@@ -1,6 +1,6 @@
 using Refresh.Database.Models.Authentication;
 
-namespace Refresh.GameServer.Types.Matching;
+namespace Refresh.Core.Types.Matching;
 
 #nullable disable
 

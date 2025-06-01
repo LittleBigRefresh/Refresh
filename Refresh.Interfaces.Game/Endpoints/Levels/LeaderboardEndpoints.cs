@@ -5,17 +5,18 @@ using Bunkum.Core.RateLimit;
 using Bunkum.Core.Responses;
 using Bunkum.Listener.Protocol;
 using Bunkum.Protocols.Http;
-using Refresh.Database.Models.Authentication;
-using Refresh.GameServer.Configuration;
+using Refresh.Core.Authentication.Permission;
+using Refresh.Core.Configuration;
 using Refresh.Database;
-using Refresh.GameServer.Types.Lists;
-using Refresh.GameServer.Types.Scores;
-using Refresh.Database.Models.Users;
-using Refresh.Database.Models.Levels.Scores;
+using Refresh.Database.Models.Authentication;
 using Refresh.Database.Models.Levels;
-using Refresh.Database.Models.Users.Leaderboard;
+using Refresh.Database.Models.Levels.Scores;
+using Refresh.Database.Models.Users;
+using Refresh.Interfaces.Game.Types.Lists;
+using Refresh.Interfaces.Game.Types.Scores;
+using Refresh.Interfaces.Game.Types.UserData.Leaderboard;
 
-namespace Refresh.GameServer.Endpoints.Game.Levels;
+namespace Refresh.Interfaces.Game.Endpoints.Levels;
 
 public class LeaderboardEndpoints : EndpointGroup
 {

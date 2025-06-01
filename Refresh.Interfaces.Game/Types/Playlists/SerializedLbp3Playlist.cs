@@ -1,11 +1,10 @@
 using System.Xml.Serialization;
 using Refresh.Common.Constants;
+using Refresh.Core.Types.Data;
 using Refresh.Database.Models;
 using Refresh.Database.Query;
-using Refresh.GameServer.Endpoints.ApiV3.DataTypes;
-using Refresh.GameServer.Types.Data;
 
-namespace Refresh.GameServer.Types.Playlists;
+namespace Refresh.Interfaces.Game.Types.Playlists;
 
 // Disable false nullability warnings caused by Realm's source generators.
 #if !POSTGRES

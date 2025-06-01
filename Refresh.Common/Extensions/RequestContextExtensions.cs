@@ -1,8 +1,8 @@
 using System.Net;
-using JetBrains.Annotations;
 using Bunkum.Core;
+using JetBrains.Annotations;
 
-namespace Refresh.GameServer.Extensions;
+namespace Refresh.Common.Extensions;
 
 public static class RequestContextExtensions
 {

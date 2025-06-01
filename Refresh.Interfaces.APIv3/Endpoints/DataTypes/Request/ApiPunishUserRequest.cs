@@ -1,4 +1,4 @@
-namespace Refresh.GameServer.Endpoints.ApiV3.DataTypes.Request;
+namespace Refresh.Interfaces.APIv3.Endpoints.DataTypes.Request;
 
 #nullable disable
 

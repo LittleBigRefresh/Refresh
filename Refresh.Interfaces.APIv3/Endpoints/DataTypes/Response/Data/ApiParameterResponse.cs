@@ -1,7 +1,7 @@
 using AttribDoc;
 using Newtonsoft.Json.Converters;
 
-namespace Refresh.GameServer.Endpoints.ApiV3.DataTypes.Response.Data;
+namespace Refresh.Interfaces.APIv3.Endpoints.DataTypes.Response.Data;
 
 [JsonObject(NamingStrategyType = typeof(CamelCaseNamingStrategy))]
 public class ApiParameterResponse : IApiResponse

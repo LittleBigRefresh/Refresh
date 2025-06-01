@@ -2,12 +2,13 @@ using AttribDoc.Attributes;
 using Bunkum.Core;
 using Bunkum.Core.Endpoints;
 using Bunkum.Protocols.Http;
+using Refresh.Core.Authentication.Permission;
 using Refresh.Database;
-using Refresh.GameServer.Endpoints.ApiV3.ApiTypes;
-using Refresh.GameServer.Endpoints.ApiV3.ApiTypes.Errors;
 using Refresh.Database.Models.Users;
+using Refresh.Interfaces.APIv3.Endpoints.ApiTypes;
+using Refresh.Interfaces.APIv3.Endpoints.ApiTypes.Errors;
 
-namespace Refresh.GameServer.Endpoints.ApiV3.Admin;
+namespace Refresh.Interfaces.APIv3.Endpoints.Admin;
 
 public class AdminReviewApiEndpoints : EndpointGroup
 {

@@ -1,10 +1,10 @@
 using Refresh.Database.Models.Authentication;
 using Refresh.Database.Models.Comments;
-using Refresh.GameServer.Endpoints.Game.DataTypes.Response;
-using Refresh.GameServer.Types.Lists;
 using Refresh.Database.Models.Users;
 using RefreshTests.GameServer.Extensions;
 using Refresh.Database.Models.Levels;
+using Refresh.Interfaces.Game.Endpoints.DataTypes.Response;
+using Refresh.Interfaces.Game.Types.Lists;
 
 namespace RefreshTests.GameServer.Tests.Levels;
 

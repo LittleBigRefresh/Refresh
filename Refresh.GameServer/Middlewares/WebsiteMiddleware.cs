@@ -3,6 +3,7 @@ using Bunkum.Core;
 using Bunkum.Core.Database;
 using Bunkum.Core.Endpoints.Middlewares;
 using Refresh.GameServer.Endpoints;
+using Refresh.Interfaces.Game;
 
 namespace Refresh.GameServer.Middlewares;
 

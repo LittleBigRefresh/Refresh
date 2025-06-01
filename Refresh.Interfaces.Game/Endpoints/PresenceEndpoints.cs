@@ -3,12 +3,13 @@ using Bunkum.Core;
 using Bunkum.Core.Endpoints;
 using Bunkum.Listener.Protocol;
 using Bunkum.Protocols.Http;
-using Refresh.Database.Models.Authentication;
+using Refresh.Core.Authentication.Permission;
+using Refresh.Core.Services;
 using Refresh.Database;
-using Refresh.GameServer.Services;
+using Refresh.Database.Models.Authentication;
 using Refresh.Database.Models.Users;
 
-namespace Refresh.GameServer.Endpoints.Game;
+namespace Refresh.Interfaces.Game.Endpoints;
 
 public class PresenceEndpoints : EndpointGroup
 {

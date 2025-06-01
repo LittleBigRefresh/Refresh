@@ -1,4 +1,4 @@
-namespace Refresh.GameServer.Types.Commands;
+namespace Refresh.Core.Types.Commands;
 
 public ref struct CommandInvocation
 {

@@ -1,6 +1,6 @@
 using System.Reflection;
 
-namespace Refresh.GameServer;
+namespace Refresh.Core;
 
 public static class VersionInformation
 {

@@ -1,6 +1,4 @@
-using Refresh.GameServer.Types.Data;
-
-namespace Refresh.GameServer.Endpoints.ApiV3.DataTypes;
+namespace Refresh.Core.Types.Data;
 
 public interface IDataConvertableFrom<out TNew, in TOld> where TNew : IDataConvertableFrom<TNew, TOld>
 {

@@ -1,9 +1,9 @@
 using System.Collections.Frozen;
 using Bunkum.Core.Services;
 using NotEnoughLogs;
-using Refresh.GameServer.Types.Categories.Levels;
+using Refresh.Core.Types.Categories.Levels;
 
-namespace Refresh.GameServer.Types.Categories;
+namespace Refresh.Core.Types.Categories;
 
 public class CategoryService : EndpointService
 {

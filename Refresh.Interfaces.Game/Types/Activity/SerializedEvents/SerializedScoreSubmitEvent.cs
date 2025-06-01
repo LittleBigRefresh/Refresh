@@ -1,7 +1,7 @@
 using System.Xml.Serialization;
 using Refresh.Database.Models.Levels.Scores;
 
-namespace Refresh.GameServer.Types.Activity.SerializedEvents;
+namespace Refresh.Interfaces.Game.Types.Activity.SerializedEvents;
 
 public class SerializedScoreSubmitEvent : SerializedLevelEvent
 {

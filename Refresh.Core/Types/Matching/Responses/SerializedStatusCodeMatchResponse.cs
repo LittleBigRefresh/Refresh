@@ -2,7 +2,7 @@ using System.Diagnostics.CodeAnalysis;
 using System.Net;
 using Bunkum.Core.Responses;
 
-namespace Refresh.GameServer.Types.Matching.Responses;
+namespace Refresh.Core.Types.Matching.Responses;
 
 [JsonObject(MemberSerialization.OptIn)]
 public class SerializedStatusCodeMatchResponse: IHasResponseCode

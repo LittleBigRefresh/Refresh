@@ -1,7 +1,7 @@
 using System.Xml.Serialization;
-using Refresh.GameServer.Types.Activity.SerializedEvents;
+using Refresh.Interfaces.Game.Types.Activity.SerializedEvents;
 
-namespace Refresh.GameServer.Types.Activity;
+namespace Refresh.Interfaces.Game.Types.Activity;
 
 [XmlRoot("events")]
 [XmlType("events")]

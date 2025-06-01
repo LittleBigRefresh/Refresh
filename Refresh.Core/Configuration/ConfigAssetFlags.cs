@@ -1,6 +1,6 @@
 using Refresh.Database.Models.Assets;
 
-namespace Refresh.GameServer.Configuration;
+namespace Refresh.Core.Configuration;
 
 public class ConfigAssetFlags
 {

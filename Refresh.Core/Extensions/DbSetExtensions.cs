@@ -1,7 +1,7 @@
 ﻿#if POSTGRES
 using Microsoft.EntityFrameworkCore;
 
-namespace Refresh.GameServer.Extensions;
+namespace Refresh.Core.Extensions;
 
 
 public static class DbSetExtensions

@@ -1,6 +1,6 @@
 using System.Xml.Serialization;
 
-namespace Refresh.GameServer.Types.Notifications;
+namespace Refresh.Interfaces.Game.Types.Notifications;
 
 #nullable disable
 

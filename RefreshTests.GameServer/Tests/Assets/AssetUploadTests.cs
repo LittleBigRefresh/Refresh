@@ -1,9 +1,9 @@
 using System.Security.Cryptography;
+using Refresh.Core.Configuration;
+using Refresh.Core.Services;
 using Refresh.Database.Models.Authentication;
-using Refresh.GameServer.Configuration;
-using Refresh.GameServer.Services;
-using Refresh.GameServer.Types.Lists;
 using Refresh.Database.Models.Users;
+using Refresh.Interfaces.Game.Types.Lists;
 using RefreshTests.GameServer.Extensions;
 
 namespace RefreshTests.GameServer.Tests.Assets;

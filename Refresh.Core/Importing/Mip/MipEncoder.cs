@@ -5,7 +5,7 @@ using SixLabors.ImageSharp.Processing;
 using SixLabors.ImageSharp.Processing.Processors.Dithering;
 using SixLabors.ImageSharp.Processing.Processors.Quantization;
 
-namespace Refresh.GameServer.Importing.Mip;
+namespace Refresh.Core.Importing.Mip;
 
 public class MipEncoder : ImageEncoder
 {

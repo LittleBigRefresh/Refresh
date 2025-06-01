@@ -1,6 +1,6 @@
 using System.Xml.Serialization;
 
-namespace Refresh.GameServer.Types.Reviews;
+namespace Refresh.Interfaces.Game.Types.Reviews;
 
 [XmlRoot("deleted_by")]
 public enum ReviewDeletedBy

@@ -1,6 +1,6 @@
 using Rgba32 = SixLabors.ImageSharp.PixelFormats.Rgba32;
 
-namespace Refresh.GameServer.Importing.Mip;
+namespace Refresh.Core.Importing.Mip;
 
 public class MipHeader
 {

@@ -1,6 +1,6 @@
 using System.Diagnostics.CodeAnalysis;
 
-namespace Refresh.GameServer.Types.Matching.Responses;
+namespace Refresh.Core.Types.Matching.Responses;
 
 #nullable disable
 

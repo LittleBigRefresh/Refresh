@@ -1,6 +1,6 @@
 using System.Xml.Serialization;
 
-namespace Refresh.Database.Models.Users.Leaderboard;
+namespace Refresh.Interfaces.Game.Types.UserData.Leaderboard;
 
 #nullable disable
 

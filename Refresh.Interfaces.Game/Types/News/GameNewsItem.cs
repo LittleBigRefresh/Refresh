@@ -1,6 +1,6 @@
 using System.Xml.Serialization;
 
-namespace Refresh.GameServer.Types.News;
+namespace Refresh.Interfaces.Game.Types.News;
 
 public class GameNewsItem
 {

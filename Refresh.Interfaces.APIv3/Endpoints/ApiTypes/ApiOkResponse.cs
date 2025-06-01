@@ -1,4 +1,4 @@
-namespace Refresh.GameServer.Endpoints.ApiV3.ApiTypes;
+namespace Refresh.Interfaces.APIv3.Endpoints.ApiTypes;
 
 public class ApiOkResponse : ApiResponse<ApiEmptyResponse>
 {

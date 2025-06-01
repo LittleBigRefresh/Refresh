@@ -2,11 +2,11 @@ using Bunkum.Core.Services;
 using Discord;
 using Discord.Webhook;
 using NotEnoughLogs;
-using Refresh.GameServer.Configuration;
+using Refresh.Core.Configuration;
 using Refresh.Database.Models.Users;
 using GameAsset = Refresh.Database.Models.Assets.GameAsset;
 
-namespace Refresh.GameServer.Services;
+namespace Refresh.Core.Services;
 
 public class DiscordStaffService : EndpointService
 {

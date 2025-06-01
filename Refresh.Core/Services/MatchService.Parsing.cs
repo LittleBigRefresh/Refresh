@@ -1,6 +1,6 @@
 using System.Globalization;
 
-namespace Refresh.GameServer.Services;
+namespace Refresh.Core.Services;
 
 public partial class MatchService // Parsing
 {

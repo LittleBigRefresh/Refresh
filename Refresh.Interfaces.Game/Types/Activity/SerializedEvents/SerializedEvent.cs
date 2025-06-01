@@ -1,14 +1,13 @@
 using System.Xml.Serialization;
+using Refresh.Core.Types.Data;
 using Refresh.Database.Models.Activity;
 using Refresh.Database.Models.Levels;
 using Refresh.Database.Models.Levels.Scores;
 using Refresh.Database.Models.Photos;
 using Refresh.Database.Models.Users;
-using Refresh.GameServer.Endpoints.ApiV3.DataTypes;
-using Refresh.GameServer.Types.Data;
-using Refresh.GameServer.Types.Levels;
+using Refresh.Interfaces.Game.Types.Levels;
 
-namespace Refresh.GameServer.Types.Activity.SerializedEvents;
+namespace Refresh.Interfaces.Game.Types.Activity.SerializedEvents;
 
 [XmlType("event")]
 [XmlRoot("event")]

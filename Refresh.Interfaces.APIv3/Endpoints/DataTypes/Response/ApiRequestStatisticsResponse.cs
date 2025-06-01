@@ -1,7 +1,7 @@
-using Refresh.GameServer.Types.Data;
+using Refresh.Core.Types.Data;
 using Refresh.Database.Models;
 
-namespace Refresh.GameServer.Endpoints.ApiV3.DataTypes.Response;
+namespace Refresh.Interfaces.APIv3.Endpoints.DataTypes.Response;
 
 [JsonObject(NamingStrategyType = typeof(CamelCaseNamingStrategy))]
 public class ApiRequestStatisticsResponse : IApiResponse, IDataConvertableFrom<ApiRequestStatisticsResponse, RequestStatistics>

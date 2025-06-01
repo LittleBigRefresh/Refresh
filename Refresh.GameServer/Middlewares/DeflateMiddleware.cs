@@ -2,8 +2,8 @@ using Bunkum.Core.Database;
 using Bunkum.Core.Endpoints.Middlewares;
 using Bunkum.Listener.Request;
 using Org.BouncyCastle.Utilities.Zlib;
-using Refresh.GameServer.Configuration;
-using Refresh.GameServer.Endpoints;
+using Refresh.Core.Configuration;
+using Refresh.Interfaces.Game;
 
 namespace Refresh.GameServer.Middlewares;
 

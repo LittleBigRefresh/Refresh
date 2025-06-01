@@ -1,4 +1,4 @@
-namespace Refresh.GameServer.Importing.Gtf;
+namespace Refresh.Core.Importing.Gtf;
 
 //See https://github.com/RPCS3/rpcs3/blob/23cb67e0a10f7d7ecf39122fa697af8dcc30690e/rpcs3/Emu/RSX/gcm_enums.h#L135
 public enum GtfPixelFormat : byte

@@ -3,16 +3,17 @@ using Bunkum.Core;
 using Bunkum.Core.Endpoints;
 using Bunkum.Protocols.Http;
 using MongoDB.Bson;
+using Refresh.Core.Authentication.Permission;
+using Refresh.Core.Types.Data;
 using Refresh.Database;
-using Refresh.GameServer.Endpoints.ApiV3.ApiTypes;
-using Refresh.GameServer.Endpoints.ApiV3.ApiTypes.Errors;
-using Refresh.GameServer.Endpoints.ApiV3.DataTypes.Request;
-using Refresh.GameServer.Endpoints.ApiV3.DataTypes.Response;
 using Refresh.Database.Models.Contests;
-using Refresh.GameServer.Types.Data;
 using Refresh.Database.Models.Users;
+using Refresh.Interfaces.APIv3.Endpoints.ApiTypes;
+using Refresh.Interfaces.APIv3.Endpoints.ApiTypes.Errors;
+using Refresh.Interfaces.APIv3.Endpoints.DataTypes.Request;
+using Refresh.Interfaces.APIv3.Endpoints.DataTypes.Response;
 
-namespace Refresh.GameServer.Endpoints.ApiV3.Admin;
+namespace Refresh.Interfaces.APIv3.Endpoints.Admin;
 
 public class AdminContestApiEndpoints : EndpointGroup
 {

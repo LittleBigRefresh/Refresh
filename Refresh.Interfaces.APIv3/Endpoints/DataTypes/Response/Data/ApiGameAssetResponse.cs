@@ -1,8 +1,8 @@
-using Refresh.GameServer.Endpoints.ApiV3.DataTypes.Response.Users;
+using Refresh.Core.Types.Data;
 using Refresh.Database.Models.Assets;
-using Refresh.GameServer.Types.Data;
+using Refresh.Interfaces.APIv3.Endpoints.DataTypes.Response.Users;
 
-namespace Refresh.GameServer.Endpoints.ApiV3.DataTypes.Response.Data;
+namespace Refresh.Interfaces.APIv3.Endpoints.DataTypes.Response.Data;
 
 [JsonObject(NamingStrategyType = typeof(CamelCaseNamingStrategy))]
 public class ApiGameAssetResponse : IApiResponse, IDataConvertableFrom<ApiGameAssetResponse, GameAsset>

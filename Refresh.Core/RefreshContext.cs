@@ -1,4 +1,4 @@
-namespace Refresh.GameServer;
+namespace Refresh.Core;
 
 public enum RefreshContext
 {

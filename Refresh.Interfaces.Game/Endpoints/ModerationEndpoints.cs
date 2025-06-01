@@ -2,14 +2,16 @@ using Bunkum.Core;
 using Bunkum.Core.Endpoints;
 using Bunkum.Listener.Protocol;
 using Bunkum.Protocols.Http;
-using Refresh.Database.Models.Authentication;
+using Refresh.Core.Authentication.Permission;
+using Refresh.Core.Services;
+using Refresh.Core.Types.Commands;
 using Refresh.Database;
-using Refresh.GameServer.Services;
-using Refresh.GameServer.Types.Commands;
+using Refresh.Database.Models.Authentication;
 using Refresh.Database.Models.Users;
-using Refresh.Database.Models.Users.Filtering;
+using Refresh.Interfaces.Game.Types.UserData;
+using Refresh.Interfaces.Game.Types.UserData.Filtering;
 
-namespace Refresh.GameServer.Endpoints.Game;
+namespace Refresh.Interfaces.Game.Endpoints;
 
 public class ModerationEndpoints : EndpointGroup
 {

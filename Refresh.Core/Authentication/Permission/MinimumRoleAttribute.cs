@@ -1,6 +1,6 @@
 using Refresh.Database.Models.Users;
 
-namespace Refresh.GameServer.Endpoints;
+namespace Refresh.Core.Authentication.Permission;
 
 [AttributeUsage(AttributeTargets.Method)]
 public class MinimumRoleAttribute : Attribute // TODO: DocAttribute

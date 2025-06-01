@@ -4,7 +4,7 @@ using Microsoft.CSharp.RuntimeBinder;
 using Refresh.Database.Models.Assets;
 using Refresh.Database.Models.Users;
 
-namespace Refresh.GameServer.Configuration;
+namespace Refresh.Core.Configuration;
 
 [SuppressMessage("ReSharper", "AutoPropertyCanBeMadeGetOnly.Global")]
 [SuppressMessage("ReSharper", "RedundantDefaultMemberInitializer")]

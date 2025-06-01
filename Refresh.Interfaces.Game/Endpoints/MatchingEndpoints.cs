@@ -5,13 +5,14 @@ using Bunkum.Core.Endpoints.Debugging;
 using Bunkum.Core.Responses;
 using Bunkum.Listener.Protocol;
 using Bunkum.Protocols.Http;
+using Refresh.Core.Authentication.Permission;
+using Refresh.Core.Configuration;
+using Refresh.Core.Services;
+using Refresh.Core.Types.Data;
+using Refresh.Core.Types.Matching;
 using Refresh.Database.Models.Authentication;
-using Refresh.GameServer.Configuration;
-using Refresh.GameServer.Services;
-using Refresh.GameServer.Types.Data;
-using Refresh.GameServer.Types.Matching;
 
-namespace Refresh.GameServer.Endpoints.Game;
+namespace Refresh.Interfaces.Game.Endpoints;
 
 public class MatchingEndpoints : EndpointGroup
 {

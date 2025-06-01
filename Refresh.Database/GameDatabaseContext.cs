@@ -1,7 +1,7 @@
 using System.Diagnostics.CodeAnalysis;
 using System.Runtime.CompilerServices;
+using Refresh.Common.Time;
 using Refresh.Database.Models.Authentication;
-using Refresh.GameServer.Time;
 using Refresh.Database.Models.Activity;
 using Refresh.Database.Models.Assets;
 using Refresh.Database.Models.Comments;

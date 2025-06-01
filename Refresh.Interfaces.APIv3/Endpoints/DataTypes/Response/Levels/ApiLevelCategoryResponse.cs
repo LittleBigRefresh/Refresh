@@ -1,12 +1,12 @@
 using Bunkum.Core;
-using Refresh.Database.Query;
-using Refresh.Database.Models.Authentication;
+using Refresh.Core.Types.Categories.Levels;
+using Refresh.Core.Types.Data;
 using Refresh.Database;
-using Refresh.GameServer.Types.Categories.Levels;
-using Refresh.GameServer.Types.Data;
+using Refresh.Database.Models.Authentication;
 using Refresh.Database.Models.Levels;
+using Refresh.Database.Query;
 
-namespace Refresh.GameServer.Endpoints.ApiV3.DataTypes.Response.Levels;
+namespace Refresh.Interfaces.APIv3.Endpoints.DataTypes.Response.Levels;
 
 [JsonObject(NamingStrategyType = typeof(CamelCaseNamingStrategy))]
 public class ApiLevelCategoryResponse : IApiResponse, IDataConvertableFrom<ApiLevelCategoryResponse, GameLevelCategory>

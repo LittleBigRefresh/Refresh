@@ -1,6 +1,6 @@
 using SixLabors.ImageSharp.Formats;
 
-namespace Refresh.GameServer.Importing.Mip;
+namespace Refresh.Core.Importing.Mip;
 
 public class MipFormat : IImageFormat<MipMetadata>
 {

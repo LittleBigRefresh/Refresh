@@ -1,7 +1,7 @@
 ﻿using MongoDB.Bson;
 using Refresh.Database.Models.Authentication;
 
-namespace Refresh.GameServer.Types.Matching.RoomAccessors;
+namespace Refresh.Core.Types.Matching.RoomAccessors;
 
 public class NullRoomAccessor : IRoomAccessor
 {

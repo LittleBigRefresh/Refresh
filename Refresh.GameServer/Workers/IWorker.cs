@@ -1,4 +1,4 @@
-using Refresh.GameServer.Types.Data;
+using Refresh.Core.Types.Data;
 
 namespace Refresh.GameServer.Workers;
 

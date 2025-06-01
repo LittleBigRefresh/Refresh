@@ -1,9 +1,10 @@
 using System.Xml.Serialization;
 using Refresh.Database.Models;
-using Refresh.Database.Models.Users;
 using Refresh.Database.Models.Levels;
+using Refresh.Database.Models.Users;
+using Refresh.Interfaces.Game.Types.UserData;
 
-namespace Refresh.GameServer.Endpoints.Game.DataTypes.Request;
+namespace Refresh.Interfaces.Game.Endpoints.DataTypes.Request;
 
 [XmlRoot("slot")]
 [XmlType("slot")]

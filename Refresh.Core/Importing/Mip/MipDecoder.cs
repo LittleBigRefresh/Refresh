@@ -4,7 +4,7 @@ using SixLabors.ImageSharp.Memory;
 using SixLabors.ImageSharp.Metadata;
 using SixLabors.ImageSharp.PixelFormats;
 
-namespace Refresh.GameServer.Importing.Mip;
+namespace Refresh.Core.Importing.Mip;
 
 public class MipDecoder : ImageDecoder
 {

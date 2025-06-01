@@ -1,7 +1,7 @@
 using System.Xml.Serialization;
 using Refresh.Database.Query;
 
-namespace Refresh.GameServer.Types.Challenges.LbpHub;
+namespace Refresh.Interfaces.Game.Types.Challenges.LbpHub;
 
 //  <challenge-attempt>
 //      <score>9223371991757619189</score>

@@ -1,7 +1,7 @@
 using Bunkum.Protocols.Http;
 using JetBrains.Annotations;
 
-namespace Refresh.GameServer.Endpoints;
+namespace Refresh.Interfaces.APIv3;
 
 [MeansImplicitUse]
 public class ApiV3EndpointAttribute : HttpEndpointAttribute

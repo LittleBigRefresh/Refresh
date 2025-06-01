@@ -1,9 +1,8 @@
 using System.Xml.Serialization;
+using Refresh.Core.Types.Data;
 using Refresh.Database.Models.Comments;
-using Refresh.GameServer.Endpoints.ApiV3.DataTypes;
-using Refresh.GameServer.Types.Data;
 
-namespace Refresh.GameServer.Types.Comments;
+namespace Refresh.Interfaces.Game.Types.Comments;
 
 [XmlRoot("comment")]
 [XmlType("comment")]

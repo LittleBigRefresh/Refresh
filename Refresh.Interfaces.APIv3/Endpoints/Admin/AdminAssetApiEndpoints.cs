@@ -1,15 +1,17 @@
 using AttribDoc.Attributes;
 using Bunkum.Core;
 using Bunkum.Core.Endpoints;
+using Refresh.Core.Authentication.Permission;
+using Refresh.Core.Types.Data;
 using Refresh.Database;
-using Refresh.GameServer.Endpoints.ApiV3.ApiTypes;
-using Refresh.GameServer.Endpoints.ApiV3.ApiTypes.Errors;
-using Refresh.GameServer.Endpoints.ApiV3.DataTypes.Response.Data;
 using Refresh.Database.Models.Assets;
-using Refresh.GameServer.Types.Data;
 using Refresh.Database.Models.Users;
+using Refresh.Interfaces.APIv3.Endpoints.ApiTypes;
+using Refresh.Interfaces.APIv3.Endpoints.ApiTypes.Errors;
+using Refresh.Interfaces.APIv3.Endpoints.DataTypes.Response.Data;
+using Refresh.Interfaces.APIv3.Extensions;
 
-namespace Refresh.GameServer.Endpoints.ApiV3.Admin;
+namespace Refresh.Interfaces.APIv3.Endpoints.Admin;
 
 public class AdminAssetApiEndpoints : EndpointGroup
 {

@@ -3,7 +3,7 @@ using Bunkum.Core.Storage;
 using JetBrains.Annotations;
 using Refresh.Common.Verification;
 
-namespace Refresh.GameServer.Storage;
+namespace Refresh.Core.Storage;
 
 public class DryDataStore : IDataStore
 {

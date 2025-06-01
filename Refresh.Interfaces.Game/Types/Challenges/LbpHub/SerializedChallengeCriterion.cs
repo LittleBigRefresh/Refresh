@@ -1,7 +1,7 @@
 using System.Xml.Serialization;
 using Refresh.Database.Models.Levels.Challenges;
 
-namespace Refresh.GameServer.Types.Challenges.LbpHub;
+namespace Refresh.Interfaces.Game.Types.Challenges.LbpHub;
 
 [XmlRoot("criterion")]
 [XmlType("criterion")]

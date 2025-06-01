@@ -1,7 +1,7 @@
 using System.Xml.Serialization;
-using Refresh.GameServer.Types.Challenges.LbpHub;
+using Refresh.Interfaces.Game.Types.Challenges.LbpHub;
 
-namespace Refresh.GameServer.Types.Lists;
+namespace Refresh.Interfaces.Game.Types.Lists;
 
 [XmlRoot("challenge")]
 [XmlType("challenges")]

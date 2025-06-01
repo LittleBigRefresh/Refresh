@@ -1,4 +1,4 @@
-namespace Refresh.GameServer.Configuration;
+namespace Refresh.Core.Configuration;
 
 public class TimedLevelUploadLimitProperties
 {

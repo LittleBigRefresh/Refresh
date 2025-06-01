@@ -5,20 +5,21 @@ using Bunkum.Core.Endpoints;
 using Bunkum.Core.Responses;
 using Bunkum.Listener.Protocol;
 using Bunkum.Protocols.Http;
-using Refresh.Database.Query;
-using Refresh.Database.Models.Authentication;
+using Refresh.Common.Time;
+using Refresh.Core.Authentication.Permission;
+using Refresh.Core.Configuration;
+using Refresh.Core.Types.Data;
 using Refresh.Database;
-using Refresh.GameServer.Time;
-using Refresh.GameServer.Types.Data;
-using Refresh.GameServer.Types.News;
-using Refresh.Database.Models.Users;
+using Refresh.Database.Models.Authentication;
 using Refresh.Database.Models.Levels;
-using Refresh.GameServer.Configuration;
-using Refresh.GameServer.Types.Activity;
-using Refresh.GameServer.Types.Activity.Groups;
-using Refresh.GameServer.Types.Lists;
+using Refresh.Database.Models.Users;
+using Refresh.Database.Query;
+using Refresh.Interfaces.Game.Types.Activity;
+using Refresh.Interfaces.Game.Types.Activity.Groups;
+using Refresh.Interfaces.Game.Types.Lists;
+using Refresh.Interfaces.Game.Types.News;
 
-namespace Refresh.GameServer.Endpoints.Game;
+namespace Refresh.Interfaces.Game.Endpoints;
 
 public class ActivityEndpoints : EndpointGroup
 {

@@ -1,5 +1,6 @@
+using Refresh.Core;
+using Refresh.Core.Types.Data;
 using Refresh.Database.Models.Authentication;
-using Refresh.GameServer.Types.Data;
 using Refresh.Database.Models.Users;
 
 namespace Refresh.GameServer.Workers;

@@ -1,4 +1,4 @@
-namespace Refresh.GameServer.Endpoints.ApiV3.DataTypes.Response.Levels;
+namespace Refresh.Interfaces.APIv3.Endpoints.DataTypes.Response.Levels;
 
 [JsonObject(NamingStrategyType = typeof(CamelCaseNamingStrategy))]
 public class ApiGameLevelRelationsResponse : IApiResponse

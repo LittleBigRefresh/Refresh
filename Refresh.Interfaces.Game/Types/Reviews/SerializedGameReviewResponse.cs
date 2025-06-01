@@ -1,7 +1,7 @@
 using System.Xml.Serialization;
-using Refresh.GameServer.Types.Lists;
+using Refresh.Interfaces.Game.Types.Lists;
 
-namespace Refresh.GameServer.Types.Reviews;
+namespace Refresh.Interfaces.Game.Types.Reviews;
 
 #nullable disable
 

@@ -1,5 +1,5 @@
 #nullable disable
-namespace Refresh.GameServer.Endpoints.ApiV3.DataTypes.Request.Authentication;
+namespace Refresh.Interfaces.APIv3.Endpoints.DataTypes.Request.Authentication;
 
 [JsonObject(NamingStrategyType = typeof(CamelCaseNamingStrategy))]
 public class ApiResetPasswordRequest

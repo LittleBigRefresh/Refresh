@@ -1,4 +1,4 @@
-namespace Refresh.GameServer.Types.RichPresence;
+namespace Refresh.Core.Types.RichPresence;
 
 /// <summary>
 /// Specifies how a user's link should be presented in rich presence.

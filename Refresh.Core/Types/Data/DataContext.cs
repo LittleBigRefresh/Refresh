@@ -1,11 +1,11 @@
 using Bunkum.Core.Storage;
 using NotEnoughLogs;
+using Refresh.Core.Services;
 using Refresh.Database;
 using Refresh.Database.Models.Authentication;
-using Refresh.GameServer.Services;
 using Refresh.Database.Models.Users;
 
-namespace Refresh.GameServer.Types.Data;
+namespace Refresh.Core.Types.Data;
 
 public class DataContext : IDataContext
 {

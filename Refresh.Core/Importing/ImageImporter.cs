@@ -2,11 +2,11 @@ using System.Collections.Concurrent;
 using Bunkum.Core.Storage;
 using NotEnoughLogs;
 using Refresh.Common.Helpers;
-using Refresh.Database.Models.Authentication;
 using Refresh.Database;
 using Refresh.Database.Models.Assets;
+using Refresh.Database.Models.Authentication;
 
-namespace Refresh.GameServer.Importing;
+namespace Refresh.Core.Importing;
 
 public partial class ImageImporter : Importer
 {

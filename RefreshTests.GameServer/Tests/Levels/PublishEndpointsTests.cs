@@ -1,16 +1,16 @@
 using Refresh.Common.Constants;
+using Refresh.Core.Configuration;
 using Refresh.Database.Query;
 using Refresh.Database.Models.Authentication;
-using Refresh.GameServer.Configuration;
 using Refresh.Database;
 using Refresh.Database.Models;
-using Refresh.GameServer.Endpoints.Game.DataTypes.Request;
-using Refresh.GameServer.Endpoints.Game.DataTypes.Response;
-using Refresh.GameServer.Types.Levels;
 using Refresh.Database.Models.Users;
 using RefreshTests.GameServer.Extensions;
 using Refresh.Database.Models.Levels;
 using Refresh.Database.Models.Notifications;
+using Refresh.Interfaces.Game.Endpoints.DataTypes.Request;
+using Refresh.Interfaces.Game.Endpoints.DataTypes.Response;
+using Refresh.Interfaces.Game.Types.Levels;
 
 namespace RefreshTests.GameServer.Tests.Levels;
 

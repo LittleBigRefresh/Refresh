@@ -1,15 +1,15 @@
 using System.Xml.Serialization;
 using Refresh.Common.Constants;
+using Refresh.Core.Types.Data;
 using Refresh.Database.Models;
-using Refresh.Database.Query;
 using Refresh.Database.Models.Authentication;
-using Refresh.GameServer.Endpoints.ApiV3.DataTypes;
-using Refresh.GameServer.Types.Data;
-using Refresh.GameServer.Types.Levels;
-using Refresh.GameServer.Types.Lists;
 using Refresh.Database.Models.Users;
+using Refresh.Database.Query;
+using Refresh.Interfaces.Game.Types.Levels;
+using Refresh.Interfaces.Game.Types.Lists;
+using Refresh.Interfaces.Game.Types.UserData;
 
-namespace Refresh.GameServer.Endpoints.Game.DataTypes.Response;
+namespace Refresh.Interfaces.Game.Endpoints.DataTypes.Response;
 
 [XmlRoot("user")]
 public class GameUserResponse : IDataConvertableFrom<GameUserResponse, GameUser>

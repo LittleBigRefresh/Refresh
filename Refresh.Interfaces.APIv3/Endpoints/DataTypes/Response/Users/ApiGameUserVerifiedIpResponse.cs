@@ -1,6 +1,7 @@
-using Refresh.GameServer.Types.Data;
+using Refresh.Core.Types.Data;
 using Refresh.Database.Models.Relations;
-namespace Refresh.GameServer.Endpoints.ApiV3.DataTypes.Response.Users;
+
+namespace Refresh.Interfaces.APIv3.Endpoints.DataTypes.Response.Users;
 
 [JsonObject(NamingStrategyType = typeof(CamelCaseNamingStrategy))]
 public class ApiGameUserVerifiedIpResponse : IApiResponse, IDataConvertableFrom<ApiGameUserVerifiedIpResponse, GameUserVerifiedIpRelation>

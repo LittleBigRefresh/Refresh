@@ -1,10 +1,10 @@
-using Refresh.GameServer.Endpoints.ApiV3.DataTypes.Response.Levels;
-using Refresh.GameServer.Endpoints.ApiV3.DataTypes.Response.Users;
-using Refresh.GameServer.Endpoints.ApiV3.DataTypes.Response.Users.Photos;
+using Refresh.Core.Types.Data;
 using Refresh.Database.Models.Activity;
-using Refresh.GameServer.Types.Data;
+using Refresh.Interfaces.APIv3.Endpoints.DataTypes.Response.Levels;
+using Refresh.Interfaces.APIv3.Endpoints.DataTypes.Response.Users;
+using Refresh.Interfaces.APIv3.Endpoints.DataTypes.Response.Users.Photos;
 
-namespace Refresh.GameServer.Endpoints.ApiV3.DataTypes.Response.Activity;
+namespace Refresh.Interfaces.APIv3.Endpoints.DataTypes.Response.Activity;
 
 [JsonObject(NamingStrategyType = typeof(CamelCaseNamingStrategy))]
 public class ApiActivityPageResponse : IApiResponse, IDataConvertableFrom<ApiActivityPageResponse, DatabaseActivityPage>

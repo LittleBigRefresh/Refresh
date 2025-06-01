@@ -1,7 +1,8 @@
 using System.Xml.Serialization;
+using Refresh.Database;
 using Refresh.Database.Models.Levels.Scores;
 
-namespace Refresh.Database.Models.Users.Leaderboard;
+namespace Refresh.Interfaces.Game.Types.UserData.Leaderboard;
 
 [XmlRoot("scoreboards")]
 public class SerializedMultiLeaderboardResponse

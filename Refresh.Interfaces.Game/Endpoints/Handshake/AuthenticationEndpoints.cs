@@ -8,16 +8,18 @@ using Bunkum.Protocols.Http;
 using NPTicket;
 using NPTicket.Verification;
 using NPTicket.Verification.Keys;
+using Refresh.Common.Time;
 using Refresh.Common.Verification;
-using Refresh.Database.Models.Authentication;
-using Refresh.GameServer.Configuration;
+using Refresh.Core;
+using Refresh.Core.Authentication.Permission;
+using Refresh.Core.Configuration;
+using Refresh.Core.Services;
+using Refresh.Core.Types.Matching;
 using Refresh.Database;
-using Refresh.GameServer.Services;
-using Refresh.GameServer.Time;
-using Refresh.GameServer.Types.Matching;
+using Refresh.Database.Models.Authentication;
 using Refresh.Database.Models.Users;
 
-namespace Refresh.GameServer.Endpoints.Game.Handshake;
+namespace Refresh.Interfaces.Game.Endpoints.Handshake;
 
 public class AuthenticationEndpoints : EndpointGroup
 {

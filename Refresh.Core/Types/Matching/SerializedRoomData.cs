@@ -1,6 +1,6 @@
 using System.Diagnostics.CodeAnalysis;
 
-namespace Refresh.GameServer.Types.Matching;
+namespace Refresh.Core.Types.Matching;
 
 [SuppressMessage("Maintainability", "CA1507:Use nameof to express symbol names")]
 public class SerializedRoomData

@@ -1,6 +1,6 @@
 using System.Xml.Serialization;
 
-namespace Refresh.GameServer.Types.Levels;
+namespace Refresh.Interfaces.Game.Types.Levels;
 
 [XmlRoot("object_slot_id")]
 [XmlType("object_slot_id")]

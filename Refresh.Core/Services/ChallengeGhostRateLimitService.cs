@@ -2,7 +2,7 @@ using Bunkum.Core.Services;
 using MongoDB.Bson;
 using NotEnoughLogs;
 
-namespace Refresh.GameServer.Services;
+namespace Refresh.Core.Services;
 
 public class ChallengeGhostRateLimitService : EndpointService
 {
@@ -27,7 +27,7 @@ public class ChallengeGhostRateLimitService : EndpointService
     public void AddUserToChallengeGhostRateLimit(ObjectId id)
     {
         // Unconditionally add the user to the set
-        this._challengeGhostRateLimitedUsers.Add(id, _timeProviderService.TimeProvider.Now);
+        this._challengeGhostRateLimitedUsers.Add(id, this._timeProviderService.TimeProvider.Now);
     }
 
     /// <summary>

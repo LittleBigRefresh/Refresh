@@ -1,20 +1,20 @@
 using System.Collections.Frozen;
-using Bunkum.Core;
-using Bunkum.Core.Services;
-using NotEnoughLogs;
 using System.Reflection;
+using Bunkum.Core;
 using Bunkum.Core.Responses;
+using Bunkum.Core.Services;
 using Bunkum.Listener.Protocol;
+using NotEnoughLogs;
+using Refresh.Core.Configuration;
+using Refresh.Core.Types.Data;
+using Refresh.Core.Types.Matching;
+using Refresh.Core.Types.Matching.MatchMethods;
+using Refresh.Core.Types.Matching.Responses;
+using Refresh.Core.Types.Matching.RoomAccessors;
 using Refresh.Database.Models.Authentication;
-using Refresh.GameServer.Configuration;
-using Refresh.GameServer.Types.Data;
-using Refresh.GameServer.Types.Matching;
-using Refresh.GameServer.Types.Matching.MatchMethods;
-using Refresh.GameServer.Types.Matching.Responses;
-using Refresh.GameServer.Types.Matching.RoomAccessors;
 using Refresh.Database.Models.Users;
 
-namespace Refresh.GameServer.Services;
+namespace Refresh.Core.Services;
 
 public partial class MatchService : EndpointService
 {

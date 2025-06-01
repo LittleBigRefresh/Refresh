@@ -2,7 +2,7 @@ using System.Xml.Serialization;
 using Refresh.Database.Models;
 using Refresh.Database.Query;
 
-namespace Refresh.GameServer.Types.Levels;
+namespace Refresh.Interfaces.Game.Types.Levels;
 
 #nullable disable
 

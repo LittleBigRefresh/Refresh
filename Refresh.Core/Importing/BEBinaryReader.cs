@@ -1,6 +1,6 @@
 using System.Buffers.Binary;
 
-namespace Refresh.GameServer.Importing;
+namespace Refresh.Core.Importing;
 
 public class BEBinaryReader : BinaryReader
 {

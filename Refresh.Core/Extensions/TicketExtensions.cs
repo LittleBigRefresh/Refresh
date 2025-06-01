@@ -1,9 +1,9 @@
 using Bunkum.Core;
 using NPTicket;
-using Refresh.GameServer.Authentication;
+using Refresh.Core.Authentication;
 using Refresh.Database.Models.Authentication;
 
-namespace Refresh.GameServer.Extensions;
+namespace Refresh.Core.Extensions;
 
 public static class TicketExtensions
 {

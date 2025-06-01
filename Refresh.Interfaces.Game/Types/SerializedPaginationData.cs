@@ -1,6 +1,6 @@
 using System.Xml.Serialization;
 
-namespace Refresh.GameServer.Types;
+namespace Refresh.Interfaces.Game.Types;
 
 public abstract class SerializedPaginationData
 {

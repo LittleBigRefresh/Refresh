@@ -1,12 +1,12 @@
 using Bunkum.Core.Services;
 using MongoDB.Bson;
 using NotEnoughLogs;
-using Refresh.Database.Models.Authentication;
 using Refresh.Database;
-using Refresh.Database.Models.Users;
+using Refresh.Database.Models.Authentication;
 using Refresh.Database.Models.Levels;
+using Refresh.Database.Models.Users;
 
-namespace Refresh.GameServer.Services;
+namespace Refresh.Core.Services;
 
 public class PlayNowService : EndpointService
 {

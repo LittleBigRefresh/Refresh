@@ -1,7 +1,7 @@
 using System.Xml.Serialization;
 using Refresh.Database.Models.Photos;
 
-namespace Refresh.GameServer.Types.Lists;
+namespace Refresh.Interfaces.Game.Types.Lists;
 
 [XmlRoot("photos")]
 [XmlType("photos")]

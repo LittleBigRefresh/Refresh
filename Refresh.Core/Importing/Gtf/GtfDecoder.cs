@@ -9,7 +9,7 @@ using SixLabors.ImageSharp.Memory;
 using SixLabors.ImageSharp.Metadata;
 using SixLabors.ImageSharp.PixelFormats;
 
-namespace Refresh.GameServer.Importing.Gtf;
+namespace Refresh.Core.Importing.Gtf;
 
 public class GtfDecoder : ImageDecoder
 {

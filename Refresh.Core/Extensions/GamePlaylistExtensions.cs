@@ -1,7 +1,7 @@
 using Refresh.Database;
 using Refresh.Database.Models.Playlists;
 
-namespace Refresh.GameServer.Extensions;
+namespace Refresh.Core.Extensions;
 
 public static class GamePlaylistExtensions
 {

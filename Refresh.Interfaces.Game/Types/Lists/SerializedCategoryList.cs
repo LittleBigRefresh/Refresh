@@ -1,8 +1,8 @@
 using System.Xml.Serialization;
-using Refresh.GameServer.Types.Categories;
-using Refresh.GameServer.Types.Categories.Levels;
+using Refresh.Core.Types.Categories.Levels;
+using Refresh.Interfaces.Game.Types.Categories;
 
-namespace Refresh.GameServer.Types.Lists;
+namespace Refresh.Interfaces.Game.Types.Lists;
 [XmlRoot("categories")]
 [XmlType("categories")]
 [XmlInclude(typeof(SerializedLevelCategory))]

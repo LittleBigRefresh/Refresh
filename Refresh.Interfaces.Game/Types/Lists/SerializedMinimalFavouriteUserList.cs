@@ -1,7 +1,7 @@
 using System.Xml.Serialization;
-using Refresh.Database.Models.Users;
+using Refresh.Interfaces.Game.Types.UserData;
 
-namespace Refresh.GameServer.Types.Lists;
+namespace Refresh.Interfaces.Game.Types.Lists;
 
 #nullable disable
 

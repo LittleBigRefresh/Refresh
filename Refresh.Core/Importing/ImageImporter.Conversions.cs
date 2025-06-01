@@ -1,11 +1,11 @@
 using Pfim;
-using Refresh.GameServer.Importing.Gtf;
-using Refresh.GameServer.Importing.Mip;
+using Refresh.Core.Importing.Gtf;
+using Refresh.Core.Importing.Mip;
 using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.Formats;
 using SixLabors.ImageSharp.PixelFormats;
 
-namespace Refresh.GameServer.Importing;
+namespace Refresh.Core.Importing;
 
 public partial class ImageImporter // Conversions
 {

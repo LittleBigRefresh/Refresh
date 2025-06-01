@@ -1,6 +1,6 @@
 using Bunkum.Core.Configuration;
 
-namespace Refresh.GameServer.Configuration;
+namespace Refresh.Core.Configuration;
 
 /// <summary>
 /// A configuration file representing options for various integrations like e-mail, discord, and others.

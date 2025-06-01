@@ -1,7 +1,7 @@
+using Refresh.Common.Time;
 using Refresh.Database.Models.Authentication;
 using Refresh.Database.Models.Comments;
 using Refresh.Database.Models.Users;
-using Refresh.GameServer.Time;
 using Refresh.Database.Models.Activity;
 using Refresh.Database.Models.Assets;
 using Refresh.Database.Models.Contests;

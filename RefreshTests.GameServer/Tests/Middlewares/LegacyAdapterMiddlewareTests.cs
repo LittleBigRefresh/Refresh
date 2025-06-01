@@ -1,6 +1,6 @@
 using System.Net.Http.Json;
-using Refresh.GameServer.Endpoints.ApiV3.ApiTypes;
 using Refresh.GameServer.Middlewares;
+using Refresh.Interfaces.APIv3.Endpoints.ApiTypes;
 
 namespace RefreshTests.GameServer.Tests.Middlewares;
 

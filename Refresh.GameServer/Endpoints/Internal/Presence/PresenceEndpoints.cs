@@ -2,6 +2,7 @@ using Bunkum.Core;
 using Bunkum.Core.Endpoints;
 using Bunkum.Core.Responses;
 using Bunkum.Protocols.Http;
+using Refresh.Core;
 using Refresh.Database.Models.Authentication;
 using Refresh.Database;
 using Refresh.Database.Models.Users;

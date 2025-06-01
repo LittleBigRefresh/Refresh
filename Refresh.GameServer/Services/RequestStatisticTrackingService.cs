@@ -4,7 +4,7 @@ using Bunkum.Core.Database;
 using Bunkum.Core.Responses;
 using Bunkum.Core.Services;
 using NotEnoughLogs;
-using Refresh.GameServer.Endpoints;
+using Refresh.Interfaces.Game;
 
 namespace Refresh.GameServer.Services;
 

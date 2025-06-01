@@ -1,6 +1,6 @@
-using Refresh.GameServer.Configuration;
+using Refresh.Core.Configuration;
 
-namespace Refresh.GameServer.Endpoints.ApiV3.DataTypes.Response;
+namespace Refresh.Interfaces.APIv3.Endpoints.DataTypes.Response;
 
 [JsonObject(NamingStrategyType = typeof(CamelCaseNamingStrategy))]
 public class ApiInstanceResponse : IApiResponse

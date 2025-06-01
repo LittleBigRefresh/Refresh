@@ -1,6 +1,6 @@
 using Bunkum.Core.Configuration;
 
-namespace Refresh.GameServer.Storage;
+namespace Refresh.Core.Storage;
 
 public class DryArchiveConfig : Config
 {

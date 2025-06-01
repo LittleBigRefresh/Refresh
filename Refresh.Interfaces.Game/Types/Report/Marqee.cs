@@ -1,6 +1,6 @@
 using System.Xml.Serialization;
 
-namespace Refresh.GameServer.Types.Report;
+namespace Refresh.Interfaces.Game.Types.Report;
 
 #nullable disable
 

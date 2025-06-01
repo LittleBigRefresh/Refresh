@@ -1,10 +1,10 @@
 using System.Net.Http.Headers;
 using Bunkum.Core.Services;
 using NotEnoughLogs;
-using Refresh.GameServer.Configuration;
+using Refresh.Core.Configuration;
 using Refresh.Database.Models.Users;
 
-namespace Refresh.GameServer.Services;
+namespace Refresh.Core.Services;
 
 public class PresenceService : EndpointService
 {

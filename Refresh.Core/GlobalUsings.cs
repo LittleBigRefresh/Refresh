@@ -5,4 +5,5 @@ global using Newtonsoft.Json;
 global using Newtonsoft.Json.Serialization;
 
 global using Refresh.Common.Extensions;
-global using Refresh.GameServer.Extensions;
+global using Refresh.Core.Extensions;
+global using Refresh.Database.Extensions;

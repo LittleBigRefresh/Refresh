@@ -1,7 +1,7 @@
 using System.Xml.Serialization;
-using Refresh.GameServer.Types.Levels;
+using Refresh.Interfaces.Game.Types.Levels;
 
-namespace Refresh.GameServer.Types.Activity.Groups;
+namespace Refresh.Interfaces.Game.Types.Activity.Groups;
 
 public class LevelSerializedActivityGroup : SerializedActivityGroup
 {

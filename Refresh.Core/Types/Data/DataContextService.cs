@@ -4,11 +4,11 @@ using Bunkum.Core.Services;
 using Bunkum.Core.Storage;
 using Bunkum.Listener.Request;
 using NotEnoughLogs;
-using Refresh.Database.Models.Authentication;
+using Refresh.Core.Services;
 using Refresh.Database;
-using Refresh.GameServer.Services;
+using Refresh.Database.Models.Authentication;
 
-namespace Refresh.GameServer.Types.Data;
+namespace Refresh.Core.Types.Data;
 
 public class DataContextService : Service
 {

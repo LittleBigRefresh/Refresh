@@ -1,7 +1,7 @@
 using System.Net;
 using Bunkum.Core.Responses;
 
-namespace Refresh.GameServer.Endpoints.ApiV3.ApiTypes;
+namespace Refresh.Interfaces.APIv3.Endpoints.ApiTypes;
 
 /// <summary>
 /// A response from the API.

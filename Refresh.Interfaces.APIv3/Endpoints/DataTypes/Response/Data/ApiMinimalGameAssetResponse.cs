@@ -1,7 +1,7 @@
+using Refresh.Core.Types.Data;
 using Refresh.Database.Models.Assets;
-using Refresh.GameServer.Types.Data;
 
-namespace Refresh.GameServer.Endpoints.ApiV3.DataTypes.Response.Data;
+namespace Refresh.Interfaces.APIv3.Endpoints.DataTypes.Response.Data;
 
 [JsonObject(NamingStrategyType = typeof(CamelCaseNamingStrategy))]
 public class ApiMinimalGameAssetResponse : IApiResponse, IDataConvertableFrom<ApiMinimalGameAssetResponse, GameAsset>

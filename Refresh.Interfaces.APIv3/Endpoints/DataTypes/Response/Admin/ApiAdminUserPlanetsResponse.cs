@@ -1,4 +1,4 @@
-namespace Refresh.GameServer.Endpoints.ApiV3.DataTypes.Response.Admin;
+namespace Refresh.Interfaces.APIv3.Endpoints.DataTypes.Response.Admin;
 
 [JsonObject(NamingStrategyType = typeof(CamelCaseNamingStrategy))]
 public class ApiAdminUserPlanetsResponse : IApiResponse

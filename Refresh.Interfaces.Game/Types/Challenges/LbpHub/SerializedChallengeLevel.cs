@@ -1,6 +1,6 @@
 using System.Xml.Serialization;
 
-namespace Refresh.GameServer.Types.Challenges.LbpHub;
+namespace Refresh.Interfaces.Game.Types.Challenges.LbpHub;
 
 #nullable disable
 

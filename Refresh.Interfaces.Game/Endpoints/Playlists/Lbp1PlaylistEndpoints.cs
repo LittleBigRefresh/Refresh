@@ -3,17 +3,18 @@ using Bunkum.Core.Endpoints;
 using Bunkum.Core.Responses;
 using Bunkum.Listener.Protocol;
 using Bunkum.Protocols.Http;
-using Refresh.GameServer.Configuration;
+using Refresh.Core.Authentication.Permission;
+using Refresh.Core.Configuration;
+using Refresh.Core.Types.Data;
 using Refresh.Database;
-using Refresh.GameServer.Types.Data;
-using Refresh.GameServer.Types.Levels;
-using Refresh.GameServer.Types.Lists;
-using Refresh.Database.Models.Users;
 using Refresh.Database.Models.Levels;
 using Refresh.Database.Models.Playlists;
-using Refresh.GameServer.Types.Playlists;
+using Refresh.Database.Models.Users;
+using Refresh.Interfaces.Game.Types.Levels;
+using Refresh.Interfaces.Game.Types.Lists;
+using Refresh.Interfaces.Game.Types.Playlists;
 
-namespace Refresh.GameServer.Endpoints.Game.Playlists;
+namespace Refresh.Interfaces.Game.Endpoints.Playlists;
 
 public class Lbp1PlaylistEndpoints : EndpointGroup
 {

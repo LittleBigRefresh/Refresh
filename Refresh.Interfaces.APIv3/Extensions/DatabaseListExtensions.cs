@@ -1,10 +1,9 @@
-﻿using Refresh.Database;
-using Refresh.GameServer.Endpoints.ApiV3.DataTypes;
-using Refresh.GameServer.Types.Data;
+﻿using Refresh.Core.Types.Data;
+using Refresh.Database;
 
 #pragma warning disable CS0618 // Type or member is obsolete
 
-namespace Refresh.GameServer.Extensions;
+namespace Refresh.Interfaces.APIv3.Extensions;
 
 public static class DatabaseListExtensions
 {

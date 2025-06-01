@@ -1,13 +1,14 @@
 using Discord;
 using Discord.Webhook;
+using Refresh.Core;
+using Refresh.Core.Configuration;
+using Refresh.Core.Types.Data;
 using Refresh.Database.Query;
-using Refresh.GameServer.Configuration;
 using Refresh.Database;
-using Refresh.GameServer.Endpoints.ApiV3.DataTypes.Response.Levels;
-using Refresh.GameServer.Endpoints.ApiV3.DataTypes.Response.Users;
-using Refresh.GameServer.Endpoints.ApiV3.DataTypes.Response.Users.Photos;
 using Refresh.Database.Models.Activity;
-using Refresh.GameServer.Types.Data;
+using Refresh.Interfaces.APIv3.Endpoints.DataTypes.Response.Levels;
+using Refresh.Interfaces.APIv3.Endpoints.DataTypes.Response.Users;
+using Refresh.Interfaces.APIv3.Endpoints.DataTypes.Response.Users.Photos;
 
 namespace Refresh.GameServer.Workers;
 

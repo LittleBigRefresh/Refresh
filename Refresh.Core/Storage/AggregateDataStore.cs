@@ -1,7 +1,7 @@
 using System.Collections.Frozen;
 using Bunkum.Core.Storage;
 
-namespace Refresh.GameServer.Storage;
+namespace Refresh.Core.Storage;
 
 public class AggregateDataStore : IDataStore
 {

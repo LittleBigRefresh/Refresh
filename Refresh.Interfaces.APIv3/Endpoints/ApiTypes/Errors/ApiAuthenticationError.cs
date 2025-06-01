@@ -1,4 +1,4 @@
-namespace Refresh.GameServer.Endpoints.ApiV3.ApiTypes.Errors;
+namespace Refresh.Interfaces.APIv3.Endpoints.ApiTypes.Errors;
 
 [JsonObject(NamingStrategyType = typeof(CamelCaseNamingStrategy))]
 public class ApiAuthenticationError : ApiError

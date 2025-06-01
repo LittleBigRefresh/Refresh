@@ -1,10 +1,11 @@
 using System.Text;
 using Bunkum.Core;
 using Bunkum.Core.Endpoints;
+using Refresh.Core.Authentication.Permission;
+using Refresh.Core.Configuration;
 using Refresh.Database.Models.Users;
-using Refresh.GameServer.Configuration;
 
-namespace Refresh.GameServer.Endpoints.Game.Handshake;
+namespace Refresh.Interfaces.Game.Endpoints.Handshake;
 
 public class WelcomeEndpoints : EndpointGroup
 {

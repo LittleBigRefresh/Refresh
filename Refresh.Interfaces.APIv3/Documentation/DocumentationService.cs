@@ -2,9 +2,9 @@ using System.Collections.Frozen;
 using System.Reflection;
 using Bunkum.Core.Services;
 using NotEnoughLogs;
-using Refresh.GameServer.Endpoints.ApiV3.DataTypes.Response.Data;
+using Refresh.Interfaces.APIv3.Endpoints.DataTypes.Response.Data;
 
-namespace Refresh.GameServer.Documentation;
+namespace Refresh.Interfaces.APIv3.Documentation;
 
 public class DocumentationService : EndpointService
 {

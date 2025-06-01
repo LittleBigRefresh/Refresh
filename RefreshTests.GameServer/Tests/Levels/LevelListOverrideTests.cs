@@ -1,13 +1,13 @@
 using MongoDB.Bson;
 using NotEnoughLogs;
+using Refresh.Core.Configuration;
+using Refresh.Core.Services;
 using Refresh.Database.Models.Authentication;
-using Refresh.GameServer.Configuration;
-using Refresh.GameServer.Services;
-using Refresh.GameServer.Types.Lists;
 using Refresh.Database.Models.Users;
 using RefreshTests.GameServer.Extensions;
 using RefreshTests.GameServer.Logging;
 using Refresh.Database.Models.Levels;
+using Refresh.Interfaces.Game.Types.Lists;
 
 namespace RefreshTests.GameServer.Tests.Levels;
 

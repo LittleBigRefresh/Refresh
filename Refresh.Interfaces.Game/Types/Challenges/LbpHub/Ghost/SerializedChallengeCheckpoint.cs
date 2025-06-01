@@ -1,6 +1,6 @@
 using System.Xml.Serialization;
 
-namespace Refresh.GameServer.Types.Challenges.LbpHub.Ghost;
+namespace Refresh.Interfaces.Game.Types.Challenges.LbpHub.Ghost;
 
 [XmlRoot("checkpoint")]
 [XmlType("checkpoint")]

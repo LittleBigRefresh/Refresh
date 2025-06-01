@@ -3,7 +3,7 @@ using MongoDB.Bson;
 using NotEnoughLogs;
 using Refresh.Database.Models.Authentication;
 
-namespace Refresh.GameServer.Types.Matching.RoomAccessors;
+namespace Refresh.Core.Types.Matching.RoomAccessors;
 
 public class InMemoryRoomAccessor(Logger logger) : IRoomAccessor
 {

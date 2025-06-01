@@ -1,7 +1,7 @@
 using JetBrains.Annotations;
 using Newtonsoft.Json;
-using Refresh.GameServer.Endpoints.ApiV3.ApiTypes;
-using Refresh.GameServer.Endpoints.ApiV3.DataTypes;
+using Refresh.Interfaces.APIv3.Endpoints.ApiTypes;
+using Refresh.Interfaces.APIv3.Endpoints.DataTypes;
 
 namespace RefreshTests.GameServer.Extensions;
 

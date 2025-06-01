@@ -1,7 +1,8 @@
 using System.Xml.Serialization;
-using Refresh.GameServer.Types.Data;
+using Refresh.Core.Types.Data;
+using Refresh.Database.Models.Users;
 
-namespace Refresh.Database.Models.Users;
+namespace Refresh.Interfaces.Game.Types.UserData;
 
 [XmlRoot("npHandle")]
 [XmlType("npHandle")]

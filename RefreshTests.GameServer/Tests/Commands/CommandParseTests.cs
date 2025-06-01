@@ -1,7 +1,7 @@
 using NotEnoughLogs;
-using Refresh.GameServer.Configuration;
-using Refresh.GameServer.Services;
-using Refresh.GameServer.Types.Commands;
+using Refresh.Core.Configuration;
+using Refresh.Core.Services;
+using Refresh.Core.Types.Commands;
 using RefreshTests.GameServer.Logging;
 
 namespace RefreshTests.GameServer.Tests.Commands;

@@ -1,8 +1,8 @@
+using Refresh.Core.Types.Data;
 using Refresh.Database.Models.Comments;
-using Refresh.GameServer.Endpoints.ApiV3.DataTypes.Response.Users;
-using Refresh.GameServer.Types.Data;
+using Refresh.Interfaces.APIv3.Endpoints.DataTypes.Response.Users;
 
-namespace Refresh.GameServer.Endpoints.ApiV3.DataTypes.Response.Levels;
+namespace Refresh.Interfaces.APIv3.Endpoints.DataTypes.Response.Levels;
 
 [JsonObject(NamingStrategyType = typeof(CamelCaseNamingStrategy))]
 public class ApiGameReviewResponse : IApiResponse, IDataConvertableFrom<ApiGameReviewResponse, GameReview>
