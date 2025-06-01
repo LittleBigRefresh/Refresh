@@ -28,6 +28,7 @@ using Refresh.Database.Models.Levels;
 using Refresh.Interfaces.APIv3;
 using Refresh.Interfaces.APIv3.Documentation;
 using Refresh.Interfaces.Game;
+using Refresh.Interfaces.Internal;
 using Refresh.Interfaces.Workers;
 using Refresh.Interfaces.Workers.RequestTracking;
 using Refresh.Interfaces.Workers.Workers;
@@ -92,6 +93,7 @@ public class RefreshGameServer : RefreshServer
         base.Initialize();
         this.Server.DiscoverEndpointsFromAssembly(typeof(ApiV3EndpointAttribute).Assembly);
         this.Server.DiscoverEndpointsFromAssembly(typeof(GameEndpointAttribute).Assembly);
+        this.Server.DiscoverEndpointsFromAssembly(typeof(PresenceEndpointAttribute).Assembly);
         this.SetupWorkers();
     }
 

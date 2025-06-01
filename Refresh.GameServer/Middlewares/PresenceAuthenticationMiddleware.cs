@@ -2,7 +2,7 @@ using Bunkum.Core.Database;
 using Bunkum.Core.Endpoints.Middlewares;
 using Bunkum.Listener.Request;
 using Refresh.Core.Configuration;
-using Refresh.GameServer.Endpoints;
+using Refresh.Interfaces.Internal;
 
 namespace Refresh.GameServer.Middlewares;
 

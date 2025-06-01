@@ -29,6 +29,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Refresh.Interfaces.Game", "
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Refresh.Interfaces.Workers", "Refresh.Interfaces.Workers\Refresh.Interfaces.Workers.csproj", "{0FD65A5F-F20F-4A30-B486-B21146686FA6}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Refresh.Interfaces.Internal", "Refresh.Interfaces.Internal\Refresh.Interfaces.Internal.csproj", "{14EF66DA-391A-40A1-80B3-03A2553C71C9}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -120,6 +122,14 @@ Global
 		{0FD65A5F-F20F-4A30-B486-B21146686FA6}.DebugLocalBunkum|Any CPU.Build.0 = Debug|Any CPU
 		{0FD65A5F-F20F-4A30-B486-B21146686FA6}.DebugPostgres|Any CPU.ActiveCfg = Debug|Any CPU
 		{0FD65A5F-F20F-4A30-B486-B21146686FA6}.DebugPostgres|Any CPU.Build.0 = Debug|Any CPU
+		{14EF66DA-391A-40A1-80B3-03A2553C71C9}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{14EF66DA-391A-40A1-80B3-03A2553C71C9}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{14EF66DA-391A-40A1-80B3-03A2553C71C9}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{14EF66DA-391A-40A1-80B3-03A2553C71C9}.Release|Any CPU.Build.0 = Release|Any CPU
+		{14EF66DA-391A-40A1-80B3-03A2553C71C9}.DebugLocalBunkum|Any CPU.ActiveCfg = Debug|Any CPU
+		{14EF66DA-391A-40A1-80B3-03A2553C71C9}.DebugLocalBunkum|Any CPU.Build.0 = Debug|Any CPU
+		{14EF66DA-391A-40A1-80B3-03A2553C71C9}.DebugPostgres|Any CPU.ActiveCfg = Debug|Any CPU
+		{14EF66DA-391A-40A1-80B3-03A2553C71C9}.DebugPostgres|Any CPU.Build.0 = Debug|Any CPU
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
 		{A3D76B31-8732-4134-907B-F36773DF70D3} = {AA547E95-555C-470E-995A-D66E56660542}

@@ -3,11 +3,11 @@ using Bunkum.Core.Endpoints;
 using Bunkum.Core.Responses;
 using Bunkum.Protocols.Http;
 using Refresh.Core;
-using Refresh.Database.Models.Authentication;
 using Refresh.Database;
+using Refresh.Database.Models.Authentication;
 using Refresh.Database.Models.Users;
 
-namespace Refresh.GameServer.Endpoints.Internal.Presence;
+namespace Refresh.Interfaces.Internal;
 
 public class PresenceEndpoints : EndpointGroup
 {
