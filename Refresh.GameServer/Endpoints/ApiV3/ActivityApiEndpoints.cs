@@ -12,6 +12,7 @@ using Refresh.Database.Models.Activity;
 using Refresh.GameServer.Types.Data;
 using Refresh.Database.Models.Users;
 using Refresh.Database.Models.Levels;
+using Refresh.GameServer.Configuration;
 
 namespace Refresh.GameServer.Endpoints.ApiV3;
 
@@ -23,9 +24,12 @@ public class ActivityApiEndpoints : EndpointGroup
     [DocUsesPageData, DocSummary("Fetch a list of recent happenings on the server.")]
     [DocQueryParam("timestamp", "A timestamp in unix seconds, used to search backwards.")]
     [DocError(typeof(ApiValidationError), ApiValidationError.NumberParseErrorWhen)]
-    public ApiResponse<ApiActivityPageResponse> GetRecentActivity(RequestContext context, GameDatabaseContext database,
+    public ApiResponse<ApiActivityPageResponse> GetRecentActivity(RequestContext context, GameServerConfig config, GameDatabaseContext database,
         IDataStore dataStore, DataContext dataContext)
     {
+        if (!config.PermitShowingOnlineUsers)
+            return ApiActivityPageResponse.Empty;
+
         long timestamp = 0;
 
         string? tsStr = context.QueryString["timestamp"];
@@ -33,12 +37,12 @@ public class ActivityApiEndpoints : EndpointGroup
         
         (int skip, int count) = context.GetPageData();
 
-        ActivityPage page = ActivityPage.GlobalActivity(database, new ActivityQueryParameters
+        DatabaseActivityPage page = database.GetGlobalRecentActivityPage(new ActivityQueryParameters
         {
             Timestamp = timestamp,
             Count = count,
             Skip = skip,
-        }, dataContext, false);
+        });
         return ApiActivityPageResponse.FromOld(page, dataContext);
     }
     
@@ -48,9 +52,12 @@ public class ActivityApiEndpoints : EndpointGroup
     [DocError(typeof(ApiValidationError), ApiValidationError.NumberParseErrorWhen)]
     [DocError(typeof(ApiNotFoundError), "The level could not be found")]
     public ApiResponse<ApiActivityPageResponse> GetRecentActivityForLevel(RequestContext context,
-        GameDatabaseContext database, IDataStore dataStore, GameUser? user,
+        GameServerConfig config, GameDatabaseContext database, IDataStore dataStore, GameUser? user,
         [DocSummary("The ID of the level")] int id, DataContext dataContext)
     {
+        if (!config.PermitShowingOnlineUsers)
+            return ApiActivityPageResponse.Empty;
+
         long timestamp = 0;
 
         string? tsStr = context.QueryString["timestamp"];
@@ -60,14 +67,14 @@ public class ActivityApiEndpoints : EndpointGroup
         if (level == null) return ApiNotFoundError.Instance;
         
         (int skip, int count) = context.GetPageData();
-        
-        ActivityPage page = ActivityPage.ApiForLevelActivity(database, level, new ActivityQueryParameters
+
+        DatabaseActivityPage page = database.GetRecentActivityForLevel(level, new ActivityQueryParameters
         {
             Timestamp = timestamp,
             Skip = skip,
             Count = count,
             User = user,
-        }, dataContext, false);
+        });
         return ApiActivityPageResponse.FromOld(page, dataContext);
     }
     
@@ -77,9 +84,12 @@ public class ActivityApiEndpoints : EndpointGroup
     [DocError(typeof(ApiValidationError), ApiValidationError.NumberParseErrorWhen)]
     [DocError(typeof(ApiNotFoundError), "The user could not be found")]
     public ApiResponse<ApiActivityPageResponse> GetRecentActivityForUserUuid(RequestContext context,
-        GameDatabaseContext database, IDataStore dataStore,
+        GameServerConfig config, GameDatabaseContext database, IDataStore dataStore,
         [DocSummary("The UUID of the user")] string uuid, DataContext dataContext)
     {
+        if (!config.PermitShowingOnlineUsers)
+            return ApiActivityPageResponse.Empty;
+
         long timestamp = 0;
 
         string? tsStr = context.QueryString["timestamp"];
@@ -89,14 +99,14 @@ public class ActivityApiEndpoints : EndpointGroup
         if (user == null) return ApiNotFoundError.Instance;
         
         (int skip, int count) = context.GetPageData();
-        
-        ActivityPage page = ActivityPage.ApiFromUserActivity(database, new ActivityQueryParameters
+
+        DatabaseActivityPage page = database.GetRecentActivityFromUser(new ActivityQueryParameters
         {
             Timestamp = timestamp,
             Skip = skip,
             Count = count,
             User = user,
-        }, dataContext, false);
+        });
         return ApiActivityPageResponse.FromOld(page, dataContext);
     }
     
@@ -106,9 +116,12 @@ public class ActivityApiEndpoints : EndpointGroup
     [DocError(typeof(ApiValidationError), ApiValidationError.NumberParseErrorWhen)]
     [DocError(typeof(ApiNotFoundError), "The user could not be found")]
     public ApiResponse<ApiActivityPageResponse> GetRecentActivityForUserUsername(RequestContext context,
-        GameDatabaseContext database, IDataStore dataStore,
+        GameServerConfig config, GameDatabaseContext database, IDataStore dataStore,
         [DocSummary("The username of the user")] string username, DataContext dataContext)
     {
+        if (!config.PermitShowingOnlineUsers)
+            return ApiActivityPageResponse.Empty;
+
         long timestamp = 0;
 
         string? tsStr = context.QueryString["timestamp"];
@@ -118,14 +131,14 @@ public class ActivityApiEndpoints : EndpointGroup
         if (user == null) return ApiNotFoundError.Instance;
         
         (int skip, int count) = context.GetPageData();
-        
-        ActivityPage page = ActivityPage.ApiFromUserActivity(database, new ActivityQueryParameters
+
+        DatabaseActivityPage page = database.GetRecentActivityFromUser(new ActivityQueryParameters
         {
             Timestamp = timestamp,
             Skip = skip,
             Count = count,
             User = user,
-        }, dataContext, false);
+        });
         return ApiActivityPageResponse.FromOld(page, dataContext);
     }
 }

@@ -9,11 +9,14 @@ using Refresh.Database.Query;
 using Refresh.Database.Models.Authentication;
 using Refresh.Database;
 using Refresh.GameServer.Time;
-using Refresh.Database.Models.Activity;
 using Refresh.GameServer.Types.Data;
 using Refresh.GameServer.Types.News;
 using Refresh.Database.Models.Users;
 using Refresh.Database.Models.Levels;
+using Refresh.GameServer.Configuration;
+using Refresh.GameServer.Types.Activity;
+using Refresh.GameServer.Types.Activity.Groups;
+using Refresh.GameServer.Types.Lists;
 
 namespace Refresh.GameServer.Endpoints.Game;
 
@@ -23,9 +26,12 @@ public class ActivityEndpoints : EndpointGroup
     [GameEndpoint("stream", ContentType.Xml, HttpMethods.Post)]
     [NullStatusCode(BadRequest)]
     [MinimumRole(GameUserRole.Restricted)]
-    public ActivityPage? GetRecentActivity(RequestContext context, GameDatabaseContext database, GameUser? user,
+    public SerializedActivityPage? GetRecentActivity(RequestContext context, GameServerConfig config, GameDatabaseContext database, GameUser? user,
         DataContext dataContext)
     {
+        if (!config.PermitShowingOnlineUsers)
+            return null;
+        
         long timestamp = 0;
         long endTimestamp = 0;
 
@@ -41,7 +47,7 @@ public class ActivityEndpoints : EndpointGroup
 
         if (endTimestamp == 0) endTimestamp = timestamp - 86400000 * 7; // 1 week
 
-        return ActivityPage.GameUserActivity(database, new ActivityQueryParameters
+        return SerializedActivityPage.FromOld(database.GetUserRecentActivity(new ActivityQueryParameters
         {
             Timestamp = timestamp,
             EndTimestamp = endTimestamp,
@@ -50,15 +56,18 @@ public class ActivityEndpoints : EndpointGroup
             ExcludeFavouriteUsers = excludeFavouriteUsers,
             ExcludeMyself = excludeMyself,
             User = user,
-        }, dataContext);
+        }), dataContext);
     }
 
     [GameEndpoint("stream/slot/{type}/{id}", ContentType.Xml)]
     [NullStatusCode(BadRequest)]
     [MinimumRole(GameUserRole.Restricted)]
-    public Response GetRecentActivityForLevel(RequestContext context, GameDatabaseContext database, GameUser? user,
+    public Response GetRecentActivityForLevel(RequestContext context, GameServerConfig config, GameDatabaseContext database, GameUser? user,
         string type, int id, DataContext dataContext)
     {
+        if (!config.PermitShowingOnlineUsers)
+            return Unauthorized;
+        
         GameLevel? level = type == "developer" ? database.GetStoryLevelById(id) : database.GetLevelById(id);
         if (level == null) return NotFound;
         
@@ -76,7 +85,7 @@ public class ActivityEndpoints : EndpointGroup
 
         if (endTimestamp == 0) endTimestamp = timestamp - 86400000 * 7; // 1 week
 
-        ActivityPage page = ActivityPage.GameForLevelActivity(database, level, new ActivityQueryParameters
+        SerializedActivityPage? page = SerializedActivityPage.FromOld(database.GetRecentActivityForLevel(level, new ActivityQueryParameters
         {
             Count = 20,
             Skip = 0,
@@ -86,7 +95,7 @@ public class ActivityEndpoints : EndpointGroup
             ExcludeFavouriteUsers = excludeFavouriteUsers,
             ExcludeMyself = excludeMyself,
             User = user,
-        }, dataContext);
+        }), dataContext);
         
         return new Response(page, ContentType.Xml);
     }
@@ -94,14 +103,24 @@ public class ActivityEndpoints : EndpointGroup
     [GameEndpoint("stream/user2/{username}", ContentType.Xml)]
     [NullStatusCode(BadRequest)]
     [MinimumRole(GameUserRole.Restricted)]
-    public Response GetRecentActivityFromUser(RequestContext context, GameDatabaseContext database, string username,
+    public Response GetRecentActivityFromUser(RequestContext context, GameServerConfig config, GameDatabaseContext database, string username,
         DataContext dataContext)
     {
+        if (!config.PermitShowingOnlineUsers)
+            return Unauthorized;
+
         GameUser? user = database.GetUserByUsername(username);
         if (user == null) return NotFound;
 
         if (user.FakeUser)
-            return new Response(new ActivityPage());
+            return new Response(new SerializedActivityPage
+            {
+                StartTimestamp = 0,
+                EndTimestamp = 0,
+                Groups = new SerializedActivityGroups(),
+                Users = new SerializedUserList(),
+                Levels = new SerializedLevelList(),
+            });
         
         long timestamp = 0;
         long endTimestamp = 0;
@@ -118,7 +137,7 @@ public class ActivityEndpoints : EndpointGroup
 
         if (endTimestamp == 0) endTimestamp = timestamp - 86400000 * 7; // 1 week
 
-        return new Response(ActivityPage.GameFromUserActivity(database, new ActivityQueryParameters
+        return new Response(SerializedActivityPage.FromOld(database.GetRecentActivityFromUser(new ActivityQueryParameters
         {
             Timestamp = timestamp,
             EndTimestamp = endTimestamp,
@@ -127,7 +146,7 @@ public class ActivityEndpoints : EndpointGroup
             ExcludeFavouriteUsers = excludeFavouriteUsers,
             ExcludeMyself = excludeMyself,
             User = user,
-        }, dataContext), ContentType.Xml);
+        }), dataContext), ContentType.Xml);
     }
     
     [GameEndpoint("news", ContentType.Xml)]

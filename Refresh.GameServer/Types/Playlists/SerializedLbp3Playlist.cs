@@ -7,11 +7,17 @@ using Refresh.GameServer.Types.Data;
 
 namespace Refresh.GameServer.Types.Playlists;
 
+// Disable false nullability warnings caused by Realm's source generators.
+#if !POSTGRES
+#pragma warning disable CS8766 // Nullability of reference types in return type doesn't match implicitly implemented member (possibly because of nullability attributes).
+#endif
+
 [XmlRoot("playlist")]
 [XmlType("playlist")]
 public class SerializedLbp3Playlist : IDataConvertableFrom<SerializedLbp3Playlist, Database.Models.Playlists.GamePlaylist>, ISerializedCreatePlaylistInfo
 {
     [XmlElement("id")] public int Id { get; set; }
+
     [XmlElement("name")] public string? Name { get; set; }
     [XmlElement("description")] public string? Description { get; set; }
 

@@ -10,36 +10,13 @@ namespace Refresh.Database;
 
 public partial class GameDatabaseContext // Activity
 {
-    [Pure]
-    public DatabaseList<Event> GetUserRecentActivity(ActivityQueryParameters parameters)
-    {
-        IEnumerable<Event> query = this.GetRecentActivity(parameters);
-
-        if (parameters.User != null)
-        {
-            List<ObjectId?> favouriteUsers = this.GetUsersFavouritedByUser(parameters.User, 1000, 0).Select(f => (ObjectId?)f.UserId).ToList();
-            List<ObjectId?> userFriends = this.GetUsersMutuals(parameters.User).Select(u => (ObjectId?)u.UserId).ToList();
-
-            query = query.Where(e =>
-                e.User.UserId == parameters.User.UserId ||
-                e.StoredObjectId == parameters.User.UserId ||
-                favouriteUsers.Contains(e.User.UserId) ||
-                favouriteUsers.Contains(e.StoredObjectId) ||
-                userFriends.Contains(e.User.UserId) ||
-                userFriends.Contains(e.StoredObjectId) ||
-                this.GetLevelById(e.StoredSequentialId ?? int.MaxValue)?.Publisher?.UserId == parameters.User.UserId ||
-                e.EventType == EventType.LevelTeamPick ||
-                e.EventType == EventType.UserFirstLogin
-            );
-        }
-        
-        return new DatabaseList<Event>(query.OrderByDescending(e => e.Timestamp), parameters.Skip, parameters.Count);
-    }
-
-    private IEnumerable<Event> GetRecentActivity(ActivityQueryParameters parameters)
+    private IEnumerable<Event> GetEvents(ActivityQueryParameters parameters)
     {
         if (parameters.Timestamp == 0) 
             parameters.Timestamp = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
+
+        if (parameters.EndTimestamp == 0)
+            parameters.EndTimestamp = DateTimeOffset.UtcNow.Subtract(TimeSpan.FromDays(30.5 * 6)).ToUnixTimeMilliseconds();
 
         DateTimeOffset timestamp = DateTimeOffset.FromUnixTimeMilliseconds(parameters.Timestamp);
         DateTimeOffset endTimestamp = DateTimeOffset.FromUnixTimeMilliseconds(parameters.EndTimestamp);
@@ -77,31 +54,86 @@ public partial class GameDatabaseContext // Activity
 
         return query;
     }
+
+    private DatabaseActivityPage GetRecentActivity(IEnumerable<Event> eventQuery, ActivityQueryParameters parameters)
+    {
+        if (parameters.Timestamp == 0) 
+            parameters.Timestamp = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
+        
+        List<Event> events = eventQuery
+            .OrderByDescending(e => e.Timestamp)
+            .Skip(parameters.Skip)
+            .Take(parameters.Count)
+            .ToList();
+
+        DatabaseActivityPage page = new(this, events, parameters);
+
+        return page;
+    }
     
     [Pure]
     public DatabaseList<Event> GetGlobalRecentActivity(ActivityQueryParameters parameters)
     {
-        return new DatabaseList<Event>(this.GetRecentActivity(parameters).OrderByDescending(e => e.Timestamp), parameters.Skip, parameters.Count);
+        return new DatabaseList<Event>(this.GetEvents(parameters).OrderByDescending(e => e.Timestamp), parameters.Skip, parameters.Count);
     }
 
     [Pure]
-    public DatabaseList<Event> GetRecentActivityForLevel(
+    public DatabaseActivityPage GetGlobalRecentActivityPage(ActivityQueryParameters parameters)
+    {
+        return this.GetRecentActivity(this.GetEvents(parameters), parameters);
+    }
+    
+    [Pure]
+    public DatabaseActivityPage GetUserRecentActivity(ActivityQueryParameters parameters)
+    {
+        IEnumerable<Event> query = this.GetEvents(parameters);
+
+        if (parameters.User != null)
+        {
+            List<ObjectId?> favouriteUsers = this.GetUsersFavouritedByUser(parameters.User, 1000, 0).Select(f => (ObjectId?)f.UserId).ToList();
+            List<ObjectId?> userFriends = this.GetUsersMutuals(parameters.User).Select(u => (ObjectId?)u.UserId).ToList();
+
+            query = query.Where(e =>
+                e.User?.UserId == parameters.User.UserId ||
+                e.StoredObjectId == parameters.User.UserId ||
+                favouriteUsers.Contains(e.User?.UserId) ||
+                favouriteUsers.Contains(e.StoredObjectId) ||
+                userFriends.Contains(e.User?.UserId) ||
+                userFriends.Contains(e.StoredObjectId) ||
+                this.GetLevelById(e.StoredSequentialId ?? int.MaxValue)?.Publisher?.UserId == parameters.User.UserId ||
+                e.EventType == EventType.LevelTeamPick ||
+                e.EventType == EventType.UserFirstLogin
+            );
+        }
+
+        query = query.OrderByDescending(e => e.Timestamp);
+
+        return GetRecentActivity(query, parameters);
+    }
+
+    [Pure]
+    public DatabaseActivityPage GetRecentActivityForLevel(
         GameLevel level, 
         ActivityQueryParameters parameters
     )
     {
-        return new DatabaseList<Event>(this.GetRecentActivity(parameters)
-            .Where(e => e._StoredDataType == 1 && e.StoredSequentialId == level.LevelId)
-            .OrderByDescending(e => e.Timestamp), parameters.Skip, parameters.Count);
+        IEnumerable<Event> events = this.GetEvents(parameters)
+            .Where(e => e._StoredDataType == (int)EventDataType.Level && e.StoredSequentialId == level.LevelId)
+            .OrderByDescending(e => e.Timestamp);
+
+        return GetRecentActivity(events, parameters);
     }
     
     [Pure]
-    public DatabaseList<Event> GetRecentActivityFromUser(ActivityQueryParameters parameters)
+    public DatabaseActivityPage GetRecentActivityFromUser(ActivityQueryParameters parameters)
     {
         Debug.Assert(parameters.User != null);
-        return new DatabaseList<Event>(this.GetRecentActivity(parameters)
+
+        IEnumerable<Event> events = this.GetEvents(parameters)
             .Where(e => e.User?.UserId == parameters.User.UserId)
-            .OrderByDescending(e => e.Timestamp), parameters.Skip, parameters.Count);
+            .OrderByDescending(e => e.Timestamp);
+        
+        return GetRecentActivity(events, parameters);
     }
 
     public int GetTotalEventCount() => this.Events.Count();

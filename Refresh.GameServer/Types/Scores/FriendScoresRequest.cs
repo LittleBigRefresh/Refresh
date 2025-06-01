@@ -2,6 +2,8 @@ using System.Xml.Serialization;
 
 namespace Refresh.GameServer.Types.Scores;
 
+#nullable disable
+
 [XmlRoot("playRecord")]
 public class FriendScoresRequest
 {

@@ -2,6 +2,8 @@ using System.Xml.Serialization;
 
 namespace Refresh.GameServer.Types.Challenges.Lbp3;
 
+#nullable disable
+
 [XmlRoot("Challenge_header")]
 public class SerializedLbp3ChallengeList
 {

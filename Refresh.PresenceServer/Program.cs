@@ -11,7 +11,7 @@ namespace Refresh.PresenceServer;
 
 internal class Program
 {
-    public static Server.PresenceServer PresenceServer;
+    public static Server.PresenceServer PresenceServer = null!;
     
     public static async Task Main()
     {

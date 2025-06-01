@@ -2,6 +2,8 @@ using Refresh.Database.Models.Playlists;
 
 namespace Refresh.Database.Models.Relations;
 
+#nullable disable
+
 /// <summary>
 /// A mapping of playlist -> sub-playlist
 /// </summary>

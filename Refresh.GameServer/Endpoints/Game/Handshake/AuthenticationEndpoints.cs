@@ -33,6 +33,11 @@ public class AuthenticationEndpoints : EndpointGroup
         SmtpService smtpService,
         IDateTimeProvider timeProvider)
     {
+        if (!config.PermitAllLogins)
+        {
+            return null;
+        }
+        
         Ticket ticket;
         try
         {
@@ -106,6 +111,24 @@ public class AuthenticationEndpoints : EndpointGroup
                                                                      $"IssuerID: {ticket.IssuerId}, SignatureIdentifier: {ticket.SignatureIdentifier}");
             return null;
         }
+        
+        if (platform is TokenPlatform.PS3 or TokenPlatform.PSP or TokenPlatform.Vita && !config.PermitPsnLogin)
+        {
+            context.Logger.LogWarning(BunkumCategory.Authentication, $"Rejecting {user}'s login because PSN login is forbidden");
+            return null;
+        }
+
+        if (platform is TokenPlatform.RPCS3 && !config.PermitRpcnLogin)
+        {
+            context.Logger.LogWarning(BunkumCategory.Authentication, $"Rejecting {user}'s login because RPCN login is forbidden");
+            return null;
+        }
+
+        if (platform is TokenPlatform.Website)
+        {
+            context.Logger.LogWarning(BunkumCategory.Authentication, $"Rejecting {user}'s login because a web token was used");
+            return null;
+        }
 
         bool ticketVerified = false;
         if (config.UseTicketVerification)
@@ -113,7 +136,7 @@ public class AuthenticationEndpoints : EndpointGroup
             if ((platform is TokenPlatform.PS3 or TokenPlatform.Vita or TokenPlatform.PSP && !user.PsnAuthenticationAllowed) ||
                 (platform is TokenPlatform.RPCS3 && !user.RpcnAuthenticationAllowed))
             {
-                context.Logger.LogWarning(BunkumCategory.Authentication, $"Rejecting {user}'s login because their platform ({platform}) is not allowed");
+                context.Logger.LogWarning(BunkumCategory.Authentication, $"Rejecting {user}'s login because their platform ({platform}) is not allowed in user settings");
                 SendPlatformNotAllowedNotification(database, user, platform.Value);
                 return null;
             }
@@ -152,6 +175,19 @@ public class AuthenticationEndpoints : EndpointGroup
 
         if (game == TokenGame.LittleBigPlanetVita && platform == TokenPlatform.PS3) platform = TokenPlatform.Vita;
         else if (game == TokenGame.LittleBigPlanetPSP && platform == TokenPlatform.PS3) platform = TokenPlatform.PSP;
+        
+        // Check if client-side security patches are present.
+        // PSP is invulnerable to most exploits as it does not support multiplayer nor scripting.
+        if (game != TokenGame.LittleBigPlanetPSP && !context.IsPatchworkVersionValid(config.RequiredPatchworkMajorVersion, config.RequiredPatchworkMinorVersion))
+        {
+            database.AddLoginFailNotification("The server detected you are not using the latest version of Patchwork. Please update or install it.", user);
+            context.Logger.LogWarning(BunkumCategory.Authentication, $"{ticket.Username}'s Patchwork version is invalid: {context.RequestHeaders["User-Agent"]}");
+            return null;
+        }
+        
+        // !!
+        // Past this point, login is considered to be complete.
+        // !!
 
         Token token = database.GenerateTokenForUser(user, TokenType.Game, game.Value, platform.Value, ipAddress, GameDatabaseContext.GameTokenExpirySeconds); // 4 hours
 

@@ -2,6 +2,8 @@ using Refresh.Database.Models.Users;
 
 namespace Refresh.Database.Models.Comments;
 
+#nullable disable
+
 public partial class GameProfileComment : IRealmObject, IGameComment, ISequentialId
 {
     [PrimaryKey] public int SequentialId { get; set; }

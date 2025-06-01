@@ -1,9 +1,9 @@
 using System.Xml.Serialization;
 using Refresh.GameServer.Types.Levels;
 
-namespace Refresh.Database.Models.Activity.Groups;
+namespace Refresh.GameServer.Types.Activity.Groups;
 
-public class LevelActivityGroup : ActivityGroup
+public class LevelSerializedActivityGroup : SerializedActivityGroup
 {
     [XmlAttribute("type")]
     public override string Type { get; set; } = "level";

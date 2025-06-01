@@ -410,7 +410,7 @@ public enum GameAssetType
 
 public static class GameAssetTypeExtensions
 {
-    private static readonly Dictionary<int, GameAssetType> _lbpMagics = new()
+    private static readonly Dictionary<int, GameAssetType> LbpMagics = new()
     {
         { BinaryPrimitives.ReadInt32BigEndian("TEX\0"u8), GameAssetType.Texture },
         { BinaryPrimitives.ReadInt32BigEndian("GTF\0"u8), GameAssetType.GameDataTexture },
@@ -477,13 +477,13 @@ public static class GameAssetTypeExtensions
     {
         int magicInt = magic[0] << 24 | magic[1] << 16 | magic[2] << 8;
         
-        if (!_lbpMagics.TryGetValue(magicInt, out GameAssetType assetType))
+        if (!LbpMagics.TryGetValue(magicInt, out GameAssetType assetType))
             return null;
         
         return assetType;
     }
     
-    public static string Magic(this GameAssetType type)
+    public static string? LbpMagic(this GameAssetType type)
     {
         return type switch
         {
@@ -546,6 +546,9 @@ public static class GameAssetTypeExtensions
             GameAssetType.CachedCostumeData => "CCD",
             GameAssetType.DataLabels => "DLA",
             GameAssetType.AdventureMaps => "ADM",
+            GameAssetType.GriefSongState => "MATT",
+            GameAssetType.ChallengeGhost => "<ghost>",
+            _ => null,
         };
     }
 }
