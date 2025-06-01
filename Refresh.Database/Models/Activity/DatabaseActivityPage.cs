@@ -3,17 +3,24 @@ using Refresh.Database.Models.Levels;
 using Refresh.Database.Models.Levels.Scores;
 using Refresh.Database.Models.Photos;
 using Refresh.Database.Models.Users;
+using Refresh.Database.Query;
 
 namespace Refresh.Database.Models.Activity;
 
 public class DatabaseActivityPage
 {
-    internal DatabaseActivityPage(GameDatabaseContext database, IReadOnlyCollection<Event> events)
+    internal DatabaseActivityPage(GameDatabaseContext database, IReadOnlyCollection<Event> events, ActivityQueryParameters parameters)
     {
         this.StoreReferencedObjects(database, events);
         this.GenerateGroups(events);
         
         this.Cleanup();
+
+        if (this.EventGroups.Count > 0)
+        {
+            this.Start = DateTimeOffset.FromUnixTimeMilliseconds(parameters.Timestamp);
+            this.End = DateTimeOffset.FromUnixTimeMilliseconds(parameters.EndTimestamp);
+        }
     }
     
     public DateTimeOffset Start;

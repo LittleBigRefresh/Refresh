@@ -63,7 +63,7 @@ public partial class GameDatabaseContext // Activity
             .Take(parameters.Count)
             .ToList();
 
-        DatabaseActivityPage page = new(this, events);
+        DatabaseActivityPage page = new(this, events, parameters);
 
         return page;
     }
