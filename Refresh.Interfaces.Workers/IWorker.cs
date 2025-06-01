@@ -1,6 +1,6 @@
 using Refresh.Core.Types.Data;
 
-namespace Refresh.GameServer.Workers;
+namespace Refresh.Interfaces.Workers;
 
 public interface IWorker
 {

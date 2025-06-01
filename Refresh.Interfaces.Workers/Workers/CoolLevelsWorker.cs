@@ -15,7 +15,7 @@ using Refresh.Database.Models.Comments;
 using Refresh.Database.Models.Levels;
 using Refresh.Database.Models.Users;
 
-namespace Refresh.GameServer.Workers;
+namespace Refresh.Interfaces.Workers.Workers;
 
 public class CoolLevelsWorker : IWorker
 {

@@ -1,7 +1,7 @@
 using Refresh.Core.Types.Data;
-using TrackingService = Refresh.GameServer.Services.RequestStatisticTrackingService;
+using TrackingService = Refresh.Interfaces.Workers.RequestTracking.RequestStatisticTrackingService;
 
-namespace Refresh.GameServer.Workers;
+namespace Refresh.Interfaces.Workers.RequestTracking;
 
 public class RequestStatisticSubmitWorker : IWorker
 {

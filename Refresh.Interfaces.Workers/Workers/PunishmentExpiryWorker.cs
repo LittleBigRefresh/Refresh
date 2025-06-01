@@ -3,7 +3,7 @@ using Refresh.Core.Types.Data;
 using Refresh.Database;
 using Refresh.Database.Models.Users;
 
-namespace Refresh.GameServer.Workers;
+namespace Refresh.Interfaces.Workers.Workers;
 
 /// <summary>
 /// A worker that checks all users for bans/restrictions, then removes them if expired.

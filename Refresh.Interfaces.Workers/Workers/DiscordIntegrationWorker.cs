@@ -3,14 +3,14 @@ using Discord.Webhook;
 using Refresh.Core;
 using Refresh.Core.Configuration;
 using Refresh.Core.Types.Data;
-using Refresh.Database.Query;
 using Refresh.Database;
 using Refresh.Database.Models.Activity;
+using Refresh.Database.Query;
 using Refresh.Interfaces.APIv3.Endpoints.DataTypes.Response.Levels;
 using Refresh.Interfaces.APIv3.Endpoints.DataTypes.Response.Users;
 using Refresh.Interfaces.APIv3.Endpoints.DataTypes.Response.Users.Photos;
 
-namespace Refresh.GameServer.Workers;
+namespace Refresh.Interfaces.Workers.Workers;
 
 public class DiscordIntegrationWorker : IWorker
 {

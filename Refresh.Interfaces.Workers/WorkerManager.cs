@@ -5,7 +5,7 @@ using Refresh.Core.Services;
 using Refresh.Core.Types.Data;
 using Refresh.Database;
 
-namespace Refresh.GameServer.Workers;
+namespace Refresh.Interfaces.Workers;
 
 public class WorkerManager
 {

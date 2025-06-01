@@ -3,7 +3,7 @@ using Refresh.Core.Types.Data;
 using Refresh.Database.Models.Authentication;
 using Refresh.Database.Models.Users;
 
-namespace Refresh.GameServer.Workers;
+namespace Refresh.Interfaces.Workers.Workers;
 
 public class ExpiredObjectWorker : IWorker
 {

@@ -66,5 +66,6 @@
         <ProjectReference Include="..\Refresh.Database\Refresh.Database.csproj" />
         <ProjectReference Include="..\Refresh.Interfaces.APIv3\Refresh.Interfaces.APIv3.csproj" />
         <ProjectReference Include="..\Refresh.Interfaces.Game\Refresh.Interfaces.Game.csproj" />
+        <ProjectReference Include="..\Refresh.Interfaces.Workers\Refresh.Interfaces.Workers.csproj" />
     </ItemGroup>
 </Project>

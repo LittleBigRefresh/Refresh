@@ -1,12 +1,11 @@
 using System.Reflection;
-using Bunkum.Listener.Request;
 using Bunkum.Core.Database;
 using Bunkum.Core.Responses;
 using Bunkum.Core.Services;
+using Bunkum.Listener.Request;
 using NotEnoughLogs;
-using Refresh.Interfaces.Game;
 
-namespace Refresh.GameServer.Services;
+namespace Refresh.Interfaces.Workers.RequestTracking;
 
 public class RequestStatisticTrackingService : Service
 {
@@ -24,7 +23,7 @@ public class RequestStatisticTrackingService : Service
 
     public override Response? OnRequestHandled(ListenerContext context, MethodInfo method, Lazy<IDatabaseContext> database)
     {
-        if (context.Uri.AbsolutePath.StartsWith(GameEndpointAttribute.BaseRoute))
+        if (context.Uri.AbsolutePath.StartsWith("/lbp/" /* GameEndpointAttribute.BaseRoute */))
             Interlocked.Increment(ref _gameRequestsToSubmit);
         else
             Interlocked.Increment(ref _apiRequestsToSubmit);

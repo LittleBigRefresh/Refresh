@@ -1,6 +1,6 @@
 using NotEnoughLogs;
 using Refresh.Database.Models.Users;
-using Refresh.GameServer.Workers;
+using Refresh.Interfaces.Workers.Workers;
 using RefreshTests.GameServer.Logging;
 using static Refresh.Database.Models.Users.GameUserRole;
 
