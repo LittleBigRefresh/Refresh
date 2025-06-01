@@ -1,6 +1,7 @@
 using System.Xml.Serialization;
+using Refresh.Database.Models.Levels.Scores;
 
-namespace Refresh.Database.Models.Activity.SerializedEvents;
+namespace Refresh.GameServer.Types.Activity.SerializedEvents;
 
 public class SerializedScoreSubmitEvent : SerializedLevelEvent
 {
@@ -9,4 +10,15 @@ public class SerializedScoreSubmitEvent : SerializedLevelEvent
     
     [XmlElement("count")]
     public int ScoreType { get; set; }
+    
+    public static SerializedScoreSubmitEvent FromSerializedLevelEvent(SerializedLevelEvent e, GameSubmittedScore score) => new()
+    {
+        Actor = e.Actor,
+        LevelId = e.LevelId,
+        Timestamp = e.Timestamp,
+        Type = e.Type,
+        
+        Score = score.Score,
+        ScoreType = score.ScoreType,
+    };
 }

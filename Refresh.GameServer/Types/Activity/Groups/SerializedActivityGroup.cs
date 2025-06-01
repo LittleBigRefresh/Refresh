@@ -1,8 +1,8 @@
 using System.Xml.Serialization;
 using Refresh.Database.Models.Activity;
-using Refresh.Database.Models.Activity.SerializedEvents;
 using Refresh.Database.Models.Levels;
 using Refresh.GameServer.Endpoints.ApiV3.DataTypes;
+using Refresh.GameServer.Types.Activity.SerializedEvents;
 using Refresh.GameServer.Types.Data;
 using Refresh.GameServer.Types.Levels;
 
