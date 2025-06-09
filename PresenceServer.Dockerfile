@@ -36,7 +36,7 @@ COPY --from=build /build/scripts/docker-entrypoint.sh /refresh
 RUN chown -R refresh:refresh /refresh && \
 chmod +x /refresh/docker-entrypoint.sh 
 
-ENV PRIV_CMD su-exec
-ENV PRIV_USER refresh:refresh
+ENV PRIV_CMD=su-exec
+ENV PRIV_USER=refresh:refresh
 
 ENTRYPOINT ["/refresh/docker-entrypoint.sh", "PresenceServer"]

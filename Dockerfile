@@ -38,7 +38,7 @@ COPY --from=build /build/scripts/docker-entrypoint.sh /refresh
 RUN chown -R refresh:refresh /refresh && \
 chmod +x /refresh/docker-entrypoint.sh 
 
-ENV PRIV_CMD gosu
-ENV PRIV_USER refresh
+ENV PRIV_CMD=gosu
+ENV PRIV_USER=refresh
 
 ENTRYPOINT ["/refresh/docker-entrypoint.sh", "GameServer"]
