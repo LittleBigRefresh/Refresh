@@ -383,6 +383,14 @@ public partial class GameDatabaseContext // Users
             user.ShowModdedContent = value;
         });
     }
+    
+    public void SetShowReuploadedContent(GameUser user, bool value)
+    {
+        this.Write(() =>
+        {
+            user.ShowReuploadedContent = value;
+        });
+    }
 
     public void ClearForceMatch(GameUser user)
     {

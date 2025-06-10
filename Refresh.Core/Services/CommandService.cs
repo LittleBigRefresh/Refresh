@@ -125,6 +125,16 @@ public class CommandService : EndpointService
                 database.SetShowModdedContent(user, false);
                 break;
             }
+            case "showreupload":
+            {
+                database.SetShowReuploadedContent(user, true);
+                break;
+            }
+            case "hidereupload":
+            {
+                database.SetShowReuploadedContent(user, false);
+                break;
+            }
             case "play":
             {
                 if (CommonPatterns.Sha1Regex().IsMatch(command.Arguments))
