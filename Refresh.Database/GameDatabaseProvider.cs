@@ -47,7 +47,7 @@ public class GameDatabaseProvider :
     #endif
 
     #if !POSTGRES
-    protected override ulong SchemaVersion => 168;
+    protected override ulong SchemaVersion => 169;
 
     protected override string Filename => "refreshGameServer.realm";
     
@@ -135,7 +135,7 @@ public class GameDatabaseProvider :
     {
         IQueryable<dynamic>? oldUsers = migration.OldRealm.DynamicApi.All("GameUser");
         IQueryable<GameUser>? newUsers = migration.NewRealm.All<GameUser>();
-        if (oldVersion < 165)
+        if (oldVersion < 169)
             for (int i = 0; i < newUsers.Count(); i++)
             {
                 dynamic oldUser = oldUsers.ElementAt(i);
@@ -341,7 +341,7 @@ public class GameDatabaseProvider :
                     }
                 }
                 
-                if (oldVersion < 168)
+                if (oldVersion < 169)
                     newUser.ShowReuploadedContent = true;
             }
 
