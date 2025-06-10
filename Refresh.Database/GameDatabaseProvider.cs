@@ -47,7 +47,7 @@ public class GameDatabaseProvider :
     #endif
 
     #if !POSTGRES
-    protected override ulong SchemaVersion => 167;
+    protected override ulong SchemaVersion => 168;
 
     protected override string Filename => "refreshGameServer.realm";
     
@@ -340,6 +340,9 @@ public class GameDatabaseProvider :
                         }
                     }
                 }
+                
+                if (oldVersion < 168)
+                    newUser.ShowReuploadedContent = true;
             }
 
         IQueryable<dynamic>? oldLevels = migration.OldRealm.DynamicApi.All("GameLevel");

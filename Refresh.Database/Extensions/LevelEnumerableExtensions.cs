@@ -41,6 +41,9 @@ public static class LevelEnumerableExtensions
         // If the user has it disabled globally and the filter doesnt enable it, or the filter disables it, disable modded content from being shown
         if ((user is { ShowModdedContent: false } && levelFilterSettings.ShowModdedLevels != true) || levelFilterSettings.ShowModdedLevels == false)
             levels = levels.Where(l => !l.IsModded);
+        
+        if ((user is { ShowReuploadedContent: false } && levelFilterSettings.ShowReuploadedLevels != true) || levelFilterSettings.ShowReuploadedLevels == false)
+            levels = levels.Where(l => !l.IsReUpload);
 
         // Don't allow beta builds to use this filtering option
         // If the client specifies this option then it will filter out *all* levels.
@@ -89,6 +92,9 @@ public static class LevelEnumerableExtensions
         if ((user is { ShowModdedContent: false } && levelFilterSettings.ShowModdedLevels != true) || levelFilterSettings.ShowModdedLevels == false)
             levels = levels.Where(l => !l.IsModded);
         
+        if ((user is { ShowReuploadedContent: false } && levelFilterSettings.ShowReuploadedLevels != true) || levelFilterSettings.ShowReuploadedLevels == false)
+            levels = levels.Where(l => !l.IsReUpload);
+
         // Don't allow beta builds to use this filtering option
         // If the client specifies this option then it will filter out *all* levels.
         if (levelFilterSettings.GameVersion != TokenGame.BetaBuild)
@@ -122,7 +128,7 @@ public static class LevelEnumerableExtensions
         // };
         
         // Filter out sub levels that weren't published by self
-        levels = levels.Where(l => !l.IsSubLevel || l.Publisher?.UserId ==  user?.UserId);
+        levels = levels.Where(l => !l.IsSubLevel || l.Publisher == user);
 
         return levels;
     }

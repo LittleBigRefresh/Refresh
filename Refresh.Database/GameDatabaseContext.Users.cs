@@ -204,6 +204,9 @@ public partial class GameDatabaseContext // Users
 
             if (data.ShowModdedContent != null)
                 user.ShowModdedContent = data.ShowModdedContent.Value;
+            
+            if (data.ShowReuploadedContent != null)
+                user.ShowReuploadedContent = data.ShowReuploadedContent.Value;
         });
     }
 

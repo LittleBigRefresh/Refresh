@@ -58,9 +58,14 @@ public class LevelFilterSettings
     public TokenGame GameVersion;
 
     /// <summary>
-    /// Whether or not to force showing/hiding modded content.
+    /// Whether to force showing/hiding modded content.
     /// </summary>
     public bool? ShowModdedLevels;
+    
+    /// <summary>
+    /// Whether to force showing/hiding reuploaded content.
+    /// </summary>
+    public bool? ShowReuploadedLevels;
     
     /// <summary>
     /// The seed used for lucky dip/random levels.
