@@ -188,5 +188,15 @@ public class LevelFilterSettings
 
             this.ShowModdedLevels = showModdedLevels;
         }
+        
+        string? reuploadedFilter = context.QueryString.Get("includeReuploaded");
+
+        if (reuploadedFilter != null)
+        {
+            if (!bool.TryParse(moddedFilter, out bool showReuploadedLevels))
+                throw new FormatException("Could not parse reuploaded filter setting because the boolean was invalid.");
+
+            this.ShowModdedLevels = showReuploadedLevels;
+        }
     }
 }
