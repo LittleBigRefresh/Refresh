@@ -36,6 +36,7 @@ public class ApiExtendedGameUserResponse : IApiResponse, IDataConvertableFrom<Ap
     public required bool AllowIpAuthentication { get; set; }
     
     public required bool ShowModdedContent { get; set; }
+    public required bool ShowReuploadedContent { get; set; }
     
     public required Visibility LevelVisibility { get; set; }
     public required Visibility ProfileVisibility { get; set; }
@@ -76,6 +77,7 @@ public class ApiExtendedGameUserResponse : IApiResponse, IDataConvertableFrom<Ap
             LevelVisibility = user.LevelVisibility,
             ProfileVisibility = user.ProfileVisibility,
             ShowModdedContent = user.ShowModdedContent,
+            ShowReuploadedContent = user.ShowReuploadedContent,
             ConnectedToPresenceServer = user.PresenceServerAuthToken != null,
         };
     }

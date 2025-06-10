@@ -12,6 +12,7 @@ public interface IApiEditUserRequest
     bool? UnescapeXmlSequences { get; set; }
     string? EmailAddress { get; set; }
     bool? ShowModdedContent { get; set; }
+    bool? ShowReuploadedContent { get; set; }
     Visibility? LevelVisibility { get; set; }
     Visibility? ProfileVisibility { get; set; }
 }

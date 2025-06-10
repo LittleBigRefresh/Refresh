@@ -204,6 +204,9 @@ public partial class GameDatabaseContext // Users
 
             if (data.ShowModdedContent != null)
                 user.ShowModdedContent = data.ShowModdedContent.Value;
+            
+            if (data.ShowReuploadedContent != null)
+                user.ShowReuploadedContent = data.ShowReuploadedContent.Value;
         });
     }
 
@@ -378,6 +381,14 @@ public partial class GameDatabaseContext // Users
         this.Write(() =>
         {
             user.ShowModdedContent = value;
+        });
+    }
+    
+    public void SetShowReuploadedContent(GameUser user, bool value)
+    {
+        this.Write(() =>
+        {
+            user.ShowReuploadedContent = value;
         });
     }
 

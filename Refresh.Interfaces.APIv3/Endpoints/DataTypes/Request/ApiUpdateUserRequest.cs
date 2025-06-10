@@ -18,7 +18,8 @@ public class ApiUpdateUserRequest : IApiEditUserRequest
     public string? EmailAddress { get; set; }
     
     public bool? ShowModdedContent { get; set; }
-    
+    public bool? ShowReuploadedContent { get; set; }
+
     public Visibility? LevelVisibility { get; set; }
     public Visibility? ProfileVisibility { get; set; }
 }

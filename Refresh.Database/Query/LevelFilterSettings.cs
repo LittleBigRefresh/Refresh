@@ -58,9 +58,14 @@ public class LevelFilterSettings
     public TokenGame GameVersion;
 
     /// <summary>
-    /// Whether or not to force showing/hiding modded content.
+    /// Whether to force showing/hiding modded content.
     /// </summary>
     public bool? ShowModdedLevels;
+    
+    /// <summary>
+    /// Whether to force showing/hiding reuploaded content.
+    /// </summary>
+    public bool? ShowReuploadedLevels;
     
     /// <summary>
     /// The seed used for lucky dip/random levels.
@@ -182,6 +187,16 @@ public class LevelFilterSettings
                 throw new FormatException("Could not parse modded filter setting because the boolean was invalid.");
 
             this.ShowModdedLevels = showModdedLevels;
+        }
+        
+        string? reuploadedFilter = context.QueryString.Get("includeReuploaded");
+
+        if (reuploadedFilter != null)
+        {
+            if (!bool.TryParse(moddedFilter, out bool showReuploadedLevels))
+                throw new FormatException("Could not parse reuploaded filter setting because the boolean was invalid.");
+
+            this.ShowModdedLevels = showReuploadedLevels;
         }
     }
 }

@@ -135,9 +135,14 @@ public partial class GameUser : IRealmObject, IRateLimitUser
     }
 
     /// <summary>
-    /// Whether or not modded content should be shown in level listings
+    /// Whether modded content should be shown in level listings
     /// </summary>
     public bool ShowModdedContent { get; set; } = true;
+
+    /// <summary>
+    /// Whether reuploaded content should be shown in level listings
+    /// </summary>
+    public bool ShowReuploadedContent { get; set; } = true;
 
     // ReSharper disable once InconsistentNaming
     internal byte _Role { get; set; }
