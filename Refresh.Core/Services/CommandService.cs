@@ -14,15 +14,14 @@ namespace Refresh.Core.Services;
 
 public class CommandService : EndpointService
 {
-    private readonly MatchService _match;
     private readonly PlayNowService _levelListService;
     
-    public CommandService(Logger logger, MatchService match, PlayNowService levelListService) : base(logger) {
-        this._match = match;
+    public CommandService(Logger logger, PlayNowService levelListService) : base(logger)
+    {
         this._levelListService = levelListService;
     }
 
-    private readonly HashSet<ObjectId> _usersPublishing = new();
+    private readonly HashSet<ObjectId> _usersPublishing = [];
 
     /// <summary>
     /// Start tracking the user, eg. they started publishing
