@@ -125,11 +125,13 @@ public class CommandService : EndpointService
                 break;
             }
             case "showreupload":
+            case "showreuploads":
             {
                 database.SetShowReuploadedContent(user, true);
                 break;
             }
             case "hidereupload":
+            case "hidereuploads":
             {
                 database.SetShowReuploadedContent(user, false);
                 break;
