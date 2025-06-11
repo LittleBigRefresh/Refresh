@@ -40,4 +40,13 @@ public class KeyAttribute : Attribute;
 
 [AttributeUsage(AttributeTargets.Property)]
 public class NotMappedAttribute : Attribute;
+
+[AttributeUsage(AttributeTargets.Class)]
+public class IndexAttribute : Attribute
+{
+    public IndexAttribute(params string[] parameterNames)
+    {
+        _ = parameterNames;
+    }
+}
 #endif
