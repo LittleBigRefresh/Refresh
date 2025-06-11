@@ -1,4 +1,5 @@
 using Refresh.Common.Time;
+#if !POSTGRES
 using Refresh.Database.Models.Authentication;
 using Refresh.Database.Models.Comments;
 using Refresh.Database.Models.Users;
@@ -14,7 +15,6 @@ using Refresh.Database.Models.Pins;
 using Refresh.Database.Models.Playlists;
 using Refresh.Database.Models.Relations;
 using Refresh.Database.Models;
-#if !POSTGRES
 #endif
 
 namespace Refresh.Database;
@@ -39,7 +39,7 @@ public class GameDatabaseProvider :
     }
     
     #if POSTGRES
-    public void Initialize()
+    public virtual void Initialize()
     {
         using GameDatabaseContext context = this.GetContext();
         context.Database.Migrate();
@@ -127,7 +127,7 @@ public class GameDatabaseProvider :
     }
 
     #if POSTGRES
-    public GameDatabaseContext GetContext()
+    public virtual GameDatabaseContext GetContext()
     #else
     protected override GameDatabaseContext CreateContext()
     #endif
