@@ -117,6 +117,12 @@ public partial class GameDatabaseContext :
         this._time = time;
     }
 
+    [Obsolete("For use by the `dotnet ef` tool only.", true)]
+    public GameDatabaseContext()
+    {
+        this._time = new SystemDateTimeProvider();
+    }
+
     private int GetOrCreateSequentialId<T>() where T : class, IRealmObject, ISequentialId
     {
         string name = typeof(T).Name;
