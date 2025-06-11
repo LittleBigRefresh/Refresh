@@ -47,7 +47,6 @@ public static class QueryMethods
 [AttributeUsage(AttributeTargets.Property)]
 public class KeyAttribute : Attribute;
 
-[AttributeUsage(AttributeTargets.Property)]
 public class NotMappedAttribute : Attribute;
 
 [AttributeUsage(AttributeTargets.Class)]
@@ -56,6 +55,15 @@ public class IndexAttribute : Attribute
     public IndexAttribute(params string[] parameterNames)
     {
         _ = parameterNames;
+    }
+}
+
+[AttributeUsage(AttributeTargets.Property)]
+public class ForeignKeyAttribute : Attribute
+{
+    public ForeignKeyAttribute(string key)
+    {
+        _ = key;
     }
 }
 #endif

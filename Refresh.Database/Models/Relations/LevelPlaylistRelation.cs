@@ -1,10 +1,6 @@
 using Refresh.Database.Models.Levels;
 using Refresh.Database.Models.Playlists;
 
-#if POSTGRES
-using PrimaryKeyAttribute = Microsoft.EntityFrameworkCore.PrimaryKeyAttribute;
-#endif
-
 namespace Refresh.Database.Models.Relations;
 
 #nullable disable
@@ -12,7 +8,10 @@ namespace Refresh.Database.Models.Relations;
 /// <summary>
 /// A mapping of playlist -> sub-level
 /// </summary>
+#if POSTGRES
+using PrimaryKeyAttribute = Microsoft.EntityFrameworkCore.PrimaryKeyAttribute;
 [PrimaryKey(nameof(PlaylistId), nameof(LevelId))]
+#endif
 public partial class LevelPlaylistRelation : IRealmObject
 {
     /// <summary>
@@ -26,8 +25,8 @@ public partial class LevelPlaylistRelation : IRealmObject
     [ForeignKey(nameof(LevelId))]
     public GameLevel Level { get; set; }
     
-    public int PlaylistId { get; set; }
-    public int LevelId { get; set; }
+    [Ignored] public int PlaylistId { get; set; }
+    [Ignored] public int LevelId { get; set; }
     
     /// <summary>
     /// The place of this level in the playlist, starts from 0

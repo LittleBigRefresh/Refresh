@@ -1,15 +1,14 @@
 using MongoDB.Bson;
 using Refresh.Database.Models.Users;
 
-#if POSTGRES
-using PrimaryKeyAttribute = Microsoft.EntityFrameworkCore.PrimaryKeyAttribute;
-#endif
-
 namespace Refresh.Database.Models.Relations;
 
 #nullable disable
 
+#if POSTGRES
+using PrimaryKeyAttribute = Microsoft.EntityFrameworkCore.PrimaryKeyAttribute;
 [PrimaryKey(nameof(PinId), nameof(PublisherId))]
+#endif
 public partial class PinProgressRelation : IRealmObject
 {
     /// <summary>
@@ -20,7 +19,7 @@ public partial class PinProgressRelation : IRealmObject
     [ForeignKey(nameof(PublisherId))]
     public GameUser Publisher { get; set; }
     
-    public ObjectId PublisherId { get; set; }
+    [Ignored] public ObjectId PublisherId { get; set; }
 
     public DateTimeOffset FirstPublished { get; set; }
     public DateTimeOffset LastUpdated { get; set; }

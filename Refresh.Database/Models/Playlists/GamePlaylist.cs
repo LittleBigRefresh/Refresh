@@ -22,7 +22,7 @@ public partial class GamePlaylist : IRealmObject, ISequentialId
     /// <summary>
     /// The ID of the user who published the playlist
     /// </summary>
-    public ObjectId PublisherId { get; set; } 
+    [Ignored] public ObjectId PublisherId { get; set; } 
     
     /// <summary>
     /// The user who published the playlist

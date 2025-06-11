@@ -2,15 +2,14 @@ using MongoDB.Bson;
 using Refresh.Database.Models.Levels;
 using Refresh.Database.Models.Users;
 
-#if POSTGRES
-using PrimaryKeyAttribute = Microsoft.EntityFrameworkCore.PrimaryKeyAttribute;
-#endif
-
 namespace Refresh.Database.Models.Relations;
 
 #nullable disable
 
+#if POSTGRES
+using PrimaryKeyAttribute = Microsoft.EntityFrameworkCore.PrimaryKeyAttribute;
 [PrimaryKey(nameof(_Tag), nameof(UserId), nameof(LevelId))]
+#endif
 public partial class TagLevelRelation : IRealmObject
 {
     [ForeignKey(nameof(LevelId))]
@@ -18,8 +17,8 @@ public partial class TagLevelRelation : IRealmObject
     [ForeignKey(nameof(UserId))]
     public GameUser User { get; set; }
     
-    public int LevelId { get; set; }
-    public ObjectId UserId { get; set; }
+    [Ignored] public int LevelId { get; set; }
+    [Ignored] public ObjectId UserId { get; set; }
     
     [Ignored, NotMapped]
     public Tag Tag

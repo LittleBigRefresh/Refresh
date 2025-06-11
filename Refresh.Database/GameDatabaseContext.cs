@@ -1,7 +1,5 @@
 using System.Diagnostics.CodeAnalysis;
 using System.Runtime.CompilerServices;
-using MongoDB.Bson;
-using Npgsql;
 using Refresh.Common.Time;
 using Refresh.Database.Models.Authentication;
 using Refresh.Database.Models.Activity;
@@ -17,6 +15,11 @@ using Refresh.Database.Models.Photos;
 using Refresh.Database.Models.Playlists;
 using Refresh.Database.Models.Relations;
 using Refresh.Database.Models;
+
+#if POSTGRES
+using MongoDB.Bson;
+using Npgsql;
+#endif
 
 namespace Refresh.Database;
 

@@ -7,9 +7,8 @@ namespace Refresh.Database.Models.Relations;
 
 #if POSTGRES
 using PrimaryKeyAttribute = Microsoft.EntityFrameworkCore.PrimaryKeyAttribute;
-#endif
-
 [PrimaryKey(nameof(LevelId), nameof(UserId))]
+#endif
 public partial class FavouriteLevelRelation : IRealmObject
 {
     [ForeignKey(nameof(LevelId))]
@@ -17,8 +16,8 @@ public partial class FavouriteLevelRelation : IRealmObject
     [ForeignKey(nameof(UserId))]
     public GameUser User { get; set; }
     
-    public int LevelId { get; set; }
-    public ObjectId UserId { get; set; }
+    [Ignored] public int LevelId { get; set; }
+    [Ignored] public ObjectId UserId { get; set; }
     
     public DateTimeOffset Timestamp { get; set; }
 }

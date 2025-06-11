@@ -1,9 +1,5 @@
 using Refresh.Database.Models.Playlists;
 
-#if POSTGRES
-using PrimaryKeyAttribute = Microsoft.EntityFrameworkCore.PrimaryKeyAttribute;
-#endif
-
 namespace Refresh.Database.Models.Relations;
 
 #nullable disable
@@ -11,7 +7,10 @@ namespace Refresh.Database.Models.Relations;
 /// <summary>
 /// A mapping of playlist -> sub-playlist
 /// </summary>
+#if POSTGRES
+using PrimaryKeyAttribute = Microsoft.EntityFrameworkCore.PrimaryKeyAttribute;
 [PrimaryKey(nameof(PlaylistId), nameof(SubPlaylistId))]
+#endif
 public partial class SubPlaylistRelation : IRealmObject
 {
     /// <summary>
@@ -25,8 +24,8 @@ public partial class SubPlaylistRelation : IRealmObject
     [ForeignKey(nameof(SubPlaylistId))]
     public GamePlaylist SubPlaylist { get; set; }
     
-    public int PlaylistId { get; set; }
-    public int SubPlaylistId { get; set; }
+    [Ignored] public int PlaylistId { get; set; }
+    [Ignored] public int SubPlaylistId { get; set; }
     
     public DateTimeOffset Timestamp { get; set; }
 }
