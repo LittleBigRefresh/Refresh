@@ -1,5 +1,6 @@
 using System.Diagnostics.CodeAnalysis;
 using System.Runtime.CompilerServices;
+using MongoDB.Bson;
 using Refresh.Common.Time;
 using Refresh.Database.Models.Authentication;
 using Refresh.Database.Models.Activity;
@@ -126,6 +127,13 @@ public partial class GameDatabaseContext :
     {
         base.OnConfiguring(options);
         options.UseNpgsql();
+    }
+
+    protected override void ConfigureConventions(ModelConfigurationBuilder config)
+    {
+        config
+            .Properties<ObjectId>()
+            .HaveConversion<ObjectIdConverter>();
     }
 #endif
 
