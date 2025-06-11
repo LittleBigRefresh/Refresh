@@ -4,6 +4,10 @@ using JetBrains.Annotations;
 using MongoDB.Bson;
 using Refresh.Database.Models.Users;
 
+#if POSTGRES
+using PrimaryKeyAttribute = Refresh.Database.Compatibility.PrimaryKeyAttribute;
+#endif
+
 namespace Refresh.Database.Models.Authentication;
 
 #nullable disable
@@ -11,7 +15,7 @@ namespace Refresh.Database.Models.Authentication;
 [JsonObject(MemberSerialization.OptIn)]
 public partial class Token : IRealmObject, IToken<GameUser>
 {
-    [PrimaryKey]
+    [Key, PrimaryKey]
     public ObjectId TokenId { get; set; } = ObjectId.GenerateNewId();
     
     // this shouldn't ever be serialized, but just in case let's ignore it

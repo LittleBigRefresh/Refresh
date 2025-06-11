@@ -3,6 +3,10 @@ using Refresh.Database.Models.Authentication;
 using Refresh.Database.Models.Users;
 using Refresh.Database.Models.Levels;
 
+#if POSTGRES
+using PrimaryKeyAttribute = Refresh.Database.Compatibility.PrimaryKeyAttribute;
+#endif
+
 namespace Refresh.Database.Models.Contests;
 
 #nullable disable
@@ -16,7 +20,7 @@ public partial class GameContest : IRealmObject
     /// Must be lowercase and not include special characters.
     /// </remarks>
     /// <example>lbpcc1</example>
-    [PrimaryKey] public string ContestId { get; set; }
+    [Key, PrimaryKey] public string ContestId { get; set; }
     /// <summary>
     /// The user responsible for organizing the contest.
     /// </summary>

@@ -1,11 +1,15 @@
 using Refresh.Common.Helpers;
 using Refresh.Database.Models.Users;
 
+#if POSTGRES
+using PrimaryKeyAttribute = Refresh.Database.Compatibility.PrimaryKeyAttribute;
+#endif
+
 namespace Refresh.Database.Models.Assets;
 
 public partial class GameAsset : IRealmObject
 {
-    [PrimaryKey] public string AssetHash { get; set; } = string.Empty;
+    [Key, PrimaryKey] public string AssetHash { get; set; } = string.Empty;
     public GameUser? OriginalUploader { get; set; }
     public DateTimeOffset UploadDate { get; set; }
     public bool IsPSP { get; set; }

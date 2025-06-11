@@ -3,12 +3,16 @@ using MongoDB.Bson;
 using Bunkum.Core.RateLimit;
 using Refresh.Database.Models.Playlists;
 
+#if POSTGRES
+using PrimaryKeyAttribute = Refresh.Database.Compatibility.PrimaryKeyAttribute;
+#endif
+
 namespace Refresh.Database.Models.Users;
 
 [JsonObject(MemberSerialization.OptIn)]
 public partial class GameUser : IRealmObject, IRateLimitUser
 {
-    [PrimaryKey] public ObjectId UserId { get; set; } = ObjectId.GenerateNewId();
+    [Key, PrimaryKey] public ObjectId UserId { get; set; } = ObjectId.GenerateNewId();
     [Indexed] public string Username { get; set; } = string.Empty;
     [Indexed] public string? EmailAddress { get; set; }
     [Indexed] public string? PasswordBcrypt { get; set; } = null;

@@ -3,12 +3,17 @@ using Refresh.Database.Models.Authentication;
 using Refresh.Database.Models.Comments;
 using Refresh.Database.Models.Users;
 
+#if POSTGRES
+using PrimaryKeyAttribute = Refresh.Database.Compatibility.PrimaryKeyAttribute;
+#endif
+
 namespace Refresh.Database.Models.Levels;
 
 [JsonObject(MemberSerialization.OptIn)]
+[Index(nameof(Title), nameof(Description))]
 public partial class GameLevel : IRealmObject, ISequentialId
 {
-    [PrimaryKey] public int LevelId { get; set; }
+    [Key, PrimaryKey] public int LevelId { get; set; }
     
     public bool IsAdventure { get; set; }
 
