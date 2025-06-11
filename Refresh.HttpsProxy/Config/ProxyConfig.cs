@@ -7,7 +7,7 @@ public class ProxyConfig : Bunkum.Core.Configuration.Config
     
     protected override void Migrate(int oldVer, dynamic oldConfig) { }
 
-    public string TargetServerUrl { get; set; } = "https://lbp.littlebigrefresh.com";
+    public string TargetServerUrl { get; set; } = "https://lbp.lbpbonsai.com";
     public int Ps3DigestIndex { get; set; } = 0;
     public int Ps4DigestIndex { get; set; } = 0;
 }
