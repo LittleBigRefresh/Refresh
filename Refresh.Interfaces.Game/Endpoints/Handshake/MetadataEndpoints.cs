@@ -62,15 +62,7 @@ public class MetadataEndpoints : EndpointGroup
     [MinimumRole(GameUserRole.Restricted)]
     public string NetworkSettings(RequestContext context, GameServerConfig config)
     {
-        bool created = NetworkSettingsFile.IsValueCreated;
-        
         string? networkSettings = NetworkSettingsFile.Value;
-        
-        // Only log this warning once
-        if(!created && networkSettings == null)
-            context.Logger.LogWarning(BunkumCategory.Request, "network_settings.nws file is missing! " +
-                                                              "We've defaulted to one with sane defaults, but it may be relevant to write your own if you are an advanced user. " +
-                                                              "If everything works the way you like, you can safely ignore this warning.");
 
         // EnableHackChecks being false fixes the "There was a problem with the level you were playing on that forced a return to your Pod." error that LBP3 tends to show in the pod.
         // AlexDB
@@ -79,7 +71,7 @@ public class MetadataEndpoints : EndpointGroup
         //  - Part of the check for enabling LBP1 Playlists
         //  - Adds "Mm Picks" and "Lucky Dip" search options on LBP1
         // OverheatingThreshholdDisallowMidgameJoin is set to >1.0 so that it never triggers
-        // EnableCommunityDecorations, EnablePlayedFilter, EnableDiveIn enable various game features
+        // ShowLevelBoos, EnableCommunityDecorations, EnablePlayedFilter enable various game features
         // DisableDLCPublishCheck disables the game's DLC publish check.
         networkSettings ??= $"""
                             AllowOnlineCreate true
@@ -92,7 +84,7 @@ public class MetadataEndpoints : EndpointGroup
                             OverheatingThresholdDisallowMidgameJoin 2.0
                             EnableCommunityDecorations true
                             EnablePlayedFilter true
-                            EnableDiveIn true
+                            EnableDiveIn {(config.EnableDiveIn ? "true" : "false")}
                             EnableHackChecks false
                             DisableDLCPublishCheck true
                             AlexDB true
