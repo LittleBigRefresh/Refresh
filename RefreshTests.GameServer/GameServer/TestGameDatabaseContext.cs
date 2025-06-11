@@ -1,4 +1,6 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿#if POSTGRES
+
+using Microsoft.EntityFrameworkCore;
 using Refresh.Common.Time;
 using Refresh.Database;
 
@@ -22,3 +24,5 @@ public class TestGameDatabaseContext : GameDatabaseContext
         options.UseInMemoryDatabase(this._databaseId.ToString());
     }
 }
+
+#endif

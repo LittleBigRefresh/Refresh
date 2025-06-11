@@ -9,7 +9,7 @@ namespace Refresh.Database.Models.Notifications;
 [Serializable]
 public partial class GameNotification : IRealmObject
 {
-    public ObjectId NotificationId { get; set; } = ObjectId.GenerateNewId();
+    [Key] public ObjectId NotificationId { get; set; } = ObjectId.GenerateNewId();
     public string Title { get; set; }
     public string Text { get; set; }
     

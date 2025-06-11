@@ -1,4 +1,5 @@
 using Refresh.Database.Models.Levels;
+using Refresh.Database.Models.Playlists;
 
 namespace Refresh.Database.Models.Relations;
 
@@ -7,16 +8,26 @@ namespace Refresh.Database.Models.Relations;
 /// <summary>
 /// A mapping of playlist -> sub-level
 /// </summary>
+#if POSTGRES
+using PrimaryKeyAttribute = Microsoft.EntityFrameworkCore.PrimaryKeyAttribute;
+[PrimaryKey(nameof(PlaylistId), nameof(LevelId))]
+#endif
 public partial class LevelPlaylistRelation : IRealmObject
 {
     /// <summary>
     /// The playlist the level is contained in
     /// </summary>
-    public Playlists.GamePlaylist Playlist { get; set; }
+    [ForeignKey(nameof(PlaylistId))]
+    public GamePlaylist Playlist { get; set; }
     /// <summary>
     /// The level contained within the playlist
     /// </summary>
+    [ForeignKey(nameof(LevelId))]
     public GameLevel Level { get; set; }
+    
+    [Ignored] public int PlaylistId { get; set; }
+    [Ignored] public int LevelId { get; set; }
+    
     /// <summary>
     /// The place of this level in the playlist, starts from 0
     /// </summary>

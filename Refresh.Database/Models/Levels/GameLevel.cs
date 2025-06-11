@@ -63,7 +63,7 @@ public partial class GameLevel : IRealmObject, ISequentialId
     }
     
     // ReSharper disable once InconsistentNaming
-    internal int _GameVersion { get; set; }
+    public int _GameVersion { get; set; }
     
     public GameLevelType LevelType
     {
@@ -72,7 +72,7 @@ public partial class GameLevel : IRealmObject, ISequentialId
     }
 
     // ReSharper disable once InconsistentNaming
-    internal int _LevelType { get; set; }
+    public int _LevelType { get; set; }
 
     /// <summary>
     /// The associated ID for the developer level.

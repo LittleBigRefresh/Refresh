@@ -16,6 +16,11 @@ using Refresh.Database.Models.Playlists;
 using Refresh.Database.Models.Relations;
 using Refresh.Database.Models;
 
+#if POSTGRES
+using MongoDB.Bson;
+using Npgsql;
+#endif
+
 namespace Refresh.Database;
 
 [SuppressMessage("ReSharper", "InconsistentlySynchronizedField")]
@@ -125,7 +130,22 @@ public partial class GameDatabaseContext :
     protected override void OnConfiguring(DbContextOptionsBuilder options)
     {
         base.OnConfiguring(options);
-        options.UseNpgsql();
+        NpgsqlConnectionStringBuilder builder = new()
+        {
+            Database = "refresh",
+            Username = "refresh",
+            Password = "refresh",
+            Host = "localhost",
+            Port = 5432,
+        };
+        options.UseNpgsql(builder.ToString());
+    }
+
+    protected override void ConfigureConventions(ModelConfigurationBuilder config)
+    {
+        config
+            .Properties<ObjectId>()
+            .HaveConversion<ObjectIdConverter>();
     }
 #endif
 

@@ -18,6 +18,7 @@
         <PackageReference Include="Bunkum.RealmDatabase" Version="4.8.1" />
         <PackageReference Include="Bunkum.HealthChecks.RealmDatabase" Version="4.8.1" />
         <PackageReference Include="Realm" Version="20.1.0" />
+        <Compile Remove="Migrations/**/*.cs"/>
     </ItemGroup>
 
     <ItemGroup Condition="'$(Configuration)'=='DebugPostgres'">

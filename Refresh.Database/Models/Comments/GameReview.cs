@@ -7,7 +7,7 @@ namespace Refresh.Database.Models.Comments;
 
 public partial class GameReview : IRealmObject, ISequentialId
 {
-    public int ReviewId { get; set; }
+    [Key] public int ReviewId { get; set; }
     
     public GameLevel Level { get; set;  }
 

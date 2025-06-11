@@ -1,3 +1,4 @@
+using MongoDB.Bson;
 using Refresh.Database.Models.Users;
 
 #if POSTGRES
@@ -19,8 +20,14 @@ public partial class GamePlaylist : IRealmObject, ISequentialId
     [Key, PrimaryKey] public int PlaylistId { get; set; }
     
     /// <summary>
+    /// The ID of the user who published the playlist
+    /// </summary>
+    [Ignored] public ObjectId PublisherId { get; set; } 
+    
+    /// <summary>
     /// The user who published the playlist
     /// </summary>
+    [ForeignKey(nameof(PublisherId))]
     public GameUser Publisher { get; set; }
     
     /// <summary>

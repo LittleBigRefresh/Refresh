@@ -150,7 +150,7 @@ public partial class GameUser : IRealmObject, IRateLimitUser
     public bool ShowReuploadedContent { get; set; } = true;
 
     // ReSharper disable once InconsistentNaming
-    internal byte _Role { get; set; }
+    public byte _Role { get; set; }
 
     public override string ToString() => $"{this.Username} ({this.Role})";
 

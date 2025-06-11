@@ -8,7 +8,7 @@ namespace Refresh.Database.Models.Relations;
 
 public partial class ProfileCommentRelation : IRealmObject, ICommentRelation<GameProfileComment>
 {
-    public ObjectId CommentRelationId { get; set; } = ObjectId.GenerateNewId();
+    [Key] public ObjectId CommentRelationId { get; set; } = ObjectId.GenerateNewId();
     public GameUser User { get; set; }
     public GameProfileComment Comment { get; set; }
     [Ignored, NotMapped]
@@ -19,6 +19,6 @@ public partial class ProfileCommentRelation : IRealmObject, ICommentRelation<Gam
     }
     
     // ReSharper disable once InconsistentNaming
-    internal int _RatingType { get; set; }
+    public int _RatingType { get; set; }
     public DateTimeOffset Timestamp { get; set; }
 }

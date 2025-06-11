@@ -1,13 +1,22 @@
+using MongoDB.Bson;
 using Refresh.Database.Models.Authentication;
 using Refresh.Database.Models.Users;
 
 namespace Refresh.Database.Models.Relations;
 
 #nullable disable
+
+#if POSTGRES
+using PrimaryKeyAttribute = Microsoft.EntityFrameworkCore.PrimaryKeyAttribute;
+[PrimaryKey(nameof(PinId), nameof(PublisherId))]
+#endif
 public partial class ProfilePinRelation : IRealmObject
 {
     public long PinId { get; set; }
+    [ForeignKey(nameof(PublisherId))]
     public GameUser Publisher { get; set; }
+    
+    [Ignored] public ObjectId PublisherId { get; set; }
 
     /// <summary>
     /// Whether to show as first, second or third pin in-game
@@ -22,7 +31,7 @@ public partial class ProfilePinRelation : IRealmObject
         get => (TokenGame)this._Game;
         set => this._Game = (int)value;
     }
-    internal int _Game { get; set; }
+    public int _Game { get; set; }
 
     public DateTimeOffset Timestamp { get; set; }
 }
