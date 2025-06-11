@@ -72,6 +72,7 @@ public partial class GameDatabaseContext // Tokens
     public Token? GetTokenFromTokenData(string tokenData, TokenType type)
     {
         Token? token = this.Tokens
+            .Include(t => t.User)
             .FirstOrDefault(t => t.TokenData == tokenData && t._TokenType == (int)type);
 
         if (token == null) return null;
