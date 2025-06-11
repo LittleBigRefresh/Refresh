@@ -7,8 +7,10 @@ public class TestGameDatabaseProvider : GameDatabaseProvider
 {
     public TestGameDatabaseProvider(MockDateTimeProvider time) : base(time)
     {}
-
+    
+    #if !POSTGRES
     private readonly int _databaseId = Random.Shared.Next();
     protected override string Filename => $"realm-inmemory-{this._databaseId}";
     protected override bool InMemory => true;
+    #endif
 }

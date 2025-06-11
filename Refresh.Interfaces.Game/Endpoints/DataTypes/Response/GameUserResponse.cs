@@ -74,14 +74,14 @@ public class GameUserResponse : IDataConvertableFrom<GameUserResponse, GameUser>
             Handle = SerializedUserHandle.FromUser(old, dataContext),
             CommentCount = dataContext.Database.GetTotalCommentsForProfile(old),
             CommentsEnabled = true,
-            FavouriteLevelCount = old.IsManaged ? dataContext.Database.GetTotalLevelsFavouritedByUser(old) : 0,
-            FavouriteUserCount = old.IsManaged ? dataContext.Database.GetTotalUsersFavouritedByUser(old) : 0,
-            QueuedLevelCount = old.IsManaged ? dataContext.Database.GetTotalLevelsQueuedByUser(old) : 0,
-            HeartCount = old.IsManaged ? dataContext.Database.GetTotalUsersFavouritingUser(old) : 0,
-            PhotosByMeCount = old.IsManaged ? dataContext.Database.GetTotalPhotosByUser(old) : 0,
-            PhotosWithMeCount = old.IsManaged ? dataContext.Database.GetTotalPhotosWithUser(old) : 0,
+            FavouriteLevelCount = !old.FakeUser ? dataContext.Database.GetTotalLevelsFavouritedByUser(old) : 0,
+            FavouriteUserCount = !old.FakeUser ? dataContext.Database.GetTotalUsersFavouritedByUser(old) : 0,
+            QueuedLevelCount = !old.FakeUser ? dataContext.Database.GetTotalLevelsQueuedByUser(old) : 0,
+            HeartCount = !old.FakeUser ? dataContext.Database.GetTotalUsersFavouritingUser(old) : 0,
+            PhotosByMeCount = !old.FakeUser ? dataContext.Database.GetTotalPhotosByUser(old) : 0,
+            PhotosWithMeCount = !old.FakeUser ? dataContext.Database.GetTotalPhotosWithUser(old) : 0,
             RootPlaylist = old.RootPlaylist?.PlaylistId.ToString(),
-            ProfilePins = old.IsManaged ? dataContext.Database.GetProfilePinsByUser(old, dataContext.Game, 0, 3).Items.Select(p => p.PinId).ToList() : [],
+            ProfilePins = !old.FakeUser ? dataContext.Database.GetProfilePinsByUser(old, dataContext.Game, 0, 3).Items.Select(p => p.PinId).ToList() : [],
             
             EntitledSlots = UgcLimits.MaximumLevels,
             EntitledSlotsLBP2 = UgcLimits.MaximumLevels,
@@ -93,7 +93,7 @@ public class GameUserResponse : IDataConvertableFrom<GameUserResponse, GameUser>
             PurchasedSlotsLBP3 = 0,
         };
         
-        if (!old.IsManaged)
+        if (old.FakeUser)
         {
             response.PlanetsHash = "0";
             response.Handle.IconHash = "0";

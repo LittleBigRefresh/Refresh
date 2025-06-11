@@ -1,12 +1,16 @@
 using Refresh.Database.Models.Users;
 
+#if POSTGRES
+using PrimaryKeyAttribute = Refresh.Database.Compatibility.PrimaryKeyAttribute;
+#endif
+
 namespace Refresh.Database.Models.Comments;
 
 #nullable disable
 
 public partial class GameProfileComment : IRealmObject, IGameComment, ISequentialId
 {
-    [PrimaryKey] public int SequentialId { get; set; }
+    [Key, PrimaryKey] public int SequentialId { get; set; }
 
     /// <inheritdoc/>
     public GameUser Author { get; set; } = null!;

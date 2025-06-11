@@ -8,6 +8,7 @@
         <Platforms>AnyCPU</Platforms>
         <ServerGarbageCollection>true</ServerGarbageCollection>
         <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+        <WarningsNotAsErrors>612,618</WarningsNotAsErrors>
     </PropertyGroup>
     
     <PropertyGroup Condition=" '$(Configuration)' == 'DebugLocalBunkum' ">

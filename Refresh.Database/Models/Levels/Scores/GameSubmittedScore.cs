@@ -2,17 +2,22 @@ using MongoDB.Bson;
 using Refresh.Database.Models.Authentication;
 using Refresh.Database.Models.Users;
 
+#if POSTGRES
+using PrimaryKeyAttribute = Refresh.Database.Compatibility.PrimaryKeyAttribute;
+#endif
+
 namespace Refresh.Database.Models.Levels.Scores;
 
 #nullable disable
 
+[Index(nameof(_Game), nameof(Score), nameof(ScoreType))]
 public partial class GameSubmittedScore : IRealmObject // TODO: Rename to GameScore
 {
-    [PrimaryKey] public ObjectId ScoreId { get; set; } = ObjectId.GenerateNewId();
+    [Key, PrimaryKey] public ObjectId ScoreId { get; set; } = ObjectId.GenerateNewId();
     
     // ReSharper disable once InconsistentNaming
     [Indexed] public int _Game { get; set; }
-    [Ignored] public TokenGame Game
+    [Ignored, NotMapped] public TokenGame Game
     {
         get => (TokenGame)this._Game;
         set => this._Game = (int)value;
@@ -20,7 +25,7 @@ public partial class GameSubmittedScore : IRealmObject // TODO: Rename to GameSc
     
     // ReSharper disable once InconsistentNaming
     public int _Platform { get; set; }
-    [Ignored] public TokenPlatform Platform
+    [Ignored, NotMapped] public TokenPlatform Platform
     {
         get => (TokenPlatform)this._Platform;
         set => this._Platform = (int)value;

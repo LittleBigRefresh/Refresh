@@ -1,5 +1,9 @@
 using Refresh.Database.Models.Users;
 
+#if POSTGRES
+using PrimaryKeyAttribute = Refresh.Database.Compatibility.PrimaryKeyAttribute;
+#endif
+
 namespace Refresh.Database.Models.Playlists;
 
 #nullable disable
@@ -12,7 +16,7 @@ public partial class GamePlaylist : IRealmObject, ISequentialId
     /// <summary>
     /// The unique ID of this playlist, must be > 0
     /// </summary>
-    [PrimaryKey] public int PlaylistId { get; set; }
+    [Key, PrimaryKey] public int PlaylistId { get; set; }
     
     /// <summary>
     /// The user who published the playlist

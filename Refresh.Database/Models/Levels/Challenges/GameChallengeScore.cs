@@ -1,13 +1,17 @@
 using MongoDB.Bson;
 using Refresh.Database.Models.Users;
 
+#if POSTGRES
+using PrimaryKeyAttribute = Refresh.Database.Compatibility.PrimaryKeyAttribute;
+#endif
+
 namespace Refresh.Database.Models.Levels.Challenges;
 
 #nullable disable
 
 public partial class GameChallengeScore : IRealmObject
 {
-    [PrimaryKey] public ObjectId ScoreId { get; set; } = ObjectId.GenerateNewId();
+    [Key, PrimaryKey] public ObjectId ScoreId { get; set; } = ObjectId.GenerateNewId();
 
     public GameChallenge Challenge { get; set; }
     public GameUser Publisher { get; set; }

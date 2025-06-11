@@ -1,8 +1,5 @@
 ﻿#if POSTGRES
-using Microsoft.EntityFrameworkCore;
-
-namespace Refresh.Core.Extensions;
-
+namespace Refresh.Database.Extensions;
 
 public static class DbSetExtensions
 {

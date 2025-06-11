@@ -6,7 +6,6 @@ using Bunkum.Core.RateLimit;
 using Bunkum.Core.Services;
 using Bunkum.Core.Storage;
 using Bunkum.HealthChecks;
-using Bunkum.HealthChecks.RealmDatabase;
 using Bunkum.Protocols.Http;
 using Refresh.Common;
 using Refresh.Common.Time;
@@ -32,6 +31,10 @@ using Refresh.Interfaces.Internal;
 using Refresh.Interfaces.Workers;
 using Refresh.Interfaces.Workers.RequestTracking;
 using Refresh.Interfaces.Workers.Workers;
+
+#if !POSTGRES
+using Bunkum.HealthChecks.RealmDatabase;
+#endif
 
 namespace Refresh.GameServer;
 
@@ -138,10 +141,18 @@ public class RefreshGameServer : RefreshServer
             serverDescription: this._config.InstanceDescription,
             bannerImageUrl: "https://github.com/LittleBigRefresh/Branding/blob/main/logos/refresh_type.png?raw=true");
         
-        this.Server.AddHealthCheckService(this._databaseProvider, new []
+#pragma warning disable CA1825
+#pragma warning disable CA1861
+        this.Server.AddHealthCheckService(this._databaseProvider, new Type[]
         {
+            #if !POSTGRES
             typeof(RealmDatabaseHealthCheck),
+            #else
+            // TODO: add postgres health check
+            #endif
         });
+#pragma warning restore CA1861
+#pragma warning restore CA1825
         
         this.Server.AddService<RoleService>();
         this.Server.AddService<SmtpService>();

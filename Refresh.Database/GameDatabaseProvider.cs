@@ -44,6 +44,11 @@ public class GameDatabaseProvider :
         using GameDatabaseContext context = this.GetContext();
         context.Database.Migrate();
     }
+    
+    public void Dispose()
+    {
+        GC.SuppressFinalize(this);
+    }
     #endif
 
     #if !POSTGRES

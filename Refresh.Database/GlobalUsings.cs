@@ -5,12 +5,14 @@ global using Newtonsoft.Json.Serialization;
 global using Refresh.Database.Extensions;
 global using Refresh.Common.Extensions;
 
-#if !POSTGRES
-global using Realms;
-global using Bunkum.RealmDatabase;
-#endif
+global using Refresh.Database.Compatibility;
 
 #if POSTGRES
 global using Bunkum.Core.Database;
 global using Microsoft.EntityFrameworkCore;
+global using System.ComponentModel.DataAnnotations;
+global using System.ComponentModel.DataAnnotations.Schema;
+#else
+global using Realms;
+global using Bunkum.RealmDatabase;
 #endif

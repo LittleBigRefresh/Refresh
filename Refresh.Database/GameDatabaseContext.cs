@@ -117,7 +117,7 @@ public partial class GameDatabaseContext :
         this._time = time;
     }
 
-    private int GetOrCreateSequentialId<T>() where T : IRealmObject, ISequentialId
+    private int GetOrCreateSequentialId<T>() where T : class, IRealmObject, ISequentialId
     {
         string name = typeof(T).Name;
 
@@ -130,7 +130,7 @@ public partial class GameDatabaseContext :
             return storage.SequentialId;
         }
 
-        int objectCount = this._realm.All<T>().Count();
+        int objectCount = this.Set<T>().Count();
         
         storage = new SequentialIdStorage
         {
@@ -138,7 +138,7 @@ public partial class GameDatabaseContext :
         };
 
         if (objectCount != 0)
-            storage.SequentialId = this._realm.All<T>()
+            storage.SequentialId = this.Set<T>()
                 .AsEnumerable() // because realm.
                 .Max(t => t.SequentialId) + 1;
         else
@@ -151,7 +151,7 @@ public partial class GameDatabaseContext :
     }
 
     // ReSharper disable once SuggestBaseTypeForParameter
-    private void AddSequentialObject<T>(T obj, IList<T>? list, Action? writtenCallback = null) where T : IRealmObject, ISequentialId
+    private void AddSequentialObject<T>(T obj, IList<T>? list, Action? writtenCallback = null) where T : class, IRealmObject, ISequentialId
     {
         lock (IdLock)
         {
@@ -161,7 +161,7 @@ public partial class GameDatabaseContext :
 
                 obj.SequentialId = newId;
 
-                this._realm.Add(obj);
+                this.Add(obj);
                 if(list == null) writtenCallback?.Invoke();
             });
         }
@@ -178,10 +178,10 @@ public partial class GameDatabaseContext :
         }
     }
 
-    private void AddSequentialObject<T>(T obj, Action? writtenCallback) where T : IRealmObject, ISequentialId 
+    private void AddSequentialObject<T>(T obj, Action? writtenCallback) where T : class, IRealmObject, ISequentialId 
         => this.AddSequentialObject(obj, null, writtenCallback);
     
-    private void AddSequentialObject<T>(T obj) where T : IRealmObject, ISequentialId 
+    private void AddSequentialObject<T>(T obj) where T : class, IRealmObject, ISequentialId 
         => this.AddSequentialObject(obj, null, null);
 
     #if !POSTGRES
@@ -212,10 +212,24 @@ public partial class GameDatabaseContext :
     {
         this._realm.RemoveAll<T>();
     }
+
+    private IQueryable<T> Set<T>() where T : IRealmObject
+    {
+        return this._realm.All<T>();
+    }
+
+    private void Add<T>(T obj) where T : IRealmObject
+    {
+        this._realm.Add(obj);
+    }
     #else
     private void RemoveAll<TClass>() where TClass : class
     {
         this.RemoveRange(this.Set<TClass>());
     }
+    
+    [Obsolete("This has no effect in Postgres.")]
+    // ReSharper disable once MemberCanBeMadeStatic.Global
+    public void Refresh() {}
     #endif
 }

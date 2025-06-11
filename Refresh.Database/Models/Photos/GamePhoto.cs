@@ -2,6 +2,10 @@ using Refresh.Database.Models.Assets;
 using Refresh.Database.Models.Levels;
 using Refresh.Database.Models.Users;
 
+#if POSTGRES
+using PrimaryKeyAttribute = Refresh.Database.Compatibility.PrimaryKeyAttribute;
+#endif
+
 namespace Refresh.Database.Models.Photos;
 
 #nullable disable
@@ -9,7 +13,7 @@ namespace Refresh.Database.Models.Photos;
 [JsonObject(MemberSerialization.OptOut)]
 public partial class GamePhoto : IRealmObject, ISequentialId
 {
-    [PrimaryKey] public int PhotoId { get; set; }
+    [Key, PrimaryKey] public int PhotoId { get; set; }
     public DateTimeOffset TakenAt { get; set; }
     public DateTimeOffset PublishedAt { get; set; }
     
@@ -29,7 +33,7 @@ public partial class GamePhoto : IRealmObject, ISequentialId
 
     #region Subjects
     
-    [Ignored]
+    [Ignored, NotMapped]
     public IReadOnlyList<GamePhotoSubject> Subjects
     {
         get
