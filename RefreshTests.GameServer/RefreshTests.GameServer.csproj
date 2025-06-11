@@ -9,6 +9,7 @@
         <Configurations>Debug;Release;DebugLocalBunkum;DebugPostgres</Configurations>
         <Platforms>AnyCPU</Platforms>
         <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+        <WarningsNotAsErrors>612,618</WarningsNotAsErrors>
     </PropertyGroup>
 
     <PropertyGroup Condition=" '$(Configuration)' == 'DebugPostgres' ">
