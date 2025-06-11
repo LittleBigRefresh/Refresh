@@ -8,7 +8,7 @@ namespace Refresh.Database.Models.Relations;
 
 public partial class ProfileCommentRelation : IRealmObject, ICommentRelation<GameProfileComment>
 {
-    public ObjectId CommentRelationId { get; set; } = ObjectId.GenerateNewId();
+    [Key] public ObjectId CommentRelationId { get; set; } = ObjectId.GenerateNewId();
     public GameUser User { get; set; }
     public GameProfileComment Comment { get; set; }
     [Ignored, NotMapped]

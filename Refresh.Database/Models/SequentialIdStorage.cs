@@ -4,6 +4,6 @@ namespace Refresh.Database.Models;
 
 public partial class SequentialIdStorage : IRealmObject
 {
-    public string TypeName { get; set; }
+    [Key] public string TypeName { get; set; }
     public int SequentialId { get; set; }
 }
