@@ -98,39 +98,48 @@ public class LevelApiTests : GameServerTest
     }
 
     [Test]
-    public void CanDeleteLevel()
+    public async Task CanDeleteLevel()
     {
         using TestContext context = this.GetServer();
         GameUser author = context.CreateUser();
         GameLevel level = context.CreateLevel(author);
 
+        int id = level.LevelId;
+
         using HttpClient client = context.GetAuthenticatedClient(TokenType.Api, author);
-        client.DeleteAsync($"/api/v3/levels/id/{level.LevelId}").Wait();
-        Assert.That(level.IsValid, Is.False);
+        HttpResponseMessage response = await client.DeleteAsync($"/api/v3/levels/id/{id}");
+        Assert.That(response.IsSuccessStatusCode, Is.True);
+        Assert.That(context.Database.GetLevelById(id), Is.Null);
     }
     
     [Test]
-    public void CantDeleteLevelIfNotAuthor()
+    public async Task CantDeleteLevelIfNotAuthor()
     {
         using TestContext context = this.GetServer();
         GameUser author = context.CreateUser();
         GameUser moron = context.CreateUser();
         GameLevel level = context.CreateLevel(author);
 
+        int id = level.LevelId;
+
         using HttpClient client = context.GetAuthenticatedClient(TokenType.Api, moron);
-        client.DeleteAsync($"/api/v3/levels/id/{level.LevelId}").Wait();
-        Assert.That(level.IsValid, Is.True);
+        HttpResponseMessage response = await client.DeleteAsync($"/api/v3/levels/id/{id}");
+        Assert.That(response.IsSuccessStatusCode, Is.False);
+        Assert.That(context.Database.GetLevelById(id), Is.Not.Null);
     }
     
     [Test]
-    public void CantDeleteLevelIfLevelInvalid()
+    public async Task CantDeleteLevelIfLevelInvalid()
     {
         using TestContext context = this.GetServer();
         GameUser author = context.CreateUser();
         GameLevel level = context.CreateLevel(author);
 
+        int id = level.LevelId;
+
         using HttpClient client = context.GetAuthenticatedClient(TokenType.Api, author);
-        client.DeleteAsync($"/api/v3/levels/id/{int.MaxValue}").Wait();
-        Assert.That(level.IsValid, Is.True);
+        HttpResponseMessage response = await client.DeleteAsync($"/api/v3/levels/id/{int.MaxValue}");
+        Assert.That(response.StatusCode, Is.EqualTo(NotFound));
+        Assert.That(context.Database.GetLevelById(id), Is.Not.Null);
     }
 }
