@@ -1,6 +1,7 @@
 using System.Diagnostics.CodeAnalysis;
 using System.Runtime.CompilerServices;
 using MongoDB.Bson;
+using Npgsql;
 using Refresh.Common.Time;
 using Refresh.Database.Models.Authentication;
 using Refresh.Database.Models.Activity;
@@ -126,7 +127,15 @@ public partial class GameDatabaseContext :
     protected override void OnConfiguring(DbContextOptionsBuilder options)
     {
         base.OnConfiguring(options);
-        options.UseNpgsql();
+        NpgsqlConnectionStringBuilder builder = new()
+        {
+            Database = "refresh",
+            Username = "refresh",
+            Password = "refresh",
+            Host = "localhost",
+            Port = 5432,
+        };
+        options.UseNpgsql(builder.ToString());
     }
 
     protected override void ConfigureConventions(ModelConfigurationBuilder config)
