@@ -19,6 +19,6 @@ public partial class ProfileCommentRelation : IRealmObject, ICommentRelation<Gam
     }
     
     // ReSharper disable once InconsistentNaming
-    internal int _RatingType { get; set; }
+    public int _RatingType { get; set; }
     public DateTimeOffset Timestamp { get; set; }
 }

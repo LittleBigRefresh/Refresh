@@ -23,7 +23,7 @@ public partial class Token : IRealmObject, IToken<GameUser>
     
     // Realm can't store enums, use recommended workaround
     // ReSharper disable once InconsistentNaming (can't fix due to conflict with TokenType)
-    internal int _TokenType { get; set; }
+    public int _TokenType { get; set; }
 
     public TokenType TokenType
     {
@@ -31,8 +31,8 @@ public partial class Token : IRealmObject, IToken<GameUser>
         set => this._TokenType = (int)value;
     }
     
-    internal int _TokenPlatform { get; set; }
-    internal int _TokenGame { get; set; }
+    public int _TokenPlatform { get; set; }
+    public int _TokenGame { get; set; }
     
     public TokenPlatform TokenPlatform 
     {

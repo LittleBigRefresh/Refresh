@@ -32,7 +32,7 @@ public partial class ProfilePinRelation : IRealmObject
         get => (TokenGame)this._Game;
         set => this._Game = (int)value;
     }
-    internal int _Game { get; set; }
+    public int _Game { get; set; }
 
     public DateTimeOffset Timestamp { get; set; }
 }

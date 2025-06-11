@@ -13,7 +13,7 @@ public partial class GameSkillReward : IEmbeddedObject
     // Realm can't store enums, use recommended workaround
     // ReSharper disable once InconsistentNaming (can't fix due to conflict with ConditionType)
     // ReSharper disable once MemberCanBePrivate.Global
-    internal int _ConditionType { get; set; }
+    public int _ConditionType { get; set; }
     [Ignored, NotMapped] [XmlElement("condition")]
     public GameSkillRewardCondition ConditionType
     {

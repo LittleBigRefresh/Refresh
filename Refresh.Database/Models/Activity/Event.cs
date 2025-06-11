@@ -32,7 +32,7 @@ public partial class Event : IRealmObject
     }
     
     // ReSharper disable once InconsistentNaming
-    internal int _EventType { get; set; }
+    public int _EventType { get; set; }
 
     /// <summary>
     /// The user in question that created this event.
@@ -63,7 +63,7 @@ public partial class Event : IRealmObject
     }
     
     // ReSharper disable once InconsistentNaming
-    internal int _StoredDataType { get; set; }
+    public int _StoredDataType { get; set; }
     
     /// <summary>
     /// The sequential ID of the object this event is referencing. If null, use <see cref="StoredObjectId"/>.

@@ -21,7 +21,7 @@ public partial class GameAsset : IRealmObject
     }
 
     // ReSharper disable once InconsistentNaming
-    internal int _AssetType { get; set; }
+    public int _AssetType { get; set; }
 
     [Ignored, NotMapped] public GameAssetFormat AssetFormat
     {
@@ -30,7 +30,7 @@ public partial class GameAsset : IRealmObject
     }
     
     // ReSharper disable once InconsistentNaming
-    internal int _AssetSerializationMethod { get; set; }
+    public int _AssetSerializationMethod { get; set; }
     
     public IList<string> Dependencies { get; } = null!;
 

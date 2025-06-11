@@ -19,7 +19,7 @@ public partial class RateLevelRelation : IRealmObject
     }
     
     // ReSharper disable once InconsistentNaming
-    internal int _RatingType { get; set; }
+    public int _RatingType { get; set; }
     
     public GameLevel Level { get; set; }
     public GameUser User { get; set; }
