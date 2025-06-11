@@ -10,7 +10,7 @@ using PrimaryKeyAttribute = Refresh.Database.Compatibility.PrimaryKeyAttribute;
 namespace Refresh.Database.Models.Levels;
 
 [JsonObject(MemberSerialization.OptIn)]
-[Index(nameof(Title), nameof(Description))]
+[Index(nameof(Title), nameof(Description), nameof(StoryId))]
 public partial class GameLevel : IRealmObject, ISequentialId
 {
     [Key, PrimaryKey] public int LevelId { get; set; }
@@ -42,7 +42,7 @@ public partial class GameLevel : IRealmObject, ISequentialId
     public bool EnforceMinMaxPlayers { get; set; }
     
     public bool SameScreenGame { get; set; }
-    [Ignored]
+    [Ignored, NotMapped]
     public bool TeamPicked => this.DateTeamPicked != null;
     public DateTimeOffset? DateTeamPicked { get; set; }
     

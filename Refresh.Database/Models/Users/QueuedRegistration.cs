@@ -11,12 +11,13 @@ namespace Refresh.Database.Models.Users;
 /// <summary>
 /// A registration request waiting to be activated.
 /// </summary>
+[Index(nameof(Username), nameof(EmailAddress))]
 public partial class QueuedRegistration : IRealmObject
 {
     [Key, PrimaryKey] public ObjectId RegistrationId { get; set; } = ObjectId.GenerateNewId();
     [Indexed] public string Username { get; set; } = string.Empty;
-    public string EmailAddress { get; set; } = string.Empty;
-    [Indexed] public string PasswordBcrypt { get; set; }
+    [Indexed] public string EmailAddress { get; set; } = string.Empty;
+    public string PasswordBcrypt { get; set; }
     
     public DateTimeOffset ExpiryDate { get; set; }
 }

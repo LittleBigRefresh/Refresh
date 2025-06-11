@@ -11,7 +11,7 @@ public partial class RateLevelRelation : IRealmObject
 {
     public ObjectId RateLevelRelationId { get; set; } = ObjectId.GenerateNewId();
     
-    [Ignored]
+    [Ignored, NotMapped]
     public RatingType RatingType
     {
         get => (RatingType)this._RatingType;

@@ -8,7 +8,7 @@ namespace Refresh.Database.Models.Relations;
 public partial class RateReviewRelation : IRealmObject
 {
     // we could just reuse RatingType from GameLevel rating logic
-    [Ignored]
+    [Ignored, NotMapped]
     public RatingType RatingType
     {
         get => (RatingType)this._ReviewRatingType;

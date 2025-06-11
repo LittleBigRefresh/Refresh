@@ -11,7 +11,7 @@ public partial class LevelCommentRelation : IRealmObject, ICommentRelation<GameL
     public ObjectId CommentRelationId { get; set; } = ObjectId.GenerateNewId();
     public GameUser User { get; set; }
     public GameLevelComment Comment { get; set; }
-    [Ignored]
+    [Ignored, NotMapped]
     public RatingType RatingType
     {
         get => (RatingType)this._RatingType;

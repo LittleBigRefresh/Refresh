@@ -11,6 +11,7 @@ global using Refresh.Database.Compatibility;
 global using Bunkum.Core.Database;
 global using Microsoft.EntityFrameworkCore;
 global using System.ComponentModel.DataAnnotations;
+global using System.ComponentModel.DataAnnotations.Schema;
 #else
 global using Realms;
 global using Bunkum.RealmDatabase;

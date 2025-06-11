@@ -10,6 +10,7 @@ using PrimaryKeyAttribute = Refresh.Database.Compatibility.PrimaryKeyAttribute;
 namespace Refresh.Database.Models.Users;
 
 [JsonObject(MemberSerialization.OptIn)]
+[Index(nameof(Username), nameof(EmailAddress), nameof(PasswordBcrypt))]
 public partial class GameUser : IRealmObject, IRateLimitUser
 {
     [Key, PrimaryKey] public ObjectId UserId { get; set; } = ObjectId.GenerateNewId();
@@ -110,7 +111,7 @@ public partial class GameUser : IRealmObject, IRateLimitUser
     /// <summary>
     /// Whether the user's profile information is exposed in the public API.
     /// </summary>
-    [Ignored]
+    [Ignored, NotMapped]
     public Visibility ProfileVisibility
     {
         get => (Visibility)this._ProfileVisibility;
@@ -120,7 +121,7 @@ public partial class GameUser : IRealmObject, IRateLimitUser
     /// <summary>
     /// Whether the user's levels are exposed in the public API.
     /// </summary>
-    [Ignored]
+    [Ignored, NotMapped]
     public Visibility LevelVisibility
     {
         get => (Visibility)this._LevelVisibility;
@@ -132,7 +133,7 @@ public partial class GameUser : IRealmObject, IRateLimitUser
     /// </summary>
     public bool UnescapeXmlSequences { get; set; }
     
-    [Ignored] public GameUserRole Role
+    [Ignored, NotMapped] public GameUserRole Role
     {
         get => (GameUserRole)this._Role;
         set => this._Role = (byte)value;
@@ -161,9 +162,9 @@ public partial class GameUser : IRealmObject, IRateLimitUser
     }
 
     // Defined in authentication provider. Avoids Realm threading nonsense.
-    [Ignored] [XmlIgnore] public object RateLimitUserId { get; set; } = null!;
+    [Ignored, NotMapped] [XmlIgnore] public object RateLimitUserId { get; set; } = null!;
 
     #endregion
 
-    [Ignored] public bool FakeUser { get; set; } = false;
+    [Ignored, NotMapped] public bool FakeUser { get; set; } = false;
 }

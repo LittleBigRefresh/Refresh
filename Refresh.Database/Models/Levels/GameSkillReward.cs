@@ -14,7 +14,7 @@ public partial class GameSkillReward : IEmbeddedObject
     // ReSharper disable once InconsistentNaming (can't fix due to conflict with ConditionType)
     // ReSharper disable once MemberCanBePrivate.Global
     internal int _ConditionType { get; set; }
-    [Ignored] [XmlElement("condition")]
+    [Ignored, NotMapped] [XmlElement("condition")]
     public GameSkillRewardCondition ConditionType
     {
         get => (GameSkillRewardCondition)this._ConditionType;

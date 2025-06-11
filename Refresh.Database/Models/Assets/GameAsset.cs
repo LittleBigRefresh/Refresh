@@ -14,7 +14,7 @@ public partial class GameAsset : IRealmObject
     public DateTimeOffset UploadDate { get; set; }
     public bool IsPSP { get; set; }
     public int SizeInBytes { get; set; }
-    [Ignored] public GameAssetType AssetType
+    [Ignored, NotMapped] public GameAssetType AssetType
     {
         get => (GameAssetType)this._AssetType;
         set => this._AssetType = (int)value;
@@ -23,7 +23,7 @@ public partial class GameAsset : IRealmObject
     // ReSharper disable once InconsistentNaming
     internal int _AssetType { get; set; }
 
-    [Ignored] public GameAssetFormat AssetFormat
+    [Ignored, NotMapped] public GameAssetFormat AssetFormat
     {
         get => (GameAssetFormat)this._AssetSerializationMethod;
         set => this._AssetSerializationMethod = (int)value;
@@ -34,7 +34,7 @@ public partial class GameAsset : IRealmObject
     
     public IList<string> Dependencies { get; } = null!;
 
-    [Ignored] 
+    [Ignored, NotMapped] 
     public AssetFlags AssetFlags
     {
         get

@@ -7,7 +7,7 @@ namespace Refresh.Database.Models.Relations;
 
 public partial class TagLevelRelation : IRealmObject
 {
-    [Ignored]
+    [Ignored, NotMapped]
     public Tag Tag
     {
         get => (Tag)this._Tag;

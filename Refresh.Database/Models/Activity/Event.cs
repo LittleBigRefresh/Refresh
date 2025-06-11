@@ -23,7 +23,7 @@ public partial class Event : IRealmObject
     [XmlIgnore]
     public ObjectId EventId { get; set; } = ObjectId.GenerateNewId();
     
-    [Ignored]
+    [Ignored, NotMapped]
     [XmlAttribute("type")]
     public EventType EventType
     {
@@ -54,7 +54,7 @@ public partial class Event : IRealmObject
     /// <summary>
     /// The type of data that this event is referencing.
     /// </summary>
-    [Ignored]
+    [Ignored, NotMapped]
     [XmlIgnore]
     public EventDataType StoredDataType
     {

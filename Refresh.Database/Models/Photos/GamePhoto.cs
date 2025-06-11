@@ -33,7 +33,7 @@ public partial class GamePhoto : IRealmObject, ISequentialId
 
     #region Subjects
     
-    [Ignored]
+    [Ignored, NotMapped]
     public IReadOnlyList<GamePhotoSubject> Subjects
     {
         get
