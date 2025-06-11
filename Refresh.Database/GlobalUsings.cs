@@ -13,4 +13,5 @@ global using Bunkum.RealmDatabase;
 #if POSTGRES
 global using Bunkum.Core.Database;
 global using Microsoft.EntityFrameworkCore;
+global using Refresh.Database.Compatibility;
 #endif
