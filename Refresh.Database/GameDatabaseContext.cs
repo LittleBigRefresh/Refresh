@@ -71,51 +71,63 @@ public partial class GameDatabaseContext :
     private RealmDbSet<PinProgressRelation> PinProgressRelations => new(this._realm);
     private RealmDbSet<ProfilePinRelation> ProfilePinRelations => new(this._realm);
     #else
-    private DbSet<GameUser> GameUsers { get; set; }
-    private DbSet<Token> Tokens { get; set; }
-    private DbSet<GameLevel> GameLevels { get; set; }
-    private DbSet<GameProfileComment> GameProfileComments { get; set; }
-    private DbSet<GameLevelComment> GameLevelComments { get; set; }
-    private DbSet<ProfileCommentRelation> ProfileCommentRelations { get; set; }
-    private DbSet<LevelCommentRelation> LevelCommentRelations { get; set; }
-    private DbSet<FavouriteLevelRelation> FavouriteLevelRelations { get; set; }
-    private DbSet<QueueLevelRelation> QueueLevelRelations { get; set; }
-    private DbSet<FavouriteUserRelation> FavouriteUserRelations { get; set; }
-    private DbSet<PlayLevelRelation> PlayLevelRelations { get; set; }
-    private DbSet<UniquePlayLevelRelation> UniquePlayLevelRelations { get; set; }
-    private DbSet<RateLevelRelation> RateLevelRelations { get; set; }
-    private DbSet<Event> Events { get; set; }
-    private DbSet<GameSubmittedScore> GameSubmittedScores { get; set; }
-    private DbSet<GameAsset> GameAssets { get; set; }
-    private DbSet<GameNotification> GameNotifications { get; set; }
-    private DbSet<GamePhoto> GamePhotos { get; set; }
-    private DbSet<GameIpVerificationRequest> GameIpVerificationRequests { get; set; }
-    private DbSet<GameAnnouncement> GameAnnouncements { get; set; }
-    private DbSet<QueuedRegistration> QueuedRegistrations { get; set; }
-    private DbSet<EmailVerificationCode> EmailVerificationCodes { get; set; }
-    private DbSet<RequestStatistics> RequestStatistics { get; set; }
-    private DbSet<SequentialIdStorage> SequentialIdStorage { get; set; }
-    private DbSet<GameContest> GameContests { get; set; }
-    private DbSet<AssetDependencyRelation> AssetDependencyRelations { get; set; }
-    private DbSet<GameReview> GameReviews { get; set; }
-    private DbSet<DisallowedUser> DisallowedUsers { get; set; }
-    private DbSet<RateReviewRelation> RateReviewRelations { get; set; }
-    private DbSet<TagLevelRelation> TagLevelRelations { get; set; }
-    private DbSet<GamePlaylist> GamePlaylists { get; set; }
-    private DbSet<LevelPlaylistRelation> LevelPlaylistRelations { get; set; }
-    private DbSet<SubPlaylistRelation> SubPlaylistRelations { get; set; }
-    private DbSet<FavouritePlaylistRelation> FavouritePlaylistRelations { get; set; }
-    private DbSet<GameUserVerifiedIpRelation> GameUserVerifiedIpRelations { get; set; }
-    private DbSet<GameChallenge> GameChallenges { get; set; }
-    private DbSet<GameChallengeScore> GameChallengeScores { get; set; }
-    private DbSet<PinProgressRelation> PinProgressRelations { get; set; }
-    private DbSet<ProfilePinRelation> ProfilePinRelations { get; set; }
+    internal DbSet<GameUser> GameUsers { get; set; }
+    internal DbSet<Token> Tokens { get; set; }
+    internal DbSet<GameLevel> GameLevels { get; set; }
+    internal DbSet<GameProfileComment> GameProfileComments { get; set; }
+    internal DbSet<GameLevelComment> GameLevelComments { get; set; }
+    internal DbSet<ProfileCommentRelation> ProfileCommentRelations { get; set; }
+    internal DbSet<LevelCommentRelation> LevelCommentRelations { get; set; }
+    internal DbSet<FavouriteLevelRelation> FavouriteLevelRelations { get; set; }
+    internal DbSet<QueueLevelRelation> QueueLevelRelations { get; set; }
+    internal DbSet<FavouriteUserRelation> FavouriteUserRelations { get; set; }
+    internal DbSet<PlayLevelRelation> PlayLevelRelations { get; set; }
+    internal DbSet<UniquePlayLevelRelation> UniquePlayLevelRelations { get; set; }
+    internal DbSet<RateLevelRelation> RateLevelRelations { get; set; }
+    internal DbSet<Event> Events { get; set; }
+    internal DbSet<GameSubmittedScore> GameSubmittedScores { get; set; }
+    internal DbSet<GameAsset> GameAssets { get; set; }
+    internal DbSet<GameNotification> GameNotifications { get; set; }
+    internal DbSet<GamePhoto> GamePhotos { get; set; }
+    internal DbSet<GameIpVerificationRequest> GameIpVerificationRequests { get; set; }
+    internal DbSet<GameAnnouncement> GameAnnouncements { get; set; }
+    internal DbSet<QueuedRegistration> QueuedRegistrations { get; set; }
+    internal DbSet<EmailVerificationCode> EmailVerificationCodes { get; set; }
+    internal DbSet<RequestStatistics> RequestStatistics { get; set; }
+    internal DbSet<SequentialIdStorage> SequentialIdStorage { get; set; }
+    internal DbSet<GameContest> GameContests { get; set; }
+    internal DbSet<AssetDependencyRelation> AssetDependencyRelations { get; set; }
+    internal DbSet<GameReview> GameReviews { get; set; }
+    internal DbSet<DisallowedUser> DisallowedUsers { get; set; }
+    internal DbSet<RateReviewRelation> RateReviewRelations { get; set; }
+    internal DbSet<TagLevelRelation> TagLevelRelations { get; set; }
+    internal DbSet<GamePlaylist> GamePlaylists { get; set; }
+    internal DbSet<LevelPlaylistRelation> LevelPlaylistRelations { get; set; }
+    internal DbSet<SubPlaylistRelation> SubPlaylistRelations { get; set; }
+    internal DbSet<FavouritePlaylistRelation> FavouritePlaylistRelations { get; set; }
+    internal DbSet<GameUserVerifiedIpRelation> GameUserVerifiedIpRelations { get; set; }
+    internal DbSet<GameChallenge> GameChallenges { get; set; }
+    internal DbSet<GameChallengeScore> GameChallengeScores { get; set; }
+    internal DbSet<PinProgressRelation> PinProgressRelations { get; set; }
+    internal DbSet<ProfilePinRelation> ProfilePinRelations { get; set; }
     #endif
     
     internal GameDatabaseContext(IDateTimeProvider time)
     {
         this._time = time;
     }
+
+#if POSTGRES
+    [Obsolete("For use by the `dotnet ef` tool only.", true)]
+    public GameDatabaseContext() : this(new SystemDateTimeProvider())
+    {}
+
+    protected override void OnConfiguring(DbContextOptionsBuilder options)
+    {
+        base.OnConfiguring(options);
+        options.UseNpgsql();
+    }
+#endif
 
     private int GetOrCreateSequentialId<T>() where T : class, IRealmObject, ISequentialId
     {
