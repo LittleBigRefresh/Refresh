@@ -12,11 +12,17 @@ namespace Refresh.Core.Types.Matching.MatchMethods;
 
 public class FindRoomMethod : IMatchMethod
 {
-    public IEnumerable<string> MethodNames => new[] { "FindBestRoom" };
+    public IEnumerable<string> MethodNames => ["FindBestRoom"];
 
     public Response Execute(DataContext dataContext, SerializedRoomData body, GameServerConfig gameServerConfig)
     {
         SerializedStatusCodeMatchResponse status = new(OK);
+
+        if (!gameServerConfig.EnableDiveIn)
+        {
+            status.StatusCode = Unauthorized;
+            return new Response(new List<object> {status}, ContentType.Json, status.StatusCode);
+        }
         
         GameRoom? usersRoom = dataContext.Match.RoomAccessor.GetRoomByUser(dataContext.User!, dataContext.Platform, dataContext.Game);
         if (usersRoom == null) return BadRequest; // user should already have a room.
