@@ -18,7 +18,7 @@ public static class GameAssetExtensions
     public static void TraverseDependenciesRecursively(this GameAsset asset, GameDatabaseContext database, Action<string, GameAsset?> callback)
     {
         callback(asset.AssetHash, asset);
-        foreach (string internalAssetHash in database.GetAssetDependencies(asset))
+        foreach (string internalAssetHash in database.GetAssetDependencies(asset).ToArray())
         {
             GameAsset? internalAsset = database.GetAssetFromHash(internalAssetHash);
             
