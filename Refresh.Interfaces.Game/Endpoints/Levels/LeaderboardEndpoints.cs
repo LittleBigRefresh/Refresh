@@ -7,6 +7,7 @@ using Bunkum.Listener.Protocol;
 using Bunkum.Protocols.Http;
 using Refresh.Core.Authentication.Permission;
 using Refresh.Core.Configuration;
+using Refresh.Core.Types.Data;
 using Refresh.Database;
 using Refresh.Database.Models.Authentication;
 using Refresh.Database.Models.Levels;
@@ -58,7 +59,8 @@ public class LeaderboardEndpoints : EndpointGroup
     
     [GameEndpoint("scoreboard/{slotType}/{id}", HttpMethods.Get, ContentType.Xml)]
     [RateLimitSettings(RequestTimeoutDuration, MaxRequestAmount, RequestBlockDuration, BucketName)]
-    public Response GetUserScores(RequestContext context, GameUser user, GameDatabaseContext database, string slotType, int id, Token token)
+    public Response GetUserScores(RequestContext context, GameUser user, GameDatabaseContext database, string slotType,
+        int id, Token token, DataContext dataContext)
     {
         GameLevel? level = database.GetLevelByIdAndType(slotType, id);
         if (level == null) return NotFound;
@@ -66,30 +68,32 @@ public class LeaderboardEndpoints : EndpointGroup
         //Get the scores from the database
         MultiLeaderboard multiLeaderboard = new(database, level, token.TokenGame);
         
-        return new Response(SerializedMultiLeaderboardResponse.FromOld(multiLeaderboard), ContentType.Xml);
+        return new Response(SerializedMultiLeaderboardResponse.FromOld(multiLeaderboard, dataContext), ContentType.Xml);
     }
 
     [GameEndpoint("scoreboard/friends/{slotType}/{id}", HttpMethods.Post, ContentType.Xml)]
     [RateLimitSettings(RequestTimeoutDuration, MaxRequestAmount, RequestBlockDuration, BucketName)]
     [NullStatusCode(NotFound)]
-    public SerializedScoreLeaderboardList? GetLevelFriendLeaderboard(
-        RequestContext context, 
-        GameUser user, 
-        GameDatabaseContext database, 
-        string slotType, 
-        int id, 
-        FriendScoresRequest body)
+    public SerializedScoreLeaderboardList? GetLevelFriendLeaderboard(RequestContext context,
+        GameUser user,
+        GameDatabaseContext database,
+        string slotType,
+        int id,
+        FriendScoresRequest body,
+        DataContext dataContext)
     {
         GameLevel? level = database.GetLevelByIdAndType(slotType, id);
         if (level == null) return null;
         
-        return SerializedScoreLeaderboardList.FromSubmittedEnumerable(database.GetLevelTopScoresByFriends(user, level, 10, body.Type));
+        return SerializedScoreLeaderboardList.FromSubmittedEnumerable(database.GetLevelTopScoresByFriends(user, level, 10, body.Type), dataContext);
     }
     
     [GameEndpoint("scoreboard/{slotType}/{id}", ContentType.Xml, HttpMethods.Post)]
     [RateLimitSettings(RequestTimeoutDuration, MaxRequestAmount, RequestBlockDuration, BucketName)]
     [RequireEmailVerified]
-    public Response SubmitScore(RequestContext context, GameUser user, GameServerConfig config, GameDatabaseContext database, string slotType, int id, SerializedScore body, Token token)
+    public Response SubmitScore(RequestContext context, GameUser user, GameServerConfig config,
+        GameDatabaseContext database, string slotType, int id, SerializedScore body, Token token,
+        DataContext dataContext)
     {
         if (user.IsWriteBlocked(config))
             return Unauthorized;
@@ -115,18 +119,19 @@ public class LeaderboardEndpoints : EndpointGroup
         IEnumerable<ScoreWithRank>? scores = database.GetRankedScoresAroundScore(score, 5);
         Debug.Assert(scores != null);
         
-        return new Response(SerializedScoreLeaderboardList.FromSubmittedEnumerable(scores), ContentType.Xml);
+        return new Response(SerializedScoreLeaderboardList.FromSubmittedEnumerable(scores, dataContext), ContentType.Xml);
     }
 
     [GameEndpoint("topscores/{slotType}/{id}/{type}", ContentType.Xml)]
     [MinimumRole(GameUserRole.Restricted)]
     [RateLimitSettings(RequestTimeoutDuration, MaxRequestAmount, RequestBlockDuration, BucketName)]
-    public Response GetTopScoresForLevel(RequestContext context, GameDatabaseContext database, string slotType, int id, int type)
+    public Response GetTopScoresForLevel(RequestContext context, GameDatabaseContext database, string slotType, int id,
+        int type, DataContext dataContext)
     {
         GameLevel? level = database.GetLevelByIdAndType(slotType, id);
         if (level == null) return NotFound;
         
         (int skip, int count) = context.GetPageData();
-        return new Response(SerializedScoreList.FromSubmittedEnumerable(database.GetTopScoresForLevel(level, count, skip, (byte)type).Items, skip), ContentType.Xml);
+        return new Response(SerializedScoreList.FromSubmittedEnumerable(database.GetTopScoresForLevel(level, count, skip, (byte)type).Items, dataContext, skip), ContentType.Xml);
     }
 }

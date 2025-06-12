@@ -512,6 +512,9 @@ namespace Refresh.Database.Migrations
                     b.Property<int?>("LevelId")
                         .HasColumnType("integer");
 
+                    b.PrimitiveCollection<List<string>>("PlayerIdsRaw")
+                        .HasColumnType("text[]");
+
                     b.Property<int>("Score")
                         .HasColumnType("integer");
 
@@ -596,6 +599,9 @@ namespace Refresh.Database.Migrations
                     b.Property<int>("LevelId")
                         .HasColumnType("integer");
 
+                    b.Property<int?>("LevelIdKey")
+                        .HasColumnType("integer");
+
                     b.Property<string>("LevelName")
                         .HasColumnType("text");
 
@@ -664,7 +670,7 @@ namespace Refresh.Database.Migrations
 
                     b.HasIndex("LargeAssetAssetHash");
 
-                    b.HasIndex("LevelId");
+                    b.HasIndex("LevelIdKey");
 
                     b.HasIndex("MediumAssetAssetHash");
 
@@ -1188,9 +1194,6 @@ namespace Refresh.Database.Migrations
                     b.Property<string>("ForceMatch")
                         .HasColumnType("text");
 
-                    b.Property<string>("GameSubmittedScoreScoreId")
-                        .HasColumnType("text");
-
                     b.Property<string>("IconHash")
                         .IsRequired()
                         .HasColumnType("text");
@@ -1273,8 +1276,6 @@ namespace Refresh.Database.Migrations
                         .HasColumnType("smallint");
 
                     b.HasKey("UserId");
-
-                    b.HasIndex("GameSubmittedScoreScoreId");
 
                     b.HasIndex("Username", "EmailAddress", "PasswordBcrypt");
 
@@ -1464,9 +1465,7 @@ namespace Refresh.Database.Migrations
 
                     b.HasOne("Refresh.Database.Models.Levels.GameLevel", "Level")
                         .WithMany()
-                        .HasForeignKey("LevelId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                        .HasForeignKey("LevelIdKey");
 
                     b.HasOne("Refresh.Database.Models.Assets.GameAsset", "MediumAsset")
                         .WithMany()
@@ -1816,23 +1815,11 @@ namespace Refresh.Database.Migrations
                     b.Navigation("User");
                 });
 
-            modelBuilder.Entity("Refresh.Database.Models.Users.GameUser", b =>
-                {
-                    b.HasOne("Refresh.Database.Models.Levels.Scores.GameSubmittedScore", null)
-                        .WithMany("Players")
-                        .HasForeignKey("GameSubmittedScoreScoreId");
-                });
-
             modelBuilder.Entity("Refresh.Database.Models.Levels.GameLevel", b =>
                 {
                     b.Navigation("Reviews");
 
                     b.Navigation("SkillRewards");
-                });
-
-            modelBuilder.Entity("Refresh.Database.Models.Levels.Scores.GameSubmittedScore", b =>
-                {
-                    b.Navigation("Players");
                 });
 
             modelBuilder.Entity("Refresh.Database.Models.Users.GameUser", b =>

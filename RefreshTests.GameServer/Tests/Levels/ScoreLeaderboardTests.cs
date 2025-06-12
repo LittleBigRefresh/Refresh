@@ -424,7 +424,7 @@ public class ScoreLeaderboardTests : GameServerTest
             // Check that notification was sent to the last #1 users
             if (lastBestScore == null) continue;
 
-            GameUser notificationRecipient = lastBestScore.Players.First();
+            GameUser notificationRecipient = context.Database.GetSubmittingPlayerFromScore(lastBestScore)!;
             GameNotification? notification = context.Database.GetNotificationsByUser(notificationRecipient, 1, 0).Items.FirstOrDefault();
 
             if (lastBestScore.Score <= 0)
