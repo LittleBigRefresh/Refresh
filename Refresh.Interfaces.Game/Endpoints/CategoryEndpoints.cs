@@ -58,7 +58,7 @@ public class CategoryEndpoints : EndpointGroup
         
         return new SerializedCategoryResultsList
         (
-            levels.Items.Select(l => GameMinimalLevelResponse.FromOld(l, dataContext))!,
+            levels.Items.ToArray().Select(l => GameMinimalLevelResponse.FromOld(l, dataContext))!,
             levels.TotalItems,
             levels.NextPageIndex
         );

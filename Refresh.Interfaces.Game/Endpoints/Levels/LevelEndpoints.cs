@@ -66,7 +66,7 @@ public class LevelEndpoints : EndpointGroup
 
         if (levels == null) return null;
         
-        IEnumerable<GameMinimalLevelResponse> slots = levels.Items
+        IEnumerable<GameMinimalLevelResponse> slots = levels.Items.ToArray()
             .Select(l => GameMinimalLevelResponse.FromOld(l, dataContext)!);
 
         int injectedAmount = 0;
