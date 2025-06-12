@@ -329,7 +329,7 @@ public partial class GameDatabaseContext // Users
             
             foreach (GameSubmittedScore score in this.GameSubmittedScores.ToList())
             {
-                if (!score.Players.Contains(user)) continue;
+                if (!score.PlayerIds.Contains(user.UserId)) continue;
                 this.GameSubmittedScores.Remove(score);
             }
             

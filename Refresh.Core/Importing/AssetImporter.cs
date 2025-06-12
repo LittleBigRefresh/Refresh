@@ -40,7 +40,7 @@ public class AssetImporter : Importer
         {
             tasks[i] = Task.Factory.StartNew(() =>
             {
-                GameDatabaseContext database = databaseProvider.GetContext();
+                using GameDatabaseContext database = databaseProvider.GetContext();
 
                 List<GameAsset> assets = new(assetHashes.Length / taskCount);
 

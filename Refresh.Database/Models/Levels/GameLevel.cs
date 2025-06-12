@@ -135,7 +135,7 @@ public partial class GameLevel : IRealmObject, ISequentialId
     }
     #endif
     
-    public int SequentialId
+    [NotMapped] public int SequentialId
     {
         get => this.LevelId;
         set => this.LevelId = value;

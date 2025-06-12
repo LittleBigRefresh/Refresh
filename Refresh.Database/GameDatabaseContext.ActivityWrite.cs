@@ -224,14 +224,14 @@ public partial class GameDatabaseContext // ActivityWrite
     /// <summary>
     /// Creates a new UserFirstLogin event from a <see cref='GameUser'/>, and adds it to the event list.
     /// </summary>
-    public Event CreateUserFirstLoginEvent(GameUser userFrom, GameUser user)
+    public Event CreateUserFirstLoginEvent(GameUser user)
     {
         Event e = new()
         {
             EventType = EventType.UserFirstLogin,
             StoredDataType = EventDataType.User,
             Timestamp = this._time.Now,
-            User = userFrom,
+            User = user,
             StoredObjectId = user.UserId,
         };
 

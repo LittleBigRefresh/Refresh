@@ -81,7 +81,9 @@ public class PhotoEndpoints : EndpointGroup
         (int skip, int count) = context.GetPageData();
 
         // count not used ingame
-        IEnumerable<SerializedPhoto> photos = photoGetter.Invoke(user, count, skip).Items
+        IEnumerable<SerializedPhoto> photos = photoGetter.Invoke(user, count, skip)
+            .Items
+            .ToArray()
             .Select(photo => PhotoExtensions.FromGamePhoto(photo, dataContext));
 
         return new Response(new SerializedPhotoList(photos), ContentType.Xml);

@@ -40,7 +40,7 @@ namespace Refresh.Database.Migrations
                     b.Property<DateTimeOffset>("Timestamp")
                         .HasColumnType("timestamp with time zone");
 
-                    b.Property<string>("UserId1")
+                    b.Property<string>("UserId")
                         .HasColumnType("text");
 
                     b.Property<int>("_EventType")
@@ -51,7 +51,7 @@ namespace Refresh.Database.Migrations
 
                     b.HasKey("EventId");
 
-                    b.HasIndex("UserId1");
+                    b.HasIndex("UserId");
 
                     b.ToTable("Events");
                 });
@@ -227,9 +227,6 @@ namespace Refresh.Database.Migrations
                     b.Property<string>("PublisherUserId")
                         .HasColumnType("text");
 
-                    b.Property<int>("SequentialId")
-                        .HasColumnType("integer");
-
                     b.HasKey("ReviewId");
 
                     b.HasIndex("LevelId");
@@ -318,9 +315,6 @@ namespace Refresh.Database.Migrations
 
                     b.Property<string>("PublisherUserId")
                         .HasColumnType("text");
-
-                    b.Property<int>("SequentialId")
-                        .HasColumnType("integer");
 
                     b.Property<int>("StartCheckpointUid")
                         .HasColumnType("integer");
@@ -455,9 +449,6 @@ namespace Refresh.Database.Migrations
                     b.Property<float>("Score")
                         .HasColumnType("real");
 
-                    b.Property<int>("SequentialId")
-                        .HasColumnType("integer");
-
                     b.Property<int>("StoryId")
                         .HasColumnType("integer");
 
@@ -520,6 +511,9 @@ namespace Refresh.Database.Migrations
 
                     b.Property<int?>("LevelId")
                         .HasColumnType("integer");
+
+                    b.PrimitiveCollection<List<string>>("PlayerIdsRaw")
+                        .HasColumnType("text[]");
 
                     b.Property<int>("Score")
                         .HasColumnType("integer");
@@ -605,6 +599,9 @@ namespace Refresh.Database.Migrations
                     b.Property<int>("LevelId")
                         .HasColumnType("integer");
 
+                    b.Property<int?>("LevelIdKey")
+                        .HasColumnType("integer");
+
                     b.Property<string>("LevelName")
                         .HasColumnType("text");
 
@@ -622,9 +619,6 @@ namespace Refresh.Database.Migrations
 
                     b.Property<string>("PublisherUserId")
                         .HasColumnType("text");
-
-                    b.Property<int>("SequentialId")
-                        .HasColumnType("integer");
 
                     b.Property<string>("SmallAssetAssetHash")
                         .HasColumnType("text");
@@ -676,7 +670,7 @@ namespace Refresh.Database.Migrations
 
                     b.HasIndex("LargeAssetAssetHash");
 
-                    b.HasIndex("LevelId");
+                    b.HasIndex("LevelIdKey");
 
                     b.HasIndex("MediumAssetAssetHash");
 
@@ -730,9 +724,6 @@ namespace Refresh.Database.Migrations
                     b.Property<string>("PublisherId")
                         .IsRequired()
                         .HasColumnType("text");
-
-                    b.Property<int>("SequentialId")
-                        .HasColumnType("integer");
 
                     b.HasKey("PlaylistId");
 
@@ -1203,9 +1194,6 @@ namespace Refresh.Database.Migrations
                     b.Property<string>("ForceMatch")
                         .HasColumnType("text");
 
-                    b.Property<string>("GameSubmittedScoreScoreId")
-                        .HasColumnType("text");
-
                     b.Property<string>("IconHash")
                         .IsRequired()
                         .HasColumnType("text");
@@ -1289,8 +1277,6 @@ namespace Refresh.Database.Migrations
 
                     b.HasKey("UserId");
 
-                    b.HasIndex("GameSubmittedScoreScoreId");
-
                     b.HasIndex("Username", "EmailAddress", "PasswordBcrypt");
 
                     b.ToTable("GameUsers");
@@ -1324,7 +1310,7 @@ namespace Refresh.Database.Migrations
                 {
                     b.HasOne("Refresh.Database.Models.Users.GameUser", "User")
                         .WithMany()
-                        .HasForeignKey("UserId1");
+                        .HasForeignKey("UserId");
 
                     b.Navigation("User");
                 });
@@ -1479,9 +1465,7 @@ namespace Refresh.Database.Migrations
 
                     b.HasOne("Refresh.Database.Models.Levels.GameLevel", "Level")
                         .WithMany()
-                        .HasForeignKey("LevelId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                        .HasForeignKey("LevelIdKey");
 
                     b.HasOne("Refresh.Database.Models.Assets.GameAsset", "MediumAsset")
                         .WithMany()
@@ -1831,23 +1815,11 @@ namespace Refresh.Database.Migrations
                     b.Navigation("User");
                 });
 
-            modelBuilder.Entity("Refresh.Database.Models.Users.GameUser", b =>
-                {
-                    b.HasOne("Refresh.Database.Models.Levels.Scores.GameSubmittedScore", null)
-                        .WithMany("Players")
-                        .HasForeignKey("GameSubmittedScoreScoreId");
-                });
-
             modelBuilder.Entity("Refresh.Database.Models.Levels.GameLevel", b =>
                 {
                     b.Navigation("Reviews");
 
                     b.Navigation("SkillRewards");
-                });
-
-            modelBuilder.Entity("Refresh.Database.Models.Levels.Scores.GameSubmittedScore", b =>
-                {
-                    b.Navigation("Players");
                 });
 
             modelBuilder.Entity("Refresh.Database.Models.Users.GameUser", b =>

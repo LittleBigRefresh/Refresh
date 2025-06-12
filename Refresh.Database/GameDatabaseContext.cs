@@ -236,9 +236,10 @@ public partial class GameDatabaseContext :
     {
         callback();
         this.SaveChanges();
+        Debug.Assert(!this.ChangeTracker.HasChanges());
     }
 
-    private void AddSequentialObject<TEntity>(TEntity entity)
+    private void AddSequentialObject<TEntity>(TEntity entity) where TEntity : class
     {
         // causes compiler warning without this for some reason even tho no nullable attribute???
         // in a #nullable-enabled class???
@@ -246,16 +247,17 @@ public partial class GameDatabaseContext :
         Debug.Assert(entity != null);
         this.Write(() =>
         {
-            this.Add(entity);
+            this.Set<TEntity>().Add(entity);
         });
     }
     
-    private void AddSequentialObject<TEntity>(TEntity entity, Action callback)
+    private void AddSequentialObject<TEntity>(TEntity entity, Action callback) where TEntity : class
     {
         this.AddSequentialObject(entity);
         callback();
     }
     
+    [Obsolete("IList shouldn't be used on an entity")]
     private void AddSequentialObject<TEntity>(TEntity entity, IList<TEntity> list)
     {
         Debug.Assert(entity != null);

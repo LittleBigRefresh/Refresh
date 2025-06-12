@@ -45,7 +45,7 @@ public class GameDatabaseProvider :
         context.Database.Migrate();
     }
     
-    public void Dispose()
+    public virtual void Dispose()
     {
         GC.SuppressFinalize(this);
     }

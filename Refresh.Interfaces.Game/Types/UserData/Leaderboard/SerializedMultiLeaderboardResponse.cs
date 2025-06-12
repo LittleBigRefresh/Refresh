@@ -1,4 +1,5 @@
 using System.Xml.Serialization;
+using Refresh.Core.Types.Data;
 using Refresh.Database;
 using Refresh.Database.Models.Levels.Scores;
 
@@ -20,12 +21,12 @@ public class SerializedMultiLeaderboardResponse
     [XmlElement("topScores")]
     public List<SerializedPlayerLeaderboardResponse> Scoreboards;
 
-    public static SerializedMultiLeaderboardResponse FromOld(MultiLeaderboard multiLeaderboard)
+    public static SerializedMultiLeaderboardResponse FromOld(MultiLeaderboard multiLeaderboard, DataContext dataContext)
     {
         List<SerializedPlayerLeaderboardResponse> leaderboards = new();
 
         //Iterate over all leaderboards in the list
-        foreach ((byte type, DatabaseList<Database.Models.Levels.Scores.GameSubmittedScore> scores) in multiLeaderboard.Leaderboards)
+        foreach ((byte type, DatabaseList<GameSubmittedScore> scores) in multiLeaderboard.Leaderboards)
         {
             SerializedPlayerLeaderboardResponse leaderboard = new()
             {
@@ -34,9 +35,9 @@ public class SerializedMultiLeaderboardResponse
             };
 
             int i = 1;
-            foreach (Database.Models.Levels.Scores.GameSubmittedScore score in scores.Items)
+            foreach (GameSubmittedScore score in scores.Items)
             {
-                leaderboard.Scores.Add(SerializedLeaderboardScore.FromOld(score, i));
+                leaderboard.Scores.Add(SerializedLeaderboardScore.FromOld(score, dataContext, i));
                 i += 1;
             }
             

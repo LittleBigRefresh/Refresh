@@ -19,14 +19,16 @@ public class TestContext : IDisposable
 {
     public Lazy<TestRefreshGameServer> Server { get; }
     public GameDatabaseContext Database { get; }
+    public TestGameDatabaseProvider DatabaseProvider { get; }
     public HttpClient Http { get; }
     public MockDateTimeProvider Time { get; }
     private DirectHttpListener Listener { get; }
     
-    public TestContext(Lazy<TestRefreshGameServer> server, GameDatabaseContext database, HttpClient http, DirectHttpListener listener, MockDateTimeProvider time)
+    public TestContext(Lazy<TestRefreshGameServer> server, TestGameDatabaseProvider database, HttpClient http, DirectHttpListener listener, MockDateTimeProvider time)
     {
         this.Server = server;
-        this.Database = database;
+        this.DatabaseProvider = database;
+        this.Database = database.GetContext();
         this.Http = http;
         this.Listener = listener;
         this.Time = time;
@@ -169,6 +171,7 @@ public class TestContext : IDisposable
     public void Dispose()
     {
         this.Database.Dispose();
+        this.DatabaseProvider.Dispose();
         this.Http.Dispose();
         this.Listener.Dispose();
 

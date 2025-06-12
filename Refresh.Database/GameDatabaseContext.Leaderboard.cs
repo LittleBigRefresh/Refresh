@@ -21,7 +21,11 @@ public partial class GameDatabaseContext // Leaderboard
             Score = score.Score,
             ScoreType = score.ScoreType,
             Level = level,
+#if POSTGRES
+            PlayerIdsRaw = [ user.UserId.ToString() ],
+#else
             Players = { user },
+#endif
             ScoreSubmitted = this._time.Now,
             Game = game,
             Platform = platform,
@@ -45,11 +49,8 @@ public partial class GameDatabaseContext // Leaderboard
            )
         {
             // Notify the last #1 users that they've been overtaken
-            foreach (GameUser? player in rankTwo.score.Players)
+            foreach (GameUser player in this.GetPlayersFromScore(rankTwo.score).ToArray())
             {
-                if (player == null)
-                    continue;
-                
                 this.AddNotification("Score overtaken", 
                     $"Your #1 score on {level.Title} has been overtaken by {user.Username}!", 
                     player, "medal");   
@@ -69,7 +70,7 @@ public partial class GameDatabaseContext // Leaderboard
             .AsEnumerable();
 
         if (!showDuplicates)
-            scores = scores.DistinctBy(s => s.Players[0]);
+            scores = scores.DistinctBy(s => s.PlayerIds[0]);
 
         return new DatabaseList<GameSubmittedScore>(scores, skip, count);
     }
@@ -85,7 +86,7 @@ public partial class GameDatabaseContext // Leaderboard
             .AsEnumerable()
             .ToList();
 
-        scores = scores.DistinctBy(s => s.Players[0])
+        scores = scores.DistinctBy(s => s.PlayerIds[0])
             .ToList();
 
         return scores.Select((s, i) => new ScoreWithRank(s, i + 1))
@@ -95,15 +96,17 @@ public partial class GameDatabaseContext // Leaderboard
     
     public IEnumerable<ScoreWithRank> GetLevelTopScoresByFriends(GameUser user, GameLevel level, int count, byte type)
     {
-        IEnumerable<GameUser> mutuals = this.GetUsersMutuals(user);
+        IEnumerable<ObjectId> mutuals = this.GetUsersMutuals(user)
+            .AsEnumerableIfRealm()
+            .Select(u => u.UserId);
         
         IEnumerable<GameSubmittedScore> scores = this.GameSubmittedScores
             .Where(s => s.ScoreType == type && s.Level == level)
             .OrderByDescending(s => s.Score)
-            .AsEnumerable()
-            .DistinctBy(s => s.Players[0].UserId)
+            .AsEnumerableIfRealm()
+            .DistinctBy(s => s.PlayerIds[0])
             //TODO: THIS CALL IS EXTREMELY INEFFECIENT!!! once we are in postgres land, figure out a way to do this effeciently
-            .Where(s => s.Players.Any(p => p.UserId == user.UserId || mutuals.Contains(p)))
+            .Where(s => s.PlayerIds.Any(p => p == user.UserId || mutuals.Contains(p)))
             .Take(10)
             .ToList();
 
@@ -146,8 +149,9 @@ public partial class GameDatabaseContext // Leaderboard
             // Realm doesn't support .Contains on IList<T>. Yes, really.
             // This means we are forced to iterate over EVERY SCORE.
             // I can't wait for Postgres.
-            .AsEnumerable()
-            .Where(s => s.Players.Contains(user));
+            .AsEnumerableIfRealm()
+            .Where(s => s.PlayerIdsRaw.Contains(user.UserId.ToString()))
+            .ToArrayIfPostgres();
         
         this.Write(() =>
         {
@@ -160,5 +164,18 @@ public partial class GameDatabaseContext // Leaderboard
                 this.GameSubmittedScores.Remove(score);
             }
         });
+    }
+
+    public IEnumerable<GameUser> GetPlayersFromScore(GameSubmittedScore score)
+    {
+        IEnumerable<ObjectId> playerIds = score.PlayerIds.Select(p => p);
+        return this.GameUsers
+            .AsEnumerableIfRealm()
+            .Where(u => playerIds.Contains(u.UserId));
+    }
+    
+    public GameUser? GetSubmittingPlayerFromScore(GameSubmittedScore score)
+    {
+        return this.GetUserByUuid(score.PlayerIdsRaw.FirstOrDefault());
     }
 }

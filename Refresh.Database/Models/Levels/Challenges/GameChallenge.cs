@@ -40,7 +40,7 @@ public partial class GameChallenge : IRealmObject, ISequentialId
     public DateTimeOffset LastUpdateDate { get; set; }
     public DateTimeOffset ExpirationDate { get; set; }
 
-    public int SequentialId
+    [NotMapped] public int SequentialId
     {
         get => this.ChallengeId;
         set => this.ChallengeId = value;

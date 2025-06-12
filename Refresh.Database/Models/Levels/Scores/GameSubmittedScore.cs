@@ -32,9 +32,18 @@ public partial class GameSubmittedScore : IRealmObject // TODO: Rename to GameSc
     }
 
     public GameLevel Level { get; set; }
-    public IList<GameUser> Players { get; }
     public DateTimeOffset ScoreSubmitted { get; set; }
     
     [Indexed] public int Score { get; set; }
     [Indexed] public byte ScoreType { get; set; }
+    
+#if !POSTGRES
+    public IList<GameUser> Players { get; }
+    [Ignored] public List<ObjectId> PlayerIds => Players.Select(r => r.UserId).ToList();
+    [Ignored] public List<string> PlayerIdsRaw => Players.Select(r => r.UserId.ToString()).ToList();
+#else
+    public List<string> PlayerIdsRaw { get; set; } = [];
+    [NotMapped] public List<ObjectId> PlayerIds => PlayerIdsRaw.Select(ObjectId.Parse).ToList();
+    // set => PlayerIdsRaw = value.Select(v => v.ToString()).ToList();
+#endif
 }
