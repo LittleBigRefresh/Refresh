@@ -36,7 +36,7 @@ public partial class GameDatabaseContext // Comments
         this.GameProfileCommentsIncluded
             .Where(c => c.Profile == profile)
             .OrderByDescending(c => c.Timestamp)
-            .AsEnumerable()
+            .AsEnumerableIfRealm()
             .Skip(skip)
             .Take(count);
     
@@ -72,7 +72,7 @@ public partial class GameDatabaseContext // Comments
         this.GameLevelCommentsIncluded
             .Where(c => c.Level == level)
             .OrderByDescending(c => c.Timestamp)
-            .AsEnumerable()
+            .AsEnumerableIfRealm()
             .Skip(skip)
             .Take(count);
     
