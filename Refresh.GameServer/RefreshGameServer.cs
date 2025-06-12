@@ -1,5 +1,6 @@
 using System.Diagnostics.CodeAnalysis;
 using Bunkum.AutoDiscover.Extensions;
+using Bunkum.Core;
 using Bunkum.Core.Authentication;
 using Bunkum.Core.Configuration;
 using Bunkum.Core.RateLimit;
@@ -64,10 +65,17 @@ public class RefreshGameServer : RefreshServer
         this._databaseProvider = databaseProvider.Invoke();
         this._databaseProvider.Initialize();
         this._dataStore = dataStore;
-        
-        DryArchiveConfig dryConfig = Config.LoadFromJsonFile<DryArchiveConfig>("dry.json", this.Logger);
-        if (dryConfig.Enabled)
-            this._dataStore = new AggregateDataStore(dataStore, new DryDataStore(dryConfig));
+
+        try
+        {
+            DryArchiveConfig dryConfig = Config.LoadFromJsonFile<DryArchiveConfig>("dry.json", this.Logger);
+            if (dryConfig.Enabled)
+                this._dataStore = new AggregateDataStore(dataStore, new DryDataStore(dryConfig));
+        }
+        catch (Exception ex)
+        {
+            this.Logger.LogWarning(BunkumCategory.Configuration, "Failed to read dry.json: " + ex);
+        }
 
         // Uncomment if you want to use production refresh as a source for assets
         // this._dataStore = new AggregateDataStore(dataStore, new RemoteRefreshDataStore());
