@@ -170,8 +170,8 @@ public class TestContext : IDisposable
 
     public void Dispose()
     {
-        this.DatabaseProvider.Dispose();
         this.Database.Dispose();
+        this.DatabaseProvider.Dispose();
         this.Http.Dispose();
         this.Listener.Dispose();
 

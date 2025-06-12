@@ -417,7 +417,10 @@ public partial class GameDatabaseContext // Relations
     
     public GameReview? GetReviewByLevelAndUser(GameLevel level, GameUser user)
     {
-        return this.GameReviewsIncluded.FirstOrDefault(r => r.Level == level && r.Publisher.UserId == user.UserId);
+        return this.GameReviewsIncluded
+            .Where(r => r.Level == level)
+            .AsEnumerableIfRealm()
+            .FirstOrDefault(r => r.Publisher.UserId == user.UserId);
     }
 
     public DatabaseList<GameReview> GetReviewsForLevel(GameLevel level, int count, int skip)

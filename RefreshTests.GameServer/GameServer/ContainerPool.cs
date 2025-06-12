@@ -1,4 +1,6 @@
-﻿using Testcontainers.PostgreSql;
+﻿#if POSTGRES
+
+using Testcontainers.PostgreSql;
 
 namespace RefreshTests.GameServer.GameServer;
 
@@ -47,3 +49,5 @@ public class ContainerPool : IDisposable
         GC.SuppressFinalize(this);
     }
 }
+
+#endif
