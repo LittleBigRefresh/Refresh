@@ -1102,19 +1102,6 @@ namespace Refresh.Database.Migrations
                     b.ToTable("RequestStatistics");
                 });
 
-            modelBuilder.Entity("Refresh.Database.Models.SequentialIdStorage", b =>
-                {
-                    b.Property<string>("TypeName")
-                        .HasColumnType("text");
-
-                    b.Property<int>("SequentialId")
-                        .HasColumnType("integer");
-
-                    b.HasKey("TypeName");
-
-                    b.ToTable("SequentialIdStorage");
-                });
-
             modelBuilder.Entity("Refresh.Database.Models.Users.DisallowedUser", b =>
                 {
                     b.Property<string>("Username")

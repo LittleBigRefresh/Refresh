@@ -100,7 +100,6 @@ public partial class GameDatabaseContext :
     internal DbSet<QueuedRegistration> QueuedRegistrations { get; set; }
     internal DbSet<EmailVerificationCode> EmailVerificationCodes { get; set; }
     internal DbSet<RequestStatistics> RequestStatistics { get; set; }
-    internal DbSet<SequentialIdStorage> SequentialIdStorage { get; set; }
     internal DbSet<GameContest> GameContests { get; set; }
     internal DbSet<AssetDependencyRelation> AssetDependencyRelations { get; set; }
     internal DbSet<GameReview> GameReviews { get; set; }
@@ -150,6 +149,7 @@ public partial class GameDatabaseContext :
     }
 #endif
 
+#if !POSTGRES
     private int GetOrCreateSequentialId<T>() where T : class, IRealmObject, ISequentialId
     {
         string name = typeof(T).Name;
@@ -217,7 +217,6 @@ public partial class GameDatabaseContext :
     private void AddSequentialObject<T>(T obj) where T : class, IRealmObject, ISequentialId 
         => this.AddSequentialObject(obj, null, null);
 
-    #if !POSTGRES
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     private void Write(Action callback)
     {
@@ -237,6 +236,33 @@ public partial class GameDatabaseContext :
     {
         callback();
         this.SaveChanges();
+    }
+
+    private void AddSequentialObject<TEntity>(TEntity entity)
+    {
+        // causes compiler warning without this for some reason even tho no nullable attribute???
+        // in a #nullable-enabled class???
+        // fuck this shit
+        Debug.Assert(entity != null);
+        this.Write(() =>
+        {
+            this.Add(entity);
+        });
+    }
+    
+    private void AddSequentialObject<TEntity>(TEntity entity, Action callback)
+    {
+        this.AddSequentialObject(entity);
+        callback();
+    }
+    
+    private void AddSequentialObject<TEntity>(TEntity entity, IList<TEntity> list)
+    {
+        Debug.Assert(entity != null);
+        this.Write(() =>
+        {
+            list.Add(entity);
+        });
     }
     #endif
 
