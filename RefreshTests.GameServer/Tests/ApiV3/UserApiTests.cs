@@ -155,6 +155,7 @@ public class UserApiTests : GameServerTest
         Assert.That(response, Is.Not.Null);
         Assert.That(response!.Data!.Description, Is.EqualTo(description));
 
+        context.Database.Refresh();
         user = context.Database.GetUserByObjectId(user.UserId)!;
         Assert.That(user.Description, Is.EqualTo(description));
     }

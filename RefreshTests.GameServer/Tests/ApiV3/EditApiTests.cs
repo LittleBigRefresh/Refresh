@@ -28,8 +28,9 @@ public class EditApiTests : GameServerTest
         using HttpClient client = context.GetAuthenticatedClient(TokenType.Api, user);
         HttpResponseMessage response = client.PatchAsync($"/api/v3/levels/id/{level.LevelId}", JsonContent.Create(payload)).Result;
         Assert.That(response.StatusCode, Is.EqualTo(OK));
-        
+
         context.Database.Refresh();
+        level = context.Database.GetLevelById(level.LevelId)!;
         Assert.Multiple(() =>
         {
             Assert.That(level.Title, Is.EqualTo("Updated"));
@@ -87,6 +88,7 @@ public class EditApiTests : GameServerTest
         Assert.That(response.StatusCode, Is.EqualTo(OK));
         
         context.Database.Refresh();
+        level = context.Database.GetLevelById(level.LevelId)!;
         Assert.Multiple(() =>
         {
             Assert.That(level.Title, Is.EqualTo("Updated"));

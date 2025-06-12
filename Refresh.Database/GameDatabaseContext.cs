@@ -17,6 +17,7 @@ using Refresh.Database.Models.Relations;
 using Refresh.Database.Models;
 
 #if POSTGRES
+using System.Diagnostics;
 using MongoDB.Bson;
 using Npgsql;
 #endif
@@ -260,8 +261,11 @@ public partial class GameDatabaseContext :
         this.RemoveRange(this.Set<TClass>());
     }
     
-    [Obsolete("This has no effect in Postgres.")]
     // ReSharper disable once MemberCanBeMadeStatic.Global
-    public void Refresh() {}
+    public void Refresh()
+    {
+        Debug.Assert(!this.ChangeTracker.HasChanges());
+        this.ChangeTracker.Clear();
+    }
     #endif
 }
