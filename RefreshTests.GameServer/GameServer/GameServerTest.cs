@@ -35,6 +35,6 @@ public class GameServerTest
         if (startServer) _ = gameServer.Value;
         else provider.Initialize();
 
-        return new TestContext(gameServer, provider.GetContext(), client, listener, time);
+        return new TestContext(gameServer, provider, client, listener, time);
     }
 }
