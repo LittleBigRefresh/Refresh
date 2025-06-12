@@ -70,6 +70,7 @@ public partial class GameContest : IRealmObject
     
     [CanBeNull] public string ContestTheme { get; set; }
     
+#if !POSTGRES
     /// <summary>
     /// A list of games that are allowed in the contest
     /// </summary>
@@ -89,6 +90,8 @@ public partial class GameContest : IRealmObject
             }
         }
     }
-    
+#else
+    public IList<TokenGame> AllowedGames { get; set; } = [];
+#endif
     [CanBeNull] public GameLevel TemplateLevel { get; set; }
 }
