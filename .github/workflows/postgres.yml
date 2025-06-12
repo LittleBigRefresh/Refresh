@@ -1,0 +1,25 @@
+﻿name: DebugPostgres Test
+
+on:
+  push:
+  pull_request:
+    branches: [ "main" ]
+
+jobs:
+  debug-postgres-tests:
+    name: Run DebugPostgres Tests
+    runs-on: ubuntu-latest
+    continue-on-error: true
+
+    steps:
+      - uses: actions/checkout@v4
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 9.0.x
+
+      - name: Restore dependencies
+        run: dotnet restore
+
+      - name: Run tests with DebugPostgres
+        run: dotnet test --configuration DebugPostgres --verbosity normal
