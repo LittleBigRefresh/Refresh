@@ -61,7 +61,7 @@ public partial class GamePlaylist : IRealmObject, ISequentialId
     /// </summary>
     public bool IsRoot { get; set; }
     
-    public int SequentialId
+    [NotMapped] public int SequentialId
     {
         get => this.PlaylistId;
         set => this.PlaylistId = value;

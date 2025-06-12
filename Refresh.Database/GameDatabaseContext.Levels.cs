@@ -16,6 +16,7 @@ namespace Refresh.Database;
 public partial class GameDatabaseContext // Levels
 {
     private IQueryable<GameLevel> GameLevelsIncluded => this.GameLevels
+        .AsNoTracking()
         .Include(l => l.Publisher)
         .Include(l => l.Reviews);
     

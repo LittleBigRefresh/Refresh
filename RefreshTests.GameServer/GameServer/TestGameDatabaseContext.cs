@@ -1,6 +1,7 @@
 ﻿#if POSTGRES
 
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
 using Refresh.Common.Time;
 using Refresh.Database;
 using Testcontainers.PostgreSql;
@@ -25,6 +26,7 @@ public class TestGameDatabaseContext : GameDatabaseContext
     protected override void OnConfiguring(DbContextOptionsBuilder options)
     {
         options.UseNpgsql(this._container.GetConnectionString() + ";Include Error Detail=true");
+        options.LogTo(Console.WriteLine, LogLevel.Information);
     }
 }
 

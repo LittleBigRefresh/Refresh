@@ -19,7 +19,7 @@ public partial class GameReview : IRealmObject, ISequentialId
     
     public string Content { get; set; }
     
-    public int SequentialId
+    [NotMapped] public int SequentialId
     {
         get => this.ReviewId;
         set => this.ReviewId = value;

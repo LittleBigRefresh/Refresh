@@ -147,7 +147,7 @@ public partial class GamePhoto : IRealmObject, ISequentialId
     
     #endregion
     
-    [JsonIgnore] public int SequentialId
+    [JsonIgnore] [NotMapped] public int SequentialId
     {
         get => this.PhotoId;
         set => this.PhotoId = value;

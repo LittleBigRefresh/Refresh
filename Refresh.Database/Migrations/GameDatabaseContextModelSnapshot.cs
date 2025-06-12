@@ -40,7 +40,7 @@ namespace Refresh.Database.Migrations
                     b.Property<DateTimeOffset>("Timestamp")
                         .HasColumnType("timestamp with time zone");
 
-                    b.Property<string>("UserId1")
+                    b.Property<string>("UserId")
                         .HasColumnType("text");
 
                     b.Property<int>("_EventType")
@@ -51,7 +51,7 @@ namespace Refresh.Database.Migrations
 
                     b.HasKey("EventId");
 
-                    b.HasIndex("UserId1");
+                    b.HasIndex("UserId");
 
                     b.ToTable("Events");
                 });
@@ -227,9 +227,6 @@ namespace Refresh.Database.Migrations
                     b.Property<string>("PublisherUserId")
                         .HasColumnType("text");
 
-                    b.Property<int>("SequentialId")
-                        .HasColumnType("integer");
-
                     b.HasKey("ReviewId");
 
                     b.HasIndex("LevelId");
@@ -318,9 +315,6 @@ namespace Refresh.Database.Migrations
 
                     b.Property<string>("PublisherUserId")
                         .HasColumnType("text");
-
-                    b.Property<int>("SequentialId")
-                        .HasColumnType("integer");
 
                     b.Property<int>("StartCheckpointUid")
                         .HasColumnType("integer");
@@ -454,9 +448,6 @@ namespace Refresh.Database.Migrations
 
                     b.Property<float>("Score")
                         .HasColumnType("real");
-
-                    b.Property<int>("SequentialId")
-                        .HasColumnType("integer");
 
                     b.Property<int>("StoryId")
                         .HasColumnType("integer");
@@ -623,9 +614,6 @@ namespace Refresh.Database.Migrations
                     b.Property<string>("PublisherUserId")
                         .HasColumnType("text");
 
-                    b.Property<int>("SequentialId")
-                        .HasColumnType("integer");
-
                     b.Property<string>("SmallAssetAssetHash")
                         .HasColumnType("text");
 
@@ -730,9 +718,6 @@ namespace Refresh.Database.Migrations
                     b.Property<string>("PublisherId")
                         .IsRequired()
                         .HasColumnType("text");
-
-                    b.Property<int>("SequentialId")
-                        .HasColumnType("integer");
 
                     b.HasKey("PlaylistId");
 
@@ -1324,7 +1309,7 @@ namespace Refresh.Database.Migrations
                 {
                     b.HasOne("Refresh.Database.Models.Users.GameUser", "User")
                         .WithMany()
-                        .HasForeignKey("UserId1");
+                        .HasForeignKey("UserId");
 
                     b.Navigation("User");
                 });
