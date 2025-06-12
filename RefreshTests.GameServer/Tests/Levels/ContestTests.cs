@@ -147,7 +147,7 @@ public class ContestTests : GameServerTest
         {
             OrganizerId = contest.Organizer.UserId.ToString(),
             ContestTag = "#ut2",
-        });
+        }, false, true);
         
         Assert.That(response, Is.Not.Null);
         Assert.That(response!.Success, Is.False);

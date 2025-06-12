@@ -74,7 +74,7 @@ public class CommentEndpoints : EndpointGroup
             return Unauthorized;
         }
 
-        database.DeleteProfileComment(comment, profile);
+        database.DeleteProfileComment(comment);
 
         return OK;
     }
@@ -136,7 +136,7 @@ public class CommentEndpoints : EndpointGroup
             return Unauthorized;
         }
         
-        database.DeleteLevelComment(comment, level);
+        database.DeleteLevelComment(comment);
         
         return OK;
     }

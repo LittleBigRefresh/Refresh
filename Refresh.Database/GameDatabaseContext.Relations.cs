@@ -21,7 +21,9 @@ public partial class GameDatabaseContext // Relations
         => new(this.FavouriteLevelRelations
         .Where(r => r.User == user)
         .OrderByDescending(r => r.Timestamp)
-        .AsEnumerable()
+        .Include(r => r.Level.Publisher)
+        .Include(r => r.Level.Reviews)
+        .AsEnumerableIfRealm()
         .Select(r => r.Level)
         .FilterByLevelFilterSettings(accessor, levelFilterSettings)
         .FilterByGameVersion(levelFilterSettings.GameVersion), skip, count);
@@ -151,7 +153,9 @@ public partial class GameDatabaseContext // Relations
         => new(this.QueueLevelRelations
         .Where(r => r.User == user)
         .OrderByDescending(r => r.Timestamp)
-        .AsEnumerable()
+        .Include(r => r.Level.Publisher)
+        .Include(r => r.Level.Reviews)
+        .AsEnumerableIfRealm()
         .Select(r => r.Level)
         .FilterByLevelFilterSettings(accessor, levelFilterSettings)
         .FilterByGameVersion(levelFilterSettings.GameVersion), skip, count);
@@ -388,6 +392,7 @@ public partial class GameDatabaseContext // Relations
     public DatabaseList<GameReview> GetReviewsForLevel(GameLevel level, int count, int skip)
         => new(this.GameReviews
             .Where(r => r.Level == level)
+            .AsEnumerable()
             // Sort reviews from most liked to most disliked
             .OrderByDescending(this.GetRawRatingForReview), skip, count);
     

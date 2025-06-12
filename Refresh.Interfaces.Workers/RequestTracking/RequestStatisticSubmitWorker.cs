@@ -1,5 +1,4 @@
 using Refresh.Core.Types.Data;
-using TrackingService = Refresh.Interfaces.Workers.RequestTracking.RequestStatisticTrackingService;
 
 namespace Refresh.Interfaces.Workers.RequestTracking;
 
@@ -9,9 +8,8 @@ public class RequestStatisticSubmitWorker : IWorker
     
     public void DoWork(DataContext context)
     {
-        (int game, int api) = TrackingService.SubmitAndClearRequests();
+        (int game, int api) = RequestStatisticTrackingService.SubmitAndClearRequests();
         
-        context.Database.IncrementGameRequests(game);
-        context.Database.IncrementApiRequests(api);
+        context.Database.IncrementRequests(api, game);
     }
 }

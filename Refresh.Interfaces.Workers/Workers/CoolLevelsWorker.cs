@@ -42,7 +42,7 @@ public class CoolLevelsWorker : IWorker
         {
             scoresToSet.Clear(); // Re-use the same dictionary object.
             
-            foreach (GameLevel level in levels.Items)
+            foreach (GameLevel level in levels.Items.ToArray())
             {
                 Log(context.Logger, LogLevel.Trace, "Calculating score for '{0}' ({1})", level.Title, level.LevelId);
                 float decayMultiplier = CalculateLevelDecayMultiplier(context.Logger, now, level);

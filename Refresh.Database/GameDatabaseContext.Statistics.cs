@@ -18,21 +18,14 @@ public partial class GameDatabaseContext // Statistics
         return statistics;
     }
     
-    public void IncrementApiRequests(int count)
+    public void IncrementRequests(int api, int game)
     {
         RequestStatistics statistics = this.GetRequestStatistics();
         this.Write(() => {
-            statistics.TotalRequests += count;
-            statistics.ApiRequests += count;
-        });
-    }
-    
-    public void IncrementGameRequests(int count)
-    {
-        RequestStatistics statistics = this.GetRequestStatistics();
-        this.Write(() => {
-            statistics.TotalRequests += count;
-            statistics.GameRequests += count;
+            statistics.ApiRequests += api;
+            statistics.GameRequests += game;
+
+            statistics.TotalRequests = statistics.ApiRequests + statistics.GameRequests;
         });
     }
 }
