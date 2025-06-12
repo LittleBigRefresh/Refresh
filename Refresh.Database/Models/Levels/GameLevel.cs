@@ -95,15 +95,18 @@ public partial class GameLevel : IRealmObject, ISequentialId
     public float Score { get; set; }
 
 #nullable disable
+    #if !POSTGRES
     // ILists can't be serialized to XML, and Lists/Arrays cannot be stored in realm,
     // hence _SkillRewards and SkillRewards both existing
     // ReSharper disable once InconsistentNaming
     public IList<GameSkillReward> _SkillRewards { get; }
+    #endif
     
     public IList<GameReview> Reviews { get; }
     
 #nullable restore
     
+    #if !POSTGRES
     [XmlArray("customRewards")]
     [XmlArrayItem("customReward")]
     public GameSkillReward[] SkillRewards
@@ -123,6 +126,14 @@ public partial class GameLevel : IRealmObject, ISequentialId
             }
         }
     }
+    #else
+    // TODO: Port GameSkillRewards to not use IEmbeddedObject
+    public GameSkillReward[] SkillRewards
+    {
+        get => [];
+        set => _ = value;
+    }
+    #endif
     
     public int SequentialId
     {

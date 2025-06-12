@@ -496,9 +496,6 @@ namespace Refresh.Database.Migrations
                     b.Property<int?>("GameLevelLevelId")
                         .HasColumnType("integer");
 
-                    b.Property<int?>("GameLevelLevelId1")
-                        .HasColumnType("integer");
-
                     b.Property<float>("RequiredAmount")
                         .HasColumnType("real");
 
@@ -511,8 +508,6 @@ namespace Refresh.Database.Migrations
                     b.HasKey("Id");
 
                     b.HasIndex("GameLevelLevelId");
-
-                    b.HasIndex("GameLevelLevelId1");
 
                     b.ToTable("GameSkillReward");
                 });
@@ -1452,10 +1447,6 @@ namespace Refresh.Database.Migrations
                     b.HasOne("Refresh.Database.Models.Levels.GameLevel", null)
                         .WithMany("SkillRewards")
                         .HasForeignKey("GameLevelLevelId");
-
-                    b.HasOne("Refresh.Database.Models.Levels.GameLevel", null)
-                        .WithMany("_SkillRewards")
-                        .HasForeignKey("GameLevelLevelId1");
                 });
 
             modelBuilder.Entity("Refresh.Database.Models.Levels.Scores.GameSubmittedScore", b =>
@@ -1848,8 +1839,6 @@ namespace Refresh.Database.Migrations
                     b.Navigation("Reviews");
 
                     b.Navigation("SkillRewards");
-
-                    b.Navigation("_SkillRewards");
                 });
 
             modelBuilder.Entity("Refresh.Database.Models.Levels.Scores.GameSubmittedScore", b =>
