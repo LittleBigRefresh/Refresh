@@ -19,7 +19,9 @@ public partial class GamePhoto : IRealmObject, ISequentialId
     
     public GameUser Publisher { get; set; }
     #nullable restore
+    [ForeignKey(nameof(LevelIdKey))]
     public GameLevel? Level { get; set; }
+    public int? LevelIdKey { get; set; }
     #nullable disable
     
     public string LevelName { get; set; }

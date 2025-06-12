@@ -13,8 +13,18 @@ public static class QueryableExtensions
     {
         return queryable.AsEnumerable();
     }
+    
+    public static IEnumerable<T> AsEnumerableIfRealm<T>(this IEnumerable<T> queryable)
+    {
+        return queryable.AsEnumerable();
+    }
 #else
     public static IQueryable<T> AsEnumerableIfRealm<T>(this IQueryable<T> queryable)
+    {
+        return queryable;
+    }
+    
+    public static IEnumerable<T> AsEnumerableIfRealm<T>(this IEnumerable<T> queryable)
     {
         return queryable;
     }

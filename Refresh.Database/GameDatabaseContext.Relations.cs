@@ -77,7 +77,7 @@ public partial class GameDatabaseContext // Relations
 
     [Pure]
     private bool IsUserFavouritedByUser(GameUser userToFavourite, GameUser userFavouriting) => this.FavouriteUserRelations
-        .FirstOrDefault(r => r.UserToFavourite == userToFavourite && r.UserFavouriting == userFavouriting) != null;
+        .Any(r => r.UserToFavourite == userToFavourite && r.UserFavouriting == userFavouriting);
 
     [Pure]
     public bool AreUsersMutual(GameUser user1, GameUser user2) =>
@@ -87,7 +87,8 @@ public partial class GameDatabaseContext // Relations
     [Pure]
     public IEnumerable<GameUser> GetUsersMutuals(GameUser user)
     {
-        return this.GetUsersFavouritedByUser(user, 1000, 0).AsEnumerable()
+        return this.GetUsersFavouritedByUser(user, 1000, 0)
+            .ToArray()
             .Where(u => this.IsUserFavouritedByUser(user, u));
     }
     
@@ -95,7 +96,7 @@ public partial class GameDatabaseContext // Relations
     public IEnumerable<GameUser> GetUsersFavouritedByUser(GameUser user, int count, int skip) => this.FavouriteUserRelationsIncluded
         .Where(r => r.UserFavouriting == user)
         .OrderByDescending(r => r.Timestamp)
-        .AsEnumerable()
+        .AsEnumerableIfRealm()
         .Select(r => r.UserToFavourite)
         .Skip(skip)
         .Take(count);

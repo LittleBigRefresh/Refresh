@@ -11,7 +11,7 @@ public static class DatabaseListExtensions
         where TNewObject : class, IDataConvertableFrom<TNewObject, TOldObject>
         where TOldObject : class
     {
-        DatabaseList<TNewObject> newList = new(oldList.TotalItems, oldList.NextPageIndex, TNewObject.FromOldList(oldList.Items, dataContext));
+        DatabaseList<TNewObject> newList = new(oldList.TotalItems, oldList.NextPageIndex, TNewObject.FromOldList(oldList.Items.ToArray(), dataContext));
         return newList;
     }
 }
