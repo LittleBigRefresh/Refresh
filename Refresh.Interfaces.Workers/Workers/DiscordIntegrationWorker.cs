@@ -99,7 +99,7 @@ public class DiscordIntegrationWorker : IWorker
             embed.WithThumbnailUrl(this.GetAssetUrl(user.IconHash));
         
         embed.WithTimestamp(@event.Timestamp);
-        embed.WithAuthor(@event.User.Username, this.GetAssetUrl(@event.User.IconHash), $"{this._externalUrl}/u/{@event.UserId}");
+        embed.WithAuthor(@event.User.Username, this.GetAssetUrl(@event.User.IconHash), $"{this._externalUrl}/u/{@event.User.UserId}");
 
         return embed.Build();
     }

@@ -55,7 +55,7 @@ public partial class GameDatabaseContext // Tokens
         
         if (user.LastLoginDate == DateTimeOffset.MinValue)
         {
-            this.CreateUserFirstLoginEvent(user, user);
+            this.CreateUserFirstLoginEvent(user);
         }
 
         this.Write(() =>
