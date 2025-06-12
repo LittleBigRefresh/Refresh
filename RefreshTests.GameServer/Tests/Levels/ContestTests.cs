@@ -126,9 +126,11 @@ public class ContestTests : GameServerTest
             OrganizerId = contest.Organizer.UserId.ToString(),
             ContestTag = "#ut2",
         });
-        
+
         Assert.That(response, Is.Not.Null);
         Assert.That(response!.Success, Is.True);
+
+        context.Database.Refresh();
 
         GameContest? createdContest = context.Database.GetContestById("ut");
         Assert.That(createdContest, Is.Not.Null);

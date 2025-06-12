@@ -274,7 +274,7 @@ public partial class GameDatabaseContext // Relations
     
     public DatabaseRating GetRatingForReview(GameReview review)
     {
-        IQueryable<RateReviewRelation> relations = this.RateReviewRelations.Where(r => r.Review == review);
+        IEnumerable<RateReviewRelation> relations = this.RateReviewRelations.Where(r => r.Review == review);
         DatabaseRating rating = new();
 
         foreach (RateReviewRelation relation in relations)

@@ -94,8 +94,12 @@ public class ReviewEndpoints : EndpointGroup
             return NotFound;
 
         (int skip, int count) =  context.GetPageData();
-        
-        return new Response(new SerializedGameReviewResponse(SerializedGameReview.FromOldList(database.GetReviewsByUser(user, count, skip).Items, dataContext).ToList()), ContentType.Xml);
+
+        IEnumerable<GameReview> items = database.GetReviewsByUser(user, count, skip)
+            .Items
+            .ToArrayIfPostgres();
+
+        return new Response(new SerializedGameReviewResponse(SerializedGameReview.FromOldList(items, dataContext).ToList()), ContentType.Xml);
     }
 
     [GameEndpoint("postReview/{slotType}/{id}", ContentType.Xml, HttpMethods.Post)]

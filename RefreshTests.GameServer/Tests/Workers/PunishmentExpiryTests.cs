@@ -11,9 +11,7 @@ public class PunishmentExpiryTests : GameServerTest
     [Test]
     public void BannedUsersExpire()
     {
-        using TestContext context = this.GetServer(false);
-        using Logger logger = new(new []{ new NUnitSink() });
-        
+        using TestContext context = this.GetServer();
         PunishmentExpiryWorker worker = new();
         GameUser user = context.CreateUser();
         Assert.Multiple(() =>
@@ -39,6 +37,8 @@ public class PunishmentExpiryTests : GameServerTest
         context.Time.TimestampMilliseconds = 2000;
         worker.DoWork(context.GetDataContext());
         
+        context.Database.Refresh();
+        user = context.Database.GetUserByObjectId(user.UserId)!;
         Assert.Multiple(() =>
         {
             Assert.That(user.Role, Is.EqualTo(User));
@@ -48,9 +48,7 @@ public class PunishmentExpiryTests : GameServerTest
     [Test]
     public void RestrictedUsersExpire()
     {
-        using TestContext context = this.GetServer(false);
-        using Logger logger = new(new []{ new NUnitSink() });
-        
+        using TestContext context = this.GetServer();
         PunishmentExpiryWorker worker = new();
         
         GameUser user = context.CreateUser();
@@ -68,6 +66,8 @@ public class PunishmentExpiryTests : GameServerTest
         context.Time.TimestampMilliseconds = 2000;
         worker.DoWork(context.GetDataContext());
         
+        context.Database.Refresh();
+        user = context.Database.GetUserByObjectId(user.UserId)!;
         Assert.Multiple(() =>
         {
             Assert.That(user.Role, Is.EqualTo(User));

@@ -2,6 +2,7 @@ using System.Diagnostics;
 using System.Text;
 using Bunkum.Core.Responses;
 using Newtonsoft.Json;
+using Refresh.Core.Configuration;
 using Refresh.Core.Services;
 using Refresh.Core.Types.Data;
 using Refresh.Core.Types.Matching;
@@ -17,6 +18,7 @@ public class MatchingTests : GameServerTest
     public void CreatesRooms()
     {
         using TestContext context = this.GetServer(false);
+        GameServerConfig config = new();
         MatchService match = new(Logger);
         match.Initialize();
 
@@ -37,21 +39,21 @@ public class MatchingTests : GameServerTest
         match.ExecuteMethod("CreateRoom", roomData, new DataContext
         {
             Database = context.Database,
-            Logger = context.Server.Value.Logger,
+            Logger = Logger,
             DataStore = null!, //this isn't accessed by matching
             Match = match,
             GuidChecker = null!,
             Token = token1,
-        }, context.Server.Value.GameServerConfig);
+        }, config);
         match.ExecuteMethod("CreateRoom", roomData, new DataContext
         {
             Database = context.Database,
-            Logger = context.Server.Value.Logger,
+            Logger = Logger,
             DataStore = null!,
             Match = match,
             Token = token2,
             GuidChecker = null!,
-        }, context.Server.Value.GameServerConfig);
+        }, config);
         
         Assert.Multiple(() =>
         {
@@ -76,6 +78,7 @@ public class MatchingTests : GameServerTest
     public void DoesntMatchIfNoRooms()
     {
         using TestContext context = this.GetServer(false);
+        GameServerConfig config = new();
         MatchService match = new(Logger);
         match.Initialize();
         
@@ -93,12 +96,12 @@ public class MatchingTests : GameServerTest
         match.ExecuteMethod("CreateRoom", roomData, new DataContext
         {
             Database = context.Database,
-            Logger = context.Server.Value.Logger,
+            Logger = Logger,
             GuidChecker = null!,
             DataStore = null!, //this isn't accessed by matching
             Match = match,
             Token = token1,
-        }, context.Server.Value.GameServerConfig);
+        }, config);
         
         // Tell user1 to try to find a room
         Response response = match.ExecuteMethod("FindBestRoom", new SerializedRoomData
@@ -110,12 +113,12 @@ public class MatchingTests : GameServerTest
         }, new DataContext
         {
             Database = context.Database,
-            Logger = context.Server.Value.Logger,
+            Logger = Logger,
             GuidChecker = null!,
             DataStore = null!, //this isn't accessed by matching
             Match = match,
             Token = token1,
-        }, context.Server.Value.GameServerConfig);
+        }, config);
 
         // Deserialize the result
         List<SerializedStatusCodeMatchResponse> responseObjects =
@@ -131,6 +134,7 @@ public class MatchingTests : GameServerTest
     public void StrictNatCantJoinStrict()
     {
         using TestContext context = this.GetServer(false);
+        GameServerConfig config = new();
         MatchService match = new(Logger);
         match.Initialize();
         
@@ -153,31 +157,31 @@ public class MatchingTests : GameServerTest
         match.ExecuteMethod("CreateRoom", roomData, new DataContext
         {
             Database = context.Database,
-            Logger = context.Server.Value.Logger,
+            Logger = Logger,
             DataStore = null!, //this isn't accessed by matching
             Match = match,
             GuidChecker = null!,
             Token = token1,
-        }, context.Server.Value.GameServerConfig);
+        }, config);
         match.ExecuteMethod("CreateRoom", roomData, new DataContext
         {
             Database = context.Database,
-            Logger = context.Server.Value.Logger,
+            Logger = Logger,
             DataStore = null!,
             Match = match,
             Token = token2,
             GuidChecker = null!,
-        }, context.Server.Value.GameServerConfig);
+        }, config);
         
         // Tell user2 to try to find a room
         Response response = match.ExecuteMethod("FindBestRoom", new SerializedRoomData { NatType = [NatType.Strict], }, new DataContext {
             Database = context.Database,
-            Logger = context.Server.Value.Logger,
+            Logger = Logger,
             DataStore = null!,
             Match = match,
             GuidChecker = null!,
             Token = token2,
-        }, context.Server.Value.GameServerConfig);
+        }, config);
         
         //Deserialize the result
         List<SerializedStatusCodeMatchResponse> responseObjects =
@@ -193,6 +197,7 @@ public class MatchingTests : GameServerTest
     public void StrictNatCanJoinOpen()
     {
         using TestContext context = this.GetServer(false);
+        GameServerConfig config = new();
         MatchService match = new(Logger);
         match.Initialize();
         
@@ -224,21 +229,21 @@ public class MatchingTests : GameServerTest
         match.ExecuteMethod("CreateRoom", roomData, new DataContext
         {
             Database = context.Database,
-            Logger = context.Server.Value.Logger,
+            Logger = Logger,
             DataStore = null!, //this isn't accessed by matching
             Match = match,
             Token = token1,
             GuidChecker = null!,
-        }, context.Server.Value.GameServerConfig);
+        }, config);
         match.ExecuteMethod("CreateRoom", roomData2, new DataContext
         {
             Database = context.Database,
-            Logger = context.Server.Value.Logger,
+            Logger = Logger,
             DataStore = null!,
             Match = match,
             Token = token2, 
             GuidChecker = null!,
-        }, context.Server.Value.GameServerConfig);
+        }, config);
         
         // Tell user2 to try to find a room
         Response response = match.ExecuteMethod("FindBestRoom", new SerializedRoomData
@@ -249,12 +254,12 @@ public class MatchingTests : GameServerTest
         }, new DataContext
         {
             Database = context.Database,
-            Logger = context.Server.Value.Logger,
+            Logger = Logger,
             DataStore = null!, //this isn't accessed by matching
             Match = match,
             Token = token2,
             GuidChecker = null!,
-        }, context.Server.Value.GameServerConfig);
+        }, config);
         Assert.That(response.StatusCode, Is.EqualTo(OK));
     }
 
@@ -262,6 +267,7 @@ public class MatchingTests : GameServerTest
     public void MatchesPlayersTogether()
     {
         using TestContext context = this.GetServer(false);
+        GameServerConfig config = new();
         MatchService match = new(Logger);
         match.Initialize();
         
@@ -284,21 +290,21 @@ public class MatchingTests : GameServerTest
         match.ExecuteMethod("CreateRoom", roomData, new DataContext
         {
             Database = context.Database,
-            Logger = context.Server.Value.Logger,
+            Logger = Logger,
             DataStore = null!, //this isn't accessed by matching
             Match = match,
             Token = token1,
             GuidChecker = null!,
-        }, context.Server.Value.GameServerConfig);
+        }, config);
         match.ExecuteMethod("CreateRoom", roomData, new DataContext
         {
             Database = context.Database,
-            Logger = context.Server.Value.Logger,
+            Logger = Logger,
             DataStore = null!,
             Match = match,
             Token = token2,
             GuidChecker = null!,
-        }, context.Server.Value.GameServerConfig);
+        }, config);
         
         // Tell user2 to try to find a room
         Response response = match.ExecuteMethod("FindBestRoom", new SerializedRoomData
@@ -309,12 +315,12 @@ public class MatchingTests : GameServerTest
         }, new DataContext
         {
             Database = context.Database,
-            Logger = context.Server.Value.Logger,
+            Logger = Logger,
             DataStore = null!, //this isn't accessed by matching
             Match = match,
             Token = token2,
             GuidChecker = null!,
-        }, context.Server.Value.GameServerConfig);
+        }, config);
         Assert.That(response.StatusCode, Is.EqualTo(OK));
     }
 
@@ -322,6 +328,7 @@ public class MatchingTests : GameServerTest
     public void HostCanSetPlayersInRoom()
     {
         using TestContext context = this.GetServer(false);
+        GameServerConfig config = new();
         MatchService match = new(Logger);
         match.Initialize();
         
@@ -341,24 +348,26 @@ public class MatchingTests : GameServerTest
         Token token1 = context.CreateToken(user1);
         Token token2 = context.CreateToken(user2);
         
+        context.Database.Refresh();
+        
         match.ExecuteMethod("CreateRoom", roomData, new DataContext
         {
             Database = context.Database,
-            Logger = context.Server.Value.Logger,
+            Logger = Logger,
             DataStore = null!, //this isn't accessed by matching
             Match = match,
             Token = token1,
             GuidChecker = null!,
-        }, context.Server.Value.GameServerConfig);
+        }, config);
         match.ExecuteMethod("CreateRoom", roomData, new DataContext
         {
             Database = context.Database,
-            Logger = context.Server.Value.Logger,
+            Logger = Logger,
             DataStore = null!,
             Match = match,
             Token = token2,
             GuidChecker = null!,
-        }, context.Server.Value.GameServerConfig);
+        }, config);
         
         // Get user1 and user2 in the same room
         roomData.Players = new List<string>
@@ -370,12 +379,12 @@ public class MatchingTests : GameServerTest
         match.ExecuteMethod("UpdatePlayersInRoom", roomData, new DataContext
         {
             Database = context.Database,
-            Logger = context.Server.Value.Logger,
+            Logger = Logger,
             DataStore = null!, //this isn't accessed by matching
             Match = match,
             Token = token1,
             GuidChecker = null!,
-        }, context.Server.Value.GameServerConfig);
+        }, config);
         GameRoom? room = match.RoomAccessor.GetRoomByUser(user1);
         Assert.Multiple(() =>
         {
@@ -390,6 +399,7 @@ public class MatchingTests : GameServerTest
     public void PlayersCanLeaveAndSplitIntoNewRoom()
     {
         using TestContext context = this.GetServer(false);
+        GameServerConfig config = new();
         MatchService match = new(Logger);
         match.Initialize();
         
@@ -412,21 +422,21 @@ public class MatchingTests : GameServerTest
         match.ExecuteMethod("CreateRoom", roomData, new DataContext
         {
             Database = context.Database,
-            Logger = context.Server.Value.Logger,
+            Logger = Logger,
             DataStore = null!, //this isn't accessed by matching
             Match = match,
             Token = token1,
             GuidChecker = null!,
-        }, context.Server.Value.GameServerConfig);
+        }, config);
         match.ExecuteMethod("CreateRoom", roomData, new DataContext
         {
             Database = context.Database,
-            Logger = context.Server.Value.Logger,
+            Logger = Logger,
             DataStore = null!,
             Match = match,
             Token = token2,
             GuidChecker = null!,
-        }, context.Server.Value.GameServerConfig);
+        }, config);
         
         // Get user1 and user2 in the same room
         roomData.Players = new List<string>
@@ -439,12 +449,12 @@ public class MatchingTests : GameServerTest
             match.ExecuteMethod("UpdatePlayersInRoom", roomData, new DataContext
             {
                 Database = context.Database,
-                Logger = context.Server.Value.Logger,
+                Logger = Logger,
                 DataStore = null!, //this isn't accessed by matching
                 Match = match,
                 Token = token1,
                 GuidChecker = null!,
-            }, context.Server.Value.GameServerConfig);
+            }, config);
             GameRoom? user1Room = match.RoomAccessor.GetRoomByUser(user1);
             Assert.That(user1Room, Is.Not.Null);
             Assert.That(user1Room!.PlayerIds.FirstOrDefault(r => r.Id == user2.UserId), Is.Not.Null);
@@ -454,12 +464,12 @@ public class MatchingTests : GameServerTest
             match.ExecuteMethod("CreateRoom", roomData, new DataContext
             {
                 Database = context.Database,
-                Logger = context.Server.Value.Logger,
+                Logger = Logger,
                 DataStore = null!, //this isn't accessed by matching
                 Match = match,
                 Token = token2,
                 GuidChecker = null!,
-            }, context.Server.Value.GameServerConfig);
+            }, config);
             GameRoom? user1Room = match.RoomAccessor.GetRoomByUser(user1);
             GameRoom? user2Room = match.RoomAccessor.GetRoomByUser(user2);
             Assert.That(user1Room, Is.Not.Null);
@@ -474,6 +484,7 @@ public class MatchingTests : GameServerTest
     public void DoesntMatchIfLookingForLevelWhenPod()
     {
         using TestContext context = this.GetServer(false);
+        GameServerConfig config = new();
         MatchService match = new(Logger);
         match.Initialize();
         
@@ -498,8 +509,8 @@ public class MatchingTests : GameServerTest
         Token token1 = context.CreateToken(user1);
         Token token2 = context.CreateToken(user2);
 
-        match.ExecuteMethod("CreateRoom", roomData, context.GetDataContext(token1), context.Server.Value.GameServerConfig);
-        match.ExecuteMethod("CreateRoom", roomData, context.GetDataContext(token2), context.Server.Value.GameServerConfig);
+        match.ExecuteMethod("CreateRoom", roomData, context.GetDataContext(token1), config);
+        match.ExecuteMethod("CreateRoom", roomData, context.GetDataContext(token2), config);
         
         // Tell user2 to try to find a room
         Response response = match.ExecuteMethod("FindBestRoom", new SerializedRoomData
@@ -512,7 +523,7 @@ public class MatchingTests : GameServerTest
                 (int)RoomSlotType.Online,
                 1337,
             ],
-        }, context.GetDataContext(token2), context.Server.Value.GameServerConfig);
+        }, context.GetDataContext(token2), config);
         Assert.That(response.StatusCode, Is.EqualTo(NotFound));
     }
 }
