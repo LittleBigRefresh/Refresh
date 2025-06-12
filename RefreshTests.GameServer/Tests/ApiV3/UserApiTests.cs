@@ -19,7 +19,7 @@ public class UserApiTests : GameServerTest
         ApiResponse<ApiGameUserResponse>? response = context.Http.GetData<ApiGameUserResponse>($"/api/v3/users/name/{user.Username}");
         Assert.That(response, Is.Not.Null);
         
-        response = context.Http.GetData<ApiGameUserResponse>($"/api/v3/users/uuid/{user.Username}");
+        response = context.Http.GetData<ApiGameUserResponse>($"/api/v3/users/uuid/{user.Username}", false, true);
         Assert.That(response, Is.Not.Null);
         response!.AssertErrorIsEqual(ApiNotFoundError.UserMissingError);
     }
@@ -57,7 +57,7 @@ public class UserApiTests : GameServerTest
             Username = username,
             EmailAddress = "guy@lil.com",
             PasswordSha512 = "ee26b0dd4af7e749aa1a8ee3c10ae9923f618980772e473f8819a5d4940e0db27ac185f8a0e1d5f84f88bc887fd67b143732c304cc5fa9ad8e6f57f50028a8ff",
-        });
+        }, false, true);
         Assert.That(response, Is.Not.Null);
         Assert.That(response!.Error, Is.Not.EqualTo(null));
         Assert.That(response.Error!.Name, Is.EqualTo("ApiAuthenticationError"));
@@ -78,7 +78,7 @@ public class UserApiTests : GameServerTest
             Username = username,
             EmailAddress = "far4@toolkit.vita",
             PasswordSha512 = "ee26b0dd4af7e749aa1a8ee3c10ae9923f618980772e473f8819a5d4940e0db27ac185f8a0e1d5f84f88bc887fd67b143732c304cc5fa9ad8e6f57f50028a8ff",
-        });
+        }, false, true);
         Assert.That(response, Is.Not.Null);
         Assert.That(response!.Error, Is.Not.Null);
         Assert.That(response.Error!.Name, Is.EqualTo("ApiValidationError"));
@@ -96,7 +96,7 @@ public class UserApiTests : GameServerTest
         ApiResponse<ApiGameUserResponse>? response = context.Http.GetData<ApiGameUserResponse>($"/api/v3/users/uuid/{user.UserId.ToString()}");
         Assert.That(response, Is.Not.Null);
         
-        response = context.Http.GetData<ApiGameUserResponse>($"/api/v3/users/name/{user.UserId.ToString()}");
+        response = context.Http.GetData<ApiGameUserResponse>($"/api/v3/users/name/{user.UserId.ToString()}", false, true);
         Assert.That(response, Is.Not.Null);
         response!.AssertErrorIsEqual(ApiNotFoundError.UserMissingError);
     }
@@ -107,11 +107,11 @@ public class UserApiTests : GameServerTest
         using TestContext context = this.GetServer();
         context.CreateUser();
 
-        ApiResponse<ApiGameUserResponse>? response = context.Http.GetData<ApiGameUserResponse>("/api/v3/users/name/dingus");
+        ApiResponse<ApiGameUserResponse>? response = context.Http.GetData<ApiGameUserResponse>("/api/v3/users/name/dingus", false, true);
         Assert.That(response, Is.Not.Null);
         response!.AssertErrorIsEqual(ApiNotFoundError.UserMissingError);
         
-        response = context.Http.GetData<ApiGameUserResponse>("/api/v3/users/uuid/dingus");
+        response = context.Http.GetData<ApiGameUserResponse>("/api/v3/users/uuid/dingus", false, true);
         Assert.That(response, Is.Not.Null);
         response!.AssertErrorIsEqual(ApiNotFoundError.UserMissingError);
     }
@@ -154,9 +154,8 @@ public class UserApiTests : GameServerTest
         ApiResponse<ApiGameUserResponse>? response = client.PatchData<ApiGameUserResponse>("/api/v3/users/me", payload);
         Assert.That(response, Is.Not.Null);
         Assert.That(response!.Data!.Description, Is.EqualTo(description));
-        
-        context.Database.Refresh();
-        
+
+        user = context.Database.GetUserByObjectId(user.UserId)!;
         Assert.That(user.Description, Is.EqualTo(description));
     }
 }

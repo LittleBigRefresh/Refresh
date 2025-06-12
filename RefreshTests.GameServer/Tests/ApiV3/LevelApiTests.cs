@@ -56,7 +56,7 @@ public class LevelApiTests : GameServerTest
     {
         using TestContext context = this.GetServer();
         
-        ApiListResponse<ApiLevelCategoryResponse>? categories = context.Http.GetList<ApiLevelCategoryResponse>("/api/v3/levels?includePreviews=babelababehbaooh"); // https://youtu.be/K4w1h_r8l2Y?t=17
+        ApiListResponse<ApiLevelCategoryResponse>? categories = context.Http.GetList<ApiLevelCategoryResponse>("/api/v3/levels?includePreviews=babelababehbaooh", false, true); // https://youtu.be/K4w1h_r8l2Y?t=17
         Assert.That(categories, Is.Not.Null);
         categories!.AssertErrorIsEqual(ApiValidationError.BooleanParseError);
     }
@@ -92,7 +92,7 @@ public class LevelApiTests : GameServerTest
         using TestContext context = this.GetServer();
         context.CreateLevel(context.CreateUser());
 
-        ApiResponse<ApiGameLevelResponse>? levelResponse = context.Http.GetData<ApiGameLevelResponse>($"/api/v3/levels/id/{int.MaxValue}");
+        ApiResponse<ApiGameLevelResponse>? levelResponse = context.Http.GetData<ApiGameLevelResponse>($"/api/v3/levels/id/{int.MaxValue}", false, true);
         Assert.That(levelResponse, Is.Not.Null);
         levelResponse!.AssertErrorIsEqual(ApiNotFoundError.LevelMissingError);
     }

@@ -18,28 +18,44 @@ public static class HttpClientExtensions
     }
     
     [Pure]
-    public static ApiResponse<TData>? GetData<TData>(this HttpClient client, string endpoint) where TData : class, IApiResponse
+    public static ApiResponse<TData>? GetData<TData>(this HttpClient client, string endpoint, bool ensureSuccessful = true, bool ensureFailure = false) where TData : class, IApiResponse
     {
         HttpResponseMessage response = client.GetAsync(endpoint).Result;
+        if (ensureSuccessful)
+            Assert.That(response.StatusCode, Is.EqualTo(OK));
+        else if (ensureFailure)
+            Assert.That(response.StatusCode, Is.Not.EqualTo(OK));
         return ReadData<TData>(response.Content);
     }
     
     [Pure]
-    public static ApiListResponse<TData>? GetList<TData>(this HttpClient client, string endpoint) where TData : class, IApiResponse
+    public static ApiListResponse<TData>? GetList<TData>(this HttpClient client, string endpoint, bool ensureSuccessful = true, bool ensureFailure = false) where TData : class, IApiResponse
     {
         HttpResponseMessage response = client.GetAsync(endpoint).Result;
+        if (ensureSuccessful)
+            Assert.That(response.StatusCode, Is.EqualTo(OK));
+        else if (ensureFailure)
+            Assert.That(response.StatusCode, Is.Not.EqualTo(OK));
         return ReadList<TData>(response.Content);
     }
     
-    public static ApiResponse<TData>? PostData<TData>(this HttpClient client, string endpoint, object data) where TData : class, IApiResponse
+    public static ApiResponse<TData>? PostData<TData>(this HttpClient client, string endpoint, object data, bool ensureSuccessful = true, bool ensureFailure = false) where TData : class, IApiResponse
     {
         HttpResponseMessage response = client.PostAsync(endpoint, new StringContent(data.AsJson())).Result;
+        if (ensureSuccessful)
+            Assert.That(response.StatusCode, Is.EqualTo(OK));
+        else if (ensureFailure)
+            Assert.That(response.StatusCode, Is.Not.EqualTo(OK));
         return ReadData<TData>(response.Content);
     }
     
-    public static ApiResponse<TData>? PatchData<TData>(this HttpClient client, string endpoint, object data) where TData : class, IApiResponse
+    public static ApiResponse<TData>? PatchData<TData>(this HttpClient client, string endpoint, object data, bool ensureSuccessful = true, bool ensureFailure = false) where TData : class, IApiResponse
     {
         HttpResponseMessage response = client.PatchAsync(endpoint, new StringContent(data.AsJson())).Result;
+        if (ensureSuccessful)
+            Assert.That(response.StatusCode, Is.EqualTo(OK));
+        else if (ensureFailure)
+            Assert.That(response.StatusCode, Is.Not.EqualTo(OK));
         return ReadData<TData>(response.Content);
     }
 }
