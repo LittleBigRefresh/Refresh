@@ -16,6 +16,8 @@ public class ReviewTests : GameServerTest
         
         GameUser levelPublisher = context.CreateUser();
         GameUser reviewPublisher = context.CreateUser();
+        
+        using HttpClient reviewerClient = context.GetAuthenticatedClient(TokenType.Game, reviewPublisher);
 
         GameLevel level = slotType == "developer" ? context.Database.GetStoryLevelById(1) : context.CreateLevel(levelPublisher);
 
@@ -23,8 +25,6 @@ public class ReviewTests : GameServerTest
         
         context.Database.PlayLevel(level, reviewPublisher, 1);
         context.Database.Refresh();
-        
-        using HttpClient reviewerClient = context.GetAuthenticatedClient(TokenType.Game, reviewPublisher);
 
         SerializedGameReview review = new()
         {
@@ -94,12 +94,11 @@ public class ReviewTests : GameServerTest
         GameUser levelPublisher = context.CreateUser();
         GameUser reviewPublisher = context.CreateUser();
 
+        using HttpClient reviewerClient = context.GetAuthenticatedClient(TokenType.Game, reviewPublisher);
+
         GameLevel level = context.CreateLevel(levelPublisher);
 
         context.Database.PlayLevel(level, reviewPublisher, 1);
-        context.Database.Refresh();
-        
-        using HttpClient reviewerClient = context.GetAuthenticatedClient(TokenType.Game, reviewPublisher);
 
         SerializedGameReview review = new()
         {
@@ -110,7 +109,7 @@ public class ReviewTests : GameServerTest
         Assert.That(reviewerClient.PostAsync($"/lbp/postReview/badType/{level.LevelId}", new StringContent(review.AsXML())).Result.StatusCode, Is.EqualTo(NotFound));
         
         context.Database.Refresh();
-        Assert.That(level.Reviews, Is.Empty);
+        Assert.That(context.Database.GetTotalReviewsForLevel(level), Is.Zero);
     }
     
     [Test]
@@ -152,6 +151,6 @@ public class ReviewTests : GameServerTest
         Assert.That(reviewerClient.PostAsync($"/lbp/postReview/user/{level.LevelId}", new StringContent(review.AsXML())).Result.StatusCode, Is.EqualTo(BadRequest));
         
         context.Database.Refresh();
-        Assert.That(level.Reviews, Is.Empty);
+        Assert.That(context.Database.GetTotalReviewsForLevel(level), Is.Zero);
     }
 }
