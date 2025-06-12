@@ -170,7 +170,7 @@ public class GameLevelResponse : IDataConvertableFrom<GameLevelResponse, GameLev
             BackgroundGuid = old.BackgroundGuid,
             Links = "",
             AverageStarRating = old.CalculateAverageStarRating(dataContext.Database),
-            ReviewCount = old.Reviews.Count,
+            ReviewCount = dataContext.Database.GetTotalReviewsForLevel(old),
             CommentCount = dataContext.Database.GetTotalCommentsForLevel(old),
             PhotoCount = dataContext.Database.GetTotalPhotosInLevel(old),
             PublisherPhotoCount = old.Publisher == null ? 0 : dataContext.Database.GetTotalPhotosInLevelByUser(old, old.Publisher),
