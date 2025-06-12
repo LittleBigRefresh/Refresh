@@ -21,7 +21,11 @@ public partial class GameDatabaseContext // Leaderboard
             Score = score.Score,
             ScoreType = score.ScoreType,
             Level = level,
+#if POSTGRES
             PlayerIdsRaw = [ user.UserId.ToString() ],
+#else
+            Players = { user },
+#endif
             ScoreSubmitted = this._time.Now,
             Game = game,
             Platform = platform,
@@ -166,6 +170,7 @@ public partial class GameDatabaseContext // Leaderboard
     {
         IEnumerable<ObjectId> playerIds = score.PlayerIds.Select(p => p);
         return this.GameUsers
+            .AsEnumerableIfRealm()
             .Where(u => playerIds.Contains(u.UserId));
     }
     
