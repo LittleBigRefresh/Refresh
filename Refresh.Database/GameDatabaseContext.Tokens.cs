@@ -140,7 +140,7 @@ public partial class GameDatabaseContext // Tokens
     public bool IsTokenExpired(Token token) => token.ExpiresAt < this._time.Now;
     
     public DatabaseList<Token> GetAllTokens()
-        => new(this.Tokens);
+        => new(this.Tokens.Include(t => t.User));
     
     public void ResetApiRefreshTokenExpiry(Token token)
     {
