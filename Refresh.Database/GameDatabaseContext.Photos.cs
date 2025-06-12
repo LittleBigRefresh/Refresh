@@ -8,6 +8,17 @@ namespace Refresh.Database;
 
 public partial class GameDatabaseContext // Photos
 {
+    public IQueryable<GamePhoto> GamePhotosIncluded => this.GamePhotos
+        .Include(p => p.LargeAsset)
+        .Include(p => p.MediumAsset)
+        .Include(p => p.SmallAsset)
+        .Include(p => p.Publisher)
+        .Include(p => p.Level)
+        .Include(p => p.Subject1User)
+        .Include(p => p.Subject2User)
+        .Include(p => p.Subject3User)
+        .Include(p => p.Subject4User);
+    
     public void UploadPhoto(SerializedPhoto photo, GameUser publisher)
     {
         GamePhoto newPhoto = new()
@@ -71,16 +82,16 @@ public partial class GameDatabaseContext // Photos
     
     [Pure]
     public DatabaseList<GamePhoto> GetRecentPhotos(int count, int skip) =>
-        new(this.GamePhotos
+        new(this.GamePhotosIncluded
             .OrderByDescending(p => p.PublishedAt), skip, count);
 
     [Pure]
     public GamePhoto? GetPhotoById(int id) =>
-        this.GamePhotos.FirstOrDefault(p => p.PhotoId == id);
+        this.GamePhotosIncluded.FirstOrDefault(p => p.PhotoId == id);
 
     [Pure]
     public DatabaseList<GamePhoto> GetPhotosByUser(GameUser user, int count, int skip) =>
-        new(this.GamePhotos.Where(p => p.Publisher == user)
+        new(this.GamePhotosIncluded.Where(p => p.Publisher == user)
             .OrderByDescending(p => p.TakenAt), skip, count);
     
     [Pure]
@@ -90,7 +101,7 @@ public partial class GameDatabaseContext // Photos
 
     [Pure]
     public DatabaseList<GamePhoto> GetPhotosWithUser(GameUser user, int count, int skip) =>
-        new(this.GamePhotos
+        new(this.GamePhotosIncluded
             // FIXME: client-side enumeration
             .AsEnumerable()
             .Where(p => p.Subjects.FirstOrDefault(s => Equals(s.User, user)) != null)
@@ -107,7 +118,7 @@ public partial class GameDatabaseContext // Photos
 
     [Pure]
     public DatabaseList<GamePhoto> GetPhotosInLevel(GameLevel level, int count, int skip)
-        => new(this.GamePhotos
+        => new(this.GamePhotosIncluded
             .Where(p => p.Level == level)
             .OrderByDescending(p => p.TakenAt), skip, count);
     
@@ -116,7 +127,7 @@ public partial class GameDatabaseContext // Photos
         => this.GamePhotos.Count(p => p.Level == level);
 
     public DatabaseList<GamePhoto> GetPhotosInLevelByUser(GameLevel level, GameUser user, int count, int skip) 
-        => new(this.GamePhotos
+        => new(this.GamePhotosIncluded
             .Where(p => p.Level == level && p.Publisher == user)
             .OrderByDescending(p => p.TakenAt), skip, count);
 

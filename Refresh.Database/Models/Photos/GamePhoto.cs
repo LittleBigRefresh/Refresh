@@ -120,19 +120,27 @@ public partial class GamePhoto : IRealmObject, ISequentialId
     
     public GameUser? Subject1User { get; set; }
     public string? Subject1DisplayName { get; set; }
-    public IList<float> Subject1Bounds { get; }
     
     public GameUser? Subject2User { get; set; }
     public string? Subject2DisplayName { get; set; }
-    public IList<float> Subject2Bounds { get; }
     
     public GameUser? Subject3User { get; set; }
     public string? Subject3DisplayName { get; set; }
-    public IList<float> Subject3Bounds { get; }
     
     public GameUser? Subject4User { get; set; }
     public string? Subject4DisplayName { get; set; }
+    
+    #if !POSTGRES
+    public IList<float> Subject1Bounds { get; }
+    public IList<float> Subject2Bounds { get; }
+    public IList<float> Subject3Bounds { get; }
     public IList<float> Subject4Bounds { get; }
+    #else
+    public List<float> Subject1Bounds { get; set; } = [];
+    public List<float> Subject2Bounds { get; set; } = [];
+    public List<float> Subject3Bounds { get; set; } = [];
+    public List<float> Subject4Bounds { get; set; } = [];
+    #endif
     
     #pragma warning restore CS8618
     #nullable disable
