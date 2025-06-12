@@ -15,6 +15,10 @@ namespace Refresh.Database;
 
 public partial class GameDatabaseContext // Levels
 {
+    private IQueryable<GameLevel> GameLevelsIncluded => this.GameLevels
+        .Include(l => l.Publisher)
+        .Include(l => l.Reviews);
+    
     public bool AddLevel(GameLevel level)
     {
         if (level.Title is { Length: > UgcLimits.TitleLimit })
@@ -37,7 +41,8 @@ public partial class GameDatabaseContext // Levels
 
     public GameLevel GetStoryLevelById(int id)
     {
-        GameLevel? level = this.GameLevels.FirstOrDefault(l => l.StoryId == id);
+        GameLevel? level = this.GameLevelsIncluded
+            .FirstOrDefault(l => l.StoryId == id);
 
         if (level != null) return level;
         
@@ -231,7 +236,7 @@ public partial class GameDatabaseContext // Levels
     }
     
     private IQueryable<GameLevel> GetLevelsByGameVersion(TokenGame gameVersion) 
-        => this.GameLevels
+        => this.GameLevelsIncluded
             .Where(l => l.StoryId == 0) // Filter out any user levels
             .FilterByGameVersion(gameVersion);
 
@@ -273,11 +278,13 @@ public partial class GameDatabaseContext // Levels
     
     [Pure]
     public DatabaseList<GameLevel> GetUserLevelsChunk(int skip, int count)
-        => new(this.GameLevels.Where(l => l.StoryId == 0), skip, count);
+        => new(this.GameLevelsIncluded
+            .Where(l => l.StoryId == 0), skip, count);
 
     [Pure]
     public IQueryable<GameLevel> GetAllUserLevels()
-        => this.GameLevels.Where(l => l.StoryId == 0);
+        => this.GameLevelsIncluded
+            .Where(l => l.StoryId == 0);
     
     [Pure]
     public DatabaseList<GameLevel> GetNewestLevels(int count, int skip, GameUser? user, LevelFilterSettings levelFilterSettings) =>
@@ -488,11 +495,12 @@ public partial class GameDatabaseContext // Levels
         }
     }
 
-    public GameLevel? GetLevelByRootResource(string rootResource) =>
-        this.GameLevels.FirstOrDefault(level => level.RootResource == rootResource);
+    public GameLevel? GetLevelByRootResource(string rootResource) => this.GameLevelsIncluded
+        .FirstOrDefault(level => level.RootResource == rootResource);
     
     [Pure]
-    public GameLevel? GetLevelById(int id) => this.GameLevels.FirstOrDefault(l => l.LevelId == id);
+    public GameLevel? GetLevelById(int id) => this.GameLevelsIncluded
+        .FirstOrDefault(l => l.LevelId == id);
 
     public void AddTeamPickToLevel(GameLevel level)
     {

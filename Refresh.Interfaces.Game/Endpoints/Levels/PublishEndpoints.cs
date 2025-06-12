@@ -250,6 +250,7 @@ public class PublishEndpoints : EndpointGroup
 
         context.Logger.LogInfo(BunkumCategory.UserContent, "User {0} (id: {1}) uploaded level id {2}", user.Username, user.UserId, level.LevelId);
 
+        level = dataContext.Database.GetLevelById(level.LevelId)!;
         return new Response(GameLevelResponse.FromOld(level, dataContext)!, ContentType.Xml);
     }
 
