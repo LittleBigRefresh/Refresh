@@ -37,11 +37,13 @@ public partial class GameDatabaseContext // Assets
         return null;
     }
 
+    // TODO: optimize this by returning a list of GameAsset instead
     public IEnumerable<string> GetAssetDependencies(GameAsset asset) 
         => this.AssetDependencyRelations.Where(a => a.Dependent == asset.AssetHash)
             .AsEnumerable()
             .Select(a => a.Dependency);
     
+    // TODO: optimize this by returning a list of GameAsset instead
     public IEnumerable<string> GetAssetDependents(GameAsset asset) 
         => this.AssetDependencyRelations.Where(a => a.Dependency == asset.AssetHash)
             .AsEnumerable()
