@@ -9,7 +9,7 @@ jobs:
   debug-postgres-tests:
     name: Run DebugPostgres Tests
     runs-on: ubuntu-latest
-    continue-on-error: true
+    continue-on-error: false
 
     steps:
       - uses: actions/checkout@v4
@@ -23,7 +23,7 @@ jobs:
 
       - name: Run tests with DebugPostgres
         run: dotnet test --configuration DebugPostgres --verbosity normal
-        continue-on-error: true
+        continue-on-error: false
         
-      - name: Allow failures
-        run: "true"
+#      - name: Allow failures
+#        run: "true"
