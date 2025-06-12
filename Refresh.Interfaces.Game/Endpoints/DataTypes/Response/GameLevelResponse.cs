@@ -219,7 +219,7 @@ public class GameLevelResponse : IDataConvertableFrom<GameLevelResponse, GameLev
         response.PlayerCount = dataContext.Match.GetPlayerCountForLevel(RoomSlotType.Online, response.LevelId);
         
         GameAsset? rootResourceAsset = dataContext.Database.GetAssetFromHash(response.RootResource);
-        if (rootResourceAsset != null)
+        if (rootResourceAsset != null && dataContext.Game == TokenGame.LittleBigPlanetVita)
         {
             rootResourceAsset.TraverseDependenciesRecursively(dataContext.Database, (_, asset) =>
             {
