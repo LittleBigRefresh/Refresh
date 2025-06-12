@@ -21,7 +21,7 @@ public partial class GamePhoto : IRealmObject, ISequentialId
     #nullable restore
     [ForeignKey(nameof(LevelIdKey))]
     public GameLevel? Level { get; set; }
-    public int? LevelIdKey { get; set; }
+    [Ignored] public int? LevelIdKey { get; set; }
     #nullable disable
     
     public string LevelName { get; set; }
