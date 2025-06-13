@@ -295,12 +295,31 @@ public partial class GameDatabaseContext // Levels
     [Pure]
     public DatabaseList<GameLevel> GetRandomLevels(int count, int skip, GameUser? user, LevelFilterSettings levelFilterSettings)
     {
+#if POSTGRES
+        int seed = levelFilterSettings.Seed ?? 0;
+
+        IQueryable<GameLevel> list = this.GameLevels
+            .FromSqlInterpolated($"""
+                                  SELECT *, md5(CAST("LevelId" AS TEXT) || {seed}) as RandomHash
+                                  FROM "GameLevels"
+                                  ORDER BY md5(CAST("LevelId" AS text) || {seed})
+                                  """)
+            .Include(l => l.Publisher)
+            .Include(l => l.Reviews)
+            .FilterByGameVersion(levelFilterSettings.GameVersion)
+            .FilterByLevelFilterSettings(user, levelFilterSettings);
+
+        return new DatabaseList<GameLevel>(list, skip, count);
+#else
         Random random = new(levelFilterSettings.Seed ?? 0);
         
         return new DatabaseList<GameLevel>(this.GetLevelsByGameVersion(levelFilterSettings.GameVersion)
             .FilterByLevelFilterSettings(user, levelFilterSettings)
+            .OrderBy(_ => EF.Functions.Random())
             .AsEnumerable()
-            .OrderBy(_ => random.Next()), skip, count);
+            .OrderBy(_ => random.Next())
+            , skip, count);
+#endif
     }
 
     // TODO: reduce code duplication for getting most of x
