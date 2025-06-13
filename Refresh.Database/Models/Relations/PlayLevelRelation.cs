@@ -6,12 +6,10 @@ namespace Refresh.Database.Models.Relations;
 
 #nullable disable
 
-#if POSTGRES
-using PrimaryKeyAttribute = Microsoft.EntityFrameworkCore.PrimaryKeyAttribute;
-[PrimaryKey(nameof(LevelId), nameof(UserId))]
-#endif
 public partial class PlayLevelRelation : IRealmObject
 {
+    [Key] [Ignored] public ObjectId PlayId { get; set; } = ObjectId.GenerateNewId();
+    
     [ForeignKey(nameof(LevelId))]
     public GameLevel Level { get; set; }
     [ForeignKey(nameof(UserId))]

@@ -892,19 +892,25 @@ namespace Refresh.Database.Migrations
 
             modelBuilder.Entity("Refresh.Database.Models.Relations.PlayLevelRelation", b =>
                 {
-                    b.Property<int>("LevelId")
-                        .HasColumnType("integer");
-
-                    b.Property<string>("UserId")
+                    b.Property<string>("PlayId")
                         .HasColumnType("text");
 
                     b.Property<int>("Count")
                         .HasColumnType("integer");
 
+                    b.Property<int>("LevelId")
+                        .HasColumnType("integer");
+
                     b.Property<DateTimeOffset>("Timestamp")
                         .HasColumnType("timestamp with time zone");
 
-                    b.HasKey("LevelId", "UserId");
+                    b.Property<string>("UserId")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.HasKey("PlayId");
+
+                    b.HasIndex("LevelId");
 
                     b.HasIndex("UserId");
 
