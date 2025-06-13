@@ -5,7 +5,7 @@ public class DatabaseList<TObject> where TObject : class
     // ReSharper disable once ParameterTypeCanBeEnumerable.Local
     public DatabaseList(IQueryable<TObject> items, int skip, int count)
     {
-        this.Items = items.AsEnumerable().Skip(skip).Take(count);
+        this.Items = items.AsEnumerableIfRealm().Skip(skip).Take(count);
         this.TotalItems = items.Count();
         this.NextPageIndex = skip + count + 1;
 
@@ -15,10 +15,8 @@ public class DatabaseList<TObject> where TObject : class
     
     public DatabaseList(IEnumerable<TObject> items, int skip, int count)
     {
-        List<TObject> itemsList = items.ToList();
-        
-        this.Items = itemsList.Skip(skip).Take(count);
-        this.TotalItems = itemsList.Count;
+        this.Items = items.Skip(skip).Take(count);
+        this.TotalItems = items.Count();
         this.NextPageIndex = skip + count + 1;
 
         if (this.NextPageIndex > this.TotalItems)
@@ -27,10 +25,8 @@ public class DatabaseList<TObject> where TObject : class
     
     public DatabaseList(IEnumerable<TObject> items)
     {
-        List<TObject> itemsList = items.ToList();
-        
-        this.Items = itemsList;
-        this.TotalItems = itemsList.Count;
+        this.Items = items;
+        this.TotalItems = items.Count();
         this.NextPageIndex = -1;
     }
 
