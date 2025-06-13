@@ -10,9 +10,11 @@ using PrimaryKeyAttribute = Microsoft.EntityFrameworkCore.PrimaryKeyAttribute;
 public partial class EmailVerificationCode : IRealmObject
 {
     [ForeignKey(nameof(UserId))]
+    [Required]
     public GameUser User { get; set; }
     public string Code { get; set; }
     
+    [Required]
     [Ignored] public ObjectId UserId { get; set; }
     
     public DateTimeOffset ExpiryDate { get; set; }

@@ -14,6 +14,7 @@ public partial class GameChallenge : IRealmObject, ISequentialId
     public GameUser? Publisher { get; set; }
 
     #nullable disable
+    [Required]
     public GameLevel Level { get; set; }
     #nullable enable
 

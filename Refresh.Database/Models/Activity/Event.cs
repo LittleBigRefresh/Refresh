@@ -31,6 +31,7 @@ public partial class Event : IRealmObject
     /// <summary>
     /// The user in question that created this event.
     /// </summary>
+    [Required]
     public GameUser User { get; set; }
     
     /// <summary>

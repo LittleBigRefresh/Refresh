@@ -14,11 +14,13 @@ public partial class GameLevelComment : IRealmObject, IGameComment, ISequentialI
     [Key, PrimaryKey] public int SequentialId { get; set; }
 
     /// <inheritdoc/>
+    [Required]
     public GameUser Author { get; set; } = null!;
 
     /// <summary>
     /// The destination level this comment was posted to.
     /// </summary>
+    [Required]
     public GameLevel Level { get; set; } = null!;
     
     /// <inheritdoc/>

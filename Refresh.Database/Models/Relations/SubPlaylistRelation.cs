@@ -17,14 +17,18 @@ public partial class SubPlaylistRelation : IRealmObject
     /// The playlist the level is contained in
     /// </summary>
     [ForeignKey(nameof(PlaylistId))]
+    [Required]
     public GamePlaylist Playlist { get; set; }
     /// <summary>
     /// The sub-playlist contained within the playlist
     /// </summary>
     [ForeignKey(nameof(SubPlaylistId))]
+    [Required]
     public GamePlaylist SubPlaylist { get; set; }
     
+    [Required]
     [Ignored] public int PlaylistId { get; set; }
+    [Required]
     [Ignored] public int SubPlaylistId { get; set; }
     
     public DateTimeOffset Timestamp { get; set; }

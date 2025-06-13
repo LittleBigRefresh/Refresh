@@ -78,7 +78,7 @@ public class RefreshGameServer : RefreshServer
         }
 
         // Uncomment if you want to use production refresh as a source for assets
-        // this._dataStore = new AggregateDataStore(dataStore, new RemoteRefreshDataStore());
+        this._dataStore = new AggregateDataStore(dataStore, new RemoteRefreshDataStore());
         
         this.SetupInitializer(() =>
         {

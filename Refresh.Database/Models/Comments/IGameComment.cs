@@ -9,6 +9,7 @@ public interface IGameComment
     /// <summary>
     /// The user who originally posted the comment.
     /// </summary>
+    [Required]
     GameUser Author { get; set; }
     
     /// <summary>

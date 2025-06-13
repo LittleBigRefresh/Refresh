@@ -13,7 +13,9 @@ public partial class GameChallengeScore : IRealmObject
 {
     [Key, PrimaryKey] public ObjectId ScoreId { get; set; } = ObjectId.GenerateNewId();
 
+    [Required]
     public GameChallenge Challenge { get; set; }
+    [Required]
     public GameUser Publisher { get; set; }
     /// <summary>
     /// The publisher's achieved raw score. More always means better here, independent of challenge criteria.

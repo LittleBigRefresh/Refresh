@@ -17,8 +17,10 @@ public partial class PinProgressRelation : IRealmObject
     public long PinId { get; set; }
     public int Progress { get; set; }
     [ForeignKey(nameof(PublisherId))]
+    [Required]
     public GameUser Publisher { get; set; }
     
+    [Required]
     [Ignored] public ObjectId PublisherId { get; set; }
 
     public DateTimeOffset FirstPublished { get; set; }

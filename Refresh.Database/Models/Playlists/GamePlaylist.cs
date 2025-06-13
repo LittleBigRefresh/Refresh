@@ -27,6 +27,7 @@ public partial class GamePlaylist : IRealmObject, ISequentialId
     /// <summary>
     /// The user who published the playlist
     /// </summary>
+    [Required]
     [ForeignKey(nameof(PublisherId))]
     public GameUser Publisher { get; set; }
     

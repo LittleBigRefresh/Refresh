@@ -11,12 +11,16 @@ using PrimaryKeyAttribute = Microsoft.EntityFrameworkCore.PrimaryKeyAttribute;
 #endif
 public partial class FavouriteLevelRelation : IRealmObject
 {
+    [Required]
     [ForeignKey(nameof(LevelId))]
     public GameLevel Level { get; set; }
+    [Required]
     [ForeignKey(nameof(UserId))]
     public GameUser User { get; set; }
     
+    [Required]
     [Ignored] public int LevelId { get; set; }
+    [Required]
     [Ignored] public ObjectId UserId { get; set; }
     
     public DateTimeOffset Timestamp { get; set; }

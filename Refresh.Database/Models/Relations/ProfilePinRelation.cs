@@ -14,8 +14,10 @@ public partial class ProfilePinRelation : IRealmObject
 {
     public long PinId { get; set; }
     [ForeignKey(nameof(PublisherId))]
+    [Required]
     public GameUser Publisher { get; set; }
     
+    [Required]
     [Ignored] public ObjectId PublisherId { get; set; }
 
     /// <summary>

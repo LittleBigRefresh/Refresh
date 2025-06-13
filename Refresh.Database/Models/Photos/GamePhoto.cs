@@ -17,6 +17,7 @@ public partial class GamePhoto : IRealmObject, ISequentialId
     public DateTimeOffset TakenAt { get; set; }
     public DateTimeOffset PublishedAt { get; set; }
     
+    [Required]
     public GameUser Publisher { get; set; }
     #nullable restore
     [ForeignKey(nameof(LevelIdKey))]
@@ -28,8 +29,11 @@ public partial class GamePhoto : IRealmObject, ISequentialId
     public string LevelType { get; set; }
     public int LevelId { get; set; }
     
+    [Required]
     public GameAsset SmallAsset { get; set; }
+    [Required]
     public GameAsset MediumAsset { get; set; }
+    [Required]
     public GameAsset LargeAsset { get; set; }
     public string PlanHash { get; set; }
 

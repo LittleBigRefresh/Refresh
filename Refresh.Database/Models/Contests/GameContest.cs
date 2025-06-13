@@ -27,6 +27,7 @@ public partial class GameContest : IRealmObject
     /// <remarks>
     /// This will allow this user to modify any aspect of the contest. This does not disallow admins from editing the contest.
     /// </remarks>
+    [Required]
     public GameUser Organizer { get; set; }
     
     /// <summary>

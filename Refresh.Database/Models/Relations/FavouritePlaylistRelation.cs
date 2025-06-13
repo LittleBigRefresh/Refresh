@@ -12,8 +12,10 @@ using PrimaryKeyAttribute = Microsoft.EntityFrameworkCore.PrimaryKeyAttribute;
 public partial class FavouritePlaylistRelation : IRealmObject
 {
     [ForeignKey(nameof(PlaylistId))]
+    [Required]
     public GamePlaylist Playlist { get; set; }
     [ForeignKey(nameof(UserId))]
+    [Required]
     public GameUser User { get; set; }
     
     [Ignored] public int PlaylistId { get; set; }

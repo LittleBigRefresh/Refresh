@@ -13,11 +13,15 @@ using PrimaryKeyAttribute = Microsoft.EntityFrameworkCore.PrimaryKeyAttribute;
 public partial class RateReviewRelation : IRealmObject
 {
     [ForeignKey(nameof(ReviewId))]
+    [Required]
     public GameReview Review { get; set; }
     [ForeignKey(nameof(UserId))]
+    [Required]
     public GameUser User { get; set; }
     
+    [Required]
     [Ignored] public int ReviewId { get; set; }
+    [Required]
     [Ignored] public ObjectId UserId { get; set; }
     
     // we could just reuse RatingType from GameLevel rating logic

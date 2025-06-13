@@ -9,8 +9,10 @@ public partial class GameReview : IRealmObject, ISequentialId
 {
     [Key] public int ReviewId { get; set; }
     
+    [Required]
     public GameLevel Level { get; set;  }
 
+    [Required]
     public GameUser Publisher { get; set; }
     
     public DateTimeOffset PostedAt { get; set; }

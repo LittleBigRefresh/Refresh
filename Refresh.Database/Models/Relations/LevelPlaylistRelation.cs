@@ -18,14 +18,18 @@ public partial class LevelPlaylistRelation : IRealmObject
     /// The playlist the level is contained in
     /// </summary>
     [ForeignKey(nameof(PlaylistId))]
+    [Required]
     public GamePlaylist Playlist { get; set; }
     /// <summary>
     /// The level contained within the playlist
     /// </summary>
     [ForeignKey(nameof(LevelId))]
+    [Required]
     public GameLevel Level { get; set; }
     
+    [Required]
     [Ignored] public int PlaylistId { get; set; }
+    [Required]
     [Ignored] public int LevelId { get; set; }
     
     /// <summary>

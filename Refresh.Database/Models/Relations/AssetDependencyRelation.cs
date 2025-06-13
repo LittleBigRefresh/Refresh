@@ -8,6 +8,8 @@ using PrimaryKeyAttribute = Microsoft.EntityFrameworkCore.PrimaryKeyAttribute;
 #endif
 public partial class AssetDependencyRelation : IRealmObject
 {
+    [Required]
     public string Dependent { get; set; }
+    [Required]
     public string Dependency { get; set; }
 }

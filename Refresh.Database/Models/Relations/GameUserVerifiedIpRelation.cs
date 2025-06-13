@@ -12,9 +12,11 @@ using PrimaryKeyAttribute = Microsoft.EntityFrameworkCore.PrimaryKeyAttribute;
 public partial class GameUserVerifiedIpRelation : IRealmObject
 {
     [ForeignKey(nameof(UserId))]
+    [Required]
     public GameUser User { get; set; }
     public string IpAddress { get; set; }
     
+    [Required]
     [Ignored] public ObjectId UserId { get; set; }
     
     public DateTimeOffset VerifiedAt { get; set; }
