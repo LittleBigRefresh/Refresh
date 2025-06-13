@@ -338,6 +338,26 @@ public class ScoreLeaderboardTests : GameServerTest
     }
     
     [Test]
+    public void PlayLevelMultipleTimes()
+    {
+        using TestContext context = this.GetServer();
+        GameUser user = context.CreateUser();
+        GameLevel level = context.CreateLevel(user);
+
+        using HttpClient client = context.GetAuthenticatedClient(TokenType.Game, user);
+
+        for (int i = 0; i < 5; i++)
+        {
+            HttpResponseMessage message = client.PostAsync($"/lbp/play/user/{level.LevelId}", new ReadOnlyMemoryContent(Array.Empty<byte>())).Result;
+            Assert.That(message.StatusCode, Is.EqualTo(OK));
+
+            context.Database.Refresh();
+
+            Assert.That(context.Database.GetTotalPlaysForLevel(level), Is.EqualTo(i + 1));
+        }
+    }
+    
+    [Test]
     public void DoesntPlayInvalidLevel()
     {
         using TestContext context = this.GetServer();
