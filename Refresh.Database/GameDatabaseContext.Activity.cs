@@ -100,7 +100,9 @@ public partial class GameDatabaseContext // Activity
                 favouriteUsers.Contains(e.StoredObjectId) ||
                 userFriends.Contains(e.User?.UserId) ||
                 userFriends.Contains(e.StoredObjectId) ||
+                #if !POSTGRES // FIXME: double query
                 this.GetLevelById(e.StoredSequentialId ?? int.MaxValue)?.Publisher?.UserId == parameters.User.UserId ||
+                #endif
                 e.EventType == EventType.LevelTeamPick ||
                 e.EventType == EventType.UserFirstLogin
             );
