@@ -217,14 +217,14 @@ public class PublishEndpoints : EndpointGroup
             context.Logger.LogInfo(BunkumCategory.UserContent, "Republishing level id {0}", level.LevelId);
 
             GameLevel? newBody;
-            // ReSharper disable once InvertIf
-            if ((newBody = dataContext.Database.UpdateLevel(level, user)) != null)
+            if ((newBody = dataContext.Database.UpdateLevel(level, user)) == null)
             {
-                return new Response(GameLevelResponse.FromOld(newBody, dataContext)!, ContentType.Xml);
+                dataContext.Database.AddPublishFailNotification("You may not republish another user's level.", level, dataContext.User!);
+                return BadRequest;
             }
 
-            dataContext.Database.AddPublishFailNotification("You may not republish another user's level.", level, dataContext.User!);
-            return BadRequest;
+            dataContext.Database.UpdateSkillRewardsForLevel(level, body.SkillRewards);
+            return new Response(GameLevelResponse.FromOld(newBody, dataContext)!, ContentType.Xml);
         }
 
         //Mark the user as no longer publishing
@@ -233,6 +233,7 @@ public class PublishEndpoints : EndpointGroup
         level.Publisher = dataContext.User;
 
         dataContext.Database.AddLevel(level);
+        dataContext.Database.UpdateSkillRewardsForLevel(level, body.SkillRewards);
 
         // Only increment if the level can be uploaded (right after the previous checks + adding the level),
         // don't want to increment for failed uploads

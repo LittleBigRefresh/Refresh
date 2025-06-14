@@ -13,8 +13,7 @@ public partial class GameDatabaseContext // Leaderboard
 {
     private IQueryable<GameSubmittedScore> GameSubmittedScoresIncluded => this.GameSubmittedScores
         .Include(s => s.Level)
-        .Include(s => s.Level.Publisher)
-        .Include(s => s.Level.Reviews);
+        .Include(s => s.Level.Publisher);
     
     public GameSubmittedScore SubmitScore(ISerializedScore score, Token token, GameLevel level)
         => this.SubmitScore(score, token.User, level, token.TokenGame, token.TokenPlatform);

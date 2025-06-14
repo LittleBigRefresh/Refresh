@@ -17,8 +17,11 @@ namespace Refresh.Database;
 public partial class GameDatabaseContext // Levels
 {
     private IQueryable<GameLevel> GameLevelsIncluded => this.GameLevels
-        .Include(l => l.Publisher)
-        .Include(l => l.Reviews);
+        .Include(l => l.Publisher);
+
+    private IQueryable<GameSkillReward> SkillRewardsIncluded => this.GameSkillRewards
+        .Include(s => s.Level)
+        .Include(s => s.Level.Publisher);
     
     public bool AddLevel(GameLevel level)
     {
@@ -341,7 +344,6 @@ public partial class GameDatabaseContext // Levels
         
         IEnumerable<GameLevel> mostHeartedLevels = favourites
             .Include(r => r.Level.Publisher)
-            .Include(r => r.Level.Reviews)
             .AsEnumerable()
             .GroupBy(r => r.Level)
             .Select(g => new { Level = g.Key, Count = g.Count() })
@@ -362,7 +364,6 @@ public partial class GameDatabaseContext // Levels
         
         IEnumerable<GameLevel> filteredTaggedLevels = tagRelations
             .Include(x => x.Level.Publisher)
-            .Include(x => x.Level.Reviews)
             .Where(x => x._Tag == (int)tag)
             .AsEnumerable()
             .Select(x => x.Level)
@@ -382,7 +383,6 @@ public partial class GameDatabaseContext // Levels
         
         IEnumerable<GameLevel> mostPlayed = uniquePlays
             .Include(r => r.Level.Publisher)
-            .Include(r => r.Level.Reviews)
             .AsEnumerable()
             .GroupBy(r => r.Level)
             .Select(g => new { Level = g.Key, Count = g.Count() })
@@ -403,7 +403,6 @@ public partial class GameDatabaseContext // Levels
         
         IEnumerable<GameLevel> mostPlayed = plays
             .Include(r => r.Level.Publisher)
-            .Include(r => r.Level.Reviews)
             .AsEnumerable()
             .GroupBy(r => r.Level)
             .Select(g => new { Level = g.Key, Count = g.Sum(p => p.Count) })
@@ -423,7 +422,6 @@ public partial class GameDatabaseContext // Levels
         
         IEnumerable<GameLevel> highestRated = ratings
             .Include(r => r.Level.Publisher)
-            .Include(r => r.Level.Reviews)
             .AsEnumerable()
             .GroupBy(r => r.Level)
             .Select(g => new { Level = g.Key, Karma = g.Sum(r => r._RatingType) })
@@ -584,6 +582,35 @@ public partial class GameDatabaseContext // Levels
             foreach ((GameLevel? level, bool modded) in levels)
             {
                 level.IsModded = modded;
+            }
+        });
+    }
+
+    public IEnumerable<GameSkillReward> GetSkillRewardsForLevel(GameLevel level)
+    {
+        return this.GameSkillRewards.Where(r => r.LevelId == level.LevelId);
+    }
+
+    public void UpdateSkillRewardsForLevel(GameLevel level, IEnumerable<GameSkillReward> rewards)
+    {
+        this.GameSkillRewards.RemoveRange(this.GetSkillRewardsForLevel(level));
+        
+        this.Write(() =>
+        {
+            foreach (GameSkillReward reward in rewards.Take(3))
+            {
+                GameSkillReward newReward = new()
+                {
+                    Id = reward.Id,
+                    Title = reward.Title,
+                    Enabled = reward.Enabled,
+                    RequiredAmount = reward.RequiredAmount,
+                    Level = level,
+                    LevelId = level.LevelId,
+                    ConditionType = reward.ConditionType,
+                };
+                
+                this.GameSkillRewards.Add(newReward);
             }
         });
     }

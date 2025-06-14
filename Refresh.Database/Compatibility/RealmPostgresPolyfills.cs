@@ -4,11 +4,7 @@
 namespace Refresh.Database.Compatibility;
 
 #if POSTGRES
-using System.ComponentModel.DataAnnotations.Schema;
-
 public interface IRealmObject;
-[Obsolete("IEmbeddedObject is not supported in Postgres models")]
-public interface IEmbeddedObject;
 
 [AttributeUsage(AttributeTargets.Property)]
 public class IgnoredAttribute : Attribute;

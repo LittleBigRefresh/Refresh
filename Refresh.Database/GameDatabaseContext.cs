@@ -76,6 +76,7 @@ public partial class GameDatabaseContext :
     private RealmDbSet<GameChallengeScore> GameChallengeScores => new(this._realm);
     private RealmDbSet<PinProgressRelation> PinProgressRelations => new(this._realm);
     private RealmDbSet<ProfilePinRelation> ProfilePinRelations => new(this._realm);
+    private RealmDbSet<GameSkillReward> GameSkillRewards => new(this._realm);
     #else
     internal DbSet<GameUser> GameUsers { get; set; }
     internal DbSet<Token> Tokens { get; set; }
@@ -115,6 +116,7 @@ public partial class GameDatabaseContext :
     internal DbSet<GameChallengeScore> GameChallengeScores { get; set; }
     internal DbSet<PinProgressRelation> PinProgressRelations { get; set; }
     internal DbSet<ProfilePinRelation> ProfilePinRelations { get; set; }
+    internal DbSet<GameSkillReward> GameSkillRewards { get; set; }
     #endif
     
     internal GameDatabaseContext(IDateTimeProvider time)
@@ -184,7 +186,7 @@ public partial class GameDatabaseContext :
     }
 
     // ReSharper disable once SuggestBaseTypeForParameter
-    private void AddSequentialObject<T>(T obj, IList<T>? list, Action? writtenCallback = null) where T : class, IRealmObject, ISequentialId
+    private void AddSequentialObject<T>(T obj, Action? writtenCallback = null) where T : class, IRealmObject, ISequentialId
     {
         lock (IdLock)
         {
@@ -195,27 +197,10 @@ public partial class GameDatabaseContext :
                 obj.SequentialId = newId;
 
                 this.Add(obj);
-                if(list == null) writtenCallback?.Invoke();
-            });
-        }
-        
-        // Two writes are necessary here for some unexplainable reason
-        // We've already set a SequentialId so we can be outside the lock at this stage
-        if (list != null)
-        {
-            this.Write(() =>
-            {
-                list.Add(obj);
                 writtenCallback?.Invoke();
             });
         }
     }
-
-    private void AddSequentialObject<T>(T obj, Action? writtenCallback) where T : class, IRealmObject, ISequentialId 
-        => this.AddSequentialObject(obj, null, writtenCallback);
-    
-    private void AddSequentialObject<T>(T obj) where T : class, IRealmObject, ISequentialId 
-        => this.AddSequentialObject(obj, null, null);
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     private void Write(Action callback)
@@ -254,16 +239,9 @@ public partial class GameDatabaseContext :
     private void AddSequentialObject<TEntity>(TEntity entity, Action callback) where TEntity : class
     {
         this.AddSequentialObject(entity);
-        callback();
-    }
-    
-    [Obsolete("IList shouldn't be used on an entity")]
-    private void AddSequentialObject<TEntity>(TEntity entity, IList<TEntity> list)
-    {
-        Debug.Assert(entity != null);
         this.Write(() =>
         {
-            list.Add(entity);
+            callback();
         });
     }
     #endif
@@ -282,6 +260,40 @@ public partial class GameDatabaseContext :
     private void Add<T>(T obj) where T : IRealmObject
     {
         this._realm.Add(obj);
+    }
+    
+    internal static List<GameSkillReward>? SkillRewardsToImport;
+
+    internal void ImportObjects()
+    {
+        if (SkillRewardsToImport == null)
+            return;
+        
+        Console.Write("Migrating GameSkillRewards... ");
+
+        List<GameSkillReward> objects;
+        lock (SkillRewardsToImport)
+        {
+            objects = SkillRewardsToImport.ToList();
+        }
+        Console.Write(objects.Count);
+        Console.WriteLine(" to migrate");
+        
+        SkillRewardsToImport = null;
+        this.Write(this.RemoveAll<GameSkillReward>);
+        this.Write(() =>
+        {
+            foreach (GameSkillReward reward in objects)
+            {
+                GameLevel? level = this.GetLevelById(reward.LevelId);
+                if (level == null)
+                    throw new Exception("Level for reward was null, id: " + reward.LevelId);
+                reward.Level = level;
+                this.Add(reward);
+            }
+        });
+        
+        Console.WriteLine("Done!");
     }
     #else
     private void RemoveAll<TClass>() where TClass : class

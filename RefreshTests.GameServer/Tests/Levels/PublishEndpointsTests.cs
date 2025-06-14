@@ -628,9 +628,9 @@ public class PublishEndpointsTests : GameServerTest
     private GameLevelRequest CreateValidTestLevel(int id)
         => new()
         {
-            LevelId = default,
+            LevelId = id,
             IsAdventure = false,
-            Title = "Test level!",
+            Title = "Test level! " + id,
             IconHash = "g0",
             Description = "Test description",
             Location = new GameLocation(),
@@ -644,4 +644,64 @@ public class PublishEndpointsTests : GameServerTest
             SameScreenGame = false,
             SkillRewards = [],
         };
+
+    [Test]
+    public void CanPublishLevelWithSkillRewards()
+    {
+        using TestContext context = this.GetServer();
+        GameUser user = context.CreateUser();
+
+        using HttpClient client = context.GetAuthenticatedClient(TokenType.Game, user);
+
+        GameLevelRequest level = new()
+        {
+            LevelId = 0,
+            IsAdventure = false,
+            Title = "Normal Title!",
+            IconHash = "g0",
+            Description = new string('=', UgcLimits.DescriptionLimit * 2),
+            Location = new GameLocation(),
+            GameVersion = 0,
+            RootResource = TEST_ASSET_HASH,
+            PublishDate = 0,
+            UpdateDate = 0,
+            MinPlayers = 0,
+            MaxPlayers = 0,
+            EnforceMinMaxPlayers = false,
+            SameScreenGame = false,
+            SkillRewards = new List<GameSkillReward>()
+            {
+                new()
+                {
+                    ConditionType = GameSkillRewardCondition.Lives,
+                    RequiredAmount = 3,
+                    Id = 1,
+                    Title = "do the stuff",
+                    Enabled = true,
+                },
+            },
+        };
+
+        HttpResponseMessage message = client.PostAsync("/lbp/startPublish", new StringContent(level.AsXML())).Result;
+        Assert.That(message.StatusCode, Is.EqualTo(OK));
+
+        message = client.PostAsync($"/lbp/upload/{TEST_ASSET_HASH}", new ReadOnlyMemoryContent("LVLb"u8.ToArray())).Result;
+        Assert.That(message.StatusCode, Is.EqualTo(OK));
+        
+        message = client.PostAsync("/lbp/publish", new StringContent(level.AsXML())).Result;
+        Assert.That(message.StatusCode, Is.EqualTo(OK));
+        GameLevelResponse resp = message.Content.ReadAsXML<GameLevelResponse>();
+        Assert.That(resp, Is.Not.Null);
+        Assert.That(resp.Description, Has.Length.EqualTo(UgcLimits.DescriptionLimit));
+        
+        Assert.That(resp.SkillRewards, Has.Count.EqualTo(1));
+        Assert.That(resp.SkillRewards.First().Title, Is.EqualTo("do the stuff"));
+        
+        context.Database.Refresh();
+        GameLevel? dbLevel = context.Database.GetLevelById(resp.LevelId);
+        Assert.That(dbLevel, Is.Not.Null);
+
+        IEnumerable<GameSkillReward> rewards = context.Database.GetSkillRewardsForLevel(dbLevel);
+        Assert.That(rewards, Is.Not.Empty);
+    }
 }

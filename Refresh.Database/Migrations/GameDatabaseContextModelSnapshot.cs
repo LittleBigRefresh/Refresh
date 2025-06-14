@@ -485,17 +485,14 @@ namespace Refresh.Database.Migrations
 
             modelBuilder.Entity("Refresh.Database.Models.Levels.GameSkillReward", b =>
                 {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
+                    b.Property<int>("LevelId")
                         .HasColumnType("integer");
 
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+                    b.Property<int>("Id")
+                        .HasColumnType("integer");
 
                     b.Property<bool>("Enabled")
                         .HasColumnType("boolean");
-
-                    b.Property<int?>("GameLevelLevelId")
-                        .HasColumnType("integer");
 
                     b.Property<float>("RequiredAmount")
                         .HasColumnType("real");
@@ -506,11 +503,9 @@ namespace Refresh.Database.Migrations
                     b.Property<int>("_ConditionType")
                         .HasColumnType("integer");
 
-                    b.HasKey("Id");
+                    b.HasKey("LevelId", "Id");
 
-                    b.HasIndex("GameLevelLevelId");
-
-                    b.ToTable("GameSkillReward");
+                    b.ToTable("GameSkillRewards");
                 });
 
             modelBuilder.Entity("Refresh.Database.Models.Levels.Scores.GameSubmittedScore", b =>
@@ -1401,7 +1396,7 @@ namespace Refresh.Database.Migrations
             modelBuilder.Entity("Refresh.Database.Models.Comments.GameReview", b =>
                 {
                     b.HasOne("Refresh.Database.Models.Levels.GameLevel", "Level")
-                        .WithMany("Reviews")
+                        .WithMany()
                         .HasForeignKey("LevelId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
@@ -1481,9 +1476,13 @@ namespace Refresh.Database.Migrations
 
             modelBuilder.Entity("Refresh.Database.Models.Levels.GameSkillReward", b =>
                 {
-                    b.HasOne("Refresh.Database.Models.Levels.GameLevel", null)
-                        .WithMany("SkillRewards")
-                        .HasForeignKey("GameLevelLevelId");
+                    b.HasOne("Refresh.Database.Models.Levels.GameLevel", "Level")
+                        .WithMany()
+                        .HasForeignKey("LevelId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Level");
                 });
 
             modelBuilder.Entity("Refresh.Database.Models.Levels.Scores.GameSubmittedScore", b =>
@@ -1884,13 +1883,6 @@ namespace Refresh.Database.Migrations
                         .IsRequired();
 
                     b.Navigation("User");
-                });
-
-            modelBuilder.Entity("Refresh.Database.Models.Levels.GameLevel", b =>
-                {
-                    b.Navigation("Reviews");
-
-                    b.Navigation("SkillRewards");
                 });
 
             modelBuilder.Entity("Refresh.Database.Models.Users.GameUser", b =>

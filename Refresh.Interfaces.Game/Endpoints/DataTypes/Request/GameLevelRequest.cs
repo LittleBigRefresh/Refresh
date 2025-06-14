@@ -68,7 +68,6 @@ public class GameLevelRequest
             MaxPlayers = this.MaxPlayers,
             EnforceMinMaxPlayers = this.EnforceMinMaxPlayers,
             SameScreenGame = this.SameScreenGame,
-            SkillRewards = this.SkillRewards.ToArray(),
             Publisher = publisher,
             LevelType = GameLevelTypeExtensions.FromGameString(this.LevelType),
             IsLocked = this.IsLocked,

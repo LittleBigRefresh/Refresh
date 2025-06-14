@@ -8,11 +8,12 @@ public static class DbSetExtensions
         set.RemoveRange(set.Where(predicate));
     }
     
-    [Obsolete("Remove update parameter when postgres is removed")]
     public static void AddRange<TClass>(this DbSet<TClass> set, IEnumerable<TClass> range, bool update) where TClass : class
     {
-        set.AddRange(range);
-        _ = update;
+        if(!update)
+            set.AddRange(range);
+        else
+            set.UpdateRange(range);
     }
 }
 
