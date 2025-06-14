@@ -186,7 +186,7 @@ public partial class GameDatabaseContext :
     }
 
     // ReSharper disable once SuggestBaseTypeForParameter
-    private void AddSequentialObject<T>(T obj, IList<T>? list, Action? writtenCallback = null) where T : class, IRealmObject, ISequentialId
+    private void AddSequentialObject<T>(T obj, Action? writtenCallback = null) where T : class, IRealmObject, ISequentialId
     {
         lock (IdLock)
         {
@@ -197,27 +197,10 @@ public partial class GameDatabaseContext :
                 obj.SequentialId = newId;
 
                 this.Add(obj);
-                if(list == null) writtenCallback?.Invoke();
-            });
-        }
-        
-        // Two writes are necessary here for some unexplainable reason
-        // We've already set a SequentialId so we can be outside the lock at this stage
-        if (list != null)
-        {
-            this.Write(() =>
-            {
-                list.Add(obj);
                 writtenCallback?.Invoke();
             });
         }
     }
-
-    private void AddSequentialObject<T>(T obj, Action? writtenCallback) where T : class, IRealmObject, ISequentialId 
-        => this.AddSequentialObject(obj, null, writtenCallback);
-    
-    private void AddSequentialObject<T>(T obj) where T : class, IRealmObject, ISequentialId 
-        => this.AddSequentialObject(obj, null, null);
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     private void Write(Action callback)
@@ -256,16 +239,9 @@ public partial class GameDatabaseContext :
     private void AddSequentialObject<TEntity>(TEntity entity, Action callback) where TEntity : class
     {
         this.AddSequentialObject(entity);
-        callback();
-    }
-    
-    [Obsolete("IList shouldn't be used on an entity")]
-    private void AddSequentialObject<TEntity>(TEntity entity, IList<TEntity> list)
-    {
-        Debug.Assert(entity != null);
         this.Write(() =>
         {
-            list.Add(entity);
+            callback();
         });
     }
     #endif
