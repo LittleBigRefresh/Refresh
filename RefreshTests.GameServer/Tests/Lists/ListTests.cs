@@ -19,6 +19,8 @@ public class ListTests : GameServerTest
         
         for (int i = 0; i < pageSize * pages; i++)
         {
+            // newest category sorts by date, make sure levels are ordered properly
+            context.Time.TimestampMilliseconds = -i + 1000;
             context.CreateLevel(user, i.ToString());
         }
 
