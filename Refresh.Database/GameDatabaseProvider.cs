@@ -52,7 +52,7 @@ public class GameDatabaseProvider :
     #endif
 
     #if !POSTGRES
-    protected override ulong SchemaVersion => 170;
+    protected override ulong SchemaVersion => 171;
 
     protected override string Filename => "refreshGameServer.realm";
     
@@ -124,6 +124,9 @@ public class GameDatabaseProvider :
     {
         using GameDatabaseContext context = this.GetContext();
         _ = context.GetTotalLevelCount();
+        
+        // import objects needing import
+        context.ImportObjects();
     }
 
     #if POSTGRES
@@ -353,7 +356,7 @@ public class GameDatabaseProvider :
         IQueryable<dynamic>? oldLevels = migration.OldRealm.DynamicApi.All("GameLevel");
         IQueryable<GameLevel>? newLevels = migration.NewRealm.All<GameLevel>();
 
-        if (oldVersion < 163)
+        if (oldVersion < 171)
             for (int i = 0; i < newLevels.Count(); i++)
             {
                 dynamic oldLevel = oldLevels.ElementAt(i);
@@ -471,6 +474,33 @@ public class GameDatabaseProvider :
                 if (oldVersion < 163)
                 {
                     newLevel.RequiresMoveController = false;
+                }
+
+                if (oldVersion < 171)
+                {
+                    dynamic oldSkillRewards = oldLevel._SkillRewards;
+                    
+                    for (int o = 0; o < oldSkillRewards.Count; o++)
+                    {
+                        dynamic reward = oldSkillRewards[o];
+
+                        GameSkillReward newReward = new()
+                        {
+                             Id = (int)reward.Id,
+                             Title = reward.Title,
+                             Enabled = reward.Enabled,
+                             RequiredAmount = (int)reward.RequiredAmount,
+                             // Level = newLevel,
+                             LevelId = newLevel.LevelId,
+                             _ConditionType = (int)reward._ConditionType,
+                         };
+                        
+                        // causes crash because the realm considers this object to still be an embedded object
+                        // add to queue so GameDatabaseContext will add them on startup
+                        // migration.NewRealm.Add(newReward);
+                        GameDatabaseContext.SkillRewardsToImport ??= [];
+                        GameDatabaseContext.SkillRewardsToImport.Add(newReward);
+                    }
                 }
             }
 

@@ -160,7 +160,7 @@ public class GameLevelResponse : IDataConvertableFrom<GameLevelResponse, GameLev
             UniquePlayCount = dataContext.Database.GetUniquePlaysForLevel(old),
             YayCount = dataContext.Database.GetTotalRatingsForLevel(old, RatingType.Yay),
             BooCount = dataContext.Database.GetTotalRatingsForLevel(old, RatingType.Boo),
-            SkillRewards = old.SkillRewards.ToList(),
+            SkillRewards = dataContext.Database.GetSkillRewardsForLevel(old).ToList(),
             TeamPicked = old.TeamPicked,
             LevelType = old.LevelType.ToGameString(),
             IsCopyable = old.IsCopyable ? 1 : 0,

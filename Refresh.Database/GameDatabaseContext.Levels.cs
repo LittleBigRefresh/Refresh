@@ -17,6 +17,10 @@ public partial class GameDatabaseContext // Levels
 {
     private IQueryable<GameLevel> GameLevelsIncluded => this.GameLevels
         .Include(l => l.Publisher);
+
+    private IQueryable<GameSkillReward> SkillRewardsIncluded => this.GameSkillRewards
+        .Include(s => s.Level)
+        .Include(s => s.Level.Publisher);
     
     public bool AddLevel(GameLevel level)
     {
@@ -548,6 +552,35 @@ public partial class GameDatabaseContext // Levels
             foreach ((GameLevel? level, bool modded) in levels)
             {
                 level.IsModded = modded;
+            }
+        });
+    }
+
+    public IEnumerable<GameSkillReward> GetSkillRewardsForLevel(GameLevel level)
+    {
+        return this.GameSkillRewards.Where(r => r.LevelId == level.LevelId);
+    }
+
+    public void UpdateSkillRewardsForLevel(GameLevel level, IEnumerable<GameSkillReward> rewards)
+    {
+        this.GameSkillRewards.RemoveRange(this.GetSkillRewardsForLevel(level));
+        
+        this.Write(() =>
+        {
+            foreach (GameSkillReward reward in rewards.Take(3))
+            {
+                GameSkillReward newReward = new()
+                {
+                    Id = reward.Id,
+                    Title = reward.Title,
+                    Enabled = reward.Enabled,
+                    RequiredAmount = reward.RequiredAmount,
+                    Level = level,
+                    LevelId = level.LevelId,
+                    ConditionType = reward.ConditionType,
+                };
+                
+                this.GameSkillRewards.Add(newReward);
             }
         });
     }

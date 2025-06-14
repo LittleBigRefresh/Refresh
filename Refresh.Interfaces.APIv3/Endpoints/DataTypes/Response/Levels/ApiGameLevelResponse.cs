@@ -75,7 +75,7 @@ public class ApiGameLevelResponse : IApiResponse, IDataConvertableFrom<ApiGameLe
             MaxPlayers = level.MaxPlayers,
             EnforceMinMaxPlayers = level.EnforceMinMaxPlayers,
             SameScreenGame = level.SameScreenGame,
-            SkillRewards = ApiGameSkillRewardResponse.FromOldList(level.SkillRewards, dataContext),
+            SkillRewards = ApiGameSkillRewardResponse.FromOldList(dataContext.Database.GetSkillRewardsForLevel(level), dataContext),
             YayRatings = dataContext.Database.GetTotalRatingsForLevel(level, RatingType.Yay),
             BooRatings = dataContext.Database.GetTotalRatingsForLevel(level, RatingType.Boo),
             Hearts = dataContext.Database.GetFavouriteCountForLevel(level),
