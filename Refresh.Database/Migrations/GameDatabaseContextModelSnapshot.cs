@@ -41,6 +41,7 @@ namespace Refresh.Database.Migrations
                         .HasColumnType("timestamp with time zone");
 
                     b.Property<string>("UserId")
+                        .IsRequired()
                         .HasColumnType("text");
 
                     b.Property<int>("_EventType")
@@ -107,6 +108,7 @@ namespace Refresh.Database.Migrations
                         .HasColumnType("timestamp with time zone");
 
                     b.Property<string>("IpAddress")
+                        .IsRequired()
                         .HasColumnType("text");
 
                     b.Property<bool>("IsHmacDigest")
@@ -128,6 +130,7 @@ namespace Refresh.Database.Migrations
                         .HasColumnType("integer");
 
                     b.Property<string>("UserId")
+                        .IsRequired()
                         .HasColumnType("text");
 
                     b.Property<int>("_TokenGame")
@@ -155,12 +158,13 @@ namespace Refresh.Database.Migrations
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("SequentialId"));
 
                     b.Property<string>("AuthorUserId")
+                        .IsRequired()
                         .HasColumnType("text");
 
                     b.Property<string>("Content")
                         .HasColumnType("text");
 
-                    b.Property<int?>("LevelId")
+                    b.Property<int>("LevelId")
                         .HasColumnType("integer");
 
                     b.Property<DateTimeOffset>("Timestamp")
@@ -184,12 +188,14 @@ namespace Refresh.Database.Migrations
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("SequentialId"));
 
                     b.Property<string>("AuthorUserId")
+                        .IsRequired()
                         .HasColumnType("text");
 
                     b.Property<string>("Content")
                         .HasColumnType("text");
 
                     b.Property<string>("ProfileUserId")
+                        .IsRequired()
                         .HasColumnType("text");
 
                     b.Property<DateTimeOffset>("Timestamp")
@@ -218,13 +224,14 @@ namespace Refresh.Database.Migrations
                     b.Property<string>("Labels")
                         .HasColumnType("text");
 
-                    b.Property<int?>("LevelId")
+                    b.Property<int>("LevelId")
                         .HasColumnType("integer");
 
                     b.Property<DateTimeOffset>("PostedAt")
                         .HasColumnType("timestamp with time zone");
 
                     b.Property<string>("PublisherUserId")
+                        .IsRequired()
                         .HasColumnType("text");
 
                     b.HasKey("ReviewId");
@@ -269,6 +276,7 @@ namespace Refresh.Database.Migrations
                         .HasColumnType("timestamp with time zone");
 
                     b.Property<string>("OrganizerUserId")
+                        .IsRequired()
                         .HasColumnType("text");
 
                     b.Property<DateTimeOffset>("StartDate")
@@ -303,7 +311,7 @@ namespace Refresh.Database.Migrations
                     b.Property<DateTimeOffset>("LastUpdateDate")
                         .HasColumnType("timestamp with time zone");
 
-                    b.Property<int?>("LevelId")
+                    b.Property<int>("LevelId")
                         .HasColumnType("integer");
 
                     b.Property<string>("Name")
@@ -339,7 +347,7 @@ namespace Refresh.Database.Migrations
                     b.Property<string>("ScoreId")
                         .HasColumnType("text");
 
-                    b.Property<int?>("ChallengeId")
+                    b.Property<int>("ChallengeId")
                         .HasColumnType("integer");
 
                     b.Property<string>("GhostHash")
@@ -349,6 +357,7 @@ namespace Refresh.Database.Migrations
                         .HasColumnType("timestamp with time zone");
 
                     b.Property<string>("PublisherUserId")
+                        .IsRequired()
                         .HasColumnType("text");
 
                     b.Property<long>("Score")
@@ -509,7 +518,7 @@ namespace Refresh.Database.Migrations
                     b.Property<string>("ScoreId")
                         .HasColumnType("text");
 
-                    b.Property<int?>("LevelId")
+                    b.Property<int>("LevelId")
                         .HasColumnType("integer");
 
                     b.PrimitiveCollection<List<string>>("PlayerIdsRaw")
@@ -576,6 +585,7 @@ namespace Refresh.Database.Migrations
                         .HasColumnType("text");
 
                     b.Property<string>("UserId")
+                        .IsRequired()
                         .HasColumnType("text");
 
                     b.HasKey("NotificationId");
@@ -594,6 +604,7 @@ namespace Refresh.Database.Migrations
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("PhotoId"));
 
                     b.Property<string>("LargeAssetAssetHash")
+                        .IsRequired()
                         .HasColumnType("text");
 
                     b.Property<int>("LevelId")
@@ -609,6 +620,7 @@ namespace Refresh.Database.Migrations
                         .HasColumnType("text");
 
                     b.Property<string>("MediumAssetAssetHash")
+                        .IsRequired()
                         .HasColumnType("text");
 
                     b.Property<string>("PlanHash")
@@ -618,9 +630,11 @@ namespace Refresh.Database.Migrations
                         .HasColumnType("timestamp with time zone");
 
                     b.Property<string>("PublisherUserId")
+                        .IsRequired()
                         .HasColumnType("text");
 
                     b.Property<string>("SmallAssetAssetHash")
+                        .IsRequired()
                         .HasColumnType("text");
 
                     b.PrimitiveCollection<List<float>>("Subject1Bounds")
@@ -821,13 +835,14 @@ namespace Refresh.Database.Migrations
                     b.Property<string>("CommentRelationId")
                         .HasColumnType("text");
 
-                    b.Property<int?>("CommentSequentialId")
+                    b.Property<int>("CommentSequentialId")
                         .HasColumnType("integer");
 
                     b.Property<DateTimeOffset>("Timestamp")
                         .HasColumnType("timestamp with time zone");
 
                     b.Property<string>("UserId")
+                        .IsRequired()
                         .HasColumnType("text");
 
                     b.Property<int>("_RatingType")
@@ -892,19 +907,25 @@ namespace Refresh.Database.Migrations
 
             modelBuilder.Entity("Refresh.Database.Models.Relations.PlayLevelRelation", b =>
                 {
-                    b.Property<int>("LevelId")
-                        .HasColumnType("integer");
-
-                    b.Property<string>("UserId")
+                    b.Property<string>("PlayId")
                         .HasColumnType("text");
 
                     b.Property<int>("Count")
                         .HasColumnType("integer");
 
+                    b.Property<int>("LevelId")
+                        .HasColumnType("integer");
+
                     b.Property<DateTimeOffset>("Timestamp")
                         .HasColumnType("timestamp with time zone");
 
-                    b.HasKey("LevelId", "UserId");
+                    b.Property<string>("UserId")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.HasKey("PlayId");
+
+                    b.HasIndex("LevelId");
 
                     b.HasIndex("UserId");
 
@@ -916,13 +937,14 @@ namespace Refresh.Database.Migrations
                     b.Property<string>("CommentRelationId")
                         .HasColumnType("text");
 
-                    b.Property<int?>("CommentSequentialId")
+                    b.Property<int>("CommentSequentialId")
                         .HasColumnType("integer");
 
                     b.Property<DateTimeOffset>("Timestamp")
                         .HasColumnType("timestamp with time zone");
 
                     b.Property<string>("UserId")
+                        .IsRequired()
                         .HasColumnType("text");
 
                     b.Property<int>("_RatingType")
@@ -987,13 +1009,14 @@ namespace Refresh.Database.Migrations
                     b.Property<string>("RateLevelRelationId")
                         .HasColumnType("text");
 
-                    b.Property<int?>("LevelId")
+                    b.Property<int>("LevelId")
                         .HasColumnType("integer");
 
                     b.Property<DateTimeOffset>("Timestamp")
                         .HasColumnType("timestamp with time zone");
 
                     b.Property<string>("UserId")
+                        .IsRequired()
                         .HasColumnType("text");
 
                     b.Property<int>("_RatingType")
@@ -1310,7 +1333,9 @@ namespace Refresh.Database.Migrations
                 {
                     b.HasOne("Refresh.Database.Models.Users.GameUser", "User")
                         .WithMany()
-                        .HasForeignKey("UserId");
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
 
                     b.Navigation("User");
                 });
@@ -1328,7 +1353,9 @@ namespace Refresh.Database.Migrations
                 {
                     b.HasOne("Refresh.Database.Models.Users.GameUser", "User")
                         .WithMany()
-                        .HasForeignKey("UserId");
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
 
                     b.Navigation("User");
                 });
@@ -1337,11 +1364,15 @@ namespace Refresh.Database.Migrations
                 {
                     b.HasOne("Refresh.Database.Models.Users.GameUser", "Author")
                         .WithMany()
-                        .HasForeignKey("AuthorUserId");
+                        .HasForeignKey("AuthorUserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
 
                     b.HasOne("Refresh.Database.Models.Levels.GameLevel", "Level")
                         .WithMany()
-                        .HasForeignKey("LevelId");
+                        .HasForeignKey("LevelId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
 
                     b.Navigation("Author");
 
@@ -1352,11 +1383,15 @@ namespace Refresh.Database.Migrations
                 {
                     b.HasOne("Refresh.Database.Models.Users.GameUser", "Author")
                         .WithMany()
-                        .HasForeignKey("AuthorUserId");
+                        .HasForeignKey("AuthorUserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
 
                     b.HasOne("Refresh.Database.Models.Users.GameUser", "Profile")
                         .WithMany()
-                        .HasForeignKey("ProfileUserId");
+                        .HasForeignKey("ProfileUserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
 
                     b.Navigation("Author");
 
@@ -1367,11 +1402,15 @@ namespace Refresh.Database.Migrations
                 {
                     b.HasOne("Refresh.Database.Models.Levels.GameLevel", "Level")
                         .WithMany("Reviews")
-                        .HasForeignKey("LevelId");
+                        .HasForeignKey("LevelId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
 
                     b.HasOne("Refresh.Database.Models.Users.GameUser", "Publisher")
                         .WithMany()
-                        .HasForeignKey("PublisherUserId");
+                        .HasForeignKey("PublisherUserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
 
                     b.Navigation("Level");
 
@@ -1382,7 +1421,9 @@ namespace Refresh.Database.Migrations
                 {
                     b.HasOne("Refresh.Database.Models.Users.GameUser", "Organizer")
                         .WithMany()
-                        .HasForeignKey("OrganizerUserId");
+                        .HasForeignKey("OrganizerUserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
 
                     b.HasOne("Refresh.Database.Models.Levels.GameLevel", "TemplateLevel")
                         .WithMany()
@@ -1397,7 +1438,9 @@ namespace Refresh.Database.Migrations
                 {
                     b.HasOne("Refresh.Database.Models.Levels.GameLevel", "Level")
                         .WithMany()
-                        .HasForeignKey("LevelId");
+                        .HasForeignKey("LevelId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
 
                     b.HasOne("Refresh.Database.Models.Users.GameUser", "Publisher")
                         .WithMany()
@@ -1412,11 +1455,15 @@ namespace Refresh.Database.Migrations
                 {
                     b.HasOne("Refresh.Database.Models.Levels.Challenges.GameChallenge", "Challenge")
                         .WithMany()
-                        .HasForeignKey("ChallengeId");
+                        .HasForeignKey("ChallengeId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
 
                     b.HasOne("Refresh.Database.Models.Users.GameUser", "Publisher")
                         .WithMany()
-                        .HasForeignKey("PublisherUserId");
+                        .HasForeignKey("PublisherUserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
 
                     b.Navigation("Challenge");
 
@@ -1443,7 +1490,9 @@ namespace Refresh.Database.Migrations
                 {
                     b.HasOne("Refresh.Database.Models.Levels.GameLevel", "Level")
                         .WithMany()
-                        .HasForeignKey("LevelId");
+                        .HasForeignKey("LevelId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
 
                     b.Navigation("Level");
                 });
@@ -1452,7 +1501,9 @@ namespace Refresh.Database.Migrations
                 {
                     b.HasOne("Refresh.Database.Models.Users.GameUser", "User")
                         .WithMany()
-                        .HasForeignKey("UserId");
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
 
                     b.Navigation("User");
                 });
@@ -1461,7 +1512,9 @@ namespace Refresh.Database.Migrations
                 {
                     b.HasOne("Refresh.Database.Models.Assets.GameAsset", "LargeAsset")
                         .WithMany()
-                        .HasForeignKey("LargeAssetAssetHash");
+                        .HasForeignKey("LargeAssetAssetHash")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
 
                     b.HasOne("Refresh.Database.Models.Levels.GameLevel", "Level")
                         .WithMany()
@@ -1469,15 +1522,21 @@ namespace Refresh.Database.Migrations
 
                     b.HasOne("Refresh.Database.Models.Assets.GameAsset", "MediumAsset")
                         .WithMany()
-                        .HasForeignKey("MediumAssetAssetHash");
+                        .HasForeignKey("MediumAssetAssetHash")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
 
                     b.HasOne("Refresh.Database.Models.Users.GameUser", "Publisher")
                         .WithMany()
-                        .HasForeignKey("PublisherUserId");
+                        .HasForeignKey("PublisherUserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
 
                     b.HasOne("Refresh.Database.Models.Assets.GameAsset", "SmallAsset")
                         .WithMany()
-                        .HasForeignKey("SmallAssetAssetHash");
+                        .HasForeignKey("SmallAssetAssetHash")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
 
                     b.HasOne("Refresh.Database.Models.Users.GameUser", "Subject1User")
                         .WithMany()
@@ -1597,11 +1656,15 @@ namespace Refresh.Database.Migrations
                 {
                     b.HasOne("Refresh.Database.Models.Comments.GameLevelComment", "Comment")
                         .WithMany()
-                        .HasForeignKey("CommentSequentialId");
+                        .HasForeignKey("CommentSequentialId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
 
                     b.HasOne("Refresh.Database.Models.Users.GameUser", "User")
                         .WithMany()
-                        .HasForeignKey("UserId");
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
 
                     b.Navigation("Comment");
 
@@ -1661,11 +1724,15 @@ namespace Refresh.Database.Migrations
                 {
                     b.HasOne("Refresh.Database.Models.Comments.GameProfileComment", "Comment")
                         .WithMany()
-                        .HasForeignKey("CommentSequentialId");
+                        .HasForeignKey("CommentSequentialId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
 
                     b.HasOne("Refresh.Database.Models.Users.GameUser", "User")
                         .WithMany()
-                        .HasForeignKey("UserId");
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
 
                     b.Navigation("Comment");
 
@@ -1706,11 +1773,15 @@ namespace Refresh.Database.Migrations
                 {
                     b.HasOne("Refresh.Database.Models.Levels.GameLevel", "Level")
                         .WithMany()
-                        .HasForeignKey("LevelId");
+                        .HasForeignKey("LevelId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
 
                     b.HasOne("Refresh.Database.Models.Users.GameUser", "User")
                         .WithMany()
-                        .HasForeignKey("UserId");
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
 
                     b.Navigation("Level");
 

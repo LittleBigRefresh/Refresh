@@ -2,6 +2,7 @@ using System.Diagnostics;
 using System.Reflection;
 using JetBrains.Annotations;
 using Refresh.Common.Constants;
+using Refresh.Common.Helpers;
 using Refresh.Database.Query;
 using Refresh.Database.Models.Authentication;
 using Refresh.Database.Models.Activity;
@@ -295,12 +296,41 @@ public partial class GameDatabaseContext // Levels
     [Pure]
     public DatabaseList<GameLevel> GetRandomLevels(int count, int skip, GameUser? user, LevelFilterSettings levelFilterSettings)
     {
+#if POSTGRES
+        float seed = MathHelper.RemapIntToFloat(levelFilterSettings.Seed ?? 0);
+        
+        // TODO: include publisher in result somehow
+        // this needs a hacky workaround, because Include causes an ORDER BY to be added after the joins
+        // that breaks our query since we use ORDER BY in the sql and cant really use it after the fact
+        // issue ref: https://github.com/dotnet/efcore/issues/29171
+        // i've spent far too long trying to figure this out so i'll leave it for now
+
+        // for solutions to the above that do multiple queries, cap it to a reasonable amount please
+        // count = Math.Min(30, count);
+
+        IQueryable<GameLevel> list = this.GameLevels
+            .FromSqlInterpolated($"""
+                                  SELECT
+                                    setseed({seed}),
+                                    RANDOM() as rand,
+                                    *
+                                  FROM "GameLevels"
+                                  ORDER BY rand
+                                  """)
+            .AsNoTracking()
+            .FilterByGameVersion(levelFilterSettings.GameVersion)
+            .FilterByLevelFilterSettings(user, levelFilterSettings);
+
+        return new DatabaseList<GameLevel>(list, skip, count);
+#else
         Random random = new(levelFilterSettings.Seed ?? 0);
         
         return new DatabaseList<GameLevel>(this.GetLevelsByGameVersion(levelFilterSettings.GameVersion)
             .FilterByLevelFilterSettings(user, levelFilterSettings)
             .AsEnumerable()
-            .OrderBy(_ => random.Next()), skip, count);
+            .OrderBy(_ => random.Next())
+            , skip, count);
+#endif
     }
 
     // TODO: reduce code duplication for getting most of x

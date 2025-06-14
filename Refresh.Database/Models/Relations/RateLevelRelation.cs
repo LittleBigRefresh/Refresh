@@ -21,7 +21,13 @@ public partial class RateLevelRelation : IRealmObject
     // ReSharper disable once InconsistentNaming
     public int _RatingType { get; set; }
     
+    #if POSTGRES
+    [Required]
+    #endif
     public GameLevel Level { get; set; }
+    #if POSTGRES
+    [Required]
+    #endif
     public GameUser User { get; set; }
     public DateTimeOffset Timestamp { get; set; }
 }

@@ -26,7 +26,7 @@ public class ApiGameScoreResponse : IApiResponse, IDataConvertableFrom<ApiGameSc
         {
             ScoreId = old.ScoreId.ToString()!,
             Level = ApiGameLevelResponse.FromOld(old.Level, dataContext)!,
-            Players = ApiGameUserResponse.FromOldList(dataContext.Database.GetPlayersFromScore(old), dataContext),
+            Players = ApiGameUserResponse.FromOldList(dataContext.Database.GetPlayersFromScore(old).ToArray(), dataContext),
             ScoreSubmitted = old.ScoreSubmitted,
             Score = old.Score,
             ScoreType = old.ScoreType,

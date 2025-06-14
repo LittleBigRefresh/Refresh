@@ -14,7 +14,10 @@ public partial class GameNotification : IRealmObject
     public string Text { get; set; }
     
     public DateTimeOffset CreatedAt { get; set; }
-    [JsonIgnore] public GameUser User { get; set; }
+    #if POSTGRES
+    [Required]
+    #endif
+    public GameUser User { get; set; }
     
     public string FontAwesomeIcon { get; set; }
 }

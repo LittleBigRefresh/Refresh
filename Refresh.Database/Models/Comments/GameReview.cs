@@ -9,8 +9,14 @@ public partial class GameReview : IRealmObject, ISequentialId
 {
     [Key] public int ReviewId { get; set; }
     
+    #if POSTGRES
+    [Required]
+    #endif
     public GameLevel Level { get; set;  }
 
+    #if POSTGRES
+    [Required]
+    #endif
     public GameUser Publisher { get; set; }
     
     public DateTimeOffset PostedAt { get; set; }
