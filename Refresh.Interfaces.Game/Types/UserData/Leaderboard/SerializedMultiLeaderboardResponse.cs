@@ -35,7 +35,7 @@ public class SerializedMultiLeaderboardResponse
             };
 
             int i = 1;
-            foreach (GameSubmittedScore score in scores.Items)
+            foreach (GameSubmittedScore score in scores.Items.ToArrayIfPostgres())
             {
                 leaderboard.Scores.Add(SerializedLeaderboardScore.FromOld(score, dataContext, i));
                 i += 1;

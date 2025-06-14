@@ -72,7 +72,7 @@ public partial class GameDatabaseContext // Leaderboard
         IEnumerable<GameSubmittedScore> scores = this.GameSubmittedScoresIncluded
             .Where(s => s.ScoreType == type && s.Level == level)
             .OrderByDescending(s => s.Score)
-            .AsEnumerable();
+            .AsEnumerableIfRealm();
 
         if (!showDuplicates)
             scores = scores.DistinctBy(s => s.PlayerIds[0]);
