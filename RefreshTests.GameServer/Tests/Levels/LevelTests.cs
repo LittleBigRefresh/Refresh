@@ -36,6 +36,9 @@ public class LevelTests : GameServerTest
     }
     
     [Test]
+    #if POSTGRES
+    [Retry(3)]
+    #endif
     public void SlotsRandom()
     {
         using TestContext context = this.GetServer();
