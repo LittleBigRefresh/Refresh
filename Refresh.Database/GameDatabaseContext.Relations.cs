@@ -14,8 +14,7 @@ public partial class GameDatabaseContext // Relations
     #region Favouriting Levels
     private IQueryable<FavouriteLevelRelation> FavouriteLevelRelationsIncluded => this.FavouriteLevelRelations
         .Include(r => r.Level)
-        .Include(r => r.Level.Publisher)
-        .Include(r => r.Level.Reviews);
+        .Include(r => r.Level.Publisher);
     
     [Pure]
     public bool IsLevelFavouritedByUser(GameLevel level, GameUser user) => this.FavouriteLevelRelations
@@ -155,8 +154,7 @@ public partial class GameDatabaseContext // Relations
 
     private IQueryable<QueueLevelRelation> QueueLevelRelationsIncluded => this.QueueLevelRelations
         .Include(r => r.Level)
-        .Include(r => r.Level.Publisher)
-        .Include(r => r.Level.Reviews);
+        .Include(r => r.Level.Publisher);
     
     [Pure]
     public bool IsLevelQueuedByUser(GameLevel level, GameUser user) => this.QueueLevelRelations
@@ -217,20 +215,17 @@ public partial class GameDatabaseContext // Relations
         .Include(r => r.Review)
         .Include(r => r.Review.Level)
         .Include(r => r.Review.Level.Publisher)
-        .Include(r => r.Review.Level.Reviews)
         .Include(r => r.Review.Publisher)
         .Include(r => r.User);
 
     public IQueryable<RateLevelRelation> RateLevelRelationsIncluded => this.RateLevelRelations
         .Include(r => r.User)
         .Include(r => r.Level)
-        .Include(r => r.Level.Publisher)
-        .Include(r => r.Level.Reviews);
+        .Include(r => r.Level.Publisher);
 
     public IQueryable<GameReview> GameReviewsIncluded => this.GameReviews
         .Include(r => r.Level)
         .Include(r => r.Level.Publisher)
-        .Include(r => r.Level.Reviews)
         .Include(r => r.Publisher);
 
     public void RateReview(GameReview review, RatingType ratingType, GameUser user)
@@ -374,20 +369,19 @@ public partial class GameDatabaseContext // Relations
     /// <param name="user">The user who made the review</param>
     public void AddReviewToLevel(GameReview review, GameLevel level)
     {
-        List<GameReview> toRemove = level.Reviews.Where(r => r.Publisher.UserId == review.Publisher.UserId).ToList();
+        List<GameReview> toRemove = this.GameReviews.Where(r => r.Level.LevelId == level.LevelId && r.Publisher.UserId == review.Publisher.UserId).ToList();
         if (toRemove.Count > 0)
         {
             this.Write(() =>
             {
                 foreach (GameReview reviewToDelete in toRemove)
                 {
-                    level.Reviews.Remove(reviewToDelete);
                     this.GameReviews.Remove(reviewToDelete);
                 }
             });
         }
         
-        this.AddSequentialObject(review, level.Reviews);
+        this.AddSequentialObject(review);
     }
     
     public void DeleteReviewsPostedByUser(GameUser user)
@@ -441,14 +435,12 @@ public partial class GameDatabaseContext // Relations
     private IQueryable<PlayLevelRelation> PlayLevelRelationsIncluded => this.PlayLevelRelations
         .Include(r => r.User)
         .Include(r => r.Level)
-        .Include(r => r.Level.Publisher)
-        .Include(r => r.Level.Reviews);
+        .Include(r => r.Level.Publisher);
     
     private IQueryable<UniquePlayLevelRelation> UniquePlayLevelRelationsIncluded => this.UniquePlayLevelRelations
         .Include(r => r.User)
         .Include(r => r.Level)
-        .Include(r => r.Level.Publisher)
-        .Include(r => r.Level.Reviews);
+        .Include(r => r.Level.Publisher);
     
     public void PlayLevel(GameLevel level, GameUser user, int count)
     {

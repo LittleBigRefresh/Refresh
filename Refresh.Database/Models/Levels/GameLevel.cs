@@ -102,8 +102,6 @@ public partial class GameLevel : IRealmObject, ISequentialId
     public IList<GameSkillReward> _SkillRewards { get; }
     #endif
     
-    public IList<GameReview> Reviews { get; }
-    
 #nullable restore
     
     #if !POSTGRES

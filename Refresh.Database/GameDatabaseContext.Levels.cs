@@ -16,8 +16,7 @@ namespace Refresh.Database;
 public partial class GameDatabaseContext // Levels
 {
     private IQueryable<GameLevel> GameLevelsIncluded => this.GameLevels
-        .Include(l => l.Publisher)
-        .Include(l => l.Reviews);
+        .Include(l => l.Publisher);
     
     public bool AddLevel(GameLevel level)
     {
@@ -311,7 +310,6 @@ public partial class GameDatabaseContext // Levels
         
         IEnumerable<GameLevel> mostHeartedLevels = favourites
             .Include(r => r.Level.Publisher)
-            .Include(r => r.Level.Reviews)
             .AsEnumerable()
             .GroupBy(r => r.Level)
             .Select(g => new { Level = g.Key, Count = g.Count() })
@@ -332,7 +330,6 @@ public partial class GameDatabaseContext // Levels
         
         IEnumerable<GameLevel> filteredTaggedLevels = tagRelations
             .Include(x => x.Level.Publisher)
-            .Include(x => x.Level.Reviews)
             .Where(x => x._Tag == (int)tag)
             .AsEnumerable()
             .Select(x => x.Level)
@@ -352,7 +349,6 @@ public partial class GameDatabaseContext // Levels
         
         IEnumerable<GameLevel> mostPlayed = uniquePlays
             .Include(r => r.Level.Publisher)
-            .Include(r => r.Level.Reviews)
             .AsEnumerable()
             .GroupBy(r => r.Level)
             .Select(g => new { Level = g.Key, Count = g.Count() })
@@ -373,7 +369,6 @@ public partial class GameDatabaseContext // Levels
         
         IEnumerable<GameLevel> mostPlayed = plays
             .Include(r => r.Level.Publisher)
-            .Include(r => r.Level.Reviews)
             .AsEnumerable()
             .GroupBy(r => r.Level)
             .Select(g => new { Level = g.Key, Count = g.Sum(p => p.Count) })
@@ -393,7 +388,6 @@ public partial class GameDatabaseContext // Levels
         
         IEnumerable<GameLevel> highestRated = ratings
             .Include(r => r.Level.Publisher)
-            .Include(r => r.Level.Reviews)
             .AsEnumerable()
             .GroupBy(r => r.Level)
             .Select(g => new { Level = g.Key, Karma = g.Sum(r => r._RatingType) })
