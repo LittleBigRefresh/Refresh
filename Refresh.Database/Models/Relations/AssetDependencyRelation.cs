@@ -8,8 +8,12 @@ using PrimaryKeyAttribute = Microsoft.EntityFrameworkCore.PrimaryKeyAttribute;
 #endif
 public partial class AssetDependencyRelation : IRealmObject
 {
+    #if POSTGRES
     [Required]
+    #endif
     public string Dependent { get; set; }
+    #if POSTGRES
     [Required]
+    #endif
     public string Dependency { get; set; }
 }

@@ -48,10 +48,14 @@ public partial class Token : IRealmObject, IToken<GameUser>
     public DateTimeOffset ExpiresAt { get; set; }
     public DateTimeOffset LoginDate { get; set; }
     
+    #if POSTGRES
     [Required]
+    #endif
     public string IpAddress { get; set; }
 
+    #if POSTGRES
     [Required]
+    #endif
     public GameUser User { get; set; }
     
     /// <summary>

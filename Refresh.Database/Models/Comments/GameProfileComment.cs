@@ -13,13 +13,17 @@ public partial class GameProfileComment : IRealmObject, IGameComment, ISequentia
     [Key, PrimaryKey] public int SequentialId { get; set; }
 
     /// <inheritdoc/>
+    #if POSTGRES
     [Required]
+    #endif
     public GameUser Author { get; set; } = null!;
 
     /// <summary>
     /// The destination profile this comment was posted to.
     /// </summary>
+    #if POSTGRES
     [Required]
+    #endif
     public GameUser Profile { get; set; } = null!;
     
     /// <inheritdoc/>

@@ -9,9 +9,13 @@ namespace Refresh.Database.Models.Relations;
 public partial class LevelCommentRelation : IRealmObject, ICommentRelation<GameLevelComment>
 {
     [Key] public ObjectId CommentRelationId { get; set; } = ObjectId.GenerateNewId();
+    #if POSTGRES
     [Required]
+    #endif
     public GameUser User { get; set; }
+    #if POSTGRES
     [Required]
+    #endif
     public GameLevelComment Comment { get; set; }
     [Ignored, NotMapped]
     public RatingType RatingType

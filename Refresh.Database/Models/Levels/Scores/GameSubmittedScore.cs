@@ -31,7 +31,9 @@ public partial class GameSubmittedScore : IRealmObject // TODO: Rename to GameSc
         set => this._Platform = (int)value;
     }
 
+    #if POSTGRES
     [Required]
+    #endif
     public GameLevel Level { get; set; }
     public DateTimeOffset ScoreSubmitted { get; set; }
     
