@@ -327,7 +327,6 @@ public partial class GameDatabaseContext // Levels
         
         return new DatabaseList<GameLevel>(this.GetLevelsByGameVersion(levelFilterSettings.GameVersion)
             .FilterByLevelFilterSettings(user, levelFilterSettings)
-            .OrderBy(_ => EF.Functions.Random())
             .AsEnumerable()
             .OrderBy(_ => random.Next())
             , skip, count);
