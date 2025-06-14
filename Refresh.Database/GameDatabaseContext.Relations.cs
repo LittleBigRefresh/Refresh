@@ -369,7 +369,10 @@ public partial class GameDatabaseContext // Relations
     /// <param name="user">The user who made the review</param>
     public void AddReviewToLevel(GameReview review, GameLevel level)
     {
-        List<GameReview> toRemove = this.GameReviews.Where(r => r.Level.LevelId == level.LevelId && r.Publisher.UserId == review.Publisher.UserId).ToList();
+        List<GameReview> toRemove = this.GameReviews
+            .Where(r => r.Publisher == review.Publisher)
+            .Where(r => r.Level == level)
+            .ToList();
         if (toRemove.Count > 0)
         {
             this.Write(() =>
