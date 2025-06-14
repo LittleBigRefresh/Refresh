@@ -11,11 +11,23 @@ using PrimaryKeyAttribute = Microsoft.EntityFrameworkCore.PrimaryKeyAttribute;
 public partial class FavouriteUserRelation : IRealmObject
 {
     [ForeignKey(nameof(UserToFavouriteId))]
+    #if POSTGRES
+    [Required]
+    #endif
     public GameUser UserToFavourite { get; set; }
+    #if POSTGRES
+    [Required]
+    #endif
     [ForeignKey(nameof(UserFavouritingId))]
     public GameUser UserFavouriting { get; set; }
     
+    #if POSTGRES
+    [Required]
+    #endif
     [Ignored] public ObjectId UserToFavouriteId { get; set; }
+    #if POSTGRES
+    [Required]
+    #endif
     [Ignored] public ObjectId UserFavouritingId { get; set; }
     
     public DateTimeOffset Timestamp { get; set; }

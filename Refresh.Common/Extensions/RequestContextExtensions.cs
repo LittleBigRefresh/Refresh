@@ -18,6 +18,7 @@ public static class RequestContextExtensions
         if (!parsed) count = 20; // Default items in a page
         
         count = Math.Clamp(count, 0, maxCount);
+        skip = Math.Max(0, skip);
 
         return (skip, count);
     }

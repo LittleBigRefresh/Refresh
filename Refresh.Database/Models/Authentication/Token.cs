@@ -19,7 +19,7 @@ public partial class Token : IRealmObject, IToken<GameUser>
     public ObjectId TokenId { get; set; } = ObjectId.GenerateNewId();
     
     // this shouldn't ever be serialized, but just in case let's ignore it
-    [XmlIgnore] public string TokenData { get; set; }
+    [XmlIgnore, JsonIgnore] public string TokenData { get; set; }
     
     // Realm can't store enums, use recommended workaround
     // ReSharper disable once InconsistentNaming (can't fix due to conflict with TokenType)
@@ -48,8 +48,14 @@ public partial class Token : IRealmObject, IToken<GameUser>
     public DateTimeOffset ExpiresAt { get; set; }
     public DateTimeOffset LoginDate { get; set; }
     
+    #if POSTGRES
+    [Required]
+    #endif
     public string IpAddress { get; set; }
 
+    #if POSTGRES
+    [Required]
+    #endif
     public GameUser User { get; set; }
     
     /// <summary>

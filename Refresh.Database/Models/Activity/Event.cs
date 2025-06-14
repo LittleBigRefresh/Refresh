@@ -31,6 +31,9 @@ public partial class Event : IRealmObject
     /// <summary>
     /// The user in question that created this event.
     /// </summary>
+    #if POSTGRES
+    [Required]
+    #endif
     public GameUser User { get; set; }
     
     /// <summary>

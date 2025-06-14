@@ -149,7 +149,7 @@ public class AnnouncementEndpoints : EndpointGroup
         XmlSerializerNamespaces namespaces = new();
         namespaces.Add("", "");
         
-        foreach (GameNotification notification in notifications.Items)
+        foreach (GameNotification notification in notifications.Items.ToList())
         {
             SerializedNotification serializedNotification = new()
             {

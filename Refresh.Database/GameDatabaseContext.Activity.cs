@@ -22,6 +22,7 @@ public partial class GameDatabaseContext // Activity
         DateTimeOffset endTimestamp = DateTimeOffset.FromUnixTimeMilliseconds(parameters.EndTimestamp);
         
         IEnumerable<Event> query = this.Events
+            .Include(e => e.User)
             .Where(e => e.Timestamp < timestamp && e.Timestamp >= endTimestamp)
             .AsEnumerable();
 
@@ -100,7 +101,9 @@ public partial class GameDatabaseContext // Activity
                 favouriteUsers.Contains(e.StoredObjectId) ||
                 userFriends.Contains(e.User?.UserId) ||
                 userFriends.Contains(e.StoredObjectId) ||
+                #if !POSTGRES // FIXME: double query
                 this.GetLevelById(e.StoredSequentialId ?? int.MaxValue)?.Publisher?.UserId == parameters.User.UserId ||
+                #endif
                 e.EventType == EventType.LevelTeamPick ||
                 e.EventType == EventType.UserFirstLogin
             );

@@ -18,14 +18,26 @@ public partial class LevelPlaylistRelation : IRealmObject
     /// The playlist the level is contained in
     /// </summary>
     [ForeignKey(nameof(PlaylistId))]
+    #if POSTGRES
+    [Required]
+    #endif
     public GamePlaylist Playlist { get; set; }
     /// <summary>
     /// The level contained within the playlist
     /// </summary>
     [ForeignKey(nameof(LevelId))]
+    #if POSTGRES
+    [Required]
+    #endif
     public GameLevel Level { get; set; }
     
+    #if POSTGRES
+    [Required]
+    #endif
     [Ignored] public int PlaylistId { get; set; }
+    #if POSTGRES
+    [Required]
+    #endif
     [Ignored] public int LevelId { get; set; }
     
     /// <summary>
