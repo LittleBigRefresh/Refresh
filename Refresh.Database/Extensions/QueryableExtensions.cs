@@ -1,4 +1,6 @@
-﻿namespace Refresh.Database.Extensions;
+﻿using System.Linq.Expressions;
+
+namespace Refresh.Database.Extensions;
 
 public static class QueryableExtensions
 {

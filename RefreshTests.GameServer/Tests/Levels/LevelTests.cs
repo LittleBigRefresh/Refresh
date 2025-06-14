@@ -62,10 +62,18 @@ public class LevelTests : GameServerTest
             }
         }
         
+        #if POSTGRES
+        TestSeed(level2, 69);
+        TestSeed(level3, 1);
+        TestSeed(level2, 2);
+        TestSeed(level1, -2);
+        TestSeed(level2, 90);
+        #else
         TestSeed(level1, 69420);
         TestSeed(level2, 1);
         TestSeed(level3, 2);
         TestSeed(level3, -2);
+        #endif
     }
     
     [Test]
