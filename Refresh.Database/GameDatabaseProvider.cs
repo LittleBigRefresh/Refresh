@@ -125,8 +125,10 @@ public class GameDatabaseProvider :
         using GameDatabaseContext context = this.GetContext();
         _ = context.GetTotalLevelCount();
         
+        #if !POSTGRES
         // import objects needing import
         context.ImportObjects();
+        #endif
     }
 
     #if POSTGRES
