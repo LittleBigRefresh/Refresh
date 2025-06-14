@@ -52,7 +52,7 @@ public class GameDatabaseProvider :
     #endif
 
     #if !POSTGRES
-    protected override ulong SchemaVersion => 169;
+    protected override ulong SchemaVersion => 170;
 
     protected override string Filename => "refreshGameServer.realm";
     
