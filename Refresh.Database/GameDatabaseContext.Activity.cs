@@ -22,6 +22,7 @@ public partial class GameDatabaseContext // Activity
         DateTimeOffset endTimestamp = DateTimeOffset.FromUnixTimeMilliseconds(parameters.EndTimestamp);
         
         IEnumerable<Event> query = this.Events
+            .Include(e => e.User)
             .Where(e => e.Timestamp < timestamp && e.Timestamp >= endTimestamp)
             .AsEnumerable();
 

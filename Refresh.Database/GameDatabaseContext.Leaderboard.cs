@@ -11,6 +11,11 @@ namespace Refresh.Database;
 
 public partial class GameDatabaseContext // Leaderboard
 {
+    private IQueryable<GameSubmittedScore> GameSubmittedScoresIncluded => this.GameSubmittedScores
+        .Include(s => s.Level)
+        .Include(s => s.Level.Publisher)
+        .Include(s => s.Level.Reviews);
+    
     public GameSubmittedScore SubmitScore(ISerializedScore score, Token token, GameLevel level)
         => this.SubmitScore(score, token.User, level, token.TokenGame, token.TokenPlatform);
 
@@ -64,7 +69,7 @@ public partial class GameDatabaseContext // Leaderboard
     
     public DatabaseList<GameSubmittedScore> GetTopScoresForLevel(GameLevel level, int count, int skip, byte type, bool showDuplicates = false)
     {
-        IEnumerable<GameSubmittedScore> scores = this.GameSubmittedScores
+        IEnumerable<GameSubmittedScore> scores = this.GameSubmittedScoresIncluded
             .Where(s => s.ScoreType == type && s.Level == level)
             .OrderByDescending(s => s.Score)
             .AsEnumerable();
@@ -81,7 +86,8 @@ public partial class GameDatabaseContext // Leaderboard
         
         // this is probably REALLY fucking slow, and i probably shouldn't be trusted with LINQ anymore
 
-        List<GameSubmittedScore> scores = this.GameSubmittedScores.Where(s => s.ScoreType == score.ScoreType && s.Level == score.Level)
+        List<GameSubmittedScore> scores = this.GameSubmittedScoresIncluded
+            .Where(s => s.ScoreType == score.ScoreType && s.Level == score.Level)
             .OrderByDescending(s => s.Score)
             .AsEnumerable()
             .ToList();
@@ -119,7 +125,8 @@ public partial class GameDatabaseContext // Leaderboard
     {
         if (uuid == null) return null;
         if(!ObjectId.TryParse(uuid, out ObjectId objectId)) return null;
-        return this.GameSubmittedScores.FirstOrDefault(u => u.ScoreId == objectId);
+
+        return GetScoreByObjectId(objectId);
     }
     
     [Pure]
@@ -127,7 +134,8 @@ public partial class GameDatabaseContext // Leaderboard
     public GameSubmittedScore? GetScoreByObjectId(ObjectId? id)
     {
         if (id == null) return null;
-        return this.GameSubmittedScores.FirstOrDefault(u => u.ScoreId == id);
+        return this.GameSubmittedScoresIncluded
+            .FirstOrDefault(u => u.ScoreId == id);
     }
     
     public void DeleteScore(GameSubmittedScore score)
