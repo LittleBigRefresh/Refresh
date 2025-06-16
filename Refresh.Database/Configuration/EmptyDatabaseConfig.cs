@@ -1,10 +1,9 @@
-﻿using Npgsql;
-
-namespace Refresh.Database.Configuration;
+﻿namespace Refresh.Database.Configuration;
 
 public class EmptyDatabaseConfig : IDatabaseConfig
 {
-    public string ConnectionString => new NpgsqlConnectionStringBuilder
+    #if POSTGRES
+    public string ConnectionString => new Npgsql.NpgsqlConnectionStringBuilder
     {
         Database = "refresh",
         Username = "refresh",
@@ -12,6 +11,9 @@ public class EmptyDatabaseConfig : IDatabaseConfig
         Host = "localhost",
         Port = 5432,
     }.ToString();
+    #else
+    public string ConnectionString => string.Empty;
+    #endif
 
     public bool PreferConnectionStringEnvironmentVariable => false;
 }
