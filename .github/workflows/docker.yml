@@ -20,19 +20,20 @@ jobs:
           - name: GameServer
             dockerfile: Dockerfile
             container_id: refresh
-            build_args: []
+            build_args: ""
           - name: HttpsProxy
             dockerfile: HttpsProxy.Dockerfile
             container_id: refresh-httpsproxy
-            build_args: []
+            build_args: ""
           - name: PresenceServer
             dockerfile: PresenceServer.Dockerfile
             container_id: refresh-presenceserver
-            build_args: []
+            build_args: ""
           - name: GameServer (DebugPostgres)
             dockerfile: Dockerfile
             container_id: refresh-postgres-beta
-            build_args: ["BUILD_CONFIGURATION=DebugPostgres"]
+            build_args: |
+              BUILD_CONFIGURATION=DebugPostgres
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -58,4 +59,5 @@ jobs:
           push: ${{ github.event_name != 'pull_request' }}
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
-          build-args: ${{ matrix.service.build_args }}
+          build-args: |
+            ${{ matrix.service.build_args }}
