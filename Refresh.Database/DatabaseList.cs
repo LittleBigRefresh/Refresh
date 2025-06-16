@@ -15,7 +15,7 @@ public class DatabaseList<TObject> where TObject : class
     
     public DatabaseList(IEnumerable<TObject> items, int skip, int count)
     {
-        this.Items = items.Skip(skip).Take(count);
+        this.Items = items.AsEnumerableIfRealm().Skip(skip).Take(count);
         this.TotalItems = items.Count();
         this.NextPageIndex = skip + count + 1;
 
