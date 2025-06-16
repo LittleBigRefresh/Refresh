@@ -1,0 +1,12 @@
+﻿apiVersion: v1
+kind: Service
+metadata:
+  name: refresh-gameserver
+spec:
+  selector:
+    app: refresh-gameserver
+  ports:
+    - protocol: TCP
+      port: 10061
+      targetPort: 10061
+  type: ClusterIP

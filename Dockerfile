@@ -1,4 +1,7 @@
 # Build stage
+
+ARG BUILD_CONFIGURATION=Release
+
 FROM mcr.microsoft.com/dotnet/sdk:9.0-bookworm-slim AS build
 WORKDIR /build
 
@@ -11,11 +14,13 @@ RUN dotnet sln list | grep ".csproj" \
     mv $(basename $line) $(dirname $line); \
     done;
 
-RUN dotnet restore --use-current-runtime
+ARG BUILD_CONFIGURATION=Release
+
+RUN dotnet restore --use-current-runtime /p:Configuration=${BUILD_CONFIGURATION}
 
 COPY . .
 
-RUN dotnet publish Refresh.GameServer -c Release --property:OutputPath=/build/publish/ --no-restore --no-self-contained
+RUN dotnet publish Refresh.GameServer -c ${BUILD_CONFIGURATION} --property:OutputPath=/build/publish/ --no-restore --no-self-contained
 
 # Final running container
 
