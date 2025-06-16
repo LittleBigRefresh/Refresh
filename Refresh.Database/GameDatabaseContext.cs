@@ -1,6 +1,7 @@
 using System.Diagnostics.CodeAnalysis;
 using System.Runtime.CompilerServices;
 using Refresh.Common.Time;
+using Refresh.Database.Configuration;
 using Refresh.Database.Models.Authentication;
 using Refresh.Database.Models.Activity;
 using Refresh.Database.Models.Assets;
@@ -35,6 +36,7 @@ public partial class GameDatabaseContext :
     private static readonly object IdLock = new();
 
     private readonly IDateTimeProvider _time;
+    private readonly IDatabaseConfig _dbConfig;
     
     #if !POSTGRES
     private RealmDbSet<GameUser> GameUsers => new(this._realm);
@@ -119,28 +121,29 @@ public partial class GameDatabaseContext :
     internal DbSet<GameSkillReward> GameSkillRewards { get; set; }
     #endif
     
-    internal GameDatabaseContext(IDateTimeProvider time)
+    internal GameDatabaseContext(IDateTimeProvider time, IDatabaseConfig dbConfig)
     {
         this._time = time;
+        this._dbConfig = dbConfig;
     }
 
 #if POSTGRES
     [Obsolete("For use by the `dotnet ef` tool only.", true)]
-    public GameDatabaseContext() : this(new SystemDateTimeProvider())
+    public GameDatabaseContext() : this(new SystemDateTimeProvider(), new EmptyDatabaseConfig())
     {}
 
     protected override void OnConfiguring(DbContextOptionsBuilder options)
     {
         base.OnConfiguring(options);
-        NpgsqlConnectionStringBuilder builder = new()
+        string connectionString = this._dbConfig.ConnectionString;
+        if (this._dbConfig.PreferConnectionStringEnvironmentVariable)
         {
-            Database = "refresh",
-            Username = "refresh",
-            Password = "refresh",
-            Host = "localhost",
-            Port = 5432,
-        };
-        options.UseNpgsql(builder.ToString());
+            string? envVarString = Environment.GetEnvironmentVariable("POSTGRES_CONNECTION_STRING");
+            if (envVarString != null)
+                connectionString = envVarString;
+        }
+        
+        options.UseNpgsql(connectionString);
     }
 
     protected override void ConfigureConventions(ModelConfigurationBuilder config)
