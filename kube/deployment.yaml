@@ -1,0 +1,37 @@
+﻿apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: refresh-gameserver
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: refresh-gameserver
+  template:
+    metadata:
+      labels:
+        app: refresh-gameserver
+    spec:
+      containers:
+        - name: refresh-gameserver
+          image: ghcr.io/littlebigrefresh/refresh:latest
+          ports:
+            - containerPort: 10061
+          env:
+            - name: BUNKUM_DATA_FOLDER
+              value: /refresh/data
+          volumeMounts:
+            - name: gameserver-data
+              mountPath: /refresh/data
+          livenessProbe:
+            httpGet:
+              path: /_health
+              port: 10061
+            initialDelaySeconds: 10
+            periodSeconds: 5
+            timeoutSeconds: 3
+            failureThreshold: 5
+      volumes:
+        - name: gameserver-data
+          persistentVolumeClaim:
+            claimName: gameserver-pvc

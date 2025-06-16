@@ -2,7 +2,20 @@
 <project version="4">
   <component name="UserContentModel">
     <attachedFolders />
-    <explicitIncludes />
+    <explicitIncludes>
+      <Path>.dockerignore</Path>
+      <Path>.gitignore</Path>
+      <Path>CONTRIBUTING.md</Path>
+      <Path>Dockerfile</Path>
+      <Path>HttpsProxy.Dockerfile</Path>
+      <Path>LICENSE</Path>
+      <Path>PresenceServer.Dockerfile</Path>
+      <Path>README.md</Path>
+      <Path>docker-compose.yml</Path>
+      <Path>global.json</Path>
+      <Path>kube</Path>
+      <Path>scripts</Path>
+    </explicitIncludes>
     <explicitExcludes />
   </component>
 </project>
