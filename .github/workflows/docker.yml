@@ -20,12 +20,19 @@ jobs:
           - name: GameServer
             dockerfile: Dockerfile
             container_id: refresh
+            build_args: []
           - name: HttpsProxy
             dockerfile: HttpsProxy.Dockerfile
             container_id: refresh-httpsproxy
+            build_args: []
           - name: PresenceServer
             dockerfile: PresenceServer.Dockerfile
             container_id: refresh-presenceserver
+            build_args: []
+          - name: GameServer (DebugPostgres)
+            dockerfile: Dockerfile
+            container_id: refresh-postgres-beta
+            build_args: ["BUILD_CONFIGURATION=DebugPostgres"]
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -40,11 +47,11 @@ jobs:
       # See https://github.com/docker/metadata-action#basic
       - name: Extract metadata for ${{ matrix.service.name }}
         id: meta
-        uses: docker/metadata-action@v5.6.0
+        uses: docker/metadata-action@v5.7.0
         with:
           images: ghcr.io/${{ github.repository_owner }}/${{ matrix.service.container_id }}
       - name: Build and push ${{ matrix.service.name }}
-        uses: docker/build-push-action@v6.15.0
+        uses: docker/build-push-action@v6.18.0
         with:
           context: .
           file: ${{ matrix.service.dockerfile }}
