@@ -15,5 +15,5 @@ public class DatabaseConfig : Config, IDatabaseConfig
     }
 
     public string ConnectionString { get; set; } = "Database=refresh;Username=refresh;Password=refresh;Host=localhost;Port=5432";
-    public bool PreferConnectionStringEnvironmentVariable { get; set; } = false;
+    public bool PreferConnectionStringEnvironmentVariable { get; set; } = true;
 }
