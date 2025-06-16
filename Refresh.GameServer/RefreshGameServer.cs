@@ -59,11 +59,8 @@ public class RefreshGameServer : RefreshServer
         IDataStore? dataStore = null
     ) : base(listener)
     {
-        databaseProvider ??= () => new GameDatabaseProvider();
         dataStore ??= new FileSystemDataStore();
-        
-        this._databaseProvider = databaseProvider.Invoke();
-        this._databaseProvider.Initialize();
+
         this._dataStore = dataStore;
 
         try
@@ -76,6 +73,26 @@ public class RefreshGameServer : RefreshServer
         {
             this.Logger.LogWarning(BunkumCategory.Configuration, "Failed to read dry.json: " + ex);
         }
+
+        if (databaseProvider == null)
+        {
+            DatabaseConfig? dbConfig = null;
+            try
+            {
+               dbConfig = Config.LoadFromJsonFile<DatabaseConfig>("db.json", this.Logger);
+            }
+            catch (Exception ex)
+            {
+                this.Logger.LogCritical(RefreshContext.Database, "Failed to read the database configuration file: " + ex);
+                this.Logger.Dispose();
+                Environment.Exit(1);
+            }
+            
+            databaseProvider = () => new GameDatabaseProvider(dbConfig);
+        }
+        
+        this._databaseProvider = databaseProvider.Invoke();
+        this._databaseProvider.Initialize();
 
         // Uncomment if you want to use production refresh as a source for assets
         #if DEBUG
