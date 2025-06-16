@@ -7,7 +7,7 @@ namespace Refresh.Database.Models.Relations;
 
 #if POSTGRES
 using PrimaryKeyAttribute = Microsoft.EntityFrameworkCore.PrimaryKeyAttribute;
-[PrimaryKey(nameof(PinId), nameof(PublisherId))]
+[PrimaryKey(nameof(PinId), nameof(PublisherId), nameof(IsBeta))]
 #endif
 public partial class PinProgressRelation : IRealmObject
 {

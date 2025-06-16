@@ -881,11 +881,11 @@ namespace Refresh.Database.Migrations
                     b.Property<string>("PublisherId")
                         .HasColumnType("text");
 
-                    b.Property<DateTimeOffset>("FirstPublished")
-                        .HasColumnType("timestamp with time zone");
-
                     b.Property<bool>("IsBeta")
                         .HasColumnType("boolean");
+
+                    b.Property<DateTimeOffset>("FirstPublished")
+                        .HasColumnType("timestamp with time zone");
 
                     b.Property<DateTimeOffset>("LastUpdated")
                         .HasColumnType("timestamp with time zone");
@@ -893,7 +893,7 @@ namespace Refresh.Database.Migrations
                     b.Property<int>("Progress")
                         .HasColumnType("integer");
 
-                    b.HasKey("PinId", "PublisherId");
+                    b.HasKey("PinId", "PublisherId", "IsBeta");
 
                     b.HasIndex("PublisherId");
 
