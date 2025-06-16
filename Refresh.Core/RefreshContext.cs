@@ -11,4 +11,5 @@ public enum RefreshContext
     Publishing,
     Aipi,
     Presence,
+    Database,
 }

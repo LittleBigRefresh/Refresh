@@ -1,4 +1,5 @@
 using Refresh.Common.Time;
+using Refresh.Database.Configuration;
 #if !POSTGRES
 using Refresh.Database.Models.Authentication;
 using Refresh.Database.Models.Comments;
@@ -27,15 +28,18 @@ public class GameDatabaseProvider :
 #endif
 {
     private readonly IDateTimeProvider _time;
-    
-    public GameDatabaseProvider()
+    private readonly IDatabaseConfig _dbConfig;
+
+    public GameDatabaseProvider(IDatabaseConfig dbConfig)
     {
         this._time = new SystemDateTimeProvider();
+        this._dbConfig = dbConfig;
     }
 
     protected GameDatabaseProvider(IDateTimeProvider time)
     {
         this._time = time;
+        this._dbConfig = new EmptyDatabaseConfig();
     }
     
     #if POSTGRES
@@ -137,7 +141,7 @@ public class GameDatabaseProvider :
     protected override GameDatabaseContext CreateContext()
     #endif
     {
-        return new GameDatabaseContext(this._time);
+        return new GameDatabaseContext(this._time, this._dbConfig);
     }
 
     #if !POSTGRES
