@@ -14,11 +14,12 @@ RUN dotnet sln list | grep ".csproj" \
     mv $(basename $line) $(dirname $line); \
     done;
 
-RUN dotnet restore --use-current-runtime
+ARG BUILD_CONFIGURATION=Release
+
+RUN dotnet restore --use-current-runtime /p:Configuration=${BUILD_CONFIGURATION}
 
 COPY . .
 
-ARG BUILD_CONFIGURATION=Release
 RUN dotnet publish Refresh.GameServer -c ${BUILD_CONFIGURATION} --property:OutputPath=/build/publish/ --no-restore --no-self-contained
 
 # Final running container
