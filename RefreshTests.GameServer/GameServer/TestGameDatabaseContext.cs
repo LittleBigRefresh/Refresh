@@ -18,7 +18,7 @@ public class TestGameDatabaseContext : GameDatabaseContext
         throw new InvalidOperationException("Do not use this constructor.");
     }
 
-    public TestGameDatabaseContext(IDateTimeProvider time, PostgreSqlContainer container) : base(time)
+    public TestGameDatabaseContext(IDateTimeProvider time, PostgreSqlContainer container) : base(time, new TestDatabaseConfig(container))
     {
         this._container = container;
     }
