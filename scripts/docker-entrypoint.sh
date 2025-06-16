@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/usr/bin/env sh
 
 # Docker volume mapping messes with folder ownership
 # so it must be changed again during the entrypoint
