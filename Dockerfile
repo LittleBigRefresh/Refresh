@@ -1,4 +1,7 @@
 # Build stage
+
+ARG BUILD_CONFIGURATION=Release
+
 FROM mcr.microsoft.com/dotnet/sdk:9.0-bookworm-slim AS build
 WORKDIR /build
 
@@ -15,7 +18,8 @@ RUN dotnet restore --use-current-runtime
 
 COPY . .
 
-RUN dotnet publish Refresh.GameServer -c Release --property:OutputPath=/build/publish/ --no-restore --no-self-contained
+ARG BUILD_CONFIGURATION=Release
+RUN dotnet publish Refresh.GameServer -c ${BUILD_CONFIGURATION} --property:OutputPath=/build/publish/ --no-restore --no-self-contained
 
 # Final running container
 
