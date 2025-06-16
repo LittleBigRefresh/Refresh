@@ -2,7 +2,7 @@ name: Create Docker image
 
 on:
   push:
-    branches: ['main', 'kube']
+    branches: ['main']
     tags: ["*"]
   pull_request:
     branches: ['main']
