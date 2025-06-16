@@ -14,7 +14,8 @@ spec:
     spec:
       containers:
         - name: refresh-gameserver
-          image: ghcr.io/littlebigrefresh/refresh:latest
+          image: ghcr.io/littlebigrefresh/refresh-postgres-beta:latest
+          imagePullPolicy: Always
           ports:
             - containerPort: 10061
           env:
