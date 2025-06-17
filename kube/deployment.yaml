@@ -14,13 +14,15 @@ spec:
     spec:
       containers:
         - name: refresh-gameserver
-          image: ghcr.io/littlebigrefresh/refresh-postgres-beta:latest
+          image: ghcr.io/littlebigrefresh/refresh-postgres-beta:main
           imagePullPolicy: Always
           ports:
             - containerPort: 10061
           env:
             - name: BUNKUM_DATA_FOLDER
               value: /refresh/data
+            - name: POSTGRES_CONNECTION_STRING
+              value: Database=refresh;Username=refresh;Password=refresh;Host=refresh-db;Port=5432
           volumeMounts:
             - name: gameserver-data
               mountPath: /refresh/data
