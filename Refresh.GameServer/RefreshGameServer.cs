@@ -63,9 +63,10 @@ public class RefreshGameServer : RefreshServer
 
         this._dataStore = dataStore;
 
+        DryArchiveConfig? dryConfig = null;
         try
         {
-            DryArchiveConfig dryConfig = Config.LoadFromJsonFile<DryArchiveConfig>("dry.json", this.Logger);
+            dryConfig = Config.LoadFromJsonFile<DryArchiveConfig>("dry.json", this.Logger);
             if (dryConfig.Enabled)
                 this._dataStore = new AggregateDataStore(dataStore, new DryDataStore(dryConfig));
         }
@@ -95,9 +96,11 @@ public class RefreshGameServer : RefreshServer
         this._databaseProvider.Initialize();
 
         // Uncomment if you want to use production refresh as a source for assets
-        #if DEBUG
-        // this._dataStore = new AggregateDataStore(dataStore, new RemoteRefreshDataStore());
-        #endif
+        // TODO: remove config option when test.lbpbonsai.com instance no longer needs prod assets
+#if DEBUG && POSTGRES
+        if (dryConfig?.TemporaryWillBeRemoved_UseProductionRefreshData ?? false)
+            this._dataStore = new AggregateDataStore(dataStore, new RemoteRefreshDataStore());
+#endif
         
         this.SetupInitializer(() =>
         {
