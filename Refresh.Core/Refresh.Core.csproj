@@ -6,6 +6,12 @@
         <Nullable>enable</Nullable>
         <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
         <WarningsNotAsErrors>612,618</WarningsNotAsErrors>
+        <Configurations>Debug;Release;DebugPostgres</Configurations>
+    </PropertyGroup>
+
+    <PropertyGroup Condition=" '$(Configuration)' == 'DebugPostgres' ">
+        <DefineConstants>TRACE;DEBUG;POSTGRES</DefineConstants>
+        <DebugSymbols>true</DebugSymbols>
     </PropertyGroup>
 
     <ItemGroup>

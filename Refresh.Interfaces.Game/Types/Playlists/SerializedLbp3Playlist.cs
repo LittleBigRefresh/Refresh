@@ -7,9 +7,7 @@ using Refresh.Database.Query;
 namespace Refresh.Interfaces.Game.Types.Playlists;
 
 // Disable false nullability warnings caused by Realm's source generators.
-#if !POSTGRES
 #pragma warning disable CS8766 // Nullability of reference types in return type doesn't match implicitly implemented member (possibly because of nullability attributes).
-#endif
 
 [XmlRoot("playlist")]
 [XmlType("playlist")]

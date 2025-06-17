@@ -79,8 +79,12 @@ public class InstanceApiEndpoints : EndpointGroup
             },
             
             ActiveContest = ApiContestResponse.FromOld(database.GetNewestActiveContest(), dataContext),
-#if DEBUG
+#if DEBUG && POSTGRES
+            SoftwareType = "Debug (Postgres)",
+#elif DEBUG
             SoftwareType = "Debug",
+#elif POSTGRES
+            SoftwareType = "Release (Postgres)",
 #else
             SoftwareType = "Release",
 #endif

@@ -1,0 +1,74 @@
+﻿apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: db-pvc
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 4Gi
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: db-cfg
+  labels:
+    app: refresh-db
+data:
+  POSTGRES_DB: refresh
+  POSTGRES_USER: refresh
+  POSTGRES_PASSWORD: refresh
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: refresh-db
+  name: refresh-db
+spec:
+  selector:
+    matchLabels:
+      app: refresh-db
+  template:
+    metadata:
+      labels:
+        app: refresh-db
+    spec:
+      containers:
+        - name: refresh-db
+          image: postgres:17-alpine
+          imagePullPolicy: IfNotPresent
+          resources:
+            requests:
+              cpu: 250m
+              memory: 256Mi
+          ports:
+            - containerPort: 5432
+              name: db-port
+          envFrom:
+            - configMapRef:
+                name: db-cfg
+          env:
+            - name: PGDATA
+              value: /var/lib/postgresql/data/pgdata
+          volumeMounts:
+            - mountPath: /var/lib/postgresql/data
+              name: db-pv
+      volumes:
+        - name: db-pv
+          persistentVolumeClaim:
+            claimName: db-pvc
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: refresh-db
+spec:
+  selector:
+    app: refresh-db
+  ports:
+    - protocol: TCP
+      port: 5432
+      targetPort: db-port
+  type: LoadBalancer
