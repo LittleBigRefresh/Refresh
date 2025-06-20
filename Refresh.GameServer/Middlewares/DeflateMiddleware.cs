@@ -28,8 +28,16 @@ public class DeflateMiddleware(GameServerConfig config) : IMiddleware
         if (!config.UseDeflateCompression)
             return;
         
-        // If this isn't a game request or it's a resource request, don't deflate, since resource requests will be corrupted if deflated
-        if (!context.Uri.AbsolutePath.StartsWith(GameEndpointAttribute.BaseRoute) || context.Uri.AbsolutePath.StartsWith($"{GameEndpointAttribute.BaseRoute}r/"))
+        // If this isn't a game request, it isn't necessary to do anything here.
+        if (!context.Uri.AbsolutePath.StartsWith(GameEndpointAttribute.BaseRoute))
+            return;
+        
+        // If the request is coming through Cloudflare, tell cloudflare not to touch the data in any way
+        if (context.RequestHeaders["Cf-Ray"] != null)
+            context.ResponseHeaders["Cache-Control"] = "no-transform";
+        
+        // If this is a resource request, don't deflate because resources will be corrupted if deflated.
+        if (context.Uri.AbsolutePath.StartsWith($"{GameEndpointAttribute.BaseRoute}r/"))
             return;
         
         string? encodings = context.RequestHeaders.Get("Accept-Encoding");
@@ -41,10 +49,6 @@ public class DeflateMiddleware(GameServerConfig config) : IMiddleware
         context.ResponseHeaders["X-Original-Content-Length"] = context.ResponseStream.Length.ToString();
         context.ResponseHeaders["Vary"] = "Accept-Encoding";
         context.ResponseHeaders["Content-Encoding"] = "deflate";
-        
-        // If the request is coming through Cloudflare, tell cloudflare not to touch the data
-        if (context.RequestHeaders["Cf-Ray"] != null)
-            context.ResponseHeaders["Cache-Control"] = "no-transform";
         
         // Create a copy of our uncompressed data
         byte[] uncompressed = context.ResponseStream.ToArray();
