@@ -42,6 +42,10 @@ public class DeflateMiddleware(GameServerConfig config) : IMiddleware
         context.ResponseHeaders["Vary"] = "Accept-Encoding";
         context.ResponseHeaders["Content-Encoding"] = "deflate";
         
+        // If the request is coming through Cloudflare, tell cloudflare not to touch the data
+        if (context.RequestHeaders["Cf-Ray"] != null)
+            context.ResponseHeaders["Cache-Control"] = "no-transform";
+        
         // Create a copy of our uncompressed data
         byte[] uncompressed = context.ResponseStream.ToArray();
         
