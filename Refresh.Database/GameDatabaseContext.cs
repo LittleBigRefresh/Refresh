@@ -144,6 +144,8 @@ public partial class GameDatabaseContext :
         }
         
         options.UseNpgsql(connectionString);
+
+        // options.LogTo(Console.WriteLine);
     }
 
     protected override void ConfigureConventions(ModelConfigurationBuilder config)
