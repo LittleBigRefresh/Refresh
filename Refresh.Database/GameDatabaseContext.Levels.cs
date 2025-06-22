@@ -470,12 +470,21 @@ public partial class GameDatabaseContext // Levels
     [Pure]
     public DatabaseList<GameLevel> SearchForLevels(int count, int skip, GameUser? user, LevelFilterSettings levelFilterSettings, string query)
     {
-        IQueryable<GameLevel> validLevels = this.GetLevelsByGameVersion(levelFilterSettings.GameVersion).FilterByLevelFilterSettings(user, levelFilterSettings);
+        IQueryable<GameLevel> validLevels = this.GetLevelsByGameVersion(levelFilterSettings.GameVersion)
+                .FilterByLevelFilterSettings(user, levelFilterSettings);
 
+#if !POSTGRES
         List<GameLevel> levels = validLevels.Where(l =>
-                                                       QueryMethods.FullTextSearch(l.Title, query) ||
-                                                       QueryMethods.FullTextSearch(l.Description, query)
+            QueryMethods.FullTextSearch(l.Title, query) ||
+            QueryMethods.FullTextSearch(l.Description, query)
         ).ToList();
+#else
+        string dbQuery = $"%{query}%";
+        List<GameLevel> levels = validLevels.Where(l =>
+            EF.Functions.ILike(l.Title, dbQuery) ||
+            EF.Functions.ILike(l.Description, dbQuery)
+        ).ToList();
+#endif
         
         // If the search is just an int, then we should also look for levels which match that ID
         if (int.TryParse(query, out int id))

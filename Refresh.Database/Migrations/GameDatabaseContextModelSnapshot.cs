@@ -1278,6 +1278,10 @@ namespace Refresh.Database.Migrations
                         .IsRequired()
                         .HasColumnType("text");
 
+                    b.Property<string>("UsernameLower")
+                        .IsRequired()
+                        .HasColumnType("text");
+
                     b.Property<string>("VitaIconHash")
                         .IsRequired()
                         .HasColumnType("text");
@@ -1295,7 +1299,7 @@ namespace Refresh.Database.Migrations
 
                     b.HasKey("UserId");
 
-                    b.HasIndex("Username", "EmailAddress", "PasswordBcrypt");
+                    b.HasIndex("Username", "UsernameLower", "EmailAddress", "PasswordBcrypt");
 
                     b.ToTable("GameUsers");
                 });
