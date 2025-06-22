@@ -225,7 +225,7 @@ public class RefreshGameServer : RefreshServer
     public override void Start()
     {
         this.Server.Start();
-        // this.WorkerManager?.Start();
+        this.WorkerManager?.Start();
 
         if (this._config!.MaintenanceMode)
         {
