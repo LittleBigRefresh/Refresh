@@ -29,11 +29,6 @@ jobs:
             dockerfile: PresenceServer.Dockerfile
             container_id: refresh-presenceserver
             build_args: ""
-          - name: GameServer (DebugPostgres)
-            dockerfile: Dockerfile
-            container_id: refresh-postgres-beta
-            build_args: |
-              BUILD_CONFIGURATION=DebugPostgres
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
