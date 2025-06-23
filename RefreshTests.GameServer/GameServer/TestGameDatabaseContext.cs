@@ -1,6 +1,4 @@
-﻿#if POSTGRES
-
-using Refresh.Common.Time;
+﻿using Refresh.Common.Time;
 using Refresh.Database;
 using Testcontainers.PostgreSql;
 
@@ -12,5 +10,3 @@ public class TestGameDatabaseContext : GameDatabaseContext
         base(time, new TestDatabaseConfig(container))
     {}
 }
-
-#endif

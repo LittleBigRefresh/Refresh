@@ -1,29 +1,21 @@
 using Refresh.Database.Models.Users;
 
-#if POSTGRES
-using PrimaryKeyAttribute = Refresh.Database.Compatibility.PrimaryKeyAttribute;
-#endif
-
 namespace Refresh.Database.Models.Comments;
 
 #nullable disable
 
-public partial class GameProfileComment : IRealmObject, IGameComment, ISequentialId
+public partial class GameProfileComment : IGameComment, ISequentialId
 {
-    [Key, PrimaryKey] public int SequentialId { get; set; }
+    [Key] public int SequentialId { get; set; }
 
     /// <inheritdoc/>
-    #if POSTGRES
     [Required]
-    #endif
     public GameUser Author { get; set; } = null!;
 
     /// <summary>
     /// The destination profile this comment was posted to.
     /// </summary>
-    #if POSTGRES
     [Required]
-    #endif
     public GameUser Profile { get; set; } = null!;
     
     /// <inheritdoc/>

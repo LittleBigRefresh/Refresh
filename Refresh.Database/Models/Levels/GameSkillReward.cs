@@ -4,12 +4,9 @@ namespace Refresh.Database.Models.Levels;
 
 #nullable disable
 
-#if POSTGRES
-using PrimaryKeyAttribute = Microsoft.EntityFrameworkCore.PrimaryKeyAttribute;
 [PrimaryKey(nameof(LevelId), nameof(Id))]
-#endif
 [XmlType("customReward")]
-public partial class GameSkillReward : IRealmObject
+public partial class GameSkillReward
 {
     [XmlAttribute(AttributeName = "id")] public int Id { get; set; }
     [XmlElement("enabled")] public bool Enabled { get; set; }
@@ -24,7 +21,7 @@ public partial class GameSkillReward : IRealmObject
     // ReSharper disable once InconsistentNaming (can't fix due to conflict with ConditionType)
     // ReSharper disable once MemberCanBePrivate.Global
     public int _ConditionType { get; set; }
-    [Ignored, NotMapped] [XmlElement("condition")]
+    [NotMapped] [XmlElement("condition")]
     public GameSkillRewardCondition ConditionType
     {
         get => (GameSkillRewardCondition)this._ConditionType;

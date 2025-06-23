@@ -6,30 +6,15 @@ namespace Refresh.Database.Models.Relations;
 
 #nullable disable
 
-#if POSTGRES
-using PrimaryKeyAttribute = Microsoft.EntityFrameworkCore.PrimaryKeyAttribute;
 [PrimaryKey(nameof(LevelId), nameof(UserId))]
-#endif
-public partial class QueueLevelRelation : IRealmObject
+public partial class QueueLevelRelation
 {
-    [ForeignKey(nameof(LevelId))]
-    #if POSTGRES
-    [Required]
-    #endif
+    [ForeignKey(nameof(LevelId)), Required]
     public GameLevel Level { get; set; }
-    [ForeignKey(nameof(UserId))]
-    #if POSTGRES
-    [Required]
-    #endif
+    [ForeignKey(nameof(UserId)), Required]
     public GameUser User { get; set; }
     
-    #if POSTGRES
-    [Required]
-    #endif
-    [Ignored] public int LevelId { get; set; }
-    #if POSTGRES
-    [Required]
-    #endif
-    [Ignored] public ObjectId UserId { get; set; }
+    [Required] public int LevelId { get; set; }
+    [Required] public ObjectId UserId { get; set; }
     public DateTimeOffset Timestamp { get; set; }
 }

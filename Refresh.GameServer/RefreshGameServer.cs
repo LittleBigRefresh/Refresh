@@ -33,10 +33,6 @@ using Refresh.Interfaces.Workers;
 using Refresh.Interfaces.Workers.RequestTracking;
 using Refresh.Interfaces.Workers.Workers;
 
-#if !POSTGRES
-using Bunkum.HealthChecks.RealmDatabase;
-#endif
-
 namespace Refresh.GameServer;
 
 [SuppressMessage("ReSharper", "InconsistentNaming")]
@@ -97,7 +93,7 @@ public class RefreshGameServer : RefreshServer
 
         // Uncomment if you want to use production refresh as a source for assets
         // TODO: remove config option when test.lbpbonsai.com instance no longer needs prod assets
-#if DEBUG && POSTGRES
+#if DEBUG
         if (dryConfig?.TemporaryWillBeRemoved_UseProductionRefreshData ?? false)
             this._dataStore = new AggregateDataStore(dataStore, new RemoteRefreshDataStore());
 #endif
@@ -175,11 +171,7 @@ public class RefreshGameServer : RefreshServer
 #pragma warning disable CA1861
         this.Server.AddHealthCheckService(this._databaseProvider, new Type[]
         {
-            #if !POSTGRES
-            typeof(RealmDatabaseHealthCheck),
-            #else
             // TODO: add postgres health check
-            #endif
         });
 #pragma warning restore CA1861
 #pragma warning restore CA1825

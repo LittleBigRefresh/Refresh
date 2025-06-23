@@ -4,18 +4,14 @@ using JetBrains.Annotations;
 using MongoDB.Bson;
 using Refresh.Database.Models.Users;
 
-#if POSTGRES
-using PrimaryKeyAttribute = Refresh.Database.Compatibility.PrimaryKeyAttribute;
-#endif
-
 namespace Refresh.Database.Models.Authentication;
 
 #nullable disable
 
 [JsonObject(MemberSerialization.OptIn)]
-public partial class Token : IRealmObject, IToken<GameUser>
+public partial class Token : IToken<GameUser>
 {
-    [Key, PrimaryKey]
+    [Key]
     public ObjectId TokenId { get; set; } = ObjectId.GenerateNewId();
     
     // this shouldn't ever be serialized, but just in case let's ignore it
@@ -48,14 +44,10 @@ public partial class Token : IRealmObject, IToken<GameUser>
     public DateTimeOffset ExpiresAt { get; set; }
     public DateTimeOffset LoginDate { get; set; }
     
-    #if POSTGRES
     [Required]
-    #endif
     public string IpAddress { get; set; }
 
-    #if POSTGRES
     [Required]
-    #endif
     public GameUser User { get; set; }
     
     /// <summary>

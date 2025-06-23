@@ -3,24 +3,18 @@ using Refresh.Database.Models.Authentication;
 using Refresh.Database.Models.Comments;
 using Refresh.Database.Models.Users;
 
-#if POSTGRES
-using PrimaryKeyAttribute = Refresh.Database.Compatibility.PrimaryKeyAttribute;
-#endif
-
 namespace Refresh.Database.Models.Levels;
 
 [JsonObject(MemberSerialization.OptIn)]
 [Index(nameof(Title), nameof(Description), nameof(StoryId))]
-public partial class GameLevel : IRealmObject, ISequentialId
+public partial class GameLevel : ISequentialId
 {
-    [Key, PrimaryKey] public int LevelId { get; set; }
+    [Key] public int LevelId { get; set; }
     
     public bool IsAdventure { get; set; }
 
-    [Indexed(IndexType.FullText)]
     public string Title { get; set; } = "";
     public string IconHash { get; set; } = "0";
-    [Indexed(IndexType.FullText)]
     public string Description { get; set; } = "";
 
     public int LocationX { get; set; }
@@ -42,7 +36,7 @@ public partial class GameLevel : IRealmObject, ISequentialId
     public bool EnforceMinMaxPlayers { get; set; }
     
     public bool SameScreenGame { get; set; }
-    [Ignored, NotMapped]
+    [NotMapped]
     public bool TeamPicked => this.DateTeamPicked != null;
     public DateTimeOffset? DateTeamPicked { get; set; }
     
@@ -78,7 +72,7 @@ public partial class GameLevel : IRealmObject, ISequentialId
     /// The associated ID for the developer level.
     /// Set to 0 for user generated levels, since slot IDs of zero are invalid ingame.
     /// </summary>
-    [Indexed] public int StoryId { get; set; }
+    public int StoryId { get; set; }
 
     public GameSlotType SlotType 
         => this.StoryId == 0 ? GameSlotType.User : GameSlotType.Story;
@@ -137,5 +131,10 @@ public partial class GameLevel : IRealmObject, ISequentialId
         const int range = rangeEnd - rangeStart;
         
         return rangeStart + Math.Abs(hash.GetHashCode()) % range;
+    }
+
+    public GameLevel Clone()
+    {
+        return (GameLevel)this.MemberwiseClone();
     }
 }

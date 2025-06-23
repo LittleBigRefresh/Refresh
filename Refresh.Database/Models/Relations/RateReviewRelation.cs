@@ -6,34 +6,19 @@ namespace Refresh.Database.Models.Relations;
 
 #nullable disable
 
-#if POSTGRES
-using PrimaryKeyAttribute = Microsoft.EntityFrameworkCore.PrimaryKeyAttribute;
 [PrimaryKey(nameof(ReviewId), nameof(UserId))]
-#endif
-public partial class RateReviewRelation : IRealmObject
+public partial class RateReviewRelation
 {
-    [ForeignKey(nameof(ReviewId))]
-    #if POSTGRES
-    [Required]
-    #endif
+    [ForeignKey(nameof(ReviewId)), Required]
     public GameReview Review { get; set; }
-    [ForeignKey(nameof(UserId))]
-    #if POSTGRES
-    [Required]
-    #endif
+    [ForeignKey(nameof(UserId)), Required]
     public GameUser User { get; set; }
     
-    #if POSTGRES
-    [Required]
-    #endif
-    [Ignored] public int ReviewId { get; set; }
-    #if POSTGRES
-    [Required]
-    #endif
-    [Ignored] public ObjectId UserId { get; set; }
+    [Required] public int ReviewId { get; set; }
+    [Required] public ObjectId UserId { get; set; }
     
     // we could just reuse RatingType from GameLevel rating logic
-    [Ignored, NotMapped]
+    [NotMapped]
     public RatingType RatingType
     {
         get => (RatingType)this._ReviewRatingType;

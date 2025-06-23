@@ -299,7 +299,7 @@ public partial class GameDatabaseContext // Levels
     [Pure]
     public DatabaseList<GameLevel> GetRandomLevels(int count, int skip, GameUser? user, LevelFilterSettings levelFilterSettings)
     {
-#if POSTGRES
+#if true
         float seed = MathHelper.RemapIntToFloat(levelFilterSettings.Seed ?? 0);
         
         // TODO: include publisher in result somehow
@@ -473,18 +473,11 @@ public partial class GameDatabaseContext // Levels
         IQueryable<GameLevel> validLevels = this.GetLevelsByGameVersion(levelFilterSettings.GameVersion)
                 .FilterByLevelFilterSettings(user, levelFilterSettings);
 
-#if !POSTGRES
-        List<GameLevel> levels = validLevels.Where(l =>
-            QueryMethods.FullTextSearch(l.Title, query) ||
-            QueryMethods.FullTextSearch(l.Description, query)
-        ).ToList();
-#else
         string dbQuery = $"%{query}%";
         List<GameLevel> levels = validLevels.Where(l =>
             EF.Functions.ILike(l.Title, dbQuery) ||
             EF.Functions.ILike(l.Description, dbQuery)
         ).ToList();
-#endif
         
         // If the search is just an int, then we should also look for levels which match that ID
         if (int.TryParse(query, out int id))

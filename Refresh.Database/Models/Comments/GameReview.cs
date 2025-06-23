@@ -5,18 +5,14 @@ namespace Refresh.Database.Models.Comments;
 
 #nullable disable
 
-public partial class GameReview : IRealmObject, ISequentialId
+public partial class GameReview : ISequentialId
 {
     [Key] public int ReviewId { get; set; }
     
-    #if POSTGRES
     [Required]
-    #endif
     public GameLevel Level { get; set;  }
 
-    #if POSTGRES
     [Required]
-    #endif
     public GameUser Publisher { get; set; }
     
     public DateTimeOffset PostedAt { get; set; }

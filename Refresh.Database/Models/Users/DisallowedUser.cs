@@ -1,13 +1,9 @@
 namespace Refresh.Database.Models.Users;
 
-#if POSTGRES
-using PrimaryKeyAttribute = Refresh.Database.Compatibility.PrimaryKeyAttribute;
-#endif
-
 #nullable disable
 
-public partial class DisallowedUser : IRealmObject
+public partial class DisallowedUser
 {
-    [Key, PrimaryKey]
+    [Key]
     public string Username { get; set; }
 }

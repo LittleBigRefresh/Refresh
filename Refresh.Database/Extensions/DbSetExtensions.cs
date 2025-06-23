@@ -1,5 +1,4 @@
-﻿#if POSTGRES
-namespace Refresh.Database.Extensions;
+﻿namespace Refresh.Database.Extensions;
 
 public static class DbSetExtensions
 {
@@ -16,5 +15,3 @@ public static class DbSetExtensions
             set.UpdateRange(range);
     }
 }
-
-#endif
