@@ -132,4 +132,9 @@ public partial class GameLevel : ISequentialId
         
         return rangeStart + Math.Abs(hash.GetHashCode()) % range;
     }
+
+    public GameLevel Clone()
+    {
+        return (GameLevel)this.MemberwiseClone();
+    }
 }

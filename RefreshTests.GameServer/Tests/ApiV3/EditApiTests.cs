@@ -1,5 +1,4 @@
 using System.Net.Http.Json;
-using Refresh.Database.Extensions;
 using Refresh.Database.Models.Authentication;
 using Refresh.Database.Models.Users;
 using Refresh.Database.Models.Levels;
@@ -137,11 +136,12 @@ public class EditApiTests : GameServerTest
         
         // When originating from a request, it wouldn't pass down the original PublishDate.
         // Replicate this here.
-        level.PublishDate = default;
-        level.RootResource = "g12345";
+        GameLevel newLevel = level.Clone();
+        newLevel.PublishDate = default;
+        newLevel.RootResource = "g12345";
 
         context.Time.TimestampMilliseconds = 2;
-        context.Database.UpdateLevel(level, author);
+        context.Database.UpdateLevel(newLevel, author);
         Assert.Multiple(() =>
         {
             Assert.That(level.PublishDate.ToUnixTimeMilliseconds(), Is.EqualTo(1));
@@ -165,11 +165,12 @@ public class EditApiTests : GameServerTest
         
         // When originating from a request, it wouldn't pass down the original PublishDate.
         // Replicate this here.
-        level.PublishDate = default;
-        level.Description = "description update";
+        GameLevel newLevel = level.Clone();
+        newLevel.PublishDate = default;
+        newLevel.Description = "description update";
 
         context.Time.TimestampMilliseconds = 2;
-        context.Database.UpdateLevel(level, author);
+        context.Database.UpdateLevel(newLevel, author);
         Assert.Multiple(() =>
         {
             Assert.That(level.PublishDate.ToUnixTimeMilliseconds(), Is.EqualTo(1));
