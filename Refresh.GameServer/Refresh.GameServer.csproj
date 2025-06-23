@@ -4,7 +4,7 @@
         <TargetFramework>net9.0</TargetFramework>
         <ImplicitUsings>enable</ImplicitUsings>
         <Nullable>enable</Nullable>
-        <Configurations>Debug;Release;DebugLocalBunkum;DebugPostgres</Configurations>
+        <Configurations>Debug;Release;DebugLocalBunkum</Configurations>
         <Platforms>AnyCPU</Platforms>
         <ServerGarbageCollection>true</ServerGarbageCollection>
         <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
@@ -14,15 +14,6 @@
     <PropertyGroup Condition=" '$(Configuration)' == 'DebugLocalBunkum' ">
       <DefineConstants>TRACE;DEBUG</DefineConstants>
       <DebugSymbols>true</DebugSymbols>
-    </PropertyGroup>
-
-    <PropertyGroup Condition=" '$(Configuration)' == 'DebugPostgres' ">
-        <DefineConstants>TRACE;DEBUG;POSTGRES</DefineConstants>
-        <DebugSymbols>true</DebugSymbols>
-    </PropertyGroup>
-    
-    <PropertyGroup Condition=" '$(Configuration)' == 'Release' ">
-        <PublishSingleFile>true</PublishSingleFile>
     </PropertyGroup>
     
     <ItemGroup Condition="'$(Configuration)'=='DebugLocalBunkum'">

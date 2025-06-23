@@ -2,52 +2,40 @@ using Refresh.Database.Models.Assets;
 using Refresh.Database.Models.Levels;
 using Refresh.Database.Models.Users;
 
-#if POSTGRES
-using PrimaryKeyAttribute = Refresh.Database.Compatibility.PrimaryKeyAttribute;
-#endif
-
 namespace Refresh.Database.Models.Photos;
 
 #nullable disable
 
 [JsonObject(MemberSerialization.OptOut)]
-public partial class GamePhoto : IRealmObject, ISequentialId
+public partial class GamePhoto : ISequentialId
 {
-    [Key, PrimaryKey] public int PhotoId { get; set; }
+    [Key] public int PhotoId { get; set; }
     public DateTimeOffset TakenAt { get; set; }
     public DateTimeOffset PublishedAt { get; set; }
     
-    #if POSTGRES
     [Required]
-    #endif
     public GameUser Publisher { get; set; }
     #nullable restore
     [ForeignKey(nameof(LevelIdKey))]
     public GameLevel? Level { get; set; }
-    [Ignored] public int? LevelIdKey { get; set; }
+    public int? LevelIdKey { get; set; }
     #nullable disable
     
     public string LevelName { get; set; }
     public string LevelType { get; set; }
     public int LevelId { get; set; }
     
-    #if POSTGRES
     [Required]
-    #endif
     public GameAsset SmallAsset { get; set; }
-    #if POSTGRES
     [Required]
-    #endif
     public GameAsset MediumAsset { get; set; }
-    #if POSTGRES
     [Required]
-    #endif
     public GameAsset LargeAsset { get; set; }
     public string PlanHash { get; set; }
 
     #region Subjects
     
-    [Ignored, NotMapped]
+    [NotMapped]
     public IReadOnlyList<GamePhotoSubject> Subjects
     {
         get
@@ -144,17 +132,10 @@ public partial class GamePhoto : IRealmObject, ISequentialId
     public GameUser? Subject4User { get; set; }
     public string? Subject4DisplayName { get; set; }
     
-    #if !POSTGRES
-    public IList<float> Subject1Bounds { get; }
-    public IList<float> Subject2Bounds { get; }
-    public IList<float> Subject3Bounds { get; }
-    public IList<float> Subject4Bounds { get; }
-    #else
     public List<float> Subject1Bounds { get; set; } = [];
     public List<float> Subject2Bounds { get; set; } = [];
     public List<float> Subject3Bounds { get; set; } = [];
     public List<float> Subject4Bounds { get; set; } = [];
-    #endif
     
     #pragma warning restore CS8618
     #nullable disable

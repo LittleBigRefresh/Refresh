@@ -1,10 +1,6 @@
 using MongoDB.Bson;
 using Refresh.Database.Models.Users;
 
-#if POSTGRES
-using PrimaryKeyAttribute = Refresh.Database.Compatibility.PrimaryKeyAttribute;
-#endif
-
 namespace Refresh.Database.Models.Playlists;
 
 #nullable disable
@@ -12,24 +8,22 @@ namespace Refresh.Database.Models.Playlists;
 /// <summary>
 /// A user-curated list of levels.
 /// </summary>
-public partial class GamePlaylist : IRealmObject, ISequentialId
+public partial class GamePlaylist : ISequentialId
 {
     /// <summary>
     /// The unique ID of this playlist, must be > 0
     /// </summary>
-    [Key, PrimaryKey] public int PlaylistId { get; set; }
+    [Key] public int PlaylistId { get; set; }
     
     /// <summary>
     /// The ID of the user who published the playlist
     /// </summary>
-    [Ignored] public ObjectId PublisherId { get; set; } 
+    public ObjectId PublisherId { get; set; } 
     
     /// <summary>
     /// The user who published the playlist
     /// </summary>
-    #if POSTGRES
     [Required]
-    #endif
     [ForeignKey(nameof(PublisherId))]
     public GameUser Publisher { get; set; }
     

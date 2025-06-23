@@ -29,7 +29,7 @@ public partial class ImageImporter : Importer
 
         ConcurrentQueue<GameAsset> assetQueue = new();
         foreach (GameAsset asset in assets) 
-            assetQueue.Enqueue((GameAsset)asset.Clone(false));
+            assetQueue.Enqueue(asset);
         
         this.Info("Cloned Realm objects");
 

@@ -1,6 +1,4 @@
-﻿#if POSTGRES
-
-using JetBrains.Annotations;
+﻿using JetBrains.Annotations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using MongoDB.Bson;
 
@@ -14,5 +12,3 @@ public class ObjectIdConverter : ValueConverter<ObjectId, string>
         v => ObjectId.Parse(v))
     {}
 }
-
-#endif

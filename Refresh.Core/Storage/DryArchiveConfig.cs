@@ -16,7 +16,7 @@ public class DryArchiveConfig : Config
     public string Location { get; set; } = "/var/dry/";
     public bool UseFolderNames { get; set; } = true;
     
-#if DEBUG && POSTGRES
+#if DEBUG
     // ReSharper disable once InconsistentNaming
     public bool TemporaryWillBeRemoved_UseProductionRefreshData { get; set; } = false;
 #endif

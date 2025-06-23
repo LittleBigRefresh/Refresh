@@ -3,20 +3,16 @@ using MongoDB.Bson;
 using Bunkum.Core.RateLimit;
 using Refresh.Database.Models.Playlists;
 
-#if POSTGRES
-using PrimaryKeyAttribute = Refresh.Database.Compatibility.PrimaryKeyAttribute;
-#endif
-
 namespace Refresh.Database.Models.Users;
 
 [JsonObject(MemberSerialization.OptIn)]
 [Index(nameof(Username), nameof(UsernameLower), nameof(EmailAddress), nameof(PasswordBcrypt))]
-public partial class GameUser : IRealmObject, IRateLimitUser
+public partial class GameUser : IRateLimitUser
 {
-    [Key, PrimaryKey] public ObjectId UserId { get; set; } = ObjectId.GenerateNewId();
-    [Indexed] public string Username { get; set; } = string.Empty;
-    [Indexed] public string? EmailAddress { get; set; }
-    [Indexed] public string? PasswordBcrypt { get; set; } = null;
+    [Key] public ObjectId UserId { get; set; } = ObjectId.GenerateNewId();
+    public string Username { get; set; } = string.Empty;
+    public string? EmailAddress { get; set; }
+    public string? PasswordBcrypt { get; set; } = null;
     
     public bool EmailAddressVerified { get; set; }
     public bool ShouldResetPassword { get; set; }
@@ -111,7 +107,7 @@ public partial class GameUser : IRealmObject, IRateLimitUser
     /// <summary>
     /// Whether the user's profile information is exposed in the public API.
     /// </summary>
-    [Ignored, NotMapped]
+    [NotMapped]
     public Visibility ProfileVisibility
     {
         get => (Visibility)this._ProfileVisibility;
@@ -121,7 +117,7 @@ public partial class GameUser : IRealmObject, IRateLimitUser
     /// <summary>
     /// Whether the user's levels are exposed in the public API.
     /// </summary>
-    [Ignored, NotMapped]
+    [NotMapped]
     public Visibility LevelVisibility
     {
         get => (Visibility)this._LevelVisibility;
@@ -133,7 +129,7 @@ public partial class GameUser : IRealmObject, IRateLimitUser
     /// </summary>
     public bool UnescapeXmlSequences { get; set; }
     
-    [Ignored, NotMapped] public GameUserRole Role
+    [NotMapped] public GameUserRole Role
     {
         get => (GameUserRole)this._Role;
         set => this._Role = (byte)value;
@@ -152,7 +148,6 @@ public partial class GameUser : IRealmObject, IRateLimitUser
     // ReSharper disable once InconsistentNaming
     public byte _Role { get; set; }
 
-    [Ignored]
     public string UsernameLower
     {
         get => Username.ToLower();
@@ -170,9 +165,9 @@ public partial class GameUser : IRealmObject, IRateLimitUser
     }
 
     // Defined in authentication provider. Avoids Realm threading nonsense.
-    [Ignored, NotMapped] [XmlIgnore] public object RateLimitUserId { get; set; } = null!;
+    [NotMapped] [XmlIgnore] public object RateLimitUserId { get; set; } = null!;
 
     #endregion
 
-    [Ignored, NotMapped] public bool FakeUser { get; set; } = false;
+    [NotMapped] public bool FakeUser { get; set; } = false;
 }

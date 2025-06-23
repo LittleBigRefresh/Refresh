@@ -9,9 +9,6 @@ public interface IGameComment
     /// <summary>
     /// The user who originally posted the comment.
     /// </summary>
-    #if POSTGRES
-    [Required]
-    #endif
     GameUser Author { get; set; }
     
     /// <summary>

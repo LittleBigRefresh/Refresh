@@ -7,16 +7,14 @@ namespace Refresh.Database.Models.Notifications;
 
 [JsonObject(MemberSerialization.OptOut)]
 [Serializable]
-public partial class GameNotification : IRealmObject
+public partial class GameNotification
 {
     [Key] public ObjectId NotificationId { get; set; } = ObjectId.GenerateNewId();
     public string Title { get; set; }
     public string Text { get; set; }
     
     public DateTimeOffset CreatedAt { get; set; }
-    #if POSTGRES
     [Required]
-    #endif
     public GameUser User { get; set; }
     
     public string FontAwesomeIcon { get; set; }

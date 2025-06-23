@@ -1,8 +1,8 @@
 namespace Refresh.Database.Models;
 
-public partial class RequestStatistics : IRealmObject
+public partial class RequestStatistics
 {
-    [Key, Ignored] public int Id { get; set; }
+    [Key] public int Id { get; set; }
     
     public long TotalRequests { get; set; }
     public long ApiRequests { get; set; }

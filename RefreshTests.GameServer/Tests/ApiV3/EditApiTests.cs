@@ -134,16 +134,14 @@ public class EditApiTests : GameServerTest
             Assert.That(level.PublishDate.ToUnixTimeMilliseconds(), Is.EqualTo(1));
             Assert.That(level.UpdateDate.ToUnixTimeMilliseconds(), Is.EqualTo(1));
         });
-
-        GameLevel newLevel = (GameLevel)level.Clone();
+        
         // When originating from a request, it wouldn't pass down the original PublishDate.
         // Replicate this here.
-        newLevel.PublishDate = default;
-
-        newLevel.RootResource = "g12345";
+        level.PublishDate = default;
+        level.RootResource = "g12345";
 
         context.Time.TimestampMilliseconds = 2;
-        context.Database.UpdateLevel(newLevel, author);
+        context.Database.UpdateLevel(level, author);
         Assert.Multiple(() =>
         {
             Assert.That(level.PublishDate.ToUnixTimeMilliseconds(), Is.EqualTo(1));
@@ -164,16 +162,14 @@ public class EditApiTests : GameServerTest
             Assert.That(level.PublishDate.ToUnixTimeMilliseconds(), Is.EqualTo(1));
             Assert.That(level.UpdateDate.ToUnixTimeMilliseconds(), Is.EqualTo(1));
         });
-
-        GameLevel newLevel = (GameLevel)level.Clone();
+        
         // When originating from a request, it wouldn't pass down the original PublishDate.
         // Replicate this here.
-        newLevel.PublishDate = default;
-
-        newLevel.Description = "description update";
+        level.PublishDate = default;
+        level.Description = "description update";
 
         context.Time.TimestampMilliseconds = 2;
-        context.Database.UpdateLevel(newLevel, author);
+        context.Database.UpdateLevel(level, author);
         Assert.Multiple(() =>
         {
             Assert.That(level.PublishDate.ToUnixTimeMilliseconds(), Is.EqualTo(1));

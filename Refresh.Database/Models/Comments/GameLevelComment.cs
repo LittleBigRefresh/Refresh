@@ -1,30 +1,22 @@
 using Refresh.Database.Models.Users;
 using Refresh.Database.Models.Levels;
 
-#if POSTGRES
-using PrimaryKeyAttribute = Refresh.Database.Compatibility.PrimaryKeyAttribute;
-#endif
-
 namespace Refresh.Database.Models.Comments;
 
 #nullable disable
 
-public partial class GameLevelComment : IRealmObject, IGameComment, ISequentialId
+public partial class GameLevelComment : IGameComment, ISequentialId
 {
-    [Key, PrimaryKey] public int SequentialId { get; set; }
+    [Key] public int SequentialId { get; set; }
 
     /// <inheritdoc/>
-    #if POSTGRES
     [Required]
-    #endif
     public GameUser Author { get; set; } = null!;
 
     /// <summary>
     /// The destination level this comment was posted to.
     /// </summary>
-    #if POSTGRES
     [Required]
-    #endif
     public GameLevel Level { get; set; } = null!;
     
     /// <inheritdoc/>

@@ -4,18 +4,11 @@ using Refresh.Database.Models.Users;
 
 namespace Refresh.Database.Models.Relations;
 
-public interface ICommentRelation<TComment> : IRealmObject
-    where TComment : IGameComment
+public interface ICommentRelation<TComment> where TComment : IGameComment
 {
     ObjectId CommentRelationId { get; set; }
-    #if POSTGRES
-    [Required]
-    #endif
-    GameUser User { get; set; }
-    #if POSTGRES
-    [Required]
-    #endif
-    TComment Comment { get; set; }
+    [Required] GameUser User { get; set; }
+    [Required] TComment Comment { get; set; }
     RatingType RatingType { get; set; }
     DateTimeOffset Timestamp { get; set; }
 }

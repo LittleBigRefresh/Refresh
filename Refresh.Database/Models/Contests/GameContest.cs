@@ -3,15 +3,11 @@ using Refresh.Database.Models.Authentication;
 using Refresh.Database.Models.Users;
 using Refresh.Database.Models.Levels;
 
-#if POSTGRES
-using PrimaryKeyAttribute = Refresh.Database.Compatibility.PrimaryKeyAttribute;
-#endif
-
 namespace Refresh.Database.Models.Contests;
 
 #nullable disable
 
-public partial class GameContest : IRealmObject
+public partial class GameContest
 {
     /// <summary>
     /// The unique identifier for the contest.
@@ -20,16 +16,14 @@ public partial class GameContest : IRealmObject
     /// Must be lowercase and not include special characters.
     /// </remarks>
     /// <example>lbpcc1</example>
-    [Key, PrimaryKey] public string ContestId { get; set; }
+    [Key] public string ContestId { get; set; }
     /// <summary>
     /// The user responsible for organizing the contest.
     /// </summary>
     /// <remarks>
     /// This will allow this user to modify any aspect of the contest. This does not disallow admins from editing the contest.
     /// </remarks>
-    #if POSTGRES
     [Required]
-    #endif
     public GameUser Organizer { get; set; }
     
     /// <summary>
@@ -73,28 +67,7 @@ public partial class GameContest : IRealmObject
     
     [CanBeNull] public string ContestTheme { get; set; }
     
-#if !POSTGRES
-    /// <summary>
-    /// A list of games that are allowed in the contest
-    /// </summary>
-    // ReSharper disable once InconsistentNaming
-    // ReSharper disable once UnassignedGetOnlyAutoProperty
-    public IList<int> _AllowedGames { get; }
-
-    public IEnumerable<TokenGame> AllowedGames
-    {
-        get => this._AllowedGames.Select(g => (TokenGame)g);
-        set
-        {
-            this._AllowedGames.Clear();
-            foreach (TokenGame game in value)
-            {
-                this._AllowedGames.Add((int)game);
-            }
-        }
-    }
-#else
     public IList<TokenGame> AllowedGames { get; set; } = [];
-#endif
+
     [CanBeNull] public GameLevel TemplateLevel { get; set; }
 }

@@ -6,23 +6,14 @@ namespace Refresh.Database.Models.Relations;
 
 #nullable disable
 
-#if POSTGRES
-using PrimaryKeyAttribute = Microsoft.EntityFrameworkCore.PrimaryKeyAttribute;
 [PrimaryKey(nameof(PinId), nameof(PublisherId))]
-#endif
-public partial class ProfilePinRelation : IRealmObject
+public partial class ProfilePinRelation
 {
     public long PinId { get; set; }
     [ForeignKey(nameof(PublisherId))]
-    #if POSTGRES
-    [Required]
-    #endif
-    public GameUser Publisher { get; set; }
+    [Required] public GameUser Publisher { get; set; }
     
-    #if POSTGRES
-    [Required]
-    #endif
-    [Ignored] public ObjectId PublisherId { get; set; }
+    [Required] public ObjectId PublisherId { get; set; }
 
     /// <summary>
     /// Whether to show as first, second or third pin in-game

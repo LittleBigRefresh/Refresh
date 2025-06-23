@@ -41,15 +41,13 @@ public partial class GameDatabaseContext // Registration
 
     public GameUser CreateUserFromQueuedRegistration(QueuedRegistration registration, TokenPlatform? platform = null)
     {
-        QueuedRegistration cloned = (QueuedRegistration)registration.Clone();
-
         this.Write(() =>
         {
             this.QueuedRegistrations.Remove(registration);
         });
 
-        GameUser user = this.CreateUser(cloned.Username, cloned.EmailAddress);
-        this.SetUserPassword(user, cloned.PasswordBcrypt);
+        GameUser user = this.CreateUser(registration.Username, registration.EmailAddress);
+        this.SetUserPassword(user, registration.PasswordBcrypt);
 
         if (platform != null)
         {

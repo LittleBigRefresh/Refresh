@@ -6,18 +6,12 @@ namespace Refresh.Database.Models.Relations;
 
 #nullable disable
 
-public partial class ProfileCommentRelation : IRealmObject, ICommentRelation<GameProfileComment>
+public partial class ProfileCommentRelation : ICommentRelation<GameProfileComment>
 {
     [Key] public ObjectId CommentRelationId { get; set; } = ObjectId.GenerateNewId();
-    #if POSTGRES
-    [Required]
-    #endif
-    public GameUser User { get; set; }
-    #if POSTGRES
-    [Required]
-    #endif
-    public GameProfileComment Comment { get; set; }
-    [Ignored, NotMapped]
+    [Required] public GameUser User { get; set; }
+    [Required] public GameProfileComment Comment { get; set; }
+    [NotMapped]
     public RatingType RatingType
     {
         get => (RatingType)this._RatingType;

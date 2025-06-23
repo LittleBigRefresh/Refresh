@@ -1,20 +1,16 @@
 using Refresh.Common.Helpers;
 using Refresh.Database.Models.Users;
 
-#if POSTGRES
-using PrimaryKeyAttribute = Refresh.Database.Compatibility.PrimaryKeyAttribute;
-#endif
-
 namespace Refresh.Database.Models.Assets;
 
-public partial class GameAsset : IRealmObject
+public partial class GameAsset
 {
-    [Key, PrimaryKey] public string AssetHash { get; set; } = string.Empty;
+    [Key] public string AssetHash { get; set; } = string.Empty;
     public GameUser? OriginalUploader { get; set; }
     public DateTimeOffset UploadDate { get; set; }
     public bool IsPSP { get; set; }
     public int SizeInBytes { get; set; }
-    [Ignored, NotMapped] public GameAssetType AssetType
+    [NotMapped] public GameAssetType AssetType
     {
         get => (GameAssetType)this._AssetType;
         set => this._AssetType = (int)value;
@@ -23,7 +19,7 @@ public partial class GameAsset : IRealmObject
     // ReSharper disable once InconsistentNaming
     public int _AssetType { get; set; }
 
-    [Ignored, NotMapped] public GameAssetFormat AssetFormat
+    [NotMapped] public GameAssetFormat AssetFormat
     {
         get => (GameAssetFormat)this._AssetSerializationMethod;
         set => this._AssetSerializationMethod = (int)value;
@@ -32,7 +28,7 @@ public partial class GameAsset : IRealmObject
     // ReSharper disable once InconsistentNaming
     public int _AssetSerializationMethod { get; set; }
 
-    [Ignored, NotMapped] 
+    [NotMapped] 
     public AssetFlags AssetFlags
     {
         get

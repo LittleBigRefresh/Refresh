@@ -1,22 +1,16 @@
 using Refresh.Database.Models.Users;
 
-#if POSTGRES
-using PrimaryKeyAttribute = Refresh.Database.Compatibility.PrimaryKeyAttribute;
-#endif
-
 namespace Refresh.Database.Models.Levels.Challenges;
 
-public partial class GameChallenge : IRealmObject, ISequentialId
+public partial class GameChallenge : ISequentialId
 {
-    [Key, PrimaryKey] public int ChallengeId { get; set; }
+    [Key] public int ChallengeId { get; set; }
     
     public string Name { get; set; } = "";
     public GameUser? Publisher { get; set; }
 
     #nullable disable
-    #if POSTGRES
     [Required]
-    #endif
     public GameLevel Level { get; set; }
     #nullable enable
 

@@ -7,7 +7,7 @@ namespace Refresh.Database.Models.Notifications;
 /// <summary>
 /// An announcement posted by a server administrator.
 /// </summary>
-public partial class GameAnnouncement : IRealmObject
+public partial class GameAnnouncement
 {
     [Key] public ObjectId AnnouncementId { get; set; } = ObjectId.GenerateNewId();
     public string Title { get; set; }

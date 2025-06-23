@@ -11,14 +11,14 @@ namespace Refresh.Database.Models.Activity;
 /// An action performed by a user.
 /// </summary>
 [SuppressMessage("ReSharper", "UnusedMember.Global")]
-public partial class Event : IRealmObject
+public partial class Event
 {
     /// <summary>
     /// The ID of the event.
     /// </summary>
     public ObjectId EventId { get; set; } = ObjectId.GenerateNewId();
     
-    [Ignored, NotMapped]
+    [NotMapped]
     public EventType EventType
     {
         get => (EventType)this._EventType;
@@ -31,9 +31,7 @@ public partial class Event : IRealmObject
     /// <summary>
     /// The user in question that created this event.
     /// </summary>
-    #if POSTGRES
     [Required]
-    #endif
     public GameUser User { get; set; }
     
     /// <summary>
@@ -47,7 +45,7 @@ public partial class Event : IRealmObject
     /// <summary>
     /// The type of data that this event is referencing.
     /// </summary>
-    [Ignored, NotMapped]
+    [NotMapped]
     public EventDataType StoredDataType
     {
         get => (EventDataType)this._StoredDataType;

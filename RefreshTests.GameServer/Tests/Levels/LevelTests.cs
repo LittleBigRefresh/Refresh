@@ -36,9 +36,7 @@ public class LevelTests : GameServerTest
     }
     
     [Test]
-    #if POSTGRES
     [Retry(3)]
-    #endif
     public void SlotsRandom()
     {
         using TestContext context = this.GetServer();
@@ -65,7 +63,7 @@ public class LevelTests : GameServerTest
             }
         }
         
-        #if POSTGRES
+        #if true
         TestSeed(level2, 69);
         TestSeed(level3, 1);
         TestSeed(level2, 2);

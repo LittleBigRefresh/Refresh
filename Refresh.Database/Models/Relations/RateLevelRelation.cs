@@ -7,11 +7,11 @@ namespace Refresh.Database.Models.Relations;
 
 #nullable disable
 
-public partial class RateLevelRelation : IRealmObject
+public partial class RateLevelRelation
 {
     public ObjectId RateLevelRelationId { get; set; } = ObjectId.GenerateNewId();
     
-    [Ignored, NotMapped]
+    [NotMapped]
     public RatingType RatingType
     {
         get => (RatingType)this._RatingType;
@@ -21,13 +21,7 @@ public partial class RateLevelRelation : IRealmObject
     // ReSharper disable once InconsistentNaming
     public int _RatingType { get; set; }
     
-    #if POSTGRES
-    [Required]
-    #endif
-    public GameLevel Level { get; set; }
-    #if POSTGRES
-    [Required]
-    #endif
-    public GameUser User { get; set; }
+    [Required] public GameLevel Level { get; set; }
+    [Required] public GameUser User { get; set; }
     public DateTimeOffset Timestamp { get; set; }
 }
