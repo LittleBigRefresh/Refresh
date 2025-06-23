@@ -122,7 +122,7 @@ public class PhotoEndpoints : EndpointGroup
             photos = dataContext.Database.GetPhotosInLevel(level, count, skip);
 
         // count not used ingame
-        return new SerializedPhotoList(photos.Items.Select(photo => PhotoExtensions.FromGamePhoto(photo, dataContext)));
+        return new SerializedPhotoList(photos.Items.ToArrayIfPostgres().Select(photo => PhotoExtensions.FromGamePhoto(photo, dataContext)));
     }
 
     [GameEndpoint("photo/{id}", ContentType.Xml)]
