@@ -29,16 +29,6 @@ public enum IndexType
     FullText,
 }
 
-public static class QueryMethods
-{
-    public static bool FullTextSearch(string text, string query)
-    {
-        // TODO: this NEEDS to be actual, full, real full text search
-        // the postgres library for EF doesn't support this directly, so use this hacky workaround for now
-        return text.Contains(query);
-    }
-}
-
 #else
 [AttributeUsage(AttributeTargets.Property)]
 public class KeyAttribute : Attribute;

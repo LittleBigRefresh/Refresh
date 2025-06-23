@@ -24,7 +24,11 @@ public partial class GameDatabaseContext // Users
         // Try the first pass to get the user
         GameUser? user = caseSensitive
             ? this.GameUsers.FirstOrDefault(u => u.Username == username)
+#if !POSTGRES
             : this.GameUsers.FirstOrDefault(u => u.Username.Equals(username, StringComparison.OrdinalIgnoreCase));
+#else
+            : this.GameUsers.FirstOrDefault(u => u.UsernameLower == username.ToLower());
+#endif
         
         // If that failed and the username is the deleted user, then we need to create the backing deleted user
         if (username == SystemUsers.DeletedUserName && user == null)

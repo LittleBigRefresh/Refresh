@@ -10,7 +10,7 @@ using PrimaryKeyAttribute = Refresh.Database.Compatibility.PrimaryKeyAttribute;
 namespace Refresh.Database.Models.Users;
 
 [JsonObject(MemberSerialization.OptIn)]
-[Index(nameof(Username), nameof(EmailAddress), nameof(PasswordBcrypt))]
+[Index(nameof(Username), nameof(UsernameLower), nameof(EmailAddress), nameof(PasswordBcrypt))]
 public partial class GameUser : IRealmObject, IRateLimitUser
 {
     [Key, PrimaryKey] public ObjectId UserId { get; set; } = ObjectId.GenerateNewId();
@@ -151,6 +151,14 @@ public partial class GameUser : IRealmObject, IRateLimitUser
 
     // ReSharper disable once InconsistentNaming
     public byte _Role { get; set; }
+
+    [Ignored]
+    public string UsernameLower
+    {
+        get => Username.ToLower();
+        // ReSharper disable once ValueParameterNotUsed
+        set {}
+    }
 
     public override string ToString() => $"{this.Username} ({this.Role})";
 

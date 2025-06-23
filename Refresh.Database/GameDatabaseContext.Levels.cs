@@ -344,15 +344,16 @@ public partial class GameDatabaseContext // Levels
         
         IEnumerable<GameLevel> mostHeartedLevels = favourites
             .Include(r => r.Level.Publisher)
-            .AsEnumerable()
+            .AsEnumerableIfRealm()
             .GroupBy(r => r.Level)
             .Select(g => new { Level = g.Key, Count = g.Count() })
             .OrderByDescending(x => x.Count)
             .Select(x => x.Level)
             .Where(l => l != null)
             .Where(l => l.StoryId == 0)
-            .FilterByLevelFilterSettings(user, levelFilterSettings)
-            .FilterByGameVersion(levelFilterSettings.GameVersion);
+            .FilterByGameVersion(levelFilterSettings.GameVersion)
+            .AsEnumerable()
+            .FilterByLevelFilterSettings(user, levelFilterSettings);
 
         return new DatabaseList<GameLevel>(mostHeartedLevels, skip, count);
     }
@@ -365,7 +366,7 @@ public partial class GameDatabaseContext // Levels
         IEnumerable<GameLevel> filteredTaggedLevels = tagRelations
             .Include(x => x.Level.Publisher)
             .Where(x => x._Tag == (int)tag)
-            .AsEnumerable()
+            .AsEnumerableIfRealm()
             .Select(x => x.Level)
             .Distinct()
             .Where(l => l.StoryId == 0)
@@ -383,15 +384,16 @@ public partial class GameDatabaseContext // Levels
         
         IEnumerable<GameLevel> mostPlayed = uniquePlays
             .Include(r => r.Level.Publisher)
-            .AsEnumerable()
+            .AsEnumerableIfRealm()
             .GroupBy(r => r.Level)
             .Select(g => new { Level = g.Key, Count = g.Count() })
             .OrderByDescending(x => x.Count)
             .Select(x => x.Level)
             .Where(l => l != null)
             .Where(l => l.StoryId == 0)
-            .FilterByLevelFilterSettings(user, levelFilterSettings)
-            .FilterByGameVersion(levelFilterSettings.GameVersion);
+            .FilterByGameVersion(levelFilterSettings.GameVersion)
+            .AsEnumerable()
+            .FilterByLevelFilterSettings(user, levelFilterSettings);
 
         return new DatabaseList<GameLevel>(mostPlayed, skip, count);
     }
@@ -403,14 +405,15 @@ public partial class GameDatabaseContext // Levels
         
         IEnumerable<GameLevel> mostPlayed = plays
             .Include(r => r.Level.Publisher)
-            .AsEnumerable()
+            .AsEnumerableIfRealm()
             .GroupBy(r => r.Level)
             .Select(g => new { Level = g.Key, Count = g.Sum(p => p.Count) })
             .OrderByDescending(x => x.Count)
             .Select(x => x.Level)
             .Where(l => l != null)
-            .FilterByLevelFilterSettings(user, levelFilterSettings)
-            .FilterByGameVersion(levelFilterSettings.GameVersion);
+            .FilterByGameVersion(levelFilterSettings.GameVersion)
+            .AsEnumerable()
+            .FilterByLevelFilterSettings(user, levelFilterSettings);
 
         return new DatabaseList<GameLevel>(mostPlayed, skip, count);
     }
@@ -419,18 +422,19 @@ public partial class GameDatabaseContext // Levels
     public DatabaseList<GameLevel> GetHighestRatedLevels(int count, int skip, GameUser? user, LevelFilterSettings levelFilterSettings)
     {
         IQueryable<RateLevelRelation> ratings = this.RateLevelRelations;
-        
+
         IEnumerable<GameLevel> highestRated = ratings
             .Include(r => r.Level.Publisher)
-            .AsEnumerable()
+            .AsEnumerableIfRealm()
             .GroupBy(r => r.Level)
             .Select(g => new { Level = g.Key, Karma = g.Sum(r => r._RatingType) })
             .OrderByDescending(x => x.Karma) // reddit moment
             .Select(x => x.Level)
             .Where(l => l != null)
             .Where(l => l.StoryId == 0)
-            .FilterByLevelFilterSettings(user, levelFilterSettings)
-            .FilterByGameVersion(levelFilterSettings.GameVersion);
+            .FilterByGameVersion(levelFilterSettings.GameVersion)
+            .AsEnumerable()
+            .FilterByLevelFilterSettings(user, levelFilterSettings);
 
         return new DatabaseList<GameLevel>(highestRated, skip, count);
     }
@@ -466,12 +470,21 @@ public partial class GameDatabaseContext // Levels
     [Pure]
     public DatabaseList<GameLevel> SearchForLevels(int count, int skip, GameUser? user, LevelFilterSettings levelFilterSettings, string query)
     {
-        IQueryable<GameLevel> validLevels = this.GetLevelsByGameVersion(levelFilterSettings.GameVersion).FilterByLevelFilterSettings(user, levelFilterSettings);
+        IQueryable<GameLevel> validLevels = this.GetLevelsByGameVersion(levelFilterSettings.GameVersion)
+                .FilterByLevelFilterSettings(user, levelFilterSettings);
 
+#if !POSTGRES
         List<GameLevel> levels = validLevels.Where(l =>
-                                                       QueryMethods.FullTextSearch(l.Title, query) ||
-                                                       QueryMethods.FullTextSearch(l.Description, query)
+            QueryMethods.FullTextSearch(l.Title, query) ||
+            QueryMethods.FullTextSearch(l.Description, query)
         ).ToList();
+#else
+        string dbQuery = $"%{query}%";
+        List<GameLevel> levels = validLevels.Where(l =>
+            EF.Functions.ILike(l.Title, dbQuery) ||
+            EF.Functions.ILike(l.Description, dbQuery)
+        ).ToList();
+#endif
         
         // If the search is just an int, then we should also look for levels which match that ID
         if (int.TryParse(query, out int id))

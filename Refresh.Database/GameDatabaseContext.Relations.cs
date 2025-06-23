@@ -627,9 +627,11 @@ public partial class GameDatabaseContext // Relations
     {
         IQueryable<TagLevelRelation> levelTags = this.TagLevelRelationsIncluded.Where(t => t.Level == level);
  
-        IOrderedEnumerable<TagLevelRelation> tags = levelTags
-            .AsEnumerable() // TODO: optimize for postgres when realm is deleted
-            .DistinctBy(t => t._Tag)
+        IEnumerable<TagLevelRelation> tags = levelTags
+            .AsEnumerableIfRealm() // TODO: optimize for postgres when realm is deleted
+            .GroupBy(t => t._Tag).Select(g => g.First())
+            // ^ is equivalent to .DistinctBy(t => t._Tag)
+            .AsEnumerable()
             .OrderByDescending(t => levelTags.Count(levelTag => levelTag._Tag == t._Tag));
 
         return tags;
