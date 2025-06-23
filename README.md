@@ -1,3 +1,13 @@
+# V2 LEGACY BRANCH
+
+This is the outdated legacy branch containing Realm support. This will only be updated for fixes relating to migration to v3.
+
+Please use the migration utility to migrate from Realm to Postgres.
+
+## https://github.com/LittleBigRefresh/RefreshMigrationUtility
+
+---
+
 # &#127758; Refresh 
 
 A second-generation custom server for LittleBigPlanet that focuses on ease of use and reliability. &#127758;&#127918;
