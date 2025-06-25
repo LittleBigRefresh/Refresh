@@ -102,7 +102,7 @@ public class ResourceEndpoints : EndpointGroup
 
     [GameEndpoint("r/{hash}")]
     [MinimumRole(GameUserRole.Restricted)]
-    public Response GetResource(RequestContext context, GameUser user, string hash, DataContext dataContext, ChallengeGhostRateLimitService ghostService)
+    public Response GetResource(RequestContext context, GameUser user, Token token, string hash, DataContext dataContext, ChallengeGhostRateLimitService ghostService)
     {
         if (!CommonPatterns.Sha1Regex().IsMatch(hash)) return BadRequest;
         
@@ -117,7 +117,7 @@ public class ResourceEndpoints : EndpointGroup
             return NotFound;
 
         // Part of a workaround to prevent LBP Hub from breaking challenge ghost replay
-        if (dataContext.Database.GetAssetFromHash(hash)?.AssetType == GameAssetType.ChallengeGhost)
+        if (token.TokenGame == TokenGame.BetaBuild && dataContext.Database.GetAssetFromHash(hash)?.AssetType == GameAssetType.ChallengeGhost)
         {
             if (ghostService.IsUserChallengeGhostRateLimited(user.UserId))
             {
