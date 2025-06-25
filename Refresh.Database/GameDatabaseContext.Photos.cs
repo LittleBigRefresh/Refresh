@@ -58,7 +58,10 @@ public partial class GameDatabaseContext // Photos
 
         newPhoto.Subjects = gameSubjects;
 
-        this.AddSequentialObject(newPhoto);
+        this.Write(() =>
+        {
+            this.GamePhotos.Add(newPhoto);
+        });
         
         this.CreatePhotoUploadEvent(publisher, newPhoto);
     }

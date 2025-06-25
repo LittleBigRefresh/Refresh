@@ -110,27 +110,6 @@ public partial class GameDatabaseContext : DbContext, IDatabaseContext
         Debug.Assert(!this.ChangeTracker.HasChanges());
     }
 
-    private void AddSequentialObject<TEntity>(TEntity entity) where TEntity : class
-    {
-        // causes compiler warning without this for some reason even tho no nullable attribute???
-        // in a #nullable-enabled class???
-        // fuck this shit
-        Debug.Assert(entity != null);
-        this.Write(() =>
-        {
-            this.Set<TEntity>().Add(entity);
-        });
-    }
-    
-    private void AddSequentialObject<TEntity>(TEntity entity, Action callback) where TEntity : class
-    {
-        this.AddSequentialObject(entity);
-        this.Write(() =>
-        {
-            callback();
-        });
-    }
-
     private void RemoveAll<TClass>() where TClass : class
     {
         this.RemoveRange(this.Set<TClass>());

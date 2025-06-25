@@ -11,6 +11,7 @@ using Refresh.Database.Models.Levels.Challenges;
 using Refresh.Database.Models.Levels.Scores;
 using Refresh.Database.Models.Levels;
 using Refresh.Database.Models.Relations;
+using Refresh.Database.Models.Statistics;
 
 namespace Refresh.Database;
 
@@ -22,6 +23,7 @@ public partial class GameDatabaseContext // Levels
 
     private IQueryable<GameSkillReward> SkillRewardsIncluded => this.GameSkillRewards
         .Include(s => s.Level)
+        .Include(s => s.Level.Statistics)
         .Include(s => s.Level.Publisher);
     
     public bool AddLevel(GameLevel level)
@@ -35,10 +37,20 @@ public partial class GameDatabaseContext // Levels
         if (level.Publisher == null) throw new InvalidOperationException("Cannot create a level without a publisher");
 
         DateTimeOffset timestamp = this._time.Now;
-        this.AddSequentialObject(level, () =>
+        
+        level.PublishDate = timestamp;
+        level.UpdateDate = timestamp;
+        this.Write(() =>
         {
-            level.PublishDate = timestamp;
-            level.UpdateDate = timestamp;
+            this.GameLevels.Add(level);
+        });
+        
+        this.Write(() =>
+        {
+            this.GameLevelStatistics.Add(level.Statistics = new GameLevelStatistics()
+            {
+                LevelId = level.LevelId,
+            });
         });
 
         return true;
@@ -61,10 +73,20 @@ public partial class GameDatabaseContext // Levels
             
         //Add the new story level to the database
         DateTimeOffset timestamp = this._time.Now;
-        this.AddSequentialObject(level, () =>
+
+        level.PublishDate = timestamp;
+        level.UpdateDate = timestamp;
+        this.Write(() =>
         {
-            level.PublishDate = timestamp;
-            level.UpdateDate = timestamp;
+            this.GameLevels.Add(level);
+        });
+        
+        this.Write(() =>
+        {
+            this.GameLevelStatistics.Add(level.Statistics = new GameLevelStatistics()
+            {
+                LevelId = level.LevelId,
+            });
         });
         
         return level;

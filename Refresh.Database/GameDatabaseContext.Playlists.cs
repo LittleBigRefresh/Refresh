@@ -18,11 +18,13 @@ public partial class GameDatabaseContext // Playlists
     private void CreatePlaylistInternal(GamePlaylist createInfo)
     {
         DateTimeOffset now = this._time.Now;
-
-        this.AddSequentialObject(createInfo, () =>
+        
+        createInfo.CreationDate = now;
+        createInfo.LastUpdateDate = now;
+        
+        this.Write(() =>
         {
-            createInfo.CreationDate = now;
-            createInfo.LastUpdateDate = now;
+            this.GamePlaylists.Add(createInfo);
         });
     }
 

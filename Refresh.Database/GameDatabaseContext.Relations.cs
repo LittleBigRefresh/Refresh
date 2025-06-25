@@ -383,8 +383,11 @@ public partial class GameDatabaseContext // Relations
                 }
             });
         }
-        
-        this.AddSequentialObject(review);
+
+        this.Write(() =>
+        {
+            this.GameReviews.Add(review);
+        });
     }
     
     public void DeleteReviewsPostedByUser(GameUser user)

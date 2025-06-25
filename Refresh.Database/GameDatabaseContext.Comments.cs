@@ -28,7 +28,11 @@ public partial class GameDatabaseContext // Comments
             Timestamp = this._time.Now,
         };
         
-        this.AddSequentialObject(comment);
+        this.Write(() =>
+        {
+            this.GameProfileComments.Add(comment);
+        });
+
         return comment;
     }
 
@@ -64,7 +68,10 @@ public partial class GameDatabaseContext // Comments
                 Timestamp = this._time.Now,
             };
             
-            this.AddSequentialObject(comment);
+            this.Write(() =>
+            {
+                this.GameLevelComments.Add(comment);
+            });
             return comment;
         }
 
