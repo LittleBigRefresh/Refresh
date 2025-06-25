@@ -65,7 +65,6 @@ public class GameAuthenticationProvider : IAuthenticationProvider<Token>
             return null;
 
         GameUser user = token.User;
-        user.RateLimitUserId = user.UserId;
         
         // Don't allow non-admins to authenticate during maintenance mode.
         // technically, this check isn't here for token but this is okay since
