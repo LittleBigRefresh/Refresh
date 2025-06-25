@@ -6,7 +6,7 @@ using Refresh.Interfaces.APIv3.Endpoints.DataTypes.Response.Users;
 namespace Refresh.Interfaces.APIv3.Endpoints.DataTypes.Response.Levels;
 
 [JsonObject(NamingStrategyType = typeof(CamelCaseNamingStrategy))]
-public class ApiGameScoreResponse : IApiResponse, IDataConvertableFrom<ApiGameScoreResponse, GameSubmittedScore>
+public class ApiGameScoreResponse : IApiResponse, IDataConvertableFrom<ApiGameScoreResponse, GameScore>
 {
     public required string ScoreId { get; set; }
     public required ApiGameLevelResponse Level { get; set; }
@@ -18,7 +18,7 @@ public class ApiGameScoreResponse : IApiResponse, IDataConvertableFrom<ApiGameSc
     public required TokenGame Game { get; set; }
     public required TokenPlatform Platform { get; set; }
     
-    public static ApiGameScoreResponse? FromOld(GameSubmittedScore? old, DataContext dataContext)
+    public static ApiGameScoreResponse? FromOld(GameScore? old, DataContext dataContext)
     {
         if (old == null) return null;
 
@@ -35,6 +35,6 @@ public class ApiGameScoreResponse : IApiResponse, IDataConvertableFrom<ApiGameSc
         };
     }
     
-    public static IEnumerable<ApiGameScoreResponse> FromOldList(IEnumerable<GameSubmittedScore> oldList,
+    public static IEnumerable<ApiGameScoreResponse> FromOldList(IEnumerable<GameScore> oldList,
         DataContext dataContext) => oldList.Select(old => FromOld(old, dataContext)).ToList()!;
 }

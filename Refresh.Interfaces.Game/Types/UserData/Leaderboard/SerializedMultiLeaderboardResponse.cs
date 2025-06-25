@@ -26,7 +26,7 @@ public class SerializedMultiLeaderboardResponse
         List<SerializedPlayerLeaderboardResponse> leaderboards = new();
 
         //Iterate over all leaderboards in the list
-        foreach ((byte type, DatabaseList<GameSubmittedScore> scores) in multiLeaderboard.Leaderboards)
+        foreach ((byte type, DatabaseList<GameScore> scores) in multiLeaderboard.Leaderboards)
         {
             SerializedPlayerLeaderboardResponse leaderboard = new()
             {
@@ -35,7 +35,7 @@ public class SerializedMultiLeaderboardResponse
             };
 
             int i = 1;
-            foreach (GameSubmittedScore score in scores.Items.ToArrayIfPostgres())
+            foreach (GameScore score in scores.Items.ToArrayIfPostgres())
             {
                 leaderboard.Scores.Add(SerializedLeaderboardScore.FromOld(score, dataContext, i));
                 i += 1;

@@ -7,7 +7,7 @@ namespace Refresh.Database.Models.Levels.Scores;
 #nullable disable
 
 [Index(nameof(Game), nameof(Score), nameof(ScoreType))]
-public partial class GameSubmittedScore // TODO: Rename to GameScore
+public partial class GameScore
 {
     [Key] public ObjectId ScoreId { get; set; } = ObjectId.GenerateNewId();
 

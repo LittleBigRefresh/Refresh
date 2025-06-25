@@ -220,16 +220,16 @@ public partial class GameDatabaseContext // Levels
             }
             this.GameChallenges.RemoveRange(challenges);
             
-            IQueryable<GameSubmittedScore> scores = this.GameSubmittedScores.Where(r => r.Level == level);
+            IQueryable<GameScore> scores = this.GameScores.Where(r => r.Level == level);
             
-            foreach (GameSubmittedScore score in scores)
+            foreach (GameScore score in scores)
             {
                 IQueryable<Event> scoreEvents = this.Events
                     .Where(e => e.StoredDataType == EventDataType.Score && e.StoredObjectId == score.ScoreId);
                 this.Events.RemoveRange(scoreEvents);
             }
             
-            this.GameSubmittedScores.RemoveRange(scores);
+            this.GameScores.RemoveRange(scores);
         });
 
         //do in separate transaction in a vain attempt to fix Weirdness with favourite level relations having missing levels

@@ -490,7 +490,7 @@ namespace Refresh.Database.Migrations
                     b.ToTable("GameSkillRewards");
                 });
 
-            modelBuilder.Entity("Refresh.Database.Models.Levels.Scores.GameSubmittedScore", b =>
+            modelBuilder.Entity("Refresh.Database.Models.Levels.Scores.GameScore", b =>
                 {
                     b.Property<string>("ScoreId")
                         .HasColumnType("text");
@@ -522,7 +522,7 @@ namespace Refresh.Database.Migrations
 
                     b.HasIndex("Game", "Score", "ScoreType");
 
-                    b.ToTable("GameSubmittedScores");
+                    b.ToTable("GameScores");
                 });
 
             modelBuilder.Entity("Refresh.Database.Models.Notifications.GameAnnouncement", b =>
@@ -1474,7 +1474,7 @@ namespace Refresh.Database.Migrations
                     b.Navigation("Level");
                 });
 
-            modelBuilder.Entity("Refresh.Database.Models.Levels.Scores.GameSubmittedScore", b =>
+            modelBuilder.Entity("Refresh.Database.Models.Levels.Scores.GameScore", b =>
                 {
                     b.HasOne("Refresh.Database.Models.Levels.GameLevel", "Level")
                         .WithMany()

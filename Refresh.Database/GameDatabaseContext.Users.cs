@@ -322,10 +322,10 @@ public partial class GameDatabaseContext // Users
             this.GamePhotos.RemoveRange(p => p.Publisher == user);
             this.GameUserVerifiedIpRelations.RemoveRange(p => p.User == user);
             
-            foreach (GameSubmittedScore score in this.GameSubmittedScores.ToList())
+            foreach (GameScore score in this.GameScores.ToList())
             {
                 if (!score.PlayerIds.Contains(user.UserId)) continue;
-                this.GameSubmittedScores.Remove(score);
+                this.GameScores.Remove(score);
             }
             
             foreach (GameLevel level in this.GameLevels.Where(l => l.Publisher == user))

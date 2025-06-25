@@ -11,7 +11,7 @@ public class SerializedScoreSubmitEvent : SerializedLevelEvent
     [XmlElement("count")]
     public int ScoreType { get; set; }
     
-    public static SerializedScoreSubmitEvent? FromSerializedLevelEvent(SerializedLevelEvent? e, GameSubmittedScore? score)
+    public static SerializedScoreSubmitEvent? FromSerializedLevelEvent(SerializedLevelEvent? e, GameScore? score)
     {
         if (e == null || score == null)
             return null;

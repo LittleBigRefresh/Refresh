@@ -16,7 +16,7 @@ public class ScoreModerationTests : GameServerTest
         GameUser user = context.CreateUser();
         GameLevel level = context.CreateLevel(user);
         
-        GameSubmittedScore score = context.SubmitScore(1, 1, level, user, TokenGame.LittleBigPlanet2, TokenPlatform.PS3);
+        GameScore score = context.SubmitScore(1, 1, level, user, TokenGame.LittleBigPlanet2, TokenPlatform.PS3);
         string uuid = score.ScoreId.ToString();
         
         // Act
@@ -35,7 +35,7 @@ public class ScoreModerationTests : GameServerTest
         GameUser user = context.CreateUser();
         GameLevel level = context.CreateLevel(user);
         
-        GameSubmittedScore score = context.SubmitScore(1, 1, level, user, TokenGame.LittleBigPlanet2, TokenPlatform.PS3);
+        GameScore score = context.SubmitScore(1, 1, level, user, TokenGame.LittleBigPlanet2, TokenPlatform.PS3);
         string uuid = score.ScoreId.ToString();
         
         // Act
@@ -56,7 +56,7 @@ public class ScoreModerationTests : GameServerTest
         GameLevel level = context.CreateLevel(user);
         context.Database.SetUserRole(user, GameUserRole.Admin);
         
-        GameSubmittedScore score = context.SubmitScore(1, 1, level, user, TokenGame.LittleBigPlanet2, TokenPlatform.PS3);
+        GameScore score = context.SubmitScore(1, 1, level, user, TokenGame.LittleBigPlanet2, TokenPlatform.PS3);
         string uuid = score.ScoreId.ToString();
 
         using HttpClient client = context.GetAuthenticatedClient(TokenType.Api, user);
@@ -79,8 +79,8 @@ public class ScoreModerationTests : GameServerTest
         GameLevel level1 = context.CreateLevel(user);
         GameLevel level2 = context.CreateLevel(user);
         
-        GameSubmittedScore score1 = context.SubmitScore(1, 1, level1, user, TokenGame.LittleBigPlanet2, TokenPlatform.PS3);
-        GameSubmittedScore score2 = context.SubmitScore(1, 1, level2, user, TokenGame.LittleBigPlanet2, TokenPlatform.PS3);
+        GameScore score1 = context.SubmitScore(1, 1, level1, user, TokenGame.LittleBigPlanet2, TokenPlatform.PS3);
+        GameScore score2 = context.SubmitScore(1, 1, level2, user, TokenGame.LittleBigPlanet2, TokenPlatform.PS3);
         string uuid1 = score1.ScoreId.ToString();
         string uuid2 = score2.ScoreId.ToString();
         

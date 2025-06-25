@@ -114,7 +114,7 @@ public class LeaderboardEndpoints : EndpointGroup
             return BadRequest;
         }
 
-        GameSubmittedScore score = database.SubmitScore(body, token, level);
+        GameScore score = database.SubmitScore(body, token, level);
 
         IEnumerable<ScoreWithRank>? scores = database.GetRankedScoresAroundScore(score, 5);
         Debug.Assert(scores != null);
