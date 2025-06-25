@@ -5,19 +5,22 @@ namespace Refresh.Database;
 
 public partial class GameDatabaseContext // Assets
 {
+    public IQueryable<GameAsset> GameAssetsIncluded => this.GameAssets
+        .Include(a => a.OriginalUploader);
+    
     public GameAsset? GetAssetFromHash(string hash)
     {
         if (hash == "0" || hash.StartsWith('g')) return null;
         
-        return this.GameAssets
+        return this.GameAssetsIncluded
             .FirstOrDefault(a => a.AssetHash == hash);
     }
 
     public DatabaseList<GameAsset> GetAssetsUploadedByUser(GameUser? user, int skip, int count)
-        => new(this.GameAssets.Where(a => a.OriginalUploader == user), skip, count);
+        => new(this.GameAssetsIncluded.Where(a => a.OriginalUploader == user), skip, count);
     
     public DatabaseList<GameAsset> GetAssetsUploadedByUser(GameUser? user, int skip, int count, GameAssetType type)
-        => new(this.GameAssets.Where(a => a.OriginalUploader == user && a._AssetType == (int)type), skip, count);
+        => new(this.GameAssetsIncluded.Where(a => a.OriginalUploader == user && a._AssetType == (int)type), skip, count);
 
     public GameAssetType? GetConvertedType(string hash)
     {
@@ -66,7 +69,7 @@ public partial class GameDatabaseContext // Assets
     }
     
     public IEnumerable<GameAsset> GetAssetsByType(GameAssetType type) =>
-        this.GameAssets
+        this.GameAssetsIncluded
             .Where(a => a._AssetType == (int)type);
 
     public void AddAssetToDatabase(GameAsset asset) =>
