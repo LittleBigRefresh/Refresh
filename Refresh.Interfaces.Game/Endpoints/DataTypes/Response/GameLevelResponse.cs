@@ -47,6 +47,7 @@ public class GameLevelResponse : IDataConvertableFrom<GameLevelResponse, GameLev
     [XmlElement("playCount")] public required int TotalPlayCount { get; set; }
     [XmlElement("completionCount")] public required int CompletionCount { get; set; }
     [XmlElement("uniquePlayCount")] public required int UniquePlayCount { get; set; }
+    [XmlElement("lbp3PlayCount")] public required int Lbp3PlayCount { get; set; }
 
     [XmlElement("yourDPadRating")] public int YourRating { get; set; }
     [XmlElement("thumbsup")] public required int YayCount { get; set; }
@@ -94,7 +95,7 @@ public class GameLevelResponse : IDataConvertableFrom<GameLevelResponse, GameLev
             IconHash = "0",
             GameVersion = 0,
             RootResource = hash,
-            Description = "This is a hashed level. We don't know anything about it.",
+            Description = "This is a hashed level from the Dry Archive. We can't provide any information about it.",
             Location = new GameLocation(),
             Handle = new SerializedUserHandle
             {
@@ -109,6 +110,7 @@ public class GameLevelResponse : IDataConvertableFrom<GameLevelResponse, GameLev
             TotalPlayCount = 0,
             CompletionCount = 0,
             UniquePlayCount = 0,
+            Lbp3PlayCount = 0,
             YayCount = 0,
             BooCount = 0,
             AverageStarRating = 0,
@@ -138,6 +140,8 @@ public class GameLevelResponse : IDataConvertableFrom<GameLevelResponse, GameLev
     {
         if (old == null) return null;
 
+        int uniquePlays = dataContext.Database.GetUniquePlaysForLevel(old);
+
         GameLevelResponse response = new()
         {
             LevelId = old.LevelId,
@@ -157,7 +161,8 @@ public class GameLevelResponse : IDataConvertableFrom<GameLevelResponse, GameLev
             HeartCount = dataContext.Database.GetFavouriteCountForLevel(old),
             TotalPlayCount = dataContext.Database.GetTotalPlaysForLevel(old),
             CompletionCount = dataContext.Database.GetTotalCompletionsForLevel(old),
-            UniquePlayCount = dataContext.Database.GetUniquePlaysForLevel(old),
+            UniquePlayCount = uniquePlays,
+            Lbp3PlayCount = uniquePlays,
             YayCount = dataContext.Database.GetTotalRatingsForLevel(old, RatingType.Yay),
             BooCount = dataContext.Database.GetTotalRatingsForLevel(old, RatingType.Boo),
             SkillRewards = dataContext.Database.GetSkillRewardsForLevel(old).ToList(),
@@ -265,6 +270,7 @@ public class GameLevelResponse : IDataConvertableFrom<GameLevelResponse, GameLev
             TotalPlayCount = 0,
             CompletionCount = 0,
             UniquePlayCount = 0,
+            Lbp3PlayCount = 0,
             YourRating = 0,
             YayCount = 0, 
             BooCount = 0,
