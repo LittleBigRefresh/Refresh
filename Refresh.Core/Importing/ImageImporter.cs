@@ -61,8 +61,15 @@ public partial class ImageImporter : Importer
         
         while (assetQueue.TryDequeue(out GameAsset? asset))
         {
-            this.ImportAsset(asset.AssetHash, asset.IsPSP, asset.AssetType, dataStore);
-            this.Info($"Imported {asset.AssetType} {asset.AssetHash}");   
+            try
+            {
+                this.Info($"Imported {asset.AssetType} {asset.AssetHash} ({assetQueue.Count} remaining)");
+                this.ImportAsset(asset.AssetHash, asset.IsPSP, asset.AssetType, dataStore);
+            }
+            catch (Exception ex)
+            {
+                this.Warn($"Failed to import {asset.AssetType} {asset.AssetHash}: {ex.GetType().Name}: {ex.Message}");
+            }
         }
 
         this._runningCount--;
@@ -83,7 +90,7 @@ public partial class ImageImporter : Importer
         }
         
         using Stream stream = dataStore.GetStreamFromStore(dataStorePath);
-        using Stream writeStream = dataStore.OpenWriteStream($"png/{hash}");
+        using Stream writeStream = dataStore.OpenWriteStream($"png/{hash}.png");
 
         switch (type)
         {
