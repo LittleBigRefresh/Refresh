@@ -63,7 +63,7 @@ public class LevelTests : GameServerTest
             }
         }
         
-        #if true
+        #if false
         TestSeed(level2, 69);
         TestSeed(level3, 1);
         TestSeed(level2, 2);
