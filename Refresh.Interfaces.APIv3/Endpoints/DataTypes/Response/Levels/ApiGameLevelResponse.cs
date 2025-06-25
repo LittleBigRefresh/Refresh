@@ -1,3 +1,4 @@
+using System.Diagnostics;
 using Refresh.Core.Types.Data;
 using Refresh.Database.Models.Authentication;
 using Refresh.Database.Models.Comments;
@@ -57,6 +58,11 @@ public class ApiGameLevelResponse : IApiResponse, IDataConvertableFrom<ApiGameLe
     public static ApiGameLevelResponse? FromOld(GameLevel? level, DataContext dataContext)
     {
         if (level == null) return null;
+        
+        if(level.Statistics == null)
+            dataContext.Database.RecalculateLevelStatistics(level);
+        
+        Debug.Assert(level.Statistics != null);
 
         return new ApiGameLevelResponse
         {
@@ -76,10 +82,10 @@ public class ApiGameLevelResponse : IApiResponse, IDataConvertableFrom<ApiGameLe
             EnforceMinMaxPlayers = level.EnforceMinMaxPlayers,
             SameScreenGame = level.SameScreenGame,
             SkillRewards = ApiGameSkillRewardResponse.FromOldList(dataContext.Database.GetSkillRewardsForLevel(level), dataContext),
-            YayRatings = dataContext.Database.GetTotalRatingsForLevel(level, RatingType.Yay),
-            BooRatings = dataContext.Database.GetTotalRatingsForLevel(level, RatingType.Boo),
-            Hearts = dataContext.Database.GetFavouriteCountForLevel(level),
-            UniquePlays = dataContext.Database.GetUniquePlaysForLevel(level),
+            YayRatings = level.Statistics.YayCount,
+            BooRatings = level.Statistics.BooCount,
+            Hearts = level.Statistics.FavouriteCount,
+            UniquePlays = level.Statistics.UniquePlayCount,
             TeamPicked = level.TeamPicked,
             DateTeamPicked = level.DateTeamPicked,
             RootLevelHash = level.RootResource,
@@ -90,9 +96,9 @@ public class ApiGameLevelResponse : IApiResponse, IDataConvertableFrom<ApiGameLe
             IsLocked = level.IsLocked,
             IsSubLevel = level.IsSubLevel,
             Score = level.Score,
-            PhotosTaken = dataContext.Database.GetTotalPhotosInLevel(level),
-            LevelComments = dataContext.Database.GetTotalCommentsForLevel(level),
-            Reviews = dataContext.Database.GetTotalReviewsForLevel(level),
+            PhotosTaken = level.Statistics.PhotoInLevelCount,
+            LevelComments = level.Statistics.CommentCount,
+            Reviews = level.Statistics.ReviewCount,
             Tags = dataContext.Database.GetTagsForLevel(level).Select(t => t.Tag),
             IsModded = level.IsModded,
         };

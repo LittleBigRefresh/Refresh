@@ -1,6 +1,8 @@
+using System.Diagnostics;
 using System.Xml.Serialization;
 using Refresh.Database.Models.Authentication;
 using Refresh.Database.Models.Comments;
+using Refresh.Database.Models.Statistics;
 using Refresh.Database.Models.Users;
 
 namespace Refresh.Database.Models.Levels;
@@ -86,14 +88,20 @@ public partial class GameLevel : ISequentialId
     /// </summary>
     public string? OriginalPublisher { get; set; }
 
+    public GameLevelStatistics? Statistics { get; set; }
+
     public bool IsReUpload { get; set; }
 
     /// <summary>
     /// Calculates the average rating of a level based on the ratings it has.
     /// </summary>
     /// <returns>A double between 1 and 5, indicating the level's average ratings.</returns>
-    public double CalculateAverageStarRating(int yayCount, int neutralCount, int booCount)
+    public double CalculateAverageStarRating()
     {
+        Debug.Assert(this.Statistics != null);
+        int yayCount = this.Statistics.YayCount;
+        int booCount = this.Statistics.BooCount;
+        int neutralCount = this.Statistics.NeutralCount;
         // Return 0 if all the counts are 0, we don't want a div by 0 error!
         if (yayCount + booCount + neutralCount == 0) return 0;
         

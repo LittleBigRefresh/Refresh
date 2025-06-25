@@ -17,6 +17,7 @@ namespace Refresh.Database;
 public partial class GameDatabaseContext // Levels
 {
     private IQueryable<GameLevel> GameLevelsIncluded => this.GameLevels
+        .Include(l => l.Statistics)
         .Include(l => l.Publisher);
 
     private IQueryable<GameSkillReward> SkillRewardsIncluded => this.GameSkillRewards

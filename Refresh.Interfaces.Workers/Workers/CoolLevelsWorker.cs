@@ -112,11 +112,11 @@ public class CoolLevelsWorker : IWorker
         
         int positiveRatings = context.Database.GetTotalRatingsForLevel(level, RatingType.Yay, false);
         int negativeRatings = context.Database.GetTotalRatingsForLevel(level, RatingType.Boo, false);
-        int uniquePlays = context.Database.GetUniquePlaysForLevel(level, false);
+        int uniquePlays = context.Database.GetTotalUniquePlaysForLevel(level, false);
         
         score += positiveRatings * positiveRatingPoints;
         score += uniquePlays * uniquePlayPoints;
-        score += context.Database.GetFavouriteCountForLevel(level, false) * heartPoints;
+        score += context.Database.GetTotalFavouritesForLevel(level, false) * heartPoints;
         
         // Reward for a good ratio between plays and yays
         float ratingRatio = (positiveRatings - negativeRatings) / (float)uniquePlays;

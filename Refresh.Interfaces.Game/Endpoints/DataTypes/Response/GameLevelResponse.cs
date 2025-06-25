@@ -1,3 +1,4 @@
+using System.Diagnostics;
 using System.Xml.Serialization;
 using Refresh.Common.Constants;
 using Refresh.Core.Types.Data;
@@ -139,11 +140,11 @@ public class GameLevelResponse : IDataConvertableFrom<GameLevelResponse, GameLev
     public static GameLevelResponse? FromOld(GameLevel? old, DataContext dataContext)
     {
         if (old == null) return null;
-
-        int uniquePlays = dataContext.Database.GetUniquePlaysForLevel(old);
-        int yays = dataContext.Database.GetTotalRatingsForLevel(old, RatingType.Yay);
-        int neutrals = dataContext.Database.GetTotalRatingsForLevel(old, RatingType.Neutral);
-        int boos = dataContext.Database.GetTotalRatingsForLevel(old, RatingType.Boo);
+        
+        if(old.Statistics == null)
+            dataContext.Database.RecalculateLevelStatistics(old);
+        
+        Debug.Assert(old.Statistics != null);
 
         GameLevelResponse response = new()
         {
@@ -161,13 +162,13 @@ public class GameLevelResponse : IDataConvertableFrom<GameLevelResponse, GameLev
             MaxPlayers = old.MaxPlayers,
             EnforceMinMaxPlayers = old.EnforceMinMaxPlayers,
             SameScreenGame = old.SameScreenGame,
-            HeartCount = dataContext.Database.GetFavouriteCountForLevel(old),
-            TotalPlayCount = dataContext.Database.GetTotalPlaysForLevel(old),
-            CompletionCount = dataContext.Database.GetTotalCompletionsForLevel(old),
-            UniquePlayCount = uniquePlays,
-            Lbp3PlayCount = uniquePlays,
-            YayCount = yays,
-            BooCount = boos,
+            HeartCount = old.Statistics.FavouriteCount,
+            TotalPlayCount = old.Statistics.PlayCount,
+            CompletionCount = old.Statistics.CompletionCount,
+            UniquePlayCount = old.Statistics.UniquePlayCount,
+            Lbp3PlayCount = old.Statistics.UniquePlayCount,
+            YayCount = old.Statistics.YayCount,
+            BooCount = old.Statistics.BooCount,
             SkillRewards = dataContext.Database.GetSkillRewardsForLevel(old).ToList(),
             TeamPicked = old.TeamPicked,
             LevelType = old.LevelType.ToGameString(),
@@ -177,11 +178,11 @@ public class GameLevelResponse : IDataConvertableFrom<GameLevelResponse, GameLev
             RequiresMoveController = old.RequiresMoveController,
             BackgroundGuid = old.BackgroundGuid,
             Links = "",
-            AverageStarRating = old.CalculateAverageStarRating(yays, neutrals, boos),
-            ReviewCount = dataContext.Database.GetTotalReviewsForLevel(old),
-            CommentCount = dataContext.Database.GetTotalCommentsForLevel(old),
-            PhotoCount = dataContext.Database.GetTotalPhotosInLevel(old),
-            PublisherPhotoCount = old.Publisher == null ? 0 : dataContext.Database.GetTotalPhotosInLevelByUser(old, old.Publisher),
+            AverageStarRating = old.CalculateAverageStarRating(),
+            ReviewCount = old.Statistics.ReviewCount,
+            CommentCount = old.Statistics.CommentCount,
+            PhotoCount = old.Statistics.PhotoInLevelCount,
+            PublisherPhotoCount = old.Statistics.PhotoByPublisherCount,
             Tags = string.Join(',', dataContext.Database.GetTagsForLevel(old).Select(t => t.Tag.ToLbpString())) ,
             Type = old.SlotType.ToGameType(),
         };
@@ -237,8 +238,6 @@ public class GameLevelResponse : IDataConvertableFrom<GameLevelResponse, GameLev
         }
         
         response.IconHash = dataContext.Database.GetAssetFromHash(old.IconHash)?.GetAsIcon(dataContext.Game, dataContext) ?? response.IconHash;
-        
-        response.CommentCount = dataContext.Database.GetTotalCommentsForLevel(old);
         
         return response;
     }

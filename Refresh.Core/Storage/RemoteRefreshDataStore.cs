@@ -1,5 +1,6 @@
 using Bunkum.Core.Storage;
 using JetBrains.Annotations;
+#pragma warning disable CS0162 // Unreachable code detected
 
 namespace Refresh.Core.Storage;
 
@@ -11,7 +12,7 @@ public class RemoteRefreshDataStore : IDataStore
 {
     private const string SourceUrl = "https://lbp.lbpbonsai.com/api/v3/"; 
     private const string WriteError = $"{nameof(RemoteRefreshDataStore)} is a read-only source, and cannot be written to.";
-    private const bool HideImages = true;
+    private const bool HideImages = false;
     
     private readonly HttpClient _client = new()
     {

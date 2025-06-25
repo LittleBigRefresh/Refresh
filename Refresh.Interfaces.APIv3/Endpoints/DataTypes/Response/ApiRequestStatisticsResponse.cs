@@ -1,5 +1,6 @@
 using Refresh.Core.Types.Data;
 using Refresh.Database.Models;
+using Refresh.Database.Models.Statistics;
 
 namespace Refresh.Interfaces.APIv3.Endpoints.DataTypes.Response;
 

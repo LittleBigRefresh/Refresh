@@ -131,9 +131,12 @@ public partial class GameDatabaseContext // Photos
             .Where(p => p.Level == level && p.Publisher == user)
             .OrderByDescending(p => p.TakenAt), skip, count);
 
-    public int GetTotalPhotosInLevelByUser(GameLevel level, GameUser user)
-        => this.GamePhotos.Count(p => p.Level == level && p.Publisher == user);
-    
+    public int GetTotalPhotosInLevelByUser(GameLevel level, GameUser? user)
+    {
+        if (user == null) return 0;
+        return this.GamePhotos.Count(p => p.Level == level && p.Publisher == user);
+    }
+
     public void DeletePhotosPostedByUser(GameUser user)
     {
         IEnumerable<GamePhoto> photos = this.GamePhotos.Where(s => s.Publisher == user);

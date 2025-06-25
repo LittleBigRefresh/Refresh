@@ -63,7 +63,7 @@ public partial class GameDatabaseContext // Relations
         return true;
     }
     
-    public int GetFavouriteCountForLevel(GameLevel level, bool includingAuthor = true) => this.FavouriteLevelRelations
+    public int GetTotalFavouritesForLevel(GameLevel level, bool includingAuthor = true) => this.FavouriteLevelRelations
             .Count(r => r.Level == level && (includingAuthor || r.User != level.Publisher));
 
     #endregion
@@ -493,7 +493,7 @@ public partial class GameDatabaseContext // Relations
     public int GetTotalPlaysForLevelByUser(GameLevel level, GameUser user) =>
         this.GetAllPlaysForLevelByUser(level, user).Sum(playLevelRelation => playLevelRelation.Count);
     
-    public int GetUniquePlaysForLevel(GameLevel level, bool includingAuthor = true) =>
+    public int GetTotalUniquePlaysForLevel(GameLevel level, bool includingAuthor = true) =>
         this.UniquePlayLevelRelations.Count(r => r.Level == level && (includingAuthor || r.User != level.Publisher));
 
     public int GetTotalCompletionsForLevel(GameLevel level) =>
