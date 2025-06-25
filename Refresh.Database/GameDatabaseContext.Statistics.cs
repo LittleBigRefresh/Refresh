@@ -50,16 +50,21 @@ public partial class GameDatabaseContext // Statistics
         this.Write(() =>
         {
             level.Statistics.FavouriteCount = this.GetTotalFavouritesForLevel(level);
+            level.Statistics.FavouriteCountExcludingPublisher = this.GetTotalFavouritesForLevel(level, false);
             level.Statistics.PlayCount = this.GetTotalPlaysForLevel(level);
             level.Statistics.UniquePlayCount = this.GetTotalUniquePlaysForLevel(level);
+            level.Statistics.UniquePlayCountExcludingPublisher = this.GetTotalUniquePlaysForLevel(level, false);
             level.Statistics.CompletionCount = this.GetTotalCompletionsForLevel(level);
             level.Statistics.ReviewCount = this.GetTotalReviewsForLevel(level);
             level.Statistics.CommentCount = this.GetTotalCommentsForLevel(level);
             level.Statistics.PhotoInLevelCount = this.GetTotalPhotosInLevel(level);
             level.Statistics.PhotoByPublisherCount = this.GetTotalPhotosInLevelByUser(level, level.Publisher);
             level.Statistics.YayCount = this.GetTotalRatingsForLevel(level, RatingType.Yay);
+            level.Statistics.YayCountExcludingPublisher = this.GetTotalRatingsForLevel(level, RatingType.Yay, false);
             level.Statistics.BooCount = this.GetTotalRatingsForLevel(level, RatingType.Boo);
+            level.Statistics.BooCountExcludingPublisher = this.GetTotalRatingsForLevel(level, RatingType.Boo, false);
             level.Statistics.NeutralCount = this.GetTotalRatingsForLevel(level, RatingType.Neutral);
+            level.Statistics.NeutralCountExcludingPublisher = this.GetTotalRatingsForLevel(level, RatingType.Neutral, false);
         });
     }
 }

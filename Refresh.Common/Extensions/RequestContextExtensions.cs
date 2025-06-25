@@ -7,7 +7,7 @@ namespace Refresh.Common.Extensions;
 public static class RequestContextExtensions
 {
     [Pure]
-    public static (int, int) GetPageData(this RequestContext context, int maxCount = 100)
+    public static (int, int) GetPageData(this RequestContext context, int maxCount = 10000)
     {
         bool api = context.IsApi();
         

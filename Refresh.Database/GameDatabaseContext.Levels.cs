@@ -565,13 +565,12 @@ public partial class GameDatabaseContext // Levels
 
     public void SetLevelScores(Dictionary<GameLevel, float> scoresToSet)
     {
-        this.Write(() =>
+        foreach ((GameLevel level, float score) in scoresToSet)
         {
-            foreach ((GameLevel level, float score) in scoresToSet)
-            {
-                level.Score = score;
-            }
-        });
+            level.Score = score;
+        }
+
+        this.SaveChanges();
     }
     
     public void SetLevelModdedStatus(GameLevel level, bool modded)

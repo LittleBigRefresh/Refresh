@@ -1101,6 +1101,9 @@ namespace Refresh.Database.Migrations
                     b.Property<int>("BooCount")
                         .HasColumnType("integer");
 
+                    b.Property<int>("BooCountExcludingPublisher")
+                        .HasColumnType("integer");
+
                     b.Property<int>("CommentCount")
                         .HasColumnType("integer");
 
@@ -1110,7 +1113,13 @@ namespace Refresh.Database.Migrations
                     b.Property<int>("FavouriteCount")
                         .HasColumnType("integer");
 
+                    b.Property<int>("FavouriteCountExcludingPublisher")
+                        .HasColumnType("integer");
+
                     b.Property<int>("NeutralCount")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("NeutralCountExcludingPublisher")
                         .HasColumnType("integer");
 
                     b.Property<int>("PhotoByPublisherCount")
@@ -1128,7 +1137,13 @@ namespace Refresh.Database.Migrations
                     b.Property<int>("UniquePlayCount")
                         .HasColumnType("integer");
 
+                    b.Property<int>("UniquePlayCountExcludingPublisher")
+                        .HasColumnType("integer");
+
                     b.Property<int>("YayCount")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("YayCountExcludingPublisher")
                         .HasColumnType("integer");
 
                     b.HasKey("LevelId");
