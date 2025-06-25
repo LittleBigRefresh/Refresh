@@ -107,12 +107,8 @@ public partial class GameLevel : ISequentialId
     /// Calculates the average rating of a level based on the ratings it has.
     /// </summary>
     /// <returns>A double between 1 and 5, indicating the level's average ratings.</returns>
-    public double CalculateAverageStarRating(GameDatabaseContext database)
+    public double CalculateAverageStarRating(int yayCount, int neutralCount, int booCount)
     {
-        int yayCount = database.GetTotalRatingsForLevel(this, RatingType.Yay);
-        int booCount = database.GetTotalRatingsForLevel(this, RatingType.Boo);
-        int neutralCount = database.GetTotalRatingsForLevel(this, RatingType.Neutral);
-
         // Return 0 if all the counts are 0, we don't want a div by 0 error!
         if (yayCount + booCount + neutralCount == 0) return 0;
         

@@ -141,6 +141,9 @@ public class GameLevelResponse : IDataConvertableFrom<GameLevelResponse, GameLev
         if (old == null) return null;
 
         int uniquePlays = dataContext.Database.GetUniquePlaysForLevel(old);
+        int yays = dataContext.Database.GetTotalRatingsForLevel(old, RatingType.Yay);
+        int neutrals = dataContext.Database.GetTotalRatingsForLevel(old, RatingType.Neutral);
+        int boos = dataContext.Database.GetTotalRatingsForLevel(old, RatingType.Boo);
 
         GameLevelResponse response = new()
         {
@@ -163,8 +166,8 @@ public class GameLevelResponse : IDataConvertableFrom<GameLevelResponse, GameLev
             CompletionCount = dataContext.Database.GetTotalCompletionsForLevel(old),
             UniquePlayCount = uniquePlays,
             Lbp3PlayCount = uniquePlays,
-            YayCount = dataContext.Database.GetTotalRatingsForLevel(old, RatingType.Yay),
-            BooCount = dataContext.Database.GetTotalRatingsForLevel(old, RatingType.Boo),
+            YayCount = yays,
+            BooCount = boos,
             SkillRewards = dataContext.Database.GetSkillRewardsForLevel(old).ToList(),
             TeamPicked = old.TeamPicked,
             LevelType = old.LevelType.ToGameString(),
@@ -174,7 +177,7 @@ public class GameLevelResponse : IDataConvertableFrom<GameLevelResponse, GameLev
             RequiresMoveController = old.RequiresMoveController,
             BackgroundGuid = old.BackgroundGuid,
             Links = "",
-            AverageStarRating = old.CalculateAverageStarRating(dataContext.Database),
+            AverageStarRating = old.CalculateAverageStarRating(yays, neutrals, boos),
             ReviewCount = dataContext.Database.GetTotalReviewsForLevel(old),
             CommentCount = dataContext.Database.GetTotalCommentsForLevel(old),
             PhotoCount = dataContext.Database.GetTotalPhotosInLevel(old),
