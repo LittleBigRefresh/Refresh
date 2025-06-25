@@ -309,7 +309,7 @@ public partial class GameDatabaseContext // Relations
         => this.RateReviewRelationsIncluded.FirstOrDefault(relation => relation.User == user && relation.Review == review);
     
     public bool ReviewRatingExists(GameUser user, GameReview review, RatingType rating)
-        => this.RateReviewRelations.Any(r => r.Review == review && r.User == user && r._ReviewRatingType == (int)rating);
+        => this.RateReviewRelations.Any(r => r.Review == review && r.User == user && r.RatingType == rating);
 
     private RateLevelRelation? GetRateRelationByUser(GameLevel level, GameUser user)
         => this.RateLevelRelationsIncluded.FirstOrDefault(r => r.User == user && r.Level == level);
@@ -358,7 +358,7 @@ public partial class GameDatabaseContext // Relations
     public int GetTotalRatingsForLevel(GameLevel level, RatingType type, bool includingAuthor = true) =>
         this.RateLevelRelations.Count(r =>
             r.Level == level &&
-            r._RatingType == (int)type && 
+            r.RatingType == type && 
             (includingAuthor || r.User != level.Publisher));
     
     /// <summary>
@@ -544,10 +544,10 @@ public partial class GameDatabaseContext // Relations
         => this.GetLevelCommentRelationByUser(comment, user)?.RatingType;
     
     public int GetTotalRatingsForProfileComment(GameProfileComment comment, RatingType type) =>
-        this.ProfileCommentRelations.Count(r => r.Comment == comment && r._RatingType == (int)type);
+        this.ProfileCommentRelations.Count(r => r.Comment == comment && r.RatingType == type);
     
     public int GetTotalRatingsForLevelComment(GameLevelComment comment, RatingType type) =>
-        this.LevelCommentRelations.Count(r => r.Comment == comment && r._RatingType == (int)type);
+        this.LevelCommentRelations.Count(r => r.Comment == comment && r.RatingType == type);
 
     private bool RateComment<TComment, TCommentRelation>(GameUser user, TComment comment, RatingType ratingType, DbSet<TCommentRelation> list)
         where TComment : class, IGameComment
@@ -623,10 +623,10 @@ public partial class GameDatabaseContext // Relations
  
         IEnumerable<TagLevelRelation> tags = levelTags
             .AsEnumerableIfRealm() // TODO: optimize for postgres when realm is deleted
-            .GroupBy(t => t._Tag).Select(g => g.First())
+            .GroupBy(t => t.Tag).Select(g => g.First())
             // ^ is equivalent to .DistinctBy(t => t._Tag)
             .AsEnumerable()
-            .OrderByDescending(t => levelTags.Count(levelTag => levelTag._Tag == t._Tag));
+            .OrderByDescending(t => levelTags.Count(levelTag => levelTag.Tag == t.Tag));
 
         return tags;
     }

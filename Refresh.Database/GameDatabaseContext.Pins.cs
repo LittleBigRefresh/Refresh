@@ -107,7 +107,7 @@ public partial class GameDatabaseContext // Pins
 
     private IEnumerable<ProfilePinRelation> GetProfilePinsByUser(GameUser user, TokenGame game)
         => this.ProfilePinRelations
-            .Where(p => p.Publisher == user && p._Game == (int)game)
+            .Where(p => p.Publisher == user && p.Game == game)
             .OrderBy(p => p.Index);
 
     public DatabaseList<ProfilePinRelation> GetProfilePinsByUser(GameUser user, TokenGame game, int skip, int count)

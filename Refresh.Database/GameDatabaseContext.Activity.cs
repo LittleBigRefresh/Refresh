@@ -121,7 +121,7 @@ public partial class GameDatabaseContext // Activity
     )
     {
         IEnumerable<Event> events = this.GetEvents(parameters)
-            .Where(e => e._StoredDataType == (int)EventDataType.Level && e.StoredSequentialId == level.LevelId)
+            .Where(e => e.StoredDataType == EventDataType.Level && e.StoredSequentialId == level.LevelId)
             .OrderByDescending(e => e.Timestamp);
 
         return GetRecentActivity(events, parameters);

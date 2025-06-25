@@ -18,14 +18,6 @@ public partial class RateReviewRelation
     [Required] public ObjectId UserId { get; set; }
     
     // we could just reuse RatingType from GameLevel rating logic
-    [NotMapped]
-    public RatingType RatingType
-    {
-        get => (RatingType)this._ReviewRatingType;
-        set => this._ReviewRatingType = (int)value;
-    }
-    
-    // ReSharper disable once InconsistentNaming
-    public int _ReviewRatingType { get; set; }
+    public RatingType RatingType { get; set; }
     public DateTimeOffset Timestamp { get; set; }
 }

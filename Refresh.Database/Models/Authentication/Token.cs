@@ -16,30 +16,11 @@ public partial class Token : IToken<GameUser>
     
     // this shouldn't ever be serialized, but just in case let's ignore it
     [XmlIgnore, JsonIgnore] public string TokenData { get; set; }
-    
-    // Realm can't store enums, use recommended workaround
-    // ReSharper disable once InconsistentNaming (can't fix due to conflict with TokenType)
-    public int _TokenType { get; set; }
 
-    public TokenType TokenType
-    {
-        get => (TokenType)this._TokenType;
-        set => this._TokenType = (int)value;
-    }
+    public TokenType TokenType { get; set; }
     
-    public int _TokenPlatform { get; set; }
-    public int _TokenGame { get; set; }
-    
-    public TokenPlatform TokenPlatform 
-    {
-        get => (TokenPlatform)this._TokenPlatform;
-        set => this._TokenPlatform = (int)value;
-    }
-    public TokenGame TokenGame 
-    {
-        get => (TokenGame)this._TokenGame;
-        set => this._TokenGame = (int)value;
-    }
+    public TokenPlatform TokenPlatform  { get; set; }
+    public TokenGame TokenGame  { get; set; }
 
     public DateTimeOffset ExpiresAt { get; set; }
     public DateTimeOffset LoginDate { get; set; }

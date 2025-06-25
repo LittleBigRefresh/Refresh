@@ -136,7 +136,7 @@ public partial class GameDatabaseContext // Leaderboard
     public void DeleteScore(GameSubmittedScore score)
     {
         IQueryable<Event> scoreEvents = this.Events
-            .Where(e => e._StoredDataType == (int)EventDataType.Score && e.StoredObjectId == score.ScoreId);
+            .Where(e => e.StoredDataType == EventDataType.Score && e.StoredObjectId == score.ScoreId);
         
         this.Write(() =>
         {
@@ -161,7 +161,7 @@ public partial class GameDatabaseContext // Leaderboard
             foreach (GameSubmittedScore score in scores)
             {
                 IQueryable<Event> scoreEvents = this.Events
-                    .Where(e => e._StoredDataType == (int)EventDataType.Score && e.StoredObjectId == score.ScoreId);
+                    .Where(e => e.StoredDataType == EventDataType.Score && e.StoredObjectId == score.ScoreId);
                 
                 this.Events.RemoveRange(scoreEvents);
                 this.GameSubmittedScores.Remove(score);

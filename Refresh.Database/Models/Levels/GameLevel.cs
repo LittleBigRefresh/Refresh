@@ -50,23 +50,8 @@ public partial class GameLevel : ISequentialId
     /// </summary>
     public string? BackgroundGuid { get; set; }
     
-    public TokenGame GameVersion 
-    {
-        get => (TokenGame)this._GameVersion;
-        set => this._GameVersion = (int)value;
-    }
-    
-    // ReSharper disable once InconsistentNaming
-    public int _GameVersion { get; set; }
-    
-    public GameLevelType LevelType
-    {
-        get => (GameLevelType)this._LevelType;
-        set => this._LevelType = (int)value;
-    }
-
-    // ReSharper disable once InconsistentNaming
-    public int _LevelType { get; set; }
+    public TokenGame GameVersion  { get; set; }
+    public GameLevelType LevelType { get; set; }
 
     /// <summary>
     /// The associated ID for the developer level.

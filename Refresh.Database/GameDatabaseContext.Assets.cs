@@ -20,7 +20,7 @@ public partial class GameDatabaseContext // Assets
         => new(this.GameAssetsIncluded.Where(a => a.OriginalUploader == user), skip, count);
     
     public DatabaseList<GameAsset> GetAssetsUploadedByUser(GameUser? user, int skip, int count, GameAssetType type)
-        => new(this.GameAssetsIncluded.Where(a => a.OriginalUploader == user && a._AssetType == (int)type), skip, count);
+        => new(this.GameAssetsIncluded.Where(a => a.OriginalUploader == user && a.AssetType == type), skip, count);
 
     public GameAssetType? GetConvertedType(string hash)
     {
@@ -70,7 +70,7 @@ public partial class GameDatabaseContext // Assets
     
     public IEnumerable<GameAsset> GetAssetsByType(GameAssetType type) =>
         this.GameAssetsIncluded
-            .Where(a => a._AssetType == (int)type);
+            .Where(a => a.AssetType == type);
 
     public void AddAssetToDatabase(GameAsset asset) =>
         this.Write(() =>

@@ -266,12 +266,7 @@ public partial class GameDatabaseContext // Users
     public bool IsUserRestricted(GameUser user) => this.IsUserPunished(user, GameUserRole.Restricted);
 
     public DatabaseList<GameUser> GetAllUsersWithRole(GameUserRole role)
-    {
-        // for some stupid reason, we have to do the byte conversion here or realm won't work correctly.
-        byte roleByte = (byte)role;
-        
-        return new DatabaseList<GameUser>(this.GameUsers.Where(u => u._Role == roleByte));
-    }
+        => new(this.GameUsers.Where(u => u.Role == role));
 
     public void RenameUser(GameUser user, string newUsername)
     {

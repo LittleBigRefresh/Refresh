@@ -26,12 +26,7 @@ public partial class GameChallenge : ISequentialId
     /// The challenge's criteria type (time/score/lives etc).
     /// </summary>
     /// <seealso cref="GameChallengeCriteriaType"/>
-    public GameChallengeCriteriaType Type
-    {
-        get => (GameChallengeCriteriaType)this._Type;
-        set => this._Type = (byte)value;
-    }
-    public byte _Type { get; set; }
+    public GameChallengeCriteriaType Type { get; set; }
 
     public DateTimeOffset PublishDate { get; set; }
     public DateTimeOffset LastUpdateDate { get; set; }

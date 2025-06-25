@@ -73,7 +73,7 @@ public partial class GameDatabaseContext // Tokens
     {
         Token? token = this.Tokens
             .Include(t => t.User)
-            .FirstOrDefault(t => t.TokenData == tokenData && t._TokenType == (int)type);
+            .FirstOrDefault(t => t.TokenData == tokenData && t.TokenType == type);
 
         if (token == null) return null;
 
@@ -105,7 +105,7 @@ public partial class GameDatabaseContext // Tokens
     {
         if (tokenData == null) return false;
 
-        Token? token = this.Tokens.FirstOrDefault(t => t.TokenData == tokenData && t._TokenType == (int)type);
+        Token? token = this.Tokens.FirstOrDefault(t => t.TokenData == tokenData && t.TokenType == type);
         if (token == null) return false;
 
         this.RevokeToken(token);
@@ -133,7 +133,7 @@ public partial class GameDatabaseContext // Tokens
     {
         this.Write(() =>
         {
-            this.Tokens.RemoveRange(t => t.User == user && t._TokenType == (int)type);
+            this.Tokens.RemoveRange(t => t.User == user && t.TokenType == type);
         });
     }
     

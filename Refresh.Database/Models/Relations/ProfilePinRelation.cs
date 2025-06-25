@@ -23,12 +23,7 @@ public partial class ProfilePinRelation
     /// <summary>
     /// The game to show this profile pin on, to allow different sets of profile pins per game
     /// </summary>
-    public TokenGame Game
-    {
-        get => (TokenGame)this._Game;
-        set => this._Game = (int)value;
-    }
-    public int _Game { get; set; }
+    public TokenGame Game { get; set; }
 
     public DateTimeOffset Timestamp { get; set; }
 }

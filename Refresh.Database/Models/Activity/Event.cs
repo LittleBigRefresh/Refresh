@@ -18,15 +18,8 @@ public partial class Event
     /// </summary>
     public ObjectId EventId { get; set; } = ObjectId.GenerateNewId();
     
-    [NotMapped]
-    public EventType EventType
-    {
-        get => (EventType)this._EventType;
-        set => this._EventType = (int)value;
-    }
-    
-    // ReSharper disable once InconsistentNaming
-    public int _EventType { get; set; }
+    public EventType EventType { get; set; }
+
 
     /// <summary>
     /// The user in question that created this event.
@@ -45,15 +38,7 @@ public partial class Event
     /// <summary>
     /// The type of data that this event is referencing.
     /// </summary>
-    [NotMapped]
-    public EventDataType StoredDataType
-    {
-        get => (EventDataType)this._StoredDataType;
-        set => this._StoredDataType = (int)value;
-    }
-    
-    // ReSharper disable once InconsistentNaming
-    public int _StoredDataType { get; set; }
+    public EventDataType StoredDataType { get; set; }
     
     /// <summary>
     /// The sequential ID of the object this event is referencing. If null, use <see cref="StoredObjectId"/>.
