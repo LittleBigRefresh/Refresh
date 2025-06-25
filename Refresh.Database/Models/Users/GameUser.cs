@@ -1,3 +1,4 @@
+using System.Runtime.CompilerServices;
 using System.Xml.Serialization;
 using MongoDB.Bson;
 using Bunkum.Core.RateLimit;
@@ -164,8 +165,7 @@ public partial class GameUser : IRateLimitUser
         return this.UserId.Equals(id);
     }
 
-    // Defined in authentication provider. Avoids Realm threading nonsense.
-    [NotMapped] [XmlIgnore] public object RateLimitUserId { get; set; } = null!;
+    [NotMapped] public object RateLimitUserId => this.UserId; 
 
     #endregion
 
