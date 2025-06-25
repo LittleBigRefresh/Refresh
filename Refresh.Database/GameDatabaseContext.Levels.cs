@@ -299,7 +299,7 @@ public partial class GameDatabaseContext // Levels
     [Pure]
     public DatabaseList<GameLevel> GetRandomLevels(int count, int skip, GameUser? user, LevelFilterSettings levelFilterSettings)
     {
-#if true
+#if false
         float seed = MathHelper.RemapIntToFloat(levelFilterSettings.Seed ?? 0);
         
         // TODO: include publisher in result somehow
