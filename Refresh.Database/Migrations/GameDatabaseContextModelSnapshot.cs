@@ -28,8 +28,14 @@ namespace Refresh.Database.Migrations
                     b.Property<string>("EventId")
                         .HasColumnType("text");
 
+                    b.Property<byte>("EventType")
+                        .HasColumnType("smallint");
+
                     b.Property<bool>("IsPrivate")
                         .HasColumnType("boolean");
+
+                    b.Property<int>("StoredDataType")
+                        .HasColumnType("integer");
 
                     b.Property<string>("StoredObjectId")
                         .HasColumnType("text");
@@ -43,12 +49,6 @@ namespace Refresh.Database.Migrations
                     b.Property<string>("UserId")
                         .IsRequired()
                         .HasColumnType("text");
-
-                    b.Property<int>("_EventType")
-                        .HasColumnType("integer");
-
-                    b.Property<int>("_StoredDataType")
-                        .HasColumnType("integer");
 
                     b.HasKey("EventId");
 
@@ -71,6 +71,12 @@ namespace Refresh.Database.Migrations
                     b.Property<string>("AsMipIconHash")
                         .HasColumnType("text");
 
+                    b.Property<byte>("AssetFormat")
+                        .HasColumnType("smallint");
+
+                    b.Property<int>("AssetType")
+                        .HasColumnType("integer");
+
                     b.Property<bool>("IsPSP")
                         .HasColumnType("boolean");
 
@@ -82,12 +88,6 @@ namespace Refresh.Database.Migrations
 
                     b.Property<DateTimeOffset>("UploadDate")
                         .HasColumnType("timestamp with time zone");
-
-                    b.Property<int>("_AssetSerializationMethod")
-                        .HasColumnType("integer");
-
-                    b.Property<int>("_AssetType")
-                        .HasColumnType("integer");
 
                     b.HasKey("AssetHash");
 
@@ -132,15 +132,6 @@ namespace Refresh.Database.Migrations
                     b.Property<string>("UserId")
                         .IsRequired()
                         .HasColumnType("text");
-
-                    b.Property<int>("_TokenGame")
-                        .HasColumnType("integer");
-
-                    b.Property<int>("_TokenPlatform")
-                        .HasColumnType("integer");
-
-                    b.Property<int>("_TokenType")
-                        .HasColumnType("integer");
 
                     b.HasKey("TokenId");
 
@@ -330,9 +321,6 @@ namespace Refresh.Database.Migrations
                     b.Property<byte>("Type")
                         .HasColumnType("smallint");
 
-                    b.Property<byte>("_Type")
-                        .HasColumnType("smallint");
-
                     b.HasKey("ChallengeId");
 
                     b.HasIndex("LevelId");
@@ -468,12 +456,6 @@ namespace Refresh.Database.Migrations
                     b.Property<DateTimeOffset>("UpdateDate")
                         .HasColumnType("timestamp with time zone");
 
-                    b.Property<int>("_GameVersion")
-                        .HasColumnType("integer");
-
-                    b.Property<int>("_LevelType")
-                        .HasColumnType("integer");
-
                     b.HasKey("LevelId");
 
                     b.HasIndex("PublisherUserId");
@@ -491,6 +473,9 @@ namespace Refresh.Database.Migrations
                     b.Property<int>("Id")
                         .HasColumnType("integer");
 
+                    b.Property<int>("ConditionType")
+                        .HasColumnType("integer");
+
                     b.Property<bool>("Enabled")
                         .HasColumnType("boolean");
 
@@ -499,9 +484,6 @@ namespace Refresh.Database.Migrations
 
                     b.Property<string>("Title")
                         .HasColumnType("text");
-
-                    b.Property<int>("_ConditionType")
-                        .HasColumnType("integer");
 
                     b.HasKey("LevelId", "Id");
 
@@ -513,7 +495,13 @@ namespace Refresh.Database.Migrations
                     b.Property<string>("ScoreId")
                         .HasColumnType("text");
 
+                    b.Property<int>("Game")
+                        .HasColumnType("integer");
+
                     b.Property<int>("LevelId")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("Platform")
                         .HasColumnType("integer");
 
                     b.PrimitiveCollection<List<string>>("PlayerIdsRaw")
@@ -528,17 +516,11 @@ namespace Refresh.Database.Migrations
                     b.Property<byte>("ScoreType")
                         .HasColumnType("smallint");
 
-                    b.Property<int>("_Game")
-                        .HasColumnType("integer");
-
-                    b.Property<int>("_Platform")
-                        .HasColumnType("integer");
-
                     b.HasKey("ScoreId");
 
                     b.HasIndex("LevelId");
 
-                    b.HasIndex("_Game", "Score", "ScoreType");
+                    b.HasIndex("Game", "Score", "ScoreType");
 
                     b.ToTable("GameSubmittedScores");
                 });
@@ -833,15 +815,15 @@ namespace Refresh.Database.Migrations
                     b.Property<int>("CommentSequentialId")
                         .HasColumnType("integer");
 
+                    b.Property<short>("RatingType")
+                        .HasColumnType("smallint");
+
                     b.Property<DateTimeOffset>("Timestamp")
                         .HasColumnType("timestamp with time zone");
 
                     b.Property<string>("UserId")
                         .IsRequired()
                         .HasColumnType("text");
-
-                    b.Property<int>("_RatingType")
-                        .HasColumnType("integer");
 
                     b.HasKey("CommentRelationId");
 
@@ -935,15 +917,15 @@ namespace Refresh.Database.Migrations
                     b.Property<int>("CommentSequentialId")
                         .HasColumnType("integer");
 
+                    b.Property<short>("RatingType")
+                        .HasColumnType("smallint");
+
                     b.Property<DateTimeOffset>("Timestamp")
                         .HasColumnType("timestamp with time zone");
 
                     b.Property<string>("UserId")
                         .IsRequired()
                         .HasColumnType("text");
-
-                    b.Property<int>("_RatingType")
-                        .HasColumnType("integer");
 
                     b.HasKey("CommentRelationId");
 
@@ -970,9 +952,6 @@ namespace Refresh.Database.Migrations
 
                     b.Property<DateTimeOffset>("Timestamp")
                         .HasColumnType("timestamp with time zone");
-
-                    b.Property<int>("_Game")
-                        .HasColumnType("integer");
 
                     b.HasKey("PinId", "PublisherId");
 
@@ -1007,15 +986,15 @@ namespace Refresh.Database.Migrations
                     b.Property<int>("LevelId")
                         .HasColumnType("integer");
 
+                    b.Property<short>("RatingType")
+                        .HasColumnType("smallint");
+
                     b.Property<DateTimeOffset>("Timestamp")
                         .HasColumnType("timestamp with time zone");
 
                     b.Property<string>("UserId")
                         .IsRequired()
                         .HasColumnType("text");
-
-                    b.Property<int>("_RatingType")
-                        .HasColumnType("integer");
 
                     b.HasKey("RateLevelRelationId");
 
@@ -1034,11 +1013,11 @@ namespace Refresh.Database.Migrations
                     b.Property<string>("UserId")
                         .HasColumnType("text");
 
+                    b.Property<short>("RatingType")
+                        .HasColumnType("smallint");
+
                     b.Property<DateTimeOffset>("Timestamp")
                         .HasColumnType("timestamp with time zone");
-
-                    b.Property<int>("_ReviewRatingType")
-                        .HasColumnType("integer");
 
                     b.HasKey("ReviewId", "UserId");
 
@@ -1067,7 +1046,7 @@ namespace Refresh.Database.Migrations
 
             modelBuilder.Entity("Refresh.Database.Models.Relations.TagLevelRelation", b =>
                 {
-                    b.Property<byte>("_Tag")
+                    b.Property<byte>("Tag")
                         .HasColumnType("smallint");
 
                     b.Property<string>("UserId")
@@ -1079,7 +1058,7 @@ namespace Refresh.Database.Migrations
                     b.Property<DateTimeOffset>("Timestamp")
                         .HasColumnType("timestamp with time zone");
 
-                    b.HasKey("_Tag", "UserId", "LevelId");
+                    b.HasKey("Tag", "UserId", "LevelId");
 
                     b.HasIndex("LevelId");
 
@@ -1230,6 +1209,9 @@ namespace Refresh.Database.Migrations
                         .IsRequired()
                         .HasColumnType("text");
 
+                    b.Property<int>("LevelVisibility")
+                        .HasColumnType("integer");
+
                     b.Property<int>("LocationX")
                         .HasColumnType("integer");
 
@@ -1246,12 +1228,18 @@ namespace Refresh.Database.Migrations
                     b.Property<string>("PresenceServerAuthToken")
                         .HasColumnType("text");
 
+                    b.Property<int>("ProfileVisibility")
+                        .HasColumnType("integer");
+
                     b.Property<bool>("PsnAuthenticationAllowed")
                         .HasColumnType("boolean");
 
                     b.Property<string>("PspIconHash")
                         .IsRequired()
                         .HasColumnType("text");
+
+                    b.Property<short>("Role")
+                        .HasColumnType("smallint");
 
                     b.Property<bool>("RpcnAuthenticationAllowed")
                         .HasColumnType("boolean");
@@ -1293,9 +1281,6 @@ namespace Refresh.Database.Migrations
                     b.Property<string>("YayFaceHash")
                         .IsRequired()
                         .HasColumnType("text");
-
-                    b.Property<byte>("_Role")
-                        .HasColumnType("smallint");
 
                     b.HasKey("UserId");
 
