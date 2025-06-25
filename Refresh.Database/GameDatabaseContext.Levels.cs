@@ -199,7 +199,7 @@ public partial class GameDatabaseContext // Levels
         this.Write(() =>
         {
             IQueryable<Event> levelEvents = this.Events
-                .Where(e => e._StoredDataType == (int)EventDataType.Level && e.StoredSequentialId == level.LevelId);
+                .Where(e => e.StoredDataType == EventDataType.Level && e.StoredSequentialId == level.LevelId);
             
             this.Events.RemoveRange(levelEvents);
 
@@ -220,16 +220,16 @@ public partial class GameDatabaseContext // Levels
             }
             this.GameChallenges.RemoveRange(challenges);
             
-            IQueryable<GameSubmittedScore> scores = this.GameSubmittedScores.Where(r => r.Level == level);
+            IQueryable<GameScore> scores = this.GameScores.Where(r => r.Level == level);
             
-            foreach (GameSubmittedScore score in scores)
+            foreach (GameScore score in scores)
             {
                 IQueryable<Event> scoreEvents = this.Events
-                    .Where(e => e._StoredDataType == (int)EventDataType.Score && e.StoredObjectId == score.ScoreId);
+                    .Where(e => e.StoredDataType == EventDataType.Score && e.StoredObjectId == score.ScoreId);
                 this.Events.RemoveRange(scoreEvents);
             }
             
-            this.GameSubmittedScores.RemoveRange(scores);
+            this.GameScores.RemoveRange(scores);
         });
 
         //do in separate transaction in a vain attempt to fix Weirdness with favourite level relations having missing levels
@@ -365,7 +365,7 @@ public partial class GameDatabaseContext // Levels
         
         IEnumerable<GameLevel> filteredTaggedLevels = tagRelations
             .Include(x => x.Level.Publisher)
-            .Where(x => x._Tag == (int)tag)
+            .Where(x => x.Tag == tag)
             .AsEnumerableIfRealm()
             .Select(x => x.Level)
             .Distinct()
@@ -427,7 +427,7 @@ public partial class GameDatabaseContext // Levels
             .Include(r => r.Level.Publisher)
             .AsEnumerableIfRealm()
             .GroupBy(r => r.Level)
-            .Select(g => new { Level = g.Key, Karma = g.Sum(r => r._RatingType) })
+            .Select(g => new { Level = g.Key, Karma = g.Sum(r => (int)r.RatingType) })
             .OrderByDescending(x => x.Karma) // reddit moment
             .Select(x => x.Level)
             .Where(l => l != null)
@@ -517,7 +517,7 @@ public partial class GameDatabaseContext // Levels
     
     public int GetTotalLevelsPublishedByUser(GameUser user, TokenGame game)
         => this.GameLevels
-            .Count(r => r.Publisher == user && r._GameVersion == (int)game);
+            .Count(r => r.Publisher == user && r.GameVersion == game);
     
     [Pure]
     public int GetTotalTeamPickCount(TokenGame game) => this.GameLevels.FilterByGameVersion(game).Count(l => l.DateTeamPicked != null);

@@ -36,8 +36,8 @@ public class LeaderboardApiEndpoints : EndpointGroup
         bool result = bool.TryParse(context.QueryString.Get("showAll") ?? "false", out bool showAll);
         if (!result) return ApiValidationError.BooleanParseError;
 
-        DatabaseList<GameSubmittedScore> scores = database.GetTopScoresForLevel(level, count, skip, (byte)mode, showAll);
-        DatabaseList<ApiGameScoreResponse> ret = DatabaseListExtensions.FromOldList<ApiGameScoreResponse, GameSubmittedScore>(scores, dataContext);
+        DatabaseList<GameScore> scores = database.GetTopScoresForLevel(level, count, skip, (byte)mode, showAll);
+        DatabaseList<ApiGameScoreResponse> ret = DatabaseListExtensions.FromOldList<ApiGameScoreResponse, GameScore>(scores, dataContext);
         return ret;
     }
 
@@ -48,7 +48,7 @@ public class LeaderboardApiEndpoints : EndpointGroup
         DataContext dataContext,
         [DocSummary("The UUID of the score")] string uuid)
     {
-        GameSubmittedScore? score = database.GetScoreByUuid(uuid);
+        GameScore? score = database.GetScoreByUuid(uuid);
         if (score == null) return ApiNotFoundError.Instance;
         
         return ApiGameScoreResponse.FromOld(score, dataContext);

@@ -17,14 +17,6 @@ public partial class GameSkillReward
     [XmlIgnore] public GameLevel Level { get; set; } = null!;
     [XmlIgnore] public int LevelId { get; set; }
 
-    // Realm can't store enums, use recommended workaround
-    // ReSharper disable once InconsistentNaming (can't fix due to conflict with ConditionType)
-    // ReSharper disable once MemberCanBePrivate.Global
-    public int _ConditionType { get; set; }
-    [NotMapped] [XmlElement("condition")]
-    public GameSkillRewardCondition ConditionType
-    {
-        get => (GameSkillRewardCondition)this._ConditionType;
-        set => this._ConditionType = (int)value;
-    }
+    [XmlElement("condition")]
+    public GameSkillRewardCondition ConditionType { get; set; }
 }

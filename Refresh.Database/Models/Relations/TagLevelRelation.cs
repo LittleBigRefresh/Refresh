@@ -6,7 +6,7 @@ namespace Refresh.Database.Models.Relations;
 
 #nullable disable
 
-[PrimaryKey(nameof(_Tag), nameof(UserId), nameof(LevelId))]
+[PrimaryKey(nameof(Tag), nameof(UserId), nameof(LevelId))]
 public partial class TagLevelRelation
 {
     [ForeignKey(nameof(LevelId))]
@@ -19,15 +19,7 @@ public partial class TagLevelRelation
     [Required] public int LevelId { get; set; }
     [Required] public ObjectId UserId { get; set; }
     
-    [NotMapped]
-    public Tag Tag
-    {
-        get => (Tag)this._Tag;
-        set => this._Tag = (byte)value;
-    }
-    
-    // ReSharper disable once InconsistentNaming
-    public byte _Tag { get; set; }
+    public Tag Tag { get; set; }
 
     public DateTimeOffset Timestamp { get; set; }
 }

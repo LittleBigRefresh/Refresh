@@ -19,7 +19,7 @@ public class AdminLeaderboardApiEndpoints : EndpointGroup
     public ApiOkResponse DeleteScore(RequestContext context, GameDatabaseContext database,
         [DocSummary("The UUID of the score")] string uuid)
     {
-        GameSubmittedScore? score = database.GetScoreByUuid(uuid);
+        GameScore? score = database.GetScoreByUuid(uuid);
         if (score == null) return ApiNotFoundError.Instance;
         
         database.DeleteScore(score);

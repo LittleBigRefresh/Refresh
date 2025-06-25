@@ -29,7 +29,7 @@ public partial class GameDatabaseContext // ActivityRead
         return this.GetLevelById(e.StoredSequentialId.Value);
     }
 
-    public GameSubmittedScore? GetScoreFromEvent(Event e)
+    public GameScore? GetScoreFromEvent(Event e)
     {
         if (e.StoredDataType != EventDataType.Score)
             throw new InvalidOperationException($"Event does not store the correct data type (expected {nameof(EventDataType.Score)})");

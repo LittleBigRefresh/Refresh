@@ -10,23 +10,9 @@ public partial class GameAsset
     public DateTimeOffset UploadDate { get; set; }
     public bool IsPSP { get; set; }
     public int SizeInBytes { get; set; }
-    [NotMapped] public GameAssetType AssetType
-    {
-        get => (GameAssetType)this._AssetType;
-        set => this._AssetType = (int)value;
-    }
+    public GameAssetType AssetType { get; set; }
 
-    // ReSharper disable once InconsistentNaming
-    public int _AssetType { get; set; }
-
-    [NotMapped] public GameAssetFormat AssetFormat
-    {
-        get => (GameAssetFormat)this._AssetSerializationMethod;
-        set => this._AssetSerializationMethod = (int)value;
-    }
-    
-    // ReSharper disable once InconsistentNaming
-    public int _AssetSerializationMethod { get; set; }
+    public GameAssetFormat AssetFormat { get; set; }
 
     [NotMapped] 
     public AssetFlags AssetFlags

@@ -33,7 +33,7 @@ public abstract class SerializedEvent : IDataConvertableFrom<SerializedEvent, Ev
 
         GameUser? user = null;
         GameLevel? level = null;
-        GameSubmittedScore? score = null;
+        GameScore? score = null;
         GamePhoto? photo = null;
 
         if (old.StoredDataType == EventDataType.User)

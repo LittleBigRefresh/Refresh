@@ -91,9 +91,6 @@ public partial class GameUser : IRateLimitUser
     public bool RpcnAuthenticationAllowed { get; set; }
     public bool PsnAuthenticationAllowed { get; set; }
     
-    private int _ProfileVisibility { get; set; } = (int)Visibility.All;
-    private int _LevelVisibility { get; set; } = (int)Visibility.All;
-    
     /// <summary>
     /// The auth token the presence server knows this user by, null if not connected to the presence server
     /// </summary>
@@ -104,37 +101,23 @@ public partial class GameUser : IRateLimitUser
     /// although the game does not expose the ability to do this normally.
     /// </summary>
     public GamePlaylist? RootPlaylist { get; set; }
-    
+
     /// <summary>
     /// Whether the user's profile information is exposed in the public API.
     /// </summary>
-    [NotMapped]
-    public Visibility ProfileVisibility
-    {
-        get => (Visibility)this._ProfileVisibility;
-        set => this._ProfileVisibility = (int)value;
-    }
-    
+    public Visibility ProfileVisibility { get; set; } = Visibility.All;
+
     /// <summary>
     /// Whether the user's levels are exposed in the public API.
     /// </summary>
-    [NotMapped]
-    public Visibility LevelVisibility
-    {
-        get => (Visibility)this._LevelVisibility;
-        set => this._LevelVisibility = (int)value;
-    }
+    public Visibility LevelVisibility { get; set; } = Visibility.All;
 
     /// <summary>
     /// If `true`, unescape XML tags sent to /filter
     /// </summary>
     public bool UnescapeXmlSequences { get; set; }
     
-    [NotMapped] public GameUserRole Role
-    {
-        get => (GameUserRole)this._Role;
-        set => this._Role = (byte)value;
-    }
+    public GameUserRole Role { get; set; }
 
     /// <summary>
     /// Whether modded content should be shown in level listings
@@ -145,9 +128,6 @@ public partial class GameUser : IRateLimitUser
     /// Whether reuploaded content should be shown in level listings
     /// </summary>
     public bool ShowReuploadedContent { get; set; } = true;
-
-    // ReSharper disable once InconsistentNaming
-    public byte _Role { get; set; }
 
     public string UsernameLower
     {

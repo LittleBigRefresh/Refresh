@@ -11,16 +11,16 @@ namespace Refresh.Database;
 
 public partial class GameDatabaseContext // Leaderboard
 {
-    private IQueryable<GameSubmittedScore> GameSubmittedScoresIncluded => this.GameSubmittedScores
+    private IQueryable<GameScore> GameScoresIncluded => this.GameScores
         .Include(s => s.Level)
         .Include(s => s.Level.Publisher);
     
-    public GameSubmittedScore SubmitScore(ISerializedScore score, Token token, GameLevel level)
+    public GameScore SubmitScore(ISerializedScore score, Token token, GameLevel level)
         => this.SubmitScore(score, token.User, level, token.TokenGame, token.TokenPlatform);
 
-    public GameSubmittedScore SubmitScore(ISerializedScore score, GameUser user, GameLevel level, TokenGame game, TokenPlatform platform)
+    public GameScore SubmitScore(ISerializedScore score, GameUser user, GameLevel level, TokenGame game, TokenPlatform platform)
     {
-        GameSubmittedScore newScore = new()
+        GameScore newScore = new()
         {
             Score = score.Score,
             ScoreType = score.ScoreType,
@@ -33,7 +33,7 @@ public partial class GameDatabaseContext // Leaderboard
 
         this.Write(() =>
         {
-            this.GameSubmittedScores.Add(newScore);
+            this.GameScores.Add(newScore);
         });
 
         this.CreateLevelScoreEvent(user, newScore);
@@ -62,9 +62,9 @@ public partial class GameDatabaseContext // Leaderboard
         return newScore;
     }
     
-    public DatabaseList<GameSubmittedScore> GetTopScoresForLevel(GameLevel level, int count, int skip, byte type, bool showDuplicates = false)
+    public DatabaseList<GameScore> GetTopScoresForLevel(GameLevel level, int count, int skip, byte type, bool showDuplicates = false)
     {
-        IEnumerable<GameSubmittedScore> scores = this.GameSubmittedScoresIncluded
+        IEnumerable<GameScore> scores = this.GameScoresIncluded
             .Where(s => s.ScoreType == type && s.Level == level)
             .OrderByDescending(s => s.Score)
             .AsEnumerableIfRealm();
@@ -72,16 +72,16 @@ public partial class GameDatabaseContext // Leaderboard
         if (!showDuplicates)
             scores = scores.DistinctBy(s => s.PlayerIds[0]);
 
-        return new DatabaseList<GameSubmittedScore>(scores, skip, count);
+        return new DatabaseList<GameScore>(scores, skip, count);
     }
 
-    public IEnumerable<ScoreWithRank> GetRankedScoresAroundScore(GameSubmittedScore score, int count)
+    public IEnumerable<ScoreWithRank> GetRankedScoresAroundScore(GameScore score, int count)
     {
         if (count % 2 != 1) throw new ArgumentException("The number of scores must be odd.", nameof(count));
         
         // this is probably REALLY fucking slow, and i probably shouldn't be trusted with LINQ anymore
 
-        List<GameSubmittedScore> scores = this.GameSubmittedScoresIncluded
+        List<GameScore> scores = this.GameScoresIncluded
             .Where(s => s.ScoreType == score.ScoreType && s.Level == score.Level)
             .OrderByDescending(s => s.Score)
             .AsEnumerable()
@@ -101,7 +101,7 @@ public partial class GameDatabaseContext // Leaderboard
             .AsEnumerableIfRealm()
             .Select(u => u.UserId);
         
-        IEnumerable<GameSubmittedScore> scores = this.GameSubmittedScores
+        IEnumerable<GameScore> scores = this.GameScores
             .Where(s => s.ScoreType == type && s.Level == level)
             .OrderByDescending(s => s.Score)
             .AsEnumerableIfRealm()
@@ -116,7 +116,7 @@ public partial class GameDatabaseContext // Leaderboard
 
     [Pure]
     [ContractAnnotation("null => null; notnull => canbenull")]
-    public GameSubmittedScore? GetScoreByUuid(string? uuid)
+    public GameScore? GetScoreByUuid(string? uuid)
     {
         if (uuid == null) return null;
         if(!ObjectId.TryParse(uuid, out ObjectId objectId)) return null;
@@ -126,28 +126,28 @@ public partial class GameDatabaseContext // Leaderboard
     
     [Pure]
     [ContractAnnotation("null => null; notnull => canbenull")]
-    public GameSubmittedScore? GetScoreByObjectId(ObjectId? id)
+    public GameScore? GetScoreByObjectId(ObjectId? id)
     {
         if (id == null) return null;
-        return this.GameSubmittedScoresIncluded
+        return this.GameScoresIncluded
             .FirstOrDefault(u => u.ScoreId == id);
     }
     
-    public void DeleteScore(GameSubmittedScore score)
+    public void DeleteScore(GameScore score)
     {
         IQueryable<Event> scoreEvents = this.Events
-            .Where(e => e._StoredDataType == (int)EventDataType.Score && e.StoredObjectId == score.ScoreId);
+            .Where(e => e.StoredDataType == EventDataType.Score && e.StoredObjectId == score.ScoreId);
         
         this.Write(() =>
         {
             this.Events.RemoveRange(scoreEvents);
-            this.GameSubmittedScores.Remove(score);
+            this.GameScores.Remove(score);
         });
     }
     
     public void DeleteScoresSetByUser(GameUser user)
     {
-        IEnumerable<GameSubmittedScore> scores = this.GameSubmittedScores
+        IEnumerable<GameScore> scores = this.GameScores
             // FIXME: Realm (ahem, I mean the atlas device sdk *rolls eyes*) is a fucking joke.
             // Realm doesn't support .Contains on IList<T>. Yes, really.
             // This means we are forced to iterate over EVERY SCORE.
@@ -158,18 +158,18 @@ public partial class GameDatabaseContext // Leaderboard
         
         this.Write(() =>
         {
-            foreach (GameSubmittedScore score in scores)
+            foreach (GameScore score in scores)
             {
                 IQueryable<Event> scoreEvents = this.Events
-                    .Where(e => e._StoredDataType == (int)EventDataType.Score && e.StoredObjectId == score.ScoreId);
+                    .Where(e => e.StoredDataType == EventDataType.Score && e.StoredObjectId == score.ScoreId);
                 
                 this.Events.RemoveRange(scoreEvents);
-                this.GameSubmittedScores.Remove(score);
+                this.GameScores.Remove(score);
             }
         });
     }
 
-    public IEnumerable<GameUser> GetPlayersFromScore(GameSubmittedScore score)
+    public IEnumerable<GameUser> GetPlayersFromScore(GameScore score)
     {
         IEnumerable<ObjectId> playerIds = score.PlayerIds.Select(p => p);
         return this.GameUsers
@@ -177,7 +177,7 @@ public partial class GameDatabaseContext // Leaderboard
             .Where(u => playerIds.Contains(u.UserId));
     }
     
-    public GameUser? GetSubmittingPlayerFromScore(GameSubmittedScore score)
+    public GameUser? GetSubmittingPlayerFromScore(GameScore score)
     {
         return this.GetUserByUuid(score.PlayerIdsRaw.FirstOrDefault());
     }

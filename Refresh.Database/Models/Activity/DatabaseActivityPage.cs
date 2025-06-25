@@ -44,7 +44,7 @@ public class DatabaseActivityPage
 
     public readonly List<GameUser> Users = [];
     public readonly List<GameLevel> Levels = [];
-    public readonly List<GameSubmittedScore> Scores = [];
+    public readonly List<GameScore> Scores = [];
     public readonly List<GamePhoto> Photos = [];
 
     #region Generation
@@ -159,7 +159,7 @@ public class DatabaseActivityPage
     {
         foreach (Event @event in events.Where(e => e.EventType == EventType.LevelScore))
         {
-            GameSubmittedScore score = this.Scores.First(u => u.ScoreId == @event.StoredObjectId);
+            GameScore score = this.Scores.First(u => u.ScoreId == @event.StoredObjectId);
             GameLevel level = score.Level;
 
             DatabaseActivityUserGroup group = GetOrCreateLevelUserGroup(@event, level);

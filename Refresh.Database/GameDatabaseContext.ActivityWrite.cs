@@ -189,9 +189,9 @@ public partial class GameDatabaseContext // ActivityWrite
     }
 
     /// <summary>
-    /// Creates a new LevelScore event from a <see cref='GameSubmittedScore'/>, and adds it to the event list.
+    /// Creates a new LevelScore event from a <see cref='GameScore'/>, and adds it to the event list.
     /// </summary>
-    public Event CreateLevelScoreEvent(GameUser userFrom, GameSubmittedScore score)
+    public Event CreateLevelScoreEvent(GameUser userFrom, GameScore score)
     {
         Event e = new()
         {
