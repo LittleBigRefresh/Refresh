@@ -26,7 +26,7 @@ public class UserApiEndpoints : EndpointGroup
         [DocSummary("The username of the user")]
         string username, DataContext dataContext)
     {
-        GameUser? user = database.GetUserByUsername(username);
+        GameUser? user = database.GetUserByUsername(username, false);
         if(user == null) return ApiNotFoundError.UserMissingError;
         
         return ApiGameUserResponse.FromOld(user, dataContext);

@@ -28,7 +28,7 @@ public class AdminUserApiEndpoints : EndpointGroup
     public ApiResponse<ApiExtendedGameUserResponse> GetExtendedUserByUsername(RequestContext context,
         GameDatabaseContext database, string username, IDataStore dataStore, DataContext dataContext)
     {
-        GameUser? user = database.GetUserByUsername(username);
+        GameUser? user = database.GetUserByUsername(username, false);
         if (user == null) return ApiNotFoundError.UserMissingError;
 
         return ApiExtendedGameUserResponse.FromOld(user, dataContext);
