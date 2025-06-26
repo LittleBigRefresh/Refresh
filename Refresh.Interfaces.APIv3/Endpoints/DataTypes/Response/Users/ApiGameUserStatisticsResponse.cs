@@ -1,3 +1,4 @@
+using System.Diagnostics;
 using Refresh.Core.Types.Data;
 using Refresh.Database.Models.Users;
 
@@ -15,12 +16,17 @@ public class ApiGameUserStatisticsResponse: IApiResponse, IDataConvertableFrom<A
     {
         if (user == null) return null;
         
+        if(user.Statistics == null)
+            dataContext.Database.RecalculateUserStatistics(user);
+        
+        Debug.Assert(user.Statistics != null);
+        
         return new ApiGameUserStatisticsResponse
         {
-            Favourites = dataContext.Database.GetTotalUsersFavouritingUser(user),
-            ProfileComments = dataContext.Database.GetTotalCommentsForProfile(user),
-            PublishedLevels = dataContext.Database.GetTotalLevelsByUser(user),
-            PhotosTaken = dataContext.Database.GetTotalPhotosByUser(user),
+            Favourites = user.Statistics.FavouriteCount,
+            ProfileComments = user.Statistics.CommentCount,
+            PublishedLevels = user.Statistics.LevelCount,
+            PhotosTaken = user.Statistics.PhotosByUserCount,
         };
     }
     

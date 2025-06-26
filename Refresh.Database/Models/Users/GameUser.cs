@@ -1,8 +1,7 @@
-using System.Runtime.CompilerServices;
-using System.Xml.Serialization;
 using MongoDB.Bson;
 using Bunkum.Core.RateLimit;
 using Refresh.Database.Models.Playlists;
+using Refresh.Database.Models.Statistics;
 
 namespace Refresh.Database.Models.Users;
 
@@ -19,6 +18,8 @@ public partial class GameUser : IRateLimitUser
     public bool ShouldResetPassword { get; set; }
     
     public string IconHash { get; set; } = "0";
+    
+    public GameUserStatistics? Statistics { get; set; }
 
     /// <summary>
     /// The force match of the user, cleared on login

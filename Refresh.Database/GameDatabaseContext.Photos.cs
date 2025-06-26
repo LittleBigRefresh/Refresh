@@ -54,18 +54,45 @@ public partial class GameDatabaseContext // Photos
             SerializedPhotoSubject.ParseBoundsList(subject.BoundsList, bounds);
 
             gameSubjects.Add(new GamePhotoSubject(subjectUser, subject.DisplayName, bounds));
+
+            if (subjectUser != null)
+            {
+                this.WriteEnsuringStatistics(subjectUser, () =>
+                {
+                    subjectUser.Statistics!.PhotosWithUserCount++;
+                });
+            }
         }
 
         newPhoto.Subjects = gameSubjects;
 
-        this.AddSequentialObject(newPhoto);
+        this.Write(() =>
+        {
+            this.GamePhotos.Add(newPhoto);
+        });
+        
+        this.WriteEnsuringStatistics(publisher, () =>
+        {
+            publisher.Statistics!.PhotosByUserCount++;
+        });
         
         this.CreatePhotoUploadEvent(publisher, newPhoto);
     }
 
     public void RemovePhoto(GamePhoto photo)
     {
-        this.Write(() =>
+        foreach (GamePhotoSubject subject in photo.Subjects)
+        {
+            if (subject.User != null)
+            {
+                this.WriteEnsuringStatistics(subject.User, () =>
+                {
+                    subject.User.Statistics!.PhotosWithUserCount--;
+                });
+            }
+        }
+
+        this.WriteEnsuringStatistics(photo.Publisher, () =>
         {
             IQueryable<Event> photoEvents = this.Events
                 .Where(e => e.StoredDataType == EventDataType.Photo && e.StoredSequentialId == photo.PhotoId);
@@ -75,6 +102,8 @@ public partial class GameDatabaseContext // Photos
             
             // Remove the photo
             this.GamePhotos.Remove(photo);
+
+            photo.Publisher.Statistics!.PhotosByUserCount--;
         });
     }
 
@@ -131,19 +160,24 @@ public partial class GameDatabaseContext // Photos
             .Where(p => p.Level == level && p.Publisher == user)
             .OrderByDescending(p => p.TakenAt), skip, count);
 
-    public int GetTotalPhotosInLevelByUser(GameLevel level, GameUser user)
-        => this.GamePhotos.Count(p => p.Level == level && p.Publisher == user);
-    
+    public int GetTotalPhotosInLevelByUser(GameLevel level, GameUser? user)
+    {
+        if (user == null) return 0;
+        return this.GamePhotos.Count(p => p.Level == level && p.Publisher == user);
+    }
+
     public void DeletePhotosPostedByUser(GameUser user)
     {
         IEnumerable<GamePhoto> photos = this.GamePhotos.Where(s => s.Publisher == user);
         
-        this.Write(() =>
+        this.WriteEnsuringStatistics(user, () =>
         {
             foreach (GamePhoto photo in photos)
             {
                 this.RemovePhoto(photo);
             }
+            
+            user.Statistics!.PhotosByUserCount = 0;
         });
     }
 }

@@ -1,3 +1,4 @@
+using System.Diagnostics;
 using System.Xml.Serialization;
 using Refresh.Common.Constants;
 using Refresh.Core.Types.Data;
@@ -60,6 +61,11 @@ public class GameUserResponse : IDataConvertableFrom<GameUserResponse, GameUser>
     public static GameUserResponse? FromOld(GameUser? old, DataContext dataContext)
     {
         if (old == null) return null;
+        
+        if(old.Statistics == null)
+            dataContext.Database.RecalculateUserStatistics(old);
+        
+        Debug.Assert(old.Statistics != null);
 
         GameUserResponse response = new()
         {
@@ -72,14 +78,15 @@ public class GameUserResponse : IDataConvertableFrom<GameUserResponse, GameUser>
             MehFaceHash = dataContext.GetIconFromHash(old.MehFaceHash),
             
             Handle = SerializedUserHandle.FromUser(old, dataContext),
-            CommentCount = dataContext.Database.GetTotalCommentsForProfile(old),
+            CommentCount = old.Statistics.CommentCount,
             CommentsEnabled = true,
-            FavouriteLevelCount = !old.FakeUser ? dataContext.Database.GetTotalLevelsFavouritedByUser(old) : 0,
-            FavouriteUserCount = !old.FakeUser ? dataContext.Database.GetTotalUsersFavouritedByUser(old) : 0,
-            QueuedLevelCount = !old.FakeUser ? dataContext.Database.GetTotalLevelsQueuedByUser(old) : 0,
-            HeartCount = !old.FakeUser ? dataContext.Database.GetTotalUsersFavouritingUser(old) : 0,
-            PhotosByMeCount = !old.FakeUser ? dataContext.Database.GetTotalPhotosByUser(old) : 0,
-            PhotosWithMeCount = !old.FakeUser ? dataContext.Database.GetTotalPhotosWithUser(old) : 0,
+            FavouriteLevelCount = old.Statistics.FavouriteLevelCount,
+            FavouriteUserCount = old.Statistics.FavouriteUserCount,
+            QueuedLevelCount = old.Statistics.QueueCount,
+            HeartCount = old.Statistics.FavouriteCount,
+            PhotosByMeCount = old.Statistics.PhotosByUserCount,
+            PhotosWithMeCount = old.Statistics.PhotosWithUserCount,
+            ReviewCount = old.Statistics.ReviewCount,
             RootPlaylist = old.RootPlaylist?.PlaylistId.ToString(),
             ProfilePins = !old.FakeUser ? dataContext.Database.GetProfilePinsByUser(old, dataContext.Game, 0, 3).Items.Select(p => p.PinId).ToList() : [],
             
@@ -100,8 +107,6 @@ public class GameUserResponse : IDataConvertableFrom<GameUserResponse, GameUser>
             
             return response;
         }
-        
-        response.ReviewCount = dataContext.Database.GetTotalReviewsByUser(old);
         
         response.PlanetsHash = dataContext.Game switch
         {

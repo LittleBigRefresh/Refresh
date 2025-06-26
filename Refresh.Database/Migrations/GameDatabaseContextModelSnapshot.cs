@@ -446,6 +446,9 @@ namespace Refresh.Database.Migrations
                     b.Property<float>("Score")
                         .HasColumnType("real");
 
+                    b.Property<int?>("StatisticsLevelId")
+                        .HasColumnType("integer");
+
                     b.Property<int>("StoryId")
                         .HasColumnType("integer");
 
@@ -459,6 +462,8 @@ namespace Refresh.Database.Migrations
                     b.HasKey("LevelId");
 
                     b.HasIndex("PublisherUserId");
+
+                    b.HasIndex("StatisticsLevelId");
 
                     b.HasIndex("Title", "Description", "StoryId");
 
@@ -1085,7 +1090,111 @@ namespace Refresh.Database.Migrations
                     b.ToTable("UniquePlayLevelRelations");
                 });
 
-            modelBuilder.Entity("Refresh.Database.Models.RequestStatistics", b =>
+            modelBuilder.Entity("Refresh.Database.Models.Statistics.GameLevelStatistics", b =>
+                {
+                    b.Property<int>("LevelId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("LevelId"));
+
+                    b.Property<int>("BooCount")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("BooCountExcludingPublisher")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("CommentCount")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("CompletionCount")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("FavouriteCount")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("FavouriteCountExcludingPublisher")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("NeutralCount")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("NeutralCountExcludingPublisher")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("PhotoByPublisherCount")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("PhotoInLevelCount")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("PlayCount")
+                        .HasColumnType("integer");
+
+                    b.Property<DateTimeOffset?>("RecalculateAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<int>("ReviewCount")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("UniquePlayCount")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("UniquePlayCountExcludingPublisher")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("YayCount")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("YayCountExcludingPublisher")
+                        .HasColumnType("integer");
+
+                    b.HasKey("LevelId");
+
+                    b.ToTable("GameLevelStatistics");
+                });
+
+            modelBuilder.Entity("Refresh.Database.Models.Statistics.GameUserStatistics", b =>
+                {
+                    b.Property<string>("UserId")
+                        .HasColumnType("text");
+
+                    b.Property<int>("CommentCount")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("FavouriteCount")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("FavouriteLevelCount")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("FavouriteUserCount")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("LevelCount")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("PhotosByUserCount")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("PhotosWithUserCount")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("QueueCount")
+                        .HasColumnType("integer");
+
+                    b.Property<DateTimeOffset?>("RecalculateAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<int>("ReviewCount")
+                        .HasColumnType("integer");
+
+                    b.HasKey("UserId");
+
+                    b.ToTable("GameUserStatistics");
+                });
+
+            modelBuilder.Entity("Refresh.Database.Models.Statistics.RequestStatistics", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -1097,9 +1206,6 @@ namespace Refresh.Database.Migrations
                         .HasColumnType("bigint");
 
                     b.Property<long>("GameRequests")
-                        .HasColumnType("bigint");
-
-                    b.Property<long>("TotalRequests")
                         .HasColumnType("bigint");
 
                     b.HasKey("Id");
@@ -1253,6 +1359,9 @@ namespace Refresh.Database.Migrations
                     b.Property<bool>("ShowReuploadedContent")
                         .HasColumnType("boolean");
 
+                    b.Property<string>("StatisticsUserId")
+                        .HasColumnType("text");
+
                     b.Property<DateTimeOffset?>("TimedLevelUploadExpiryDate")
                         .HasColumnType("timestamp with time zone");
 
@@ -1283,6 +1392,8 @@ namespace Refresh.Database.Migrations
                         .HasColumnType("text");
 
                     b.HasKey("UserId");
+
+                    b.HasIndex("StatisticsUserId");
 
                     b.HasIndex("Username", "UsernameLower", "EmailAddress", "PasswordBcrypt");
 
@@ -1460,7 +1571,13 @@ namespace Refresh.Database.Migrations
                         .WithMany()
                         .HasForeignKey("PublisherUserId");
 
+                    b.HasOne("Refresh.Database.Models.Statistics.GameLevelStatistics", "Statistics")
+                        .WithMany()
+                        .HasForeignKey("StatisticsLevelId");
+
                     b.Navigation("Publisher");
+
+                    b.Navigation("Statistics");
                 });
 
             modelBuilder.Entity("Refresh.Database.Models.Levels.GameSkillReward", b =>
@@ -1872,6 +1989,15 @@ namespace Refresh.Database.Migrations
                         .IsRequired();
 
                     b.Navigation("User");
+                });
+
+            modelBuilder.Entity("Refresh.Database.Models.Users.GameUser", b =>
+                {
+                    b.HasOne("Refresh.Database.Models.Statistics.GameUserStatistics", "Statistics")
+                        .WithMany()
+                        .HasForeignKey("StatisticsUserId");
+
+                    b.Navigation("Statistics");
                 });
 
             modelBuilder.Entity("Refresh.Database.Models.Users.GameUser", b =>

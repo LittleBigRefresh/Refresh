@@ -44,6 +44,9 @@ public class CoolLevelsWorker : IWorker
             
             foreach (GameLevel level in levels.Items.ToArray())
             {
+                if(level.Statistics == null)
+                    context.Database.RecalculateLevelStatistics(level);
+                
                 Log(context.Logger, LogLevel.Trace, "Calculating score for '{0}' ({1})", level.Title, level.LevelId);
                 float decayMultiplier = CalculateLevelDecayMultiplier(context.Logger, now, level);
                 
@@ -98,6 +101,8 @@ public class CoolLevelsWorker : IWorker
 
     private static float CalculatePositiveScore(GameLevel level, DataContext context)
     {
+        Debug.Assert(level.Statistics != null);
+
         // Start levels off with a few points to prevent one dislike from bombing the level
         // Don't apply this bonus to reuploads to discourage a flood of 15CR levels.
         float score = level.IsReUpload ? 0 : 15;
@@ -110,13 +115,13 @@ public class CoolLevelsWorker : IWorker
         if (level.TeamPicked)
             score += 50;
         
-        int positiveRatings = context.Database.GetTotalRatingsForLevel(level, RatingType.Yay, false);
-        int negativeRatings = context.Database.GetTotalRatingsForLevel(level, RatingType.Boo, false);
-        int uniquePlays = context.Database.GetUniquePlaysForLevel(level, false);
+        int positiveRatings = level.Statistics.YayCountExcludingPublisher;
+        int negativeRatings = level.Statistics.BooCountExcludingPublisher;
+        int uniquePlays = level.Statistics.UniquePlayCountExcludingPublisher;
         
         score += positiveRatings * positiveRatingPoints;
         score += uniquePlays * uniquePlayPoints;
-        score += context.Database.GetFavouriteCountForLevel(level, false) * heartPoints;
+        score += level.Statistics.FavouriteCountExcludingPublisher * heartPoints;
         
         // Reward for a good ratio between plays and yays
         float ratingRatio = (positiveRatings - negativeRatings) / (float)uniquePlays;
@@ -134,6 +139,8 @@ public class CoolLevelsWorker : IWorker
 
     private static float CalculateNegativeScore(GameLevel level, DataContext context)
     {
+        Debug.Assert(level.Statistics != null);
+
         float penalty = 0;
         const float negativeRatingPenalty = 5;
         const float noAuthorPenalty = 10;
@@ -143,7 +150,7 @@ public class CoolLevelsWorker : IWorker
         // The percentage of how much penalty should be applied at the end of the calculation.
         const float penaltyMultiplier = 0.75f;
         
-        penalty += context.Database.GetTotalRatingsForLevel(level, RatingType.Boo, false) * negativeRatingPenalty;
+        penalty += level.Statistics.BooCountExcludingPublisher * negativeRatingPenalty;
         
         if (level.Publisher == null)
             penalty += noAuthorPenalty;

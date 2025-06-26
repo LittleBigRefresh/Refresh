@@ -18,20 +18,21 @@ using Refresh.Database.Models.Relations;
 using Refresh.Database.Models;
 using System.Diagnostics;
 using MongoDB.Bson;
+using Refresh.Database.Models.Statistics;
 
 namespace Refresh.Database;
 
 [SuppressMessage("ReSharper", "InconsistentlySynchronizedField")]
 public partial class GameDatabaseContext : DbContext, IDatabaseContext
 {
-    private static readonly object IdLock = new();
-
     private readonly IDateTimeProvider _time;
     private readonly IDatabaseConfig _dbConfig;
 
     internal DbSet<GameUser> GameUsers { get; set; }
+    internal DbSet<GameUserStatistics> GameUserStatistics { get; set; }
     internal DbSet<Token> Tokens { get; set; }
     internal DbSet<GameLevel> GameLevels { get; set; }
+    internal DbSet<GameLevelStatistics> GameLevelStatistics { get; set; }
     internal DbSet<GameProfileComment> GameProfileComments { get; set; }
     internal DbSet<GameLevelComment> GameLevelComments { get; set; }
     internal DbSet<ProfileCommentRelation> ProfileCommentRelations { get; set; }
@@ -108,27 +109,6 @@ public partial class GameDatabaseContext : DbContext, IDatabaseContext
         callback();
         this.SaveChanges();
         Debug.Assert(!this.ChangeTracker.HasChanges());
-    }
-
-    private void AddSequentialObject<TEntity>(TEntity entity) where TEntity : class
-    {
-        // causes compiler warning without this for some reason even tho no nullable attribute???
-        // in a #nullable-enabled class???
-        // fuck this shit
-        Debug.Assert(entity != null);
-        this.Write(() =>
-        {
-            this.Set<TEntity>().Add(entity);
-        });
-    }
-    
-    private void AddSequentialObject<TEntity>(TEntity entity, Action callback) where TEntity : class
-    {
-        this.AddSequentialObject(entity);
-        this.Write(() =>
-        {
-            callback();
-        });
     }
 
     private void RemoveAll<TClass>() where TClass : class

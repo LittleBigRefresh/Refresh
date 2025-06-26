@@ -28,7 +28,10 @@ public partial class GameDatabaseContext // Challenges
             ExpirationDate = now.AddDays(createInfo.ExpiresAt),
         };
         
-        this.AddSequentialObject(challenge);
+        this.Write(() =>
+        {
+            this.GameChallenges.Add(challenge);
+        });
 
         return challenge;
     }

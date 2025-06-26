@@ -11,16 +11,19 @@ using Refresh.Database.Models.Levels.Challenges;
 using Refresh.Database.Models.Levels.Scores;
 using Refresh.Database.Models.Levels;
 using Refresh.Database.Models.Relations;
+using Refresh.Database.Models.Statistics;
 
 namespace Refresh.Database;
 
 public partial class GameDatabaseContext // Levels
 {
     private IQueryable<GameLevel> GameLevelsIncluded => this.GameLevels
+        .Include(l => l.Statistics)
         .Include(l => l.Publisher);
 
     private IQueryable<GameSkillReward> SkillRewardsIncluded => this.GameSkillRewards
         .Include(s => s.Level)
+        .Include(s => s.Level.Statistics)
         .Include(s => s.Level.Publisher);
     
     public bool AddLevel(GameLevel level)
@@ -34,11 +37,29 @@ public partial class GameDatabaseContext // Levels
         if (level.Publisher == null) throw new InvalidOperationException("Cannot create a level without a publisher");
 
         DateTimeOffset timestamp = this._time.Now;
-        this.AddSequentialObject(level, () =>
+        
+        level.PublishDate = timestamp;
+        level.UpdateDate = timestamp;
+        this.Write(() =>
         {
-            level.PublishDate = timestamp;
-            level.UpdateDate = timestamp;
+            this.GameLevels.Add(level);
         });
+        
+        this.Write(() =>
+        {
+            this.GameLevelStatistics.Add(level.Statistics = new GameLevelStatistics()
+            {
+                LevelId = level.LevelId,
+            });
+        });
+
+        if (level.Publisher != null)
+        {
+            this.WriteEnsuringStatistics(level.Publisher, () =>
+            {
+                level.Publisher.Statistics!.LevelCount++;
+            });
+        }
 
         return true;
     }
@@ -60,10 +81,20 @@ public partial class GameDatabaseContext // Levels
             
         //Add the new story level to the database
         DateTimeOffset timestamp = this._time.Now;
-        this.AddSequentialObject(level, () =>
+
+        level.PublishDate = timestamp;
+        level.UpdateDate = timestamp;
+        this.Write(() =>
         {
-            level.PublishDate = timestamp;
-            level.UpdateDate = timestamp;
+            this.GameLevels.Add(level);
+        });
+        
+        this.Write(() =>
+        {
+            this.GameLevelStatistics.Add(level.Statistics = new GameLevelStatistics()
+            {
+                LevelId = level.LevelId,
+            });
         });
         
         return level;
@@ -73,13 +104,22 @@ public partial class GameDatabaseContext // Levels
     {
         if (level.Publisher?.UserId == newAuthor.UserId)
             return level;
+
+        if (level.Publisher != null)
+        {
+            this.WriteEnsuringStatistics(level.Publisher, () =>
+            {
+                level.Publisher.Statistics!.LevelCount--;
+            });
+        }
         
-        this.Write(() =>
+        this.WriteEnsuringStatistics(newAuthor, () =>
         {
             // Change the level's publisher, making sure we also unset OriginalPublisher
             // if this level wasn't uploaded by an actual user originally.
             level.Publisher = newAuthor;
             level.OriginalPublisher = null;
+            newAuthor.Statistics!.LevelCount++;
         });
 
         return level;
@@ -196,6 +236,14 @@ public partial class GameDatabaseContext // Levels
 
     public void DeleteLevel(GameLevel level)
     {
+        if (level.Publisher != null)
+        {
+            this.WriteEnsuringStatistics(level.Publisher, () =>
+            {
+                level.Publisher.Statistics!.LevelCount--;
+            });
+        }
+        
         this.Write(() =>
         {
             IQueryable<Event> levelEvents = this.Events
@@ -564,13 +612,12 @@ public partial class GameDatabaseContext // Levels
 
     public void SetLevelScores(Dictionary<GameLevel, float> scoresToSet)
     {
-        this.Write(() =>
+        foreach ((GameLevel level, float score) in scoresToSet)
         {
-            foreach ((GameLevel level, float score) in scoresToSet)
-            {
-                level.Score = score;
-            }
-        });
+            level.Score = score;
+        }
+
+        this.SaveChanges();
     }
     
     public void SetLevelModdedStatus(GameLevel level, bool modded)
