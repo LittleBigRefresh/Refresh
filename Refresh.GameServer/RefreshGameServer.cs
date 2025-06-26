@@ -206,6 +206,7 @@ public class RefreshGameServer : RefreshServer
         this.WorkerManager.AddWorker<ExpiredObjectWorker>();
         this.WorkerManager.AddWorker<CoolLevelsWorker>();
         this.WorkerManager.AddWorker<RequestStatisticSubmitWorker>();
+        this.WorkerManager.AddWorker<ObjectStatisticsWorker>();
         
         if ((this._integrationConfig?.DiscordWebhookEnabled ?? false) && this._config != null && this._config.PermitShowingOnlineUsers)
         {

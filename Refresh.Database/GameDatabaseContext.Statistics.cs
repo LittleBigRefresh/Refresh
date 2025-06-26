@@ -31,6 +31,16 @@ public partial class GameDatabaseContext // Statistics
             statistics.GameRequests += game;
         });
     }
+    
+    public IEnumerable<GameLevel> GetLevelsWithStatisticsNeedingUpdates()
+    {
+        DateTimeOffset now = this._time.Now;
+
+        return this.GameLevels
+            .Include(l => l.Statistics)
+            .Where(l => l.Statistics != null)
+            .Where(l => l.Statistics!.RecalculateAt <= now);
+    }
 
     public bool EnsureLevelStatisticsCreated(GameLevel level)
     {
@@ -92,7 +102,9 @@ public partial class GameDatabaseContext // Statistics
         level.Statistics.CommentCount = this.GetTotalCommentsForLevel(level);
         level.Statistics.PhotoInLevelCount = this.GetTotalPhotosInLevel(level);
         level.Statistics.PhotoByPublisherCount = this.GetTotalPhotosInLevelByUser(level, level.Publisher);
-        RecalculateLevelRatingStatisticsInternal(level);
+        this.RecalculateLevelRatingStatisticsInternal(level);
+
+        level.Statistics.RecalculateAt = null;
     }
 
     private void RecalculateLevelRatingStatisticsInternal(GameLevel level)
@@ -112,13 +124,7 @@ public partial class GameDatabaseContext // Statistics
         Debug.Assert(this.ChangeTracker.HasChanges(), "should be called in write (no changes detected)");
         Debug.Assert(level.Statistics != null);
         
-        if(level.Statistics.RecalculateAt != null)
-            level.Statistics.RecalculateAt = this._time.Now + TimeSpan.FromMinutes(5);
-    }
-    
-    private void MarkLevelStatisticsClean(GameLevel level)
-    {
-        Debug.Assert(level.Statistics != null);
-        level.Statistics.RecalculateAt = null;
+        if(level.Statistics.RecalculateAt == null)
+            level.Statistics.RecalculateAt = this._time.Now + TimeSpan.FromMinutes(1);
     }
 }
