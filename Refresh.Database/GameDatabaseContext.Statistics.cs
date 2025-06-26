@@ -3,6 +3,7 @@ using Refresh.Database.Models;
 using Refresh.Database.Models.Comments;
 using Refresh.Database.Models.Levels;
 using Refresh.Database.Models.Statistics;
+using Refresh.Database.Models.Users;
 
 namespace Refresh.Database;
 
@@ -32,6 +33,19 @@ public partial class GameDatabaseContext // Statistics
         });
     }
     
+    private void WriteEnsuringStatistics(GameUser user, GameLevel level, Action action)
+    {
+        this.Write(() =>
+        {
+            this.CalculateUserStatisticsIfNotPresent(user);
+            this.CalculateLevelStatisticsIfNotPresent(level);
+            action();
+            this.MarkUserStatisticsDirty(user);
+            this.MarkLevelStatisticsDirty(level);
+        });
+    }
+    
+    #region Levels
     public IEnumerable<GameLevel> GetLevelsWithStatisticsNeedingUpdates()
     {
         DateTimeOffset now = this._time.Now;
@@ -127,4 +141,91 @@ public partial class GameDatabaseContext // Statistics
         if(level.Statistics.RecalculateAt == null)
             level.Statistics.RecalculateAt = this._time.Now + TimeSpan.FromMinutes(1);
     }
+    #endregion
+
+    #region Users
+
+    public IEnumerable<GameUser> GetUsersWithStatisticsNeedingUpdates()
+    {
+        DateTimeOffset now = this._time.Now;
+
+        return this.GameUsers
+            .Include(l => l.Statistics)
+            .Where(l => l.Statistics != null)
+            .Where(l => l.Statistics!.RecalculateAt <= now);
+    }
+
+    public bool EnsureUserStatisticsCreated(GameUser user)
+    {
+        if (user.Statistics != null) return false;
+
+        user.Statistics = this.GameUserStatistics.FirstOrDefault(s => s.UserId == user.UserId);
+
+        if (user.Statistics != null) return false;
+
+        user.Statistics = new GameUserStatistics
+        {
+            UserId = user.UserId,
+        };
+        this.GameUserStatistics.Add(user.Statistics);
+
+        return true;
+    }
+
+    public void RecalculateUserStatistics(GameUser user)
+    {
+        this.EnsureUserStatisticsCreated(user);
+        this.Write(() =>
+        {
+            this.RecalculateUserStatisticsInternal(user);
+        });
+    }
+    
+    public void CalculateUserStatisticsIfNotPresent(GameUser user)
+    {
+        if (!this.EnsureUserStatisticsCreated(user)) return;
+
+        this.Write(() =>
+        {
+            this.RecalculateUserStatisticsInternal(user);
+        });
+    }
+
+    private void WriteEnsuringStatistics(GameUser user, Action action)
+    {
+        this.Write(() =>
+        {
+            this.CalculateUserStatisticsIfNotPresent(user);
+            action();
+            this.MarkUserStatisticsDirty(user);
+        });
+    }
+
+    private void RecalculateUserStatisticsInternal(GameUser user)
+    {
+        Debug.Assert(user.Statistics != null);
+        
+        user.Statistics.FavouriteCount = this.GetTotalUsersFavouritingUser(user);
+        user.Statistics.CommentCount = this.GetTotalCommentsForProfile(user);
+        user.Statistics.PhotosByUserCount = this.GetTotalPhotosByUser(user);
+        user.Statistics.PhotosWithUserCount = this.GetTotalPhotosWithUser(user);
+        user.Statistics.LevelCount = this.GetTotalLevelsByUser(user);
+        user.Statistics.ReviewCount = this.GetTotalReviewsByUser(user);
+        user.Statistics.QueueCount = this.GetTotalLevelsQueuedByUser(user);
+        user.Statistics.FavouriteUserCount = this.GetTotalUsersFavouritedByUser(user);
+        user.Statistics.FavouriteLevelCount = this.GetTotalLevelsFavouritedByUser(user);
+
+        user.Statistics.RecalculateAt = null;
+    }
+
+    private void MarkUserStatisticsDirty(GameUser user)
+    {
+        Debug.Assert(this.ChangeTracker.HasChanges(), "should be called in write (no changes detected)");
+        Debug.Assert(user.Statistics != null);
+        
+        if(user.Statistics.RecalculateAt == null)
+            user.Statistics.RecalculateAt = this._time.Now + TimeSpan.FromMinutes(1);
+    }
+
+    #endregion
 }

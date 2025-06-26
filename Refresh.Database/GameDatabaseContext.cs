@@ -29,6 +29,7 @@ public partial class GameDatabaseContext : DbContext, IDatabaseContext
     private readonly IDatabaseConfig _dbConfig;
 
     internal DbSet<GameUser> GameUsers { get; set; }
+    internal DbSet<GameUserStatistics> GameUserStatistics { get; set; }
     internal DbSet<Token> Tokens { get; set; }
     internal DbSet<GameLevel> GameLevels { get; set; }
     internal DbSet<GameLevelStatistics> GameLevelStatistics { get; set; }
