@@ -55,6 +55,9 @@ public class AuthenticationApiEndpoints : EndpointGroup
                 "The server is not allowing website logins right now.");
         }
         
+        if (database.IsEmailQueued(body.EmailAddress))
+            return UserInQueueError();
+        
         GameUser? user = database.GetUserByEmailAddress(body.EmailAddress);
         if (user == null)
         {
@@ -165,6 +168,9 @@ public class AuthenticationApiEndpoints : EndpointGroup
         ApiSendPasswordResetEmailRequest body,
         SmtpService smtpService)
     {
+        if (database.IsEmailQueued(body.EmailAddress))
+            return UserInQueueError();
+        
         GameUser? user = database.GetUserByEmailAddress(body.EmailAddress);
         if (user == null)
         {
@@ -280,7 +286,7 @@ public class AuthenticationApiEndpoints : EndpointGroup
     [DocSummary("Registers a new user.")]
     [DocRequestBody(typeof(ApiRegisterRequest))]
     #if !DEBUG
-    [RateLimitSettings(3600, 5, 3600 / 2, "register")]
+    [RateLimitSettings(3600, 10, 3600 / 2, "register")]
     #endif
     public ApiResponse<IApiAuthenticationResponse> Register(RequestContext context,
         GameDatabaseContext database,
@@ -296,19 +302,22 @@ public class AuthenticationApiEndpoints : EndpointGroup
             return new ApiValidationError("Password is definitely not SHA512. Please hash the password.");
 
         if (!CommonPatterns.EmailAddressRegex().IsMatch(body.EmailAddress))
-            return new ApiValidationError("The email address given is invalid.");
+            return new ApiValidationError("The email address given is invalid. Did you type it correctly?");
         
         if (!smtpService.CheckEmailDomainValidity(body.EmailAddress))
             return ApiValidationError.EmailDoesNotActuallyExistError;
         
         if (database.IsUserDisallowed(body.Username))
-            return new ApiAuthenticationError("This username is disallowed from being registered.");
+            return new ApiAuthenticationError("You aren't allowed to play on this instance.");
         
         if (!database.IsUsernameValid(body.Username))
             return new ApiValidationError(
                 "The username must be valid. " +
                 "The requirements are 3 to 16 alphanumeric characters, plus hyphens and underscores. " +
                 "Are you sure you used your PSN/RPCN username?");
+
+        if (database.IsUsernameQueued(body.Username) || database.IsEmailQueued(body.EmailAddress))
+            return UserInQueueError();
         
         if (database.IsUsernameTaken(body.Username) || database.IsEmailTaken(body.EmailAddress))
         {
@@ -352,6 +361,7 @@ public class AuthenticationApiEndpoints : EndpointGroup
             ExpiresAt = token.ExpiresAt,
         };
     }
+
     [ApiV3Endpoint("verify", HttpMethods.Post)]
     [DocSummary("Verifies an email address using the given code")]
     public ApiOkResponse VerifyEmail(RequestContext context, GameUser user, GameDatabaseContext database)
@@ -381,5 +391,13 @@ public class AuthenticationApiEndpoints : EndpointGroup
     {
         database.DeleteUser(user);
         return new ApiOkResponse();
+    }
+    
+    private static ApiAuthenticationError UserInQueueError()
+    {
+        return new ApiAuthenticationError(
+            "Your account is in the registration queue, and we are waiting for you to connect. " +
+            "To do so you must patch your game to our servers. " +
+            "For more instructions on patching, please visit https://docs.lbpbonsai.com", true);
     }
 }

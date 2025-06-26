@@ -86,6 +86,16 @@ public partial class GameDatabaseContext // Registration
         return CommonPatterns.UsernameRegex().IsMatch(username);
     }
 
+    public bool IsUsernameQueued(string username)
+    {
+        return this.QueuedRegistrations.Any(r => r.Username == username);
+    }
+    
+    public bool IsEmailQueued(string emailAddress)
+    {
+        return this.QueuedRegistrations.Any(r => r.EmailAddress == emailAddress);
+    }
+
     public bool IsUsernameTaken(string username)
     {
         return this.GameUsers.Any(u => u.Username == username) ||
