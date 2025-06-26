@@ -38,10 +38,10 @@ Make sure to add [the upstream Refresh repository](https://github.com/LittleBigR
 # Connecting locally
 You can either use the website front-end called [refresh-web](https://github.com/LittleBigRefresh/refresh-web) to test the API, or you can connect using a game.
 
-Here's how to identify the URL to patch to: https://docs.littlebigrefresh.com/get-url.html
+Here's how to identify the URL to patch to: https://docs.lbpbonsai.com/get-url.html
 
 You can use these guides to find out how to patch your game:
-- https://docs.littlebigrefresh.com/ps3.html
-- https://docs.littlebigrefresh.com/rpcs3.html
-- https://docs.littlebigrefresh.com/psp.html
-- https://docs.littlebigrefresh.com/vita.html
+- https://docs.lbpbonsai.com/ps3.html
+- https://docs.lbpbonsai.com/rpcs3.html
+- https://docs.lbpbonsai.com/psp.html
+- https://docs.lbpbonsai.com/vita.html

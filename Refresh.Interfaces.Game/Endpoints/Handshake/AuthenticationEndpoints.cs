@@ -201,8 +201,12 @@ public class AuthenticationEndpoints : EndpointGroup
         // Mark the user as disconnected from the presence server
         database.SetUserPresenceAuthToken(user, null);
 
+        // Automatically verify the ip in use, since this is now a trusted connection
         if (!database.IsIpVerified(user, ipAddress)) 
             database.AddVerifiedIp(user, ipAddress, timeProvider);
+        
+        // Avoid confusing users by sending them login failure notifications in-game
+        database.ClearLoginFailNotificationsForUser(user);
 
         context.Logger.LogInfo(BunkumCategory.Authentication, $"{user} successfully logged in on {game} via {platform}");
         
