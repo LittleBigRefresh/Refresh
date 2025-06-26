@@ -1131,6 +1131,9 @@ namespace Refresh.Database.Migrations
                     b.Property<int>("PlayCount")
                         .HasColumnType("integer");
 
+                    b.Property<DateTimeOffset?>("RecalculateAt")
+                        .HasColumnType("timestamp with time zone");
+
                     b.Property<int>("ReviewCount")
                         .HasColumnType("integer");
 

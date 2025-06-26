@@ -14,6 +14,7 @@ public partial class GameDatabaseContext // Relations
     #region Favouriting Levels
     private IQueryable<FavouriteLevelRelation> FavouriteLevelRelationsIncluded => this.FavouriteLevelRelations
         .Include(r => r.Level)
+        .Include(r => r.Level.Statistics)
         .Include(r => r.Level.Publisher);
     
     [Pure]
@@ -44,7 +45,15 @@ public partial class GameDatabaseContext // Relations
             User = user,
             Timestamp = this._time.Now,
         };
-        this.Write(() => this.FavouriteLevelRelations.Add(relation));
+        
+        this.WriteEnsuringStatistics(level, () =>
+        {
+            this.FavouriteLevelRelations.Add(relation);
+            level.Statistics!.FavouriteCount++;
+
+            if (level.Publisher == user)
+                level.Statistics!.FavouriteCountExcludingPublisher++;
+        });
 
         this.CreateLevelFavouriteEvent(user, level);
 
@@ -58,7 +67,14 @@ public partial class GameDatabaseContext // Relations
 
         if (relation == null) return false;
 
-        this.Write(() => this.FavouriteLevelRelations.Remove(relation));
+        this.WriteEnsuringStatistics(level, () =>
+        {
+            this.FavouriteLevelRelations.Remove(relation);
+            level.Statistics!.FavouriteCount--;
+
+            if (level.Publisher == user)
+                level.Statistics!.FavouriteCountExcludingPublisher--;
+        });
 
         return true;
     }
@@ -154,6 +170,7 @@ public partial class GameDatabaseContext // Relations
 
     private IQueryable<QueueLevelRelation> QueueLevelRelationsIncluded => this.QueueLevelRelations
         .Include(r => r.Level)
+        .Include(r => r.Level.Statistics)
         .Include(r => r.Level.Publisher);
     
     [Pure]
@@ -214,6 +231,7 @@ public partial class GameDatabaseContext // Relations
     public IQueryable<RateReviewRelation> RateReviewRelationsIncluded => this.RateReviewRelations
         .Include(r => r.Review)
         .Include(r => r.Review.Level)
+        .Include(r => r.Review.Level.Statistics)
         .Include(r => r.Review.Level.Publisher)
         .Include(r => r.Review.Publisher)
         .Include(r => r.User);
@@ -221,10 +239,12 @@ public partial class GameDatabaseContext // Relations
     public IQueryable<RateLevelRelation> RateLevelRelationsIncluded => this.RateLevelRelations
         .Include(r => r.User)
         .Include(r => r.Level)
+        .Include(r => r.Level.Statistics)
         .Include(r => r.Level.Publisher);
 
     public IQueryable<GameReview> GameReviewsIncluded => this.GameReviews
         .Include(r => r.Level)
+        .Include(r => r.Level.Statistics)
         .Include(r => r.Level.Publisher)
         .Include(r => r.Publisher);
 
@@ -343,15 +363,21 @@ public partial class GameDatabaseContext // Relations
                 Timestamp = this._time.Now,
             };
 
-            this.Write(() => this.RateLevelRelations.Add(rating));
+            this.WriteEnsuringStatistics(level, () =>
+            {
+                this.RateLevelRelations.Add(rating);
+                this.RecalculateLevelRatingStatisticsInternal(level);
+            });
             return true;
         }
 
-        this.Write(() =>
+        this.WriteEnsuringStatistics(level, () =>
         {
             rating.RatingType = type;
             rating.Timestamp = this._time.Now;
+            this.RecalculateLevelRatingStatisticsInternal(level);
         });
+
         return true;
     }
     
@@ -375,30 +401,40 @@ public partial class GameDatabaseContext // Relations
             .ToList();
         if (toRemove.Count > 0)
         {
-            this.Write(() =>
+            this.WriteEnsuringStatistics(level, () =>
             {
                 foreach (GameReview reviewToDelete in toRemove)
                 {
                     this.GameReviews.Remove(reviewToDelete);
+                    level.Statistics!.ReviewCount--;
                 }
             });
         }
 
-        this.Write(() =>
+        this.WriteEnsuringStatistics(level, () =>
         {
             this.GameReviews.Add(review);
+            level.Statistics!.ReviewCount++;
         });
     }
     
     public void DeleteReviewsPostedByUser(GameUser user)
     {
-        IEnumerable<GameReview> reviews = this.GameReviews.Where(s => s.Publisher == user);
+        IEnumerable<GameReview> reviews = this.GameReviews
+            .Include(r => r.Level)
+            .Include(r => r.Level.Statistics)
+            .Where(s => s.Publisher == user);
         
         this.Write(() =>
         {
             foreach (GameReview review in reviews)
             {
-                this.DeleteReview(review);
+                this.CalculateLevelStatisticsIfNotPresent(review.Level);
+                
+                this.GameReviews.Remove(review);
+                review.Level.Statistics!.ReviewCount--;
+
+                this.MarkLevelStatisticsDirty(review.Level);
             }
         });
     }
@@ -410,11 +446,6 @@ public partial class GameDatabaseContext // Relations
 
     public int GetTotalReviewsByUser(GameUser user)
         => this.GameReviews.Count(r => r.Publisher == user);
-    
-    public void DeleteReview(GameReview review)
-    {
-        this.GameReviews.Remove(review);
-    }
     
     public GameReview? GetReviewByLevelAndUser(GameLevel level, GameUser user)
     {
@@ -441,11 +472,13 @@ public partial class GameDatabaseContext // Relations
     private IQueryable<PlayLevelRelation> PlayLevelRelationsIncluded => this.PlayLevelRelations
         .Include(r => r.User)
         .Include(r => r.Level)
+        .Include(r => r.Level.Statistics)
         .Include(r => r.Level.Publisher);
     
     private IQueryable<UniquePlayLevelRelation> UniquePlayLevelRelationsIncluded => this.UniquePlayLevelRelations
         .Include(r => r.User)
         .Include(r => r.Level)
+        .Include(r => r.Level.Statistics)
         .Include(r => r.Level.Publisher);
     
     public void PlayLevel(GameLevel level, GameUser user, int count)
@@ -460,11 +493,12 @@ public partial class GameDatabaseContext // Relations
         
         UniquePlayLevelRelation? uniqueRelation = this.UniquePlayLevelRelations
             .FirstOrDefault(r => r.Level == level && r.User == user);
-
-        this.Write(() =>
+        
+        this.WriteEnsuringStatistics(level, () =>
         {
             this.PlayLevelRelations.Add(relation);
             
+            level.Statistics!.PlayCount++;
             // If the user hasn't played the level before, then add a unique relation too
             if (uniqueRelation == null)
             {
@@ -476,6 +510,10 @@ public partial class GameDatabaseContext // Relations
                 });
 
                 this.CreateLevelPlayEvent(user, level);
+
+                level.Statistics!.UniquePlayCount++;
+                if(user != level.Publisher)
+                    level.Statistics!.UniquePlayCountExcludingPublisher++;
             }
         });
     }
@@ -601,6 +639,7 @@ public partial class GameDatabaseContext // Relations
     private IQueryable<TagLevelRelation> TagLevelRelationsIncluded => this.TagLevelRelations
         .Include(r => r.User)
         .Include(r => r.Level)
+        .Include(r => r.Level.Statistics)
         .Include(r => r.Level.Publisher);
 
     public void AddTagRelation(GameUser user, GameLevel level, Tag tag)
