@@ -41,10 +41,20 @@ public partial class GameDatabaseContext // Notifications
     {
         this.AddErrorNotification("Publish failed", $"The level '{levelTitle}' failed to publish. {reason}", user);
     }
+
+    private const string LoginFail = "Log-in failure";
     
     public void AddLoginFailNotification(string reason, GameUser user)
     {
-        this.AddErrorNotification("Authentication failure", $"There was a recent failed sign-in attempt. {reason}", user);
+        this.AddErrorNotification(LoginFail, $"There was a recent failed sign-in attempt. {reason}", user);
+    }
+
+    public void ClearLoginFailNotificationsForUser(GameUser user)
+    {
+        this.Write(() =>
+        {
+            this.GameNotifications.RemoveRange(n => n.User == user && n.Title == LoginFail);
+        });
     }
 
     [Pure]
