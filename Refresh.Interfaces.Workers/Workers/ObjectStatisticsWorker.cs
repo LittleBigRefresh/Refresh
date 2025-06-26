@@ -7,7 +7,7 @@ namespace Refresh.Interfaces.Workers.Workers;
 
 public class ObjectStatisticsWorker : IWorker
 {
-    public int WorkInterval => 10_000;
+    public int WorkInterval => 60_000;
     public void DoWork(DataContext context)
     {
         GameLevel[] levels = context.Database.GetLevelsWithStatisticsNeedingUpdates().ToArray();

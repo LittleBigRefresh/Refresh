@@ -139,7 +139,7 @@ public partial class GameDatabaseContext // Statistics
         Debug.Assert(level.Statistics != null);
         
         if(level.Statistics.RecalculateAt == null)
-            level.Statistics.RecalculateAt = this._time.Now + TimeSpan.FromMinutes(1);
+            level.Statistics.RecalculateAt = this._time.Now + TimeSpan.FromMinutes(5);
     }
     #endregion
 
@@ -233,7 +233,7 @@ public partial class GameDatabaseContext // Statistics
         Debug.Assert(user.Statistics != null);
         
         if(user.Statistics.RecalculateAt == null)
-            user.Statistics.RecalculateAt = this._time.Now + TimeSpan.FromMinutes(1);
+            user.Statistics.RecalculateAt = this._time.Now + TimeSpan.FromMinutes(5);
     }
 
     #endregion
