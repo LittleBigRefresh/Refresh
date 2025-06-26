@@ -158,6 +158,7 @@ public partial class GameDatabaseContext // Statistics
     public bool EnsureUserStatisticsCreated(GameUser user)
     {
         if (user.Statistics != null) return false;
+        if (user.FakeUser) return true;
 
         user.Statistics = this.GameUserStatistics.FirstOrDefault(s => s.UserId == user.UserId);
 
@@ -203,6 +204,14 @@ public partial class GameDatabaseContext // Statistics
 
     private void RecalculateUserStatisticsInternal(GameUser user)
     {
+        if (user.FakeUser)
+        {
+            user.Statistics = new GameUserStatistics
+            {
+                UserId = user.UserId,
+            };
+        }
+        
         Debug.Assert(user.Statistics != null);
         
         user.Statistics.FavouriteCount = this.GetTotalUsersFavouritingUser(user);

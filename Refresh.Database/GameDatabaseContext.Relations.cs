@@ -1,3 +1,4 @@
+using System.Diagnostics;
 using System.Diagnostics.Contracts;
 using Refresh.Database.Models;
 using Refresh.Database.Query;
@@ -46,10 +47,11 @@ public partial class GameDatabaseContext // Relations
             Timestamp = this._time.Now,
         };
         
-        this.WriteEnsuringStatistics(level, () =>
+        this.WriteEnsuringStatistics(user, level, () =>
         {
             this.FavouriteLevelRelations.Add(relation);
             level.Statistics!.FavouriteCount++;
+            user.Statistics!.FavouriteLevelCount++;
 
             if (level.Publisher == user)
                 level.Statistics!.FavouriteCountExcludingPublisher++;
@@ -67,10 +69,11 @@ public partial class GameDatabaseContext // Relations
 
         if (relation == null) return false;
 
-        this.WriteEnsuringStatistics(level, () =>
+        this.WriteEnsuringStatistics(user, level, () =>
         {
             this.FavouriteLevelRelations.Remove(relation);
             level.Statistics!.FavouriteCount--;
+            user.Statistics!.FavouriteLevelCount--;
 
             if (level.Publisher == user)
                 level.Statistics!.FavouriteCountExcludingPublisher--;
@@ -135,7 +138,16 @@ public partial class GameDatabaseContext // Relations
             Timestamp = this._time.Now,
         };
         
-        this.Write(() => this.FavouriteUserRelations.Add(relation));
+        this.WriteEnsuringStatistics(userFavouriting, () =>
+        {
+            userFavouriting.Statistics!.FavouriteUserCount++;
+            this.FavouriteUserRelations.Add(relation);
+        });
+        
+        this.WriteEnsuringStatistics(userToFavourite, () =>
+        {
+            userToFavourite.Statistics!.FavouriteCount++;
+        });
 
         this.CreateUserFavouriteEvent(userFavouriting, userToFavourite);
 
@@ -159,7 +171,16 @@ public partial class GameDatabaseContext // Relations
 
         if (relation == null) return false;
 
-        this.Write(() => this.FavouriteUserRelations.Remove(relation));
+        this.WriteEnsuringStatistics(userFavouriting, () =>
+        {
+            userFavouriting.Statistics!.FavouriteUserCount--;
+            this.FavouriteUserRelations.Remove(relation);
+        });
+        
+        this.WriteEnsuringStatistics(userToFavourite, () =>
+        {
+            userToFavourite.Statistics!.FavouriteCount--;
+        });
 
         return true;
     }
@@ -202,7 +223,11 @@ public partial class GameDatabaseContext // Relations
             User = user,
             Timestamp = this._time.Now,
         };
-        this.Write(() => this.QueueLevelRelations.Add(relation));
+        this.WriteEnsuringStatistics(user, () =>
+        {
+            user.Statistics!.QueueCount++;
+            this.QueueLevelRelations.Add(relation);
+        });
 
         return true;
     }
@@ -214,14 +239,22 @@ public partial class GameDatabaseContext // Relations
 
         if (relation == null) return false;
 
-        this.Write(() => this.QueueLevelRelations.Remove(relation));
+        this.WriteEnsuringStatistics(user, () =>
+        {
+            user.Statistics!.QueueCount--;
+            this.QueueLevelRelations.Remove(relation);
+        });
 
         return true;
     }
 
     public void ClearQueue(GameUser user)
     {
-        this.Write(() => this.QueueLevelRelations.RemoveRange(r => r.User == user));
+        this.WriteEnsuringStatistics(user, () =>
+        {
+            user.Statistics!.QueueCount = 0;
+            this.QueueLevelRelations.RemoveRange(r => r.User == user);
+        });
     }
 
     #endregion
@@ -395,26 +428,30 @@ public partial class GameDatabaseContext // Relations
     /// <param name="user">The user who made the review</param>
     public void AddReviewToLevel(GameReview review, GameLevel level)
     {
+        Debug.Assert(review.Publisher != null);
+        
         List<GameReview> toRemove = this.GameReviews
             .Where(r => r.Publisher == review.Publisher)
             .Where(r => r.Level == level)
             .ToList();
         if (toRemove.Count > 0)
         {
-            this.WriteEnsuringStatistics(level, () =>
+            this.WriteEnsuringStatistics(review.Publisher, level, () =>
             {
                 foreach (GameReview reviewToDelete in toRemove)
                 {
                     this.GameReviews.Remove(reviewToDelete);
                     level.Statistics!.ReviewCount--;
+                    review.Publisher.Statistics!.ReviewCount--;
                 }
             });
         }
 
-        this.WriteEnsuringStatistics(level, () =>
+        this.WriteEnsuringStatistics(review.Publisher, level, () =>
         {
             this.GameReviews.Add(review);
             level.Statistics!.ReviewCount++;
+            review.Publisher.Statistics!.ReviewCount++;
         });
     }
     
@@ -423,6 +460,8 @@ public partial class GameDatabaseContext // Relations
         IEnumerable<GameReview> reviews = this.GameReviews
             .Include(r => r.Level)
             .Include(r => r.Level.Statistics)
+            .Include(r => r.Publisher)
+            .Include(r => r.Publisher.Statistics)
             .Where(s => s.Publisher == user);
         
         this.Write(() =>
@@ -430,11 +469,14 @@ public partial class GameDatabaseContext // Relations
             foreach (GameReview review in reviews)
             {
                 this.CalculateLevelStatisticsIfNotPresent(review.Level);
+                this.CalculateUserStatisticsIfNotPresent(review.Publisher);
                 
                 this.GameReviews.Remove(review);
                 review.Level.Statistics!.ReviewCount--;
+                review.Publisher.Statistics!.ReviewCount--;
 
                 this.MarkLevelStatisticsDirty(review.Level);
+                this.MarkUserStatisticsDirty(review.Publisher);
             }
         });
     }

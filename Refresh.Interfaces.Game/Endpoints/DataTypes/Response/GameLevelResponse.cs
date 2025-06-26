@@ -183,7 +183,6 @@ public class GameLevelResponse : IDataConvertableFrom<GameLevelResponse, GameLev
             CommentCount = old.Statistics.CommentCount,
             PhotoCount = old.Statistics.PhotoInLevelCount,
             PublisherPhotoCount = old.Statistics.PhotoByPublisherCount,
-            Tags = string.Join(',', dataContext.Database.GetTagsForLevel(old).Select(t => t.Tag.ToLbpString())) ,
             Type = old.SlotType.ToGameType(),
         };
         
@@ -235,6 +234,11 @@ public class GameLevelResponse : IDataConvertableFrom<GameLevelResponse, GameLev
                 if (asset != null)
                     response.SizeOfResourcesInBytes += asset.SizeInBytes;
             });
+        }
+
+        if (dataContext.Game == TokenGame.LittleBigPlanet1)
+        {
+            response.Tags = string.Join(',', dataContext.Database.GetTagsForLevel(old).Select(t => t.Tag.ToLbpString()));
         }
         
         response.IconHash = dataContext.Database.GetAssetFromHash(old.IconHash)?.GetAsIcon(dataContext.Game, dataContext) ?? response.IconHash;

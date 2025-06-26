@@ -53,6 +53,14 @@ public partial class GameDatabaseContext // Levels
             });
         });
 
+        if (level.Publisher != null)
+        {
+            this.WriteEnsuringStatistics(level.Publisher, () =>
+            {
+                level.Publisher.Statistics!.LevelCount++;
+            });
+        }
+
         return true;
     }
 
@@ -96,13 +104,22 @@ public partial class GameDatabaseContext // Levels
     {
         if (level.Publisher?.UserId == newAuthor.UserId)
             return level;
+
+        if (level.Publisher != null)
+        {
+            this.WriteEnsuringStatistics(level.Publisher, () =>
+            {
+                level.Publisher.Statistics!.LevelCount--;
+            });
+        }
         
-        this.Write(() =>
+        this.WriteEnsuringStatistics(newAuthor, () =>
         {
             // Change the level's publisher, making sure we also unset OriginalPublisher
             // if this level wasn't uploaded by an actual user originally.
             level.Publisher = newAuthor;
             level.OriginalPublisher = null;
+            newAuthor.Statistics!.LevelCount++;
         });
 
         return level;
@@ -219,6 +236,14 @@ public partial class GameDatabaseContext // Levels
 
     public void DeleteLevel(GameLevel level)
     {
+        if (level.Publisher != null)
+        {
+            this.WriteEnsuringStatistics(level.Publisher, () =>
+            {
+                level.Publisher.Statistics!.LevelCount--;
+            });
+        }
+        
         this.Write(() =>
         {
             IQueryable<Event> levelEvents = this.Events

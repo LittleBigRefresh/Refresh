@@ -1,6 +1,7 @@
 using MongoDB.Bson;
 using Refresh.Common.Verification;
 using Refresh.Database.Models.Authentication;
+using Refresh.Database.Models.Statistics;
 using Refresh.Database.Models.Users;
 
 namespace Refresh.Database;
@@ -36,6 +37,15 @@ public partial class GameDatabaseContext // Registration
         {
             this.GameUsers.Add(user);
         });
+        
+        this.Write(() =>
+        {
+            user.Statistics = new GameUserStatistics
+            {
+                UserId = user.UserId,
+            };
+            this.GameUserStatistics.Add(user.Statistics);
+        });
         return user;
     }
 
@@ -58,6 +68,7 @@ public partial class GameDatabaseContext // Registration
                 {
                     case TokenPlatform.PS3:
                     case TokenPlatform.Vita:
+                    case TokenPlatform.PSP:
                         user.PsnAuthenticationAllowed = true;
                         break;
                     case TokenPlatform.RPCS3:

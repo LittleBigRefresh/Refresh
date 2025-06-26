@@ -1,3 +1,4 @@
+using System.Diagnostics;
 using JetBrains.Annotations;
 using Refresh.Database.Models.Comments;
 using Refresh.Database.Models.Users;
@@ -28,8 +29,9 @@ public partial class GameDatabaseContext // Comments
             Timestamp = this._time.Now,
         };
         
-        this.Write(() =>
+        this.WriteEnsuringStatistics(profile, () =>
         {
+            profile.Statistics!.CommentCount++;
             this.GameProfileComments.Add(comment);
         });
 
@@ -49,8 +51,10 @@ public partial class GameDatabaseContext // Comments
 
     public void DeleteProfileComment(GameProfileComment comment)
     {
-        this.Write(() =>
+        Debug.Assert(comment.Profile != null);
+        this.WriteEnsuringStatistics(comment.Profile, () =>
         {
+            comment.Profile.Statistics!.CommentCount--;
             this.GameProfileComments.Remove(comment);
         });
     }
@@ -59,21 +63,22 @@ public partial class GameDatabaseContext // Comments
         .FirstOrDefault(c => c.SequentialId == id);
 
     public GameLevelComment PostCommentToLevel(GameLevel level, GameUser author, string content)
+    {
+        GameLevelComment comment = new()
         {
-            GameLevelComment comment = new()
-            {
-                Author = author,
-                Level = level,
-                Content = content,
-                Timestamp = this._time.Now,
-            };
-            
-            this.Write(() =>
-            {
-                this.GameLevelComments.Add(comment);
-            });
-            return comment;
-        }
+            Author = author,
+            Level = level,
+            Content = content,
+            Timestamp = this._time.Now,
+        };
+
+        this.WriteEnsuringStatistics(level, () =>
+        {
+            level.Statistics!.CommentCount++;
+            this.GameLevelComments.Add(comment);
+        });
+        return comment;
+    }
 
     public IEnumerable<GameLevelComment> GetLevelComments(GameLevel level, int count, int skip) =>
         this.GameLevelCommentsIncluded
@@ -88,8 +93,10 @@ public partial class GameDatabaseContext // Comments
 
     public void DeleteLevelComment(GameLevelComment comment)
     {
-        this.Write(() =>
+        Debug.Assert(comment.Level != null);
+        this.WriteEnsuringStatistics(comment.Level, () =>
         {
+            comment.Level.Statistics!.CommentCount--;
             this.GameLevelComments.Remove(comment);
         });
     }
