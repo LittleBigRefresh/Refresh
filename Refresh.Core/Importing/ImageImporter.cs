@@ -90,7 +90,7 @@ public partial class ImageImporter : Importer
         }
         
         using Stream stream = dataStore.GetStreamFromStore(dataStorePath);
-        using Stream writeStream = dataStore.OpenWriteStream($"png/{hash}.png");
+        using Stream writeStream = dataStore.OpenWriteStream($"png/{hash}");
 
         switch (type)
         {
