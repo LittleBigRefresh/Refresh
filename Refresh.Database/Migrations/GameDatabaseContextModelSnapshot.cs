@@ -1417,9 +1417,12 @@ namespace Refresh.Database.Migrations
                     b.Property<string>("Username")
                         .HasColumnType("text");
 
+                    b.Property<string>("UsernameLower")
+                        .HasColumnType("text");
+
                     b.HasKey("RegistrationId");
 
-                    b.HasIndex("Username", "EmailAddress");
+                    b.HasIndex("Username", "UsernameLower", "EmailAddress");
 
                     b.ToTable("QueuedRegistrations");
                 });

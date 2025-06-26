@@ -119,6 +119,7 @@ public partial class GameDatabaseContext // Registration
         QueuedRegistration registration = new()
         {
             Username = username,
+            UsernameLower = username.ToLower(),
             EmailAddress = emailAddress,
             PasswordBcrypt = passwordBcrypt,
             ExpiryDate = this._time.Now + TimeSpan.FromHours(1),
@@ -143,7 +144,9 @@ public partial class GameDatabaseContext // Registration
     public bool IsRegistrationExpired(QueuedRegistration registration) => registration.ExpiryDate < this._time.Now;
 
     public QueuedRegistration? GetQueuedRegistrationByUsername(string username) 
-        => this.QueuedRegistrations.FirstOrDefault(q => q.Username == username);
+#pragma warning disable CA1862
+        => this.QueuedRegistrations.FirstOrDefault(q => q.UsernameLower == username.ToLower());
+#pragma warning restore CA1862
     
     public QueuedRegistration? GetQueuedRegistrationByObjectId(ObjectId id) 
         => this.QueuedRegistrations.FirstOrDefault(q => q.RegistrationId == id);
