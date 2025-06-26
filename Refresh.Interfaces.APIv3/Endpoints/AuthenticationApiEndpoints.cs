@@ -326,7 +326,7 @@ public class AuthenticationApiEndpoints : EndpointGroup
             return new ApiAuthenticationError(
                 "Account queued! Play a patched game online within the next hour to permanently register. " +
                 "If you wait longer than an hour, you’ll have to redo this process to reenter the queue. " +
-                "For more instructions on patching, please visit https://docs.littlebigrefresh.com", true);
+                "For more instructions on patching, please visit https://docs.lbpbonsai.com", true);
         }
 
         GameUser user = database.CreateUser(body.Username, body.EmailAddress, true);
