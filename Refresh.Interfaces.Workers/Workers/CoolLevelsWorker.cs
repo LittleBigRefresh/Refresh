@@ -70,7 +70,7 @@ public class CoolLevelsWorker : IWorker
             }
             
             // Commit scores to database. This method lets us use a dictionary so we can batch everything in one write
-            context.Database.SetLevelScores(scoresToSet);
+            context.Database.SetLevelCoolRatings(scoresToSet);
             
             // Load the next page
             levels = context.Database.GetUserLevelsChunk(levels.NextPageIndex - 1, pageSize);

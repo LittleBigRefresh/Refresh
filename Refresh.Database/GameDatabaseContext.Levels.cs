@@ -469,8 +469,8 @@ public partial class GameDatabaseContext // Levels
     public DatabaseList<GameLevel> GetCoolLevels(int count, int skip, GameUser? user, LevelFilterSettings levelFilterSettings) =>
         new(this.GetLevelsByGameVersion(levelFilterSettings.GameVersion)
             .FilterByLevelFilterSettings(user, levelFilterSettings)
-            .Where(l => l.Score > 0)
-            .OrderByDescending(l => l.Score), skip, count);
+            .Where(l => l.CoolRating > 0)
+            .OrderByDescending(l => l.CoolRating), skip, count);
 
     [Pure]
     public DatabaseList<GameLevel> GetAdventureLevels(int count, int skip, GameUser? user, LevelFilterSettings levelFilterSettings) =>
@@ -511,7 +511,7 @@ public partial class GameDatabaseContext // Levels
             levels.AddRange(validLevels.Where(l => l.Publisher == publisher));
         }
 
-        return new DatabaseList<GameLevel>(levels.OrderByDescending(l => l.Score), skip, count);
+        return new DatabaseList<GameLevel>(levels.OrderByDescending(l => l.CoolRating), skip, count);
     }
 
     [Pure]
@@ -574,11 +574,11 @@ public partial class GameDatabaseContext // Levels
         });
     }
 
-    public void SetLevelScores(Dictionary<GameLevel, float> scoresToSet)
+    public void SetLevelCoolRatings(Dictionary<GameLevel, float> coolRatingsToSet)
     {
-        foreach ((GameLevel level, float score) in scoresToSet)
+        foreach ((GameLevel level, float coolRating) in coolRatingsToSet)
         {
-            level.Score = score;
+            level.CoolRating = coolRating;
         }
 
         this.SaveChanges();

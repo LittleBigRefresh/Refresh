@@ -95,7 +95,7 @@ public class ApiGameLevelResponse : IApiResponse, IDataConvertableFrom<ApiGameLe
             IsCopyable = level.IsCopyable,
             IsLocked = level.IsLocked,
             IsSubLevel = level.IsSubLevel,
-            Score = level.Score,
+            Score = level.CoolRating,
             PhotosTaken = level.Statistics.PhotoInLevelCount,
             LevelComments = level.Statistics.CommentCount,
             Reviews = level.Statistics.ReviewCount,

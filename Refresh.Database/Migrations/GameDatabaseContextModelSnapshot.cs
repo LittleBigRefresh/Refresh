@@ -376,6 +376,9 @@ namespace Refresh.Database.Migrations
                     b.Property<string>("BackgroundGuid")
                         .HasColumnType("text");
 
+                    b.Property<float>("CoolRating")
+                        .HasColumnType("real");
+
                     b.Property<DateTimeOffset?>("DateTeamPicked")
                         .HasColumnType("timestamp with time zone");
 
@@ -444,9 +447,6 @@ namespace Refresh.Database.Migrations
 
                     b.Property<bool>("SameScreenGame")
                         .HasColumnType("boolean");
-
-                    b.Property<float>("Score")
-                        .HasColumnType("real");
 
                     b.Property<int?>("StatisticsLevelId")
                         .HasColumnType("integer");
