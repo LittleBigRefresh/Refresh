@@ -12,7 +12,7 @@ using NotEnoughLogs;
 using Refresh.Core;
 using Refresh.Core.Types.Data;
 using Refresh.Database;
-using Refresh.Database.Models.Comments;
+using Refresh.Database.Models.Authentication;
 using Refresh.Database.Models.Levels;
 using Refresh.Database.Models.Users;
 
@@ -70,7 +70,7 @@ public class CoolLevelsWorker : IWorker
             }
             
             // Commit scores to database. This method lets us use a dictionary so we can batch everything in one write
-            context.Database.SetLevelScores(scoresToSet);
+            context.Database.SetLevelCoolRatings(scoresToSet);
             
             // Load the next page
             levels = context.Database.GetUserLevelsChunk(levels.NextPageIndex - 1, pageSize);
@@ -89,6 +89,7 @@ public class CoolLevelsWorker : IWorker
     private static float CalculateLevelDecayMultiplier(Logger logger, long now, GameLevel level)
     {
         const double secondsPerMonth = 30 * 24 * 3600;
+        const double minimumMultiplier = 0.005f;
         
         // Use months
         double publishDate = level.PublishDate.ToUnixTimeSeconds() / secondsPerMonth;
@@ -97,6 +98,7 @@ public class CoolLevelsWorker : IWorker
         // Get a scale from 0.0f to 1.0f, the percent of decay, using an exponential decay function
         // https://www.desmos.com/calculator/87wbuh1gcy
         double multiplier = Math.Pow(Math.E, -elapsedMonths);
+        multiplier = Math.Max(minimumMultiplier, multiplier);
         
         Log(logger, LogLevel.Trace, "Decay multiplier is {0}", multiplier);
         return (float)multiplier;
@@ -110,13 +112,30 @@ public class CoolLevelsWorker : IWorker
         // Don't apply this bonus to reuploads to discourage a flood of 15CR levels.
         float score = level.IsReUpload ? 0 : 15;
         
-        const float positiveRatingPoints = 5;
         const float uniquePlayPoints = 0.1f;
-        const float heartPoints = 10;
         const float trustedAuthorPoints = 5;
+        
+        float positiveRatingPoints = level.GameVersion switch
+        {
+            TokenGame.LittleBigPlanet1 => 2.5f,
+            TokenGame.LittleBigPlanet2 => 7.5f,
+            TokenGame.LittleBigPlanet3 => 30f, // yays are apparently hard to get to in LBP3; see example disparity with https://lbp.lbpbonsai.com/level/6961
+            
+            TokenGame.LittleBigPlanetVita => 15f,
+            TokenGame.LittleBigPlanetPSP => 15f,
+            _ => 5,
+        };
+
+        float heartPoints = level.GameVersion switch {
+            TokenGame.LittleBigPlanet3 => 15f,
+            
+            TokenGame.LittleBigPlanetVita => 15f,
+            TokenGame.LittleBigPlanetPSP => 15f,
+            _ => 10,
+        };
 
         if (level.TeamPicked)
-            score += 50;
+            score += 100;
         
         int positiveRatings = level.Statistics.YayCountExcludingPublisher;
         int negativeRatings = level.Statistics.BooCountExcludingPublisher;
@@ -126,15 +145,19 @@ public class CoolLevelsWorker : IWorker
         score += uniquePlays * uniquePlayPoints;
         score += level.Statistics.FavouriteCountExcludingPublisher * heartPoints;
         
-        // Reward for a good ratio between plays and yays
+        // Reward for a good ratio between plays and yays.
+        // Doesn't apply to LBP1 levels.
         float ratingRatio = (positiveRatings - negativeRatings) / (float)uniquePlays;
-        if (ratingRatio > 0.5f)
+        if (ratingRatio > 0.5f && level.GameVersion != TokenGame.LittleBigPlanet1)
         {
             score += positiveRatings * (positiveRatingPoints * ratingRatio);
         }
 
         if (level.Publisher?.Role == GameUserRole.Trusted)
             score += trustedAuthorPoints;
+
+        if (level.IsReUpload)
+            score *= 0.8f;
 
         Log(context.Logger, LogLevel.Trace, "positiveScore is {0}", score);
         return score;

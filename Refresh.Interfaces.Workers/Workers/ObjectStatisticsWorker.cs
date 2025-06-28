@@ -13,14 +13,18 @@ public class ObjectStatisticsWorker : IWorker
     [SuppressMessage("ReSharper.DPA", "DPA0005: Database issues")]
     public void DoWork(DataContext context)
     {
-        GameLevel[] levels = context.Database.GetLevelsWithStatisticsNeedingUpdates().ToArray();
+        GameLevel[] levels = context.Database.GetLevelsWithStatisticsNeedingUpdates()
+            .Take(500)
+            .ToArray();
 
         foreach (GameLevel level in levels)
         {
             context.Database.RecalculateLevelStatistics(level);
         }
         
-        GameUser[] users = context.Database.GetUsersWithStatisticsNeedingUpdates().ToArray();
+        GameUser[] users = context.Database.GetUsersWithStatisticsNeedingUpdates()
+            .Take(500)
+            .ToArray();
 
         foreach (GameUser user in users)
         {

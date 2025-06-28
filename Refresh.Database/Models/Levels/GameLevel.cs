@@ -73,7 +73,7 @@ public partial class GameLevel : ISequentialId
     /// The score, used for Cool Levels.
     /// </summary>
     /// <seealso cref="CoolLevelsWorker"/>
-    public float Score { get; set; }
+    public float CoolRating { get; set; }
     
     [NotMapped] public int SequentialId
     {
