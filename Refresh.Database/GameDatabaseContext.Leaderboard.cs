@@ -172,7 +172,7 @@ public partial class GameDatabaseContext // Leaderboard
     public IEnumerable<GameUser> GetPlayersFromScore(GameScore score)
     {
         IEnumerable<ObjectId> playerIds = score.PlayerIds.Select(p => p);
-        return this.GameUsers
+        return this.GameUsersIncluded
             .AsEnumerableIfRealm()
             .Where(u => playerIds.Contains(u.UserId));
     }

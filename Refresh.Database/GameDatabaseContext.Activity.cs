@@ -20,16 +20,18 @@ public partial class GameDatabaseContext // Activity
 
         DateTimeOffset timestamp = DateTimeOffset.FromUnixTimeMilliseconds(parameters.Timestamp);
         DateTimeOffset endTimestamp = DateTimeOffset.FromUnixTimeMilliseconds(parameters.EndTimestamp);
-        
+
         IEnumerable<Event> query = this.Events
             .Include(e => e.User)
-            .Where(e => e.Timestamp < timestamp && e.Timestamp >= endTimestamp)
-            .AsEnumerable();
+            .Include(e => e.User.Statistics)
+            .Where(e => e.Timestamp < timestamp && e.Timestamp >= endTimestamp);
 
         if (parameters is { ExcludeMyLevels: true, User: not null })
         {
             //Filter the query to events which either arent level related, or which the level publisher doesnt contain the user
-            query = query.Where(e => e.StoredDataType != EventDataType.Level || this.GetLevelById(e.StoredSequentialId ?? int.MaxValue)?.Publisher?.UserId != parameters.User.UserId);
+            query = query
+                .AsEnumerable() // TODO: optimize me
+                .Where(e => e.StoredDataType != EventDataType.Level || this.GetLevelById(e.StoredSequentialId ?? int.MaxValue)?.Publisher?.UserId != parameters.User.UserId);
         }
         
         if (parameters is { ExcludeFriends: true, User: not null })
@@ -66,6 +68,8 @@ public partial class GameDatabaseContext // Activity
             .Skip(parameters.Skip)
             .Take(parameters.Count)
             .ToList();
+        
+        Debug.Assert(events.Count < 100);
 
         DatabaseActivityPage page = new(this, events, parameters);
 
