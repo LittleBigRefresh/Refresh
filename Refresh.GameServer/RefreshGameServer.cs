@@ -85,7 +85,7 @@ public class RefreshGameServer : RefreshServer
                 Environment.Exit(1);
             }
             
-            databaseProvider = () => new GameDatabaseProvider(dbConfig);
+            databaseProvider = () => new GameDatabaseProvider(this.Logger, dbConfig);
         }
         
         this._databaseProvider = databaseProvider.Invoke();

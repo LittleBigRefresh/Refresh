@@ -1,3 +1,4 @@
+using NotEnoughLogs;
 using Refresh.Database;
 using RefreshTests.GameServer.Time;
 using Testcontainers.PostgreSql;
@@ -9,7 +10,7 @@ public class TestGameDatabaseProvider : GameDatabaseProvider
     private readonly MockDateTimeProvider _time;
     private readonly PostgreSqlContainer _container;
 
-    public TestGameDatabaseProvider(MockDateTimeProvider time) : base(time)
+    public TestGameDatabaseProvider(Logger logger, MockDateTimeProvider time) : base(logger, time)
     {
         this._time = time;
         this._container = ContainerPool.Instance.Take();
@@ -17,7 +18,7 @@ public class TestGameDatabaseProvider : GameDatabaseProvider
     
     public override TestGameDatabaseContext GetContext()
     {
-        return new TestGameDatabaseContext(this._time, this._container);
+        return new TestGameDatabaseContext(this.Logger, this._time, this._container);
     }
 
     public override void Initialize()
