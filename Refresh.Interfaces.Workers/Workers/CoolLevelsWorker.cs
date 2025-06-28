@@ -117,16 +117,18 @@ public class CoolLevelsWorker : IWorker
         {
             TokenGame.LittleBigPlanet1 => 2.5f,
             TokenGame.LittleBigPlanet2 => 7.5f,
-            TokenGame.LittleBigPlanet3 => 15,
-            TokenGame.LittleBigPlanetVita => 7.5f,
+            TokenGame.LittleBigPlanet3 => 30f, // yays are apparently hard to get to in LBP3; see example disparity with https://lbp.lbpbonsai.com/level/6961
+            
+            TokenGame.LittleBigPlanetVita => 15f,
             TokenGame.LittleBigPlanetPSP => 15f,
             _ => 5,
         };
 
         float heartPoints = level.GameVersion switch {
-            TokenGame.LittleBigPlanet3 => 15,
-            TokenGame.LittleBigPlanetVita => 15,
-            TokenGame.LittleBigPlanetPSP => 15,
+            TokenGame.LittleBigPlanet3 => 15f,
+            
+            TokenGame.LittleBigPlanetVita => 15f,
+            TokenGame.LittleBigPlanetPSP => 15f,
             _ => 10,
         };
 
