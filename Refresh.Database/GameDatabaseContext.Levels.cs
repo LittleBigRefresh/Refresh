@@ -19,12 +19,14 @@ public partial class GameDatabaseContext // Levels
 {
     private IQueryable<GameLevel> GameLevelsIncluded => this.GameLevels
         .Include(l => l.Statistics)
-        .Include(l => l.Publisher);
+        .Include(l => l.Publisher)
+        .Include(l => l.Publisher!.Statistics);
 
     private IQueryable<GameSkillReward> SkillRewardsIncluded => this.GameSkillRewards
         .Include(s => s.Level)
         .Include(s => s.Level.Statistics)
-        .Include(s => s.Level.Publisher);
+        .Include(s => s.Level.Publisher)
+        .Include(s => s.Level.Publisher!.Statistics);
     
     public bool AddLevel(GameLevel level)
     {
