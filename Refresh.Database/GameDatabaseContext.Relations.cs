@@ -13,6 +13,7 @@ namespace Refresh.Database;
 public partial class GameDatabaseContext // Relations
 {
     #region Favouriting Levels
+
     private IQueryable<FavouriteLevelRelation> FavouriteLevelRelationsIncluded => this.FavouriteLevelRelations
         .Include(r => r.Level)
         .Include(r => r.Level.Statistics)
@@ -298,7 +299,8 @@ public partial class GameDatabaseContext // Relations
         {
             RateReviewRelation relation = this.RateReviewRelations.First(r => r.Review == review && r.User == user);
             
-            this.Write(() => {
+            this.Write(() =>
+            {
                 relation.RatingType = ratingType;
                 relation.Timestamp = this._time.Now;
             });
@@ -510,13 +512,13 @@ public partial class GameDatabaseContext // Relations
     #endregion
 
     #region Playing
-    
+
     private IQueryable<PlayLevelRelation> PlayLevelRelationsIncluded => this.PlayLevelRelations
         .Include(r => r.User)
         .Include(r => r.Level)
         .Include(r => r.Level.Statistics)
         .Include(r => r.Level.Publisher);
-    
+
     private IQueryable<UniquePlayLevelRelation> UniquePlayLevelRelationsIncluded => this.UniquePlayLevelRelations
         .Include(r => r.User)
         .Include(r => r.Level)
