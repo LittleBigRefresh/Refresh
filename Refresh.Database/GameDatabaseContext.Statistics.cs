@@ -121,6 +121,7 @@ public partial class GameDatabaseContext // Statistics
         this.RecalculateLevelRatingStatisticsInternal(level);
 
         level.Statistics.RecalculateAt = null;
+        level.Statistics.Version = LevelStatisticsVersion;
     }
 
     private void RecalculateLevelRatingStatisticsInternal(GameLevel level)
@@ -230,6 +231,7 @@ public partial class GameDatabaseContext // Statistics
         user.Statistics.FavouriteLevelCount = this.GetTotalLevelsFavouritedByUser(user);
 
         user.Statistics.RecalculateAt = null;
+        user.Statistics.Version = UserStatisticsVersion;
     }
 
     private void MarkUserStatisticsDirty(GameUser user)
