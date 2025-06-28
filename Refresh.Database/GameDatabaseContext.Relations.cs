@@ -92,7 +92,9 @@ public partial class GameDatabaseContext // Relations
 
     private IQueryable<FavouriteUserRelation> FavouriteUserRelationsIncluded => this.FavouriteUserRelations
         .Include(r => r.UserFavouriting)
-        .Include(r => r.UserToFavourite);
+        .Include(r => r.UserFavouriting.Statistics)
+        .Include(r => r.UserToFavourite)
+        .Include(r => r.UserToFavourite.Statistics);
 
     [Pure]
     private bool IsUserFavouritedByUser(GameUser userToFavourite, GameUser userFavouriting) => this.FavouriteUserRelations
