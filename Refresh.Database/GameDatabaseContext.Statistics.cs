@@ -64,7 +64,15 @@ public partial class GameDatabaseContext // Statistics
 
         level.Statistics = this.GameLevelStatistics.FirstOrDefault(s => s.LevelId == level.LevelId);
 
-        if (level.Statistics != null) return false;
+        if (level.Statistics != null)
+        {
+#if DEBUG
+            if(Debugger.IsAttached)
+                Debugger.Break();
+#endif
+
+            return false;
+        }
 
         level.Statistics = new GameLevelStatistics
         {
@@ -168,7 +176,15 @@ public partial class GameDatabaseContext // Statistics
 
         user.Statistics = this.GameUserStatistics.FirstOrDefault(s => s.UserId == user.UserId);
 
-        if (user.Statistics != null) return false;
+        if (user.Statistics != null)
+        {
+#if DEBUG
+            if(Debugger.IsAttached)
+                Debugger.Break();
+#endif
+
+            return false;
+        }
 
         user.Statistics = new GameUserStatistics
         {
