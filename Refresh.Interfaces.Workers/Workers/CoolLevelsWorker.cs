@@ -157,7 +157,7 @@ public class CoolLevelsWorker : IWorker
             score += trustedAuthorPoints;
 
         if (level.IsReUpload)
-            score *= 0.95f;
+            score *= 0.8f;
 
         Log(context.Logger, LogLevel.Trace, "positiveScore is {0}", score);
         return score;
