@@ -25,12 +25,17 @@ public class ActivityApiEndpoints : EndpointGroup
     [DocQueryParam("timestamp", "A timestamp in unix seconds, used to search backwards.")]
     [DocError(typeof(ApiValidationError), ApiValidationError.NumberParseErrorWhen)]
     public ApiResponse<ApiActivityPageResponse> GetRecentActivity(RequestContext context, GameServerConfig config, GameDatabaseContext database,
-        IDataStore dataStore, DataContext dataContext)
+        GameUser? user, IDataStore dataStore, DataContext dataContext)
     {
         if (!config.PermitShowingOnlineUsers)
             return ApiActivityPageResponse.Empty;
 
         long timestamp = 0;
+        
+        bool excludeMyLevels = bool.Parse(context.QueryString["excludeMyLevels"] ?? "false");
+        bool excludeFriends = bool.Parse(context.QueryString["excludeFriends"] ?? "false");
+        bool excludeFavouriteUsers = bool.Parse(context.QueryString["excludeFavouriteUsers"] ?? "false");
+        bool excludeMyself = bool.Parse(context.QueryString["excludeMyself"] ?? "false");
 
         string? tsStr = context.QueryString["timestamp"];
         if (tsStr != null && !long.TryParse(tsStr, out timestamp)) return ApiValidationError.NumberParseError;
@@ -42,6 +47,11 @@ public class ActivityApiEndpoints : EndpointGroup
             Timestamp = timestamp,
             Count = count,
             Skip = skip,
+            User = user,
+            ExcludeFriends = excludeFriends,
+            ExcludeMyLevels = excludeMyLevels,
+            ExcludeFavouriteUsers = excludeFavouriteUsers,
+            ExcludeMyself = excludeMyself,
         });
         return ApiActivityPageResponse.FromOld(page, dataContext);
     }
@@ -59,6 +69,11 @@ public class ActivityApiEndpoints : EndpointGroup
             return ApiActivityPageResponse.Empty;
 
         long timestamp = 0;
+        
+        bool excludeMyLevels = bool.Parse(context.QueryString["excludeMyLevels"] ?? "false");
+        bool excludeFriends = bool.Parse(context.QueryString["excludeFriends"] ?? "false");
+        bool excludeFavouriteUsers = bool.Parse(context.QueryString["excludeFavouriteUsers"] ?? "false");
+        bool excludeMyself = bool.Parse(context.QueryString["excludeMyself"] ?? "false");
 
         string? tsStr = context.QueryString["timestamp"];
         if (tsStr != null && !long.TryParse(tsStr, out timestamp)) return ApiValidationError.NumberParseError;
@@ -74,6 +89,10 @@ public class ActivityApiEndpoints : EndpointGroup
             Skip = skip,
             Count = count,
             User = user,
+            ExcludeFriends = excludeFriends,
+            ExcludeMyLevels = excludeMyLevels,
+            ExcludeFavouriteUsers = excludeFavouriteUsers,
+            ExcludeMyself = excludeMyself,
         });
         return ApiActivityPageResponse.FromOld(page, dataContext);
     }
@@ -91,6 +110,11 @@ public class ActivityApiEndpoints : EndpointGroup
             return ApiActivityPageResponse.Empty;
 
         long timestamp = 0;
+        
+        bool excludeMyLevels = bool.Parse(context.QueryString["excludeMyLevels"] ?? "false");
+        bool excludeFriends = bool.Parse(context.QueryString["excludeFriends"] ?? "false");
+        bool excludeFavouriteUsers = bool.Parse(context.QueryString["excludeFavouriteUsers"] ?? "false");
+        bool excludeMyself = bool.Parse(context.QueryString["excludeMyself"] ?? "false");
 
         string? tsStr = context.QueryString["timestamp"];
         if (tsStr != null && !long.TryParse(tsStr, out timestamp)) return ApiValidationError.NumberParseError;
@@ -106,6 +130,10 @@ public class ActivityApiEndpoints : EndpointGroup
             Skip = skip,
             Count = count,
             User = user,
+            ExcludeFriends = excludeFriends,
+            ExcludeMyLevels = excludeMyLevels,
+            ExcludeFavouriteUsers = excludeFavouriteUsers,
+            ExcludeMyself = excludeMyself,
         });
         return ApiActivityPageResponse.FromOld(page, dataContext);
     }
@@ -123,6 +151,11 @@ public class ActivityApiEndpoints : EndpointGroup
             return ApiActivityPageResponse.Empty;
 
         long timestamp = 0;
+        
+        bool excludeMyLevels = bool.Parse(context.QueryString["excludeMyLevels"] ?? "false");
+        bool excludeFriends = bool.Parse(context.QueryString["excludeFriends"] ?? "false");
+        bool excludeFavouriteUsers = bool.Parse(context.QueryString["excludeFavouriteUsers"] ?? "false");
+        bool excludeMyself = bool.Parse(context.QueryString["excludeMyself"] ?? "false");
 
         string? tsStr = context.QueryString["timestamp"];
         if (tsStr != null && !long.TryParse(tsStr, out timestamp)) return ApiValidationError.NumberParseError;
@@ -138,6 +171,10 @@ public class ActivityApiEndpoints : EndpointGroup
             Skip = skip,
             Count = count,
             User = user,
+            ExcludeFriends = excludeFriends,
+            ExcludeMyLevels = excludeMyLevels,
+            ExcludeFavouriteUsers = excludeFavouriteUsers,
+            ExcludeMyself = excludeMyself,
         });
         return ApiActivityPageResponse.FromOld(page, dataContext);
     }
