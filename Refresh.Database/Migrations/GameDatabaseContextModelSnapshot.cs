@@ -52,6 +52,8 @@ namespace Refresh.Database.Migrations
 
                     b.HasKey("EventId");
 
+                    b.HasIndex("Timestamp");
+
                     b.HasIndex("UserId");
 
                     b.ToTable("Events");
