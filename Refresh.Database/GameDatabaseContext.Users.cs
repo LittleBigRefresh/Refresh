@@ -14,6 +14,9 @@ namespace Refresh.Database;
 
 public partial class GameDatabaseContext // Users
 {
+    private IQueryable<GameUser> GameUsersIncluded => this.GameUsers
+        .Include(u => u.Statistics);
+    
     [Pure]
     [ContractAnnotation("username:null => null; username:notnull => canbenull")]
     public GameUser? GetUserByUsername(string? username, bool caseSensitive = true)
@@ -23,8 +26,8 @@ public partial class GameDatabaseContext // Users
         
         // Try the first pass to get the user
         GameUser? user = caseSensitive
-            ? this.GameUsers.FirstOrDefault(u => u.Username == username)
-            : this.GameUsers.FirstOrDefault(u => u.UsernameLower == username.ToLower());
+            ? this.GameUsersIncluded.FirstOrDefault(u => u.Username == username)
+            : this.GameUsersIncluded.FirstOrDefault(u => u.UsernameLower == username.ToLower());
         
         // If that failed and the username is the deleted user, then we need to create the backing deleted user
         if (username == SystemUsers.DeletedUserName && user == null)
@@ -62,7 +65,7 @@ public partial class GameDatabaseContext // Users
     {
         if (emailAddress == null) return null;
         emailAddress = emailAddress.ToLowerInvariant();
-        return this.GameUsers.FirstOrDefault(u => u.EmailAddress == emailAddress);
+        return this.GameUsersIncluded.FirstOrDefault(u => u.EmailAddress == emailAddress);
     }
 
     [Pure]
@@ -70,7 +73,7 @@ public partial class GameDatabaseContext // Users
     public GameUser? GetUserByObjectId(ObjectId? id)
     {
         if (id == null) return null;
-        return this.GameUsers.FirstOrDefault(u => u.UserId == id);
+        return this.GameUsersIncluded.FirstOrDefault(u => u.UserId == id);
     }
     
     [Pure]
@@ -79,11 +82,11 @@ public partial class GameDatabaseContext // Users
     {
         if (uuid == null) return null;
         if(!ObjectId.TryParse(uuid, out ObjectId objectId)) return null;
-        return this.GameUsers.FirstOrDefault(u => u.UserId == objectId);
+        return this.GameUsersIncluded.FirstOrDefault(u => u.UserId == objectId);
     }
 
     public DatabaseList<GameUser> GetUsers(int count, int skip)
-        => new(this.GameUsers.OrderByDescending(u => u.JoinDate), skip, count);
+        => new(this.GameUsersIncluded.OrderByDescending(u => u.JoinDate), skip, count);
 
     public void UpdateUserData(GameUser user, ISerializedEditUser data, TokenGame game)
     {
@@ -266,7 +269,7 @@ public partial class GameDatabaseContext // Users
     public bool IsUserRestricted(GameUser user) => this.IsUserPunished(user, GameUserRole.Restricted);
 
     public DatabaseList<GameUser> GetAllUsersWithRole(GameUserRole role)
-        => new(this.GameUsers.Where(u => u.Role == role));
+        => new(this.GameUsersIncluded.Where(u => u.Role == role));
 
     public void RenameUser(GameUser user, string newUsername)
     {

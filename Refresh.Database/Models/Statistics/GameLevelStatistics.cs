@@ -2,8 +2,10 @@
 
 public class GameLevelStatistics
 {
+    
     [Required, Key] public int LevelId { get; set; }
     public DateTimeOffset? RecalculateAt { get; set; } = null;
+    public int Version { get; set; } = GameDatabaseContext.LevelStatisticsVersion;
 
     public int FavouriteCount { get; set; }
     public int FavouriteCountExcludingPublisher { get; set; }
@@ -21,4 +23,5 @@ public class GameLevelStatistics
     public int BooCountExcludingPublisher { get; set; }
     public int NeutralCount { get; set; }
     public int NeutralCountExcludingPublisher { get; set; }
+    public int Karma { get; set; }
 }

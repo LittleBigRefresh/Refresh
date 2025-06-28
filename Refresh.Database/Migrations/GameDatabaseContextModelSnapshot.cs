@@ -52,6 +52,8 @@ namespace Refresh.Database.Migrations
 
                     b.HasKey("EventId");
 
+                    b.HasIndex("Timestamp");
+
                     b.HasIndex("UserId");
 
                     b.ToTable("Events");
@@ -1116,6 +1118,9 @@ namespace Refresh.Database.Migrations
                     b.Property<int>("FavouriteCountExcludingPublisher")
                         .HasColumnType("integer");
 
+                    b.Property<int>("Karma")
+                        .HasColumnType("integer");
+
                     b.Property<int>("NeutralCount")
                         .HasColumnType("integer");
 
@@ -1141,6 +1146,9 @@ namespace Refresh.Database.Migrations
                         .HasColumnType("integer");
 
                     b.Property<int>("UniquePlayCountExcludingPublisher")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("Version")
                         .HasColumnType("integer");
 
                     b.Property<int>("YayCount")
@@ -1187,6 +1195,9 @@ namespace Refresh.Database.Migrations
                         .HasColumnType("timestamp with time zone");
 
                     b.Property<int>("ReviewCount")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("Version")
                         .HasColumnType("integer");
 
                     b.HasKey("UserId");

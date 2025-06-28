@@ -20,5 +20,5 @@ public class MostHeartedLevelsCategory : GameLevelCategory
     public override DatabaseList<GameLevel>? Fetch(RequestContext context, int skip, int count,
         DataContext dataContext,
         LevelFilterSettings levelFilterSettings, GameUser? _) 
-        => dataContext.Database.GetMostHeartedLevels(count, skip, dataContext.User, levelFilterSettings);
+        => dataContext.Database.GetMostFavouritedLevels(count, skip, dataContext.User, levelFilterSettings);
 }

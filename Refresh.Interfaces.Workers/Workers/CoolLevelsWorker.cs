@@ -7,6 +7,7 @@
 #endif
 
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using NotEnoughLogs;
 using Refresh.Core;
 using Refresh.Core.Types.Data;
@@ -20,6 +21,8 @@ namespace Refresh.Interfaces.Workers.Workers;
 public class CoolLevelsWorker : IWorker
 {
     public int WorkInterval => 600_000; // Every 10 minutes
+
+    [SuppressMessage("ReSharper.DPA", "DPA0005: Database issues")]
     public void DoWork(DataContext context)
     {
         const int pageSize = 1000;

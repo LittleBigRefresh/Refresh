@@ -1,3 +1,4 @@
+using System.Diagnostics.CodeAnalysis;
 using Refresh.Common.Time;
 using Refresh.Database.Configuration;
 
@@ -21,6 +22,7 @@ public class GameDatabaseProvider :
         this._dbConfig = new EmptyDatabaseConfig();
     }
     
+    [SuppressMessage("ReSharper.DPA", "DPA0005: Database issues")]
     public virtual void Initialize()
     {
         using GameDatabaseContext context = this.GetContext();

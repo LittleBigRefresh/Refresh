@@ -15,7 +15,6 @@ using Refresh.Database.Models.Notifications;
 using Refresh.Database.Models.Photos;
 using Refresh.Database.Models.Playlists;
 using Refresh.Database.Models.Relations;
-using Refresh.Database.Models;
 using System.Diagnostics;
 using MongoDB.Bson;
 using Refresh.Database.Models.Statistics;
@@ -92,8 +91,7 @@ public partial class GameDatabaseContext : DbContext, IDatabaseContext
         }
         
         options.UseNpgsql(connectionString);
-
-        // options.LogTo(Console.WriteLine);
+        // options.LogTo(Console.WriteLine, LogLevel.Information);
     }
 
     protected override void ConfigureConventions(ModelConfigurationBuilder config)

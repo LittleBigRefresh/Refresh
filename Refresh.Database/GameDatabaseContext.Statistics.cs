@@ -1,4 +1,5 @@
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using Refresh.Database.Models;
 using Refresh.Database.Models.Comments;
 using Refresh.Database.Models.Levels;
@@ -46,6 +47,8 @@ public partial class GameDatabaseContext // Statistics
     }
     
     #region Levels
+    internal const int LevelStatisticsVersion = 2;
+    
     public IEnumerable<GameLevel> GetLevelsWithStatisticsNeedingUpdates()
     {
         DateTimeOffset now = this._time.Now;
@@ -53,7 +56,7 @@ public partial class GameDatabaseContext // Statistics
         return this.GameLevels
             .Include(l => l.Statistics)
             .Where(l => l.Statistics != null)
-            .Where(l => l.Statistics!.RecalculateAt <= now);
+            .Where(l => l.Statistics!.RecalculateAt <= now || l.Statistics.Version != LevelStatisticsVersion);
     }
 
     public bool EnsureLevelStatisticsCreated(GameLevel level)
@@ -62,7 +65,15 @@ public partial class GameDatabaseContext // Statistics
 
         level.Statistics = this.GameLevelStatistics.FirstOrDefault(s => s.LevelId == level.LevelId);
 
-        if (level.Statistics != null) return false;
+        if (level.Statistics != null)
+        {
+#if DEBUG
+            if(Debugger.IsAttached)
+                Debugger.Break();
+#endif
+
+            return false;
+        }
 
         level.Statistics = new GameLevelStatistics
         {
@@ -102,6 +113,7 @@ public partial class GameDatabaseContext // Statistics
         });
     }
 
+    [SuppressMessage("ReSharper.DPA", "DPA0005: Database issues")]
     private void RecalculateLevelStatisticsInternal(GameLevel level)
     {
         Debug.Assert(level.Statistics != null);
@@ -119,6 +131,7 @@ public partial class GameDatabaseContext // Statistics
         this.RecalculateLevelRatingStatisticsInternal(level);
 
         level.Statistics.RecalculateAt = null;
+        level.Statistics.Version = LevelStatisticsVersion;
     }
 
     private void RecalculateLevelRatingStatisticsInternal(GameLevel level)
@@ -131,6 +144,7 @@ public partial class GameDatabaseContext // Statistics
         level.Statistics.BooCountExcludingPublisher = this.GetTotalRatingsForLevel(level, RatingType.Boo, false);
         level.Statistics.NeutralCount = this.GetTotalRatingsForLevel(level, RatingType.Neutral);
         level.Statistics.NeutralCountExcludingPublisher = this.GetTotalRatingsForLevel(level, RatingType.Neutral, false);
+        level.Statistics.Karma = level.Statistics.YayCount - level.Statistics.BooCount;
     }
 
     private void MarkLevelStatisticsDirty(GameLevel level)
@@ -145,14 +159,16 @@ public partial class GameDatabaseContext // Statistics
 
     #region Users
 
+    internal const int UserStatisticsVersion = 1;
+    
     public IEnumerable<GameUser> GetUsersWithStatisticsNeedingUpdates()
     {
         DateTimeOffset now = this._time.Now;
 
         return this.GameUsers
-            .Include(l => l.Statistics)
-            .Where(l => l.Statistics != null)
-            .Where(l => l.Statistics!.RecalculateAt <= now);
+            .Include(u => u.Statistics)
+            .Where(u => u.Statistics != null)
+            .Where(u => u.Statistics!.RecalculateAt <= now || u.Statistics.Version != UserStatisticsVersion);
     }
 
     public bool EnsureUserStatisticsCreated(GameUser user)
@@ -162,7 +178,15 @@ public partial class GameDatabaseContext // Statistics
 
         user.Statistics = this.GameUserStatistics.FirstOrDefault(s => s.UserId == user.UserId);
 
-        if (user.Statistics != null) return false;
+        if (user.Statistics != null)
+        {
+#if DEBUG
+            if(Debugger.IsAttached)
+                Debugger.Break();
+#endif
+
+            return false;
+        }
 
         user.Statistics = new GameUserStatistics
         {
@@ -202,6 +226,7 @@ public partial class GameDatabaseContext // Statistics
         });
     }
 
+    [SuppressMessage("ReSharper.DPA", "DPA0005: Database issues")]
     private void RecalculateUserStatisticsInternal(GameUser user)
     {
         if (user.FakeUser)
@@ -225,6 +250,7 @@ public partial class GameDatabaseContext // Statistics
         user.Statistics.FavouriteLevelCount = this.GetTotalLevelsFavouritedByUser(user);
 
         user.Statistics.RecalculateAt = null;
+        user.Statistics.Version = UserStatisticsVersion;
     }
 
     private void MarkUserStatisticsDirty(GameUser user)

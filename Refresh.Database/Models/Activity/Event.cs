@@ -11,12 +11,13 @@ namespace Refresh.Database.Models.Activity;
 /// An action performed by a user.
 /// </summary>
 [SuppressMessage("ReSharper", "UnusedMember.Global")]
+[Index(nameof(Timestamp))]
 public partial class Event
 {
     /// <summary>
     /// The ID of the event.
     /// </summary>
-    public ObjectId EventId { get; set; } = ObjectId.GenerateNewId();
+    [Key] public ObjectId EventId { get; set; } = ObjectId.GenerateNewId();
     
     public EventType EventType { get; set; }
 

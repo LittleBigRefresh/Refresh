@@ -16,20 +16,22 @@ public partial class GameDatabaseContext // Activity
             parameters.Timestamp = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
 
         if (parameters.EndTimestamp == 0)
-            parameters.EndTimestamp = DateTimeOffset.UtcNow.Subtract(TimeSpan.FromDays(30.5 * 6)).ToUnixTimeMilliseconds();
+            parameters.EndTimestamp = DateTimeOffset.UtcNow.Subtract(TimeSpan.FromDays(30.5 * 3)).ToUnixTimeMilliseconds();
 
         DateTimeOffset timestamp = DateTimeOffset.FromUnixTimeMilliseconds(parameters.Timestamp);
         DateTimeOffset endTimestamp = DateTimeOffset.FromUnixTimeMilliseconds(parameters.EndTimestamp);
-        
+
+        // DO NOT USE INCLUDE ON THIS QUERY
+        // this will severely hurt performance as postgres will not use the index efficiently due to the joins
         IEnumerable<Event> query = this.Events
-            .Include(e => e.User)
-            .Where(e => e.Timestamp < timestamp && e.Timestamp >= endTimestamp)
-            .AsEnumerable();
+            .Where(e => e.Timestamp < timestamp && e.Timestamp >= endTimestamp);
 
         if (parameters is { ExcludeMyLevels: true, User: not null })
         {
             //Filter the query to events which either arent level related, or which the level publisher doesnt contain the user
-            query = query.Where(e => e.StoredDataType != EventDataType.Level || this.GetLevelById(e.StoredSequentialId ?? int.MaxValue)?.Publisher?.UserId != parameters.User.UserId);
+            query = query
+                .AsEnumerable() // TODO: optimize me
+                .Where(e => e.StoredDataType != EventDataType.Level || this.GetLevelById(e.StoredSequentialId ?? int.MaxValue)?.Publisher?.UserId != parameters.User.UserId);
         }
         
         if (parameters is { ExcludeFriends: true, User: not null })
@@ -60,11 +62,25 @@ public partial class GameDatabaseContext // Activity
     {
         if (parameters.Timestamp == 0) 
             parameters.Timestamp = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
-        
-        List<Event> events = eventQuery
+
+        // step 1: gather event ids
+        List<ObjectId> eventIds = eventQuery
             .OrderByDescending(e => e.Timestamp)
+            .Select(e => e.EventId)
             .Skip(parameters.Skip)
             .Take(parameters.Count)
+            .ToList();
+        
+        Debug.Assert(eventIds.Count <= 100);
+
+        // step 2: separate query to contain JOINs
+        // helps with performance
+        List<Event> events = this.Events
+            .Where(e => eventIds.Contains(e.EventId))
+            .Include(e => e.User)
+            .Include(e => e.User.Statistics)
+            .AsEnumerable()
+            .OrderByDescending(e => e.Timestamp)
             .ToList();
 
         DatabaseActivityPage page = new(this, events, parameters);
@@ -75,7 +91,7 @@ public partial class GameDatabaseContext // Activity
     [Pure]
     public DatabaseList<Event> GetGlobalRecentActivity(ActivityQueryParameters parameters)
     {
-        return new DatabaseList<Event>(this.GetEvents(parameters).OrderByDescending(e => e.Timestamp), parameters.Skip, parameters.Count);
+        return new DatabaseList<Event>(this.GetEvents(parameters), parameters.Skip, parameters.Count);
     }
 
     [Pure]
@@ -109,8 +125,6 @@ public partial class GameDatabaseContext // Activity
             );
         }
 
-        query = query.OrderByDescending(e => e.Timestamp);
-
         return GetRecentActivity(query, parameters);
     }
 
@@ -121,8 +135,7 @@ public partial class GameDatabaseContext // Activity
     )
     {
         IEnumerable<Event> events = this.GetEvents(parameters)
-            .Where(e => e.StoredDataType == EventDataType.Level && e.StoredSequentialId == level.LevelId)
-            .OrderByDescending(e => e.Timestamp);
+            .Where(e => e.StoredDataType == EventDataType.Level && e.StoredSequentialId == level.LevelId);
 
         return GetRecentActivity(events, parameters);
     }
@@ -133,8 +146,7 @@ public partial class GameDatabaseContext // Activity
         Debug.Assert(parameters.User != null);
 
         IEnumerable<Event> events = this.GetEvents(parameters)
-            .Where(e => e.User?.UserId == parameters.User.UserId)
-            .OrderByDescending(e => e.Timestamp);
+            .Where(e => e.User?.UserId == parameters.User.UserId);
         
         return GetRecentActivity(events, parameters);
     }

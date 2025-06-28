@@ -8,16 +8,23 @@ namespace Refresh.Database;
 
 public partial class GameDatabaseContext // Photos
 {
-    public IQueryable<GamePhoto> GamePhotosIncluded => this.GamePhotos
+    private IQueryable<GamePhoto> GamePhotosIncluded => this.GamePhotos
         .Include(p => p.LargeAsset)
         .Include(p => p.MediumAsset)
         .Include(p => p.SmallAsset)
         .Include(p => p.Publisher)
+        .Include(p => p.Publisher.Statistics)
         .Include(p => p.Level)
+        .Include(p => p.Level!.Publisher)
+        .Include(p => p.Level!.Publisher!.Statistics)
         .Include(p => p.Subject1User)
+        .Include(p => p.Subject1User!.Statistics)
         .Include(p => p.Subject2User)
+        .Include(p => p.Subject2User!.Statistics)
         .Include(p => p.Subject3User)
-        .Include(p => p.Subject4User);
+        .Include(p => p.Subject3User!.Statistics)
+        .Include(p => p.Subject4User)
+        .Include(p => p.Subject4User!.Statistics);
     
     public void UploadPhoto(SerializedPhoto photo, GameUser publisher)
     {
@@ -141,9 +148,7 @@ public partial class GameDatabaseContext // Photos
     [Pure]
     public int GetTotalPhotosWithUser(GameUser user)
         => this.GamePhotos
-            // FIXME: client-side enumeration
-            .AsEnumerable()
-            .Count(p => p.Subjects.FirstOrDefault(s => Equals(s.User, user)) != null);
+            .Count(p => p.Subject1User == user || p.Subject2User == user || p.Subject3User == user || p.Subject4User == user);
 
     [Pure]
     public DatabaseList<GamePhoto> GetPhotosInLevel(GameLevel level, int count, int skip)
