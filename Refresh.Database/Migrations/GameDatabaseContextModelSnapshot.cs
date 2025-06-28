@@ -1116,6 +1116,9 @@ namespace Refresh.Database.Migrations
                     b.Property<int>("FavouriteCountExcludingPublisher")
                         .HasColumnType("integer");
 
+                    b.Property<int>("Karma")
+                        .HasColumnType("integer");
+
                     b.Property<int>("NeutralCount")
                         .HasColumnType("integer");
 

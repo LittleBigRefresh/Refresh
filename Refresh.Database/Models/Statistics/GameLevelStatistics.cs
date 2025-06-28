@@ -23,4 +23,5 @@ public class GameLevelStatistics
     public int BooCountExcludingPublisher { get; set; }
     public int NeutralCount { get; set; }
     public int NeutralCountExcludingPublisher { get; set; }
+    public int Karma { get; set; }
 }

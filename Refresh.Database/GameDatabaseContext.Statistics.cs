@@ -46,7 +46,7 @@ public partial class GameDatabaseContext // Statistics
     }
     
     #region Levels
-    internal const int LevelStatisticsVersion = 1;
+    internal const int LevelStatisticsVersion = 2;
     
     public IEnumerable<GameLevel> GetLevelsWithStatisticsNeedingUpdates()
     {
@@ -133,6 +133,7 @@ public partial class GameDatabaseContext // Statistics
         level.Statistics.BooCountExcludingPublisher = this.GetTotalRatingsForLevel(level, RatingType.Boo, false);
         level.Statistics.NeutralCount = this.GetTotalRatingsForLevel(level, RatingType.Neutral);
         level.Statistics.NeutralCountExcludingPublisher = this.GetTotalRatingsForLevel(level, RatingType.Neutral, false);
+        level.Statistics.Karma = level.Statistics.YayCount - level.Statistics.BooCount;
     }
 
     private void MarkLevelStatisticsDirty(GameLevel level)
