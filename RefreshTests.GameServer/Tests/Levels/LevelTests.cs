@@ -279,10 +279,22 @@ public class LevelTests : GameServerTest
 
         SerializedMinimalLevelList result = message.Content.ReadAsXML<SerializedMinimalLevelList>();
         Assert.That(result.Items, Has.Count.EqualTo(0));
+        
+        Assert.That(context.Database.RateLevel(level, user, RatingType.Yay), Is.True);
+        Assert.That(context.Database.RateLevel(level, user2, RatingType.Yay), Is.True);
+        Assert.That(context.Database.RateLevel(level2, user3, RatingType.Yay), Is.True);
 
-        bool a = context.Database.RateLevel(level, user, RatingType.Yay);
-        context.Database.RateLevel(level, user2, RatingType.Yay);
-        context.Database.RateLevel(level2, user3, RatingType.Yay);
+        Assert.That(context.Database.GetTotalRatingsForLevel(level, RatingType.Yay), Is.EqualTo(2)); 
+        Assert.That(context.Database.GetTotalRatingsForLevel(level2, RatingType.Yay), Is.EqualTo(1)); 
+        
+        context.Database.RecalculateLevelStatistics(level);
+        context.Database.RecalculateLevelStatistics(level2);
+
+        level = context.Database.GetLevelById(level.LevelId)!;
+        level2 = context.Database.GetLevelById(level2.LevelId)!;
+        
+        Assert.That(level.Statistics!.YayCount, Is.EqualTo(2));
+        Assert.That(level2.Statistics!.YayCount, Is.EqualTo(1));
 
         message = client.GetAsync($"/lbp/slots/highestRated").Result;
         Assert.That(message.StatusCode, Is.EqualTo(OK));
@@ -292,12 +304,18 @@ public class LevelTests : GameServerTest
         Assert.That(result.Items[0].LevelId, Is.EqualTo(level.LevelId));
         Assert.That(result.Items[1].LevelId, Is.EqualTo(level2.LevelId));
 
-        context.Database.RateLevel(level2, user, RatingType.Yay);
-        context.Database.RateLevel(level, user3, RatingType.Boo);
+        Assert.That(context.Database.RateLevel(level2, user, RatingType.Yay), Is.True);
+        Assert.That(context.Database.RateLevel(level, user3, RatingType.Boo), Is.True);
+        
+        context.Database.RecalculateLevelStatistics(level);
+        context.Database.RecalculateLevelStatistics(level2);
+
+        level = context.Database.GetLevelById(level.LevelId)!;
+        level2 = context.Database.GetLevelById(level2.LevelId)!;
  
         message = client.GetAsync($"/lbp/slots/highestRated").Result;
         Assert.That(message.StatusCode, Is.EqualTo(OK));
-
+        
         result = message.Content.ReadAsXML<SerializedMinimalLevelList>();
         Assert.That(result.Items, Has.Count.EqualTo(2));
         Assert.That(result.Items[0].LevelId, Is.EqualTo(level2.LevelId));
@@ -364,6 +382,9 @@ public class LevelTests : GameServerTest
         context.Database.PlayLevel(level2, user2, 5);
         context.Database.PlayLevel(level, user3, 1);
         context.Database.PlayLevel(level2, user3, 1);
+        
+        context.Database.RecalculateLevelStatistics(level);
+        context.Database.RecalculateLevelStatistics(level2);
         
         message = client.GetAsync($"/lbp/slots/mostPlays").Result;
         Assert.That(message.StatusCode, Is.EqualTo(OK));
