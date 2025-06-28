@@ -141,9 +141,7 @@ public partial class GameDatabaseContext // Photos
     [Pure]
     public int GetTotalPhotosWithUser(GameUser user)
         => this.GamePhotos
-            // FIXME: client-side enumeration
-            .AsEnumerable()
-            .Count(p => p.Subjects.FirstOrDefault(s => Equals(s.User, user)) != null);
+            .Count(p => p.Subject1User == user || p.Subject2User == user || p.Subject3User == user || p.Subject4User == user);
 
     [Pure]
     public DatabaseList<GamePhoto> GetPhotosInLevel(GameLevel level, int count, int skip)
