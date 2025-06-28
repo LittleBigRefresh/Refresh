@@ -6,6 +6,7 @@ public class GameUserStatistics
 {
     [Required, Key] public ObjectId UserId { get; set; }
     public DateTimeOffset? RecalculateAt { get; set; } = null;
+    public int Version { get; set; } = GameDatabaseContext.UserStatisticsVersion;
     
     public int FavouriteCount { get; set; }
     public int CommentCount { get; set; }

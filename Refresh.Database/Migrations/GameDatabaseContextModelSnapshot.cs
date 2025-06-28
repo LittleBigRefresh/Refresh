@@ -1143,6 +1143,9 @@ namespace Refresh.Database.Migrations
                     b.Property<int>("UniquePlayCountExcludingPublisher")
                         .HasColumnType("integer");
 
+                    b.Property<int>("Version")
+                        .HasColumnType("integer");
+
                     b.Property<int>("YayCount")
                         .HasColumnType("integer");
 
@@ -1187,6 +1190,9 @@ namespace Refresh.Database.Migrations
                         .HasColumnType("timestamp with time zone");
 
                     b.Property<int>("ReviewCount")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("Version")
                         .HasColumnType("integer");
 
                     b.HasKey("UserId");
