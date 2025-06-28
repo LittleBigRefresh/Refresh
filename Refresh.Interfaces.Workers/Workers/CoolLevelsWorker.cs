@@ -131,7 +131,7 @@ public class CoolLevelsWorker : IWorker
         };
 
         if (level.TeamPicked)
-            score += 50;
+            score += 100;
         
         int positiveRatings = level.Statistics.YayCountExcludingPublisher;
         int negativeRatings = level.Statistics.BooCountExcludingPublisher;
