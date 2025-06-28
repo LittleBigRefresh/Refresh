@@ -152,6 +152,9 @@ public class CoolLevelsWorker : IWorker
         if (level.Publisher?.Role == GameUserRole.Trusted)
             score += trustedAuthorPoints;
 
+        if (level.IsReUpload)
+            score *= 0.95f;
+
         Log(context.Logger, LogLevel.Trace, "positiveScore is {0}", score);
         return score;
     }
