@@ -1,4 +1,5 @@
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using Refresh.Database.Models;
 using Refresh.Database.Models.Comments;
 using Refresh.Database.Models.Levels;
@@ -112,6 +113,7 @@ public partial class GameDatabaseContext // Statistics
         });
     }
 
+    [SuppressMessage("ReSharper.DPA", "DPA0005: Database issues")]
     private void RecalculateLevelStatisticsInternal(GameLevel level)
     {
         Debug.Assert(level.Statistics != null);
@@ -224,6 +226,7 @@ public partial class GameDatabaseContext // Statistics
         });
     }
 
+    [SuppressMessage("ReSharper.DPA", "DPA0005: Database issues")]
     private void RecalculateUserStatisticsInternal(GameUser user)
     {
         if (user.FakeUser)
