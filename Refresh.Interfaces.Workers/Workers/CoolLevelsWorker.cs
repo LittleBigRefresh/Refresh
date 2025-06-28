@@ -12,7 +12,7 @@ using NotEnoughLogs;
 using Refresh.Core;
 using Refresh.Core.Types.Data;
 using Refresh.Database;
-using Refresh.Database.Models.Comments;
+using Refresh.Database.Models.Authentication;
 using Refresh.Database.Models.Levels;
 using Refresh.Database.Models.Users;
 
@@ -110,10 +110,25 @@ public class CoolLevelsWorker : IWorker
         // Don't apply this bonus to reuploads to discourage a flood of 15CR levels.
         float score = level.IsReUpload ? 0 : 15;
         
-        const float positiveRatingPoints = 5;
         const float uniquePlayPoints = 0.1f;
-        const float heartPoints = 10;
         const float trustedAuthorPoints = 5;
+        
+        float positiveRatingPoints = level.GameVersion switch
+        {
+            TokenGame.LittleBigPlanet1 => 2.5f,
+            TokenGame.LittleBigPlanet2 => 7.5f,
+            TokenGame.LittleBigPlanet3 => 15,
+            TokenGame.LittleBigPlanetVita => 7.5f,
+            TokenGame.LittleBigPlanetPSP => 15f,
+            _ => 5,
+        };
+
+        float heartPoints = level.GameVersion switch {
+            TokenGame.LittleBigPlanet3 => 15,
+            TokenGame.LittleBigPlanetVita => 15,
+            TokenGame.LittleBigPlanetPSP => 15,
+            _ => 10,
+        };
 
         if (level.TeamPicked)
             score += 50;
@@ -126,9 +141,10 @@ public class CoolLevelsWorker : IWorker
         score += uniquePlays * uniquePlayPoints;
         score += level.Statistics.FavouriteCountExcludingPublisher * heartPoints;
         
-        // Reward for a good ratio between plays and yays
+        // Reward for a good ratio between plays and yays.
+        // Doesn't apply to LBP1 levels.
         float ratingRatio = (positiveRatings - negativeRatings) / (float)uniquePlays;
-        if (ratingRatio > 0.5f)
+        if (ratingRatio > 0.5f && level.GameVersion != TokenGame.LittleBigPlanet1)
         {
             score += positiveRatings * (positiveRatingPoints * ratingRatio);
         }
