@@ -56,15 +56,14 @@ public class RefreshGameServer : RefreshServer
     ) : base(listener)
     {
         dataStore ??= new FileSystemDataStore();
-
-        this._dataStore = dataStore;
+        List<IDataStore> dataStores = [];
 
         DryArchiveConfig? dryConfig = null;
         try
         {
             dryConfig = Config.LoadFromJsonFile<DryArchiveConfig>("dry.json", this.Logger);
             if (dryConfig.Enabled)
-                this._dataStore = new AggregateDataStore(dataStore, new DryDataStore(dryConfig));
+                dataStores.Add(new DownloadingDataStore(dataStore, new DryDataStore(dryConfig)));
         }
         catch (Exception ex)
         {
@@ -95,9 +94,15 @@ public class RefreshGameServer : RefreshServer
         // TODO: remove config option when test.lbpbonsai.com instance no longer needs prod assets
 #if DEBUG
         if (dryConfig?.TemporaryWillBeRemoved_UseProductionRefreshData ?? false)
-            this._dataStore = new AggregateDataStore(dataStore, new RemoteRefreshDataStore());
+            dataStores.Add(new DownloadingDataStore(dataStore, new RemoteRefreshDataStore()));
 #endif
-        
+
+        // ReSharper disable once ConvertIfStatementToConditionalTernaryExpression
+        if (dataStores.Count > 0)
+            this._dataStore = new AggregateDataStore(dataStore, dataStores.ToArray());
+        else
+            this._dataStore = dataStore;
+
         this.SetupInitializer(() =>
         {
             GameDatabaseProvider provider = databaseProvider.Invoke();
