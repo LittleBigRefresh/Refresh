@@ -10,10 +10,10 @@ namespace RefreshTests.GameServer.GameServer;
 [CancelAfter(2000)]
 public class GameServerTest
 {
-    protected static readonly Logger Logger = new(new []
-    {
+    protected static readonly Logger Logger = new(
+[
         new NUnitSink(),
-    });
+    ]);
     
     // ReSharper disable once MemberCanBeMadeStatic.Global
     protected TestContext GetServer(bool startServer = true, IDataStore? dataStore = null)
@@ -22,7 +22,7 @@ public class GameServerTest
         HttpClient client = listener.GetClient();
         MockDateTimeProvider time = new();
 
-        TestGameDatabaseProvider provider = new(time);
+        TestGameDatabaseProvider provider = new(Logger, time);
 
         Lazy<TestRefreshGameServer> gameServer = new(() =>
         {

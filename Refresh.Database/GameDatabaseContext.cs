@@ -17,7 +17,9 @@ using Refresh.Database.Models.Playlists;
 using Refresh.Database.Models.Relations;
 using System.Diagnostics;
 using MongoDB.Bson;
+using NotEnoughLogs;
 using Refresh.Database.Models.Statistics;
+using LogLevel = Microsoft.Extensions.Logging.LogLevel;
 
 namespace Refresh.Database;
 
@@ -26,6 +28,7 @@ public partial class GameDatabaseContext : DbContext, IDatabaseContext
 {
     private readonly IDateTimeProvider _time;
     private readonly IDatabaseConfig _dbConfig;
+    private readonly Logger _logger;
 
     internal DbSet<GameUser> GameUsers { get; set; }
     internal DbSet<GameUserStatistics> GameUserStatistics { get; set; }
@@ -69,14 +72,15 @@ public partial class GameDatabaseContext : DbContext, IDatabaseContext
     internal DbSet<ProfilePinRelation> ProfilePinRelations { get; set; }
     internal DbSet<GameSkillReward> GameSkillRewards { get; set; }
     
-    internal GameDatabaseContext(IDateTimeProvider time, IDatabaseConfig dbConfig)
+    internal GameDatabaseContext(Logger logger, IDateTimeProvider time, IDatabaseConfig dbConfig)
     {
+        this._logger = logger;
         this._time = time;
         this._dbConfig = dbConfig;
     }
 
     [Obsolete("For use by the `dotnet ef` tool only.", true)]
-    public GameDatabaseContext() : this(new SystemDateTimeProvider(), new EmptyDatabaseConfig())
+    public GameDatabaseContext() : this(new Logger(), new SystemDateTimeProvider(), new EmptyDatabaseConfig())
     {}
 
     protected override void OnConfiguring(DbContextOptionsBuilder options)
@@ -89,8 +93,33 @@ public partial class GameDatabaseContext : DbContext, IDatabaseContext
             if (envVarString != null)
                 connectionString = envVarString;
         }
+
+        const LogLevel targetLevel = LogLevel.Warning;
         
         options.UseNpgsql(connectionString);
+        options.LogTo(((_, level) => level >= targetLevel), (e) =>
+        {
+            NotEnoughLogs.LogLevel loggerLevel = e.LogLevel switch
+            {
+                LogLevel.Trace => NotEnoughLogs.LogLevel.Trace,
+                LogLevel.Debug => NotEnoughLogs.LogLevel.Debug,
+                LogLevel.Information => NotEnoughLogs.LogLevel.Info,
+                LogLevel.Warning => NotEnoughLogs.LogLevel.Warning,
+                LogLevel.Error => NotEnoughLogs.LogLevel.Error,
+                LogLevel.Critical => NotEnoughLogs.LogLevel.Critical,
+                LogLevel.None => NotEnoughLogs.LogLevel.Debug,
+                _ => NotEnoughLogs.LogLevel.Trace,
+            };
+
+            const string codePrefix = "Database/";
+            ReadOnlySpan<char> code = e.EventIdCode.AsSpan();
+
+            Span<char> category = stackalloc char[code.Length + codePrefix.Length];
+            codePrefix.CopyTo(category);
+            code.CopyTo(category[codePrefix.Length..]);
+            
+            this._logger.Log(loggerLevel, category, e.ToString());
+        });
         // options.LogTo(Console.WriteLine, LogLevel.Information);
     }
 
@@ -106,7 +135,6 @@ public partial class GameDatabaseContext : DbContext, IDatabaseContext
     {
         callback();
         this.SaveChanges();
-        Debug.Assert(!this.ChangeTracker.HasChanges());
     }
 
     private void RemoveAll<TClass>() where TClass : class
