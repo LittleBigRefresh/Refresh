@@ -333,11 +333,13 @@ public partial class GameDatabaseContext // Levels
     [Pure]
     public DatabaseList<GameLevel> GetUserLevelsChunk(int skip, int count)
         => new(this.GameLevelsIncluded
+            .OrderByDescending(l => l.LevelId)
             .Where(l => l.StoryId == 0), skip, count);
 
     [Pure]
     public IQueryable<GameLevel> GetAllUserLevels()
         => this.GameLevelsIncluded
+            .OrderByDescending(l => l.LevelId)
             .Where(l => l.StoryId == 0);
     
     [Pure]

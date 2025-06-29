@@ -12,7 +12,9 @@ public partial class GameDatabaseContext // Statistics
 {
     public RequestStatistics GetRequestStatistics()
     {
-        RequestStatistics? statistics = this.RequestStatistics.FirstOrDefault();
+        RequestStatistics? statistics = this.RequestStatistics
+            .OrderBy(l => l.Id)
+            .FirstOrDefault();
         if (statistics != null) return statistics;
 
         statistics = new RequestStatistics();
