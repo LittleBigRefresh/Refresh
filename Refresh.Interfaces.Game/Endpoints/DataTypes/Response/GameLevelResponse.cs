@@ -201,7 +201,7 @@ public class GameLevelResponse : IDataConvertableFrom<GameLevelResponse, GameLev
                     : SystemUsers.SystemPrefix + old.OriginalPublisher;
 
             if (publisher.Length > 16) // issue #698
-                publisher = publisher.Substring(0, 15) + "…";
+                publisher = string.Concat(publisher.AsSpan(0, 15), "…");
             
             
             response.Handle = new SerializedUserHandle
