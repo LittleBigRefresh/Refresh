@@ -199,6 +199,10 @@ public class GameLevelResponse : IDataConvertableFrom<GameLevelResponse, GameLev
                 publisher = string.IsNullOrEmpty(old.OriginalPublisher)
                     ? SystemUsers.UnknownUserName
                     : SystemUsers.SystemPrefix + old.OriginalPublisher;
+
+            if (publisher.Length > 16) // issue #698
+                publisher = string.Concat(publisher.AsSpan(0, 15), "-");
+            
             
             response.Handle = new SerializedUserHandle
             {
