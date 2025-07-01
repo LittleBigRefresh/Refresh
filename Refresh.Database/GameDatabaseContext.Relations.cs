@@ -358,7 +358,10 @@ public partial class GameDatabaseContext // Relations
 
     public GameReview? GetReviewByUserForLevel(GameUser user, GameLevel level)
         => this.GameReviewsIncluded.FirstOrDefault(gameReview => gameReview.Publisher == user && gameReview.Level == level);
-
+    
+    public GameReview? GetReviewById(int reviewId)
+        => this.GameReviewsIncluded.FirstOrDefault(gameReview => gameReview.ReviewId == reviewId);
+    
     public bool ReviewRatingExistsByUser(GameUser user, GameReview review)
         => this.RateReviewRelations.Any(relation => relation.Review == review && relation.User == user);
 
@@ -466,23 +469,57 @@ public partial class GameDatabaseContext // Relations
             .Include(r => r.Level.Statistics)
             .Include(r => r.Publisher)
             .Include(r => r.Publisher.Statistics)
-            .Where(s => s.Publisher == user);
-        
+            .Where(s => s.Publisher == user)
+            .ToList();
+    
+        foreach (GameReview review in reviews)
+        {
+            this.DeleteReview(review); 
+        }
+    }
+    
+    public bool DeleteReview(GameReview review)
+    {
         this.Write(() =>
         {
-            foreach (GameReview review in reviews)
-            {
-                this.CalculateLevelStatisticsIfNotPresent(review.Level);
-                this.CalculateUserStatisticsIfNotPresent(review.Publisher);
-                
-                this.GameReviews.Remove(review);
-                review.Level.Statistics!.ReviewCount--;
-                review.Publisher.Statistics!.ReviewCount--;
+            this.CalculateLevelStatisticsIfNotPresent(review.Level);
+            this.CalculateUserStatisticsIfNotPresent(review.Publisher);
+        
+            this.GameReviews.Remove(review);
+            review.Level.Statistics!.ReviewCount--;
+            review.Publisher.Statistics!.ReviewCount--;
 
-                this.MarkLevelStatisticsDirty(review.Level);
-                this.MarkUserStatisticsDirty(review.Publisher);
-            }
+            this.MarkLevelStatisticsDirty(review.Level);
+            this.MarkUserStatisticsDirty(review.Publisher);
         });
+    
+        return true;
+    }
+    
+    public void DeleteProfileCommentsPostedByUser(GameUser user)
+    {
+        IEnumerable<GameProfileComment> comments = this.GameProfileComments
+            .Include(c => c.Profile.Statistics)
+            .Where(c => c.Author == user)
+            .ToList();
+    
+        foreach (GameProfileComment comment in comments)
+        {
+            this.DeleteProfileComment(comment); 
+        }
+    }
+    
+    public void DeleteLevelCommentsPostedByUser(GameUser user)
+    {
+        IEnumerable<GameLevelComment> comments = this.GameLevelComments
+            .Include(c => c.Level.Statistics)
+            .Where(c => c.Author == user)
+            .ToList();
+    
+        foreach (GameLevelComment comment in comments)
+        {
+            this.DeleteLevelComment(comment); 
+        }
     }
 
     public DatabaseList<GameReview> GetReviewsByUser(GameUser user, int count, int skip)
