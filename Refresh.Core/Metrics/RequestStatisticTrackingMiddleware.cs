@@ -21,7 +21,7 @@ public class RequestStatisticTrackingMiddleware : IMiddleware
     public void HandleRequest(ListenerContext context, Lazy<IDatabaseContext> database, Action next)
     {
         Debug.Assert(this._sw.Value != null);
-        this._sw.Value.Start();
+        this._sw.Value.Restart();
         next();
         this._sw.Value.Stop();
         

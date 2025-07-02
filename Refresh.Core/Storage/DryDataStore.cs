@@ -1,7 +1,9 @@
+using System.Diagnostics;
 using System.Text;
 using Bunkum.Core.Storage;
 using JetBrains.Annotations;
 using Refresh.Common.Verification;
+using Refresh.Core.Metrics;
 
 namespace Refresh.Core.Storage;
 
@@ -15,6 +17,8 @@ public class DryDataStore : IDataStore
     {
         this._config = config;
     }
+    
+    private readonly ThreadLocal<Stopwatch> _sw = new(() => new Stopwatch());
     
     [Pure]
     private string? GetPath(ReadOnlySpan<char> hash)
@@ -67,7 +71,12 @@ public class DryDataStore : IDataStore
         if (path == null)
             throw new FormatException("The key was invalid.");
         
-        return File.ReadAllBytes(path);
+        this._sw.Value!.Restart();
+        byte[] data = File.ReadAllBytes(path);
+        this._sw.Value!.Stop();
+        DataStoreMetrics.RecordDry(this._sw.Value);
+
+        return data;
     }
     
     public bool RemoveFromStore(string key)
@@ -89,7 +98,12 @@ public class DryDataStore : IDataStore
         if (path == null)
             throw new FormatException("The key was invalid.");
         
-        return File.OpenRead(path);
+        this._sw.Value!.Restart();
+        Stream data = File.OpenRead(path);
+        this._sw.Value!.Stop();
+        DataStoreMetrics.RecordDry(this._sw.Value);
+
+        return data;
     }
     
     public Stream OpenWriteStream(string key)

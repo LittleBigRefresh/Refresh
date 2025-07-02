@@ -1,5 +1,8 @@
+using System.Diagnostics;
 using Bunkum.Core.Storage;
 using JetBrains.Annotations;
+using Refresh.Core.Metrics;
+
 #pragma warning disable CS0162 // Unreachable code detected
 
 namespace Refresh.Core.Storage;
@@ -18,6 +21,8 @@ public class RemoteRefreshDataStore : IDataStore
     {
         BaseAddress = new Uri(SourceUrl),
     };
+    
+    private readonly ThreadLocal<Stopwatch> _sw = new(() => new Stopwatch());
     
     [Pure]
     private string? GetPath(ReadOnlySpan<char> key)
@@ -44,6 +49,7 @@ public class RemoteRefreshDataStore : IDataStore
         if (path == null)
             throw new FormatException("The key was invalid.");
         
+        DataStoreMetrics.RecordRemoteCheck();
         HttpResponseMessage resp = this.Get(path);
         return resp.IsSuccessStatusCode;
     }
@@ -56,11 +62,16 @@ public class RemoteRefreshDataStore : IDataStore
         
         if (path == null)
             throw new FormatException("The key was invalid.");
-
+        
+        this._sw.Value!.Restart();
         HttpResponseMessage resp = this.Get(path);
         resp.EnsureSuccessStatusCode();
         
-        return resp.Content.ReadAsByteArrayAsync().Result;
+        byte[] data = resp.Content.ReadAsByteArrayAsync().Result;
+        this._sw.Value!.Stop();
+        DataStoreMetrics.RecordRemote(this._sw.Value);
+
+        return data;
     }
     
     public bool RemoveFromStore(string key) => throw new InvalidOperationException(WriteError);
