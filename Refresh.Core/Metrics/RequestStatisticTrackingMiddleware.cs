@@ -28,12 +28,12 @@ public class RequestStatisticTrackingMiddleware : IMiddleware
         if (context.Uri.AbsolutePath.StartsWith("/lbp/" /* GameEndpointAttribute.BaseRoute */))
         {
             Interlocked.Increment(ref _gameRequestsToSubmit);
-            GameServerMetrics.RecordGameRequest(this._sw.Value);
+            GameServerMetrics.RecordGameRequest(this._sw.Value, context.ResponseCode);
         }
         else
         {
             Interlocked.Increment(ref _apiRequestsToSubmit);
-            GameServerMetrics.RecordApiRequest(this._sw.Value);
+            GameServerMetrics.RecordApiRequest(this._sw.Value, context.ResponseCode);
         }
     }
 }
