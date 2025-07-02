@@ -15,6 +15,7 @@ using Refresh.Core;
 using Refresh.Core.Configuration;
 using Refresh.Core.Extensions;
 using Refresh.Core.Importing;
+using Refresh.Core.Metrics;
 using Refresh.Core.Services;
 using Refresh.Core.Storage;
 using Refresh.Core.Types.Categories;
@@ -141,6 +142,7 @@ public class RefreshGameServer : RefreshServer
         this.Server.AddMiddleware<CrossOriginMiddleware>();
         this.Server.AddMiddleware<PspVersionMiddleware>();
         this.Server.AddMiddleware(new PresenceAuthenticationMiddleware(this._integrationConfig!));
+        this.Server.AddMiddleware<RequestStatisticTrackingMiddleware>();
     }
 
     protected override void SetupConfiguration()
@@ -183,7 +185,6 @@ public class RefreshGameServer : RefreshServer
         
         this.Server.AddService<RoleService>();
         this.Server.AddService<SmtpService>();
-        this.Server.AddService<RequestStatisticTrackingService>();
         this.Server.AddService<PresenceService>();
         this.Server.AddService<PlayNowService>();
         this.Server.AddService<CommandService>();

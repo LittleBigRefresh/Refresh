@@ -1,7 +1,9 @@
 using System.Collections.Concurrent;
+using System.Diagnostics;
 using Bunkum.Core.Storage;
 using NotEnoughLogs;
 using Refresh.Common.Helpers;
+using Refresh.Core.Metrics;
 using Refresh.Database;
 using Refresh.Database.Models.Assets;
 using Refresh.Database.Models.Authentication;
@@ -92,10 +94,13 @@ public partial class ImageImporter : Importer
         using Stream stream = dataStore.GetStreamFromStore(dataStorePath);
         using Stream writeStream = dataStore.OpenWriteStream($"png/{hash}");
 
+        Stopwatch sw = Stopwatch.StartNew();
+
         switch (type)
         {
             case GameAssetType.GameDataTexture:
                 GtfToPng(stream, writeStream);
+                GameServerMetrics.RecordImageConversion(sw);
                 break;
             case GameAssetType.Mip: {
                 byte[] rawData = dataStore.GetDataFromStore(dataStorePath);
@@ -104,14 +109,17 @@ public partial class ImageImporter : Importer
                 using MemoryStream dataStream = new(data);
 
                 MipToPng(dataStream, writeStream);
+                GameServerMetrics.RecordImageConversion(sw);
                 break;
             }
             case GameAssetType.Texture:
                 TextureToPng(stream, writeStream);
+                GameServerMetrics.RecordImageConversion(sw);
                 break;
             case GameAssetType.Tga:
             case GameAssetType.Jpeg:
                 ImageToPng(stream, writeStream);
+                GameServerMetrics.RecordImageConversion(sw);
                 break;
             case GameAssetType.Png:
                 stream.CopyTo(writeStream); // TODO: use hard links instead of just replicating same data, or run 'optipng'?
