@@ -12,7 +12,7 @@ public class RemoteRefreshDataStore : IDataStore
 {
     private const string SourceUrl = "https://lbp.lbpbonsai.com/api/v3/"; 
     private const string WriteError = $"{nameof(RemoteRefreshDataStore)} is a read-only source, and cannot be written to.";
-    private const bool HideImages = false;
+    private const bool HideImages = true;
     
     private readonly HttpClient _client = new()
     {
