@@ -2,11 +2,20 @@
 kind: Service
 metadata:
   name: refresh-gameserver
+  namespace: refresh
+  labels:
+    app: refresh-gameserver
 spec:
   selector:
     app: refresh-gameserver
   ports:
-    - protocol: TCP
+    - name: refresh-gameserver
       port: 10061
-      targetPort: 10061
+      protocol: TCP
+    - name: monitor
+      protocol: TCP
+      port: 52323
+    - name: monitor-metrics
+      protocol: TCP
+      port: 52325
   type: ClusterIP

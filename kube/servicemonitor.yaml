@@ -1,0 +1,19 @@
+﻿apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: refresh-gameserver-monitor
+  namespace: monitoring
+  labels:
+    app: refresh-gameserver
+    release: kube-prometheus-stack
+spec:
+  endpoints:
+    - interval: 5s
+      port: monitor-metrics
+      path: /metrics
+  namespaceSelector:
+    matchNames:
+      - refresh
+  selector:
+    matchLabels:
+      app: refresh-gameserver
