@@ -109,6 +109,7 @@ public partial class GameDatabaseContext // Activity
         {
             List<ObjectId?> favouriteUsers = this.GetUsersFavouritedByUser(parameters.User, 1000, 0).Select(f => (ObjectId?)f.UserId).ToList();
             List<ObjectId?> userFriends = this.GetUsersMutuals(parameters.User).Select(u => (ObjectId?)u.UserId).ToList();
+            List<int> userLevels = this.GetLevelsByUser(parameters.User).Select(l => l.LevelId).ToList();
             
             query = query.Where(e =>
                 e.User?.UserId == parameters.User.UserId ||
@@ -117,8 +118,7 @@ public partial class GameDatabaseContext // Activity
                 favouriteUsers.Contains(e.StoredObjectId) ||
                 userFriends.Contains(e.User?.UserId) ||
                 userFriends.Contains(e.StoredObjectId) ||
-                (e.StoredDataType == EventDataType.Level && 
-                 this.GameLevels.Any(l => l.LevelId == e.StoredSequentialId && l.Publisher != null && l.Publisher.UserId == parameters.User.UserId)) ||
+                (e.StoredDataType == EventDataType.Level && userLevels.Contains(e.StoredSequentialId ?? -1)) ||
                 e.EventType == EventType.LevelTeamPick ||
                 e.EventType == EventType.UserFirstLogin
             );
