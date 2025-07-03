@@ -109,25 +109,32 @@ public class ReviewEndpoints : EndpointGroup
         string slotType,
         int id,
         SerializedGameReview body,
-        GameUser user,
+        GameUser userFrom,
         IDateTimeProvider timeProvider,
         GameServerConfig config)
     {
-        if (user.IsWriteBlocked(config))
+        if (userFrom.IsWriteBlocked(config))
             return Unauthorized;
         GameLevel? level = database.GetLevelByIdAndType(slotType, id);
 
         if (level == null)
             return NotFound;
 
-        //You cant review a level you haven't played.
-        if (!database.HasUserPlayedLevel(level, user))
+        // You cant review a level you haven't played.
+        if (!database.HasUserPlayedLevel(level, userFrom))
             return BadRequest;
 
         //Add the review to the database
+        GameUser? publisher = level.Publisher;
+        if (publisher != null)
+        {
+            database.AddNotification("New review", $"{userFrom.Username} reviewed your level '{level.Title}'!", publisher);
+            database.CreateLevelReviewEvent(userFrom, level);
+        }
+        
         database.AddReviewToLevel(new GameReview
         {
-            Publisher = user,
+            Publisher = userFrom,
             Level = level,
             PostedAt = timeProvider.Now,
             Labels = body.Labels,
@@ -135,7 +142,7 @@ public class ReviewEndpoints : EndpointGroup
         }, level);
 
         // Update the user's rating
-        database.RateLevel(level, user, (RatingType)body.Thumb);
+        database.RateLevel(level, userFrom, (RatingType)body.Thumb);
 
         return OK;
     }
