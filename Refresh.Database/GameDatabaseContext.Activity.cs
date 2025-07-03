@@ -52,7 +52,7 @@ public partial class GameDatabaseContext // Activity
 
         if (parameters is { ExcludeMyself: true, User: not null })
         {
-            query = query.Where(e => e.User != parameters.User);  
+            query = query.Where(e => e.User.UserId != parameters.User.UserId);
         }
 
         return query;
@@ -84,7 +84,7 @@ public partial class GameDatabaseContext // Activity
             .ToList();
 
         DatabaseActivityPage page = new(this, events, parameters);
-
+        
         return page;
     }
     
