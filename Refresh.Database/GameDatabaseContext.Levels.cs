@@ -295,6 +295,7 @@ public partial class GameDatabaseContext // Levels
             .FilterByGameVersion(gameVersion);
 
     [Pure]
+    public IQueryable<GameLevel> GetLevelsByUser(GameUser user) => this.GameLevels.Where(l => l.Publisher == user);
     public DatabaseList<GameLevel> GetLevelsByUser(GameUser user, int count, int skip, LevelFilterSettings levelFilterSettings, GameUser? accessor)
     {
         IEnumerable<GameLevel> levels;
@@ -524,10 +525,6 @@ public partial class GameDatabaseContext // Levels
 
     [Pure]
     public int GetModdedLevelCount() => this.GameLevels.Count(l => l.StoryId == 0 && l.IsModded);
-
-    public int GetTotalLevelsPublishedByUser(GameUser user)
-        => this.GameLevels
-            .Count(r => r.Publisher == user);
     
     public int GetTotalLevelsPublishedByUser(GameUser user, TokenGame game)
         => this.GameLevels
