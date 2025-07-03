@@ -52,7 +52,7 @@ public partial class GameDatabaseContext // Activity
 
         if (parameters is { ExcludeMyself: true, User: not null })
         {
-            query = query.Where(e => e.User.UserId != parameters.User.UserId && (e.StoredDataType != EventDataType.User || e.StoredObjectId != parameters.User.UserId));  
+            query = query.Where(e => e.User != parameters.User);  
         }
 
         return query;
@@ -109,7 +109,7 @@ public partial class GameDatabaseContext // Activity
         {
             List<ObjectId?> favouriteUsers = this.GetUsersFavouritedByUser(parameters.User, 1000, 0).Select(f => (ObjectId?)f.UserId).ToList();
             List<ObjectId?> userFriends = this.GetUsersMutuals(parameters.User).Select(u => (ObjectId?)u.UserId).ToList();
-
+            
             query = query.Where(e =>
                 e.User?.UserId == parameters.User.UserId ||
                 e.StoredObjectId == parameters.User.UserId ||
@@ -117,9 +117,8 @@ public partial class GameDatabaseContext // Activity
                 favouriteUsers.Contains(e.StoredObjectId) ||
                 userFriends.Contains(e.User?.UserId) ||
                 userFriends.Contains(e.StoredObjectId) ||
-                #if false // FIXME: double query
-                this.GetLevelById(e.StoredSequentialId ?? int.MaxValue)?.Publisher?.UserId == parameters.User.UserId ||
-                #endif
+                (e.StoredDataType == EventDataType.Level && 
+                 this.GameLevels.Any(l => l.LevelId == e.StoredSequentialId && l.Publisher != null && l.Publisher.UserId == parameters.User.UserId)) ||
                 e.EventType == EventType.LevelTeamPick ||
                 e.EventType == EventType.UserFirstLogin
             );
