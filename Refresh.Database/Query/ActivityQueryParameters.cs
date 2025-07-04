@@ -16,6 +16,5 @@ public struct ActivityQueryParameters
 
     public GameUser? User = null;
 
-    public ActivityQueryParameters()
-    {}
+    public ActivityQueryParameters() {}
 }
