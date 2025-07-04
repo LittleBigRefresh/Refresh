@@ -20,6 +20,35 @@ public class ActivityApiEndpoints : EndpointGroup
 {
     // TODO: this api really needs improvement
     // it's recent activity so i'm lazy
+    
+    // IM TRYING something ..new
+    private static (ActivityQueryParameters parameters, ApiValidationError? error) 
+        ExtractParameters(RequestContext context, GameUser? user)
+    {
+        ActivityQueryParameters parameters = new ActivityQueryParameters
+        {
+            User = user,
+            ExcludeMyLevels = bool.Parse(context.QueryString["excludeMyLevels"] ?? "false"),
+            ExcludeFriends = bool.Parse(context.QueryString["excludeFriends"] ?? "false"),
+            ExcludeFavouriteUsers = bool.Parse(context.QueryString["excludeFavouriteUsers"] ?? "false"),
+            ExcludeMyself = bool.Parse(context.QueryString["excludeMyself"] ?? "false")
+        };
+
+        long timestamp = 0;
+    
+        string? tsStr = context.QueryString["timestamp"];
+        if (tsStr != null && !long.TryParse(tsStr, out timestamp))
+            return (default, ApiValidationError.NumberParseError);
+    
+        parameters.Timestamp = timestamp;
+    
+        (int skip, int count) = context.GetPageData();
+        parameters.Skip = skip;
+        parameters.Count = count;
+    
+        return (parameters, null);
+    }
+
     [ApiV3Endpoint("activity"), Authentication(false)]
     [DocUsesPageData, DocSummary("Fetch a list of recent happenings on the server.")]
     [DocQueryParam("timestamp", "A timestamp in unix seconds, used to search backwards.")]
@@ -30,29 +59,11 @@ public class ActivityApiEndpoints : EndpointGroup
         if (!config.PermitShowingOnlineUsers)
             return ApiActivityPageResponse.Empty;
 
-        long timestamp = 0;
+        (ActivityQueryParameters parameters, ApiValidationError? error) = ExtractParameters(context, user);
+        if (error != null) return error;
         
-        bool excludeMyLevels = bool.Parse(context.QueryString["excludeMyLevels"] ?? "false");
-        bool excludeFriends = bool.Parse(context.QueryString["excludeFriends"] ?? "false");
-        bool excludeFavouriteUsers = bool.Parse(context.QueryString["excludeFavouriteUsers"] ?? "false");
-        bool excludeMyself = bool.Parse(context.QueryString["excludeMyself"] ?? "false");
-
-        string? tsStr = context.QueryString["timestamp"];
-        if (tsStr != null && !long.TryParse(tsStr, out timestamp)) return ApiValidationError.NumberParseError;
+        DatabaseActivityPage page = database.GetGlobalRecentActivityPage(parameters);
         
-        (int skip, int count) = context.GetPageData();
-
-        DatabaseActivityPage page = database.GetGlobalRecentActivityPage(new ActivityQueryParameters
-        {
-            Timestamp = timestamp,
-            Count = count,
-            Skip = skip,
-            User = user,
-            ExcludeFriends = excludeFriends,
-            ExcludeMyLevels = excludeMyLevels,
-            ExcludeFavouriteUsers = excludeFavouriteUsers,
-            ExcludeMyself = excludeMyself,
-        });
         return ApiActivityPageResponse.FromOld(page, dataContext);
     }
     
@@ -68,32 +79,13 @@ public class ActivityApiEndpoints : EndpointGroup
         if (!config.PermitShowingOnlineUsers)
             return ApiActivityPageResponse.Empty;
 
-        long timestamp = 0;
-        
-        bool excludeMyLevels = bool.Parse(context.QueryString["excludeMyLevels"] ?? "false");
-        bool excludeFriends = bool.Parse(context.QueryString["excludeFriends"] ?? "false");
-        bool excludeFavouriteUsers = bool.Parse(context.QueryString["excludeFavouriteUsers"] ?? "false");
-        bool excludeMyself = bool.Parse(context.QueryString["excludeMyself"] ?? "false");
-
-        string? tsStr = context.QueryString["timestamp"];
-        if (tsStr != null && !long.TryParse(tsStr, out timestamp)) return ApiValidationError.NumberParseError;
+        (ActivityQueryParameters parameters, ApiValidationError? error) = ExtractParameters(context, user);
+        if (error != null) return error;
 
         GameLevel? level = database.GetLevelById(id);
         if (level == null) return ApiNotFoundError.Instance;
         
-        (int skip, int count) = context.GetPageData();
-
-        DatabaseActivityPage page = database.GetRecentActivityForLevel(level, new ActivityQueryParameters
-        {
-            Timestamp = timestamp,
-            Skip = skip,
-            Count = count,
-            User = user,
-            ExcludeFriends = excludeFriends,
-            ExcludeMyLevels = excludeMyLevels,
-            ExcludeFavouriteUsers = excludeFavouriteUsers,
-            ExcludeMyself = excludeMyself,
-        });
+        DatabaseActivityPage page = database.GetRecentActivityForLevel(level, parameters);
         return ApiActivityPageResponse.FromOld(page, dataContext);
     }
     
@@ -108,33 +100,14 @@ public class ActivityApiEndpoints : EndpointGroup
     {
         if (!config.PermitShowingOnlineUsers)
             return ApiActivityPageResponse.Empty;
-
-        long timestamp = 0;
-        
-        bool excludeMyLevels = bool.Parse(context.QueryString["excludeMyLevels"] ?? "false");
-        bool excludeFriends = bool.Parse(context.QueryString["excludeFriends"] ?? "false");
-        bool excludeFavouriteUsers = bool.Parse(context.QueryString["excludeFavouriteUsers"] ?? "false");
-        bool excludeMyself = bool.Parse(context.QueryString["excludeMyself"] ?? "false");
-
-        string? tsStr = context.QueryString["timestamp"];
-        if (tsStr != null && !long.TryParse(tsStr, out timestamp)) return ApiValidationError.NumberParseError;
-        
+                
         GameUser? user = database.GetUserByUuid(uuid);
         if (user == null) return ApiNotFoundError.Instance;
-        
-        (int skip, int count) = context.GetPageData();
 
-        DatabaseActivityPage page = database.GetRecentActivityFromUser(new ActivityQueryParameters
-        {
-            Timestamp = timestamp,
-            Skip = skip,
-            Count = count,
-            User = user,
-            ExcludeFriends = excludeFriends,
-            ExcludeMyLevels = excludeMyLevels,
-            ExcludeFavouriteUsers = excludeFavouriteUsers,
-            ExcludeMyself = excludeMyself,
-        });
+        (ActivityQueryParameters parameters, ApiValidationError? error) = ExtractParameters(context, user);
+        if (error != null) return error;
+
+        DatabaseActivityPage page = database.GetRecentActivityFromUser(parameters);
         return ApiActivityPageResponse.FromOld(page, dataContext);
     }
     
@@ -150,32 +123,14 @@ public class ActivityApiEndpoints : EndpointGroup
         if (!config.PermitShowingOnlineUsers)
             return ApiActivityPageResponse.Empty;
 
-        long timestamp = 0;
-        
-        bool excludeMyLevels = bool.Parse(context.QueryString["excludeMyLevels"] ?? "false");
-        bool excludeFriends = bool.Parse(context.QueryString["excludeFriends"] ?? "false");
-        bool excludeFavouriteUsers = bool.Parse(context.QueryString["excludeFavouriteUsers"] ?? "false");
-        bool excludeMyself = bool.Parse(context.QueryString["excludeMyself"] ?? "false");
-
-        string? tsStr = context.QueryString["timestamp"];
-        if (tsStr != null && !long.TryParse(tsStr, out timestamp)) return ApiValidationError.NumberParseError;
-        
+      
         GameUser? user = database.GetUserByUsername(username);
         if (user == null) return ApiNotFoundError.Instance;
         
-        (int skip, int count) = context.GetPageData();
-
-        DatabaseActivityPage page = database.GetRecentActivityFromUser(new ActivityQueryParameters
-        {
-            Timestamp = timestamp,
-            Skip = skip,
-            Count = count,
-            User = user,
-            ExcludeFriends = excludeFriends,
-            ExcludeMyLevels = excludeMyLevels,
-            ExcludeFavouriteUsers = excludeFavouriteUsers,
-            ExcludeMyself = excludeMyself,
-        });
+        (ActivityQueryParameters parameters, ApiValidationError? error) = ExtractParameters(context, user);
+        if (error != null) return error;
+        
+        DatabaseActivityPage page = database.GetRecentActivityFromUser(parameters);
         return ApiActivityPageResponse.FromOld(page, dataContext);
     }
 }
