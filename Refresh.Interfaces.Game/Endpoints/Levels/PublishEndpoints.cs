@@ -227,7 +227,7 @@ public class PublishEndpoints : EndpointGroup
             level.IsReUpload = true;
 
             // get publisher -- [OriginalPublisher:{username}]
-            Match attributeMatch = Regex.Match(level.Title, @"\[OriginalPublisher:([^\]]+)\]", RegexOptions.IgnoreCase); // could we turn this in the future into something that allows custom level attributes?
+            Match attributeMatch = Regex.Match(level.Description, @"\[OriginalPublisher:([^\]]+)\]", RegexOptions.IgnoreCase); // could we turn this in the future into something that allows custom level attributes?
             level.OriginalPublisher = attributeMatch.Groups[1].Value;
         }
 
@@ -246,7 +246,7 @@ public class PublishEndpoints : EndpointGroup
             return new Response(GameLevelResponse.FromOld(newBody, dataContext)!, ContentType.Xml);
         }
 
-        //Mark the user as no longer publishing
+        // Mark the user as no longer publishing
         commandService.StopPublishing(dataContext.User!.UserId);
 
         level.Publisher = dataContext.User;
