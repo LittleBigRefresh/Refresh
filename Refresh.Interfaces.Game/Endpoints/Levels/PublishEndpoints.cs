@@ -215,7 +215,7 @@ public class PublishEndpoints : EndpointGroup
         }
         
         // Automatically mark level as reupload by keyword matching the title
-        // maybe get original publisher from the description??
+        // + get original publisher from the description??
         string[] reuploadWords = { 
             "(reupload)", "[reupload]",
             "(archive)", "[archive]"
