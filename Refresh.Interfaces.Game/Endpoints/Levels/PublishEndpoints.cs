@@ -1,5 +1,3 @@
-using System.Diagnostics.Tracing;
-using System.Text.RegularExpressions;
 using Bunkum.Core;
 using Bunkum.Core.Endpoints;
 using Bunkum.Core.RateLimit;
@@ -212,23 +210,6 @@ public class PublishEndpoints : EndpointGroup
                 dataContext.Database.AddPublishFailNotification("The uploaded level data was corrupted.", level, dataContext.User!);
                 return BadRequest;
             }
-        }
-        
-        // Automatically mark level as reupload by keyword matching the title
-        // + get original publisher from the description??
-        string[] reuploadWords = { 
-            "(reupload)", "[reupload]",
-            "(archive)", "[archive]"
-        };
-       
-        bool isReUpload = reuploadWords.Any(keyword => level.Title.IndexOf(keyword, StringComparison.OrdinalIgnoreCase) >= 0);
-        if (isReUpload)
-        {
-            level.IsReUpload = true;
-
-            // get publisher -- [OriginalPublisher:{username}]
-            Match attributeMatch = Regex.Match(level.Description, @"\[OriginalPublisher:([^\]]+)\]", RegexOptions.IgnoreCase); // could we turn this in the future into something that allows custom level attributes?
-            level.OriginalPublisher = attributeMatch.Groups[1].Value;
         }
 
         if (level.LevelId != default) // Republish requests contain the id of the old level
