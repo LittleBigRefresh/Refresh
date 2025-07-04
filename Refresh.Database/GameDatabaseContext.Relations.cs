@@ -386,10 +386,10 @@ public partial class GameDatabaseContext // Relations
     [Pure]
     public RatingType? GetRatingByUser(GameLevel level, GameUser user) => this.GetRateRelationByUser(level, user)?.RatingType;
 
-    public bool RateLevel(GameLevel level, GameUser user, RatingType type)
+    public RateLevelRelation? RateLevel(GameLevel level, GameUser user, RatingType type)
     {
-        if (level.Publisher?.UserId == user.UserId) return false;
-        if (level.GameVersion != TokenGame.LittleBigPlanetPSP && !this.HasUserPlayedLevel(level, user)) return false;
+        if (level.Publisher?.UserId == user.UserId) return null;
+        if (level.GameVersion != TokenGame.LittleBigPlanetPSP && !this.HasUserPlayedLevel(level, user)) return null;
         
         RateLevelRelation? rating = this.GetRateRelationByUser(level, user);
         
@@ -408,7 +408,7 @@ public partial class GameDatabaseContext // Relations
                 this.RateLevelRelations.Add(rating);
                 this.RecalculateLevelRatingStatisticsInternal(level);
             });
-            return true;
+            return rating;
         }
 
         this.WriteEnsuringStatistics(level, () =>
@@ -418,7 +418,7 @@ public partial class GameDatabaseContext // Relations
             this.RecalculateLevelRatingStatisticsInternal(level);
         });
 
-        return true;
+        return rating;
     }
     
     public int GetTotalRatingsForLevel(GameLevel level, RatingType type, bool includingAuthor = true) =>

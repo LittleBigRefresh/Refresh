@@ -10,6 +10,7 @@ using Refresh.Core.Types.Data;
 using Refresh.Database;
 using Refresh.Database.Models.Comments;
 using Refresh.Database.Models.Levels;
+using Refresh.Database.Models.Relations;
 using Refresh.Database.Models.Users;
 using Refresh.Interfaces.Game.Types.Reviews;
 
@@ -34,8 +35,8 @@ public class ReviewEndpoints : EndpointGroup
         //dpad ratings can only be -1 0 1
         if (rating is > 1 or < -1) return BadRequest;
         
-        bool rated = database.RateLevel(level, user, (RatingType)rating);
-        return rated ? OK : Unauthorized;
+        RateLevelRelation? rated = database.RateLevel(level, user, (RatingType)rating);
+        return (rated != null) ? OK : Unauthorized;
     }
     
     [GameEndpoint("rate/{slotType}/{id}", ContentType.Xml, HttpMethods.Post)]
@@ -65,7 +66,7 @@ public class ReviewEndpoints : EndpointGroup
                 return BadRequest;
         }
 
-        return database.RateLevel(level, user, rating) ? OK : Unauthorized;
+        return (database.RateLevel(level, user, rating) != null) ? OK : Unauthorized;
     }
 
     [GameEndpoint("reviewsFor/{slotType}/{id}", ContentType.Xml)]
@@ -126,11 +127,7 @@ public class ReviewEndpoints : EndpointGroup
 
         //Add the review to the database
         GameUser? publisher = level.Publisher;
-        if (publisher != null)
-        {
-            database.AddNotification("New review", $"{userFrom.Username} reviewed your level '{level.Title}'!", publisher);
-            database.CreateLevelReviewEvent(userFrom, level);
-        }
+
         
         database.AddReviewToLevel(new GameReview
         {
@@ -142,8 +139,18 @@ public class ReviewEndpoints : EndpointGroup
         }, level);
 
         // Update the user's rating
-        database.RateLevel(level, userFrom, (RatingType)body.Thumb);
-
+        RateLevelRelation? rating = database.RateLevel(level, userFrom, (RatingType)body.Thumb);
+       
+        if (publisher != null)
+        {
+            database.AddNotification("New review", $"{userFrom.Username} reviewed your level '{level.Title}'!", publisher);
+            database.CreateLevelReviewEvent(userFrom, level);
+            if (rating != null)
+            {
+                database.CreateLevelRateEvent(userFrom, rating);
+            }
+        }
+        
         return OK;
     }
     

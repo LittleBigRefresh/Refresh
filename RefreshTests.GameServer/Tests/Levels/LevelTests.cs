@@ -280,9 +280,9 @@ public class LevelTests : GameServerTest
         SerializedMinimalLevelList result = message.Content.ReadAsXML<SerializedMinimalLevelList>();
         Assert.That(result.Items, Has.Count.EqualTo(0));
         
-        Assert.That(context.Database.RateLevel(level, user, RatingType.Yay), Is.True);
-        Assert.That(context.Database.RateLevel(level, user2, RatingType.Yay), Is.True);
-        Assert.That(context.Database.RateLevel(level2, user3, RatingType.Yay), Is.True);
+        Assert.That(context.Database.RateLevel(level, user, RatingType.Yay), Is.Not.Null);
+        Assert.That(context.Database.RateLevel(level, user2, RatingType.Yay), Is.Not.Null);
+        Assert.That(context.Database.RateLevel(level2, user3, RatingType.Yay), Is.Not.Null);
 
         Assert.That(context.Database.GetTotalRatingsForLevel(level, RatingType.Yay), Is.EqualTo(2)); 
         Assert.That(context.Database.GetTotalRatingsForLevel(level2, RatingType.Yay), Is.EqualTo(1)); 
@@ -304,8 +304,8 @@ public class LevelTests : GameServerTest
         Assert.That(result.Items[0].LevelId, Is.EqualTo(level.LevelId));
         Assert.That(result.Items[1].LevelId, Is.EqualTo(level2.LevelId));
 
-        Assert.That(context.Database.RateLevel(level2, user, RatingType.Yay), Is.True);
-        Assert.That(context.Database.RateLevel(level, user3, RatingType.Boo), Is.True);
+        Assert.That(context.Database.RateLevel(level2, user, RatingType.Yay), Is.Not.Null);
+        Assert.That(context.Database.RateLevel(level, user3, RatingType.Boo), Is.Not.Null);
         
         context.Database.RecalculateLevelStatistics(level);
         context.Database.RecalculateLevelStatistics(level2);
