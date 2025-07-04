@@ -23,9 +23,9 @@ public enum EventType : byte
     [XmlEnum("tag_level")]
     LevelTag = 7,
     [XmlEnum("comment_on_level")]
-    PostLevelComment = 8,
+    LevelPostComment = 8,
     [XmlEnum("delete_level_comment")]
-    DeleteLevelComment = 9,
+    LevelDeleteComment = 9,
     [XmlEnum("upload_photo")]
     PhotoUpload = 10,
     [XmlEnum("unpublish_level")]
@@ -39,7 +39,7 @@ public enum EventType : byte
     [XmlEnum("review_level")]
     LevelReview = 15,
     [XmlEnum("comment_on_user")]
-    PostUserComment = 16,
+    UserPostComment = 16,
     [XmlEnum("create_playlist")]
     PlaylistCreate = 17,
     [XmlEnum("heart_playlist")]

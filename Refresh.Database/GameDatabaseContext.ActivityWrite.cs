@@ -18,8 +18,8 @@ public partial class GameDatabaseContext // ActivityWrite
             EventType = EventType.LevelUpload,
             StoredDataType = EventDataType.Level,
             Timestamp = this._time.Now,
-            User = userFrom,
-            StoredSequentialId = level.LevelId,
+            User = userFrom, // this is the container
+            StoredSequentialId = level.LevelId, // part of the container
         };
 
         this.Write(() => this.Events.Add(e));
@@ -72,8 +72,8 @@ public partial class GameDatabaseContext // ActivityWrite
             EventType = EventType.UserFavourite,
             StoredDataType = EventDataType.User,
             Timestamp = this._time.Now,
-            User = userFrom,
-            StoredObjectId = user.UserId,
+            User = user,
+            StoredObjectId = userFrom.UserId,
         };
 
         this.Write(() => this.Events.Add(e));
@@ -97,6 +97,62 @@ public partial class GameDatabaseContext // ActivityWrite
         this.Write(() => this.Events.Add(e));
         return e;
     }
+    
+    /// <summary>
+    /// Creates a new UserPostComment event from a <see cref='GameUser'/>, and adds it to the event list.
+    /// </summary>
+    public Event CreateUserPostCommentEvent(GameUser userFrom, GameUser user)
+    {
+        Event e = new()
+        {
+            EventType = EventType.UserPostComment,
+            StoredDataType = EventDataType.User,
+            Timestamp = this._time.Now,
+            User = userFrom,
+            StoredObjectId = user.UserId,
+        };
+
+        this.Write(() => this.Events.Add(e));
+        return e;
+    }
+    
+    /// <summary>
+    /// Creates a new LevelPostComment event from a <see cref='GameLevel'/>, and adds it to the event list.
+    /// </summary>
+    public Event CreateLevelPostCommentEvent(GameUser userFrom, GameLevel level)
+    {
+        Event e = new()
+        {
+            EventType = EventType.LevelPostComment,
+            StoredDataType = EventDataType.Level,
+            Timestamp = this._time.Now,
+            User = userFrom,
+            StoredSequentialId = level.LevelId,
+        };
+
+        this.Write(() => this.Events.Add(e));
+        return e;
+    }
+    
+        
+    /// <summary>
+    /// Creates a new LevelDeleteComment event from a <see cref='GameLevel'/>, and adds it to the event list.
+    /// </summary>
+    public Event CreateLevelDeleteCommentEvent(GameUser userFrom, GameLevel level)
+    {
+        Event e = new()
+        {
+            EventType = EventType.LevelDeleteComment,
+            StoredDataType = EventDataType.Level,
+            Timestamp = this._time.Now,
+            User = userFrom,
+            StoredSequentialId = level.LevelId,
+        };
+
+        this.Write(() => this.Events.Add(e));
+        return e;
+    }
+
 
     /// <summary>
     /// Creates a new LevelPlay event from a <see cref='GameLevel'/>, and adds it to the event list.
@@ -155,7 +211,7 @@ public partial class GameDatabaseContext // ActivityWrite
     /// <summary>
     /// Creates a new LevelRate event from a <see cref='RateLevelRelation'/>, and adds it to the event list.
     /// </summary>
-    public Event CreateRateLevelEvent(GameUser userFrom, RateLevelRelation relation)
+    public Event CreateLevelRateEvent(GameUser userFrom, RateLevelRelation relation)
     {
         Event e = new()
         {

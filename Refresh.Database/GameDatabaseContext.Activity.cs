@@ -1,4 +1,5 @@
 using System.Diagnostics;
+using Bunkum.Core;
 using JetBrains.Annotations;
 using MongoDB.Bson;
 using Refresh.Database.Query;
@@ -10,53 +11,46 @@ namespace Refresh.Database;
 
 public partial class GameDatabaseContext // Activity
 {
-    private IEnumerable<Event> GetEvents(ActivityQueryParameters parameters)
-    {
-        if (parameters.Timestamp == 0) 
-            parameters.Timestamp = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
+	private IEnumerable<Event> GetEvents(ActivityQueryParameters parameters)
+	{ 
+		if (parameters.Timestamp == 0) 
+			parameters.Timestamp = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
 
-        if (parameters.EndTimestamp == 0)
-            parameters.EndTimestamp = DateTimeOffset.UtcNow.Subtract(TimeSpan.FromDays(30.5 * 3)).ToUnixTimeMilliseconds();
+		if (parameters.EndTimestamp == 0)
+			parameters.EndTimestamp = DateTimeOffset.UtcNow.Subtract(TimeSpan.FromDays(30.5 * 3)).ToUnixTimeMilliseconds();
 
-        DateTimeOffset timestamp = DateTimeOffset.FromUnixTimeMilliseconds(parameters.Timestamp);
-        DateTimeOffset endTimestamp = DateTimeOffset.FromUnixTimeMilliseconds(parameters.EndTimestamp);
+		DateTimeOffset timestamp = DateTimeOffset.FromUnixTimeMilliseconds(parameters.Timestamp);
+		DateTimeOffset endTimestamp = DateTimeOffset.FromUnixTimeMilliseconds(parameters.EndTimestamp);
+		
+		
+		IQueryable<Event> events = this.Events.FromSqlRaw(@"
+	    SELECT e.* FROM public.""Events"" e
+	    WHERE e.""Timestamp"" >= {0} AND e.""Timestamp"" < {1}
+   		-- Exclude my levels if requested
 
-        // DO NOT USE INCLUDE ON THIS QUERY
-        // this will severely hurt performance as postgres will not use the index efficiently due to the joins
-        IEnumerable<Event> query = this.Events
-            .Where(e => e.Timestamp < timestamp && e.Timestamp >= endTimestamp);
+   		
+   		-- Exclude friends if requested  
+   		AND ({4} = false OR 
+   			((e.""StoredDataType"" != 0 OR
+   			NOT EXISTS (SELECT 1 FROM public.""FavouriteUserRelations"" fur 
+   				WHERE fur.""UserFavouritingId"" = {3} AND fur.""UserToFavouriteId"" = e.""StoredObjectId""))
+   			AND NOT EXISTS (SELECT 1 FROM public.""FavouriteUserRelations"" fur2 
+   				WHERE fur2.""UserFavouritingId"" = {3} AND fur2.""UserToFavouriteId"" = e.""UserId"")))
+   							
+   		-- Exclude myself if requested
+   		AND ({5} = false OR 
+   			(e.""UserId"" != {3} AND 
+   			(e.""StoredDataType"" != 0 OR e.""StoredObjectId"" != {3}))
+   	    );",
+		endTimestamp, timestamp,
+		parameters.ExcludeMyLevels,
+		parameters.User?.UserId.ToString(),
+		parameters.ExcludeFriends, 
+		parameters.ExcludeMyself)
+		.AsNoTracking();
 
-        if (parameters is { ExcludeMyLevels: true, User: not null })
-        {
-            //Filter the query to events which either arent level related, or which the level publisher doesnt contain the user
-            query = query
-                .AsEnumerable() // TODO: optimize me
-                .Where(e => e.StoredDataType != EventDataType.Level || this.GetLevelById(e.StoredSequentialId ?? int.MaxValue)?.Publisher?.UserId != parameters.User.UserId);
-        }
-        
-        if (parameters is { ExcludeFriends: true, User: not null })
-        {
-            List<ObjectId?> userFriends = this.GetUsersMutuals(parameters.User).Select(u => (ObjectId?)u.UserId).ToList();
-
-            // Filter the query to events which do not contain friends
-            query = query.Where(e => (e.StoredDataType != EventDataType.User || !userFriends.Contains(e.StoredObjectId)) &&
-                                                                               !userFriends.Contains(e.User.UserId));
-        }
-
-        if (parameters is { ExcludeFavouriteUsers: true, User: not null })
-        {
-            List<GameUser> favouriteUsers = this.GetUsersFavouritedByUser(parameters.User, 1000, 0).ToList();
-            
-            query = query.Where(e => favouriteUsers.All(r => r.UserId != e.User.UserId && (e.StoredDataType != EventDataType.User || r.UserId != e.StoredObjectId))); 
-        }
-
-        if (parameters is { ExcludeMyself: true, User: not null })
-        {
-            query = query.Where(e => e.User.UserId != parameters.User.UserId);
-        }
-
-        return query;
-    }
+		return events;
+	}
 
     private DatabaseActivityPage GetRecentActivity(IEnumerable<Event> eventQuery, ActivityQueryParameters parameters)
     {

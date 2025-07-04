@@ -57,8 +57,8 @@ public abstract class SerializedEvent : IDataConvertableFrom<SerializedEvent, Ev
             case EventType.LevelUnfavourite:
             case EventType.LevelStarRate:
             case EventType.LevelTag:
-            case EventType.PostLevelComment:
-            case EventType.DeleteLevelComment:
+            case EventType.LevelPostComment:
+            case EventType.LevelDeleteComment:
             case EventType.LevelUnpublish:
             case EventType.LevelTeamPick:
             case EventType.LevelRate:
@@ -69,7 +69,7 @@ public abstract class SerializedEvent : IDataConvertableFrom<SerializedEvent, Ev
                 return FromOldLevelEvent(old, level!);
             case EventType.UserFavourite:
             case EventType.UserUnfavourite:
-            case EventType.PostUserComment:
+            case EventType.UserPostComment:
             case EventType.UserFirstLogin:
                 return FromOldUserEvent(old, user!);
             case EventType.LevelUpload:

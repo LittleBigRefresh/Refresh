@@ -20,9 +20,9 @@ public class CommentEndpoints : EndpointGroup
 {
     [GameEndpoint("postUserComment/{username}", ContentType.Xml, HttpMethods.Post)]
     [RequireEmailVerified]
-    public Response PostProfileComment(RequestContext context, GameDatabaseContext database, string username, SerializedComment body, GameUser user, IDateTimeProvider timeProvider, GameServerConfig config)
+    public Response PostProfileComment(RequestContext context, GameDatabaseContext database, string username, SerializedComment body, GameUser userFrom, IDateTimeProvider timeProvider, GameServerConfig config)
     {
-        if (user.IsWriteBlocked(config))
+        if (userFrom.IsWriteBlocked(config))
             return Unauthorized;
         
         if (body.Content.Length > 4096)
@@ -34,12 +34,13 @@ public class CommentEndpoints : EndpointGroup
         if (profile == null) return NotFound;
         
         // TODO: include a check for if the user wants to receive these types of notifications 
-        if (!profile.Equals(user)) 
+        if (!profile.Equals(userFrom)) 
         {
-            database.AddNotification("New comment", $"{user.Username} left a comment on your profile!", profile);
+            database.AddNotification("New comment", $"{userFrom.Username} left a comment on your profile!", profile);
+            database.CreateUserPostCommentEvent(userFrom, database.GetUserByUsername(username)!);
         }
 
-        database.PostCommentToProfile(profile, user, body.Content);
+        database.PostCommentToProfile(profile, userFrom, body.Content);
         return OK;
     }
 
@@ -82,9 +83,9 @@ public class CommentEndpoints : EndpointGroup
     [GameEndpoint("postComment/{slotType}/{id}", ContentType.Xml, HttpMethods.Post)]
     [RequireEmailVerified]
     public Response PostLevelComment(RequestContext context, GameDatabaseContext database, string slotType, int id,
-        SerializedComment body, GameUser user, GameServerConfig config)
+        SerializedComment body, GameUser userFrom, GameServerConfig config)
     {
-        if (user.IsWriteBlocked(config))
+        if (userFrom.IsWriteBlocked(config))
             return Unauthorized;
 
         if (body.Content.Length > 4096)
@@ -95,12 +96,13 @@ public class CommentEndpoints : EndpointGroup
         GameLevel? level = database.GetLevelByIdAndType(slotType, id);
         if (level == null) return NotFound;
 
-        if (level.Publisher != null && !level.Publisher.Equals(user)) 
+        if (level.Publisher != null && !level.Publisher.Equals(userFrom)) 
         {
-            database.AddNotification("New comment", $"{user.Username} left a comment on your level: '{level.Title}!'", level.Publisher);
+            database.AddNotification("New comment", $"{userFrom.Username} left a comment on your level: '{level.Title}!'", level.Publisher);
+            database.CreateLevelPostCommentEvent(userFrom, level);
         }
 
-        database.PostCommentToLevel(level, user, body.Content);
+        database.PostCommentToLevel(level, userFrom, body.Content);
         return OK;
     }
 
@@ -119,7 +121,7 @@ public class CommentEndpoints : EndpointGroup
     }
 
     [GameEndpoint("deleteComment/{slotType}/{id}", HttpMethods.Post)]
-    public Response DeleteLevelComment(RequestContext context, GameDatabaseContext database, string slotType, int id, GameUser user)
+    public Response DeleteLevelComment(RequestContext context, GameDatabaseContext database, string slotType, int id, GameUser userFrom)
     {
         if (!int.TryParse(context.QueryString["commentId"], out int commentId)) return BadRequest;
         
@@ -130,19 +132,20 @@ public class CommentEndpoints : EndpointGroup
         if (comment == null) return BadRequest;
         
         //Validate someone doesnt try to delete someone else's comment
-        if (comment.Author.UserId != user.UserId)
+        if (comment.Author.UserId != userFrom.UserId)
         {
-            context.Logger.LogWarning(BunkumCategory.Game, $"User {user.Username} attempted to delete someone else's comment! This is likely a forged request");
+            context.Logger.LogWarning(BunkumCategory.Game, $"User {userFrom.Username} attempted to delete someone else's comment! This is likely a forged request");
             return Unauthorized;
         }
         
+        database.CreateLevelDeleteCommentEvent(userFrom, level);
         database.DeleteLevelComment(comment);
         
         return OK;
     }
     
     [GameEndpoint("rateUserComment/{content}", HttpMethods.Post)] // profile comments
-    public Response RateProfileComment(RequestContext context, GameDatabaseContext database, GameUser user, string content)
+    public Response RateProfileComment(RequestContext context, GameDatabaseContext database, GameUser userFrom, string content)
     {
         if (!int.TryParse(context.QueryString["commentId"], out int commentId)) return BadRequest;
         if (!Enum.TryParse(context.QueryString["rating"], out RatingType ratingType)) return BadRequest;
@@ -151,7 +154,7 @@ public class CommentEndpoints : EndpointGroup
         if (comment == null)
             return NotFound;
 
-        if (!database.RateProfileComment(user, comment, ratingType))
+        if (!database.RateProfileComment(userFrom, comment, ratingType))
             return BadRequest;
 
         return OK;
