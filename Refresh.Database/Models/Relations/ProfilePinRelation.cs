@@ -6,10 +6,11 @@ namespace Refresh.Database.Models.Relations;
 
 #nullable disable
 
-[PrimaryKey(nameof(PinId), nameof(PublisherId))]
+[PrimaryKey(nameof(Index), nameof(PublisherId), nameof(Game))]
 public partial class ProfilePinRelation
 {
     public long PinId { get; set; }
+    
     [ForeignKey(nameof(PublisherId))]
     [Required] public GameUser Publisher { get; set; }
     
