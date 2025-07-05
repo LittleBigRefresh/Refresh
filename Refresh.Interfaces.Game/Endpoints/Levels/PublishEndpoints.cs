@@ -227,7 +227,7 @@ public class PublishEndpoints : EndpointGroup
             return new Response(GameLevelResponse.FromOld(newBody, dataContext)!, ContentType.Xml);
         }
 
-        //Mark the user as no longer publishing
+        // Mark the user as no longer publishing
         commandService.StopPublishing(dataContext.User!.UserId);
 
         level.Publisher = dataContext.User;
