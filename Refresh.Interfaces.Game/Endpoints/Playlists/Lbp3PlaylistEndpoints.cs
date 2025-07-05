@@ -92,20 +92,20 @@ public class Lbp3PlaylistEndpoints : EndpointGroup
         if (playlist == null)
             return null;
 
-        IEnumerable<GameLevel> levels = dataContext.Database.GetLevelsInPlaylist(playlist, dataContext.Game);
+        DatabaseList<GameLevel> levels = dataContext.Database.GetLevelsInPlaylist(playlist, dataContext.Game, 0, 100);
 
-        foreach(GameLevel level in levels)
+        foreach(GameLevel level in levels.Items)
         {
             context.Logger.LogDebug(BunkumCategory.UserContent, $"Level {level}, ID {level.LevelId}, title {level.Title}");
         }
 
-        IEnumerable<GameLevelResponse> serializedLevels = GameLevelResponse.FromOldList(levels, dataContext);
+        IEnumerable<GameLevelResponse> serializedLevels = GameLevelResponse.FromOldList(levels.Items, dataContext);
 
         return new SerializedLevelList
         {
             Items = serializedLevels.ToList(),
-            Total = 0,
-            NextPageStart = 0
+            Total = levels.TotalItems,
+            NextPageStart = levels.NextPageIndex
         };
     }
 
@@ -186,11 +186,11 @@ public class Lbp3PlaylistEndpoints : EndpointGroup
         if (user == null) 
             return null;
 
-        IEnumerable<GamePlaylist> playlists = dataContext.Database.GetPlaylistsByAuthor(user);
+        DatabaseList<GamePlaylist> playlists = dataContext.Database.GetPlaylistsByAuthor(user, 0, 100);
 
         return new SerializedLbp3PlaylistList 
         {
-            Items = SerializedLbp3Playlist.FromOldList(playlists, dataContext).ToList()
+            Items = SerializedLbp3Playlist.FromOldList(playlists.Items, dataContext).ToList()
         };
     }
 

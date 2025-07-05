@@ -207,79 +207,59 @@ public partial class GameDatabaseContext // Playlists
             }
         });
     }
-
-    public IEnumerable<GamePlaylist> GetPlaylistsContainingPlaylist(GamePlaylist playlist)
-        => this.SubPlaylistRelations.Where(p => p.SubPlaylist == playlist).OrderByDescending(r => r.Timestamp)
-            .Select(r => this.GamePlaylists.First(p => p.PlaylistId == r.Playlist.PlaylistId))
-            .Where(p => !p.IsRoot);
-
-    public DatabaseList<GamePlaylist> GetPlaylistsContainingPlaylist(GamePlaylist playlist, int skip, int count)
-        => new(this.GetPlaylistsContainingPlaylist(playlist), skip, count);
-    
-    public DatabaseList<GamePlaylist> GetPlaylistsByAuthorContainingPlaylist(GameUser user, GamePlaylist playlist, int skip, int count)
-        => new(this.SubPlaylistRelations
-            .Where(p => p.SubPlaylist == playlist)
-            .OrderByDescending(r => r.Timestamp)
-            .Select(r => this.GamePlaylists.First(p => p.PlaylistId == r.Playlist.PlaylistId))
-            .Where(p => p.Publisher.UserId == user.UserId)
-            .Where(p => !p.IsRoot), skip, count);
-
-    public IEnumerable<GameLevel> GetLevelsInPlaylist(GamePlaylist playlist, TokenGame game)
-        => this.LevelPlaylistRelations
-            .Where(l => l.Playlist == playlist)
-            .OrderBy(r => r.Index)
-            .Select(l => l.Level)
-            .FilterByGameVersion(game);
         
     public DatabaseList<GameLevel> GetLevelsInPlaylist(GamePlaylist playlist, TokenGame game, int skip, int count)
-        => new(this.GetLevelsInPlaylist(playlist, game), skip, count);
-
-    public DatabaseList<GameLevel> GetLevelsInPlaylist(GamePlaylist playlist, int skip, int count)
         => new(this.LevelPlaylistRelations
             .Where(l => l.Playlist == playlist)
             .OrderBy(r => r.Index)
-            .Select(l => l.Level), skip, count);
-
-    public int GetTotalLevelsInPlaylistCount(GamePlaylist playlist, TokenGame game) => 
-        this.LevelPlaylistRelations.Where(l => l.Playlist == playlist)
-            .AsEnumerable()
             .Select(l => l.Level)
-            .FilterByGameVersion(game)
-            .Count();
+            .FilterByGameVersion(game), skip, count);
 
-    public int GetTotalLevelsInPlaylistCount(GamePlaylist playlist) => 
-        this.LevelPlaylistRelations.Count(l => l.Playlist == playlist);
+    public int GetTotalLevelsInPlaylistCount(GamePlaylist playlist) 
+        => this.LevelPlaylistRelations.Count(l => l.Playlist == playlist);
 
-    public IEnumerable<GamePlaylist> GetPlaylistsInPlaylist(GamePlaylist playlist)
-        => this.SubPlaylistRelations
-            .Where(p => p.Playlist == playlist)
-            .OrderByDescending(r => r.Timestamp)
-            .Select(l => l.SubPlaylist);
+    private IEnumerable<GamePlaylist> GetPlaylistsContainingPlaylistInternal(GamePlaylist playlist)
+    {
+        IQueryable<SubPlaylistRelation> allParents = this.SubPlaylistRelations
+            .Where(p => p.SubPlaylist == playlist)
+            .OrderByDescending(r => r.Timestamp);
+        
+        return allParents
+            .Select(r => this.GamePlaylists.First(p => p.PlaylistId == r.Playlist.PlaylistId))
+            .Where(p => !p.IsRoot);
+    }
+
+    public DatabaseList<GamePlaylist> GetPlaylistsContainingPlaylist(GamePlaylist playlist, int skip, int count)
+        => new(GetPlaylistsContainingPlaylistInternal(playlist), skip, count);
+
+    public DatabaseList<GamePlaylist> GetPlaylistsByAuthorContainingPlaylist(GameUser user, GamePlaylist playlist, int skip, int count)
+        => new(GetPlaylistsContainingPlaylistInternal(playlist)
+            .Where(p => p.PublisherId == user.UserId), skip, count);
 
     public DatabaseList<GamePlaylist> GetPlaylistsInPlaylist(GamePlaylist playlist, int skip, int count)
-        => new(this.GetPlaylistsInPlaylist(playlist), skip, count);
-
-    public IEnumerable<GamePlaylist> GetPlaylistsByAuthor(GameUser author)
-        => this.GamePlaylists
-            .Where(p => p.Publisher == author)
-            .Where(p => !p.IsRoot)
-            .OrderByDescending(p => p.LastUpdateDate);
+        => new(this.SubPlaylistRelations
+            .Where(p => p.Playlist == playlist)
+            .OrderByDescending(r => r.Timestamp)
+            .Select(l => l.SubPlaylist), skip, count);
     
-    public DatabaseList<GamePlaylist> GetPlaylistsByAuthor(GameUser author, int count, int skip)
-        => new(this.GetPlaylistsByAuthor(author), skip, count);
+    public DatabaseList<GamePlaylist> GetPlaylistsByAuthor(GameUser author, int skip, int count)
+        => new(this.GamePlaylists
+            .Where(p => p.PublisherId == author.UserId)
+            .Where(p => !p.IsRoot)
+            .OrderByDescending(p => p.LastUpdateDate), skip, count);
+    
+    public IEnumerable<GamePlaylist> GetPlaylistsContainingLevelInternal(GameLevel level)
+        => this.LevelPlaylistRelations
+            .Where(p => p.Level == level)
+            .OrderByDescending(r => r.Timestamp)
+            .Select(r => this.GamePlaylists.First(p => p.PlaylistId == r.Playlist.PlaylistId));
 
     public DatabaseList<GamePlaylist> GetPlaylistsByAuthorContainingLevel(GameUser author, GameLevel level, int skip, int count)
-        => new(this.LevelPlaylistRelations
-            .Where(p => p.Level == level)
-            .OrderByDescending(r => r.Timestamp)
-            .Select(r => this.GamePlaylists.First(p => p.PlaylistId == r.Playlist.PlaylistId))
-            .Where(p => p.Publisher.UserId == author.UserId), skip, count);
+        => new(GetPlaylistsContainingLevelInternal(level)
+            .Where(p => p.PublisherId == author.UserId), skip, count);
     
     public DatabaseList<GamePlaylist> GetPlaylistsContainingLevel(GameLevel level, int skip, int count)
-        => new(this.LevelPlaylistRelations
-            .Where(p => p.Level == level)
-            .OrderByDescending(r => r.Timestamp)
-            .Select(r => this.GamePlaylists.First(p => p.PlaylistId == r.Playlist.PlaylistId)), skip, count);
+        => new(GetPlaylistsContainingLevelInternal(level), skip, count);
 
     public DatabaseList<GamePlaylist> GetNewestPlaylists(int skip, int count)
         => new(this.GamePlaylists
