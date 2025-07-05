@@ -41,60 +41,46 @@ public partial class GameDatabaseContext // Pins
         });
     }
 
-    public void UpdateUserProfilePins(List<long> profilePinUpdates, GameUser user, TokenGame game)
+    public void UpdateUserProfilePins(List<long> pinUpdates, GameUser user, TokenGame game)
     {
-        DateTimeOffset now = this._time.Now;
-        IEnumerable<PinProgressRelation> existingProgresses = this.GetPinProgressesByUser(user, game == TokenGame.BetaBuild);
+        IEnumerable<long> existingProgressIds = this.GetPinProgressesByUser(user, game == TokenGame.BetaBuild).Select(p => p.PinId);
         IEnumerable<ProfilePinRelation> existingProfilePins = this.GetProfilePinsByUser(user, game);
-        int failedProfilePinUpdates = 0;
+        DateTimeOffset now = this._time.Now;
 
-        this.Write(() => 
+        this.Write(() =>
         {
-            for (int i = 0; i < profilePinUpdates.Count; i++)
+            for (int i = 0; i < pinUpdates.Count; i++)
             {
-                ProfilePinRelation? existingProfilePin = existingProfilePins.FirstOrDefault(p => p.Index == i);
-                long progressType = profilePinUpdates[i];
+                long progressType = pinUpdates[i];
 
-                // If there is no profile pin at index i, or the existing profile pin at that index is
-                // referencing a different pin, overwrite it
-                if (existingProfilePin == null || existingProfilePin.PinId != progressType)
+                // Does the user have any progress on the new pin?
+                if (!existingProgressIds.Contains(progressType)) continue;
+
+                ProfilePinRelation? existingPinAtIndex = existingProfilePins.FirstOrDefault(p => p.Index == i);
+
+                // If the pin at this position hasn't changed, skip it
+                if (existingPinAtIndex?.PinId == progressType) continue;
+
+                if (existingPinAtIndex == null)
                 {
-                    // Does the user even have any progress on this pin?
-                    if (existingProgresses.Any(p => p.PinId == progressType))
+                    this.ProfilePinRelations.Add(new()
                     {
-                        if (existingProfilePin != null) 
-                        {
-                            this.ProfilePinRelations.Remove(existingProfilePin);
-                        }
-
-                        ProfilePinRelation newProfilePin = new()
-                        {
-                            PinId = progressType,
-                            Publisher = user,
-                            Index = i,
-                            Game = game,
-                            Timestamp = now,
-                        };
-                        this.ProfilePinRelations.Add(newProfilePin);
-                    }
-                    else
-                    {
-                        failedProfilePinUpdates++;
-                    }
+                        PinId = progressType,
+                        Publisher = user,
+                        PublisherId = user.UserId,
+                        Index = i,
+                        Game = game,
+                        Timestamp = now,
+                    });
+                }
+                else
+                {
+                    this.ProfilePinRelations.Update(existingPinAtIndex);
+                    existingPinAtIndex.PinId = progressType;
+                    existingPinAtIndex.Timestamp = now; // New pin at this position: reset timestamp
                 }
             }
         });
-
-        if (failedProfilePinUpdates > 0)
-        {
-            this.AddErrorNotification
-            (
-                "Profile pin update failed", 
-                $"Failed to update {failedProfilePinUpdates} out of {profilePinUpdates.Count} profile pins "+
-                $"for game {game} because we couldn't find your progress for these pins on the server.",
-                user
-            );
-        }
     }
 
     private IEnumerable<PinProgressRelation> GetPinProgressesByUser(GameUser user, bool isBeta)
