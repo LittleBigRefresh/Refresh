@@ -4,7 +4,7 @@ namespace Refresh.Common.Constants;
 
 public static partial class LevelPrefixes
 {
-    [GeneratedRegex(@"\?(\w+)\.([\w-]+)")]
+    [GeneratedRegex(@"\?(\w+)[\.:]([\w-]+)")]
     public static partial Regex AttributeRegex();
     
     /// <summary>
