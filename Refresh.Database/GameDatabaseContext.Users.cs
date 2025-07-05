@@ -459,17 +459,7 @@ public partial class GameDatabaseContext // Users
     }
 
     public GamePlaylist? GetUserRootPlaylist(GameUser user)
-        => this.GamePlaylists.FirstOrDefault(p => p.IsRoot && p.Publisher == user);
-
-    public void SetUserRootPlaylist(GameUser user, GamePlaylist playlist)
-    {
-        /*
-        this.Write(() =>
-        {
-            user.RootPlaylist = playlist;
-        });
-        */
-    }
+        => this.GamePlaylists.FirstOrDefault(p => p.IsRoot && p.PublisherId == user.UserId);
 
     public void SetUserPresenceAuthToken(GameUser user, string? token)
     {

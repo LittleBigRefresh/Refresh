@@ -64,7 +64,6 @@ public partial class GameDatabaseContext // Playlists
         };
 
         this.CreatePlaylistInternal(rootPlaylist);
-        this.SetUserRootPlaylist(user, rootPlaylist);
     }
 
     public GamePlaylist? GetPlaylistById(int playlistId) 

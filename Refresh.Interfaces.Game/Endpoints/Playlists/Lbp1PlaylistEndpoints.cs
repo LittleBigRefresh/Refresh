@@ -55,10 +55,6 @@ public class Lbp1PlaylistEndpoints : EndpointGroup
         // If there is a parent, add the new playlist to the parent
         if (parent != null) 
             dataContext.Database.AddPlaylistToPlaylist(playlist, parent);
-
-        // If this new playlist is the root playlist, mark the user's root playlist as it
-        if (playlist.IsRoot)
-            dataContext.Database.SetUserRootPlaylist(user, playlist);
         
         // Create the new playlist, returning the data
         return new Response(SerializedLbp1Playlist.FromOld(playlist, dataContext), ContentType.Xml);
