@@ -126,6 +126,20 @@ public class TestContext : IDisposable
         this.Database.AddLevel(level);
         return level;
     }
+    
+    public GameLevel CreateLevel(GameUser author, string title, string description, TokenGame gameVersion = TokenGame.LittleBigPlanet1)
+    {
+        GameLevel level = new()
+        {
+            Title = title,
+            Description = description,
+            Publisher = author,
+            GameVersion = gameVersion,
+        };
+
+        this.Database.AddLevel(level);
+        return level;
+    }
 
     public void FillLeaderboard(GameLevel level, int count, byte type)
     {
