@@ -725,8 +725,7 @@ namespace Refresh.Database.Migrations
 
                     b.HasKey("PlaylistId");
 
-                    b.HasIndex("PublisherId")
-                        .IsUnique();
+                    b.HasIndex("PublisherId");
 
                     b.ToTable("GamePlaylists");
                 });
@@ -1695,8 +1694,8 @@ namespace Refresh.Database.Migrations
             modelBuilder.Entity("Refresh.Database.Models.Playlists.GamePlaylist", b =>
                 {
                     b.HasOne("Refresh.Database.Models.Users.GameUser", "Publisher")
-                        .WithOne("RootPlaylist")
-                        .HasForeignKey("Refresh.Database.Models.Playlists.GamePlaylist", "PublisherId")
+                        .WithMany()
+                        .HasForeignKey("PublisherId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
@@ -2012,11 +2011,6 @@ namespace Refresh.Database.Migrations
                         .HasForeignKey("StatisticsUserId");
 
                     b.Navigation("Statistics");
-                });
-
-            modelBuilder.Entity("Refresh.Database.Models.Users.GameUser", b =>
-                {
-                    b.Navigation("RootPlaylist");
                 });
 #pragma warning restore 612, 618
         }

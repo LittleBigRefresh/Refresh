@@ -29,6 +29,8 @@ public class Lbp1PlaylistEndpoints : EndpointGroup
             return Unauthorized;
         
         GamePlaylist? parent = null;
+        GamePlaylist? rootPlaylist = dataContext.Database.GetUserRootPlaylist(user);
+
         // If the parent ID is specified, try to parse that out
         if (int.TryParse(context.QueryString["parent_id"], out int parentId))
         {
@@ -43,12 +45,12 @@ public class Lbp1PlaylistEndpoints : EndpointGroup
                 return Unauthorized;
 
             // If the user has no root playlist, but they are trying to create a sub-playlist, something has gone wrong.
-            if (user.RootPlaylist == null)
+            if (rootPlaylist == null)
                 return BadRequest;
         }
 
         // Create the playlist, marking it as the root playlist if the user does not have one set already
-        GamePlaylist playlist = dataContext.Database.CreatePlaylist(user, body, user.RootPlaylist == null);
+        GamePlaylist playlist = dataContext.Database.CreatePlaylist(user, body, rootPlaylist == null);
 
         // If there is a parent, add the new playlist to the parent
         if (parent != null) 

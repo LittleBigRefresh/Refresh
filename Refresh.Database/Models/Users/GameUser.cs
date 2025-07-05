@@ -101,7 +101,7 @@ public partial class GameUser : IRateLimitUser
     /// The user's root playlist. This playlist contains all the user's playlists, and optionally other slots as well,
     /// although the game does not expose the ability to do this normally.
     /// </summary>
-    public GamePlaylist? RootPlaylist { get; set; }
+    //public GamePlaylist? RootPlaylist { get; set; }
 
     /// <summary>
     /// Whether the user's profile information is exposed in the public API.

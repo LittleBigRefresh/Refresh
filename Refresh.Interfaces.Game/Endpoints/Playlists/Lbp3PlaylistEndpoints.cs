@@ -25,15 +25,17 @@ public class Lbp3PlaylistEndpoints : EndpointGroup
         if (user.IsWriteBlocked(config))
             return Unauthorized;
 
+        GamePlaylist? rootPlaylist = dataContext.Database.GetUserRootPlaylist(user);
+
         // if the player has no root playlist yet, create a new one first
-        if (user.RootPlaylist == null)
+        if (rootPlaylist == null)
         {
             dataContext.Database.CreateRootPlaylist(user);
         }
 
         // create the actual playlist and add it to the root playlist
         GamePlaylist playlist = dataContext.Database.CreatePlaylist(user, body);
-        dataContext.Database.AddPlaylistToPlaylist(playlist, user.RootPlaylist!);
+        dataContext.Database.AddPlaylistToPlaylist(playlist, rootPlaylist!);
 
         // return the playlist we just created to have the game open to it immediately
         return new Response(SerializedLbp3Playlist.FromOld(playlist, dataContext), ContentType.Xml);
@@ -92,9 +94,16 @@ public class Lbp3PlaylistEndpoints : EndpointGroup
 
         IEnumerable<GameLevel> levels = dataContext.Database.GetLevelsInPlaylist(playlist, dataContext.Game);
 
+        foreach(GameLevel level in levels)
+        {
+            context.Logger.LogDebug(BunkumCategory.UserContent, $"Level {level}, ID {level.LevelId}, title {level.Title}");
+        }
+
+        IEnumerable<GameLevelResponse> serializedLevels = GameLevelResponse.FromOldList(levels, dataContext);
+
         return new SerializedLevelList
         {
-            Items = GameLevelResponse.FromOldList(levels, dataContext).ToList(),
+            Items = serializedLevels.ToList(),
             Total = 0,
             NextPageStart = 0
         };

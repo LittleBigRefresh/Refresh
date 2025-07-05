@@ -18,14 +18,12 @@ public partial class GamePlaylist : ISequentialId
     /// <summary>
     /// The ID of the user who published the playlist
     /// </summary>
-    public ObjectId PublisherId { get; set; } 
+    [Required] public ObjectId PublisherId { get; set; } 
     
     /// <summary>
     /// The user who published the playlist
     /// </summary>
-    [Required]
-    [ForeignKey(nameof(PublisherId))]
-    public GameUser Publisher { get; set; }
+    [Required] public GameUser Publisher { get; set; }
     
     /// <summary>
     /// The name of the playlist
@@ -56,7 +54,7 @@ public partial class GamePlaylist : ISequentialId
     /// <summary>
     /// Whether or not this playlist is a root playlist. This is to let us hide the root playlists when we 
     /// </summary>
-    public bool IsRoot { get; set; }
+    [Required]public bool IsRoot { get; set; }
     
     [NotMapped] public int SequentialId
     {
