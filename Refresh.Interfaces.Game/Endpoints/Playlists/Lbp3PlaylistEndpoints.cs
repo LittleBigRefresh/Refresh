@@ -99,7 +99,7 @@ public class Lbp3PlaylistEndpoints : EndpointGroup
             context.Logger.LogDebug(BunkumCategory.UserContent, $"Level {level}, ID {level.LevelId}, title {level.Title}");
         }
 
-        IEnumerable<GameLevelResponse> serializedLevels = GameLevelResponse.FromOldList(levels.Items, dataContext);
+        IEnumerable<GameLevelResponse> serializedLevels = GameLevelResponse.FromOldList(levels.Items.ToArray(), dataContext);
 
         return new SerializedLevelList
         {
@@ -150,7 +150,7 @@ public class Lbp3PlaylistEndpoints : EndpointGroup
         if (playlist.Publisher.UserId != user.UserId)
             return Unauthorized;
 
-        dataContext.Database.UpdatePlaylistLevelOrder(playlist, body.LevelIds);
+        dataContext.Database.ReorderLevelsInPlaylist(body.LevelIds, playlist);
         return OK;
     }
 
