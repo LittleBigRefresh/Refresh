@@ -3,6 +3,7 @@ using Refresh.Database.Models.Playlists;
 
 namespace Refresh.Core.Extensions;
 
+#pragma warning disable CS0618
 public static class GamePlaylistExtensions
 {
     /// <summary>
@@ -15,7 +16,7 @@ public static class GamePlaylistExtensions
         Func<GamePlaylist, bool> callback)
     {
         // Iterate over all parents
-        foreach (GamePlaylist parent in database.GetPlaylistsContainingPlaylist(playlist))
+        foreach (GamePlaylist parent in database.GetPlaylistsContainingPlaylist(playlist).ToArray())
         {
             // Call the callback for this parent. If the callback requests to stop the traversal by returning false 
             // (for example because it has detected a loop in the tree), stop the traversal by returning

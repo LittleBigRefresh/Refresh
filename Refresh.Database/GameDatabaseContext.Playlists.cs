@@ -8,6 +8,7 @@ using Refresh.Database.Models.Relations;
 
 namespace Refresh.Database;
 
+#pragma warning disable CS0618
 public partial class GameDatabaseContext // Playlists
 {
     /// <summary>
@@ -218,7 +219,8 @@ public partial class GameDatabaseContext // Playlists
     public int GetTotalLevelsInPlaylistCount(GamePlaylist playlist) 
         => this.LevelPlaylistRelations.Count(l => l.Playlist == playlist);
 
-    private IEnumerable<GamePlaylist> GetPlaylistsContainingPlaylistInternal(GamePlaylist playlist)
+    [Obsolete("Only to be used by GameDatabaseContext and GamePlaylistExtensions.")]
+    public IEnumerable<GamePlaylist> GetPlaylistsContainingPlaylist(GamePlaylist playlist)
     {
         IQueryable<SubPlaylistRelation> allParents = this.SubPlaylistRelations
             .Where(p => p.SubPlaylist == playlist)
@@ -230,10 +232,10 @@ public partial class GameDatabaseContext // Playlists
     }
 
     public DatabaseList<GamePlaylist> GetPlaylistsContainingPlaylist(GamePlaylist playlist, int skip, int count)
-        => new(GetPlaylistsContainingPlaylistInternal(playlist), skip, count);
+        => new(GetPlaylistsContainingPlaylist(playlist), skip, count);
 
     public DatabaseList<GamePlaylist> GetPlaylistsByAuthorContainingPlaylist(GameUser user, GamePlaylist playlist, int skip, int count)
-        => new(GetPlaylistsContainingPlaylistInternal(playlist)
+        => new(GetPlaylistsContainingPlaylist(playlist)
             .Where(p => p.PublisherId == user.UserId), skip, count);
 
     public DatabaseList<GamePlaylist> GetPlaylistsInPlaylist(GamePlaylist playlist, int skip, int count)

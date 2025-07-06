@@ -82,7 +82,7 @@ public class LevelEndpoints : EndpointGroup
             if (rootPlaylist != null)
             {
                 DatabaseList<GamePlaylist> playlists = database.GetPlaylistsInPlaylist(rootPlaylist, skip, count);
-                slots = GameMinimalLevelResponse.FromOldList(playlists.Items, dataContext).Concat(slots);
+                slots = GameMinimalLevelResponse.FromOldList(playlists.Items.ToArray(), dataContext).Concat(slots);
 
                 // While this does technically return more slot results than the game is expecting,
                 // because we tell the game exactly what the "next page index" is (its not based on count sent),

@@ -77,8 +77,8 @@ public class Lbp1PlaylistEndpoints : EndpointGroup
 
         // Concat together the playlist's sub-playlists and levels 
         IEnumerable<GameMinimalLevelResponse> slots =
-            GameMinimalLevelResponse.FromOldList(subPlaylists.Items, dataContext) // the sub-playlists
-                .Concat(GameMinimalLevelResponse.FromOldList(levels.Items, dataContext)); // the sub-levels
+            GameMinimalLevelResponse.FromOldList(subPlaylists.Items.ToArray(), dataContext) // the sub-playlists
+                .Concat(GameMinimalLevelResponse.FromOldList(levels.Items.ToArray(), dataContext)); // the sub-levels
         
         // Convert the GameLevelResponse list down to a GameMinimalLevelResponse
         return new SerializedMinimalLevelList(
@@ -134,7 +134,7 @@ public class Lbp1PlaylistEndpoints : EndpointGroup
 
         // Return the serialized playlists 
         return new SerializedMinimalLevelList(
-            GameMinimalLevelResponse.FromOldList(playlists.Items, dataContext), 
+            GameMinimalLevelResponse.FromOldList(playlists.Items.ToArray(), dataContext), 
             playlists.TotalItems, 
             skip
         );
