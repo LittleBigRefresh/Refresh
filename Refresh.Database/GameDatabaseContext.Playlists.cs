@@ -220,22 +220,19 @@ public partial class GameDatabaseContext // Playlists
     public int GetTotalLevelsInPlaylistCount(GamePlaylist playlist) 
         => this.LevelPlaylistRelations.Count(l => l.Playlist == playlist);
 
-    [Obsolete("Only to be used by GameDatabaseContext and GamePlaylistExtensions.")]
-    public IEnumerable<GamePlaylist> GetPlaylistsContainingPlaylist(GamePlaylist playlist)
+    private IEnumerable<GamePlaylist> GetPlaylistsContainingPlaylistInternal(GamePlaylist playlist)
         => this.SubPlaylistRelations
-            .Where(p => p.SubPlaylist == playlist)
+            .Where(p => p.SubPlaylistId == playlist.PlaylistId)
             .OrderByDescending(r => r.Timestamp)
             .Select(r => this.GamePlaylists.First(p => p.PlaylistId == r.PlaylistId))
             .Where(p => !p.IsRoot);
 
-#pragma warning disable CS0618 // obsolete warning
     public DatabaseList<GamePlaylist> GetPlaylistsContainingPlaylist(GamePlaylist playlist, int skip, int count)
-        => new(GetPlaylistsContainingPlaylist(playlist), skip, count);
+        => new(GetPlaylistsContainingPlaylistInternal(playlist), skip, count);
 
     public DatabaseList<GamePlaylist> GetPlaylistsByAuthorContainingPlaylist(GameUser user, GamePlaylist playlist, int skip, int count)
-        => new(GetPlaylistsContainingPlaylist(playlist)
+        => new(GetPlaylistsContainingPlaylistInternal(playlist)
             .Where(p => p.PublisherId == user.UserId), skip, count);
-#pragma warning restore CS0618
 
     public DatabaseList<GamePlaylist> GetPlaylistsInPlaylist(GamePlaylist playlist, int skip, int count)
         => new(this.SubPlaylistRelationsIncluded
@@ -249,7 +246,7 @@ public partial class GameDatabaseContext // Playlists
             .Where(p => !p.IsRoot)
             .OrderByDescending(p => p.LastUpdateDate), skip, count);
     
-    public IEnumerable<GamePlaylist> GetPlaylistsContainingLevelInternal(GameLevel level)
+    private IEnumerable<GamePlaylist> GetPlaylistsContainingLevelInternal(GameLevel level)
         => this.LevelPlaylistRelationsIncluded
             .Where(p => p.LevelId == level.LevelId)
             .OrderByDescending(r => r.Timestamp)
