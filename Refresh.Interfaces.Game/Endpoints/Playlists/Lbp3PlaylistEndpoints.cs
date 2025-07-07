@@ -50,7 +50,7 @@ public class Lbp3PlaylistEndpoints : EndpointGroup
             return NotFound;
 
         // don't allow the wrong user to update playlists
-        if (playlist.Publisher.UserId != user.UserId)
+        if (playlist.PublisherId != user.UserId)
             return Unauthorized;
         
         dataContext.Database.UpdatePlaylist(playlist, body);
@@ -73,7 +73,7 @@ public class Lbp3PlaylistEndpoints : EndpointGroup
             return NotFound;
 
         // don't allow the wrong user to delete playlists
-        if (playlist.Publisher.UserId != user.UserId)
+        if (playlist.PublisherId != user.UserId)
             return Unauthorized;
 
         dataContext.Database.DeletePlaylist(playlist);
@@ -111,7 +111,7 @@ public class Lbp3PlaylistEndpoints : EndpointGroup
             return NotFound;
 
         // Dont let people add levels to other's playlists
-        if (playlist.Publisher.UserId != user.UserId) 
+        if (playlist.PublisherId != user.UserId) 
             return Unauthorized;
 
         foreach (int levelId in body.LevelIds)
@@ -137,7 +137,7 @@ public class Lbp3PlaylistEndpoints : EndpointGroup
             return NotFound;
 
         // Dont let people reorder levels in other's playlists
-        if (playlist.Publisher.UserId != user.UserId)
+        if (playlist.PublisherId != user.UserId)
             return Unauthorized;
 
         dataContext.Database.ReorderLevelsInPlaylist(body.LevelIds, playlist);
@@ -160,7 +160,7 @@ public class Lbp3PlaylistEndpoints : EndpointGroup
             return NotFound;
 
         // Dont let people remove levels from other's playlists
-        if (playlist.Publisher.UserId != user.UserId)
+        if (playlist.PublisherId != user.UserId)
             return Unauthorized;
 
         dataContext.Database.RemoveLevelFromPlaylist(level, playlist);
