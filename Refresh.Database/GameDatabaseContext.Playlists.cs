@@ -18,6 +18,10 @@ public partial class GameDatabaseContext // Playlists
     private IQueryable<LevelPlaylistRelation> LevelPlaylistRelationsIncluded => this.LevelPlaylistRelations
         .Include(r => r.Level);
 
+    private IQueryable<FavouritePlaylistRelation> FavouritePlaylistRelationsIncluded => this.FavouritePlaylistRelations
+        .Include(r => r.Playlist)
+        .Include(r => r.Playlist.Publisher);
+    
     private void CreatePlaylistInternal(GamePlaylist createInfo)
     {
         DateTimeOffset now = this._time.Now;
@@ -47,11 +51,10 @@ public partial class GameDatabaseContext // Playlists
         };
 
         this.CreatePlaylistInternal(playlist);
-
         return playlist;
     }
 
-    public void CreateRootPlaylist(GameUser user)
+    public GamePlaylist CreateRootPlaylist(GameUser user)
     {
         GameLocation randomLocation = GameLocation.Random;
 
@@ -67,6 +70,7 @@ public partial class GameDatabaseContext // Playlists
         };
 
         this.CreatePlaylistInternal(rootPlaylist);
+        return rootPlaylist;
     }
 
     public GamePlaylist? GetPlaylistById(int playlistId) 
@@ -268,7 +272,7 @@ public partial class GameDatabaseContext // Playlists
             .Where(p => p != null), skip, count);
 
     public DatabaseList<GamePlaylist> GetPlaylistsFavouritedByUser(GameUser user, int skip, int count) 
-        => new(this.FavouritePlaylistRelations
+        => new(this.FavouritePlaylistRelationsIncluded
             .Where(r => r.UserId == user.UserId)
             .OrderByDescending(r => r.Timestamp)
             .Select(r => r.Playlist), skip, count);
