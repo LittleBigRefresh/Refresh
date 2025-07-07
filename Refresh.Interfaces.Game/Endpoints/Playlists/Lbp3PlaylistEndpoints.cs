@@ -28,10 +28,7 @@ public class Lbp3PlaylistEndpoints : EndpointGroup
         GamePlaylist? rootPlaylist = dataContext.Database.GetUserRootPlaylist(user);
 
         // if the player has no root playlist yet, create a new one first
-        if (rootPlaylist == null)
-        {
-            dataContext.Database.CreateRootPlaylist(user);
-        }
+        rootPlaylist ??= dataContext.Database.CreateRootPlaylist(user);
 
         // create the actual playlist and add it to the root playlist
         GamePlaylist playlist = dataContext.Database.CreatePlaylist(user, body);
@@ -196,7 +193,6 @@ public class Lbp3PlaylistEndpoints : EndpointGroup
         if (user == null) 
             return null;
 
-        // The only LBP3 playlist endpoint so far which uses pagination
         (int skip, int count) = context.GetPageData();
         DatabaseList<GamePlaylist> playlists = dataContext.Database.GetPlaylistsFavouritedByUser(user, skip, count);
 
