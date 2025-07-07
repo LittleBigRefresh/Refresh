@@ -94,16 +94,9 @@ public class Lbp3PlaylistEndpoints : EndpointGroup
 
         DatabaseList<GameLevel> levels = dataContext.Database.GetLevelsInPlaylist(playlist, dataContext.Game, 0, 100);
 
-        foreach(GameLevel level in levels.Items)
-        {
-            context.Logger.LogDebug(BunkumCategory.UserContent, $"Level {level}, ID {level.LevelId}, title {level.Title}");
-        }
-
-        IEnumerable<GameLevelResponse> serializedLevels = GameLevelResponse.FromOldList(levels.Items.ToArray(), dataContext);
-
         return new SerializedLevelList
         {
-            Items = serializedLevels.ToList(),
+            Items = GameLevelResponse.FromOldList(levels.Items.ToArray(), dataContext).ToList(),
             Total = levels.TotalItems,
             NextPageStart = levels.NextPageIndex
         };
