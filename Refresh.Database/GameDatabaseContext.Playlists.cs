@@ -216,7 +216,7 @@ public partial class GameDatabaseContext // Playlists
         => this.SubPlaylistRelations
             .Where(p => p.SubPlaylist == playlist)
             .OrderByDescending(r => r.Timestamp)
-            .Select(r => this.GamePlaylists.First(p => p.PlaylistId == r.Playlist.PlaylistId))
+            .Select(r => this.GamePlaylists.First(p => p.PlaylistId == r.PlaylistId))
             .Where(p => !p.IsRoot);
 
 #pragma warning disable CS0618 // obsolete warning
@@ -230,7 +230,7 @@ public partial class GameDatabaseContext // Playlists
 
     public DatabaseList<GamePlaylist> GetPlaylistsInPlaylist(GamePlaylist playlist, int skip, int count)
         => new(this.SubPlaylistRelations
-            .Where(p => p.Playlist == playlist)
+            .Where(p => p.PlaylistId == playlist.PlaylistId)
             .OrderByDescending(r => r.Timestamp)
             .Select(l => l.SubPlaylist), skip, count);
     
@@ -244,7 +244,7 @@ public partial class GameDatabaseContext // Playlists
         => this.LevelPlaylistRelations
             .Where(p => p.Level == level)
             .OrderByDescending(r => r.Timestamp)
-            .Select(r => this.GamePlaylists.First(p => p.PlaylistId == r.Playlist.PlaylistId));
+            .Select(r => this.GamePlaylists.First(p => p.PlaylistId == r.PlaylistId));
 
     public DatabaseList<GamePlaylist> GetPlaylistsByAuthorContainingLevel(GameUser author, GameLevel level, int skip, int count)
         => new(GetPlaylistsContainingLevelInternal(level)
@@ -269,15 +269,15 @@ public partial class GameDatabaseContext // Playlists
 
     public DatabaseList<GamePlaylist> GetPlaylistsFavouritedByUser(GameUser user, int skip, int count) 
         => new(this.FavouritePlaylistRelations
-            .Where(r => r.User == user)
+            .Where(r => r.UserId == user.UserId)
             .OrderByDescending(r => r.Timestamp)
             .Select(r => r.Playlist), skip, count);
 
     public int GetFavouriteCountForPlaylist(GamePlaylist playlist)
-        => this.FavouritePlaylistRelations.Count(r => r.Playlist == playlist);
+        => this.FavouritePlaylistRelations.Count(r => r.PlaylistId == playlist.PlaylistId);
 
     public bool IsPlaylistFavouritedByUser(GamePlaylist playlist, GameUser user)
-        => this.FavouritePlaylistRelations.FirstOrDefault(r => r.Playlist == playlist && r.User == user) != null;
+        => this.FavouritePlaylistRelations.Any(r => r.PlaylistId == playlist.PlaylistId && r.UserId == user.UserId);
 
     public bool FavouritePlaylist(GamePlaylist playlist, GameUser user)
     {
@@ -297,7 +297,7 @@ public partial class GameDatabaseContext // Playlists
     public bool UnfavouritePlaylist(GamePlaylist playlist, GameUser user)
     {
         FavouritePlaylistRelation? relation = this.FavouritePlaylistRelations
-            .FirstOrDefault(r => r.Playlist == playlist && r.User == user);
+            .FirstOrDefault(r => r.PlaylistId == playlist.PlaylistId && r.UserId == user.UserId);
 
         if (relation == null) return false;
 
