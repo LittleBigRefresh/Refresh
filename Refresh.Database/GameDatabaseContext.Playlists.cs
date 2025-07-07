@@ -8,7 +8,7 @@ using Refresh.Database.Models.Relations;
 
 namespace Refresh.Database;
 
-#pragma warning disable CS0618
+
 public partial class GameDatabaseContext // Playlists
 {
     /// <summary>
@@ -221,12 +221,14 @@ public partial class GameDatabaseContext // Playlists
             .Where(p => !p.IsRoot);
     }
 
+#pragma warning disable CS0618 // obsolete warning
     public DatabaseList<GamePlaylist> GetPlaylistsContainingPlaylist(GamePlaylist playlist, int skip, int count)
         => new(GetPlaylistsContainingPlaylist(playlist), skip, count);
 
     public DatabaseList<GamePlaylist> GetPlaylistsByAuthorContainingPlaylist(GameUser user, GamePlaylist playlist, int skip, int count)
         => new(GetPlaylistsContainingPlaylist(playlist)
             .Where(p => p.PublisherId == user.UserId), skip, count);
+#pragma warning restore CS0618
 
     public DatabaseList<GamePlaylist> GetPlaylistsInPlaylist(GamePlaylist playlist, int skip, int count)
         => new(this.SubPlaylistRelations
