@@ -8,13 +8,15 @@ using Refresh.Database.Models.Relations;
 
 namespace Refresh.Database;
 
-
 public partial class GameDatabaseContext // Playlists
 {
     /// <summary>
     /// Default icon used by playlists created in LBP3, through ApiV3 or similar
     /// </summary>
     private const string DefaultPlaylistIcon = "g18451"; // LBP1 star sticker
+
+    private IQueryable<LevelPlaylistRelation> LevelPlaylistRelationsIncluded => this.LevelPlaylistRelations
+        .Include(r => r.Level);
 
     private void CreatePlaylistInternal(GamePlaylist createInfo)
     {
@@ -197,7 +199,7 @@ public partial class GameDatabaseContext // Playlists
     }
 
     private IEnumerable<LevelPlaylistRelation> GetLevelRelationsForPlaylist(GamePlaylist playlist)
-        => this.LevelPlaylistRelations
+        => this.LevelPlaylistRelationsIncluded
             .Where(r => r.PlaylistId == playlist.PlaylistId)
             .OrderBy(r => r.Index);
 
@@ -211,15 +213,11 @@ public partial class GameDatabaseContext // Playlists
 
     [Obsolete("Only to be used by GameDatabaseContext and GamePlaylistExtensions.")]
     public IEnumerable<GamePlaylist> GetPlaylistsContainingPlaylist(GamePlaylist playlist)
-    {
-        IQueryable<SubPlaylistRelation> allParents = this.SubPlaylistRelations
+        => this.SubPlaylistRelations
             .Where(p => p.SubPlaylist == playlist)
-            .OrderByDescending(r => r.Timestamp);
-        
-        return allParents
+            .OrderByDescending(r => r.Timestamp)
             .Select(r => this.GamePlaylists.First(p => p.PlaylistId == r.Playlist.PlaylistId))
             .Where(p => !p.IsRoot);
-    }
 
 #pragma warning disable CS0618 // obsolete warning
     public DatabaseList<GamePlaylist> GetPlaylistsContainingPlaylist(GamePlaylist playlist, int skip, int count)
