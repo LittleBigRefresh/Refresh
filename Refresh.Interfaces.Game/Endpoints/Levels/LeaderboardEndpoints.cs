@@ -23,8 +23,10 @@ public class LeaderboardEndpoints : EndpointGroup
 {
     private const int RequestTimeoutDuration = 300;
     private const int MaxRequestAmount = 250;
+    private const int MaxScoreSubmissionAmount = 10;
     private const int RequestBlockDuration = 300;
     private const string BucketName = "score";
+    private const string ScoreSubmissionBucketName = "score-submission";
 
     [GameEndpoint("play/{slotType}/{id}", ContentType.Xml, HttpMethods.Post)]
     public Response PlayLevel(RequestContext context, GameUser user, GameDatabaseContext database, string slotType, int id)
@@ -89,7 +91,7 @@ public class LeaderboardEndpoints : EndpointGroup
     }
     
     [GameEndpoint("scoreboard/{slotType}/{id}", ContentType.Xml, HttpMethods.Post)]
-    [RateLimitSettings(RequestTimeoutDuration, MaxRequestAmount, RequestBlockDuration, BucketName)]
+    [RateLimitSettings(RequestTimeoutDuration, MaxScoreSubmissionAmount, RequestBlockDuration, ScoreSubmissionBucketName)]
     [RequireEmailVerified]
     public Response SubmitScore(RequestContext context, GameUser user, GameServerConfig config,
         GameDatabaseContext database, string slotType, int id, SerializedScore body, Token token,
@@ -101,8 +103,14 @@ public class LeaderboardEndpoints : EndpointGroup
         GameLevel? level = database.GetLevelByIdAndType(slotType, id);
         if (level == null) return NotFound;
 
-        // Validate the score is a non-negative amount
-        if (body.Score < 0)
+        // A user has to play a level in order to submit a score
+        if (!database.HasUserPlayedLevel(level, user))
+        {
+            return Unauthorized;
+        }
+
+        // Validate the score is a non-negative amount and not above the in-game limit
+        if (body.Score is < 0 or > 16_000_000)
         {
             return BadRequest;
         }
