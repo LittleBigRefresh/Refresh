@@ -16,7 +16,12 @@ public partial class GameDatabaseContext // Playlists
     private const string DefaultPlaylistIcon = "g18451"; // LBP1 star sticker
 
     private IQueryable<LevelPlaylistRelation> LevelPlaylistRelationsIncluded => this.LevelPlaylistRelations
+        .Include(r => r.Playlist)
         .Include(r => r.Level);
+
+    private IQueryable<SubPlaylistRelation> SubPlaylistRelationsIncluded => this.SubPlaylistRelations
+        .Include(r => r.SubPlaylist)
+        .Include(r => r.SubPlaylist.Publisher);
 
     private IQueryable<FavouritePlaylistRelation> FavouritePlaylistRelationsIncluded => this.FavouritePlaylistRelations
         .Include(r => r.Playlist)
@@ -110,7 +115,7 @@ public partial class GameDatabaseContext // Playlists
         this.Write(() =>
         {
             // Make sure to not create a duplicate object
-            if (this.SubPlaylistRelations.Any(p => p.SubPlaylist == child && p.Playlist == parent))
+            if (this.SubPlaylistRelations.Any(p => p.SubPlaylistId == child.PlaylistId && p.PlaylistId == parent.PlaylistId))
                 return;
             
             // Add the relation
@@ -128,7 +133,7 @@ public partial class GameDatabaseContext // Playlists
         this.Write(() =>
         {
             SubPlaylistRelation? relation =
-                this.SubPlaylistRelations.FirstOrDefault(r => r.SubPlaylist == child && r.Playlist == parent);
+                this.SubPlaylistRelations.FirstOrDefault(r => r.SubPlaylistId == child.PlaylistId && r.PlaylistId == parent.PlaylistId);
 
             if (relation == null)
                 return;
@@ -142,7 +147,7 @@ public partial class GameDatabaseContext // Playlists
         this.Write(() =>
         {
             // Make sure to not create a duplicate object
-            if (this.LevelPlaylistRelations.Any(p => p.Level == level && p.Playlist == parent))
+            if (this.LevelPlaylistRelations.Any(p => p.LevelId == level.LevelId && p.PlaylistId == parent.PlaylistId))
                 return;
             
             // Add the relation
@@ -160,7 +165,7 @@ public partial class GameDatabaseContext // Playlists
     public void RemoveLevelFromPlaylist(GameLevel level, GamePlaylist parent)
     {
         LevelPlaylistRelation? relation =
-            this.LevelPlaylistRelations.FirstOrDefault(r => r.Level == level && r.Playlist == parent);
+            this.LevelPlaylistRelations.FirstOrDefault(r => r.LevelId == level.LevelId && r.PlaylistId == parent.PlaylistId);
 
         if (relation == null)
             return;
@@ -233,7 +238,7 @@ public partial class GameDatabaseContext // Playlists
 #pragma warning restore CS0618
 
     public DatabaseList<GamePlaylist> GetPlaylistsInPlaylist(GamePlaylist playlist, int skip, int count)
-        => new(this.SubPlaylistRelations
+        => new(this.SubPlaylistRelationsIncluded
             .Where(p => p.PlaylistId == playlist.PlaylistId)
             .OrderByDescending(r => r.Timestamp)
             .Select(l => l.SubPlaylist), skip, count);
@@ -245,10 +250,10 @@ public partial class GameDatabaseContext // Playlists
             .OrderByDescending(p => p.LastUpdateDate), skip, count);
     
     public IEnumerable<GamePlaylist> GetPlaylistsContainingLevelInternal(GameLevel level)
-        => this.LevelPlaylistRelations
-            .Where(p => p.Level == level)
+        => this.LevelPlaylistRelationsIncluded
+            .Where(p => p.LevelId == level.LevelId)
             .OrderByDescending(r => r.Timestamp)
-            .Select(r => this.GamePlaylists.First(p => p.PlaylistId == r.PlaylistId));
+            .Select(r => r.Playlist);
 
     public DatabaseList<GamePlaylist> GetPlaylistsByAuthorContainingLevel(GameUser author, GameLevel level, int skip, int count)
         => new(GetPlaylistsContainingLevelInternal(level)
