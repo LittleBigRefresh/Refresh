@@ -41,7 +41,7 @@ public class Lbp1PlaylistEndpoints : EndpointGroup
                 return BadRequest;
             
             // Dont let you create a sub-playlist of someone else's playlist
-            if (user.UserId != parent.Publisher.UserId)
+            if (user.UserId != parent.PublisherId)
                 return Unauthorized;
 
             // If the user has no root playlist, but they are trying to create a sub-playlist, something has gone wrong.
@@ -152,7 +152,7 @@ public class Lbp1PlaylistEndpoints : EndpointGroup
             return NotFound;
 
         // Dont allow the wrong user to update playlists
-        if (playlist.Publisher.UserId != user.UserId)
+        if (playlist.PublisherId != user.UserId)
             return Unauthorized;
         
         database.UpdatePlaylist(playlist, body);
@@ -171,7 +171,7 @@ public class Lbp1PlaylistEndpoints : EndpointGroup
             return NotFound;
 
         // Dont allow the wrong user to delete playlists
-        if (playlist.Publisher.UserId != user.UserId)
+        if (playlist.PublisherId != user.UserId)
             return Unauthorized;
 
         database.DeletePlaylist(playlist);
@@ -197,7 +197,7 @@ public class Lbp1PlaylistEndpoints : EndpointGroup
             return NotFound;
 
         // Dont let people add slots to other's playlists
-        if (parentPlaylist.Publisher.UserId != user.UserId)
+        if (parentPlaylist.PublisherId != user.UserId)
             return Unauthorized;
 
         // Adding a playlist to a playlist requires a special case, since we use `SubPlaylistRelation` internally to record child playlists.
@@ -278,7 +278,7 @@ public class Lbp1PlaylistEndpoints : EndpointGroup
             return NotFound;
 
         // Dont let people remove slots from other's playlists
-        if (parentPlaylist.Publisher.UserId != user.UserId)
+        if (parentPlaylist.PublisherId != user.UserId)
             return Unauthorized;
 
         // Removing a playlist from a playlist requires a special case, since we use `SubPlaylistRelation` internally to record child playlists.
