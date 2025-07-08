@@ -46,7 +46,7 @@ public class GameUserResponse : IDataConvertableFrom<GameUserResponse, GameUser>
     [XmlElement("lbp3UsedSlots")] public int UsedSlotsLBP3 { get; set; }
     [XmlElement("lbp2PurchasedSlots")] public int PurchasedSlotsLBP2 { get; set; }
     [XmlElement("lbp3PurchasedSlots")] public int PurchasedSlotsLBP3 { get; set; }
-    [XmlElement("rootPlaylist")] public int? RootPlaylistId { get; set; }
+    [XmlElement("rootPlaylist")] public string? RootPlaylistId { get; set; }
     [XmlElement("pins")] public List<long> ProfilePins { get; set; } = [];
     
     /// <summary>
@@ -106,7 +106,7 @@ public class GameUserResponse : IDataConvertableFrom<GameUserResponse, GameUser>
             return response;
         }
 
-        response.RootPlaylistId = dataContext.Database.GetUserRootPlaylist(old)?.PlaylistId;
+        response.RootPlaylistId = dataContext.Database.GetUserRootPlaylist(old)?.PlaylistId.ToString();
         response.ProfilePins = dataContext.Database.GetProfilePinsByUser(old, dataContext.Game, 0, 3).Items.Select(p => p.PinId).ToList();
 
         response.PlanetsHash = dataContext.Game switch
