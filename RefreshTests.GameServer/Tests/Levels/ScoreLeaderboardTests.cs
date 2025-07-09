@@ -27,8 +27,11 @@ public class ScoreLeaderboardTests : GameServerTest
             ScoreType = 1,
             Score = 5,
         }; 
+
+        HttpResponseMessage message = client.PostAsync($"/lbp/play/user/{level.LevelId}", new StringContent(score.AsXML())).Result;
+        Assert.That(message.StatusCode, Is.EqualTo(OK));
         
-        HttpResponseMessage message = client.PostAsync($"/lbp/scoreboard/user/{level.LevelId}", new StringContent(score.AsXML())).Result;
+        message = client.PostAsync($"/lbp/scoreboard/user/{level.LevelId}", new StringContent(score.AsXML())).Result;
         Assert.That(message.StatusCode, Is.EqualTo(OK));
         
         message = client.GetAsync($"/lbp/topscores/user/{level.LevelId}/1").Result;
@@ -63,8 +66,10 @@ public class ScoreLeaderboardTests : GameServerTest
             ScoreType = 1,
             Score = 5,
         }; 
-        
-        HttpResponseMessage message = client.PostAsync($"/lbp/scoreboard/developer/1", new StringContent(score.AsXML())).Result;
+
+        HttpResponseMessage message = client.PostAsync($"/lbp/play/developer/1", new StringContent(score.AsXML())).Result;
+        Assert.That(message.StatusCode, Is.EqualTo(OK));
+        message = client.PostAsync($"/lbp/scoreboard/developer/1", new StringContent(score.AsXML())).Result;
         Assert.That(message.StatusCode, Is.EqualTo(OK));
         
         context.Database.Refresh();
@@ -112,7 +117,9 @@ public class ScoreLeaderboardTests : GameServerTest
     }
     
     [Test]
-    public void DoesntSubmitInvalidScore()
+    [TestCase(-1)]
+    [TestCase(int.MaxValue)]
+    public void DoesntSubmitInvalidScore(int scoreValue)
     {
         using TestContext context = this.GetServer();
         GameUser user = context.CreateUser();
@@ -124,10 +131,12 @@ public class ScoreLeaderboardTests : GameServerTest
         {
             Host = true,
             ScoreType = 1,
-            Score = -1,
+            Score = scoreValue,
         }; 
         
-        HttpResponseMessage message = client.PostAsync($"/lbp/scoreboard/user/{level.LevelId}", new StringContent(score.AsXML())).Result;
+        HttpResponseMessage message = client.PostAsync($"/lbp/play/user/{level.LevelId}", new StringContent(score.AsXML())).Result;
+        Assert.That(message.StatusCode, Is.EqualTo(OK));
+        message = client.PostAsync($"/lbp/scoreboard/user/{level.LevelId}", new StringContent(score.AsXML())).Result;
         Assert.That(message.StatusCode, Is.EqualTo(BadRequest));
 
         context.Database.Refresh();
@@ -159,12 +168,16 @@ public class ScoreLeaderboardTests : GameServerTest
             Score = 69,
         };
         
-        HttpResponseMessage message = client.PostAsync($"/lbp/scoreboard/user/{level.LevelId}", new StringContent(score.AsXML())).Result;
+        HttpResponseMessage message = client.PostAsync($"/lbp/play/user/{level.LevelId}", new StringContent(score.AsXML())).Result;
+        Assert.That(message.StatusCode, Is.EqualTo(OK));
+        message = client.PostAsync($"/lbp/scoreboard/user/{level.LevelId}", new StringContent(score.AsXML())).Result;
         Assert.That(message.StatusCode, Is.EqualTo(shouldPass ? OK : BadRequest));
     }
     
     [Test]
-    public void DoesntSubmitDeveloperInvalidScore()
+    [TestCase(-1)]
+    [TestCase(int.MaxValue)]
+    public void DoesntSubmitDeveloperInvalidScore(int scoreValue)
     {
         using TestContext context = this.GetServer();
         GameUser user = context.CreateUser();
@@ -175,10 +188,12 @@ public class ScoreLeaderboardTests : GameServerTest
         {
             Host = true,
             ScoreType = 1,
-            Score = -1,
+            Score = scoreValue,
         }; 
         
-        HttpResponseMessage message = client.PostAsync($"/lbp/scoreboard/developer/1", new StringContent(score.AsXML())).Result;
+        HttpResponseMessage message = client.PostAsync($"/lbp/play/developer/1", new StringContent(score.AsXML())).Result;
+        Assert.That(message.StatusCode, Is.EqualTo(OK));
+        message = client.PostAsync($"/lbp/scoreboard/developer/1", new StringContent(score.AsXML())).Result;
         Assert.That(message.StatusCode, Is.EqualTo(BadRequest));
 
         context.Database.Refresh();
@@ -223,6 +238,45 @@ public class ScoreLeaderboardTests : GameServerTest
         
         HttpResponseMessage message = client.PostAsync($"/lbp/scoreboard/developer/-1", new StringContent(score.AsXML())).Result;
         Assert.That(message.StatusCode, Is.EqualTo(NotFound));
+    }
+
+    [Test]
+    public void DoesntSubmitScoreToUnplayedLevel()
+    {
+        using TestContext context = this.GetServer();
+        GameUser user = context.CreateUser();
+        GameLevel level = context.CreateLevel(user);
+
+        using HttpClient client = context.GetAuthenticatedClient(TokenType.Game, user);
+
+        SerializedScore score = new()
+        {
+            Host = true,
+            ScoreType = 1,
+            Score = 0,
+        }; 
+        
+        HttpResponseMessage message = client.PostAsync($"/lbp/scoreboard/user/{level.LevelId}", new StringContent(score.AsXML())).Result;
+        Assert.That(message.StatusCode, Is.EqualTo(Unauthorized));
+    }
+    
+    [Test]
+    public void DoesntSubmitScoreToUnplayedDeveloperLevel()
+    {
+        using TestContext context = this.GetServer();
+        GameUser user = context.CreateUser();
+
+        using HttpClient client = context.GetAuthenticatedClient(TokenType.Game, user);
+
+        SerializedScore score = new()
+        {
+            Host = true,
+            ScoreType = 1,
+            Score = 0,
+        }; 
+        
+        HttpResponseMessage message = client.PostAsync($"/lbp/scoreboard/developer/1", new StringContent(score.AsXML())).Result;
+        Assert.That(message.StatusCode, Is.EqualTo(Unauthorized));
     }
     
     [Test]

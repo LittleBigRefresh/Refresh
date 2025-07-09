@@ -944,8 +944,8 @@ namespace Refresh.Database.Migrations
 
             modelBuilder.Entity("Refresh.Database.Models.Relations.ProfilePinRelation", b =>
                 {
-                    b.Property<long>("PinId")
-                        .HasColumnType("bigint");
+                    b.Property<int>("Index")
+                        .HasColumnType("integer");
 
                     b.Property<string>("PublisherId")
                         .HasColumnType("text");
@@ -953,13 +953,13 @@ namespace Refresh.Database.Migrations
                     b.Property<int>("Game")
                         .HasColumnType("integer");
 
-                    b.Property<int>("Index")
-                        .HasColumnType("integer");
+                    b.Property<long>("PinId")
+                        .HasColumnType("bigint");
 
                     b.Property<DateTimeOffset>("Timestamp")
                         .HasColumnType("timestamp with time zone");
 
-                    b.HasKey("PinId", "PublisherId");
+                    b.HasKey("Index", "PublisherId", "Game");
 
                     b.HasIndex("PublisherId");
 
