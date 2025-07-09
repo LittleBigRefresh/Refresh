@@ -43,10 +43,6 @@ public partial class GameDatabaseContext // Levels
         DateTimeOffset timestamp = this._time.Now;
         level.PublishDate = timestamp;
         level.UpdateDate = timestamp;
-        
-        // Automatically mark level as reupload by keyword matching the title
-        // + get original publisher from the description
-
 
         // Automatically mark level as reupload by keyword matching the title
         bool isReUpload = LevelPrefixes.ReuploadKeywords.Any(keyword => level.Title.Contains(keyword, StringComparison.OrdinalIgnoreCase));
