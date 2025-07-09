@@ -76,7 +76,7 @@ public class LevelEndpoints : EndpointGroup
         {
             // Get the requested user's root playlist
             GameUser? requestedUser = database.GetUserByUsername(context.QueryString.Get("u"));
-            GamePlaylist? rootPlaylist = requestedUser == null ? null : database.GetUserRootPlaylist(user);
+            GamePlaylist? rootPlaylist = requestedUser == null ? null : database.GetUserRootPlaylist(requestedUser);
 
             // If it was found, inject it into the response info
             if (rootPlaylist != null)
