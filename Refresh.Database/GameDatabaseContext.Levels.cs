@@ -1,4 +1,5 @@
 using System.Diagnostics;
+using System.Globalization;
 using System.Reflection;
 using System.Text.RegularExpressions;
 using JetBrains.Annotations;
@@ -44,19 +45,30 @@ public partial class GameDatabaseContext // Levels
         level.UpdateDate = timestamp;
         
         // Automatically mark level as reupload by keyword matching the title
-        // + get original publisher from the description??
+        // + get original publisher from the description
+
+
+        // Automatically mark level as reupload by keyword matching the title
         bool isReUpload = LevelPrefixes.ReuploadKeywords.Any(keyword => level.Title.Contains(keyword, StringComparison.OrdinalIgnoreCase));
-       
+        
         if (isReUpload)
         {
             level.IsReUpload = true;
+            
+            // Extract all attributes of our format ?{key}[:|.]{value}
+            Dictionary<string, string> levelAttributes = LevelPrefixes.ExtractAttributes(level.Description);
 
-            // Get original publisher from ?OP.{username} ?op.{username}
-            Match attributeMatch = LevelPrefixes.AttributeRegex().Match(level.Description);
-            if (attributeMatch.Success && attributeMatch.Groups[1].Value == "op") //?op
+            
+            // Get original publisher from ?op.{username} or ?op:{username} otherwise Unknown
+            level.OriginalPublisher = levelAttributes.GetValueOrDefault("op") ?? SystemUsers.UnknownUserName; 
+            
+            // Parse original publish date in format dd-mm-yy (ex. 15-07-25 -> 15/07/2025)
+            if (levelAttributes.TryGetValue("date", out string? dateString) && 
+                DateTimeOffset.TryParseExact(dateString, "dd-MM-yy", null, DateTimeStyles.None, out DateTimeOffset parsedDate))
             {
-                level.OriginalPublisher = attributeMatch.Groups[2].Value;
+                level.PublishDate = parsedDate.ToUniversalTime();
             }
+       
         }
         
         this.Write(() =>
