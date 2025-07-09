@@ -701,7 +701,7 @@ public class PublishEndpointsTests : GameServerTest
         GameLevel? dbLevel = context.Database.GetLevelById(resp.LevelId);
         Assert.That(dbLevel, Is.Not.Null);
 
-        IEnumerable<GameSkillReward> rewards = context.Database.GetSkillRewardsForLevel(dbLevel);
+        IEnumerable<GameSkillReward> rewards = context.Database.GetSkillRewardsForLevel(dbLevel!);
         Assert.That(rewards, Is.Not.Empty);
     }
 }
