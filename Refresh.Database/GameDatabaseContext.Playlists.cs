@@ -220,7 +220,7 @@ public partial class GameDatabaseContext // Playlists
     public int GetTotalLevelsInPlaylistCount(GamePlaylist playlist) 
         => this.LevelPlaylistRelations.Count(l => l.Playlist == playlist);
 
-    private IEnumerable<GamePlaylist> GetPlaylistsContainingPlaylistInternal(GamePlaylist playlist)
+    internal IEnumerable<GamePlaylist> GetPlaylistsContainingPlaylistInternal(GamePlaylist playlist)
         => this.SubPlaylistRelations
             .Where(p => p.SubPlaylistId == playlist.PlaylistId)
             .OrderByDescending(r => r.Timestamp)

@@ -1,7 +1,6 @@
-using Refresh.Database;
 using Refresh.Database.Models.Playlists;
 
-namespace Refresh.Core.Extensions;
+namespace Refresh.Database.Extensions;
 
 public static class GamePlaylistExtensions
 {
@@ -14,10 +13,8 @@ public static class GamePlaylistExtensions
     public static void TraverseParentsRecursively(this GamePlaylist playlist, GameDatabaseContext database,
         Func<GamePlaylist, bool> callback)
     {
-        // Iterate over all parents.
-        // While this will not return all parents in very specific cases, I doubt anyone will go this far
-        // just to create a loop in their playlist tree.
-        foreach (GamePlaylist parent in database.GetPlaylistsContainingPlaylist(playlist, 0, 1000).Items.ToArray())
+        // Iterate over all parents
+        foreach (GamePlaylist parent in database.GetPlaylistsContainingPlaylistInternal(playlist).ToArray())
         {
             // Call the callback for this parent. If the callback requests to stop the traversal by returning false 
             // (for example because it has detected a loop in the tree), stop the traversal by returning
