@@ -75,13 +75,14 @@ public class LevelEndpoints : EndpointGroup
         if (route == "by" && dataContext.Game == TokenGame.LittleBigPlanet1)
         {
             // Get the requested user's root playlist
-            GamePlaylist? playlist = database.GetUserByUsername(context.QueryString.Get("u"))?.RootPlaylist;
+            GameUser? requestedUser = database.GetUserByUsername(context.QueryString.Get("u"));
+            GamePlaylist? rootPlaylist = requestedUser == null ? null : database.GetUserRootPlaylist(requestedUser);
 
             // If it was found, inject it into the response info
-            if (playlist != null)
+            if (rootPlaylist != null)
             {
-                DatabaseList<GamePlaylist> playlists = database.GetPlaylistsInPlaylist(playlist, skip, count);
-                slots = GameMinimalLevelResponse.FromOldList(playlists.Items, dataContext).Concat(slots);
+                DatabaseList<GamePlaylist> playlists = database.GetPlaylistsInPlaylist(rootPlaylist, skip, count);
+                slots = GameMinimalLevelResponse.FromOldList(playlists.Items.ToArray(), dataContext).Concat(slots);
 
                 // While this does technically return more slot results than the game is expecting,
                 // because we tell the game exactly what the "next page index" is (its not based on count sent),

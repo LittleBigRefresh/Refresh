@@ -15,6 +15,18 @@ public partial class GameDatabaseContext // Playlists
     /// </summary>
     private const string DefaultPlaylistIcon = "g18451"; // LBP1 star sticker
 
+    private IQueryable<LevelPlaylistRelation> LevelPlaylistRelationsIncluded => this.LevelPlaylistRelations
+        .Include(r => r.Playlist)
+        .Include(r => r.Level);
+
+    private IQueryable<SubPlaylistRelation> SubPlaylistRelationsIncluded => this.SubPlaylistRelations
+        .Include(r => r.SubPlaylist)
+        .Include(r => r.SubPlaylist.Publisher);
+
+    private IQueryable<FavouritePlaylistRelation> FavouritePlaylistRelationsIncluded => this.FavouritePlaylistRelations
+        .Include(r => r.Playlist)
+        .Include(r => r.Playlist.Publisher);
+    
     private void CreatePlaylistInternal(GamePlaylist createInfo)
     {
         DateTimeOffset now = this._time.Now;
@@ -44,11 +56,10 @@ public partial class GameDatabaseContext // Playlists
         };
 
         this.CreatePlaylistInternal(playlist);
-
         return playlist;
     }
 
-    public void CreateRootPlaylist(GameUser user)
+    public GamePlaylist CreateRootPlaylist(GameUser user)
     {
         GameLocation randomLocation = GameLocation.Random;
 
@@ -64,7 +75,7 @@ public partial class GameDatabaseContext // Playlists
         };
 
         this.CreatePlaylistInternal(rootPlaylist);
-        this.SetUserRootPlaylist(user, rootPlaylist);
+        return rootPlaylist;
     }
 
     public GamePlaylist? GetPlaylistById(int playlistId) 
@@ -104,7 +115,7 @@ public partial class GameDatabaseContext // Playlists
         this.Write(() =>
         {
             // Make sure to not create a duplicate object
-            if (this.SubPlaylistRelations.Any(p => p.SubPlaylist == child && p.Playlist == parent))
+            if (this.SubPlaylistRelations.Any(p => p.SubPlaylistId == child.PlaylistId && p.PlaylistId == parent.PlaylistId))
                 return;
             
             // Add the relation
@@ -122,7 +133,7 @@ public partial class GameDatabaseContext // Playlists
         this.Write(() =>
         {
             SubPlaylistRelation? relation =
-                this.SubPlaylistRelations.FirstOrDefault(r => r.SubPlaylist == child && r.Playlist == parent);
+                this.SubPlaylistRelations.FirstOrDefault(r => r.SubPlaylistId == child.PlaylistId && r.PlaylistId == parent.PlaylistId);
 
             if (relation == null)
                 return;
@@ -136,7 +147,7 @@ public partial class GameDatabaseContext // Playlists
         this.Write(() =>
         {
             // Make sure to not create a duplicate object
-            if (this.LevelPlaylistRelations.Any(p => p.Level == level && p.Playlist == parent))
+            if (this.LevelPlaylistRelations.Any(p => p.LevelId == level.LevelId && p.PlaylistId == parent.PlaylistId))
                 return;
             
             // Add the relation
@@ -154,13 +165,10 @@ public partial class GameDatabaseContext // Playlists
     public void RemoveLevelFromPlaylist(GameLevel level, GamePlaylist parent)
     {
         LevelPlaylistRelation? relation =
-            this.LevelPlaylistRelations.FirstOrDefault(r => r.Level == level && r.Playlist == parent);
+            this.LevelPlaylistRelations.FirstOrDefault(r => r.LevelId == level.LevelId && r.PlaylistId == parent.PlaylistId);
 
         if (relation == null)
             return;
-
-        // decrease index of every playlist level after this one by 1
-        this.DecreasePlaylistLevelIndicesAfterIndex(parent, relation.Index);
 
         this.Write(() =>
         {
@@ -168,135 +176,88 @@ public partial class GameDatabaseContext // Playlists
         });
     }
 
-    private void DecreasePlaylistLevelIndicesAfterIndex(GamePlaylist playlist, int startIndex)
+    public void ReorderLevelsInPlaylist(IEnumerable<int> levelIds, GamePlaylist parent)
     {
-        IEnumerable<LevelPlaylistRelation> relations = this.LevelPlaylistRelations
-            .Where(r => r.Playlist == playlist && r.Index >= startIndex)
-            .AsEnumerable();
+        IEnumerable<LevelPlaylistRelation> relations = this.GetLevelRelationsForPlaylist(parent).ToArray();
+        IEnumerable<LevelPlaylistRelation> includedRelations = relations.Where(r => levelIds.Contains(r.LevelId));
+        IEnumerable<LevelPlaylistRelation> excludedRelations = relations.Where(r => !levelIds.Contains(r.LevelId));
 
-        this.Write(() => {
-            foreach(LevelPlaylistRelation relation in relations)
-            {
-                relation.Index--;
-            }
-        });
-    }
-
-    public void UpdatePlaylistLevelOrder(GamePlaylist playlist, List<int> levelIds)
-    {
-        IEnumerable<LevelPlaylistRelation> relations = this.LevelPlaylistRelations.Where(p => p.Playlist == playlist).OrderBy(r => r.Index);
-        int relationCount = relations.Count();
-
-        int newIndex = 0;
-        this.Write(() => {
-            // overwrite the indices of relations whose level IDs appear in the given list, based on the order of these IDs
+        this.Write(() => 
+        {
+            // update playlist levels referenced in the given list
+            int newIndex = 0;
             foreach (int levelId in levelIds)
             {
-                LevelPlaylistRelation? relation = relations.FirstOrDefault(r => r.Level.LevelId == levelId);
-                if (relation != null)
+                LevelPlaylistRelation? includedRelation = includedRelations.FirstOrDefault(r => r.LevelId == levelId);
+
+                // only update if the playlist actually contains the level
+                if (includedRelation != null)
                 {
-                    relation.Index = newIndex;
+                    includedRelation.Index = newIndex;
                     newIndex++;
                 }
             }
 
-            // now "append" the relations whose level IDs did not appear in the given list
-            while (newIndex < relationCount)
+            // update levels not included in the list to retain their previously set order, but to be behind the newly ordered levels
+            foreach (LevelPlaylistRelation excludedRelation in excludedRelations)
             {
-                relations.ElementAt(newIndex).Index = newIndex;
+                excludedRelation.Index = newIndex;
                 newIndex++;
             }
         });
     }
 
-    public IEnumerable<GamePlaylist> GetPlaylistsContainingPlaylist(GamePlaylist playlist)
-        // TODO: with postgres this can be IQueryable
-        => this.SubPlaylistRelations.Where(p => p.SubPlaylist == playlist).OrderByDescending(r => r.Timestamp)
-            .AsEnumerable()
-            .Select(r => this.GamePlaylists.First(p => p.PlaylistId == r.Playlist.PlaylistId))
+    private IEnumerable<LevelPlaylistRelation> GetLevelRelationsForPlaylist(GamePlaylist playlist)
+        => this.LevelPlaylistRelationsIncluded
+            .Where(r => r.PlaylistId == playlist.PlaylistId)
+            .OrderBy(r => r.Index);
+
+    public DatabaseList<GameLevel> GetLevelsInPlaylist(GamePlaylist playlist, TokenGame game, int skip, int count)
+        => new(this.GetLevelRelationsForPlaylist(playlist)
+            .Select(l => l.Level)
+            .FilterByGameVersion(game), skip, count);
+
+    public int GetTotalLevelsInPlaylistCount(GamePlaylist playlist) 
+        => this.LevelPlaylistRelations.Count(l => l.Playlist == playlist);
+
+    internal IEnumerable<GamePlaylist> GetPlaylistsContainingPlaylistInternal(GamePlaylist playlist)
+        => this.SubPlaylistRelations
+            .Where(p => p.SubPlaylistId == playlist.PlaylistId)
+            .OrderByDescending(r => r.Timestamp)
+            .Select(r => this.GamePlaylists.First(p => p.PlaylistId == r.PlaylistId))
             .Where(p => !p.IsRoot);
 
     public DatabaseList<GamePlaylist> GetPlaylistsContainingPlaylist(GamePlaylist playlist, int skip, int count)
-        => new(this.GetPlaylistsContainingPlaylist(playlist), skip, count);
-    
+        => new(GetPlaylistsContainingPlaylistInternal(playlist), skip, count);
+
     public DatabaseList<GamePlaylist> GetPlaylistsByAuthorContainingPlaylist(GameUser user, GamePlaylist playlist, int skip, int count)
-        // TODO: with postgres this can be IQueryable
-        => new(this.SubPlaylistRelations
-            .Where(p => p.SubPlaylist == playlist)
-            .OrderByDescending(r => r.Timestamp)
-            .AsEnumerable()
-            .Select(r => this.GamePlaylists.First(p => p.PlaylistId == r.Playlist.PlaylistId))
-            .Where(p => p.Publisher.UserId == user.UserId)
-            .Where(p => !p.IsRoot), skip, count);
-
-    public IEnumerable<GameLevel> GetLevelsInPlaylist(GamePlaylist playlist, TokenGame game)
-        // TODO: When we have postgres, remove the `AsEnumerable` call for performance. 
-        => this.LevelPlaylistRelations
-            .Where(l => l.Playlist == playlist)
-            .OrderBy(r => r.Index)
-            .AsEnumerable()
-            .Select(l => l.Level)
-            .FilterByGameVersion(game);
-        
-    public DatabaseList<GameLevel> GetLevelsInPlaylist(GamePlaylist playlist, TokenGame game, int skip, int count)
-        // TODO: When we have postgres, remove the `AsEnumerable` call for performance. 
-        => new(this.GetLevelsInPlaylist(playlist, game), skip, count);
-
-    public DatabaseList<GameLevel> GetLevelsInPlaylist(GamePlaylist playlist, int skip, int count)
-        // TODO: When we have postgres, remove the `AsEnumerable` call for performance. 
-        => new(this.LevelPlaylistRelations
-            .Where(l => l.Playlist == playlist)
-            .OrderBy(r => r.Index)
-            .AsEnumerable()
-            .Select(l => l.Level), skip, count);
-
-    public int GetTotalLevelsInPlaylistCount(GamePlaylist playlist, TokenGame game) => 
-        this.LevelPlaylistRelations.Where(l => l.Playlist == playlist)
-            .AsEnumerable()
-            .Select(l => l.Level)
-            .FilterByGameVersion(game)
-            .Count();
-
-    public int GetTotalLevelsInPlaylistCount(GamePlaylist playlist) => 
-        this.LevelPlaylistRelations.Count(l => l.Playlist == playlist);
-
-    public IEnumerable<GamePlaylist> GetPlaylistsInPlaylist(GamePlaylist playlist)
-        // TODO: When we have postgres, remove the `AsEnumerable` call for performance. 
-        => this.SubPlaylistRelations
-            .Where(p => p.Playlist == playlist)
-            .OrderByDescending(r => r.Timestamp)
-            .AsEnumerable()
-            .Select(l => l.SubPlaylist);
+        => new(GetPlaylistsContainingPlaylistInternal(playlist)
+            .Where(p => p.PublisherId == user.UserId), skip, count);
 
     public DatabaseList<GamePlaylist> GetPlaylistsInPlaylist(GamePlaylist playlist, int skip, int count)
-        // TODO: When we have postgres, remove the `AsEnumerable` call for performance. 
-        => new(this.GetPlaylistsInPlaylist(playlist), skip, count);
-
-    public IEnumerable<GamePlaylist> GetPlaylistsByAuthor(GameUser author)
-        => this.GamePlaylists
-            .Where(p => p.Publisher == author)
-            .Where(p => !p.IsRoot)
-            .OrderByDescending(p => p.LastUpdateDate);
+        => new(this.SubPlaylistRelationsIncluded
+            .Where(p => p.PlaylistId == playlist.PlaylistId)
+            .OrderByDescending(r => r.Timestamp)
+            .Select(l => l.SubPlaylist), skip, count);
     
-    public DatabaseList<GamePlaylist> GetPlaylistsByAuthor(GameUser author, int count, int skip)
-        => new(this.GetPlaylistsByAuthor(author), skip, count);
+    public DatabaseList<GamePlaylist> GetPlaylistsByAuthor(GameUser author, int skip, int count)
+        => new(this.GamePlaylists
+            .Where(p => p.PublisherId == author.UserId)
+            .Where(p => !p.IsRoot)
+            .OrderByDescending(p => p.LastUpdateDate), skip, count);
+    
+    private IEnumerable<GamePlaylist> GetPlaylistsContainingLevelInternal(GameLevel level)
+        => this.LevelPlaylistRelationsIncluded
+            .Where(p => p.LevelId == level.LevelId)
+            .OrderByDescending(r => r.Timestamp)
+            .Select(r => r.Playlist);
 
     public DatabaseList<GamePlaylist> GetPlaylistsByAuthorContainingLevel(GameUser author, GameLevel level, int skip, int count)
-        // TODO: When we have postgres, remove the `AsEnumerable` call for performance. 
-        => new(this.LevelPlaylistRelations
-            .Where(p => p.Level == level)
-            .OrderByDescending(r => r.Timestamp)
-            .AsEnumerable()
-            .Select(r => this.GamePlaylists.First(p => p.PlaylistId == r.Playlist.PlaylistId))
-            .Where(p => p.Publisher.UserId == author.UserId), skip, count);
+        => new(GetPlaylistsContainingLevelInternal(level)
+            .Where(p => p.PublisherId == author.UserId), skip, count);
     
     public DatabaseList<GamePlaylist> GetPlaylistsContainingLevel(GameLevel level, int skip, int count)
-        // TODO: When we have postgres, remove the `AsEnumerable` call for performance. 
-        => new(this.LevelPlaylistRelations
-            .Where(p => p.Level == level)
-            .OrderByDescending(r => r.Timestamp)
-            .AsEnumerable()
-            .Select(r => this.GamePlaylists.First(p => p.PlaylistId == r.Playlist.PlaylistId)), skip, count);
+        => new(GetPlaylistsContainingLevelInternal(level), skip, count);
 
     public DatabaseList<GamePlaylist> GetNewestPlaylists(int skip, int count)
         => new(this.GamePlaylists
@@ -304,29 +265,25 @@ public partial class GameDatabaseContext // Playlists
             .OrderByDescending(p => p.CreationDate), skip, count);
 
     public DatabaseList<GamePlaylist> GetMostHeartedPlaylists(int skip, int count) 
-        // TODO: When we have postgres, remove the `AsEnumerable` call for performance.
         // TODO: reduce code duplication for getting most of x
         => new(this.FavouritePlaylistRelations
             .GroupBy(r => r.Playlist)
             .Select(g => new { Playlist = g.Key, Count = g.Count() })
             .OrderByDescending(x => x.Count)
-            .AsEnumerable()
             .Select(x => x.Playlist)
             .Where(p => p != null), skip, count);
 
     public DatabaseList<GamePlaylist> GetPlaylistsFavouritedByUser(GameUser user, int skip, int count) 
-        // TODO: When we have postgres, remove the `AsEnumerable` call for performance.
-        => new(this.FavouritePlaylistRelations
-            .Where(r => r.User == user)
+        => new(this.FavouritePlaylistRelationsIncluded
+            .Where(r => r.UserId == user.UserId)
             .OrderByDescending(r => r.Timestamp)
-            .AsEnumerable()
             .Select(r => r.Playlist), skip, count);
 
     public int GetFavouriteCountForPlaylist(GamePlaylist playlist)
-        => this.FavouritePlaylistRelations.Count(r => r.Playlist == playlist);
+        => this.FavouritePlaylistRelations.Count(r => r.PlaylistId == playlist.PlaylistId);
 
     public bool IsPlaylistFavouritedByUser(GamePlaylist playlist, GameUser user)
-        => this.FavouritePlaylistRelations.FirstOrDefault(r => r.Playlist == playlist && r.User == user) != null;
+        => this.FavouritePlaylistRelations.Any(r => r.PlaylistId == playlist.PlaylistId && r.UserId == user.UserId);
 
     public bool FavouritePlaylist(GamePlaylist playlist, GameUser user)
     {
@@ -346,7 +303,7 @@ public partial class GameDatabaseContext // Playlists
     public bool UnfavouritePlaylist(GamePlaylist playlist, GameUser user)
     {
         FavouritePlaylistRelation? relation = this.FavouritePlaylistRelations
-            .FirstOrDefault(r => r.Playlist == playlist && r.User == user);
+            .FirstOrDefault(r => r.PlaylistId == playlist.PlaylistId && r.UserId == user.UserId);
 
         if (relation == null) return false;
 

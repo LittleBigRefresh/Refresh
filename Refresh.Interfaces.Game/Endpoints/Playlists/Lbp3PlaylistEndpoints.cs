@@ -25,15 +25,14 @@ public class Lbp3PlaylistEndpoints : EndpointGroup
         if (user.IsWriteBlocked(config))
             return Unauthorized;
 
+        GamePlaylist? rootPlaylist = dataContext.Database.GetUserRootPlaylist(user);
+
         // if the player has no root playlist yet, create a new one first
-        if (user.RootPlaylist == null)
-        {
-            dataContext.Database.CreateRootPlaylist(user);
-        }
+        rootPlaylist ??= dataContext.Database.CreateRootPlaylist(user);
 
         // create the actual playlist and add it to the root playlist
         GamePlaylist playlist = dataContext.Database.CreatePlaylist(user, body);
-        dataContext.Database.AddPlaylistToPlaylist(playlist, user.RootPlaylist!);
+        dataContext.Database.AddPlaylistToPlaylist(playlist, rootPlaylist!);
 
         // return the playlist we just created to have the game open to it immediately
         return new Response(SerializedLbp3Playlist.FromOld(playlist, dataContext), ContentType.Xml);
@@ -51,7 +50,7 @@ public class Lbp3PlaylistEndpoints : EndpointGroup
             return NotFound;
 
         // don't allow the wrong user to update playlists
-        if (playlist.Publisher.UserId != user.UserId)
+        if (playlist.PublisherId != user.UserId)
             return Unauthorized;
         
         dataContext.Database.UpdatePlaylist(playlist, body);
@@ -74,7 +73,7 @@ public class Lbp3PlaylistEndpoints : EndpointGroup
             return NotFound;
 
         // don't allow the wrong user to delete playlists
-        if (playlist.Publisher.UserId != user.UserId)
+        if (playlist.PublisherId != user.UserId)
             return Unauthorized;
 
         dataContext.Database.DeletePlaylist(playlist);
@@ -90,13 +89,13 @@ public class Lbp3PlaylistEndpoints : EndpointGroup
         if (playlist == null)
             return null;
 
-        IEnumerable<GameLevel> levels = dataContext.Database.GetLevelsInPlaylist(playlist, dataContext.Game);
+        DatabaseList<GameLevel> levels = dataContext.Database.GetLevelsInPlaylist(playlist, dataContext.Game, 0, 100);
 
         return new SerializedLevelList
         {
-            Items = GameLevelResponse.FromOldList(levels, dataContext).ToList(),
-            Total = 0,
-            NextPageStart = 0
+            Items = GameLevelResponse.FromOldList(levels.Items.ToArray(), dataContext).ToList(),
+            Total = levels.TotalItems,
+            NextPageStart = levels.NextPageIndex
         };
     }
 
@@ -112,7 +111,7 @@ public class Lbp3PlaylistEndpoints : EndpointGroup
             return NotFound;
 
         // Dont let people add levels to other's playlists
-        if (playlist.Publisher.UserId != user.UserId) 
+        if (playlist.PublisherId != user.UserId) 
             return Unauthorized;
 
         foreach (int levelId in body.LevelIds)
@@ -138,10 +137,10 @@ public class Lbp3PlaylistEndpoints : EndpointGroup
             return NotFound;
 
         // Dont let people reorder levels in other's playlists
-        if (playlist.Publisher.UserId != user.UserId)
+        if (playlist.PublisherId != user.UserId)
             return Unauthorized;
 
-        dataContext.Database.UpdatePlaylistLevelOrder(playlist, body.LevelIds);
+        dataContext.Database.ReorderLevelsInPlaylist(body.LevelIds, playlist);
         return OK;
     }
 
@@ -161,7 +160,7 @@ public class Lbp3PlaylistEndpoints : EndpointGroup
             return NotFound;
 
         // Dont let people remove levels from other's playlists
-        if (playlist.Publisher.UserId != user.UserId)
+        if (playlist.PublisherId != user.UserId)
             return Unauthorized;
 
         dataContext.Database.RemoveLevelFromPlaylist(level, playlist);
@@ -177,11 +176,11 @@ public class Lbp3PlaylistEndpoints : EndpointGroup
         if (user == null) 
             return null;
 
-        IEnumerable<GamePlaylist> playlists = dataContext.Database.GetPlaylistsByAuthor(user);
+        DatabaseList<GamePlaylist> playlists = dataContext.Database.GetPlaylistsByAuthor(user, 0, 100);
 
         return new SerializedLbp3PlaylistList 
         {
-            Items = SerializedLbp3Playlist.FromOldList(playlists, dataContext).ToList()
+            Items = SerializedLbp3Playlist.FromOldList(playlists.Items, dataContext).ToList()
         };
     }
 
@@ -194,7 +193,6 @@ public class Lbp3PlaylistEndpoints : EndpointGroup
         if (user == null) 
             return null;
 
-        // The only LBP3 playlist endpoint so far which uses pagination
         (int skip, int count) = context.GetPageData();
         DatabaseList<GamePlaylist> playlists = dataContext.Database.GetPlaylistsFavouritedByUser(user, skip, count);
 
