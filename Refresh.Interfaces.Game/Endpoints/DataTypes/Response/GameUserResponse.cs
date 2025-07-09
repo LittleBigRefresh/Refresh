@@ -67,6 +67,8 @@ public class GameUserResponse : IDataConvertableFrom<GameUserResponse, GameUser>
         
         Debug.Assert(old.Statistics != null);
 
+        TokenGame game = dataContext.Game;
+
         GameUserResponse response = new()
         {
             Description = old.Description,
@@ -106,8 +108,16 @@ public class GameUserResponse : IDataConvertableFrom<GameUserResponse, GameUser>
             return response;
         }
 
-        response.RootPlaylistId = dataContext.Database.GetUserRootPlaylist(old)?.PlaylistId.ToString();
-        response.ProfilePins = dataContext.Database.GetProfilePinsByUser(old, dataContext.Game, 0, 3).Items.Select(p => p.PinId).ToList();
+        // Fill out information only relevant in certain games
+        if (game is TokenGame.LittleBigPlanet1 or TokenGame.BetaBuild)
+        {
+            response.RootPlaylistId = dataContext.Database.GetUserRootPlaylist(old)?.PlaylistId.ToString();
+        }
+        if (game is not TokenGame.LittleBigPlanet1 or TokenGame.LittleBigPlanetPSP)
+        {
+            response.ProfilePins = dataContext.Database.GetProfilePinsByUser(old, dataContext.Game, 0, 3)
+                .Items.Select(p => p.PinId).ToList();
+        }
 
         response.PlanetsHash = dataContext.Game switch
         {
