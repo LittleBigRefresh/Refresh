@@ -56,6 +56,7 @@ public class ReuploadDetectionTests : GameServerTest
             Assert.That(level.IsReUpload, Is.True);
             Assert.That(level.OriginalPublisher, Is.EqualTo("gamer1"));
         }
+        
     }
     
     

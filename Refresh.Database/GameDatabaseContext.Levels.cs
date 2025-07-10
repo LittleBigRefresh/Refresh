@@ -1,10 +1,7 @@
 using System.Diagnostics;
-using System.Globalization;
 using System.Reflection;
-using System.Text.RegularExpressions;
 using JetBrains.Annotations;
 using Refresh.Common.Constants;
-using Refresh.Common.Helpers;
 using Refresh.Database.Query;
 using Refresh.Database.Models.Authentication;
 using Refresh.Database.Models.Activity;
@@ -53,18 +50,9 @@ public partial class GameDatabaseContext // Levels
             
             // Extract all attributes of our format ?{key}[:|.]{value}
             Dictionary<string, string> levelAttributes = LevelPrefixes.ExtractAttributes(level.Description);
-
             
             // Get original publisher from ?op.{username} or ?op:{username} otherwise Unknown
             level.OriginalPublisher = levelAttributes.GetValueOrDefault("op") ?? SystemUsers.UnknownUserName; 
-            
-            // Parse original publish date in format dd-mm-yy (ex. 15-07-25 -> 15/07/2025)
-            if (levelAttributes.TryGetValue("date", out string? dateString) && 
-                DateTimeOffset.TryParseExact(dateString, "dd-MM-yy", null, DateTimeStyles.None, out DateTimeOffset parsedDate))
-            {
-                level.PublishDate = parsedDate.ToUniversalTime();
-            }
-       
         }
         
         this.Write(() =>
