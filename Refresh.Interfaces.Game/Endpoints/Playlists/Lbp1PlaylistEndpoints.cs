@@ -29,6 +29,8 @@ public class Lbp1PlaylistEndpoints : EndpointGroup
             return Unauthorized;
         
         GamePlaylist? parent = null;
+        GamePlaylist? rootPlaylist = dataContext.Database.GetUserRootPlaylist(user);
+
         // If the parent ID is specified, try to parse that out
         if (int.TryParse(context.QueryString["parent_id"], out int parentId))
         {
@@ -39,24 +41,20 @@ public class Lbp1PlaylistEndpoints : EndpointGroup
                 return BadRequest;
             
             // Dont let you create a sub-playlist of someone else's playlist
-            if (user.UserId != parent.Publisher.UserId)
+            if (user.UserId != parent.PublisherId)
                 return Unauthorized;
 
             // If the user has no root playlist, but they are trying to create a sub-playlist, something has gone wrong.
-            if (user.RootPlaylist == null)
+            if (rootPlaylist == null)
                 return BadRequest;
         }
 
         // Create the playlist, marking it as the root playlist if the user does not have one set already
-        GamePlaylist playlist = dataContext.Database.CreatePlaylist(user, body, user.RootPlaylist == null);
+        GamePlaylist playlist = dataContext.Database.CreatePlaylist(user, body, rootPlaylist == null);
 
         // If there is a parent, add the new playlist to the parent
         if (parent != null) 
             dataContext.Database.AddPlaylistToPlaylist(playlist, parent);
-
-        // If this new playlist is the root playlist, mark the user's root playlist as it
-        if (playlist.IsRoot)
-            dataContext.Database.SetUserRootPlaylist(user, playlist);
         
         // Create the new playlist, returning the data
         return new Response(SerializedLbp1Playlist.FromOld(playlist, dataContext), ContentType.Xml);
@@ -79,8 +77,8 @@ public class Lbp1PlaylistEndpoints : EndpointGroup
 
         // Concat together the playlist's sub-playlists and levels 
         IEnumerable<GameMinimalLevelResponse> slots =
-            GameMinimalLevelResponse.FromOldList(subPlaylists.Items, dataContext) // the sub-playlists
-                .Concat(GameMinimalLevelResponse.FromOldList(levels.Items, dataContext)); // the sub-levels
+            GameMinimalLevelResponse.FromOldList(subPlaylists.Items.ToArray(), dataContext) // the sub-playlists
+                .Concat(GameMinimalLevelResponse.FromOldList(levels.Items.ToArray(), dataContext)); // the sub-levels
         
         // Convert the GameLevelResponse list down to a GameMinimalLevelResponse
         return new SerializedMinimalLevelList(
@@ -136,7 +134,7 @@ public class Lbp1PlaylistEndpoints : EndpointGroup
 
         // Return the serialized playlists 
         return new SerializedMinimalLevelList(
-            GameMinimalLevelResponse.FromOldList(playlists.Items, dataContext), 
+            GameMinimalLevelResponse.FromOldList(playlists.Items.ToArray(), dataContext), 
             playlists.TotalItems, 
             skip
         );
@@ -154,7 +152,7 @@ public class Lbp1PlaylistEndpoints : EndpointGroup
             return NotFound;
 
         // Dont allow the wrong user to update playlists
-        if (playlist.Publisher.UserId != user.UserId)
+        if (playlist.PublisherId != user.UserId)
             return Unauthorized;
         
         database.UpdatePlaylist(playlist, body);
@@ -173,7 +171,7 @@ public class Lbp1PlaylistEndpoints : EndpointGroup
             return NotFound;
 
         // Dont allow the wrong user to delete playlists
-        if (playlist.Publisher.UserId != user.UserId)
+        if (playlist.PublisherId != user.UserId)
             return Unauthorized;
 
         database.DeletePlaylist(playlist);
@@ -199,7 +197,7 @@ public class Lbp1PlaylistEndpoints : EndpointGroup
             return NotFound;
 
         // Dont let people add slots to other's playlists
-        if (parentPlaylist.Publisher.UserId != user.UserId)
+        if (parentPlaylist.PublisherId != user.UserId)
             return Unauthorized;
 
         // Adding a playlist to a playlist requires a special case, since we use `SubPlaylistRelation` internally to record child playlists.
@@ -280,7 +278,7 @@ public class Lbp1PlaylistEndpoints : EndpointGroup
             return NotFound;
 
         // Dont let people remove slots from other's playlists
-        if (parentPlaylist.Publisher.UserId != user.UserId)
+        if (parentPlaylist.PublisherId != user.UserId)
             return Unauthorized;
 
         // Removing a playlist from a playlist requires a special case, since we use `SubPlaylistRelation` internally to record child playlists.

@@ -23,7 +23,7 @@ public class SerializedLbp3Playlist : IDataConvertableFrom<SerializedLbp3Playlis
     /// </summary>
     [XmlElement("author")] public SerializedLbp3PlaylistAuthor? Author { get; set; }
     /// <summary>
-    /// Amount of times this playlist has been hearted
+    /// Amount of times this playlist has been hearted, not actually used for anything in LBP3
     /// </summary>
     [XmlElement("hearts")] public int HeartCount { get; set; }
     /// <summary>
@@ -48,7 +48,7 @@ public class SerializedLbp3Playlist : IDataConvertableFrom<SerializedLbp3Playlis
             {
                 Username = old.Publisher.Username
             },
-            HeartCount = dataContext.Database.GetFavouriteCountForPlaylist(old),
+            HeartCount = 0,
             PlaylistQuota = UgcLimits.MaximumLevels,
         };
     }

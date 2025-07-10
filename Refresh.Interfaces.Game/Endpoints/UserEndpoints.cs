@@ -10,10 +10,10 @@ using Refresh.Core.Services;
 using Refresh.Core.Types.Data;
 using Refresh.Database;
 using Refresh.Database.Models.Authentication;
-using Refresh.Database.Models.Pins;
 using Refresh.Database.Models.Users;
 using Refresh.Interfaces.Game.Endpoints.DataTypes.Response;
 using Refresh.Interfaces.Game.Types.Lists;
+using Refresh.Interfaces.Game.Types.Pins;
 using Refresh.Interfaces.Game.Types.UserData;
 
 namespace Refresh.Interfaces.Game.Endpoints;
@@ -198,7 +198,6 @@ public class UserEndpoints : EndpointGroup
     public SerializedPins GetPins(RequestContext context, DataContext dataContext, GameUser user)
         => SerializedPins.FromOld
         (
-            dataContext.Database.GetPinProgressesByUser(user, dataContext.Game, 0, 999).Items,
-            dataContext.Database.GetProfilePinsByUser(user, dataContext.Game, 0, 3).Items
+            dataContext.Database.GetPinProgressesByUser(user, dataContext.Game, 0, 999).Items
         );
 }
