@@ -1,10 +1,13 @@
-﻿using Microsoft.EntityFrameworkCore.Migrations;
+﻿using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 
 #nullable disable
 
 namespace Refresh.Database.Migrations
 {
     /// <inheritdoc />
+    [DbContext(typeof(GameDatabaseContext))]
+    [Migration("20250705152755_FixPlaylistCreation")]
     public partial class FixPlaylistCreation : Migration
     {
         /// <inheritdoc />
