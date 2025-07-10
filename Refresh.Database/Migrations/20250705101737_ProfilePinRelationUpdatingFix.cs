@@ -1,10 +1,13 @@
-﻿using Microsoft.EntityFrameworkCore.Migrations;
+﻿using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 
 #nullable disable
 
 namespace Refresh.Database.Migrations
 {
     /// <inheritdoc />
+    [DbContext(typeof(GameDatabaseContext))]
+    [Migration("20250705101737_ProfilePinRelationUpdatingFix")]
     public partial class ProfilePinRelationUpdatingFix : Migration
     {
         /// <inheritdoc />
