@@ -10,10 +10,10 @@ using Refresh.Core.Services;
 using Refresh.Core.Types.Data;
 using Refresh.Database;
 using Refresh.Database.Models.Authentication;
-using Refresh.Database.Models.Pins;
 using Refresh.Database.Models.Users;
 using Refresh.Interfaces.Game.Endpoints.DataTypes.Response;
 using Refresh.Interfaces.Game.Types.Lists;
+using Refresh.Interfaces.Game.Types.Pins;
 using Refresh.Interfaces.Game.Types.UserData;
 
 namespace Refresh.Interfaces.Game.Endpoints;

@@ -1,8 +1,7 @@
 using Refresh.Database.Models.Relations;
 
-namespace Refresh.Database.Models.Pins;
+namespace Refresh.Interfaces.Game.Types.Pins;
 
-#nullable disable
 public partial class SerializedPins
 {
     /// <summary>
@@ -11,7 +10,7 @@ public partial class SerializedPins
     /// Can contain the same pins as AwardPins (equal progressTypes), if it does, the times awarded and progress value
     /// is usually equal per pin (progressType).
     /// </summary>
-	[JsonProperty("progress")] public List<long> ProgressPins { get; set; }
+	[JsonProperty("progress")] public List<long> ProgressPins { get; set; } = [];
 
     /// <summary>
     /// Pins which can be awarded once or multiple times.
@@ -19,14 +18,12 @@ public partial class SerializedPins
     /// Can contain the same pins as ProgressPins (equal progressTypes), if it does, the times awarded and progress value
     /// is usually equal per pin (progressType).
     /// </summary>
-	[JsonProperty("awards")] public List<long> AwardPins { get; set; }
+	[JsonProperty("awards")] public List<long> AwardPins { get; set; } = [];
 
     /// <summary>
     /// The progressTypes of pins set to be shown on a user's profile for a certain game, in an order set by the user.
     /// </summary>
-	[JsonProperty("profile_pins")] public List<long> ProfilePins { get; set; }
-
-    #nullable enable
+	[JsonProperty("profile_pins")] public List<long> ProfilePins { get; set; } = [];
 
     /// <remarks>
     /// Can throw if either the rawPins list has an odd length or if a progress value from that list can't be casted to long.
@@ -35,7 +32,6 @@ public partial class SerializedPins
     public static Dictionary<long, int> ToDictionary(IList<long> rawPins)
     {
         Dictionary<long, int> dictionary = [];
-
         for (int i = 0; i < rawPins.Count; i += 2)
         {
             long progressType = rawPins[i];
@@ -50,7 +46,6 @@ public partial class SerializedPins
     public static Dictionary<long, int> ToMergedDictionary(IEnumerable<Dictionary<long, int>> dictionaries)
     {
         IEnumerable<KeyValuePair<long, int>> mergedDictionary = [];
-
         foreach (Dictionary<long, int> dictionary in dictionaries)
         {
             mergedDictionary = mergedDictionary.Concat(dictionary);
