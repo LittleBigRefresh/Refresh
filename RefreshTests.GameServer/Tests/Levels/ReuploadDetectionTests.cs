@@ -1,4 +1,5 @@
-﻿using Refresh.Database.Models.Levels;
+﻿using Refresh.Common.Constants;
+using Refresh.Database.Models.Levels;
 using Refresh.Database.Models.Users;
 
 namespace RefreshTests.GameServer.Tests.Levels;
@@ -34,7 +35,7 @@ public class ReuploadDetectionTests : GameServerTest
         using (Assert.EnterMultipleScope())
         {
             Assert.That(level.IsReUpload, Is.True);
-            Assert.That(level.OriginalPublisher, Is.Null);
+            Assert.That(level.OriginalPublisher, Is.EqualTo(SystemUsers.UnknownUserName));
         }
     }
     
