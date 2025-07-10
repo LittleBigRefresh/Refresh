@@ -1,9 +1,7 @@
 using System.Diagnostics;
 using System.Reflection;
-using System.Text.RegularExpressions;
 using JetBrains.Annotations;
 using Refresh.Common.Constants;
-using Refresh.Common.Helpers;
 using Refresh.Database.Query;
 using Refresh.Database.Models.Authentication;
 using Refresh.Database.Models.Activity;
@@ -42,21 +40,19 @@ public partial class GameDatabaseContext // Levels
         DateTimeOffset timestamp = this._time.Now;
         level.PublishDate = timestamp;
         level.UpdateDate = timestamp;
-        
+
         // Automatically mark level as reupload by keyword matching the title
-        // + get original publisher from the description??
         bool isReUpload = LevelPrefixes.ReuploadKeywords.Any(keyword => level.Title.Contains(keyword, StringComparison.OrdinalIgnoreCase));
-       
+        
         if (isReUpload)
         {
             level.IsReUpload = true;
-
-            // Get original publisher from ?OP.{username} ?op.{username}
-            Match attributeMatch = LevelPrefixes.AttributeRegex().Match(level.Description);
-            if (attributeMatch.Success && attributeMatch.Groups[1].Value == "op") //?op
-            {
-                level.OriginalPublisher = attributeMatch.Groups[2].Value;
-            }
+            
+            // Extract all attributes of our format ?{key}[:|.]{value}
+            Dictionary<string, string> levelAttributes = LevelPrefixes.ExtractAttributes(level.Description);
+            
+            // Get original publisher from ?op.{username} or ?op:{username} otherwise Unknown
+            level.OriginalPublisher = levelAttributes.GetValueOrDefault("op") ?? SystemUsers.UnknownUserName; 
         }
         
         this.Write(() =>
