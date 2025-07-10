@@ -198,7 +198,6 @@ public class UserEndpoints : EndpointGroup
     public SerializedPins GetPins(RequestContext context, DataContext dataContext, GameUser user)
         => SerializedPins.FromOld
         (
-            dataContext.Database.GetPinProgressesByUser(user, dataContext.Game, 0, 999).Items,
-            dataContext.Database.GetProfilePinsByUser(user, dataContext.Game, 0, 3).Items
+            dataContext.Database.GetPinProgressesByUser(user, dataContext.Game, 0, 999).Items
         );
 }

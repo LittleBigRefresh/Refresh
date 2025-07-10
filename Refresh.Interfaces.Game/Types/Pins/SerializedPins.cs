@@ -57,7 +57,7 @@ public partial class SerializedPins
             .ToDictionary();
     }
         
-    public static SerializedPins FromOld(IEnumerable<PinProgressRelation> pinProgresses, IEnumerable<ProfilePinRelation> profilePins)
+    public static SerializedPins FromOld(IEnumerable<PinProgressRelation> pinProgresses)
     {
         // Convert pin progress relations (both progressTypes and progress values) back to a list
         List<long> rawPinList = [];
@@ -69,10 +69,10 @@ public partial class SerializedPins
 
         return new()
         {
-            // Setting both to the same list is easier and has no negative impacts in-game
+            // Setting both ProgressPins and AwardPins to the same list is easier and has no negative impacts in-game
             ProgressPins = rawPinList,
             AwardPins = rawPinList,
-            ProfilePins = profilePins.Select(p => p.PinId).ToList(),
+            ProfilePins = [], // LBP never seems to care about profile pins returned here
         };
     }
 }
