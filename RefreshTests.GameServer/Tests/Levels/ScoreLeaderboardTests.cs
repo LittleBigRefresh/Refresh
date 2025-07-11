@@ -410,7 +410,64 @@ public class ScoreLeaderboardTests : GameServerTest
             Assert.That(context.Database.GetTotalPlaysForLevel(level), Is.EqualTo(i + 1));
         }
     }
-    
+
+    [Test]
+    public void PlayUserLevelInLBP1()
+    {
+        using TestContext context = this.GetServer();
+        GameUser user = context.CreateUser();
+        GameLevel level = context.CreateLevel(user);
+        using HttpClient client = context.GetAuthenticatedClient(TokenType.Game, user);
+        int plays = 2;
+
+        for (int i = 0; i < plays; i++)
+        {
+            // Enter level (increment play count)
+            HttpResponseMessage message = client.PostAsync($"/lbp/enterLevel/user/{level.LevelId}", new ReadOnlyMemoryContent(Array.Empty<byte>())).Result;
+            Assert.That(message.StatusCode, Is.EqualTo(OK));
+
+            // Enter level again (no increment)
+            message = client.PostAsync($"/lbp/enterLevel/user/{level.LevelId}", new ReadOnlyMemoryContent(Array.Empty<byte>())).Result;
+            Assert.That(message.StatusCode, Is.EqualTo(OK));
+
+            // Back to pod
+            message = client.PostAsync($"/lbp/enterLevel/user/0", new ReadOnlyMemoryContent(Array.Empty<byte>())).Result;
+            Assert.That(message.StatusCode, Is.EqualTo(OK));
+        }
+
+        Assert.That(context.Database.HasUserPlayedLevel(level, user), Is.True);
+        Assert.That(context.Database.GetTotalPlaysForLevelByUser(level, user), Is.EqualTo(plays));
+    }
+
+    [Test]
+    public void PlayDeveloperLevelInLBP1()
+    {
+        using TestContext context = this.GetServer();
+        GameUser user = context.CreateUser();
+        using HttpClient client = context.GetAuthenticatedClient(TokenType.Game, user);
+        int plays = 2;
+
+        for (int i = 0; i < plays; i++)
+        {
+            // Enter level (don't increment play count)
+            HttpResponseMessage message = client.PostAsync($"/lbp/enterLevel/developer/1", new ReadOnlyMemoryContent(Array.Empty<byte>())).Result;
+            Assert.That(message.StatusCode, Is.EqualTo(OK));
+
+            // Play level (do increment)
+            message = client.PostAsync($"/lbp/play/developer/1", new ReadOnlyMemoryContent(Array.Empty<byte>())).Result;
+            Assert.That(message.StatusCode, Is.EqualTo(OK));
+
+            // Back to pod
+            message = client.PostAsync($"/lbp/enterLevel/user/0", new ReadOnlyMemoryContent(Array.Empty<byte>())).Result;
+            Assert.That(message.StatusCode, Is.EqualTo(OK));
+        }
+
+        GameLevel level = context.Database.GetStoryLevelById(1);
+
+        Assert.That(context.Database.HasUserPlayedLevel(level, user), Is.True);
+        Assert.That(context.Database.GetTotalPlaysForLevelByUser(level, user), Is.EqualTo(plays));
+    }
+
     [Test]
     public void DoesntPlayInvalidLevel()
     {
