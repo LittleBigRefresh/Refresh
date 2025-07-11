@@ -317,6 +317,7 @@ public class ScoreLeaderboardTests : GameServerTest
         GameScore score = context.SubmitScore(submittedScore, 1, level, user, TokenGame.LittleBigPlanet2, TokenPlatform.PS3);
 
         List<ObjectId> scores = context.Database.GetRankedScoresAroundScore(score, count)!
+            .Items
             .Select(s => s.score.ScoreId)
             .ToList();
         

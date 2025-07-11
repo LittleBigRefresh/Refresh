@@ -11,9 +11,10 @@ public partial class GameScore
 {
     [Key] public ObjectId ScoreId { get; set; } = ObjectId.GenerateNewId();
 
-     public TokenGame Game { get; set; }
+    public TokenGame Game { get; set; }
     public TokenPlatform Platform { get; set; }
 
+    [Required] public int LevelId { get; set; }
     [Required] public GameLevel Level { get; set; }
     public DateTimeOffset ScoreSubmitted { get; set; }
     
