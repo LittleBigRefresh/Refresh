@@ -11,6 +11,7 @@ using Refresh.Core.Services;
 using Refresh.Core.Types.Data;
 using Refresh.Core.Types.Matching;
 using Refresh.Database.Models.Authentication;
+using Refresh.Database.Models.Levels;
 
 namespace Refresh.Interfaces.Game.Endpoints;
 
@@ -101,12 +102,13 @@ public class MatchingEndpoints : EndpointGroup
         return dataContext.Match.ExecuteMethod(method, roomData, dataContext, gameServerConfig);
     }
     
-    // Sent by LBP1 to notify the server it has entered a level.
+    // Sent periodically by LBP1 to notify the server it has entered a level.
     // While it doesn't send us any detailed room information, we can at least create a pseudo-room on the server with just that player.
-    // Due to it only sending this when the level is *entered*, it means its much more likely for the room to be auto cleared due to inactivity,
+    // Due to LBP1 requesting this endpoint way less often than /notification, it's much more likely for the room to be auto cleared due to inactivity,
     // since the "bump" is much less often. This will at the very least make API tools be able to see LBP1 player activity and player counts
+    // LBP1 doesn't send any requests to /play if a user enters an online user level, so use this endpoint to increment plays for those.
     [GameEndpoint("enterLevel/{slotType}/{id}", HttpMethods.Post)]
-    public Response EnterLevel(RequestContext context, Token token, MatchService matchService, string slotType, int id)
+    public Response EnterLevel(RequestContext context, Token token, MatchService matchService, string slotType, int id, DataContext dataContext)
     {
         GameRoom room = matchService.GetOrCreateRoomByPlayer(token.User, token.TokenPlatform, token.TokenGame, NatType.Strict, false);
         
@@ -119,12 +121,20 @@ public class MatchingEndpoints : EndpointGroup
         }
         else
         {
-            room.LevelType = slotType == "user" ? RoomSlotType.Online : RoomSlotType.Story;
+            GameLevel? level = dataContext.Database.GetLevelByIdAndType(slotType, id);
+            RoomSlotType roomSlotType = slotType == "user" ? RoomSlotType.Online : RoomSlotType.Story;
+
+            // User has actually entered a new online user level
+            if (level != null && roomSlotType == RoomSlotType.Online && room.LevelId != id && room.LevelType != roomSlotType)
+            {
+                dataContext.Database.PlayLevel(level, token.User, 1);
+            }
+
+            room.LevelType = roomSlotType;
             room.LevelId = id;
         }
         
         room.LastContact = DateTimeOffset.Now;
-        
         matchService.RoomAccessor.UpdateRoom(room);
         
         return OK;

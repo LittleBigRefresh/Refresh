@@ -28,6 +28,7 @@ public class LeaderboardEndpoints : EndpointGroup
     private const string BucketName = "score";
     private const string ScoreSubmissionBucketName = "score-submission";
 
+    // LBP1 doesn't send any requests to this endpoint if a user enters an online user level.
     [GameEndpoint("play/{slotType}/{id}", ContentType.Xml, HttpMethods.Post)]
     public Response PlayLevel(RequestContext context, GameUser user, GameDatabaseContext database, string slotType, int id)
     {
