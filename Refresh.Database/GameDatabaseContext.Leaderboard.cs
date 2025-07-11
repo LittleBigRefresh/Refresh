@@ -83,8 +83,8 @@ public partial class GameDatabaseContext // Leaderboard
         List<GameScore> scores = this.GameScoresIncluded
             .Where(s => s.ScoreType == score.ScoreType && s.LevelId == score.LevelId)
             .OrderByDescending(s => s.Score)
-            .ToArray()
-            .DistinctBy(s => s.PlayerIds[0])
+            .GroupBy(s => s.PlayerIdsRaw[0])
+            .Select(g => g.ElementAt(0))
             .ToList();
 
         return new
@@ -104,8 +104,9 @@ public partial class GameDatabaseContext // Leaderboard
         IEnumerable<GameScore> scores = this.GameScoresIncluded
             .Where(s => s.ScoreType == scoreType && s.LevelId == level.LevelId)
             .OrderByDescending(s => s.Score)
+            .GroupBy(s => s.PlayerIdsRaw[0])
+            .Select(g => g.ElementAt(0))
             .ToArray()
-            .DistinctBy(s => s.PlayerIds[0])
             //TODO: THIS CALL IS EXTREMELY INEFFECIENT!!! once we are in postgres land, figure out a way to do this effeciently
             .Where(s => s.PlayerIds.Any(p => mutuals.Contains(p)));
 
