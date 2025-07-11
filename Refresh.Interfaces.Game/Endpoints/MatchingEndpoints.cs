@@ -105,7 +105,7 @@ public class MatchingEndpoints : EndpointGroup
     // Sent periodically by LBP1 to notify the server it has entered a level.
     // While it doesn't send us any detailed room information, we can at least create a pseudo-room on the server with just that player.
     // Due to LBP1 requesting this endpoint way less often than /notification, it's much more likely for the room to be auto cleared due to inactivity,
-    // since the "bump" is much less often. This will at the very least make API tools be able to see LBP1 player activity and player counts
+    // since the "bump" is much less often. This will at the very least make API tools be able to see LBP1 player activity and player counts.
     // LBP1 doesn't send any requests to /play if a user enters an online user level, so use this endpoint to increment plays for those.
     [GameEndpoint("enterLevel/{slotType}/{id}", HttpMethods.Post)]
     public Response EnterLevel(RequestContext context, Token token, MatchService matchService, string slotType, int id, DataContext dataContext)
