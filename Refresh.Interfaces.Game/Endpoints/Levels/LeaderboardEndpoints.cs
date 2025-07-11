@@ -87,7 +87,7 @@ public class LeaderboardEndpoints : EndpointGroup
         GameLevel? level = database.GetLevelByIdAndType(slotType, id);
         if (level == null) return null;
         
-        return SerializedScoreLeaderboardList.FromSubmittedEnumerable(database.GetLevelTopScoresByFriends(user, level, 10, body.Type), dataContext);
+        return SerializedScoreLeaderboardList.FromSubmittedEnumerable(database.GetLevelTopScoresByFriends(user, level, 10, body.Type).Items, dataContext);
     }
     
     [GameEndpoint("scoreboard/{slotType}/{id}", ContentType.Xml, HttpMethods.Post)]

@@ -95,23 +95,21 @@ public partial class GameDatabaseContext // Leaderboard
             .Take(count);
     }
     
-    public IEnumerable<ScoreWithRank> GetLevelTopScoresByFriends(GameUser user, GameLevel level, int count, byte type)
+    public DatabaseList<ScoreWithRank> GetLevelTopScoresByFriends(GameUser user, GameLevel level, int count, byte scoreType)
     {
         IEnumerable<ObjectId> mutuals = this.GetUsersMutuals(user)
-            .AsEnumerableIfRealm()
-            .Select(u => u.UserId);
-        
-        IEnumerable<GameScore> scores = this.GameScores
-            .Where(s => s.ScoreType == type && s.Level == level)
+            .Select(u => u.UserId)
+            .Append(user.UserId);
+
+        IEnumerable<GameScore> scores = this.GameScoresIncluded
+            .Where(s => s.ScoreType == scoreType && s.LevelId == level.LevelId)
             .OrderByDescending(s => s.Score)
-            .AsEnumerableIfRealm()
+            .ToArray()
             .DistinctBy(s => s.PlayerIds[0])
             //TODO: THIS CALL IS EXTREMELY INEFFECIENT!!! once we are in postgres land, figure out a way to do this effeciently
-            .Where(s => s.PlayerIds.Any(p => p == user.UserId || mutuals.Contains(p)))
-            .Take(10)
-            .ToList();
+            .Where(s => s.PlayerIds.Any(p => mutuals.Contains(p)));
 
-        return scores.Select((s, i) => new ScoreWithRank(s, i + 1));
+        return new(scores.Select((s, i) => new ScoreWithRank(s, i + 1)), 0, count);
     }
 
     [Pure]
