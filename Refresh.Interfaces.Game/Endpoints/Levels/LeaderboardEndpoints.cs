@@ -86,8 +86,9 @@ public class LeaderboardEndpoints : EndpointGroup
     {
         GameLevel? level = database.GetLevelByIdAndType(slotType, id);
         if (level == null) return null;
-        
-        return SerializedScoreLeaderboardList.FromSubmittedEnumerable(database.GetLevelTopScoresByFriends(user, level, 10, body.Type).Items, dataContext);
+
+        DatabaseList<ScoreWithRank>? scores = database.GetLevelTopScoresByFriends(user, level, 10, body.Type);
+        return SerializedScoreLeaderboardList.FromSubmittedEnumerable(scores.Items, dataContext);
     }
     
     [GameEndpoint("scoreboard/{slotType}/{id}", ContentType.Xml, HttpMethods.Post)]
@@ -124,10 +125,10 @@ public class LeaderboardEndpoints : EndpointGroup
 
         GameScore score = database.SubmitScore(body, token, level);
 
-        IEnumerable<ScoreWithRank>? scores = database.GetRankedScoresAroundScore(score, 5);
+        DatabaseList<ScoreWithRank>? scores = database.GetRankedScoresAroundScore(score, 5);
         Debug.Assert(scores != null);
         
-        return new Response(SerializedScoreLeaderboardList.FromSubmittedEnumerable(scores, dataContext), ContentType.Xml);
+        return new Response(SerializedScoreLeaderboardList.FromSubmittedEnumerable(scores.Items.ToArray(), dataContext), ContentType.Xml);
     }
 
     [GameEndpoint("topscores/{slotType}/{id}/{type}", ContentType.Xml)]
@@ -140,6 +141,8 @@ public class LeaderboardEndpoints : EndpointGroup
         if (level == null) return NotFound;
         
         (int skip, int count) = context.GetPageData();
-        return new Response(SerializedScoreList.FromSubmittedEnumerable(database.GetTopScoresForLevel(level, count, skip, (byte)type).Items.ToArrayIfPostgres(), dataContext, skip), ContentType.Xml);
+        DatabaseList<GameScore>? scores = database.GetTopScoresForLevel(level, count, skip, (byte)type);
+
+        return new Response(SerializedScoreList.FromSubmittedEnumerable(scores.Items.ToArray(), dataContext, skip), ContentType.Xml);
     }
 }
