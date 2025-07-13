@@ -57,8 +57,7 @@ namespace Refresh.Database.Migrations
         /// <inheritdoc />
         protected override void Down(MigrationBuilder migration)
         {
-            migration.Sql("SELECT setval('GameLevels_LevelId_seq', nextval('GameLevels_LevelId_seq') - 200000000);");
-            migration.Sql("UPDATE \"GameLevels\" SET \"LevelId\" = \"LevelId\" - 200000000");
+            
         }
     }
 }
