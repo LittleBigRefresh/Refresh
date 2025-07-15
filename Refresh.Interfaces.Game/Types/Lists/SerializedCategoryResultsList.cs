@@ -25,5 +25,5 @@ public class SerializedCategoryResultsList : SerializedPaginationData
     }
 
     [XmlElement("slot")] public List<GameMinimalLevelResponse> Levels { get; set; } = [];
-    [XmlElement("users")] public List<GameUserResponse> Users { get; set; } = [];
+    [XmlElement("user")] public List<GameUserResponse> Users { get; set; } = [];
 }
