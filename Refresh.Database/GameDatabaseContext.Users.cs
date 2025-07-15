@@ -87,6 +87,11 @@ public partial class GameDatabaseContext // Users
 
     public DatabaseList<GameUser> GetUsers(int count, int skip)
         => new(this.GameUsersIncluded.OrderByDescending(u => u.JoinDate), skip, count);
+    
+    public DatabaseList<GameUser> GetMostFavouritedUsers(int skip, int count)
+        => new(this.GameUsersIncluded
+            .Where(u => u.Statistics!.FavouriteCount > 0)
+            .OrderByDescending(u => u.Statistics!.FavouriteCount), skip, count);
 
     public void UpdateUserData(GameUser user, ISerializedEditUser data, TokenGame game)
     {

@@ -3,9 +3,11 @@ using Refresh.Core.Types.Categories.Levels;
 using Refresh.Interfaces.Game.Types.Categories;
 
 namespace Refresh.Interfaces.Game.Types.Lists;
+
 [XmlRoot("categories")]
 [XmlType("categories")]
 [XmlInclude(typeof(SerializedLevelCategory))]
+[XmlInclude(typeof(SerializedUserCategory))]
 public class SerializedCategoryList : SerializedList<SerializedCategory>
 {
     public SerializedCategoryList(IEnumerable<SerializedCategory> items, SearchLevelCategory searchCategory, int total)
