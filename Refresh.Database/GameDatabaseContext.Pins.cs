@@ -83,6 +83,48 @@ public partial class GameDatabaseContext // Pins
         });
     }
 
+    /// <param name="finalProgressValueCallback">
+    /// Takes the existing PinProgressRelation's progress value, aswell as newProgressValue, and uses them to create the final progress value to overwrite with,
+    /// whether the callback adds them together, compares them etc. If there is no PinProgressRelation, its progress value gets set to newProgressValue by default,
+    /// ignoring finalProgressValueCallback.
+    /// </param>
+    public PinProgressRelation UpdateUserPinProgress(long pinId, int newProgressValue, Func<int, int, int> finalProgressValueCallback, GameUser user, bool isBeta)
+    {
+        // Get pin progress if it exists already
+        PinProgressRelation? progressToUpdate = this.PinProgressRelations.FirstOrDefault(p => p.PinId == pinId && p.PublisherId == user.UserId && p.IsBeta == isBeta);
+        DateTimeOffset now = this._time.Now;
+
+        this.Write(() =>
+        {
+            if (progressToUpdate == null)
+            {
+                progressToUpdate = new()
+                {
+                    PinId = pinId,
+                    Progress = newProgressValue,
+                    Publisher = user,
+                    FirstPublished = now,
+                    LastUpdated = now,
+                    IsBeta = isBeta,
+                };
+                this.PinProgressRelations.Add(progressToUpdate);
+            }
+            else
+            {
+                int finalProgressValue = finalProgressValueCallback(progressToUpdate.Progress, newProgressValue);
+
+                // Only update if the final progress value is actually different to the one already set
+                if (newProgressValue != finalProgressValue)
+                {
+                    progressToUpdate.Progress = finalProgressValue;
+                    progressToUpdate.LastUpdated = now;
+                }
+            }
+        });
+
+        return progressToUpdate!;
+    }
+
     private IEnumerable<PinProgressRelation> GetPinProgressesByUser(GameUser user, bool isBeta)
         => this.PinProgressRelations
             .Where(p => p.Publisher == user && p.IsBeta == isBeta)
