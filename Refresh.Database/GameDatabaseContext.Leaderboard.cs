@@ -62,7 +62,7 @@ public partial class GameDatabaseContext // Leaderboard
         return newScore;
     }
     
-    public DatabaseList<GameScore> GetTopScoresForLevel(GameLevel level, int count, int skip, byte type, bool showDuplicates = false)
+    public DatabaseList<GameScore> GetTopScoresForLevel(GameLevel level, int count, int skip, byte type, bool showDuplicates = false, DateTimeOffset? minAge = null)
     {
         IEnumerable<GameScore> scores = this.GameScoresIncluded
             .Where(s => s.ScoreType == type && s.LevelId == level.LevelId)
@@ -70,6 +70,9 @@ public partial class GameDatabaseContext // Leaderboard
 
         if (!showDuplicates)
             scores = scores.DistinctBy(s => s.PlayerIds[0]);
+        
+        if (minAge != null)
+            scores = scores.Where(s => s.ScoreSubmitted >= minAge);
 
         return new DatabaseList<GameScore>(scores, skip, count);
     }
@@ -95,7 +98,7 @@ public partial class GameDatabaseContext // Leaderboard
         );
     }
     
-    public DatabaseList<ScoreWithRank> GetLevelTopScoresByFriends(GameUser user, GameLevel level, int count, byte scoreType)
+    public DatabaseList<ScoreWithRank> GetLevelTopScoresByFriends(GameUser user, GameLevel level, int count, byte scoreType, DateTimeOffset? minAge = null)
     {
         IEnumerable<ObjectId> mutuals = this.GetUsersMutuals(user)
             .Select(u => u.UserId)
@@ -108,6 +111,9 @@ public partial class GameDatabaseContext // Leaderboard
             .DistinctBy(s => s.PlayerIds[0])
             //TODO: THIS CALL IS EXTREMELY INEFFECIENT!!! once we are in postgres land, figure out a way to do this effeciently
             .Where(s => s.PlayerIds.Any(p => mutuals.Contains(p)));
+        
+        if (minAge != null)
+            scores = scores.Where(s => s.ScoreSubmitted >= minAge);
 
         return new(scores.Select((s, i) => new ScoreWithRank(s, i + 1)), 0, count);
     }
