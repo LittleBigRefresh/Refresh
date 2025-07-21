@@ -11,17 +11,24 @@ public class WorkerManager
     private readonly IDataStore _dataStore;
     private readonly GameDatabaseProvider _databaseProvider;
 
+    private readonly int _workerId;
+    
+    private Thread? _thread = null;
+    private bool _threadShouldRun = false;
+
+    private long _lastContactUpdate = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
+
+    private readonly List<WorkerJob> _jobs = [];
+
     public WorkerManager(Logger logger, IDataStore dataStore, GameDatabaseProvider databaseProvider)
     {
         this._dataStore = dataStore;
         this._databaseProvider = databaseProvider;
         this._logger = logger;
+        
+        using GameDatabaseContext context = this._databaseProvider.GetContext();
+        this._workerId = context.CreateWorker();
     }
-
-    private Thread? _thread = null;
-    private bool _threadShouldRun = false;
-
-    private readonly List<WorkerJob> _jobs = [];
 
     public void AddJob<TJob>() where TJob : WorkerJob, new()
     {
@@ -35,12 +42,12 @@ public class WorkerManager
 
     private void RunWorkCycle()
     {
-        Lazy<WorkContext> context = new(() => new WorkContext
+        WorkContext context = new()
         {
             Database = this._databaseProvider.GetContext(),
             Logger = this._logger,
             DataStore = this._dataStore,
-        });
+        };
         
         foreach (WorkerJob job in this._jobs)
         {
@@ -50,7 +57,7 @@ public class WorkerManager
             this._logger.LogDebug(RefreshContext.Worker, $"Running work cycle for {job.GetType().Name}");
             try
             {
-                job.ExecuteJob(context.Value);
+                job.ExecuteJob(context);
                 job.FirstCycle = false;
             }
             catch(Exception e)
@@ -58,6 +65,12 @@ public class WorkerManager
                 this._logger.LogError(RefreshContext.Worker, $"Unhandled exception while running work cycle for {job.GetType().Name}: {e}");
             }
         }
+        
+        long now = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
+        if (now - this._lastContactUpdate < 5000) return;
+
+        this._lastContactUpdate = now;
+        context.Database.MarkWorkerContacted(this._workerId);
     }
 
     public void Start()
@@ -71,7 +84,7 @@ public class WorkerManager
                 try
                 {
                     this.RunWorkCycle();
-                    Thread.Sleep(100);
+                    Thread.Sleep(1000);
                 }
                 catch(Exception e)
                 {

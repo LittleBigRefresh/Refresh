@@ -18,7 +18,7 @@ namespace Refresh.Database.Migrations
         {
 #pragma warning disable 612, 618
             modelBuilder
-                .HasAnnotation("ProductVersion", "9.0.6")
+                .HasAnnotation("ProductVersion", "9.0.7")
                 .HasAnnotation("Relational:MaxIdentifierLength", 63);
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
@@ -1435,6 +1435,28 @@ namespace Refresh.Database.Migrations
                     b.HasIndex("Username", "UsernameLower", "EmailAddress");
 
                     b.ToTable("QueuedRegistrations");
+                });
+
+            modelBuilder.Entity("Refresh.Database.Models.Workers.WorkerInfo", b =>
+                {
+                    b.Property<int>("WorkerId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("WorkerId"));
+
+                    b.Property<int>("Class")
+                        .HasColumnType("integer");
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<DateTimeOffset>("LastContact")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.HasKey("WorkerId");
+
+                    b.ToTable("Workers");
                 });
 
             modelBuilder.Entity("Refresh.Database.Models.Activity.Event", b =>
