@@ -18,7 +18,7 @@ namespace Refresh.Database.Migrations
         {
 #pragma warning disable 612, 618
             modelBuilder
-                .HasAnnotation("ProductVersion", "9.0.6")
+                .HasAnnotation("ProductVersion", "9.0.7")
                 .HasAnnotation("Relational:MaxIdentifierLength", 63);
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
@@ -470,6 +470,53 @@ namespace Refresh.Database.Migrations
                     b.HasIndex("Title", "Description", "StoryId");
 
                     b.ToTable("GameLevels");
+                });
+
+            modelBuilder.Entity("Refresh.Database.Models.Levels.GameLevelRevision", b =>
+                {
+                    b.Property<int>("LevelId")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("RevisionId")
+                        .HasColumnType("integer");
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("CreatedById")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("Description")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<int>("GameVersion")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("IconHash")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<byte>("LevelType")
+                        .HasColumnType("smallint");
+
+                    b.Property<string>("RootResource")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<int>("StoryId")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("Title")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.HasKey("LevelId", "RevisionId");
+
+                    b.HasIndex("CreatedById");
+
+                    b.ToTable("GameLevelRevisions");
                 });
 
             modelBuilder.Entity("Refresh.Database.Models.Levels.GameSkillReward", b =>
@@ -1591,6 +1638,25 @@ namespace Refresh.Database.Migrations
                     b.Navigation("Publisher");
 
                     b.Navigation("Statistics");
+                });
+
+            modelBuilder.Entity("Refresh.Database.Models.Levels.GameLevelRevision", b =>
+                {
+                    b.HasOne("Refresh.Database.Models.Users.GameUser", "CreatedBy")
+                        .WithMany()
+                        .HasForeignKey("CreatedById")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("Refresh.Database.Models.Levels.GameLevel", "Level")
+                        .WithMany()
+                        .HasForeignKey("LevelId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("CreatedBy");
+
+                    b.Navigation("Level");
                 });
 
             modelBuilder.Entity("Refresh.Database.Models.Levels.GameSkillReward", b =>
