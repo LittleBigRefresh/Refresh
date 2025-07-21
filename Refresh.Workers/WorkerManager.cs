@@ -70,7 +70,13 @@ public class WorkerManager
         if (now - this._lastContactUpdate < 5000) return;
 
         this._lastContactUpdate = now;
-        context.Database.MarkWorkerContacted(this._workerId);
+        bool updated = context.Database.MarkWorkerContacted(this._workerId);
+
+        if (!updated)
+        {
+            this._logger.LogInfo(RefreshContext.Worker, "Worker is shutting down as we've been replaced.");
+            this.Stop(false);
+        }
     }
 
     public void Start()
@@ -83,8 +89,8 @@ public class WorkerManager
             {
                 try
                 {
+                    Thread.Sleep(500);
                     this.RunWorkCycle();
-                    Thread.Sleep(1000);
                 }
                 catch(Exception e)
                 {
@@ -100,12 +106,13 @@ public class WorkerManager
         this._thread = thread;
     }
     
-    public void Stop()
+    public void Stop(bool join = true)
     {
         if (this._thread == null) return;
         this._logger.LogDebug(RefreshContext.Worker, "Stopping the worker thread");
         
         this._threadShouldRun = false;
-        this._thread.Join();
+        if(join)
+            this._thread.Join();
     }
 }
