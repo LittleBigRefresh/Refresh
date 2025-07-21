@@ -86,9 +86,6 @@ public class WorkerManager
         this._logger.LogDebug(RefreshContext.Worker, "Stopping the worker thread");
         
         this._threadShouldRun = false;
-        while (this._thread.IsAlive)
-        {
-            Thread.Sleep(10);
-        }
+        this._thread.Join();
     }
 }
