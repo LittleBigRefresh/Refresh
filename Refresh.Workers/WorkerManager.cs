@@ -47,9 +47,16 @@ public class WorkerManager
             if (!job.CanExecute())
                 continue;
             
-            this._logger.LogDebug(RefreshContext.Worker, "Running work cycle for " + job.GetType().Name);
-            job.ExecuteJob(context.Value);
-            job.FirstCycle = false;
+            this._logger.LogDebug(RefreshContext.Worker, $"Running work cycle for {job.GetType().Name}");
+            try
+            {
+                job.ExecuteJob(context.Value);
+                job.FirstCycle = false;
+            }
+            catch(Exception e)
+            {
+                this._logger.LogError(RefreshContext.Worker, $"Unhandled exception while running work cycle for {job.GetType().Name}: {e}");
+            }
         }
     }
 
