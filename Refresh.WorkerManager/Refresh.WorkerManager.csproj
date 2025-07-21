@@ -1,18 +1,17 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
     <PropertyGroup>
+        <OutputType>Exe</OutputType>
         <TargetFramework>net9.0</TargetFramework>
         <ImplicitUsings>enable</ImplicitUsings>
         <Nullable>enable</Nullable>
         <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
         <WarningsNotAsErrors>612,618</WarningsNotAsErrors>
-        <Configurations>Debug;Release</Configurations>
-        <Platforms>AnyCPU</Platforms>
     </PropertyGroup>
 
     <ItemGroup>
-        <ProjectReference Include="..\Refresh.Core\Refresh.Core.csproj" />
         <ProjectReference Include="..\Refresh.Workers\Refresh.Workers.csproj" />
+        <ProjectReference Include="..\Refresh.Interfaces.Workers\Refresh.Interfaces.Workers.csproj" />
     </ItemGroup>
 
 </Project>
