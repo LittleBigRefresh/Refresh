@@ -15,11 +15,11 @@
             <PrivateAssets>all</PrivateAssets>
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
         </PackageReference>
-        <PackageReference Include="MongoDB.Bson" Version="3.4.0" />
+        <PackageReference Include="MongoDB.Bson" Version="3.4.1" />
     </ItemGroup>
 
     <ItemGroup>
-      <InternalsVisibleTo Include="RefreshTests.GameServer"/>
+      <InternalsVisibleTo Include="RefreshTests.GameServer" />
       <ProjectReference Include="..\Refresh.Common\Refresh.Common.csproj" />
     </ItemGroup>
 
