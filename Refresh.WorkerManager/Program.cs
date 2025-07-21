@@ -20,6 +20,7 @@ LoggerConfiguration loggerConfiguration = new()
 using Logger logger = new(loggerConfiguration);
 
 logger.LogInfo(BunkumCategory.Startup, "Starting up worker manager...");
+logger.LogCritical(BunkumCategory.Startup, "The dedicated worker manager isn't complete yet! It will work in a debug setting, but do not use this in production yet.");
 
 using GameDatabaseProvider database = new(logger, new EmptyDatabaseConfig());
 logger.LogInfo(BunkumCategory.Startup, "Initializing database...");
