@@ -12,7 +12,6 @@
 
     <ItemGroup>
         <ProjectReference Include="..\Refresh.Core\Refresh.Core.csproj" />
-        <ProjectReference Include="..\Refresh.Workers\Refresh.Workers.csproj" />
     </ItemGroup>
 
 </Project>

@@ -1,11 +1,9 @@
 using Bunkum.Core.Storage;
 using NotEnoughLogs;
 using Refresh.Core;
-using Refresh.Core.Services;
-using Refresh.Core.Types.Data;
 using Refresh.Database;
 
-namespace Refresh.Interfaces.Workers;
+namespace Refresh.Workers;
 
 public class WorkerManager
 {
@@ -23,15 +21,15 @@ public class WorkerManager
     private Thread? _thread = null;
     private bool _threadShouldRun = false;
 
-    private readonly List<IWorker> _workers = [];
-    private readonly Dictionary<IWorker, long> _lastWorkTimestamps = new();
+    private readonly List<WorkerJob> _workers = [];
+    private readonly Dictionary<WorkerJob, long> _lastWorkTimestamps = new();
 
-    public void AddWorker<TWorker>() where TWorker : IWorker, new()
+    public void AddWorker<TWorker>() where TWorker : WorkerJob, new()
     {
         TWorker worker = new();
         this._workers.Add(worker);
     }
-    public void AddWorker(IWorker worker)
+    public void AddWorker(WorkerJob worker)
     {
         this._workers.Add(worker);
     }
@@ -45,7 +43,7 @@ public class WorkerManager
             DataStore = this._dataStore,
         });
         
-        foreach (IWorker worker in this._workers)
+        foreach (WorkerJob worker in this._workers)
         {
             long now = DateTimeOffset.Now.ToUnixTimeMilliseconds();
             if (this._lastWorkTimestamps.TryGetValue(worker, out long lastWork))
@@ -60,7 +58,7 @@ public class WorkerManager
             }
             
             this._logger.LogTrace(RefreshContext.Worker, "Running work cycle for " + worker.GetType().Name);
-            worker.DoWork(workContext.Value);
+            worker.ExecuteJob(workContext.Value);
         }
     }
 

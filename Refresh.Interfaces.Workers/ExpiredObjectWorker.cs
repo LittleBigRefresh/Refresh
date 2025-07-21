@@ -1,14 +1,14 @@
 using Refresh.Core;
-using Refresh.Core.Types.Data;
 using Refresh.Database.Models.Authentication;
 using Refresh.Database.Models.Users;
+using Refresh.Workers;
 
-namespace Refresh.Interfaces.Workers.Workers;
+namespace Refresh.Interfaces.Workers;
 
-public class ExpiredObjectWorker : IWorker
+public class CleanupExpiredObjectsJob : WorkerJob
 {
-    public int WorkInterval => 60_000; // 1 minute
-    public void DoWork(WorkContext context)
+    public override int WorkInterval => 60_000; // 1 minute
+    public override void ExecuteJob(WorkContext context)
     {
         List<QueuedRegistration> registrationsToRemove = [];
         List<EmailVerificationCode> codesToRemove = [];

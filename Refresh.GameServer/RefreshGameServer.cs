@@ -31,8 +31,7 @@ using Refresh.Interfaces.APIv3.Documentation;
 using Refresh.Interfaces.Game;
 using Refresh.Interfaces.Internal;
 using Refresh.Interfaces.Workers;
-using Refresh.Interfaces.Workers.RequestTracking;
-using Refresh.Interfaces.Workers.Workers;
+using Refresh.Workers;
 
 namespace Refresh.GameServer;
 
@@ -208,15 +207,15 @@ public class RefreshGameServer : RefreshServer
     {
         this.WorkerManager = new WorkerManager(this.Logger, this._dataStore, this._databaseProvider);
         
-        this.WorkerManager.AddWorker<PunishmentExpiryWorker>();
-        this.WorkerManager.AddWorker<ExpiredObjectWorker>();
-        this.WorkerManager.AddWorker<CoolLevelsWorker>();
-        this.WorkerManager.AddWorker<RequestStatisticSubmitWorker>();
-        this.WorkerManager.AddWorker<ObjectStatisticsWorker>();
+        this.WorkerManager.AddWorker<PunishmentExpiryJob>();
+        this.WorkerManager.AddWorker<CleanupExpiredObjectsJob>();
+        this.WorkerManager.AddWorker<CoolLevelsJob>();
+        this.WorkerManager.AddWorker<RequestStatisticSubmitJob>();
+        this.WorkerManager.AddWorker<ObjectStatisticsJob>();
         
         if ((this._integrationConfig?.DiscordWebhookEnabled ?? false) && this._config != null && this._config.PermitShowingOnlineUsers)
         {
-            this.WorkerManager.AddWorker(new DiscordIntegrationWorker(this._integrationConfig, this._config));
+            this.WorkerManager.AddWorker(new DiscordIntegrationJob(this._integrationConfig, this._config));
         }
     }
 

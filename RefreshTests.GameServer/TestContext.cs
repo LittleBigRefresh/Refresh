@@ -13,6 +13,7 @@ using Refresh.Database.Models.Levels.Scores;
 using Refresh.Database.Models.Levels;
 using Refresh.Interfaces.Game.Types.UserData.Leaderboard;
 using Refresh.Interfaces.Workers;
+using Refresh.Workers;
 
 namespace RefreshTests.GameServer;
 

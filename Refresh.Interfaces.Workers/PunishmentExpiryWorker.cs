@@ -1,18 +1,18 @@
 using Refresh.Core;
-using Refresh.Core.Types.Data;
 using Refresh.Database;
 using Refresh.Database.Models.Users;
+using Refresh.Workers;
 
-namespace Refresh.Interfaces.Workers.Workers;
+namespace Refresh.Interfaces.Workers;
 
 /// <summary>
 /// A worker that checks all users for bans/restrictions, then removes them if expired.
 /// </summary>
-public class PunishmentExpiryWorker : IWorker
+public class PunishmentExpiryJob : WorkerJob
 {
-    public int WorkInterval => 60_000; // 1 minute
+    public override int WorkInterval => 60_000; // 1 minute
 
-    public void DoWork(WorkContext context)
+    public override void ExecuteJob(WorkContext context)
     {
         DatabaseList<GameUser> bannedUsers = context.Database.GetAllUsersWithRole(GameUserRole.Banned);
         DatabaseList<GameUser> restrictedUsers = context.Database.GetAllUsersWithRole(GameUserRole.Restricted);

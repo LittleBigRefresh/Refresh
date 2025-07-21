@@ -2,7 +2,6 @@ using Discord;
 using Discord.Webhook;
 using Refresh.Core;
 using Refresh.Core.Configuration;
-using Refresh.Core.Types.Data;
 using Refresh.Database;
 using Refresh.Database.Models.Activity;
 using Refresh.Database.Models.Levels;
@@ -10,13 +9,11 @@ using Refresh.Database.Models.Levels.Scores;
 using Refresh.Database.Models.Photos;
 using Refresh.Database.Models.Users;
 using Refresh.Database.Query;
-using Refresh.Interfaces.APIv3.Endpoints.DataTypes.Response.Levels;
-using Refresh.Interfaces.APIv3.Endpoints.DataTypes.Response.Users;
-using Refresh.Interfaces.APIv3.Endpoints.DataTypes.Response.Users.Photos;
+using Refresh.Workers;
 
-namespace Refresh.Interfaces.Workers.Workers;
+namespace Refresh.Interfaces.Workers;
 
-public class DiscordIntegrationWorker : IWorker
+public class DiscordIntegrationJob : WorkerJob
 {
     private readonly IntegrationConfig _config;
     private readonly string _externalUrl;
@@ -26,9 +23,9 @@ public class DiscordIntegrationWorker : IWorker
 
     private long _lastTimestamp;
     private static long Now => DateTimeOffset.Now.ToUnixTimeMilliseconds();
-    public int WorkInterval => this._config.DiscordWorkerFrequencySeconds * 1000; // 60 seconds by default
+    public override int WorkInterval => this._config.DiscordWorkerFrequencySeconds * 1000; // 60 seconds by default
 
-    public DiscordIntegrationWorker(IntegrationConfig config, GameServerConfig gameConfig)
+    public DiscordIntegrationJob(IntegrationConfig config, GameServerConfig gameConfig)
     {
         this._config = config;
         this._externalUrl = gameConfig.WebExternalUrl;
@@ -108,7 +105,7 @@ public class DiscordIntegrationWorker : IWorker
         return embed.Build();
     }
 
-    public void DoWork(WorkContext context)
+    public override void ExecuteJob(WorkContext context)
     {
         if (this._firstCycle)
         {

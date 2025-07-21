@@ -2,7 +2,7 @@
 using NotEnoughLogs;
 using Refresh.Database;
 
-namespace Refresh.Interfaces.Workers;
+namespace Refresh.Workers;
 
 public class WorkContext : IDataContext
 {
