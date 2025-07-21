@@ -35,6 +35,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Interfaces", "Interfaces", 
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Refresh.Workers", "Refresh.Workers\Refresh.Workers.csproj", "{F33E3D8D-7867-41C6-8E24-5BA95642D001}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Refresh.WorkerManager", "Refresh.WorkerManager\Refresh.WorkerManager.csproj", "{DFB85FD4-CB9D-48B4-A2B7-41A592136568}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -117,6 +119,12 @@ Global
 		{F33E3D8D-7867-41C6-8E24-5BA95642D001}.Release|Any CPU.Build.0 = Release|Any CPU
 		{F33E3D8D-7867-41C6-8E24-5BA95642D001}.DebugLocalBunkum|Any CPU.ActiveCfg = Debug|Any CPU
 		{F33E3D8D-7867-41C6-8E24-5BA95642D001}.DebugLocalBunkum|Any CPU.Build.0 = Debug|Any CPU
+		{DFB85FD4-CB9D-48B4-A2B7-41A592136568}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{DFB85FD4-CB9D-48B4-A2B7-41A592136568}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{DFB85FD4-CB9D-48B4-A2B7-41A592136568}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{DFB85FD4-CB9D-48B4-A2B7-41A592136568}.Release|Any CPU.Build.0 = Release|Any CPU
+		{DFB85FD4-CB9D-48B4-A2B7-41A592136568}.DebugLocalBunkum|Any CPU.ActiveCfg = Debug|Any CPU
+		{DFB85FD4-CB9D-48B4-A2B7-41A592136568}.DebugLocalBunkum|Any CPU.Build.0 = Debug|Any CPU
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
 		{A3D76B31-8732-4134-907B-F36773DF70D3} = {AA547E95-555C-470E-995A-D66E56660542}

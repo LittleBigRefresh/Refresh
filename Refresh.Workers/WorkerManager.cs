@@ -115,4 +115,12 @@ public class WorkerManager
         if(join)
             this._thread.Join();
     }
+
+    public void WaitForExit()
+    {
+        while(this._thread == null)
+            Thread.Sleep(20);
+
+        this._thread.Join();
+    }
 }

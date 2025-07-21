@@ -206,13 +206,7 @@ public class RefreshGameServer : RefreshServer
 
     protected virtual void SetupWorkers()
     {
-        this.WorkerManager = new WorkerManager(this.Logger, this._dataStore, this._databaseProvider);
-        
-        this.WorkerManager.AddJob<PunishmentExpiryJob>();
-        this.WorkerManager.AddJob<CleanupExpiredObjectsJob>();
-        this.WorkerManager.AddJob<CoolLevelsJob>();
-        this.WorkerManager.AddJob<RequestStatisticSubmitJob>();
-        this.WorkerManager.AddJob<ObjectStatisticsJob>();
+        this.WorkerManager = RefreshWorkerManager.Create(this.Logger, this._dataStore, this._databaseProvider);
         
         if ((this._integrationConfig?.DiscordWebhookEnabled ?? false) && this._config != null && this._config.PermitShowingOnlineUsers)
         {
