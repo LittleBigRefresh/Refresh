@@ -5,7 +5,7 @@ namespace Refresh.Interfaces.Workers;
 
 public class RequestStatisticSubmitJob : WorkerJob
 {
-    public override int WorkInterval => 5_000;
+    public override int Interval => 5_000;
     
     public override void ExecuteJob(WorkContext context)
     {

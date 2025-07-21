@@ -20,7 +20,7 @@ namespace Refresh.Interfaces.Workers;
 
 public class CoolLevelsJob : WorkerJob
 {
-    public override int WorkInterval => 600_000; // Every 10 minutes
+    public override int Interval => 600_000; // Every 10 minutes
 
     [SuppressMessage("ReSharper.DPA", "DPA0005: Database issues")]
     public override void ExecuteJob(WorkContext context)

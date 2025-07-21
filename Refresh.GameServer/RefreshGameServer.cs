@@ -207,15 +207,15 @@ public class RefreshGameServer : RefreshServer
     {
         this.WorkerManager = new WorkerManager(this.Logger, this._dataStore, this._databaseProvider);
         
-        this.WorkerManager.AddWorker<PunishmentExpiryJob>();
-        this.WorkerManager.AddWorker<CleanupExpiredObjectsJob>();
-        this.WorkerManager.AddWorker<CoolLevelsJob>();
-        this.WorkerManager.AddWorker<RequestStatisticSubmitJob>();
-        this.WorkerManager.AddWorker<ObjectStatisticsJob>();
+        this.WorkerManager.AddJob<PunishmentExpiryJob>();
+        this.WorkerManager.AddJob<CleanupExpiredObjectsJob>();
+        this.WorkerManager.AddJob<CoolLevelsJob>();
+        this.WorkerManager.AddJob<RequestStatisticSubmitJob>();
+        this.WorkerManager.AddJob<ObjectStatisticsJob>();
         
         if ((this._integrationConfig?.DiscordWebhookEnabled ?? false) && this._config != null && this._config.PermitShowingOnlineUsers)
         {
-            this.WorkerManager.AddWorker(new DiscordIntegrationJob(this._integrationConfig, this._config));
+            this.WorkerManager.AddJob(new DiscordIntegrationJob(this._integrationConfig, this._config));
         }
     }
 

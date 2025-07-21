@@ -21,45 +21,45 @@ public class WorkerManager
     private Thread? _thread = null;
     private bool _threadShouldRun = false;
 
-    private readonly List<WorkerJob> _workers = [];
-    private readonly Dictionary<WorkerJob, long> _lastWorkTimestamps = new();
+    private readonly List<WorkerJob> _jobs = [];
+    private readonly Dictionary<WorkerJob, long> _lastJobTimestamps = new();
 
-    public void AddWorker<TWorker>() where TWorker : WorkerJob, new()
+    public void AddJob<TJob>() where TJob : WorkerJob, new()
     {
-        TWorker worker = new();
-        this._workers.Add(worker);
+        TJob worker = new();
+        this._jobs.Add(worker);
     }
-    public void AddWorker(WorkerJob worker)
+    public void AddJob(WorkerJob worker)
     {
-        this._workers.Add(worker);
+        this._jobs.Add(worker);
     }
 
     private void RunWorkCycle()
     {
-        Lazy<WorkContext> workContext = new(() => new WorkContext
+        Lazy<WorkContext> context = new(() => new WorkContext
         {
             Database = this._databaseProvider.GetContext(),
             Logger = this._logger,
             DataStore = this._dataStore,
         });
         
-        foreach (WorkerJob worker in this._workers)
+        foreach (WorkerJob job in this._jobs)
         {
             long now = DateTimeOffset.Now.ToUnixTimeMilliseconds();
-            if (this._lastWorkTimestamps.TryGetValue(worker, out long lastWork))
+            if (this._lastJobTimestamps.TryGetValue(job, out long lastJob))
             {
-                if(now - lastWork < worker.WorkInterval) continue;
+                if(now - lastJob < job.Interval) continue;
                 
-                this._lastWorkTimestamps[worker] = now;
+                this._lastJobTimestamps[job] = now;
             }
             else
             {
-                this._lastWorkTimestamps.Add(worker, now);
+                this._lastJobTimestamps.Add(job, now);
             }
             
-            this._logger.LogTrace(RefreshContext.Worker, "Running work cycle for " + worker.GetType().Name);
-            worker.ExecuteJob(workContext.Value);
-            worker.FirstCycle = false;
+            this._logger.LogTrace(RefreshContext.Worker, "Running work cycle for " + job.GetType().Name);
+            job.ExecuteJob(context.Value);
+            job.FirstCycle = false;
         }
     }
 

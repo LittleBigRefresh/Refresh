@@ -5,7 +5,7 @@ public abstract class WorkerJob
     /// <summary>
     /// How often to perform work, in milliseconds
     /// </summary>
-    public abstract int WorkInterval { get; }
+    public abstract int Interval { get; }
 
     public bool FirstCycle { get; internal set; } = true;
 

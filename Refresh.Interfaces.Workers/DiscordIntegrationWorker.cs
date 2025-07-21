@@ -21,7 +21,7 @@ public class DiscordIntegrationJob : WorkerJob
 
     private long _lastTimestamp;
     private static long Now => DateTimeOffset.Now.ToUnixTimeMilliseconds();
-    public override int WorkInterval => this._config.DiscordWorkerFrequencySeconds * 1000; // 60 seconds by default
+    public override int Interval => this._config.DiscordWorkerFrequencySeconds * 1000; // 60 seconds by default
 
     public DiscordIntegrationJob(IntegrationConfig config, GameServerConfig gameConfig)
     {

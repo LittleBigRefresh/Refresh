@@ -7,7 +7,7 @@ namespace Refresh.Interfaces.Workers;
 
 public class CleanupExpiredObjectsJob : WorkerJob
 {
-    public override int WorkInterval => 60_000; // 1 minute
+    public override int Interval => 60_000; // 1 minute
     public override void ExecuteJob(WorkContext context)
     {
         List<QueuedRegistration> registrationsToRemove = [];

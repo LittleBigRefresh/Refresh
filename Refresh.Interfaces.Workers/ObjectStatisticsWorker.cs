@@ -8,7 +8,7 @@ namespace Refresh.Interfaces.Workers;
 
 public class ObjectStatisticsJob : WorkerJob
 {
-    public override int WorkInterval => 60_000;
+    public override int Interval => 60_000;
 
     [SuppressMessage("ReSharper.DPA", "DPA0005: Database issues")]
     public override void ExecuteJob(WorkContext context)
