@@ -1,3 +1,4 @@
+using MongoDB.Bson;
 using Refresh.Database.Models.Assets;
 using Refresh.Database.Models.Levels;
 using Refresh.Database.Models.Users;
@@ -15,6 +16,8 @@ public partial class GamePhoto : ISequentialId
     
     [Required]
     public GameUser Publisher { get; set; }
+    public ObjectId PublisherUserId { get; set; }
+
     #nullable restore
     [ForeignKey(nameof(LevelIdKey))]
     public GameLevel? Level { get; set; }
@@ -120,15 +123,19 @@ public partial class GamePhoto : ISequentialId
 #nullable enable
     #pragma warning disable CS8618 // realm forces us to have a non-nullable IList<float> so we have to have these shenanigans
     
+    public ObjectId? Subject1UserUserId { get; set; }
     public GameUser? Subject1User { get; set; }
     public string? Subject1DisplayName { get; set; }
     
+    public ObjectId? Subject2UserUserId { get; set; }
     public GameUser? Subject2User { get; set; }
     public string? Subject2DisplayName { get; set; }
     
+    public ObjectId? Subject3UserUserId { get; set; }
     public GameUser? Subject3User { get; set; }
     public string? Subject3DisplayName { get; set; }
     
+    public ObjectId? Subject4UserUserId { get; set; }
     public GameUser? Subject4User { get; set; }
     public string? Subject4DisplayName { get; set; }
     

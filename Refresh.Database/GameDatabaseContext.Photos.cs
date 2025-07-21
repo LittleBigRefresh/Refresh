@@ -117,7 +117,7 @@ public partial class GameDatabaseContext // Photos
             this.WriteEnsuringStatistics(photo.Publisher, photo.Level, () =>
             {
                 photo.Level.Statistics!.PhotoInLevelCount--;
-                if (photo.Level.Publisher?.UserId == photo.Publisher.UserId)
+                if (photo.Level.Publisher?.UserId == photo.PublisherUserId)
                 {
                     photo.Level.Statistics!.PhotoByPublisherCount--;
                 }
@@ -152,53 +152,49 @@ public partial class GameDatabaseContext // Photos
 
     [Pure]
     public DatabaseList<GamePhoto> GetPhotosByUser(GameUser user, int count, int skip) =>
-        new(this.GamePhotosIncluded.Where(p => p.Publisher == user)
+        new(this.GamePhotosIncluded.Where(p => p.PublisherUserId == user.UserId)
             .OrderByDescending(p => p.TakenAt), skip, count);
     
     [Pure]
     public int GetTotalPhotosByUser(GameUser user)
         => this.GamePhotos
-            .Count(p => p.Publisher == user);
+            .Count(p => p.PublisherUserId == user.UserId);
 
     [Pure]
     public DatabaseList<GamePhoto> GetPhotosWithUser(GameUser user, int count, int skip) =>
         new(this.GamePhotosIncluded
-            // FIXME: client-side enumeration
-            .AsEnumerable()
-            .Where(p => p.Subjects.FirstOrDefault(s => Equals(s.User, user)) != null)
-            .OrderByDescending(p => p.TakenAt)
-            .Skip(skip)
-            .Take(count));
+            .Where(p => p.Subject1UserUserId == user.UserId || p.Subject2UserUserId == user.UserId || p.Subject3UserUserId == user.UserId || p.Subject4UserUserId == user.UserId)
+            .OrderByDescending(p => p.TakenAt), skip, count);
     
     [Pure]
     public int GetTotalPhotosWithUser(GameUser user)
         => this.GamePhotos
-            .Count(p => p.Subject1User == user || p.Subject2User == user || p.Subject3User == user || p.Subject4User == user);
+            .Count(p => p.Subject1UserUserId == user.UserId || p.Subject2UserUserId == user.UserId || p.Subject3UserUserId == user.UserId || p.Subject4UserUserId == user.UserId);
 
     [Pure]
     public DatabaseList<GamePhoto> GetPhotosInLevel(GameLevel level, int count, int skip)
         => new(this.GamePhotosIncluded
-            .Where(p => p.Level == level)
+            .Where(p => p.LevelIdKey == level.LevelId)
             .OrderByDescending(p => p.TakenAt), skip, count);
     
     [Pure]
     public int GetTotalPhotosInLevel(GameLevel level)
-        => this.GamePhotos.Count(p => p.Level == level);
+        => this.GamePhotos.Count(p => p.LevelIdKey == level.LevelId);
 
     public DatabaseList<GamePhoto> GetPhotosInLevelByUser(GameLevel level, GameUser user, int count, int skip) 
         => new(this.GamePhotosIncluded
-            .Where(p => p.Level == level && p.Publisher == user)
+            .Where(p => p.LevelIdKey == level.LevelId && p.PublisherUserId == user.UserId)
             .OrderByDescending(p => p.TakenAt), skip, count);
 
     public int GetTotalPhotosInLevelByUser(GameLevel level, GameUser? user)
     {
         if (user == null) return 0;
-        return this.GamePhotos.Count(p => p.Level == level && p.Publisher == user);
+        return this.GamePhotos.Count(p => p.LevelIdKey == level.LevelId && p.PublisherUserId == user.UserId);
     }
 
     public void DeletePhotosPostedByUser(GameUser user)
     {
-        IEnumerable<GamePhoto> photos = this.GamePhotos.Where(s => s.Publisher == user);
+        IEnumerable<GamePhoto> photos = this.GamePhotos.Where(s => s.PublisherUserId == user.UserId);
         
         this.WriteEnsuringStatistics(user, () =>
         {
