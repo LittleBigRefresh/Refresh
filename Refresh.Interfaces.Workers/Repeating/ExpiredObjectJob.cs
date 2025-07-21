@@ -3,7 +3,7 @@ using Refresh.Database.Models.Authentication;
 using Refresh.Database.Models.Users;
 using Refresh.Workers;
 
-namespace Refresh.Interfaces.Workers;
+namespace Refresh.Interfaces.Workers.Repeating;
 
 public class CleanupExpiredObjectsJob : RepeatingJob
 {

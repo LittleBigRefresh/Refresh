@@ -3,7 +3,7 @@ using Refresh.Database;
 using Refresh.Database.Models.Users;
 using Refresh.Workers;
 
-namespace Refresh.Interfaces.Workers;
+namespace Refresh.Interfaces.Workers.Repeating;
 
 /// <summary>
 /// A worker that checks all users for bans/restrictions, then removes them if expired.

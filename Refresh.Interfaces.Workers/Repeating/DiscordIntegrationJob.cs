@@ -11,7 +11,7 @@ using Refresh.Database.Models.Users;
 using Refresh.Database.Query;
 using Refresh.Workers;
 
-namespace Refresh.Interfaces.Workers;
+namespace Refresh.Interfaces.Workers.Repeating;
 
 public class DiscordIntegrationJob : RepeatingJob
 {

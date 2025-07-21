@@ -4,7 +4,7 @@ using Refresh.Database.Models.Levels;
 using Refresh.Database.Models.Users;
 using Refresh.Workers;
 
-namespace Refresh.Interfaces.Workers;
+namespace Refresh.Interfaces.Workers.Repeating;
 
 public class ObjectStatisticsJob : RepeatingJob
 {

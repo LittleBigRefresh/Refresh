@@ -31,6 +31,7 @@ using Refresh.Interfaces.APIv3.Documentation;
 using Refresh.Interfaces.Game;
 using Refresh.Interfaces.Internal;
 using Refresh.Interfaces.Workers;
+using Refresh.Interfaces.Workers.Repeating;
 using Refresh.Workers;
 
 namespace Refresh.GameServer;

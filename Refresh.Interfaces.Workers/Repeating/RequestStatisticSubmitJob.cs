@@ -1,7 +1,7 @@
 using Refresh.Core.Metrics;
 using Refresh.Workers;
 
-namespace Refresh.Interfaces.Workers;
+namespace Refresh.Interfaces.Workers.Repeating;
 
 public class RequestStatisticSubmitJob : RepeatingJob
 {
