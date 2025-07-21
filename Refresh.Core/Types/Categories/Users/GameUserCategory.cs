@@ -3,7 +3,6 @@ using Bunkum.Core;
 using Refresh.Core.Types.Data;
 using Refresh.Database;
 using Refresh.Database.Models.Users;
-using Refresh.Database.Query;
 
 namespace Refresh.Core.Types.Categories.Users;
 
@@ -15,6 +14,5 @@ public abstract class GameUserCategory : GameCategory
     internal GameUserCategory(string apiRoute, string[] gameRoutes, bool requiresUser) : base(apiRoute, gameRoutes, requiresUser) {}
 
     [Pure]
-    public abstract DatabaseList<GameUser>? Fetch(RequestContext context, int skip, int count, DataContext dataContext,
-        LevelFilterSettings levelFilterSettings, GameUser? user);
+    public abstract DatabaseList<GameUser>? Fetch(RequestContext context, int skip, int count, DataContext dataContext, GameUser? user);
 }

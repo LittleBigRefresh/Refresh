@@ -2,7 +2,6 @@ using Bunkum.Core;
 using Refresh.Core.Types.Data;
 using Refresh.Database;
 using Refresh.Database.Models.Users;
-using Refresh.Database.Query;
 
 namespace Refresh.Core.Types.Categories.Users;
 
@@ -16,8 +15,7 @@ public class HeartedUsersByUserCategory : GameUserCategory
         this.IconHash = "g820612";
     }
 
-    public override DatabaseList<GameUser>? Fetch(RequestContext context, int skip, int count, DataContext dataContext,
-        LevelFilterSettings levelFilterSettings, GameUser? user)
+    public override DatabaseList<GameUser>? Fetch(RequestContext context, int skip, int count, DataContext dataContext, GameUser? user)
     {
         // Prefer username from query, but fallback to user passed into this category if it's missing
         string? username = context.QueryString["u"] ?? context.QueryString["username"];

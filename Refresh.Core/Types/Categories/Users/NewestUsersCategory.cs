@@ -2,7 +2,6 @@ using Bunkum.Core;
 using Refresh.Core.Types.Data;
 using Refresh.Database;
 using Refresh.Database.Models.Users;
-using Refresh.Database.Query;
 
 namespace Refresh.Core.Types.Categories.Users;
 
@@ -16,8 +15,7 @@ public class NewestUsersCategory : GameUserCategory
         this.IconHash = "g820602";
     }
 
-    public override DatabaseList<GameUser>? Fetch(RequestContext context, int skip, int count, DataContext dataContext,
-        LevelFilterSettings levelFilterSettings, GameUser? _)
+    public override DatabaseList<GameUser>? Fetch(RequestContext context, int skip, int count, DataContext dataContext, GameUser? _)
     {
         return dataContext.Database.GetUsers(count, skip);
     }

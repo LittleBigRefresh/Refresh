@@ -4,7 +4,6 @@ using Refresh.Core.Types.Categories.Users;
 using Refresh.Core.Types.Data;
 using Refresh.Database;
 using Refresh.Database.Models.Users;
-using Refresh.Database.Query;
 using Refresh.Interfaces.Game.Endpoints.DataTypes.Response;
 using Refresh.Interfaces.Game.Types.Lists;
 
@@ -37,9 +36,7 @@ public class SerializedUserCategory : SerializedCategory
         int count = 20)
     {
         SerializedUserCategory serializedUserCategory = FromUserCategory(userCategory);
-
-        LevelFilterSettings filterSettings = new(context, dataContext.Token!.TokenGame);
-        DatabaseList<GameUser> categoryLevels = userCategory.Fetch(context, skip, count, dataContext, filterSettings, dataContext.User);
+        DatabaseList<GameUser> categoryLevels = userCategory.Fetch(context, skip, count, dataContext, dataContext.User);
         
         IEnumerable<GameUserResponse> users = categoryLevels?.Items.ToArray()
             .Select(l => GameUserResponse.FromOld(l, dataContext)) ?? [];

@@ -77,7 +77,7 @@ public class CategoryEndpoints : EndpointGroup
     [NullStatusCode(NotFound)]
     [MinimumRole(GameUserRole.Restricted)]
     public SerializedCategoryResultsList? GetUsersFromCategory(RequestContext context, CategoryService categories, GameUser user, 
-        Token token, string apiRoute, DataContext dataContext, GameServerConfig config)
+        string apiRoute, DataContext dataContext, GameServerConfig config)
     {
         if (!config.PermitShowingOnlineUsers) return null;
 
@@ -85,7 +85,7 @@ public class CategoryEndpoints : EndpointGroup
 
         DatabaseList<GameUser>? users = categories.UserCategories
             .FirstOrDefault(c => c.ApiRoute.StartsWith(apiRoute))?
-            .Fetch(context, skip, count, dataContext, new LevelFilterSettings(context, token.TokenGame), user);
+            .Fetch(context, skip, count, dataContext, user);
         
         if (users == null) return null;
         
