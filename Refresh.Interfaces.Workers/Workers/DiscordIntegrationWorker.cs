@@ -5,6 +5,10 @@ using Refresh.Core.Configuration;
 using Refresh.Core.Types.Data;
 using Refresh.Database;
 using Refresh.Database.Models.Activity;
+using Refresh.Database.Models.Levels;
+using Refresh.Database.Models.Levels.Scores;
+using Refresh.Database.Models.Photos;
+using Refresh.Database.Models.Users;
 using Refresh.Database.Query;
 using Refresh.Interfaces.APIv3.Endpoints.DataTypes.Response.Levels;
 using Refresh.Interfaces.APIv3.Endpoints.DataTypes.Response.Users;
@@ -43,21 +47,21 @@ public class DiscordIntegrationWorker : IWorker
         return $"{this._externalUrl}/api/v3/assets/{hash}/image";
     }
 
-    private Embed? GenerateEmbedFromEvent(Event @event, DataContext context)
+    private Embed? GenerateEmbedFromEvent(Event @event, WorkContext context)
     {
         EmbedBuilder embed = new();
 
-        ApiGameLevelResponse? level = @event.StoredDataType == EventDataType.Level ? 
-            ApiGameLevelResponse.FromOld(context.Database.GetLevelById(@event.StoredSequentialId!.Value), context)
+        GameLevel? level = @event.StoredDataType == EventDataType.Level ? 
+            context.Database.GetLevelById(@event.StoredSequentialId!.Value)
             : null;
-        ApiGameUserResponse? user = @event.StoredDataType == EventDataType.User ? 
-            ApiGameUserResponse.FromOld(context.Database.GetUserByObjectId(@event.StoredObjectId), context)
+        GameUser? user = @event.StoredDataType == EventDataType.User ? 
+            context.Database.GetUserByObjectId(@event.StoredObjectId)
             : null;
-        ApiGameScoreResponse? score = @event.StoredDataType == EventDataType.Score ? 
-            ApiGameScoreResponse.FromOld(context.Database.GetScoreByObjectId(@event.StoredObjectId), context)
+        GameScore? score = @event.StoredDataType == EventDataType.Score ? 
+            context.Database.GetScoreByObjectId(@event.StoredObjectId)
             : null;
-        ApiGamePhotoResponse? photo = @event.StoredDataType == EventDataType.Photo ? 
-            ApiGamePhotoResponse.FromOld(context.Database.GetPhotoFromEvent(@event), context)
+        GamePhoto? photo = @event.StoredDataType == EventDataType.Photo ? 
+            context.Database.GetPhotoFromEvent(@event)
             : null;
         
         if (photo != null)
@@ -92,7 +96,7 @@ public class DiscordIntegrationWorker : IWorker
         embed.WithDescription($"[{@event.User.Username}]({this._externalUrl}/u/{@event.User.UserId}) {description}");
 
         if (photo != null)
-            embed.WithImageUrl(this.GetAssetUrl(photo.LargeHash));
+            embed.WithImageUrl(this.GetAssetUrl(photo.LargeAsset.AssetHash));
         else if (level != null) 
             embed.WithThumbnailUrl(this.GetAssetUrl(level.IconHash));
         else if (user != null)
@@ -104,7 +108,7 @@ public class DiscordIntegrationWorker : IWorker
         return embed.Build();
     }
 
-    public void DoWork(DataContext context)
+    public void DoWork(WorkContext context)
     {
         if (this._firstCycle)
         {

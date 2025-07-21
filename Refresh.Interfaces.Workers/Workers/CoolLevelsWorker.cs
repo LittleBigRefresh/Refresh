@@ -23,7 +23,7 @@ public class CoolLevelsWorker : IWorker
     public int WorkInterval => 600_000; // Every 10 minutes
 
     [SuppressMessage("ReSharper.DPA", "DPA0005: Database issues")]
-    public void DoWork(DataContext context)
+    public void DoWork(WorkContext context)
     {
         const int pageSize = 1000;
         DatabaseList<GameLevel> levels = context.Database.GetUserLevelsChunk(0, pageSize);
@@ -104,7 +104,7 @@ public class CoolLevelsWorker : IWorker
         return (float)multiplier;
     }
 
-    private static float CalculatePositiveScore(GameLevel level, DataContext context)
+    private static float CalculatePositiveScore(GameLevel level, WorkContext context)
     {
         Debug.Assert(level.Statistics != null);
 
@@ -163,7 +163,7 @@ public class CoolLevelsWorker : IWorker
         return score;
     }
 
-    private static float CalculateNegativeScore(GameLevel level, DataContext context)
+    private static float CalculateNegativeScore(GameLevel level, WorkContext context)
     {
         Debug.Assert(level.Statistics != null);
 

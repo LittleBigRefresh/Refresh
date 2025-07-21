@@ -11,7 +11,7 @@ public class ObjectStatisticsWorker : IWorker
     public int WorkInterval => 60_000;
 
     [SuppressMessage("ReSharper.DPA", "DPA0005: Database issues")]
-    public void DoWork(DataContext context)
+    public void DoWork(WorkContext context)
     {
         GameLevel[] levels = context.Database.GetLevelsWithStatisticsNeedingUpdates()
             .Take(500)

@@ -8,7 +8,7 @@ namespace Refresh.Interfaces.Workers.Workers;
 public class ExpiredObjectWorker : IWorker
 {
     public int WorkInterval => 60_000; // 1 minute
-    public void DoWork(DataContext context)
+    public void DoWork(WorkContext context)
     {
         List<QueuedRegistration> registrationsToRemove = [];
         List<EmailVerificationCode> codesToRemove = [];

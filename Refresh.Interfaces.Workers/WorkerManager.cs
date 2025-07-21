@@ -12,16 +12,12 @@ public class WorkerManager
     private readonly Logger _logger;
     private readonly IDataStore _dataStore;
     private readonly GameDatabaseProvider _databaseProvider;
-    private readonly MatchService _matchService;
-    private readonly GuidCheckerService _guidCheckerService;
 
-    public WorkerManager(Logger logger, IDataStore dataStore, GameDatabaseProvider databaseProvider, MatchService matchService, GuidCheckerService guidCheckerService)
+    public WorkerManager(Logger logger, IDataStore dataStore, GameDatabaseProvider databaseProvider)
     {
         this._dataStore = dataStore;
         this._databaseProvider = databaseProvider;
         this._logger = logger;
-        this._matchService = matchService;
-        this._guidCheckerService = guidCheckerService;
     }
 
     private Thread? _thread = null;
@@ -42,14 +38,11 @@ public class WorkerManager
 
     private void RunWorkCycle()
     {
-        Lazy<DataContext> dataContext = new(() => new DataContext
+        Lazy<WorkContext> workContext = new(() => new WorkContext
         {
             Database = this._databaseProvider.GetContext(),
             Logger = this._logger,
             DataStore = this._dataStore,
-            Match = this._matchService,
-            Token = null,
-            GuidChecker = this._guidCheckerService,
         });
         
         foreach (IWorker worker in this._workers)
@@ -67,7 +60,7 @@ public class WorkerManager
             }
             
             this._logger.LogTrace(RefreshContext.Worker, "Running work cycle for " + worker.GetType().Name);
-            worker.DoWork(dataContext.Value);
+            worker.DoWork(workContext.Value);
         }
     }
 

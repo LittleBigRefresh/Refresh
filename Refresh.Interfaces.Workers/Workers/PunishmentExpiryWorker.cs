@@ -12,7 +12,7 @@ public class PunishmentExpiryWorker : IWorker
 {
     public int WorkInterval => 60_000; // 1 minute
 
-    public void DoWork(DataContext context)
+    public void DoWork(WorkContext context)
     {
         DatabaseList<GameUser> bannedUsers = context.Database.GetAllUsersWithRole(GameUserRole.Banned);
         DatabaseList<GameUser> restrictedUsers = context.Database.GetAllUsersWithRole(GameUserRole.Restricted);

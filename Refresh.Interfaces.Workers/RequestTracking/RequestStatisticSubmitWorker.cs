@@ -7,7 +7,7 @@ public class RequestStatisticSubmitWorker : IWorker
 {
     public int WorkInterval => 5_000;
     
-    public void DoWork(DataContext context)
+    public void DoWork(WorkContext context)
     {
         (int game, int api) = RequestStatisticTrackingMiddleware.SubmitAndClearRequests();
         
