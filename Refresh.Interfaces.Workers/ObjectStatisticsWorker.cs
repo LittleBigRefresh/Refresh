@@ -6,9 +6,9 @@ using Refresh.Workers;
 
 namespace Refresh.Interfaces.Workers;
 
-public class ObjectStatisticsJob : WorkerJob
+public class ObjectStatisticsJob : RepeatingJob
 {
-    public override int Interval => 60_000;
+    protected override int Interval => 60_000;
 
     [SuppressMessage("ReSharper.DPA", "DPA0005: Database issues")]
     public override void ExecuteJob(WorkContext context)

@@ -5,9 +5,9 @@ using Refresh.Workers;
 
 namespace Refresh.Interfaces.Workers;
 
-public class CleanupExpiredObjectsJob : WorkerJob
+public class CleanupExpiredObjectsJob : RepeatingJob
 {
-    public override int Interval => 60_000; // 1 minute
+    protected override int Interval => 60_000; // 1 minute
     public override void ExecuteJob(WorkContext context)
     {
         List<QueuedRegistration> registrationsToRemove = [];

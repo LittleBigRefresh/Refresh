@@ -2,12 +2,9 @@
 
 public abstract class WorkerJob
 {
-    /// <summary>
-    /// How often to perform work, in milliseconds
-    /// </summary>
-    public abstract int Interval { get; }
-
     public bool FirstCycle { get; internal set; } = true;
+
+    public virtual bool CanExecute() => true; 
 
     /// <summary>
     /// Executes the job.

@@ -3,9 +3,9 @@ using Refresh.Workers;
 
 namespace Refresh.Interfaces.Workers;
 
-public class RequestStatisticSubmitJob : WorkerJob
+public class RequestStatisticSubmitJob : RepeatingJob
 {
-    public override int Interval => 5_000;
+    protected override int Interval => 5_000;
     
     public override void ExecuteJob(WorkContext context)
     {

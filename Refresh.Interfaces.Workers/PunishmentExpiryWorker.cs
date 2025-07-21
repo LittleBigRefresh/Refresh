@@ -8,9 +8,9 @@ namespace Refresh.Interfaces.Workers;
 /// <summary>
 /// A worker that checks all users for bans/restrictions, then removes them if expired.
 /// </summary>
-public class PunishmentExpiryJob : WorkerJob
+public class PunishmentExpiryJob : RepeatingJob
 {
-    public override int Interval => 60_000; // 1 minute
+    protected override int Interval => 60_000; // 1 minute
 
     public override void ExecuteJob(WorkContext context)
     {

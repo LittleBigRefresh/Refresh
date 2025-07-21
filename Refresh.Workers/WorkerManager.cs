@@ -22,7 +22,6 @@ public class WorkerManager
     private bool _threadShouldRun = false;
 
     private readonly List<WorkerJob> _jobs = [];
-    private readonly Dictionary<WorkerJob, long> _lastJobTimestamps = new();
 
     public void AddJob<TJob>() where TJob : WorkerJob, new()
     {
@@ -45,19 +44,10 @@ public class WorkerManager
         
         foreach (WorkerJob job in this._jobs)
         {
-            long now = DateTimeOffset.Now.ToUnixTimeMilliseconds();
-            if (this._lastJobTimestamps.TryGetValue(job, out long lastJob))
-            {
-                if(now - lastJob < job.Interval) continue;
-                
-                this._lastJobTimestamps[job] = now;
-            }
-            else
-            {
-                this._lastJobTimestamps.Add(job, now);
-            }
+            if (!job.CanExecute())
+                continue;
             
-            this._logger.LogTrace(RefreshContext.Worker, "Running work cycle for " + job.GetType().Name);
+            this._logger.LogDebug(RefreshContext.Worker, "Running work cycle for " + job.GetType().Name);
             job.ExecuteJob(context.Value);
             job.FirstCycle = false;
         }

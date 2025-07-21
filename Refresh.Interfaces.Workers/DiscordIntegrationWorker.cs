@@ -13,7 +13,7 @@ using Refresh.Workers;
 
 namespace Refresh.Interfaces.Workers;
 
-public class DiscordIntegrationJob : WorkerJob
+public class DiscordIntegrationJob : RepeatingJob
 {
     private readonly IntegrationConfig _config;
     private readonly string _externalUrl;
@@ -21,7 +21,7 @@ public class DiscordIntegrationJob : WorkerJob
 
     private long _lastTimestamp;
     private static long Now => DateTimeOffset.Now.ToUnixTimeMilliseconds();
-    public override int Interval => this._config.DiscordWorkerFrequencySeconds * 1000; // 60 seconds by default
+    protected override int Interval => this._config.DiscordWorkerFrequencySeconds * 1000; // 60 seconds by default
 
     public DiscordIntegrationJob(IntegrationConfig config, GameServerConfig gameConfig)
     {
