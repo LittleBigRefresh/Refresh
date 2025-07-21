@@ -10,10 +10,10 @@ public class NewestUsersCategory : GameUserCategory
 {
     public NewestUsersCategory() : base("newest", [], false)
     {
-        this.Name = "Newest users";
+        this.Name = "Newest Players";
         this.Description = "Our newest server users.";
         this.FontAwesomeIcon = "user-plus";
-        this.IconHash = "g820625";
+        this.IconHash = "g820602";
     }
 
     public override DatabaseList<GameUser>? Fetch(RequestContext context, int skip, int count, DataContext dataContext,

@@ -11,7 +11,7 @@ public class MostHeartedUsersCategory : GameUserCategory
     public MostHeartedUsersCategory() : base("mostHearted", [], false)
     {
         this.Name = "Top Creators";
-        this.Description = "Our most hearted users.";
+        this.Description = "Our most hearted users!";
         this.FontAwesomeIcon = "heart";
         this.IconHash = "g820627";
     }
