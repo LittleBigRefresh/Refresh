@@ -45,8 +45,13 @@ public partial class GameDatabaseContext // Photos
             PublishedAt = this._time.Now,
         };
 
-        if (photo.Level?.Type == "user") 
-            newPhoto.Level = this.GetLevelById(photo.Level.LevelId);
+        GameLevel? level = null;
+
+        if (photo.Level?.Type is "user" or "developer") 
+        {
+            level = this.GetLevelByIdAndType(photo.Level.Type, photo.Level.LevelId);
+            newPhoto.Level = level;
+        }
 
         float[] bounds = new float[SerializedPhotoSubject.FloatCount];
 
@@ -73,15 +78,23 @@ public partial class GameDatabaseContext // Photos
 
         newPhoto.Subjects = gameSubjects;
 
-        this.Write(() =>
-        {
-            this.GamePhotos.Add(newPhoto);
-        });
-        
         this.WriteEnsuringStatistics(publisher, () =>
         {
+            this.GamePhotos.Add(newPhoto);
             publisher.Statistics!.PhotosByUserCount++;
         });
+
+        if (level != null)
+        {
+            this.WriteEnsuringStatistics(publisher, level, () =>
+            {
+                level.Statistics!.PhotoInLevelCount++;
+                if (level.Publisher?.UserId == publisher.UserId)
+                {
+                    level.Statistics!.PhotoByPublisherCount++;
+                }
+            });
+        }
         
         this.CreatePhotoUploadEvent(publisher, newPhoto);
     }
@@ -97,6 +110,18 @@ public partial class GameDatabaseContext // Photos
                     subject.User.Statistics!.PhotosWithUserCount--;
                 });
             }
+        }
+
+        if (photo.Level != null)
+        {
+            this.WriteEnsuringStatistics(photo.Publisher, photo.Level, () =>
+            {
+                photo.Level.Statistics!.PhotoInLevelCount--;
+                if (photo.Level.Publisher?.UserId == photo.Publisher.UserId)
+                {
+                    photo.Level.Statistics!.PhotoByPublisherCount--;
+                }
+            });
         }
 
         this.WriteEnsuringStatistics(photo.Publisher, () =>
