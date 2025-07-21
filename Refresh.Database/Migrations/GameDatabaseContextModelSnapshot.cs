@@ -18,7 +18,7 @@ namespace Refresh.Database.Migrations
         {
 #pragma warning disable 612, 618
             modelBuilder
-                .HasAnnotation("ProductVersion", "9.0.6")
+                .HasAnnotation("ProductVersion", "9.0.7")
                 .HasAnnotation("Relational:MaxIdentifierLength", 63);
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
@@ -591,14 +591,8 @@ namespace Refresh.Database.Migrations
                         .IsRequired()
                         .HasColumnType("text");
 
-                    b.Property<int>("LevelId")
+                    b.Property<int?>("LevelId")
                         .HasColumnType("integer");
-
-                    b.Property<int?>("LevelIdKey")
-                        .HasColumnType("integer");
-
-                    b.Property<string>("LevelName")
-                        .HasColumnType("text");
 
                     b.Property<string>("LevelType")
                         .HasColumnType("text");
@@ -613,7 +607,7 @@ namespace Refresh.Database.Migrations
                     b.Property<DateTimeOffset>("PublishedAt")
                         .HasColumnType("timestamp with time zone");
 
-                    b.Property<string>("PublisherUserId")
+                    b.Property<string>("PublisherId")
                         .IsRequired()
                         .HasColumnType("text");
 
@@ -628,7 +622,7 @@ namespace Refresh.Database.Migrations
                     b.Property<string>("Subject1DisplayName")
                         .HasColumnType("text");
 
-                    b.Property<string>("Subject1UserUserId")
+                    b.Property<string>("Subject1UserId")
                         .HasColumnType("text");
 
                     b.PrimitiveCollection<List<float>>("Subject2Bounds")
@@ -638,7 +632,7 @@ namespace Refresh.Database.Migrations
                     b.Property<string>("Subject2DisplayName")
                         .HasColumnType("text");
 
-                    b.Property<string>("Subject2UserUserId")
+                    b.Property<string>("Subject2UserId")
                         .HasColumnType("text");
 
                     b.PrimitiveCollection<List<float>>("Subject3Bounds")
@@ -648,7 +642,7 @@ namespace Refresh.Database.Migrations
                     b.Property<string>("Subject3DisplayName")
                         .HasColumnType("text");
 
-                    b.Property<string>("Subject3UserUserId")
+                    b.Property<string>("Subject3UserId")
                         .HasColumnType("text");
 
                     b.PrimitiveCollection<List<float>>("Subject4Bounds")
@@ -658,7 +652,7 @@ namespace Refresh.Database.Migrations
                     b.Property<string>("Subject4DisplayName")
                         .HasColumnType("text");
 
-                    b.Property<string>("Subject4UserUserId")
+                    b.Property<string>("Subject4UserId")
                         .HasColumnType("text");
 
                     b.Property<DateTimeOffset>("TakenAt")
@@ -668,21 +662,21 @@ namespace Refresh.Database.Migrations
 
                     b.HasIndex("LargeAssetAssetHash");
 
-                    b.HasIndex("LevelIdKey");
+                    b.HasIndex("LevelId");
 
                     b.HasIndex("MediumAssetAssetHash");
 
-                    b.HasIndex("PublisherUserId");
+                    b.HasIndex("PublisherId");
 
                     b.HasIndex("SmallAssetAssetHash");
 
-                    b.HasIndex("Subject1UserUserId");
+                    b.HasIndex("Subject1UserId");
 
-                    b.HasIndex("Subject2UserUserId");
+                    b.HasIndex("Subject2UserId");
 
-                    b.HasIndex("Subject3UserUserId");
+                    b.HasIndex("Subject3UserId");
 
-                    b.HasIndex("Subject4UserUserId");
+                    b.HasIndex("Subject4UserId");
 
                     b.ToTable("GamePhotos");
                 });
@@ -1636,7 +1630,7 @@ namespace Refresh.Database.Migrations
 
                     b.HasOne("Refresh.Database.Models.Levels.GameLevel", "Level")
                         .WithMany()
-                        .HasForeignKey("LevelIdKey");
+                        .HasForeignKey("LevelId");
 
                     b.HasOne("Refresh.Database.Models.Assets.GameAsset", "MediumAsset")
                         .WithMany()
@@ -1646,7 +1640,7 @@ namespace Refresh.Database.Migrations
 
                     b.HasOne("Refresh.Database.Models.Users.GameUser", "Publisher")
                         .WithMany()
-                        .HasForeignKey("PublisherUserId")
+                        .HasForeignKey("PublisherId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
@@ -1658,19 +1652,19 @@ namespace Refresh.Database.Migrations
 
                     b.HasOne("Refresh.Database.Models.Users.GameUser", "Subject1User")
                         .WithMany()
-                        .HasForeignKey("Subject1UserUserId");
+                        .HasForeignKey("Subject1UserId");
 
                     b.HasOne("Refresh.Database.Models.Users.GameUser", "Subject2User")
                         .WithMany()
-                        .HasForeignKey("Subject2UserUserId");
+                        .HasForeignKey("Subject2UserId");
 
                     b.HasOne("Refresh.Database.Models.Users.GameUser", "Subject3User")
                         .WithMany()
-                        .HasForeignKey("Subject3UserUserId");
+                        .HasForeignKey("Subject3UserId");
 
                     b.HasOne("Refresh.Database.Models.Users.GameUser", "Subject4User")
                         .WithMany()
-                        .HasForeignKey("Subject4UserUserId");
+                        .HasForeignKey("Subject4UserId");
 
                     b.Navigation("LargeAsset");
 

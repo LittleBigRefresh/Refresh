@@ -36,10 +36,7 @@ public partial class GameDatabaseContext // Photos
             PlanHash = photo.PlanHash,
             
             Publisher = publisher,
-            LevelName = photo.Level?.Title ?? "",
             LevelType = photo.Level?.Type ?? "",
-            //If level is null, default to level ID 0
-            LevelId = photo.Level?.LevelId ?? 0,
 
             TakenAt = DateTimeOffset.FromUnixTimeSeconds(Math.Clamp(photo.Timestamp, this._time.EarliestDate, this._time.TimestampSeconds)),
             PublishedAt = this._time.Now,
@@ -117,7 +114,7 @@ public partial class GameDatabaseContext // Photos
             this.WriteEnsuringStatistics(photo.Publisher, photo.Level, () =>
             {
                 photo.Level.Statistics!.PhotoInLevelCount--;
-                if (photo.Level.Publisher?.UserId == photo.PublisherUserId)
+                if (photo.Level.Publisher?.UserId == photo.PublisherId)
                 {
                     photo.Level.Statistics!.PhotoByPublisherCount--;
                 }
@@ -152,49 +149,49 @@ public partial class GameDatabaseContext // Photos
 
     [Pure]
     public DatabaseList<GamePhoto> GetPhotosByUser(GameUser user, int count, int skip) =>
-        new(this.GamePhotosIncluded.Where(p => p.PublisherUserId == user.UserId)
+        new(this.GamePhotosIncluded.Where(p => p.PublisherId == user.UserId)
             .OrderByDescending(p => p.TakenAt), skip, count);
     
     [Pure]
     public int GetTotalPhotosByUser(GameUser user)
         => this.GamePhotos
-            .Count(p => p.PublisherUserId == user.UserId);
+            .Count(p => p.PublisherId == user.UserId);
 
     [Pure]
     public DatabaseList<GamePhoto> GetPhotosWithUser(GameUser user, int count, int skip) =>
         new(this.GamePhotosIncluded
-            .Where(p => p.Subject1UserUserId == user.UserId || p.Subject2UserUserId == user.UserId || p.Subject3UserUserId == user.UserId || p.Subject4UserUserId == user.UserId)
+            .Where(p => p.Subject1UserId == user.UserId || p.Subject2UserId == user.UserId || p.Subject3UserId == user.UserId || p.Subject4UserId == user.UserId)
             .OrderByDescending(p => p.TakenAt), skip, count);
     
     [Pure]
     public int GetTotalPhotosWithUser(GameUser user)
         => this.GamePhotos
-            .Count(p => p.Subject1UserUserId == user.UserId || p.Subject2UserUserId == user.UserId || p.Subject3UserUserId == user.UserId || p.Subject4UserUserId == user.UserId);
+            .Count(p => p.Subject1UserId == user.UserId || p.Subject2UserId == user.UserId || p.Subject3UserId == user.UserId || p.Subject4UserId == user.UserId);
 
     [Pure]
     public DatabaseList<GamePhoto> GetPhotosInLevel(GameLevel level, int count, int skip)
         => new(this.GamePhotosIncluded
-            .Where(p => p.LevelIdKey == level.LevelId)
+            .Where(p => p.LevelId == level.LevelId)
             .OrderByDescending(p => p.TakenAt), skip, count);
     
     [Pure]
     public int GetTotalPhotosInLevel(GameLevel level)
-        => this.GamePhotos.Count(p => p.LevelIdKey == level.LevelId);
+        => this.GamePhotos.Count(p => p.LevelId == level.LevelId);
 
     public DatabaseList<GamePhoto> GetPhotosInLevelByUser(GameLevel level, GameUser user, int count, int skip) 
         => new(this.GamePhotosIncluded
-            .Where(p => p.LevelIdKey == level.LevelId && p.PublisherUserId == user.UserId)
+            .Where(p => p.LevelId == level.LevelId && p.PublisherId == user.UserId)
             .OrderByDescending(p => p.TakenAt), skip, count);
 
     public int GetTotalPhotosInLevelByUser(GameLevel level, GameUser? user)
     {
         if (user == null) return 0;
-        return this.GamePhotos.Count(p => p.LevelIdKey == level.LevelId && p.PublisherUserId == user.UserId);
+        return this.GamePhotos.Count(p => p.LevelId == level.LevelId && p.PublisherId == user.UserId);
     }
 
     public void DeletePhotosPostedByUser(GameUser user)
     {
-        IEnumerable<GamePhoto> photos = this.GamePhotos.Where(s => s.PublisherUserId == user.UserId);
+        IEnumerable<GamePhoto> photos = this.GamePhotos.Where(s => s.PublisherId == user.UserId);
         
         this.WriteEnsuringStatistics(user, () =>
         {
