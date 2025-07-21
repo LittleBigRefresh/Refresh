@@ -7,8 +7,7 @@ public abstract class WorkerJob
     /// </summary>
     public abstract int WorkInterval { get; }
 
-    public bool FirstCycle { get; internal set; }
-    
+    public bool FirstCycle { get; internal set; } = true;
 
     /// <summary>
     /// Executes the job.

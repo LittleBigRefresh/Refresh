@@ -59,6 +59,7 @@ public class WorkerManager
             
             this._logger.LogTrace(RefreshContext.Worker, "Running work cycle for " + worker.GetType().Name);
             worker.ExecuteJob(workContext.Value);
+            worker.FirstCycle = false;
         }
     }
 

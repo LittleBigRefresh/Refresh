@@ -18,8 +18,6 @@ public class DiscordIntegrationJob : WorkerJob
     private readonly IntegrationConfig _config;
     private readonly string _externalUrl;
     private readonly DiscordWebhookClient _client;
-    
-    private bool _firstCycle = true;
 
     private long _lastTimestamp;
     private static long Now => DateTimeOffset.Now.ToUnixTimeMilliseconds();
@@ -31,12 +29,6 @@ public class DiscordIntegrationJob : WorkerJob
         this._externalUrl = gameConfig.WebExternalUrl;
 
         this._client = new DiscordWebhookClient(config.DiscordWebhookUrl);
-    }
-
-    private void DoFirstCycle()
-    {
-        this._firstCycle = false;
-        this._lastTimestamp = Now;
     }
 
     private string GetAssetUrl(string hash)
@@ -107,10 +99,8 @@ public class DiscordIntegrationJob : WorkerJob
 
     public override void ExecuteJob(WorkContext context)
     {
-        if (this._firstCycle)
-        {
-            this.DoFirstCycle();
-        }
+        if (this.FirstCycle)
+            this._lastTimestamp = Now;
 
         DatabaseList<Event> activity = context.Database.GetGlobalRecentActivity(new ActivityQueryParameters
         {
