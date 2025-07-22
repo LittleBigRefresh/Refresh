@@ -24,9 +24,9 @@ public class TestRefreshGameServer : RefreshGameServer
     public TestRefreshGameServer(BunkumHttpListener listener, Func<GameDatabaseProvider> provider, IDataStore? dataStore = null) : base(listener, provider, null, dataStore ?? new InMemoryDataStore())
     {}
 
-    protected override void SetupConfiguration()
+    protected override ConfigStore CreateConfigStore()
     {
-        new ConfigStore().AddToBunkum(this.Server);
+        return new ConfigStore();
     }
 
     public GameServerConfig GameServerConfig => this._configStore.GameServer;

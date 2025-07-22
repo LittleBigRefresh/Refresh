@@ -57,7 +57,8 @@ public class RefreshGameServer : RefreshServer
 
         try
         {
-            this._configStore = new ConfigStore(this.Logger);
+            // ReSharper disable once VirtualMemberCallInConstructor (you can't stop me)
+            this._configStore = this.CreateConfigStore();
         }
         catch (Exception ex)
         {
@@ -97,6 +98,11 @@ public class RefreshGameServer : RefreshServer
 
             this.InjectBaseServices(provider, authProvider, this._dataStore);
         });
+    }
+
+    protected virtual ConfigStore CreateConfigStore()
+    {
+        return new ConfigStore(this.Logger);
     }
 
     private void InjectBaseServices(GameDatabaseProvider databaseProvider, IAuthenticationProvider<Token> authProvider, IDataStore dataStore)
