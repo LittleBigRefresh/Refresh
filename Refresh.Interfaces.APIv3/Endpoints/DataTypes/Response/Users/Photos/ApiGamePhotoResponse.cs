@@ -40,7 +40,7 @@ public class ApiGamePhotoResponse : IApiResponse, IDataConvertableFrom<ApiGamePh
 
             LevelName = old.Level?.Title ?? "",
             LevelType = old.LevelType,
-            LevelId = old.LevelId ?? 0,
+            LevelId = old.OriginalLevelId,
 
             SmallHash = old.SmallAsset.IsPSP ? $"psp/{old.SmallAsset.AssetHash}" : old.SmallAsset.AssetHash,
             MediumHash = old.MediumAsset.IsPSP ? $"psp/{old.MediumAsset.AssetHash}" : old.MediumAsset.AssetHash,

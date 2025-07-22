@@ -7,16 +7,12 @@ namespace Refresh.Database.Migrations
 {
     /// <inheritdoc />
     [DbContext(typeof(GameDatabaseContext))]
-    [Migration("20250721151840_RenameGamePhotoAttributes")]
-    public partial class RenameGamePhotoAttributes : Migration
+    [Migration("20250722093849_RenameGamePhotoAttributesRoundOne")]
+    public partial class RenameGamePhotoAttributesRoundOne : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
         {
-            migrationBuilder.DropForeignKey(
-                name: "FK_GamePhotos_GameLevels_LevelIdKey",
-                table: "GamePhotos");
-
             migrationBuilder.DropForeignKey(
                 name: "FK_GamePhotos_GameUsers_PublisherUserId",
                 table: "GamePhotos");
@@ -63,9 +59,14 @@ namespace Refresh.Database.Migrations
                 newName: "PublisherId");
 
             migrationBuilder.RenameColumn(
-                name: "LevelIdKey",
+                name: "LevelName",
                 table: "GamePhotos",
-                newName: "LevelId");
+                newName: "OriginalLevelName");
+
+            migrationBuilder.RenameColumn(
+                name: "LevelId",
+                table: "GamePhotos",
+                newName: "OriginalLevelId");
 
             migrationBuilder.RenameIndex(
                 name: "IX_GamePhotos_Subject4UserUserId",
@@ -91,18 +92,6 @@ namespace Refresh.Database.Migrations
                 name: "IX_GamePhotos_PublisherUserId",
                 table: "GamePhotos",
                 newName: "IX_GamePhotos_PublisherId");
-
-            migrationBuilder.RenameIndex(
-                name: "IX_GamePhotos_LevelIdKey",
-                table: "GamePhotos",
-                newName: "IX_GamePhotos_LevelId");
-
-            migrationBuilder.AddForeignKey(
-                name: "FK_GamePhotos_GameLevels_LevelId",
-                table: "GamePhotos",
-                column: "LevelId",
-                principalTable: "GameLevels",
-                principalColumn: "LevelId");
 
             migrationBuilder.AddForeignKey(
                 name: "FK_GamePhotos_GameUsers_PublisherId",
@@ -144,10 +133,6 @@ namespace Refresh.Database.Migrations
         /// <inheritdoc />
         protected override void Down(MigrationBuilder migrationBuilder)
         {
-            migrationBuilder.DropForeignKey(
-                name: "FK_GamePhotos_GameLevels_LevelId",
-                table: "GamePhotos");
-
             migrationBuilder.DropForeignKey(
                 name: "FK_GamePhotos_GameUsers_PublisherId",
                 table: "GamePhotos");
@@ -194,9 +179,14 @@ namespace Refresh.Database.Migrations
                 newName: "PublisherUserId");
 
             migrationBuilder.RenameColumn(
-                name: "LevelId",
+                name: "OriginalLevelName",
                 table: "GamePhotos",
-                newName: "LevelIdKey");
+                newName: "LevelName");
+
+            migrationBuilder.RenameColumn(
+                name: "OriginalLevelId",
+                table: "GamePhotos",
+                newName: "LevelId");
 
             migrationBuilder.RenameIndex(
                 name: "IX_GamePhotos_Subject4UserId",
@@ -222,18 +212,6 @@ namespace Refresh.Database.Migrations
                 name: "IX_GamePhotos_PublisherId",
                 table: "GamePhotos",
                 newName: "IX_GamePhotos_PublisherUserId");
-
-            migrationBuilder.RenameIndex(
-                name: "IX_GamePhotos_LevelId",
-                table: "GamePhotos",
-                newName: "IX_GamePhotos_LevelIdKey");
-
-            migrationBuilder.AddForeignKey(
-                name: "FK_GamePhotos_GameLevels_LevelIdKey",
-                table: "GamePhotos",
-                column: "LevelIdKey",
-                principalTable: "GameLevels",
-                principalColumn: "LevelId");
 
             migrationBuilder.AddForeignKey(
                 name: "FK_GamePhotos_GameUsers_PublisherUserId",

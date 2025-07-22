@@ -587,7 +587,7 @@ namespace Refresh.Database.Migrations
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("PhotoId"));
 
-                    b.Property<string>("LargeAssetAssetHash")
+                    b.Property<string>("LargeAssetHash")
                         .IsRequired()
                         .HasColumnType("text");
 
@@ -597,8 +597,14 @@ namespace Refresh.Database.Migrations
                     b.Property<string>("LevelType")
                         .HasColumnType("text");
 
-                    b.Property<string>("MediumAssetAssetHash")
+                    b.Property<string>("MediumAssetHash")
                         .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<int>("OriginalLevelId")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("OriginalLevelName")
                         .HasColumnType("text");
 
                     b.Property<string>("PlanHash")
@@ -611,7 +617,7 @@ namespace Refresh.Database.Migrations
                         .IsRequired()
                         .HasColumnType("text");
 
-                    b.Property<string>("SmallAssetAssetHash")
+                    b.Property<string>("SmallAssetHash")
                         .IsRequired()
                         .HasColumnType("text");
 
@@ -660,15 +666,15 @@ namespace Refresh.Database.Migrations
 
                     b.HasKey("PhotoId");
 
-                    b.HasIndex("LargeAssetAssetHash");
+                    b.HasIndex("LargeAssetHash");
 
                     b.HasIndex("LevelId");
 
-                    b.HasIndex("MediumAssetAssetHash");
+                    b.HasIndex("MediumAssetHash");
 
                     b.HasIndex("PublisherId");
 
-                    b.HasIndex("SmallAssetAssetHash");
+                    b.HasIndex("SmallAssetHash");
 
                     b.HasIndex("Subject1UserId");
 
@@ -1624,7 +1630,7 @@ namespace Refresh.Database.Migrations
                 {
                     b.HasOne("Refresh.Database.Models.Assets.GameAsset", "LargeAsset")
                         .WithMany()
-                        .HasForeignKey("LargeAssetAssetHash")
+                        .HasForeignKey("LargeAssetHash")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
@@ -1634,7 +1640,7 @@ namespace Refresh.Database.Migrations
 
                     b.HasOne("Refresh.Database.Models.Assets.GameAsset", "MediumAsset")
                         .WithMany()
-                        .HasForeignKey("MediumAssetAssetHash")
+                        .HasForeignKey("MediumAssetHash")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
@@ -1646,7 +1652,7 @@ namespace Refresh.Database.Migrations
 
                     b.HasOne("Refresh.Database.Models.Assets.GameAsset", "SmallAsset")
                         .WithMany()
-                        .HasForeignKey("SmallAssetAssetHash")
+                        .HasForeignKey("SmallAssetHash")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 

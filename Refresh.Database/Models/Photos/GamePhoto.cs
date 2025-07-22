@@ -14,8 +14,7 @@ public partial class GamePhoto : ISequentialId
     public DateTimeOffset TakenAt { get; set; }
     public DateTimeOffset PublishedAt { get; set; }
     
-    [Required]
-    [ForeignKey(nameof(PublisherId))]
+    [Required, ForeignKey(nameof(PublisherId))]
     public GameUser Publisher { get; set; }
     public ObjectId PublisherId { get; set; }
 
@@ -24,15 +23,23 @@ public partial class GamePhoto : ISequentialId
     public GameLevel? Level { get; set; }
     public int? LevelId { get; set; }
     #nullable disable
-    
+
     public string LevelType { get; set; }
+    public int OriginalLevelId { get; set; }
+    public string OriginalLevelName { get; set; }
     
-    [Required]
+    [Required, ForeignKey(nameof(SmallAssetHash))]
     public GameAsset SmallAsset { get; set; }
-    [Required]
+    public string SmallAssetHash { get; set; }
+
+    [Required, ForeignKey(nameof(MediumAssetHash))]
     public GameAsset MediumAsset { get; set; }
-    [Required]
+    public string MediumAssetHash { get; set; }
+
+    [Required, ForeignKey(nameof(LargeAssetHash))]
     public GameAsset LargeAsset { get; set; }
+    public string LargeAssetHash { get; set; }
+
     public string PlanHash { get; set; }
 
     #region Subjects
