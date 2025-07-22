@@ -38,7 +38,7 @@ public class ApiGamePhotoResponse : IApiResponse, IDataConvertableFrom<ApiGamePh
             Publisher = ApiGameUserResponse.FromOld(old.Publisher, dataContext)!,
             Level = ApiGameLevelResponse.FromOld(old.Level, dataContext),
 
-            LevelName = old.Level?.Title ?? "",
+            LevelName = old.OriginalLevelName,
             LevelType = old.LevelType,
             LevelId = old.OriginalLevelId,
 
