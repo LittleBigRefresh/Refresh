@@ -43,11 +43,7 @@ public class RefreshGameServer : RefreshServer
     
     protected readonly GameDatabaseProvider _databaseProvider;
     protected readonly IDataStore _dataStore;
-    protected MatchService _matchService = null!;
-    protected GuidCheckerService _guidCheckerService = null!;
-    
-    protected GameServerConfig? _config;
-    protected IntegrationConfig? _integrationConfig;
+    protected readonly ConfigStore _configStore;
 
     public RefreshGameServer(
         BunkumHttpListener? listener = null,
@@ -59,34 +55,21 @@ public class RefreshGameServer : RefreshServer
         dataStore ??= new FileSystemDataStore();
         List<IDataStore> dataStores = [];
 
-        DryArchiveConfig? dryConfig = null;
         try
         {
-            dryConfig = Config.LoadFromJsonFile<DryArchiveConfig>("dry.json", this.Logger);
-            if (dryConfig.Enabled)
-                dataStores.Add(new DownloadingDataStore(dataStore, new DryDataStore(dryConfig)));
+            this._configStore = new ConfigStore(this.Logger);
         }
         catch (Exception ex)
         {
-            this.Logger.LogWarning(BunkumCategory.Configuration, "Failed to read dry.json: " + ex);
+            this.Logger.LogCritical(RefreshContext.Database, "Failed to read the configuration files: " + ex);
+            this.Logger.Dispose();
+            Environment.Exit(1);
         }
+        
+        if (this._configStore.DryArchive.Enabled)
+            dataStores.Add(new DownloadingDataStore(dataStore, new DryDataStore(this._configStore.DryArchive)));
 
-        if (databaseProvider == null)
-        {
-            DatabaseConfig? dbConfig = null;
-            try
-            {
-               dbConfig = Config.LoadFromJsonFile<DatabaseConfig>("db.json", this.Logger);
-            }
-            catch (Exception ex)
-            {
-                this.Logger.LogCritical(RefreshContext.Database, "Failed to read the database configuration file: " + ex);
-                this.Logger.Dispose();
-                Environment.Exit(1);
-            }
-            
-            databaseProvider = () => new GameDatabaseProvider(this.Logger, dbConfig);
-        }
+        databaseProvider ??= () => new GameDatabaseProvider(this.Logger, this._configStore.DatabaseConfig);
         
         this._databaseProvider = databaseProvider.Invoke();
         this._databaseProvider.Initialize();
@@ -94,7 +77,7 @@ public class RefreshGameServer : RefreshServer
         // Uncomment if you want to use production refresh as a source for assets
         // TODO: remove config option when test.lbpbonsai.com instance no longer needs prod assets
 #if DEBUG
-        if (dryConfig?.TemporaryWillBeRemoved_UseProductionRefreshData ?? false)
+        if (this._configStore.DryArchive?.TemporaryWillBeRemoved_UseProductionRefreshData ?? false)
             dataStores.Add(new DownloadingDataStore(dataStore, new RemoteRefreshDataStore()));
 #endif
 
@@ -110,7 +93,7 @@ public class RefreshGameServer : RefreshServer
 
             this.WorkerManager?.Stop();
             
-            authProvider ??= new GameAuthenticationProvider(this._config!);
+            authProvider ??= new GameAuthenticationProvider(this._configStore.GameServer);
 
             this.InjectBaseServices(provider, authProvider, this._dataStore);
         });
@@ -135,28 +118,19 @@ public class RefreshGameServer : RefreshServer
     protected override void SetupMiddlewares()
     {
         this.Server.AddMiddleware<WebsiteMiddleware>();
-        this.Server.AddMiddleware(new DeflateMiddleware(this._config!));
+        this.Server.AddMiddleware(new DeflateMiddleware(this._configStore.GameServer));
         this.Server.AddMiddleware<LegacyAdapterMiddleware>();
         // Digest middleware must be run before LegacyAdapterMiddleware, because digest is based on the raw route, not the fixed route
-        this.Server.AddMiddleware(new DigestMiddleware(this._config!));
+        this.Server.AddMiddleware(new DigestMiddleware(this._configStore.GameServer));
         this.Server.AddMiddleware<CrossOriginMiddleware>();
         this.Server.AddMiddleware<PspVersionMiddleware>();
-        this.Server.AddMiddleware(new PresenceAuthenticationMiddleware(this._integrationConfig!));
+        this.Server.AddMiddleware(new PresenceAuthenticationMiddleware(this._configStore.Integration!));
         this.Server.AddMiddleware<RequestStatisticTrackingMiddleware>();
     }
 
     protected override void SetupConfiguration()
     {
-        GameServerConfig config = Config.LoadFromJsonFile<GameServerConfig>("refreshGameServer.json", this.Server.Logger);
-        this._config = config;
-
-        IntegrationConfig integrationConfig = Config.LoadFromJsonFile<IntegrationConfig>("integrations.json", this.Server.Logger);
-        this._integrationConfig = integrationConfig;
-        
-        this.Server.AddConfig(config);
-        this.Server.AddConfig(integrationConfig);
-        this.Server.AddConfigFromJsonFile<RichPresenceConfig>("rpc.json");
-        this.Server.AddConfigFromJsonFile<ContactInfoConfig>("contactInfo.json");
+        this._configStore.AddToBunkum(this.Server);
     }
     
     protected override void SetupServices()
@@ -164,22 +138,21 @@ public class RefreshGameServer : RefreshServer
         this.Server.AddService<TimeProviderService>(this.GetTimeProvider());
         this.Server.AddRateLimitService(new RateLimitSettings(60, 400, 30, "global"));
         this.Server.AddService<CategoryService>();
-        this.Server.AddService(this._matchService = new MatchService(this.Server.Logger, this._config!));
+        this.Server.AddService(new MatchService(this.Server.Logger, this._configStore.GameServer));
         this.Server.AddService<ImportService>();
         this.Server.AddService<DocumentationService>();
-        this.Server.AddService(this._guidCheckerService = new GuidCheckerService(this._config!, this.Server.Logger));
-        this.Server.AddAutoDiscover(serverBrand: $"{this._config!.InstanceName} (Refresh)",
-            baseEndpoint: GameEndpointAttribute.BaseRoute.Substring(0, GameEndpointAttribute.BaseRoute.Length - 1),
+        this.Server.AddService(new GuidCheckerService(this._configStore.GameServer, this.Server.Logger));
+        this.Server.AddAutoDiscover(serverBrand: $"{this._configStore.GameServer.InstanceName} (Refresh)",
+            baseEndpoint: GameEndpointAttribute.BaseRoute[..^1],
             usesCustomDigestKey: true,
-            serverDescription: this._config.InstanceDescription,
+            serverDescription: this._configStore.GameServer.InstanceDescription,
             bannerImageUrl: "https://github.com/LittleBigRefresh/Branding/blob/main/logos/refresh_type.png?raw=true");
         
 #pragma warning disable CA1825
 #pragma warning disable CA1861
-        this.Server.AddHealthCheckService(this._databaseProvider, new Type[]
-        {
+        this.Server.AddHealthCheckService(this._databaseProvider, [
             // TODO: add postgres health check
-        });
+        ]);
 #pragma warning restore CA1861
 #pragma warning restore CA1825
         
@@ -191,7 +164,7 @@ public class RefreshGameServer : RefreshServer
         this.Server.AddService<ChallengeGhostRateLimitService>();
         this.Server.AddService<DiscordStaffService>();
 
-        if(this._integrationConfig!.AipiEnabled)
+        if(this._configStore.Integration!.AipiEnabled)
             this.Server.AddService<AipiService>();
         
         #if DEBUG
@@ -208,9 +181,9 @@ public class RefreshGameServer : RefreshServer
     {
         this.WorkerManager = RefreshWorkerManager.Create(this.Logger, this._dataStore, this._databaseProvider);
         
-        if ((this._integrationConfig?.DiscordWebhookEnabled ?? false) && this._config != null && this._config.PermitShowingOnlineUsers)
+        if (this._configStore.Integration.DiscordWebhookEnabled && this._configStore.GameServer.PermitShowingOnlineUsers)
         {
-            this.WorkerManager.AddJob(new DiscordIntegrationJob(this._integrationConfig, this._config));
+            this.WorkerManager.AddJob(new DiscordIntegrationJob(this._configStore.Integration, this._configStore.GameServer));
         }
     }
 
@@ -220,7 +193,7 @@ public class RefreshGameServer : RefreshServer
         this.Server.Start();
         this.WorkerManager?.Start();
 
-        if (this._config!.MaintenanceMode)
+        if (this._configStore.GameServer.MaintenanceMode)
         {
             this.Logger.LogWarning(RefreshContext.Startup, "The server is currently in maintenance mode! " +
                                                             "Only administrators will be able to log in and interact with the server.");
