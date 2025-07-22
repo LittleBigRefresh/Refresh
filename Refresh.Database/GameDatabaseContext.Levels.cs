@@ -283,7 +283,7 @@ public partial class GameDatabaseContext // Levels
             }
             this.GameChallenges.RemoveRange(challenges);
             
-            IQueryable<GameScore> scores = this.GameScores.Where(r => r.Level == level);
+            IEnumerable<GameScore> scores = this.GameScores.Where(r => r.Level == level).ToArray();
             
             foreach (GameScore score in scores)
             {
