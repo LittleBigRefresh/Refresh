@@ -21,10 +21,6 @@ jobs:
             dockerfile: Dockerfile
             container_id: refresh
             build_args: ""
-          - name: HttpsProxy
-            dockerfile: HttpsProxy.Dockerfile
-            container_id: refresh-httpsproxy
-            build_args: ""
           - name: PresenceServer
             dockerfile: PresenceServer.Dockerfile
             container_id: refresh-presenceserver
