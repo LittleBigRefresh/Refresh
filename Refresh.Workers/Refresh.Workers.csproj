@@ -11,6 +11,7 @@
     </PropertyGroup>
 
     <ItemGroup>
+        <InternalsVisibleTo Include="RefreshTests.GameServer" />
         <ProjectReference Include="..\Refresh.Core\Refresh.Core.csproj" />
     </ItemGroup>
 

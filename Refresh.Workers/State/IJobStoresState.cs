@@ -2,7 +2,7 @@
 
 public interface IJobStoresState
 {
-    public string JobId { get; set; }
-    public object JobState { get; protected internal set; }
+    public string JobId { get; }
+    public object JobState { get; set; }
     public Type JobStateType { get; }
 }

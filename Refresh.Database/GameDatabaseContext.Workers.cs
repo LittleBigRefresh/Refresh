@@ -52,13 +52,18 @@ public partial class GameDatabaseContext // Workers
 
     public void UpdateOrCreateJobState(string jobId, object state)
     {
-        PersistentJobState jobState = new()
+        PersistentJobState? jobState = this.JobStates.FirstOrDefault(s => s.JobId == jobId);
+        if (jobState == null)
         {
-            JobId = jobId,
-            State = JsonConvert.SerializeObject(state, Formatting.None),
-        };
+            jobState = new PersistentJobState
+            {
+                JobId = jobId,
+            };
 
-        this.JobStates.Update(jobState);
+            this.JobStates.Add(jobState);
+        }
+        
+        jobState.State = JsonConvert.SerializeObject(state, Formatting.None);
         this.SaveChanges();
     }
 }

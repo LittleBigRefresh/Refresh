@@ -55,8 +55,6 @@ public class WorkerManager
             if (!job.CanExecute())
                 continue;
             
-            this._logger.LogTrace(RefreshContext.Worker, $"Running work cycle for {job.GetType().Name}");
-            
             IJobStoresState? jobWithState = job as IJobStoresState;
             if (jobWithState != null)
             {
@@ -64,7 +62,14 @@ public class WorkerManager
                 jobState ??= Activator.CreateInstance(jobWithState.JobStateType);
 
                 jobWithState.JobState = jobState!;
+                
+                // jobs that consume state may have different execution requirements when state is updated
+                // check again to handle this case. the check above is still retained to avoid unnecessary db lookups
+                if (!job.CanExecute())
+                    continue;
             }
+            
+            this._logger.LogTrace(RefreshContext.Worker, $"Running work cycle for {job.GetType().Name}");
             
             try
             {
