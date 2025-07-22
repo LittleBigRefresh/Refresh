@@ -54,7 +54,7 @@ public class WorkerManager
             if (!job.CanExecute())
                 continue;
             
-            this._logger.LogDebug(RefreshContext.Worker, $"Running work cycle for {job.GetType().Name}");
+            this._logger.LogTrace(RefreshContext.Worker, $"Running work cycle for {job.GetType().Name}");
             try
             {
                 job.ExecuteJob(context);
