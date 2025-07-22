@@ -1,3 +1,4 @@
+using MongoDB.Bson;
 using Refresh.Database.Models.Assets;
 using Refresh.Database.Models.Levels;
 using Refresh.Database.Models.Users;
@@ -13,24 +14,32 @@ public partial class GamePhoto : ISequentialId
     public DateTimeOffset TakenAt { get; set; }
     public DateTimeOffset PublishedAt { get; set; }
     
-    [Required]
+    [Required, ForeignKey(nameof(PublisherId))]
     public GameUser Publisher { get; set; }
+    public ObjectId PublisherId { get; set; }
+
     #nullable restore
-    [ForeignKey(nameof(LevelIdKey))]
+    [ForeignKey(nameof(LevelId))]
     public GameLevel? Level { get; set; }
-    public int? LevelIdKey { get; set; }
+    public int? LevelId { get; set; }
     #nullable disable
-    
-    public string LevelName { get; set; }
+
     public string LevelType { get; set; }
-    public int LevelId { get; set; }
+    public int OriginalLevelId { get; set; }
+    public string OriginalLevelName { get; set; }
     
-    [Required]
+    [Required, ForeignKey(nameof(SmallAssetHash))]
     public GameAsset SmallAsset { get; set; }
-    [Required]
+    public string SmallAssetHash { get; set; }
+
+    [Required, ForeignKey(nameof(MediumAssetHash))]
     public GameAsset MediumAsset { get; set; }
-    [Required]
+    public string MediumAssetHash { get; set; }
+
+    [Required, ForeignKey(nameof(LargeAssetHash))]
     public GameAsset LargeAsset { get; set; }
+    public string LargeAssetHash { get; set; }
+
     public string PlanHash { get; set; }
 
     #region Subjects
@@ -120,15 +129,23 @@ public partial class GamePhoto : ISequentialId
 #nullable enable
     #pragma warning disable CS8618 // realm forces us to have a non-nullable IList<float> so we have to have these shenanigans
     
+    public ObjectId? Subject1UserId { get; set; }
+    [ForeignKey(nameof(Subject1UserId))]
     public GameUser? Subject1User { get; set; }
     public string? Subject1DisplayName { get; set; }
     
+    public ObjectId? Subject2UserId { get; set; }
+    [ForeignKey(nameof(Subject2UserId))]
     public GameUser? Subject2User { get; set; }
     public string? Subject2DisplayName { get; set; }
     
+    public ObjectId? Subject3UserId { get; set; }
+    [ForeignKey(nameof(Subject3UserId))]
     public GameUser? Subject3User { get; set; }
     public string? Subject3DisplayName { get; set; }
     
+    public ObjectId? Subject4UserId { get; set; }
+    [ForeignKey(nameof(Subject4UserId))]
     public GameUser? Subject4User { get; set; }
     public string? Subject4DisplayName { get; set; }
     

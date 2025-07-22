@@ -38,9 +38,9 @@ public class ApiGamePhotoResponse : IApiResponse, IDataConvertableFrom<ApiGamePh
             Publisher = ApiGameUserResponse.FromOld(old.Publisher, dataContext)!,
             Level = ApiGameLevelResponse.FromOld(old.Level, dataContext),
 
-            LevelName = old.LevelName,
+            LevelName = old.OriginalLevelName,
             LevelType = old.LevelType,
-            LevelId = old.LevelId,
+            LevelId = old.OriginalLevelId,
 
             SmallHash = old.SmallAsset.IsPSP ? $"psp/{old.SmallAsset.AssetHash}" : old.SmallAsset.AssetHash,
             MediumHash = old.MediumAsset.IsPSP ? $"psp/{old.MediumAsset.AssetHash}" : old.MediumAsset.AssetHash,

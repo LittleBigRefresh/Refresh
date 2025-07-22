@@ -138,7 +138,7 @@ public class DatabaseActivityPage
             if (@event.StoredDataType == EventDataType.Photo)
             {
                 GamePhoto photo = this.Photos.First(p => p.PhotoId == @event.StoredSequentialId);
-                levelId = photo.LevelId;
+                levelId = photo.LevelId ?? 0;
             }
 
             GameLevel? level = this.Levels.FirstOrDefault(l => l.LevelId == levelId);
