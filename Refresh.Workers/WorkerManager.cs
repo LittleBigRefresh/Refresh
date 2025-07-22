@@ -2,6 +2,7 @@ using Bunkum.Core.Storage;
 using NotEnoughLogs;
 using Refresh.Core;
 using Refresh.Database;
+using Refresh.Workers.State;
 
 namespace Refresh.Workers;
 
@@ -54,7 +55,22 @@ public class WorkerManager
             if (!job.CanExecute())
                 continue;
             
+            IJobStoresState? jobWithState = job as IJobStoresState;
+            if (jobWithState != null)
+            {
+                object? jobState = context.Database.GetJobState(jobWithState.JobId, jobWithState.JobStateType);
+                jobState ??= Activator.CreateInstance(jobWithState.JobStateType);
+
+                jobWithState.JobState = jobState!;
+                
+                // jobs that consume state may have different execution requirements when state is updated
+                // check again to handle this case. the check above is still retained to avoid unnecessary db lookups
+                if (!job.CanExecute())
+                    continue;
+            }
+            
             this._logger.LogTrace(RefreshContext.Worker, $"Running work cycle for {job.GetType().Name}");
+            
             try
             {
                 job.ExecuteJob(context);
@@ -64,6 +80,9 @@ public class WorkerManager
             {
                 this._logger.LogError(RefreshContext.Worker, $"Unhandled exception while running work cycle for {job.GetType().Name}: {e}");
             }
+
+            if (jobWithState != null)
+                context.Database.UpdateOrCreateJobState(jobWithState.JobId, jobWithState.JobState);
         }
         
         long now = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();

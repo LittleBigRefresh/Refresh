@@ -1437,6 +1437,20 @@ namespace Refresh.Database.Migrations
                     b.ToTable("QueuedRegistrations");
                 });
 
+            modelBuilder.Entity("Refresh.Database.Models.Workers.PersistentJobState", b =>
+                {
+                    b.Property<string>("JobId")
+                        .HasColumnType("text");
+
+                    b.Property<string>("State")
+                        .IsRequired()
+                        .HasColumnType("jsonb");
+
+                    b.HasKey("JobId");
+
+                    b.ToTable("JobStates");
+                });
+
             modelBuilder.Entity("Refresh.Database.Models.Workers.WorkerInfo", b =>
                 {
                     b.Property<int>("WorkerId")

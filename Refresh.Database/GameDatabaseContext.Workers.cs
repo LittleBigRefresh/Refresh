@@ -40,4 +40,30 @@ public partial class GameDatabaseContext // Workers
         
         return true;
     }
+
+    public object? GetJobState(string jobId, Type type)
+    {
+        PersistentJobState? state = this.JobStates.FirstOrDefault(s => s.JobId == jobId);
+        if (state == null)
+            return null;
+
+        return JsonConvert.DeserializeObject(state.State, type);
+    }
+
+    public void UpdateOrCreateJobState(string jobId, object state)
+    {
+        PersistentJobState? jobState = this.JobStates.FirstOrDefault(s => s.JobId == jobId);
+        if (jobState == null)
+        {
+            jobState = new PersistentJobState
+            {
+                JobId = jobId,
+            };
+
+            this.JobStates.Add(jobState);
+        }
+        
+        jobState.State = JsonConvert.SerializeObject(state, Formatting.None);
+        this.SaveChanges();
+    }
 }
