@@ -19,6 +19,7 @@ using System.Diagnostics;
 using MongoDB.Bson;
 using NotEnoughLogs;
 using Refresh.Database.Models.Statistics;
+using Refresh.Database.Models.Workers;
 using LogLevel = Microsoft.Extensions.Logging.LogLevel;
 
 namespace Refresh.Database;
@@ -71,6 +72,8 @@ public partial class GameDatabaseContext : DbContext, IDatabaseContext
     internal DbSet<PinProgressRelation> PinProgressRelations { get; set; }
     internal DbSet<ProfilePinRelation> ProfilePinRelations { get; set; }
     internal DbSet<GameSkillReward> GameSkillRewards { get; set; }
+    internal DbSet<WorkerInfo> Workers { get; set; }
+    internal DbSet<PersistentJobState> JobStates { get; set; }
     
 #pragma warning disable CS8618 // Non-nullable variable must contain a non-null value when exiting constructor. Consider declaring it as nullable.
     internal GameDatabaseContext(Logger logger, IDateTimeProvider time, IDatabaseConfig dbConfig)

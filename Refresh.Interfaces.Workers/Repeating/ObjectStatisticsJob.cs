@@ -1,17 +1,17 @@
 ﻿using System.Diagnostics.CodeAnalysis;
 using Refresh.Core;
-using Refresh.Core.Types.Data;
 using Refresh.Database.Models.Levels;
 using Refresh.Database.Models.Users;
+using Refresh.Workers;
 
-namespace Refresh.Interfaces.Workers.Workers;
+namespace Refresh.Interfaces.Workers.Repeating;
 
-public class ObjectStatisticsWorker : IWorker
+public class ObjectStatisticsJob : RepeatingJob
 {
-    public int WorkInterval => 60_000;
+    protected override int Interval => 60_000;
 
     [SuppressMessage("ReSharper.DPA", "DPA0005: Database issues")]
-    public void DoWork(DataContext context)
+    public override void ExecuteJob(WorkContext context)
     {
         GameLevel[] levels = context.Database.GetLevelsWithStatisticsNeedingUpdates()
             .Take(500)

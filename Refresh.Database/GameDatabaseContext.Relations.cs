@@ -108,19 +108,18 @@ public partial class GameDatabaseContext // Relations
     [Pure]
     public IEnumerable<GameUser> GetUsersMutuals(GameUser user)
     {
-        return this.GetUsersFavouritedByUser(user, 1000, 0)
+        return this.GetUsersFavouritedByUser(user, 0, 1000)
+            .Items
             .ToArray()
             .Where(u => this.IsUserFavouritedByUser(user, u));
     }
     
     [Pure]
-    public IEnumerable<GameUser> GetUsersFavouritedByUser(GameUser user, int count, int skip) => this.FavouriteUserRelationsIncluded
+    public DatabaseList<GameUser> GetUsersFavouritedByUser(GameUser user, int skip, int count) => new(this.FavouriteUserRelationsIncluded
         .Where(r => r.UserFavouriting == user)
         .OrderByDescending(r => r.Timestamp)
         .AsEnumerableIfRealm()
-        .Select(r => r.UserToFavourite)
-        .Skip(skip)
-        .Take(count);
+        .Select(r => r.UserToFavourite), skip, count);
     
     public int GetTotalUsersFavouritedByUser(GameUser user)
         => this.FavouriteUserRelations

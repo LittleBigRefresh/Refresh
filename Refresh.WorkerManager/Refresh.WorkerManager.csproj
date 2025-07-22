@@ -10,11 +10,8 @@
     </PropertyGroup>
 
     <ItemGroup>
-      <PackageReference Include="Bunkum.Protocols.Https" Version="4.9.0" />
-    </ItemGroup>
-
-    <ItemGroup>
-      <ProjectReference Include="..\Refresh.Common\Refresh.Common.csproj" />
+        <ProjectReference Include="..\Refresh.Workers\Refresh.Workers.csproj" />
+        <ProjectReference Include="..\Refresh.Interfaces.Workers\Refresh.Interfaces.Workers.csproj" />
     </ItemGroup>
 
 </Project>

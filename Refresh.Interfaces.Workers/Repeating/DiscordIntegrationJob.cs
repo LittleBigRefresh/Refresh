@@ -2,29 +2,28 @@ using Discord;
 using Discord.Webhook;
 using Refresh.Core;
 using Refresh.Core.Configuration;
-using Refresh.Core.Types.Data;
 using Refresh.Database;
 using Refresh.Database.Models.Activity;
+using Refresh.Database.Models.Levels;
+using Refresh.Database.Models.Levels.Scores;
+using Refresh.Database.Models.Photos;
+using Refresh.Database.Models.Users;
 using Refresh.Database.Query;
-using Refresh.Interfaces.APIv3.Endpoints.DataTypes.Response.Levels;
-using Refresh.Interfaces.APIv3.Endpoints.DataTypes.Response.Users;
-using Refresh.Interfaces.APIv3.Endpoints.DataTypes.Response.Users.Photos;
+using Refresh.Workers;
 
-namespace Refresh.Interfaces.Workers.Workers;
+namespace Refresh.Interfaces.Workers.Repeating;
 
-public class DiscordIntegrationWorker : IWorker
+public class DiscordIntegrationJob : RepeatingJob
 {
     private readonly IntegrationConfig _config;
     private readonly string _externalUrl;
     private readonly DiscordWebhookClient _client;
-    
-    private bool _firstCycle = true;
 
     private long _lastTimestamp;
     private static long Now => DateTimeOffset.Now.ToUnixTimeMilliseconds();
-    public int WorkInterval => this._config.DiscordWorkerFrequencySeconds * 1000; // 60 seconds by default
+    protected override int Interval => this._config.DiscordWorkerFrequencySeconds * 1000; // 60 seconds by default
 
-    public DiscordIntegrationWorker(IntegrationConfig config, GameServerConfig gameConfig)
+    public DiscordIntegrationJob(IntegrationConfig config, GameServerConfig gameConfig)
     {
         this._config = config;
         this._externalUrl = gameConfig.WebExternalUrl;
@@ -32,32 +31,26 @@ public class DiscordIntegrationWorker : IWorker
         this._client = new DiscordWebhookClient(config.DiscordWebhookUrl);
     }
 
-    private void DoFirstCycle()
-    {
-        this._firstCycle = false;
-        this._lastTimestamp = Now;
-    }
-
     private string GetAssetUrl(string hash)
     {
         return $"{this._externalUrl}/api/v3/assets/{hash}/image";
     }
 
-    private Embed? GenerateEmbedFromEvent(Event @event, DataContext context)
+    private Embed? GenerateEmbedFromEvent(Event @event, WorkContext context)
     {
         EmbedBuilder embed = new();
 
-        ApiGameLevelResponse? level = @event.StoredDataType == EventDataType.Level ? 
-            ApiGameLevelResponse.FromOld(context.Database.GetLevelById(@event.StoredSequentialId!.Value), context)
+        GameLevel? level = @event.StoredDataType == EventDataType.Level ? 
+            context.Database.GetLevelById(@event.StoredSequentialId!.Value)
             : null;
-        ApiGameUserResponse? user = @event.StoredDataType == EventDataType.User ? 
-            ApiGameUserResponse.FromOld(context.Database.GetUserByObjectId(@event.StoredObjectId), context)
+        GameUser? user = @event.StoredDataType == EventDataType.User ? 
+            context.Database.GetUserByObjectId(@event.StoredObjectId)
             : null;
-        ApiGameScoreResponse? score = @event.StoredDataType == EventDataType.Score ? 
-            ApiGameScoreResponse.FromOld(context.Database.GetScoreByObjectId(@event.StoredObjectId), context)
+        GameScore? score = @event.StoredDataType == EventDataType.Score ? 
+            context.Database.GetScoreByObjectId(@event.StoredObjectId)
             : null;
-        ApiGamePhotoResponse? photo = @event.StoredDataType == EventDataType.Photo ? 
-            ApiGamePhotoResponse.FromOld(context.Database.GetPhotoFromEvent(@event), context)
+        GamePhoto? photo = @event.StoredDataType == EventDataType.Photo ? 
+            context.Database.GetPhotoFromEvent(@event)
             : null;
         
         if (photo != null)
@@ -92,7 +85,7 @@ public class DiscordIntegrationWorker : IWorker
         embed.WithDescription($"[{@event.User.Username}]({this._externalUrl}/u/{@event.User.UserId}) {description}");
 
         if (photo != null)
-            embed.WithImageUrl(this.GetAssetUrl(photo.LargeHash));
+            embed.WithImageUrl(this.GetAssetUrl(photo.LargeAsset.AssetHash));
         else if (level != null) 
             embed.WithThumbnailUrl(this.GetAssetUrl(level.IconHash));
         else if (user != null)
@@ -104,12 +97,10 @@ public class DiscordIntegrationWorker : IWorker
         return embed.Build();
     }
 
-    public void DoWork(DataContext context)
+    public override void ExecuteJob(WorkContext context)
     {
-        if (this._firstCycle)
-        {
-            this.DoFirstCycle();
-        }
+        if (this.FirstCycle)
+            this._lastTimestamp = Now;
 
         DatabaseList<Event> activity = context.Database.GetGlobalRecentActivity(new ActivityQueryParameters
         {

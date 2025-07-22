@@ -106,10 +106,9 @@ public class RelationEndpoints : EndpointGroup
         if (user == null) return null;
 
         (int skip, int count) = context.GetPageData();
-        List<GameUser> users = database.GetUsersFavouritedByUser(user, count, skip)
-            .ToList();
 
-        return new SerializedFavouriteUserList(GameUserResponse.FromOldList(users, dataContext).ToList(), users.Count, skip + count);
+        DatabaseList<GameUser> users = database.GetUsersFavouritedByUser(user, skip, count);
+        return new SerializedFavouriteUserList(GameUserResponse.FromOldList(users.Items.ToArray(), dataContext).ToList(), users.TotalItems, users.NextPageIndex);
     }
 
     [GameEndpoint("lolcatftw/add/{slotType}/{id}", HttpMethods.Post)]
