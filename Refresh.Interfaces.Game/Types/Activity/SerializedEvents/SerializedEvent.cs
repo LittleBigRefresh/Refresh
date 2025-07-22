@@ -92,6 +92,8 @@ public abstract class SerializedEvent : IDataConvertableFrom<SerializedEvent, Ev
         if (level == null)
             return null;
         
+        bool isStoryLevel = level.StoryId != 0;
+        
         return new SerializedLevelEvent
         {
             Timestamp = old.Timestamp.ToUnixTimeMilliseconds(),
@@ -99,7 +101,7 @@ public abstract class SerializedEvent : IDataConvertableFrom<SerializedEvent, Ev
             Actor = old.User.Username,
             LevelId = new SerializedLevelId()
             {
-                LevelId = level.LevelId,
+                LevelId = isStoryLevel ? level.StoryId : level.LevelId,
                 Type = level.SlotType.ToGameType(),
             },
         };
