@@ -8,15 +8,22 @@ public partial class GameDatabaseContext // LevelRevisions
     private IQueryable<GameLevelRevision> GameLevelRevisionsIncluded => this.GameLevelRevisions
         .Include(r => r.Level);
 
-    public GameLevelRevision CreateRevisionForLevel(GameLevel level, GameUser? creator, bool save = true)
+    public GameLevelRevision CreateRevisionForLevel(GameLevel level, GameUser? creator, bool saveChanges = false)
     {
+        // FIXME: this isn't exactly atomic, but it should be incredibly rare
+        // for multiple threads to be trying to make a revision for the same level at the same time
+        int sequentialId = this.GameLevelRevisions
+            .Where(r => r.LevelId == level.LevelId)
+            .DefaultIfEmpty()
+            .Max(r => r != null ? r.RevisionId : 0);
+        
         GameLevelRevision revision = new()
         {
-            Level = level,
             LevelId = level.LevelId,
             CreatedAt = this._time.Now,
-            CreatedBy = creator,
             CreatedById = creator?.UserId,
+            
+            RevisionId = sequentialId + 1,
             
             Title = level.Title,
             Description = level.Description,
@@ -29,7 +36,7 @@ public partial class GameDatabaseContext // LevelRevisions
 
         this.GameLevelRevisions.Add(revision);
 
-        if(save)
+        if(saveChanges)
             this.SaveChanges();
 
         return revision;

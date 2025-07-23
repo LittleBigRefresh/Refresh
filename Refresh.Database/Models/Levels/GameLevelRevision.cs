@@ -7,9 +7,14 @@ namespace Refresh.Database.Models.Levels;
 /// <summary>
 /// A snapshot of a level's details at a point in time. This can be used for moderation, rollbacks of migrations, and in LBP hub's challenges.
 /// </summary>
-[PrimaryKey(nameof(LevelId), nameof(RevisionId))]
+[PrimaryKey(nameof(RevisionId), nameof(LevelId))]
 public class GameLevelRevision
 {
+    /// <summary>
+    /// The sequential revision ID for this revision.
+    /// </summary>
+    [Required] public int RevisionId { get; set; }
+    
     /// <summary>
     /// The level whose snapshot this is.
     /// </summary>
@@ -18,10 +23,6 @@ public class GameLevelRevision
     /// The ID of the level whose snapshot this is.
     /// </summary>
     [Required] public int LevelId { get; set; }
-    /// <summary>
-    /// The sequential revision ID for this revision.
-    /// </summary>
-    [Required] public int RevisionId { get; set; }
     
     /// <summary>
     /// The point in time in which this revision was created.

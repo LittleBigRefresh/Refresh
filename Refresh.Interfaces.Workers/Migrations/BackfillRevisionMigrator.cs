@@ -9,7 +9,7 @@ public class BackfillRevisionMigration : MigrationJob<GameLevel>
     {
         foreach (GameLevel level in batch)
         {
-            context.Database.CreateRevisionForLevel(level, null, false);
+            context.Database.CreateRevisionForLevel(level, null);
         }
     }
 

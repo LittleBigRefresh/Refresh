@@ -474,10 +474,10 @@ namespace Refresh.Database.Migrations
 
             modelBuilder.Entity("Refresh.Database.Models.Levels.GameLevelRevision", b =>
                 {
-                    b.Property<int>("LevelId")
+                    b.Property<int>("RevisionId")
                         .HasColumnType("integer");
 
-                    b.Property<int>("RevisionId")
+                    b.Property<int>("LevelId")
                         .HasColumnType("integer");
 
                     b.Property<DateTimeOffset>("CreatedAt")
@@ -511,9 +511,11 @@ namespace Refresh.Database.Migrations
                         .IsRequired()
                         .HasColumnType("text");
 
-                    b.HasKey("LevelId", "RevisionId");
+                    b.HasKey("RevisionId", "LevelId");
 
                     b.HasIndex("CreatedById");
+
+                    b.HasIndex("LevelId");
 
                     b.ToTable("GameLevelRevisions");
                 });
