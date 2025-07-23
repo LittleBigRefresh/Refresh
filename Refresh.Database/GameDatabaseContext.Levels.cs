@@ -41,20 +41,7 @@ public partial class GameDatabaseContext // Levels
         level.PublishDate = timestamp;
         level.UpdateDate = timestamp;
 
-        // Automatically mark level as reupload by keyword matching the title
-        bool isReUpload = LevelPrefixes.ReuploadKeywords.Any(keyword => level.Title.Contains(keyword, StringComparison.OrdinalIgnoreCase));
-        
-        if (isReUpload)
-        {
-            level.IsReUpload = true;
-            
-            // Extract all attributes of our format ?{key}[:|.]{value}
-            Dictionary<string, string> levelAttributes = LevelPrefixes.ExtractAttributes(level.Description);
-            
-            // Get original publisher from ?op.{username} or ?op:{username} otherwise Unknown
-            level.OriginalPublisher = levelAttributes.GetValueOrDefault("op") ?? SystemUsers.UnknownUserName; 
-        }
-        
+        this.ApplyLevelMetadataFromAttributes(level);
         this.GameLevels.Add(level);
 
         this.SaveChanges();
@@ -212,6 +199,7 @@ public partial class GameDatabaseContext // Levels
             prop.SetValue(oldLevel, prop.GetValue(newLevel));
         }
 
+        this.ApplyLevelMetadataFromAttributes(newLevel);
         this.CreateRevisionForLevel(newLevel, author);
         this.SaveChanges();
         return oldLevel;
@@ -241,6 +229,7 @@ public partial class GameDatabaseContext // Levels
             
         level.UpdateDate = this._time.Now;
 
+        this.ApplyLevelMetadataFromAttributes(level);
         this.CreateRevisionForLevel(level, updatingUser);
         this.SaveChanges();
         return level;
@@ -642,5 +631,25 @@ public partial class GameDatabaseContext // Levels
                 this.GameSkillRewards.Add(newReward);
             }
         });
+    }
+    
+    public void ApplyLevelMetadataFromAttributes(GameLevel level, bool save = false)
+    {
+        // Automatically mark level as reupload by keyword matching the title
+        bool isReUpload = LevelPrefixes.ReuploadKeywords.Any(keyword => level.Title.Contains(keyword, StringComparison.OrdinalIgnoreCase));
+        
+        if (isReUpload)
+        {
+            level.IsReUpload = true;
+            
+            // Extract all attributes of our format ?{key}[:|.]{value}
+            Dictionary<string, string> levelAttributes = LevelPrefixes.ExtractAttributes(level.Description);
+            
+            // Get original publisher from ?op.{username} or ?op:{username} otherwise Unknown
+            level.OriginalPublisher = levelAttributes.GetValueOrDefault("op") ?? SystemUsers.UnknownUserName; 
+        }
+
+        if (save)
+            this.SaveChanges();
     }
 }
