@@ -10,20 +10,20 @@ using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using NotEnoughLogs;
 using Refresh.Core;
-using Refresh.Core.Types.Data;
 using Refresh.Database;
 using Refresh.Database.Models.Authentication;
 using Refresh.Database.Models.Levels;
 using Refresh.Database.Models.Users;
+using Refresh.Workers;
 
-namespace Refresh.Interfaces.Workers.Workers;
+namespace Refresh.Interfaces.Workers.Repeating;
 
-public class CoolLevelsWorker : IWorker
+public class CoolLevelsJob : RepeatingJob
 {
-    public int WorkInterval => 600_000; // Every 10 minutes
+    protected override int Interval => 600_000; // Every 10 minutes
 
     [SuppressMessage("ReSharper.DPA", "DPA0005: Database issues")]
-    public void DoWork(DataContext context)
+    public override void ExecuteJob(WorkContext context)
     {
         const int pageSize = 1000;
         DatabaseList<GameLevel> levels = context.Database.GetUserLevelsChunk(0, pageSize);
@@ -104,7 +104,7 @@ public class CoolLevelsWorker : IWorker
         return (float)multiplier;
     }
 
-    private static float CalculatePositiveScore(GameLevel level, DataContext context)
+    private static float CalculatePositiveScore(GameLevel level, WorkContext context)
     {
         Debug.Assert(level.Statistics != null);
 
@@ -163,7 +163,7 @@ public class CoolLevelsWorker : IWorker
         return score;
     }
 
-    private static float CalculateNegativeScore(GameLevel level, DataContext context)
+    private static float CalculateNegativeScore(GameLevel level, WorkContext context)
     {
         Debug.Assert(level.Statistics != null);
 

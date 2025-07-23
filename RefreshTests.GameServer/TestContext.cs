@@ -12,6 +12,8 @@ using RefreshTests.GameServer.Time;
 using Refresh.Database.Models.Levels.Scores;
 using Refresh.Database.Models.Levels;
 using Refresh.Interfaces.Game.Types.UserData.Leaderboard;
+using Refresh.Interfaces.Workers;
+using Refresh.Workers;
 
 namespace RefreshTests.GameServer;
 
@@ -179,6 +181,17 @@ public class TestContext : IDisposable
             Match = this.GetService<MatchService>(),
             Token = token,
             GuidChecker = this.GetService<GuidCheckerService>(),
+        };
+    }
+    
+    public WorkContext GetWorkContext()
+    {
+        return new WorkContext
+        {
+            Database = this.Database,
+            Logger = this.Server.Value.Logger,
+            DataStore = (IDataStore)this.GetService<StorageService>()
+                .AddParameterToEndpoint(null!, new BunkumParameterInfo(typeof(IDataStore), ""), null!)!,
         };
     }
 

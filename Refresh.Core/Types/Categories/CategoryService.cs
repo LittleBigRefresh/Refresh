@@ -2,6 +2,7 @@ using System.Collections.Frozen;
 using Bunkum.Core.Services;
 using NotEnoughLogs;
 using Refresh.Core.Types.Categories.Levels;
+using Refresh.Core.Types.Categories.Users;
 
 namespace Refresh.Core.Types.Categories;
 
@@ -36,8 +37,20 @@ public class CategoryService : EndpointService
         new AdventureCategory(),
     ];
 
+    // User Categories
+    public readonly FrozenSet<GameUserCategory> UserCategories;
+
+    // ReSharper disable once InconsistentNaming
+    private readonly List<GameUserCategory> _userCategories =
+    [
+        new HeartedUsersByUserCategory(),
+        new MostHeartedUsersCategory(),
+        new NewestUsersCategory()
+    ];
+
     internal CategoryService(Logger logger) : base(logger)
     {
         this.LevelCategories = this._levelCategories.ToFrozenSet();
+        this.UserCategories = this._userCategories.ToFrozenSet();
     }
 }
