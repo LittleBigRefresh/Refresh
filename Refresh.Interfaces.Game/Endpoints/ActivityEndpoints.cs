@@ -68,7 +68,12 @@ public class ActivityEndpoints : EndpointGroup
     {
         if (!config.PermitShowingOnlineUsers)
             return Unauthorized;
+
+        return NoContent;
         
+        // FIXME: enable below code to have this endpoint return actual recent activity as soon as we find out how to do so without
+        // the game rejecting the response and spamming this endpoint
+        /*
         GameLevel? level = type == "developer" ? database.GetStoryLevelById(id) : database.GetLevelById(id);
         if (level == null) return NotFound;
         
@@ -99,6 +104,7 @@ public class ActivityEndpoints : EndpointGroup
         }), dataContext);
         
         return new Response(page, ContentType.Xml);
+        */
     }
 
     [GameEndpoint("stream/user2/{username}", ContentType.Xml)]
@@ -109,7 +115,12 @@ public class ActivityEndpoints : EndpointGroup
     {
         if (!config.PermitShowingOnlineUsers)
             return Unauthorized;
+        
+        return NoContent;
 
+        // FIXME: enable below code to have this endpoint return actual recent activity as soon as we find out how to do so without
+        // the game rejecting the response and spamming this endpoint
+        /*
         GameUser? user = database.GetUserByUsername(username);
         if (user == null) return NotFound;
 
@@ -148,6 +159,7 @@ public class ActivityEndpoints : EndpointGroup
             ExcludeMyself = excludeMyself,
             User = user,
         }), dataContext), ContentType.Xml);
+        */
     }
     
     [GameEndpoint("news", ContentType.Xml)]
