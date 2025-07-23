@@ -28,10 +28,10 @@ public partial class GameDatabaseContext // Activity
 
         if (parameters is { ExcludeMyLevels: true, User: not null })
         {
-            //Filter the query to events which either arent level related, or which the level publisher doesnt contain the user
-            query = query
-                .AsEnumerable() // TODO: optimize me
-                .Where(e => e.StoredDataType != EventDataType.Level || this.GetLevelById(e.StoredSequentialId ?? int.MaxValue)?.Publisher?.UserId != parameters.User.UserId);
+            //Filter the query to events which either arent level related, or which the level publisher is not the user
+            query = query // TODO: This part of the query can still be more optimized
+                .ToArray() // this instead of AsEnumerable avoids a NpgsqlOperationInProgressException
+                .Where(e => e.StoredDataType != EventDataType.Level || (e.StoredSequentialId != null && this.GetLevelById(e.StoredSequentialId.Value)?.Publisher?.UserId != parameters.User.UserId));
         }
         
         if (parameters is { ExcludeFriends: true, User: not null })
