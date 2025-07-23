@@ -146,9 +146,11 @@ public class GameLevelResponse : IDataConvertableFrom<GameLevelResponse, GameLev
         
         Debug.Assert(old.Statistics != null);
 
+        bool isStoryLevel = old.StoryId != 0;
+
         GameLevelResponse response = new()
         {
-            LevelId = old.LevelId,
+            LevelId = isStoryLevel ? old.StoryId : old.LevelId,
             IsAdventure = old.IsAdventure,
             Title = old.Title,
             IconHash = old.IconHash,
