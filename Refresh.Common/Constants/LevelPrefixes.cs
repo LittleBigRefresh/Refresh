@@ -28,7 +28,9 @@ public static partial class LevelPrefixes
     /// </summary>
     public static readonly string[] ReuploadKeywords = { 
         "(reupload)", "[reupload]",
+        "(reuploaded)", "[reuploaded]",
         "(archive)", "[archive]",
+        "(archived)", "[archived]",
         "(republish)", "[republish]",
         "(republished)", "[republished]",
     };
