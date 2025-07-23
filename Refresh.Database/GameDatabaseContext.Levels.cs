@@ -41,7 +41,7 @@ public partial class GameDatabaseContext // Levels
         level.PublishDate = timestamp;
         level.UpdateDate = timestamp;
 
-        this.ApplyLevelMetadataFromDetails(level);
+        this.ApplyLevelMetadataFromAttributes(level);
         this.GameLevels.Add(level);
 
         this.SaveChanges();
@@ -199,7 +199,7 @@ public partial class GameDatabaseContext // Levels
             prop.SetValue(oldLevel, prop.GetValue(newLevel));
         }
 
-        this.ApplyLevelMetadataFromDetails(newLevel);
+        this.ApplyLevelMetadataFromAttributes(newLevel);
         this.CreateRevisionForLevel(newLevel, author);
         this.SaveChanges();
         return oldLevel;
@@ -229,7 +229,7 @@ public partial class GameDatabaseContext // Levels
             
         level.UpdateDate = this._time.Now;
 
-        this.ApplyLevelMetadataFromDetails(level);
+        this.ApplyLevelMetadataFromAttributes(level);
         this.CreateRevisionForLevel(level, updatingUser);
         this.SaveChanges();
         return level;
@@ -633,7 +633,7 @@ public partial class GameDatabaseContext // Levels
         });
     }
     
-    private void ApplyLevelMetadataFromDetails(GameLevel level, bool save = false)
+    public void ApplyLevelMetadataFromAttributes(GameLevel level, bool save = false)
     {
         // Automatically mark level as reupload by keyword matching the title
         bool isReUpload = LevelPrefixes.ReuploadKeywords.Any(keyword => level.Title.Contains(keyword, StringComparison.OrdinalIgnoreCase));
