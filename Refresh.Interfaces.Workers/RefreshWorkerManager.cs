@@ -20,6 +20,7 @@ public static class RefreshWorkerManager
         manager.AddJob<ObjectStatisticsJob>();
         
         manager.AddJob<BackfillRevisionMigration>();
+        manager.AddJob<EnsureDeletedUsersDeletedMigration>();
         
         return manager;
     }
