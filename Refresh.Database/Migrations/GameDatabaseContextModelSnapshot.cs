@@ -484,7 +484,6 @@ namespace Refresh.Database.Migrations
                         .HasColumnType("timestamp with time zone");
 
                     b.Property<string>("CreatedById")
-                        .IsRequired()
                         .HasColumnType("text");
 
                     b.Property<string>("Description")
@@ -1680,9 +1679,7 @@ namespace Refresh.Database.Migrations
                 {
                     b.HasOne("Refresh.Database.Models.Users.GameUser", "CreatedBy")
                         .WithMany()
-                        .HasForeignKey("CreatedById")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                        .HasForeignKey("CreatedById");
 
                     b.HasOne("Refresh.Database.Models.Levels.GameLevel", "Level")
                         .WithMany()

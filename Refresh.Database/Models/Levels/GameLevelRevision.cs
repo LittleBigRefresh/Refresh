@@ -34,7 +34,7 @@ public class GameLevelRevision
     /// If null, this was actioned by Refresh itself.
     /// </remarks>
     [ForeignKey(nameof(CreatedById))] public GameUser? CreatedBy { get; set; }
-    public ObjectId CreatedById { get; set; }
+    public ObjectId? CreatedById { get; set; }
     
     public string Title { get; set; } = "";
     public string IconHash { get; set; } = "";

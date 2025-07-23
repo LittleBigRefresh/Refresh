@@ -1,6 +1,7 @@
 ﻿using Bunkum.Core.Storage;
 using NotEnoughLogs;
 using Refresh.Database;
+using Refresh.Interfaces.Workers.Migrations;
 using Refresh.Interfaces.Workers.Repeating;
 using Refresh.Workers;
 
@@ -17,6 +18,8 @@ public static class RefreshWorkerManager
         manager.AddJob<CoolLevelsJob>();
         manager.AddJob<RequestStatisticSubmitJob>();
         manager.AddJob<ObjectStatisticsJob>();
+        
+        manager.AddJob<BackfillRevisionMigration>();
         
         return manager;
     }
