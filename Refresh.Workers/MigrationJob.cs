@@ -13,7 +13,6 @@ public abstract class MigrationJob<TEntity> : WorkerJob, IJobStoresState where T
     public MigrationJobState? MigrationJobState => JobState as MigrationJobState;
 
     protected virtual int BatchCount => 1_000;
-    protected virtual IQueryable<TEntity> SortAndFilter(IQueryable<TEntity> query) => query;
 
     public override bool CanExecute()
     {
@@ -46,6 +45,8 @@ public abstract class MigrationJob<TEntity> : WorkerJob, IJobStoresState where T
         state.Processed += batch.Length;
         context.Logger.LogInfo(RefreshContext.Database, $"{this.JobId} migrated {batch.Length} objects ({state.Processed}/{state.Total}, complete: {state.Complete})");
     }
+    
+    protected abstract IQueryable<TEntity> SortAndFilter(IQueryable<TEntity> query);
 
     protected abstract void Migrate(WorkContext context, TEntity[] batch);
 }
