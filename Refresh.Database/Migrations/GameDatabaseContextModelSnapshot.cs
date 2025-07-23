@@ -472,6 +472,54 @@ namespace Refresh.Database.Migrations
                     b.ToTable("GameLevels");
                 });
 
+            modelBuilder.Entity("Refresh.Database.Models.Levels.GameLevelRevision", b =>
+                {
+                    b.Property<int>("RevisionId")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("LevelId")
+                        .HasColumnType("integer");
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("CreatedById")
+                        .HasColumnType("text");
+
+                    b.Property<string>("Description")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<int>("GameVersion")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("IconHash")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<byte>("LevelType")
+                        .HasColumnType("smallint");
+
+                    b.Property<string>("RootResource")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<int>("StoryId")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("Title")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.HasKey("RevisionId", "LevelId");
+
+                    b.HasIndex("CreatedById");
+
+                    b.HasIndex("LevelId");
+
+                    b.ToTable("GameLevelRevisions");
+                });
+
             modelBuilder.Entity("Refresh.Database.Models.Levels.GameSkillReward", b =>
                 {
                     b.Property<int>("LevelId")
@@ -1627,6 +1675,23 @@ namespace Refresh.Database.Migrations
                     b.Navigation("Publisher");
 
                     b.Navigation("Statistics");
+                });
+
+            modelBuilder.Entity("Refresh.Database.Models.Levels.GameLevelRevision", b =>
+                {
+                    b.HasOne("Refresh.Database.Models.Users.GameUser", "CreatedBy")
+                        .WithMany()
+                        .HasForeignKey("CreatedById");
+
+                    b.HasOne("Refresh.Database.Models.Levels.GameLevel", "Level")
+                        .WithMany()
+                        .HasForeignKey("LevelId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("CreatedBy");
+
+                    b.Navigation("Level");
                 });
 
             modelBuilder.Entity("Refresh.Database.Models.Levels.GameSkillReward", b =>
