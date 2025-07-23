@@ -1,4 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore.Storage;
+using Refresh.Core;
 using Refresh.Workers.State;
 
 namespace Refresh.Workers;
@@ -43,6 +44,7 @@ public abstract class MigrationJob<TEntity> : WorkerJob, IJobStoresState where T
         transaction.Commit();
 
         state.Processed += batch.Length;
+        context.Logger.LogInfo(RefreshContext.Database, $"{this.JobId} migrated {batch.Length} objects ({state.Processed}/{state.Total}, complete: {state.Complete})");
     }
 
     protected abstract void Migrate(WorkContext context, TEntity[] batch);
