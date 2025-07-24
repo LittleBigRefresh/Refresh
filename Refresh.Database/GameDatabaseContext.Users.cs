@@ -210,6 +210,9 @@ public partial class GameDatabaseContext // Users
             
             if (data.ShowReuploadedContent != null)
                 user.ShowReuploadedContent = data.ShowReuploadedContent.Value;
+            
+            if (data.RedirectGriefReportsToPhotos != null)
+                user.RedirectGriefReportsToPhotos = data.RedirectGriefReportsToPhotos.Value;
         });
     }
 
@@ -387,6 +390,14 @@ public partial class GameDatabaseContext // Users
         this.Write(() =>
         {
             user.ShowReuploadedContent = value;
+        });
+    }
+    
+    public void SetUserGriefReportRedirection(GameUser user, bool value)
+    {
+        this.Write(() =>
+        {
+            user.RedirectGriefReportsToPhotos = value;
         });
     }
 

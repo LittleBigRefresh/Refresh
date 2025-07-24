@@ -28,6 +28,7 @@ public class ApiExtendedGameUserResponse : IApiResponse, IDataConvertableFrom<Ap
     public required bool RpcnAuthenticationAllowed { get; set; }
     public required bool PsnAuthenticationAllowed { get; set; }
 
+    public required bool RedirectGriefReportsToPhotos { get; set; }
     public required bool UnescapeXmlSequences { get; set; } 
     
     public required string? EmailAddress { get; set; }
@@ -70,6 +71,7 @@ public class ApiExtendedGameUserResponse : IApiResponse, IDataConvertableFrom<Ap
             EmailAddress = user.EmailAddress,
             EmailAddressVerified = user.EmailAddressVerified,
             ShouldResetPassword = user.ShouldResetPassword,
+            RedirectGriefReportsToPhotos = user.RedirectGriefReportsToPhotos,
             UnescapeXmlSequences = user.UnescapeXmlSequences,
             FilesizeQuotaUsage = user.FilesizeQuotaUsage,
             Statistics = ApiGameUserStatisticsResponse.FromOld(user, dataContext)!,
