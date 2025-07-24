@@ -14,8 +14,10 @@ public partial class GameNotification
     public string Text { get; set; }
     
     public DateTimeOffset CreatedAt { get; set; }
-    [Required]
+    [ForeignKey(nameof(UserId)), Required]
     public GameUser User { get; set; }
+    [Required]
+    public ObjectId UserId { get; set; }
     
     public string FontAwesomeIcon { get; set; }
 }

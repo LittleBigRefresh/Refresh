@@ -16,15 +16,13 @@ public partial class GameDatabaseContext // Notifications
         {
             Title = title,
             Text = text,
-            User = user,
+            UserId = user.UserId,
             FontAwesomeIcon = icon,
             CreatedAt = this._time.Now,
         };
-
-        this.Write(() =>
-        {
-            this.GameNotifications.Add(notification);
-        });
+        
+        this.GameNotifications.Add(notification);
+        this.SaveChanges();
     }
 
     public void AddErrorNotification(string title, string text, GameUser user)
