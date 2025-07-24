@@ -87,6 +87,11 @@ public partial class GameDatabaseContext // Users
 
     public DatabaseList<GameUser> GetUsers(int count, int skip)
         => new(this.GameUsersIncluded.OrderByDescending(u => u.JoinDate), skip, count);
+    
+    public DatabaseList<GameUser> GetMostFavouritedUsers(int skip, int count)
+        => new(this.GameUsersIncluded
+            .Where(u => u.Statistics!.FavouriteCount > 0)
+            .OrderByDescending(u => u.Statistics!.FavouriteCount), skip, count);
 
     public void UpdateUserData(GameUser user, ISerializedEditUser data, TokenGame game)
     {
@@ -277,11 +282,9 @@ public partial class GameDatabaseContext // Users
     public void RenameUser(GameUser user, string newUsername)
     {
         string oldUsername = user.Username;
-        
-        this.Write(() =>
-        {
-            user.Username = newUsername;
-        });
+
+        user.Username = newUsername;
+        this.SaveChanges();
         
         this.AddNotification("Username Updated", $"An admin has updated your account's username from '{oldUsername}' to '{newUsername}'. " +
                                                  $"If there are any problems caused by this, please let us know.", user);

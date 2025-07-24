@@ -121,7 +121,7 @@ public class LevelApiEndpoints : EndpointGroup
             !dataContext.GuidChecker.IsTextureGuid(level.GameVersion, long.Parse(body.IconHash)))
             return ApiValidationError.InvalidTextureGuidError;
         
-        level = dataContext.Database.UpdateLevel(body, level);
+        level = dataContext.Database.UpdateLevel(body, level, dataContext.User);
 
         return ApiGameLevelResponse.FromOld(level, dataContext);
     }

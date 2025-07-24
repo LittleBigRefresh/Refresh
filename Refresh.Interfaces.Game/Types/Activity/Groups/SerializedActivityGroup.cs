@@ -44,6 +44,9 @@ public abstract class SerializedActivityGroup : IDataConvertableFrom<SerializedA
 
         if (old is DatabaseActivityLevelGroup levelOld)
         {
+            GameLevel level = levelOld.Level;
+            bool isStoryLevel = level.StoryId != 0;
+
             return new LevelSerializedActivityGroup
             {
                 Type = "level",
@@ -52,8 +55,8 @@ public abstract class SerializedActivityGroup : IDataConvertableFrom<SerializedA
                 Subgroups = subgroups,
                 LevelId = new SerializedLevelId
                 {
-                    LevelId = levelOld.Level.LevelId,
-                    Type = levelOld.Level.SlotType.ToGameType(),
+                    LevelId = isStoryLevel ? level.StoryId : level.LevelId,
+                    Type = level.SlotType.ToGameType(),
                 },
             };
         }
