@@ -89,8 +89,8 @@ public class LeaderboardEndpoints : EndpointGroup
         GameLevel? level = database.GetLevelByIdAndType(slotType, id);
         if (level == null) return null;
 
-        DatabaseList<ScoreWithRank>? scores = database.GetLevelTopScoresByFriends(user, level, 10, body.Type);
-        return SerializedScoreLeaderboardList.FromSubmittedEnumerable(scores.Items, dataContext);
+        DatabaseScoreList? scores = database.GetLevelTopScoresByFriends(user, level, 10, body.Type);
+        return SerializedScoreLeaderboardList.FromDatabaseList(scores, dataContext);
     }
     
     [GameEndpoint("scoreboard/{slotType}/{id}", ContentType.Xml, HttpMethods.Post)]
@@ -127,10 +127,10 @@ public class LeaderboardEndpoints : EndpointGroup
 
         GameScore score = database.SubmitScore(body, token, level);
 
-        DatabaseList<ScoreWithRank>? scores = database.GetRankedScoresAroundScore(score, 5);
+        DatabaseScoreList? scores = database.GetRankedScoresAroundScore(score, 5);
         Debug.Assert(scores != null);
         
-        return new Response(SerializedScoreLeaderboardList.FromSubmittedEnumerable(scores.Items.ToArray(), dataContext), ContentType.Xml);
+        return new Response(SerializedScoreLeaderboardList.FromDatabaseList(scores, dataContext), ContentType.Xml);
     }
 
     private (byte, DateTimeOffset?) GetScoreTypeAndMinAge(int originalType, DateTimeOffset now)
@@ -148,7 +148,7 @@ public class LeaderboardEndpoints : EndpointGroup
     [NullStatusCode(NotFound)]
     [RateLimitSettings(RequestTimeoutDuration, MaxRequestAmount, RequestBlockDuration, BucketName)]
     public SerializedScoreList? GetTopScoresForLevel(RequestContext context, GameDatabaseContext database, string slotType, int id,
-        int type, DataContext dataContext, IDateTimeProvider dateTimeProvider)
+        int type, DataContext dataContext, GameUser user, IDateTimeProvider dateTimeProvider)
     {
         GameLevel? level = database.GetLevelByIdAndType(slotType, id);
         if (level == null) return null;
@@ -156,8 +156,8 @@ public class LeaderboardEndpoints : EndpointGroup
         (int skip, int count) = context.GetPageData();
         (byte scoreType, DateTimeOffset? minAge) = this.GetScoreTypeAndMinAge(type, dateTimeProvider.Now);
 
-        DatabaseList<GameScore>? scores = database.GetTopScoresForLevel(level, count, skip, scoreType, false, minAge);
-        return SerializedScoreList.FromSubmittedEnumerable(scores.Items.ToArray(), dataContext, skip);
+        DatabaseScoreList? scores = database.GetTopScoresForLevel(level, count, skip, scoreType, false, minAge, user);
+        return SerializedScoreList.FromDatabaseList(scores, dataContext);
     }
 
     [GameEndpoint("friendscores/{slotType}/{id}/{type}", ContentType.Xml)]
@@ -173,7 +173,7 @@ public class LeaderboardEndpoints : EndpointGroup
         (int skip, int count) = context.GetPageData();
         (byte scoreType, DateTimeOffset? minAge) = this.GetScoreTypeAndMinAge(type, dateTimeProvider.Now);
 
-        DatabaseList<ScoreWithRank>? scores = database.GetLevelTopScoresByFriends(user, level, count, scoreType, minAge);
-        return SerializedScoreList.FromSubmittedEnumerable(scores.Items.Select(s => s.score), dataContext, skip);
+        DatabaseScoreList? scores = database.GetLevelTopScoresByFriends(user, level, count, scoreType, minAge);
+        return SerializedScoreList.FromDatabaseList(scores, dataContext);
     }
 }

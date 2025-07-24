@@ -4,11 +4,11 @@ namespace Refresh.Database.Models.Levels.Scores;
 
 public class MultiLeaderboard
 {
-    public readonly Dictionary<byte, DatabaseList<GameScore>> Leaderboards;
+    public readonly Dictionary<byte, DatabaseScoreList> Leaderboards;
 
     public MultiLeaderboard(GameDatabaseContext database, GameLevel level, TokenGame game)
     {
-        this.Leaderboards = new Dictionary<byte, DatabaseList<GameScore>>
+        this.Leaderboards = new Dictionary<byte, DatabaseScoreList>
         {
             //On all games set the 1 player leaderboards
             [1] = database.GetTopScoresForLevel(level, 10, 0, 1),
