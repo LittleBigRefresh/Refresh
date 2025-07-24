@@ -1,7 +1,6 @@
-using Refresh.Database.Models.Levels.Scores;
 using Refresh.Database.Models.Users;
 
-namespace Refresh.Database;
+namespace Refresh.Database.Models.Levels.Scores;
 
 /// <summary>
 /// An extension of DatabaseList (generic type ScoreWithRank) for game endpoints where the game also 
