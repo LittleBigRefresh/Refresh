@@ -1,6 +1,6 @@
-namespace Refresh.Interfaces.Game.Types.Report; 
+namespace Refresh.Database.Models.Reports; 
 
-public enum GriefReportType 
+public enum ReportType 
 {
     Unknown = 0,
     Obscene = 1,

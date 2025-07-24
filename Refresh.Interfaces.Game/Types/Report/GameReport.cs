@@ -1,4 +1,5 @@
 using System.Xml.Serialization;
+using Refresh.Database.Models.Reports;
 
 namespace Refresh.Interfaces.Game.Types.Report;
 
@@ -28,10 +29,9 @@ public class GameReport
         }
     }
 
-    [XmlIgnore]
-    public GriefReportType Type { get => (GriefReportType)this.InternalType; set => this.InternalType = (int)value; }
-
     [XmlElement("griefTypeId")]
+    public ReportType Type { get => (ReportType)this.InternalType; set => this.InternalType = (int)value; }
+
     private int InternalType { get; set; }
 
     [XmlElement("marqee")]
