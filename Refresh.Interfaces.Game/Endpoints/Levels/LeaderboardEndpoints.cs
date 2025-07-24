@@ -89,7 +89,7 @@ public class LeaderboardEndpoints : EndpointGroup
         GameLevel? level = database.GetLevelByIdAndType(slotType, id);
         if (level == null) return null;
 
-        DatabaseScoreList? scores = database.GetLevelTopScoresByFriends(user, level, 10, body.Type);
+        DatabaseList<ScoreWithRank>? scores = database.GetLevelTopScoresByFriends(user, level, 10, body.Type);
         return SerializedScoreLeaderboardList.FromDatabaseList(scores, dataContext);
     }
     
@@ -127,7 +127,7 @@ public class LeaderboardEndpoints : EndpointGroup
 
         GameScore score = database.SubmitScore(body, token, level);
 
-        DatabaseScoreList? scores = database.GetRankedScoresAroundScore(score, 5);
+        DatabaseList<ScoreWithRank>? scores = database.GetRankedScoresAroundScore(score, 5);
         Debug.Assert(scores != null);
         
         return new Response(SerializedScoreLeaderboardList.FromDatabaseList(scores, dataContext), ContentType.Xml);

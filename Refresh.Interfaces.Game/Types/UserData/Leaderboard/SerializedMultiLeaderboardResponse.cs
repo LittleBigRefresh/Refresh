@@ -26,7 +26,7 @@ public class SerializedMultiLeaderboardResponse
         List<SerializedPlayerLeaderboardResponse> leaderboards = new();
 
         //Iterate over all leaderboards in the list
-        foreach ((byte type, DatabaseScoreList scores) in multiLeaderboard.Leaderboards)
+        foreach ((byte type, DatabaseList<ScoreWithRank> scores) in multiLeaderboard.Leaderboards)
         {
             SerializedPlayerLeaderboardResponse leaderboard = new()
             {
