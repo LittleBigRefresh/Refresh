@@ -122,6 +122,7 @@ public class ReportingEndpoints : EndpointGroup
         GriefReport griefReport = new()
         {
             Reporter = user,
+            GameVersion = token.TokenGame,
             Level = level,
             LevelType = body.LevelType,
             InitialStateHash = body.InitialStateHash ?? "0",

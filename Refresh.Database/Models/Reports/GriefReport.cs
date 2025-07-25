@@ -1,4 +1,5 @@
 ﻿using System.Drawing;
+using Refresh.Database.Models.Authentication;
 using Refresh.Database.Models.Levels;
 using Refresh.Database.Models.Photos;
 using Refresh.Database.Models.Relations;
@@ -12,14 +13,16 @@ public class GriefReport
     
     public GameUser Reporter { get; set; } = null!;
     public DateTimeOffset ReportDate { get; set; }
+    public TokenGame GameVersion;
+
     
     // level/evidence data
     public int? LevelId { get; set; }
     [ForeignKey("LevelId")]
     public GameLevel? Level { get; set; }
     public string LevelType { get; set; } = string.Empty;
-    public string InitialStateHash { get; set; } = "0"; // hash for initial level state asset
-    public string GriefStateHash { get; set; } = "0"; // hash for griefed level state asset
+    public string InitialStateHash { get; set; } = "0"; // Hash for asset of initial level
+    public string GriefStateHash { get; set; } = "0"; // Hash for asset of griefed level
     
     // evidence
     public string PhotoAssetHash { get; set; } = "0";
