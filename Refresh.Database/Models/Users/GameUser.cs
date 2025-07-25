@@ -108,6 +108,11 @@ public partial class GameUser : IRateLimitUser
     public Visibility LevelVisibility { get; set; } = Visibility.All;
 
     /// <summary>
+    /// If `true`, turn all grief reports into photo uploads
+    /// </summary>
+    public bool RedirectGriefReportsToPhotos { get; set; }
+    
+    /// <summary>
     /// If `true`, unescape XML tags sent to /filter
     /// </summary>
     public bool UnescapeXmlSequences { get; set; }

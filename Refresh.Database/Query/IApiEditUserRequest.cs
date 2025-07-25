@@ -9,6 +9,7 @@ public interface IApiEditUserRequest
     bool? AllowIpAuthentication { get; set; }
     bool? PsnAuthenticationAllowed { get; set; }
     bool? RpcnAuthenticationAllowed { get; set; }
+    bool? RedirectGriefReportsToPhotos { get; set; }
     bool? UnescapeXmlSequences { get; set; }
     string? EmailAddress { get; set; }
     bool? ShowModdedContent { get; set; }
