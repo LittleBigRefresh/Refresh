@@ -35,7 +35,7 @@ public class ReuploadDetectionTests : GameServerTest
         using (Assert.EnterMultipleScope())
         {
             Assert.That(level.IsReUpload, Is.True);
-            Assert.That(level.OriginalPublisher, Is.EqualTo(SystemUsers.UnknownUserName));
+            Assert.That(level.OriginalPublisher, Is.Null);
         }
     }
     
