@@ -29,8 +29,11 @@ public class GameReport
         }
     }
 
+    [XmlIgnore]
+    public GriefReportType Type { get => (GriefReportType)this.InternalType; set => this.InternalType = (int)value; }
+
     [XmlElement("griefTypeId")]
-    public GriefReportType Type { get; set; }
+    public int InternalType { get; set; }
 
     [XmlElement("marqee")]
     public Marqee Marqee { get; set; }
