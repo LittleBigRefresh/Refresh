@@ -646,7 +646,7 @@ public partial class GameDatabaseContext // Levels
             Dictionary<string, string> levelAttributes = LevelPrefixes.ExtractAttributes(level.Description);
             
             // Get original publisher from ?op.{username} or ?op:{username} otherwise Unknown
-            level.OriginalPublisher = levelAttributes.GetValueOrDefault("op") ?? SystemUsers.UnknownUserName; 
+            level.OriginalPublisher = levelAttributes.GetValueOrDefault("op"); 
         }
 
         if (save)
