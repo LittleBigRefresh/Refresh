@@ -18,7 +18,7 @@ public class GriefReport
     // Level data
     public int? LevelId { get; set; }
     [ForeignKey("LevelId")]
-    public GameLevel? Level { get; set; }
+    public GameLevel? Level { get; set; } // Level reference only provided if it's an uploaded or story level
     public string LevelType { get; set; } = string.Empty;
     public string InitialStateHash { get; set; } = "0"; // Hash for asset of initial level
     public string GriefStateHash { get; set; } = "0"; // Hash for asset of griefed level
