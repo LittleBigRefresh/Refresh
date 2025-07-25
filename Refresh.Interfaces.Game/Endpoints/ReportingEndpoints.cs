@@ -28,8 +28,7 @@ public class ReportingEndpoints : EndpointGroup
         if (user.IsWriteBlocked(config))
             return Unauthorized;
         
-        GameLevel? level = database.GetLevelByIdAndType(body.LevelType, body.LevelId); // called by id and type but requires type then id guh
-        
+        GameLevel? level = database.GetLevelByIdAndType(body.LevelType, body.LevelId);
         Size imageSize;
         switch (token.TokenGame)
         {
