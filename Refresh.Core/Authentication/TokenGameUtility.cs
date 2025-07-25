@@ -49,6 +49,7 @@ public static class TokenGameUtility
         "BCAS20113", // Asia Disc
         // missing asia digital?
         "BCAS20201", // Asia Special Edition Disc
+        "NPHA80161", // Hong Kong Digital? Is this actually asia digital?
         
         "BCJS30058", // JP Disc
         // missing japan digital?
