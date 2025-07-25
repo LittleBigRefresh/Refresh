@@ -16,7 +16,7 @@ public class GriefReport
     public TokenGame GameVersion;
 
     
-    // level/evidence data
+    // Level data
     public int? LevelId { get; set; }
     [ForeignKey("LevelId")]
     public GameLevel? Level { get; set; }
@@ -24,18 +24,19 @@ public class GriefReport
     public string InitialStateHash { get; set; } = "0"; // Hash for asset of initial level
     public string GriefStateHash { get; set; } = "0"; // Hash for asset of griefed level
     
-    // evidence
+    // Evidence
     public string PhotoAssetHash { get; set; } = "0";
-    public string MarkerRect { get; set; } = string.Empty; // normalized "l,t,r,b" 
+    public string MarkerRect { get; set; } = string.Empty; // Normalized Rect (-1,1) "l,t,r,b" 
     public ICollection<ReportPlayerRelation> Players { get; set; } = new List<ReportPlayerRelation>();
     
-    // report details
+    // Report details
     public GriefReportType Type { get; set; } = GriefReportType.Unknown;
     public string Description { get; set; } = string.Empty;
-    public GriefReportStatus Status { get; set; } = GriefReportStatus.Pending; 
     
     // Moderation
     public GameUser? ReviewedBy { get; set; }
     public DateTimeOffset? ReviewedDate { get; set; }
     public string? ModeratorNotes { get; set; }
+    public GriefReportStatus Status { get; set; } = GriefReportStatus.Pending; 
+
 }
