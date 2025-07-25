@@ -281,6 +281,7 @@ public partial class GameDatabaseContext // Users
         string oldUsername = user.Username;
 
         user.Username = newUsername;
+        this.GameUsers.Update(user);
         this.SaveChanges();
         
         this.AddNotification("Username Updated", $"An admin has updated your account's username from '{oldUsername}' to '{newUsername}'. " +
