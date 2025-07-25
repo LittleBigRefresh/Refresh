@@ -13,8 +13,7 @@ public class GriefReport
     
     public GameUser Reporter { get; set; } = null!;
     public DateTimeOffset ReportDate { get; set; }
-    public TokenGame GameVersion;
-
+    public TokenGame GameVersion { get; set; }
     
     // Level data
     public int? LevelId { get; set; }
