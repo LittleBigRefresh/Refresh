@@ -8,25 +8,20 @@ namespace Refresh.Interfaces.Game.Types.Lists;
 [XmlRoot("scores")]
 public class SerializedScoreList
 {
-    [XmlElement("playRecord")]
-    public List<SerializedLeaderboardScore> Scores { get; set; } = new();
+    [XmlElement("playRecord")] public List<SerializedLeaderboardScore> Scores { get; set; } = [];
+    [XmlAttribute("totalNumScores")] public int TotalScores { get; set; }
+    [XmlAttribute("yourScore")] public int OwnScore { get; set; }
+    [XmlAttribute("yourRank")] public int OwnRank { get; set; }
 
-    public static SerializedScoreList FromSubmittedEnumerable(IEnumerable<GameScore> list, DataContext dataContext, int skip)
+    public static SerializedScoreList FromDatabaseList(DatabaseScoreList scoreList, DataContext dataContext)
     {
-        SerializedScoreList value = new();
-
-        int i = skip;
-        foreach (GameScore score in list)
+        SerializedScoreList value = new()
         {
-            i++;
-            
-            value.Scores.Add(new SerializedLeaderboardScore
-            {
-                Player = dataContext.Database.GetSubmittingPlayerFromScore(score)?.Username ?? "",
-                Score = score.Score,
-                Rank = i,
-            });
-        }
+            Scores = scoreList.Items.Select(s => SerializedLeaderboardScore.FromOld(s.score, dataContext, s.rank)).ToList(),
+            TotalScores = scoreList.TotalItems,
+            OwnScore = scoreList.OwnScore?.score.Score ?? -1,
+            OwnRank = scoreList.OwnScore?.rank ?? -1,
+        };
 
         return value;
     }

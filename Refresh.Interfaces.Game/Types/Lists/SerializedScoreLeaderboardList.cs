@@ -1,5 +1,6 @@
 using System.Xml.Serialization;
 using Refresh.Core.Types.Data;
+using Refresh.Database;
 using Refresh.Database.Models.Levels.Scores;
 using Refresh.Interfaces.Game.Types.UserData.Leaderboard;
 
@@ -11,19 +12,12 @@ public class SerializedScoreLeaderboardList
     [XmlElement("playRecord")]
     public List<SerializedLeaderboardScore> Scores { get; set; } = new();
     
-    public static SerializedScoreLeaderboardList FromSubmittedEnumerable(IEnumerable<ScoreWithRank> list, DataContext dataContext)
+    public static SerializedScoreLeaderboardList FromDatabaseList(DatabaseList<ScoreWithRank> scoreList, DataContext dataContext)
     {
-        SerializedScoreLeaderboardList value = new();
-        
-        foreach (ScoreWithRank score in list)
+        SerializedScoreLeaderboardList value = new()
         {
-            value.Scores.Add(new SerializedLeaderboardScore
-            {
-                Player = dataContext.Database.GetSubmittingPlayerFromScore(score.score)?.Username ?? "",
-                Score = score.score.Score,
-                Rank = score.rank,
-            });
-        }
+            Scores = scoreList.Items.Select(s => SerializedLeaderboardScore.FromOld(s.score, dataContext, s.rank)).ToList(),
+        };
 
         return value;
     }
