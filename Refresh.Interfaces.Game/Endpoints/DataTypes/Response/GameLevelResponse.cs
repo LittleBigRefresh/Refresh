@@ -188,10 +188,13 @@ public class GameLevelResponse : IDataConvertableFrom<GameLevelResponse, GameLev
             Type = old.SlotType.ToGameType(),
         };
         
-        if (old is { Publisher: not null, IsReUpload: false })
+        // If we're not a reupload, show the real publisher
+        // If we're the real publisher of a reupload, show the real publisher to give them editing capabilities
+        if ((old.Publisher != null && !old.IsReUpload) || (dataContext.User != null && old.Publisher == dataContext.User && old.IsReUpload))
         {
             response.Handle = SerializedUserHandle.FromUser(old.Publisher, dataContext);
         }
+        // Otherwise, show our special reupload username
         else
         {
             string publisher;
@@ -202,7 +205,7 @@ public class GameLevelResponse : IDataConvertableFrom<GameLevelResponse, GameLev
                     ? SystemUsers.UnknownUserName
                     : SystemUsers.SystemPrefix + old.OriginalPublisher;
 
-            if (publisher.Length > 16) // issue #698
+            if (publisher.Length > 16) // Trim publisher name to fit in the maximum limit LBP will show
                 publisher = string.Concat(publisher.AsSpan(0, 15), "-");
             
             
