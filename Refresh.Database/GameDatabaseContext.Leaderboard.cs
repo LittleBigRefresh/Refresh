@@ -61,8 +61,8 @@ public partial class GameDatabaseContext // Leaderboard
 
         return newScore;
     }
-    
-    public DatabaseList<GameScore> GetTopScoresForLevel(GameLevel level, int count, int skip, byte type, bool showDuplicates = false, DateTimeOffset? minAge = null)
+
+    public DatabaseScoreList GetTopScoresForLevel(GameLevel level, int count, int skip, byte type, bool showDuplicates = false, DateTimeOffset? minAge = null, GameUser? user = null)
     {
         IEnumerable<GameScore> scores = this.GameScoresIncluded
             .Where(s => s.ScoreType == type && s.LevelId == level.LevelId)
@@ -74,10 +74,10 @@ public partial class GameDatabaseContext // Leaderboard
         if (minAge != null)
             scores = scores.Where(s => s.ScoreSubmitted >= minAge);
 
-        return new DatabaseList<GameScore>(scores, skip, count);
+        return new(scores.ToArray().Select((s, i) => new ScoreWithRank(s, i + 1)), skip, count, user);
     }
 
-    public DatabaseList<ScoreWithRank> GetRankedScoresAroundScore(GameScore score, int count)
+    public DatabaseScoreList GetRankedScoresAroundScore(GameScore score, int count, GameUser? user = null)
     {
         if (count % 2 != 1) throw new ArgumentException("The number of scores must be odd.", nameof(count));
         
@@ -94,11 +94,11 @@ public partial class GameDatabaseContext // Leaderboard
         (
             scores.Select((s, i) => new ScoreWithRank(s, i + 1)),
             Math.Min(scores.Count, scores.IndexOf(score) - count / 2), // center user's score around other scores
-            count
+            count, user
         );
     }
     
-    public DatabaseList<ScoreWithRank> GetLevelTopScoresByFriends(GameUser user, GameLevel level, int count, byte scoreType, DateTimeOffset? minAge = null)
+    public DatabaseScoreList GetLevelTopScoresByFriends(GameUser user, GameLevel level, int count, byte scoreType, DateTimeOffset? minAge = null)
     {
         IEnumerable<ObjectId> mutuals = this.GetUsersMutuals(user)
             .Select(u => u.UserId)
@@ -115,7 +115,7 @@ public partial class GameDatabaseContext // Leaderboard
         if (minAge != null)
             scores = scores.Where(s => s.ScoreSubmitted >= minAge);
 
-        return new(scores.Select((s, i) => new ScoreWithRank(s, i + 1)), 0, count);
+        return new(scores.Select((s, i) => new ScoreWithRank(s, i + 1)), 0, count, user);
     }
 
     [Pure]

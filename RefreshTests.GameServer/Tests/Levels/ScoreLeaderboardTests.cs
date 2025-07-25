@@ -141,7 +141,7 @@ public class ScoreLeaderboardTests : GameServerTest
 
         context.Database.Refresh();
 
-        List<GameScore> scores = context.Database.GetTopScoresForLevel(level, 1, 0, 1).Items.ToList();
+        List<ScoreWithRank> scores = context.Database.GetTopScoresForLevel(level, 1, 0, 1).Items.ToList();
         Assert.That(scores, Has.Count.EqualTo(0));
     }
 
@@ -198,7 +198,7 @@ public class ScoreLeaderboardTests : GameServerTest
 
         context.Database.Refresh();
 
-        List<GameScore> scores = context.Database.GetTopScoresForLevel(context.Database.GetStoryLevelById(1), 1, 0, 1).Items.ToList();
+        List<ScoreWithRank> scores = context.Database.GetTopScoresForLevel(context.Database.GetStoryLevelById(1), 1, 0, 1).Items.ToList();
         Assert.That(scores, Has.Count.EqualTo(0));
     }
     
@@ -360,8 +360,8 @@ public class ScoreLeaderboardTests : GameServerTest
         
         Assert.Multiple(() =>
         {
-            Assert.That(context.Database.GetTopScoresForLevel(level, 1, 0, 1).Items, Does.Not.Contain(score2));
-            Assert.That(context.Database.GetTopScoresForLevel(level, 1, 0, 2).Items, Does.Not.Contain(score1));
+            Assert.That(context.Database.GetTopScoresForLevel(level, 1, 0, 1).Items.Select(s => s.score), Does.Not.Contain(score2));
+            Assert.That(context.Database.GetTopScoresForLevel(level, 1, 0, 2).Items.Select(s => s.score), Does.Not.Contain(score1));
         });
     }
 
@@ -548,7 +548,7 @@ public class ScoreLeaderboardTests : GameServerTest
 
         for (int i = 0; i < users.Count; i++)
         {
-            GameScore? lastBestScore = context.Database.GetTopScoresForLevel(level, 1, 0, 1, true).Items.FirstOrDefault();
+            GameScore? lastBestScore = context.Database.GetTopScoresForLevel(level, 1, 0, 1, true).Items.FirstOrDefault()?.score;
             
             GameUser user = users[i];
             context.SubmitScore(i, 1, level, user, TokenGame.LittleBigPlanet2, TokenPlatform.PS3);
