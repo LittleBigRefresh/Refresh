@@ -73,7 +73,7 @@ public partial class GameDatabaseContext : DbContext, IDatabaseContext
     internal DbSet<PinProgressRelation> PinProgressRelations { get; set; }
     internal DbSet<ProfilePinRelation> ProfilePinRelations { get; set; }
     internal DbSet<GameSkillReward> GameSkillRewards { get; set; }
-    internal DbSet<Report> Reports { get; set; }
+    internal DbSet<GriefReport> Reports { get; set; }
     internal DbSet<ReportPlayerRelation> ReportPlayersRelations { get; set; }
     internal DbSet<WorkerInfo> Workers { get; set; }
     internal DbSet<PersistentJobState> JobStates { get; set; }

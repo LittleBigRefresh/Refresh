@@ -6,7 +6,7 @@ using Refresh.Database.Models.Users;
 
 namespace Refresh.Database.Models.Reports; 
 
-public class Report 
+public class GriefReport 
 {
     [Key] public int ReportId { get; set; }
     
@@ -27,9 +27,9 @@ public class Report
     public ICollection<ReportPlayerRelation> Players { get; set; } = new List<ReportPlayerRelation>();
     
     // report details
-    public ReportType Type { get; set; } = ReportType.Unknown;
+    public GriefReportType Type { get; set; } = GriefReportType.Unknown;
     public string Description { get; set; } = string.Empty;
-    public ReportStatus Status { get; set; } = ReportStatus.Pending; 
+    public GriefReportStatus Status { get; set; } = GriefReportStatus.Pending; 
     
     // Moderation
     public GameUser? ReviewedBy { get; set; }

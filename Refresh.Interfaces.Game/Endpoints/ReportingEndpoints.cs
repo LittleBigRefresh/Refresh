@@ -119,7 +119,7 @@ public class ReportingEndpoints : EndpointGroup
             }));
         }
 
-        Report report = new()
+        GriefReport griefReport = new()
         {
             Reporter = user,
             Level = level,
@@ -133,7 +133,7 @@ public class ReportingEndpoints : EndpointGroup
             Players = players
         };
 
-        database.CreateReport(report);
+        database.CreateReport(griefReport);
             
         return OK;
     }

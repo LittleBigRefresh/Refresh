@@ -1,6 +1,6 @@
 namespace Refresh.Database.Models.Reports; 
 
-public enum ReportStatus
+public enum GriefReportStatus
 {
     Pending = 0,        // Awaiting review
     InReview = 1,       // Being actively investigated by a moderator

@@ -1,6 +1,6 @@
 namespace Refresh.Database.Models.Reports; 
 
-public enum ReportType 
+public enum GriefReportType 
 {
     Unknown = 0,
     Obscene = 1,

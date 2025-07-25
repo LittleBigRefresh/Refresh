@@ -7,7 +7,7 @@ namespace Refresh.Database;
 
 public partial class GameDatabaseContext // Reports
 {
-    private IQueryable<Report> ReportsIncluded => this.Reports
+    private IQueryable<GriefReport> ReportsIncluded => this.Reports
         .Include(r => r.Reporter)
         .Include(r => r.Reporter.Statistics)
         .Include(r => r.Level)
@@ -20,62 +20,62 @@ public partial class GameDatabaseContext // Reports
         .Include(r => r.Players)
         .ThenInclude(p => p.User.Statistics);
     
-    public void CreateReport(Report report)
+    public void CreateReport(GriefReport griefReport)
     {
         this.Write(() =>
         {
-            report.ReportDate = this._time.Now;
-            this.Reports.Add(report);
+            griefReport.ReportDate = this._time.Now;
+            this.Reports.Add(griefReport);
         });
     }
     
-    public void UpdateReportStatus(Report report, ReportStatus status, GameUser? reviewer = null, string? notes = null)
+    public void UpdateReportStatus(GriefReport griefReport, GriefReportStatus status, GameUser? reviewer = null, string? notes = null)
     {
         this.Write(() =>
         {
-            report.Status = status;
-            report.ReviewedBy = reviewer;
-            report.ReviewedDate = reviewer != null ? this._time.Now : null;
-            report.ModeratorNotes = notes;
+            griefReport.Status = status;
+            griefReport.ReviewedBy = reviewer;
+            griefReport.ReviewedDate = reviewer != null ? this._time.Now : null;
+            griefReport.ModeratorNotes = notes;
         });
     }
     
-    public void RemoveReport(Report report)
+    public void RemoveReport(GriefReport griefReport)
     {
         this.Write(() =>
         {
-            this.Reports.Remove(report);
+            this.Reports.Remove(griefReport);
         });
     }
     
     [Pure]
-    public Report? GetReportById(int id) =>
+    public GriefReport? GetReportById(int id) =>
         this.ReportsIncluded.FirstOrDefault(r => r.ReportId == id);
     
     [Pure]
-    public DatabaseList<Report> GetReportsByStatus(ReportStatus status, int count, int skip) =>
+    public DatabaseList<GriefReport> GetReportsByStatus(GriefReportStatus status, int count, int skip) =>
         new(this.ReportsIncluded
             .Where(r => r.Status == status)
             .OrderByDescending(r => r.ReportDate), skip, count);
     
     [Pure]
-    public DatabaseList<Report> GetReportsByReporter(GameUser reporter, int count, int skip) =>
+    public DatabaseList<GriefReport> GetReportsByReporter(GameUser reporter, int count, int skip) =>
         new(this.ReportsIncluded
             .Where(r => r.Reporter == reporter)
             .OrderByDescending(r => r.ReportDate), skip, count);
     
     [Pure]
-    public DatabaseList<Report> GetReportsForLevel(GameLevel level, int count, int skip) =>
+    public DatabaseList<GriefReport> GetReportsForLevel(GameLevel level, int count, int skip) =>
         new(this.ReportsIncluded
             .Where(r => r.Level == level)
             .OrderByDescending(r => r.ReportDate), skip, count);
     
     [Pure]
-    public DatabaseList<Report> GetStaleReports(TimeSpan maxAge, int count, int skip)
+    public DatabaseList<GriefReport> GetStaleReports(TimeSpan maxAge, int count, int skip)
     {
         DateTimeOffset cutoff = this._time.Now - maxAge;
         return new(this.ReportsIncluded
-            .Where(r => r.Status == ReportStatus.Pending && r.ReportDate < cutoff)
+            .Where(r => r.Status == GriefReportStatus.Pending && r.ReportDate < cutoff)
             .OrderBy(r => r.ReportDate), skip, count);
     }
 

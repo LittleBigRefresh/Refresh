@@ -30,7 +30,7 @@ public class GameReport
     }
 
     [XmlIgnore]
-    public ReportType Type { get => (ReportType)this.InternalType; set => this.InternalType = (int)value; }
+    public GriefReportType Type { get => (GriefReportType)this.InternalType; set => this.InternalType = (int)value; }
 
     [XmlElement("griefTypeId")]
     public int InternalType { get; set; }
