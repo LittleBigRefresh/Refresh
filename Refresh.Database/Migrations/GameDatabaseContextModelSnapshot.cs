@@ -1196,7 +1196,6 @@ namespace Refresh.Database.Migrations
                         .HasColumnType("integer");
 
                     b.Property<string>("LevelType")
-                        .IsRequired()
                         .HasColumnType("text");
 
                     b.Property<string>("MarkerRect")
