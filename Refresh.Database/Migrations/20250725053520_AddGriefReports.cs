@@ -1,4 +1,5 @@
 ﻿using System;
+using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Migrations;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
@@ -6,6 +7,8 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
 namespace Refresh.Database.Migrations
 {
+    [DbContext(typeof(GameDatabaseContext))]
+    [Migration("20250725053520_AddGriefReports")]
     /// <inheritdoc />
     public partial class AddGriefReports : Migration
     {
