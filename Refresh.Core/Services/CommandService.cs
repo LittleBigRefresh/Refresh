@@ -104,6 +104,16 @@ public class CommandService : EndpointService
                 database.ClearForceMatch(user);
                 break;
             }
+            case "griefphotoson":
+            {
+                database.SetUserGriefReportRedirection(user, true);
+                break;
+            }
+            case "griefphotosoff":
+            {
+                database.SetUserGriefReportRedirection(user, false);
+                break;
+            }
             case "unescapexmlon":
             {
                 database.SetUnescapeXmlSequences(user, true);

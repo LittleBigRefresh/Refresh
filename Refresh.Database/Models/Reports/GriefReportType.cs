@@ -1,4 +1,4 @@
-namespace Refresh.Interfaces.Game.Types.Report; 
+namespace Refresh.Database.Models.Reports; 
 
 public enum GriefReportType 
 {
