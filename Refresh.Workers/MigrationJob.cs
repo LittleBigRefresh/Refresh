@@ -1,5 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore.Storage;
 using Refresh.Core;
+using Refresh.Database.Models.Workers;
 using Refresh.Workers.State;
 
 namespace Refresh.Workers;
@@ -9,6 +10,7 @@ public abstract class MigrationJob<TEntity> : WorkerJob, IJobStoresState where T
     public virtual string JobId => this.GetType().Name;
     public object JobState { get; set; } = null!;
     public Type JobStateType => typeof(MigrationJobState);
+    public WorkerClass JobClass => WorkerClass.Refresh;
 
     public MigrationJobState? MigrationJobState => JobState as MigrationJobState;
 

@@ -1594,6 +1594,9 @@ namespace Refresh.Database.Migrations
                     b.Property<string>("JobId")
                         .HasColumnType("text");
 
+                    b.Property<int>("Class")
+                        .HasColumnType("integer");
+
                     b.Property<string>("State")
                         .IsRequired()
                         .HasColumnType("jsonb");

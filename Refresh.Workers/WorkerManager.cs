@@ -2,6 +2,7 @@ using Bunkum.Core.Storage;
 using NotEnoughLogs;
 using Refresh.Core;
 using Refresh.Database;
+using Refresh.Database.Models.Workers;
 using Refresh.Workers.State;
 
 namespace Refresh.Workers;
@@ -58,7 +59,7 @@ public class WorkerManager
             IJobStoresState? jobWithState = job as IJobStoresState;
             if (jobWithState != null)
             {
-                object? jobState = context.Database.GetJobState(jobWithState.JobId, jobWithState.JobStateType);
+                object? jobState = context.Database.GetJobState(jobWithState.JobId, jobWithState.JobStateType, jobWithState.JobClass);
                 jobState ??= Activator.CreateInstance(jobWithState.JobStateType);
 
                 jobWithState.JobState = jobState!;
@@ -82,7 +83,7 @@ public class WorkerManager
             }
 
             if (jobWithState != null)
-                context.Database.UpdateOrCreateJobState(jobWithState.JobId, jobWithState.JobState);
+                context.Database.UpdateOrCreateJobState(jobWithState.JobId, jobWithState.JobState, jobWithState.JobClass);
         }
         
         long now = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();

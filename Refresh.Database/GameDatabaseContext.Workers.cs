@@ -41,18 +41,18 @@ public partial class GameDatabaseContext // Workers
         return true;
     }
 
-    public object? GetJobState(string jobId, Type type)
+    public object? GetJobState(string jobId, Type type, WorkerClass workerClass)
     {
-        PersistentJobState? state = this.JobStates.FirstOrDefault(s => s.JobId == jobId);
+        PersistentJobState? state = this.JobStates.FirstOrDefault(s => s.JobId == jobId && s.Class == workerClass);
         if (state == null)
             return null;
 
         return JsonConvert.DeserializeObject(state.State, type);
     }
 
-    public void UpdateOrCreateJobState(string jobId, object state)
+    public void UpdateOrCreateJobState(string jobId, object state, WorkerClass workerClass)
     {
-        PersistentJobState? jobState = this.JobStates.FirstOrDefault(s => s.JobId == jobId);
+        PersistentJobState? jobState = this.JobStates.FirstOrDefault(s => s.JobId == jobId && s.Class == workerClass);
         if (jobState == null)
         {
             jobState = new PersistentJobState
