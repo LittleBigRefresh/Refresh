@@ -5,6 +5,7 @@ using Refresh.Database.Models.Users;
 using Refresh.Database.Models.Levels;
 using Refresh.Database.Models.Playlists;
 using Refresh.Database.Models.Relations;
+using Refresh.Database.Models.Statistics;
 
 namespace Refresh.Database;
 
@@ -15,28 +16,54 @@ public partial class GameDatabaseContext // Playlists
     /// </summary>
     private const string DefaultPlaylistIcon = "g18451"; // LBP1 star sticker
 
+    private IQueryable<GamePlaylist> GamePlaylistsIncluded => this.GamePlaylists
+        .Include(p => p.Statistics)
+        .Include(p => p.Publisher)
+        .Include(p => p.Publisher.Statistics);
+
     private IQueryable<LevelPlaylistRelation> LevelPlaylistRelationsIncluded => this.LevelPlaylistRelations
         .Include(r => r.Playlist)
-        .Include(r => r.Level);
+        .Include(r => r.Playlist.Statistics)
+        .Include(r => r.Playlist.Publisher)
+        .Include(r => r.Level)
+        .Include(r => r.Level.Statistics)
+        .Include(r => r.Level.Publisher);
 
     private IQueryable<SubPlaylistRelation> SubPlaylistRelationsIncluded => this.SubPlaylistRelations
+        .Include(r => r.Playlist)
+        .Include(r => r.Playlist.Statistics)
+        .Include(r => r.Playlist.Publisher)
         .Include(r => r.SubPlaylist)
+        .Include(r => r.SubPlaylist.Statistics)
         .Include(r => r.SubPlaylist.Publisher);
 
     private IQueryable<FavouritePlaylistRelation> FavouritePlaylistRelationsIncluded => this.FavouritePlaylistRelations
         .Include(r => r.Playlist)
-        .Include(r => r.Playlist.Publisher);
-    
+        .Include(r => r.Playlist.Statistics)
+        .Include(r => r.Playlist.Publisher)
+        .Include(r => r.User)
+        .Include(r => r.User.Statistics);
+
     private void CreatePlaylistInternal(GamePlaylist createInfo)
     {
         DateTimeOffset now = this._time.Now;
         
         createInfo.CreationDate = now;
         createInfo.LastUpdateDate = now;
-        
-        this.Write(() =>
+
+        this.WriteEnsuringStatistics(createInfo.Publisher, () =>
         {
             this.GamePlaylists.Add(createInfo);
+
+            if (!createInfo.IsRoot)
+            {
+                createInfo.Publisher.Statistics!.PlaylistCount++;
+            }
+        });
+
+        this.GamePlaylistStatistics.Add(createInfo.Statistics = new GamePlaylistStatistics
+        {
+            PlaylistId = createInfo.PlaylistId,
         });
     }
 
@@ -79,7 +106,10 @@ public partial class GameDatabaseContext // Playlists
     }
 
     public GamePlaylist? GetPlaylistById(int playlistId) 
-        => this.GamePlaylists.FirstOrDefault(p => p.PlaylistId == playlistId);
+        => this.GamePlaylistsIncluded.FirstOrDefault(p => p.PlaylistId == playlistId);
+    
+    public GamePlaylist? GetUserRootPlaylist(GameUser user)
+        => this.GamePlaylistsIncluded.FirstOrDefault(p => p.IsRoot && p.PublisherId == user.UserId);
 
     public void UpdatePlaylist(GamePlaylist playlist, ISerializedCreatePlaylistInfo updateInfo)
     {
@@ -98,26 +128,30 @@ public partial class GameDatabaseContext // Playlists
 
     public void DeletePlaylist(GamePlaylist playlist)
     {
-        this.Write(() =>
+        this.WriteEnsuringStatistics(playlist.Publisher, () =>
         {
             // Remove all relations relating to this playlist
-            this.LevelPlaylistRelations.RemoveRange(l => l.Playlist == playlist);
-            this.SubPlaylistRelations.RemoveRange(l => l.Playlist == playlist || l.SubPlaylist == playlist);
-            this.FavouritePlaylistRelations.RemoveRange(l => l.Playlist == playlist);
+            this.LevelPlaylistRelations.RemoveRange(l => l.PlaylistId == playlist.PlaylistId);
+            this.SubPlaylistRelations.RemoveRange(l => l.PlaylistId == playlist.PlaylistId || l.SubPlaylistId == playlist.PlaylistId);
+            this.FavouritePlaylistRelations.RemoveRange(l => l.PlaylistId == playlist.PlaylistId);
             
             // Remove the playlist object
             this.GamePlaylists.Remove(playlist);
+
+            // Only decrement the user's playlists count, decrementing all relation stats aswell might be way too much effort,
+            // they will be recalculated in a while anyway
+            playlist.Publisher.Statistics!.PlaylistCount--;
         });
     }
 
     public void AddPlaylistToPlaylist(GamePlaylist child, GamePlaylist parent)
     {
-        this.Write(() =>
+        // Make sure to not create a duplicate object
+        if (this.SubPlaylistRelations.Any(p => p.SubPlaylistId == child.PlaylistId && p.PlaylistId == parent.PlaylistId))
+            return;
+
+        this.WriteEnsuringStatistics(parent, child, () =>
         {
-            // Make sure to not create a duplicate object
-            if (this.SubPlaylistRelations.Any(p => p.SubPlaylistId == child.PlaylistId && p.PlaylistId == parent.PlaylistId))
-                return;
-            
             // Add the relation
             this.SubPlaylistRelations.Add(new SubPlaylistRelation
             {
@@ -125,40 +159,49 @@ public partial class GameDatabaseContext // Playlists
                 SubPlaylist = child,
                 Timestamp = this._time.Now,
             });
+
+            parent.Statistics!.SubPlaylistCount++;
+            child.Statistics!.ParentPlaylistCount++;
         });
     }
     
     public void RemovePlaylistFromPlaylist(GamePlaylist child, GamePlaylist parent)
     {
-        this.Write(() =>
-        {
-            SubPlaylistRelation? relation =
-                this.SubPlaylistRelations.FirstOrDefault(r => r.SubPlaylistId == child.PlaylistId && r.PlaylistId == parent.PlaylistId);
+        SubPlaylistRelation? relation =
+            this.SubPlaylistRelations.FirstOrDefault(r => r.SubPlaylistId == child.PlaylistId && r.PlaylistId == parent.PlaylistId);
 
-            if (relation == null)
-                return;
+        if (relation == null)
+            return;
             
+        this.WriteEnsuringStatistics(parent, child, () =>
+        {
             this.SubPlaylistRelations.Remove(relation);
+
+            parent.Statistics!.SubPlaylistCount--;
+            child.Statistics!.ParentPlaylistCount--;
         });
     }
     
     public void AddLevelToPlaylist(GameLevel level, GamePlaylist parent)
     {
-        this.Write(() =>
+        // Make sure to not create a duplicate object
+        if (this.LevelPlaylistRelations.Any(p => p.LevelId == level.LevelId && p.PlaylistId == parent.PlaylistId))
+            return;
+
+        this.WriteEnsuringStatistics(level, parent, () =>
         {
-            // Make sure to not create a duplicate object
-            if (this.LevelPlaylistRelations.Any(p => p.LevelId == level.LevelId && p.PlaylistId == parent.PlaylistId))
-                return;
-            
             // Add the relation
             this.LevelPlaylistRelations.Add(new LevelPlaylistRelation
             {
                 Level = level,
                 Playlist = parent,
                 // index of new relation = index of last relation + 1 = relation count (without new relation)
-                Index = this.GetTotalLevelsInPlaylistCount(parent),
+                Index = parent.Statistics!.LevelCount,
                 Timestamp = this._time.Now,
             });
+
+            parent.Statistics!.LevelCount++;
+            level.Statistics!.ParentPlaylistCount++;
         });
     }
     
@@ -170,15 +213,21 @@ public partial class GameDatabaseContext // Playlists
         if (relation == null)
             return;
 
-        this.Write(() =>
+        this.WriteEnsuringStatistics(level, parent, () =>
         {
             this.LevelPlaylistRelations.Remove(relation);
+
+            parent.Statistics!.LevelCount--;
+            level.Statistics!.ParentPlaylistCount--;
         });
     }
 
     public void ReorderLevelsInPlaylist(IEnumerable<int> levelIds, GamePlaylist parent)
     {
-        IEnumerable<LevelPlaylistRelation> relations = this.GetLevelRelationsForPlaylist(parent).ToArray();
+        IEnumerable<LevelPlaylistRelation> relations = this.LevelPlaylistRelations
+            .Where(r => r.PlaylistId == parent.PlaylistId)
+            .OrderBy(r => r.Index)
+            .ToArray();
         IEnumerable<LevelPlaylistRelation> includedRelations = relations.Where(r => levelIds.Contains(r.LevelId));
         IEnumerable<LevelPlaylistRelation> excludedRelations = relations.Where(r => !levelIds.Contains(r.LevelId));
 
@@ -207,46 +256,19 @@ public partial class GameDatabaseContext // Playlists
         });
     }
 
-    private IEnumerable<LevelPlaylistRelation> GetLevelRelationsForPlaylist(GamePlaylist playlist)
-        => this.LevelPlaylistRelationsIncluded
-            .Where(r => r.PlaylistId == playlist.PlaylistId)
-            .OrderBy(r => r.Index);
-
+    // Levels in Playlist
     public DatabaseList<GameLevel> GetLevelsInPlaylist(GamePlaylist playlist, TokenGame game, int skip, int count)
-        => new(this.GetLevelRelationsForPlaylist(playlist)
+        => new(this.LevelPlaylistRelationsIncluded
+            .Where(r => r.PlaylistId == playlist.PlaylistId)
+            .OrderBy(r => r.Index)
             .Select(l => l.Level)
             .FilterByGameVersion(game), skip, count);
 
-    public int GetTotalLevelsInPlaylistCount(GamePlaylist playlist) 
-        => this.LevelPlaylistRelations.Count(l => l.Playlist == playlist);
-
-    internal IEnumerable<GamePlaylist> GetPlaylistsContainingPlaylistInternal(GamePlaylist playlist)
-        => this.SubPlaylistRelations
-            .Where(p => p.SubPlaylistId == playlist.PlaylistId)
-            .OrderByDescending(r => r.Timestamp)
-            .Select(r => this.GamePlaylists.First(p => p.PlaylistId == r.PlaylistId))
-            .Where(p => !p.IsRoot);
-
-    public DatabaseList<GamePlaylist> GetPlaylistsContainingPlaylist(GamePlaylist playlist, int skip, int count)
-        => new(GetPlaylistsContainingPlaylistInternal(playlist), skip, count);
-
-    public DatabaseList<GamePlaylist> GetPlaylistsByAuthorContainingPlaylist(GameUser user, GamePlaylist playlist, int skip, int count)
-        => new(GetPlaylistsContainingPlaylistInternal(playlist)
-            .Where(p => p.PublisherId == user.UserId), skip, count);
-
-    public DatabaseList<GamePlaylist> GetPlaylistsInPlaylist(GamePlaylist playlist, int skip, int count)
-        => new(this.SubPlaylistRelationsIncluded
-            .Where(p => p.PlaylistId == playlist.PlaylistId)
-            .OrderByDescending(r => r.Timestamp)
-            .Select(l => l.SubPlaylist), skip, count);
+    public int GetTotalLevelsInPlaylist(GamePlaylist playlist) 
+        => this.LevelPlaylistRelations.Count(l => l.PlaylistId == playlist.PlaylistId);
     
-    public DatabaseList<GamePlaylist> GetPlaylistsByAuthor(GameUser author, int skip, int count)
-        => new(this.GamePlaylists
-            .Where(p => p.PublisherId == author.UserId)
-            .Where(p => !p.IsRoot)
-            .OrderByDescending(p => p.LastUpdateDate), skip, count);
-    
-    private IEnumerable<GamePlaylist> GetPlaylistsContainingLevelInternal(GameLevel level)
+    // Playlists containing Level
+    private IQueryable<GamePlaylist> GetPlaylistsContainingLevelInternal(GameLevel level)
         => this.LevelPlaylistRelationsIncluded
             .Where(p => p.LevelId == level.LevelId)
             .OrderByDescending(r => r.Timestamp)
@@ -258,28 +280,70 @@ public partial class GameDatabaseContext // Playlists
     
     public DatabaseList<GamePlaylist> GetPlaylistsContainingLevel(GameLevel level, int skip, int count)
         => new(GetPlaylistsContainingLevelInternal(level), skip, count);
+    
+    public int GetTotalPlaylistsContainingLevel(GameLevel level) 
+        => this.LevelPlaylistRelations.Count(l => l.LevelId == level.LevelId);
+    
+    // Playlists in Playlists
+    public DatabaseList<GamePlaylist> GetPlaylistsInPlaylist(GamePlaylist playlist, int skip, int count)
+        => new(this.SubPlaylistRelationsIncluded
+            .Where(p => p.PlaylistId == playlist.PlaylistId)
+            .OrderByDescending(r => r.Timestamp)
+            .Select(l => l.SubPlaylist), skip, count);
+    
+    public int GetTotalPlaylistsInPlaylist(GamePlaylist playlist)
+        => this.SubPlaylistRelations.Count(p => p.PlaylistId == playlist.PlaylistId);
+    
+    // Playlists containing Playlists
+    internal IQueryable<GamePlaylist> GetPlaylistsContainingPlaylistInternal(GamePlaylist playlist)
+        => this.SubPlaylistRelations
+            .Where(p => p.SubPlaylistId == playlist.PlaylistId)
+            .OrderByDescending(r => r.Timestamp)
+            .Select(r => this.GamePlaylistsIncluded.First(p => p.PlaylistId == r.PlaylistId))
+            .Where(p => !p.IsRoot);
 
+    public DatabaseList<GamePlaylist> GetPlaylistsContainingPlaylist(GamePlaylist playlist, int skip, int count)
+        => new(GetPlaylistsContainingPlaylistInternal(playlist), skip, count);
+    
+    public int GetTotalPlaylistsContainingPlaylist(GamePlaylist playlist)
+        => this.SubPlaylistRelationsIncluded.Count(p => p.SubPlaylistId == playlist.PlaylistId && !p.Playlist.IsRoot);
+
+    public DatabaseList<GamePlaylist> GetPlaylistsByAuthorContainingPlaylist(GameUser user, GamePlaylist playlist, int skip, int count)
+        => new(GetPlaylistsContainingPlaylistInternal(playlist)
+            .Where(p => p.PublisherId == user.UserId), skip, count);
+
+    // Just Playlists
+    public DatabaseList<GamePlaylist> GetPlaylistsByAuthor(GameUser author, int skip, int count)
+        => new(this.GamePlaylistsIncluded
+            .Where(p => p.PublisherId == author.UserId)
+            .Where(p => !p.IsRoot)
+            .OrderByDescending(p => p.LastUpdateDate), skip, count);
+    
+    public int GetTotalPlaylistsByAuthor(GameUser author)
+        => this.GamePlaylists.Count(p => p.PublisherId == author.UserId && !p.IsRoot);
+    
     public DatabaseList<GamePlaylist> GetNewestPlaylists(int skip, int count)
-        => new(this.GamePlaylists
+        => new(this.GamePlaylistsIncluded
             .Where(p => !p.IsRoot)
             .OrderByDescending(p => p.CreationDate), skip, count);
 
-    public DatabaseList<GamePlaylist> GetMostHeartedPlaylists(int skip, int count) 
-        // TODO: reduce code duplication for getting most of x
-        => new(this.FavouritePlaylistRelations
-            .GroupBy(r => r.Playlist)
-            .Select(g => new { Playlist = g.Key, Count = g.Count() })
-            .OrderByDescending(x => x.Count)
-            .Select(x => x.Playlist)
-            .Where(p => p != null), skip, count);
+    public DatabaseList<GamePlaylist> GetMostHeartedPlaylists(int skip, int count)
+        => new(this.GamePlaylistsIncluded
+            .Where(p => p.Statistics!.FavouriteCount > 0 && !p.IsRoot)
+            .OrderByDescending(p => p.Statistics!.FavouriteCount), skip, count);
+    
+    #region Favouriting Playlists
 
     public DatabaseList<GamePlaylist> GetPlaylistsFavouritedByUser(GameUser user, int skip, int count) 
         => new(this.FavouritePlaylistRelationsIncluded
             .Where(r => r.UserId == user.UserId)
             .OrderByDescending(r => r.Timestamp)
             .Select(r => r.Playlist), skip, count);
+    
+    public int GetTotalPlaylistsFavouritedByUser(GameUser user) 
+        => this.FavouritePlaylistRelations.Count(r => r.UserId == user.UserId);
 
-    public int GetFavouriteCountForPlaylist(GamePlaylist playlist)
+    public int GetTotalFavouritesForPlaylist(GamePlaylist playlist)
         => this.FavouritePlaylistRelations.Count(r => r.PlaylistId == playlist.PlaylistId);
 
     public bool IsPlaylistFavouritedByUser(GamePlaylist playlist, GameUser user)
@@ -295,7 +359,13 @@ public partial class GameDatabaseContext // Playlists
             User = user,
             Timestamp = this._time.Now,
         };
-        this.Write(() => this.FavouritePlaylistRelations.Add(relation));
+        this.WriteEnsuringStatistics(user, playlist, () => 
+        {
+            this.FavouritePlaylistRelations.Add(relation);
+
+            user.Statistics!.FavouritePlaylistCount++;
+            playlist.Statistics!.FavouriteCount++;
+        });
 
         return true;
     }
@@ -307,8 +377,16 @@ public partial class GameDatabaseContext // Playlists
 
         if (relation == null) return false;
 
-        this.Write(() => this.FavouritePlaylistRelations.Remove(relation));
+        this.WriteEnsuringStatistics(user, playlist, () => 
+        {
+            this.FavouritePlaylistRelations.Remove(relation);
+
+            user.Statistics!.FavouritePlaylistCount--;
+            playlist.Statistics!.FavouriteCount--;
+        });
 
         return true;
     }
+
+    #endregion
 }
