@@ -18,8 +18,7 @@ public partial class GameDatabaseContext // Playlists
 
     private IQueryable<GamePlaylist> GamePlaylistsIncluded => this.GamePlaylists
         .Include(p => p.Statistics)
-        .Include(p => p.Publisher)
-        .Include(p => p.Publisher.Statistics);
+        .Include(p => p.Publisher);
 
     private IQueryable<LevelPlaylistRelation> LevelPlaylistRelationsIncluded => this.LevelPlaylistRelations
         .Include(r => r.Playlist)
@@ -40,9 +39,7 @@ public partial class GameDatabaseContext // Playlists
     private IQueryable<FavouritePlaylistRelation> FavouritePlaylistRelationsIncluded => this.FavouritePlaylistRelations
         .Include(r => r.Playlist)
         .Include(r => r.Playlist.Statistics)
-        .Include(r => r.Playlist.Publisher)
-        .Include(r => r.User)
-        .Include(r => r.User.Statistics);
+        .Include(r => r.Playlist.Publisher);
 
     private void CreatePlaylistInternal(GamePlaylist createInfo)
     {
