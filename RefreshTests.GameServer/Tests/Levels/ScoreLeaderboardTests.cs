@@ -582,6 +582,29 @@ public class ScoreLeaderboardTests : GameServerTest
     }
 
     [Test]
+    public void DontSpamSecondBestPlayerWithOvertakeNotifs()
+    {
+        using TestContext context = this.GetServer();
+        GameUser user1 = context.CreateUser();
+        GameUser user2 = context.CreateUser();
+        GameLevel level = context.CreateLevel(user1);
+
+        const int overtakeAmount = 5;
+        context.SubmitScore(10, 1, level, user2, TokenGame.LittleBigPlanet2, TokenPlatform.PS3);
+
+        for (int i = 0; i < overtakeAmount; i++)
+        {
+            context.SubmitScore(20 * i + 20, 1, level, user1, TokenGame.LittleBigPlanet2, TokenPlatform.PS3);
+
+            // Make sure that user1 is always #1
+            Assert.That(context.Database.GetTopScoresForLevel(level, 1, 0, 1, true).Items.FirstOrDefault()?.score.PlayerIds[0], Is.EqualTo(user1.UserId));
+        }
+
+        // Make sure #2 only has one overtake notif
+        Assert.That(context.Database.GetNotificationCountByUser(user2), Is.EqualTo(1));
+    }
+
+    [Test]
     public async Task GamePaginationSortsCorrectly()
     {
         using TestContext context = this.GetServer();
