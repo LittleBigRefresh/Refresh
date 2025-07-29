@@ -16,6 +16,6 @@ public class UserActionTests : GameServerTest
         user = context.Database.GetUserByObjectId(user.UserId);
         Assert.That(user, Is.Not.Null);
         
-        Assert.That(user.Username, Is.EqualTo("gamer2"));
+        Assert.That(user!.Username, Is.EqualTo("gamer2"));
     }
 }
