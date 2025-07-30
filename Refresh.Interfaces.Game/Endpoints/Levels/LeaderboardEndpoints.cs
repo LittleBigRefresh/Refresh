@@ -13,6 +13,7 @@ using Refresh.Database;
 using Refresh.Database.Models.Authentication;
 using Refresh.Database.Models.Levels;
 using Refresh.Database.Models.Levels.Scores;
+using Refresh.Database.Models.Pins;
 using Refresh.Database.Models.Users;
 using Refresh.Interfaces.Game.Types.Lists;
 using Refresh.Interfaces.Game.Types.Scores;
@@ -129,8 +130,58 @@ public class LeaderboardEndpoints : EndpointGroup
 
         DatabaseList<ScoreWithRank>? scores = database.GetRankedScoresAroundScore(score, 5);
         Debug.Assert(scores != null);
-        
+
+        this.AwardScoreboardPins(scores, dataContext, user, level);
+
         return new Response(SerializedScoreLeaderboardList.FromDatabaseList(scores, dataContext), ContentType.Xml);
+    }
+
+    /// <summary>
+    /// Awards certain score submission-related pins which the game expects the server to award
+    /// </summary>
+    private void AwardScoreboardPins(DatabaseList<ScoreWithRank> scores, DataContext dataContext, GameUser user, GameLevel level)
+    {
+        dataContext.Database.EnsureLevelStatisticsCreated(level);
+        int uniqueScoreCount = scores.TotalItems;
+
+        // All pins below are only expected to be awarded if the level's leaderboard has atleast 50 scores
+        if (uniqueScoreCount < 50) return;
+
+        ScoreWithRank? ownScore = scores.Items.FirstOrDefault(s => s.score.PlayerIds.Contains(user.UserId));
+        if (ownScore == null) return; // Should never happen, incase it somehow does, skip this part
+
+        // Examples:
+        // - rank 20 out of 40 = 50%
+        // - rank 5 out of 40 = 12.5%
+        float rankingInPercent = ownScore.rank / uniqueScoreCount * 100;
+        bool isStoryLevel = level.SlotType == GameSlotType.Story;
+        bool isGameBetaBuild = dataContext.Game == TokenGame.BetaBuild;
+
+        // Update lowest rankingInPercent of any story/user level leaderboard
+        if (isStoryLevel)
+        {
+            dataContext.Database.UpdateUserPinProgressToLowest((long)ManuallyAwardedPins.TopXOfAnyStoryLevelWithOver50Scores,
+                (int)rankingInPercent, user, isGameBetaBuild);
+        }
+        else
+        {
+            dataContext.Database.UpdateUserPinProgressToLowest((long)ManuallyAwardedPins.TopXOfAnyCommunityLevelWithOver50Scores, 
+                (int)rankingInPercent, user, isGameBetaBuild);
+        }
+
+        // Update on how many story/user levels the user's ranking is 25% (top 1/4th of the leaderboard) or below
+        if (rankingInPercent <= 25) return;
+        
+        if (isStoryLevel)
+        {
+            dataContext.Database.IncrementUserPinProgress((long)ManuallyAwardedPins.TopFourthOfXStoryLevelsWithOver50Scores, 
+                1, user, isGameBetaBuild);
+        }
+        else
+        {
+            dataContext.Database.IncrementUserPinProgress((long)ManuallyAwardedPins.TopFourthOfXCommunityLevelsWithOver50Scores, 
+                1, user, isGameBetaBuild);
+        }
     }
 
     private (byte, DateTimeOffset?) GetScoreTypeAndMinAge(int originalType, DateTimeOffset now)

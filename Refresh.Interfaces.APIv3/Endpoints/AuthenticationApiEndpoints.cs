@@ -109,12 +109,8 @@ public class AuthenticationApiEndpoints : EndpointGroup
         context.Logger.LogInfo(BunkumCategory.Authentication, $"{user} successfully logged in through the API");
 
         // Update pin progress for signing into the API
-        Func<int, int, int> pinProgressUpdateCallback = delegate (int existingProgress, int progressToAdd)
-        {
-            return existingProgress + progressToAdd;
-        };
-        database.UpdateUserPinProgress((long)ManuallyAwardedPins.SignIntoWebsite, 1, pinProgressUpdateCallback, user, false);
-        database.UpdateUserPinProgress((long)ManuallyAwardedPins.SignIntoWebsite, 1, pinProgressUpdateCallback, user, true);
+        database.IncrementUserPinProgress((long)ManuallyAwardedPins.SignIntoWebsite, 1, user, false);
+        database.IncrementUserPinProgress((long)ManuallyAwardedPins.SignIntoWebsite, 1, user, true);
 
         return new ApiAuthenticationResponse
         {

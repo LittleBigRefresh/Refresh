@@ -234,12 +234,8 @@ public class LevelApiEndpoints : EndpointGroup
         database.QueueLevel(level, user);
 
         // Update pin progress for queueing a level through the API
-        Func<int, int, int> pinProgressUpdateCallback = delegate (int existingProgress, int progressToAdd)
-        {
-            return existingProgress + progressToAdd;
-        };
-        database.UpdateUserPinProgress((long)ManuallyAwardedPins.QueueLevelOnWebsite, 1, pinProgressUpdateCallback, user, false);
-        database.UpdateUserPinProgress((long)ManuallyAwardedPins.QueueLevelOnWebsite, 1, pinProgressUpdateCallback, user, true);
+        database.IncrementUserPinProgress((long)ManuallyAwardedPins.QueueLevelOnWebsite, 1, user, false);
+        database.IncrementUserPinProgress((long)ManuallyAwardedPins.QueueLevelOnWebsite, 1, user, true);
 
         return new ApiOkResponse();
     }
