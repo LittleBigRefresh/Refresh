@@ -6,9 +6,9 @@ using Refresh.Core.Types.Matching;
 using Refresh.Database.Models;
 using Refresh.Database.Models.Assets;
 using Refresh.Database.Models.Authentication;
-using Refresh.Database.Models.Comments;
 using Refresh.Database.Models.Levels;
 using Refresh.Database.Models.Playlists;
+using Refresh.Interfaces.Game.Types.Levels;
 using Refresh.Interfaces.Game.Types.Reviews;
 using Refresh.Interfaces.Game.Types.UserData;
 
@@ -139,90 +139,61 @@ public class GameLevelResponse : IDataConvertableFrom<GameLevelResponse, GameLev
 
     public static GameLevelResponse? FromOld(GameLevel? old, DataContext dataContext)
     {
-        if (old == null) return null;
-        
-        if(old.Statistics == null)
-            dataContext.Database.RecalculateLevelStatistics(old);
-        
-        Debug.Assert(old.Statistics != null);
+        GameMinimalLevelResponse? minimal = GameMinimalLevelResponse.FromOld(old, dataContext);
+        if (old == null || minimal == null) return null;
 
-        bool isStoryLevel = old.StoryId != 0;
+        Debug.Assert(old.Statistics != null);
 
         GameLevelResponse response = new()
         {
-            LevelId = isStoryLevel ? old.StoryId : old.LevelId,
-            IsAdventure = old.IsAdventure,
-            Title = old.Title,
-            IconHash = old.IconHash,
-            Description = old.Description,
-            Location = new GameLocation(old.LocationX, old.LocationY),
-            GameVersion = old.GameVersion.ToSerializedGame(),
-            RootResource = old.RootResource,
+            // Provided by GameMinimalLevelResponse
+            LevelId = minimal.LevelId,
+            IsAdventure = minimal.IsAdventure,
+            Title = minimal.Title,
+            IconHash = minimal.IconHash,
+            Description = minimal.Description,
+            Location = minimal.Location,
+            GameVersion = minimal.GameVersion,
+            RootResource = minimal.RootResource,
+            Handle = minimal.Handle!,
+            Type = minimal.Type,
+            LevelType = minimal.LevelType,
+            HeartCount = minimal.HeartCount,
+            TotalPlayCount = minimal.TotalPlayCount,
+            UniquePlayCount = minimal.UniquePlayCount,
+            Lbp3PlayCount = minimal.Lbp3PlayCount,
+            YayCount = minimal.YayCount,
+            BooCount = minimal.BooCount,
+            AverageStarRating = minimal.AverageStarRating,
+            YourRating = minimal.YourRating,
+            YourStarRating = minimal.YourStarRating,
+            ReviewCount = minimal.ReviewCount,
+            CommentCount = minimal.CommentCount,
+            PlayerCount = minimal.PlayerCount,
+            TeamPicked = minimal.TeamPicked,
+            IsCopyable = minimal.IsCopyable,
+            IsLocked = minimal.IsLocked,
+            IsSubLevel = minimal.IsSubLevel,
+            RequiresMoveController = minimal.RequiresMoveController,
+            Tags = minimal.Tags,
+
+            // Not provided by GameMinimalLevelResponse
+            CompletionCount = old.Statistics.CompletionCount,
             PublishDate = old.PublishDate.ToUnixTimeMilliseconds(),
             UpdateDate = old.UpdateDate.ToUnixTimeMilliseconds(),
             MinPlayers = old.MinPlayers,
             MaxPlayers = old.MaxPlayers,
             EnforceMinMaxPlayers = old.EnforceMinMaxPlayers,
             SameScreenGame = old.SameScreenGame,
-            HeartCount = old.Statistics.FavouriteCount,
-            TotalPlayCount = old.Statistics.PlayCount,
-            CompletionCount = old.Statistics.CompletionCount,
-            UniquePlayCount = old.Statistics.UniquePlayCount,
-            Lbp3PlayCount = old.Statistics.UniquePlayCount,
-            YayCount = old.Statistics.YayCount,
-            BooCount = old.Statistics.BooCount,
             SkillRewards = dataContext.Database.GetSkillRewardsForLevel(old).ToList(),
-            TeamPicked = old.TeamPicked,
-            LevelType = old.LevelType.ToGameString(),
-            IsCopyable = old.IsCopyable ? 1 : 0,
-            IsLocked = old.IsLocked,
-            IsSubLevel = old.IsSubLevel,
-            RequiresMoveController = old.RequiresMoveController,
             BackgroundGuid = old.BackgroundGuid,
             Links = "",
-            AverageStarRating = old.CalculateAverageStarRating(),
-            ReviewCount = old.Statistics.ReviewCount,
-            CommentCount = old.Statistics.CommentCount,
             PhotoCount = old.Statistics.PhotoInLevelCount,
             PublisherPhotoCount = old.Statistics.PhotoByPublisherCount,
-            Type = old.SlotType.ToGameType(),
         };
-        
-        // If we're not a reupload, show the real publisher
-        // If we're the real publisher of a reupload, show the real publisher to give them editing capabilities
-        if ((old.Publisher != null && !old.IsReUpload) || (dataContext.User != null && old.Publisher == dataContext.User && old.IsReUpload))
-        {
-            response.Handle = SerializedUserHandle.FromUser(old.Publisher, dataContext);
-        }
-        // Otherwise, show our special reupload username
-        else
-        {
-            string publisher;
-            if (!old.IsReUpload)
-                publisher = SystemUsers.DeletedUserName;
-            else
-                publisher = string.IsNullOrEmpty(old.OriginalPublisher)
-                    ? SystemUsers.UnknownUserName
-                    : SystemUsers.SystemPrefix + old.OriginalPublisher;
-
-            if (publisher.Length > 16) // Trim publisher name to fit in the maximum limit LBP will show
-                publisher = string.Concat(publisher.AsSpan(0, 15), "-");
-            
-            
-            response.Handle = new SerializedUserHandle
-            {
-                IconHash = "0",
-                Username = publisher,
-            };
-        }
         
         if (dataContext.User != null)
         {
-            RatingType? rating = dataContext.Database.GetRatingByUser(old, dataContext.User);
-
-            response.YourRating = rating?.ToDPad() ?? (int)RatingType.Neutral;
-            response.YourStarRating = rating?.ToLBP1() ?? 0;
-            
             response.YourReview = SerializedGameReview.FromOld(dataContext.Database.GetReviewByLevelAndUser(old, dataContext.User), dataContext);
 
             // this is technically invalid, but specifying this for all games ensures they all have the capacity to review if played.
@@ -233,8 +204,6 @@ public class GameLevelResponse : IDataConvertableFrom<GameLevelResponse, GameLev
             response.YourLbp3PlayCount = plays;
         }
         
-        response.PlayerCount = dataContext.Match.GetPlayerCountForLevel(RoomSlotType.Online, response.LevelId);
-        
         GameAsset? rootResourceAsset = dataContext.Database.GetAssetFromHash(response.RootResource);
         if (rootResourceAsset != null && dataContext.Game == TokenGame.LittleBigPlanetVita)
         {
@@ -244,13 +213,6 @@ public class GameLevelResponse : IDataConvertableFrom<GameLevelResponse, GameLev
                     response.SizeOfResourcesInBytes += asset.SizeInBytes;
             });
         }
-
-        if (dataContext.Game == TokenGame.LittleBigPlanet1)
-        {
-            response.Tags = string.Join(',', dataContext.Database.GetTagsForLevel(old).Select(t => t.Tag.ToLbpString()));
-        }
-        
-        response.IconHash = dataContext.Database.GetAssetFromHash(old.IconHash)?.GetAsIcon(dataContext.Game, dataContext) ?? response.IconHash;
         
         return response;
     }
