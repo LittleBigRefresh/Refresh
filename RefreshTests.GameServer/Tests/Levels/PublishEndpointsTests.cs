@@ -651,7 +651,7 @@ public class PublishEndpointsTests : GameServerTest
         using TestContext context = this.GetServer();
         GameUser user = context.CreateUser();
 
-        using HttpClient client = context.GetAuthenticatedClient(TokenType.Game, user);
+        using HttpClient client = context.GetAuthenticatedClient(TokenType.Game, TokenGame.LittleBigPlanetVita, TokenPlatform.Vita, user);
 
         GameLevelRequest level = new()
         {

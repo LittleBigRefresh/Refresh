@@ -58,10 +58,9 @@ public class GameLevelResponse : IDataConvertableFrom<GameLevelResponse, GameLev
     [XmlElement("yourlbp1PlayCount")] public int YourLbp1PlayCount { get; set; }
     [XmlElement("yourlbp2PlayCount")] public int YourLbp2PlayCount { get; set; }
     [XmlElement("yourlbp3PlayCount")] public int YourLbp3PlayCount { get; set; }
-    
     [XmlArray("customRewards")]
     [XmlArrayItem("customReward")]
-    public required List<GameSkillReward> SkillRewards { get; set; }
+    public List<GameSkillReward> SkillRewards { get; set; } = [];
 
     [XmlElement("mmpick")] public required bool TeamPicked { get; set; }
     [XmlElement("resource")] public List<string> XmlResources { get; set; } = new();
@@ -185,7 +184,6 @@ public class GameLevelResponse : IDataConvertableFrom<GameLevelResponse, GameLev
             MaxPlayers = old.MaxPlayers,
             EnforceMinMaxPlayers = old.EnforceMinMaxPlayers,
             SameScreenGame = old.SameScreenGame,
-            SkillRewards = dataContext.Database.GetSkillRewardsForLevel(old).ToList(),
             BackgroundGuid = old.BackgroundGuid,
             Links = "",
             PhotoCount = old.Statistics.PhotoInLevelCount,
@@ -194,24 +192,32 @@ public class GameLevelResponse : IDataConvertableFrom<GameLevelResponse, GameLev
         
         if (dataContext.User != null)
         {
-            response.YourReview = SerializedGameReview.FromOld(dataContext.Database.GetReviewByLevelAndUser(old, dataContext.User), dataContext);
-
             // this is technically invalid, but specifying this for all games ensures they all have the capacity to review if played.
             // we don't store the game's version in play relations, so this is the best we can do
             int plays = dataContext.Database.GetTotalPlaysForLevelByUser(old, dataContext.User);
             response.YourLbp1PlayCount = plays;
             response.YourLbp2PlayCount = plays;
             response.YourLbp3PlayCount = plays;
+
+            if (dataContext.Game is not TokenGame.LittleBigPlanet1 or TokenGame.LittleBigPlanetPSP)
+            {
+                response.YourReview = SerializedGameReview.FromOld(dataContext.Database.GetReviewByLevelAndUser(old, dataContext.User), dataContext);
+            }
         }
         
-        GameAsset? rootResourceAsset = dataContext.Database.GetAssetFromHash(response.RootResource);
-        if (rootResourceAsset != null && dataContext.Game == TokenGame.LittleBigPlanetVita)
+        if (dataContext.Game is TokenGame.LittleBigPlanetVita or TokenGame.BetaBuild)
         {
-            rootResourceAsset.TraverseDependenciesRecursively(dataContext.Database, (_, asset) =>
+            GameAsset? rootResourceAsset = dataContext.Database.GetAssetFromHash(response.RootResource);
+            if (rootResourceAsset != null && dataContext.Game == TokenGame.LittleBigPlanetVita)
             {
-                if (asset != null)
-                    response.SizeOfResourcesInBytes += asset.SizeInBytes;
-            });
+                rootResourceAsset.TraverseDependenciesRecursively(dataContext.Database, (_, asset) =>
+                {
+                    if (asset != null)
+                        response.SizeOfResourcesInBytes += asset.SizeInBytes;
+                });
+            }
+
+            response.SkillRewards = dataContext.Database.GetSkillRewardsForLevel(old).ToList();
         }
         
         return response;
