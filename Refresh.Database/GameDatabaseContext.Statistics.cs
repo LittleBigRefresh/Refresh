@@ -85,7 +85,7 @@ public partial class GameDatabaseContext // Statistics
     }
     
     #region Levels
-    internal const int LevelStatisticsVersion = 2;
+    internal const int LevelStatisticsVersion = 3;
     
     public IEnumerable<GameLevel> GetLevelsWithStatisticsNeedingUpdates()
     {
@@ -198,7 +198,7 @@ public partial class GameDatabaseContext // Statistics
 
     #region Users
 
-    internal const int UserStatisticsVersion = 1;
+    internal const int UserStatisticsVersion = 2;
     
     public IEnumerable<GameUser> GetUsersWithStatisticsNeedingUpdates()
     {
