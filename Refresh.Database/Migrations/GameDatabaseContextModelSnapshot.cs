@@ -771,9 +771,14 @@ namespace Refresh.Database.Migrations
                         .IsRequired()
                         .HasColumnType("text");
 
+                    b.Property<int?>("StatisticsPlaylistId")
+                        .HasColumnType("integer");
+
                     b.HasKey("PlaylistId");
 
                     b.HasIndex("PublisherId");
+
+                    b.HasIndex("StatisticsPlaylistId");
 
                     b.ToTable("GamePlaylists");
                 });
@@ -1274,6 +1279,9 @@ namespace Refresh.Database.Migrations
                     b.Property<int>("NeutralCountExcludingPublisher")
                         .HasColumnType("integer");
 
+                    b.Property<int>("ParentPlaylistCount")
+                        .HasColumnType("integer");
+
                     b.Property<int>("PhotoByPublisherCount")
                         .HasColumnType("integer");
 
@@ -1309,6 +1317,37 @@ namespace Refresh.Database.Migrations
                     b.ToTable("GameLevelStatistics");
                 });
 
+            modelBuilder.Entity("Refresh.Database.Models.Statistics.GamePlaylistStatistics", b =>
+                {
+                    b.Property<int>("PlaylistId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("PlaylistId"));
+
+                    b.Property<int>("FavouriteCount")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("LevelCount")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("ParentPlaylistCount")
+                        .HasColumnType("integer");
+
+                    b.Property<DateTimeOffset?>("RecalculateAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<int>("SubPlaylistCount")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("Version")
+                        .HasColumnType("integer");
+
+                    b.HasKey("PlaylistId");
+
+                    b.ToTable("GamePlaylistStatistics");
+                });
+
             modelBuilder.Entity("Refresh.Database.Models.Statistics.GameUserStatistics", b =>
                 {
                     b.Property<string>("UserId")
@@ -1323,6 +1362,9 @@ namespace Refresh.Database.Migrations
                     b.Property<int>("FavouriteLevelCount")
                         .HasColumnType("integer");
 
+                    b.Property<int>("FavouritePlaylistCount")
+                        .HasColumnType("integer");
+
                     b.Property<int>("FavouriteUserCount")
                         .HasColumnType("integer");
 
@@ -1333,6 +1375,9 @@ namespace Refresh.Database.Migrations
                         .HasColumnType("integer");
 
                     b.Property<int>("PhotosWithUserCount")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("PlaylistCount")
                         .HasColumnType("integer");
 
                     b.Property<int>("QueueCount")
@@ -1906,7 +1951,13 @@ namespace Refresh.Database.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
+                    b.HasOne("Refresh.Database.Models.Statistics.GamePlaylistStatistics", "Statistics")
+                        .WithMany()
+                        .HasForeignKey("StatisticsPlaylistId");
+
                     b.Navigation("Publisher");
+
+                    b.Navigation("Statistics");
                 });
 
             modelBuilder.Entity("Refresh.Database.Models.Relations.FavouriteLevelRelation", b =>

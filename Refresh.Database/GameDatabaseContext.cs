@@ -64,6 +64,7 @@ public partial class GameDatabaseContext : DbContext, IDatabaseContext
     internal DbSet<RateReviewRelation> RateReviewRelations { get; set; }
     internal DbSet<TagLevelRelation> TagLevelRelations { get; set; }
     internal DbSet<GamePlaylist> GamePlaylists { get; set; }
+    internal DbSet<GamePlaylistStatistics> GamePlaylistStatistics { get; set; }
     internal DbSet<LevelPlaylistRelation> LevelPlaylistRelations { get; set; }
     internal DbSet<SubPlaylistRelation> SubPlaylistRelations { get; set; }
     internal DbSet<FavouritePlaylistRelation> FavouritePlaylistRelations { get; set; }

@@ -1,8 +1,8 @@
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
-using Refresh.Database.Models;
 using Refresh.Database.Models.Comments;
 using Refresh.Database.Models.Levels;
+using Refresh.Database.Models.Playlists;
 using Refresh.Database.Models.Statistics;
 using Refresh.Database.Models.Users;
 
@@ -47,9 +47,45 @@ public partial class GameDatabaseContext // Statistics
             this.MarkLevelStatisticsDirty(level);
         });
     }
+
+    private void WriteEnsuringStatistics(GameUser user, GamePlaylist playlist, Action action)
+    {
+        this.Write(() =>
+        {
+            this.CalculateUserStatisticsIfNotPresent(user);
+            this.CalculatePlaylistStatisticsIfNotPresent(playlist);
+            action();
+            this.MarkUserStatisticsDirty(user);
+            this.MarkPlaylistStatisticsDirty(playlist);
+        });
+    }
+
+    private void WriteEnsuringStatistics(GameLevel level, GamePlaylist playlist, Action action)
+    {
+        this.Write(() =>
+        {
+            this.CalculatePlaylistStatisticsIfNotPresent(playlist);
+            this.CalculateLevelStatisticsIfNotPresent(level);
+            action();
+            this.MarkPlaylistStatisticsDirty(playlist);
+            this.MarkLevelStatisticsDirty(level);
+        });
+    }
+
+    private void WriteEnsuringStatistics(GamePlaylist parent, GamePlaylist child, Action action)
+    {
+        this.Write(() =>
+        {
+            this.CalculatePlaylistStatisticsIfNotPresent(parent);
+            this.CalculatePlaylistStatisticsIfNotPresent(child);
+            action();
+            this.MarkPlaylistStatisticsDirty(parent);
+            this.MarkPlaylistStatisticsDirty(child);
+        });
+    }
     
     #region Levels
-    internal const int LevelStatisticsVersion = 2;
+    internal const int LevelStatisticsVersion = 3;
     
     public IEnumerable<GameLevel> GetLevelsWithStatisticsNeedingUpdates()
     {
@@ -130,6 +166,7 @@ public partial class GameDatabaseContext // Statistics
         level.Statistics.CommentCount = this.GetTotalCommentsForLevel(level);
         level.Statistics.PhotoInLevelCount = this.GetTotalPhotosInLevel(level);
         level.Statistics.PhotoByPublisherCount = this.GetTotalPhotosInLevelByUser(level, level.Publisher);
+        level.Statistics.ParentPlaylistCount = this.GetTotalPlaylistsContainingLevel(level);
         this.RecalculateLevelRatingStatisticsInternal(level);
 
         level.Statistics.RecalculateAt = null;
@@ -161,7 +198,7 @@ public partial class GameDatabaseContext // Statistics
 
     #region Users
 
-    internal const int UserStatisticsVersion = 1;
+    internal const int UserStatisticsVersion = 2;
     
     public IEnumerable<GameUser> GetUsersWithStatisticsNeedingUpdates()
     {
@@ -250,6 +287,8 @@ public partial class GameDatabaseContext // Statistics
         user.Statistics.QueueCount = this.GetTotalLevelsQueuedByUser(user);
         user.Statistics.FavouriteUserCount = this.GetTotalUsersFavouritedByUser(user);
         user.Statistics.FavouriteLevelCount = this.GetTotalLevelsFavouritedByUser(user);
+        user.Statistics.FavouritePlaylistCount = this.GetTotalPlaylistsFavouritedByUser(user);
+        user.Statistics.PlaylistCount = this.GetTotalPlaylistsByAuthor(user);
 
         user.Statistics.RecalculateAt = null;
         user.Statistics.Version = UserStatisticsVersion;
@@ -262,6 +301,98 @@ public partial class GameDatabaseContext // Statistics
         
         if(user.Statistics.RecalculateAt == null)
             user.Statistics.RecalculateAt = this._time.Now + TimeSpan.FromMinutes(5);
+    }
+
+    #endregion
+
+    #region Playlists
+
+    internal const int PlaylistStatisticsVersion = 1;
+    
+    public IEnumerable<GamePlaylist> GetPlaylistsWithStatisticsNeedingUpdates()
+    {
+        DateTimeOffset now = this._time.Now;
+
+        return this.GamePlaylists
+            .Include(u => u.Statistics)
+            .Where(u => u.Statistics != null)
+            .Where(u => u.Statistics!.RecalculateAt <= now || u.Statistics.Version != PlaylistStatisticsVersion);
+    }
+
+    public bool EnsurePlaylistStatisticsCreated(GamePlaylist playlist)
+    {
+        if (playlist.Statistics != null) return false;
+
+        playlist.Statistics = this.GamePlaylistStatistics.FirstOrDefault(s => s.PlaylistId == playlist.PlaylistId);
+
+        if (playlist.Statistics != null)
+        {
+#if DEBUG
+            if(Debugger.IsAttached)
+                Debugger.Break();
+#endif
+
+            return false;
+        }
+
+        playlist.Statistics = new GamePlaylistStatistics
+        {
+            PlaylistId = playlist.PlaylistId,
+        };
+        this.GamePlaylistStatistics.Add(playlist.Statistics);
+
+        return true;
+    }
+
+    public void RecalculatePlaylistStatistics(GamePlaylist playlist)
+    {
+        this.EnsurePlaylistStatisticsCreated(playlist);
+        this.Write(() =>
+        {
+            this.RecalculatePlaylistStatisticsInternal(playlist);
+        });
+    }
+    
+    public void CalculatePlaylistStatisticsIfNotPresent(GamePlaylist playlist)
+    {
+        if (!this.EnsurePlaylistStatisticsCreated(playlist)) return;
+
+        this.Write(() =>
+        {
+            this.RecalculatePlaylistStatisticsInternal(playlist);
+        });
+    }
+
+    private void WriteEnsuringStatistics(GamePlaylist playlist, Action action)
+    {
+        this.Write(() =>
+        {
+            this.CalculatePlaylistStatisticsIfNotPresent(playlist);
+            action();
+            this.MarkPlaylistStatisticsDirty(playlist);
+        });
+    }
+
+    private void RecalculatePlaylistStatisticsInternal(GamePlaylist playlist)
+    {
+        Debug.Assert(playlist.Statistics != null);
+        
+        playlist.Statistics.FavouriteCount = this.GetTotalFavouritesForPlaylist(playlist);
+        playlist.Statistics.ParentPlaylistCount = this.GetTotalPlaylistsContainingPlaylist(playlist);
+        playlist.Statistics.LevelCount = this.GetTotalLevelsInPlaylist(playlist);
+        playlist.Statistics.SubPlaylistCount = this.GetTotalPlaylistsInPlaylist(playlist);
+
+        playlist.Statistics.RecalculateAt = null;
+        playlist.Statistics.Version = UserStatisticsVersion;
+    }
+
+    private void MarkPlaylistStatisticsDirty(GamePlaylist playlist)
+    {
+        Debug.Assert(this.ChangeTracker.HasChanges(), "should be called in write (no changes detected)");
+        Debug.Assert(playlist.Statistics != null);
+        
+        if(playlist.Statistics.RecalculateAt == null)
+            playlist.Statistics.RecalculateAt = this._time.Now + TimeSpan.FromMinutes(5);
     }
 
     #endregion

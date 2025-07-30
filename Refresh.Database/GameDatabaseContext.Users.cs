@@ -8,7 +8,6 @@ using Refresh.Database.Models.Levels.Challenges;
 using Refresh.Database.Models.Levels.Scores;
 using Refresh.Database.Models.Levels;
 using Refresh.Database.Models.Photos;
-using Refresh.Database.Models.Playlists;
 
 namespace Refresh.Database;
 
@@ -473,8 +472,6 @@ public partial class GameDatabaseContext // Users
         });
     }
 
-    public GamePlaylist? GetUserRootPlaylist(GameUser user)
-        => this.GamePlaylists.FirstOrDefault(p => p.IsRoot && p.PublisherId == user.UserId);
 
     public void SetUserPresenceAuthToken(GameUser user, string? token)
     {
