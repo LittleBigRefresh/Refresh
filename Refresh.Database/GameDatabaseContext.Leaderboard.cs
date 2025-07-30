@@ -31,6 +31,20 @@ public partial class GameDatabaseContext // Leaderboard
             Platform = platform,
         };
 
+        GameScore? currentFirstPlace = this.GameScores
+            .Where(s => s.LevelId == level.LevelId && s.ScoreType == score.ScoreType)
+            .OrderByDescending(s => s.Score)
+            .ToArray()
+            .DistinctBy(s => s.PlayerIdsRaw[0])
+            .FirstOrDefault();
+
+        // If the current first score is not 0, is lower than the new score and by a different first player,
+        // show the overtake notification. This way the #1 player will not spam the #2 player by repeatedly improving their own score.
+        bool showOvertakeNotification = currentFirstPlace != null
+            && currentFirstPlace.Score > 0
+            && currentFirstPlace.Score < score.Score 
+            && currentFirstPlace.PlayerIds[0] != user.UserId;
+
         this.Write(() =>
         {
             this.GameScores.Add(newScore);
@@ -38,31 +52,22 @@ public partial class GameDatabaseContext // Leaderboard
 
         this.CreateLevelScoreEvent(user, newScore);
 
-        #region Notifications
-        
-        IEnumerable<ScoreWithRank> rankedScores = GetRankedScoresAroundScore(newScore, 3).Items;
-        ScoreWithRank? rankOne = rankedScores.FirstOrDefault(s => s.rank == 1);
-        ScoreWithRank? rankTwo = rankedScores.FirstOrDefault(s => s.rank == 2);
-        if (rankOne != null && rankTwo != null &&
-            rankOne.score.ScoreId == newScore.ScoreId && // if submitted score is the new #1
-            rankTwo.score.Score > 0 // don't send notification if the last #1 score was just 0
-           )
+        // Only do this part of notifying after actually adding the new score to the database incase that fails
+        if (showOvertakeNotification)
         {
             // Notify the last #1 users that they've been overtaken
-            foreach (GameUser player in this.GetPlayersFromScore(rankTwo.score).ToArray())
+            foreach (GameUser player in this.GetPlayersFromScore(currentFirstPlace!).ToArray())
             {
                 this.AddNotification("Score overtaken", 
                     $"Your #1 score on {level.Title} has been overtaken by {user.Username}!", 
                     player, "medal");   
             }
         }
-        
-        #endregion
 
         return newScore;
     }
-    
-    public DatabaseList<GameScore> GetTopScoresForLevel(GameLevel level, int count, int skip, byte type, bool showDuplicates = false)
+
+    public DatabaseScoreList GetTopScoresForLevel(GameLevel level, int count, int skip, byte type, bool showDuplicates = false, DateTimeOffset? minAge = null, GameUser? user = null)
     {
         IEnumerable<GameScore> scores = this.GameScoresIncluded
             .Where(s => s.ScoreType == type && s.LevelId == level.LevelId)
@@ -70,11 +75,14 @@ public partial class GameDatabaseContext // Leaderboard
 
         if (!showDuplicates)
             scores = scores.DistinctBy(s => s.PlayerIds[0]);
+        
+        if (minAge != null)
+            scores = scores.Where(s => s.ScoreSubmitted >= minAge);
 
-        return new DatabaseList<GameScore>(scores, skip, count);
+        return new(scores.ToArray().Select((s, i) => new ScoreWithRank(s, i + 1)), skip, count, user);
     }
 
-    public DatabaseList<ScoreWithRank> GetRankedScoresAroundScore(GameScore score, int count)
+    public DatabaseScoreList GetRankedScoresAroundScore(GameScore score, int count, GameUser? user = null)
     {
         if (count % 2 != 1) throw new ArgumentException("The number of scores must be odd.", nameof(count));
         
@@ -91,11 +99,11 @@ public partial class GameDatabaseContext // Leaderboard
         (
             scores.Select((s, i) => new ScoreWithRank(s, i + 1)),
             Math.Min(scores.Count, scores.IndexOf(score) - count / 2), // center user's score around other scores
-            count
+            count, user
         );
     }
     
-    public DatabaseList<ScoreWithRank> GetLevelTopScoresByFriends(GameUser user, GameLevel level, int count, byte scoreType)
+    public DatabaseScoreList GetLevelTopScoresByFriends(GameUser user, GameLevel level, int count, byte scoreType, DateTimeOffset? minAge = null)
     {
         IEnumerable<ObjectId> mutuals = this.GetUsersMutuals(user)
             .Select(u => u.UserId)
@@ -108,8 +116,11 @@ public partial class GameDatabaseContext // Leaderboard
             .DistinctBy(s => s.PlayerIds[0])
             //TODO: THIS CALL IS EXTREMELY INEFFECIENT!!! once we are in postgres land, figure out a way to do this effeciently
             .Where(s => s.PlayerIds.Any(p => mutuals.Contains(p)));
+        
+        if (minAge != null)
+            scores = scores.Where(s => s.ScoreSubmitted >= minAge);
 
-        return new(scores.Select((s, i) => new ScoreWithRank(s, i + 1)), 0, count);
+        return new(scores.Select((s, i) => new ScoreWithRank(s, i + 1)), 0, count, user);
     }
 
     [Pure]

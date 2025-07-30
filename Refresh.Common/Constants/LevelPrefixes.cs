@@ -16,7 +16,7 @@ public static partial class LevelPrefixes
     /// </summary>
     public static Dictionary<string, string> ExtractAttributes(string description)
     {
-        MatchCollection matches = LevelPrefixes.AttributeRegex().Matches(description);
+        MatchCollection matches = AttributeRegex().Matches(description);
         return matches.ToDictionary(
             m => m.Groups[1].Value, 
             m => m.Groups[2].Value
@@ -28,6 +28,10 @@ public static partial class LevelPrefixes
     /// </summary>
     public static readonly string[] ReuploadKeywords = { 
         "(reupload)", "[reupload]",
-        "(archive)", "[archive]"
+        "(reuploaded)", "[reuploaded]",
+        "(archive)", "[archive]",
+        "(archived)", "[archived]",
+        "(republish)", "[republish]",
+        "(republished)", "[republished]",
     };
 }

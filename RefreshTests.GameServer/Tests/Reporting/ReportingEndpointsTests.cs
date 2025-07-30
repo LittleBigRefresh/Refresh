@@ -6,6 +6,7 @@ using Refresh.Database.Models.Users;
 using RefreshTests.GameServer.Extensions;
 using Refresh.Database.Models.Levels;
 using Refresh.Database.Models.Photos;
+using Refresh.Database.Models.Reports;
 using Refresh.Interfaces.Game.Types.Report;
 
 namespace RefreshTests.GameServer.Tests.Reporting;
@@ -32,7 +33,7 @@ public class ReportingEndpointsTests : GameServerTest
         {
             InfoBubble = new InfoBubble[]
                 {},
-            Type = GriefReportType.Obscene,
+            Type = GriefReportType.TermsOfService,
             Marqee = new Marqee
             {
                 Rect = new Rect
@@ -86,9 +87,16 @@ public class ReportingEndpointsTests : GameServerTest
 
         context.Database.Refresh();
 
-        DatabaseList<GamePhoto> photos = context.Database.GetRecentPhotos(10, 0);
-        Assert.That(photos.TotalItems, Is.EqualTo(1));
-        Assert.That(photos.Items.First().LevelId, Is.EqualTo(report.LevelId));
+        DatabaseList<GriefReport> reports = context.Database.GetReportsByReporter(user, 10, 0);
+        Assert.That(reports.TotalItems, Is.EqualTo(1));
+    
+        GriefReport createdReport = reports.Items.First();
+        Assert.That(createdReport.Level?.LevelId, Is.EqualTo(level.LevelId));
+        Assert.That(createdReport.Type, Is.EqualTo(GriefReportType.TermsOfService));
+        Assert.That(createdReport.Description, Is.EqualTo("This is a description, sent by LBP3"));
+        Assert.That(createdReport.PhotoAssetHash, Is.EqualTo(TEST_ASSET_HASH));
+        Assert.That(createdReport.Status, Is.EqualTo(GriefReportStatus.Pending));
+        Assert.That(createdReport.Players.Count, Is.EqualTo(1));
     }
     
     [Test]
@@ -114,8 +122,10 @@ public class ReportingEndpointsTests : GameServerTest
         
         context.Database.Refresh();
 
-        DatabaseList<GamePhoto> photos = context.Database.GetRecentPhotos(10, 0);
-        Assert.That(photos.TotalItems, Is.EqualTo(1));
+        DatabaseList<GriefReport> reports = context.Database.GetReportsByReporter(user, 10, 0);
+        Assert.That(reports.TotalItems, Is.EqualTo(1));
+        
+        Assert.That(reports.Items.First().Level, Is.Null);
     }
     
     [TestCase(true)]
@@ -145,17 +155,17 @@ public class ReportingEndpointsTests : GameServerTest
                 },
                 new()
                 {
-                    Username = "haw",
+                    Username = "hawk",
                     Rectangle = new Rect(),
                 },
                 new()
                 {
-                    Username = "ham",
+                    Username = "2uh",
                     Rectangle = new Rect(),
                 },
                 new()
                 {
-                    Username = "burg",
+                    Username = "burger",
                     Rectangle = new Rect(),
                 },
                 new()
@@ -234,6 +244,8 @@ public class ReportingEndpointsTests : GameServerTest
     {
         using TestContext context = this.GetServer();
         GameUser user = context.CreateUser();
+        user.RedirectGriefReportsToPhotos = true;
+        
         GameLevel level = context.CreateLevel(user);
 
         using HttpClient client = context.GetAuthenticatedClient(TokenType.Game, game, TokenPlatform.PS3, user);
@@ -281,6 +293,7 @@ public class ReportingEndpointsTests : GameServerTest
     {
         using TestContext context = this.GetServer();
         GameUser user = context.CreateUser();
+        user.RedirectGriefReportsToPhotos = true;
         GameLevel level = context.Database.GetStoryLevelById(100000);
 
         using HttpClient client = context.GetAuthenticatedClient(TokenType.Game, game, TokenPlatform.PS3, user);
@@ -324,6 +337,7 @@ public class ReportingEndpointsTests : GameServerTest
     {
         using TestContext context = this.GetServer();
         GameUser user = context.CreateUser();
+        user.RedirectGriefReportsToPhotos = true;
 
         using HttpClient client = context.GetAuthenticatedClient(TokenType.Game, TokenGame.Website, TokenPlatform.PS3, user);
 

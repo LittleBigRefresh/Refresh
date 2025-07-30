@@ -2,6 +2,7 @@ using System.Xml;
 using System.Xml.Serialization;
 using Bunkum.Core;
 using Bunkum.Core.Endpoints;
+using Bunkum.Core.RateLimit;
 using Bunkum.Core.Responses;
 using Bunkum.Listener.Protocol;
 using Bunkum.Protocols.Http;
@@ -23,8 +24,14 @@ namespace Refresh.Interfaces.Game.Endpoints;
 
 public class ActivityEndpoints : EndpointGroup
 {
+    private const int RequestTimeoutDuration = 60;
+    private const int MaxRequestAmount = 80;
+    private const int RequestBlockDuration = 60;
+    private const string BucketName = "activity";
+
     [GameEndpoint("stream", ContentType.Xml)]
     [GameEndpoint("stream", ContentType.Xml, HttpMethods.Post)]
+    [RateLimitSettings(RequestTimeoutDuration, MaxRequestAmount, RequestBlockDuration, BucketName)]
     [NullStatusCode(BadRequest)]
     [MinimumRole(GameUserRole.Restricted)]
     public SerializedActivityPage? GetRecentActivity(RequestContext context, GameServerConfig config, GameDatabaseContext database, GameUser? user,
@@ -61,6 +68,7 @@ public class ActivityEndpoints : EndpointGroup
     }
 
     [GameEndpoint("stream/slot/{type}/{id}", ContentType.Xml)]
+    [RateLimitSettings(RequestTimeoutDuration, MaxRequestAmount, RequestBlockDuration, BucketName)]
     [NullStatusCode(BadRequest)]
     [MinimumRole(GameUserRole.Restricted)]
     public Response GetRecentActivityForLevel(RequestContext context, GameServerConfig config, GameDatabaseContext database, GameUser? user,
@@ -68,7 +76,12 @@ public class ActivityEndpoints : EndpointGroup
     {
         if (!config.PermitShowingOnlineUsers)
             return Unauthorized;
+
+        return NoContent;
         
+        // FIXME: enable below code to have this endpoint return actual recent activity as soon as we find out how to do so without
+        // the game rejecting the response and spamming this endpoint
+        /*
         GameLevel? level = type == "developer" ? database.GetStoryLevelById(id) : database.GetLevelById(id);
         if (level == null) return NotFound;
         
@@ -99,9 +112,11 @@ public class ActivityEndpoints : EndpointGroup
         }), dataContext);
         
         return new Response(page, ContentType.Xml);
+        */
     }
 
     [GameEndpoint("stream/user2/{username}", ContentType.Xml)]
+    [RateLimitSettings(RequestTimeoutDuration, MaxRequestAmount, RequestBlockDuration, BucketName)]
     [NullStatusCode(BadRequest)]
     [MinimumRole(GameUserRole.Restricted)]
     public Response GetRecentActivityFromUser(RequestContext context, GameServerConfig config, GameDatabaseContext database, string username,
@@ -109,7 +124,12 @@ public class ActivityEndpoints : EndpointGroup
     {
         if (!config.PermitShowingOnlineUsers)
             return Unauthorized;
+        
+        return NoContent;
 
+        // FIXME: enable below code to have this endpoint return actual recent activity as soon as we find out how to do so without
+        // the game rejecting the response and spamming this endpoint
+        /*
         GameUser? user = database.GetUserByUsername(username);
         if (user == null) return NotFound;
 
@@ -148,6 +168,7 @@ public class ActivityEndpoints : EndpointGroup
             ExcludeMyself = excludeMyself,
             User = user,
         }), dataContext), ContentType.Xml);
+        */
     }
     
     [GameEndpoint("news", ContentType.Xml)]

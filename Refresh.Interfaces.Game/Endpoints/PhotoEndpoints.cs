@@ -43,6 +43,12 @@ public class PhotoEndpoints : EndpointGroup
             return BadRequest;
         }
 
+        if (body.PhotoSubjects.Any(s => s.Username.Equals("LBPMod.me", StringComparison.InvariantCultureIgnoreCase)))
+        {
+            context.Logger.LogWarning(BunkumCategory.UserContent, $"Photo contains disallowed subjects, rejecting photo upload. Uploader: {user.UserId}");
+            return Unauthorized;
+        }
+
         List<string> hashes = [body.LargeHash, body.MediumHash, body.SmallHash];
         foreach (string hash in hashes.Distinct())
         {

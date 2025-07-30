@@ -28,10 +28,10 @@ public partial class GameDatabaseContext // Activity
 
         if (parameters is { ExcludeMyLevels: true, User: not null })
         {
-            //Filter the query to events which either arent level related, or which the level publisher doesnt contain the user
-            query = query
-                .AsEnumerable() // TODO: optimize me
-                .Where(e => e.StoredDataType != EventDataType.Level || this.GetLevelById(e.StoredSequentialId ?? int.MaxValue)?.Publisher?.UserId != parameters.User.UserId);
+            //Filter the query to events which either arent level related, or which the level publisher is not the user
+            query = query // TODO: This part of the query can still be more optimized
+                .ToArray() // this instead of AsEnumerable avoids a NpgsqlOperationInProgressException
+                .Where(e => e.StoredDataType != EventDataType.Level || (e.StoredSequentialId != null && this.GetLevelById(e.StoredSequentialId.Value)?.Publisher?.UserId != parameters.User.UserId));
         }
         
         if (parameters is { ExcludeFriends: true, User: not null })
@@ -45,7 +45,7 @@ public partial class GameDatabaseContext // Activity
 
         if (parameters is { ExcludeFavouriteUsers: true, User: not null })
         {
-            List<GameUser> favouriteUsers = this.GetUsersFavouritedByUser(parameters.User, 1000, 0).ToList();
+            List<GameUser> favouriteUsers = this.GetUsersFavouritedByUser(parameters.User, 0, 1000).Items.ToList();
             
             query = query.Where(e => favouriteUsers.All(r => r.UserId != e.User.UserId && (e.StoredDataType != EventDataType.User || r.UserId != e.StoredObjectId))); 
         }
@@ -107,7 +107,7 @@ public partial class GameDatabaseContext // Activity
 
         if (parameters.User != null)
         {
-            List<ObjectId?> favouriteUsers = this.GetUsersFavouritedByUser(parameters.User, 1000, 0).Select(f => (ObjectId?)f.UserId).ToList();
+            List<ObjectId?> favouriteUsers = this.GetUsersFavouritedByUser(parameters.User, 0, 1000).Items.Select(f => (ObjectId?)f.UserId).ToList();
             List<ObjectId?> userFriends = this.GetUsersMutuals(parameters.User).Select(u => (ObjectId?)u.UserId).ToList();
 
             query = query.Where(e =>

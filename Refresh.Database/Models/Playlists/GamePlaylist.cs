@@ -1,4 +1,5 @@
 using MongoDB.Bson;
+using Refresh.Database.Models.Statistics;
 using Refresh.Database.Models.Users;
 
 namespace Refresh.Database.Models.Playlists;
@@ -42,6 +43,9 @@ public partial class GamePlaylist : ISequentialId
     public int LocationX { get; set; }
     public int LocationY { get; set; }
 
+    #nullable enable
+    public GamePlaylistStatistics? Statistics { get; set; }
+
     /// <summary>
     /// The time the playlist was created
     /// </summary>
@@ -54,7 +58,7 @@ public partial class GamePlaylist : ISequentialId
     /// <summary>
     /// Whether or not this playlist is a root playlist. This is to let us hide the root playlists when we 
     /// </summary>
-    [Required]public bool IsRoot { get; set; }
+    [Required] public bool IsRoot { get; set; }
     
     [NotMapped] public int SequentialId
     {

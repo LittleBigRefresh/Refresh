@@ -8,7 +8,6 @@ using Refresh.Database.Models.Levels.Challenges;
 using Refresh.Database.Models.Levels.Scores;
 using Refresh.Database.Models.Levels;
 using Refresh.Database.Models.Photos;
-using Refresh.Database.Models.Playlists;
 
 namespace Refresh.Database;
 
@@ -87,6 +86,11 @@ public partial class GameDatabaseContext // Users
 
     public DatabaseList<GameUser> GetUsers(int count, int skip)
         => new(this.GameUsersIncluded.OrderByDescending(u => u.JoinDate), skip, count);
+    
+    public DatabaseList<GameUser> GetMostFavouritedUsers(int skip, int count)
+        => new(this.GameUsersIncluded
+            .Where(u => u.Statistics!.FavouriteCount > 0)
+            .OrderByDescending(u => u.Statistics!.FavouriteCount), skip, count);
 
     public void UpdateUserData(GameUser user, ISerializedEditUser data, TokenGame game)
     {
@@ -210,6 +214,9 @@ public partial class GameDatabaseContext // Users
             
             if (data.ShowReuploadedContent != null)
                 user.ShowReuploadedContent = data.ShowReuploadedContent.Value;
+            
+            if (data.RedirectGriefReportsToPhotos != null)
+                user.RedirectGriefReportsToPhotos = data.RedirectGriefReportsToPhotos.Value;
         });
     }
 
@@ -274,11 +281,10 @@ public partial class GameDatabaseContext // Users
     public void RenameUser(GameUser user, string newUsername)
     {
         string oldUsername = user.Username;
-        
-        this.Write(() =>
-        {
-            user.Username = newUsername;
-        });
+
+        user.Username = newUsername;
+        this.GameUsers.Update(user);
+        this.SaveChanges();
         
         this.AddNotification("Username Updated", $"An admin has updated your account's username from '{oldUsername}' to '{newUsername}'. " +
                                                  $"If there are any problems caused by this, please let us know.", user);
@@ -389,6 +395,14 @@ public partial class GameDatabaseContext // Users
             user.ShowReuploadedContent = value;
         });
     }
+    
+    public void SetUserGriefReportRedirection(GameUser user, bool value)
+    {
+        this.Write(() =>
+        {
+            user.RedirectGriefReportsToPhotos = value;
+        });
+    }
 
     public void ClearForceMatch(GameUser user)
     {
@@ -458,8 +472,6 @@ public partial class GameDatabaseContext // Users
         });
     }
 
-    public GamePlaylist? GetUserRootPlaylist(GameUser user)
-        => this.GamePlaylists.FirstOrDefault(p => p.IsRoot && p.PublisherId == user.UserId);
 
     public void SetUserPresenceAuthToken(GameUser user, string? token)
     {

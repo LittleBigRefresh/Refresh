@@ -41,32 +41,18 @@ public partial class GameDatabaseContext // Levels
         level.PublishDate = timestamp;
         level.UpdateDate = timestamp;
 
-        // Automatically mark level as reupload by keyword matching the title
-        bool isReUpload = LevelPrefixes.ReuploadKeywords.Any(keyword => level.Title.Contains(keyword, StringComparison.OrdinalIgnoreCase));
-        
-        if (isReUpload)
+        this.ApplyLevelMetadataFromAttributes(level);
+        this.GameLevels.Add(level);
+
+        this.SaveChanges();
+
+        this.CreateRevisionForLevel(level, level.Publisher);
+        this.GameLevelStatistics.Add(level.Statistics = new GameLevelStatistics
         {
-            level.IsReUpload = true;
-            
-            // Extract all attributes of our format ?{key}[:|.]{value}
-            Dictionary<string, string> levelAttributes = LevelPrefixes.ExtractAttributes(level.Description);
-            
-            // Get original publisher from ?op.{username} or ?op:{username} otherwise Unknown
-            level.OriginalPublisher = levelAttributes.GetValueOrDefault("op") ?? SystemUsers.UnknownUserName; 
-        }
-        
-        this.Write(() =>
-        {
-            this.GameLevels.Add(level);
+            LevelId = level.LevelId,
         });
-        
-        this.Write(() =>
-        {
-            this.GameLevelStatistics.Add(level.Statistics = new GameLevelStatistics()
-            {
-                LevelId = level.LevelId,
-            });
-        });
+
+        this.SaveChanges();
 
         if (level.Publisher != null)
         {
@@ -206,20 +192,20 @@ public partial class GameDatabaseContext // Levels
         // Now newLevel is set up to replace oldLevel.
         // If information is lost here, then that's probably a bug.
         // Update the level's properties in the database
-        this.Write(() =>
+        PropertyInfo[] userProps = typeof(GameLevel).GetProperties();
+        foreach (PropertyInfo prop in userProps)
         {
-            PropertyInfo[] userProps = typeof(GameLevel).GetProperties();
-            foreach (PropertyInfo prop in userProps)
-            {
-                if (!prop.CanWrite || !prop.CanRead) continue;
-                prop.SetValue(oldLevel, prop.GetValue(newLevel));
-            }
-        });
+            if (!prop.CanWrite || !prop.CanRead) continue;
+            prop.SetValue(oldLevel, prop.GetValue(newLevel));
+        }
 
+        this.ApplyLevelMetadataFromAttributes(newLevel);
+        this.CreateRevisionForLevel(newLevel, author);
+        this.SaveChanges();
         return oldLevel;
     }
     
-    public GameLevel? UpdateLevel(IApiEditLevelRequest body, GameLevel level)
+    public GameLevel? UpdateLevel(IApiEditLevelRequest body, GameLevel level, GameUser? updatingUser)
     {
         if (body.Title is { Length: > UgcLimits.TitleLimit })
             body.Title = body.Title[..UgcLimits.TitleLimit];
@@ -227,25 +213,25 @@ public partial class GameDatabaseContext // Levels
         if (body.Description is { Length: > UgcLimits.DescriptionLimit })
             body.Description = body.Description[..UgcLimits.DescriptionLimit];
         
-        this.Write(() =>
+        PropertyInfo[] userProps = body.GetType().GetProperties();
+        foreach (PropertyInfo prop in userProps)
         {
-            PropertyInfo[] userProps = body.GetType().GetProperties();
-            foreach (PropertyInfo prop in userProps)
-            {
-                if (!prop.CanWrite || !prop.CanRead) continue;
+            if (!prop.CanWrite || !prop.CanRead) continue;
                 
-                object? propValue = prop.GetValue(body);
-                if(propValue == null) continue;
+            object? propValue = prop.GetValue(body);
+            if(propValue == null) continue;
 
-                PropertyInfo? gameLevelProp = level.GetType().GetProperty(prop.Name);
-                Debug.Assert(gameLevelProp != null, $"Invalid property {prop.Name} on {nameof(IApiEditLevelRequest)}");
+            PropertyInfo? gameLevelProp = level.GetType().GetProperty(prop.Name);
+            Debug.Assert(gameLevelProp != null, $"Invalid property {prop.Name} on {nameof(IApiEditLevelRequest)}");
                 
-                gameLevelProp.SetValue(level, prop.GetValue(body));
-            }
+            gameLevelProp.SetValue(level, prop.GetValue(body));
+        }
             
-            level.UpdateDate = this._time.Now;
-        });
+        level.UpdateDate = this._time.Now;
 
+        this.ApplyLevelMetadataFromAttributes(level);
+        this.CreateRevisionForLevel(level, updatingUser);
+        this.SaveChanges();
         return level;
     }
 
@@ -283,7 +269,7 @@ public partial class GameDatabaseContext // Levels
             }
             this.GameChallenges.RemoveRange(challenges);
             
-            IQueryable<GameScore> scores = this.GameScores.Where(r => r.Level == level);
+            IEnumerable<GameScore> scores = this.GameScores.Where(r => r.Level == level).ToArray();
             
             foreach (GameScore score in scores)
             {
@@ -645,5 +631,25 @@ public partial class GameDatabaseContext // Levels
                 this.GameSkillRewards.Add(newReward);
             }
         });
+    }
+    
+    public void ApplyLevelMetadataFromAttributes(GameLevel level, bool save = false)
+    {
+        // Automatically mark level as reupload by keyword matching the title
+        bool isReUpload = LevelPrefixes.ReuploadKeywords.Any(keyword => level.Title.Contains(keyword, StringComparison.OrdinalIgnoreCase));
+        
+        if (isReUpload)
+        {
+            level.IsReUpload = true;
+            
+            // Extract all attributes of our format ?{key}[:|.]{value}
+            Dictionary<string, string> levelAttributes = LevelPrefixes.ExtractAttributes(level.Description);
+            
+            // Get original publisher from ?op.{username} or ?op:{username} otherwise Unknown
+            level.OriginalPublisher = levelAttributes.GetValueOrDefault("op"); 
+        }
+
+        if (save)
+            this.SaveChanges();
     }
 }

@@ -24,15 +24,12 @@ public class TestRefreshGameServer : RefreshGameServer
     public TestRefreshGameServer(BunkumHttpListener listener, Func<GameDatabaseProvider> provider, IDataStore? dataStore = null) : base(listener, provider, null, dataStore ?? new InMemoryDataStore())
     {}
 
-    protected override void SetupConfiguration()
+    protected override ConfigStore CreateConfigStore()
     {
-        this.Server.AddConfig(this._config = new GameServerConfig());
-        this.Server.AddConfig(new RichPresenceConfig());
-        this.Server.AddConfig(this._integrationConfig = new IntegrationConfig());
-        this.Server.AddConfig(new ContactInfoConfig());
+        return new ConfigStore();
     }
 
-    public GameServerConfig GameServerConfig => this._config!;
+    public GameServerConfig GameServerConfig => this._configStore.GameServer;
 
     public override void Start()
     {
@@ -71,7 +68,7 @@ public class TestRefreshGameServer : RefreshGameServer
         this.Server.AddService<CategoryService>();
         this.Server.AddService<MatchService>();
         this.Server.AddService<ImportService>();
-        this.Server.AddService(new PresenceService(this.Logger, this._integrationConfig!));
+        this.Server.AddService(new PresenceService(this.Logger, this._configStore.Integration!));
         this.Server.AddService<PlayNowService>();
         this.Server.AddService<CommandService>();
         this.Server.AddService<GuidCheckerService>();

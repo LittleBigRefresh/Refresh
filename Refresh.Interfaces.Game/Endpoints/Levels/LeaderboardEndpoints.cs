@@ -5,6 +5,7 @@ using Bunkum.Core.RateLimit;
 using Bunkum.Core.Responses;
 using Bunkum.Listener.Protocol;
 using Bunkum.Protocols.Http;
+using Refresh.Common.Time;
 using Refresh.Core.Authentication.Permission;
 using Refresh.Core.Configuration;
 using Refresh.Core.Types.Data;
@@ -89,7 +90,7 @@ public class LeaderboardEndpoints : EndpointGroup
         if (level == null) return null;
 
         DatabaseList<ScoreWithRank>? scores = database.GetLevelTopScoresByFriends(user, level, 10, body.Type);
-        return SerializedScoreLeaderboardList.FromSubmittedEnumerable(scores.Items, dataContext);
+        return SerializedScoreLeaderboardList.FromDatabaseList(scores, dataContext);
     }
     
     [GameEndpoint("scoreboard/{slotType}/{id}", ContentType.Xml, HttpMethods.Post)]
@@ -129,21 +130,50 @@ public class LeaderboardEndpoints : EndpointGroup
         DatabaseList<ScoreWithRank>? scores = database.GetRankedScoresAroundScore(score, 5);
         Debug.Assert(scores != null);
         
-        return new Response(SerializedScoreLeaderboardList.FromSubmittedEnumerable(scores.Items.ToArray(), dataContext), ContentType.Xml);
+        return new Response(SerializedScoreLeaderboardList.FromDatabaseList(scores, dataContext), ContentType.Xml);
+    }
+
+    private (byte, DateTimeOffset?) GetScoreTypeAndMinAge(int originalType, DateTimeOffset now)
+    {
+        return originalType switch
+        {
+            5 => (7, now.AddDays(-1)), // daily versus leaderboard
+            6 => (7, now.AddDays(-7)), // weekly versus leaderboard
+            _ => ((byte)originalType, null),
+        };
     }
 
     [GameEndpoint("topscores/{slotType}/{id}/{type}", ContentType.Xml)]
     [MinimumRole(GameUserRole.Restricted)]
+    [NullStatusCode(NotFound)]
     [RateLimitSettings(RequestTimeoutDuration, MaxRequestAmount, RequestBlockDuration, BucketName)]
-    public Response GetTopScoresForLevel(RequestContext context, GameDatabaseContext database, string slotType, int id,
-        int type, DataContext dataContext)
+    public SerializedScoreList? GetTopScoresForLevel(RequestContext context, GameDatabaseContext database, string slotType, int id,
+        int type, DataContext dataContext, GameUser user, IDateTimeProvider dateTimeProvider)
     {
         GameLevel? level = database.GetLevelByIdAndType(slotType, id);
-        if (level == null) return NotFound;
+        if (level == null) return null;
         
         (int skip, int count) = context.GetPageData();
-        DatabaseList<GameScore>? scores = database.GetTopScoresForLevel(level, count, skip, (byte)type);
+        (byte scoreType, DateTimeOffset? minAge) = this.GetScoreTypeAndMinAge(type, dateTimeProvider.Now);
 
-        return new Response(SerializedScoreList.FromSubmittedEnumerable(scores.Items.ToArray(), dataContext, skip), ContentType.Xml);
+        DatabaseScoreList? scores = database.GetTopScoresForLevel(level, count, skip, scoreType, false, minAge, user);
+        return SerializedScoreList.FromDatabaseList(scores, dataContext);
+    }
+
+    [GameEndpoint("friendscores/{slotType}/{id}/{type}", ContentType.Xml)]
+    [MinimumRole(GameUserRole.Restricted)]
+    [NullStatusCode(NotFound)]
+    [RateLimitSettings(RequestTimeoutDuration, MaxRequestAmount, RequestBlockDuration, BucketName)]
+    public SerializedScoreList? GetFriendTopScoresForLevel(RequestContext context, GameDatabaseContext database, string slotType, int id,
+        int type, DataContext dataContext, GameUser user, IDateTimeProvider dateTimeProvider)
+    {
+        GameLevel? level = database.GetLevelByIdAndType(slotType, id);
+        if (level == null) return null;
+        
+        (int skip, int count) = context.GetPageData();
+        (byte scoreType, DateTimeOffset? minAge) = this.GetScoreTypeAndMinAge(type, dateTimeProvider.Now);
+
+        DatabaseScoreList? scores = database.GetLevelTopScoresByFriends(user, level, count, scoreType, minAge);
+        return SerializedScoreList.FromDatabaseList(scores, dataContext);
     }
 }

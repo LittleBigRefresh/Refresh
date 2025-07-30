@@ -54,4 +54,4 @@ To contribute to Refresh, it may be helpful to refer to our [contributing guide]
 
 However, something important for all those involved: we also serve additional documentation relating to Refresh, Bunkum, and LittleBigPlanet in general in our [Docs repo](https://littlebigrefresh.github.io/Docs/).
 
-*Made with &#128153; for the LittleBigPlanet community*
+*Made with* &#128153; *for the LittleBigPlanet community*

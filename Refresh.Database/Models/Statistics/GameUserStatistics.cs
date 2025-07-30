@@ -16,5 +16,7 @@ public class GameUserStatistics
     public int ReviewCount { get; set; }
     public int FavouriteLevelCount { get; set; }
     public int FavouriteUserCount { get; set; }
+    public int FavouritePlaylistCount { get; set; }
     public int QueueCount { get; set; }
+    public int PlaylistCount { get; set; }
 }

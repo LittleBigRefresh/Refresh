@@ -12,7 +12,7 @@
 
     <ItemGroup>
         <ProjectReference Include="..\Refresh.Core\Refresh.Core.csproj" />
-        <ProjectReference Include="..\Refresh.Interfaces.APIv3\Refresh.Interfaces.APIv3.csproj" />
+        <ProjectReference Include="..\Refresh.Workers\Refresh.Workers.csproj" />
     </ItemGroup>
 
 </Project>

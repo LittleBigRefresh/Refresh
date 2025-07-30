@@ -17,6 +17,7 @@ public class GameLevelStatistics
     public int CommentCount { get; set; }
     public int PhotoInLevelCount { get; set; }
     public int PhotoByPublisherCount { get; set; }
+    public int ParentPlaylistCount { get; set; }
     public int YayCount { get; set; }
     public int YayCountExcludingPublisher { get; set; }
     public int BooCount { get; set; }
