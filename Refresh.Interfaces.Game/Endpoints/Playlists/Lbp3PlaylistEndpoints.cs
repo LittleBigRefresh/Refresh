@@ -10,7 +10,7 @@ using Refresh.Database;
 using Refresh.Database.Models.Levels;
 using Refresh.Database.Models.Playlists;
 using Refresh.Database.Models.Users;
-using Refresh.Interfaces.Game.Endpoints.DataTypes.Response;
+using Refresh.Interfaces.Game.Types.Levels;
 using Refresh.Interfaces.Game.Types.Lists;
 using Refresh.Interfaces.Game.Types.Playlists;
 
@@ -83,7 +83,7 @@ public class Lbp3PlaylistEndpoints : EndpointGroup
     [GameEndpoint("playlists/{playlistId}/slots", HttpMethods.Get, ContentType.Xml)]
     [NullStatusCode(NotFound)]
     [MinimumRole(GameUserRole.Restricted)]
-    public SerializedLevelList? GetPlaylistLevels(RequestContext context, DataContext dataContext, GameUser user, int playlistId)
+    public SerializedMinimalLevelList? GetPlaylistLevels(RequestContext context, DataContext dataContext, GameUser user, int playlistId)
     {
         GamePlaylist? playlist = dataContext.Database.GetPlaylistById(playlistId);
         if (playlist == null)
@@ -91,9 +91,9 @@ public class Lbp3PlaylistEndpoints : EndpointGroup
 
         DatabaseList<GameLevel> levels = dataContext.Database.GetLevelsInPlaylist(playlist, dataContext.Game, 0, 100);
 
-        return new SerializedLevelList
+        return new SerializedMinimalLevelList
         {
-            Items = GameLevelResponse.FromOldList(levels.Items.ToArray(), dataContext).ToList(),
+            Items = GameMinimalLevelResponse.FromOldList(levels.Items.ToArray(), dataContext).ToList(),
             Total = levels.TotalItems,
             NextPageStart = levels.NextPageIndex
         };
