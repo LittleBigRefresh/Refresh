@@ -2,7 +2,6 @@ using System.Diagnostics;
 using System.Xml.Serialization;
 using Refresh.Common.Constants;
 using Refresh.Core.Types.Data;
-using Refresh.Core.Types.Matching;
 using Refresh.Database.Models;
 using Refresh.Database.Models.Assets;
 using Refresh.Database.Models.Authentication;
@@ -87,15 +86,17 @@ public class GameLevelResponse : IDataConvertableFrom<GameLevelResponse, GameLev
     
     public static GameLevelResponse FromHash(string hash, DataContext dataContext)
     {
+        GameMinimalLevelResponse minimal = GameMinimalLevelResponse.FromHash(hash, dataContext);
+
         return new GameLevelResponse
         {
-            LevelId = dataContext.Game == TokenGame.LittleBigPlanet3 ? GameLevel.LevelIdFromHash(hash) : int.MaxValue,
+            LevelId = minimal.LevelId,
             IsAdventure = false,
-            Title = $"Hashed Level - {hash}",
+            Title = minimal.Title,
             IconHash = "0",
             GameVersion = 0,
             RootResource = hash,
-            Description = "This is a hashed level from the Dry Archive. We can't provide any information about it.",
+            Description = minimal.Description,
             Location = new GameLocation(),
             Handle = new SerializedUserHandle
             {
