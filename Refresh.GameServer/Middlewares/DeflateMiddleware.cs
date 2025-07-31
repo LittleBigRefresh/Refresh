@@ -41,8 +41,8 @@ public class DeflateMiddleware(GameServerConfig config) : IMiddleware
             return;
         
         string? encodings = context.RequestHeaders.Get("Accept-Encoding");
-        // If the accepted encodings aren't specified, or they don't contain deflate/gzip, or we don't need to use deflate on the data, do nothing.
-        if (encodings == null || (!encodings.Contains("deflate") && !encodings.Contains("gzip")) || context.ResponseStream.Length <= DeflateCutoff) 
+        // If the accepted encodings aren't specified, or they don't contain deflate, or we don't need to use deflate on the data, do nothing.
+        if (encodings == null || !encodings.Contains("deflate") || context.ResponseStream.Length <= DeflateCutoff) 
             return;
 
         // Update the headers marking that we are sending encoded data
