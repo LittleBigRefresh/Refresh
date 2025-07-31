@@ -53,7 +53,7 @@ public class GameMinimalLevelResponse : IDataConvertableFrom<GameMinimalLevelRes
     [XmlElement("moveRequired")] public bool RequiresMoveController { get; set; }
     [XmlElement("tags")] public string Tags { get; set; } = "";
  
-    private GameMinimalLevelResponse() {}
+    protected GameMinimalLevelResponse() {}
     
     /// <summary>
     /// Constructs a placeholder level response from a root level hash
