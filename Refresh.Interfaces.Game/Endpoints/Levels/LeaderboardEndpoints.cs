@@ -107,7 +107,7 @@ public class LeaderboardEndpoints : EndpointGroup
         if (level == null) return NotFound;
 
         // A user has to play a level in order to submit a score
-        if (!database.HasUserPlayedLevel(level, user))
+        if (!database.HasUserPlayedLevel(level, user) && !context.IsPSP())
         {
             return Unauthorized;
         }
