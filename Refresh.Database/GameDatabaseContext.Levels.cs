@@ -623,7 +623,6 @@ public partial class GameDatabaseContext // Levels
                     Title = reward.Title,
                     Enabled = reward.Enabled,
                     RequiredAmount = reward.RequiredAmount,
-                    Level = level,
                     LevelId = level.LevelId,
                     ConditionType = reward.ConditionType,
                 };
