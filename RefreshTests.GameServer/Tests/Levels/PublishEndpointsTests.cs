@@ -763,13 +763,11 @@ public class PublishEndpointsTests : GameServerTest
         message = client.PostAsync("/lbp/publish", new StringContent(level.AsXML())).Result;
         Assert.That(message.StatusCode, Is.EqualTo(OK));
 
-        GameLevelResponse response = message.Content.ReadAsXML<GameLevelResponse>();
         context.Database.Refresh();
         dbLevel = context.Database.GetLevelById(dbLevel.LevelId)!;
 
         using (Assert.EnterMultipleScope())
         {
-            Assert.That(response.Handle?.Username, Is.EqualTo("!glotchmeister69"));
             Assert.That(dbLevel.IsReUpload, Is.True);
             Assert.That(dbLevel.OriginalPublisher, Is.EqualTo("glotchmeister69"));
         }

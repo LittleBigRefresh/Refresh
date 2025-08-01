@@ -176,6 +176,8 @@ public partial class GameDatabaseContext // Levels
         newLevel.Publisher = author;
         newLevel.PublishDate = oldLevel.PublishDate;
         newLevel.DateTeamPicked = oldLevel.DateTeamPicked;
+        newLevel.IsReUpload = oldLevel.IsReUpload;
+        newLevel.OriginalPublisher = oldLevel.OriginalPublisher;
         
         // If the actual contents of the level haven't changed, extract some extra information
         if (oldLevel.RootResource == newLevel.RootResource)
