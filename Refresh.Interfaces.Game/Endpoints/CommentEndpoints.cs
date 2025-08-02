@@ -53,7 +53,8 @@ public class CommentEndpoints : EndpointGroup
         
         (int skip, int count) = context.GetPageData();
 
-        return new SerializedCommentList(SerializedComment.FromOldList(database.GetProfileComments(profile, count, skip).ToArray(), dataContext));
+        DatabaseList<GameProfileComment> comments = database.GetProfileComments(profile, count, skip);
+        return new SerializedCommentList(SerializedComment.FromOldList(comments.Items.ToArray(), dataContext));
     }
 
     [GameEndpoint("deleteUserComment/{username}", HttpMethods.Post)]
@@ -115,7 +116,8 @@ public class CommentEndpoints : EndpointGroup
 
         (int skip, int count) = context.GetPageData();
 
-        return new SerializedCommentList(SerializedComment.FromOldList(database.GetLevelComments(level, count, skip).ToArray(), dataContext));
+        DatabaseList<GameLevelComment> comments = database.GetLevelComments(level, count, skip);
+        return new SerializedCommentList(SerializedComment.FromOldList(comments.Items.ToArray(), dataContext));
     }
 
     [GameEndpoint("deleteComment/{slotType}/{id}", HttpMethods.Post)]
@@ -151,9 +153,7 @@ public class CommentEndpoints : EndpointGroup
         if (comment == null)
             return NotFound;
 
-        if (!database.RateProfileComment(user, comment, ratingType))
-            return BadRequest;
-
+        database.RateProfileComment(user, comment, ratingType);
         return OK;
     }
     
@@ -168,9 +168,7 @@ public class CommentEndpoints : EndpointGroup
         if (comment == null)
             return NotFound;
 
-        if (!database.RateLevelComment(user, comment, ratingType))
-            return BadRequest;
-
+        database.RateLevelComment(user, comment, ratingType);
         return OK;
     }
 }

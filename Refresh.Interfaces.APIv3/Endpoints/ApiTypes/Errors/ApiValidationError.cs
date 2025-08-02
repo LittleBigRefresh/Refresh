@@ -10,12 +10,18 @@ public class ApiValidationError : ApiError
     
     public const string NumberParseErrorWhen = "The number could not be parsed by the server";
     public static readonly ApiValidationError NumberParseError = new(NumberParseErrorWhen);
+
+    public const string RatingParseErrorWhen = "The given rating could not be parsed by the server";
+    public static readonly ApiValidationError RatingParseError = new(RatingParseErrorWhen);
     
     public const string IpAddressParseErrorWhen = "The IP address could not be parsed by the server";
     public static readonly ApiValidationError IpAddressParseError = new(IpAddressParseErrorWhen);
 
     public const string NoPhotoDeletionPermissionErrorWhen = "You do not have permission to delete someone else's photo";
     public static readonly ApiValidationError NoPhotoDeletionPermissionError = new(NoPhotoDeletionPermissionErrorWhen);
+
+    public const string NoCommentDeletionPermissionErrorWhen = "You do not have permission to delete this comment";
+    public static readonly ApiValidationError NoCommentDeletionPermissionError = new(NoCommentDeletionPermissionErrorWhen);
     
     public const string HashInvalidErrorWhen = "The hash is invalid (should be SHA1 hash)";
     public static readonly ApiValidationError HashInvalidError = new(HashInvalidErrorWhen);

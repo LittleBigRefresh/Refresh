@@ -14,6 +14,6 @@ public class CommentPublishTests : GameServerTest
         
         GameProfileComment comment = context.Database.PostCommentToProfile(profile, commenter, "Hi!");
         
-        Assert.That(context.Database.GetProfileComments(profile, 1, 0).First(), Is.EqualTo(comment));
+        Assert.That(context.Database.GetProfileComments(profile, 1, 0).Items.First(), Is.EqualTo(comment));
     }
 }
