@@ -153,7 +153,7 @@ public class LeaderboardEndpoints : EndpointGroup
         // Examples:
         // - rank 20 out of 40 = 50%
         // - rank 5 out of 40 = 12.5%
-        float rankingInPercent = ownScore.rank / uniqueScoreCount * 100;
+        int rankingInPercent = (int)((float)ownScore.rank / uniqueScoreCount * 100);
         bool isStoryLevel = level.SlotType == GameSlotType.Story;
         bool isGameBetaBuild = dataContext.Game == TokenGame.BetaBuild;
 
@@ -170,7 +170,7 @@ public class LeaderboardEndpoints : EndpointGroup
         }
 
         // Update on how many story/user levels the user's ranking is 25% (top 1/4th of the leaderboard) or below
-        if (rankingInPercent <= 25) return;
+        if (rankingInPercent > 25) return;
         
         if (isStoryLevel)
         {
