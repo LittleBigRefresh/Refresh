@@ -19,7 +19,6 @@ namespace Refresh.Interfaces.APIv3.Endpoints;
 public class CommentApiEndpoints : EndpointGroup
 {
     #region Profile
-
     [ApiV3Endpoint("users/uuid/{uuid}/comments"), Authentication(false)]
     [DocSummary("Gets comments posted under the specified user's profile.")]
     [DocError(typeof(ApiNotFoundError), ApiNotFoundError.UserMissingErrorWhen)]
@@ -79,13 +78,13 @@ public class CommentApiEndpoints : EndpointGroup
     [DocError(typeof(ApiNotFoundError), ApiNotFoundError.CommentMissingErrorWhen)]
     [DocError(typeof(ApiValidationError), ApiValidationError.RatingParseErrorWhen)]
     public ApiOkResponse RateProfileComment(RequestContext context, DataContext dataContext, GameUser user, int id, 
-        [DocSummary("The comment's new rating by the user. -1 = dislike, 0 = neutral, 1 = like.")] string rawRating)
+        [DocSummary("The user's new rating for the comment. -1 = dislike, 0 = neutral, 1 = like.")] string rawRating)
     {
         GameProfileComment? comment = dataContext.Database.GetProfileCommentById(id);
         if (comment == null) return ApiNotFoundError.CommentMissingError;
 
-        // rawRating is string and not integer because passing any out of range value will make Bunkum set rawRating to 0 instead,
-        // which we would here wrongly take as a neutral rating instead of an invalid value.
+        // rawRating is string and not sbyte or integer because passing any out of range value will make Bunkum 
+        // set rawRating to 0 instead, which we would here wrongly take as a neutral rating instead of an invalid value.
         if (!sbyte.TryParse(rawRating, out sbyte rating) || !Enum.IsDefined(typeof(RatingType), rating))
             return ApiValidationError.RatingParseError;
 
@@ -154,7 +153,7 @@ public class CommentApiEndpoints : EndpointGroup
     [DocError(typeof(ApiNotFoundError), ApiNotFoundError.CommentMissingErrorWhen)]
     [DocError(typeof(ApiValidationError), ApiValidationError.RatingParseErrorWhen)]
     public ApiOkResponse RateLevelComment(RequestContext context, DataContext dataContext, GameUser user, int id, 
-        [DocSummary("The comment's new rating by the user. -1 = dislike, 0 = neutral, 1 = like.")] string rawRating)
+        [DocSummary("The user's new rating for the comment. -1 = dislike, 0 = neutral, 1 = like.")] string rawRating)
     {
         GameLevelComment? comment = dataContext.Database.GetLevelCommentById(id);
         if (comment == null) return ApiNotFoundError.CommentMissingError;
