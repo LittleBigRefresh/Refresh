@@ -5,6 +5,7 @@ using Refresh.Database.Models.Comments;
 using Refresh.Database.Models.Levels;
 using Refresh.Interfaces.APIv3.Endpoints.DataTypes.Response.Data;
 using Refresh.Interfaces.APIv3.Endpoints.DataTypes.Response.Users;
+using Refresh.Interfaces.APIv3.Extensions;
 
 namespace Refresh.Interfaces.APIv3.Endpoints.DataTypes.Response.Levels;
 
@@ -72,7 +73,7 @@ public class ApiGameLevelResponse : IApiResponse, IDataConvertableFrom<ApiGameLe
             OriginalPublisher = level.OriginalPublisher,
             IsReUpload = level.IsReUpload,
             LevelId = level.LevelId,
-            IconHash = GetIconHash(level, dataContext),
+            IconHash = level.GetIconHash(dataContext),
             Description = level.Description,
             Location = ApiGameLocationResponse.FromLocation(level.LocationX, level.LocationY)!,
             PublishDate = level.PublishDate,
@@ -102,14 +103,6 @@ public class ApiGameLevelResponse : IApiResponse, IDataConvertableFrom<ApiGameLe
             Tags = dataContext.Database.GetTagsForLevel(level).Select(t => t.Tag),
             IsModded = level.IsModded,
         };
-    }
-    
-    private static string GetIconHash(GameLevel level, DataContext dataContext)
-    {
-        string hash = dataContext.Database.GetAssetFromHash(level.IconHash)?.GetAsIcon(TokenGame.Website, dataContext) ?? level.IconHash;
-        return level.GameVersion == TokenGame.LittleBigPlanetPSP
-            ? "psp/" + hash
-            : hash;
     }
 
     public static IEnumerable<ApiGameLevelResponse> FromOldList(IEnumerable<GameLevel> oldList, DataContext dataContext) => oldList.Select(old => FromOld(old, dataContext)).ToList()!;
