@@ -153,9 +153,7 @@ public class CommentEndpoints : EndpointGroup
         if (comment == null)
             return NotFound;
 
-        if (!database.RateProfileComment(user, comment, ratingType))
-            return BadRequest;
-
+        database.RateProfileComment(user, comment, ratingType);
         return OK;
     }
     
@@ -170,9 +168,7 @@ public class CommentEndpoints : EndpointGroup
         if (comment == null)
             return NotFound;
 
-        if (!database.RateLevelComment(user, comment, ratingType))
-            return BadRequest;
-
+        database.RateLevelComment(user, comment, ratingType);
         return OK;
     }
 }

@@ -672,17 +672,16 @@ public partial class GameDatabaseContext // Relations
     public int GetTotalRatingsForLevelComment(GameLevelComment comment, RatingType type) =>
         this.LevelCommentRelations.Count(r => r.Comment == comment && r.RatingType == type);
 
-    private bool RateComment<TComment, TCommentRelation>(GameUser user, TComment comment, RatingType ratingType, DbSet<TCommentRelation> list)
+    private void RateComment<TComment, TCommentRelation>(GameUser user, TComment comment, RatingType ratingType, DbSet<TCommentRelation> list)
         where TComment : class, IGameComment
         where TCommentRelation : class, ICommentRelation<TComment>, new()
     {
-        if (ratingType == RatingType.Neutral)
-            return false;
-        
         TCommentRelation? relation = list.FirstOrDefault(r => r.Comment == comment && r.User == user);
         
         if (relation == null)
         {
+            if (ratingType == RatingType.Neutral) return;
+
             relation = new TCommentRelation
             {
                 User = user,
@@ -698,20 +697,28 @@ public partial class GameDatabaseContext // Relations
         }
         else
         {
-            this.Write(() =>
+            if (ratingType == RatingType.Neutral)
             {
-                relation.Timestamp = this._time.Now;
-                relation.RatingType = ratingType;
-            });
+                this.Write(() =>
+                {
+                    list.Remove(relation);
+                });
+            }
+            else
+            {
+                this.Write(() =>
+                {
+                    relation.Timestamp = this._time.Now;
+                    relation.RatingType = ratingType;
+                });
+            }
         }
-
-        return true;
     }
     
-    public bool RateProfileComment(GameUser user, GameProfileComment comment, RatingType ratingType)
+    public void RateProfileComment(GameUser user, GameProfileComment comment, RatingType ratingType)
         => this.RateComment(user, comment, ratingType, this.ProfileCommentRelations);
 
-    public bool RateLevelComment(GameUser user, GameLevelComment comment, RatingType ratingType)
+    public void RateLevelComment(GameUser user, GameLevelComment comment, RatingType ratingType)
         => this.RateComment(user, comment, ratingType, this.LevelCommentRelations);
 
     #endregion
