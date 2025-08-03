@@ -104,23 +104,22 @@ public partial class GameDatabaseContext // Pins
 
         if (progressToUpdate == null)
         {
-            PinProgressRelation newRelation = new()
-            {
-                PinId = pinId,
-                Progress = newProgressValue,
-                Publisher = user,
-                PublisherId = user.UserId,
-                FirstPublished = now,
-                LastUpdated = now,
-                IsBeta = isBeta,
-            };
-
             this.Write(() =>
             {
-                this.PinProgressRelations.Add(newRelation);
-            });
+                //PinProgressRelation newRelation = new()
+                progressToUpdate = new()
+                {
+                    PinId = pinId,
+                    Progress = newProgressValue,
+                    Publisher = user,
+                    PublisherId = user.UserId,
+                    FirstPublished = now,
+                    LastUpdated = now,
+                    IsBeta = isBeta,
+                };
 
-            return newRelation;
+                this.PinProgressRelations.Add(progressToUpdate);
+            });
         }
         // Only update if the final progress value is actually lower to the one already set
         else if (newProgressValue < progressToUpdate.Progress)
@@ -132,7 +131,7 @@ public partial class GameDatabaseContext // Pins
             });
         }
         
-        return progressToUpdate;
+        return progressToUpdate!;
     }
 
     public PinProgressRelation IncrementUserPinProgress(long pinId, int progressToAdd, GameUser user, bool isBeta)

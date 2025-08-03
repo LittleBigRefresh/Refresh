@@ -13,13 +13,19 @@ namespace RefreshTests.GameServer.Tests.Levels;
 public class ScorePinTests : GameServerTest
 {
     [Test]
-    [TestCase(1)]
-    [TestCase(2)]
-    public void AchieveTopXOfCommunityLeaderboardsPin(byte scoreType)
+    [TestCase(1, false)]
+    [TestCase(2, false)]
+    [TestCase(1, true)]
+    [TestCase(2, true)]
+    public void AchieveTopXOfLeaderboardsPin(byte scoreType, bool isStoryLevel)
     {
         using TestContext context = this.GetServer();
         GameUser user = context.CreateUser();
-        GameLevel level = context.CreateLevel(user);
+        GameLevel level = isStoryLevel ? context.Database.GetStoryLevelById(1) : context.CreateLevel(user);
+        int levelId = isStoryLevel ? level.StoryId : level.LevelId;
+        string slotType = level.SlotType.ToGameType();
+        long pinIdToCheck = isStoryLevel ? (long)ManuallyAwardedPins.TopXOfAnyStoryLevelWithOver50Scores
+                                         : (long)ManuallyAwardedPins.TopXOfAnyCommunityLevelWithOver50Scores;
 
         // Prepare by posting 100 scores by other people
         context.FillLeaderboard(level, 100, scoreType);
@@ -28,9 +34,9 @@ public class ScorePinTests : GameServerTest
         DatabaseList<ScoreWithRank> scores = context.Database.GetTopScoresForLevel(level, 100, 0, scoreType);
         Assert.That(scores.TotalItems, Is.EqualTo(100));
 
-        // Now post our score
+        // ROUND 1: Post our initial score to create the pin relation
         using HttpClient client = context.GetAuthenticatedClient(TokenType.Game, user);
-        SerializedScore score = new()
+        SerializedScore score1 = new()
         {
             Host = true,
             ScoreType = scoreType,
@@ -38,75 +44,47 @@ public class ScorePinTests : GameServerTest
         };
 
         context.Database.PlayLevel(level, user, 1);
-        
-        HttpResponseMessage message = client.PostAsync($"/lbp/scoreboard/user/{level.LevelId}", new StringContent(score.AsXML())).Result;
+
+        HttpResponseMessage message = client.PostAsync($"/lbp/scoreboard/{slotType}/{levelId}", new StringContent(score1.AsXML())).Result;
         Assert.That(message.StatusCode, Is.EqualTo(OK));
 
         // Ensure we now have the pin
-        PinProgressRelation? relation = context.Database.GetUserPinProgress((long)ManuallyAwardedPins.TopXOfAnyCommunityLevelWithOver50Scores, user, false);
+        PinProgressRelation? relation = context.Database.GetUserPinProgress(pinIdToCheck, user, false);
         Assert.That(relation, Is.Not.Null);
         int progress = relation!.Progress;
 
-        // Now post a better score to try and update our pin progress
-        score = new()
+        // ROUND 2: Now post a better score to update our pin relation
+        SerializedScore score2 = new()
         {
             Host = true,
             ScoreType = scoreType,
             Score = 50,
         };
 
-        message = client.PostAsync($"/lbp/scoreboard/user/{level.LevelId}", new StringContent(score.AsXML())).Result;
+        message = client.PostAsync($"/lbp/scoreboard/{slotType}/{levelId}", new StringContent(score2.AsXML())).Result;
         Assert.That(message.StatusCode, Is.EqualTo(OK));
 
-        // Ensure the pin has a better progress value
-        relation = context.Database.GetUserPinProgress((long)ManuallyAwardedPins.TopXOfAnyCommunityLevelWithOver50Scores, user, false);
+        // Ensure the pin now has a better progress value (is smaller)
+        context.Database.Refresh();
+        relation = context.Database.GetUserPinProgress(pinIdToCheck, user, false);
         Assert.That(relation, Is.Not.Null);
         Assert.That(relation!.Progress, Is.LessThan(progress));
     }
 
     [Test]
-    [TestCase(1)]
-    [TestCase(2)]
-    public void RejectTopXOfCommunityLeaderboardsPinIfTooFewScores(byte scoreType)
+    [TestCase(1, false)]
+    [TestCase(2, false)]
+    [TestCase(1, true)]
+    [TestCase(2, true)]
+    public void AchieveTopFourthOfXLeaderboardsPin(byte scoreType, bool isStoryLevel)
     {
         using TestContext context = this.GetServer();
         GameUser user = context.CreateUser();
-        GameLevel level = context.CreateLevel(user);
-
-        // Prepare by posting only 10 scores by other people
-        context.FillLeaderboard(level, 10, scoreType);
-
-        // Ensure the level now has 10 unique scores
-        DatabaseList<ScoreWithRank> scores = context.Database.GetTopScoresForLevel(level, 100, 0, scoreType);
-        Assert.That(scores.TotalItems, Is.EqualTo(10));
-
-        // Now post our score
-        using HttpClient client = context.GetAuthenticatedClient(TokenType.Game, user);
-        SerializedScore score = new()
-        {
-            Host = true,
-            ScoreType = scoreType,
-            Score = 10,
-        };
-
-        context.Database.PlayLevel(level, user, 1);
-        
-        HttpResponseMessage message = client.PostAsync($"/lbp/scoreboard/user/{level.LevelId}", new StringContent(score.AsXML())).Result;
-        Assert.That(message.StatusCode, Is.EqualTo(OK));
-
-        // Ensure we don't have the pin
-        PinProgressRelation? relation = context.Database.GetUserPinProgress((long)ManuallyAwardedPins.TopXOfAnyCommunityLevelWithOver50Scores, user, false);
-        Assert.That(relation, Is.Null);
-    }
-
-    [Test]
-    [TestCase(1)]
-    [TestCase(2)]
-    public void AchieveTopXOfStoryLeaderboardsPin(byte scoreType)
-    {
-        using TestContext context = this.GetServer();
-        GameUser user = context.CreateUser();
-        GameLevel level = context.Database.GetStoryLevelById(1);
+        GameLevel level = isStoryLevel ? context.Database.GetStoryLevelById(1) : context.CreateLevel(user);
+        int levelId = isStoryLevel ? level.StoryId : level.LevelId;
+        string slotType = level.SlotType.ToGameType();
+        long pinIdToCheck = isStoryLevel ? (long)ManuallyAwardedPins.TopXOfAnyStoryLevelWithOver50Scores
+                                         : (long)ManuallyAwardedPins.TopXOfAnyCommunityLevelWithOver50Scores;
 
         // Prepare by posting 100 scores by other people
         context.FillLeaderboard(level, 100, scoreType);
@@ -115,42 +93,69 @@ public class ScorePinTests : GameServerTest
         DatabaseList<ScoreWithRank> scores = context.Database.GetTopScoresForLevel(level, 100, 0, scoreType);
         Assert.That(scores.TotalItems, Is.EqualTo(100));
 
-        // Now post our score
+        // ROUND 1: Post our score which will definitely make it to the top 25%
         using HttpClient client = context.GetAuthenticatedClient(TokenType.Game, user);
-        SerializedScore score = new()
+        SerializedScore score1 = new()
         {
             Host = true,
             ScoreType = scoreType,
-            Score = 10,
+            Score = 80,
         };
 
         context.Database.PlayLevel(level, user, 1);
 
-        HttpResponseMessage message = client.PostAsync($"/lbp/scoreboard/developer/{level.StoryId}", new StringContent(score.AsXML())).Result;
+        HttpResponseMessage message = client.PostAsync($"/lbp/scoreboard/{slotType}/{levelId}", new StringContent(score1.AsXML())).Result;
         Assert.That(message.StatusCode, Is.EqualTo(OK));
 
         // Ensure we now have the pin
-        PinProgressRelation? relation = context.Database.GetUserPinProgress((long)ManuallyAwardedPins.TopXOfAnyStoryLevelWithOver50Scores, user, false);
+        PinProgressRelation? relation = context.Database.GetUserPinProgress(pinIdToCheck, user, false);
         Assert.That(relation, Is.Not.Null);
+        int progress = relation!.Progress;
+
+        // ROUND 2: Now post a better score to update our pin relation
+        SerializedScore score2 = new()
+        {
+            Host = true,
+            ScoreType = scoreType,
+            Score = 1000,
+        };
+
+        message = client.PostAsync($"/lbp/scoreboard/{slotType}/{levelId}", new StringContent(score2.AsXML())).Result;
+        Assert.That(message.StatusCode, Is.EqualTo(OK));
+
+        // Ensure the pin now has a better progress value (is smaller)
+        context.Database.Refresh();
+        relation = context.Database.GetUserPinProgress(pinIdToCheck, user, false);
+        Assert.That(relation, Is.Not.Null);
+        Assert.That(relation!.Progress, Is.LessThan(progress));
+
+        // Ensure that progress is higher than 0
+        Assert.That(relation!.Progress, Is.GreaterThan(0));
     }
 
     [Test]
-    [TestCase(1)]
-    [TestCase(2)]
-    public void RejectTopXOfStoryLeaderboardsPinIfTooFewScores(byte scoreType)
+    [TestCase(1, false)]
+    [TestCase(2, false)]
+    [TestCase(1, true)]
+    [TestCase(2, true)]
+    public void RejectTopXOfLeaderboardsPinIfTooFewScores(byte scoreType, bool isStoryLevel)
     {
         using TestContext context = this.GetServer();
         GameUser user = context.CreateUser();
-        GameLevel level = context.Database.GetStoryLevelById(1);
+        GameLevel level = isStoryLevel ? context.Database.GetStoryLevelById(1) : context.CreateLevel(user);
+        int levelId = isStoryLevel ? level.StoryId : level.LevelId;
+        string slotType = level.SlotType.ToGameType();
+        long pinIdToCheck = isStoryLevel ? (long)ManuallyAwardedPins.TopFourthOfXStoryLevelsWithOver50Scores
+                                         : (long)ManuallyAwardedPins.TopFourthOfXCommunityLevelsWithOver50Scores;
 
-        // Prepare by posting only 10 scores by other people
+        // Prepare by posting 10 scores by other people
         context.FillLeaderboard(level, 10, scoreType);
 
-        // Ensure the level now has 10 unique scores
+        // Ensure the level now has only 10 unique scores (less than 50)
         DatabaseList<ScoreWithRank> scores = context.Database.GetTopScoresForLevel(level, 100, 0, scoreType);
         Assert.That(scores.TotalItems, Is.EqualTo(10));
 
-        // Now post our score
+        // Post our own score
         using HttpClient client = context.GetAuthenticatedClient(TokenType.Game, user);
         SerializedScore score = new()
         {
@@ -160,152 +165,53 @@ public class ScorePinTests : GameServerTest
         };
 
         context.Database.PlayLevel(level, user, 1);
-        
-        HttpResponseMessage message = client.PostAsync($"/lbp/scoreboard/developer/{level.StoryId}", new StringContent(score.AsXML())).Result;
+
+        HttpResponseMessage message = client.PostAsync($"/lbp/scoreboard/{slotType}/{levelId}", new StringContent(score.AsXML())).Result;
         Assert.That(message.StatusCode, Is.EqualTo(OK));
 
         // Ensure we don't have the pin
-        PinProgressRelation? relation = context.Database.GetUserPinProgress((long)ManuallyAwardedPins.TopXOfAnyStoryLevelWithOver50Scores, user, false);
+        PinProgressRelation? relation = context.Database.GetUserPinProgress(pinIdToCheck, user, false);
         Assert.That(relation, Is.Null);
     }
 
     [Test]
-    [TestCase(1)]
-    [TestCase(2)]
-    public void AchieveTopFourthOfXCommunityLeaderboardsPin(byte scoreType)
+    [TestCase(1, false)]
+    [TestCase(2, false)]
+    [TestCase(1, true)]
+    [TestCase(2, true)]
+    public void RejectTopFourthOfXLeaderboardsPinIfSkillIssue(byte scoreType, bool isStoryLevel)
     {
         using TestContext context = this.GetServer();
         GameUser user = context.CreateUser();
-        GameLevel level = context.CreateLevel(user);
+        GameLevel level = isStoryLevel ? context.Database.GetStoryLevelById(1) : context.CreateLevel(user);
+        int levelId = isStoryLevel ? level.StoryId : level.LevelId;
+        string slotType = level.SlotType.ToGameType();
+        long pinIdToCheck = isStoryLevel ? (long)ManuallyAwardedPins.TopFourthOfXStoryLevelsWithOver50Scores
+                                         : (long)ManuallyAwardedPins.TopFourthOfXCommunityLevelsWithOver50Scores;
 
         // Prepare by posting 100 scores by other people
         context.FillLeaderboard(level, 100, scoreType);
 
-        // Ensure the level now has 100 unique scores
+        // Ensure the level now has 100 unique scores to try to create the pin relation
         DatabaseList<ScoreWithRank> scores = context.Database.GetTopScoresForLevel(level, 100, 0, scoreType);
         Assert.That(scores.TotalItems, Is.EqualTo(100));
 
-        // Now post our score, which will beat most other scores
+        // Post a score which will definitely not make it to the top 25%
         using HttpClient client = context.GetAuthenticatedClient(TokenType.Game, user);
         SerializedScore score = new()
         {
             Host = true,
             ScoreType = scoreType,
-            Score = 420,
+            Score = 10,
         };
 
         context.Database.PlayLevel(level, user, 1);
-        
-        HttpResponseMessage message = client.PostAsync($"/lbp/scoreboard/user/{level.LevelId}", new StringContent(score.AsXML())).Result;
-        Assert.That(message.StatusCode, Is.EqualTo(OK));
 
-        // Ensure we have the pin
-        PinProgressRelation? relation = context.Database.GetUserPinProgress((long)ManuallyAwardedPins.TopFourthOfXCommunityLevelsWithOver50Scores, user, false);
-        Assert.That(relation, Is.Not.Null);
-    }
-
-    [Test]
-    [TestCase(1)]
-    [TestCase(2)]
-    public void RejectTopFourthOfXCommunityLeaderboardsPinIfSkillIssue(byte scoreType)
-    {
-        using TestContext context = this.GetServer();
-        GameUser user = context.CreateUser();
-        GameLevel level = context.CreateLevel(user);
-
-        // Prepare by posting 100 scores by other people
-        context.FillLeaderboard(level, 100, scoreType);
-
-        // Ensure the level now has 100 unique scores
-        DatabaseList<ScoreWithRank> scores = context.Database.GetTopScoresForLevel(level, 100, 0, scoreType);
-        Assert.That(scores.TotalItems, Is.EqualTo(100));
-
-        // Now post our score, which definitely won't make it to the top 25%
-        using HttpClient client = context.GetAuthenticatedClient(TokenType.Game, user);
-        SerializedScore score = new()
-        {
-            Host = true,
-            ScoreType = scoreType,
-            Score = 5,
-        };
-
-        context.Database.PlayLevel(level, user, 1);
-        
-        HttpResponseMessage message = client.PostAsync($"/lbp/scoreboard/user/{level.LevelId}", new StringContent(score.AsXML())).Result;
+        HttpResponseMessage message = client.PostAsync($"/lbp/scoreboard/{slotType}/{levelId}", new StringContent(score.AsXML())).Result;
         Assert.That(message.StatusCode, Is.EqualTo(OK));
 
         // Ensure we don't have the pin
-        PinProgressRelation? relation = context.Database.GetUserPinProgress((long)ManuallyAwardedPins.TopFourthOfXCommunityLevelsWithOver50Scores, user, false);
-        Assert.That(relation, Is.Null);
-    }
-
-    [Test]
-    [TestCase(1)]
-    [TestCase(2)]
-    public void AchieveTopFourthOfXStoryLeaderboardsPin(byte scoreType)
-    {
-        using TestContext context = this.GetServer();
-        GameUser user = context.CreateUser();
-        GameLevel level = context.Database.GetStoryLevelById(1);
-
-        // Prepare by posting 100 scores by other people
-        context.FillLeaderboard(level, 100, scoreType);
-
-        // Ensure the level now has 100 unique scores
-        DatabaseList<ScoreWithRank> scores = context.Database.GetTopScoresForLevel(level, 100, 0, scoreType);
-        Assert.That(scores.TotalItems, Is.EqualTo(100));
-
-        // Now post our score, which will beat most other scores
-        using HttpClient client = context.GetAuthenticatedClient(TokenType.Game, user);
-        SerializedScore score = new()
-        {
-            Host = true,
-            ScoreType = scoreType,
-            Score = 420,
-        };
-
-        context.Database.PlayLevel(level, user, 1);
-        
-        HttpResponseMessage message = client.PostAsync($"/lbp/scoreboard/developer/{level.StoryId}", new StringContent(score.AsXML())).Result;
-        Assert.That(message.StatusCode, Is.EqualTo(OK));
-
-        // Ensure we have the pin
-        PinProgressRelation? relation = context.Database.GetUserPinProgress((long)ManuallyAwardedPins.TopFourthOfXStoryLevelsWithOver50Scores, user, false);
-        Assert.That(relation, Is.Not.Null);
-    }
-
-    [Test]
-    [TestCase(1)]
-    [TestCase(2)]
-    public void RejectTopFourthOfXStoryLeaderboardsPinIfSkillIssue(byte scoreType)
-    {
-        using TestContext context = this.GetServer();
-        GameUser user = context.CreateUser();
-        GameLevel level = context.Database.GetStoryLevelById(1);
-
-        // Prepare by posting 100 scores by other people
-        context.FillLeaderboard(level, 100, scoreType);
-
-        // Ensure the level now has 100 unique scores
-        DatabaseList<ScoreWithRank> scores = context.Database.GetTopScoresForLevel(level, 100, 0, scoreType);
-        Assert.That(scores.TotalItems, Is.EqualTo(100));
-
-        // Now post our score, which definitely won't make it to the top 25%
-        using HttpClient client = context.GetAuthenticatedClient(TokenType.Game, user);
-        SerializedScore score = new()
-        {
-            Host = true,
-            ScoreType = scoreType,
-            Score = 5,
-        };
-
-        context.Database.PlayLevel(level, user, 1);
-        
-        HttpResponseMessage message = client.PostAsync($"/lbp/scoreboard/developer/{level.StoryId}", new StringContent(score.AsXML())).Result;
-        Assert.That(message.StatusCode, Is.EqualTo(OK));
-
-        // Ensure we don't have the pin
-        PinProgressRelation? relation = context.Database.GetUserPinProgress((long)ManuallyAwardedPins.TopFourthOfXStoryLevelsWithOver50Scores, user, false);
+        PinProgressRelation? relation = context.Database.GetUserPinProgress(pinIdToCheck, user, false);
         Assert.That(relation, Is.Null);
     }
 }
