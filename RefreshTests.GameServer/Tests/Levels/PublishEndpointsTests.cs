@@ -8,6 +8,7 @@ using Refresh.Database.Models.Users;
 using RefreshTests.GameServer.Extensions;
 using Refresh.Database.Models.Levels;
 using Refresh.Database.Models.Notifications;
+using Refresh.Interfaces.APIv3.Endpoints.DataTypes.Request;
 using Refresh.Interfaces.Game.Endpoints.DataTypes.Request;
 using Refresh.Interfaces.Game.Endpoints.DataTypes.Response;
 using Refresh.Interfaces.Game.Types.Levels;
@@ -703,5 +704,72 @@ public class PublishEndpointsTests : GameServerTest
 
         IEnumerable<GameSkillReward> rewards = context.Database.GetSkillRewardsForLevel(dbLevel!);
         Assert.That(rewards, Is.Not.Empty);
+    }
+    
+    [Test]
+    public void ReuploadStatusPreserved()
+    {
+        using TestContext context = this.GetServer();
+        GameUser user = context.CreateUser();
+
+        using HttpClient client = context.GetAuthenticatedClient(TokenType.Game, user);
+        
+        HttpResponseMessage message = client.PostAsync($"/lbp/upload/{TEST_ASSET_HASH}", new ReadOnlyMemoryContent("LVLb"u8.ToArray())).Result;
+        Assert.That(message.StatusCode, Is.EqualTo(OK));
+
+        GameLevel dbLevel = context.CreateLevel(user);
+        context.Database.UpdateLevel(new ApiAdminEditLevelRequest()
+        {
+            IsReUpload = true,
+            OriginalPublisher = "glotchmeister69",
+        }, dbLevel, null);
+
+        using (Assert.EnterMultipleScope())
+        {
+            Assert.That(dbLevel.IsReUpload, Is.True);
+            Assert.That(dbLevel.OriginalPublisher, Is.EqualTo("glotchmeister69"));
+        }
+
+        GameLevelRequest level = new()
+        {
+            LevelId = dbLevel.LevelId,
+            IsAdventure = false,
+            Title = "Level",
+            IconHash = "0",
+            Description = new string('=', UgcLimits.DescriptionLimit * 2),
+            Location = new GameLocation(),
+            GameVersion = 0,
+            RootResource = TEST_ASSET_HASH,
+            PublishDate = 0,
+            UpdateDate = 0,
+            MinPlayers = 0,
+            MaxPlayers = 0,
+            EnforceMinMaxPlayers = false,
+            SameScreenGame = false,
+            SkillRewards = new List<GameSkillReward>()
+            {
+                new()
+                {
+                    ConditionType = GameSkillRewardCondition.Lives,
+                    RequiredAmount = 3,
+                    Id = 1,
+                    Title = "do the stuff",
+                    Enabled = true,
+                },
+            },
+        };
+        
+        // Republish the level
+        message = client.PostAsync("/lbp/publish", new StringContent(level.AsXML())).Result;
+        Assert.That(message.StatusCode, Is.EqualTo(OK));
+
+        context.Database.Refresh();
+        dbLevel = context.Database.GetLevelById(dbLevel.LevelId)!;
+
+        using (Assert.EnterMultipleScope())
+        {
+            Assert.That(dbLevel.IsReUpload, Is.True);
+            Assert.That(dbLevel.OriginalPublisher, Is.EqualTo("glotchmeister69"));
+        }
     }
 }
