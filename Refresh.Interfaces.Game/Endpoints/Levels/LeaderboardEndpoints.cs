@@ -144,8 +144,8 @@ public class LeaderboardEndpoints : EndpointGroup
         dataContext.Database.EnsureLevelStatisticsCreated(level);
         int uniqueScoreCount = scores.TotalItems;
 
-        // All pins below are only expected to be awarded if the level's leaderboard has atleast 50 scores
-        // This also prevents dividing by 0 below.
+        // All pins below are only expected to be awarded if the level's leaderboard has atleast 50 scores.
+        // This check also prevents dividing by 0 below.
         if (uniqueScoreCount < 50) return;
 
         ScoreWithRank? ownScore = scores.Items.FirstOrDefault(s => s.score.PlayerIds.Contains(user.UserId));
@@ -154,7 +154,7 @@ public class LeaderboardEndpoints : EndpointGroup
         // Examples for rankingInPercent:
         // - rank 20 out of 40 = 50%
         // - rank 5 out of 40 = 12.5%
-        // Always rounding up will prevent users from being top 0% of a leaderboard (since 1% is the maximum)
+        // Always rounding up will prevent users from being top 0% of a leaderboard (since 1% should be the maximum)
         // after the int cast; and for the top 25% pins, being in the top 25.001% for example technically
         // doesn't count as completing the pins' objective, since that's still greater than 25%.
         int rankingInPercent = (int)Math.Ceiling((float)ownScore.rank / uniqueScoreCount * 100);

@@ -46,8 +46,8 @@ public partial class GameDatabaseContext // Pins
 
                 // Only update progress if it's better. For most pins it's better the greater it is, but for the pins in
                 // specialTreatmentPins, it's better the smaller it is.
-                if (isSpecialTreatmentPin && newProgress < existingProgress.Progress
-                || !isSpecialTreatmentPin && newProgress > existingProgress.Progress)
+                if (!isSpecialTreatmentPin && newProgress > existingProgress.Progress
+                  || isSpecialTreatmentPin && newProgress < existingProgress.Progress)
                 {
                     existingProgress.Progress = newProgress;
                     existingProgress.LastUpdated = now;
@@ -108,7 +108,6 @@ public partial class GameDatabaseContext // Pins
         {
             this.Write(() =>
             {
-                //PinProgressRelation newRelation = new()
                 progressToUpdate = new()
                 {
                     PinId = pinId,

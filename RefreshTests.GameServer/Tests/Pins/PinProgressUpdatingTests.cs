@@ -1,15 +1,9 @@
-using System.Net.Http.Json;
 using System.Text;
 using Newtonsoft.Json;
-using Refresh.Database;
 using Refresh.Database.Models.Authentication;
-using Refresh.Database.Models.Levels;
-using Refresh.Database.Models.Levels.Scores;
 using Refresh.Database.Models.Pins;
-using Refresh.Database.Models.Relations;
 using Refresh.Database.Models.Users;
 using Refresh.Interfaces.Game.Types.Pins;
-using Refresh.Interfaces.Game.Types.UserData.Leaderboard;
 using RefreshTests.GameServer.Extensions;
 
 namespace RefreshTests.GameServer.Tests.Levels;

@@ -1,7 +1,5 @@
-using Refresh.Database;
 using Refresh.Database.Models.Authentication;
 using Refresh.Database.Models.Levels;
-using Refresh.Database.Models.Levels.Scores;
 using Refresh.Database.Models.Pins;
 using Refresh.Database.Models.Relations;
 using Refresh.Database.Models.Users;
@@ -21,21 +19,18 @@ public class ScorePinTests : GameServerTest
     {
         using TestContext context = this.GetServer();
         GameUser user = context.CreateUser();
+        using HttpClient client = context.GetAuthenticatedClient(TokenType.Game, user);
+        long pinIdToCheck = isStoryLevel ? (long)ManuallyAwardedPins.TopXOfAnyStoryLevelWithOver50Scores
+                                         : (long)ManuallyAwardedPins.TopXOfAnyCommunityLevelWithOver50Scores;
+        
         GameLevel level = isStoryLevel ? context.Database.GetStoryLevelById(1) : context.CreateLevel(user);
         int levelId = isStoryLevel ? level.StoryId : level.LevelId;
         string slotType = level.SlotType.ToGameType();
-        long pinIdToCheck = isStoryLevel ? (long)ManuallyAwardedPins.TopXOfAnyStoryLevelWithOver50Scores
-                                         : (long)ManuallyAwardedPins.TopXOfAnyCommunityLevelWithOver50Scores;
 
         // Prepare by posting 100 scores by other people
         context.FillLeaderboard(level, 100, scoreType);
 
-        // Ensure the level now has 100 unique scores
-        DatabaseList<ScoreWithRank> scores = context.Database.GetTopScoresForLevel(level, 100, 0, scoreType);
-        Assert.That(scores.TotalItems, Is.EqualTo(100));
-
-        // ROUND 1: Post our initial score to create the pin relation
-        using HttpClient client = context.GetAuthenticatedClient(TokenType.Game, user);
+        // ROUND 1: Post our initial score to create a pin relation
         SerializedScore score1 = new()
         {
             Host = true,
@@ -44,7 +39,6 @@ public class ScorePinTests : GameServerTest
         };
 
         context.Database.PlayLevel(level, user, 1);
-
         HttpResponseMessage message = client.PostAsync($"/lbp/scoreboard/{slotType}/{levelId}", new StringContent(score1.AsXML())).Result;
         Assert.That(message.StatusCode, Is.EqualTo(OK));
 
@@ -52,6 +46,8 @@ public class ScorePinTests : GameServerTest
         PinProgressRelation? relation = context.Database.GetUserPinProgress(pinIdToCheck, user, false);
         Assert.That(relation, Is.Not.Null);
         int progress = relation!.Progress;
+
+        context.Database.Refresh();
 
         // ROUND 2: Now post a better score to update our pin relation
         SerializedScore score2 = new()
@@ -65,10 +61,12 @@ public class ScorePinTests : GameServerTest
         Assert.That(message.StatusCode, Is.EqualTo(OK));
 
         // Ensure the pin now has a better progress value (is smaller)
-        context.Database.Refresh();
         relation = context.Database.GetUserPinProgress(pinIdToCheck, user, false);
         Assert.That(relation, Is.Not.Null);
         Assert.That(relation!.Progress, Is.LessThan(progress));
+
+        // Ensure the pin's progress is above 0
+        Assert.That(relation!.Progress, Is.GreaterThan(0));
     }
 
     [Test]
@@ -80,22 +78,19 @@ public class ScorePinTests : GameServerTest
     {
         using TestContext context = this.GetServer();
         GameUser user = context.CreateUser();
+        using HttpClient client = context.GetAuthenticatedClient(TokenType.Game, user);
+        long pinIdToCheck = isStoryLevel ? (long)ManuallyAwardedPins.TopFourthOfXStoryLevelsWithOver50Scores
+                                         : (long)ManuallyAwardedPins.TopFourthOfXCommunityLevelsWithOver50Scores;
+
+        // Create a level and spam it with scores by others
         GameLevel level = isStoryLevel ? context.Database.GetStoryLevelById(1) : context.CreateLevel(user);
         int levelId = isStoryLevel ? level.StoryId : level.LevelId;
         string slotType = level.SlotType.ToGameType();
-        long pinIdToCheck = isStoryLevel ? (long)ManuallyAwardedPins.TopXOfAnyStoryLevelWithOver50Scores
-                                         : (long)ManuallyAwardedPins.TopXOfAnyCommunityLevelWithOver50Scores;
 
-        // Prepare by posting 100 scores by other people
         context.FillLeaderboard(level, 100, scoreType);
 
-        // Ensure the level now has 100 unique scores
-        DatabaseList<ScoreWithRank> scores = context.Database.GetTopScoresForLevel(level, 100, 0, scoreType);
-        Assert.That(scores.TotalItems, Is.EqualTo(100));
-
-        // ROUND 1: Post our score which will definitely make it to the top 25%
-        using HttpClient client = context.GetAuthenticatedClient(TokenType.Game, user);
-        SerializedScore score1 = new()
+        // Now post our score which will definitely make it to the top 25%
+        SerializedScore score = new()
         {
             Host = true,
             ScoreType = scoreType,
@@ -103,34 +98,13 @@ public class ScorePinTests : GameServerTest
         };
 
         context.Database.PlayLevel(level, user, 1);
-
-        HttpResponseMessage message = client.PostAsync($"/lbp/scoreboard/{slotType}/{levelId}", new StringContent(score1.AsXML())).Result;
+        HttpResponseMessage message = client.PostAsync($"/lbp/scoreboard/{slotType}/{levelId}", new StringContent(score.AsXML())).Result;
         Assert.That(message.StatusCode, Is.EqualTo(OK));
 
         // Ensure we now have the pin
         PinProgressRelation? relation = context.Database.GetUserPinProgress(pinIdToCheck, user, false);
         Assert.That(relation, Is.Not.Null);
-        int progress = relation!.Progress;
-
-        // ROUND 2: Now post a better score to update our pin relation
-        SerializedScore score2 = new()
-        {
-            Host = true,
-            ScoreType = scoreType,
-            Score = 1000,
-        };
-
-        message = client.PostAsync($"/lbp/scoreboard/{slotType}/{levelId}", new StringContent(score2.AsXML())).Result;
-        Assert.That(message.StatusCode, Is.EqualTo(OK));
-
-        // Ensure the pin now has a better progress value (is smaller)
-        context.Database.Refresh();
-        relation = context.Database.GetUserPinProgress(pinIdToCheck, user, false);
-        Assert.That(relation, Is.Not.Null);
-        Assert.That(relation!.Progress, Is.LessThan(progress));
-
-        // Ensure that progress is higher than 0
-        Assert.That(relation!.Progress, Is.GreaterThan(0));
+        Assert.That(relation!.Progress, Is.EqualTo(1));
     }
 
     [Test]
@@ -142,21 +116,18 @@ public class ScorePinTests : GameServerTest
     {
         using TestContext context = this.GetServer();
         GameUser user = context.CreateUser();
+        using HttpClient client = context.GetAuthenticatedClient(TokenType.Game, user);
+        long pinIdToCheck = isStoryLevel ? (long)ManuallyAwardedPins.TopFourthOfXStoryLevelsWithOver50Scores
+                                         : (long)ManuallyAwardedPins.TopFourthOfXCommunityLevelsWithOver50Scores;
+        
         GameLevel level = isStoryLevel ? context.Database.GetStoryLevelById(1) : context.CreateLevel(user);
         int levelId = isStoryLevel ? level.StoryId : level.LevelId;
         string slotType = level.SlotType.ToGameType();
-        long pinIdToCheck = isStoryLevel ? (long)ManuallyAwardedPins.TopFourthOfXStoryLevelsWithOver50Scores
-                                         : (long)ManuallyAwardedPins.TopFourthOfXCommunityLevelsWithOver50Scores;
 
-        // Prepare by posting 10 scores by other people
+        // Prepare by posting only 10 scores by other people (less than 50)
         context.FillLeaderboard(level, 10, scoreType);
 
-        // Ensure the level now has only 10 unique scores (less than 50)
-        DatabaseList<ScoreWithRank> scores = context.Database.GetTopScoresForLevel(level, 100, 0, scoreType);
-        Assert.That(scores.TotalItems, Is.EqualTo(10));
-
         // Post our own score
-        using HttpClient client = context.GetAuthenticatedClient(TokenType.Game, user);
         SerializedScore score = new()
         {
             Host = true,
@@ -165,7 +136,6 @@ public class ScorePinTests : GameServerTest
         };
 
         context.Database.PlayLevel(level, user, 1);
-
         HttpResponseMessage message = client.PostAsync($"/lbp/scoreboard/{slotType}/{levelId}", new StringContent(score.AsXML())).Result;
         Assert.That(message.StatusCode, Is.EqualTo(OK));
 
@@ -183,21 +153,18 @@ public class ScorePinTests : GameServerTest
     {
         using TestContext context = this.GetServer();
         GameUser user = context.CreateUser();
+        using HttpClient client = context.GetAuthenticatedClient(TokenType.Game, user);
+        long pinIdToCheck = isStoryLevel ? (long)ManuallyAwardedPins.TopFourthOfXStoryLevelsWithOver50Scores
+                                         : (long)ManuallyAwardedPins.TopFourthOfXCommunityLevelsWithOver50Scores;
+        
         GameLevel level = isStoryLevel ? context.Database.GetStoryLevelById(1) : context.CreateLevel(user);
         int levelId = isStoryLevel ? level.StoryId : level.LevelId;
         string slotType = level.SlotType.ToGameType();
-        long pinIdToCheck = isStoryLevel ? (long)ManuallyAwardedPins.TopFourthOfXStoryLevelsWithOver50Scores
-                                         : (long)ManuallyAwardedPins.TopFourthOfXCommunityLevelsWithOver50Scores;
 
         // Prepare by posting 100 scores by other people
         context.FillLeaderboard(level, 100, scoreType);
 
-        // Ensure the level now has 100 unique scores to try to create the pin relation
-        DatabaseList<ScoreWithRank> scores = context.Database.GetTopScoresForLevel(level, 100, 0, scoreType);
-        Assert.That(scores.TotalItems, Is.EqualTo(100));
-
         // Post a score which will definitely not make it to the top 25%
-        using HttpClient client = context.GetAuthenticatedClient(TokenType.Game, user);
         SerializedScore score = new()
         {
             Host = true,
@@ -206,7 +173,6 @@ public class ScorePinTests : GameServerTest
         };
 
         context.Database.PlayLevel(level, user, 1);
-
         HttpResponseMessage message = client.PostAsync($"/lbp/scoreboard/{slotType}/{levelId}", new StringContent(score.AsXML())).Result;
         Assert.That(message.StatusCode, Is.EqualTo(OK));
 
