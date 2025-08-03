@@ -1,28 +1,30 @@
+using System.Diagnostics;
 using System.Xml.Serialization;
+using Refresh.Common.Constants;
 using Refresh.Core.Types.Data;
 using Refresh.Core.Types.Matching;
 using Refresh.Database.Models;
 using Refresh.Database.Models.Authentication;
+using Refresh.Database.Models.Comments;
 using Refresh.Database.Models.Levels;
 using Refresh.Database.Models.Playlists;
-using Refresh.Interfaces.Game.Endpoints.DataTypes.Response;
 using Refresh.Interfaces.Game.Types.UserData;
 
 namespace Refresh.Interfaces.Game.Types.Levels;
 
-public class GameMinimalLevelResponse : IDataConvertableFrom<GameMinimalLevelResponse, GameLevel>, IDataConvertableFrom<GameMinimalLevelResponse, GamePlaylist>, IDataConvertableFrom<GameMinimalLevelResponse, GameLevelResponse>
+public class GameMinimalLevelResponse : IDataConvertableFrom<GameMinimalLevelResponse, GameLevel>, IDataConvertableFrom<GameMinimalLevelResponse, GamePlaylist>
 {
     //NOTE: THIS MUST BE AT THE TOP OF THE XML RESPONSE OR ELSE LBP PSP WILL CRASH
     [XmlElement("id")] public required int LevelId { get; set; }
     
     [XmlElement("isAdventurePlanet")] public required bool IsAdventure { get; set; }
     [XmlElement("name")] public required string Title { get; set; } = string.Empty;
-    [XmlElement("icon")] public required string IconHash { get; set; } = string.Empty;
+    [XmlElement("icon")] public string IconHash { get; set; } = string.Empty;
     [XmlElement("game")] public required int GameVersion { get; set; }
     [XmlElement("rootLevel")] public required string RootResource { get; set; } = string.Empty;
     [XmlElement("description")] public required string Description { get; set; } = string.Empty;
     [XmlElement("location")] public required GameLocation Location { get; set; } = GameLocation.Zero;
-    [XmlElement("npHandle")] public required SerializedUserHandle? Handle { get; set; }
+    [XmlElement("npHandle")] public SerializedUserHandle? Handle { get; set; } = null!;
     [XmlAttribute("type")] public required string? Type { get; set; }
     [XmlElement("leveltype")] public required string LevelType { get; set; }
     [XmlElement("mmpick")] public required bool TeamPicked { get; set; }
@@ -51,7 +53,7 @@ public class GameMinimalLevelResponse : IDataConvertableFrom<GameMinimalLevelRes
     [XmlElement("moveRequired")] public bool RequiresMoveController { get; set; }
     [XmlElement("tags")] public string Tags { get; set; } = "";
  
-    private GameMinimalLevelResponse() {}
+    protected GameMinimalLevelResponse() {}
     
     /// <summary>
     /// Constructs a placeholder level response from a root level hash
@@ -61,53 +63,132 @@ public class GameMinimalLevelResponse : IDataConvertableFrom<GameMinimalLevelRes
     /// <returns></returns>
     public static GameMinimalLevelResponse FromHash(string hash, DataContext dataContext)
     {
-        return FromOld(GameLevelResponse.FromHash(hash, dataContext), dataContext)!;
-    }
-
-    public static GameMinimalLevelResponse? FromOld(GameLevel? level, DataContext dataContext)
-    {
-        if(level == null) return null;
-        return FromOld(GameLevelResponse.FromOld(level, dataContext), dataContext);
-    }
-
-
-    public static GameMinimalLevelResponse? FromOld(GameLevelResponse? level, DataContext dataContext)
-    {
-        if(level == null) return null;
-
         return new GameMinimalLevelResponse
         {
-            Title = level.Title,
-            IsAdventure = level.IsAdventure,
-            IconHash = dataContext.Database.GetAssetFromHash(level.IconHash)?.GetAsIcon(dataContext.Game, dataContext) ?? level.IconHash,
-            GameVersion = level.GameVersion,
-            RootResource = level.RootResource,
-            Description = level.Description,
-            Location = level.Location,
-            LevelId = level.LevelId,
-            Handle = level.Handle,
-            Type = level.Type,
-            LevelType = level.LevelType,
-            TeamPicked = level.TeamPicked,
-            YayCount = level.YayCount,
-            BooCount = level.BooCount,
-            HeartCount = level.HeartCount,
-            MaxPlayers = level.MaxPlayers,
-            MinPlayers = level.MinPlayers,
-            TotalPlayCount = level.TotalPlayCount,
-            UniquePlayCount = level.UniquePlayCount,
-            Lbp3PlayCount = level.Lbp3PlayCount,
-            YourStarRating = level.YourStarRating,
-            YourRating = level.YourRating,
-            AverageStarRating = level.AverageStarRating,
-            CommentCount = level.CommentCount,
-            IsLocked = level.IsLocked,
-            IsSubLevel = level.IsSubLevel,
-            IsCopyable = level.IsCopyable,
-            RequiresMoveController = level.RequiresMoveController,
-            PlayerCount = dataContext.Match.GetPlayerCountForLevel(RoomSlotType.Online, level.LevelId),
-            Tags = level.Tags,
+            LevelId = dataContext.Game == TokenGame.LittleBigPlanet3 ? GameLevel.LevelIdFromHash(hash) : int.MaxValue,
+            IsAdventure = false,
+            Title = $"Hashed Level - {hash}",
+            IconHash = "0",
+            GameVersion = 0,
+            RootResource = hash,
+            Description = "This is a hashed level from the Dry Archive. We can't provide any information about it.",
+            Location = new GameLocation(),
+            Handle = new SerializedUserHandle
+            {
+                Username = SystemUsers.HashedUserName,
+                IconHash = "0",
+            },
+            Type = GameSlotType.User.ToGameType(),
+            TeamPicked = false,
+            MinPlayers = 1,
+            MaxPlayers = 4,
+            HeartCount = 0,
+            TotalPlayCount = 0,
+            UniquePlayCount = 0,
+            Lbp3PlayCount = 0,
+            YayCount = 0,
+            BooCount = 0,
+            AverageStarRating = 0,
+            YourStarRating = 0,
+            YourRating = 0,
+            PlayerCount = 0,
+            ReviewsEnabled = false,
+            ReviewCount = 0,
+            CommentsEnabled = false,
+            CommentCount = 0,
+            IsLocked = false,
+            IsSubLevel = false,
+            IsCopyable = 0,
+            RequiresMoveController = false,
+            LevelType = "",
         };
+    }
+
+    public static GameMinimalLevelResponse? FromOld(GameLevel? old, DataContext dataContext)
+    {
+        if(old == null) return null;
+
+        if(old.Statistics == null)
+            dataContext.Database.RecalculateLevelStatistics(old);
+        
+        Debug.Assert(old.Statistics != null);
+
+        bool isStoryLevel = old.StoryId != 0;
+
+        GameMinimalLevelResponse response = new()
+        {
+            LevelId = isStoryLevel ? old.StoryId : old.LevelId,
+            IsAdventure = old.IsAdventure,
+            Title = old.Title,
+            Description = old.Description,
+            Location = new GameLocation(old.LocationX, old.LocationY),
+            GameVersion = old.GameVersion.ToSerializedGame(),
+            RootResource = old.RootResource,
+            MinPlayers = old.MinPlayers,
+            MaxPlayers = old.MaxPlayers,
+            HeartCount = old.Statistics.FavouriteCount,
+            TotalPlayCount = old.Statistics.PlayCount,
+            UniquePlayCount = old.Statistics.UniquePlayCount,
+            Lbp3PlayCount = old.Statistics.UniquePlayCount,
+            YayCount = old.Statistics.YayCount,
+            BooCount = old.Statistics.BooCount,
+            TeamPicked = old.TeamPicked,
+            LevelType = old.LevelType.ToGameString(),
+            IsCopyable = old.IsCopyable ? 1 : 0,
+            IsLocked = old.IsLocked,
+            IsSubLevel = old.IsSubLevel,
+            RequiresMoveController = old.RequiresMoveController,
+            AverageStarRating = old.CalculateAverageStarRating(),
+            ReviewCount = old.Statistics.ReviewCount,
+            CommentCount = old.Statistics.CommentCount,
+            Type = old.SlotType.ToGameType(),
+        };
+        
+        // If we're not a reupload, show the real publisher
+        // If we're the real publisher of a reupload, show the real publisher to give them editing capabilities
+        if ((old.Publisher != null && !old.IsReUpload) || (dataContext.User != null && old.Publisher == dataContext.User && old.IsReUpload))
+        {
+            response.Handle = SerializedUserHandle.FromUser(old.Publisher, dataContext);
+        }
+        // Otherwise, show our special reupload username
+        else
+        {
+            string publisher;
+            if (!old.IsReUpload)
+                publisher = SystemUsers.DeletedUserName;
+            else
+                publisher = string.IsNullOrEmpty(old.OriginalPublisher)
+                    ? SystemUsers.UnknownUserName
+                    : SystemUsers.SystemPrefix + old.OriginalPublisher;
+
+            if (publisher.Length > 16) // Trim publisher name to fit in the maximum limit LBP will show
+                publisher = string.Concat(publisher.AsSpan(0, 15), "-");
+            
+            
+            response.Handle = new SerializedUserHandle
+            {
+                IconHash = "0",
+                Username = publisher,
+            };
+        }
+        
+        if (dataContext.User != null)
+        {
+            RatingType? rating = dataContext.Database.GetRatingByUser(old, dataContext.User);
+
+            response.YourRating = rating?.ToDPad() ?? (int)RatingType.Neutral;
+            response.YourStarRating = rating?.ToLBP1() ?? 0;
+        }
+        
+        response.PlayerCount = dataContext.Match.GetPlayerCountForLevel(RoomSlotType.Online, response.LevelId);
+
+        if (dataContext.Game == TokenGame.LittleBigPlanet1)
+        {
+            response.Tags = string.Join(',', dataContext.Database.GetTagsForLevel(old).Select(t => t.Tag.ToLbpString()));
+        }
+        
+        response.IconHash = dataContext.Database.GetAssetFromHash(old.IconHash)?.GetAsIcon(dataContext.Game, dataContext) ?? old.IconHash;
+        return response;
     }
     
     public static GameMinimalLevelResponse? FromOld(GamePlaylist? old, DataContext dataContext)
@@ -156,8 +237,7 @@ public class GameMinimalLevelResponse : IDataConvertableFrom<GameMinimalLevelRes
 
     public static IEnumerable<GameMinimalLevelResponse> FromOldList(IEnumerable<GameLevel> oldList,
         DataContext dataContext) => oldList.Select(old => FromOld(old, dataContext)).ToList()!;
-    public static IEnumerable<GameMinimalLevelResponse> FromOldList(IEnumerable<GameLevelResponse> oldList,
-        DataContext dataContext) => oldList.Select(old => FromOld(old, dataContext)).ToList()!;
+
     public static IEnumerable<GameMinimalLevelResponse> FromOldList(IEnumerable<GamePlaylist> oldList, 
         DataContext dataContext) => oldList.Select(old => FromOld(old, dataContext)).ToList()!;
 
