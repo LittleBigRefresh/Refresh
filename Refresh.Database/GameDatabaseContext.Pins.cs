@@ -39,17 +39,19 @@ public partial class GameDatabaseContext // Pins
                         IsBeta = isBeta,
                     };
                     this.PinProgressRelations.Add(newRelation);
+                    continue;
                 }
+
+                bool isSpecialTreatmentPin = specialTreatmentPins.Contains(pinId);
+
                 // Only update progress if it's better. For most pins it's better the greater it is, but for the pins in
                 // specialTreatmentPins, it's better the smaller it is.
-                else if ((specialTreatmentPins.Contains(pinId)
-                        && newProgress < existingProgress.Progress)
-                        || newProgress > existingProgress.Progress)
+                if (isSpecialTreatmentPin && newProgress < existingProgress.Progress
+                || !isSpecialTreatmentPin && newProgress > existingProgress.Progress)
                 {
                     existingProgress.Progress = newProgress;
                     existingProgress.LastUpdated = now;
                 }
-                // Only update if the new progress is actually better
             }
         });
     }
