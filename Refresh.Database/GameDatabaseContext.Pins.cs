@@ -2,7 +2,6 @@ using Refresh.Database.Models.Authentication;
 using Refresh.Database.Models.Users;
 using Refresh.Database.Models.Relations;
 using Refresh.Database.Models.Pins;
-using System.Collections.Frozen;
 
 namespace Refresh.Database;
 
@@ -13,7 +12,7 @@ public partial class GameDatabaseContext // Pins
         DateTimeOffset now = this._time.Now;
         bool isBeta = game == TokenGame.BetaBuild;
         IEnumerable<PinProgressRelation> existingProgresses = this.GetPinProgressesByUser(user, isBeta);
-        FrozenSet<long> specialTreatmentPins =
+        List<long> descendingProgressPins =
         [
             (long)ServerPins.TopXOfAnyStoryLevelWithOver50Scores,
             (long)ServerPins.TopXOfAnyCommunityLevelWithOver50Scores,
@@ -42,7 +41,7 @@ public partial class GameDatabaseContext // Pins
                     continue;
                 }
 
-                bool isSpecialTreatmentPin = specialTreatmentPins.Contains(pinId);
+                bool isSpecialTreatmentPin = descendingProgressPins.Contains(pinId);
 
                 // Only update progress if it's better. For most pins it's better the greater it is, but for the pins in
                 // specialTreatmentPins, it's better the smaller it is.
