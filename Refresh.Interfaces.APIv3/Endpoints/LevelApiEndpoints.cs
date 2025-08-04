@@ -11,6 +11,7 @@ using Refresh.Core.Types.Data;
 using Refresh.Database;
 using Refresh.Database.Models.Authentication;
 using Refresh.Database.Models.Levels;
+using Refresh.Database.Models.Pins;
 using Refresh.Database.Models.Users;
 using Refresh.Database.Query;
 using Refresh.Interfaces.APIv3.Documentation.Attributes;
@@ -231,6 +232,10 @@ public class LevelApiEndpoints : EndpointGroup
         if (level == null) return ApiNotFoundError.LevelMissingError;
 
         database.QueueLevel(level, user);
+
+        // Update pin progress for queueing a level through the API
+        database.IncrementUserPinProgress((long)ServerPins.QueueLevelOnWebsite, 1, user);
+
         return new ApiOkResponse();
     }
 

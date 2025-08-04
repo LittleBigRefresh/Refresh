@@ -13,6 +13,7 @@ using Refresh.Core.Services;
 using Refresh.Core.Types.Data;
 using Refresh.Database;
 using Refresh.Database.Models.Authentication;
+using Refresh.Database.Models.Pins;
 using Refresh.Database.Models.Relations;
 using Refresh.Database.Models.Users;
 using Refresh.Interfaces.APIv3.Endpoints.ApiTypes;
@@ -106,6 +107,9 @@ public class AuthenticationApiEndpoints : EndpointGroup
         Token refreshToken = database.GenerateTokenForUser(user, TokenType.ApiRefresh, TokenGame.Website, TokenPlatform.Website, ipAddress, GameDatabaseContext.RefreshTokenExpirySeconds);
         
         context.Logger.LogInfo(BunkumCategory.Authentication, $"{user} successfully logged in through the API");
+
+        // Update pin progress for signing into the API
+        database.IncrementUserPinProgress((long)ServerPins.SignIntoWebsite, 1, user);
 
         return new ApiAuthenticationResponse
         {

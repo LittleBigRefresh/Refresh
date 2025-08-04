@@ -1,6 +1,7 @@
 using Refresh.Database.Models.Authentication;
 using Refresh.Database.Models.Users;
 using Refresh.Database.Models.Relations;
+using Refresh.Database.Models.Pins;
 
 namespace Refresh.Database;
 
@@ -11,30 +12,43 @@ public partial class GameDatabaseContext // Pins
         DateTimeOffset now = this._time.Now;
         bool isBeta = game == TokenGame.BetaBuild;
         IEnumerable<PinProgressRelation> existingProgresses = this.GetPinProgressesByUser(user, isBeta);
-       
+        List<long> descendingProgressPins =
+        [
+            (long)ServerPins.TopXOfAnyStoryLevelWithOver50Scores,
+            (long)ServerPins.TopXOfAnyCommunityLevelWithOver50Scores,
+        ];
+
         this.Write(() => 
         {
             foreach (KeyValuePair<long, int> pinProgressUpdate in pinProgressUpdates)
             {
-                PinProgressRelation? existingProgress = existingProgresses.FirstOrDefault(p => p.PinId == pinProgressUpdate.Key);
+                long pinId = pinProgressUpdate.Key;
+                int newProgress = pinProgressUpdate.Value;
+                PinProgressRelation? existingProgress = existingProgresses.FirstOrDefault(p => p.PinId == pinId);
 
                 if (existingProgress == null)
                 {
                     PinProgressRelation newRelation = new()
                     {
-                        PinId = pinProgressUpdate.Key,
-                        Progress = pinProgressUpdate.Value,
+                        PinId = pinId,
+                        Progress = newProgress,
                         Publisher = user,
                         FirstPublished = now,
                         LastUpdated = now,
                         IsBeta = isBeta,
                     };
                     this.PinProgressRelations.Add(newRelation);
+                    continue;
                 }
-                // Only update if the new progress is actually better
-                else if (pinProgressUpdate.Value > existingProgress.Progress)
+
+                bool isSpecialTreatmentPin = descendingProgressPins.Contains(pinId);
+
+                // Only update progress if it's better. For most pins it's better the greater it is, but for the pins in
+                // specialTreatmentPins, it's better the smaller it is.
+                if (!isSpecialTreatmentPin && newProgress > existingProgress.Progress
+                  || isSpecialTreatmentPin && newProgress < existingProgress.Progress)
                 {
-                    existingProgress.Progress = pinProgressUpdate.Value;
+                    existingProgress.Progress = newProgress;
                     existingProgress.LastUpdated = now;
                 }
             }
@@ -83,6 +97,96 @@ public partial class GameDatabaseContext // Pins
         });
     }
 
+    public PinProgressRelation UpdateUserPinProgressToLowest(long pinId, int newProgressValue, GameUser user, bool isBeta)
+    {
+        // Get pin progress if it exists already
+        PinProgressRelation? progressToUpdate = this.PinProgressRelations.FirstOrDefault(p => p.PinId == pinId && p.PublisherId == user.UserId && p.IsBeta == isBeta);
+        DateTimeOffset now = this._time.Now;
+
+        if (progressToUpdate == null)
+        {
+            this.Write(() =>
+            {
+                progressToUpdate = new()
+                {
+                    PinId = pinId,
+                    Progress = newProgressValue,
+                    Publisher = user,
+                    PublisherId = user.UserId,
+                    FirstPublished = now,
+                    LastUpdated = now,
+                    IsBeta = isBeta,
+                };
+
+                this.PinProgressRelations.Add(progressToUpdate);
+            });
+        }
+        // Only update if the final progress value is actually lower to the one already set
+        else if (newProgressValue < progressToUpdate.Progress)
+        {
+            this.Write(() =>
+            {
+                progressToUpdate.Progress = newProgressValue;
+                progressToUpdate.LastUpdated = now;
+            });
+        }
+        
+        return progressToUpdate!;
+    }
+
+    public void IncrementUserPinProgress(long pinId, int progressToAdd, GameUser user)
+    {
+        this.Write(() =>
+        {
+            this.IncrementUserPinProgressInternal(pinId, progressToAdd, user, true);
+            this.IncrementUserPinProgressInternal(pinId, progressToAdd, user, false);
+        });
+        
+    }
+
+    public PinProgressRelation IncrementUserPinProgress(long pinId, int progressToAdd, GameUser user, bool isBeta)
+    {
+        PinProgressRelation relation = null!;
+
+        this.Write(() =>
+        {
+            relation = this.IncrementUserPinProgressInternal(pinId, progressToAdd, user, isBeta);
+        });
+
+        return relation;
+    }
+
+    private PinProgressRelation IncrementUserPinProgressInternal(long pinId, int progressToAdd, GameUser user, bool isBeta)
+    {
+        // Get pin progress if it exists already
+        PinProgressRelation? progressToUpdate = this.PinProgressRelations.FirstOrDefault(p => p.PinId == pinId && p.PublisherId == user.UserId && p.IsBeta == isBeta);
+        DateTimeOffset now = this._time.Now;
+
+        if (progressToUpdate == null)
+        {
+            PinProgressRelation newRelation = new()
+            {
+                PinId = pinId,
+                Progress = progressToAdd,
+                Publisher = user,
+                PublisherId = user.UserId,
+                FirstPublished = now,
+                LastUpdated = now,
+                IsBeta = isBeta,
+            };
+
+            this.PinProgressRelations.Add(newRelation);
+            return newRelation;
+        }
+        else
+        {
+            progressToUpdate.Progress =+ progressToAdd;
+            progressToUpdate.LastUpdated = now;
+        }
+        
+        return progressToUpdate;
+    }
+
     private IEnumerable<PinProgressRelation> GetPinProgressesByUser(GameUser user, bool isBeta)
         => this.PinProgressRelations
             .Where(p => p.Publisher == user && p.IsBeta == isBeta)
@@ -90,6 +194,9 @@ public partial class GameDatabaseContext // Pins
     
     public DatabaseList<PinProgressRelation> GetPinProgressesByUser(GameUser user, TokenGame game, int skip, int count)
         => new(this.GetPinProgressesByUser(user, game == TokenGame.BetaBuild), skip, count);
+
+    public PinProgressRelation? GetUserPinProgress(long pinId, GameUser user, bool isBeta)
+        => this.PinProgressRelations.FirstOrDefault(p => p.PinId == pinId && p.PublisherId == user.UserId && p.IsBeta == isBeta);
 
     private IEnumerable<ProfilePinRelation> GetProfilePinsByUser(GameUser user, TokenGame game)
         => this.ProfilePinRelations
