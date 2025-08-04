@@ -10,7 +10,7 @@ public class ApiProfileCommentResponse : IApiResponse, IDataConvertableFrom<ApiP
 {
     public required int CommentId { get; set; }
     public required string Content { get; set; }
-    public required ApiMinimalUserResponse Poster { get; set; }
+    public required ApiMinimalUserResponse Publisher { get; set; }
     public required ApiMinimalUserResponse Profile { get; set; }
     public required ApiRatingResponse Rating { get; set; }
     public required DateTimeOffset Timestamp { get; set; }
@@ -23,7 +23,7 @@ public class ApiProfileCommentResponse : IApiResponse, IDataConvertableFrom<ApiP
         {
             CommentId = old.SequentialId,
             Content = old.Content,
-            Poster = ApiMinimalUserResponse.FromOld(old.Author, dataContext)!,
+            Publisher = ApiMinimalUserResponse.FromOld(old.Author, dataContext)!,
             Profile = ApiMinimalUserResponse.FromOld(old.Profile, dataContext)!,
             Rating = ApiRatingResponse.FromRating
             (

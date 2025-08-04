@@ -11,10 +11,9 @@ public class ApiLevelCommentResponse : IApiResponse, IDataConvertableFrom<ApiLev
 {
     public required int CommentId { get; set; }
     public required string Content { get; set; }
-    public required ApiMinimalUserResponse Poster { get; set; }
+    public required ApiMinimalUserResponse Publisher { get; set; }
     public required ApiMinimalLevelResponse Level { get; set; }
     public required ApiRatingResponse Rating { get; set; }
-    
     public required DateTimeOffset Timestamp { get; set; }
     
     public static ApiLevelCommentResponse? FromOld(GameLevelComment? old, DataContext dataContext)
@@ -25,7 +24,7 @@ public class ApiLevelCommentResponse : IApiResponse, IDataConvertableFrom<ApiLev
         {
             CommentId = old.SequentialId,
             Content = old.Content,
-            Poster = ApiMinimalUserResponse.FromOld(old.Author, dataContext)!,
+            Publisher = ApiMinimalUserResponse.FromOld(old.Author, dataContext)!,
             Level = ApiMinimalLevelResponse.FromOld(old.Level, dataContext)!,
             Rating = ApiRatingResponse.FromRating
             (

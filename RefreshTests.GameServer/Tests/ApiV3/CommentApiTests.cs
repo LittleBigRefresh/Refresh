@@ -34,7 +34,7 @@ public class CommentApiTests : GameServerTest
             // Check the returned comment's attributes
             Assert.That(response?.Data, Is.Not.Null);
             Assert.That(response!.Success, Is.True);
-            Assert.That(response.Data!.Poster.UserId, Is.EqualTo(newCommentPoster.UserId.ToString()));
+            Assert.That(response.Data!.Publisher.UserId, Is.EqualTo(newCommentPoster.UserId.ToString()));
             Assert.That(response.Data!.Level.LevelId, Is.EqualTo(id));
             Assert.That(response.Data!.Content, Is.EqualTo(commentToPost.Content));
         }
@@ -68,7 +68,7 @@ public class CommentApiTests : GameServerTest
             // Check the returned comment's attributes
             Assert.That(response?.Data, Is.Not.Null);
             Assert.That(response!.Success, Is.True);
-            Assert.That(response.Data!.Poster.UserId, Is.EqualTo(newCommentPoster.UserId.ToString()));
+            Assert.That(response.Data!.Publisher.UserId, Is.EqualTo(newCommentPoster.UserId.ToString()));
             Assert.That(response.Data!.Profile.UserId, Is.EqualTo(uuid));
             Assert.That(response.Data!.Content, Is.EqualTo(commentToPost.Content));
         }
@@ -81,18 +81,18 @@ public class CommentApiTests : GameServerTest
     }
 
     [Test]
-    public async Task DeleteLevelCommentAsPoster()
+    public async Task DeleteLevelCommentAsCommentPublisher()
     {
         using TestContext context = this.GetServer();
-        GameUser poster = context.CreateUser();
-        GameUser publisher = context.CreateUser();
-        GameLevel level = context.CreateLevel(publisher);
+        GameUser commentPublisher = context.CreateUser();
+        GameUser levelPublisher = context.CreateUser();
+        GameLevel level = context.CreateLevel(levelPublisher);
 
         // Create and delete comment using its ID
-        GameLevelComment comment = context.Database.PostCommentToLevel(level, poster, "Would be funny if i spoiled this level's ending");
+        GameLevelComment comment = context.Database.PostCommentToLevel(level, commentPublisher, "Would be funny if i spoiled this level's ending");
         int id = comment.SequentialId;
 
-        using HttpClient client = context.GetAuthenticatedClient(TokenType.Api, poster);
+        using HttpClient client = context.GetAuthenticatedClient(TokenType.Api, commentPublisher);
         HttpResponseMessage response = await client.DeleteAsync($"/api/v3/levelComments/id/{id}");
         Assert.That(response.IsSuccessStatusCode, Is.True);
         Assert.That(context.Database.GetLevelCommentById(id), Is.Null);
@@ -134,17 +134,17 @@ public class CommentApiTests : GameServerTest
     }
 
     [Test]
-    public async Task DeleteProfileCommentAsPoster()
+    public async Task DeleteProfileCommentAsCommentPublisher()
     {
         using TestContext context = this.GetServer();
-        GameUser poster = context.CreateUser();
+        GameUser publisher = context.CreateUser();
         GameUser profile = context.CreateUser();
 
         // Create and try to delete comment using its ID
-        GameProfileComment comment = context.Database.PostCommentToProfile(profile, poster, "i ran out of funny things to put here");
+        GameProfileComment comment = context.Database.PostCommentToProfile(profile, publisher, "i ran out of funny things to put here");
         int id = comment.SequentialId;
 
-        using HttpClient client = context.GetAuthenticatedClient(TokenType.Api, poster);
+        using HttpClient client = context.GetAuthenticatedClient(TokenType.Api, publisher);
         HttpResponseMessage response = await client.DeleteAsync($"/api/v3/profileComments/id/{id}");
         Assert.That(response.IsSuccessStatusCode, Is.True);
         Assert.That(context.Database.GetProfileCommentById(id), Is.Null);
