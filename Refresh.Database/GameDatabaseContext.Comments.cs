@@ -38,13 +38,10 @@ public partial class GameDatabaseContext // Comments
         return comment;
     }
 
-    public IEnumerable<GameProfileComment> GetProfileComments(GameUser profile, int count, int skip) =>
-        this.GameProfileCommentsIncluded
+    public DatabaseList<GameProfileComment> GetProfileComments(GameUser profile, int count, int skip) =>
+        new(this.GameProfileCommentsIncluded
             .Where(c => c.Profile == profile)
-            .OrderByDescending(c => c.Timestamp)
-            .AsEnumerableIfRealm()
-            .Skip(skip)
-            .Take(count);
+            .OrderByDescending(c => c.Timestamp), skip, count);
     
     [Pure]
     public int GetTotalCommentsForProfile(GameUser profile) => this.GameProfileComments.Count(c => c.Profile == profile);
@@ -80,13 +77,10 @@ public partial class GameDatabaseContext // Comments
         return comment;
     }
 
-    public IEnumerable<GameLevelComment> GetLevelComments(GameLevel level, int count, int skip) =>
-        this.GameLevelCommentsIncluded
+    public DatabaseList<GameLevelComment> GetLevelComments(GameLevel level, int count, int skip) =>
+        new(this.GameLevelCommentsIncluded
             .Where(c => c.Level == level)
-            .OrderByDescending(c => c.Timestamp)
-            .AsEnumerableIfRealm()
-            .Skip(skip)
-            .Take(count);
+            .OrderByDescending(c => c.Timestamp), skip, count);
     
     [Pure]
     public int GetTotalCommentsForLevel(GameLevel level) => this.GameLevelComments.Count(c => c.Level == level);
