@@ -133,13 +133,30 @@ public partial class GameDatabaseContext // Pins
         
         return progressToUpdate!;
     }
+
     public void IncrementUserPinProgress(long pinId, int progressToAdd, GameUser user)
     {
-        this.IncrementUserPinProgress(pinId, progressToAdd, user, true);
-        this.IncrementUserPinProgress(pinId, progressToAdd, user, false);
+        this.Write(() =>
+        {
+            this.IncrementUserPinProgressInternal(pinId, progressToAdd, user, true);
+            this.IncrementUserPinProgressInternal(pinId, progressToAdd, user, false);
+        });
+        
     }
 
     public PinProgressRelation IncrementUserPinProgress(long pinId, int progressToAdd, GameUser user, bool isBeta)
+    {
+        PinProgressRelation relation = null!;
+
+        this.Write(() =>
+        {
+            relation = this.IncrementUserPinProgressInternal(pinId, progressToAdd, user, isBeta);
+        });
+
+        return relation;
+    }
+
+    private PinProgressRelation IncrementUserPinProgressInternal(long pinId, int progressToAdd, GameUser user, bool isBeta)
     {
         // Get pin progress if it exists already
         PinProgressRelation? progressToUpdate = this.PinProgressRelations.FirstOrDefault(p => p.PinId == pinId && p.PublisherId == user.UserId && p.IsBeta == isBeta);
@@ -158,20 +175,13 @@ public partial class GameDatabaseContext // Pins
                 IsBeta = isBeta,
             };
 
-            this.Write(() =>
-            {
-                this.PinProgressRelations.Add(newRelation);
-            });
-
+            this.PinProgressRelations.Add(newRelation);
             return newRelation;
         }
         else
         {
-            this.Write(() =>
-            {
-                progressToUpdate.Progress =+ progressToAdd;
-                progressToUpdate.LastUpdated = now;
-            });
+            progressToUpdate.Progress =+ progressToAdd;
+            progressToUpdate.LastUpdated = now;
         }
         
         return progressToUpdate;
