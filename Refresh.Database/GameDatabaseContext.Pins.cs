@@ -133,6 +133,11 @@ public partial class GameDatabaseContext // Pins
         
         return progressToUpdate!;
     }
+    public void IncrementUserPinProgress(long pinId, int progressToAdd, GameUser user)
+    {
+        this.IncrementUserPinProgress(pinId, progressToAdd, user, true);
+        this.IncrementUserPinProgress(pinId, progressToAdd, user, false);
+    }
 
     public PinProgressRelation IncrementUserPinProgress(long pinId, int progressToAdd, GameUser user, bool isBeta)
     {

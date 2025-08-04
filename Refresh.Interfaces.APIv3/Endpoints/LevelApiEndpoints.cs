@@ -234,8 +234,7 @@ public class LevelApiEndpoints : EndpointGroup
         database.QueueLevel(level, user);
 
         // Update pin progress for queueing a level through the API
-        database.IncrementUserPinProgress((long)ManuallyAwardedPins.QueueLevelOnWebsite, 1, user, false);
-        database.IncrementUserPinProgress((long)ManuallyAwardedPins.QueueLevelOnWebsite, 1, user, true);
+        database.IncrementUserPinProgress((long)ServerPins.QueueLevelOnWebsite, 1, user);
 
         return new ApiOkResponse();
     }
