@@ -20,8 +20,8 @@ public class ScorePinTests : GameServerTest
         using TestContext context = this.GetServer();
         GameUser user = context.CreateUser();
         using HttpClient client = context.GetAuthenticatedClient(TokenType.Game, user);
-        long pinIdToCheck = isStoryLevel ? (long)ManuallyAwardedPins.TopXOfAnyStoryLevelWithOver50Scores
-                                         : (long)ManuallyAwardedPins.TopXOfAnyCommunityLevelWithOver50Scores;
+        long pinIdToCheck = isStoryLevel ? (long)ServerPins.TopXOfAnyStoryLevelWithOver50Scores
+                                         : (long)ServerPins.TopXOfAnyCommunityLevelWithOver50Scores;
         
         GameLevel level = isStoryLevel ? context.Database.GetStoryLevelById(1) : context.CreateLevel(user);
         int levelId = isStoryLevel ? level.StoryId : level.LevelId;
@@ -79,8 +79,8 @@ public class ScorePinTests : GameServerTest
         using TestContext context = this.GetServer();
         GameUser user = context.CreateUser();
         using HttpClient client = context.GetAuthenticatedClient(TokenType.Game, user);
-        long pinIdToCheck = isStoryLevel ? (long)ManuallyAwardedPins.TopFourthOfXStoryLevelsWithOver50Scores
-                                         : (long)ManuallyAwardedPins.TopFourthOfXCommunityLevelsWithOver50Scores;
+        long pinIdToCheck = isStoryLevel ? (long)ServerPins.TopFourthOfXStoryLevelsWithOver50Scores
+                                         : (long)ServerPins.TopFourthOfXCommunityLevelsWithOver50Scores;
 
         // Create a level and spam it with scores by others
         GameLevel level = isStoryLevel ? context.Database.GetStoryLevelById(1) : context.CreateLevel(user);
@@ -117,8 +117,8 @@ public class ScorePinTests : GameServerTest
         using TestContext context = this.GetServer();
         GameUser user = context.CreateUser();
         using HttpClient client = context.GetAuthenticatedClient(TokenType.Game, user);
-        long pinIdToCheck = isStoryLevel ? (long)ManuallyAwardedPins.TopFourthOfXStoryLevelsWithOver50Scores
-                                         : (long)ManuallyAwardedPins.TopFourthOfXCommunityLevelsWithOver50Scores;
+        long pinIdToCheck = isStoryLevel ? (long)ServerPins.TopFourthOfXStoryLevelsWithOver50Scores
+                                         : (long)ServerPins.TopFourthOfXCommunityLevelsWithOver50Scores;
         
         GameLevel level = isStoryLevel ? context.Database.GetStoryLevelById(1) : context.CreateLevel(user);
         int levelId = isStoryLevel ? level.StoryId : level.LevelId;
@@ -154,8 +154,8 @@ public class ScorePinTests : GameServerTest
         using TestContext context = this.GetServer();
         GameUser user = context.CreateUser();
         using HttpClient client = context.GetAuthenticatedClient(TokenType.Game, user);
-        long pinIdToCheck = isStoryLevel ? (long)ManuallyAwardedPins.TopFourthOfXStoryLevelsWithOver50Scores
-                                         : (long)ManuallyAwardedPins.TopFourthOfXCommunityLevelsWithOver50Scores;
+        long pinIdToCheck = isStoryLevel ? (long)ServerPins.TopFourthOfXStoryLevelsWithOver50Scores
+                                         : (long)ServerPins.TopFourthOfXCommunityLevelsWithOver50Scores;
         
         GameLevel level = isStoryLevel ? context.Database.GetStoryLevelById(1) : context.CreateLevel(user);
         int levelId = isStoryLevel ? level.StoryId : level.LevelId;

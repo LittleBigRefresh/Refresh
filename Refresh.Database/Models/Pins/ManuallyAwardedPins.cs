@@ -3,7 +3,7 @@ namespace Refresh.Database.Models.Pins;
 /// <summary>
 /// The progress types of pins which have to be awarded manually by the server.
 /// </summary>
-public enum ManuallyAwardedPins : long
+public enum ServerPins : long
 {
     // Level Leaderboards
     TopFourthOfXStoryLevelsWithOver50Scores = 3394094772,

@@ -30,8 +30,8 @@ public class PinProgressUpdatingTests : GameServerTest
 
         // These pins' progress works a little differently (better the smaller, not the greater),
         // so we also test them specifically and differently
-        long specialPin1Id = (long)ManuallyAwardedPins.TopXOfAnyCommunityLevelWithOver50Scores;
-        long specialPin2Id = (long)ManuallyAwardedPins.TopXOfAnyStoryLevelWithOver50Scores;
+        long specialPin1Id = (long)ServerPins.TopXOfAnyCommunityLevelWithOver50Scores;
+        long specialPin2Id = (long)ServerPins.TopXOfAnyStoryLevelWithOver50Scores;
 
         // Upload some pins to sync
         Dictionary<long, int> pinsToUpload1 = new() 

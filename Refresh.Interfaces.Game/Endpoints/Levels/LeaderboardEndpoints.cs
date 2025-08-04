@@ -164,12 +164,12 @@ public class LeaderboardEndpoints : EndpointGroup
         // Update lowest rankingInPercent of any story/user level leaderboard
         if (isStoryLevel)
         {
-            dataContext.Database.UpdateUserPinProgressToLowest((long)ManuallyAwardedPins.TopXOfAnyStoryLevelWithOver50Scores,
+            dataContext.Database.UpdateUserPinProgressToLowest((long)ServerPins.TopXOfAnyStoryLevelWithOver50Scores,
                 rankingInPercent, user, isGameBetaBuild);
         }
         else
         {
-            dataContext.Database.UpdateUserPinProgressToLowest((long)ManuallyAwardedPins.TopXOfAnyCommunityLevelWithOver50Scores, 
+            dataContext.Database.UpdateUserPinProgressToLowest((long)ServerPins.TopXOfAnyCommunityLevelWithOver50Scores, 
                 rankingInPercent, user, isGameBetaBuild);
         }
 
@@ -178,12 +178,12 @@ public class LeaderboardEndpoints : EndpointGroup
         
         if (isStoryLevel)
         {
-            dataContext.Database.IncrementUserPinProgress((long)ManuallyAwardedPins.TopFourthOfXStoryLevelsWithOver50Scores, 
+            dataContext.Database.IncrementUserPinProgress((long)ServerPins.TopFourthOfXStoryLevelsWithOver50Scores, 
                 1, user, isGameBetaBuild);
         }
         else
         {
-            dataContext.Database.IncrementUserPinProgress((long)ManuallyAwardedPins.TopFourthOfXCommunityLevelsWithOver50Scores, 
+            dataContext.Database.IncrementUserPinProgress((long)ServerPins.TopFourthOfXCommunityLevelsWithOver50Scores, 
                 1, user, isGameBetaBuild);
         }
     }

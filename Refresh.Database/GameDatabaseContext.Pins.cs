@@ -15,8 +15,8 @@ public partial class GameDatabaseContext // Pins
         IEnumerable<PinProgressRelation> existingProgresses = this.GetPinProgressesByUser(user, isBeta);
         FrozenSet<long> specialTreatmentPins =
         [
-            (long)ManuallyAwardedPins.TopXOfAnyStoryLevelWithOver50Scores,
-            (long)ManuallyAwardedPins.TopXOfAnyCommunityLevelWithOver50Scores,
+            (long)ServerPins.TopXOfAnyStoryLevelWithOver50Scores,
+            (long)ServerPins.TopXOfAnyCommunityLevelWithOver50Scores,
         ];
 
         this.Write(() => 
