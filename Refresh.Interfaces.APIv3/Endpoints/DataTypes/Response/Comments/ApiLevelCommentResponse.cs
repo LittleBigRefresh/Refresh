@@ -1,5 +1,6 @@
 using Refresh.Core.Types.Data;
 using Refresh.Database.Models.Comments;
+using Refresh.Interfaces.APIv3.Endpoints.DataTypes.Response.Data;
 using Refresh.Interfaces.APIv3.Endpoints.DataTypes.Response.Levels;
 using Refresh.Interfaces.APIv3.Endpoints.DataTypes.Response.Users;
 
@@ -12,9 +13,8 @@ public class ApiLevelCommentResponse : IApiResponse, IDataConvertableFrom<ApiLev
     public required string Content { get; set; }
     public required ApiMinimalUserResponse Poster { get; set; }
     public required ApiMinimalLevelResponse Level { get; set; }
-    public required int YayRatings { get; set; }
-    public required int BooRatings { get; set; }
-    public required int OwnRating { get; set; }
+    public required ApiRatingResponse Rating { get; set; }
+    
     public required DateTimeOffset Timestamp { get; set; }
     
     public static ApiLevelCommentResponse? FromOld(GameLevelComment? old, DataContext dataContext)
@@ -27,9 +27,12 @@ public class ApiLevelCommentResponse : IApiResponse, IDataConvertableFrom<ApiLev
             Content = old.Content,
             Poster = ApiMinimalUserResponse.FromOld(old.Author, dataContext)!,
             Level = ApiMinimalLevelResponse.FromOld(old.Level, dataContext)!,
-            YayRatings = dataContext.Database.GetTotalRatingsForLevelComment(old, RatingType.Yay),
-            BooRatings = dataContext.Database.GetTotalRatingsForLevelComment(old, RatingType.Boo),
-            OwnRating = dataContext.User != null ? (int?)dataContext.Database.GetLevelCommentRatingByUser(old, dataContext.User) ?? 0 : 0,
+            Rating = ApiRatingResponse.FromRating
+            (
+                dataContext.Database.GetTotalRatingsForLevelComment(old, RatingType.Yay),
+                dataContext.Database.GetTotalRatingsForLevelComment(old, RatingType.Boo),
+                dataContext.User != null ? (int?)dataContext.Database.GetLevelCommentRatingByUser(old, dataContext.User) : 0
+            ),
             Timestamp = old.Timestamp,
         };
     }

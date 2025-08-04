@@ -202,6 +202,12 @@ public class CommentApiTests : GameServerTest
             HttpResponseMessage response = await client.PostAsync($"/api/v3/levelComments/id/{id}/rate/{rating}", null);
             Assert.That(response.IsSuccessStatusCode, Is.True);
             Assert.That(context.Database.GetLevelCommentRatingByUser(comment, rater), rating == 0 ? Is.Null : Is.Not.Null);
+
+            // Check the comment's API response too
+            ApiResponse<ApiLevelCommentResponse>? commentResponse = client.GetData<ApiLevelCommentResponse>($"/api/v3/levelComments/id/{id}");
+            Assert.That(commentResponse?.Data, Is.Not.Null);
+            Assert.That(commentResponse!.Success, Is.True);
+            Assert.That(commentResponse.Data!.Rating.OwnRating, Is.EqualTo(rating));
         }
     }
 
@@ -248,6 +254,12 @@ public class CommentApiTests : GameServerTest
             HttpResponseMessage response = await client.PostAsync($"/api/v3/profileComments/id/{id}/rate/{rating}", null);
             Assert.That(response.IsSuccessStatusCode, Is.True);
             Assert.That(context.Database.GetProfileCommentRatingByUser(comment, rater), rating == 0 ? Is.Null : Is.Not.Null);
+
+            // Check the comment's API response too
+            ApiResponse<ApiProfileCommentResponse>? commentResponse = client.GetData<ApiProfileCommentResponse>($"/api/v3/profileComments/id/{id}");
+            Assert.That(commentResponse?.Data, Is.Not.Null);
+            Assert.That(commentResponse!.Success, Is.True);
+            Assert.That(commentResponse.Data!.Rating.OwnRating, Is.EqualTo(rating));
         }
     }
 
