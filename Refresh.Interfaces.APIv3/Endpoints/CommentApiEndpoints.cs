@@ -30,7 +30,7 @@ public class CommentApiEndpoints : EndpointGroup
 
         (int skip, int count) = context.GetPageData();
 
-        DatabaseList<GameProfileComment>? comments = dataContext.Database.GetProfileComments(profile, count, skip);
+        DatabaseList<GameProfileComment> comments = dataContext.Database.GetProfileComments(profile, count, skip);
         return DatabaseListExtensions.FromOldList<ApiProfileCommentResponse, GameProfileComment>(comments, dataContext);
     }
 
@@ -48,7 +48,7 @@ public class CommentApiEndpoints : EndpointGroup
     }
 
     [ApiV3Endpoint("profileComments/id/{id}"), Authentication(false)]
-    [DocSummary("Gets the profile comment specified by it's ID.")]
+    [DocSummary("Gets the profile comment specified by its ID.")]
     [DocError(typeof(ApiNotFoundError), ApiNotFoundError.CommentMissingErrorWhen)]
     public ApiResponse<ApiProfileCommentResponse> GetProfileComment(RequestContext context, DataContext dataContext, int id)
     {
@@ -59,7 +59,7 @@ public class CommentApiEndpoints : EndpointGroup
     }
     
     [ApiV3Endpoint("profileComments/id/{id}", HttpMethods.Delete)]
-    [DocSummary("Deletes the profile comment specified by it's ID. Fails if the user is not the comment poster or the profile owner.")]
+    [DocSummary("Deletes the profile comment specified by its ID. Fails if the user is not the comment poster or the profile owner.")]
     [DocError(typeof(ApiNotFoundError), ApiNotFoundError.CommentMissingErrorWhen)]
     [DocError(typeof(ApiValidationError), ApiValidationError.NoCommentDeletionPermissionErrorWhen)]
     public ApiOkResponse DeleteProfileComment(RequestContext context, DataContext dataContext, GameUser user, int id)
@@ -74,7 +74,7 @@ public class CommentApiEndpoints : EndpointGroup
     }
 
     [ApiV3Endpoint("profileComments/id/{id}/rate/{rawRating}", HttpMethods.Post)]
-    [DocSummary("Rates the profile comment specified by it's ID.")]
+    [DocSummary("Rates the profile comment specified by its ID.")]
     [DocError(typeof(ApiNotFoundError), ApiNotFoundError.CommentMissingErrorWhen)]
     [DocError(typeof(ApiValidationError), ApiValidationError.RatingParseErrorWhen)]
     public ApiOkResponse RateProfileComment(RequestContext context, DataContext dataContext, GameUser user, int id, 
@@ -105,7 +105,7 @@ public class CommentApiEndpoints : EndpointGroup
 
         (int skip, int count) = context.GetPageData();
 
-        DatabaseList<GameLevelComment>? comments = dataContext.Database.GetLevelComments(level, count, skip);
+        DatabaseList<GameLevelComment> comments = dataContext.Database.GetLevelComments(level, count, skip);
         return DatabaseListExtensions.FromOldList<ApiLevelCommentResponse, GameLevelComment>(comments, dataContext);
     }
 
@@ -123,7 +123,7 @@ public class CommentApiEndpoints : EndpointGroup
     }
 
     [ApiV3Endpoint("levelComments/id/{id}"), Authentication(false)]
-    [DocSummary("Gets the level comment specified by it's ID.")]
+    [DocSummary("Gets the level comment specified by its ID.")]
     [DocError(typeof(ApiNotFoundError), ApiNotFoundError.CommentMissingErrorWhen)]
     public ApiResponse<ApiLevelCommentResponse> GetLevelComment(RequestContext context, DataContext dataContext, int id)
     {
@@ -134,7 +134,7 @@ public class CommentApiEndpoints : EndpointGroup
     }
 
     [ApiV3Endpoint("levelComments/id/{id}", HttpMethods.Delete)]
-    [DocSummary("Deletes the level comment specified by it's ID. Fails if the user is not the comment poster or the level publisher.")]
+    [DocSummary("Deletes the level comment specified by its ID. Fails if the user is not the comment poster or the level publisher.")]
     [DocError(typeof(ApiNotFoundError), ApiNotFoundError.CommentMissingErrorWhen)]
     [DocError(typeof(ApiValidationError), ApiValidationError.NoCommentDeletionPermissionErrorWhen)]
     public ApiOkResponse DeleteLevelComment(RequestContext context, DataContext dataContext, GameUser user, int id)
@@ -149,7 +149,7 @@ public class CommentApiEndpoints : EndpointGroup
     }
 
     [ApiV3Endpoint("levelComments/id/{id}/rate/{rawRating}", HttpMethods.Post)]
-    [DocSummary("Rates the level comment specified by it's ID.")]
+    [DocSummary("Rates the level comment specified by its ID.")]
     [DocError(typeof(ApiNotFoundError), ApiNotFoundError.CommentMissingErrorWhen)]
     [DocError(typeof(ApiValidationError), ApiValidationError.RatingParseErrorWhen)]
     public ApiOkResponse RateLevelComment(RequestContext context, DataContext dataContext, GameUser user, int id, 
