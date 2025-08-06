@@ -15,6 +15,8 @@ public class ApiGameUserResponse : IApiResponse, IDataConvertableFrom<ApiGameUse
     public required string UserId { get; set; }
     public required string Username { get; set; }
     public required string IconHash { get; set; }
+    public required string VitaIconHash { get; set; }
+    public required string BetaIconHash { get; set; }
 
     public required string YayFaceHash { get; set; }
     public required string BooFaceHash { get; set; }
@@ -39,6 +41,8 @@ public class ApiGameUserResponse : IApiResponse, IDataConvertableFrom<ApiGameUse
             Username = user.Username,
 
             IconHash = dataContext.GetIconFromHash(user.IconHash),
+            VitaIconHash = dataContext.GetIconFromHash(user.VitaIconHash),
+            BetaIconHash = dataContext.GetIconFromHash(user.BetaIconHash),
             YayFaceHash = dataContext.GetIconFromHash(user.YayFaceHash),
             BooFaceHash = dataContext.GetIconFromHash(user.BooFaceHash),
             MehFaceHash = dataContext.GetIconFromHash(user.MehFaceHash),

@@ -59,6 +59,12 @@ public class UserApiEndpoints : EndpointGroup
     {
         if (body.IconHash != null && database.GetAssetFromHash(body.IconHash) == null)
             return ApiNotFoundError.Instance;
+        
+        if (body.VitaIconHash != null && database.GetAssetFromHash(body.VitaIconHash) == null)
+            return ApiNotFoundError.Instance;
+        
+        if (body.BetaIconHash != null && database.GetAssetFromHash(body.BetaIconHash) == null)
+            return ApiNotFoundError.Instance;
 
         if (body.EmailAddress != null && !smtpService.CheckEmailDomainValidity(body.EmailAddress))
             return ApiValidationError.EmailDoesNotActuallyExistError;

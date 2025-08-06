@@ -16,6 +16,8 @@ public class ApiExtendedGameUserResponse : IApiResponse, IDataConvertableFrom<Ap
     public required string UserId { get; set; }
     public required string Username { get; set; }
     public required string IconHash { get; set; }
+    public required string VitaIconHash { get; set; }
+    public required string BetaIconHash { get; set; }
     public required string Description { get; set; }
     public required ApiGameLocationResponse Location { get; set; }
     public required DateTimeOffset JoinDate { get; set; }
@@ -57,7 +59,9 @@ public class ApiExtendedGameUserResponse : IApiResponse, IDataConvertableFrom<Ap
         {
             UserId = user.UserId.ToString()!,
             Username = user.Username,
-            IconHash = dataContext.Database.GetAssetFromHash(user.IconHash)?.GetAsIcon(TokenGame.Website, dataContext) ?? user.IconHash,
+            IconHash = dataContext.GetIconFromHash(user.IconHash),
+            VitaIconHash = dataContext.GetIconFromHash(user.VitaIconHash),
+            BetaIconHash = dataContext.GetIconFromHash(user.BetaIconHash),
             Description = user.Description,
             Location = ApiGameLocationResponse.FromLocation(user.LocationX, user.LocationY)!,
             JoinDate = user.JoinDate,

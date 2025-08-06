@@ -184,6 +184,12 @@ public partial class GameDatabaseContext // Users
 
             if (data.IconHash != null)
                 user.IconHash = data.IconHash;
+            
+            if (data.VitaIconHash != null)
+                user.VitaIconHash = data.VitaIconHash;
+            
+            if (data.BetaIconHash != null)
+                user.BetaIconHash = data.BetaIconHash;
 
             if (data.Description != null)
                 user.Description = data.Description;

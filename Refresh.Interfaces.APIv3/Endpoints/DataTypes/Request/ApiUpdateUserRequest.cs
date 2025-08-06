@@ -7,6 +7,8 @@ namespace Refresh.Interfaces.APIv3.Endpoints.DataTypes.Request;
 public class ApiUpdateUserRequest : IApiEditUserRequest
 {
     public string? IconHash { get; set; }
+    public string? VitaIconHash { get; set; }
+    public string? BetaIconHash { get; set; }
     public string? Description { get; set; }
     public bool? AllowIpAuthentication { get; set; }
     

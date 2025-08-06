@@ -9,7 +9,8 @@ public class ApiMinimalUserResponse : IApiResponse, IDataConvertableFrom<ApiMini
     public required string UserId { get; set; }
     public required string Username { get; set; }
     public required string IconHash { get; set; }
-
+    public required string VitaIconHash { get; set; }
+    public required string BetaIconHash { get; set; }
     
     public static ApiMinimalUserResponse? FromOld(GameUser? old, DataContext dataContext)
     {
@@ -19,7 +20,9 @@ public class ApiMinimalUserResponse : IApiResponse, IDataConvertableFrom<ApiMini
         {
             UserId = old.UserId.ToString(),
             Username = old.Username,
-            IconHash = old.IconHash,
+            IconHash = dataContext.GetIconFromHash(old.IconHash),
+            VitaIconHash = dataContext.GetIconFromHash(old.VitaIconHash),
+            BetaIconHash = dataContext.GetIconFromHash(old.BetaIconHash),
         };
     }
 
