@@ -54,7 +54,22 @@ public static class LevelEnumerableExtensions
         if (!levelFilterSettings.DisplayVita) levels = levels.Where(l => l.GameVersion != TokenGame.LittleBigPlanetVita);
         if (!levelFilterSettings.DisplayPSP) levels = levels.Where(l => l.GameVersion != TokenGame.LittleBigPlanetPSP);
         if (!levelFilterSettings.DisplayBeta) levels = levels.Where(l => l.GameVersion != TokenGame.BetaBuild);
-        
+
+        switch(levelFilterSettings.DisplayAdventures)
+        {
+            case PropertyFilterType.Include:
+                // Do nothing
+                break;
+            case PropertyFilterType.Only:
+                levels = levels.Where(l => l.IsAdventure == true);
+                break;
+            case PropertyFilterType.Exclude:
+                levels = levels.Where(l => l.IsAdventure == false);
+                break;
+            default:
+                throw new ArgumentOutOfRangeException(nameof(levelFilterSettings.DisplayMoveLevels), levelFilterSettings.DisplayMoveLevels, "Unsupported value");
+        }
+
         switch(levelFilterSettings.DisplayMoveLevels)
         {
             case PropertyFilterType.Include:

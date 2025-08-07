@@ -28,9 +28,9 @@ public class ResultFilterSettings
     /// </summary>
     public PropertyFilterType DisplayMoveLevels { get; set; } = PropertyFilterType.Include;
     /// <summary>
-    /// Whether to show adventure levels
+    /// Whether to include, exclude, or only show adventure levels
     /// </summary>
-    public bool DisplayAdventures { get; set; } = true;
+    public PropertyFilterType DisplayAdventures { get; set; } = PropertyFilterType.Include;
     /// <summary>
     /// The amount of players to filter for
     /// eg. only show levels which are compatible with that many players
@@ -190,6 +190,19 @@ public class ResultFilterSettings
             }
         }
 
+        string? adventureStr = context.QueryString.Get("adventure");
+        if (adventureStr != null)
+        {
+            settings.DisplayAdventures = adventureStr switch
+            {
+                "noneCan" => PropertyFilterType.Exclude,
+                "dontCare" => PropertyFilterType.Include,
+                // Sent when only adventures are allowed and no other result type at all (LBP3 will still include resultType[]=slot in this case)
+                "allMust" => PropertyFilterType.Only,
+                _ => throw new ArgumentOutOfRangeException(nameof(adventureStr), adventureStr, "Unsupported value"),
+            };
+        }
+
         string? moveStr = context.QueryString.Get("move");
         if (moveStr != null)
         {
@@ -221,7 +234,7 @@ public class ResultFilterSettings
                     // atleast one game selected, move also selected -> show all levels of these games
                     if (gamesSpecified)
                         settings.DisplayMoveLevels = PropertyFilterType.Include;
-                    // no games selected, but move selected -> only show move levels
+                    // no games selected, but move selected -> only show move levels (of all games, can only be LBP2 and 3 anyway)
                     else
                         settings.DisplayMoveLevels = PropertyFilterType.Only;
                     break;
@@ -229,17 +242,6 @@ public class ResultFilterSettings
                 default:
                     throw new ArgumentOutOfRangeException(nameof(moveStr), moveStr, "Unsupported value");
             }
-        }
-
-        string? adventureStr = context.QueryString.Get("adventure");
-        if (adventureStr != null)
-        {
-            settings.DisplayAdventures = adventureStr switch
-            {
-                "noneCan" => false,
-                "dontCare" => true,
-                _ => throw new ArgumentOutOfRangeException(nameof(adventureStr), adventureStr, "Unsupported value"),
-            };
         }
 
         return settings;
