@@ -20,7 +20,7 @@ public class SearchLevelCategory : GameLevelCategory
 
     public override DatabaseList<GameLevel>? Fetch(RequestContext context, int skip, int count,
         DataContext dataContext,
-        LevelFilterSettings levelFilterSettings, GameUser? _)
+        ResultFilterSettings levelFilterSettings, GameUser? _)
     {
         string? query = context.QueryString["query"]
                         ?? context.QueryString["textFilter"]; // LBP3 sends this instead of query

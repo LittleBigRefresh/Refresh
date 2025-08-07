@@ -296,7 +296,7 @@ public partial class GameDatabaseContext // Levels
             .FilterByGameVersion(gameVersion);
 
     [Pure]
-    public DatabaseList<GameLevel> GetLevelsByUser(GameUser user, int count, int skip, LevelFilterSettings levelFilterSettings, GameUser? accessor)
+    public DatabaseList<GameLevel> GetLevelsByUser(GameUser user, int count, int skip, ResultFilterSettings levelFilterSettings, GameUser? accessor)
     {
         IEnumerable<GameLevel> levels;
 
@@ -344,13 +344,13 @@ public partial class GameDatabaseContext // Levels
             .Where(l => l.StoryId == 0);
     
     [Pure]
-    public DatabaseList<GameLevel> GetNewestLevels(int count, int skip, GameUser? user, LevelFilterSettings levelFilterSettings) =>
+    public DatabaseList<GameLevel> GetNewestLevels(int count, int skip, GameUser? user, ResultFilterSettings levelFilterSettings) =>
         new(this.GetLevelsByGameVersion(levelFilterSettings.GameVersion)
             .FilterByLevelFilterSettings(user, levelFilterSettings)
             .OrderByDescending(l => l.PublishDate), skip, count);
     
     [Pure]
-    public DatabaseList<GameLevel> GetRandomLevels(int count, int skip, GameUser? user, LevelFilterSettings levelFilterSettings)
+    public DatabaseList<GameLevel> GetRandomLevels(int count, int skip, GameUser? user, ResultFilterSettings levelFilterSettings)
     {
 #if false
         float seed = MathHelper.RemapIntToFloat(levelFilterSettings.Seed ?? 0);
@@ -391,7 +391,7 @@ public partial class GameDatabaseContext // Levels
 
     // TODO: reduce code duplication for getting most of x
     [Pure]
-    public DatabaseList<GameLevel> GetMostFavouritedLevels(int count, int skip, GameUser? user, LevelFilterSettings levelFilterSettings)
+    public DatabaseList<GameLevel> GetMostFavouritedLevels(int count, int skip, GameUser? user, ResultFilterSettings levelFilterSettings)
     {
         IQueryable<GameLevel> mostHeartedLevels = this.GetLevelsByGameVersion(levelFilterSettings.GameVersion)
             .Where(l => l.Statistics!.FavouriteCount > 0)
@@ -402,7 +402,7 @@ public partial class GameDatabaseContext // Levels
     }
     
     [Pure]
-    public DatabaseList<GameLevel> GetLevelsByTag(int count, int skip, GameUser? user, Tag tag, LevelFilterSettings levelFilterSettings)
+    public DatabaseList<GameLevel> GetLevelsByTag(int count, int skip, GameUser? user, Tag tag, ResultFilterSettings levelFilterSettings)
     {
         IQueryable<TagLevelRelation> tagRelations = this.TagLevelRelations;
         
@@ -422,7 +422,7 @@ public partial class GameDatabaseContext // Levels
     }
     
     [Pure]
-    public DatabaseList<GameLevel> GetMostUniquelyPlayedLevels(int count, int skip, GameUser? user, LevelFilterSettings levelFilterSettings)
+    public DatabaseList<GameLevel> GetMostUniquelyPlayedLevels(int count, int skip, GameUser? user, ResultFilterSettings levelFilterSettings)
     {
         IQueryable<GameLevel> mostPlayed = this.GetLevelsByGameVersion(levelFilterSettings.GameVersion)
             .Where(l => l.Statistics!.UniquePlayCount > 0)
@@ -433,7 +433,7 @@ public partial class GameDatabaseContext // Levels
     }
     
     [Pure]
-    public DatabaseList<GameLevel> GetMostReplayedLevels(int count, int skip, GameUser? user, LevelFilterSettings levelFilterSettings)
+    public DatabaseList<GameLevel> GetMostReplayedLevels(int count, int skip, GameUser? user, ResultFilterSettings levelFilterSettings)
     {
         IQueryable<GameLevel> mostPlayed = this.GetLevelsByGameVersion(levelFilterSettings.GameVersion)
             .Where(l => l.Statistics!.PlayCount > 0)
@@ -444,7 +444,7 @@ public partial class GameDatabaseContext // Levels
     }
     
     [Pure]
-    public DatabaseList<GameLevel> GetHighestRatedLevels(int count, int skip, GameUser? user, LevelFilterSettings levelFilterSettings)
+    public DatabaseList<GameLevel> GetHighestRatedLevels(int count, int skip, GameUser? user, ResultFilterSettings levelFilterSettings)
     {
         IQueryable<GameLevel> highestRated = this.GetLevelsByGameVersion(levelFilterSettings.GameVersion)
             .Where(l => l.Statistics!.Karma > 0)
@@ -455,35 +455,35 @@ public partial class GameDatabaseContext // Levels
     }
     
     [Pure]
-    public DatabaseList<GameLevel> GetTeamPickedLevels(int count, int skip, GameUser? user, LevelFilterSettings levelFilterSettings) =>
+    public DatabaseList<GameLevel> GetTeamPickedLevels(int count, int skip, GameUser? user, ResultFilterSettings levelFilterSettings) =>
         new(this.GetLevelsByGameVersion(levelFilterSettings.GameVersion)
             .Where(l => l.DateTeamPicked != null)
             .FilterByLevelFilterSettings(user, levelFilterSettings)
             .OrderByDescending(l => l.DateTeamPicked), skip, count);
 
     [Pure]
-    public DatabaseList<GameLevel> GetDeveloperLevels(int count, int skip, LevelFilterSettings levelFilterSettings) =>
+    public DatabaseList<GameLevel> GetDeveloperLevels(int count, int skip, ResultFilterSettings levelFilterSettings) =>
         new(this.GameLevelsIncluded
             .Where(l => l.StoryId != 0) // filter to only levels with a story ID set
             .FilterByLevelFilterSettings(null, levelFilterSettings)
             .OrderByDescending(l => l.Title), skip, count);
     
     [Pure]
-    public DatabaseList<GameLevel> GetCoolLevels(int count, int skip, GameUser? user, LevelFilterSettings levelFilterSettings) =>
+    public DatabaseList<GameLevel> GetCoolLevels(int count, int skip, GameUser? user, ResultFilterSettings levelFilterSettings) =>
         new(this.GetLevelsByGameVersion(levelFilterSettings.GameVersion)
             .FilterByLevelFilterSettings(user, levelFilterSettings)
             .Where(l => l.CoolRating > 0)
             .OrderByDescending(l => l.CoolRating), skip, count);
 
     [Pure]
-    public DatabaseList<GameLevel> GetAdventureLevels(int count, int skip, GameUser? user, LevelFilterSettings levelFilterSettings) =>
+    public DatabaseList<GameLevel> GetAdventureLevels(int count, int skip, GameUser? user, ResultFilterSettings levelFilterSettings) =>
         new(this.GetLevelsByGameVersion(levelFilterSettings.GameVersion)
             .FilterByLevelFilterSettings(user, levelFilterSettings)
             .Where(l => l.IsAdventure)
             .OrderByDescending(l => l.PublishDate), skip, count);
 
     [Pure]
-    public DatabaseList<GameLevel> SearchForLevels(int count, int skip, GameUser? user, LevelFilterSettings levelFilterSettings, string query)
+    public DatabaseList<GameLevel> SearchForLevels(int count, int skip, GameUser? user, ResultFilterSettings levelFilterSettings, string query)
     {
         IQueryable<GameLevel> validLevels = this.GetLevelsByGameVersion(levelFilterSettings.GameVersion)
                 .FilterByLevelFilterSettings(user, levelFilterSettings);

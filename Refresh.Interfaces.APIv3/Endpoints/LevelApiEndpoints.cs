@@ -71,7 +71,7 @@ public class LevelApiEndpoints : EndpointGroup
 
         DatabaseList<GameLevel>? list = categories.LevelCategories
             .FirstOrDefault(c => c.ApiRoute.StartsWith(route))?
-            .Fetch(context, skip, count, dataContext, LevelFilterSettings.FromApiRequest(context), user);
+            .Fetch(context, skip, count, dataContext, ResultFilterSettings.FromApiRequest(context), user);
 
         if (list == null) return ApiNotFoundError.Instance;
 

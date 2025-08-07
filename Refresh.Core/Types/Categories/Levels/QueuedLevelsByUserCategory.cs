@@ -18,7 +18,7 @@ public class QueuedLevelsByUserCategory : GameLevelCategory
     }
     
     public override DatabaseList<GameLevel>? Fetch(RequestContext context, int skip, int count, DataContext dataContext,
-        LevelFilterSettings levelFilterSettings, GameUser? user)
+        ResultFilterSettings levelFilterSettings, GameUser? user)
     {
         if (user == null) return null;
         return dataContext.Database.GetLevelsQueuedByUser(user, count, skip, levelFilterSettings, dataContext.User);

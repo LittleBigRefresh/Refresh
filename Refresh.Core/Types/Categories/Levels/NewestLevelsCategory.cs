@@ -18,6 +18,6 @@ public class NewestLevelsCategory : GameLevelCategory
     }
     
     public override DatabaseList<GameLevel>? Fetch(RequestContext context, int skip, int count, DataContext dataContext,
-        LevelFilterSettings levelFilterSettings, GameUser? _) 
+        ResultFilterSettings levelFilterSettings, GameUser? _) 
         => dataContext.Database.GetNewestLevels(count, skip, dataContext.User, levelFilterSettings);
 }

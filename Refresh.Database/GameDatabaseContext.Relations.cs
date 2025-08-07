@@ -24,7 +24,7 @@ public partial class GameDatabaseContext // Relations
         .FirstOrDefault(r => r.Level == level && r.User == user) != null;
 
     [Pure]
-    public DatabaseList<GameLevel> GetLevelsFavouritedByUser(GameUser user, int count, int skip, LevelFilterSettings levelFilterSettings, GameUser? accessor) 
+    public DatabaseList<GameLevel> GetLevelsFavouritedByUser(GameUser user, int count, int skip, ResultFilterSettings levelFilterSettings, GameUser? accessor) 
         => new(this.FavouriteLevelRelationsIncluded
         .Where(r => r.User == user)
         .OrderByDescending(r => r.Timestamp)
@@ -201,7 +201,7 @@ public partial class GameDatabaseContext // Relations
         .FirstOrDefault(r => r.Level == level && r.User == user) != null;
 
     [Pure]
-    public DatabaseList<GameLevel> GetLevelsQueuedByUser(GameUser user, int count, int skip, LevelFilterSettings levelFilterSettings, GameUser? accessor)
+    public DatabaseList<GameLevel> GetLevelsQueuedByUser(GameUser user, int count, int skip, ResultFilterSettings levelFilterSettings, GameUser? accessor)
         => new(this.QueueLevelRelationsIncluded
         .Where(r => r.User == user)
         .OrderByDescending(r => r.Timestamp)

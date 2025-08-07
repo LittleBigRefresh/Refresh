@@ -38,7 +38,7 @@ public class SerializedLevelCategory : SerializedCategory
     {
         SerializedLevelCategory serializedLevelCategory = FromLevelCategory(levelCategory);
 
-        LevelFilterSettings filterSettings = LevelFilterSettings.FromGameRequest(context, dataContext.Token!.TokenGame);
+        ResultFilterSettings filterSettings = ResultFilterSettings.FromGameRequest(context, dataContext.Token!.TokenGame);
         DatabaseList<GameLevel> categoryLevels = levelCategory.Fetch(context, skip, count, dataContext, filterSettings, dataContext.User);
         
         IEnumerable<GameMinimalLevelResponse> levels = categoryLevels?.Items.ToArrayIfPostgres()

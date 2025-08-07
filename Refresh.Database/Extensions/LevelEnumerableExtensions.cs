@@ -33,7 +33,7 @@ public static class LevelEnumerableExtensions
             _ => throw new ArgumentOutOfRangeException(nameof(gameVersion), gameVersion, null),
         };
 
-    public static IQueryable<GameLevel> FilterByLevelFilterSettings(this IQueryable<GameLevel> levels, GameUser? user, LevelFilterSettings levelFilterSettings)
+    public static IQueryable<GameLevel> FilterByLevelFilterSettings(this IQueryable<GameLevel> levels, GameUser? user, ResultFilterSettings levelFilterSettings)
     {
         if (levelFilterSettings.ExcludeMyLevels && user != null)
             levels = levels.Where(l => l.Publisher != null && l.Publisher.UserId != user.UserId);
@@ -76,7 +76,7 @@ public static class LevelEnumerableExtensions
         return levels;
     }
     
-    public static IEnumerable<GameLevel> FilterByLevelFilterSettings(this IEnumerable<GameLevel> levels, GameUser? user, LevelFilterSettings levelFilterSettings)
+    public static IEnumerable<GameLevel> FilterByLevelFilterSettings(this IEnumerable<GameLevel> levels, GameUser? user, ResultFilterSettings levelFilterSettings)
     {
         if (levelFilterSettings.ExcludeMyLevels && user != null)
             levels = levels.Where(l => l.Publisher != null && l.Publisher.UserId != user.UserId);

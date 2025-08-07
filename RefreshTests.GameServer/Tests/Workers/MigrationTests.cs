@@ -20,13 +20,13 @@ public class MigrationTests : GameServerTest
             context.CreateLevel(user);
         }
 
-        IEnumerable<GameLevel> allLevels = context.Database.GetNewestLevels(100, 0, null, new LevelFilterSettings(TokenGame.Website)).Items;
+        IEnumerable<GameLevel> allLevels = context.Database.GetNewestLevels(100, 0, null, new ResultFilterSettings(TokenGame.Website)).Items;
         Assert.That(allLevels.All(l => l.Title == "Level"), Is.True);
 
         job.JobState = new MigrationJobState();
         job.ExecuteJob(context.GetWorkContext());
         
-        allLevels = context.Database.GetNewestLevels(100, 0, null, new LevelFilterSettings(TokenGame.Website)).Items;
+        allLevels = context.Database.GetNewestLevels(100, 0, null, new ResultFilterSettings(TokenGame.Website)).Items;
         Assert.That(allLevels.All(l => l.Title == "Level test"), Is.True);
     }
 }

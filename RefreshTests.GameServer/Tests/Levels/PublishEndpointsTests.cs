@@ -493,7 +493,7 @@ public class PublishEndpointsTests : GameServerTest
         HttpResponseMessage message = client.PostAsync($"/lbp/unpublish/{level.LevelId}", new ReadOnlyMemoryContent(Array.Empty<byte>())).Result;
         Assert.That(message.StatusCode, Is.EqualTo(OK));
 
-        DatabaseList<GameLevel> levelsByUser = context.Database.GetLevelsByUser(user, 1, 0, new LevelFilterSettings(TokenGame.LittleBigPlanet3), user);
+        DatabaseList<GameLevel> levelsByUser = context.Database.GetLevelsByUser(user, 1, 0, new ResultFilterSettings(TokenGame.LittleBigPlanet3), user);
         Assert.That(levelsByUser.TotalItems, Is.EqualTo(0));
     }
 
@@ -522,7 +522,7 @@ public class PublishEndpointsTests : GameServerTest
         HttpResponseMessage message = client.PostAsync($"/lbp/unpublish/{level.LevelId}", new ReadOnlyMemoryContent(Array.Empty<byte>())).Result;
         Assert.That(message.StatusCode, Is.EqualTo(Unauthorized));
 
-        DatabaseList<GameLevel> levelsByUser = context.Database.GetLevelsByUser(user1, 1, 0, new LevelFilterSettings(TokenGame.LittleBigPlanet3), user1);
+        DatabaseList<GameLevel> levelsByUser = context.Database.GetLevelsByUser(user1, 1, 0, new ResultFilterSettings(TokenGame.LittleBigPlanet3), user1);
         Assert.That(levelsByUser.TotalItems, Is.EqualTo(1));
     }
 
@@ -564,7 +564,7 @@ public class PublishEndpointsTests : GameServerTest
         }
 
         // Check amount of levels
-        DatabaseList<GameLevel> levelsByUser = context.Database.GetLevelsByUser(user, 1000, 0, new LevelFilterSettings(TokenGame.LittleBigPlanet3), user);
+        DatabaseList<GameLevel> levelsByUser = context.Database.GetLevelsByUser(user, 1000, 0, new ResultFilterSettings(TokenGame.LittleBigPlanet3), user);
         Assert.That(levelsByUser.TotalItems, Is.EqualTo(config.TimedLevelUploadLimits.LevelQuota));
 
         // Ensure there were error notifications sent for each blocked request to both /startPublish and /publish
@@ -604,7 +604,7 @@ public class PublishEndpointsTests : GameServerTest
         SpamSuccessfulUploads(uploadAttemptsAfterExceeding, client);
 
         // Check amount of levels
-        DatabaseList<GameLevel> levelsByUser = context.Database.GetLevelsByUser(user, 1000, 0, new LevelFilterSettings(TokenGame.LittleBigPlanet3), user);
+        DatabaseList<GameLevel> levelsByUser = context.Database.GetLevelsByUser(user, 1000, 0, new ResultFilterSettings(TokenGame.LittleBigPlanet3), user);
         Assert.That(levelsByUser.TotalItems, Is.EqualTo(config.TimedLevelUploadLimits.LevelQuota + uploadAttemptsAfterExceeding));
 
         // Ensure there were no notifications sent
