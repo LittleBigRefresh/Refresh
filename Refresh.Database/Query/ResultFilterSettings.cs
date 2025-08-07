@@ -69,7 +69,7 @@ public class ResultFilterSettings
         this.GameVersion = game;
     }
 
-    private static ResultFilterSettings FromAnyRequest(RequestContext context, TokenGame game)
+    private static ResultFilterSettings FromAnyRequest(RequestContext context, TokenGame game, bool isLbp3Category = false)
     {
         ResultFilterSettings settings = new(game);
 
@@ -78,6 +78,10 @@ public class ResultFilterSettings
         {
             settings.Players = players;
         }
+
+        // When the user is in a category, LBP3 sends numbers from 1 - 3 when setting this filter to 2 - 4 players, 
+        // and nothing when set to 1 player. The UI makes it look like no parameter = only levels suited for 1 player.
+        if (isLbp3Category) settings.Players++;
 
         // Lucky Dip randomization
         string? seedStr = context.QueryString.Get("seed");
@@ -104,9 +108,9 @@ public class ResultFilterSettings
     /// <summary>
     /// Gets the filter settings from a game request
     /// </summary>
-    public static ResultFilterSettings FromGameRequest(RequestContext context, TokenGame game)
+    public static ResultFilterSettings FromGameRequest(RequestContext context, TokenGame game, bool isLbp3Category = false)
     {
-        ResultFilterSettings settings = FromAnyRequest(context, game);
+        ResultFilterSettings settings = FromAnyRequest(context, game, isLbp3Category);
 
         bool gamesSpecified = false;
         string[]? gameFilters = context.QueryString.GetValues("gameFilter[]");
