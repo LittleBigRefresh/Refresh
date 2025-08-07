@@ -18,6 +18,7 @@ using Refresh.Interfaces.APIv3.Documentation.Attributes;
 using Refresh.Interfaces.APIv3.Endpoints.ApiTypes;
 using Refresh.Interfaces.APIv3.Endpoints.ApiTypes.Errors;
 using Refresh.Interfaces.APIv3.Endpoints.DataTypes.Request;
+using Refresh.Interfaces.APIv3.Endpoints.DataTypes.Response.Categories;
 using Refresh.Interfaces.APIv3.Endpoints.DataTypes.Response.Levels;
 using Refresh.Interfaces.APIv3.Extensions;
 

@@ -5,20 +5,14 @@ using Refresh.Database;
 using Refresh.Database.Models.Authentication;
 using Refresh.Database.Models.Levels;
 using Refresh.Database.Query;
+using Refresh.Interfaces.APIv3.Endpoints.DataTypes.Response.Levels;
 
-namespace Refresh.Interfaces.APIv3.Endpoints.DataTypes.Response.Levels;
+namespace Refresh.Interfaces.APIv3.Endpoints.DataTypes.Response.Categories;
 
 [JsonObject(NamingStrategyType = typeof(CamelCaseNamingStrategy))]
-public class ApiLevelCategoryResponse : IApiResponse, IDataConvertableFrom<ApiLevelCategoryResponse, GameLevelCategory>
+public class ApiLevelCategoryResponse : ApiCategoryResponse, IApiResponse, IDataConvertableFrom<ApiLevelCategoryResponse, GameLevelCategory>
 {
-    public required string Name { get; set; }
-    public required string Description { get; set; }
-    public required string IconHash { get; set; }
-    public required string FontAwesomeIcon { get; set; }
-    public required string ApiRoute { get; set; }
-    public required bool RequiresUser { get; set; }
     public required ApiGameLevelResponse? PreviewLevel { get; set; }
-    public required bool Hidden { get; set; } = false;
     
     public static ApiLevelCategoryResponse? FromOld(GameLevelCategory? old, GameLevel? previewLevel,
         DataContext dataContext)

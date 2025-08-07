@@ -5,6 +5,7 @@ using Refresh.Database.Models.Levels;
 using Refresh.Interfaces.APIv3.Endpoints.ApiTypes;
 using Refresh.Interfaces.APIv3.Endpoints.ApiTypes.Errors;
 using Refresh.Interfaces.APIv3.Endpoints.DataTypes.Response.Levels;
+using Refresh.Interfaces.APIv3.Endpoints.DataTypes.Response.Categories;
 
 namespace RefreshTests.GameServer.Tests.ApiV3;
 
