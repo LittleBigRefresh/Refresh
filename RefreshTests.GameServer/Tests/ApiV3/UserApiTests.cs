@@ -3,6 +3,7 @@ using Refresh.Database.Models.Users;
 using Refresh.Interfaces.APIv3.Endpoints.ApiTypes;
 using Refresh.Interfaces.APIv3.Endpoints.ApiTypes.Errors;
 using Refresh.Interfaces.APIv3.Endpoints.DataTypes.Request.Authentication;
+using Refresh.Interfaces.APIv3.Endpoints.DataTypes.Response.Categories;
 using Refresh.Interfaces.APIv3.Endpoints.DataTypes.Response.Users;
 using RefreshTests.GameServer.Extensions;
 
@@ -158,5 +159,92 @@ public class UserApiTests : GameServerTest
         context.Database.Refresh();
         user = context.Database.GetUserByObjectId(user.UserId)!;
         Assert.That(user.Description, Is.EqualTo(description));
+    }
+
+    [Test]
+    [TestCase(true)]
+    [TestCase(false)]
+    public void GetsUserCategories(bool showOnlineUsers)
+    {
+        using TestContext context = this.GetServer();
+
+        // Prepare config
+        context.Server.Value.GameServerConfig.PermitShowingOnlineUsers = showOnlineUsers;
+
+        ApiListResponse<ApiUserCategoryResponse>? categories = context.Http.GetList<ApiUserCategoryResponse>("/api/v3/users");
+        Assert.That(categories, Is.Not.Null);
+
+        if (!showOnlineUsers)
+        {
+            Assert.That(categories!.ListInfo!.TotalItems, Is.Zero);
+            return;
+        }
+
+        Assert.That(categories!.ListInfo!.TotalItems, Is.EqualTo(categories.Data!.Count));
+        Assert.That(categories.ListInfo.TotalItems, Is.Not.Zero);
+    }
+    
+    [Test]
+    [TestCase(true)]
+    [TestCase(false)]
+    public void GetsUserCategoriesWithPreviews(bool showOnlineUsers)
+    {
+        using TestContext context = this.GetServer();
+        GameUser user = context.CreateUser();
+
+        // Prepare config
+        context.Server.Value.GameServerConfig.PermitShowingOnlineUsers = showOnlineUsers;
+
+        ApiListResponse<ApiUserCategoryResponse>? categories = context.Http.GetList<ApiUserCategoryResponse>("/api/v3/users?includePreviews=true");
+        Assert.That(categories, Is.Not.Null);
+
+        if (!showOnlineUsers)
+        {
+            Assert.That(categories!.ListInfo!.TotalItems, Is.Zero);
+            return;
+        }
+        
+        ApiUserCategoryResponse? category = categories?.Data?.FirstOrDefault(c => c.ApiRoute == "newest");
+        Assert.That(category, Is.Not.Null);
+        
+        Assert.Multiple(() =>
+        {
+            Assert.That(category!.PreviewItem, Is.Not.Null);
+            Assert.That(category.PreviewItem!.UserId, Is.EqualTo(user.UserId.ToString()));
+        });
+    }
+    
+    [Test]
+    public void DoesntGetUserCategoriesWithGarbledPreviews()
+    {
+        using TestContext context = this.GetServer();
+        
+        ApiListResponse<ApiUserCategoryResponse>? categories = context.Http.GetList<ApiUserCategoryResponse>("/api/v3/users?includePreviews=IIIIIIIIHEHAHAHAHAHAHAHA", false, true); // https://youtu.be/mpAnsf12JkA?t=2
+        Assert.That(categories, Is.Not.Null);
+        categories!.AssertErrorIsEqual(ApiValidationError.BooleanParseError);
+    }
+
+    [Test]
+    [TestCase(true)]
+    [TestCase(false)]
+    public void GetsNewestUser(bool showOnlineUsers)
+    {
+        using TestContext context = this.GetServer();
+        GameUser user = context.CreateUser();
+
+        // Prepare config
+        context.Server.Value.GameServerConfig.PermitShowingOnlineUsers = showOnlineUsers;
+
+        if (!showOnlineUsers)
+        {
+            HttpResponseMessage message = context.Http.GetAsync("/api/v3/users/category/newest").Result;
+            Assert.That(message.StatusCode, Is.EqualTo(NotFound));
+            return;
+        }
+
+        ApiListResponse<ApiGameUserResponse>? users = context.Http.GetList<ApiGameUserResponse>("/api/v3/users/category/newest?count=1", false);
+        Assert.That(users, Is.Not.Null);
+        Assert.That(users!.Data, Has.Count.EqualTo(1));
+        Assert.That(users.Data![0].UserId, Is.EqualTo(user.UserId.ToString()));
     }
 }
