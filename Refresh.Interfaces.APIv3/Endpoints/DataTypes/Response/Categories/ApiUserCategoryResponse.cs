@@ -30,10 +30,11 @@ public class ApiUserCategoryResponse : ApiCategoryResponse, IApiResponse, IDataC
         };
     }
     
-    public static ApiUserCategoryResponse? FromOld(GameUserCategory? old, DataContext dataContext) => FromOld(old, null, dataContext);
+    public static ApiUserCategoryResponse? FromOld(GameUserCategory? old, DataContext dataContext) 
+        => FromOld(old, null, dataContext);
 
-    public static IEnumerable<ApiUserCategoryResponse> FromOldList(IEnumerable<GameUserCategory> oldList,
-        DataContext dataContext) => oldList.Select(old => FromOld(old, dataContext)).ToList()!;
+    public static IEnumerable<ApiUserCategoryResponse> FromOldList(IEnumerable<GameUserCategory> oldList, DataContext dataContext) 
+        => oldList.Select(old => FromOld(old, dataContext)).ToList()!;
     
     public static IEnumerable<ApiUserCategoryResponse> FromOldList(IEnumerable<GameUserCategory> oldList,
         RequestContext context,
