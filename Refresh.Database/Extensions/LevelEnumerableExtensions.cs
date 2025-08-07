@@ -36,7 +36,7 @@ public static class LevelEnumerableExtensions
     public static IQueryable<GameLevel> FilterByLevelFilterSettings(this IQueryable<GameLevel> levels, GameUser? user, LevelFilterSettings levelFilterSettings)
     {
         if (levelFilterSettings.ExcludeMyLevels && user != null)
-            levels = levels.Where(l => l.Publisher != user);
+            levels = levels.Where(l => l.Publisher != null && l.Publisher.UserId != user.UserId);
 
         // If the user has it disabled globally and the filter doesnt enable it, or the filter disables it, disable modded content from being shown
         if ((user is { ShowModdedContent: false } && levelFilterSettings.ShowModdedLevels != true) || levelFilterSettings.ShowModdedLevels == false)
@@ -44,20 +44,6 @@ public static class LevelEnumerableExtensions
         
         if ((user is { ShowReuploadedContent: false } && levelFilterSettings.ShowReuploadedLevels != true) || levelFilterSettings.ShowReuploadedLevels == false)
             levels = levels.Where(l => !l.IsReUpload);
-
-        // Don't allow beta builds to use this filtering option
-        // If the client specifies this option then it will filter out *all* levels.
-        if (levelFilterSettings.GameVersion != TokenGame.BetaBuild)
-        {
-            levels = levelFilterSettings.GameFilterType switch {
-                GameFilterType.LittleBigPlanet1 => levels.Where(l => l.GameVersion == TokenGame.LittleBigPlanet1),
-                GameFilterType.LittleBigPlanet2 => levels.Where(l => l.GameVersion == TokenGame.LittleBigPlanet2),
-                //NOTE: ideally this should be .Where(l => l._GameVersion == TokenGame.LittleBigPlane1 || l._GameVersion == TokenGame.LittleBigPlane2)
-                //      however, there should be no differences in all real-world cases
-                GameFilterType.Both => levels,
-                _ => throw new ArgumentOutOfRangeException(),
-            };
-        }
 
         if (levelFilterSettings.Players != 0) 
             levels = levels.Where(l => l.MaxPlayers >= levelFilterSettings.Players && l.MinPlayers <= levelFilterSettings.Players);
@@ -69,13 +55,20 @@ public static class LevelEnumerableExtensions
         if (!levelFilterSettings.DisplayPSP) levels = levels.Where(l => l.GameVersion != TokenGame.LittleBigPlanetPSP);
         if (!levelFilterSettings.DisplayBeta) levels = levels.Where(l => l.GameVersion != TokenGame.BetaBuild);
         
-        //TODO: store move compatibility for levels
-        // levels = levelFilterSettings.MoveFilterType switch {
-        // MoveFilterType.True => levels,
-        // MoveFilterType.Only => levels.Where(l => l.MoveCompatible),
-        // MoveFilterType.False => levels.Where(l => !l.MoveCompatible),
-        // _ => throw new ArgumentOutOfRangeException()
-        // };
+        switch(levelFilterSettings.DisplayMoveLevels)
+        {
+            case PropertyFilterType.Include:
+                // Do nothing
+                break;
+            case PropertyFilterType.Only:
+                levels = levels.Where(l => l.RequiresMoveController == true);
+                break;
+            case PropertyFilterType.Exclude:
+                levels = levels.Where(l => l.RequiresMoveController == false);
+                break;
+            default:
+                throw new ArgumentOutOfRangeException(nameof(levelFilterSettings.DisplayMoveLevels), levelFilterSettings.DisplayMoveLevels, "Unsupported value");
+        }
         
         // Filter out sub levels that weren't published by self
         levels = levels.Where(l => !l.IsSubLevel || l.Publisher == user);
@@ -86,7 +79,7 @@ public static class LevelEnumerableExtensions
     public static IEnumerable<GameLevel> FilterByLevelFilterSettings(this IEnumerable<GameLevel> levels, GameUser? user, LevelFilterSettings levelFilterSettings)
     {
         if (levelFilterSettings.ExcludeMyLevels && user != null)
-            levels = levels.Where(l => l.Publisher != user);
+            levels = levels.Where(l => l.Publisher != null && l.Publisher.UserId != user.UserId);
 
         // If the user has it disabled globally and the filter doesnt enable it, or the filter disables it, disable modded content from being shown
         if ((user is { ShowModdedContent: false } && levelFilterSettings.ShowModdedLevels != true) || levelFilterSettings.ShowModdedLevels == false)
@@ -94,20 +87,6 @@ public static class LevelEnumerableExtensions
         
         if ((user is { ShowReuploadedContent: false } && levelFilterSettings.ShowReuploadedLevels != true) || levelFilterSettings.ShowReuploadedLevels == false)
             levels = levels.Where(l => !l.IsReUpload);
-
-        // Don't allow beta builds to use this filtering option
-        // If the client specifies this option then it will filter out *all* levels.
-        if (levelFilterSettings.GameVersion != TokenGame.BetaBuild)
-        {
-            levels = levelFilterSettings.GameFilterType switch {
-                GameFilterType.LittleBigPlanet1 => levels.Where(l => l.GameVersion == TokenGame.LittleBigPlanet1),
-                GameFilterType.LittleBigPlanet2 => levels.Where(l => l.GameVersion == TokenGame.LittleBigPlanet2),
-                //NOTE: ideally this should be .Where(l => l._GameVersion == TokenGame.LittleBigPlane1 || l._GameVersion == TokenGame.LittleBigPlane2)
-                //      however, there should be no differences in all real-world cases
-                GameFilterType.Both => levels,
-                _ => throw new ArgumentOutOfRangeException(),
-            };
-        }
 
         if (levelFilterSettings.Players != 0) 
             levels = levels.Where(l => l.MaxPlayers >= levelFilterSettings.Players && l.MinPlayers <= levelFilterSettings.Players);
@@ -119,13 +98,20 @@ public static class LevelEnumerableExtensions
         if (!levelFilterSettings.DisplayPSP) levels = levels.Where(l => l.GameVersion != TokenGame.LittleBigPlanetPSP);
         if (!levelFilterSettings.DisplayBeta) levels = levels.Where(l => l.GameVersion != TokenGame.BetaBuild);
         
-        //TODO: store move compatibility for levels
-        // levels = levelFilterSettings.MoveFilterType switch {
-        // MoveFilterType.True => levels,
-        // MoveFilterType.Only => levels.Where(l => l.MoveCompatible),
-        // MoveFilterType.False => levels.Where(l => !l.MoveCompatible),
-        // _ => throw new ArgumentOutOfRangeException()
-        // };
+        switch(levelFilterSettings.DisplayMoveLevels)
+        {
+            case PropertyFilterType.Include:
+                // Do nothing
+                break;
+            case PropertyFilterType.Only:
+                levels = levels.Where(l => l.RequiresMoveController == true);
+                break;
+            case PropertyFilterType.Exclude:
+                levels = levels.Where(l => l.RequiresMoveController == false);
+                break;
+            default:
+                throw new ArgumentOutOfRangeException(nameof(levelFilterSettings.DisplayMoveLevels), levelFilterSettings.DisplayMoveLevels, "Unsupported value");
+        }
         
         // Filter out sub levels that weren't published by self
         levels = levels.Where(l => !l.IsSubLevel || l.Publisher == user);
