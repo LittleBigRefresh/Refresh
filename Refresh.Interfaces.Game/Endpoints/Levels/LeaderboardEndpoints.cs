@@ -101,35 +101,44 @@ public class LeaderboardEndpoints : EndpointGroup
         GameDatabaseContext database, string slotType, int id, SerializedScore body, Token token,
         DataContext dataContext)
     {
+        // Try to not return any non-OK responses for LBP PSP here, since that apparently bugs the game
+
         if (user.IsWriteBlocked(config))
-            return Unauthorized;
+            return context.IsPSP() ? OK : Unauthorized;
         
         GameLevel? level = database.GetLevelByIdAndType(slotType, id);
-        if (level == null) return NotFound;
+        if (level == null) return context.IsPSP() ? OK : NotFound;
 
-        // A user has to play a level in order to submit a score
+        // A user has to play a level in order to submit a score (unless the game is LBP PSP)
         if (!database.HasUserPlayedLevel(level, user) && !context.IsPSP())
         {
             return Unauthorized;
         }
 
-        // Validate the score is a non-negative amount and not above the in-game limit
-        if (body.Score is < 0 or > 16_000_000)
+        // LBP PSP doesn't have any score limits, and checking the score type isn't really useful
+        // since there is no multiplayer in that game
+        if (!context.IsPSP())
         {
-            return BadRequest;
+            // Validate the score is a non-negative amount and not above the in-game limit
+            if (body.Score is < 0 or > 16_000_000)
+            {
+                return BadRequest;
+            }
+            
+            // Ensure score type is valid
+            // Only valid values are 1-4 players and 7 for versus
+            if (body.ScoreType is (> 4 or < 1) and not 7)
+            {
+                return BadRequest;
+            }
         }
-        
-        // Ensure score type is valid
-        // Only valid values are 1-4 players and 7 for versus
-        if (body.ScoreType is (> 4 or < 1) and not 7)
+        else
         {
-            return BadRequest;
+            body.ScoreType = 1;
         }
 
         GameScore score = database.SubmitScore(body, token, level);
-
-        DatabaseList<ScoreWithRank>? scores = database.GetRankedScoresAroundScore(score, 5);
-        Debug.Assert(scores != null);
+        DatabaseList<ScoreWithRank> scores = database.GetRankedScoresAroundScore(score, 5);
 
         this.AwardScoreboardPins(scores, dataContext, user, level);
 
