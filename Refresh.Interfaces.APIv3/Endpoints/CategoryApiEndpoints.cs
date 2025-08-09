@@ -22,7 +22,7 @@ namespace Refresh.Interfaces.APIv3.Endpoints;
 public class CategoryApiEndpoints : EndpointGroup
 {
     [ApiV3Endpoint("levels"), Authentication(false)]
-    [ClientCacheResponse(86400 / 2)] // cache for half a day
+    [ClientCacheResponse(1800)] // cache for half an hour
     [DocSummary("Retrieves a list of categories you can use to search levels")]
     [DocQueryParam("includePreviews", "If true, a single level will be added to each category representing a level from that category. False by default.")]
     [DocError(typeof(ApiValidationError), "The boolean 'includePreviews' could not be parsed by the server.")]
@@ -74,7 +74,7 @@ public class CategoryApiEndpoints : EndpointGroup
     }
 
     [ApiV3Endpoint("users"), Authentication(false)]
-    [ClientCacheResponse(86400 / 2)] // cache for half a day
+    [ClientCacheResponse(1800)] // cache for half an hour
     [DocSummary("Retrieves a list of categories you can use to search users. Returns an empty list if the instance doesn't allow showing online users.")]
     [DocQueryParam("includePreviews", "If true, a single user will be added to each category representing a user from that category. False by default.")]
     [DocError(typeof(ApiValidationError), "The boolean 'includePreviews' could not be parsed by the server.")]
