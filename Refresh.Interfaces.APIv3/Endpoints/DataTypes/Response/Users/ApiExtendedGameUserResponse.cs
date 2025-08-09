@@ -11,19 +11,8 @@ namespace Refresh.Interfaces.APIv3.Endpoints.DataTypes.Response.Users;
 /// A user with full information, like current role, ban status, etc.
 /// </summary>
 [JsonObject(NamingStrategyType = typeof(CamelCaseNamingStrategy))]
-public class ApiExtendedGameUserResponse : IApiResponse, IDataConvertableFrom<ApiExtendedGameUserResponse, GameUser>
+public class ApiExtendedGameUserResponse : ApiGameUserResponse, IApiResponse, IDataConvertableFrom<ApiExtendedGameUserResponse, GameUser>
 {
-    public required string UserId { get; set; }
-    public required string Username { get; set; }
-    public required string IconHash { get; set; }
-    public required string VitaIconHash { get; set; }
-    public required string BetaIconHash { get; set; }
-    public required string Description { get; set; }
-    public required ApiGameLocationResponse Location { get; set; }
-    public required DateTimeOffset JoinDate { get; set; }
-    public required DateTimeOffset LastLoginDate { get; set; }
-    public required GameUserRole Role { get; set; }
-    
     public required string? BanReason { get; set; }
     public required DateTimeOffset? BanExpiryDate { get; set; }
     
@@ -45,13 +34,10 @@ public class ApiExtendedGameUserResponse : IApiResponse, IDataConvertableFrom<Ap
     public required Visibility ProfileVisibility { get; set; }
     
     public required int FilesizeQuotaUsage { get; set; }
-    
-    public required ApiGameUserStatisticsResponse Statistics { get; set; }
-    public required ApiGameRoomResponse? ActiveRoom { get; set; }
     public required bool ConnectedToPresenceServer { get; set; }
     
     [ContractAnnotation("user:null => null; user:notnull => notnull")]
-    public static ApiExtendedGameUserResponse? FromOld(GameUser? user, DataContext dataContext)
+    public static new ApiExtendedGameUserResponse? FromOld(GameUser? user, DataContext dataContext)
     {
         if (user == null) return null;
         
@@ -62,6 +48,9 @@ public class ApiExtendedGameUserResponse : IApiResponse, IDataConvertableFrom<Ap
             IconHash = dataContext.GetIconFromHash(user.IconHash),
             VitaIconHash = dataContext.GetIconFromHash(user.VitaIconHash),
             BetaIconHash = dataContext.GetIconFromHash(user.BetaIconHash),
+            YayFaceHash = dataContext.GetIconFromHash(user.YayFaceHash),
+            BooFaceHash = dataContext.GetIconFromHash(user.BooFaceHash),
+            MehFaceHash = dataContext.GetIconFromHash(user.MehFaceHash),
             Description = user.Description,
             Location = ApiGameLocationResponse.FromLocation(user.LocationX, user.LocationY)!,
             JoinDate = user.JoinDate,
@@ -88,6 +77,6 @@ public class ApiExtendedGameUserResponse : IApiResponse, IDataConvertableFrom<Ap
         };
     }
 
-    public static IEnumerable<ApiExtendedGameUserResponse> FromOldList(IEnumerable<GameUser> oldList,
+    public static new IEnumerable<ApiExtendedGameUserResponse> FromOldList(IEnumerable<GameUser> oldList,
         DataContext dataContext) => oldList.Select(old => FromOld(old, dataContext)).ToList()!;
 }

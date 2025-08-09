@@ -1,6 +1,8 @@
 using AttribDoc.Attributes;
 using Bunkum.Core;
 using Bunkum.Core.Endpoints;
+using Bunkum.Core.Responses;
+using Bunkum.Listener.Protocol;
 using Refresh.Core.Configuration;
 using Refresh.Core.Types.Categories;
 using Refresh.Core.Types.Data;
@@ -93,24 +95,28 @@ public class CategoryApiEndpoints : EndpointGroup
         return new ApiListResponse<ApiUserCategoryResponse>(resp);
     }
 
-    // This route can not be called "users/{route}", else Bunkum will route users/me requests to here aswell.
-    // Having a special case for the "me" route here would be hacky and introduce trouble if another endpoint with the route
-    // "users/something" (for example) were to ever be implemented in the future.
-    [ApiV3Endpoint("users/category/{route}"), Authentication(false)]
+    [ApiV3Endpoint("users/{route}"), Authentication(false)]
     [DocSummary("Retrieves a list of users from a category.")]
     [DocError(typeof(ApiNotFoundError), "The user category cannot be found, or the instance does not allow showing online users.")]
     [DocUsesPageData]
     [DocQueryParam("username", "If set, certain categories like 'hearted' will return the related users of " +
                                "the user with this username instead of your own. Optional.")]
-    public ApiListResponse<ApiGameUserResponse> GetUsers(RequestContext context, CategoryService categories, GameUser? user,
+    public Response GetUsers(RequestContext context, CategoryService categories, GameUser? user,
         [DocSummary("The name of the category you'd like to retrieve users from. " +
                     "Make a request to /users to see a list of available categories")]
         string route, DataContext dataContext, GameServerConfig config)
     {
+        // Bunkum usually routes users/me requests to here aswell, so use this hack to serve those requests properly.
+        if (route == "me")
+        {
+            if (user == null) return ApiAuthenticationError.NotAuthenticated; // Error documented in UserApiEndpoints.GetMyUser()
+            return new Response(new ApiResponse<ApiExtendedGameUserResponse>(ApiExtendedGameUserResponse.FromOld(user, dataContext)!), ContentType.Json);
+        }
+
         if (string.IsNullOrWhiteSpace(route))
         {
-            return new ApiError("You didn't specify a route.", NotFound);
-            // users/ case won't happen here because of the extra "category" inbetween "users" and the route parameter.
+            return new ApiError("You didn't specify a route. " +
+                                "You probably meant to use the `/users` endpoint and left a trailing slash in the URL.", NotFound);
         }
 
         if (!config.PermitShowingOnlineUsers) return ApiNotFoundError.Instance;
@@ -122,7 +128,7 @@ public class CategoryApiEndpoints : EndpointGroup
 
         if (list == null) return ApiNotFoundError.Instance;
 
-        DatabaseList<ApiGameUserResponse> levels = DatabaseListExtensions.FromOldList<ApiGameUserResponse, GameUser>(list, dataContext);
-        return levels;
+        ApiListResponse<ApiGameUserResponse> users = DatabaseListExtensions.FromOldList<ApiGameUserResponse, GameUser>(list, dataContext);
+        return new Response(users, ContentType.Json);
     }
 }

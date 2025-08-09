@@ -9,9 +9,6 @@ namespace Refresh.Interfaces.APIv3.Endpoints.DataTypes.Response.Users;
 [JsonObject(NamingStrategyType = typeof(CamelCaseNamingStrategy))]
 public class ApiGameUserResponse : IApiResponse, IDataConvertableFrom<ApiGameUserResponse, GameUser>
 {
-    // HEY! When adding fields here, remember to propagate them in ApiExtendedGameUser too!
-    // Otherwise, they won't show up in the admin panel endpoints or /users/me. Thank you!
-    
     public required string UserId { get; set; }
     public required string Username { get; set; }
     public required string IconHash { get; set; }

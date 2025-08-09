@@ -8,7 +8,10 @@ public class ApiAuthenticationError : ApiError
     
     public const string NoPermissionsForCreationWhen = "You lack the permissions to create this type of resource.";
     public static readonly ApiAuthenticationError NoPermissionsForCreation = new(NoPermissionsForCreationWhen);
-    
+
+    public const string NotAuthenticatedWhen = "You are not authenticated.";
+    public static readonly ApiAuthenticationError NotAuthenticated = new(NotAuthenticatedWhen);
+
     public bool Warning { get; init; }
 
     public ApiAuthenticationError(string message, bool warning = false) : base(message, Forbidden)
