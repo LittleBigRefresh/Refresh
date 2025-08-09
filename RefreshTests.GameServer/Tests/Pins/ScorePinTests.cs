@@ -6,7 +6,7 @@ using Refresh.Database.Models.Users;
 using Refresh.Interfaces.Game.Types.UserData.Leaderboard;
 using RefreshTests.GameServer.Extensions;
 
-namespace RefreshTests.GameServer.Tests.Levels;
+namespace RefreshTests.GameServer.Tests.Pins;
 
 public class ScorePinTests : GameServerTest
 {
@@ -82,6 +82,7 @@ public class ScorePinTests : GameServerTest
         long pinIdToCheck = isStoryLevel ? (long)ServerPins.TopFourthOfXStoryLevelsWithOver50Scores
                                          : (long)ServerPins.TopFourthOfXCommunityLevelsWithOver50Scores;
 
+        // ROUND 1: Adding the pin
         // Create a level and spam it with scores by others
         GameLevel level = isStoryLevel ? context.Database.GetStoryLevelById(1) : context.CreateLevel(user);
         int levelId = isStoryLevel ? level.StoryId : level.LevelId;
@@ -105,6 +106,32 @@ public class ScorePinTests : GameServerTest
         PinProgressRelation? relation = context.Database.GetUserPinProgress(pinIdToCheck, user, false);
         Assert.That(relation, Is.Not.Null);
         Assert.That(relation!.Progress, Is.EqualTo(1));
+
+        // ROUND 2: Updating the pin
+        // Create another level and spam it with scores by others aswell
+        GameLevel level2 = isStoryLevel ? context.Database.GetStoryLevelById(2) : context.CreateLevel(user);
+        int levelId2 = isStoryLevel ? level2.StoryId : level2.LevelId;
+
+        context.FillLeaderboard(level2, 100, scoreType);
+
+        // Now post our score which will definitely make it to the top 25% here aswell
+        SerializedScore score2 = new()
+        {
+            Host = true,
+            ScoreType = scoreType,
+            Score = 80,
+        };
+
+        context.Database.PlayLevel(level2, user, 1);
+        message = client.PostAsync($"/lbp/scoreboard/{slotType}/{levelId2}", new StringContent(score2.AsXML())).Result;
+        Assert.That(message.StatusCode, Is.EqualTo(OK));
+
+        context.Database.Refresh();
+
+        // Ensure the pin progress has been incremented
+        PinProgressRelation? relation2 = context.Database.GetUserPinProgress(pinIdToCheck, user, false);
+        Assert.That(relation2, Is.Not.Null);
+        Assert.That(relation2!.Progress, Is.EqualTo(2));
     }
 
     [Test]

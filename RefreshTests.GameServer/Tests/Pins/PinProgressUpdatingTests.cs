@@ -6,7 +6,7 @@ using Refresh.Database.Models.Users;
 using Refresh.Interfaces.Game.Types.Pins;
 using RefreshTests.GameServer.Extensions;
 
-namespace RefreshTests.GameServer.Tests.Levels;
+namespace RefreshTests.GameServer.Tests.Pins;
 
 public class PinProgressUpdatingTests : GameServerTest
 {
