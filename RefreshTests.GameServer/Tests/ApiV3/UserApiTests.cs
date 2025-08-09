@@ -227,24 +227,41 @@ public class UserApiTests : GameServerTest
     [Test]
     [TestCase(true)]
     [TestCase(false)]
-    public void GetsNewestUser(bool showOnlineUsers)
+    public void GetsNewestUsers(bool showOnlineUsers)
     {
         using TestContext context = this.GetServer();
-        GameUser user = context.CreateUser();
+        List<GameUser> users = [];
+        const int usersCount = 10;
 
+        // Prepare users
+        for (int i = 0; i < usersCount; i++)
+        {
+            GameUser user = context.CreateUser();
+            users.Add(user);
+        }
+        
         // Prepare config
         context.Server.Value.GameServerConfig.PermitShowingOnlineUsers = showOnlineUsers;
 
         if (!showOnlineUsers)
         {
-            HttpResponseMessage message = context.Http.GetAsync("/api/v3/users/category/newest").Result;
+            HttpResponseMessage message = context.Http.GetAsync("/api/v3/users/newest").Result;
             Assert.That(message.StatusCode, Is.EqualTo(NotFound));
             return;
         }
 
-        ApiListResponse<ApiGameUserResponse>? users = context.Http.GetList<ApiGameUserResponse>("/api/v3/users/category/newest?count=1", false);
-        Assert.That(users, Is.Not.Null);
-        Assert.That(users!.Data, Has.Count.EqualTo(1));
-        Assert.That(users.Data![0].UserId, Is.EqualTo(user.UserId.ToString()));
+        ApiListResponse<ApiGameUserResponse>? response = context.Http.GetList<ApiGameUserResponse>("/api/v3/users/newest?count=20", false);
+        Assert.That(response?.Data, Is.Not.Null);
+        Assert.That(response?.ListInfo, Is.Not.Null);
+        Assert.That(response!.ListInfo!.TotalItems, Is.EqualTo(usersCount));
+        Assert.That(response!.Data!, Has.Count.EqualTo(usersCount));
+
+        int index = 0;
+        users = users.OrderByDescending(u => u.JoinDate).ToList();
+        foreach(ApiGameUserResponse user in response.Data!)
+        {
+            Assert.That(user.UserId, Is.EqualTo(users[index].UserId.ToString()));
+            index++;
+        }
     }
 }
