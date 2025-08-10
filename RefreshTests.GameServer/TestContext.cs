@@ -148,7 +148,7 @@ public class TestContext : IDisposable
         for (byte i = 0; i < count; i++)
         {
             string username = "score" + i;
-            GameUser scoreUser = Database.GetUserByUsername(username) ?? this.CreateUser(username);
+            GameUser scoreUser = this.Database.GetUserByUsername(username) ?? this.CreateUser(username);
             this.SubmitScore(i, type, level, scoreUser, TokenGame.LittleBigPlanet2, TokenPlatform.PS3);
         }
     }

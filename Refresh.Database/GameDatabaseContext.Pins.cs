@@ -50,7 +50,7 @@ public partial class GameDatabaseContext // Pins
                 existingProgress.LastUpdated = now;
             }
         }
-        SaveChanges();
+        this.SaveChanges();
     }
 
     public void UpdateUserProfilePins(List<long> pinUpdates, GameUser user, TokenGame game)
@@ -90,7 +90,7 @@ public partial class GameDatabaseContext // Pins
                 existingPinAtIndex.Timestamp = now; // New pin at this position: reset timestamp
             }
         }
-        SaveChanges();
+        this.SaveChanges();
     }
 
     public PinProgressRelation UpdateUserPinProgressToLowest(long pinId, int newProgressValue, GameUser user, bool isBeta)
@@ -131,13 +131,13 @@ public partial class GameDatabaseContext // Pins
         this.IncrementUserPinProgressInternal(pinId, progressToAdd, user, true);
         this.IncrementUserPinProgressInternal(pinId, progressToAdd, user, false);
 
-        SaveChanges();
+        this.SaveChanges();
     }
 
     public PinProgressRelation IncrementUserPinProgress(long pinId, int progressToAdd, GameUser user, bool isBeta)
     {
         PinProgressRelation relation = this.IncrementUserPinProgressInternal(pinId, progressToAdd, user, isBeta);
-        SaveChanges();
+        this.SaveChanges();
 
         return relation;
     }
