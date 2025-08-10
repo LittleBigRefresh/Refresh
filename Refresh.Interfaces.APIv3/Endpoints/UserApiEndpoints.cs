@@ -47,9 +47,13 @@ public class UserApiEndpoints : EndpointGroup
     
     [ApiV3Endpoint("users/me"), MinimumRole(GameUserRole.Restricted)]
     [DocSummary("Returns your own user, provided you are authenticated")]
-    public ApiResponse<ApiExtendedGameUserResponse> GetMyUser(RequestContext context, GameUser user,
+    [DocError(typeof(ApiAuthenticationError), "You are not authenticated")]
+    public ApiResponse<ApiExtendedGameUserResponse> GetMyUser(RequestContext context, GameUser? user,
         GameDatabaseContext database, IDataStore dataStore, DataContext dataContext)
-        => ApiExtendedGameUserResponse.FromOld(user, dataContext);
+    {
+        if (user == null) return ApiAuthenticationError.NotAuthenticated;
+        return ApiExtendedGameUserResponse.FromOld(user, dataContext);
+    }
     
     [ApiV3Endpoint("users/me", HttpMethods.Patch)]
     [DocSummary("Updates your profile with the given data")]
