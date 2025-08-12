@@ -74,14 +74,15 @@ public class ResultFilterSettings
         ResultFilterSettings settings = new(game);
 
         string? playersStr = context.QueryString.Get("players");
-        if (playersStr != null && byte.TryParse(playersStr, out byte players))
+
+        // For categories, LBP3 sends numbers from 1 - 3 when setting this filter to 2 - 4 players, 
+        // and nothing when set to 1 player. The UI makes it look like no parameter = only levels for 1 player.
+        // TODO: Since there is no way to not filter out levels with incompatible player counts in LBP3 categories
+        // require including something like the Singleplayer or Multiplayer label in order for the server to use this filter.
+        if (!isLbp3Category && playersStr != null && byte.TryParse(playersStr, out byte players))
         {
             settings.Players = players;
         }
-
-        // When the user is in a category, LBP3 sends numbers from 1 - 3 when setting this filter to 2 - 4 players, 
-        // and nothing when set to 1 player. The UI makes it look like no parameter = only levels suited for 1 player.
-        if (isLbp3Category) settings.Players++;
 
         // Lucky Dip randomization
         string? seedStr = context.QueryString.Get("seed");
@@ -115,12 +116,13 @@ public class ResultFilterSettings
         bool gamesSpecified = false;
         string[]? gameFilters = context.QueryString.GetValues("gameFilter[]");
         string? gameFilterType = context.QueryString.Get("gameFilterType");
-
+        
+        // Skip this if we are in a beta build, since those can specify either of these game filters, but 
+        // LevelEnumerableExtensions.FilterByGameVersion will already take care of only leaving beta build levels 
+        // and ignoring this filter anyway, making this step unnessesary.
         if (game == TokenGame.BetaBuild)
         {
-            // Don't allow beta builds to filter by game, always only show beta build levels regardless.
-            // Also, LBP PSP and Vita never include game filter in their requests, so they don't need a special case here.
-            settings.DisplayBeta = true;
+            // Do nothing
         }
         else if (gameFilters != null)
         {
@@ -201,7 +203,7 @@ public class ResultFilterSettings
             {
                 "noneCan" => PropertyFilterType.Exclude,
                 "dontCare" => PropertyFilterType.Include,
-                // Sent when only adventures are allowed and no other result type at all (LBP3 will still include resultType[]=slot in this case)
+                // Sent when normal levels are disallowed (LBP3 will still include resultType[]=slot in this case)
                 "allMust" => PropertyFilterType.Only,
                 _ => throw new ArgumentOutOfRangeException(nameof(adventureStr), adventureStr, "Unsupported value"),
             };
