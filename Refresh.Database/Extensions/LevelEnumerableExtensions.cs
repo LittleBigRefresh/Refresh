@@ -36,7 +36,7 @@ public static class LevelEnumerableExtensions
     public static IQueryable<GameLevel> FilterByLevelFilterSettings(this IQueryable<GameLevel> levels, GameUser? user, ResultFilterSettings levelFilterSettings)
     {
         if (levelFilterSettings.ExcludeMyLevels && user != null)
-            levels = levels.Where(l => l.Publisher != null && l.Publisher.UserId != user.UserId);
+            levels = levels.Where(l => l.Publisher != user);
 
         // If the user has it disabled globally and the filter doesnt enable it, or the filter disables it, disable modded content from being shown
         if ((user is { ShowModdedContent: false } && levelFilterSettings.ShowModdedLevels != true) || levelFilterSettings.ShowModdedLevels == false)
@@ -94,7 +94,7 @@ public static class LevelEnumerableExtensions
     public static IEnumerable<GameLevel> FilterByLevelFilterSettings(this IEnumerable<GameLevel> levels, GameUser? user, ResultFilterSettings levelFilterSettings)
     {
         if (levelFilterSettings.ExcludeMyLevels && user != null)
-            levels = levels.Where(l => l.Publisher != null && l.Publisher.UserId != user.UserId);
+            levels = levels.Where(l => l.Publisher != user);
 
         // If the user has it disabled globally and the filter doesnt enable it, or the filter disables it, disable modded content from being shown
         if ((user is { ShowModdedContent: false } && levelFilterSettings.ShowModdedLevels != true) || levelFilterSettings.ShowModdedLevels == false)
@@ -112,6 +112,21 @@ public static class LevelEnumerableExtensions
         if (!levelFilterSettings.DisplayVita) levels = levels.Where(l => l.GameVersion != TokenGame.LittleBigPlanetVita);
         if (!levelFilterSettings.DisplayPSP) levels = levels.Where(l => l.GameVersion != TokenGame.LittleBigPlanetPSP);
         if (!levelFilterSettings.DisplayBeta) levels = levels.Where(l => l.GameVersion != TokenGame.BetaBuild);
+
+        switch(levelFilterSettings.DisplayAdventures)
+        {
+            case PropertyFilterType.Include:
+                // Do nothing
+                break;
+            case PropertyFilterType.Only:
+                levels = levels.Where(l => l.IsAdventure == true);
+                break;
+            case PropertyFilterType.Exclude:
+                levels = levels.Where(l => l.IsAdventure == false);
+                break;
+            default:
+                throw new ArgumentOutOfRangeException(nameof(levelFilterSettings.DisplayMoveLevels), levelFilterSettings.DisplayMoveLevels, "Unsupported value");
+        }
         
         switch(levelFilterSettings.DisplayMoveLevels)
         {

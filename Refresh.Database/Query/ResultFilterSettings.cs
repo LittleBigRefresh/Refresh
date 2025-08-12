@@ -37,7 +37,7 @@ public class ResultFilterSettings
     /// </summary>
     public byte Players { get; set; } = 0;
     /// <summary>
-    /// The labels a level should include. Games can specify up to 5 labels.
+    /// The labels a level should include. Normally games can specify up to 3 labels, but LBP3 categories can specify up to 5.
     /// TODO: Set and use this attribute once level labels are implemented.
     /// </summary>
     public string[] Labels { get; set; } = [];
@@ -77,7 +77,7 @@ public class ResultFilterSettings
 
         // For categories, LBP3 sends numbers from 1 - 3 when setting this filter to 2 - 4 players, 
         // and nothing when set to 1 player. The UI makes it look like no parameter = only levels for 1 player.
-        // TODO: Since there is no way to not filter out levels with incompatible player counts in LBP3 categories
+        // TODO: Since there would be no way to leave in levels with incompatible player counts in LBP3 categories,
         // require including something like the Singleplayer or Multiplayer label in order for the server to use this filter.
         if (!isLbp3Category && playersStr != null && byte.TryParse(playersStr, out byte players))
         {
