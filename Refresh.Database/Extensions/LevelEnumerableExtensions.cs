@@ -67,7 +67,7 @@ public static class LevelEnumerableExtensions
                 levels = levels.Where(l => l.IsAdventure == false);
                 break;
             default:
-                throw new ArgumentOutOfRangeException(nameof(levelFilterSettings.DisplayMoveLevels), levelFilterSettings.DisplayMoveLevels, "Unsupported value");
+                throw new ArgumentOutOfRangeException(nameof(levelFilterSettings.DisplayAdventures), levelFilterSettings.DisplayAdventures, "Unsupported value");
         }
 
         switch(levelFilterSettings.DisplayMoveLevels)
@@ -125,7 +125,7 @@ public static class LevelEnumerableExtensions
                 levels = levels.Where(l => l.IsAdventure == false);
                 break;
             default:
-                throw new ArgumentOutOfRangeException(nameof(levelFilterSettings.DisplayMoveLevels), levelFilterSettings.DisplayMoveLevels, "Unsupported value");
+                throw new ArgumentOutOfRangeException(nameof(levelFilterSettings.DisplayAdventures), levelFilterSettings.DisplayAdventures, "Unsupported value");
         }
         
         switch(levelFilterSettings.DisplayMoveLevels)
