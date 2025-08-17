@@ -27,6 +27,59 @@ public partial class GameDatabaseContext // Levels
         .Include(s => s.Level.Publisher)
         .Include(s => s.Level.Publisher!.Statistics);
     
+    public GameLevel AddLevel(ISerializedPublishLevel createInfo, TokenGame game, GameUser publisher)
+    {
+        DateTimeOffset timestamp = this._time.Now;
+
+        GameLevel level = new()
+        {
+            Title = createInfo.Title ?? "",
+            Description = createInfo.Description ?? "",
+            IconHash = createInfo.IconHash ?? "",
+            LocationX = createInfo.Location.X,
+            LocationY = createInfo.Location.Y,
+            RootResource = createInfo.RootResource,
+            IsLocked = createInfo.IsLocked,
+            IsCopyable = createInfo.IsCopyable == 1,
+            IsSubLevel = createInfo.IsSubLevel,
+            MinPlayers = createInfo.MinPlayers,
+            MaxPlayers = createInfo.MaxPlayers,
+            LevelType = GameLevelTypeExtensions.FromGameString(createInfo.LevelType),
+            RequiresMoveController = createInfo.RequiresMoveController,
+            IsAdventure = createInfo.IsAdventure,
+            EnforceMinMaxPlayers = createInfo.EnforceMinMaxPlayers,
+            SameScreenGame = createInfo.SameScreenGame,
+            BackgroundGuid = createInfo.BackgroundGuid,
+            Publisher = publisher,
+            GameVersion = game,
+            PublishDate = timestamp,
+            UpdateDate = timestamp,
+        };
+
+        this.ApplyLevelMetadataFromAttributes(level);
+        this.GameLevels.Add(level);
+
+        this.SaveChanges();
+
+        this.CreateRevisionForLevel(level, level.Publisher);
+        this.GameLevelStatistics.Add(level.Statistics = new GameLevelStatistics
+        {
+            LevelId = level.LevelId,
+        });
+
+        this.SaveChanges();
+
+        if (level.Publisher != null)
+        {
+            this.WriteEnsuringStatistics(level.Publisher, () =>
+            {
+                level.Publisher.Statistics!.LevelCount++;
+            });
+        }
+
+        return level;
+    }
+    
     public bool AddLevel(GameLevel level)
     {
         if (level.Title is { Length: > UgcLimits.TitleLimit })
@@ -205,6 +258,39 @@ public partial class GameDatabaseContext // Levels
         this.CreateRevisionForLevel(newLevel, author);
         this.SaveChanges();
         return oldLevel;
+    }
+
+    public GameLevel UpdateLevel(ISerializedPublishLevel updateInfo, GameLevel level, TokenGame game, bool isLevelEdited)
+    {
+        level.Title = updateInfo.Title;
+        level.Description = updateInfo.Description;
+        level.IconHash = updateInfo.IconHash;
+        level.LocationX = updateInfo.Location.X;
+        level.LocationY = updateInfo.Location.Y;
+        level.IsLocked = updateInfo.IsLocked;
+        level.IsCopyable = updateInfo.IsCopyable == 1;
+        level.IsSubLevel = updateInfo.IsSubLevel;
+        level.MinPlayers = updateInfo.MinPlayers;
+        level.MaxPlayers = updateInfo.MaxPlayers;
+        level.LevelType = GameLevelTypeExtensions.FromGameString(updateInfo.LevelType);
+        level.RequiresMoveController = updateInfo.RequiresMoveController;
+        level.IsAdventure = updateInfo.IsAdventure;
+        level.EnforceMinMaxPlayers = updateInfo.EnforceMinMaxPlayers;
+        level.SameScreenGame = updateInfo.SameScreenGame;
+        level.BackgroundGuid = updateInfo.BackgroundGuid;
+
+        // If we're changing the actual contents of the level, update the game version and update date aswell
+        if (isLevelEdited)
+        {
+            level.UpdateDate = this._time.Now;
+            level.GameVersion = game;
+            level.RootResource = updateInfo.RootResource;
+        }
+
+        this.ApplyLevelMetadataFromAttributes(level);
+        this.CreateRevisionForLevel(level, level.Publisher);
+        this.SaveChanges();
+        return level;
     }
     
     public GameLevel? UpdateLevel(IApiEditLevelRequest body, GameLevel level, GameUser? updatingUser)

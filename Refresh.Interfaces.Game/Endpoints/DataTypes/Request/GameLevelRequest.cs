@@ -2,13 +2,14 @@ using System.Xml.Serialization;
 using Refresh.Database.Models;
 using Refresh.Database.Models.Levels;
 using Refresh.Database.Models.Users;
+using Refresh.Database.Query;
 using Refresh.Interfaces.Game.Types.UserData;
 
 namespace Refresh.Interfaces.Game.Endpoints.DataTypes.Request;
 
 [XmlRoot("slot")]
 [XmlType("slot")]
-public class GameLevelRequest
+public class GameLevelRequest : ISerializedPublishLevel
 {
     [XmlElement("id")] public required int LevelId { get; set; }
     
