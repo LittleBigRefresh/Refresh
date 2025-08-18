@@ -13,7 +13,7 @@ public interface ISerializedPublishLevel
     int MaxPlayers { get; set; }
     bool EnforceMinMaxPlayers { get; set; }
     bool SameScreenGame { get; set; }
-    string? LevelType { get; set; }
+    string LevelType { get; set; }
     bool IsLocked { get; set; }
     bool IsSubLevel { get; set; }
     int IsCopyable { get; set; }

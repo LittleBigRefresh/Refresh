@@ -203,7 +203,7 @@ public class PublishEndpoints : EndpointGroup
             }
         }
 
-        if (body.LevelId != default) // Republish requests contain the id of the old level
+        if (body.LevelId != 0) // Republish requests contain the id of the old level
         {
             context.Logger.LogInfo(BunkumCategory.UserContent, "Republishing level id {0}", body.LevelId);
 
@@ -217,10 +217,9 @@ public class PublishEndpoints : EndpointGroup
                 return BadRequest;
             }
 
-            bool isLevelEdited = body.RootResource != levelToUpdate.RootResource;
-            levelToUpdate = dataContext.Database.UpdateLevel(body, levelToUpdate, dataContext.Game, isLevelEdited);
+            levelToUpdate = dataContext.Database.UpdateLevel(body, levelToUpdate, dataContext.Game);
 
-            if (isLevelEdited)
+            if (body.RootResource != levelToUpdate.RootResource)
             {
                 // If the level's root resource was edited, update the modded status aswell.
                 // The NOTE from below applies here aswell.

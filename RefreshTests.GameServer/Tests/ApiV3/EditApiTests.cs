@@ -3,6 +3,7 @@ using Refresh.Database.Models.Authentication;
 using Refresh.Database.Models.Users;
 using Refresh.Database.Models.Levels;
 using Refresh.Interfaces.APIv3.Endpoints.DataTypes.Request;
+using Refresh.Interfaces.Game.Endpoints.DataTypes.Request;
 
 namespace RefreshTests.GameServer.Tests.ApiV3;
 
@@ -136,12 +137,13 @@ public class EditApiTests : GameServerTest
         
         // When originating from a request, it wouldn't pass down the original PublishDate.
         // Replicate this here.
-        GameLevel newLevel = level.Clone();
-        newLevel.PublishDate = default;
-        newLevel.RootResource = "g12345";
+        GameLevelRequest newLevel = new()
+        {
+            RootResource = "g12345",
+        };
 
         context.Time.TimestampMilliseconds = 2;
-        context.Database.UpdateLevel(newLevel, author);
+        context.Database.UpdateLevel(newLevel, level);
         Assert.Multiple(() =>
         {
             Assert.That(level.PublishDate.ToUnixTimeMilliseconds(), Is.EqualTo(1));
@@ -165,12 +167,14 @@ public class EditApiTests : GameServerTest
         
         // When originating from a request, it wouldn't pass down the original PublishDate.
         // Replicate this here.
-        GameLevel newLevel = level.Clone();
-        newLevel.PublishDate = default;
-        newLevel.Description = "description update";
+        GameLevelRequest newLevel = new()
+        {
+            Description = "description update",
+            RootResource = level.RootResource,
+        };
 
         context.Time.TimestampMilliseconds = 2;
-        context.Database.UpdateLevel(newLevel, author);
+        context.Database.UpdateLevel(newLevel, level);
         Assert.Multiple(() =>
         {
             Assert.That(level.PublishDate.ToUnixTimeMilliseconds(), Is.EqualTo(1));
