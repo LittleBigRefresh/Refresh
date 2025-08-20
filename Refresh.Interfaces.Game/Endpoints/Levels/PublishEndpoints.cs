@@ -217,9 +217,10 @@ public class PublishEndpoints : EndpointGroup
                 return BadRequest;
             }
 
+            bool isFullEdit = body.RootResource != levelToUpdate.RootResource;
             levelToUpdate = dataContext.Database.UpdateLevel(body, levelToUpdate, dataContext.Game);
 
-            if (body.RootResource != levelToUpdate.RootResource)
+            if (isFullEdit)
             {
                 // If the level's root resource was edited, update the modded status aswell.
                 // The NOTE from below applies here aswell.
