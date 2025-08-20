@@ -149,8 +149,8 @@ public partial class GameDatabaseContext // Registration
         QueuedRegistration? registration = this.QueuedRegistrations.FirstOrDefault(q => q.UsernameLower == username.ToLower());
 #pragma warning restore CA1862
 
-        // Correct username casing so we don't end up using this registration to create an account with a potentially wrong casing,
-        // leading to its username having a different casing from the ticket's username and preventing login.
+        // Correct the username's casing so we don't end up using this registration to create an account with a potentially
+        // wrongly cased username, leading to it not exactly matching to the ticket's username and preventing future logins.
         if (registration != null && setToCorrectUsernameCasing)
         {
             registration.Username = username;
