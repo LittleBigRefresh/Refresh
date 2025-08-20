@@ -143,11 +143,22 @@ public partial class GameDatabaseContext // Registration
 
     public bool IsRegistrationExpired(QueuedRegistration registration) => registration.ExpiryDate < this._time.Now;
 
-    public QueuedRegistration? GetQueuedRegistrationByUsername(string username) 
+    public QueuedRegistration? GetQueuedRegistrationByUsername(string username, bool setToCorrectUsernameCasing = true)
+    {
 #pragma warning disable CA1862
-        => this.QueuedRegistrations.FirstOrDefault(q => q.UsernameLower == username.ToLower());
+        QueuedRegistration? registration = this.QueuedRegistrations.FirstOrDefault(q => q.UsernameLower == username.ToLower());
 #pragma warning restore CA1862
-    
+
+        // Correct username casing so we don't end up using this registration to create an account with a potentially wrong casing,
+        // leading to its username having a different casing from the ticket's username and preventing login.
+        if (registration != null && setToCorrectUsernameCasing)
+        {
+            registration.Username = username;
+        }
+
+        return registration;
+    }
+
     public QueuedRegistration? GetQueuedRegistrationByObjectId(ObjectId id) 
         => this.QueuedRegistrations.FirstOrDefault(q => q.RegistrationId == id);
     
