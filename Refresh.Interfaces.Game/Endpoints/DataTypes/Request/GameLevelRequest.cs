@@ -1,46 +1,37 @@
 using System.Xml.Serialization;
 using Refresh.Database.Models;
 using Refresh.Database.Models.Levels;
-using Refresh.Database.Models.Users;
-using Refresh.Interfaces.Game.Types.UserData;
+using Refresh.Database.Query;
 
 namespace Refresh.Interfaces.Game.Endpoints.DataTypes.Request;
 
 [XmlRoot("slot")]
 [XmlType("slot")]
-public class GameLevelRequest
+public class GameLevelRequest : ISerializedPublishLevel
 {
-    [XmlElement("id")] public required int LevelId { get; set; }
-    
-    [XmlElement("isAdventurePlanet")] public required bool IsAdventure { get; set; }
+    // Not included if its not a republish, in that case default to 0 (invalid ID)
+    [XmlElement("id")] public int LevelId { get; set; }
 
-    [XmlElement("name")] public required string Title { get; set; }
-    [XmlElement("icon")] public required string IconHash { get; set; }
-    [XmlElement("description")] public required string Description { get; set; }
-    [XmlElement("location")] public required GameLocation Location { get; set; }
+    [XmlElement("name")] public string Title { get; set; } = "";
+    [XmlElement("icon")] public string IconHash { get; set; } = "0";
+    [XmlElement("description")] public string Description { get; set; } = "";
+    [XmlElement("location")] public GameLocation Location { get; set; } = GameLocation.Zero;
 
-    [XmlElement("game")] public required int GameVersion { get; set; }
     [XmlElement("rootLevel")] public required string RootResource { get; set; }
+    [XmlElement("isAdventurePlanet")] public bool IsAdventure { get; set; }
 
-    [XmlElement("firstPublished")] public required long PublishDate { get; set; } // unix seconds
-    [XmlElement("lastUpdated")] public required long UpdateDate { get; set; }
+    [XmlElement("minPlayers")] public int MinPlayers { get; set; } = 1;
+    [XmlElement("maxPlayers")] public int MaxPlayers { get; set; } = 4;
+    [XmlElement("enforceMinMaxPlayers")] public bool EnforceMinMaxPlayers { get; set; }
     
-    [XmlElement("minPlayers")] public required int MinPlayers { get; set; }
-    [XmlElement("maxPlayers")] public required int MaxPlayers { get; set; }
-    [XmlElement("enforceMinMaxPlayers")] public required bool EnforceMinMaxPlayers { get; set; }
-    
-    [XmlElement("sameScreenGame")] public required bool SameScreenGame { get; set; }
+    [XmlElement("sameScreenGame")] public bool SameScreenGame { get; set; }
 
-    [XmlAttribute("type")] public string Type { get; set; } = "user";
-
-    [XmlElement("npHandle")] public SerializedUserHandle Handle { get; set; } = null!;
-    
     [XmlArray("customRewards")]
     [XmlArrayItem("customReward")]
-    public required List<GameSkillReward> SkillRewards { get; set; }
+    public List<GameSkillReward> SkillRewards { get; set; } = [];
 
     [XmlElement("resource")] public List<string> XmlResources { get; set; } = new();
-    [XmlElement("leveltype")] public string? LevelType { get; set; } = "";
+    [XmlElement("leveltype")] public string LevelType { get; set; } = "";
 
     [XmlElement("initiallyLocked")] public bool IsLocked { get; set; }
     [XmlElement("isSubLevel")] public bool IsSubLevel { get; set; }
@@ -50,30 +41,4 @@ public class GameLevelRequest
     [XmlElement("backgroundGUID")] public string? BackgroundGuid { get; set; }
     
     [XmlArray("slots")] public GameLevelRequest[]? Slots { get; set; }
-    
-    public GameLevel ToGameLevel(GameUser publisher) =>
-        new()
-        {
-            LevelId = this.LevelId,
-            IsAdventure = this.IsAdventure,
-            Title = this.Title,
-            IconHash = this.IconHash,
-            Description = this.Description,
-            LocationX = this.Location.X,
-            LocationY = this.Location.Y,
-            RootResource = this.RootResource,
-            PublishDate = DateTimeOffset.FromUnixTimeMilliseconds(this.PublishDate),
-            UpdateDate = DateTimeOffset.FromUnixTimeMilliseconds(this.UpdateDate),
-            MinPlayers = this.MinPlayers,
-            MaxPlayers = this.MaxPlayers,
-            EnforceMinMaxPlayers = this.EnforceMinMaxPlayers,
-            SameScreenGame = this.SameScreenGame,
-            Publisher = publisher,
-            LevelType = GameLevelTypeExtensions.FromGameString(this.LevelType),
-            IsLocked = this.IsLocked,
-            IsSubLevel = this.IsSubLevel,
-            IsCopyable = this.IsCopyable == 1,
-            RequiresMoveController = this.RequiresMoveController,
-            BackgroundGuid = this.BackgroundGuid,
-        };
 }
