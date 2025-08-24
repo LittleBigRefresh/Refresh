@@ -61,7 +61,7 @@ public class CategoryEndpoints : EndpointGroup
 
         DatabaseList<GameLevel>? levels = categories.LevelCategories
             .FirstOrDefault(c => c.ApiRoute.StartsWith(apiRoute))?
-            .Fetch(context, skip, count, dataContext, ResultFilterSettings.FromGameRequest(context, token.TokenGame, true), user);
+            .Fetch(context, skip, count, dataContext, LevelFilterSettings.FromGameRequest(context, token.TokenGame, true), user);
         
         if (levels == null) return null;
         

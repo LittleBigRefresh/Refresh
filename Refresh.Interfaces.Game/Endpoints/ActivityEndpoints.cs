@@ -182,7 +182,7 @@ public class ActivityEndpoints : EndpointGroup
 
         if (token != null)
         {
-            IEnumerable<GameLevel> teamPicks = database.GetTeamPickedLevels(32, 0, null, new ResultFilterSettings(token.TokenGame)).Items;
+            IEnumerable<GameLevel> teamPicks = database.GetTeamPickedLevels(32, 0, null, new(token.TokenGame)).Items;
             
             int i = 0;
             foreach (GameLevel level in teamPicks)

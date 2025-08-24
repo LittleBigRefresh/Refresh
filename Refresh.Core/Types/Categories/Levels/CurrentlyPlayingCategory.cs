@@ -20,7 +20,7 @@ public class CurrentlyPlayingCategory : GameLevelCategory
 
     public override DatabaseList<GameLevel>? Fetch(RequestContext context, int skip, int count,
         DataContext dataContext,
-        ResultFilterSettings levelFilterSettings, GameUser? _)
+        LevelFilterSettings levelFilterSettings, GameUser? _)
     {
         IOrderedEnumerable<IGrouping<GameLevel?,GameRoom>> rooms = dataContext.Match.RoomAccessor.GetAllRooms()
             .Where(r => r.LevelType == RoomSlotType.Online && r.HostId.Id != null) // if playing online level and host exists on server

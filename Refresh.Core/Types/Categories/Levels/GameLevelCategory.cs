@@ -17,5 +17,5 @@ public abstract class GameLevelCategory : GameCategory
 
     [Pure]
     public abstract DatabaseList<GameLevel>? Fetch(RequestContext context, int skip, int count, DataContext dataContext,
-        ResultFilterSettings levelFilterSettings, GameUser? user);
+        LevelFilterSettings levelFilterSettings, GameUser? user);
 }

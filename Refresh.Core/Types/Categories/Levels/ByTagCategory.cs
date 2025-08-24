@@ -21,7 +21,7 @@ public class ByTagCategory : GameLevelCategory
 
     public override DatabaseList<GameLevel>? Fetch(RequestContext context, int skip, int count,
         DataContext dataContext,
-        ResultFilterSettings levelFilterSettings, GameUser? user)
+        LevelFilterSettings levelFilterSettings, GameUser? user)
     {
         string? tagStr = context.QueryString["tag"];
 

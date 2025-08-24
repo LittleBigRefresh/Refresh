@@ -20,7 +20,7 @@ public class ByUserLevelCategory : GameLevelCategory
 
     public override DatabaseList<GameLevel>? Fetch(RequestContext context, int skip, int count,
         DataContext dataContext,
-        ResultFilterSettings levelFilterSettings, GameUser? user)
+        LevelFilterSettings levelFilterSettings, GameUser? user)
     {
         // Prefer username from query, but fallback to user passed into this category if it's missing
         string? username = context.QueryString["u"] ?? context.QueryString["username"];

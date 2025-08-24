@@ -3,7 +3,7 @@ using Refresh.Database.Models.Authentication;
 
 namespace Refresh.Database.Query;
 
-public class ResultFilterSettings
+public class LevelFilterSettings
 {
     // The result types to return
     public bool DisplayLevels { get; set; } = true;
@@ -64,14 +64,14 @@ public class ResultFilterSettings
     /// <seealso cref="RandomLevelsCategory"/>
     public int? Seed { get; set; }
 
-    public ResultFilterSettings(TokenGame game)
+    public LevelFilterSettings(TokenGame game)
     {
         this.GameVersion = game;
     }
 
-    private static ResultFilterSettings FromAnyRequest(RequestContext context, TokenGame game, bool isLbp3Category = false)
+    private static LevelFilterSettings FromAnyRequest(RequestContext context, TokenGame game, bool isLbp3Category = false)
     {
-        ResultFilterSettings settings = new(game);
+        LevelFilterSettings settings = new(game);
 
         string? playersStr = context.QueryString.Get("players");
 
@@ -109,9 +109,9 @@ public class ResultFilterSettings
     /// <summary>
     /// Gets the filter settings from a game request
     /// </summary>
-    public static ResultFilterSettings FromGameRequest(RequestContext context, TokenGame game, bool isLbp3Category = false)
+    public static LevelFilterSettings FromGameRequest(RequestContext context, TokenGame game, bool isLbp3Category = false)
     {
-        ResultFilterSettings settings = FromAnyRequest(context, game, isLbp3Category);
+        LevelFilterSettings settings = FromAnyRequest(context, game, isLbp3Category);
 
         bool gamesSpecified = false;
         string[]? gameFilters = context.QueryString.GetValues("gameFilter[]");
@@ -256,9 +256,9 @@ public class ResultFilterSettings
     /// <summary>
     /// Gets the filter settings from an API request
     /// </summary>
-    public static ResultFilterSettings FromApiRequest(RequestContext context)
+    public static LevelFilterSettings FromApiRequest(RequestContext context)
     {
-        ResultFilterSettings settings = FromAnyRequest(context, TokenGame.Website);
+        LevelFilterSettings settings = FromAnyRequest(context, TokenGame.Website);
 
         string[]? gameFilters = context.QueryString.GetValues("game");
         if (gameFilters != null)

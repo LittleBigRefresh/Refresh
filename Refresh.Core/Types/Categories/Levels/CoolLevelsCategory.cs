@@ -18,7 +18,7 @@ public class CoolLevelsCategory : GameLevelCategory
     }
 
     public override DatabaseList<GameLevel>? Fetch(RequestContext context, int skip, int count, DataContext dataContext,
-        ResultFilterSettings levelFilterSettings, GameUser? _)
+        LevelFilterSettings levelFilterSettings, GameUser? _)
     {
         return dataContext.Database.GetCoolLevels(count, skip, dataContext.User, levelFilterSettings);
     }

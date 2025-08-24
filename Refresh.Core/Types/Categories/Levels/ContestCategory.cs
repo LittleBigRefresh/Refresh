@@ -19,7 +19,7 @@ public class ContestCategory : GameLevelCategory
     }
     
     public override DatabaseList<GameLevel>? Fetch(RequestContext context, int skip, int count, DataContext dataContext,
-        ResultFilterSettings levelFilterSettings, GameUser? _)
+        LevelFilterSettings levelFilterSettings, GameUser? _)
     {
         // try to find a contest by the query parameter
         string? contestId = context.QueryString["contest"];

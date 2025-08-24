@@ -90,7 +90,7 @@ public partial class GameDatabaseContext // Contests
     }
     
     [Pure]
-    public DatabaseList<GameLevel> GetLevelsFromContest(GameContest contest, int count, int skip, GameUser? user, ResultFilterSettings levelFilterSettings)
+    public DatabaseList<GameLevel> GetLevelsFromContest(GameContest contest, int count, int skip, GameUser? user, LevelFilterSettings levelFilterSettings)
     {
         return new DatabaseList<GameLevel>(((IQueryable<GameLevel>)this.GetLevelsByGameVersion(levelFilterSettings.GameVersion)).FilterByLevelFilterSettings(user, levelFilterSettings)
             .Where(l => l.Title.Contains(contest.ContestTag))
