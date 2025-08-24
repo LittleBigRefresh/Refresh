@@ -27,19 +27,34 @@ public partial class GameDatabaseContext // Levels
         .Include(s => s.Level.Publisher)
         .Include(s => s.Level.Publisher!.Statistics);
     
-    public bool AddLevel(GameLevel level)
+    public GameLevel AddLevel(ISerializedPublishLevel createInfo, TokenGame game, GameUser publisher)
     {
-        if (level.Title is { Length: > UgcLimits.TitleLimit })
-            level.Title = level.Title[..UgcLimits.TitleLimit];
-
-        if (level.Description is { Length: > UgcLimits.DescriptionLimit })
-            level.Description = level.Description[..UgcLimits.DescriptionLimit];
-        
-        if (level.Publisher == null) throw new InvalidOperationException("Cannot create a level without a publisher");
-
         DateTimeOffset timestamp = this._time.Now;
-        level.PublishDate = timestamp;
-        level.UpdateDate = timestamp;
+
+        GameLevel level = new()
+        {
+            Title = createInfo.Title,
+            Description = createInfo.Description,
+            IconHash = createInfo.IconHash,
+            LocationX = createInfo.Location.X,
+            LocationY = createInfo.Location.Y,
+            RootResource = createInfo.RootResource,
+            IsLocked = createInfo.IsLocked,
+            IsCopyable = createInfo.IsCopyable == 1,
+            IsSubLevel = createInfo.IsSubLevel,
+            MinPlayers = createInfo.MinPlayers,
+            MaxPlayers = createInfo.MaxPlayers,
+            LevelType = GameLevelTypeExtensions.FromGameString(createInfo.LevelType),
+            RequiresMoveController = createInfo.RequiresMoveController,
+            IsAdventure = createInfo.IsAdventure,
+            EnforceMinMaxPlayers = createInfo.EnforceMinMaxPlayers,
+            SameScreenGame = createInfo.SameScreenGame,
+            BackgroundGuid = createInfo.BackgroundGuid,
+            Publisher = publisher,
+            GameVersion = game,
+            PublishDate = timestamp,
+            UpdateDate = timestamp,
+        };
 
         this.ApplyLevelMetadataFromAttributes(level);
         this.GameLevels.Add(level);
@@ -62,7 +77,7 @@ public partial class GameDatabaseContext // Levels
             });
         }
 
-        return true;
+        return level;
     }
 
     public GameLevel GetStoryLevelById(int id)
@@ -156,55 +171,38 @@ public partial class GameDatabaseContext // Levels
             this.AddErrorNotification("Level updates failed", $"Failed to update {failedUpdates} out of {locations.Count()} level locations.", updatingUser);
         }
     }
-    
-    public GameLevel? UpdateLevel(GameLevel newLevel, GameUser author)
+
+    public GameLevel UpdateLevel(ISerializedPublishLevel updateInfo, GameLevel level, TokenGame game = TokenGame.LittleBigPlanet1)
     {
-        if (newLevel.Title is { Length: > UgcLimits.TitleLimit })
-            newLevel.Title = newLevel.Title[..UgcLimits.TitleLimit];
+        level.Title = updateInfo.Title;
+        level.Description = updateInfo.Description;
+        level.IconHash = updateInfo.IconHash;
+        level.LocationX = updateInfo.Location.X;
+        level.LocationY = updateInfo.Location.Y;
+        level.IsLocked = updateInfo.IsLocked;
+        level.IsCopyable = updateInfo.IsCopyable == 1;
+        level.IsSubLevel = updateInfo.IsSubLevel;
+        level.MinPlayers = updateInfo.MinPlayers;
+        level.MaxPlayers = updateInfo.MaxPlayers;
+        level.LevelType = GameLevelTypeExtensions.FromGameString(updateInfo.LevelType);
+        level.RequiresMoveController = updateInfo.RequiresMoveController;
+        level.IsAdventure = updateInfo.IsAdventure;
+        level.EnforceMinMaxPlayers = updateInfo.EnforceMinMaxPlayers;
+        level.SameScreenGame = updateInfo.SameScreenGame;
+        level.BackgroundGuid = updateInfo.BackgroundGuid;
 
-        if (newLevel.Description is { Length: > UgcLimits.DescriptionLimit })
-            newLevel.Description = newLevel.Description[..UgcLimits.DescriptionLimit];
-        
-        // Verify if this level is able to be republished
-        GameLevel? oldLevel = this.GetLevelById(newLevel.LevelId);
-        if (oldLevel == null) return null;
-            
-        Debug.Assert(oldLevel.Publisher != null);
-        if (oldLevel.Publisher.UserId != author.UserId) return null;
-        
-        // All checks passed, let's start by retaining some information from the old level
-        newLevel.Publisher = author;
-        newLevel.PublishDate = oldLevel.PublishDate;
-        newLevel.DateTeamPicked = oldLevel.DateTeamPicked;
-        newLevel.IsReUpload = oldLevel.IsReUpload;
-        newLevel.OriginalPublisher = oldLevel.OriginalPublisher;
-        
-        // If the actual contents of the level haven't changed, extract some extra information
-        if (oldLevel.RootResource == newLevel.RootResource)
+        // If we're changing the actual contents of the level, update the game version and update date aswell
+        if (updateInfo.RootResource != level.RootResource)
         {
-            newLevel.GameVersion = oldLevel.GameVersion;
-            newLevel.UpdateDate = oldLevel.UpdateDate;
-        }
-        // If we're changing the actual level, update other things
-        else
-        {
-            newLevel.UpdateDate = this._time.Now; // Set the last modified date
-        }
-        
-        // Now newLevel is set up to replace oldLevel.
-        // If information is lost here, then that's probably a bug.
-        // Update the level's properties in the database
-        PropertyInfo[] userProps = typeof(GameLevel).GetProperties();
-        foreach (PropertyInfo prop in userProps)
-        {
-            if (!prop.CanWrite || !prop.CanRead) continue;
-            prop.SetValue(oldLevel, prop.GetValue(newLevel));
+            level.UpdateDate = this._time.Now;
+            level.GameVersion = game;
+            level.RootResource = updateInfo.RootResource;
         }
 
-        this.ApplyLevelMetadataFromAttributes(newLevel);
-        this.CreateRevisionForLevel(newLevel, author);
+        this.ApplyLevelMetadataFromAttributes(level);
+        this.CreateRevisionForLevel(level, level.Publisher);
         this.SaveChanges();
-        return oldLevel;
+        return level;
     }
     
     public GameLevel? UpdateLevel(IApiEditLevelRequest body, GameLevel level, GameUser? updatingUser)

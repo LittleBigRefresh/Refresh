@@ -12,8 +12,8 @@ using RefreshTests.GameServer.Time;
 using Refresh.Database.Models.Levels.Scores;
 using Refresh.Database.Models.Levels;
 using Refresh.Interfaces.Game.Types.UserData.Leaderboard;
-using Refresh.Interfaces.Workers;
 using Refresh.Workers;
+using Refresh.Interfaces.Game.Endpoints.DataTypes.Request;
 
 namespace RefreshTests.GameServer;
 
@@ -118,30 +118,26 @@ public class TestContext : IDisposable
     
     public GameLevel CreateLevel(GameUser author, string title = "Level", TokenGame gameVersion = TokenGame.LittleBigPlanet1, int minPlayers = 1, int maxPlayers = 4)
     {
-        GameLevel level = new()
+        GameLevelRequest levelRequest = new()
         {
             Title = title,
-            Publisher = author,
-            GameVersion = gameVersion,
-            MinPlayers = minPlayers,
-            MaxPlayers = maxPlayers,
+            RootResource = "0",
         };
 
-        this.Database.AddLevel(level);
+        GameLevel level = this.Database.AddLevel(levelRequest, gameVersion, author);
         return level;
     }
-    
+
     public GameLevel CreateLevel(GameUser author, string title, string description, TokenGame gameVersion = TokenGame.LittleBigPlanet1)
     {
-        GameLevel level = new()
+        GameLevelRequest levelRequest = new()
         {
             Title = title,
             Description = description,
-            Publisher = author,
-            GameVersion = gameVersion,
+            RootResource = "0",
         };
 
-        this.Database.AddLevel(level);
+        GameLevel level = this.Database.AddLevel(levelRequest, gameVersion, author);
         return level;
     }
 
@@ -149,7 +145,8 @@ public class TestContext : IDisposable
     {
         for (byte i = 0; i < count; i++)
         {
-            GameUser scoreUser = this.CreateUser("score" + i);
+            string username = "score" + i;
+            GameUser scoreUser = this.Database.GetUserByUsername(username) ?? this.CreateUser(username);
             this.SubmitScore(i, type, level, scoreUser, TokenGame.LittleBigPlanet2, TokenPlatform.PS3);
         }
     }

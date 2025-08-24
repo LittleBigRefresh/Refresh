@@ -6,79 +6,20 @@ using Bunkum.Protocols.Http;
 using Refresh.Common.Verification;
 using Refresh.Core.Authentication.Permission;
 using Refresh.Core.Services;
-using Refresh.Core.Types.Categories;
 using Refresh.Core.Types.Data;
 using Refresh.Database;
-using Refresh.Database.Models.Authentication;
 using Refresh.Database.Models.Levels;
 using Refresh.Database.Models.Pins;
 using Refresh.Database.Models.Users;
-using Refresh.Database.Query;
-using Refresh.Interfaces.APIv3.Documentation.Attributes;
 using Refresh.Interfaces.APIv3.Endpoints.ApiTypes;
 using Refresh.Interfaces.APIv3.Endpoints.ApiTypes.Errors;
 using Refresh.Interfaces.APIv3.Endpoints.DataTypes.Request;
 using Refresh.Interfaces.APIv3.Endpoints.DataTypes.Response.Levels;
-using Refresh.Interfaces.APIv3.Extensions;
 
 namespace Refresh.Interfaces.APIv3.Endpoints;
 
 public class LevelApiEndpoints : EndpointGroup
 {
-    [ApiV3Endpoint("levels"), Authentication(false)]
-    [ClientCacheResponse(86400 / 2)] // cache for half a day
-    [DocSummary("Retrieves a list of categories you can use to search levels")]
-    [DocQueryParam("includePreviews", "If true, a single level will be added to each category representing a level from that category. False by default.")]
-    [DocError(typeof(ApiValidationError), "The boolean 'includePreviews' could not be parsed by the server.")]
-    public ApiListResponse<ApiLevelCategoryResponse> GetCategories(RequestContext context, CategoryService categories,
-        MatchService matchService, GameDatabaseContext database, GameUser? user, IDataStore dataStore,
-        DataContext dataContext)
-    {
-        bool result = bool.TryParse(context.QueryString.Get("includePreviews") ?? "false", out bool includePreviews);
-        if (!result) return ApiValidationError.BooleanParseError;
-
-        IEnumerable<ApiLevelCategoryResponse> resp;
-
-        // ReSharper disable once ConvertIfStatementToConditionalTernaryExpression
-        if (includePreviews) resp = ApiLevelCategoryResponse.FromOldList(categories.LevelCategories, context, dataContext);
-        else resp = ApiLevelCategoryResponse.FromOldList(categories.LevelCategories, dataContext);
-        
-        return new ApiListResponse<ApiLevelCategoryResponse>(resp);
-    }
-
-    [ApiV3Endpoint("levels/{route}"), Authentication(false)]
-    [DocSummary("Retrieves a list of levels from a category")]
-    [DocError(typeof(ApiNotFoundError), "The level category cannot be found")]
-    [DocUsesPageData]
-    [DocQueryParam("game", "Filters levels to a specific game version. Allowed values: lbp1-3, vita, psp, beta")]
-    [DocQueryParam("seed", "The random seed to use for randomization. Uses 0 if not specified.")]
-    [DocQueryParam("players", "Filters levels to those accommodating the specified number of players.")]
-    [DocQueryParam("username", "If set, certain categories like 'hearted' or 'byUser' will return the levels of " + 
-                               "the user with this username instead of your own. Optional.")]
-    public ApiListResponse<ApiGameLevelResponse> GetLevels(RequestContext context, GameDatabaseContext database,
-        MatchService matchService, CategoryService categories, GameUser? user, IDataStore dataStore,
-        [DocSummary("The name of the category you'd like to retrieve levels from. " +
-                    "Make a request to /levels to see a list of available categories")]
-        string route, DataContext dataContext)
-    {
-        if (string.IsNullOrWhiteSpace(route))
-        {
-            return new ApiError("You didn't specify a route. " +
-                                "You probably meant to use the `/levels` endpoint and left a trailing slash in the URL.", NotFound);
-        }
-        
-        (int skip, int count) = context.GetPageData();
-
-        DatabaseList<GameLevel>? list = categories.LevelCategories
-            .FirstOrDefault(c => c.ApiRoute.StartsWith(route))?
-            .Fetch(context, skip, count, dataContext, ResultFilterSettings.FromApiRequest(context), user);
-
-        if (list == null) return ApiNotFoundError.Instance;
-
-        DatabaseList<ApiGameLevelResponse> levels = DatabaseListExtensions.FromOldList<ApiGameLevelResponse, GameLevel>(list, dataContext);
-        return levels;
-    }
-
     [ApiV3Endpoint("levels/id/{id}"), Authentication(false)]
     [DocSummary("Gets an individual level by a numerical ID")]
     [DocError(typeof(ApiNotFoundError), "The level cannot be found")]

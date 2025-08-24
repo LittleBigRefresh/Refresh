@@ -30,14 +30,10 @@ public partial class GameDatabaseContext // Notifications
         this.AddNotification(title, text, user, "exclamation-circle");
     }
 
-    public void AddPublishFailNotification(string reason, GameLevel body, GameUser user)
-    {
-        this.AddPublishFailNotification(reason, body.Title, user);
-    }
-
     public void AddPublishFailNotification(string reason, string levelTitle, GameUser user)
     {
-        this.AddErrorNotification("Publish failed", $"The level '{levelTitle}' failed to publish. {reason}", user);
+        string title = string.IsNullOrWhiteSpace(levelTitle) ? "Unnamed Level" : levelTitle;
+        this.AddErrorNotification("Publish failed", $"The level '{title}' failed to publish. {reason}", user);
     }
 
     private const string LoginFail = "Log-in failure";

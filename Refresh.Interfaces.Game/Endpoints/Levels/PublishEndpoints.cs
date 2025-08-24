@@ -61,8 +61,7 @@ public class PublishEndpoints : EndpointGroup
         // then block the upload
         if (existingLevel != null && body.LevelId != existingLevel.LevelId)
         {
-            dataContext.Database.AddPublishFailNotification("The level you tried to publish has already been uploaded by another user.", body.ToGameLevel(dataContext.User!), dataContext.User!);
-
+            dataContext.Database.AddPublishFailNotification("The level you tried to publish has already been uploaded by another user.", body.Title, dataContext.User!);
             return false;
         }
 
@@ -167,11 +166,10 @@ public class PublishEndpoints : EndpointGroup
         GameLevelRequest body,
         CommandService commandService,
         DataContext dataContext,
+        GameUser user,
         GameServerConfig config,
         IDateTimeProvider dateTimeProvider)
     {
-        GameUser user = dataContext.User!;
-        
         if (user.IsWriteBlocked(config))
             return Unauthorized;
         
@@ -181,59 +179,65 @@ public class PublishEndpoints : EndpointGroup
         //If verifying the request fails, return BadRequest
         if (!VerifyLevel(body, dataContext)) return BadRequest;
 
-        GameLevel level = body.ToGameLevel(user);
-
-        level.GameVersion = dataContext.Token!.TokenGame;
-
-        level.MinPlayers = Math.Clamp(level.MinPlayers, 1, 4);
-        level.MaxPlayers = Math.Clamp(level.MaxPlayers, 1, 4);
-
-        string rootResourcePath = context.IsPSP() ? $"psp/{level.RootResource}" : level.RootResource;
+        string rootResourcePath = context.IsPSP() ? $"psp/{body.RootResource}" : body.RootResource;
 
         //Check if the root resource is a SHA1 hash
-        if (!CommonPatterns.Sha1Regex().IsMatch(level.RootResource)) return BadRequest;
+        if (!CommonPatterns.Sha1Regex().IsMatch(body.RootResource)) return BadRequest;
         //Make sure the root resource exists in the data store
         if (!dataContext.DataStore.ExistsInStore(rootResourcePath)) return NotFound;
 
-        GameAsset? asset = dataContext.Database.GetAssetFromHash(level.RootResource);
+        GameAsset? asset = dataContext.Database.GetAssetFromHash(body.RootResource);
         if (asset != null && dataContext.Game != TokenGame.LittleBigPlanetPSP)
         {
             // ReSharper disable once ConvertIfStatementToSwitchStatement
-            if (level.IsAdventure && asset.AssetType != GameAssetType.AdventureCreateProfile)
+            if (body.IsAdventure && asset.AssetType != GameAssetType.AdventureCreateProfile)
             {
-                dataContext.Database.AddPublishFailNotification("The uploaded adventure data was corrupted.", level, dataContext.User!);
+                dataContext.Database.AddPublishFailNotification("The uploaded adventure data was corrupted.", body.Title, dataContext.User!);
                 return BadRequest;
             }
 
-            if (!level.IsAdventure && asset.AssetType != GameAssetType.Level)
+            if (!body.IsAdventure && asset.AssetType != GameAssetType.Level)
             {
-                dataContext.Database.AddPublishFailNotification("The uploaded level data was corrupted.", level, dataContext.User!);
+                dataContext.Database.AddPublishFailNotification("The uploaded level data was corrupted.", body.Title, dataContext.User!);
                 return BadRequest;
             }
         }
 
-        if (level.LevelId != default) // Republish requests contain the id of the old level
+        if (body.LevelId != 0) // Republish requests contain the id of the old level
         {
-            context.Logger.LogInfo(BunkumCategory.UserContent, "Republishing level id {0}", level.LevelId);
+            context.Logger.LogInfo(BunkumCategory.UserContent, "Republishing level id {0}", body.LevelId);
 
-            GameLevel? newBody;
-            if ((newBody = dataContext.Database.UpdateLevel(level, user)) == null)
+            GameLevel? levelToUpdate = dataContext.Database.GetLevelById(body.LevelId);
+            if (levelToUpdate == null) return NotFound;
+
+            // Don't let users edit levels by others
+            if (levelToUpdate.Publisher != user)
             {
-                dataContext.Database.AddPublishFailNotification("You may not republish another user's level.", level, dataContext.User!);
+                dataContext.Database.AddPublishFailNotification("You may not republish another user's level.", body.Title, dataContext.User!);
                 return BadRequest;
             }
 
-            dataContext.Database.UpdateSkillRewardsForLevel(level, body.SkillRewards);
-            return new Response(GameLevelResponse.FromOld(newBody, dataContext)!, ContentType.Xml);
+            bool isFullEdit = body.RootResource != levelToUpdate.RootResource;
+            levelToUpdate = dataContext.Database.UpdateLevel(body, levelToUpdate, dataContext.Game);
+
+            if (isFullEdit)
+            {
+                // If the level's root resource was edited, update the modded status aswell.
+                // The NOTE from below applies here aswell.
+                dataContext.Database.UpdateLevelModdedStatus(levelToUpdate);
+            }
+
+            dataContext.Database.UpdateSkillRewardsForLevel(levelToUpdate, body.SkillRewards);
+            return new Response(GameLevelResponse.FromOld(levelToUpdate, dataContext)!, ContentType.Xml);
         }
 
         // Mark the user as no longer publishing
         commandService.StopPublishing(dataContext.User!.UserId);
 
-        level.Publisher = dataContext.User;
+        GameLevel newLevel = dataContext.Database.AddLevel(body, dataContext.Game, user);
+        dataContext.Database.UpdateSkillRewardsForLevel(newLevel, body.SkillRewards);
 
-        dataContext.Database.AddLevel(level);
-        dataContext.Database.UpdateSkillRewardsForLevel(level, body.SkillRewards);
+        context.Logger.LogInfo(BunkumCategory.UserContent, "User {0} (id: {1}) uploaded level id {2}", user.Username, user.UserId, newLevel.LevelId);
 
         // Only increment if the level can be uploaded (right after the previous checks + adding the level),
         // don't want to increment for failed uploads
@@ -245,14 +249,10 @@ public class PublishEndpoints : EndpointGroup
         // Update the modded status of the level
         // NOTE: this wont do anything if the slot is uploaded before the level resource,
         //       so we also do this same operation inside of ResourceEndpoints.UploadAsset to catch that case aswell
-        dataContext.Database.UpdateLevelModdedStatus(level);
-        
-        dataContext.Database.CreateLevelUploadEvent(dataContext.User, level);
+        dataContext.Database.UpdateLevelModdedStatus(newLevel);
+        dataContext.Database.CreateLevelUploadEvent(dataContext.User, newLevel);
 
-        context.Logger.LogInfo(BunkumCategory.UserContent, "User {0} (id: {1}) uploaded level id {2}", user.Username, user.UserId, level.LevelId);
-
-        level = dataContext.Database.GetLevelById(level.LevelId)!;
-        return new Response(GameLevelResponse.FromOld(level, dataContext)!, ContentType.Xml);
+        return new Response(GameLevelResponse.FromOld(newLevel, dataContext)!, ContentType.Xml);
     }
 
     [GameEndpoint("unpublish/{id}", ContentType.Xml, HttpMethods.Post)]
