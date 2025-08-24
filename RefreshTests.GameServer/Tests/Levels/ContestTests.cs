@@ -185,7 +185,7 @@ public class ContestTests : GameServerTest
         // test level published in excluded game
         context.CreateLevel(user, "#ut disallowed game", TokenGame.LittleBigPlanet1);
 
-        DatabaseList<GameLevel> levels = context.Database.GetLevelsFromContest(contest, 4, 0, user, new LevelFilterSettings(TokenGame.LittleBigPlanet2));
+        DatabaseList<GameLevel> levels = context.Database.GetLevelsFromContest(contest, 4, 0, user, new(TokenGame.LittleBigPlanet2));
         Assert.That(levels.TotalItems, Is.EqualTo(3));
         Assert.That(levels.Items.All(l => l.Title.Contains("#ut ")));
     }

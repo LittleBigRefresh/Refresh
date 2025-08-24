@@ -5,198 +5,313 @@ namespace Refresh.Database.Query;
 
 public class LevelFilterSettings
 {
+    // The result types to return
+    public bool DisplayLevels { get; set; } = true;
+    public bool DisplayPlaylists { get; set; } = true;
+    public bool DisplayUsers { get; set; } = true;
+
+    // The game versions of levels to return
+    public bool DisplayLbp1 { get; set; } = true;
+    public bool DisplayLbp2 { get; set; } = true;
+    public bool DisplayLbp3 { get; set; } = true;
+    public bool DisplayVita { get; set; } = true;
+    public bool DisplayPSP { get; set; } = true;
+    public bool DisplayBeta { get; set; } = true;
+
     /// <summary>
-    /// The game(s) to filter the results to
+    /// The game of the request, eg. to prevent LBP3 levels from appearing on LBP2 or LBP1
     /// </summary>
-    public readonly GameFilterType GameFilterType = GameFilterType.Both;
-    
+    public TokenGame GameVersion { get; set; }
+
     /// <summary>
-    /// Whether to display LBP1 levels in the results (corresponds to gameFilter[]=lbp1)
+    /// Whether to include, exclude, or only show levels which require a move controller
     /// </summary>
-    public readonly bool DisplayLbp1 = true;
+    public PropertyFilterType DisplayMoveLevels { get; set; } = PropertyFilterType.Include;
     /// <summary>
-    /// Whether to display LBP2 levels in the results (corresponds to gameFilter[]=lbp2)
+    /// Whether to include, exclude, or only show adventure levels
     /// </summary>
-    public readonly bool DisplayLbp2 = true;
-    /// <summary>
-    /// Whether to display LBP3 levels in the results (corresponds to gameFilter[]=lbp3)
-    /// </summary>
-    public readonly bool DisplayLbp3 = true;
-    /// <summary>
-    /// Whether to display Vita levels in the results (corresponds to gameFilter[]=vita)
-    /// </summary>
-    public readonly bool DisplayVita = true;
-    /// <summary>
-    /// Whether to display PSP levels in the results (corresponds to gameFilter[]=psp)
-    /// </summary>
-    public readonly bool DisplayPSP = true;
-    /// <summary>
-    /// Whether to display BetaBuild levels in the results (corresponds to gameFilter[]=beta)
-    /// </summary>
-    public readonly bool DisplayBeta = true;
-    
-    /// <summary>
-    /// Whether or not the user's own levels should be excluded from the results
-    /// </summary>
-    public bool ExcludeMyLevels = false;
+    public PropertyFilterType DisplayAdventures { get; set; } = PropertyFilterType.Include;
     /// <summary>
     /// The amount of players to filter for
     /// eg. only show levels which are compatible with that many players
     /// </summary>
-    public byte Players = 0;
+    public byte Players { get; set; } = 0;
     /// <summary>
-    /// The filter setting for move levels
+    /// The labels a level should include. Normally games can specify up to 3 labels, but LBP3 categories can specify up to 5.
+    /// TODO: Set and use this attribute once level labels are implemented.
     /// </summary>
-    public MoveFilterType MoveFilterType = MoveFilterType.True;
+    public string[] Labels { get; set; } = [];
     /// <summary>
-    /// The labels to filter by
+    /// Whether or not the user's own levels should be excluded from the results
     /// </summary>
-    public string[]? Labels;
+    public bool ExcludeMyLevels { get; set; } = false;
     /// <summary>
-    /// The game of the request, eg. to prevent LBP3 levels from appearing on LBP2 or LBP1
+    /// Whether or not to include levels the requesting user has played before.
+    /// TODO: Implement this filter
     /// </summary>
-    public TokenGame GameVersion;
-
+    public bool IncludePlayedLevels { get; set; } = true;
     /// <summary>
     /// Whether to force showing/hiding modded content.
     /// </summary>
-    public bool? ShowModdedLevels;
-    
+    public bool? ShowModdedLevels { get; set; }
     /// <summary>
     /// Whether to force showing/hiding reuploaded content.
     /// </summary>
-    public bool? ShowReuploadedLevels;
-    
+    public bool? ShowReuploadedLevels { get; set; }
     /// <summary>
     /// The seed used for lucky dip/random levels.
     /// </summary>
     /// <seealso cref="RandomLevelsCategory"/>
-    public int? Seed;
+    public int? Seed { get; set; }
 
     public LevelFilterSettings(TokenGame game)
     {
         this.GameVersion = game;
     }
-    
-    /// <summary>
-    /// Gets the filter settings from a request
-    /// </summary>
-    public LevelFilterSettings(RequestContext context, TokenGame game) : this(game)
+
+    private static LevelFilterSettings FromAnyRequest(RequestContext context, TokenGame game, bool isLbp3Category = false)
     {
-        string[]? gameFilters = context.QueryString.GetValues(context.IsApi() ? "game" : "gameFilter[]");
+        LevelFilterSettings settings = new(game);
+
+        string? playersStr = context.QueryString.Get("players");
+
+        // For categories, LBP3 sends numbers from 1 - 3 when setting this filter to 2 - 4 players, 
+        // and nothing when set to 1 player. The UI makes it look like no parameter = only levels for 1 player.
+        // TODO: Since there would be no way to leave in levels with incompatible player counts in LBP3 categories,
+        // require including something like the Singleplayer or Multiplayer label in order for the server to use this filter.
+        if (!isLbp3Category && playersStr != null && byte.TryParse(playersStr, out byte players))
+        {
+            settings.Players = players;
+        }
+
+        // Lucky Dip randomization
+        string? seedStr = context.QueryString.Get("seed");
+        if (seedStr != null && int.TryParse(seedStr, out int seed))
+        {
+            settings.Seed = seed;
+        }
+
+        string? excludeMyLevelsStr = context.QueryString.Get("excludeMyLevels");
+        if (excludeMyLevelsStr != null && bool.TryParse(excludeMyLevelsStr, out bool excludeMyLevels))
+        {
+            settings.ExcludeMyLevels = excludeMyLevels;
+        }
+
+        string? includePlayedLevelsStr = context.QueryString.Get("includePlayedLevels");
+        if (includePlayedLevelsStr != null && bool.TryParse(includePlayedLevelsStr, out bool includePlayedLevels))
+        {
+            settings.IncludePlayedLevels = includePlayedLevels;
+        }
+
+        return settings;
+    }
+
+    /// <summary>
+    /// Gets the filter settings from a game request
+    /// </summary>
+    public static LevelFilterSettings FromGameRequest(RequestContext context, TokenGame game, bool isLbp3Category = false)
+    {
+        LevelFilterSettings settings = FromAnyRequest(context, game, isLbp3Category);
+
+        bool gamesSpecified = false;
+        string[]? gameFilters = context.QueryString.GetValues("gameFilter[]");
+        string? gameFilterType = context.QueryString.Get("gameFilterType");
+        
+        // Skip this if we are in a beta build, since those can specify either of these game filters, but 
+        // LevelEnumerableExtensions.FilterByGameVersion will already take care of only leaving beta build levels 
+        // and ignoring this filter anyway, making this step unnessesary.
+        if (game == TokenGame.BetaBuild)
+        {
+            // Do nothing
+        }
+        else if (gameFilters != null)
+        {
+            // Filter used by LBP3 categories
+            gamesSpecified = true;
+            settings.DisplayLbp1 = false;
+            settings.DisplayLbp2 = false;
+            settings.DisplayLbp3 = false;
+
+            foreach (string gameFilter in gameFilters)
+            {
+                switch (gameFilter)
+                {
+                    case "lbp1":
+                        settings.DisplayLbp1 = true;
+                        break;
+                    case "lbp2":
+                        settings.DisplayLbp2 = true;
+                        break;
+                    case "lbp3":
+                        settings.DisplayLbp3 = true;
+                        break;
+                    default: 
+                        throw new ArgumentOutOfRangeException(nameof(gameFilter), gameFilter, "Unsupported value");
+                }
+            }
+        }
+        else if (gameFilterType != null)
+        {
+            // Filter used by LBP2 and 3 outside of categories.
+            // LBP3 uses a special query parameter in this case to also show LBP3 levels, but the user can't set filters outside of categories there,
+            // so LBP3 will never request for LBP3 levels to be excluded in this case. GameVersion already takes care of filtering out incompatible
+            // levels in LBP1 and 2, so it's safe to just leave DisplayLbp3 at true.
+            switch (gameFilterType)
+            {
+                case "lbp1":
+                    settings.DisplayLbp2 = false;
+                    break;
+                case "lbp2":
+                    settings.DisplayLbp1 = false;
+                    break;
+                case "both":
+                    // Do nothing, LBP1 and 2 are already set to show by default
+                    break;
+                default: 
+                    throw new ArgumentOutOfRangeException(nameof(gameFilterType), gameFilterType, "Unsupported value");
+            };
+        }
+
+        string[]? resultTypes = context.QueryString.GetValues("resultType[]");
+        if (resultTypes != null)
+        {
+            settings.DisplayLevels = false;
+            settings.DisplayPlaylists = false;
+            settings.DisplayUsers = false;
+
+            foreach (string resultType in resultTypes)
+            {
+                switch (resultType)
+                {
+                    case "slot":
+                        settings.DisplayLevels = true;
+                        break;
+                    case "playlist":
+                        settings.DisplayPlaylists = true;
+                        break;
+                    case "user":
+                        settings.DisplayUsers = true;
+                        break;
+                }
+            }
+        }
+
+        string? adventureStr = context.QueryString.Get("adventure");
+        if (adventureStr != null)
+        {
+            settings.DisplayAdventures = adventureStr switch
+            {
+                "noneCan" => PropertyFilterType.Exclude,
+                "dontCare" => PropertyFilterType.Include,
+                // Sent when normal levels are disallowed (LBP3 will still include resultType[]=slot in this case)
+                "allMust" => PropertyFilterType.Only,
+                _ => throw new ArgumentOutOfRangeException(nameof(adventureStr), adventureStr, "Unsupported value"),
+            };
+        }
+
+        string? moveStr = context.QueryString.Get("move");
+        if (moveStr != null)
+        {
+            switch (moveStr)
+            {
+                // LBP2 options
+                case "true":
+                    settings.DisplayMoveLevels = PropertyFilterType.Include;
+                    break;
+                case "false":
+                    settings.DisplayMoveLevels = PropertyFilterType.Exclude;
+                    break;
+                // Ignore case where only lbp1 and move levels are selected options,
+                // because there are no lbp1 move levels
+                case "only":
+                    settings.DisplayMoveLevels = PropertyFilterType.Only;
+                    break;
+
+                // LBP3 options
+                case "dontCare":
+                    // atleast one game selected, but move unselected -> exclude move levels
+                    if (gamesSpecified)
+                        settings.DisplayMoveLevels = PropertyFilterType.Exclude;
+                    // no games selected, move also unselected (default settings) -> show all levels
+                    else
+                        settings.DisplayMoveLevels = PropertyFilterType.Include;
+                    break;
+                case "allMust":
+                    // atleast one game selected, move also selected -> show all levels of these games
+                    if (gamesSpecified)
+                        settings.DisplayMoveLevels = PropertyFilterType.Include;
+                    // no games selected, but move selected -> only show move levels (of all games, can only be LBP2 and 3 anyway)
+                    else
+                        settings.DisplayMoveLevels = PropertyFilterType.Only;
+                    break;
+
+                default:
+                    throw new ArgumentOutOfRangeException(nameof(moveStr), moveStr, "Unsupported value");
+            }
+        }
+
+        return settings;
+    }
+
+    /// <summary>
+    /// Gets the filter settings from an API request
+    /// </summary>
+    public static LevelFilterSettings FromApiRequest(RequestContext context)
+    {
+        LevelFilterSettings settings = FromAnyRequest(context, TokenGame.Website);
+
+        string[]? gameFilters = context.QueryString.GetValues("game");
         if (gameFilters != null)
         {
-            this.DisplayLbp1 = false;
-            this.DisplayLbp2 = false;
-            this.DisplayLbp3 = false;
-            
-            bool isApi = context.IsApi();
-            
-            // On the game, we want to include LBP Vita and PSP levels by default since those games never know to send this.
-            // The API has different expectations for this.
-            this.DisplayVita = !isApi;
-            this.DisplayPSP = !isApi;
-            this.DisplayBeta = !isApi;
-            
+            settings.DisplayLbp1 = false;
+            settings.DisplayLbp2 = false;
+            settings.DisplayLbp3 = false;
+            settings.DisplayVita = false;
+            settings.DisplayPSP = false;
+            settings.DisplayBeta = false;
+
             foreach (string gameFilter in gameFilters)
                 switch (gameFilter)
                 {
                     case "lbp1":
-                        this.DisplayLbp1 = true;
+                        settings.DisplayLbp1 = true;
                         break;
                     case "lbp2":
-                        this.DisplayLbp2 = true;
+                        settings.DisplayLbp2 = true;
                         break;
                     case "lbp3":
-                        this.DisplayLbp3 = true;
+                        settings.DisplayLbp3 = true;
                         break;
                     case "vita":
-                        this.DisplayVita = true;
+                        settings.DisplayVita = true;
                         break;
                     case "psp":
-                        this.DisplayPSP = true;
+                        settings.DisplayPSP = true;
                         break;
                     case "beta":
-                        this.DisplayBeta = true;
+                        settings.DisplayBeta = true;
                         break;
                 }
         }
-        
-        string? gameFilterType = context.QueryString.Get("gameFilterType");
-        if (gameFilterType != null)
-            this.GameFilterType = gameFilterType switch
-            {
-                "lbp1" => GameFilterType.LittleBigPlanet1,
-                "lbp2" => GameFilterType.LittleBigPlanet2,
-                "both" => GameFilterType.Both,
-                _ => throw new ArgumentOutOfRangeException(),
-            };
-
-        string? excludeMyLevels = context.QueryString.Get("excludeMyLevels");
-        if (excludeMyLevels != null)
-            if (!bool.TryParse(excludeMyLevels, out this.ExcludeMyLevels))
-                this.ExcludeMyLevels = false;
-        
-        string? move = context.QueryString.Get("move");
-        if (move != null)
-            this.MoveFilterType = move switch
-            {
-                "true" => MoveFilterType.True,
-                "false" => MoveFilterType.False,
-                "only" => MoveFilterType.Only,
-                "dontCare" => MoveFilterType.True,
-                _ => throw new ArgumentOutOfRangeException(),
-            };
-
-        string? players = context.QueryString.Get("players");
-        if(players != null)
-            if (!byte.TryParse(players, out this.Players))
-                this.Players = 0;
-
-        string? labelFilter0 = context.QueryString.Get("labelFilter0");
-        string? labelFilter1 = context.QueryString.Get("labelFilter1");
-        string? labelFilter2 = context.QueryString.Get("labelFilter2");
-
-        if (labelFilter2 != null)
-        {
-            this.Labels ??= new string[3];
-            this.Labels[2] = labelFilter2;
-        }
-        if (labelFilter1 != null)
-        {
-            this.Labels ??= new string[2];
-            this.Labels[1] = labelFilter1;
-        }
-        if (labelFilter0 != null)
-        {
-            this.Labels ??= new string[1];
-            this.Labels[0] = labelFilter0;
-        }
-
-        string? seedStr = context.QueryString.Get("seed");
-        if (seedStr != null && int.TryParse(seedStr, out int seed))
-        {
-            this.Seed = seed;
-        }
 
         string? moddedFilter = context.QueryString.Get("includeModded");
-
         if (moddedFilter != null)
         {
             if (!bool.TryParse(moddedFilter, out bool showModdedLevels))
                 throw new FormatException("Could not parse modded filter setting because the boolean was invalid.");
 
-            this.ShowModdedLevels = showModdedLevels;
+            settings.ShowModdedLevels = showModdedLevels;
         }
         
         string? reuploadedFilter = context.QueryString.Get("includeReuploaded");
-
         if (reuploadedFilter != null)
         {
             if (!bool.TryParse(moddedFilter, out bool showReuploadedLevels))
                 throw new FormatException("Could not parse reuploaded filter setting because the boolean was invalid.");
 
-            this.ShowModdedLevels = showReuploadedLevels;
+            settings.ShowModdedLevels = showReuploadedLevels;
         }
+
+        return settings;
     }
 }

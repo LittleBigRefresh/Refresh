@@ -24,7 +24,7 @@ public class QueueTests : GameServerTest
         context.Database.Refresh();
         //Ensure we only have one queued level, and that it is the level we queued
         Assert.That(context.Database.GetTotalLevelsQueuedByUser(user), Is.EqualTo(1));
-        Assert.That(context.Database.GetLevelsQueuedByUser(user, 1, 0, new LevelFilterSettings(TokenGame.LittleBigPlanet2), user)
+        Assert.That(context.Database.GetLevelsQueuedByUser(user, 1, 0, new(TokenGame.LittleBigPlanet2), user)
             .Items.First().LevelId, Is.EqualTo(level.LevelId));
         
         //Remove the level from the queue
@@ -57,7 +57,7 @@ public class QueueTests : GameServerTest
         Assert.That(context.Database.GetTotalLevelsQueuedByUser(user), Is.EqualTo(2));
 
         DatabaseList<GameLevel> queue = context.Database.GetLevelsQueuedByUser(user, 2, 0,
-            new LevelFilterSettings(TokenGame.LittleBigPlanet2), user);
+            new(TokenGame.LittleBigPlanet2), user);
         
         Assert.That(queue.Items.Any(q => q.LevelId == level1.LevelId));
         Assert.That(queue.Items.Any(q => q.LevelId == level2.LevelId));
@@ -112,7 +112,7 @@ public class QueueTests : GameServerTest
         context.Database.Refresh();
         //Ensure we only have one queued level, and that it is the level we queued
         Assert.That(context.Database.GetTotalLevelsQueuedByUser(user), Is.EqualTo(1));
-        Assert.That(context.Database.GetLevelsQueuedByUser(user, 1, 0, new LevelFilterSettings(TokenGame.LittleBigPlanet2), user)
+        Assert.That(context.Database.GetLevelsQueuedByUser(user, 1, 0, new(TokenGame.LittleBigPlanet2), user)
             .Items.First().LevelId, Is.EqualTo(level.LevelId));
     }
     
