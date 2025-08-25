@@ -7,6 +7,12 @@ namespace Refresh.Database;
 
 public partial class GameDatabaseContext // Pins
 {
+    private IQueryable<PinProgressRelation> PinProgressRelationsIncluded => this.PinProgressRelations
+        .Include(p => p.Publisher);
+    
+    private IQueryable<ProfilePinRelation> ProfilePinRelationsIncluded => this.ProfilePinRelations
+        .Include(p => p.Publisher);
+
     public void UpdateUserPinProgress(Dictionary<long, int> pinProgressUpdates, GameUser user, TokenGame game)
     {
         DateTimeOffset now = this._time.Now;
@@ -96,7 +102,7 @@ public partial class GameDatabaseContext // Pins
     public PinProgressRelation UpdateUserPinProgressToLowest(long pinId, int newProgressValue, GameUser user, bool isBeta)
     {
         // Get pin progress if it exists already
-        PinProgressRelation? progressToUpdate = this.PinProgressRelations.FirstOrDefault(p => p.PinId == pinId && p.PublisherId == user.UserId && p.IsBeta == isBeta);
+        PinProgressRelation? progressToUpdate = this.GetUserPinProgress(pinId, user, isBeta);
         DateTimeOffset now = this._time.Now;
 
         if (progressToUpdate == null)
@@ -145,7 +151,7 @@ public partial class GameDatabaseContext // Pins
     private PinProgressRelation IncrementUserPinProgressInternal(long pinId, int progressToAdd, GameUser user, bool isBeta)
     {
         // Get pin progress if it exists already
-        PinProgressRelation? progressToUpdate = this.PinProgressRelations.FirstOrDefault(p => p.PinId == pinId && p.PublisherId == user.UserId && p.IsBeta == isBeta);
+        PinProgressRelation? progressToUpdate = this.GetUserPinProgress(pinId, user, isBeta);
         DateTimeOffset now = this._time.Now;
 
         if (progressToUpdate == null)
@@ -174,19 +180,19 @@ public partial class GameDatabaseContext // Pins
     }
 
     private IEnumerable<PinProgressRelation> GetPinProgressesByUser(GameUser user, bool isBeta)
-        => this.PinProgressRelations
-            .Where(p => p.Publisher == user && p.IsBeta == isBeta)
+        => this.PinProgressRelationsIncluded
+            .Where(p => p.PublisherId == user.UserId && p.IsBeta == isBeta)
             .OrderByDescending(p => p.LastUpdated);
     
     public DatabaseList<PinProgressRelation> GetPinProgressesByUser(GameUser user, TokenGame game, int skip, int count)
         => new(this.GetPinProgressesByUser(user, game == TokenGame.BetaBuild), skip, count);
 
     public PinProgressRelation? GetUserPinProgress(long pinId, GameUser user, bool isBeta)
-        => this.PinProgressRelations.FirstOrDefault(p => p.PinId == pinId && p.PublisherId == user.UserId && p.IsBeta == isBeta);
+        => this.PinProgressRelationsIncluded.FirstOrDefault(p => p.PinId == pinId && p.PublisherId == user.UserId && p.IsBeta == isBeta);
 
     private IEnumerable<ProfilePinRelation> GetProfilePinsByUser(GameUser user, TokenGame game)
-        => this.ProfilePinRelations
-            .Where(p => p.Publisher == user && p.Game == game)
+        => this.ProfilePinRelationsIncluded
+            .Where(p => p.PublisherId == user.UserId && p.Game == game)
             .OrderBy(p => p.Index);
 
     public DatabaseList<ProfilePinRelation> GetProfilePinsByUser(GameUser user, TokenGame game, int skip, int count)
