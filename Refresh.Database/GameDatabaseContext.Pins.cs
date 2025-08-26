@@ -7,12 +7,6 @@ namespace Refresh.Database;
 
 public partial class GameDatabaseContext // Pins
 {
-    private IQueryable<PinProgressRelation> PinProgressRelationsIncluded => this.PinProgressRelations
-        .Include(p => p.Publisher);
-    
-    private IQueryable<ProfilePinRelation> ProfilePinRelationsIncluded => this.ProfilePinRelations
-        .Include(p => p.Publisher);
-
     public void UpdateUserPinProgress(Dictionary<long, int> pinProgressUpdates, GameUser user, TokenGame game)
     {
         DateTimeOffset now = this._time.Now;
@@ -180,7 +174,7 @@ public partial class GameDatabaseContext // Pins
     }
 
     private IEnumerable<PinProgressRelation> GetPinProgressesByUser(GameUser user, bool isBeta)
-        => this.PinProgressRelationsIncluded
+        => this.PinProgressRelations
             .Where(p => p.PublisherId == user.UserId && p.IsBeta == isBeta)
             .OrderByDescending(p => p.LastUpdated);
     
@@ -188,10 +182,10 @@ public partial class GameDatabaseContext // Pins
         => new(this.GetPinProgressesByUser(user, game == TokenGame.BetaBuild), skip, count);
 
     public PinProgressRelation? GetUserPinProgress(long pinId, GameUser user, bool isBeta)
-        => this.PinProgressRelationsIncluded.FirstOrDefault(p => p.PinId == pinId && p.PublisherId == user.UserId && p.IsBeta == isBeta);
+        => this.PinProgressRelations.FirstOrDefault(p => p.PinId == pinId && p.PublisherId == user.UserId && p.IsBeta == isBeta);
 
     private IEnumerable<ProfilePinRelation> GetProfilePinsByUser(GameUser user, TokenGame game)
-        => this.ProfilePinRelationsIncluded
+        => this.ProfilePinRelations
             .Where(p => p.PublisherId == user.UserId && p.Game == game)
             .OrderBy(p => p.Index);
 
