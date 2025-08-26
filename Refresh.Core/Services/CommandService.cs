@@ -21,30 +21,6 @@ public class CommandService : EndpointService
         this._levelListService = levelListService;
     }
 
-    private readonly HashSet<ObjectId> _usersPublishing = [];
-
-    /// <summary>
-    /// Start tracking the user, eg. they started publishing
-    /// </summary>
-    /// <param name="id">The user ID</param>
-    public void StartPublishing(ObjectId id)
-    {
-        //Unconditionally add the user to the set
-        this._usersPublishing.Add(id);
-    }
-
-    /// <summary>
-    /// Stop tracking the user, eg. they stopped publishing
-    /// </summary>
-    /// <param name="id">The user ID</param>
-    public void StopPublishing(ObjectId id)
-    {
-        //Unconditionally remove the user from the set
-        this._usersPublishing.Remove(id);
-    }
-
-    public bool IsPublishing(ObjectId id) => this._usersPublishing.Contains(id);
-
     /// <summary>
     /// Parse a command string into a command object
     /// </summary>
