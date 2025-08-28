@@ -116,7 +116,7 @@ public class TestContext : IDisposable
         return this.Database.GenerateTokenForUser(user, type, game, platform, "0.0.0.0");
     }
     
-    public GameLevel CreateLevel(GameUser author, string title = "Level", TokenGame gameVersion = TokenGame.LittleBigPlanet1)
+    public GameLevel CreateLevel(GameUser author, string title = "Level", TokenGame gameVersion = TokenGame.LittleBigPlanet1, int minPlayers = 1, int maxPlayers = 4)
     {
         GameLevelRequest levelRequest = new()
         {
