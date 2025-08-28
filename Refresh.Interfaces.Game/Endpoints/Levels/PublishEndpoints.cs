@@ -106,7 +106,6 @@ public class PublishEndpoints : EndpointGroup
     [RequireEmailVerified]
     public Response StartPublish(RequestContext context,
         GameLevelRequest body,
-        CommandService command,
         DataContext dataContext,
         GameServerConfig config,
         IDateTimeProvider dateTimeProvider)
@@ -148,9 +147,6 @@ public class PublishEndpoints : EndpointGroup
         //Verify all hashes are valid SHA1 hashes
         if (hashes.Any(hash => !CommonPatterns.Sha1Regex().IsMatch(hash))) return BadRequest;
 
-        //Mark the user as publishing
-        command.StartPublishing(dataContext.User!.UserId);
-
         SerializedLevelResources response = new()
         {
             Resources = hashes.Where(r => !dataContext.DataStore.ExistsInStore(r)).ToArray()
@@ -164,7 +160,6 @@ public class PublishEndpoints : EndpointGroup
     [RateLimitSettings(RequestTimeoutDuration, MaxRequestAmount, RequestBlockDuration, BucketName)]
     public Response PublishLevel(RequestContext context,
         GameLevelRequest body,
-        CommandService commandService,
         DataContext dataContext,
         GameUser user,
         GameServerConfig config,
@@ -231,9 +226,6 @@ public class PublishEndpoints : EndpointGroup
             return new Response(GameLevelResponse.FromOld(levelToUpdate, dataContext)!, ContentType.Xml);
         }
 
-        // Mark the user as no longer publishing
-        commandService.StopPublishing(dataContext.User!.UserId);
-
         GameLevel newLevel = dataContext.Database.AddLevel(body, dataContext.Game, user);
         dataContext.Database.UpdateSkillRewardsForLevel(newLevel, body.SkillRewards);
 
@@ -250,7 +242,7 @@ public class PublishEndpoints : EndpointGroup
         // NOTE: this wont do anything if the slot is uploaded before the level resource,
         //       so we also do this same operation inside of ResourceEndpoints.UploadAsset to catch that case aswell
         dataContext.Database.UpdateLevelModdedStatus(newLevel);
-        dataContext.Database.CreateLevelUploadEvent(dataContext.User, newLevel);
+        dataContext.Database.CreateLevelUploadEvent(user, newLevel);
 
         return new Response(GameLevelResponse.FromOld(newLevel, dataContext)!, ContentType.Xml);
     }
