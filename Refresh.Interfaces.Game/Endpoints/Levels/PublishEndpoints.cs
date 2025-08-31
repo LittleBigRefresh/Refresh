@@ -1,5 +1,6 @@
 using Bunkum.Core;
 using Bunkum.Core.Endpoints;
+using Bunkum.Core.Endpoints.Debugging;
 using Bunkum.Core.RateLimit;
 using Bunkum.Core.Responses;
 using Bunkum.Listener.Protocol;
@@ -10,7 +11,6 @@ using Refresh.Common.Verification;
 using Refresh.Core;
 using Refresh.Core.Authentication.Permission;
 using Refresh.Core.Configuration;
-using Refresh.Core.Services;
 using Refresh.Core.Types.Data;
 using Refresh.Database;
 using Refresh.Database.Models.Assets;
@@ -63,6 +63,13 @@ public class PublishEndpoints : EndpointGroup
         {
             dataContext.Database.AddPublishFailNotification("The level you tried to publish has already been uploaded by another user.", body.Title, dataContext.User!);
             return false;
+        }
+
+        if (!string.IsNullOrWhiteSpace(body.PublisherLabels))
+        {
+            // Unknown labels will be ignored and be missing from the level. No notifications needed because the publisher should
+            // immediately be able to tell if there are missing labels on the level they just published.
+            body.FinalPublisherLabels = LabelExtensions.FromLbpEnumerable(body.PublisherLabels.Split(',')).Take(UgcLimits.MaximumLabels);
         }
 
         return true;
@@ -157,6 +164,8 @@ public class PublishEndpoints : EndpointGroup
 
     [GameEndpoint("publish", ContentType.Xml, HttpMethods.Post)]
     [RequireEmailVerified]
+    [DebugRequestBody]
+    [DebugResponseBody]
     [RateLimitSettings(RequestTimeoutDuration, MaxRequestAmount, RequestBlockDuration, BucketName)]
     public Response PublishLevel(RequestContext context,
         GameLevelRequest body,

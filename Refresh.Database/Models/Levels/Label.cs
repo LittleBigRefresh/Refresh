@@ -121,7 +121,7 @@ public static class LabelExtensions
         }
     }
     
-    private static readonly Dictionary<Label, string> StringMap = new();
+    private static readonly Dictionary<Label, string> StringMap = [];
     private static readonly Dictionary<string, Label> LabelsMap = new()
     {
         { "LABEL_Quick", Label.Short },
@@ -130,7 +130,6 @@ public static class LabelExtensions
         { "LABEL_Easy", Label.Easy },
         { "LABEL_Scary", Label.Scary },
         { "LABEL_Funny", Label.Funny },
-        { "LABEL_Challenging", Label.Challenging },
         { "LABEL_Artistic", Label.Artistic },
         { "LABEL_Musical", Label.Musical },
         { "LABEL_Intricate", Label.Intricate },
@@ -236,17 +235,17 @@ public static class LabelExtensions
 
     public static Label? FromLbpString(string str) => LabelsMap.GetValueOrDefault(str);
 
-    public static List<string> ToLbpList(this List<Label> labels)
+    public static IEnumerable<string> ToLbpEnumerable(this IEnumerable<Label> labels)
         => labels.Select(l => l.ToLbpString()!).ToList();
 
-    public static List<Label> FromLbpList(List<string> labels)
+    public static IEnumerable<Label> FromLbpEnumerable(IEnumerable<string> labels)
     {
-        List<Label> finalLabels = [];
+        IEnumerable<Label> finalLabels = [];
 
         foreach (string label in labels)
         {
             Label? deserialized = FromLbpString(label);
-            if (deserialized != null) finalLabels.Add(deserialized.Value);
+            if (deserialized != null) finalLabels = finalLabels.Append(deserialized.Value);
         }
 
         return finalLabels;

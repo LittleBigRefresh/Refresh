@@ -1,4 +1,6 @@
-﻿namespace Refresh.Database.Models.Statistics;
+﻿using Refresh.Database.Models.Levels;
+
+namespace Refresh.Database.Models.Statistics;
 
 public class GameLevelStatistics
 {
@@ -25,4 +27,6 @@ public class GameLevelStatistics
     public int NeutralCount { get; set; }
     public int NeutralCountExcludingPublisher { get; set; }
     public int Karma { get; set; }
+
+    public List<Label> RecurringLabels { get; set; } = [];
 }

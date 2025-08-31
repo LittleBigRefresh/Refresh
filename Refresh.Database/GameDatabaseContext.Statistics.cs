@@ -1,5 +1,6 @@
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
+using Refresh.Common.Constants;
 using Refresh.Database.Models.Comments;
 using Refresh.Database.Models.Levels;
 using Refresh.Database.Models.Playlists;
@@ -85,7 +86,7 @@ public partial class GameDatabaseContext // Statistics
     }
     
     #region Levels
-    internal const int LevelStatisticsVersion = 3;
+    internal const int LevelStatisticsVersion = 4;
     
     public IEnumerable<GameLevel> GetLevelsWithStatisticsNeedingUpdates()
     {
@@ -168,6 +169,7 @@ public partial class GameDatabaseContext // Statistics
         level.Statistics.PhotoByPublisherCount = this.GetTotalPhotosInLevelByUser(level, level.Publisher);
         level.Statistics.ParentPlaylistCount = this.GetTotalPlaylistsContainingLevel(level);
         this.RecalculateLevelRatingStatisticsInternal(level);
+        this.UpdateLevelReocurringLabels(level);
 
         level.Statistics.RecalculateAt = null;
         level.Statistics.Version = LevelStatisticsVersion;
@@ -184,6 +186,24 @@ public partial class GameDatabaseContext // Statistics
         level.Statistics.NeutralCount = this.GetTotalRatingsForLevel(level, RatingType.Neutral);
         level.Statistics.NeutralCountExcludingPublisher = this.GetTotalRatingsForLevel(level, RatingType.Neutral, false);
         level.Statistics.Karma = level.Statistics.YayCount - level.Statistics.BooCount;
+    }
+
+    private void UpdateLevelReocurringLabels(GameLevel level)
+    {
+        /*
+        Debug.Assert(level.Statistics != null);
+
+        // Take the most recurring labels among the reviews for the level
+        level.Statistics.RecurringLabels = this.GameReviews
+            .Where(r => r.LevelId == level.LevelId)
+            .SelectMany(r => r.Labels)
+            .GroupBy(r => r)
+            .Select(g => new { Label = g.Key, Count = g.Count() })
+            .OrderByDescending(g => g.Count)
+            .Take(UgcLimits.MaximumLabels)
+            .Select(g => g.Label)
+            .ToList();
+        */
     }
 
     private void MarkLevelStatisticsDirty(GameLevel level)

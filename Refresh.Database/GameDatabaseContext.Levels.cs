@@ -38,6 +38,7 @@ public partial class GameDatabaseContext // Levels
             IconHash = createInfo.IconHash,
             LocationX = createInfo.Location.X,
             LocationY = createInfo.Location.Y,
+            Labels = createInfo.FinalPublisherLabels.ToList() ?? [],
             RootResource = createInfo.RootResource,
             IsLocked = createInfo.IsLocked,
             IsCopyable = createInfo.IsCopyable == 1,
@@ -190,6 +191,13 @@ public partial class GameDatabaseContext // Levels
         level.EnforceMinMaxPlayers = updateInfo.EnforceMinMaxPlayers;
         level.SameScreenGame = updateInfo.SameScreenGame;
         level.BackgroundGuid = updateInfo.BackgroundGuid;
+
+        // Only update labels if this level isn't updated in LBP1, to not lose already set labels,
+        // since LBP1 doesn't support them.
+        if (game != TokenGame.LittleBigPlanet1)
+        {
+            level.Labels = updateInfo.FinalPublisherLabels.ToList();
+        }
 
         // If we're changing the actual contents of the level, update the game version and update date aswell
         if (updateInfo.RootResource != level.RootResource)

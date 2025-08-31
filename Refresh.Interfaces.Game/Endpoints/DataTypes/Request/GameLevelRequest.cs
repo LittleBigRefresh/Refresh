@@ -17,6 +17,11 @@ public class GameLevelRequest : ISerializedPublishLevel
     [XmlElement("description")] public string Description { get; set; } = "";
     [XmlElement("location")] public GameLocation Location { get; set; } = GameLocation.Zero;
 
+    // This is nullable so the labels don't get lost if the level gets updated from a game
+    // which doesn't support them
+    [XmlElement("authorLabels")] public string PublisherLabels { get; set; } = "";
+    [XmlIgnore] public IEnumerable<Label> FinalPublisherLabels { get; set; } = [];
+
     [XmlElement("rootLevel")] public required string RootResource { get; set; }
     [XmlElement("isAdventurePlanet")] public bool IsAdventure { get; set; }
 
