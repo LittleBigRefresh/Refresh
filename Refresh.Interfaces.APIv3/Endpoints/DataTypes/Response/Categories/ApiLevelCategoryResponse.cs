@@ -43,7 +43,7 @@ public class ApiLevelCategoryResponse : ApiCategoryResponse, IApiResponse, IData
     {
         return oldList.Select(category =>
         {
-            DatabaseList<GameLevel>? list = category.Fetch(context, 0, 1, dataContext, new LevelFilterSettings(context, TokenGame.Website), dataContext.User);
+            DatabaseList<GameLevel>? list = category.Fetch(context, 0, 1, dataContext, LevelFilterSettings.FromApiRequest(context), dataContext.User);
             GameLevel? level = list?.Items.FirstOrDefault();
             
             return FromOld(category, level, dataContext);

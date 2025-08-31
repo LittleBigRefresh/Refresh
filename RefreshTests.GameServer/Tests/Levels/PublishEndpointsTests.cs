@@ -30,21 +30,11 @@ public class PublishEndpointsTests : GameServerTest
 
         GameLevelRequest level = new()
         {
-            LevelId = 0,
-            IsAdventure = false,
             Title = "TEST LEVEL",
             IconHash = "g719",
             Description = "DESCRIPTION",
             Location = new GameLocation(),
-            GameVersion = 0,
             RootResource = TEST_ASSET_HASH,
-            PublishDate = 0,
-            UpdateDate = 0,
-            MinPlayers = 0,
-            MaxPlayers = 0,
-            EnforceMinMaxPlayers = false,
-            SameScreenGame = false,
-            SkillRewards = new List<GameSkillReward>(),
         };
 
         HttpResponseMessage message = client.PostAsync("/lbp/startPublish", new StringContent(level.AsXML())).Result;
@@ -94,21 +84,11 @@ public class PublishEndpointsTests : GameServerTest
 
         GameLevelRequest level = new()
         {
-            LevelId = 0,
-            IsAdventure = false,
             Title = new string('*', UgcLimits.TitleLimit * 2),
             IconHash = "g0",
             Description = "Normal length",
             Location = new GameLocation(),
-            GameVersion = 0,
             RootResource = TEST_ASSET_HASH,
-            PublishDate = 0,
-            UpdateDate = 0,
-            MinPlayers = 0,
-            MaxPlayers = 0,
-            EnforceMinMaxPlayers = false,
-            SameScreenGame = false,
-            SkillRewards = [],
         };
 
         HttpResponseMessage message = client.PostAsync("/lbp/startPublish", new StringContent(level.AsXML())).Result;
@@ -133,21 +113,11 @@ public class PublishEndpointsTests : GameServerTest
 
         GameLevelRequest level = new()
         {
-            LevelId = 0,
-            IsAdventure = false,
             Title = "Normal Title!",
             IconHash = "g0",
             Description = new string('=', UgcLimits.DescriptionLimit * 2),
             Location = new GameLocation(),
-            GameVersion = 0,
             RootResource = TEST_ASSET_HASH,
-            PublishDate = 0,
-            UpdateDate = 0,
-            MinPlayers = 0,
-            MaxPlayers = 0,
-            EnforceMinMaxPlayers = false,
-            SameScreenGame = false,
-            SkillRewards = new List<GameSkillReward>(),
         };
 
         HttpResponseMessage message = client.PostAsync("/lbp/startPublish", new StringContent(level.AsXML())).Result;
@@ -161,7 +131,7 @@ public class PublishEndpointsTests : GameServerTest
         Assert.That(message.StatusCode, Is.EqualTo(OK));
         Assert.That(message.Content.ReadAsXML<GameLevelResponse>().Description.Length, Is.EqualTo(UgcLimits.DescriptionLimit));
     }
-    
+
     [Test]
     public void CantPublishLevelWithInvalidMaxPlayers()
     {
@@ -172,21 +142,13 @@ public class PublishEndpointsTests : GameServerTest
 
         GameLevelRequest level = new()
         {
-            LevelId = 0,
-            IsAdventure = false,
             Title = "Normal Title!",
             IconHash = "g0",
             Description = "Normal Description",
             Location = new GameLocation(),
-            GameVersion = 0,
             RootResource = TEST_ASSET_HASH,
-            PublishDate = 0,
-            UpdateDate = 0,
-            MinPlayers = 0,
+            MinPlayers = 1,
             MaxPlayers = 5,
-            EnforceMinMaxPlayers = false,
-            SameScreenGame = false,
-            SkillRewards = new List<GameSkillReward>(),
         };
 
         HttpResponseMessage message = client.PostAsync("/lbp/startPublish", new StringContent(level.AsXML())).Result;
@@ -206,21 +168,13 @@ public class PublishEndpointsTests : GameServerTest
 
         GameLevelRequest level = new()
         {
-            LevelId = 0,
-            IsAdventure = false,
             Title = "Normal Title!",
             IconHash = "g0",
             Description = "Normal Description",
             Location = new GameLocation(),
-            GameVersion = 0,
             RootResource = TEST_ASSET_HASH,
-            PublishDate = 0,
-            UpdateDate = 0,
             MinPlayers = -1,
-            MaxPlayers = 0,
-            EnforceMinMaxPlayers = false,
-            SameScreenGame = false,
-            SkillRewards = new List<GameSkillReward>(),
+            MaxPlayers = 4,
         };
 
         HttpResponseMessage message = client.PostAsync("/lbp/startPublish", new StringContent(level.AsXML())).Result;
@@ -240,21 +194,11 @@ public class PublishEndpointsTests : GameServerTest
 
         GameLevelRequest level = new()
         {
-            LevelId = 0,
-            IsAdventure = false,
             Title = "Normal Title!",
             IconHash = "g0",
             Description = "Normal Description",
             Location = new GameLocation(),
-            GameVersion = 0,
             RootResource = "I AM INVALID!!!",
-            PublishDate = 0,
-            UpdateDate = 0,
-            MinPlayers = 0,
-            MaxPlayers = 0,
-            EnforceMinMaxPlayers = false,
-            SameScreenGame = false,
-            SkillRewards = new List<GameSkillReward>(),
         };
 
         HttpResponseMessage message = client.PostAsync("/lbp/startPublish", new StringContent(level.AsXML())).Result;
@@ -277,21 +221,11 @@ public class PublishEndpointsTests : GameServerTest
 
         GameLevelRequest level = new()
         {
-            LevelId = 0,
-            IsAdventure = false,
             Title = "Normal Title!",
             IconHash = "g0",
             Description = "Normal Description",
             Location = new GameLocation(),
-            GameVersion = 0,
             RootResource = "I AM INVALID!!!",
-            PublishDate = 0,
-            UpdateDate = 0,
-            MinPlayers = 0,
-            MaxPlayers = 0,
-            EnforceMinMaxPlayers = false,
-            SameScreenGame = false,
-            SkillRewards = new List<GameSkillReward>(),
         };
 
         HttpResponseMessage message = client.PostAsync("/lbp/startPublish", new StringContent(level.AsXML())).Result;
@@ -310,21 +244,11 @@ public class PublishEndpointsTests : GameServerTest
 
         GameLevelRequest level = new()
         {
-            LevelId = 0,
-            IsAdventure = false,
             Title = "Normal Title!",
             IconHash = "g0",
             Description = "Normal Description",
             Location = new GameLocation(),
-            GameVersion = 0,
             RootResource = "I AM INVALID!!!",
-            PublishDate = 0,
-            UpdateDate = 0,
-            MinPlayers = 0,
-            MaxPlayers = 0,
-            EnforceMinMaxPlayers = false,
-            SameScreenGame = false,
-            SkillRewards = new List<GameSkillReward>(),
         };
 
         HttpResponseMessage message = client.PostAsync("/lbp/startPublish", new StringContent(level.AsXML())).Result;
@@ -344,21 +268,11 @@ public class PublishEndpointsTests : GameServerTest
 
         GameLevelRequest level = new()
         {
-            LevelId = 0,
-            IsAdventure = false,
             Title = "Normal Title!",
             IconHash = "g719",
             Description = "Normal Description",
             Location = new GameLocation(),
-            GameVersion = 0,
             RootResource = TEST_MISSING_ASSET_HASH,
-            PublishDate = 0,
-            UpdateDate = 0,
-            MinPlayers = 0,
-            MaxPlayers = 0,
-            EnforceMinMaxPlayers = false,
-            SameScreenGame = false,
-            SkillRewards = new List<GameSkillReward>(),
         };
 
         HttpResponseMessage message = client.PostAsync("/lbp/startPublish", new StringContent(level.AsXML())).Result;
@@ -366,6 +280,40 @@ public class PublishEndpointsTests : GameServerTest
         
         message = client.PostAsync("/lbp/publish", new StringContent(level.AsXML())).Result;
         Assert.That(message.StatusCode, Is.EqualTo(NotFound));
+    }
+
+    [Test]
+    public void CantUpdateNonExistentLevel()
+    {
+        using TestContext context = this.GetServer();
+        GameUser author = context.CreateUser();
+        using HttpClient client = context.GetAuthenticatedClient(TokenType.Game, author);
+
+        GameLevelRequest level = new()
+        {
+            LevelId = 69696969,
+            Title = "TEST LEVEL",
+            IconHash = "g719",
+            Description = "DESCRIPTION",
+            Location = new GameLocation(),
+            RootResource = TEST_ASSET_HASH,
+        };
+
+        HttpResponseMessage message = client.PostAsync("/lbp/startPublish", new StringContent(level.AsXML())).Result;
+        Assert.That(message.StatusCode, Is.EqualTo(OK));
+
+        SerializedLevelResources resourcesToUpload = message.Content.ReadAsXML<SerializedLevelResources>();
+        Assert.That(resourcesToUpload.Resources, Has.Length.EqualTo(1));
+        Assert.That(resourcesToUpload.Resources[0], Is.EqualTo(TEST_ASSET_HASH));
+
+        //Upload our """level"""
+        message = client.PostAsync($"/lbp/upload/{TEST_ASSET_HASH}", new ReadOnlyMemoryContent("LVLb"u8.ToArray())).Result;
+        Assert.That(message.StatusCode, Is.EqualTo(OK));
+        
+        // Make sure this request fails and there are no levels uploaded
+        message = client.PostAsync("/lbp/publish", new StringContent(level.AsXML())).Result;
+        Assert.That(message.StatusCode, Is.EqualTo(NotFound));
+        Assert.That(context.Database.GetTotalLevelCount(), Is.Zero);
     }
     
     [Test]
@@ -380,21 +328,11 @@ public class PublishEndpointsTests : GameServerTest
 
         GameLevelRequest level = new()
         {
-            LevelId = 0,
-            IsAdventure = false,
             Title = "TEST LEVEL",
             IconHash = "g719",
             Description = "DESCRIPTION",
             Location = new GameLocation(),
-            GameVersion = 0,
-            RootResource = TEST_ASSET_HASH,
-            PublishDate = 0,
-            UpdateDate = 0,
-            MinPlayers = 0,
-            MaxPlayers = 0,
-            EnforceMinMaxPlayers = false,
-            SameScreenGame = false,
-            SkillRewards = new List<GameSkillReward>(),
+            RootResource = TEST_ASSET_HASH
         };
 
         HttpResponseMessage message = client1.PostAsync("/lbp/startPublish", new StringContent(level.AsXML())).Result;
@@ -437,21 +375,11 @@ public class PublishEndpointsTests : GameServerTest
 
         GameLevelRequest level = new()
         {
-            LevelId = 0,
-            IsAdventure = false,
             Title = "TEST LEVEL",
             IconHash = "g719",
             Description = "DESCRIPTION",
             Location = new GameLocation(),
-            GameVersion = 0,
             RootResource = TEST_ASSET_HASH,
-            PublishDate = 0,
-            UpdateDate = 0,
-            MinPlayers = 0,
-            MaxPlayers = 0,
-            EnforceMinMaxPlayers = false,
-            SameScreenGame = false,
-            SkillRewards = new List<GameSkillReward>(),
         };
 
         HttpResponseMessage message = client1.PostAsync("/lbp/startPublish", new StringContent(level.AsXML())).Result;
@@ -493,7 +421,7 @@ public class PublishEndpointsTests : GameServerTest
         HttpResponseMessage message = client.PostAsync($"/lbp/unpublish/{level.LevelId}", new ReadOnlyMemoryContent(Array.Empty<byte>())).Result;
         Assert.That(message.StatusCode, Is.EqualTo(OK));
 
-        DatabaseList<GameLevel> levelsByUser = context.Database.GetLevelsByUser(user, 1, 0, new LevelFilterSettings(TokenGame.LittleBigPlanet3), user);
+        DatabaseList<GameLevel> levelsByUser = context.Database.GetLevelsByUser(user, 1, 0, new(TokenGame.LittleBigPlanet3), user);
         Assert.That(levelsByUser.TotalItems, Is.EqualTo(0));
     }
 
@@ -522,7 +450,7 @@ public class PublishEndpointsTests : GameServerTest
         HttpResponseMessage message = client.PostAsync($"/lbp/unpublish/{level.LevelId}", new ReadOnlyMemoryContent(Array.Empty<byte>())).Result;
         Assert.That(message.StatusCode, Is.EqualTo(Unauthorized));
 
-        DatabaseList<GameLevel> levelsByUser = context.Database.GetLevelsByUser(user1, 1, 0, new LevelFilterSettings(TokenGame.LittleBigPlanet3), user1);
+        DatabaseList<GameLevel> levelsByUser = context.Database.GetLevelsByUser(user1, 1, 0, new(TokenGame.LittleBigPlanet3), user1);
         Assert.That(levelsByUser.TotalItems, Is.EqualTo(1));
     }
 
@@ -564,7 +492,7 @@ public class PublishEndpointsTests : GameServerTest
         }
 
         // Check amount of levels
-        DatabaseList<GameLevel> levelsByUser = context.Database.GetLevelsByUser(user, 1000, 0, new LevelFilterSettings(TokenGame.LittleBigPlanet3), user);
+        DatabaseList<GameLevel> levelsByUser = context.Database.GetLevelsByUser(user, 1000, 0, new(TokenGame.LittleBigPlanet3), user);
         Assert.That(levelsByUser.TotalItems, Is.EqualTo(config.TimedLevelUploadLimits.LevelQuota));
 
         // Ensure there were error notifications sent for each blocked request to both /startPublish and /publish
@@ -604,7 +532,7 @@ public class PublishEndpointsTests : GameServerTest
         SpamSuccessfulUploads(uploadAttemptsAfterExceeding, client);
 
         // Check amount of levels
-        DatabaseList<GameLevel> levelsByUser = context.Database.GetLevelsByUser(user, 1000, 0, new LevelFilterSettings(TokenGame.LittleBigPlanet3), user);
+        DatabaseList<GameLevel> levelsByUser = context.Database.GetLevelsByUser(user, 1000, 0, new(TokenGame.LittleBigPlanet3), user);
         Assert.That(levelsByUser.TotalItems, Is.EqualTo(config.TimedLevelUploadLimits.LevelQuota + uploadAttemptsAfterExceeding));
 
         // Ensure there were no notifications sent
@@ -629,21 +557,11 @@ public class PublishEndpointsTests : GameServerTest
     private GameLevelRequest CreateValidTestLevel(int id)
         => new()
         {
-            LevelId = id,
-            IsAdventure = false,
             Title = "Test level! " + id,
             IconHash = "g0",
             Description = "Test description",
             Location = new GameLocation(),
-            GameVersion = 0,
             RootResource = TEST_ASSET_HASH,
-            PublishDate = 0,
-            UpdateDate = 0,
-            MinPlayers = 1,
-            MaxPlayers = 4,
-            EnforceMinMaxPlayers = false,
-            SameScreenGame = false,
-            SkillRewards = [],
         };
 
     [Test]
@@ -662,14 +580,7 @@ public class PublishEndpointsTests : GameServerTest
             IconHash = "g0",
             Description = new string('=', UgcLimits.DescriptionLimit * 2),
             Location = new GameLocation(),
-            GameVersion = 0,
             RootResource = TEST_ASSET_HASH,
-            PublishDate = 0,
-            UpdateDate = 0,
-            MinPlayers = 0,
-            MaxPlayers = 0,
-            EnforceMinMaxPlayers = false,
-            SameScreenGame = false,
             SkillRewards = new List<GameSkillReward>()
             {
                 new()
@@ -738,14 +649,7 @@ public class PublishEndpointsTests : GameServerTest
             IconHash = "0",
             Description = new string('=', UgcLimits.DescriptionLimit * 2),
             Location = new GameLocation(),
-            GameVersion = 0,
             RootResource = TEST_ASSET_HASH,
-            PublishDate = 0,
-            UpdateDate = 0,
-            MinPlayers = 0,
-            MaxPlayers = 0,
-            EnforceMinMaxPlayers = false,
-            SameScreenGame = false,
             SkillRewards = new List<GameSkillReward>()
             {
                 new()

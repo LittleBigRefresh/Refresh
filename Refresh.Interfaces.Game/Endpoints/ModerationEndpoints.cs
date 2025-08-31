@@ -59,31 +59,24 @@ public class ModerationEndpoints : EndpointGroup
             body = body.Replace("&amp;", "&");
         }
 
-        if (commandService.IsPublishing(user.UserId))
-        {
-            context.Logger.LogInfo(BunkumCategory.UserLevels, $"Publish filter: '{body}'");
-        }
-        else
-        {
-            context.Logger.LogInfo(BunkumCategory.Filter, $"<{user}>: {body}");
+        context.Logger.LogInfo(BunkumCategory.Filter, $"<{user}>: {body}");
 
-            //If the text starts with a `/`, its a command, also only allow verified users to use commands
-            if (body.StartsWith('/') && user.EmailAddressVerified)
+        //If the text starts with a `/`, its a command, also only allow verified users to use commands
+        if (body.StartsWith('/') && user.EmailAddressVerified)
+        {
+            try
             {
-                try
-                {
-                    CommandInvocation command = commandService.ParseCommand(body);
+                CommandInvocation command = commandService.ParseCommand(body);
 
-                    context.Logger.LogInfo(BunkumCategory.Commands, $"User used command '{command.Name.ToString()}' with args '{command.Arguments.ToString()}'");
+                context.Logger.LogInfo(BunkumCategory.Commands, $"User used command '{command.Name.ToString()}' with args '{command.Arguments.ToString()}'");
 
-                    commandService.HandleCommand(command, database, user, token);
-                    return "(Command)";
-                }
-                catch(Exception ex)
-                {
-                    context.Logger.LogWarning(BunkumCategory.Commands, $"Error running command {body}. ex {ex}");
-                    //do nothing
-                }
+                commandService.HandleCommand(command, database, user, token);
+                return "(Command)";
+            }
+            catch(Exception ex)
+            {
+                context.Logger.LogWarning(BunkumCategory.Commands, $"Error running command {body}. ex {ex}");
+                //do nothing
             }
         }
         
