@@ -86,21 +86,16 @@ public static class TagExtensions
 {
     static TagExtensions()
     {
-        StringBuilder allTags = new();
-        
+        List<string> keys = [];
+
         // Create the conversion which goes the other way
-        foreach ((string? key, Tag value) in TagsMap)
+        foreach ((string key, Tag value) in TagsMap)
         {
             StringMap[value] = key;
-
-            allTags.Append(key);
-            allTags.Append(',');
+            keys.Add(key);
         }
 
-        if (allTags.Length > 1)
-            allTags.Remove(allTags.Length - 1, 1);
-
-        AllTags = allTags.ToString();
+        AllTags = keys.ToCommaSeperatedList();
     }
 
     public static string AllTags { get; private set; }

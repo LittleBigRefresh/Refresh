@@ -13,8 +13,8 @@ public enum Label : byte
     Funny = 5,
     Artistic = 6,
     Musical = 7,
-    SinglePlayer = 8,
-    MultiPlayer = 9,
+    Singleplayer = 8,
+    Multiplayer = 9,
     RPG = 10,
     // Category 2
     Cinematic = 11,
@@ -32,7 +32,7 @@ public enum Label : byte
     Tutorial = 23,
     Retro = 24,
     TopDown = 25,
-    Coop = 26,
+    Cooperative = 26,
     FirstPerson = 27,
     ThirdPerson = 28,
     SciFi = 29,
@@ -103,35 +103,23 @@ public enum Label : byte
     Touch = 91,
     Portrait = 92,
     MultiLevel = 93,
-    // LBP2/Vita exclusive
+    // not in LBP3
     Intricate = 94,
     // LBP3 duplicates
-    SinglePlayerLbp3 = 95,
-    CoopLbp3 = 96,
+    SingleplayerLbp3 = 95,
+    CooperativeLbp3 = 96,
 }
 
 public static class LabelExtensions
 {
     static LabelExtensions()
     {
-        StringBuilder allLabels = new();
-        
         // Create the conversion which goes the other way
-        foreach ((string? key, Label value) in LabelsMap)
+        foreach ((string key, Label value) in LabelsMap)
         {
             StringMap[value] = key;
-
-            allLabels.Append(key);
-            allLabels.Append(',');
         }
-
-        if (allLabels.Length > 1)
-            allLabels.Remove(allLabels.Length - 1, 1);
-
-        AllLabels = allLabels.ToString();
     }
-
-    public static string AllLabels { get; private set; }
     
     private static readonly Dictionary<Label, string> StringMap = new();
     private static readonly Dictionary<string, Label> LabelsMap = new()
@@ -147,9 +135,9 @@ public static class LabelExtensions
         { "LABEL_Musical", Label.Musical },
         { "LABEL_Intricate", Label.Intricate },
 
-        { "LABEL_SinglePlayer", Label.SinglePlayer },
-        { "LABEL_SINGLE_PLAYER", Label.SinglePlayerLbp3 },
-        { "LABEL_Multiplayer", Label.MultiPlayer },
+        { "LABEL_SinglePlayer", Label.Singleplayer },
+        { "LABEL_SINGLE_PLAYER", Label.SingleplayerLbp3 },
+        { "LABEL_Multiplayer", Label.Multiplayer },
         { "LABEL_RPG", Label.RPG },
         { "LABEL_Cinematic", Label.Cinematic },
         { "LABEL_Competitive", Label.Versus },
@@ -167,8 +155,8 @@ public static class LabelExtensions
         { "LABEL_Tutorial", Label.Tutorial },
         { "LABEL_Retro", Label.Retro },
         { "LABEL_TOP_DOWN", Label.TopDown },
-        { "LABEL_Co-op", Label.Coop },
-        { "LABEL_CO_OP", Label.CoopLbp3 },
+        { "LABEL_Co-op", Label.Cooperative },
+        { "LABEL_CO_OP", Label.CooperativeLbp3 },
         { "LABEL_Precision", Label.Precision },
 
         { "LABEL_1st_Person", Label.FirstPerson },
@@ -247,4 +235,20 @@ public static class LabelExtensions
     public static string? ToLbpString(this Label label) => StringMap.GetValueOrDefault(label);
 
     public static Label? FromLbpString(string str) => LabelsMap.GetValueOrDefault(str);
+
+    public static List<string> ToLbpList(this List<Label> labels)
+        => labels.Select(l => l.ToLbpString()!).ToList();
+
+    public static List<Label> FromLbpList(List<string> labels)
+    {
+        List<Label> finalLabels = [];
+
+        foreach (string label in labels)
+        {
+            Label? deserialized = FromLbpString(label);
+            if (deserialized != null) finalLabels.Add(deserialized.Value);
+        }
+
+        return finalLabels;
+    }
 }
