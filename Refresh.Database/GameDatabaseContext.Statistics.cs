@@ -169,7 +169,7 @@ public partial class GameDatabaseContext // Statistics
         level.Statistics.PhotoByPublisherCount = this.GetTotalPhotosInLevelByUser(level, level.Publisher);
         level.Statistics.ParentPlaylistCount = this.GetTotalPlaylistsContainingLevel(level);
         this.RecalculateLevelRatingStatisticsInternal(level);
-        this.UpdateLevelReocurringLabels(level);
+        this.UpdateLevelRecurringLabels(level);
 
         level.Statistics.RecalculateAt = null;
         level.Statistics.Version = LevelStatisticsVersion;
@@ -188,9 +188,8 @@ public partial class GameDatabaseContext // Statistics
         level.Statistics.Karma = level.Statistics.YayCount - level.Statistics.BooCount;
     }
 
-    private void UpdateLevelReocurringLabels(GameLevel level)
+    private void UpdateLevelRecurringLabels(GameLevel level)
     {
-        /*
         Debug.Assert(level.Statistics != null);
 
         // Take the most recurring labels among the reviews for the level
@@ -203,7 +202,6 @@ public partial class GameDatabaseContext // Statistics
             .Take(UgcLimits.MaximumLabels)
             .Select(g => g.Label)
             .ToList();
-        */
     }
 
     private void MarkLevelStatisticsDirty(GameLevel level)

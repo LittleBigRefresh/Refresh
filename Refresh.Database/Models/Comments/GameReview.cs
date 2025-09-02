@@ -9,8 +9,8 @@ public partial class GameReview : ISequentialId
 {
     [Key] public int ReviewId { get; set; }
     
-    [Required]
-    public GameLevel Level { get; set;  }
+    [Required, ForeignKey(nameof(LevelId))] public GameLevel Level { get; set; }
+    [Required] public int LevelId { get; set; }
 
     [Required]
     public GameUser Publisher { get; set; }
