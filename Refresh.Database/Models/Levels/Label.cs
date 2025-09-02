@@ -236,7 +236,7 @@ public static class LabelExtensions
     public static Label? FromLbpString(string str) => LabelsMap.GetValueOrDefault(str);
 
     public static string ToLbpCommaList(this IEnumerable<Label> labels)
-        => labels.Select(l => l.ToLbpString()!).ToList().ToCommaSeperatedList();
+        => string.Join(',', labels.Select(l => l.ToLbpString()!));
 
     public static IEnumerable<Label> FromLbpCommaList(string labels)
     {

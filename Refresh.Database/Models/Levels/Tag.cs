@@ -95,7 +95,7 @@ public static class TagExtensions
             keys.Add(key);
         }
 
-        AllTags = keys.ToCommaSeperatedList();
+        AllTags = string.Join(',', keys);
     }
 
     public static string AllTags { get; private set; }
