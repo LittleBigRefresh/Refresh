@@ -3,6 +3,7 @@ using Bunkum.Core.Endpoints;
 using Bunkum.Core.Responses;
 using Bunkum.Listener.Protocol;
 using Bunkum.Protocols.Http;
+using Refresh.Common.Constants;
 using Refresh.Common.Time;
 using Refresh.Core.Authentication.Permission;
 using Refresh.Core.Configuration;
@@ -124,13 +125,21 @@ public class ReviewEndpoints : EndpointGroup
         if (!database.HasUserPlayedLevel(level, user))
             return BadRequest;
 
+        IEnumerable<Label> labels = [];
+
+        if (!string.IsNullOrWhiteSpace(body.Labels))
+        {
+            // Make sure there aren't too many and duplicate labels.
+            labels = LabelExtensions.FromLbpCommaList(body.Labels).Distinct().Take(UgcLimits.MaximumLabels);
+        }
+
         //Add the review to the database
         database.AddReviewToLevel(new GameReview
         {
             Publisher = user,
             Level = level,
             PostedAt = timeProvider.Now,
-            Labels = LabelExtensions.FromLbpCommaList(body.Labels).ToList(),
+            Labels = labels.ToList(),
             Content = body.Text,
         }, level);
 
