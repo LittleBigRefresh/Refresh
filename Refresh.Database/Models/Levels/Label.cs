@@ -235,14 +235,15 @@ public static class LabelExtensions
 
     public static Label? FromLbpString(string str) => LabelsMap.GetValueOrDefault(str);
 
-    public static IEnumerable<string> ToLbpEnumerable(this IEnumerable<Label> labels)
-        => labels.Select(l => l.ToLbpString()!).ToList();
+    public static string ToLbpCommaList(this IEnumerable<Label> labels)
+        => labels.Select(l => l.ToLbpString()!).ToList().ToCommaSeperatedList();
 
-    public static IEnumerable<Label> FromLbpEnumerable(IEnumerable<string> labels)
+    public static IEnumerable<Label> FromLbpCommaList(string labels)
     {
+        string[] labelStrings = labels.Split(',');
         IEnumerable<Label> finalLabels = [];
 
-        foreach (string label in labels)
+        foreach (string label in labelStrings)
         {
             Label? deserialized = FromLbpString(label);
             if (deserialized != null) finalLabels = finalLabels.Append(deserialized.Value);

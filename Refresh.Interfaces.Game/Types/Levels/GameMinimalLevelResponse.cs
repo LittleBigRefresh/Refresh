@@ -191,8 +191,9 @@ public class GameMinimalLevelResponse : IDataConvertableFrom<GameMinimalLevelRes
 
         if (dataContext.Game is not TokenGame.LittleBigPlanet1 or TokenGame.LittleBigPlanetPSP)
         {
-            response.PublisherLabels = old.Labels.ToLbpEnumerable().ToCommaSeperatedList();
-            response.AllLabels = old.Statistics.RecurringLabels.Concat(old.Labels).Distinct().ToLbpEnumerable().ToCommaSeperatedList();
+            response.PublisherLabels = old.Labels.ToLbpCommaList();
+            // Don't return duplicate labels here
+            response.AllLabels = old.Statistics.RecurringLabels.Concat(old.Labels).Distinct().ToLbpCommaList();
         }
         
         response.IconHash = dataContext.Database.GetAssetFromHash(old.IconHash)?.GetAsIcon(dataContext.Game, dataContext) ?? old.IconHash;

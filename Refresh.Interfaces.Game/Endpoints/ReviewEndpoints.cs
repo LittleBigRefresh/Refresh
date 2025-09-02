@@ -130,7 +130,7 @@ public class ReviewEndpoints : EndpointGroup
             Publisher = user,
             Level = level,
             PostedAt = timeProvider.Now,
-            Labels = body.Labels,
+            Labels = LabelExtensions.FromLbpCommaList(body.Labels).ToList(),
             Content = body.Text,
         }, level);
 

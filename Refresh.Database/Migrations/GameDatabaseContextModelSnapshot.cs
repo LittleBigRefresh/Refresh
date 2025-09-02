@@ -212,9 +212,14 @@ namespace Refresh.Database.Migrations
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("ReviewId"));
 
                     b.Property<string>("Content")
+                        .IsRequired()
                         .HasColumnType("text");
 
-                    b.Property<string>("Labels")
+                    b.PrimitiveCollection<byte[]>("Labels")
+                        .IsRequired()
+                        .HasColumnType("smallint[]");
+
+                    b.Property<string>("LabelsString")
                         .HasColumnType("text");
 
                     b.Property<int>("LevelId")
