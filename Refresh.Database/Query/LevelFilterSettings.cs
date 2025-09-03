@@ -1,5 +1,6 @@
 using Bunkum.Core;
 using Refresh.Database.Models.Authentication;
+using Refresh.Database.Models.Levels;
 
 namespace Refresh.Database.Query;
 
@@ -38,9 +39,8 @@ public class LevelFilterSettings
     public byte Players { get; set; } = 0;
     /// <summary>
     /// The labels a level should include. Normally games can specify up to 3 labels, but LBP3 categories can specify up to 5.
-    /// TODO: Set and use this attribute once level labels are implemented.
     /// </summary>
-    public string[] Labels { get; set; } = [];
+    public IEnumerable<Label> Labels { get; set; } = [];
     /// <summary>
     /// Whether or not the user's own levels should be excluded from the results
     /// </summary>
@@ -249,6 +249,15 @@ public class LevelFilterSettings
                     throw new ArgumentOutOfRangeException(nameof(moveStr), moveStr, "Unsupported value");
             }
         }
+
+        // Get the labels
+        List<string> sentLabels = [];
+        sentLabels.Add(context.QueryString.Get("labelFilter0") ?? "");
+        sentLabels.Add(context.QueryString.Get("labelFilter1") ?? "");
+        sentLabels.Add(context.QueryString.Get("labelFilter2") ?? "");
+        sentLabels.Add(context.QueryString.Get("labelFilter3") ?? "");
+        sentLabels.Add(context.QueryString.Get("labelFilter4") ?? "");
+        settings.Labels = LabelExtensions.FromLbpCommaList(sentLabels.Where(l => !string.IsNullOrWhiteSpace(l)));
 
         return settings;
     }

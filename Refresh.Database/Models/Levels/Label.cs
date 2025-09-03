@@ -229,22 +229,27 @@ public static class LabelExtensions
 
     public static string? ToLbpString(this Label label) => StringMap.GetValueOrDefault(label);
 
-    public static Label? FromLbpString(string str) => LabelsMap.GetValueOrDefault(str);
-
     public static string ToLbpCommaList(this IEnumerable<Label> labels)
         => string.Join(',', labels.Select(l => l.ToLbpString()!));
-
-    public static IEnumerable<Label> FromLbpCommaList(string labels)
+    
+    public static Label? FromLbpString(string str) => LabelsMap.GetValueOrDefault(str);
+    
+    public static IEnumerable<Label> FromLbpCommaList(IEnumerable<string> labels)
     {
-        string[] labelStrings = labels.Split(',');
         IEnumerable<Label> finalLabels = [];
 
-        foreach (string label in labelStrings)
+        foreach (string label in labels)
         {
             Label? deserialized = FromLbpString(label);
             if (deserialized != null) finalLabels = finalLabels.Append(deserialized.Value);
         }
 
         return finalLabels;
+    }
+
+    public static IEnumerable<Label> FromLbpCommaList(string labels)
+    {
+        string[] labelStrings = labels.Split(',');
+        return FromLbpCommaList(labelStrings);
     }
 }
