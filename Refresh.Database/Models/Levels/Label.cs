@@ -1,5 +1,3 @@
-using System.Text;
-
 namespace Refresh.Database.Models.Levels;
 
 public enum Label : byte
