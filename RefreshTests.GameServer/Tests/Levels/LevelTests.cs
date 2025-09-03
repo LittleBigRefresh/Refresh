@@ -5,6 +5,7 @@ using RefreshTests.GameServer.Extensions;
 using Refresh.Database.Models.Levels;
 using Refresh.Interfaces.Game.Endpoints.DataTypes.Response;
 using Refresh.Interfaces.Game.Types.Lists;
+using Refresh.Interfaces.Game.Endpoints.DataTypes.Request;
 
 namespace RefreshTests.GameServer.Tests.Levels;
 
@@ -445,6 +446,82 @@ public class LevelTests : GameServerTest
         
         message = client.GetAsync($"/lbp/slots/by/I_AM_NOT_REAL").Result;
         Assert.That(message.StatusCode, Is.EqualTo(NotFound));
+    }
+
+    [Test]
+    public void FilterLevelsByLabels()
+    {
+        using TestContext context = this.GetServer();
+        GameUser publisher = context.CreateUser();
+        using HttpClient client = context.GetAuthenticatedClient(TokenType.Game, publisher);
+
+        context.Database.AddLevel(new GameLevelRequest()
+        {
+            RootResource = "real",
+            FinalPublisherLabels = [Label.Water, Label.WallJump],
+        }, TokenGame.LittleBigPlanet1, publisher);
+
+        context.Database.AddLevel(new GameLevelRequest()
+        {
+            RootResource = "real2",
+            FinalPublisherLabels = [Label.Water],
+        }, TokenGame.LittleBigPlanet1, publisher);
+
+        context.Database.AddLevel(new GameLevelRequest()
+        {
+            RootResource = "real2.5",
+            FinalPublisherLabels = [Label.WallJump, Label.Challenging],
+        }, TokenGame.LittleBigPlanet1, publisher);
+
+        context.Database.AddLevel(new GameLevelRequest()
+        {
+            RootResource = "real3",
+            FinalPublisherLabels = [],
+        }, TokenGame.LittleBigPlanet1, publisher);
+
+        context.Database.AddLevel(new GameLevelRequest()
+        {
+            RootResource = "real4",
+            FinalPublisherLabels = [Label.Artistic],
+        }, TokenGame.LittleBigPlanet1, publisher);
+
+        context.Database.AddLevel(new GameLevelRequest()
+        {
+            RootResource = "real5",
+            FinalPublisherLabels = [Label.WallJump],
+        }, TokenGame.LittleBigPlanet1, publisher);
+
+        // Just get all levels
+        HttpResponseMessage message = client.GetAsync($"/lbp/slots/newest").Result;
+        Assert.That(message.StatusCode, Is.EqualTo(OK));
+
+        SerializedMinimalLevelList result = message.Content.ReadAsXML<SerializedMinimalLevelList>();
+        Assert.That(result.Items, Has.Count.EqualTo(6));
+
+        // Get all levels with the Water label
+        message = client.GetAsync($"/lbp/slots/newest?labelFilter0=LABEL_Water").Result;
+        Assert.That(message.StatusCode, Is.EqualTo(OK));
+        result = message.Content.ReadAsXML<SerializedMinimalLevelList>();
+        Assert.That(result.Items, Has.Count.EqualTo(2));
+
+        // Get all levels with either the Water or the Wall Jump label
+        message = client.GetAsync($"/lbp/slots/newest?labelFilter0=LABEL_Water&labelFilter1=LABEL_WALLJUMP").Result;
+        Assert.That(message.StatusCode, Is.EqualTo(OK));
+        result = message.Content.ReadAsXML<SerializedMinimalLevelList>();
+        Assert.That(result.Items, Has.Count.EqualTo(4));
+
+        // Get all levels with just the Artistic label
+        message = client.GetAsync($"/lbp/slots/newest?labelFilter3=LABEL_Artistic").Result;
+        Assert.That(message.StatusCode, Is.EqualTo(OK));
+        result = message.Content.ReadAsXML<SerializedMinimalLevelList>();
+        Assert.That(result.Items, Has.Count.EqualTo(1));
+        Assert.That(result.Items.First().RootResource, Is.EqualTo("real4"));
+
+        // Get all levels with just the Swoop label (no level has it)
+        message = client.GetAsync($"/lbp/slots/newest?labelFilter1=LABEL_SWOOP").Result;
+        Assert.That(message.StatusCode, Is.EqualTo(OK));
+        result = message.Content.ReadAsXML<SerializedMinimalLevelList>();
+        Assert.That(result.Items, Has.Count.EqualTo(0));
     }
     
     [Test]

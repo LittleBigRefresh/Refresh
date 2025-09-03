@@ -72,7 +72,7 @@ public class SerializedGameReview : IDataConvertableFrom<SerializedGameReview, G
             },
             Reviewer = review.Publisher.Username,
             Timestamp = review.PostedAt.ToUnixTimeMilliseconds(),
-            Labels = review.Labels,
+            Labels = review.Labels.ToLbpCommaList(),
             Deleted = false,
             DeletedBy = ReviewDeletedBy.None,
             Text = review.Content,

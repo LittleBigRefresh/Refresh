@@ -88,6 +88,12 @@ public static class LevelEnumerableExtensions
         // Filter out sub levels that weren't published by self
         levels = levels.Where(l => !l.IsSubLevel || l.Publisher == user);
 
+        // Filter by labels
+        if (levelFilterSettings.Labels.Any())
+        {
+           levels = levels.Where(lvl => lvl.Labels.Any(lab => levelFilterSettings.Labels.Contains(lab))); 
+        }
+
         return levels;
     }
     
@@ -145,6 +151,12 @@ public static class LevelEnumerableExtensions
         
         // Filter out sub levels that weren't published by self
         levels = levels.Where(l => !l.IsSubLevel || l.Publisher == user);
+
+        // Filter by labels
+        if (levelFilterSettings.Labels.Any())
+        {
+           levels = levels.Where(lvl => lvl.Labels.Any(lab => levelFilterSettings.Labels.Contains(lab))); 
+        }
 
         return levels;
     }

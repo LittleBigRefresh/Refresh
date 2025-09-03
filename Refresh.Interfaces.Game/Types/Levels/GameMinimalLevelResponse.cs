@@ -52,7 +52,9 @@ public class GameMinimalLevelResponse : IDataConvertableFrom<GameMinimalLevelRes
     [XmlElement("shareable")] public int IsCopyable { get; set; }
     [XmlElement("moveRequired")] public bool RequiresMoveController { get; set; }
     [XmlElement("tags")] public string Tags { get; set; } = "";
- 
+    [XmlElement("authorLabels")] public string PublisherLabels { get; set; } = "";
+    [XmlElement("labels")] public string AllLabels { get; set; } = "";
+
     protected GameMinimalLevelResponse() {}
     
     /// <summary>
@@ -185,6 +187,13 @@ public class GameMinimalLevelResponse : IDataConvertableFrom<GameMinimalLevelRes
         if (dataContext.Game == TokenGame.LittleBigPlanet1)
         {
             response.Tags = string.Join(',', dataContext.Database.GetTagsForLevel(old).Select(t => t.Tag.ToLbpString()));
+        }
+
+        if (dataContext.Game is not TokenGame.LittleBigPlanet1 or TokenGame.LittleBigPlanetPSP)
+        {
+            response.PublisherLabels = old.Labels.ToLbpCommaList();
+            // Don't return duplicate labels here
+            response.AllLabels = old.Statistics.RecurringLabels.Concat(old.Labels).Distinct().ToLbpCommaList();
         }
         
         response.IconHash = dataContext.Database.GetAssetFromHash(old.IconHash)?.GetAsIcon(dataContext.Game, dataContext) ?? old.IconHash;
