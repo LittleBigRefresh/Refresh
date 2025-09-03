@@ -128,7 +128,6 @@ public static class LabelExtensions
         { "LABEL_Funny", Label.Funny },
         { "LABEL_Artistic", Label.Artistic },
         { "LABEL_Musical", Label.Musical },
-        
         { "LABEL_Cinematic", Label.Cinematic },
         { "LABEL_Competitive", Label.Versus },
         { "LABEL_Fighter", Label.Fighter },
@@ -227,7 +226,16 @@ public static class LabelExtensions
         { "LABEL_Touch", Label.Touch },
     };
 
-    public static string? ToLbpString(this Label label) => StringMap.GetValueOrDefault(label);
+    public static string? ToLbpString(this Label label) 
+    {
+        // Workarounds for duplicate labels
+        return label switch
+        {
+            Label.Singleplayer => "LABEL_SinglePlayer", // LBP3 shows this label correctly anyway
+            Label.Cooperative => "LABEL_Co-op,LABEL_CO_OP", // LBP3 nor Vita should be able to show both labels
+            _ => StringMap.GetValueOrDefault(label),
+        };
+    }
 
     public static string ToLbpCommaList(this IEnumerable<Label> labels)
         => string.Join(',', labels.Select(l => l.ToLbpString()!));

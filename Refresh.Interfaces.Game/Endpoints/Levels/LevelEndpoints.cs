@@ -1,6 +1,5 @@
 using Bunkum.Core;
 using Bunkum.Core.Endpoints;
-using Bunkum.Core.Endpoints.Debugging;
 using Bunkum.Core.Storage;
 using Bunkum.Listener.Protocol;
 using Refresh.Common.Constants;
@@ -117,8 +116,6 @@ public class LevelEndpoints : EndpointGroup
     [GameEndpoint("s/{slotType}/{id}", ContentType.Xml)]
     [NullStatusCode(NotFound)]
     [MinimumRole(GameUserRole.Restricted)]
-    [DebugRequestBody]
-    [DebugResponseBody]
     public GameLevelResponse? LevelById(RequestContext context, GameDatabaseContext database, Token token,
         string slotType, int id,
         PlayNowService overrideService, DataContext dataContext)

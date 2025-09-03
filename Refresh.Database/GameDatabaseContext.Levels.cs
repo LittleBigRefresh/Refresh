@@ -192,9 +192,8 @@ public partial class GameDatabaseContext // Levels
         level.SameScreenGame = updateInfo.SameScreenGame;
         level.BackgroundGuid = updateInfo.BackgroundGuid;
 
-        // Only update labels if this level isn't updated in LBP1, to not lose already set labels,
-        // since LBP1 doesn't support them.
-        if (game != TokenGame.LittleBigPlanet1)
+        // Only update labels if this level is updated in a game which supports them, to not lose the labels
+        if (game is not TokenGame.LittleBigPlanet1 or TokenGame.LittleBigPlanetPSP)
         {
             level.Labels = updateInfo.FinalPublisherLabels.ToList();
         }

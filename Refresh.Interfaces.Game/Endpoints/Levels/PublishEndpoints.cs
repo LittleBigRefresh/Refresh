@@ -1,6 +1,5 @@
 using Bunkum.Core;
 using Bunkum.Core.Endpoints;
-using Bunkum.Core.Endpoints.Debugging;
 using Bunkum.Core.RateLimit;
 using Bunkum.Core.Responses;
 using Bunkum.Listener.Protocol;
@@ -165,8 +164,6 @@ public class PublishEndpoints : EndpointGroup
 
     [GameEndpoint("publish", ContentType.Xml, HttpMethods.Post)]
     [RequireEmailVerified]
-    [DebugRequestBody]
-    [DebugResponseBody]
     [RateLimitSettings(RequestTimeoutDuration, MaxRequestAmount, RequestBlockDuration, BucketName)]
     public Response PublishLevel(RequestContext context,
         GameLevelRequest body,
