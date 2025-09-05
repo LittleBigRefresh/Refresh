@@ -748,19 +748,16 @@ public partial class GameDatabaseContext // Relations
         });
     }
 
-    public IEnumerable<TagLevelRelation> GetTagsForLevel(GameLevel level)
-    {
-        IQueryable<TagLevelRelation> levelTags = this.TagLevelRelationsIncluded.Where(t => t.Level == level);
- 
-        IEnumerable<TagLevelRelation> tags = levelTags
-            .AsEnumerableIfRealm() // TODO: optimize for postgres when realm is deleted
-            .GroupBy(t => t.Tag).Select(g => g.First())
-            // ^ is equivalent to .DistinctBy(t => t._Tag)
-            .AsEnumerable()
-            .OrderByDescending(t => levelTags.Count(levelTag => levelTag.Tag == t.Tag));
+    public IQueryable<Tag> GetTagsForLevel(GameLevel level)
+        => this.TagLevelRelations.Where(t => t.LevelId == level.LevelId)
+            .GroupBy(t => t.Tag)
+            .Select(g => new { Tag = g.Key, Count = g.Count() })
+            .OrderByDescending(t => t.Count)
+            .Select(g => g.Tag);
 
-        return tags;
-    }
+    public IQueryable<TagLevelRelation> GetTagRelationsForLevel(GameLevel level)
+        => this.TagLevelRelationsIncluded.Where(t => t.LevelId == level.LevelId)
+            .OrderByDescending(t => t.Timestamp);
     
     #endregion
 }
