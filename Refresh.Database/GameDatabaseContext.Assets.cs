@@ -77,12 +77,18 @@ public partial class GameDatabaseContext // Assets
         {
             this.GameAssets.Add(asset);
         });
-
-    public void AddOrUpdateAssetsInDatabase(IEnumerable<GameAsset> assets) =>
-        this.Write(() =>
-        {
-            this.GameAssets.AddRange(assets, true);
-        });
+    
+    public void AddAssetsToDatabase(IEnumerable<GameAsset> assets)
+    {
+        this.GameAssets.AddRange(assets);
+        this.SaveChanges();
+    }
+    
+    public void UpdateAssetsInDatabase(IEnumerable<GameAsset> assets)
+    {
+        this.GameAssets.UpdateRange(assets);
+        this.SaveChanges();
+    }
 
     public void SetMainlineIconHash(GameAsset asset, string hash) =>
         this.Write(() =>
