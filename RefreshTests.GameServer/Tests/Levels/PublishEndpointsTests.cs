@@ -362,6 +362,45 @@ public class PublishEndpointsTests : GameServerTest
         message = client2.PostAsync("/lbp/publish", new StringContent(level.AsXML())).Result;
         Assert.That(message.StatusCode, Is.EqualTo(BadRequest));
     }
+
+    [Test]
+    public void CantOverwriteNonLbp3LevelInLbp3()
+    {
+        using TestContext context = this.GetServer();
+        GameUser user = context.CreateUser();
+        using HttpClient clientLbp3 = context.GetAuthenticatedClient(TokenType.Game, TokenGame.LittleBigPlanet3, TokenPlatform.PS3, user);
+
+        GameLevel level = context.Database.AddLevel(new GameLevelRequest()
+        {
+            Title = "AMASING LBP1 LEVEL!!",
+            Description = "Im gonna come up with a description later...",
+            RootResource = "epic",
+        }, TokenGame.LittleBigPlanet1, user);
+
+        // Now try republishing the level in LBP3
+        GameLevelRequest republish = new()
+        {
+            LevelId = level.LevelId,
+            Title = "AMAZING LBP1 LEVEL!!",
+            IconHash = "g719",
+            Description = "THIS LEVEL IS SO GOOD IT MAKES ME WANT TO BEAUTIFY ITS METADATA IN LBP3 WITHOUT LOOKING!!",
+            RootResource = TEST_ASSET_HASH,
+        };
+
+        // Upload our """level"""
+        HttpResponseMessage message = clientLbp3.PostAsync($"/lbp/upload/{TEST_ASSET_HASH}", new ReadOnlyMemoryContent("LVLb"u8.ToArray())).Result;
+        Assert.That(message.StatusCode, Is.EqualTo(OK));
+
+        message = clientLbp3.PostAsync("/lbp/publish", new StringContent(republish.AsXML())).Result;
+        Assert.That(message.StatusCode, Is.EqualTo(OK));
+
+        GameLevelResponse response = message.Content.ReadAsXML<GameLevelResponse>();
+        Assert.That(response.Title, Is.EqualTo(republish.Title));
+        Assert.That(response.Description, Is.EqualTo(republish.Description));
+        Assert.That(response.IconHash, Is.EqualTo(republish.IconHash));
+        Assert.That(response.RootResource, Is.EqualTo("epic"));
+        Assert.That(response.GameVersion, Is.EqualTo((int)TokenGame.LittleBigPlanet1));
+    }
     
     [Test]
     public void CantPublishSameRootLevelHashTwice()
