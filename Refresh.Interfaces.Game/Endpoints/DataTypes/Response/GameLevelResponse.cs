@@ -16,17 +16,14 @@ public class GameLevelResponse : GameMinimalLevelResponse, IDataConvertableFrom<
 {
     [XmlElement("firstPublished")] public long PublishDate { get; set; } // unix seconds
     [XmlElement("lastUpdated")] public long UpdateDate { get; set; }
-    
     [XmlElement("enforceMinMaxPlayers")] public bool EnforceMinMaxPlayers { get; set; }
-    
     [XmlElement("sameScreenGame")] public bool SameScreenGame { get; set; }
-
     [XmlElement("completionCount")] public int CompletionCount { get; set; }
-
 
     [XmlElement("yourlbp1PlayCount")] public int YourLbp1PlayCount { get; set; }
     [XmlElement("yourlbp2PlayCount")] public int YourLbp2PlayCount { get; set; }
     [XmlElement("yourlbp3PlayCount")] public int YourLbp3PlayCount { get; set; }
+
     [XmlArray("customRewards")]
     [XmlArrayItem("customReward")]
     public List<GameSkillReward> SkillRewards { get; set; } = [];
@@ -76,6 +73,9 @@ public class GameLevelResponse : GameMinimalLevelResponse, IDataConvertableFrom<
             IsCopyable = minimal.IsCopyable,
             RequiresMoveController = minimal.RequiresMoveController,
             LevelType = minimal.LevelType,
+            Tags = minimal.Tags,
+            PublisherLabels = minimal.PublisherLabels,
+            AllLabels = minimal.AllLabels,
         };
     }
     

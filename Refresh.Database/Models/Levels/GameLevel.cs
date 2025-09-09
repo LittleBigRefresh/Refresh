@@ -1,7 +1,5 @@
 using System.Diagnostics;
-using System.Xml.Serialization;
 using Refresh.Database.Models.Authentication;
-using Refresh.Database.Models.Comments;
 using Refresh.Database.Models.Statistics;
 using Refresh.Database.Models.Users;
 
@@ -21,6 +19,8 @@ public partial class GameLevel : ISequentialId
 
     public int LocationX { get; set; }
     public int LocationY { get; set; }
+
+    public List<Label> Labels { get; set; } = [];
 
     public string RootResource { get; set; } = string.Empty;
 
