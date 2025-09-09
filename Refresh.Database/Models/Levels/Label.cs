@@ -224,19 +224,21 @@ public static class LabelExtensions
         { "LABEL_Touch", Label.Touch },
     };
 
-    public static string? ToLbpString(this Label label) 
+    public static string? ToLbpString(this Label label, bool isLbp3 = false) 
     {
         // Workarounds for duplicate labels
         return label switch
         {
-            Label.Singleplayer => "LABEL_SinglePlayer", // LBP3 shows this label correctly anyway
-            Label.Cooperative => "LABEL_Co-op,LABEL_CO_OP", // LBP3 nor Vita should be able to show both labels
+            // While LBP3 will still correctly show the label when returning LABEL_SinglePlayer, it won't auto-select it when editing the level's labels
+            Label.Singleplayer => isLbp3 ? "LABEL_SINGLE_PLAYER" : "LABEL_SinglePlayer", 
+            // LBP3 nor Vita should be able to show both labels
+            Label.Cooperative => "LABEL_Co-op,LABEL_CO_OP",
             _ => StringMap.GetValueOrDefault(label),
         };
     }
 
-    public static string ToLbpCommaList(this IEnumerable<Label> labels)
-        => string.Join(',', labels.Select(l => l.ToLbpString()!));
+    public static string ToLbpCommaList(this IEnumerable<Label> labels, bool isLbp3 = false)
+        => string.Join(',', labels.Select(l => l.ToLbpString(isLbp3)!));
     
     public static Label? FromLbpString(string str) => LabelsMap.GetValueOrDefault(str);
     

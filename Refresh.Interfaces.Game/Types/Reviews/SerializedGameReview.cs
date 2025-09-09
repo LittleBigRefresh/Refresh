@@ -1,6 +1,7 @@
 using System.Xml.Serialization;
 using Refresh.Core.Types.Data;
 using Refresh.Database.Models;
+using Refresh.Database.Models.Authentication;
 using Refresh.Database.Models.Comments;
 using Refresh.Database.Models.Levels;
 
@@ -72,7 +73,7 @@ public class SerializedGameReview : IDataConvertableFrom<SerializedGameReview, G
             },
             Reviewer = review.Publisher.Username,
             Timestamp = review.PostedAt.ToUnixTimeMilliseconds(),
-            Labels = review.Labels.ToLbpCommaList(),
+            Labels = review.Labels.ToLbpCommaList(dataContext.Game == TokenGame.LittleBigPlanet3),
             Deleted = false,
             DeletedBy = ReviewDeletedBy.None,
             Text = review.Content,

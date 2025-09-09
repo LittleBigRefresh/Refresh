@@ -53,7 +53,7 @@ public class GameMinimalLevelResponse : IDataConvertableFrom<GameMinimalLevelRes
     [XmlElement("moveRequired")] public bool RequiresMoveController { get; set; }
     [XmlElement("tags")] public string Tags { get; set; } = "";
     [XmlElement("authorLabels")] public string PublisherLabels { get; set; } = "";
-    [XmlElement("labels")] public string AllLabels { get; set; } = "";
+    [XmlElement("labels")] public string AllLabels { get; set; } = ""; // Must also contain all publisher labels, else they won't show up
 
     protected GameMinimalLevelResponse() {}
     
@@ -191,9 +191,11 @@ public class GameMinimalLevelResponse : IDataConvertableFrom<GameMinimalLevelRes
 
         if (dataContext.Game is not TokenGame.LittleBigPlanet1 or TokenGame.LittleBigPlanetPSP)
         {
-            response.PublisherLabels = old.Labels.ToLbpCommaList();
-            // Don't return duplicate labels here
-            response.AllLabels = old.Statistics.RecurringLabels.Concat(old.Labels).Distinct().ToLbpCommaList();
+            bool isLbp3 = dataContext.Game == TokenGame.LittleBigPlanet3;
+
+            // Try to deduplicate labels if the same ones appear among both the publisher and recurring labels
+            response.AllLabels = old.Statistics.RecurringLabels.Concat(old.Labels).Distinct().ToLbpCommaList(isLbp3);
+            response.PublisherLabels = old.Labels.ToLbpCommaList(isLbp3);
         }
         
         response.IconHash = dataContext.Database.GetAssetFromHash(old.IconHash)?.GetAsIcon(dataContext.Game, dataContext) ?? old.IconHash;
