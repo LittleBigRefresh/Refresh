@@ -169,7 +169,7 @@ public partial class GameDatabaseContext // Statistics
         level.Statistics.PhotoByPublisherCount = this.GetTotalPhotosInLevelByUser(level, level.Publisher);
         level.Statistics.ParentPlaylistCount = this.GetTotalPlaylistsContainingLevel(level);
         this.RecalculateLevelRatingStatisticsInternal(level);
-        this.UpdateLevelRecurringLabels(level);
+        this.RecalculateLevelRecurringLabels(level);
 
         level.Statistics.RecalculateAt = null;
         level.Statistics.Version = LevelStatisticsVersion;
@@ -188,7 +188,7 @@ public partial class GameDatabaseContext // Statistics
         level.Statistics.Karma = level.Statistics.YayCount - level.Statistics.BooCount;
     }
 
-    private void UpdateLevelRecurringLabels(GameLevel level)
+    private void RecalculateLevelRecurringLabels(GameLevel level)
     {
         Debug.Assert(level.Statistics != null);
 

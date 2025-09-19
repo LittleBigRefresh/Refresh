@@ -69,7 +69,9 @@ public class PublishEndpoints : EndpointGroup
             // Unknown labels will be ignored and be missing from the level. No notifications needed because the publisher should
             // immediately be able to tell if there are missing labels on the level they just published.
             // Also make sure there are no duplicate labels submitted.
-            body.FinalPublisherLabels = LabelExtensions.FromLbpCommaList(body.PublisherLabels).Distinct().Take(UgcLimits.MaximumLabels);
+            body.FinalPublisherLabels = LabelExtensions.FromLbpCommaList(body.PublisherLabels)
+                .Distinct()
+                .Take(UgcLimits.MaximumLabels);
         }
 
         return true;

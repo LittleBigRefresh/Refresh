@@ -130,7 +130,9 @@ public class ReviewEndpoints : EndpointGroup
         if (!string.IsNullOrWhiteSpace(body.Labels))
         {
             // Make sure there aren't too many and duplicate labels.
-            labels = LabelExtensions.FromLbpCommaList(body.Labels).Distinct().Take(UgcLimits.MaximumLabels);
+            labels = LabelExtensions.FromLbpCommaList(body.Labels)
+                .Distinct()
+                .Take(UgcLimits.MaximumLabels);
         }
 
         //Add the review to the database
