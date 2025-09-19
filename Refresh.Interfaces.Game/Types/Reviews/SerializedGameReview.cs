@@ -73,7 +73,7 @@ public class SerializedGameReview : IDataConvertableFrom<SerializedGameReview, G
             },
             Reviewer = review.Publisher.Username,
             Timestamp = review.PostedAt.ToUnixTimeMilliseconds(),
-            Labels = review.Labels.ToLbpCommaList(dataContext.Game == TokenGame.LittleBigPlanet3),
+            Labels = review.Labels.ToLbpCommaList(dataContext.Game),
             Deleted = false,
             DeletedBy = ReviewDeletedBy.None,
             Text = review.Content,

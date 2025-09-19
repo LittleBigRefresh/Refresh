@@ -1,4 +1,5 @@
 using System.Collections.Frozen;
+using Refresh.Database.Models.Authentication;
 
 namespace Refresh.Database.Models.Levels;
 
@@ -230,21 +231,21 @@ public static class LabelExtensions
         { "LABEL_Touch", Label.Touch },
     }.ToFrozenDictionary();
 
-    public static string? ToLbpString(this Label label, bool isLbp3 = false) 
+    public static string? ToLbpString(this Label label, TokenGame game = TokenGame.LittleBigPlanet2) 
     {
         // Workarounds for duplicate labels
         return label switch
         {
-            // While LBP3 will still correctly show the label when returning LABEL_SinglePlayer, it won't auto-select it when editing the level's labels
-            Label.Singleplayer => isLbp3 ? "LABEL_SINGLE_PLAYER" : "LABEL_SinglePlayer", 
-            // LBP3 nor Vita should be able to show both labels
-            Label.Cooperative => "LABEL_Co-op,LABEL_CO_OP",
+            // While LBP3 will still correctly show the label when returning LABEL_SinglePlayer, 
+            // it won't auto-select it when editing the level's labels
+            Label.Singleplayer => game == TokenGame.LittleBigPlanet3 ? "LABEL_SINGLE_PLAYER" : "LABEL_SinglePlayer",
+            Label.Cooperative => game == TokenGame.LittleBigPlanet3 ? "LABEL_CO_OP" : "LABEL_Co-op",
             _ => StringMap.GetValueOrDefault(label),
         };
     }
 
-    public static string ToLbpCommaList(this IEnumerable<Label> labels, bool isLbp3 = false)
-        => string.Join(',', labels.Select(l => l.ToLbpString(isLbp3)!));
+    public static string ToLbpCommaList(this IEnumerable<Label> labels, TokenGame game = TokenGame.LittleBigPlanet2)
+        => string.Join(',', labels.Select(l => l.ToLbpString(game)!));
     
     public static Label? FromLbpString(string str) => LabelsMap.GetValueOrDefault(str);
     
