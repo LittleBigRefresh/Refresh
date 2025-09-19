@@ -1,5 +1,6 @@
 using Refresh.Core.Types.Data;
 using Refresh.Database.Models.Comments;
+using Refresh.Database.Models.Levels;
 using Refresh.Interfaces.APIv3.Endpoints.DataTypes.Response.Users;
 
 namespace Refresh.Interfaces.APIv3.Endpoints.DataTypes.Response.Levels;
@@ -11,7 +12,8 @@ public class ApiGameReviewResponse : IApiResponse, IDataConvertableFrom<ApiGameR
     public required ApiGameLevelResponse Level { get; set; }
     public required ApiGameUserResponse Publisher { get; set; }
     public required DateTimeOffset PostedAt { get; set; }
-    public required string Labels { get; set; }
+    public required List<Label> LabelList { get; set; }
+    public required string Labels { get; set; } // TODO: remove this and rename LabelList to Labels in APIv4
     public required string Text { get; set; }
     public static ApiGameReviewResponse? FromOld(GameReview? old, DataContext dataContext)
     {
@@ -22,7 +24,8 @@ public class ApiGameReviewResponse : IApiResponse, IDataConvertableFrom<ApiGameR
             Level = ApiGameLevelResponse.FromOld(old.Level, dataContext)!,
             Publisher = ApiGameUserResponse.FromOld(old.Publisher, dataContext)!,
             PostedAt = old.PostedAt,
-            Labels = old.Labels,
+            LabelList = old.Labels,
+            Labels = old.Labels.ToLbpCommaList(),
             Text = old.Content,
         };
     }

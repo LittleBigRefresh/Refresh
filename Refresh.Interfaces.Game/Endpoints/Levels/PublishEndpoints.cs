@@ -10,7 +10,6 @@ using Refresh.Common.Verification;
 using Refresh.Core;
 using Refresh.Core.Authentication.Permission;
 using Refresh.Core.Configuration;
-using Refresh.Core.Services;
 using Refresh.Core.Types.Data;
 using Refresh.Database;
 using Refresh.Database.Models.Assets;
@@ -63,6 +62,16 @@ public class PublishEndpoints : EndpointGroup
         {
             dataContext.Database.AddPublishFailNotification("The level you tried to publish has already been uploaded by another user.", body.Title, dataContext.User!);
             return false;
+        }
+
+        if (!string.IsNullOrWhiteSpace(body.PublisherLabels))
+        {
+            // Unknown labels will be ignored and be missing from the level. No notifications needed because the publisher should
+            // immediately be able to tell if there are missing labels on the level they just published.
+            // Also make sure there are no duplicate labels submitted.
+            body.FinalPublisherLabels = LabelExtensions.FromLbpCommaList(body.PublisherLabels)
+                .Distinct()
+                .Take(UgcLimits.MaximumLabels);
         }
 
         return true;

@@ -18,7 +18,7 @@ namespace Refresh.Database.Migrations
         {
 #pragma warning disable 612, 618
             modelBuilder
-                .HasAnnotation("ProductVersion", "9.0.7")
+                .HasAnnotation("ProductVersion", "9.0.8")
                 .HasAnnotation("Relational:MaxIdentifierLength", 63);
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
@@ -212,9 +212,14 @@ namespace Refresh.Database.Migrations
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("ReviewId"));
 
                     b.Property<string>("Content")
+                        .IsRequired()
                         .HasColumnType("text");
 
-                    b.Property<string>("Labels")
+                    b.PrimitiveCollection<byte[]>("Labels")
+                        .IsRequired()
+                        .HasColumnType("smallint[]");
+
+                    b.Property<string>("LabelsString")
                         .HasColumnType("text");
 
                     b.Property<int>("LevelId")
@@ -413,6 +418,10 @@ namespace Refresh.Database.Migrations
 
                     b.Property<bool>("IsSubLevel")
                         .HasColumnType("boolean");
+
+                    b.PrimitiveCollection<byte[]>("Labels")
+                        .IsRequired()
+                        .HasColumnType("smallint[]");
 
                     b.Property<byte>("LevelType")
                         .HasColumnType("smallint");
@@ -1293,6 +1302,10 @@ namespace Refresh.Database.Migrations
 
                     b.Property<DateTimeOffset?>("RecalculateAt")
                         .HasColumnType("timestamp with time zone");
+
+                    b.PrimitiveCollection<byte[]>("RecurringLabels")
+                        .IsRequired()
+                        .HasColumnType("smallint[]");
 
                     b.Property<int>("ReviewCount")
                         .HasColumnType("integer");
