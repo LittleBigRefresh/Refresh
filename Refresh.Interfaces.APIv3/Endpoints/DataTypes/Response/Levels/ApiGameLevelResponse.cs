@@ -100,7 +100,7 @@ public class ApiGameLevelResponse : IApiResponse, IDataConvertableFrom<ApiGameLe
             PhotosTaken = level.Statistics.PhotoInLevelCount,
             LevelComments = level.Statistics.CommentCount,
             Reviews = level.Statistics.ReviewCount,
-            Tags = dataContext.Database.GetTagsForLevel(level).Select(t => t.Tag),
+            Tags = dataContext.Database.GetTagsForLevel(level),
             IsModded = level.IsModded,
         };
     }

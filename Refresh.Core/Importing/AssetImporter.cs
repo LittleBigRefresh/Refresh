@@ -42,7 +42,8 @@ public class AssetImporter : Importer
             {
                 using GameDatabaseContext database = databaseProvider.GetContext();
 
-                List<GameAsset> assets = new(assetHashes.Length / taskCount);
+                List<GameAsset> assetsToAdd = new(assetHashes.Length / taskCount);
+                List<GameAsset> assetsToUpdate = new(assetHashes.Length / taskCount);
 
                 while (hashesToProcess.TryTake(out string? path))
                 {
@@ -63,19 +64,22 @@ public class AssetImporter : Importer
                     {
                         newAsset.OriginalUploader = oldAsset.OriginalUploader;
                         newAsset.UploadDate = oldAsset.UploadDate;
+                        assetsToUpdate.Add(newAsset);
                         Interlocked.Increment(ref updatedAssets);
                     }
                     else
                     {
+                        assetsToAdd.Add(newAsset);
                         Interlocked.Increment(ref newAssets);
                     }
                     
-                    assets.Add(newAsset);
                     this.Info($"[{Interlocked.Increment(ref processed)}/{assetHashes.Length}] Processed {newAsset.AssetType} asset {hash} ({AssetSafetyLevelExtensions.FromAssetType(newAsset.AssetType, newAsset.AssetFormat)})");
                 }
-                
-                database.AddOrUpdateAssetsInDatabase(assets);
-                
+
+                database.ChangeTracker.Clear(); // Updating assets will throw otherwise
+                database.AddAssetsToDatabase(assetsToAdd);
+                database.UpdateAssetsInDatabase(assetsToUpdate);
+
                 return Task.CompletedTask;
             }, TaskCreationOptions.LongRunning);
         }

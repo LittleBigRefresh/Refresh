@@ -186,7 +186,7 @@ public class GameMinimalLevelResponse : IDataConvertableFrom<GameMinimalLevelRes
 
         if (dataContext.Game == TokenGame.LittleBigPlanet1)
         {
-            response.Tags = string.Join(',', dataContext.Database.GetTagsForLevel(old).Select(t => t.Tag.ToLbpString()));
+            response.Tags = string.Join(',', dataContext.Database.GetTagsForLevel(old).Select(t => t.ToLbpString()));
         }
 
         if (dataContext.Game is not TokenGame.LittleBigPlanet1 or TokenGame.LittleBigPlanetPSP)

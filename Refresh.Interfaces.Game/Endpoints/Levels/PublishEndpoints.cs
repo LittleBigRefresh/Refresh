@@ -221,6 +221,13 @@ public class PublishEndpoints : EndpointGroup
                 return BadRequest;
             }
 
+            // LBP3 doesn't allow users to overwrite LBP1/2 levels, however editing their metadata will cause LBP3 to reserialize the root resource,
+            // upload it and put its hash into the republish request body, making the levels unplayable in LBP1/2.
+            if (dataContext.Game == TokenGame.LittleBigPlanet3 && levelToUpdate.GameVersion != TokenGame.LittleBigPlanet3)
+            {
+                body.RootResource = levelToUpdate.RootResource;
+            }
+            
             bool isFullEdit = body.RootResource != levelToUpdate.RootResource;
             levelToUpdate = dataContext.Database.UpdateLevel(body, levelToUpdate, dataContext.Game);
 
