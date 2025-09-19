@@ -1,3 +1,5 @@
+using System.Collections.Frozen;
+
 namespace Refresh.Database.Models.Levels;
 
 public enum Tag : byte
@@ -84,23 +86,25 @@ public static class TagExtensions
 {
     static TagExtensions()
     {
+        Dictionary<Tag, string> stringMap = [];
         List<string> keys = [];
 
         // Create the conversion which goes the other way
         foreach ((string key, Tag value) in TagsMap)
         {
-            StringMap[value] = key;
+            stringMap[value] = key;
             keys.Add(key);
         }
 
         AllTags = string.Join(',', keys);
+        StringMap = stringMap.ToFrozenDictionary();
     }
 
     public static string AllTags { get; private set; }
-    
+
     // C# doesnt seem to have a better construct for this...
-    private static readonly Dictionary<Tag, string> StringMap = new();
-    private static readonly Dictionary<string, Tag> TagsMap = new()
+    private static readonly FrozenDictionary<Tag, string> StringMap;
+    private static readonly FrozenDictionary<string, Tag> TagsMap = new Dictionary<string, Tag>()
     {
         { "TAG_Boss", Tag.Boss },
         { "TAG_Varied", Tag.Varied },
@@ -178,7 +182,7 @@ public static class TagExtensions
         { "TAG_Ingenious", Tag.Ingenious },
         { "TAG_Beautiful", Tag.Beautiful },
         { "TAG_Electric", Tag.Electric },
-    };
+    }.ToFrozenDictionary();
 
     public static string? ToLbpString(this Tag tag) => StringMap.GetValueOrDefault(tag);
 

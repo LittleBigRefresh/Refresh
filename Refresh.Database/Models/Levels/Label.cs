@@ -1,3 +1,5 @@
+using System.Collections.Frozen;
+
 namespace Refresh.Database.Models.Levels;
 
 public enum Label : byte
@@ -108,15 +110,19 @@ public static class LabelExtensions
 {
     static LabelExtensions()
     {
+        Dictionary<Label, string> stringMap = [];
+
         // Create the conversion which goes the other way
         foreach ((string key, Label value) in LabelsMap)
         {
-            StringMap[value] = key;
+            stringMap[value] = key;
         }
+
+        StringMap = stringMap.ToFrozenDictionary();
     }
-    
-    private static readonly Dictionary<Label, string> StringMap = [];
-    private static readonly Dictionary<string, Label> LabelsMap = new()
+
+    private static readonly FrozenDictionary<Label, string> StringMap;
+    private static readonly FrozenDictionary<string, Label> LabelsMap = new Dictionary<string, Label>()
     {
         { "LABEL_Quick", Label.Short },
         { "LABEL_Long", Label.Long },
@@ -222,7 +228,7 @@ public static class LabelExtensions
         { "LABEL_Tap", Label.Tap },
         { "LABEL_Tilt", Label.Tilt },
         { "LABEL_Touch", Label.Touch },
-    };
+    }.ToFrozenDictionary();
 
     public static string? ToLbpString(this Label label, bool isLbp3 = false) 
     {
