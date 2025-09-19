@@ -1,4 +1,4 @@
-using System.Text;
+using System.Collections.Frozen;
 
 namespace Refresh.Database.Models.Levels;
 
@@ -86,28 +86,25 @@ public static class TagExtensions
 {
     static TagExtensions()
     {
-        StringBuilder allTags = new();
-        
-        // Create the conversion which goes the other way
-        foreach ((string? key, Tag value) in TagsMap)
-        {
-            StringMap[value] = key;
+        Dictionary<Tag, string> stringMap = [];
+        List<string> keys = [];
 
-            allTags.Append(key);
-            allTags.Append(',');
+        // Create the conversion which goes the other way
+        foreach ((string key, Tag value) in TagsMap)
+        {
+            stringMap[value] = key;
+            keys.Add(key);
         }
 
-        if (allTags.Length > 1)
-            allTags.Remove(allTags.Length - 1, 1);
-
-        AllTags = allTags.ToString();
+        AllTags = string.Join(',', keys);
+        StringMap = stringMap.ToFrozenDictionary();
     }
 
     public static string AllTags { get; private set; }
-    
+
     // C# doesnt seem to have a better construct for this...
-    private static readonly Dictionary<Tag, string> StringMap = new();
-    private static readonly Dictionary<string, Tag> TagsMap = new()
+    private static readonly FrozenDictionary<Tag, string> StringMap;
+    private static readonly FrozenDictionary<string, Tag> TagsMap = new Dictionary<string, Tag>()
     {
         { "TAG_Boss", Tag.Boss },
         { "TAG_Varied", Tag.Varied },
@@ -185,7 +182,7 @@ public static class TagExtensions
         { "TAG_Ingenious", Tag.Ingenious },
         { "TAG_Beautiful", Tag.Beautiful },
         { "TAG_Electric", Tag.Electric },
-    };
+    }.ToFrozenDictionary();
 
     public static string? ToLbpString(this Tag tag) => StringMap.GetValueOrDefault(tag);
 

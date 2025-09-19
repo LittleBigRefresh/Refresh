@@ -1,4 +1,5 @@
 using Refresh.Database.Models;
+using Refresh.Database.Models.Levels;
 
 namespace Refresh.Database.Query;
 
@@ -8,6 +9,7 @@ public interface ISerializedPublishLevel
     string Description { get; set; }
     string IconHash { get; set; }
     GameLocation Location { get; set; }
+    IEnumerable<Label> FinalPublisherLabels { get; set; }
     string RootResource { get; set; }
     int MinPlayers { get; set; }
     int MaxPlayers { get; set; }

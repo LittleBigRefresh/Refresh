@@ -2,6 +2,9 @@ using Refresh.Database.Models.Authentication;
 using Refresh.Database.Models.Comments;
 using Refresh.Database.Models.Users;
 using Refresh.Database.Models.Levels;
+using Refresh.Interfaces.Game.Types.Reviews;
+using RefreshTests.GameServer.Extensions;
+using Refresh.Common.Constants;
 
 namespace RefreshTests.GameServer.Tests.Levels;
 
@@ -254,5 +257,140 @@ public class ReviewEndpointsTests : GameServerTest
         
         message = client.PostAsync($"/lbp/rate/user/{level.LevelId}?rating=6", new ByteArrayContent(Array.Empty<byte>())).Result;
         Assert.That(message.StatusCode, Is.EqualTo(BadRequest));
+    } 
+
+    [Test]
+    public void CanReviewPlayedLevel()
+    {
+        using TestContext context = this.GetServer();
+        GameUser user1 = context.CreateUser();
+        GameUser user2 = context.CreateUser();
+        GameLevel level = context.CreateLevel(user2);
+
+        using HttpClient client = context.GetAuthenticatedClient(TokenType.Game, user1);
+
+        //Play the level at least once
+        context.Database.PlayLevel(level, user1, 1);
+
+        List<Label> labels = [ Label.Short, Label.BouncePads, Label.Water ];
+        SerializedGameReview review = new()
+        {
+            Text = "Sucks",
+            Labels = LabelExtensions.ToLbpCommaList(labels),
+        };
+
+        HttpResponseMessage message = client.PostAsync($"/lbp/postReview/user/{level.LevelId}", new StringContent(review.AsXML())).Result;
+        Assert.That(message.StatusCode, Is.EqualTo(OK));
+
+        GameReview? postedReview = context.Database.GetReviewByLevelAndUser(level, user1);
+        Assert.That(postedReview, Is.Not.Null);
+        Assert.That(postedReview!.Content, Is.EqualTo("Sucks"));
+        Assert.That(postedReview!.Labels, Is.EqualTo(labels));
+    }
+
+    [Test]
+    public void SanitizeReviewLabelsIfDuplicates()
+    {
+        using TestContext context = this.GetServer();
+        GameUser user1 = context.CreateUser();
+        GameUser user2 = context.CreateUser();
+        GameLevel level = context.CreateLevel(user2);
+
+        using HttpClient client = context.GetAuthenticatedClient(TokenType.Game, user1);
+
+        //Play the level at least once
+        context.Database.PlayLevel(level, user1, 1);
+
+        List<Label> labels = [ Label.Water, Label.Water, Label.Water ];
+        SerializedGameReview review = new()
+        {
+            Text = "Sucks",
+            Labels = LabelExtensions.ToLbpCommaList(labels),
+        };
+
+        HttpResponseMessage message = client.PostAsync($"/lbp/postReview/user/{level.LevelId}", new StringContent(review.AsXML())).Result;
+        Assert.That(message.StatusCode, Is.EqualTo(OK));
+
+        GameReview? postedReview = context.Database.GetReviewByLevelAndUser(level, user1);
+        Assert.That(postedReview, Is.Not.Null);
+        Assert.That(postedReview!.Labels, Is.EqualTo([ Label.Water ]));
+    }
+
+    [Test]
+    public void SanitizeReviewLabelsIfTooMany()
+    {
+        using TestContext context = this.GetServer();
+        GameUser user1 = context.CreateUser();
+        GameUser user2 = context.CreateUser();
+        GameLevel level = context.CreateLevel(user2);
+
+        using HttpClient client = context.GetAuthenticatedClient(TokenType.Game, user1);
+
+        //Play the level at least once
+        context.Database.PlayLevel(level, user1, 1);
+
+        List<Label> labels = [ Label.Water, Label.ArcadeGame, Label.Sackbots, Label.Artistic, Label.Intricate, Label.Collectables, Label.Swoop ];
+        SerializedGameReview review = new()
+        {
+            Text = "Sucks",
+            Labels = LabelExtensions.ToLbpCommaList(labels),
+        };
+
+        HttpResponseMessage message = client.PostAsync($"/lbp/postReview/user/{level.LevelId}", new StringContent(review.AsXML())).Result;
+        Assert.That(message.StatusCode, Is.EqualTo(OK));
+
+        GameReview? postedReview = context.Database.GetReviewByLevelAndUser(level, user1);
+        Assert.That(postedReview, Is.Not.Null);
+        Assert.That(postedReview!.Labels, Is.EqualTo(labels.Take(UgcLimits.MaximumLabels).ToList()));
+    }
+
+    [Test]
+    public void TestRecurringLevelLabels()
+    {
+        using TestContext context = this.GetServer();
+        
+        GameUser publisher = context.CreateUser();
+        GameUser reviewer1 = context.CreateUser();
+        GameUser reviewer2 = context.CreateUser();
+        GameUser reviewer3 = context.CreateUser();
+        GameLevel level = context.CreateLevel(publisher);
+
+        // Post a few reviews with different certain labels
+        context.Database.AddReviewToLevel(new()
+        {
+            Publisher = reviewer1,
+            Level = level,
+            PostedAt = DateTimeOffset.MinValue,
+            Content = "Hi",
+            Labels = [Label.Water],
+        }, level);
+
+        context.Database.AddReviewToLevel(new()
+        {
+            Publisher = reviewer2,
+            Level = level,
+            PostedAt = DateTimeOffset.MinValue,
+            Content = "Water Cooler",
+            Labels = [Label.Water, Label.ArcadeGame],
+        }, level);
+
+        context.Database.AddReviewToLevel(new()
+        {
+            Publisher = reviewer3,
+            Level = level,
+            PostedAt = DateTimeOffset.MinValue,
+            Content = "GG ez",
+            Labels = [Label.Water, Label.Easy, Label.ArcadeGame],
+        }, level);
+
+        // Recalculate stats for the level
+        context.Database.RecalculateLevelStatistics(level);
+        Assert.That(level.Statistics, Is.Not.Null);
+        Assert.That(level.Statistics!.RecurringLabels, Is.Not.Empty);
+
+        // Compare labels
+        List<Label> actualLabels = level.Statistics!.RecurringLabels;
+        List<Label> expectedLabels = [Label.Water, Label.ArcadeGame, Label.Easy];
+        Assert.That(actualLabels, Is.EqualTo(expectedLabels));
     } 
 }
