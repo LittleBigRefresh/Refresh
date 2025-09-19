@@ -22,6 +22,7 @@ public static class RefreshWorkerManager
         manager.AddJob<BackfillRevisionMigration>();
         manager.AddJob<EnsureDeletedUsersDeletedMigration>();
         manager.AddJob<BackfillLevelAttributesMigration>();
+        manager.AddJob<ClampPlayerLimitsMigration>();
         
         return manager;
     }
