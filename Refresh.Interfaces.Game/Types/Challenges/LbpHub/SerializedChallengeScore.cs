@@ -8,7 +8,7 @@ namespace Refresh.Interfaces.Game.Types.Challenges.LbpHub;
 
 [XmlRoot("challenge-score")]
 [XmlType("challenge-score")]
-public class SerializedChallengeScore : SerializedChallengeAttempt, IDataConvertableFrom<SerializedChallengeScore, Database.Models.Levels.Challenges.GameChallengeScore>
+public class SerializedChallengeScore : SerializedChallengeAttempt, IDataConvertableFrom<SerializedChallengeScore, GameChallengeScore>
 {   
     /// <summary>
     /// This score's rank in the challenge's leaderboard
@@ -21,13 +21,13 @@ public class SerializedChallengeScore : SerializedChallengeAttempt, IDataConvert
 
     #nullable enable
 
-    public static SerializedChallengeScore? FromOld(Database.Models.Levels.Challenges.GameChallengeScore? old, DataContext dataContext)
+    public static SerializedChallengeScore? FromOld(GameChallengeScore? old, DataContext dataContext)
         => FromOld(old, 0);
     
     public static SerializedChallengeScore? FromOld(GameChallengeScoreWithRank? old)
         => old == null ? null : FromOld(old.score, old.rank);
 
-    public static SerializedChallengeScore? FromOld(Database.Models.Levels.Challenges.GameChallengeScore? old, int rank)
+    public static SerializedChallengeScore? FromOld(GameChallengeScore? old, int rank)
     {
         if (old == null)
             return null;
@@ -41,7 +41,7 @@ public class SerializedChallengeScore : SerializedChallengeAttempt, IDataConvert
         };
     }
 
-    public static IEnumerable<SerializedChallengeScore> FromOldList(IEnumerable<Database.Models.Levels.Challenges.GameChallengeScore> oldList, DataContext dataContext)
+    public static IEnumerable<SerializedChallengeScore> FromOldList(IEnumerable<GameChallengeScore> oldList, DataContext dataContext)
         => oldList.Select((s, i) => FromOld(s, i + 1)!);
 
     public static IEnumerable<SerializedChallengeScore> FromOldList(IEnumerable<GameChallengeScoreWithRank> oldList)

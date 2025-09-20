@@ -3,6 +3,8 @@ using Refresh.Database.Query;
 
 namespace Refresh.Interfaces.Game.Types.Challenges.LbpHub;
 
+#nullable disable
+
 //  <challenge-attempt>
 //      <score>9223371991757619189</score>
 //      <ghost>b8127d2b7acb3062249022bbce63e81e4f996c52</ghost>
@@ -18,5 +20,5 @@ public class SerializedChallengeAttempt : ISerializedChallengeAttempt
     /// <summary>
     /// The hash of the ghost asset belonging to this score.
     /// </summary>
-    [XmlElement("ghost")] public string GhostHash { get; set; } = "";
+    [XmlElement("ghost")] public string GhostHash { get; set; }
 }

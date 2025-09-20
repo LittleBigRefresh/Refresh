@@ -11,7 +11,7 @@ namespace Refresh.Interfaces.Game.Types.Challenges.LbpHub;
 
 [XmlRoot("challenge")]
 [XmlType("challenge")]
-public class SerializedChallenge : IDataConvertableFrom<SerializedChallenge, Database.Models.Levels.Challenges.GameChallenge>, ICreateChallengeInfo
+public class SerializedChallenge : IDataConvertableFrom<SerializedChallenge, GameChallenge>, ICreateChallengeInfo
 {
     [XmlElement("id")] public int ChallengeId { get; set; }
     [XmlElement("name")] public string Name { get; set; } = "Unnamed Challenge";
@@ -53,12 +53,12 @@ public class SerializedChallenge : IDataConvertableFrom<SerializedChallenge, Dat
         => this.Criteria.Select(c => (GameChallengeCriteriaType)c.Type);
 
     #nullable enable
-    public static SerializedChallenge? FromOld(Database.Models.Levels.Challenges.GameChallenge? old, DataContext dataContext)
+    public static SerializedChallenge? FromOld(GameChallenge? old, DataContext dataContext)
     {
         if (old == null)
             return null;
 
-        return new SerializedChallenge
+        return new() 
         {
             ChallengeId = old.ChallengeId,
             Name = old.Name,
@@ -70,8 +70,9 @@ public class SerializedChallenge : IDataConvertableFrom<SerializedChallenge, Dat
             PublisherName = old.Publisher?.Username ?? SystemUsers.DeletedUserName,
             StartCheckpointUid = old.StartCheckpointUid,
             FinishCheckpointUid = old.FinishCheckpointUid,
-            PublishedAt = old.PublishDate.ToUnixTimeMilliseconds(),
-            ExpiresAt = old.ExpirationDate.ToUnixTimeMilliseconds(),
+            PublishedAt = DateTimeOffset.MaxValue.ToUnixTimeMilliseconds(),
+            ExpiresAt = DateTimeOffset.MaxValue.ToUnixTimeMilliseconds(),
+
             // Take the type of the first (so far always only) criterion in the challenge criteria
             Criteria =
             [
