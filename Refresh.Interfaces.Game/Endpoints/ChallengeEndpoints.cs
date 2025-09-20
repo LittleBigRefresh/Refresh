@@ -20,6 +20,9 @@ namespace Refresh.Interfaces.Game.Endpoints;
 
 public class ChallengeEndpoints : EndpointGroup
 {
+    // Try to have these endpoints be as fast as possible, as LBP Hub just freezes while it's waiting for responses of any challenge or
+    // ChallengeGhost asset requests.
+
     #region Challenges
 
     [GameEndpoint("challenge", HttpMethods.Post, ContentType.Xml)]
@@ -52,10 +55,14 @@ public class ChallengeEndpoints : EndpointGroup
         return new Response(SerializedChallenge.FromOld(challenge, dataContext), ContentType.Xml);
     }
 
+    // The game includes a "status" query param for all 3 challenge list endpoints below to specify whether to return "active"
+    // or "expired" challenges. Implementing this functionality as intended would make challenges effectively only playable for the first 3 - 7 days
+    // after they're uploaded. Since not many people play LBP Hub, they'd only ever be able to play 0 challenges or atleast a small handful if they're lucky enough.
+    // This is why we don't implement challenge expiration anymore.
+    // The challenges returned are sorted by newest anyway, and since Hub doesn't send any pagination params for challenges, we're only returning the newest 100 anyway.
+
     /// <summary>
-    /// Intended to return challenges by the specified user.
-    /// Usually gets called together with the GetChallengesByUsersFriends endpoint below.
-    /// The query parameter "status" indicates whether to return "active" or "expired" challenges.
+    /// Returns challenges by the specified user. Gets called alongside the endpoint below
     /// </summary>
     [GameEndpoint("user/{username}/challenges", HttpMethods.Get, ContentType.Xml)]
     [MinimumRole(GameUserRole.Restricted)]
@@ -66,19 +73,15 @@ public class ChallengeEndpoints : EndpointGroup
         if (user == null) return null;
 
         string? status = context.QueryString.Get("status");
-        DatabaseList<GameChallenge> challenges = dataContext.Database.GetChallengesByUser(user, 0, 100, status);
+        DatabaseList<GameChallenge> challenges = dataContext.Database.GetChallengesByUser(user, 0, 100);
         
         return new SerializedChallengeList(SerializedChallenge.FromOldList(challenges.Items, dataContext).ToList());
     }
 
     /// <summary>
-    /// Intended to return challenges by the specified user's friends.
-    /// Return all challenges except those by the specified user instead, as outside of the "Past Challenges" page in the pod, 
-    /// the game only ever uses this endpoint and the GetChallengesByUser endpoint above to get and display challenges, 
-    /// effectively only letting the player play their own and their friends' challenges.
-    /// Likely not many people play LBP Hub anyway, resulting in the number of potential challenges likely being low,
-    /// and making most of these challenges unplayable on top of that wouldn't be very smart.
-    /// The query parameter "status" indicates whether to return "active" or "expired" challenges.
+    /// Intended to return challenges by the specified user's friends. Gets called alongside the endpoint above.
+    /// Return all but this user's challenges instead, as not many people play LBP Hub and only making a fraction of an already
+    /// very small count of challenges playable doesn't make any sense here.
     /// </summary>
     [GameEndpoint("user/{username}/friends/challenges", HttpMethods.Get, ContentType.Xml)]
     [MinimumRole(GameUserRole.Restricted)]
@@ -90,18 +93,17 @@ public class ChallengeEndpoints : EndpointGroup
 
         DatabaseList<GameChallenge> challenges;
         if (user == null)
-            challenges = dataContext.Database.GetChallenges(0, 1000, status);
+            challenges = dataContext.Database.GetNewestChallenges(0, 100);
         else
-            challenges = dataContext.Database.GetChallengesNotByUser(user, 0, 1000, status);
+            challenges = dataContext.Database.GetChallengesNotByUser(user, 0, 100);
 
         return new SerializedChallengeList(SerializedChallenge.FromOldList(challenges.Items, dataContext).ToList());
     }
 
     /// <summary>
-    /// Most likely intended to get the specified user's and their friend's challenges.
-    /// Return all challenges instead, for the same reason described in GetChallengesByUsersFriends' summary above. 
-    /// Usually this endpoint only gets called when going to "Past Challenges" in the pod.
-    /// The query parameter "status" indicates whether to return "active" or "expired" challenges.
+    /// Get's both the specified user's and their friend's challenges. Only gets called in the Past Challenges page while both
+    /// endpoints above get called everywhere else. Don't know why only Past Challenges uses this endpoint, considering the "status"
+    /// query param already specifies whether to return active or expired challenges for all 3 endpoints.
     /// </summary>
     [GameEndpoint("user/{username}/challenges/joined", HttpMethods.Get, ContentType.Xml)]
     [MinimumRole(GameUserRole.Restricted)]
@@ -110,7 +112,7 @@ public class ChallengeEndpoints : EndpointGroup
     {
         string? status = context.QueryString.Get("status");
 
-        DatabaseList<GameChallenge> challenges = dataContext.Database.GetChallenges(0, 1000, status);
+        DatabaseList<GameChallenge> challenges = dataContext.Database.GetNewestChallenges(0, 100);
         return new SerializedChallengeList(SerializedChallenge.FromOldList(challenges.Items, dataContext).ToList());
     }
 
@@ -216,8 +218,8 @@ public class ChallengeEndpoints : EndpointGroup
     /// Intended to return the scores of a challenge by a user's friends, specified by that user's username.
     /// </summary>
     /// <remarks>
-    /// The response has to be an empty list, otherwise, after finishing a challenge, LBP Hub will hide the user's friends' (mutuals' in our case)
-    /// scores returned with <see cref="GetContextualScoresForChallenge"/> in a messy way.
+    /// The response has to be an empty list, else LBP Hub will hide all scores included here from the fragment returned by 
+    /// <see cref="GetContextualScoresForChallenge"/> in a messy way.
     /// </remarks>
     [GameEndpoint("challenge/{challengeId}/scoreboard/{username}/friends", HttpMethods.Get, ContentType.Xml)]
     [MinimumRole(GameUserRole.Restricted)]
@@ -233,16 +235,16 @@ public class ChallengeEndpoints : EndpointGroup
     }
 
     /// <summary>
-    /// Gets called when a user finishes a challenge to show a 3 scores large fragment of it's leaderboard with scores
-    /// "around" the user's high score. The username of that user is sometimes empty, 
-    /// therefore only use the token's user for simplicity (the game never calls the contextual leaderboard of any other user).
+    /// Called to get a 3 scores large fragment of a challenge's leaderboard, with the specified user's score being preferrably in the middle.
+    /// This is used to both show where the user's current high score is in the leaderboard after playing a challenge, and to find out the next score to beat
+    /// if the user's own score isn't rank 1 already.
     /// </summary>
     /// <remarks>
-    /// This endpoint is also used to get the next best score if the user's highscore for this challenge exists, but is not rank 1.
-    /// Unfortunately, instead of only getting the next score's ghost asset with <see cref="ResourceEndpoints.GetResource"/> afterwards, 
-    /// the game will then also try to get the ghost asset of every score in this endpoint's response, to then seemingly combine them into one asset,
-    /// completely breaking ghost replay. To work around this, we block all ghost asset requests to the GetResource endpoint past the first, correct one
-    /// using <see cref="ChallengeGhostRateLimitService._challengeGhostRateLimitedUsers"/>
+    /// The latter also leads to an annoying bug where the game will first download the ghost asset of that next best score, but then also those of
+    /// every score in this endpoint's response (in other words, it'll try downloading the next best score's asset again and that of the other scores).
+    /// It'll then seemingly somehow combine them all into one asset and try to play it back during the challenge, breaking the replay due to 
+    /// way to large coordinates. We work around this by implementing a rate limit for ghost assets in <see cref="ResourceEndpoints.GetResource"/>
+    /// using <see cref="ChallengeGhostRateLimitService._challengeGhostRateLimitedUsers"/>, so that Hub only gets the first, correct asset.
     /// </remarks>
     [GameEndpoint("challenge/{challengeId}/scoreboard/{username}/contextual", HttpMethods.Get, ContentType.Xml)]
     [MinimumRole(GameUserRole.Restricted)]

@@ -4,6 +4,9 @@ using NotEnoughLogs;
 
 namespace Refresh.Core.Services;
 
+/// <summary>
+/// Documentation on why this exists: <see cref="Endpoints.Game.ChallengeEndpoints.GetContextualScoresForChallenge"/>
+/// </summary>
 public class ChallengeGhostRateLimitService : EndpointService
 {
     public ChallengeGhostRateLimitService(Logger logger, TimeProviderService timeProviderService) : base(logger)
@@ -14,27 +17,16 @@ public class ChallengeGhostRateLimitService : EndpointService
     private readonly TimeProviderService _timeProviderService;
 
     /// <summary>
-    /// Contains the IDs of users whose challenge ghost download requests made by LBP Hub should be temporarily blocked.
-    /// Nessesary to work around an LBP Hub bug described in <see cref="Endpoints.Game.ChallengeEndpoints.GetContextualScoresForChallenge"/>
+    /// User UUIDs -> when their game has last tried to download a ChallengeGhost asset
     /// </summary>
     private readonly Dictionary<ObjectId, DateTimeOffset?> _challengeGhostRateLimitedUsers = new();
 
-    /// <summary>
-    /// Adds the given user ID to a dictionary containing the IDs of users whose challenge ghost 
-    /// download requests made by LBP Hub should be temporarily blocked
-    /// </summary>
-    /// <param name="id">The user ID</param>
     public void AddUserToChallengeGhostRateLimit(ObjectId id)
     {
         // Unconditionally add the user to the set
         this._challengeGhostRateLimitedUsers.Add(id, this._timeProviderService.TimeProvider.Now);
     }
 
-    /// <summary>
-    /// Removes the given user ID from a dictionary containing the IDs of users whose challenge ghost 
-    /// download requests made by LBP Hub should be temporarily blocked
-    /// </summary>
-    /// <param name="id">The user ID</param>
     public void RemoveUserFromChallengeGhostRateLimit(ObjectId id)
     {
         // Unconditionally remove the user from the set
@@ -42,21 +34,20 @@ public class ChallengeGhostRateLimitService : EndpointService
     }
 
     /// <summary>
-    /// If the dictionary (containing the user IDs of users whose LBP Hub games' challenge ghost download requests to block)
-    /// contains an entry for the given user ID, and it's DateTimeOffset has not "expired" yet (less than 15 seconds away from now),
-    /// return true, else false. If the entry has expired, it will automatically be removed from the dictionary by this method.
+    /// Whether the user with the given ID should be rate-limited. No rate limit if the user either isn't tracked by this service
+    /// or if the last time they've tried downloading a ChallengeGhost asset was over 15 seconds ago, in which case this method
+    /// will automatically make this service no longer track the user.
     /// </summary>
-    /// <param name="id">The user ID</param>
     public bool IsUserChallengeGhostRateLimited(ObjectId id)
     {
         KeyValuePair<ObjectId, DateTimeOffset?> usersRateLimit = this._challengeGhostRateLimitedUsers
-            .FirstOrDefault(k => k.Key == id, new(id, null));
+            .FirstOrDefault(k => k.Key == id);
         
         // No entry
         if (usersRateLimit.Value == null)
             return false;
         
-        DateTimeOffset expirationDate = (DateTimeOffset)usersRateLimit.Value;
+        DateTimeOffset expirationDate = usersRateLimit.Value.Value;
 
         // Entry has expired, remove it
         if (expirationDate.AddSeconds(15) < this._timeProviderService.TimeProvider.Now)

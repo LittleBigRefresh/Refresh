@@ -69,58 +69,43 @@ public partial class GameDatabaseContext // Challenges
     public GameChallenge? GetChallengeById(int challengeId)
         => this.GameChallengesIncluded.FirstOrDefault(c => c.ChallengeId == challengeId);
     
-    public int GetTotalChallengeCount(string? status)
+    public int GetTotalChallengeCount()
     {
-        DateTimeOffset now = this._time.Now;
-        return status switch
-        {
-            "active" => this.GameChallenges.Count(c => c.ExpirationDate > now),
-            "expired" => this.GameChallenges.Count(c => c.ExpirationDate <= now),
-            _ => this.GameChallenges.Count(),
-        };
+        return this.GameChallenges.Count();
     }
 
-    private IEnumerable<GameChallenge> FilterChallengesByStatus(IEnumerable<GameChallenge> challenges, string? status)
+    public IEnumerable<GameChallenge> GetNewestChallengesInternal()
+        => this.GameChallengesIncluded.OrderByDescending(c => c.PublishDate);
+
+    public DatabaseList<GameChallenge> GetNewestChallenges(int skip, int count)
+        => new(this.GetNewestChallengesInternal(), skip, count);
+
+    public DatabaseList<GameChallenge> GetChallengesNotByUser(GameUser user, int skip, int count)
     {
-        DateTimeOffset now = this._time.Now;
-        return status switch
-        {
-            // Sort by soonest expiration first
-            "active" => challenges.Where(c => c.ExpirationDate > now).OrderBy(c => c.ExpirationDate),
+        IEnumerable<GameChallenge> challenges = this.GetNewestChallengesInternal();
 
-            // Sort by most recently expired first
-            "expired" => challenges.Where(c => c.ExpirationDate <= now).OrderByDescending(c => c.ExpirationDate),
-
-            // Sort by newest first
-            _ => challenges.OrderByDescending(c => c.PublishDate),
-        };
-    }
-
-    public DatabaseList<GameChallenge> GetChallenges(int skip, int count, string? filter = null)
-        => new(this.FilterChallengesByStatus(this.GameChallengesIncluded, filter), skip, count);
-    
-    public DatabaseList<GameChallenge> GetNewestChallenges(int skip, int count, string? filter = null)
-        => new(this.FilterChallengesByStatus(this.GameChallengesIncluded, filter)
-            .OrderByDescending(c => c.PublishDate), skip, count);
-
-    public DatabaseList<GameChallenge> GetChallengesNotByUser(GameUser user, int skip, int count, string? filter = null)
-    {
         if (user.Username == SystemUsers.DeletedUserName)
-            return new(this.FilterChallengesByStatus(this.GameChallengesIncluded.Where(c => c.PublisherUserId != null), filter), skip, count);
+            challenges = challenges.Where(c => c.PublisherUserId != null);
         else
-            return new(this.FilterChallengesByStatus(this.GameChallengesIncluded.Where(c => c.PublisherUserId != user.UserId), filter), skip, count);
+            challenges = challenges.Where(c => c.PublisherUserId != user.UserId);
+
+        return new(challenges, skip, count);
     }
 
-    public DatabaseList<GameChallenge> GetChallengesByUser(GameUser user, int skip, int count, string? filter = null)
+    public DatabaseList<GameChallenge> GetChallengesByUser(GameUser user, int skip, int count)
     {
+        IEnumerable<GameChallenge> challenges = this.GetNewestChallengesInternal();
+
         if (user.Username == SystemUsers.DeletedUserName)
-            return new(this.FilterChallengesByStatus(this.GameChallengesIncluded.Where(c => c.PublisherUserId == null), filter), skip, count);
+            challenges = challenges.Where(c => c.PublisherUserId == null);
         else
-            return new(this.FilterChallengesByStatus(this.GameChallengesIncluded.Where(c => c.PublisherUserId == user.UserId), filter), skip, count);
+            challenges = challenges.Where(c => c.PublisherUserId == user.UserId);
+
+        return new(challenges, skip, count);
     }
 
-    public DatabaseList<GameChallenge> GetChallengesForLevel(GameLevel level, int skip, int count, string? filter = null)
-        => new(this.FilterChallengesByStatus(this.GameChallengesIncluded.Where(c => c.LevelId == level.LevelId), filter), skip, count);
+    public DatabaseList<GameChallenge> GetChallengesForLevel(GameLevel level, int skip, int count)
+        => new(this.GetNewestChallengesInternal().Where(c => c.LevelId == level.LevelId), skip, count);
 
     #endregion
 
@@ -177,6 +162,17 @@ public partial class GameDatabaseContext // Challenges
     public bool DoesChallengeHaveScores(GameChallenge challenge)
         => this.GameChallengeScores.Any(s => s.ChallengeId == challenge.ChallengeId);
 
+    private IEnumerable<GameChallengeScoreWithRank> GetRankedChallengeHighScoresInternal(GameChallenge challenge)
+    {
+        IEnumerable<GameChallengeScore> highScores = this.GameChallengeScoresIncluded
+            .Where(s => s.ChallengeId == challenge.ChallengeId)
+            .OrderByDescending(s => s.Score)
+            .ToArray()
+            .DistinctBy(s => s.PublisherUserId);
+
+        return highScores.Select((s, i) => new GameChallengeScoreWithRank(s, i + 1));
+    }
+
     public GameChallengeScoreWithRank? GetRankedChallengeHighScoreByUser(GameChallenge challenge, GameUser user)
     {
         IEnumerable<GameChallengeScoreWithRank> scores = this.GetRankedChallengeHighScoresInternal(challenge);
@@ -189,21 +185,9 @@ public partial class GameDatabaseContext // Challenges
             .GroupBy(s => s.PublisherUserId)
             .Count();
 
-    private IEnumerable<GameChallengeScore> GetChallengeHighScoresInternal(GameChallenge challenge)
-        => this.GameChallengeScoresIncluded
-            .Where(s => s.ChallengeId == challenge.ChallengeId)
-            .OrderByDescending(s => s.Score)
-            .ToArray()
-            .DistinctBy(s => s.PublisherUserId);
-
-    private IEnumerable<GameChallengeScoreWithRank> GetRankedChallengeHighScoresInternal(GameChallenge challenge)
-    {
-        IEnumerable<GameChallengeScore> highScores = this.GetChallengeHighScoresInternal(challenge);
-        return highScores.Select((s, i) => new GameChallengeScoreWithRank(s, i + 1));
-    }
-
     public DatabaseList<GameChallengeScoreWithRank> GetRankedChallengeHighScores(GameChallenge challenge, int skip, int count)
         => new(this.GetRankedChallengeHighScoresInternal(challenge), skip, count);
+
     public DatabaseList<GameChallengeScoreWithRank> GetLowestRankedChallengeHighScores(GameChallenge challenge, int skip, int count)
         => new(this.GetRankedChallengeHighScoresInternal(challenge).OrderBy(s => s.score.Score), skip, count);
 

@@ -121,9 +121,8 @@ public class ResourceEndpoints : EndpointGroup
         {
             if (ghostService.IsUserChallengeGhostRateLimited(user.UserId))
             {
-                // Lie to the game by returning OK without any actual content, as any other responses (even successful ones)
-                // will prompt LBP Hub to try and get every ungiven ghost asset a second time before giving up, 
-                // which makes the game slower and might also screw with this rate limit.
+                // Return OK but with no content here, else Hub will try downloading this asset a second time before giving up,
+                // which makes the game freeze longer and might screw with this rate limit.
                 context.Logger.LogDebug(BunkumCategory.UserContent, $"OK with no content to deal with LBP Hub bugs");
                 return OK;
             }
