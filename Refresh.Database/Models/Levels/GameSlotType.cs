@@ -19,6 +19,16 @@ public enum GameSlotType
     /// </summary>
     [XmlEnum("playlist")]
     Playlist,
+    /// <summary>
+    /// A moon level.
+    /// </summary>
+    [XmlEnum("local")]
+    Moon,
+    /// <summary>
+    /// The pod.
+    /// </summary>
+    [XmlEnum("pod")]
+    Pod,
 }
 
 public static class GameLevelSourceExtensions
@@ -30,6 +40,8 @@ public static class GameLevelSourceExtensions
             GameSlotType.User => "user",
             GameSlotType.Story => "developer",
             GameSlotType.Playlist => "playlist",
+            GameSlotType.Moon => "local",
+            GameSlotType.Pod => "pod",
             _ => throw new ArgumentOutOfRangeException(nameof(source), source, null),
         };
     }
