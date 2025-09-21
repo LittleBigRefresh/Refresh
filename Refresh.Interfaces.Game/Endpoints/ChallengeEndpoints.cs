@@ -1,5 +1,6 @@
 using Bunkum.Core;
 using Bunkum.Core.Endpoints;
+using Bunkum.Core.Endpoints.Debugging;
 using Bunkum.Core.Responses;
 using Bunkum.Listener.Protocol;
 using Bunkum.Protocols.Http;
@@ -7,6 +8,7 @@ using Refresh.Core.Authentication.Permission;
 using Refresh.Core.Configuration;
 using Refresh.Core.Services;
 using Refresh.Core.Types.Data;
+using Refresh.Core.Types.Matching;
 using Refresh.Database;
 using Refresh.Database.Models.Assets;
 using Refresh.Database.Models.Levels;
@@ -32,7 +34,38 @@ public class ChallengeEndpoints : EndpointGroup
         if (user.IsWriteBlocked(config))
             return Unauthorized;
 
-        GameLevel? level = dataContext.Database.GetLevelByIdAndType(body.Level.Type, body.Level.LevelId);
+        // Using the level specified in the request body is unreliable, since Hub allows users to create challenges in moon levels, in which case their
+        // slot type is wrongly set to user instead of local, and the ID is that of the moon slot. This would cause the server to attribute these challenges
+        // to wrong levels on top of already having them be completely unplayable due to being for moon levels anyway. Might also cause a crash if the level
+        // the server attributes the challenge to happens to have a checkpoint of the same Uid as the challenge's start checkpoint, but none matching the
+        // finish checkpoint. Since users can only ever create challenges in levels they're currently playing, and LBP Hub uses the /match endpoint seemingly
+        // just like LBP2, we can simply use room data to find out the correct level.
+        // If showing online users is disabled, we won't be able to get the user's room even if they're online, so fall back to using the request body in that case.
+        // Don't want challenge uploading to no longer work if showing online users is disabled.
+        GameLevel? level;
+        GameRoom? room = dataContext.Match.RoomAccessor.GetRoomByUser(user, dataContext.Platform, dataContext.Game);
+
+        if (room != null)
+        {
+            RoomSlotType roomSlotType = room.LevelType;
+            if (roomSlotType != RoomSlotType.Story && roomSlotType != RoomSlotType.Online && roomSlotType != RoomSlotType.DLC)
+            {
+                dataContext.Database.AddErrorNotification
+                (
+                    "Challenge upload failed", 
+                    $"Your challenge '{body.Name}' counldn't be uploaded because it was not a story, DLC or community level challenge.",
+                    user
+                );
+                return BadRequest;
+            }
+
+            level = dataContext.Database.GetLevelByIdAndType(roomSlotType.ToGameSlotType(), body.Level.LevelId);
+        }
+        else
+        {
+            level = dataContext.Database.GetLevelByIdAndType(body.Level.Type, body.Level.LevelId);
+        }
+        
         if (level == null) 
             return NotFound;
         
@@ -60,59 +93,79 @@ public class ChallengeEndpoints : EndpointGroup
     // after they're uploaded. Since not many people play LBP Hub, they'd only ever be able to play 0 challenges or atleast a small handful if they're lucky enough.
     // This is why we don't implement challenge expiration anymore.
     // The challenges returned are sorted by newest anyway, and since Hub doesn't send any pagination params for challenges, we're only returning the newest 100 anyway.
+    
+    private GameLevel? FromRoom(GameUser user, DataContext dataContext)
+    {
+        GameLevel? level;
+        GameRoom? room = dataContext.Match.RoomAccessor.GetRoomByUser(user, dataContext.Platform, dataContext.Game);
+
+        if (room != null)
+        {
+            GameSlotType slotType = room.LevelType.ToGameSlotType();
+            switch (slotType)
+            {
+                case GameSlotType.User:
+                case GameSlotType.Story:
+                    level = dataContext.Database.GetLevelByIdAndType(slotType, room.LevelId);
+
+                    // Won't be able to play any challenges if level doesn't exist anyway
+                    if (level == null)
+                    {
+                        throw new InvalidOperationException("Challenges requested for non-existent level, this is supposed to be caught by the caller.");
+                    }
+                    return level;
+                case GameSlotType.Pod:
+                    // Do nothing, allow all challenges so the game could show them in the pod menu.
+                    return null;
+                case GameSlotType.Moon:
+                    // No challenges for moon levels
+                    throw new InvalidOperationException("Challenges requested for moon slot type, this is supposed to be caught by the caller.");
+                default:
+                    throw new ArgumentOutOfRangeException(nameof(slotType), slotType, "Challenges requested for invalid slot type");
+            }
+        }
+
+        return null;
+    }
 
     /// <summary>
-    /// Returns challenges by the specified user. Gets called alongside the endpoint below
+    /// Supposed to return challenges by the specified user. Always called alongside the friends endpoint below. Since the game does nothing to differenciate
+    /// between this endpoint's response and /friends' response, and always calls this and /friends together,
+    /// it's faster to return nothing here and everything with /friends, since we don't have to do any user lookups and save one challenge query this way.
     /// </summary>
     [GameEndpoint("user/{username}/challenges", HttpMethods.Get, ContentType.Xml)]
     [MinimumRole(GameUserRole.Restricted)]
     [NullStatusCode(NotFound)]
-    public SerializedChallengeList? GetChallengesByUser(RequestContext context, DataContext dataContext, string username)
-    {
-        GameUser? user = dataContext.Database.GetUserByUsername(username);
-        if (user == null) return null;
-
-        string? status = context.QueryString.Get("status");
-        DatabaseList<GameChallenge> challenges = dataContext.Database.GetChallengesByUser(user, 0, 100);
-        
-        return new SerializedChallengeList(SerializedChallenge.FromOldList(challenges.Items, dataContext).ToList());
-    }
+    public SerializedChallengeList? GetChallengesByUser(RequestContext context)
+        => new([]);
 
     /// <summary>
-    /// Intended to return challenges by the specified user's friends. Gets called alongside the endpoint above.
-    /// Return all but this user's challenges instead, as not many people play LBP Hub and only making a fraction of an already
-    /// very small count of challenges playable doesn't make any sense here.
-    /// </summary>
-    [GameEndpoint("user/{username}/friends/challenges", HttpMethods.Get, ContentType.Xml)]
-    [MinimumRole(GameUserRole.Restricted)]
-    [NullStatusCode(NotFound)]
-    public SerializedChallengeList? GetChallengesByUsersFriends(RequestContext context, DataContext dataContext, string username)
-    {
-        GameUser? user = dataContext.Database.GetUserByUsername(username);
-        string? status = context.QueryString.Get("status");
-
-        DatabaseList<GameChallenge> challenges;
-        if (user == null)
-            challenges = dataContext.Database.GetNewestChallenges(0, 100);
-        else
-            challenges = dataContext.Database.GetChallengesNotByUser(user, 0, 100);
-
-        return new SerializedChallengeList(SerializedChallenge.FromOldList(challenges.Items, dataContext).ToList());
-    }
-
-    /// <summary>
-    /// Get's both the specified user's and their friend's challenges. Only gets called in the Past Challenges page while both
-    /// endpoints above get called everywhere else. Don't know why only Past Challenges uses this endpoint, considering the "status"
-    /// query param already specifies whether to return active or expired challenges for all 3 endpoints.
+    /// /friends is supposed to get the specified user's friends' challenges, and /joined is supposed to get both the user's and
+    /// their friends' challenges. It's really counter-productive to only limit users to be able to play a small fraction of an already very small selection
+    /// (since not many people play Hub), so just return challenges by anyone here.
+    /// The reason why /friends and /joined are handelled the same is explained in the /user endpoint's summary. 
+    /// Don't know why /joined is only ever called while in the Past Challenges menu and both /user + /friends everywhere else, 
+    /// considering the "status" query param already specifies whether to return active or expired challenges for all 3 endpoints.
     /// </summary>
     [GameEndpoint("user/{username}/challenges/joined", HttpMethods.Get, ContentType.Xml)]
+    [GameEndpoint("user/{username}/friends/challenges", HttpMethods.Get, ContentType.Xml)]
+    [DebugResponseBody]
     [MinimumRole(GameUserRole.Restricted)]
     [NullStatusCode(NotFound)]
-    public SerializedChallengeList? GetJoinedChallenges(RequestContext context, DataContext dataContext, string username)
+    public SerializedChallengeList? GetJoinedChallenges(RequestContext context, GameUser user, DataContext dataContext)
     {
-        string? status = context.QueryString.Get("status");
+        GameLevel? level;
+        try
+        {
+            level = this.FromRoom(user, dataContext);
+        }
+        catch (InvalidOperationException)
+        {
+            // Ignore and just return
+            return null;
+        }
 
-        DatabaseList<GameChallenge> challenges = dataContext.Database.GetNewestChallenges(0, 100);
+        DatabaseList<GameChallenge> challenges = dataContext.Database.GetNewestChallenges(0, 100, level);
         return new SerializedChallengeList(SerializedChallenge.FromOldList(challenges.Items, dataContext).ToList());
     }
 
@@ -224,15 +277,9 @@ public class ChallengeEndpoints : EndpointGroup
     [GameEndpoint("challenge/{challengeId}/scoreboard/{username}/friends", HttpMethods.Get, ContentType.Xml)]
     [MinimumRole(GameUserRole.Restricted)]
     [NullStatusCode(NotFound)]
-    public SerializedChallengeScoreList? GetScoresByUsersFriendsForChallenge(RequestContext context, DataContext dataContext, GameUser user, int challengeId, ChallengeGhostRateLimitService ghostService)
-    {
-        ghostService.RemoveUserFromChallengeGhostRateLimit(user.UserId);
-
-        GameChallenge? challenge = dataContext.Database.GetChallengeById(challengeId);
-        if (challenge == null) return null;
-
-        return new SerializedChallengeScoreList();
-    }
+    public SerializedChallengeScoreList? GetScoresByUsersFriendsForChallenge(RequestContext context, int challengeId)
+        // No need to reset ghost asset rate limit, the game already sends requests to enough other score endpoints at that point
+        => new([]);
 
     /// <summary>
     /// Called to get a 3 scores large fragment of a challenge's leaderboard, with the specified user's score being preferrably in the middle.

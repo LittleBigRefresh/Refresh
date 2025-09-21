@@ -74,38 +74,25 @@ public partial class GameDatabaseContext // Challenges
         return this.GameChallenges.Count();
     }
 
-    public IEnumerable<GameChallenge> GetNewestChallengesInternal()
-        => this.GameChallengesIncluded.OrderByDescending(c => c.PublishDate);
+    private IEnumerable<GameChallenge> GetNewestChallengesInternal(GameLevel? level = null)
+        => this.GameChallengesIncluded
+            .FilterByLevel(level)
+            .OrderByDescending(c => c.PublishDate);
 
-    public DatabaseList<GameChallenge> GetNewestChallenges(int skip, int count)
-        => new(this.GetNewestChallengesInternal(), skip, count);
+    public DatabaseList<GameChallenge> GetNewestChallenges(int skip, int count, GameLevel? level = null)
+        => new(this.GetNewestChallengesInternal(level), skip, count);
 
-    public DatabaseList<GameChallenge> GetChallengesNotByUser(GameUser user, int skip, int count)
+    public DatabaseList<GameChallenge> GetChallengesByUser(GameUser user, int skip, int count, GameLevel? level = null)
     {
-        IEnumerable<GameChallenge> challenges = this.GetNewestChallengesInternal();
-
-        if (user.Username == SystemUsers.DeletedUserName)
-            challenges = challenges.Where(c => c.PublisherUserId != null);
-        else
-            challenges = challenges.Where(c => c.PublisherUserId != user.UserId);
-
-        return new(challenges, skip, count);
-    }
-
-    public DatabaseList<GameChallenge> GetChallengesByUser(GameUser user, int skip, int count)
-    {
-        IEnumerable<GameChallenge> challenges = this.GetNewestChallengesInternal();
+        IEnumerable<GameChallenge> challenges = this.GetNewestChallengesInternal(level);
 
         if (user.Username == SystemUsers.DeletedUserName)
             challenges = challenges.Where(c => c.PublisherUserId == null);
         else
             challenges = challenges.Where(c => c.PublisherUserId == user.UserId);
-
+        
         return new(challenges, skip, count);
     }
-
-    public DatabaseList<GameChallenge> GetChallengesForLevel(GameLevel level, int skip, int count)
-        => new(this.GetNewestChallengesInternal().Where(c => c.LevelId == level.LevelId), skip, count);
 
     #endregion
 
