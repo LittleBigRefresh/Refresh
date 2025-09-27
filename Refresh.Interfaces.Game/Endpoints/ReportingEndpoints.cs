@@ -20,6 +20,7 @@ namespace Refresh.Interfaces.Game.Endpoints;
 
 public class ReportingEndpoints : EndpointGroup 
 {
+    // TODO: LBP1 beta builds upload all related assets after sending the report itself to this endpoint, handle that case
     [GameEndpoint("grief", HttpMethods.Post, ContentType.Xml)]
     [RequireEmailVerified]
     public Response UploadReport(RequestContext context, GameDatabaseContext database, GameReport body, GameUser user,
@@ -35,6 +36,7 @@ public class ReportingEndpoints : EndpointGroup
             case TokenGame.LittleBigPlanet1:
             case TokenGame.LittleBigPlanet2:
             case TokenGame.LittleBigPlanet3:
+            case TokenGame.BetaBuild:
                 imageSize = new Size(640, 360);
                 break;
             case TokenGame.LittleBigPlanetVita:
