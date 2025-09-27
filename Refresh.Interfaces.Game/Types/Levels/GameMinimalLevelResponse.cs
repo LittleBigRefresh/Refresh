@@ -184,7 +184,7 @@ public class GameMinimalLevelResponse : IDataConvertableFrom<GameMinimalLevelRes
         
         response.PlayerCount = dataContext.Match.GetPlayerCountForLevel(RoomSlotType.Online, response.LevelId);
 
-        if (dataContext.Game == TokenGame.LittleBigPlanet1)
+        if (dataContext.Game is TokenGame.LittleBigPlanet1 or TokenGame.BetaBuild)
         {
             response.Tags = string.Join(',', dataContext.Database.GetTagsForLevel(old).Select(t => t.ToLbpString()));
         }
