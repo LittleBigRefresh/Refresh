@@ -81,7 +81,7 @@ public enum Tag : byte
     Beautiful = 74,
     Electric = 75,
     Frosty,
-    Ass,
+    Insane,
 }
 
 public static class TagExtensions
@@ -188,7 +188,7 @@ public static class TagExtensions
         // Custom tags for LBP1 beta builds, as those don't have any hardcoded tags and instead
         // use the /tags endpoint and slot responses to discover and show tags (including arbitrary ones)
         { "Frosty", Tag.Frosty },
-        { "ASS", Tag.Ass },
+        { "INSANE", Tag.Insane },
     }.ToFrozenDictionary();
 
     public static string? ToLbpString(this Tag tag) => StringMap.GetValueOrDefault(tag);
