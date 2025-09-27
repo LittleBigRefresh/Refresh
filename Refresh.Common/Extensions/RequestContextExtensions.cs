@@ -10,11 +10,15 @@ public static class RequestContextExtensions
     public static (int, int) GetPageData(this RequestContext context, int maxCount = 100)
     {
         bool api = context.IsApi();
-        
-        bool parsed = int.TryParse(context.QueryString[api ? "skip" : "pageStart"], out int skip);
+        return context.GetPageData(context.QueryString[api ? "skip" : "pageStart"], context.QueryString[api ? "count" : "pageSize"], maxCount);
+    }
+
+    public static (int, int) GetPageData(this RequestContext context, string? skipStr, string? countStr, int maxCount = 100)
+    {
+        bool parsed = int.TryParse(skipStr, out int skip);
         if (parsed) skip--; // If we parsed, subtract the number of items to skip by one to prevent an off-by-one.
         
-        parsed = int.TryParse(context.QueryString[api ? "count" : "pageSize"], out int count);
+        parsed = int.TryParse(countStr, out int count);
         if (!parsed) count = 20; // Default items in a page
         
         count = Math.Clamp(count, 0, maxCount);

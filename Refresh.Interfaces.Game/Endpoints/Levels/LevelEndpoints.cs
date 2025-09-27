@@ -1,5 +1,6 @@
 using Bunkum.Core;
 using Bunkum.Core.Endpoints;
+using Bunkum.Core.Responses;
 using Bunkum.Core.Storage;
 using Bunkum.Listener.Protocol;
 using Refresh.Common.Constants;
@@ -11,6 +12,7 @@ using Refresh.Database;
 using Refresh.Database.Models.Authentication;
 using Refresh.Database.Models.Levels;
 using Refresh.Database.Models.Playlists;
+using Refresh.Database.Models.Relations;
 using Refresh.Database.Models.Users;
 using Refresh.Database.Query;
 using Refresh.Interfaces.Game.Endpoints.DataTypes.Response;
@@ -111,6 +113,56 @@ public class LevelEndpoints : EndpointGroup
         if (user == null) return null;
         
         return this.GetLevels(context, database, categories, overrideService, user, token, dataContext, route);
+    }
+
+    // Route example: /lbp/slots/like/user/276&pageStart=1&pageSize=30
+    // The syntax error in the query params (& instead of ?) makes Bunkum include them as part of the ID route param
+    [GameEndpoint("slots/like/{slotType}/{id}", ContentType.Xml)]
+    [MinimumRole(GameUserRole.Restricted)]
+    public Response GetLevelsLikeLevel(RequestContext context, DataContext dataContext, GameUser user, string slotType, string id)
+    {
+        string levelIdStr;
+        int skip, count;
+
+        // Get the level ID and the pagination params from the ID route parameter
+        if (id.Contains('&'))
+        {
+            levelIdStr = id.Split('&')[0];
+
+            string skipStr = "0";
+            string countStr = "30";
+            if (id.Contains("pageStart="))
+            {
+                skipStr = id.Split("pageStart=")[1];
+            }
+            if (id.Contains("pageSize="))
+            {
+                countStr = id.Split("pageSize=")[1];
+            }
+
+            (skip, count) = context.GetPageData(skipStr, countStr);
+        }
+        else
+        {
+            levelIdStr = id;
+            (skip, count) = context.GetPageData();
+        }
+
+        bool idParsed = int.TryParse(levelIdStr, out int parsedId);
+        if (!idParsed) return BadRequest;
+
+        GameLevel? level = dataContext.Database.GetLevelByIdAndType(slotType, parsedId);
+        if (level == null) return NotFound;
+
+        // Simply take a random tag from the level and then get levels which use that tag
+        IQueryable<TagLevelRelation> tags = dataContext.Database.GetTagRelationsForLevel(level);
+        if (!tags.Any()) return new(new SerializedMinimalLevelList(), ContentType.Xml); // Return empty list if there are no tags for the level
+
+        Tag tagToUse = tags.ElementAt(Random.Shared.Next(tags.Count())).Tag;
+        DatabaseList<GameLevel> levels = dataContext.Database.GetLevelsByTag(count, skip, user, tagToUse, LevelFilterSettings.FromGameRequest(context, dataContext.Game));
+
+        SerializedMinimalLevelList response = new(GameMinimalLevelResponse.FromOldList(levels.Items.ToArray(), dataContext)!, levels.TotalItems, levels.NextPageIndex);
+        return new(response, ContentType.Xml);
     }
 
     [GameEndpoint("s/{slotType}/{id}", ContentType.Xml)]
