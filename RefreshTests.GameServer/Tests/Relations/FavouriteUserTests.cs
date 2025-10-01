@@ -81,7 +81,7 @@ public class FavouriteUserTests : GameServerTest
     
     [TestCase(false)]
     [TestCase(true)]
-    public void CantFavouriteUserTwice(bool psp)
+    public void CanTryToFavouriteUserTwice(bool psp)
     {
         using TestContext context = this.GetServer();
         GameUser user1 = context.CreateUser();
@@ -90,15 +90,14 @@ public class FavouriteUserTests : GameServerTest
         using HttpClient client = context.GetAuthenticatedClient(TokenType.Game, user1);
         if (psp)
             client.DefaultRequestHeaders.UserAgent.TryParseAdd("LBPPSP CLIENT");
-
         
         //Favourite a user
         HttpResponseMessage message = client.PostAsync($"/lbp/favourite/user/{user2.Username}", new ReadOnlyMemoryContent(Array.Empty<byte>())).Result;
         Assert.That(message.StatusCode, Is.EqualTo(OK));
         
-        //Favourite the same user again
+        //Favourite the same user again (should still stay favourited)
         message = client.PostAsync($"/lbp/favourite/user/{user2.Username}", new ReadOnlyMemoryContent(Array.Empty<byte>())).Result;
-        Assert.That(message.StatusCode, Is.EqualTo(psp ? OK : Unauthorized));
+        Assert.That(message.StatusCode, Is.EqualTo(OK));
         
         //Get the favourite users
         message = client.GetAsync($"/lbp/favouriteUsers/{user1.Username}").Result;
@@ -111,7 +110,7 @@ public class FavouriteUserTests : GameServerTest
     
     [TestCase(false)]
     [TestCase(true)]
-    public void CantUnfavouriteUserTwice(bool psp)
+    public void CanTryToUnfavouriteUserTwice(bool psp)
     {
         using TestContext context = this.GetServer();
         GameUser user1 = context.CreateUser();
@@ -121,10 +120,12 @@ public class FavouriteUserTests : GameServerTest
         if(psp)        
             client.DefaultRequestHeaders.UserAgent.TryParseAdd("LBPPSP CLIENT");
 
-
         //Unfavourite a user, which we haven't favourited
         HttpResponseMessage message = client.PostAsync($"/lbp/unfavourite/user/{user2.Username}", new ReadOnlyMemoryContent(Array.Empty<byte>())).Result;
-        Assert.That(message.StatusCode, Is.EqualTo(psp ? OK : Unauthorized));
+        Assert.That(message.StatusCode, Is.EqualTo(OK));
+
+        //Make sure they're still unfavourited
+        Assert.That(context.Database.IsUserFavouritedByUser(user2, user1), Is.False);
     }
     
     [Test]
