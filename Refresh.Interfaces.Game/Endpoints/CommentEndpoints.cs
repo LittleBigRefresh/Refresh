@@ -3,6 +3,7 @@ using Bunkum.Core.Endpoints;
 using Bunkum.Core.Responses;
 using Bunkum.Listener.Protocol;
 using Bunkum.Protocols.Http;
+using Refresh.Common.Constants;
 using Refresh.Common.Time;
 using Refresh.Core.Authentication.Permission;
 using Refresh.Core.Configuration;
@@ -25,13 +26,14 @@ public class CommentEndpoints : EndpointGroup
         if (user.IsWriteBlocked(config))
             return Unauthorized;
         
-        if (body.Content.Length > 4096)
-        {
-            return BadRequest;
-        }
-
         GameUser? profile = database.GetUserByUsername(username);
         if (profile == null) return NotFound;
+
+        if (body.Content.Length > UgcLimits.CommentLimit)
+        {
+            database.AddErrorNotification("Failed to post comment", $"Your comment under {profile.Username}'s profile couldn't be posted because it was too long.", user);
+            return BadRequest;
+        }
         
         // TODO: include a check for if the user wants to receive these types of notifications 
         if (!profile.Equals(user)) 
@@ -68,8 +70,9 @@ public class CommentEndpoints : EndpointGroup
         GameProfileComment? comment = database.GetProfileCommentById(commentId);
         if (comment == null) return BadRequest;
 
-        //Validate someone doesnt try to delete someone elses comment
-        if (comment.Author.UserId != user.UserId)
+        // Validate someone doesnt try to delete someone elses comment.
+        // Also allow profile owners to delete any comment off their profile to not make the game make it look like us not implementing this is a bug.
+        if (user.UserId != comment.AuthorUserId && user.UserId != profile.UserId)
         {
             context.Logger.LogWarning(BunkumCategory.Game, $"User {user.Username} attempted to delete someone elses comment! This is likely a forged request");
             return Unauthorized;
@@ -88,13 +91,14 @@ public class CommentEndpoints : EndpointGroup
         if (user.IsWriteBlocked(config))
             return Unauthorized;
 
-        if (body.Content.Length > 4096)
-        {
-            return BadRequest;
-        }
-        
         GameLevel? level = database.GetLevelByIdAndType(slotType, id);
         if (level == null) return NotFound;
+
+        if (body.Content.Length > UgcLimits.CommentLimit)
+        {
+            database.AddErrorNotification("Failed to post comment", $"Your comment under the level '{level.Title}' couldn't be posted because it was too long.", user);
+            return BadRequest;
+        }
 
         if (level.Publisher != null && !level.Publisher.Equals(user)) 
         {
@@ -131,8 +135,9 @@ public class CommentEndpoints : EndpointGroup
         GameLevelComment? comment = database.GetLevelCommentById(commentId);
         if (comment == null) return BadRequest;
         
-        //Validate someone doesnt try to delete someone else's comment
-        if (comment.Author.UserId != user.UserId)
+        // Validate someone doesnt try to delete someone else's comment.
+        // Also allow level publishers to delete any comment off their level to not make the game make it look like us not implementing this is a bug.
+        if (comment.AuthorUserId != user.UserId && user.UserId != level.PublisherUserId)
         {
             context.Logger.LogWarning(BunkumCategory.Game, $"User {user.Username} attempted to delete someone else's comment! This is likely a forged request");
             return Unauthorized;
@@ -157,12 +162,13 @@ public class CommentEndpoints : EndpointGroup
         return OK;
     }
     
-    [GameEndpoint("rateComment/user/{content}", HttpMethods.Post)] // `user` level comments
-    [GameEndpoint("rateComment/developer/{content}", HttpMethods.Post)] // `developer` level comments
-    public Response RateLevelComment(RequestContext context, GameDatabaseContext database, GameUser user, string content)
+    [GameEndpoint("rateComment/{slotType}/{content}", HttpMethods.Post)]
+    public Response RateLevelComment(RequestContext context, GameDatabaseContext database, GameUser user, string slotType, string content)
     {
         if (!int.TryParse(context.QueryString["commentId"], out int commentId)) return BadRequest;
         if (!Enum.TryParse(context.QueryString["rating"], out RatingType ratingType)) return BadRequest;
+
+        if (slotType is not "user" or "developer") return BadRequest;
 
         GameLevelComment? comment = database.GetLevelCommentById(commentId);
         if (comment == null)
