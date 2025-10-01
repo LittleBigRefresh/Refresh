@@ -22,18 +22,15 @@ public class RelationEndpoints : EndpointGroup
         int id, GameServerConfig config)
     {
         if (user.IsWriteBlocked(config))
-            return Unauthorized;
+            return context.IsPSP() ? OK : Unauthorized; // See comment below
         
         GameLevel? level = database.GetLevelByIdAndType(slotType, id);
         // On PSP, we have to lie or else the client will begin spamming the server
         // https://discord.com/channels/1049223665243389953/1049225857350254632/1153468991675838474 
         if (level == null) return context.IsPSP() ? OK : NotFound;
 
-        if (database.FavouriteLevel(level, user))
-            return OK;
-        
-        // See above comment about PSP
-        return context.IsPSP() ? OK : Unauthorized;
+        database.FavouriteLevel(level, user);
+        return OK;
     }
     
     [GameEndpoint("unfavourite/slot/{slotType}/{id}", HttpMethods.Post)]
@@ -42,18 +39,15 @@ public class RelationEndpoints : EndpointGroup
         string slotType, int id, GameServerConfig config)
     {
         if (user.IsWriteBlocked(config))
-            return Unauthorized;
+            return context.IsPSP() ? OK : Unauthorized; // See comment below
 
         GameLevel? level = database.GetLevelByIdAndType(slotType, id);
         // On PSP, we have to lie or else the client will begin spamming the server
         // https://discord.com/channels/1049223665243389953/1049225857350254632/1153468991675838474 
         if (level == null) return context.IsPSP() ? OK : NotFound;
 
-        if (database.UnfavouriteLevel(level, user))
-            return OK;
-        
-        // See above comment about PSP
-        return context.IsPSP() ? OK : Unauthorized;
+        database.UnfavouriteLevel(level, user);
+        return OK;
     }
     
     [GameEndpoint("favourite/user/{username}", HttpMethods.Post)]
@@ -62,18 +56,15 @@ public class RelationEndpoints : EndpointGroup
         GameServerConfig config)
     {
         if (user.IsWriteBlocked(config))
-            return Unauthorized;
+            return context.IsPSP() ? OK : Unauthorized; // See comment below
         
         GameUser? userToFavourite = database.GetUserByUsername(username);
         // On PSP, we have to lie or else the client will begin spamming the server
         // https://discord.com/channels/1049223665243389953/1049225857350254632/1153468991675838474
         if (userToFavourite == null) return context.IsPSP() ? OK : NotFound;
 
-        if (database.FavouriteUser(userToFavourite, user))
-            return OK;
-
-        // See above comment about PSP
-        return context.IsPSP() ? OK : Unauthorized;
+        database.FavouriteUser(userToFavourite, user);
+        return OK;
     }
     
     [GameEndpoint("unfavourite/user/{username}", HttpMethods.Post)]
@@ -82,18 +73,15 @@ public class RelationEndpoints : EndpointGroup
         string username, GameServerConfig config)
     {
         if (user.IsWriteBlocked(config))
-            return Unauthorized;
+            return context.IsPSP() ? OK : Unauthorized; // See comment below
         
         GameUser? userToFavourite = database.GetUserByUsername(username);
         // On PSP, we have to lie or else the client will begin spamming the server
         // https://discord.com/channels/1049223665243389953/1049225857350254632/1153468991675838474
         if (userToFavourite == null) return context.IsPSP() ? OK : NotFound;
 
-        if (database.UnfavouriteUser(userToFavourite, user))
-            return OK;
-
-        // See above comment about PSP
-        return context.IsPSP() ? OK : Unauthorized;
+        database.UnfavouriteUser(userToFavourite, user);
+        return OK;
     }
 
     [GameEndpoint("favouriteUsers/{username}", ContentType.Xml)]
@@ -116,11 +104,9 @@ public class RelationEndpoints : EndpointGroup
     {
         GameLevel? level = database.GetLevelByIdAndType(slotType, id);
         if (level == null) return NotFound;
-        
-        if (database.QueueLevel(level, user))
-            return OK;
-        
-        return Unauthorized;
+
+        database.QueueLevel(level, user);
+        return OK;
     }
     
     [GameEndpoint("lolcatftw/remove/{slotType}/{id}", HttpMethods.Post)]
@@ -128,11 +114,9 @@ public class RelationEndpoints : EndpointGroup
     {
         GameLevel? level = database.GetLevelByIdAndType(slotType, id);
         if (level == null) return NotFound;
-        
-        if (database.DequeueLevel(level, user))
-            return OK;
-        
-        return Unauthorized;
+
+        database.DequeueLevel(level, user);
+        return OK;
     }
 
     [GameEndpoint("lolcatftw/clear", HttpMethods.Post)]
