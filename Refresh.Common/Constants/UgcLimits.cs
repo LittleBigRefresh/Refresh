@@ -9,4 +9,5 @@ public static class UgcLimits
     // String limits
     public const int TitleLimit = 64;
     public const int DescriptionLimit = 512;
+    public const int CommentLimit = 4096;
 }
