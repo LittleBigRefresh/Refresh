@@ -168,7 +168,7 @@ public class CommentEndpoints : EndpointGroup
         if (!int.TryParse(context.QueryString["commentId"], out int commentId)) return BadRequest;
         if (!Enum.TryParse(context.QueryString["rating"], out RatingType ratingType)) return BadRequest;
 
-        if (slotType is not "user" or "developer") return BadRequest;
+        if (slotType is not "user" and not "developer") return BadRequest;
 
         GameLevelComment? comment = database.GetLevelCommentById(commentId);
         if (comment == null)
