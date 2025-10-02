@@ -135,11 +135,12 @@ public class UserCommentTests : GameServerTest
     public void CantDeleteAnotherUsersComment()
     {
         using TestContext context = this.GetServer();
-        GameUser user1 = context.CreateUser();
-        GameUser user2 = context.CreateUser();
+        GameUser publisher = context.CreateUser();
+        GameUser profile = context.CreateUser();
+        GameUser moron = context.CreateUser();
 
-        using HttpClient client1 = context.GetAuthenticatedClient(TokenType.Game, user1);
-        using HttpClient client2 = context.GetAuthenticatedClient(TokenType.Game, user2);
+        using HttpClient client1 = context.GetAuthenticatedClient(TokenType.Game, publisher);
+        using HttpClient client2 = context.GetAuthenticatedClient(TokenType.Game, moron);
 
         SerializedComment comment = new()
         {
@@ -149,16 +150,57 @@ public class UserCommentTests : GameServerTest
             Handle = null,
         };
 
-        HttpResponseMessage response = client1.PostAsync($"/lbp/postUserComment/{user2.Username}", new StringContent(comment.AsXML())).Result;
+        HttpResponseMessage response = client1.PostAsync($"/lbp/postUserComment/{profile.Username}", new StringContent(comment.AsXML())).Result;
         Assert.That(response.StatusCode, Is.EqualTo(OK));
 
-        response = client1.GetAsync($"/lbp/userComments/{user2.Username}").Result;
+        response = client1.GetAsync($"/lbp/userComments/{profile.Username}").Result;
         SerializedCommentList userComments = response.Content.ReadAsXML<SerializedCommentList>();
         Assert.That(userComments.Items, Has.Count.EqualTo(1));
         Assert.That(userComments.Items[0].Content, Is.EqualTo(comment.Content));
         
-        response = client2.PostAsync($"/lbp/deleteUserComment/{user2.Username}?commentId={userComments.Items[0].CommentId}", new ByteArrayContent(Array.Empty<byte>())).Result;
+        response = client2.PostAsync($"/lbp/deleteUserComment/{profile.Username}?commentId={userComments.Items[0].CommentId}", new ByteArrayContent(Array.Empty<byte>())).Result;
         Assert.That(response.StatusCode, Is.EqualTo(Unauthorized));
+
+        // Make sure the comment is still there
+        response = client1.GetAsync($"/lbp/userComments/{profile.Username}").Result;
+        userComments = response.Content.ReadAsXML<SerializedCommentList>();
+        Assert.That(userComments.Items, Has.Count.EqualTo(1));
+        Assert.That(userComments.Items[0].Content, Is.EqualTo(comment.Content));
+    }
+
+    [Test]
+    public void CanDeleteAnotherUsersCommentAsProfileOwner()
+    {
+        using TestContext context = this.GetServer();
+        GameUser publisher = context.CreateUser();
+        GameUser profile = context.CreateUser();
+
+        using HttpClient client1 = context.GetAuthenticatedClient(TokenType.Game, publisher);
+        using HttpClient client2 = context.GetAuthenticatedClient(TokenType.Game, profile);
+
+        SerializedComment comment = new()
+        {
+            Content = "This is a test comment!",
+            CommentId = 0,
+            Timestamp = 0,
+            Handle = null,
+        };
+
+        HttpResponseMessage response = client1.PostAsync($"/lbp/postUserComment/{profile.Username}", new StringContent(comment.AsXML())).Result;
+        Assert.That(response.StatusCode, Is.EqualTo(OK));
+
+        response = client1.GetAsync($"/lbp/userComments/{profile.Username}").Result;
+        SerializedCommentList userComments = response.Content.ReadAsXML<SerializedCommentList>();
+        Assert.That(userComments.Items, Has.Count.EqualTo(1));
+        Assert.That(userComments.Items[0].Content, Is.EqualTo(comment.Content));
+        
+        response = client2.PostAsync($"/lbp/deleteUserComment/{profile.Username}?commentId={userComments.Items[0].CommentId}", new ByteArrayContent(Array.Empty<byte>())).Result;
+        Assert.That(response.StatusCode, Is.EqualTo(OK));
+
+        // Make sure the comment is now gone
+        response = client1.GetAsync($"/lbp/userComments/{profile.Username}").Result;
+        userComments = response.Content.ReadAsXML<SerializedCommentList>();
+        Assert.That(userComments.Items, Has.Count.EqualTo(0));
     }
     
     [Test]
