@@ -49,8 +49,9 @@ public class SerializedChallenge : IDataConvertableFrom<SerializedChallenge, Gam
     /// <seealso cref="SerializedChallengeCriterion"/>
     [XmlArray("criteria")] public List<SerializedChallengeCriterion> Criteria { get; set; } = [];
 
-    public IEnumerable<GameChallengeCriteriaType> CriteriaTypes 
-        => this.Criteria.Select(c => (GameChallengeCriteriaType)c.Type);
+    public GameChallengeCriteriaType CriteriaType  => this.Criteria
+        .Select(c => (GameChallengeCriteriaType)c.Type)
+        .First();
 
     #nullable enable
     public static SerializedChallenge? FromOld(GameChallenge? old, DataContext dataContext)

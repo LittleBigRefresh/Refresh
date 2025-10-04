@@ -12,8 +12,7 @@ public partial class GameDatabaseContext // Challenges
 
     private IQueryable<GameChallenge> GameChallengesIncluded => this.GameChallenges
         .Include(c => c.Level)
-        .Include(c => c.Level.Publisher)
-        .Include(c => c.Level.Publisher!.Statistics);
+        .Include(c => c.Level.Publisher);
 
     public GameChallenge CreateChallenge(ICreateChallengeInfo createInfo, GameLevel level, GameUser user)
     {
@@ -26,8 +25,8 @@ public partial class GameDatabaseContext // Challenges
             Level = level,
             StartCheckpointUid = createInfo.StartCheckpointUid,
             FinishCheckpointUid = createInfo.FinishCheckpointUid,
-            // Take the type of the first (so far always only) criterion in the challenge criteria
-            Type = createInfo.CriteriaTypes.First(),
+            // Take the type of the usually only criterion in the challenge criteria
+            Type = createInfo.CriteriaType,
             PublishDate = now,
             LastUpdateDate = now,
             ExpirationDate = now.AddDays(createInfo.ExpiresAt),
@@ -74,17 +73,15 @@ public partial class GameDatabaseContext // Challenges
         return this.GameChallenges.Count();
     }
 
-    private IEnumerable<GameChallenge> GetNewestChallengesInternal(GameLevel? level = null)
-        => this.GameChallengesIncluded
-            .FilterByLevel(level)
-            .OrderByDescending(c => c.PublishDate);
+    private IQueryable<GameChallenge> GetNewestChallengesInternal()
+        => this.GameChallengesIncluded.OrderByDescending(c => c.PublishDate);
 
-    public DatabaseList<GameChallenge> GetNewestChallenges(int skip, int count, GameLevel? level = null)
-        => new(this.GetNewestChallengesInternal(level), skip, count);
+    public DatabaseList<GameChallenge> GetNewestChallenges(int skip, int count)
+        => new(this.GetNewestChallengesInternal(), skip, count);
 
-    public DatabaseList<GameChallenge> GetChallengesByUser(GameUser user, int skip, int count, GameLevel? level = null)
+    public DatabaseList<GameChallenge> GetChallengesByUser(GameUser user, int skip, int count)
     {
-        IEnumerable<GameChallenge> challenges = this.GetNewestChallengesInternal(level);
+        IQueryable<GameChallenge> challenges = this.GetNewestChallengesInternal();
 
         if (user.Username == SystemUsers.DeletedUserName)
             challenges = challenges.Where(c => c.PublisherUserId == null);
@@ -93,6 +90,9 @@ public partial class GameDatabaseContext // Challenges
         
         return new(challenges, skip, count);
     }
+
+    public DatabaseList<GameChallenge> GetChallengesForLevel(GameLevel level, int skip, int count)
+        => new(this.GetNewestChallengesInternal().Where(c => c.LevelId == level.LevelId), skip, count);
 
     #endregion
 

@@ -8,5 +8,5 @@ public interface ICreateChallengeInfo
     int StartCheckpointUid { get; }
     int FinishCheckpointUid { get; }
     long ExpiresAt { get; }
-    IEnumerable<GameChallengeCriteriaType> CriteriaTypes { get; }
+    GameChallengeCriteriaType CriteriaType { get; }
 }
