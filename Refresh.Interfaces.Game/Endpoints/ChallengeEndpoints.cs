@@ -188,11 +188,7 @@ public class ChallengeEndpoints : EndpointGroup
         GameChallenge? challenge = dataContext.Database.GetChallengeById(challengeId);
         if (challenge == null) return NotFound;
 
-        GameAsset? ghostAsset = dataContext.Database.GetAssetFromHash(body.GhostHash);
-
-        // If there is no GameAsset in the database with the score's GhostHash, or the referred asset is not a ChallengeGhost for some reason,
-        // reject the score.
-        if (ghostAsset == null || ghostAsset.AssetType != GameAssetType.ChallengeGhost)
+        if (!dataContext.DataStore.ExistsInStore(body.GhostHash))
         {
             dataContext.Database.AddErrorNotification
             (
@@ -201,7 +197,7 @@ public class ChallengeEndpoints : EndpointGroup
                 +"couldn't be submitted because the ghost data was missing.",
                 user
             );
-            dataContext.Logger.LogDebug(BunkumCategory.UserContent, $"Ghost asset with hash {body.GhostHash} was not found or is not a ChallengeGhost");
+            dataContext.Logger.LogDebug(BunkumCategory.UserContent, $"Ghost asset with hash {body.GhostHash} was not found in data store");
             return BadRequest;
         }
 
@@ -209,7 +205,7 @@ public class ChallengeEndpoints : EndpointGroup
         bool isFirstScore = !dataContext.Database.DoesChallengeHaveScores(challenge);
         
         // If the ghost asset for this score is null or invalid, reject the score
-        if (serializedGhost == null || !SerializedChallengeGhost.IsGhostDataValid(serializedGhost, challenge, isFirstScore))
+        if (serializedGhost == null || !SerializedChallengeGhost.IsGhostDataValid(serializedGhost, challenge, isFirstScore, dataContext.Logger))
         {
             dataContext.Database.AddErrorNotification
             (
@@ -219,7 +215,7 @@ public class ChallengeEndpoints : EndpointGroup
                 +"Try to submit another score!",
                 user
             );
-            dataContext.Logger.LogDebug(BunkumCategory.UserContent, $"Ghost asset with hash {body.GhostHash} is corrupt");
+            // Reason is already being logged by both the deserialization and the validation methods
             return BadRequest;
         }
 

@@ -16,6 +16,6 @@ public class SerializedChallengeCheckpoint
     /// </summary>
     [XmlAttribute("time")] public long Time { get; set; }
 
-    // currently not needed
+    // currently not read, and also sent as invalid XML anyway.
     //[XmlElement("metric")] public List<SerializedChallengeCheckpointMetric> Metrics { get; set; } = [];
 }
