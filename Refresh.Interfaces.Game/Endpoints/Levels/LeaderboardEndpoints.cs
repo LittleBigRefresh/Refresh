@@ -1,4 +1,3 @@
-using System.Diagnostics;
 using Bunkum.Core;
 using Bunkum.Core.Endpoints;
 using Bunkum.Core.RateLimit;
@@ -102,22 +101,26 @@ public class LeaderboardEndpoints : EndpointGroup
         DataContext dataContext)
     {
         // Try to not return any non-OK responses for LBP PSP here, since that apparently bugs the game
+        bool isPSP = context.IsPSP();
 
         if (user.IsWriteBlocked(config))
-            return context.IsPSP() ? OK : Unauthorized;
+            return isPSP ? OK : Unauthorized;
         
         GameLevel? level = database.GetLevelByIdAndType(slotType, id);
-        if (level == null) return context.IsPSP() ? OK : NotFound;
+        if (level == null) return isPSP ? OK : NotFound;
 
         // A user has to play a level in order to submit a score (unless the game is LBP PSP)
-        if (!database.HasUserPlayedLevel(level, user) && !context.IsPSP())
+        if (!database.HasUserPlayedLevel(level, user) && !isPSP)
         {
             return Unauthorized;
         }
 
-        // LBP PSP doesn't have any score limits, and checking the score type isn't really useful
+        // Add the uploader to the list of player GameUsers to not have to search for them in the database aswell
+        IEnumerable<GameUser> players = [user];
+
+        // LBP PSP doesn't have any score limits, and checking the score type and player list isn't really useful
         // since there is no multiplayer in that game
-        if (!context.IsPSP())
+        if (!isPSP)
         {
             // Validate the score is a non-negative amount and not above the in-game limit
             if (body.Score is < 0 or > 16_000_000)
@@ -131,13 +134,44 @@ public class LeaderboardEndpoints : EndpointGroup
             {
                 return BadRequest;
             }
+
+            // The score type can't be lower than the number or players
+            if (body.ScoreType < body.PlayerUsernames.Count)
+            {
+                return BadRequest;
+            }
+
+            // Validate the player list
+            if (body.PlayerUsernames.Count > 4 || !body.PlayerUsernames.Contains(user.Username))
+            {
+                return BadRequest;
+            }
+
+            // Normally the score type is the total of both online and local users who participated in a score.
+            // If type is 7, fall back to the number of online players, to avoid showing scores "by 7 people".
+            if (body.ScoreType is 7)
+            {
+                body.ScoreType = (byte)body.PlayerUsernames.Count;
+            }
+
+            if (body.PlayerUsernames.Count > 1)
+            {
+                // Only add participants who are on this server, and make sure to not unnessesarily
+                // get the uploader's GameUser from the database
+                body.PlayerUsernames.Remove(user.Username);
+                players = players.Concat(body.PlayerUsernames
+                    .Where(u => !string.IsNullOrWhiteSpace(u))
+                    .Select(u => database.GetUserByUsername(u, true))
+                    .Where(u => u != null)
+                    .Select(u => u!));
+            }
         }
         else
         {
             body.ScoreType = 1;
         }
 
-        GameScore score = database.SubmitScore(body, token, level);
+        GameScore score = database.SubmitScore(body, token, level, players);
         DatabaseList<ScoreWithRank> scores = database.GetRankedScoresAroundScore(score, 5);
 
         this.AwardScoreboardPins(scores, dataContext, user, level);

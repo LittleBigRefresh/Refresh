@@ -17,7 +17,7 @@ public class SerializedScoreList
     {
         SerializedScoreList value = new()
         {
-            Scores = scoreList.Items.Select(s => SerializedLeaderboardScore.FromOld(s.score, dataContext, s.rank)).ToList(),
+            Scores = scoreList.Items.Select(s => SerializedLeaderboardScore.FromOld(s.score, s.rank)).ToList(),
             TotalScores = scoreList.TotalItems,
             OwnScore = scoreList.OwnScore?.score.Score ?? -1,
             OwnRank = scoreList.OwnScore?.rank ?? -1,

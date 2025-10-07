@@ -15,17 +15,20 @@ public partial class GameDatabaseContext // Leaderboard
         .Include(s => s.Level)
         .Include(s => s.Level.Publisher);
     
-    public GameScore SubmitScore(ISerializedScore score, Token token, GameLevel level)
-        => this.SubmitScore(score, token.User, level, token.TokenGame, token.TokenPlatform);
+    public GameScore SubmitScore(ISerializedScore score, Token token, GameLevel level, IEnumerable<GameUser> players)
+        => this.SubmitScore(score, token.User, level, token.TokenGame, token.TokenPlatform, players);
 
-    public GameScore SubmitScore(ISerializedScore score, GameUser user, GameLevel level, TokenGame game, TokenPlatform platform)
+    public GameScore SubmitScore(ISerializedScore score, GameUser user, GameLevel level, TokenGame game, TokenPlatform platform, IEnumerable<GameUser> players)
     {
+        IEnumerable<ObjectId> playerIds = players.Select(u => u.UserId);
+
         GameScore newScore = new()
         {
             Score = score.Score,
             ScoreType = score.ScoreType,
             Level = level,
-            PlayerIdsRaw = [ user.UserId.ToString() ],
+            PlayerIdsRaw = playerIds.Select(p => p.ToString()).ToList(),
+            Publisher = user,
             ScoreSubmitted = this._time.Now,
             Game = game,
             Platform = platform,
@@ -34,8 +37,6 @@ public partial class GameDatabaseContext // Leaderboard
         GameScore? currentFirstPlace = this.GameScores
             .Where(s => s.LevelId == level.LevelId && s.ScoreType == score.ScoreType)
             .OrderByDescending(s => s.Score)
-            .ToArray()
-            .DistinctBy(s => s.PlayerIdsRaw[0])
             .FirstOrDefault();
 
         // If the current first score is not 0, is lower than the new score and by a different first player,
@@ -43,7 +44,7 @@ public partial class GameDatabaseContext // Leaderboard
         bool showOvertakeNotification = currentFirstPlace != null
             && currentFirstPlace.Score > 0
             && currentFirstPlace.Score < score.Score 
-            && currentFirstPlace.PlayerIds[0] != user.UserId;
+            && currentFirstPlace.PublisherId != user.UserId;
 
         this.Write(() =>
         {
@@ -55,9 +56,16 @@ public partial class GameDatabaseContext // Leaderboard
         // Only do this part of notifying after actually adding the new score to the database incase that fails
         if (showOvertakeNotification)
         {
+            // Formats the shown usernames to look like this: "UserA, UserB, UserC and UserD"
+            IEnumerable<string> usernames = players.Select(u => u.Username);
+            string usernamesToShow = $"{string.Join(", ", usernames.SkipLast(1))} and {usernames.Last()}";
+
             // Notify the last #1 users that they've been overtaken
             foreach (GameUser player in this.GetPlayersFromScore(currentFirstPlace!).ToArray())
             {
+                // Only add this notif if the overtaken user isn't also part of the new score
+                if (playerIds.Contains(player.UserId)) continue;
+
                 this.AddNotification("Score overtaken", 
                     $"Your #1 score on {level.Title} has been overtaken by {user.Username}!", 
                     player, "medal");   
