@@ -12,6 +12,7 @@ namespace Refresh.Database;
 public partial class GameDatabaseContext // Leaderboard
 {
     private IQueryable<GameScore> GameScoresIncluded => this.GameScores
+        .Include(s => s.Publisher)
         .Include(s => s.Level)
         .Include(s => s.Level.Publisher);
     
@@ -75,11 +76,15 @@ public partial class GameDatabaseContext // Leaderboard
         return newScore;
     }
 
+    /// <param name="scoreType">0 = don't filter by type</param>
     public DatabaseScoreList GetTopScoresForLevel(GameLevel level, int count, int skip, byte type, bool showDuplicates = false, DateTimeOffset? minAge = null, GameUser? user = null)
     {
         IEnumerable<GameScore> scores = this.GameScoresIncluded
-            .Where(s => s.ScoreType == type && s.LevelId == level.LevelId)
+            .Where(s => s.LevelId == level.LevelId)
             .OrderByDescending(s => s.Score);
+        
+        if (type != 0)
+            scores = scores.Where(s => s.ScoreType == type);
 
         if (!showDuplicates)
             scores = scores.DistinctBy(s => s.PlayerIds[0]);
@@ -111,24 +116,28 @@ public partial class GameDatabaseContext // Leaderboard
         );
     }
     
-    public DatabaseScoreList GetLevelTopScoresByFriends(GameUser user, GameLevel level, int count, byte scoreType, DateTimeOffset? minAge = null)
+    /// <param name="scoreType">0 = don't filter by type</param>
+    public DatabaseScoreList GetLevelTopScoresByFriends(GameUser user, GameLevel level, int skip, int count, byte scoreType, DateTimeOffset? minAge = null)
     {
         IEnumerable<ObjectId> mutuals = this.GetUsersMutuals(user)
             .Select(u => u.UserId)
             .Append(user.UserId);
 
         IEnumerable<GameScore> scores = this.GameScoresIncluded
-            .Where(s => s.ScoreType == scoreType && s.LevelId == level.LevelId)
+            .Where(s => s.LevelId == level.LevelId)
             .OrderByDescending(s => s.Score)
             .ToArray()
             .DistinctBy(s => s.PlayerIds[0])
             //TODO: THIS CALL IS EXTREMELY INEFFECIENT!!! once we are in postgres land, figure out a way to do this effeciently
             .Where(s => s.PlayerIds.Any(p => mutuals.Contains(p)));
         
+        if (scoreType != 0)
+            scores = scores.Where(s => s.ScoreType == scoreType);
+        
         if (minAge != null)
             scores = scores.Where(s => s.ScoreSubmitted >= minAge);
 
-        return new(scores.Select((s, i) => new ScoreWithRank(s, i + 1)), 0, count, user);
+        return new(scores.Select((s, i) => new ScoreWithRank(s, i + 1)), skip, count, user);
     }
 
     [Pure]

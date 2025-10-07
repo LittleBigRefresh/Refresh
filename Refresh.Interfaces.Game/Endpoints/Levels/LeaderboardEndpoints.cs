@@ -89,7 +89,7 @@ public class LeaderboardEndpoints : EndpointGroup
         GameLevel? level = database.GetLevelByIdAndType(slotType, id);
         if (level == null) return null;
 
-        DatabaseList<ScoreWithRank>? scores = database.GetLevelTopScoresByFriends(user, level, 10, body.Type);
+        DatabaseList<ScoreWithRank>? scores = database.GetLevelTopScoresByFriends(user, level, 0, 10, body.Type);
         return SerializedScoreLeaderboardList.FromDatabaseList(scores, dataContext);
     }
     
@@ -235,8 +235,9 @@ public class LeaderboardEndpoints : EndpointGroup
     {
         return originalType switch
         {
-            5 => (7, now.AddDays(-1)), // daily versus leaderboard
-            6 => (7, now.AddDays(-7)), // weekly versus leaderboard
+            5 => (0, now.AddDays(-1)), // daily versus leaderboard
+            6 => (0, now.AddDays(-7)), // weekly versus leaderboard
+            7 => (0, null), // all time versus leaderboard
             _ => ((byte)originalType, null),
         };
     }
@@ -271,7 +272,7 @@ public class LeaderboardEndpoints : EndpointGroup
         (int skip, int count) = context.GetPageData();
         (byte scoreType, DateTimeOffset? minAge) = this.GetScoreTypeAndMinAge(type, dateTimeProvider.Now);
 
-        DatabaseScoreList? scores = database.GetLevelTopScoresByFriends(user, level, count, scoreType, minAge);
+        DatabaseScoreList? scores = database.GetLevelTopScoresByFriends(user, level, skip, count, scoreType, minAge);
         return SerializedScoreList.FromDatabaseList(scores, dataContext);
     }
 }
