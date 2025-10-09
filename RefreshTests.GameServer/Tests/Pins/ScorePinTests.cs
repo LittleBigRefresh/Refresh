@@ -36,6 +36,7 @@ public class ScorePinTests : GameServerTest
             Host = true,
             ScoreType = scoreType,
             Score = 10,
+            PlayerUsernames = [user.Username],
         };
 
         context.Database.PlayLevel(level, user, 1);
@@ -55,6 +56,7 @@ public class ScorePinTests : GameServerTest
             Host = true,
             ScoreType = scoreType,
             Score = 50,
+            PlayerUsernames = [user.Username],
         };
 
         message = client.PostAsync($"/lbp/scoreboard/{slotType}/{levelId}", new StringContent(score2.AsXML())).Result;
@@ -96,6 +98,7 @@ public class ScorePinTests : GameServerTest
             Host = true,
             ScoreType = scoreType,
             Score = 80,
+            PlayerUsernames = [user.Username],
         };
 
         context.Database.PlayLevel(level, user, 1);
@@ -120,6 +123,7 @@ public class ScorePinTests : GameServerTest
             Host = true,
             ScoreType = scoreType,
             Score = 80,
+            PlayerUsernames = [user.Username],
         };
 
         context.Database.PlayLevel(level2, user, 1);
@@ -160,6 +164,7 @@ public class ScorePinTests : GameServerTest
             Host = true,
             ScoreType = scoreType,
             Score = 10,
+            PlayerUsernames = [user.Username],
         };
 
         context.Database.PlayLevel(level, user, 1);
@@ -197,6 +202,7 @@ public class ScorePinTests : GameServerTest
             Host = true,
             ScoreType = scoreType,
             Score = 10,
+            PlayerUsernames = [user.Username],
         };
 
         context.Database.PlayLevel(level, user, 1);
