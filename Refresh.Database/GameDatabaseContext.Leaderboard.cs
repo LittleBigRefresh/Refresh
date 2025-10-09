@@ -21,6 +21,12 @@ public partial class GameDatabaseContext // Leaderboard
 
     public GameScore SubmitScore(ISerializedScore score, GameUser user, GameLevel level, TokenGame game, TokenPlatform platform, IEnumerable<GameUser> players)
     {
+        // Throw incase the method directly gets called like this in a test
+        if (!players.Any())
+        {
+            throw new ArgumentException("Player list is empty!", nameof(players));
+        }
+
         IEnumerable<ObjectId> playerIds = players.Select(u => u.UserId);
 
         GameScore newScore = new()
@@ -54,21 +60,27 @@ public partial class GameDatabaseContext // Leaderboard
 
         this.CreateLevelScoreEvent(user, newScore);
 
+        // Notify the last #1 users that they've been overtaken
         // Only do this part of notifying after actually adding the new score to the database incase that fails
+        // NOTE: If you want to change the notif text, make sure to adjust the respective Assert in 
+        // ScoreLeaderboardTests.OnlySendOvertakeNotifsToRelevantPlayers() aswell!
         if (showOvertakeNotification)
         {
             // Formats the shown usernames to look like this: "UserA, UserB, UserC and UserD"
             IEnumerable<string> usernames = players.Select(u => u.Username);
-            string usernamesToShow = $"{string.Join(", ", usernames.SkipLast(1))} and {usernames.Last()}";
+            string usernamesToShow = usernames.Count() > 1 
+                ? $"{string.Join(", ", usernames.SkipLast(1))} and {usernames.Last()}"
+                : usernames.First();
 
-            // Notify the last #1 users that they've been overtaken
-            foreach (GameUser player in this.GetPlayersFromScore(currentFirstPlace!).ToArray())
+            // Don't notify users who have participated in both the overtaken and the new score
+            IEnumerable<GameUser> usersToNotify = this.GetPlayersFromScore(currentFirstPlace!)
+                .Where(p => !playerIds.Contains(p.UserId))
+                .ToArray();
+            
+            foreach (GameUser player in usersToNotify)
             {
-                // Only add this notif if the overtaken user isn't also part of the new score
-                if (playerIds.Contains(player.UserId)) continue;
-
                 this.AddNotification("Score overtaken", 
-                    $"Your #1 score on {level.Title} has been overtaken by {user.Username}!", 
+                    $"Your #1 score on {level.Title} has been overtaken by {usernamesToShow} in {score.ScoreType}-player-mode!", 
                     player, "medal");   
             }
         }

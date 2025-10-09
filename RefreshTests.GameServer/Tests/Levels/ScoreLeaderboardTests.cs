@@ -806,8 +806,8 @@ public class ScoreLeaderboardTests : GameServerTest
         Assert.That(score1.PlayerIds.All(p => lobby1.Select(u => u.UserId).Contains(p)));
         Assert.That(score2.PlayerIds.All(p => lobby2.Select(u => u.UserId).Contains(p)));
 
-        // Make sure that both1 and both2 have received a notification, but the others have not. 
-        // Also make sure there are now 2 scores on the leaderboard.
+        // Make sure that first3 and first4 have received a notification (since they haven't been overtaken by themselves),
+        // but the others have not. Also make sure there are now 2 scores on the leaderboard.
         IEnumerable<ScoreWithRank> scores = context.Database.GetTopScoresForLevel(level, 100, 0, 4, false).Items;
         Assert.That(scores.Count(), Is.EqualTo(2));
         Assert.That(scores.Any(s => s.score.ScoreId == score1.ScoreId));
@@ -819,6 +819,11 @@ public class ScoreLeaderboardTests : GameServerTest
         Assert.That(context.Database.GetNotificationCountByUser(first4), Is.EqualTo(1));
         Assert.That(context.Database.GetNotificationCountByUser(second3), Is.Zero);
         Assert.That(context.Database.GetNotificationCountByUser(second4), Is.Zero);
+
+        // Ensure the usernames in the notif have been formatted correctly
+        GameNotification? notif = context.Database.GetNotificationsByUser(first3, 1, 0).Items.FirstOrDefault();
+        Assert.That(notif, Is.Not.Null);
+        Assert.That(notif!.Text, Is.EqualTo($"Your #1 score on {level.Title} has been overtaken by {both2.Username}, {second3.Username}, {second4.Username} and {both1.Username} in 4-player-mode!"));
     }
 
     [Test]
