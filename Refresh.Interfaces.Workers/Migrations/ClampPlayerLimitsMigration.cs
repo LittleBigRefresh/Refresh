@@ -20,7 +20,7 @@ public class ClampPlayerLimitsMigration : MigrationJob<GameLevel>
             if (level.MinPlayers == 0 || level.GameVersion == TokenGame.LittleBigPlanet1)
                 level.MinPlayers = 1;
 
-            if (level.MaxPlayers == 0 || level.GameVersion == TokenGame.LittleBigPlanet1)
+            if (level.MaxPlayers != 4 && level.GameVersion == TokenGame.LittleBigPlanet1)
                 level.MaxPlayers = 4;
             
             level.MinPlayers = Math.Clamp(level.MinPlayers, 1, 4);
