@@ -82,7 +82,7 @@ public class FavouriteSlotTests : GameServerTest
     
     [TestCase(false)]
     [TestCase(true)]
-    public void CantFavouriteLevelTwice(bool psp)
+    public void CanTryToFavouriteLevelTwice(bool psp)
     {
         using TestContext context = this.GetServer();
         GameUser user = context.CreateUser();
@@ -96,14 +96,14 @@ public class FavouriteSlotTests : GameServerTest
         HttpResponseMessage message = client.PostAsync($"/lbp/favourite/slot/user/{level.LevelId}", new ReadOnlyMemoryContent(Array.Empty<byte>())).Result;
         Assert.That(message.StatusCode, Is.EqualTo(OK));
         
-        //Favourite another level
+        //Try to favourite the same level again (should stay favourited)
         message = client.PostAsync($"/lbp/favourite/slot/user/{level.LevelId}", new ReadOnlyMemoryContent(Array.Empty<byte>())).Result;
-        Assert.That(message.StatusCode, Is.EqualTo(psp ? OK : Unauthorized));
+        Assert.That(message.StatusCode, Is.EqualTo(OK));
         
         //Get the favourite slots
         message = client.GetAsync($"/lbp/favouriteSlots/{user.Username}").Result;
         Assert.That(message.StatusCode, Is.EqualTo(OK));
-        //Make sure it has the level
+        //Make sure it has the level only once
         SerializedMinimalFavouriteLevelList result = message.Content.ReadAsXML<SerializedMinimalFavouriteLevelList>();
         Assert.That(result.Items, Has.Count.EqualTo(1)); 
         Assert.That(result.Items.First().LevelId, Is.EqualTo(level.LevelId));
@@ -111,7 +111,7 @@ public class FavouriteSlotTests : GameServerTest
     
     [TestCase(false)]
     [TestCase(true)]
-    public void CantUnfavouriteLevelTwice(bool psp)
+    public void CanTryToUnfavouriteLevelTwice(bool psp)
     {
         using TestContext context = this.GetServer();
         GameUser user = context.CreateUser();
@@ -123,6 +123,9 @@ public class FavouriteSlotTests : GameServerTest
 
         //Unfavourite a level, which we haven't favourited
         HttpResponseMessage message = client.PostAsync($"/lbp/unfavourite/slot/user/{level.LevelId}", new ReadOnlyMemoryContent(Array.Empty<byte>())).Result;
-        Assert.That(message.StatusCode, Is.EqualTo(psp ? OK : Unauthorized));
+        Assert.That(message.StatusCode, Is.EqualTo(OK));
+
+        //Make sure it's still unfavourited
+        Assert.That(context.Database.IsLevelFavouritedByUser(level, user), Is.False);
     }
 }

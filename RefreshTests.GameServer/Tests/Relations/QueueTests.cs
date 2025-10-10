@@ -1,4 +1,3 @@
-using Refresh.Database.Query;
 using Refresh.Database.Models.Authentication;
 using Refresh.Database;
 using Refresh.Database.Models.Users;
@@ -96,7 +95,7 @@ public class QueueTests : GameServerTest
     }
     
     [Test]
-    public void CantQueueLevelTwice()
+    public void CanTryToQueueLevelTwice()
     {
         using TestContext context = this.GetServer();
         GameUser user = context.CreateUser();
@@ -105,9 +104,16 @@ public class QueueTests : GameServerTest
         using HttpClient client = context.GetAuthenticatedClient(TokenType.Game, user);
 
         HttpResponseMessage message = client.PostAsync($"/lbp/lolcatftw/add/user/{level.LevelId}", new ReadOnlyMemoryContent(Array.Empty<byte>())).Result;
-        Assert.That(message.StatusCode, Is.EqualTo(OK)); 
+        Assert.That(message.StatusCode, Is.EqualTo(OK));
+
+        // Make sure the level is now queued
+        Assert.That(context.Database.IsLevelQueuedByUser(level, user), Is.True);
+
         message = client.PostAsync($"/lbp/lolcatftw/add/user/{level.LevelId}", new ReadOnlyMemoryContent(Array.Empty<byte>())).Result;
-        Assert.That(message.StatusCode, Is.EqualTo(Unauthorized)); 
+        Assert.That(message.StatusCode, Is.EqualTo(OK));
+
+        // Make sure the level is still queued
+        Assert.That(context.Database.IsLevelQueuedByUser(level, user), Is.True);
         
         context.Database.Refresh();
         //Ensure we only have one queued level, and that it is the level we queued
@@ -117,7 +123,7 @@ public class QueueTests : GameServerTest
     }
     
     [Test]
-    public void CantDequeueLevelTwice()
+    public void CanTryToDequeueLevelTwice()
     {
         using TestContext context = this.GetServer();
         GameUser user = context.CreateUser();
@@ -126,7 +132,7 @@ public class QueueTests : GameServerTest
         using HttpClient client = context.GetAuthenticatedClient(TokenType.Game, user);
 
         HttpResponseMessage message = client.PostAsync($"/lbp/lolcatftw/remove/user/{level.LevelId}", new ReadOnlyMemoryContent(Array.Empty<byte>())).Result;
-        Assert.That(message.StatusCode, Is.EqualTo(Unauthorized)); 
+        Assert.That(message.StatusCode, Is.EqualTo(OK));
         
         context.Database.Refresh();
         //Ensure we have 0 queued levels
