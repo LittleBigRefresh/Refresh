@@ -97,7 +97,7 @@ public partial class GameDatabaseContext // Relations
         .Include(r => r.UserToFavourite.Statistics);
 
     [Pure]
-    private bool IsUserFavouritedByUser(GameUser userToFavourite, GameUser userFavouriting) => this.FavouriteUserRelations
+    public bool IsUserFavouritedByUser(GameUser userToFavourite, GameUser userFavouriting) => this.FavouriteUserRelations
         .Any(r => r.UserToFavourite == userToFavourite && r.UserFavouriting == userFavouriting);
 
     [Pure]
