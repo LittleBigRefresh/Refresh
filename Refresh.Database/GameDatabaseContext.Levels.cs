@@ -9,6 +9,7 @@ using Refresh.Database.Models.Users;
 using Refresh.Database.Models.Levels.Challenges;
 using Refresh.Database.Models.Levels.Scores;
 using Refresh.Database.Models.Levels;
+using Refresh.Database.Models.Photos;
 using Refresh.Database.Models.Relations;
 using Refresh.Database.Models.Statistics;
 
@@ -286,6 +287,12 @@ public partial class GameDatabaseContext // Levels
             }
             
             this.GameScores.RemoveRange(scores);
+
+            IQueryable<GamePhoto> photos = this.GamePhotos.Include(p => p.Publisher).Where(p => p.Level == level);
+            foreach (GamePhoto photo in photos)
+            {
+                photo.Level = null;
+            }
         });
 
         //do in separate transaction in a vain attempt to fix Weirdness with favourite level relations having missing levels
