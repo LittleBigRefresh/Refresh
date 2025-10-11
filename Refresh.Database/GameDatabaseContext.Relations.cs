@@ -356,7 +356,7 @@ public partial class GameDatabaseContext // Relations
     }
 
     public GameReview? GetReviewByUserForLevel(GameUser user, GameLevel level)
-        => this.GameReviewsIncluded.FirstOrDefault(gameReview => gameReview.Publisher == user && gameReview.Level == level);
+        => this.GameReviewsIncluded.FirstOrDefault(r => r.PublisherUserId == user.UserId && r.LevelId == level.LevelId);
     
     public GameReview? GetReviewById(int reviewId)
         => this.GameReviewsIncluded.FirstOrDefault(gameReview => gameReview.ReviewId == reviewId);
@@ -429,36 +429,52 @@ public partial class GameDatabaseContext // Relations
     /// <summary>
     /// Adds a review to the database, deleting any old ones by the user on that level.
     /// </summary>
-    /// <param name="review">The review to add</param>
+    /// <param name="createInfo">Review attributes like text content and labels</param>
     /// <param name="level">The level the review is for</param>
     /// <param name="user">The user who made the review</param>
-    public void AddReviewToLevel(GameReview review, GameLevel level)
+    public GameReview AddReviewToLevel(ISubmitReviewRequest createInfo, GameLevel level, GameUser user)
     {
-        Debug.Assert(review.Publisher != null);
-        
-        List<GameReview> toRemove = this.GameReviews
-            .Where(r => r.Publisher == review.Publisher)
-            .Where(r => r.Level == level)
-            .ToList();
-        if (toRemove.Count > 0)
+        DateTimeOffset now = this._time.Now;
+        GameReview? review = this.GetReviewByLevelAndUser(level, user);
+
+        if (review == null)
         {
-            this.WriteEnsuringStatistics(review.Publisher, level, () =>
+            review = new()
             {
-                foreach (GameReview reviewToDelete in toRemove)
-                {
-                    this.GameReviews.Remove(reviewToDelete);
-                    level.Statistics!.ReviewCount--;
-                    review.Publisher.Statistics!.ReviewCount--;
-                }
+                Level = level,
+                Publisher = user,
+                PostedAt = now,
+                UpdatedAt = now,
+                Labels = createInfo.Labels ?? [],
+                Content = createInfo.Content ?? "",
+            };
+
+            this.WriteEnsuringStatistics(user, level, () =>
+            {
+                this.GameReviews.Add(review);
+                
+                level.Statistics!.ReviewCount++;
+                review.Publisher.Statistics!.ReviewCount++;
             });
         }
-
-        this.WriteEnsuringStatistics(review.Publisher, level, () =>
+        else
         {
-            this.GameReviews.Add(review);
-            level.Statistics!.ReviewCount++;
-            review.Publisher.Statistics!.ReviewCount++;
-        });
+            review = this.UpdateReview(createInfo, review);
+        }
+
+        return review;
+    }
+
+    public GameReview UpdateReview(ISubmitReviewRequest updateInfo, GameReview review)
+    {
+        DateTimeOffset now = this._time.Now;
+        
+        review.Labels = updateInfo.Labels ?? review.Labels;
+        review.Content = updateInfo.Content ?? review.Content;
+        review.UpdatedAt = now;
+
+        this.SaveChanges();
+        return review;
     }
 
     public void MigrateReviewLabels(IEnumerable<GameReview> reviews)

@@ -112,7 +112,8 @@ public class ReviewEndpoints : EndpointGroup
         SerializedGameReview body,
         GameUser user,
         IDateTimeProvider timeProvider,
-        GameServerConfig config)
+        GameServerConfig config,
+        DataContext dataContext)
     {
         if (user.IsWriteBlocked(config))
             return Unauthorized;
@@ -120,35 +121,51 @@ public class ReviewEndpoints : EndpointGroup
 
         if (level == null)
             return NotFound;
+        
+        // TODO: Use the comment char limit constant once the other PR is merged.
+        if (body.Content!.Length > 4096)
+        {
+            body.Content = body.Content[..4096];
+        }
 
         //You cant review a level you haven't played.
         if (!database.HasUserPlayedLevel(level, user))
             return BadRequest;
+        
+        // You shouldn't be able to review your own level
+        if (user == level.Publisher)
+            return BadRequest;
 
-        IEnumerable<Label> labels = [];
-
-        if (!string.IsNullOrWhiteSpace(body.Labels))
+        if (!string.IsNullOrWhiteSpace(body.RawLabels))
         {
             // Make sure there aren't too many and duplicate labels.
-            labels = LabelExtensions.FromLbpCommaList(body.Labels)
+            body.Labels = LabelExtensions.FromLbpCommaList(body.RawLabels)
                 .Distinct()
-                .Take(UgcLimits.MaximumLabels);
+                .Take(UgcLimits.MaximumLabels)
+                .ToList();
+        }
+
+        // LBP2 and 3 have a bug where if you leave a review's edit page by backing out instead of selecting "Done", the game 
+        // will upload all changes anyway and won't discard them. On top of that, sometimes these games bug out further and don't
+        // auto-fill the review's text, meaning that sometimes, simply entering a review's edit page and then immediately leaving it
+        // will nuke the review's text entirely. Therefore, in-game, require users to atleast put a whitespace into their review text 
+        // in order to intentionally reset it.
+        if (body.Content == "")
+        {
+            body.Content = null;
         }
 
         //Add the review to the database
-        database.AddReviewToLevel(new GameReview
+        GameReview review = database.AddReviewToLevel(body, level, user);
+
+        // Update the user's rating if valid
+        if (!Enum.IsDefined(typeof(RatingType), body.Thumb)) 
         {
-            Publisher = user,
-            Level = level,
-            PostedAt = timeProvider.Now,
-            Labels = labels.ToList(),
-            Content = body.Text,
-        }, level);
+            database.RateLevel(level, user, (RatingType)body.Thumb);
+        }
 
-        // Update the user's rating
-        database.RateLevel(level, user, (RatingType)body.Thumb);
-
-        return OK;
+        // Return the review
+        return new Response(SerializedGameReview.FromOld(review, dataContext), ContentType.Xml);
     }
     
     [GameEndpoint("rateReview/user/{levelId}/{username}", HttpMethods.Post)]
