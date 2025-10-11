@@ -22,6 +22,15 @@ public class ApiValidationError : ApiError
 
     public const string NoCommentDeletionPermissionErrorWhen = "You do not have permission to delete this comment";
     public static readonly ApiValidationError NoCommentDeletionPermissionError = new(NoCommentDeletionPermissionErrorWhen);
+
+    public const string NoReviewEditPermissionErrorWhen = "You do not have permission to edit this review";
+    public static readonly ApiValidationError NoReviewEditPermissionError = new(NoReviewEditPermissionErrorWhen);
+
+    public const string NoReviewDeletionPermissionErrorWhen = "You do not have permission to delete this review";
+    public static readonly ApiValidationError NoReviewDeletionPermissionError = new(NoReviewDeletionPermissionErrorWhen);
+
+    public const string DontRateOwnContentWhen = "You may not rate your own content";
+    public static readonly ApiValidationError DontRateOwnContent = new(DontRateOwnContentWhen);
     
     public const string HashInvalidErrorWhen = "The hash is invalid (should be SHA1 hash)";
     public static readonly ApiValidationError HashInvalidError = new(HashInvalidErrorWhen);
