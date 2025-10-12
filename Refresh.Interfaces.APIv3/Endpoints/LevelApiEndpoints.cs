@@ -8,6 +8,7 @@ using Refresh.Core.Authentication.Permission;
 using Refresh.Core.Services;
 using Refresh.Core.Types.Data;
 using Refresh.Database;
+using Refresh.Database.Models.Comments;
 using Refresh.Database.Models.Levels;
 using Refresh.Database.Models.Pins;
 using Refresh.Database.Models.Users;
@@ -199,6 +200,29 @@ public class LevelApiEndpoints : EndpointGroup
         IDataStore dataStore, GameUser user, DataContext dataContext) 
     {
         database.ClearQueue(user);
+        return new ApiOkResponse();
+    }
+
+    [ApiV3Endpoint("levels/id/{id}/rate/{rawRating}", HttpMethods.Post)]
+    [DocSummary("Rates a level by ID.")]
+    [DocError(typeof(ApiNotFoundError), ApiNotFoundError.LevelMissingErrorWhen)]
+    public ApiOkResponse RateLevelById(RequestContext context,
+        GameDatabaseContext database, IDataStore dataStore, GameUser user,
+        [DocSummary("The ID of the level")] int id, DataContext dataContext,
+        [DocSummary("The user's new rating. -1 = dislike, 0 = neutral, 1 = like.")] string rawRating)
+    {
+        GameLevel? level = database.GetLevelById(id);
+        if (level == null) return ApiNotFoundError.LevelMissingError;
+
+        // Level publishers shouldn't be able to rate their own level
+        if (user == level.Publisher) // TODO: compare UUIDs
+            return ApiValidationError.DontRateOwnContent;
+
+        // See CommentApiEndpoints.RateLevelComment()
+        if (!sbyte.TryParse(rawRating, out sbyte rating) || !Enum.IsDefined(typeof(RatingType), rating))
+            return ApiValidationError.RatingParseError;
+
+        dataContext.Database.RateLevel(level, user, (RatingType)rating);
         return new ApiOkResponse();
     }
 }

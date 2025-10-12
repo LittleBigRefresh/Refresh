@@ -39,14 +39,27 @@ public class ReviewApiEndpoints : EndpointGroup
         return ret;
     }
 
-    [ApiV3Endpoint("users/uuid/{uuid}/reviews"), Authentication(false)]
+    [ApiV3Endpoint("users/{keyType}/{key}/reviews"), Authentication(false)]
     [DocUsesPageData, DocSummary("Gets a list of the reviews posted by a user.")]
     [DocError(typeof(ApiNotFoundError), ApiNotFoundError.UserMissingErrorWhen)]
     public ApiListResponse<ApiGameReviewResponse> GetReviewsByUser(RequestContext context,
-        GameDatabaseContext database, IDataStore dataStore,
-        [DocSummary("The UUID of the user")] string uuid, DataContext dataContext)
+        GameDatabaseContext database, IDataStore dataStore, DataContext dataContext,
+        [DocSummary("The type of the key used to identify the user. Can be either 'uuid' or 'username'.")] string userKeyType,
+        [DocSummary("The UUID or username of the user, depending on the specified key type.")] string userKey)
     {
-        GameUser? user = database.GetUserByUuid(uuid);
+        GameUser? user;
+        switch (userKeyType)
+        {
+            case "uuid":
+                user = database.GetUserByUuid(userKey);
+                break;
+            case "username":
+                user = database.GetUserByUsername(userKey);
+                break;
+            default:
+                return ApiValidationError.BadUserLookupKeyType;
+        };
+
         if (user == null) return ApiNotFoundError.UserMissingError;
         
         (int skip, int count) = context.GetPageData();
@@ -93,7 +106,7 @@ public class ReviewApiEndpoints : EndpointGroup
     }
 
     [ApiV3Endpoint("reviews/id/{id}", HttpMethods.Patch)]
-    [DocUsesPageData, DocSummary("Updates a review by ID.")]
+    [DocSummary("Updates a review by ID.")]
     [DocError(typeof(ApiNotFoundError), ApiNotFoundError.ReviewMissingErrorWhen)]
     public ApiResponse<ApiGameReviewResponse> UpdateReviewById(RequestContext context,
         GameDatabaseContext database, IDataStore dataStore, GameUser user,
@@ -118,8 +131,21 @@ public class ReviewApiEndpoints : EndpointGroup
         return ApiGameReviewResponse.FromOld(review, dataContext);
     }
 
-    [ApiV3Endpoint("reviews/id/{id}", HttpMethods.Patch)]
-    [DocUsesPageData, DocSummary("Deletes a review by ID.")]
+    [ApiV3Endpoint("reviews/id/{id}"), Authentication(false)]
+    [DocSummary("Gets a review by ID.")]
+    [DocError(typeof(ApiNotFoundError), ApiNotFoundError.ReviewMissingErrorWhen)]
+    public ApiResponse<ApiGameReviewResponse> GetReviewById(RequestContext context,
+        GameDatabaseContext database, IDataStore dataStore, GameUser user,
+        [DocSummary("The ID of the review")] int id, DataContext dataContext)
+    {
+        GameReview? review = database.GetReviewById(id);
+        if (review == null) return ApiNotFoundError.ReviewMissingError;
+
+        return ApiGameReviewResponse.FromOld(review, dataContext);
+    }
+
+    [ApiV3Endpoint("reviews/id/{id}", HttpMethods.Delete)]
+    [DocSummary("Deletes a review by ID.")]
     [DocError(typeof(ApiNotFoundError), ApiNotFoundError.ReviewMissingErrorWhen)]
     public ApiOkResponse DeleteReviewById(RequestContext context,
         GameDatabaseContext database, IDataStore dataStore, GameUser user,
@@ -129,27 +155,27 @@ public class ReviewApiEndpoints : EndpointGroup
         if (review == null) return ApiNotFoundError.ReviewMissingError;
 
         // Only allow this review to be deleted by either its publisher or its level's publisher
-        if (user.UserId != review.PublisherUserId && user != review.Level.Publisher) 
+        if (user.UserId != review.PublisherUserId && user != review.Level.Publisher) // TODO: compare UUIDs
             return ApiValidationError.NoReviewDeletionPermissionError;
 
         database.DeleteReview(review);
         return new ApiOkResponse();
     }
 
-    [ApiV3Endpoint("reviews/id/{id/rate/{rawRating}}", HttpMethods.Patch)]
-    [DocUsesPageData, DocSummary("Deletes a review by ID.")]
+    [ApiV3Endpoint("reviews/id/{id}/rate/{rawRating}", HttpMethods.Post)]
+    [DocSummary("Rates a review by ID.")]
     [DocError(typeof(ApiNotFoundError), ApiNotFoundError.ReviewMissingErrorWhen)]
     public ApiOkResponse RateReviewById(RequestContext context,
         GameDatabaseContext database, IDataStore dataStore, GameUser user,
         [DocSummary("The ID of the review")] int id, DataContext dataContext,
-        [DocSummary("The user's new rating for the comment. -1 = dislike, 0 = neutral, 1 = like.")] string rawRating)
+        [DocSummary("The user's new rating. -1 = dislike, 0 = neutral, 1 = like.")] string rawRating)
     {
         GameReview? review = database.GetReviewById(id);
         if (review == null) return ApiNotFoundError.ReviewMissingError;
 
         // Review publishers shouldn't be able to rate their own review
         if (user.UserId == review.PublisherUserId) 
-            return ApiValidationError.NoReviewDeletionPermissionError;
+            return ApiValidationError.DontRateOwnContent;
 
         // See CommentApiEndpoints.RateLevelComment()
         if (!sbyte.TryParse(rawRating, out sbyte rating) || !Enum.IsDefined(typeof(RatingType), rating))

@@ -55,6 +55,9 @@ public class ApiValidationError : ApiError
 
     public const string EmailDoesNotActuallyExistErrorWhen = "The email address given does not exist. Are you sure you typed it in correctly?";
     public static readonly ApiValidationError EmailDoesNotActuallyExistError = new(EmailDoesNotActuallyExistErrorWhen);
+
+    public const string BadUserLookupKeyTypeWhen = "The specified user key type is invalid";
+    public static readonly ApiValidationError BadUserLookupKeyType = new(BadUserLookupKeyTypeWhen);
     
     public ApiValidationError(string message) : base(message) {}
 }
