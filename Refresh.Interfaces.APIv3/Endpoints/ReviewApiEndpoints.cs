@@ -13,7 +13,6 @@ using Refresh.Interfaces.APIv3.Documentation.Attributes;
 using Refresh.Interfaces.APIv3.Endpoints.ApiTypes;
 using Refresh.Interfaces.APIv3.Endpoints.ApiTypes.Errors;
 using Refresh.Interfaces.APIv3.Endpoints.DataTypes.Request;
-using Refresh.Interfaces.APIv3.Endpoints.DataTypes.Response.Comments;
 using Refresh.Interfaces.APIv3.Endpoints.DataTypes.Response.Levels;
 using Refresh.Interfaces.APIv3.Extensions;
 
@@ -41,6 +40,7 @@ public class ReviewApiEndpoints : EndpointGroup
 
     [ApiV3Endpoint("users/{keyType}/{key}/reviews"), Authentication(false)]
     [DocUsesPageData, DocSummary("Gets a list of the reviews posted by a user.")]
+    [DocError(typeof(ApiValidationError), ApiValidationError.BadUserLookupKeyTypeWhen)]
     [DocError(typeof(ApiNotFoundError), ApiNotFoundError.UserMissingErrorWhen)]
     public ApiListResponse<ApiGameReviewResponse> GetReviewsByUser(RequestContext context,
         GameDatabaseContext database, IDataStore dataStore, DataContext dataContext,
@@ -86,12 +86,18 @@ public class ReviewApiEndpoints : EndpointGroup
     [ApiV3Endpoint("levels/id/{id}/reviews", HttpMethods.Post)]
     [DocSummary("Posts a review to the specified level. Updates the user's current review if they've already posted one.")]
     [DocError(typeof(ApiNotFoundError), ApiNotFoundError.LevelMissingErrorWhen)]
+    [DocError(typeof(ApiValidationError), ApiValidationError.DontReviewOwnLevelWhen)]
+    [DocError(typeof(ApiValidationError), ApiValidationError.RatingParseErrorWhen)]
     public ApiResponse<ApiGameReviewResponse> PostReviewToLevel(RequestContext context,
         GameDatabaseContext database, IDataStore dataStore, GameUser user,
         [DocSummary("The ID of the level")] int id, ApiSubmitReviewRequest body, DataContext dataContext)
     {
         GameLevel? level = database.GetLevelById(id);
         if (level == null) return ApiNotFoundError.LevelMissingError;
+
+        // Level publishers shouldn't be able to review their own level
+        if (user == level.Publisher) // TODO: compare UUIDs
+            return ApiValidationError.DontReviewOwnLevel;
 
         if (body.LevelRating != null)
         {
@@ -108,6 +114,8 @@ public class ReviewApiEndpoints : EndpointGroup
     [ApiV3Endpoint("reviews/id/{id}", HttpMethods.Patch)]
     [DocSummary("Updates a review by ID.")]
     [DocError(typeof(ApiNotFoundError), ApiNotFoundError.ReviewMissingErrorWhen)]
+    [DocError(typeof(ApiValidationError), ApiValidationError.NoReviewEditPermissionErrorWhen)]
+    [DocError(typeof(ApiValidationError), ApiValidationError.RatingParseErrorWhen)]
     public ApiResponse<ApiGameReviewResponse> UpdateReviewById(RequestContext context,
         GameDatabaseContext database, IDataStore dataStore, GameUser user,
         [DocSummary("The ID of the review")] int id, ApiSubmitReviewRequest body, DataContext dataContext)
@@ -131,22 +139,10 @@ public class ReviewApiEndpoints : EndpointGroup
         return ApiGameReviewResponse.FromOld(review, dataContext);
     }
 
-    [ApiV3Endpoint("reviews/id/{id}"), Authentication(false)]
-    [DocSummary("Gets a review by ID.")]
-    [DocError(typeof(ApiNotFoundError), ApiNotFoundError.ReviewMissingErrorWhen)]
-    public ApiResponse<ApiGameReviewResponse> GetReviewById(RequestContext context,
-        GameDatabaseContext database, IDataStore dataStore, GameUser user,
-        [DocSummary("The ID of the review")] int id, DataContext dataContext)
-    {
-        GameReview? review = database.GetReviewById(id);
-        if (review == null) return ApiNotFoundError.ReviewMissingError;
-
-        return ApiGameReviewResponse.FromOld(review, dataContext);
-    }
-
     [ApiV3Endpoint("reviews/id/{id}", HttpMethods.Delete)]
     [DocSummary("Deletes a review by ID.")]
     [DocError(typeof(ApiNotFoundError), ApiNotFoundError.ReviewMissingErrorWhen)]
+    [DocError(typeof(ApiValidationError), ApiValidationError.NoReviewDeletionPermissionErrorWhen)]
     public ApiOkResponse DeleteReviewById(RequestContext context,
         GameDatabaseContext database, IDataStore dataStore, GameUser user,
         [DocSummary("The ID of the review")] int id, DataContext dataContext)
@@ -165,6 +161,8 @@ public class ReviewApiEndpoints : EndpointGroup
     [ApiV3Endpoint("reviews/id/{id}/rate/{rawRating}", HttpMethods.Post)]
     [DocSummary("Rates a review by ID.")]
     [DocError(typeof(ApiNotFoundError), ApiNotFoundError.ReviewMissingErrorWhen)]
+    [DocError(typeof(ApiValidationError), ApiValidationError.DontRateOwnContentWhen)]
+    [DocError(typeof(ApiValidationError), ApiValidationError.RatingParseErrorWhen)]
     public ApiOkResponse RateReviewById(RequestContext context,
         GameDatabaseContext database, IDataStore dataStore, GameUser user,
         [DocSummary("The ID of the review")] int id, DataContext dataContext,
