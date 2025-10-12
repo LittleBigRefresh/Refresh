@@ -8,7 +8,6 @@ using Refresh.Core.Authentication.Permission;
 using Refresh.Core.Services;
 using Refresh.Core.Types.Data;
 using Refresh.Database;
-using Refresh.Database.Models.Comments;
 using Refresh.Database.Models.Levels;
 using Refresh.Database.Models.Pins;
 using Refresh.Database.Models.Users;
