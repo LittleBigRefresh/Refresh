@@ -275,8 +275,8 @@ public class ReviewEndpointsTests : GameServerTest
         List<Label> labels = [ Label.Short, Label.BouncePads, Label.Water ];
         SerializedGameReview review = new()
         {
-            Text = "Sucks",
-            Labels = LabelExtensions.ToLbpCommaList(labels),
+            Content = "Sucks",
+            RawLabels = LabelExtensions.ToLbpCommaList(labels),
         };
 
         HttpResponseMessage message = client.PostAsync($"/lbp/postReview/user/{level.LevelId}", new StringContent(review.AsXML())).Result;
@@ -304,8 +304,8 @@ public class ReviewEndpointsTests : GameServerTest
         List<Label> labels = [ Label.Water, Label.Water, Label.Water ];
         SerializedGameReview review = new()
         {
-            Text = "Sucks",
-            Labels = LabelExtensions.ToLbpCommaList(labels),
+            Content = "Sucks",
+            RawLabels = LabelExtensions.ToLbpCommaList(labels),
         };
 
         HttpResponseMessage message = client.PostAsync($"/lbp/postReview/user/{level.LevelId}", new StringContent(review.AsXML())).Result;
@@ -329,11 +329,17 @@ public class ReviewEndpointsTests : GameServerTest
         //Play the level at least once
         context.Database.PlayLevel(level, user1, 1);
 
-        List<Label> labels = [ Label.Water, Label.ArcadeGame, Label.Sackbots, Label.Artistic, Label.Intricate, Label.Collectables, Label.Swoop ];
+        List<Label> labels = 
+        [ 
+            Label.Water, Label.ArcadeGame, 
+            Label.Sackbots, Label.Artistic, 
+            Label.Intricate, Label.Collectables, 
+            Label.Swoop 
+        ];
         SerializedGameReview review = new()
         {
-            Text = "Sucks",
-            Labels = LabelExtensions.ToLbpCommaList(labels),
+            Content = "Sucks",
+            RawLabels = LabelExtensions.ToLbpCommaList(labels),
         };
 
         HttpResponseMessage message = client.PostAsync($"/lbp/postReview/user/{level.LevelId}", new StringContent(review.AsXML())).Result;
@@ -356,32 +362,23 @@ public class ReviewEndpointsTests : GameServerTest
         GameLevel level = context.CreateLevel(publisher);
 
         // Post a few reviews with different certain labels
-        context.Database.AddReviewToLevel(new()
+        context.Database.AddReviewToLevel(new SerializedGameReview()
         {
-            Publisher = reviewer1,
-            Level = level,
-            PostedAt = DateTimeOffset.MinValue,
             Content = "Hi",
             Labels = [Label.Water],
-        }, level);
+        }, level, reviewer1);
 
-        context.Database.AddReviewToLevel(new()
+        context.Database.AddReviewToLevel(new SerializedGameReview()
         {
-            Publisher = reviewer2,
-            Level = level,
-            PostedAt = DateTimeOffset.MinValue,
             Content = "Water Cooler",
             Labels = [Label.Water, Label.ArcadeGame],
-        }, level);
+        }, level, reviewer2);
 
-        context.Database.AddReviewToLevel(new()
+        context.Database.AddReviewToLevel(new SerializedGameReview()
         {
-            Publisher = reviewer3,
-            Level = level,
-            PostedAt = DateTimeOffset.MinValue,
             Content = "GG ez",
             Labels = [Label.Water, Label.Easy, Label.ArcadeGame],
-        }, level);
+        }, level, reviewer3);
 
         // Recalculate stats for the level
         context.Database.RecalculateLevelStatistics(level);
