@@ -29,7 +29,10 @@ public class ReviewEndpoints : EndpointGroup
         GameLevel? level = database.GetLevelByIdAndType(slotType, id);
         if (level == null) return NotFound;
 
-        bool parsed = sbyte.TryParse(context.QueryString.Get("rating"), out sbyte rating);
+        // Don't allow users to rate their own level
+        if (level.Publisher == user) return BadRequest; // TODO: compare UUIDs
+
+        bool parsed = int.TryParse(context.QueryString.Get("rating"), out int rating);
         if (!parsed) return BadRequest;
 
         //dpad ratings can only be -1 0 1
@@ -45,6 +48,9 @@ public class ReviewEndpoints : EndpointGroup
     {
         GameLevel? level = database.GetLevelByIdAndType(slotType, id);
         if (level == null) return NotFound;
+
+        // Don't allow users to rate their own level
+        if (level.Publisher == user) return BadRequest; // TODO: compare UUIDs
 
         if (!int.TryParse(context.QueryString.Get("rating"), out int ratingInt)) return BadRequest;
         
@@ -133,7 +139,7 @@ public class ReviewEndpoints : EndpointGroup
             return BadRequest;
         
         // You shouldn't be able to review your own level
-        if (user == level.Publisher)
+        if (user == level.Publisher) // TODO: compare UUIDs
             return BadRequest;
 
         if (!string.IsNullOrWhiteSpace(body.RawLabels))
@@ -159,10 +165,8 @@ public class ReviewEndpoints : EndpointGroup
         GameReview review = database.AddReviewToLevel(body, level, user);
 
         // Update the user's rating if valid
-        if (!Enum.IsDefined(typeof(RatingType), body.Thumb)) 
-        {
-            database.RateLevel(level, user, (RatingType)body.Thumb);
-        }
+        if (body.Thumb is > 1 or < -1) return BadRequest;
+        database.RateLevel(level, user, (RatingType)body.Thumb);
 
         // Return the review
         return new Response(SerializedGameReview.FromOld(review, dataContext), ContentType.Xml);
@@ -181,6 +185,9 @@ public class ReviewEndpoints : EndpointGroup
         
         if (reviewer == null) return BadRequest;
         if (reviewedLevel == null) return BadRequest;
+
+        // Don't allow users to rate their own review
+        if (reviewer == user) return BadRequest; // TODO: compare UUIDs
         
         GameReview? review = database.GetReviewByUserForLevel(reviewer, reviewedLevel);
 

@@ -138,6 +138,9 @@ public class RelationEndpoints : EndpointGroup
         
         if (level == null)
             return NotFound;
+        
+        // Don't allow users to tag their own level
+        if (level.Publisher == user) return BadRequest; // TODO: compare UUIDs
 
         // The format of the POST body is `t=TAG_Name`, so assert this is followed
         if (!body.StartsWith("t="))
