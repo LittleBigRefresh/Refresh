@@ -158,16 +158,6 @@ public class ReviewEndpoints : EndpointGroup
                 .ToList();
         }
 
-        // LBP2 and 3 have a bug where if you leave a review's edit page by backing out instead of selecting "Done", the game 
-        // will upload all changes anyway and won't discard them. On top of that, sometimes these games bug out further and don't
-        // auto-fill the review's text, meaning that sometimes, simply entering a review's edit page and then immediately leaving it
-        // will nuke the review's text entirely. Therefore, in-game, require users to atleast put a whitespace into their review text 
-        // in order to intentionally reset it.
-        if (body.Content == "")
-        {
-            body.Content = null;
-        }
-
         //Add the review to the database
         GameReview review = database.AddReviewToLevel(body, level, user);
 
