@@ -9,6 +9,7 @@ using Refresh.Core.Authentication.Permission;
 using Refresh.Core.Configuration;
 using Refresh.Core.Types.Data;
 using Refresh.Database;
+using Refresh.Database.Models.Authentication;
 using Refresh.Database.Models.Comments;
 using Refresh.Database.Models.Levels;
 using Refresh.Database.Models.Users;
@@ -30,7 +31,9 @@ public class ReviewEndpoints : EndpointGroup
         if (level == null) return NotFound;
 
         // Don't allow users to rate their own level
-        if (level.Publisher == user) return BadRequest; // TODO: compare UUIDs
+        if (level.Publisher?.UserId == user.UserId) return BadRequest;
+
+        if (!database.HasUserPlayedLevel(level, user)) return Unauthorized;
 
         bool parsed = int.TryParse(context.QueryString.Get("rating"), out int rating);
         if (!parsed) return BadRequest;
@@ -50,7 +53,11 @@ public class ReviewEndpoints : EndpointGroup
         if (level == null) return NotFound;
 
         // Don't allow users to rate their own level
-        if (level.Publisher == user) return BadRequest; // TODO: compare UUIDs
+        if (level.Publisher?.UserId == user.UserId) return BadRequest;
+
+        // Allow PSP users to star-rate levels before having played them
+        if (level.GameVersion != TokenGame.LittleBigPlanetPSP && !database.HasUserPlayedLevel(level, user))
+            return Unauthorized;
 
         if (!int.TryParse(context.QueryString.Get("rating"), out int ratingInt)) return BadRequest;
         
@@ -139,7 +146,7 @@ public class ReviewEndpoints : EndpointGroup
             return BadRequest;
         
         // You shouldn't be able to review your own level
-        if (user == level.Publisher) // TODO: compare UUIDs
+        if (user.UserId == level.Publisher?.UserId)
             return BadRequest;
 
         if (!string.IsNullOrWhiteSpace(body.RawLabels))
@@ -185,13 +192,12 @@ public class ReviewEndpoints : EndpointGroup
         
         if (reviewer == null) return BadRequest;
         if (reviewedLevel == null) return BadRequest;
-
-        // Don't allow users to rate their own review
-        if (reviewer == user) return BadRequest; // TODO: compare UUIDs
         
         GameReview? review = database.GetReviewByUserForLevel(reviewer, reviewedLevel);
-
         if (review == null) return NotFound;
+
+        // Don't allow users to rate their own review
+        if (review.PublisherUserId == user.UserId) return BadRequest;
         
         string ratingStr = request.QueryString.Get("rating") ?? "0";
         RatingType ratingType = (RatingType)sbyte.Parse(ratingStr);

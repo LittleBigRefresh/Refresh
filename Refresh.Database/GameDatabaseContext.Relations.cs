@@ -285,42 +285,44 @@ public partial class GameDatabaseContext // Relations
 
     public void RateReview(GameReview review, RatingType ratingType, GameUser user)
     {
-        // If the rating type is neutral, remove the previous review rating by user 
-        if (ratingType == RatingType.Neutral && this.ReviewRatingExistsByUser(user, review))
-        {
-            RateReviewRelation relation =
-                this.RateReviewRelations.First(r => r.Review == review && r.User == user);
-            this.Write(() => this.RateReviewRelations.Remove(relation));
+        RateReviewRelation? relation = this.GetRateReviewRelationForReview(user, review);
 
-            return;
-        }
-        
-        // If the relation already exists, set the new rating
-        if (this.ReviewRatingExistsByUser(user, review))
+        if (relation != null)
         {
-            RateReviewRelation relation = this.RateReviewRelations.First(r => r.Review == review && r.User == user);
-            
-            this.Write(() =>
+            // If the rating type is neutral, remove the previous review rating by user 
+            if (ratingType == RatingType.Neutral)
+            {
+                this.RateReviewRelations.Remove(relation);
+                
+            }
+            // If the relation already exists, set the new rating
+            else
             {
                 relation.RatingType = ratingType;
                 relation.Timestamp = this._time.Now;
-            });
+            }
+        }
+        // Create a new relation if there is none yet
+        else if (ratingType != RatingType.Neutral)
+        {
+            relation = new()
+            {
+                RatingType = ratingType,
+                Review = review,
+                User = user,
+                Timestamp = this._time.Now,
+            };
 
+            this.RateReviewRelations.Add(relation);
+        }
+        // Don't create a new relation if it would be neutral anyway
+        else
+        {
             return;
         }
-        
-        RateReviewRelation reviewRelation = new()
-        {
-            RatingType = ratingType,
-            Review = review,
-            User = user,
-            Timestamp = this._time.Now,
-        };
 
-        this.Write(() =>
-        {
-            this.RateReviewRelations.Add(reviewRelation);
-        });
+        this.SaveChanges();
+        return;
     }
     
     public DatabaseRating GetRatingForReview(GameReview review)
@@ -365,7 +367,7 @@ public partial class GameDatabaseContext // Relations
         => this.RateReviewRelations.Any(relation => relation.Review == review && relation.User == user);
 
     public RateReviewRelation? GetRateReviewRelationForReview(GameUser user, GameReview review)
-        => this.RateReviewRelationsIncluded.FirstOrDefault(relation => relation.User == user && relation.Review == review);
+        => this.RateReviewRelationsIncluded.FirstOrDefault(r => r.UserId == user.UserId && r.ReviewId == review.ReviewId);
     
     public bool ReviewRatingExists(GameUser user, GameReview review, RatingType rating)
         => this.RateReviewRelations.Any(r => r.Review == review && r.User == user && r.RatingType == rating);
@@ -387,9 +389,6 @@ public partial class GameDatabaseContext // Relations
 
     public bool RateLevel(GameLevel level, GameUser user, RatingType type)
     {
-        if (level.Publisher?.UserId == user.UserId) return false;
-        if (level.GameVersion != TokenGame.LittleBigPlanetPSP && !this.HasUserPlayedLevel(level, user)) return false;
-        
         RateLevelRelation? rating = this.GetRateRelationByUser(level, user);
         
         if (rating == null)
