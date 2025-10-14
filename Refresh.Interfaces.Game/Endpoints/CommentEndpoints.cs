@@ -152,9 +152,6 @@ public class CommentEndpoints : EndpointGroup
         GameProfileComment? comment = database.GetProfileCommentById(commentId);
         if (comment == null)
             return NotFound;
-        
-        // Don't allow users to rate their own comment
-        if (comment.Author == user) return BadRequest; // TODO: compare UUIDs
 
         database.RateProfileComment(user, comment, ratingType);
         return OK;
@@ -170,9 +167,6 @@ public class CommentEndpoints : EndpointGroup
         GameLevelComment? comment = database.GetLevelCommentById(commentId);
         if (comment == null)
             return NotFound;
-        
-        // Don't allow users to rate their own comment
-        if (comment.Author == user) return BadRequest; // TODO: compare UUIDs
 
         database.RateLevelComment(user, comment, ratingType);
         return OK;
