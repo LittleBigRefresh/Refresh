@@ -325,7 +325,6 @@ public class ReviewApiTests : GameServerTest
 
         foreach (int rating in ratePattern)
         {
-            Console.WriteLine(($"Coming up rating {rating}"));
             HttpResponseMessage response = await client.PostAsync($"/api/v3/reviews/id/{review.ReviewId}/rate/{rating}", null);
             Assert.That(response.IsSuccessStatusCode, Is.True);
             context.Database.Refresh();

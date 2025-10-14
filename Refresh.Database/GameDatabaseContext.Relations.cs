@@ -453,7 +453,7 @@ public partial class GameDatabaseContext // Relations
                 this.GameReviews.Add(review);
                 
                 level.Statistics!.ReviewCount++;
-                review.Publisher.Statistics!.ReviewCount++;
+                user.Statistics!.ReviewCount++;
             });
         }
         else
