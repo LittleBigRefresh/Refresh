@@ -17,7 +17,8 @@ public class ApiGameReviewResponse : IApiResponse, IDataConvertableFrom<ApiGameR
     public required List<Label> LabelList { get; set; }
     public required string Labels { get; set; } // TODO: remove this and rename LabelList to Labels in APIv4
     public required string Text { get; set; }
-    public required ApiRatingResponse Rating { get; set; }
+    public required int LevelRating { get; set; }
+    public required ApiRatingResponse ReviewRating { get; set; }
     
     public static ApiGameReviewResponse? FromOld(GameReview? old, DataContext dataContext)
     {
@@ -34,11 +35,14 @@ public class ApiGameReviewResponse : IApiResponse, IDataConvertableFrom<ApiGameR
             LabelList = old.Labels,
             Labels = old.Labels.ToLbpCommaList(),
             Text = old.Content,
-            Rating = ApiRatingResponse.FromRating
+            LevelRating = (int?)dataContext.Database.GetRatingByUser(old.Level, old.Publisher) ?? 0,
+            ReviewRating = ApiRatingResponse.FromRating
             (
                 rating.PositiveRating,
                 rating.NegativeRating,
-                dataContext.User != null ? (int?)dataContext.Database.GetRateReviewRelationForReview(dataContext.User, old)?.RatingType : 0
+                dataContext.User != null 
+                    ? (int?)dataContext.Database.GetRateReviewRelationForReview(dataContext.User, old)?.RatingType 
+                    : null
             )
         };
     }

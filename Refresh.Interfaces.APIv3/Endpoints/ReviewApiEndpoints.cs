@@ -38,23 +38,23 @@ public class ReviewApiEndpoints : EndpointGroup
         return ret;
     }
 
-    [ApiV3Endpoint("users/{keyType}/{key}/reviews"), Authentication(false)]
+    [ApiV3Endpoint("users/{idType}/{id}/reviews"), Authentication(false)]
     [DocUsesPageData, DocSummary("Gets a list of the reviews posted by a user.")]
     [DocError(typeof(ApiValidationError), ApiValidationError.BadUserLookupKeyTypeWhen)]
     [DocError(typeof(ApiNotFoundError), ApiNotFoundError.UserMissingErrorWhen)]
     public ApiListResponse<ApiGameReviewResponse> GetReviewsByUser(RequestContext context,
         GameDatabaseContext database, IDataStore dataStore, DataContext dataContext,
-        [DocSummary("The type of the key used to identify the user. Can be either 'uuid' or 'username'.")] string userKeyType,
-        [DocSummary("The UUID or username of the user, depending on the specified key type.")] string userKey)
+        [DocSummary("The type of identifier used to look up the user. Can be either 'uuid' or 'username'.")] string idType,
+        [DocSummary("The UUID or username of the user, depending on the specified ID type.")] string id)
     {
         GameUser? user;
-        switch (userKeyType)
+        switch (idType)
         {
             case "uuid":
-                user = database.GetUserByUuid(userKey);
+                user = database.GetUserByUuid(id);
                 break;
             case "username":
-                user = database.GetUserByUsername(userKey);
+                user = database.GetUserByUsername(id);
                 break;
             default:
                 return ApiValidationError.BadUserLookupKeyType;
