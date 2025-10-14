@@ -3,12 +3,12 @@ using Bunkum.Core;
 using Bunkum.Core.Endpoints;
 using Bunkum.Core.Storage;
 using Bunkum.Protocols.Http;
+using Refresh.Common.Constants;
 using Refresh.Core.Types.Data;
 using Refresh.Database;
 using Refresh.Database.Models.Comments;
 using Refresh.Database.Models.Levels;
 using Refresh.Database.Models.Users;
-using Refresh.Database.Query;
 using Refresh.Interfaces.APIv3.Documentation.Attributes;
 using Refresh.Interfaces.APIv3.Endpoints.ApiTypes;
 using Refresh.Interfaces.APIv3.Endpoints.ApiTypes.Errors;
@@ -88,8 +88,9 @@ public class ReviewApiEndpoints : EndpointGroup
     /// </returns>
     private List<Label>? ValidateLabels(List<Label> input)
     {
-        // Duplicate labels aren't as bad as invalid ones, so just remove them
-        List<Label> ret = input.Distinct().ToList();
+        // Duplicate labels aren't as bad as invalid ones, so just remove them.
+        // Same with too many labels.
+        List<Label> ret = input.Distinct().Take(UgcLimits.MaximumLabels).ToList();
 
         foreach (Label label in ret)
         {
@@ -103,6 +104,7 @@ public class ReviewApiEndpoints : EndpointGroup
     [DocSummary("Posts a review to the specified level. Updates the user's current review if they've already posted one.")]
     [DocError(typeof(ApiNotFoundError), ApiNotFoundError.LevelMissingErrorWhen)]
     [DocError(typeof(ApiValidationError), ApiValidationError.DontReviewOwnLevelWhen)]
+    [DocError(typeof(ApiValidationError), ApiValidationError.MayNotReviewLevelBeforePlayingWhen)]
     [DocError(typeof(ApiValidationError), ApiValidationError.ReviewHasInvalidLabelsWhen)]
     [DocError(typeof(ApiValidationError), ApiValidationError.RatingParseErrorWhen)]
     public ApiResponse<ApiGameReviewResponse> PostReviewToLevel(RequestContext context,
@@ -115,6 +117,10 @@ public class ReviewApiEndpoints : EndpointGroup
         // Level publishers shouldn't be able to review their own level
         if (user == level.Publisher) // TODO: compare UUIDs
             return ApiValidationError.DontReviewOwnLevel;
+        
+        // A user has to play a level before they may review it
+        if (!database.HasUserPlayedLevel(level, user))
+            return ApiValidationError.MayNotReviewLevelBeforePlaying;
         
         // Validate labels
         if (body.Labels != null)

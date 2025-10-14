@@ -13,6 +13,7 @@ public class ApiValidationError : ApiError
 
     public const string RatingParseErrorWhen = "The given rating was invalid";
     public static readonly ApiValidationError RatingParseError = new(RatingParseErrorWhen);
+
     public const string IpAddressParseErrorWhen = "The IP address could not be parsed by the server";
     public static readonly ApiValidationError IpAddressParseError = new(IpAddressParseErrorWhen);
 
@@ -33,6 +34,9 @@ public class ApiValidationError : ApiError
 
     public const string DontReviewOwnLevelWhen = "You may not review your own level";
     public static readonly ApiValidationError DontReviewOwnLevel = new(DontReviewOwnLevelWhen);
+
+    public const string MayNotReviewLevelBeforePlayingWhen = "You may not review levels you haven't played yet";
+    public static readonly ApiValidationError MayNotReviewLevelBeforePlaying = new(MayNotReviewLevelBeforePlayingWhen);
 
     public const string ReviewHasInvalidLabelsWhen = "Your review contained invalid labels";
     public static readonly ApiValidationError ReviewHasInvalidLabels = new(ReviewHasInvalidLabelsWhen);
