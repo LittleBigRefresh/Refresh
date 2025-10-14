@@ -38,26 +38,26 @@ public class ReviewApiEndpoints : EndpointGroup
         return ret;
     }
 
-    [ApiV3Endpoint("users/{idType}/{id}/reviews"), Authentication(false)]
+    [ApiV3Endpoint("users/{userIdType}/{userId}/reviews"), Authentication(false)]
     [DocUsesPageData, DocSummary("Gets a list of the reviews posted by a user.")]
-    [DocError(typeof(ApiValidationError), ApiValidationError.BadUserLookupKeyTypeWhen)]
+    [DocError(typeof(ApiValidationError), ApiValidationError.BadUserLookupIdTypeWhen)]
     [DocError(typeof(ApiNotFoundError), ApiNotFoundError.UserMissingErrorWhen)]
     public ApiListResponse<ApiGameReviewResponse> GetReviewsByUser(RequestContext context,
         GameDatabaseContext database, IDataStore dataStore, DataContext dataContext,
-        [DocSummary("The type of identifier used to look up the user. Can be either 'uuid' or 'username'.")] string idType,
-        [DocSummary("The UUID or username of the user, depending on the specified ID type.")] string id)
+        [DocSummary("The type of identifier used to look up the user. Can be either 'uuid' or 'username'.")] string userIdType,
+        [DocSummary("The UUID or username of the user, depending on the specified ID type.")] string userId)
     {
         GameUser? user;
-        switch (idType)
+        switch (userIdType)
         {
             case "uuid":
-                user = database.GetUserByUuid(id);
+                user = database.GetUserByUuid(userId);
                 break;
             case "username":
-                user = database.GetUserByUsername(id);
+                user = database.GetUserByUsername(userId);
                 break;
             default:
-                return ApiValidationError.BadUserLookupKeyType;
+                return ApiValidationError.BadUserLookupIdType;
         };
 
         if (user == null) return ApiNotFoundError.UserMissingError;
@@ -104,7 +104,7 @@ public class ReviewApiEndpoints : EndpointGroup
     [DocSummary("Posts a review to the specified level. Updates the user's current review if they've already posted one.")]
     [DocError(typeof(ApiNotFoundError), ApiNotFoundError.LevelMissingErrorWhen)]
     [DocError(typeof(ApiValidationError), ApiValidationError.DontReviewOwnLevelWhen)]
-    [DocError(typeof(ApiValidationError), ApiValidationError.MayNotReviewLevelBeforePlayingWhen)]
+    [DocError(typeof(ApiValidationError), ApiValidationError.DontReviewLevelBeforePlayingWhen)]
     [DocError(typeof(ApiValidationError), ApiValidationError.ReviewHasInvalidLabelsWhen)]
     [DocError(typeof(ApiValidationError), ApiValidationError.RatingParseErrorWhen)]
     public ApiResponse<ApiGameReviewResponse> PostReviewToLevel(RequestContext context,
@@ -115,12 +115,12 @@ public class ReviewApiEndpoints : EndpointGroup
         if (level == null) return ApiNotFoundError.LevelMissingError;
 
         // Level publishers shouldn't be able to review their own level
-        if (user == level.Publisher) // TODO: compare UUIDs
+        if (user.UserId == level.Publisher?.UserId)
             return ApiValidationError.DontReviewOwnLevel;
         
         // A user has to play a level before they may review it
         if (!database.HasUserPlayedLevel(level, user))
-            return ApiValidationError.MayNotReviewLevelBeforePlaying;
+            return ApiValidationError.DontReviewLevelBeforePlaying;
         
         // Validate labels
         if (body.Labels != null)
@@ -137,6 +137,12 @@ public class ReviewApiEndpoints : EndpointGroup
                 return ApiValidationError.RatingParseError;
             
             database.RateLevel(level, user, body.LevelRating.Value);
+        }
+
+        // TODO: Use the comment char limit constant once the other PR is merged.
+        if (body.Content != null && body.Content.Length > 4096)
+        {
+            body.Content = body.Content[..4096];
         }
 
         GameReview review = database.AddReviewToLevel(body, level, user);
@@ -176,6 +182,11 @@ public class ReviewApiEndpoints : EndpointGroup
             
             database.RateLevel(review.Level, user, body.LevelRating.Value);
         }
+
+        if (body.Content != null && body.Content.Length > 4096)
+        {
+            body.Content = body.Content[..4096];
+        }
         
         review = database.UpdateReview(body, review);
         return ApiGameReviewResponse.FromOld(review, dataContext);
@@ -193,7 +204,7 @@ public class ReviewApiEndpoints : EndpointGroup
         if (review == null) return ApiNotFoundError.ReviewMissingError;
 
         // Only allow this review to be deleted by either its publisher or its level's publisher
-        if (user.UserId != review.PublisherUserId && user != review.Level.Publisher) // TODO: compare UUIDs
+        if (user.UserId != review.PublisherUserId && user.UserId != review.Level.Publisher?.UserId)
             return ApiValidationError.NoReviewDeletionPermissionError;
 
         database.DeleteReview(review);

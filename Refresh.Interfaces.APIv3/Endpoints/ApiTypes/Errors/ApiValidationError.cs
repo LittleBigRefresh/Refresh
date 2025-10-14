@@ -35,8 +35,8 @@ public class ApiValidationError : ApiError
     public const string DontReviewOwnLevelWhen = "You may not review your own level";
     public static readonly ApiValidationError DontReviewOwnLevel = new(DontReviewOwnLevelWhen);
 
-    public const string MayNotReviewLevelBeforePlayingWhen = "You may not review levels you haven't played yet";
-    public static readonly ApiValidationError MayNotReviewLevelBeforePlaying = new(MayNotReviewLevelBeforePlayingWhen);
+    public const string DontReviewLevelBeforePlayingWhen = "You may not review levels you haven't played yet";
+    public static readonly ApiValidationError DontReviewLevelBeforePlaying = new(DontReviewLevelBeforePlayingWhen);
 
     public const string ReviewHasInvalidLabelsWhen = "Your review contained invalid labels";
     public static readonly ApiValidationError ReviewHasInvalidLabels = new(ReviewHasInvalidLabelsWhen);
@@ -65,8 +65,8 @@ public class ApiValidationError : ApiError
     public const string EmailDoesNotActuallyExistErrorWhen = "The email address given does not exist. Are you sure you typed it in correctly?";
     public static readonly ApiValidationError EmailDoesNotActuallyExistError = new(EmailDoesNotActuallyExistErrorWhen);
 
-    public const string BadUserLookupKeyTypeWhen = "The specified user key type is invalid";
-    public static readonly ApiValidationError BadUserLookupKeyType = new(BadUserLookupKeyTypeWhen);
+    public const string BadUserLookupIdTypeWhen = "The ID type used to specify the user is not supported";
+    public static readonly ApiValidationError BadUserLookupIdType = new(BadUserLookupIdTypeWhen);
     
     public ApiValidationError(string message) : base(message) {}
 }
