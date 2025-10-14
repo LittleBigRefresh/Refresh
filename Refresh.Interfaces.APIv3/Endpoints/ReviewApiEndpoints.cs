@@ -83,10 +83,27 @@ public class ReviewApiEndpoints : EndpointGroup
         return ApiGameReviewResponse.FromOld(review, dataContext);
     }
 
+    /// <returns>
+    /// The validated list of labels. If null, return BadRequest.
+    /// </returns>
+    private List<Label>? ValidateLabels(List<Label> input)
+    {
+        // Duplicate labels aren't as bad as invalid ones, so just remove them
+        List<Label> ret = input.Distinct().ToList();
+
+        foreach (Label label in ret)
+        {
+            if (!Enum.IsDefined(label)) return null;
+        }
+
+        return ret;
+    }
+
     [ApiV3Endpoint("levels/id/{id}/reviews", HttpMethods.Post)]
     [DocSummary("Posts a review to the specified level. Updates the user's current review if they've already posted one.")]
     [DocError(typeof(ApiNotFoundError), ApiNotFoundError.LevelMissingErrorWhen)]
     [DocError(typeof(ApiValidationError), ApiValidationError.DontReviewOwnLevelWhen)]
+    [DocError(typeof(ApiValidationError), ApiValidationError.ReviewHasInvalidLabelsWhen)]
     [DocError(typeof(ApiValidationError), ApiValidationError.RatingParseErrorWhen)]
     public ApiResponse<ApiGameReviewResponse> PostReviewToLevel(RequestContext context,
         GameDatabaseContext database, IDataStore dataStore, GameUser user,
@@ -98,7 +115,16 @@ public class ReviewApiEndpoints : EndpointGroup
         // Level publishers shouldn't be able to review their own level
         if (user == level.Publisher) // TODO: compare UUIDs
             return ApiValidationError.DontReviewOwnLevel;
+        
+        // Validate labels
+        if (body.Labels != null)
+        {
+            body.Labels = this.ValidateLabels(body.Labels);
 
+            if (body.Labels == null) 
+                return ApiValidationError.ReviewHasInvalidLabels;
+        }
+        
         if (body.LevelRating != null)
         {
             if (!Enum.IsDefined(typeof(RatingType), body.LevelRating)) 
@@ -115,6 +141,7 @@ public class ReviewApiEndpoints : EndpointGroup
     [DocSummary("Updates a review by ID.")]
     [DocError(typeof(ApiNotFoundError), ApiNotFoundError.ReviewMissingErrorWhen)]
     [DocError(typeof(ApiValidationError), ApiValidationError.NoReviewEditPermissionErrorWhen)]
+    [DocError(typeof(ApiValidationError), ApiValidationError.ReviewHasInvalidLabelsWhen)]
     [DocError(typeof(ApiValidationError), ApiValidationError.RatingParseErrorWhen)]
     public ApiResponse<ApiGameReviewResponse> UpdateReviewById(RequestContext context,
         GameDatabaseContext database, IDataStore dataStore, GameUser user,
@@ -126,6 +153,15 @@ public class ReviewApiEndpoints : EndpointGroup
         // Don't allow users to update other users' reviews
         if (review.PublisherUserId != user.UserId) 
             return ApiValidationError.NoReviewEditPermissionError;
+
+        // Validate labels
+        if (body.Labels != null)
+        {
+            body.Labels = this.ValidateLabels(body.Labels);
+
+            if (body.Labels == null) 
+                return ApiValidationError.ReviewHasInvalidLabels;
+        }
 
         if (body.LevelRating != null)
         {

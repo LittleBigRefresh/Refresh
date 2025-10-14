@@ -11,7 +11,7 @@ public class ApiValidationError : ApiError
     public const string NumberParseErrorWhen = "The number could not be parsed by the server";
     public static readonly ApiValidationError NumberParseError = new(NumberParseErrorWhen);
 
-    public const string RatingParseErrorWhen = "The given rating could not be parsed by the server";
+    public const string RatingParseErrorWhen = "The given rating was invalid";
     public static readonly ApiValidationError RatingParseError = new(RatingParseErrorWhen);
     public const string IpAddressParseErrorWhen = "The IP address could not be parsed by the server";
     public static readonly ApiValidationError IpAddressParseError = new(IpAddressParseErrorWhen);
@@ -33,6 +33,9 @@ public class ApiValidationError : ApiError
 
     public const string DontReviewOwnLevelWhen = "You may not review your own level";
     public static readonly ApiValidationError DontReviewOwnLevel = new(DontReviewOwnLevelWhen);
+
+    public const string ReviewHasInvalidLabelsWhen = "Your review contained invalid labels";
+    public static readonly ApiValidationError ReviewHasInvalidLabels = new(ReviewHasInvalidLabelsWhen);
     
     public const string HashInvalidErrorWhen = "The hash is invalid (should be SHA1 hash)";
     public static readonly ApiValidationError HashInvalidError = new(HashInvalidErrorWhen);
