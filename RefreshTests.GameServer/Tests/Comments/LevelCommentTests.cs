@@ -138,12 +138,12 @@ public class LevelCommentTests : GameServerTest
     public void CantDeleteAnotherUsersComment()
     {
         using TestContext context = this.GetServer();
-        GameUser user1 = context.CreateUser();
-        GameUser user2 = context.CreateUser();
-        GameLevel level = context.CreateLevel(user1);
+        GameUser publisher = context.CreateUser();
+        GameUser moron = context.CreateUser();
+        GameLevel level = context.CreateLevel(publisher);
 
-        using HttpClient client1 = context.GetAuthenticatedClient(TokenType.Game, user1);
-        using HttpClient client2 = context.GetAuthenticatedClient(TokenType.Game, user2);
+        using HttpClient client1 = context.GetAuthenticatedClient(TokenType.Game, publisher);
+        using HttpClient client2 = context.GetAuthenticatedClient(TokenType.Game, moron);
 
         SerializedComment comment = new()
         {
@@ -163,6 +163,48 @@ public class LevelCommentTests : GameServerTest
         
         response = client2.PostAsync($"/lbp/deleteComment/user/{level.LevelId}?commentId={userComments.Items[0].CommentId}", new ByteArrayContent(Array.Empty<byte>())).Result;
         Assert.That(response.StatusCode, Is.EqualTo(Unauthorized));
+
+        // Make sure the comment is still there
+        response = client1.GetAsync($"/lbp/comments/user/{level.LevelId}").Result;
+        userComments = response.Content.ReadAsXML<SerializedCommentList>();
+        Assert.That(userComments.Items, Has.Count.EqualTo(1));
+        Assert.That(userComments.Items[0].Content, Is.EqualTo(comment.Content));
+    }
+
+    [Test]
+    public void CanDeleteAnotherUsersCommentAsLevelPublisher()
+    {
+        using TestContext context = this.GetServer();
+        GameUser publisher = context.CreateUser();
+        GameUser author = context.CreateUser();
+        GameLevel level = context.CreateLevel(publisher);
+
+        using HttpClient client1 = context.GetAuthenticatedClient(TokenType.Game, author);
+        using HttpClient client2 = context.GetAuthenticatedClient(TokenType.Game, publisher);
+
+        SerializedComment comment = new()
+        {
+            Content = "This is a test comment!",
+            CommentId = 0,
+            Timestamp = 0,
+            Handle = null,
+        };
+
+        HttpResponseMessage response = client1.PostAsync($"/lbp/postComment/user/{level.LevelId}", new StringContent(comment.AsXML())).Result;
+        Assert.That(response.StatusCode, Is.EqualTo(OK));
+
+        response = client1.GetAsync($"/lbp/comments/user/{level.LevelId}").Result;
+        SerializedCommentList userComments = response.Content.ReadAsXML<SerializedCommentList>();
+        Assert.That(userComments.Items, Has.Count.EqualTo(1));
+        Assert.That(userComments.Items[0].Content, Is.EqualTo(comment.Content));
+        
+        response = client2.PostAsync($"/lbp/deleteComment/user/{level.LevelId}?commentId={userComments.Items[0].CommentId}", new ByteArrayContent(Array.Empty<byte>())).Result;
+        Assert.That(response.StatusCode, Is.EqualTo(OK));
+
+        // Make sure the comment is now gone
+        response = client1.GetAsync($"/lbp/comments/user/{level.LevelId}").Result;
+        userComments = response.Content.ReadAsXML<SerializedCommentList>();
+        Assert.That(userComments.Items, Has.Count.EqualTo(0));
     }
 
     [Test]

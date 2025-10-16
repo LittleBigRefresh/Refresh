@@ -1,4 +1,5 @@
 using System.Diagnostics;
+using MongoDB.Bson;
 using Refresh.Database.Models.Authentication;
 using Refresh.Database.Models.Statistics;
 using Refresh.Database.Models.Users;
@@ -81,7 +82,9 @@ public partial class GameLevel : ISequentialId
         set => this.LevelId = value;
     }
 
-    public GameUser? Publisher { get; set; }
+    public ObjectId? PublisherUserId { get; set; }
+    [ForeignKey(nameof(PublisherUserId))] public GameUser? Publisher { get; set; }
+
     /// <summary>
     /// The publisher who originally published the level, if it has been re-uploaded by someone else.
     /// Should only be set if the original publisher does not have an account.
