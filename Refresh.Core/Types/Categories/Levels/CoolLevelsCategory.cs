@@ -9,7 +9,7 @@ namespace Refresh.Core.Types.Categories.Levels;
 
 public class CoolLevelsCategory : GameLevelCategory
 {
-    public CoolLevelsCategory() : base("coolLevels", ["lbpcool", "lbp2cool", "cool"], false)
+    public CoolLevelsCategory() : base("coolLevels", ["lbpcool", "lbp2cool", "cool", "hot"], false)
     {
         this.Name = "Cool Levels";
         this.Description = "Levels trending with players like you!";
