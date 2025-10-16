@@ -48,6 +48,10 @@ public class GameUserResponse : IDataConvertableFrom<GameUserResponse, GameUser>
     [XmlElement("lbp3PurchasedSlots")] public int PurchasedSlotsLBP3 { get; set; }
     [XmlElement("rootPlaylist")] public string? RootPlaylistId { get; set; }
     [XmlElement("pins")] public List<long> ProfilePins { get; set; } = [];
+    /// <summary>
+    /// This makes LBP3 enable the buttons for "unlocking" LBP1 and 2 story items.
+    /// </summary>
+    [XmlElement("clientsConnected")] public SerializedClientsConnected? ClientsConnected { get; set; }
     
     /// <summary>
     /// The levels the user has favourited, only used by LBP PSP
@@ -98,6 +102,8 @@ public class GameUserResponse : IDataConvertableFrom<GameUserResponse, GameUser>
             UsedSlotsLBP3 = 0,
             PurchasedSlotsLBP2 = 0,
             PurchasedSlotsLBP3 = 0,
+
+            ClientsConnected = new(), 
         };
         
         if (old.FakeUser)
