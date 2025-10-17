@@ -20,7 +20,7 @@ public partial class GameDatabaseContext // Users
     [ContractAnnotation("username:null => null; username:notnull => canbenull")]
     public GameUser? GetUserByUsername(string? username, bool caseSensitive = true)
     {
-        if (username == null) 
+        if (string.IsNullOrWhiteSpace(username)) 
             return null;
         
         // Try the first pass to get the user

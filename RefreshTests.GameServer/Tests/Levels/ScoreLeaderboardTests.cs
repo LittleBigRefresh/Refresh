@@ -26,6 +26,7 @@ public class ScoreLeaderboardTests : GameServerTest
             Host = true,
             ScoreType = 1,
             Score = 5,
+            PlayerUsernames = [user.Username],
         }; 
 
         HttpResponseMessage message = client.PostAsync($"/lbp/play/user/{level.LevelId}", new StringContent(score.AsXML())).Result;
@@ -65,6 +66,7 @@ public class ScoreLeaderboardTests : GameServerTest
             Host = true,
             ScoreType = 1,
             Score = 5,
+            PlayerUsernames = [user.Username],
         }; 
 
         HttpResponseMessage message = client.PostAsync($"/lbp/play/developer/1", new StringContent(score.AsXML())).Result;
@@ -90,6 +92,65 @@ public class ScoreLeaderboardTests : GameServerTest
         Assert.That(singleplayerScores.Scores, Has.Count.EqualTo(1));
         Assert.That(singleplayerScores.Scores[0].Player, Is.EqualTo(user.Username));
         Assert.That(singleplayerScores.Scores[0].Score, Is.EqualTo(5));
+    }
+
+    [Test]
+    public void RemoveMissingPlayersFromScoreSubmission()
+    {
+        using TestContext context = this.GetServer();
+        GameUser user = context.CreateUser();
+        GameLevel level = context.CreateLevel(user);
+
+        using HttpClient client = context.GetAuthenticatedClient(TokenType.Game, user);
+
+        SerializedScore submission = new()
+        {
+            Host = true,
+            ScoreType = 2,
+            Score = 5,
+            PlayerUsernames = [user.Username, "I'm a bacon griller"],
+        }; 
+
+        HttpResponseMessage message = client.PostAsync($"/lbp/play/user/{level.LevelId}", null).Result;
+        Assert.That(message.StatusCode, Is.EqualTo(OK));
+        
+        message = client.PostAsync($"/lbp/scoreboard/user/{level.LevelId}", new StringContent(submission.AsXML())).Result;
+        Assert.That(message.StatusCode, Is.EqualTo(OK));
+
+        ScoreWithRank? score = context.Database.GetTopScoresForLevel(level, 1000, 0, 2, false).Items.FirstOrDefault(s => s.score.PublisherId == user.UserId);
+        Assert.That(score, Is.Not.Null);
+        Assert.That(score!.score.PlayerIds.Count, Is.EqualTo(1));
+        Assert.That(score!.score.PlayerIds.First(), Is.EqualTo(user.UserId));
+    }
+
+    [Test]
+    public void IgnorePlayerListAndScoreTypeForPSP()
+    {
+        using TestContext context = this.GetServer();
+        GameUser user = context.CreateUser();
+        GameLevel level = context.CreateLevel(user);
+
+        using HttpClient client = context.GetAuthenticatedClient(TokenType.Game, user);
+        client.DefaultRequestHeaders.UserAgent.TryParseAdd("LBPPSP CLIENT");
+
+        HttpResponseMessage message = client.PostAsync($"/lbp/play/user/{level.LevelId}?count=1", new ReadOnlyMemoryContent(Array.Empty<byte>())).Result;
+        Assert.That(message.StatusCode, Is.EqualTo(OK));
+
+        SerializedScore submission = new()
+        {
+            Host = true,
+            ScoreType = 30,
+            Score = 5,
+            PlayerUsernames = [],
+        };
+        
+        message = client.PostAsync($"/lbp/scoreboard/user/{level.LevelId}", new StringContent(submission.AsXML())).Result;
+        Assert.That(message.StatusCode, Is.EqualTo(OK));
+
+        ScoreWithRank? score = context.Database.GetTopScoresForLevel(level, 1000, 0, 1, false).Items.FirstOrDefault(s => s.score.PublisherId == user.UserId);
+        Assert.That(score, Is.Not.Null);
+        Assert.That(score!.score.PlayerIds.Count, Is.EqualTo(1));
+        Assert.That(score!.score.PlayerIds.First(), Is.EqualTo(user.UserId));
     }
     
     [Test]
@@ -132,6 +193,7 @@ public class ScoreLeaderboardTests : GameServerTest
             Host = true,
             ScoreType = 1,
             Score = scoreValue,
+            PlayerUsernames = [user.Username],
         }; 
         
         HttpResponseMessage message = client.PostAsync($"/lbp/play/user/{level.LevelId}", new StringContent(score.AsXML())).Result;
@@ -166,6 +228,7 @@ public class ScoreLeaderboardTests : GameServerTest
             Host = true,
             ScoreType = type,
             Score = 69,
+            PlayerUsernames = [user.Username],
         };
         
         HttpResponseMessage message = client.PostAsync($"/lbp/play/user/{level.LevelId}", new StringContent(score.AsXML())).Result;
@@ -189,6 +252,7 @@ public class ScoreLeaderboardTests : GameServerTest
             Host = true,
             ScoreType = 1,
             Score = scoreValue,
+            PlayerUsernames = [user.Username],
         }; 
         
         HttpResponseMessage message = client.PostAsync($"/lbp/play/developer/1", new StringContent(score.AsXML())).Result;
@@ -215,6 +279,7 @@ public class ScoreLeaderboardTests : GameServerTest
             Host = true,
             ScoreType = 1,
             Score = 0,
+            PlayerUsernames = [user.Username],
         }; 
         
         HttpResponseMessage message = client.PostAsync($"/lbp/scoreboard/user/{int.MaxValue}", new StringContent(score.AsXML())).Result;
@@ -234,10 +299,80 @@ public class ScoreLeaderboardTests : GameServerTest
             Host = true,
             ScoreType = 1,
             Score = 0,
+            PlayerUsernames = [user.Username],
         }; 
         
         HttpResponseMessage message = client.PostAsync($"/lbp/scoreboard/developer/-1", new StringContent(score.AsXML())).Result;
         Assert.That(message.StatusCode, Is.EqualTo(NotFound));
+    }
+
+    [Test]
+    public void DoesntSubmitScoreWithoutPublisherAsPlayer()
+    {
+        using TestContext context = this.GetServer();
+        GameUser user = context.CreateUser();
+        GameLevel level = context.CreateLevel(user);
+
+        using HttpClient client = context.GetAuthenticatedClient(TokenType.Game, user);
+
+        SerializedScore score = new()
+        {
+            Host = true,
+            ScoreType = 1,
+            Score = 0,
+            PlayerUsernames = [],
+        }; 
+        
+        HttpResponseMessage message = client.PostAsync($"/lbp/play/user/{level.LevelId}", new StringContent(score.AsXML())).Result;
+        Assert.That(message.StatusCode, Is.EqualTo(OK));
+        message = client.PostAsync($"/lbp/scoreboard/user/{level.LevelId}", new StringContent(score.AsXML())).Result;
+        Assert.That(message.StatusCode, Is.EqualTo(BadRequest));
+    }
+
+    [Test]
+    public void DoesntSubmitScoreWithTooManyPlayers()
+    {
+        using TestContext context = this.GetServer();
+        GameUser user = context.CreateUser();
+        GameLevel level = context.CreateLevel(user);
+
+        using HttpClient client = context.GetAuthenticatedClient(TokenType.Game, user);
+
+        SerializedScore score = new()
+        {
+            Host = true,
+            ScoreType = 1,
+            Score = 0,
+            PlayerUsernames = [user.Username, "Hi", "Hi", "Hi", "Hi", "Hi", "Hi", "Hi", "Hi", "Hi I'm also here"],
+        }; 
+        
+        HttpResponseMessage message = client.PostAsync($"/lbp/play/user/{level.LevelId}", new StringContent(score.AsXML())).Result;
+        Assert.That(message.StatusCode, Is.EqualTo(OK));
+        message = client.PostAsync($"/lbp/scoreboard/user/{level.LevelId}", new StringContent(score.AsXML())).Result;
+        Assert.That(message.StatusCode, Is.EqualTo(BadRequest));
+    }
+
+    [Test]
+    public void DoesntSubmitScoreWithInvalidPlayerCountToScoreTypeRatio()
+    {
+        using TestContext context = this.GetServer();
+        GameUser user = context.CreateUser();
+        GameLevel level = context.CreateLevel(user);
+
+        using HttpClient client = context.GetAuthenticatedClient(TokenType.Game, user);
+
+        SerializedScore score = new()
+        {
+            Host = true,
+            ScoreType = 1, // Only one player in total but 4 online players
+            Score = 0,
+            PlayerUsernames = [user.Username, "Hi", "Hi", "Hi"],
+        }; 
+        
+        HttpResponseMessage message = client.PostAsync($"/lbp/play/user/{level.LevelId}", new StringContent(score.AsXML())).Result;
+        Assert.That(message.StatusCode, Is.EqualTo(OK));
+        message = client.PostAsync($"/lbp/scoreboard/user/{level.LevelId}", new StringContent(score.AsXML())).Result;
+        Assert.That(message.StatusCode, Is.EqualTo(BadRequest));
     }
 
     [Test]
@@ -254,6 +389,7 @@ public class ScoreLeaderboardTests : GameServerTest
             Host = true,
             ScoreType = 1,
             Score = 0,
+            PlayerUsernames = [user.Username],
         }; 
         
         HttpResponseMessage message = client.PostAsync($"/lbp/scoreboard/user/{level.LevelId}", new StringContent(score.AsXML())).Result;
@@ -273,6 +409,7 @@ public class ScoreLeaderboardTests : GameServerTest
             Host = true,
             ScoreType = 1,
             Score = 0,
+            PlayerUsernames = [user.Username],
         }; 
         
         HttpResponseMessage message = client.PostAsync($"/lbp/scoreboard/developer/1", new StringContent(score.AsXML())).Result;
@@ -301,6 +438,48 @@ public class ScoreLeaderboardTests : GameServerTest
 
         HttpResponseMessage message = client.GetAsync($"/lbp/topscores/developer/-1/1").Result;
         Assert.That(message.StatusCode, Is.EqualTo(NotFound));
+    }
+
+    [Test]
+    public void ShowsAllScoresForVersusIngame()
+    {
+        using TestContext context = this.GetServer();
+        GameUser user = context.CreateUser();
+        GameLevel level = context.CreateLevel(user);
+
+        // Upload some scores for various types
+        for (byte i = 1; i <= 4; i++)
+        {
+            GameUser uploader = context.CreateUser();
+            context.Database.SubmitScore(new SerializedScore()
+            {
+                Score = 180,
+                ScoreType = i,
+                PlayerUsernames = [uploader.Username],
+            }, uploader, level, TokenGame.LittleBigPlanet2, TokenPlatform.PS3, [uploader]);
+        }
+
+        using HttpClient client = context.GetAuthenticatedClient(TokenType.Game, user);
+
+        // Check for all normal score types
+        for (byte i = 1; i <= 4; i++)
+        {
+            HttpResponseMessage message = client.GetAsync($"/lbp/topscores/user/{level.LevelId}/{i}").Result;
+            Assert.That(message.StatusCode, Is.EqualTo(OK));
+            
+            SerializedScoreList scores = message.Content.ReadAsXML<SerializedScoreList>();
+            Assert.That(scores.Scores, Has.Count.EqualTo(1));
+        }
+
+        // Check for all versus score types
+        for (byte i = 5; i <= 7; i++)
+        {
+            HttpResponseMessage message = client.GetAsync($"/lbp/topscores/user/{level.LevelId}/{i}").Result;
+            Assert.That(message.StatusCode, Is.EqualTo(OK));
+            
+            SerializedScoreList scores = message.Content.ReadAsXML<SerializedScoreList>();
+            Assert.That(scores.Scores, Has.Count.EqualTo(4));
+        }
     }
     
     /// <param name="count">The number of scores to try to fetch from the database</param>
@@ -360,8 +539,9 @@ public class ScoreLeaderboardTests : GameServerTest
         
         Assert.Multiple(() =>
         {
-            Assert.That(context.Database.GetTopScoresForLevel(level, 1, 0, 1).Items.Select(s => s.score), Does.Not.Contain(score2));
-            Assert.That(context.Database.GetTopScoresForLevel(level, 1, 0, 2).Items.Select(s => s.score), Does.Not.Contain(score1));
+            Assert.That(context.Database.GetTopScoresForLevel(level, 10, 0, 1).Items.Select(s => s.score), Does.Not.Contain(score2));
+            Assert.That(context.Database.GetTopScoresForLevel(level, 10, 0, 2).Items.Select(s => s.score), Does.Not.Contain(score1));
+            Assert.That(context.Database.GetTopScoresForLevel(level, 10, 0, 0).Items.Count(), Is.EqualTo(2));
         });
     }
 
@@ -582,7 +762,7 @@ public class ScoreLeaderboardTests : GameServerTest
     }
 
     [Test]
-    public void DontSpamSecondBestPlayerWithOvertakeNotifs()
+    public void DontSpamSecondBestPlayerWithOvertakeNotifsFromRepeatedClears()
     {
         using TestContext context = this.GetServer();
         GameUser user1 = context.CreateUser();
@@ -602,6 +782,89 @@ public class ScoreLeaderboardTests : GameServerTest
 
         // Make sure #2 only has one overtake notif
         Assert.That(context.Database.GetNotificationCountByUser(user2), Is.EqualTo(1));
+    }
+
+    [Test]
+    public void OnlySendOvertakeNotifsToRelevantPlayers()
+    {
+        using TestContext context = this.GetServer();
+        GameUser both1 = context.CreateUser();
+        GameUser both2 = context.CreateUser();
+        GameUser first3 = context.CreateUser();
+        GameUser first4 = context.CreateUser();
+        GameUser second3 = context.CreateUser();
+        GameUser second4 = context.CreateUser();
+        GameLevel level = context.CreateLevel(both1);
+
+        List<GameUser> lobby1 = [both1, both2, first3, first4];
+        GameScore score1 = context.SubmitScore(10, 4, level, both1, TokenGame.LittleBigPlanet2, TokenPlatform.PS3, lobby1);
+
+        // Now overtake with half the players being new (also shuffled order)
+        List<GameUser> lobby2 = [both2, second3, second4, both1];
+        GameScore score2 = context.SubmitScore(123456, 4, level, both2, TokenGame.LittleBigPlanet2, TokenPlatform.PS3, lobby2);
+
+        Assert.That(score1.PlayerIds.All(p => lobby1.Select(u => u.UserId).Contains(p)));
+        Assert.That(score2.PlayerIds.All(p => lobby2.Select(u => u.UserId).Contains(p)));
+
+        // Make sure that first3 and first4 have received a notification (since they haven't been overtaken by themselves),
+        // but the others have not. Also make sure there are now 2 scores on the leaderboard.
+        IEnumerable<ScoreWithRank> scores = context.Database.GetTopScoresForLevel(level, 100, 0, 4, false).Items;
+        Assert.That(scores.Count(), Is.EqualTo(2));
+        Assert.That(scores.Any(s => s.score.ScoreId == score1.ScoreId));
+        Assert.That(scores.Any(s => s.score.ScoreId == score2.ScoreId));
+
+        Assert.That(context.Database.GetNotificationCountByUser(both1), Is.Zero);
+        Assert.That(context.Database.GetNotificationCountByUser(both2), Is.Zero);
+        Assert.That(context.Database.GetNotificationCountByUser(first3), Is.EqualTo(1));
+        Assert.That(context.Database.GetNotificationCountByUser(first4), Is.EqualTo(1));
+        Assert.That(context.Database.GetNotificationCountByUser(second3), Is.Zero);
+        Assert.That(context.Database.GetNotificationCountByUser(second4), Is.Zero);
+
+        // Ensure the usernames in the notif have been formatted correctly
+        GameNotification? notif = context.Database.GetNotificationsByUser(first3, 1, 0).Items.FirstOrDefault();
+        Assert.That(notif, Is.Not.Null);
+        Assert.That(notif!.Text, Is.EqualTo($"Your #1 score on {level.Title} has been overtaken by {both2.Username}, {second3.Username}, {second4.Username} and {both1.Username} in 4-player-mode!"));
+    }
+
+    [Test]
+    public void DontSpamOvertakenPlayersWithNotifsFromMultiplayerUpload()
+    {
+        using TestContext context = this.GetServer();
+        GameUser both1 = context.CreateUser();
+        GameUser both2 = context.CreateUser();
+        GameUser first3 = context.CreateUser();
+        GameUser first4 = context.CreateUser();
+        GameUser second3 = context.CreateUser();
+        GameUser second4 = context.CreateUser();
+        GameLevel level = context.CreateLevel(both1);
+
+        List<GameUser> lobby1 = [both1, both2, first3, first4];
+        List<GameUser> lobby2 = [both2, second3, second4, both1];
+
+        // Every player in the lobby uploads the score themselves, as that's how the game does it
+        foreach (GameUser player in lobby1)
+        {
+            GameScore score1 = context.SubmitScore(10, 4, level, player, TokenGame.LittleBigPlanet2, TokenPlatform.PS3, lobby1);
+        }
+
+        // Now overtake
+        foreach (GameUser player in lobby2)
+        {
+            GameScore score2 = context.SubmitScore(123456, 4, level, player, TokenGame.LittleBigPlanet2, TokenPlatform.PS3, lobby2);
+        }
+
+        // All 6 players have now uploaded atleast one score, so show their own highscores on the leaderboard
+        IEnumerable<ScoreWithRank> scores = context.Database.GetTopScoresForLevel(level, 100, 0, 4, false).Items;
+        Assert.That(scores.Count(), Is.EqualTo(6));
+
+        // Ensure the overtaken players have this notif only once, even though the overtaking score
+        // has been uploaded 4 times by the loop before
+        Assert.That(context.Database.GetNotificationCountByUser(both1), Is.Zero);
+        Assert.That(context.Database.GetNotificationCountByUser(both2), Is.Zero);
+        Assert.That(context.Database.GetNotificationCountByUser(first3), Is.EqualTo(1));
+        Assert.That(context.Database.GetNotificationCountByUser(first4), Is.EqualTo(1));
+        Assert.That(context.Database.GetNotificationCountByUser(second3), Is.Zero);
+        Assert.That(context.Database.GetNotificationCountByUser(second4), Is.Zero);
     }
 
     [Test]
@@ -634,5 +897,42 @@ public class ScoreLeaderboardTests : GameServerTest
             Assert.That(secondPage.Scores[0].Rank, Is.EqualTo(3));
             Assert.That(secondPage.Scores[1].Rank, Is.EqualTo(4)); 
         });
+    }
+
+    [Test]
+    [TestCase(1)]
+    [TestCase(4)]
+    public void ConvertScoreType7(byte playerCount)
+    {
+        using TestContext context = this.GetServer();
+        GameUser user = context.CreateUser();
+        GameLevel level = context.CreateLevel(user);
+
+        using HttpClient client = context.GetAuthenticatedClient(TokenType.Game, user);
+
+        SerializedScore score = new()
+        {
+            Host = true,
+            ScoreType = 7,
+            Score = 5,
+            PlayerUsernames = [user.Username],
+        };
+
+        // Start at 1 to skip publisher, who is already in the list
+        for (int i = 1; i < playerCount; i++) {
+            score.PlayerUsernames.Add(context.CreateUser($"FRIEND{i}").Username);
+        }
+
+        HttpResponseMessage message = client.PostAsync($"/lbp/play/user/{level.LevelId}", new StringContent(score.AsXML())).Result;
+        Assert.That(message.StatusCode, Is.EqualTo(OK));
+        
+        message = client.PostAsync($"/lbp/scoreboard/user/{level.LevelId}", new StringContent(score.AsXML())).Result;
+        Assert.That(message.StatusCode, Is.EqualTo(OK));
+
+        // Make sure the score is under the converted score type
+        Assert.That(context.Database.GetTopScoresForLevel(level, 100, 0, playerCount, false).TotalItems, Is.EqualTo(1));
+
+        // Make sure there are no actual type 7 scores
+        Assert.That(context.Database.GetTopScoresForLevel(level, 100, 0, 7, false).TotalItems, Is.Zero);
     }
 }

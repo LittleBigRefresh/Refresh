@@ -1,4 +1,3 @@
-using System.Diagnostics;
 using Bunkum.Core;
 using Bunkum.Core.Endpoints;
 using Bunkum.Core.RateLimit;
@@ -90,7 +89,7 @@ public class LeaderboardEndpoints : EndpointGroup
         GameLevel? level = database.GetLevelByIdAndType(slotType, id);
         if (level == null) return null;
 
-        DatabaseList<ScoreWithRank>? scores = database.GetLevelTopScoresByFriends(user, level, 10, body.Type);
+        DatabaseList<ScoreWithRank>? scores = database.GetLevelTopScoresByFriends(user, level, 0, 10, body.Type);
         return SerializedScoreLeaderboardList.FromDatabaseList(scores, dataContext);
     }
     
@@ -102,22 +101,26 @@ public class LeaderboardEndpoints : EndpointGroup
         DataContext dataContext)
     {
         // Try to not return any non-OK responses for LBP PSP here, since that apparently bugs the game
+        bool isPSP = context.IsPSP();
 
         if (user.IsWriteBlocked(config))
-            return context.IsPSP() ? OK : Unauthorized;
+            return isPSP ? OK : Unauthorized;
         
         GameLevel? level = database.GetLevelByIdAndType(slotType, id);
-        if (level == null) return context.IsPSP() ? OK : NotFound;
+        if (level == null) return isPSP ? OK : NotFound;
 
         // A user has to play a level in order to submit a score (unless the game is LBP PSP)
-        if (!database.HasUserPlayedLevel(level, user) && !context.IsPSP())
+        if (!database.HasUserPlayedLevel(level, user) && !isPSP)
         {
             return Unauthorized;
         }
 
-        // LBP PSP doesn't have any score limits, and checking the score type isn't really useful
+        // Add the uploader to the list of player GameUsers to not have to search for them in the database aswell
+        List<GameUser> players = [user];
+
+        // LBP PSP doesn't have any score limits, and checking the score type and player list isn't really useful
         // since there is no multiplayer in that game
-        if (!context.IsPSP())
+        if (!isPSP)
         {
             // Validate the score is a non-negative amount and not above the in-game limit
             if (body.Score is < 0 or > 16_000_000)
@@ -131,13 +134,47 @@ public class LeaderboardEndpoints : EndpointGroup
             {
                 return BadRequest;
             }
+
+            // The score type can't be lower than the number or players
+            if (body.ScoreType < body.PlayerUsernames.Count)
+            {
+                return BadRequest;
+            }
+
+            // Validate the player list
+            if (body.PlayerUsernames.Count > 4 || !body.PlayerUsernames.Contains(user.Username))
+            {
+                return BadRequest;
+            }
+
+            // Normally the score type is the total of both online and local users who participated in a score.
+            // If type is 7, fall back to the number of online players, to avoid showing scores "by 7 people".
+            if (body.ScoreType is 7)
+            {
+                body.ScoreType = (byte)body.PlayerUsernames.Count;
+            }
+
+            if (body.PlayerUsernames.Count > 1)
+            {
+                // Only add participants who are on this server, and make sure to not unnessesarily
+                // get the uploader's GameUser from the database
+                body.PlayerUsernames.Remove(user.Username);
+
+                foreach (string username in body.PlayerUsernames)
+                {
+                    GameUser? player = database.GetUserByUsername(username, true);
+                    if (player == null) continue;
+
+                    players.Add(player);
+                }
+            }
         }
         else
         {
             body.ScoreType = 1;
         }
 
-        GameScore score = database.SubmitScore(body, token, level);
+        GameScore score = database.SubmitScore(body, token, level, players);
         DatabaseList<ScoreWithRank> scores = database.GetRankedScoresAroundScore(score, 5);
 
         this.AwardScoreboardPins(scores, dataContext, user, level);
@@ -201,8 +238,9 @@ public class LeaderboardEndpoints : EndpointGroup
     {
         return originalType switch
         {
-            5 => (7, now.AddDays(-1)), // daily versus leaderboard
-            6 => (7, now.AddDays(-7)), // weekly versus leaderboard
+            5 => (0, now.AddDays(-1)), // daily versus leaderboard
+            6 => (0, now.AddDays(-7)), // weekly versus leaderboard
+            7 => (0, null), // all time versus leaderboard
             _ => ((byte)originalType, null),
         };
     }
@@ -237,7 +275,7 @@ public class LeaderboardEndpoints : EndpointGroup
         (int skip, int count) = context.GetPageData();
         (byte scoreType, DateTimeOffset? minAge) = this.GetScoreTypeAndMinAge(type, dateTimeProvider.Now);
 
-        DatabaseScoreList? scores = database.GetLevelTopScoresByFriends(user, level, count, scoreType, minAge);
+        DatabaseScoreList? scores = database.GetLevelTopScoresByFriends(user, level, skip, count, scoreType, minAge);
         return SerializedScoreList.FromDatabaseList(scores, dataContext);
     }
 }

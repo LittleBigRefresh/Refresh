@@ -18,7 +18,7 @@ namespace Refresh.Database.Migrations
         {
 #pragma warning disable 612, 618
             modelBuilder
-                .HasAnnotation("ProductVersion", "9.0.8")
+                .HasAnnotation("ProductVersion", "9.0.9")
                 .HasAnnotation("Relational:MaxIdentifierLength", 63);
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
@@ -571,6 +571,10 @@ namespace Refresh.Database.Migrations
                     b.PrimitiveCollection<List<string>>("PlayerIdsRaw")
                         .HasColumnType("text[]");
 
+                    b.Property<string>("PublisherId")
+                        .IsRequired()
+                        .HasColumnType("text");
+
                     b.Property<int>("Score")
                         .HasColumnType("integer");
 
@@ -583,6 +587,8 @@ namespace Refresh.Database.Migrations
                     b.HasKey("ScoreId");
 
                     b.HasIndex("LevelId");
+
+                    b.HasIndex("PublisherId");
 
                     b.HasIndex("Game", "Score", "ScoreType");
 
@@ -1877,7 +1883,15 @@ namespace Refresh.Database.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
+                    b.HasOne("Refresh.Database.Models.Users.GameUser", "Publisher")
+                        .WithMany()
+                        .HasForeignKey("PublisherId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
                     b.Navigation("Level");
+
+                    b.Navigation("Publisher");
                 });
 
             modelBuilder.Entity("Refresh.Database.Models.Notifications.GameNotification", b =>

@@ -24,4 +24,10 @@ public partial class GameScore
     public List<string> PlayerIdsRaw { get; set; } = [];
     [NotMapped] public List<ObjectId> PlayerIds => PlayerIdsRaw.Select(ObjectId.Parse).ToList();
     // set => PlayerIdsRaw = value.Select(v => v.ToString()).ToList();
+
+    /// <summary>
+    /// The actual publisher of this particular score.
+    /// </summary>
+    [ForeignKey(nameof(PublisherId)), Required] public GameUser Publisher { get; set; }
+    [Required] public ObjectId PublisherId { get; set; }
 }
