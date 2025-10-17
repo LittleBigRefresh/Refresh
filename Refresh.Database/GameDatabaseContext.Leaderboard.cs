@@ -101,7 +101,7 @@ public partial class GameDatabaseContext // Leaderboard
             scores = scores.Where(s => s.ScoreType == scoreType);
 
         if (!showDuplicates)
-            scores = scores.DistinctBy(s => s.PlayerIds[0]);
+            scores = scores.DistinctBy(s => s.PublisherId);
         
         if (minAge != null)
             scores = scores.Where(s => s.ScoreSubmitted >= minAge);
@@ -119,7 +119,7 @@ public partial class GameDatabaseContext // Leaderboard
             .Where(s => s.ScoreType == score.ScoreType && s.LevelId == score.LevelId)
             .OrderByDescending(s => s.Score)
             .ToArray()
-            .DistinctBy(s => s.PlayerIds[0])
+            .DistinctBy(s => s.PublisherId)
             .ToList();
 
         return new
@@ -141,7 +141,7 @@ public partial class GameDatabaseContext // Leaderboard
             .Where(s => s.LevelId == level.LevelId)
             .OrderByDescending(s => s.Score)
             .ToArray()
-            .DistinctBy(s => s.PlayerIds[0])
+            .DistinctBy(s => s.PublisherId)
             //TODO: THIS CALL IS EXTREMELY INEFFECIENT!!! once we are in postgres land, figure out a way to do this effeciently
             .Where(s => s.PlayerIds.Any(p => mutuals.Contains(p)));
         
