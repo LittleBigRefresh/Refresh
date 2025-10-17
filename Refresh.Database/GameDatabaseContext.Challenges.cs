@@ -12,6 +12,7 @@ public partial class GameDatabaseContext // Challenges
 
     private IQueryable<GameChallenge> GameChallengesIncluded => this.GameChallenges
         .Include(c => c.Level)
+        .Include(c => c.Level.Statistics)
         .Include(c => c.Level.Publisher);
 
     public GameChallenge CreateChallenge(ICreateChallengeInfo createInfo, GameLevel level, GameUser user)
