@@ -33,7 +33,7 @@ public class SerializedChallenge : IDataConvertableFrom<SerializedChallenge, Gam
     /// Appears to always be 0 when sent by the game.
     /// </summary>
     /// <remarks>
-    /// NOTE: For the response we have to send the actual unix milliseconds of the creation timestamp, else lbp hub will crash.
+    /// NOTE: This may not be too far behind from now in the response, else Hub will crash.
     /// </remarks>
     [XmlElement("published")] public long PublishedAt { get; set; }
     /// <summary>
