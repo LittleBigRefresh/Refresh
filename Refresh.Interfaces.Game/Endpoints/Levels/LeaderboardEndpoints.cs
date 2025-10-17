@@ -116,7 +116,7 @@ public class LeaderboardEndpoints : EndpointGroup
         }
 
         // Add the uploader to the list of player GameUsers to not have to search for them in the database aswell
-        IEnumerable<GameUser> players = [user];
+        List<GameUser> players = [user];
 
         // LBP PSP doesn't have any score limits, and checking the score type and player list isn't really useful
         // since there is no multiplayer in that game
@@ -159,11 +159,14 @@ public class LeaderboardEndpoints : EndpointGroup
                 // Only add participants who are on this server, and make sure to not unnessesarily
                 // get the uploader's GameUser from the database
                 body.PlayerUsernames.Remove(user.Username);
-                players = players.Concat(body.PlayerUsernames
-                    .Where(u => !string.IsNullOrWhiteSpace(u))
-                    .Select(u => database.GetUserByUsername(u, true))
-                    .Where(u => u != null)
-                    .Select(u => u!));
+
+                foreach (string username in body.PlayerUsernames)
+                {
+                    GameUser? player = database.GetUserByUsername(username, true);
+                    if (player == null) continue;
+
+                    players.Add(player);
+                }
             }
         }
         else

@@ -16,13 +16,13 @@ public partial class GameDatabaseContext // Leaderboard
         .Include(s => s.Level)
         .Include(s => s.Level.Publisher);
     
-    public GameScore SubmitScore(ISerializedScore score, Token token, GameLevel level, IEnumerable<GameUser> players)
+    public GameScore SubmitScore(ISerializedScore score, Token token, GameLevel level, IList<GameUser> players)
         => this.SubmitScore(score, token.User, level, token.TokenGame, token.TokenPlatform, players);
 
-    public GameScore SubmitScore(ISerializedScore score, GameUser user, GameLevel level, TokenGame game, TokenPlatform platform, IEnumerable<GameUser> players)
+    public GameScore SubmitScore(ISerializedScore score, GameUser user, GameLevel level, TokenGame game, TokenPlatform platform, IList<GameUser> players)
     {
         // Throw incase the method directly gets called like this in a test
-        if (!players.Any())
+        if (players.Count <= 0)
         {
             throw new ArgumentException("Player list is empty!", nameof(players));
         }
@@ -66,9 +66,11 @@ public partial class GameDatabaseContext // Leaderboard
         // ScoreLeaderboardTests.OnlySendOvertakeNotifsToRelevantPlayers() aswell!
         if (showOvertakeNotification)
         {
-            // Formats the shown usernames to look like this: "UserA, UserB, UserC and UserD"
+            // Below lines format the shown usernames to look like this: "UserA, UserB, UserC and UserD"
             IEnumerable<string> usernames = players.Select(u => u.Username);
-            string usernamesToShow = usernames.Count() > 1 
+
+            // players.Count is guaranteed to be equal to usernames.Count(), both are guaranteed to be > 0
+            string usernamesToShow = players.Count > 1 
                 ? $"{string.Join(", ", usernames.SkipLast(1))} and {usernames.Last()}"
                 : usernames.First();
 
