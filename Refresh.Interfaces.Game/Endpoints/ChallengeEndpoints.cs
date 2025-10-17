@@ -209,13 +209,12 @@ public class ChallengeEndpoints : EndpointGroup
         {
             dataContext.Database.AddErrorNotification
             (
-                "Challenge Score upload failed", 
+                "Challenge Score upload failed",
                 $"Your score for '{challenge.Name}' in '{challenge.Level.Title}' "
                 +"couldn't be submitted because the ghost data was corrupt. "
                 +"Try to submit another score!",
                 user
             );
-            // Reason is already being logged by both the deserialization and the validation methods
             return BadRequest;
         }
 
