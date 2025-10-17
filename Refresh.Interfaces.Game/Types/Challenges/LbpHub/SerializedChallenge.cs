@@ -11,7 +11,7 @@ namespace Refresh.Interfaces.Game.Types.Challenges.LbpHub;
 
 [XmlRoot("challenge")]
 [XmlType("challenge")]
-public class SerializedChallenge : IDataConvertableFrom<SerializedChallenge, Database.Models.Levels.Challenges.GameChallenge>, ICreateChallengeInfo
+public class SerializedChallenge : IDataConvertableFrom<SerializedChallenge, GameChallenge>, ICreateChallengeInfo
 {
     [XmlElement("id")] public int ChallengeId { get; set; }
     [XmlElement("name")] public string Name { get; set; } = "Unnamed Challenge";
@@ -33,7 +33,7 @@ public class SerializedChallenge : IDataConvertableFrom<SerializedChallenge, Dat
     /// Appears to always be 0 when sent by the game.
     /// </summary>
     /// <remarks>
-    /// NOTE: For the response we have to send the actual unix milliseconds of the creation timestamp, else lbp hub will crash.
+    /// NOTE: This may not be too far behind from now in the response, else Hub will crash.
     /// </remarks>
     [XmlElement("published")] public long PublishedAt { get; set; }
     /// <summary>
@@ -49,16 +49,17 @@ public class SerializedChallenge : IDataConvertableFrom<SerializedChallenge, Dat
     /// <seealso cref="SerializedChallengeCriterion"/>
     [XmlArray("criteria")] public List<SerializedChallengeCriterion> Criteria { get; set; } = [];
 
-    public IEnumerable<GameChallengeCriteriaType> CriteriaTypes 
-        => this.Criteria.Select(c => (GameChallengeCriteriaType)c.Type);
+    public GameChallengeCriteriaType CriteriaType  => this.Criteria
+        .Select(c => (GameChallengeCriteriaType)c.Type)
+        .First();
 
     #nullable enable
-    public static SerializedChallenge? FromOld(Database.Models.Levels.Challenges.GameChallenge? old, DataContext dataContext)
+    public static SerializedChallenge? FromOld(GameChallenge? old, DataContext dataContext)
     {
         if (old == null)
             return null;
 
-        return new SerializedChallenge
+        return new() 
         {
             ChallengeId = old.ChallengeId,
             Name = old.Name,
@@ -70,8 +71,9 @@ public class SerializedChallenge : IDataConvertableFrom<SerializedChallenge, Dat
             PublisherName = old.Publisher?.Username ?? SystemUsers.DeletedUserName,
             StartCheckpointUid = old.StartCheckpointUid,
             FinishCheckpointUid = old.FinishCheckpointUid,
-            PublishedAt = old.PublishDate.ToUnixTimeMilliseconds(),
-            ExpiresAt = old.ExpirationDate.ToUnixTimeMilliseconds(),
+            PublishedAt = DateTimeOffset.MaxValue.ToUnixTimeMilliseconds(),
+            ExpiresAt = DateTimeOffset.MaxValue.ToUnixTimeMilliseconds(),
+
             // Take the type of the first (so far always only) criterion in the challenge criteria
             Criteria =
             [

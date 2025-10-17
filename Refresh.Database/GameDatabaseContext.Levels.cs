@@ -558,6 +558,18 @@ public partial class GameDatabaseContext // Levels
         }
     }
 
+    public GameLevel? GetLevelByIdAndType(GameSlotType slotType, int id)
+    {
+        if (id <= 0) return null;
+
+        return slotType switch
+        {
+            GameSlotType.User => this.GetLevelById(id),
+            GameSlotType.Story => this.GetStoryLevelById(id),
+            _ => null,
+        };
+    }
+
     public GameLevel? GetLevelByRootResource(string rootResource) => this.GameLevelsIncluded
         .FirstOrDefault(level => level.RootResource == rootResource);
     
