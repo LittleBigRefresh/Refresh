@@ -9,6 +9,7 @@ using Refresh.Core.Authentication.Permission;
 using Refresh.Core.Configuration;
 using Refresh.Core.Types.Data;
 using Refresh.Database;
+using Refresh.Database.Models.Authentication;
 using Refresh.Database.Models.Comments;
 using Refresh.Database.Models.Levels;
 using Refresh.Database.Models.Users;
@@ -29,7 +30,12 @@ public class ReviewEndpoints : EndpointGroup
         GameLevel? level = database.GetLevelByIdAndType(slotType, id);
         if (level == null) return NotFound;
 
-        bool parsed = sbyte.TryParse(context.QueryString.Get("rating"), out sbyte rating);
+        // Don't allow users to rate their own level
+        if (level.Publisher?.UserId == user.UserId) return BadRequest;
+
+        if (!database.HasUserPlayedLevel(level, user)) return Unauthorized;
+
+        bool parsed = int.TryParse(context.QueryString.Get("rating"), out int rating);
         if (!parsed) return BadRequest;
 
         //dpad ratings can only be -1 0 1
@@ -45,6 +51,13 @@ public class ReviewEndpoints : EndpointGroup
     {
         GameLevel? level = database.GetLevelByIdAndType(slotType, id);
         if (level == null) return NotFound;
+
+        // Don't allow users to rate their own level
+        if (level.Publisher?.UserId == user.UserId) return BadRequest;
+
+        // Allow PSP users to star-rate levels before having played them
+        if (level.GameVersion != TokenGame.LittleBigPlanetPSP && !database.HasUserPlayedLevel(level, user))
+            return Unauthorized;
 
         if (!int.TryParse(context.QueryString.Get("rating"), out int ratingInt)) return BadRequest;
         
@@ -112,7 +125,8 @@ public class ReviewEndpoints : EndpointGroup
         SerializedGameReview body,
         GameUser user,
         IDateTimeProvider timeProvider,
-        GameServerConfig config)
+        GameServerConfig config,
+        DataContext dataContext)
     {
         if (user.IsWriteBlocked(config))
             return Unauthorized;
@@ -120,35 +134,39 @@ public class ReviewEndpoints : EndpointGroup
 
         if (level == null)
             return NotFound;
+        
+        // TODO: Use the comment char limit constant once the other PR is merged.
+        if (body.Content!.Length > 4096)
+        {
+            body.Content = body.Content[..4096];
+        }
 
         //You cant review a level you haven't played.
         if (!database.HasUserPlayedLevel(level, user))
             return BadRequest;
+        
+        // You shouldn't be able to review your own level
+        if (user.UserId == level.Publisher?.UserId)
+            return BadRequest;
 
-        IEnumerable<Label> labels = [];
-
-        if (!string.IsNullOrWhiteSpace(body.Labels))
+        if (!string.IsNullOrWhiteSpace(body.RawLabels))
         {
             // Make sure there aren't too many and duplicate labels.
-            labels = LabelExtensions.FromLbpCommaList(body.Labels)
+            body.Labels = LabelExtensions.FromLbpCommaList(body.RawLabels)
                 .Distinct()
-                .Take(UgcLimits.MaximumLabels);
+                .Take(UgcLimits.MaximumLabels)
+                .ToList();
         }
 
         //Add the review to the database
-        database.AddReviewToLevel(new GameReview
-        {
-            Publisher = user,
-            Level = level,
-            PostedAt = timeProvider.Now,
-            Labels = labels.ToList(),
-            Content = body.Text,
-        }, level);
+        GameReview review = database.AddReviewToLevel(body, level, user);
 
-        // Update the user's rating
+        // Update the user's rating if valid
+        if (body.Thumb is > 1 or < -1) return BadRequest;
         database.RateLevel(level, user, (RatingType)body.Thumb);
 
-        return OK;
+        // Return the review
+        return new Response(SerializedGameReview.FromOld(review, dataContext), ContentType.Xml);
     }
     
     [GameEndpoint("rateReview/user/{levelId}/{username}", HttpMethods.Post)]
@@ -166,8 +184,10 @@ public class ReviewEndpoints : EndpointGroup
         if (reviewedLevel == null) return BadRequest;
         
         GameReview? review = database.GetReviewByUserForLevel(reviewer, reviewedLevel);
-
         if (review == null) return NotFound;
+
+        // Don't allow users to rate their own review
+        if (review.PublisherUserId == user.UserId) return BadRequest;
         
         string ratingStr = request.QueryString.Get("rating") ?? "0";
         RatingType ratingType = (RatingType)sbyte.Parse(ratingStr);

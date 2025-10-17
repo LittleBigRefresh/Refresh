@@ -1,9 +1,9 @@
 using System.Xml.Serialization;
 using Refresh.Core.Types.Data;
 using Refresh.Database.Models;
-using Refresh.Database.Models.Authentication;
 using Refresh.Database.Models.Comments;
 using Refresh.Database.Models.Levels;
+using Refresh.Database.Query;
 
 namespace Refresh.Interfaces.Game.Types.Reviews;
 
@@ -11,7 +11,7 @@ namespace Refresh.Interfaces.Game.Types.Reviews;
 
 [XmlRoot("review")]
 [XmlType("review")]
-public class SerializedGameReview : IDataConvertableFrom<SerializedGameReview, GameReview>
+public class SerializedGameReview : IDataConvertableFrom<SerializedGameReview, GameReview>, ISubmitReviewRequest
 {
     [XmlElement("id")] 
     public int Id { get; set; }
@@ -26,7 +26,10 @@ public class SerializedGameReview : IDataConvertableFrom<SerializedGameReview, G
     public long Timestamp { get; set; }
 
     [XmlElement("labels")]
-    public string Labels { get; set; } = "";
+    public string RawLabels { get; set; } = "";
+
+    [XmlIgnore]
+    public List<Label> Labels { get; set; } = [];
 
     [XmlElement("deleted")]
     public bool Deleted { get; set; } = false;
@@ -34,9 +37,11 @@ public class SerializedGameReview : IDataConvertableFrom<SerializedGameReview, G
     [XmlElement("deleted_by")]
     public ReviewDeletedBy DeletedBy { get; set; } = ReviewDeletedBy.None;
 
+#nullable enable
+
     [XmlElement("text")]
-    public string Text { get; set; } = "";
-    
+    public string? Content { get; set; } = "";
+
     /// <summary>
     /// The rating the user has on the level.
     /// </summary>
@@ -51,8 +56,6 @@ public class SerializedGameReview : IDataConvertableFrom<SerializedGameReview, G
     
     [XmlElement("yourthumb")]
     public int YourThumb { get; set; }
-    
-    #nullable enable
 
     public static SerializedGameReview? FromOld(GameReview? review, DataContext dataContext)
     {
@@ -73,10 +76,10 @@ public class SerializedGameReview : IDataConvertableFrom<SerializedGameReview, G
             },
             Reviewer = review.Publisher.Username,
             Timestamp = review.PostedAt.ToUnixTimeMilliseconds(),
-            Labels = review.Labels.ToLbpCommaList(dataContext.Game),
+            RawLabels = review.Labels.ToLbpCommaList(dataContext.Game),
             Deleted = false,
             DeletedBy = ReviewDeletedBy.None,
-            Text = review.Content,
+            Content = review.Content,
             Thumb = dataContext.Database.GetRatingByUser(review.Level, review.Publisher)?.ToDPad() ?? 0,
             ThumbsUp = reviewRatings.PositiveRating,
             ThumbsDown = reviewRatings.NegativeRating,

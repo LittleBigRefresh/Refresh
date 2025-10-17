@@ -1,5 +1,6 @@
 using Refresh.Database.Models.Users;
 using Refresh.Database.Models.Levels;
+using MongoDB.Bson;
 
 namespace Refresh.Database.Models.Comments;
 
@@ -12,12 +13,13 @@ public partial class GameReview : ISequentialId
     [Required, ForeignKey(nameof(LevelId))] public GameLevel Level { get; set; }
     [Required] public int LevelId { get; set; }
 
-    [Required]
-    public GameUser Publisher { get; set; }
+    [Required, ForeignKey(nameof(PublisherUserId))] public GameUser Publisher { get; set; }
+    [Required] public ObjectId PublisherUserId { get; set; }
 
     #nullable enable
     
     public DateTimeOffset PostedAt { get; set; }
+    public DateTimeOffset UpdatedAt { get; set; }
     
     [Obsolete("Deprecated. This attribute only exists so BackfillReviewLabelsMigration could properly migrate labels at runtime.")]
     public string? LabelsString { get; set; }

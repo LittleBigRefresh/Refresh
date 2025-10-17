@@ -232,6 +232,9 @@ namespace Refresh.Database.Migrations
                         .IsRequired()
                         .HasColumnType("text");
 
+                    b.Property<DateTimeOffset>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone");
+
                     b.HasKey("ReviewId");
 
                     b.HasIndex("LevelId");
