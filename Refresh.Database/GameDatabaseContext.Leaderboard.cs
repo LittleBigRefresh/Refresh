@@ -89,14 +89,14 @@ public partial class GameDatabaseContext // Leaderboard
     }
 
     /// <param name="scoreType">0 = don't filter by type</param>
-    public DatabaseScoreList GetTopScoresForLevel(GameLevel level, int count, int skip, byte type, bool showDuplicates = false, DateTimeOffset? minAge = null, GameUser? user = null)
+    public DatabaseScoreList GetTopScoresForLevel(GameLevel level, int count, int skip, byte scoreType, bool showDuplicates = false, DateTimeOffset? minAge = null, GameUser? user = null)
     {
         IEnumerable<GameScore> scores = this.GameScoresIncluded
             .Where(s => s.LevelId == level.LevelId)
             .OrderByDescending(s => s.Score);
         
-        if (type != 0)
-            scores = scores.Where(s => s.ScoreType == type);
+        if (scoreType != 0)
+            scores = scores.Where(s => s.ScoreType == scoreType);
 
         if (!showDuplicates)
             scores = scores.DistinctBy(s => s.PlayerIds[0]);
