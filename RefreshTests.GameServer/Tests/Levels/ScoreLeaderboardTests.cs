@@ -762,7 +762,7 @@ public class ScoreLeaderboardTests : GameServerTest
     }
 
     [Test]
-    public void DontSpamSecondBestPlayerWithOvertakeNotifs()
+    public void DontSpamSecondBestPlayerWithOvertakeNotifsFromRepeatedClears()
     {
         using TestContext context = this.GetServer();
         GameUser user1 = context.CreateUser();
@@ -824,6 +824,47 @@ public class ScoreLeaderboardTests : GameServerTest
         GameNotification? notif = context.Database.GetNotificationsByUser(first3, 1, 0).Items.FirstOrDefault();
         Assert.That(notif, Is.Not.Null);
         Assert.That(notif!.Text, Is.EqualTo($"Your #1 score on {level.Title} has been overtaken by {both2.Username}, {second3.Username}, {second4.Username} and {both1.Username} in 4-player-mode!"));
+    }
+
+    [Test]
+    public void DontSpamOvertakenPlayersWithNotifsFromMultiplayerUpload()
+    {
+        using TestContext context = this.GetServer();
+        GameUser both1 = context.CreateUser();
+        GameUser both2 = context.CreateUser();
+        GameUser first3 = context.CreateUser();
+        GameUser first4 = context.CreateUser();
+        GameUser second3 = context.CreateUser();
+        GameUser second4 = context.CreateUser();
+        GameLevel level = context.CreateLevel(both1);
+
+        List<GameUser> lobby1 = [both1, both2, first3, first4];
+        List<GameUser> lobby2 = [both2, second3, second4, both1];
+
+        // Every player in the lobby uploads the score themselves, as that's how the game does it
+        foreach (GameUser player in lobby1)
+        {
+            GameScore score1 = context.SubmitScore(10, 4, level, player, TokenGame.LittleBigPlanet2, TokenPlatform.PS3, lobby1);
+        }
+
+        // Now overtake
+        foreach (GameUser player in lobby2)
+        {
+            GameScore score2 = context.SubmitScore(123456, 4, level, player, TokenGame.LittleBigPlanet2, TokenPlatform.PS3, lobby2);
+        }
+
+        // All 6 players have now uploaded atleast one score, so show their own highscores on the leaderboard
+        IEnumerable<ScoreWithRank> scores = context.Database.GetTopScoresForLevel(level, 100, 0, 4, false).Items;
+        Assert.That(scores.Count(), Is.EqualTo(6));
+
+        // Ensure the overtaken players have this notif only once, even though the overtaking score
+        // has been uploaded 4 times by the loop before
+        Assert.That(context.Database.GetNotificationCountByUser(both1), Is.Zero);
+        Assert.That(context.Database.GetNotificationCountByUser(both2), Is.Zero);
+        Assert.That(context.Database.GetNotificationCountByUser(first3), Is.EqualTo(1));
+        Assert.That(context.Database.GetNotificationCountByUser(first4), Is.EqualTo(1));
+        Assert.That(context.Database.GetNotificationCountByUser(second3), Is.Zero);
+        Assert.That(context.Database.GetNotificationCountByUser(second4), Is.Zero);
     }
 
     [Test]
