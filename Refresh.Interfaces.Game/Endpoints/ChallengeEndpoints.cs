@@ -183,7 +183,7 @@ public class ChallengeEndpoints : EndpointGroup
         if (user.IsWriteBlocked(config))
             return Unauthorized;
 
-        ghostService.RemoveUserFromChallengeGhostRateLimit(user.UserId);
+        ghostService.RemoveUserFromRateLimit(user.UserId);
 
         GameChallenge? challenge = dataContext.Database.GetChallengeById(challengeId);
         if (challenge == null) return NotFound;
@@ -232,7 +232,7 @@ public class ChallengeEndpoints : EndpointGroup
     [NullStatusCode(NotFound)]
     public SerializedChallengeScore? GetUsersHighScoreForChallenge(RequestContext context, DataContext dataContext, GameUser user, int challengeId, string username, ChallengeGhostRateLimitService ghostService) 
     {
-        ghostService.RemoveUserFromChallengeGhostRateLimit(user.UserId);
+        ghostService.RemoveUserFromRateLimit(user.UserId);
 
         if (string.IsNullOrEmpty(username)) return null;
 
@@ -251,7 +251,7 @@ public class ChallengeEndpoints : EndpointGroup
     [NullStatusCode(NotFound)]
     public SerializedChallengeScoreList? GetScoresForChallenge(RequestContext context, DataContext dataContext, GameUser user, int challengeId, ChallengeGhostRateLimitService ghostService)
     {
-        ghostService.RemoveUserFromChallengeGhostRateLimit(user.UserId);
+        ghostService.RemoveUserFromRateLimit(user.UserId);
 
         GameChallenge? challenge = dataContext.Database.GetChallengeById(challengeId);
         if (challenge == null) return null;
@@ -271,27 +271,20 @@ public class ChallengeEndpoints : EndpointGroup
     [MinimumRole(GameUserRole.Restricted)]
     [NullStatusCode(NotFound)]
     public SerializedChallengeScoreList? GetScoresByUsersFriendsForChallenge(RequestContext context, int challengeId)
-        // No need to reset ghost asset rate limit, the game already sends requests to enough other score endpoints at that point
+        // No need to reset ghost asset rate limit, the game already sends requests to enough other score endpoints at this point
         => new([]);
 
     /// <summary>
-    /// Called to get a 3 scores large fragment of a challenge's leaderboard, with the specified user's score being preferrably in the middle.
+    /// Called to get a 3 scores large fragment of a challenge's leaderboard, with the specified user's highscore being preferrably in the middle.
     /// This is used to both show where the user's current high score is in the leaderboard after playing a challenge, and to find out the next score to beat
     /// if the user's own score isn't rank 1 already.
     /// </summary>
-    /// <remarks>
-    /// The latter also leads to an annoying bug where the game will first download the ghost asset of that next best score, but then also those of
-    /// every score in this endpoint's response (in other words, it'll try downloading the next best score's asset again and that of the other scores).
-    /// It'll then seemingly somehow combine them all into one asset and try to play it back during the challenge, breaking the replay due to 
-    /// way to large coordinates. We work around this by implementing a rate limit for ghost assets in <see cref="ResourceEndpoints.GetResource"/>
-    /// using <see cref="ChallengeGhostRateLimitService._challengeGhostRateLimitedUsers"/>, so that Hub only gets the first, correct asset.
-    /// </remarks>
     [GameEndpoint("challenge/{challengeId}/scoreboard/{username}/contextual", HttpMethods.Get, ContentType.Xml)]
     [MinimumRole(GameUserRole.Restricted)]
     [NullStatusCode(NotFound)]
     public SerializedChallengeScoreList? GetContextualScoresForChallenge(RequestContext context, DataContext dataContext, GameUser user, int challengeId, ChallengeGhostRateLimitService ghostService) 
     {
-        ghostService.RemoveUserFromChallengeGhostRateLimit(user.UserId);
+        ghostService.RemoveUserFromRateLimit(user.UserId);
 
         GameChallenge? challenge = dataContext.Database.GetChallengeById(challengeId);
         if (challenge == null) return null;

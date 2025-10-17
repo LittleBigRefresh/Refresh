@@ -116,20 +116,21 @@ public class ResourceEndpoints : EndpointGroup
         if (!dataContext.DataStore.ExistsInStore(hash))
             return NotFound;
 
-        // Part of a workaround to prevent LBP Hub from breaking challenge ghost replay
+        // Part of a workaround to prevent LBP Hub from breaking challenge ghost replay.
+        // See ChallengeGhostRateLimitService's summary for more information.
         if (token.TokenGame == TokenGame.BetaBuild && dataContext.Database.GetAssetFromHash(hash)?.AssetType == GameAssetType.ChallengeGhost)
         {
-            if (ghostService.IsUserChallengeGhostRateLimited(user.UserId))
+            if (ghostService.IsUserRateLimited(user.UserId))
             {
                 // Return OK but with no content here, else Hub will try downloading this asset a second time before giving up,
                 // which makes the game freeze longer and might screw with this rate limit.
-                context.Logger.LogDebug(BunkumCategory.UserContent, $"OK with no content to deal with LBP Hub bugs");
+                context.Logger.LogDebug(BunkumCategory.UserContent, $"Returning OK without ChallengeGhost content due to dedicated rate-limit");
                 return OK;
             }
             else
             {
                 // Continue with request normally, but also add user to rate limit for requests in the near future
-                ghostService.AddUserToChallengeGhostRateLimit(user.UserId);
+                ghostService.AddUserToRateLimit(user.UserId);
             }
         }
 
