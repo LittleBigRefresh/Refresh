@@ -151,7 +151,7 @@ public class TestContext : IDisposable
         }
     }
 
-    public GameScore SubmitScore(int score, byte type, GameLevel level, GameUser user, TokenGame game, TokenPlatform platform, IEnumerable<GameUser>? players = null)
+    public GameScore SubmitScore(int score, byte type, GameLevel level, GameUser user, TokenGame game, TokenPlatform platform, IList<GameUser>? players = null)
     {
         SerializedScore scoreObject = new()
         {
