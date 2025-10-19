@@ -1,3 +1,4 @@
+using Refresh.Common.Constants;
 using Refresh.Database.Models.Authentication;
 using Refresh.Database.Models.Comments;
 using Refresh.Database.Models.Users;
@@ -43,7 +44,7 @@ public class UserCommentTests : GameServerTest
     }
     
     [Test]
-    public void CantPostTooLongUserComment()
+    public void TooLongUserCommentGetsTrimmed()
     {
         using TestContext context = this.GetServer();
         GameUser user1 = context.CreateUser();
@@ -53,14 +54,19 @@ public class UserCommentTests : GameServerTest
 
         SerializedComment comment = new()
         {
-            Content = new string('S', 5000),
+            Content = new string('S', 9000),
             CommentId = 0,
             Timestamp = 0,
             Handle = null,
         };
 
         HttpResponseMessage response = client.PostAsync($"/lbp/postUserComment/{user2.Username}", new StringContent(comment.AsXML())).Result;
-        Assert.That(response.StatusCode, Is.EqualTo(BadRequest));
+        Assert.That(response.StatusCode, Is.EqualTo(OK));
+
+        // Ensure the comment was trimmed
+        GameProfileComment? finalComment = context.Database.GetProfileComments(user2, 10, 0).Items.FirstOrDefault();
+        Assert.That(finalComment, Is.Not.Null);
+        Assert.That(finalComment!.Content.Length, Is.EqualTo(UgcLimits.CommentLimit));
     }
 
     [Test]

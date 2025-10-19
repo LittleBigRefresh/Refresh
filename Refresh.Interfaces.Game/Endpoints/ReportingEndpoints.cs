@@ -122,7 +122,7 @@ public class ReportingEndpoints : EndpointGroup
         }
 
         // Trim description
-        if (body.Description.Length > UgcLimits.DescriptionLimit)
+        if (body.Description != null && body.Description.Length > UgcLimits.DescriptionLimit)
             body.Description = body.Description[..UgcLimits.DescriptionLimit];
 
         GriefReport griefReport = new()
