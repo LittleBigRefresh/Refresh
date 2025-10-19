@@ -142,7 +142,6 @@ public class ReviewApiEndpoints : EndpointGroup
     [DocSummary("Updates a review by ID.")]
     [DocError(typeof(ApiNotFoundError), ApiNotFoundError.ReviewMissingErrorWhen)]
     [DocError(typeof(ApiValidationError), ApiValidationError.NoReviewEditPermissionErrorWhen)]
-    [DocError(typeof(ApiValidationError), ApiValidationError.ReviewHasInvalidLabelsWhen)]
     [DocError(typeof(ApiValidationError), ApiValidationError.RatingParseErrorWhen)]
     public ApiResponse<ApiGameReviewResponse> UpdateReviewById(RequestContext context,
         GameDatabaseContext database, IDataStore dataStore, GameUser user,
@@ -159,9 +158,6 @@ public class ReviewApiEndpoints : EndpointGroup
         if (body.Labels != null)
         {
             body.Labels = this.ValidateLabels(body.Labels);
-
-            if (body.Labels == null) 
-                return ApiValidationError.ReviewHasInvalidLabels;
         }
 
         if (body.LevelRating != null)
