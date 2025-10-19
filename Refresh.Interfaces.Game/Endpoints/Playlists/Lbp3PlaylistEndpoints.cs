@@ -3,6 +3,7 @@ using Bunkum.Core.Endpoints;
 using Bunkum.Core.Responses;
 using Bunkum.Listener.Protocol;
 using Bunkum.Protocols.Http;
+using Refresh.Common.Constants;
 using Refresh.Core.Authentication.Permission;
 using Refresh.Core.Configuration;
 using Refresh.Core.Types.Data;
@@ -30,6 +31,13 @@ public class Lbp3PlaylistEndpoints : EndpointGroup
         // if the player has no root playlist yet, create a new one first
         rootPlaylist ??= dataContext.Database.CreateRootPlaylist(user);
 
+        // Trim name and description
+        if (body.Name != null && body.Name.Length > UgcLimits.TitleLimit) 
+            body.Name = body.Name[..UgcLimits.TitleLimit];
+
+        if (body.Description != null && body.Description.Length > UgcLimits.DescriptionLimit)
+            body.Description = body.Description[..UgcLimits.DescriptionLimit];
+
         // create the actual playlist and add it to the root playlist
         GamePlaylist playlist = dataContext.Database.CreatePlaylist(user, body);
         dataContext.Database.AddPlaylistToPlaylist(playlist, rootPlaylist!);
@@ -52,6 +60,13 @@ public class Lbp3PlaylistEndpoints : EndpointGroup
         // don't allow the wrong user to update playlists
         if (playlist.PublisherId != user.UserId)
             return Unauthorized;
+        
+        // Trim name and description
+        if (body.Name != null && body.Name.Length > UgcLimits.TitleLimit) 
+            body.Name = body.Name[..UgcLimits.TitleLimit];
+
+        if (body.Description != null && body.Description.Length > UgcLimits.DescriptionLimit)
+            body.Description = body.Description[..UgcLimits.DescriptionLimit];
         
         dataContext.Database.UpdatePlaylist(playlist, body);
         

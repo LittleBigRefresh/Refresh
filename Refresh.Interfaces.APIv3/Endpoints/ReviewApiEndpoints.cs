@@ -139,10 +139,9 @@ public class ReviewApiEndpoints : EndpointGroup
             database.RateLevel(level, user, body.LevelRating.Value);
         }
 
-        // TODO: Use the comment char limit constant once the other PR is merged.
-        if (body.Content != null && body.Content.Length > 4096)
+        if (body.Content != null && body.Content.Length > UgcLimits.CommentLimit)
         {
-            body.Content = body.Content[..4096];
+            body.Content = body.Content[..UgcLimits.CommentLimit];
         }
 
         GameReview review = database.AddReviewToLevel(body, level, user);
@@ -183,9 +182,9 @@ public class ReviewApiEndpoints : EndpointGroup
             database.RateLevel(review.Level, user, body.LevelRating.Value);
         }
 
-        if (body.Content != null && body.Content.Length > 4096)
+        if (body.Content != null && body.Content.Length > UgcLimits.CommentLimit)
         {
-            body.Content = body.Content[..4096];
+            body.Content = body.Content[..UgcLimits.CommentLimit];
         }
         
         review = database.UpdateReview(body, review);

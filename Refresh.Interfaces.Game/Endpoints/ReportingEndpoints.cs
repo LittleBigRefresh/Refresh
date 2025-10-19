@@ -4,6 +4,7 @@ using Bunkum.Core.Endpoints;
 using Bunkum.Core.Responses;
 using Bunkum.Listener.Protocol;
 using Bunkum.Protocols.Http;
+using Refresh.Common.Constants;
 using Refresh.Common.Time;
 using Refresh.Core.Authentication.Permission;
 using Refresh.Core.Configuration;
@@ -119,6 +120,10 @@ public class ReportingEndpoints : EndpointGroup
                 };
             }));
         }
+
+        // Trim description
+        if (body.Description.Length > UgcLimits.DescriptionLimit)
+            body.Description = body.Description[..UgcLimits.DescriptionLimit];
 
         GriefReport griefReport = new()
         {

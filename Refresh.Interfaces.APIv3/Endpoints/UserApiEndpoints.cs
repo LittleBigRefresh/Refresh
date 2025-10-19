@@ -3,6 +3,7 @@ using Bunkum.Core;
 using Bunkum.Core.Endpoints;
 using Bunkum.Core.Storage;
 using Bunkum.Protocols.Http;
+using Refresh.Common.Constants;
 using Refresh.Core.Authentication.Permission;
 using Refresh.Core.Configuration;
 using Refresh.Core.Services;
@@ -72,6 +73,10 @@ public class UserApiEndpoints : EndpointGroup
 
         if (body.EmailAddress != null && !smtpService.CheckEmailDomainValidity(body.EmailAddress))
             return ApiValidationError.EmailDoesNotActuallyExistError;
+        
+        // Trim description
+        if (body.Description != null && body.Description.Length > UgcLimits.DescriptionLimit)
+            body.Description = body.Description[..UgcLimits.DescriptionLimit];
 
         database.UpdateUserData(user, body);
         return ApiExtendedGameUserResponse.FromOld(user, dataContext);
