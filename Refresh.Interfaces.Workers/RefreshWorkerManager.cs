@@ -24,6 +24,7 @@ public static class RefreshWorkerManager
         manager.AddJob<BackfillLevelAttributesMigration>();
         manager.AddJob<BackfillReviewLabelsMigration>();
         manager.AddJob<ClampPlayerLimitsMigration>();
+        manager.AddJob<BackfillModdedPlanetFlagsMigration>();
         
         return manager;
     }
