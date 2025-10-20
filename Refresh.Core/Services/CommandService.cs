@@ -101,15 +101,15 @@ public class CommandService : EndpointService
                 break;
             }
             case "showmodp":
-            case "showmodplanet":
-            case "showmodplanets":
+            case "showmoddedplanet":
+            case "showmoddedplanets":
             {
                 database.SetShowModdedPlanets(user, true);
                 break;
             }
             case "hidemodp":
-            case "hidemodplanet":
-            case "hidemodplanets":
+            case "hidemoddedplanet":
+            case "hidemoddedplanets":
             {
                 database.SetShowModdedPlanets(user, false);
                 break;
