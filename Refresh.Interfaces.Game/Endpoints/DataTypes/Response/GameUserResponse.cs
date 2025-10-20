@@ -128,18 +128,11 @@ public class GameUserResponse : IDataConvertableFrom<GameUserResponse, GameUser>
         response.PlanetsHash = dataContext.Game switch
         {
             // Hide modded planets if the requesting user doesn't want them to be shown, and the requested user is not the requesting user
-            TokenGame.LittleBigPlanet2 => (dataContext.User!.ShowModdedPlanets || old.UserId == dataContext.User.UserId || !old.AreLbp2PlanetsModded)
-                ? old.Lbp2PlanetsHash : "0" ,
-            TokenGame.LittleBigPlanet3 => (dataContext.User!.ShowModdedPlanets || old.UserId == dataContext.User.UserId || !old.AreLbp3PlanetsModded)
-                ? old.Lbp3PlanetsHash : "0" ,
-            TokenGame.LittleBigPlanetVita => (dataContext.User!.ShowModdedPlanets || old.UserId == dataContext.User.UserId || !old.AreVitaPlanetsModded)
-                ? old.VitaPlanetsHash : "0",
-            TokenGame.BetaBuild => (dataContext.User!.ShowModdedPlanets || old.UserId == dataContext.User.UserId || !old.AreBetaPlanetsModded)
-                ? old.BetaPlanetsHash : "0",
-            TokenGame.LittleBigPlanet1 => "0",
-            TokenGame.LittleBigPlanetPSP => "0",
-            TokenGame.Website => "0",
-            _ => throw new ArgumentOutOfRangeException(nameof(dataContext.Game), dataContext.Game, null),
+            TokenGame.LittleBigPlanet2 => !old.AreLbp2PlanetsModded || ShowModdedPlanet(dataContext.User!, old) ? old.Lbp2PlanetsHash : "0" ,
+            TokenGame.LittleBigPlanet3 => !old.AreLbp3PlanetsModded || ShowModdedPlanet(dataContext.User!, old) ? old.Lbp3PlanetsHash : "0" ,
+            TokenGame.LittleBigPlanetVita => !old.AreVitaPlanetsModded || ShowModdedPlanet(dataContext.User!, old) ? old.VitaPlanetsHash : "0",
+            TokenGame.BetaBuild => !old.AreBetaPlanetsModded || ShowModdedPlanet(dataContext.User!, old) ? old.BetaPlanetsHash : "0",
+            _ => "0",
         };
 
         // Fill out slot usage information
@@ -216,6 +209,9 @@ public class GameUserResponse : IDataConvertableFrom<GameUserResponse, GameUser>
 
         return response;
     }
+
+    private static bool ShowModdedPlanet(GameUser requestingUser, GameUser requestedUser)
+        => requestingUser.ShowModdedPlanets || requestingUser.UserId == requestedUser.UserId;
 
     public static IEnumerable<GameUserResponse> FromOldList(IEnumerable<GameUser> oldList, DataContext dataContext) => oldList.Select(old => FromOld(old, dataContext)).ToList()!;
 }
