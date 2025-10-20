@@ -9,10 +9,9 @@ public static class GameDatabaseContextExtensions
         bool modded = false;
 
         GameAsset? rootAsset = database.GetAssetFromHash(rootAssetHash);
-        
         rootAsset?.TraverseDependenciesRecursively(database, (_, asset) =>
         {
-            if (asset != null && (asset.AssetFlags & AssetFlags.Modded & AssetFlags.ModdedOnPlanets) != 0)
+            if (asset != null && (asset.AssetFlags & (AssetFlags.Modded | AssetFlags.ModdedOnPlanets)) != 0)
                 modded = true;
         });
         
