@@ -127,13 +127,18 @@ public class GameUserResponse : IDataConvertableFrom<GameUserResponse, GameUser>
 
         response.PlanetsHash = dataContext.Game switch
         {
+            // Hide modded planets if the requesting user doesn't want them to be shown, and the requested user is not the requesting user
+            TokenGame.LittleBigPlanet2 => (dataContext.User!.ShowModdedPlanets || old.UserId == dataContext.User.UserId || !old.AreLbp2PlanetsModded)
+                ? old.Lbp2PlanetsHash : "0" ,
+            TokenGame.LittleBigPlanet3 => (dataContext.User!.ShowModdedPlanets || old.UserId == dataContext.User.UserId || !old.AreLbp3PlanetsModded)
+                ? old.Lbp3PlanetsHash : "0" ,
+            TokenGame.LittleBigPlanetVita => (dataContext.User!.ShowModdedPlanets || old.UserId == dataContext.User.UserId || !old.AreVitaPlanetsModded)
+                ? old.VitaPlanetsHash : "0",
+            TokenGame.BetaBuild => (dataContext.User!.ShowModdedPlanets || old.UserId == dataContext.User.UserId || !old.AreBetaPlanetsModded)
+                ? old.BetaPlanetsHash : "0",
             TokenGame.LittleBigPlanet1 => "0",
-            TokenGame.LittleBigPlanet2 => old.Lbp2PlanetsHash,
-            TokenGame.LittleBigPlanet3 => old.Lbp3PlanetsHash,
-            TokenGame.LittleBigPlanetVita => old.VitaPlanetsHash,
             TokenGame.LittleBigPlanetPSP => "0",
             TokenGame.Website => "0",
-            TokenGame.BetaBuild => old.BetaPlanetsHash,
             _ => throw new ArgumentOutOfRangeException(nameof(dataContext.Game), dataContext.Game, null),
         };
 

@@ -14,6 +14,7 @@ public interface IApiEditUserRequest
     bool? RedirectGriefReportsToPhotos { get; set; }
     bool? UnescapeXmlSequences { get; set; }
     string? EmailAddress { get; set; }
+    bool? ShowModdedPlanets { get; set; }
     bool? ShowModdedContent { get; set; }
     bool? ShowReuploadedContent { get; set; }
     Visibility? LevelVisibility { get; set; }

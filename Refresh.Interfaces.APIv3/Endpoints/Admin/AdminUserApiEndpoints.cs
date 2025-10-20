@@ -106,6 +106,11 @@ public class AdminUserApiEndpoints : EndpointGroup
             Lbp2PlanetsHash = user.Lbp2PlanetsHash,
             Lbp3PlanetsHash = user.Lbp3PlanetsHash,
             VitaPlanetsHash = user.VitaPlanetsHash,
+            BetaPlanetsHash = user.BetaPlanetsHash,
+            AreLbp2PlanetsModded = user.AreLbp2PlanetsModded,
+            AreLbp3PlanetsModded = user.AreLbp3PlanetsModded,
+            AreVitaPlanetsModded = user.AreVitaPlanetsModded,
+            AreBetaPlanetsModded = user.AreBetaPlanetsModded,
         };
     }
     
@@ -122,6 +127,11 @@ public class AdminUserApiEndpoints : EndpointGroup
             Lbp2PlanetsHash = user.Lbp2PlanetsHash,
             Lbp3PlanetsHash = user.Lbp3PlanetsHash,
             VitaPlanetsHash = user.VitaPlanetsHash,
+            BetaPlanetsHash = user.BetaPlanetsHash,
+            AreLbp2PlanetsModded = user.AreLbp2PlanetsModded,
+            AreLbp3PlanetsModded = user.AreLbp3PlanetsModded,
+            AreVitaPlanetsModded = user.AreVitaPlanetsModded,
+            AreBetaPlanetsModded = user.AreBetaPlanetsModded,
         };
     }
     
