@@ -94,140 +94,141 @@ public partial class GameDatabaseContext // Users
 
     public void UpdateUserData(GameUser user, ISerializedEditUser data, TokenGame game)
     {
-        if (data.Description != null)
-            user.Description = data.Description;
-
-        if (data.UserLocation != null)
+        this.Write(() =>
         {
-            user.LocationX = data.UserLocation.X;
-            user.LocationY = data.UserLocation.Y;
-        }
+            if (data.Description != null)
+                user.Description = data.Description;
 
-        if (data.PlanetsHash != null)
-            // ReSharper disable once SwitchStatementMissingSomeEnumCasesNoDefault
-            switch (game)
+            if (data.UserLocation != null)
             {
-                case TokenGame.LittleBigPlanet2:
-                    user.Lbp2PlanetsHash = data.PlanetsHash;
-                    user.AreLbp2PlanetsModded = this.GetPlanetModdedStatus(data.PlanetsHash);
-                    break;
-                case TokenGame.LittleBigPlanet3:
-                    user.Lbp3PlanetsHash = data.PlanetsHash;
-                    user.AreLbp3PlanetsModded = this.GetPlanetModdedStatus(data.PlanetsHash);
-                    break;
-                case TokenGame.LittleBigPlanetVita:
-                    user.VitaPlanetsHash = data.PlanetsHash;
-                    user.AreVitaPlanetsModded = this.GetPlanetModdedStatus(data.PlanetsHash);
-                    break;
-                case TokenGame.BetaBuild:
-                    user.BetaPlanetsHash = data.PlanetsHash;
-                    user.AreBetaPlanetsModded = this.GetPlanetModdedStatus(data.PlanetsHash);
-                    break;
+                user.LocationX = data.UserLocation.X;
+                user.LocationY = data.UserLocation.Y;
             }
 
-        // ReSharper disable once InvertIf
-        if (data.IconHash != null)
-            switch (game)
-            {
+            if (data.PlanetsHash != null)
+                // ReSharper disable once SwitchStatementMissingSomeEnumCasesNoDefault
+                switch (game)
+                {
+                    case TokenGame.LittleBigPlanet2:
+                        user.Lbp2PlanetsHash = data.PlanetsHash;
+                        user.AreLbp2PlanetsModded = this.GetPlanetModdedStatus(data.PlanetsHash);
+                        break;
+                    case TokenGame.LittleBigPlanet3:
+                        user.Lbp3PlanetsHash = data.PlanetsHash;
+                        user.AreLbp3PlanetsModded = this.GetPlanetModdedStatus(data.PlanetsHash);
+                        break;
+                    case TokenGame.LittleBigPlanetVita:
+                        user.VitaPlanetsHash = data.PlanetsHash;
+                        user.AreVitaPlanetsModded = this.GetPlanetModdedStatus(data.PlanetsHash);
+                        break;
+                    case TokenGame.BetaBuild:
+                        user.BetaPlanetsHash = data.PlanetsHash;
+                        user.AreBetaPlanetsModded = this.GetPlanetModdedStatus(data.PlanetsHash);
+                        break;
+                }
 
-                case TokenGame.LittleBigPlanet1:
-                case TokenGame.LittleBigPlanet2:
-                case TokenGame.LittleBigPlanet3:
+            // ReSharper disable once InvertIf
+            if (data.IconHash != null)
+                switch (game)
+                {
+                    case TokenGame.LittleBigPlanet1:
+                    case TokenGame.LittleBigPlanet2:
+                    case TokenGame.LittleBigPlanet3:
 #if false // TODO: Enable this code once https://github.com/LittleBigRefresh/Refresh/issues/309 is resolved
-                    //If the icon is a remote asset, then it will work on Vita as well, so set the Vita hash 
-                    if (!data.IconHash.StartsWith('g'))
-                    {
-                        user.VitaIconHash = data.IconHash;
-                    }
+                        //If the icon is a remote asset, then it will work on Vita as well, so set the Vita hash 
+                        if (!data.IconHash.StartsWith('g'))
+                        {
+                            user.VitaIconHash = data.IconHash;
+                        }
 #endif
-                    user.IconHash = data.IconHash;
-                    break;
-                case TokenGame.LittleBigPlanetVita:
-#if false // TODO: Enable this code once https://github.com/LittleBigRefresh/Refresh/issues/309 is resolved
-                    //If the icon is a remote asset, then it will work on PS3 as well, so set the PS3 hash to it as well
-                    if (!data.IconHash.StartsWith('g'))
-                    {
                         user.IconHash = data.IconHash;
-                    }
+                        break;
+                    case TokenGame.LittleBigPlanetVita:
+#if false // TODO: Enable this code once https://github.com/LittleBigRefresh/Refresh/issues/309 is resolved
+                        //If the icon is a remote asset, then it will work on PS3 as well, so set the PS3 hash to it as well
+                        if (!data.IconHash.StartsWith('g'))
+                        {
+                            user.IconHash = data.IconHash;
+                        }
 #endif
-                    user.VitaIconHash = data.IconHash;
-                    
-                    break;
-                case TokenGame.LittleBigPlanetPSP:
-                    //PSP icons are special and use a GUID system separate from the mainline games,
-                    //so we separate PSP icons to another field
-                    user.PspIconHash = data.IconHash;
-                    break;
-                case TokenGame.BetaBuild:
-                    user.BetaIconHash = data.IconHash;
-                    break;
-            }
-        
-        if (data.YayFaceHash != null)
-            user.YayFaceHash = data.YayFaceHash;
-        if (data.BooFaceHash != null)
-            user.BooFaceHash = data.BooFaceHash;
-        if (data.MehFaceHash != null)
-            user.MehFaceHash = data.MehFaceHash;
-
-        this.SaveChanges();
+                        user.VitaIconHash = data.IconHash;
+                        
+                        break;
+                    case TokenGame.LittleBigPlanetPSP:
+                        //PSP icons are special and use a GUID system separate from the mainline games,
+                        //so we separate PSP icons to another field
+                        user.PspIconHash = data.IconHash;
+                        break;
+                    case TokenGame.BetaBuild:
+                        user.BetaIconHash = data.IconHash;
+                        break;
+                }
+            
+            if (data.YayFaceHash != null)
+                user.YayFaceHash = data.YayFaceHash;
+            if (data.BooFaceHash != null)
+                user.BooFaceHash = data.BooFaceHash;
+            if (data.MehFaceHash != null)
+                user.MehFaceHash = data.MehFaceHash;
+        });
     }
     
     public void UpdateUserData(GameUser user, IApiEditUserRequest data)
     {
-        if (data.EmailAddress != null && data.EmailAddress != user.EmailAddress)
+        this.Write(() =>
         {
-            user.EmailAddressVerified = false;
-        }
+            if (data.EmailAddress != null && data.EmailAddress != user.EmailAddress)
+            {
+                user.EmailAddressVerified = false;
+            }
 
-        data.EmailAddress = data.EmailAddress?.ToLowerInvariant();
+            data.EmailAddress = data.EmailAddress?.ToLowerInvariant();
 
-        if (data.IconHash != null)
-            user.IconHash = data.IconHash;
-        
-        if (data.VitaIconHash != null)
-            user.VitaIconHash = data.VitaIconHash;
-        
-        if (data.BetaIconHash != null)
-            user.BetaIconHash = data.BetaIconHash;
+            if (data.IconHash != null)
+                user.IconHash = data.IconHash;
+            
+            if (data.VitaIconHash != null)
+                user.VitaIconHash = data.VitaIconHash;
+            
+            if (data.BetaIconHash != null)
+                user.BetaIconHash = data.BetaIconHash;
 
-        if (data.Description != null)
-            user.Description = data.Description;
+            if (data.Description != null)
+                user.Description = data.Description;
 
-        if (data.AllowIpAuthentication != null)
-            user.AllowIpAuthentication = data.AllowIpAuthentication.Value;
+            if (data.AllowIpAuthentication != null)
+                user.AllowIpAuthentication = data.AllowIpAuthentication.Value;
 
-        if (data.PsnAuthenticationAllowed != null)
-            user.PsnAuthenticationAllowed = data.PsnAuthenticationAllowed.Value;
+            if (data.PsnAuthenticationAllowed != null)
+                user.PsnAuthenticationAllowed = data.PsnAuthenticationAllowed.Value;
 
-        if (data.RpcnAuthenticationAllowed != null)
-            user.RpcnAuthenticationAllowed = data.RpcnAuthenticationAllowed.Value;
-        
-        if (data.UnescapeXmlSequences != null)
-            user.UnescapeXmlSequences = data.UnescapeXmlSequences.Value;
+            if (data.RpcnAuthenticationAllowed != null)
+                user.RpcnAuthenticationAllowed = data.RpcnAuthenticationAllowed.Value;
+            
+            if (data.UnescapeXmlSequences != null)
+                user.UnescapeXmlSequences = data.UnescapeXmlSequences.Value;
 
-        if (data.EmailAddress != null)
-            user.EmailAddress = data.EmailAddress;
-        
-        if (data.LevelVisibility != null)
-            user.LevelVisibility = data.LevelVisibility.Value;
-        
-        if (data.ProfileVisibility != null)
-            user.ProfileVisibility = data.ProfileVisibility.Value;
-        
-        if (data.ShowModdedPlanets != null)
-            user.ShowModdedPlanets = data.ShowModdedPlanets.Value;
+            if (data.EmailAddress != null)
+                user.EmailAddress = data.EmailAddress;
+            
+            if (data.LevelVisibility != null)
+                user.LevelVisibility = data.LevelVisibility.Value;
+            
+            if (data.ProfileVisibility != null)
+                user.ProfileVisibility = data.ProfileVisibility.Value;
+            
+            if (data.ShowModdedPlanets != null)
+                user.ShowModdedPlanets = data.ShowModdedPlanets.Value;
 
-        if (data.ShowModdedContent != null)
-            user.ShowModdedContent = data.ShowModdedContent.Value;
-        
-        if (data.ShowReuploadedContent != null)
-            user.ShowReuploadedContent = data.ShowReuploadedContent.Value;
-        
-        if (data.RedirectGriefReportsToPhotos != null)
-            user.RedirectGriefReportsToPhotos = data.RedirectGriefReportsToPhotos.Value;
-
-        this.SaveChanges();
+            if (data.ShowModdedContent != null)
+                user.ShowModdedContent = data.ShowModdedContent.Value;
+            
+            if (data.ShowReuploadedContent != null)
+                user.ShowReuploadedContent = data.ShowReuploadedContent.Value;
+            
+            if (data.RedirectGriefReportsToPhotos != null)
+                user.RedirectGriefReportsToPhotos = data.RedirectGriefReportsToPhotos.Value;
+        });
     }
 
     [Pure]
@@ -382,7 +383,6 @@ public partial class GameDatabaseContext // Users
         user.AreLbp3PlanetsModded = false;
         user.AreVitaPlanetsModded = false;
         user.AreBetaPlanetsModded = false;
-
         this.SaveChanges();
     }
 
