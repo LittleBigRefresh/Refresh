@@ -52,6 +52,7 @@ public class ActivityApiEndpoints : EndpointGroup
             ExcludeMyLevels = excludeMyLevels,
             ExcludeFavouriteUsers = excludeFavouriteUsers,
             ExcludeMyself = excludeMyself,
+            QuerySource = ActivityQuerySource.Api,
         });
         return ApiActivityPageResponse.FromOld(page, dataContext);
     }
@@ -93,6 +94,7 @@ public class ActivityApiEndpoints : EndpointGroup
             ExcludeMyLevels = excludeMyLevels,
             ExcludeFavouriteUsers = excludeFavouriteUsers,
             ExcludeMyself = excludeMyself,
+            QuerySource = ActivityQuerySource.Api,
         });
         return ApiActivityPageResponse.FromOld(page, dataContext);
     }
@@ -134,6 +136,7 @@ public class ActivityApiEndpoints : EndpointGroup
             ExcludeMyLevels = excludeMyLevels,
             ExcludeFavouriteUsers = excludeFavouriteUsers,
             ExcludeMyself = excludeMyself,
+            QuerySource = ActivityQuerySource.Api,
         });
         return ApiActivityPageResponse.FromOld(page, dataContext);
     }
@@ -175,6 +178,7 @@ public class ActivityApiEndpoints : EndpointGroup
             ExcludeMyLevels = excludeMyLevels,
             ExcludeFavouriteUsers = excludeFavouriteUsers,
             ExcludeMyself = excludeMyself,
+            QuerySource = ActivityQuerySource.Api,
         });
         return ApiActivityPageResponse.FromOld(page, dataContext);
     }
