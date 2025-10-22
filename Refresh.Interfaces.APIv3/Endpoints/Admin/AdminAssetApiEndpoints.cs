@@ -15,7 +15,7 @@ namespace Refresh.Interfaces.APIv3.Endpoints.Admin;
 
 public class AdminAssetApiEndpoints : EndpointGroup
 {
-    [ApiV3Endpoint("admin/users/uuid/{uuid}/assets"), MinimumRole(GameUserRole.Admin)]
+    [ApiV3Endpoint("admin/users/uuid/{uuid}/assets"), MinimumRole(GameUserRole.Moderator)]
     [DocSummary("Retrieves a list of assets uploaded by the user.")]
     [DocQueryParam("assetType", "The asset type to filter by. Can be excluded to list all types.")]
     [DocError(typeof(ApiNotFoundError), ApiNotFoundError.UserMissingErrorWhen)]
