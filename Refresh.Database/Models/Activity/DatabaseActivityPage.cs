@@ -1,4 +1,5 @@
 ﻿using System.Diagnostics;
+using MongoDB.Bson;
 using Refresh.Database.Models.Levels;
 using Refresh.Database.Models.Levels.Scores;
 using Refresh.Database.Models.Photos;
@@ -95,7 +96,7 @@ public class DatabaseActivityPage
         
         // Levels
         List<GameLevel> levels = [];
-        foreach (Event e in events.Where(e => e.StoredDataType == EventDataType.Score))
+        foreach (Event e in events.Where(e => e.StoredDataType == EventDataType.Level))
         {
             GameLevel? obj = database.GetLevelFromEvent(e);
             if (obj != null) levels.Add(obj);
@@ -156,9 +157,9 @@ public class DatabaseActivityPage
     {
         foreach (Event @event in events.Where(e => e.StoredDataType == EventDataType.User))
         {
-            GameUser user = this.Users.First(u => u.UserId == @event.StoredObjectId);
-            
-            DatabaseActivityUserGroup group = GetOrCreateUserUserGroup(@event, user, @event.User);
+            GameUser? user = this.Users.FirstOrDefault(u => u.UserId == @event.StoredObjectId);
+
+            DatabaseActivityUserGroup group = GetOrCreateUserUserGroup(@event, user, @event.StoredObjectId!.Value, @event.User);
             group.Events.Add(@event);
         }
     }
@@ -171,11 +172,11 @@ public class DatabaseActivityPage
 
             if (@event.StoredDataType == EventDataType.Photo)
             {
-                GamePhoto photo = this.Photos.First(p => p.PhotoId == @event.StoredSequentialId);
-                levelId = photo.LevelId ?? 0;
+                GamePhoto? photo = this.Photos.FirstOrDefault(p => p.PhotoId == @event.StoredSequentialId);
+                levelId = photo?.LevelId ?? 0;
             }
 
-            GameLevel? level = this.Levels.FirstOrDefault(l => l.LevelId == levelId);
+            GameLevel? level = levelId != 0 ? this.Levels.FirstOrDefault(l => l.LevelId == levelId) : null;
             if (level == null)
             {
                 DatabaseActivityUserGroup userGroup = GetOrCreateUserGroup(@event);
@@ -184,7 +185,7 @@ public class DatabaseActivityPage
                 continue;
             }
             
-            DatabaseActivityUserGroup group = GetOrCreateLevelUserGroup(@event, level);
+            DatabaseActivityUserGroup group = GetOrCreateLevelUserGroup(@event, level, levelId);
             group.Events.Add(@event);
         }
     }
@@ -193,10 +194,10 @@ public class DatabaseActivityPage
     {
         foreach (Event @event in events.Where(e => e.EventType == EventType.LevelScore))
         {
-            GameScore score = this.Scores.First(u => u.ScoreId == @event.StoredObjectId);
-            GameLevel level = score.Level;
+            GameScore? score = this.Scores.FirstOrDefault(u => u.ScoreId == @event.StoredObjectId);
+            GameLevel? level = score?.Level;
 
-            DatabaseActivityUserGroup group = GetOrCreateLevelUserGroup(@event, level);
+            DatabaseActivityUserGroup group = GetOrCreateLevelUserGroup(@event, level, level?.LevelId ?? 0);
             group.Events.Add(@event);
         }
     }
@@ -216,14 +217,14 @@ public class DatabaseActivityPage
 
     #region Group Creation
 
-    private DatabaseActivityUserGroup GetOrCreateUserUserGroup(Event @event, GameUser user1, GameUser user2)
+    private DatabaseActivityUserGroup GetOrCreateUserUserGroup(Event @event, GameUser? user1, ObjectId user1Id, GameUser user2)
     {
         Debug.Assert(this.UserEventGroups != null);
         
-        DatabaseActivityUserGroup? rootGroup = this.UserEventGroups.FirstOrDefault(u => u.User.UserId == user1.UserId);
+        DatabaseActivityUserGroup? rootGroup = this.UserEventGroups.FirstOrDefault(u => u.UserId == user1Id);
         if (rootGroup == null)
         {
-            rootGroup = new DatabaseActivityUserGroup(user1)
+            rootGroup = new DatabaseActivityUserGroup(user1, user1Id)
             {
                 Timestamp = @event.Timestamp,
             };
@@ -233,10 +234,10 @@ public class DatabaseActivityPage
 
         Debug.Assert(rootGroup.UserChildren != null);
         
-        DatabaseActivityUserGroup? subGroup = rootGroup.UserChildren.FirstOrDefault(u => u.User.UserId == user2.UserId);
+        DatabaseActivityUserGroup? subGroup = rootGroup.UserChildren.FirstOrDefault(u => u.UserId == user2.UserId);
         if (subGroup == null)
         {
-            subGroup = new DatabaseActivityUserGroup(user2)
+            subGroup = new DatabaseActivityUserGroup(user2, user2.UserId)
             {
                 Timestamp = @event.Timestamp,
             };
@@ -251,10 +252,10 @@ public class DatabaseActivityPage
     {
         Debug.Assert(this.UserEventGroups != null);
         
-        DatabaseActivityUserGroup? rootGroup = this.UserEventGroups.FirstOrDefault(u => u.User.UserId == user.UserId);
+        DatabaseActivityUserGroup? rootGroup = this.UserEventGroups.FirstOrDefault(u => u.UserId == user.UserId);
         if (rootGroup == null)
         {
-            rootGroup = new DatabaseActivityUserGroup(user)
+            rootGroup = new DatabaseActivityUserGroup(user, user.UserId)
             {
                 Timestamp = @event.Timestamp,
             };
@@ -268,14 +269,14 @@ public class DatabaseActivityPage
     private DatabaseActivityUserGroup GetOrCreateUserGroup(Event @event)
         => this.GetOrCreateUserGroup(@event, @event.User);
 
-    private DatabaseActivityUserGroup GetOrCreateLevelUserGroup(Event @event,  GameLevel level, GameUser user)
+    private DatabaseActivityUserGroup GetOrCreateLevelUserGroup(Event @event, GameLevel? level, int levelId, GameUser user)
     {
         Debug.Assert(this.LevelEventGroups != null);
         
-        DatabaseActivityLevelGroup? rootGroup = this.LevelEventGroups.FirstOrDefault(u => u.Level.LevelId == level.LevelId);
+        DatabaseActivityLevelGroup? rootGroup = this.LevelEventGroups.FirstOrDefault(u => u.LevelId == levelId);
         if (rootGroup == null)
         {
-            rootGroup = new DatabaseActivityLevelGroup(level)
+            rootGroup = new DatabaseActivityLevelGroup(level, levelId)
             {
                 Timestamp = @event.Timestamp,
             };
@@ -285,10 +286,10 @@ public class DatabaseActivityPage
 
         Debug.Assert(rootGroup.UserChildren != null);
         
-        DatabaseActivityUserGroup? subGroup = rootGroup.UserChildren.FirstOrDefault(u => u.User.UserId == user.UserId);
+        DatabaseActivityUserGroup? subGroup = rootGroup.UserChildren.FirstOrDefault(u => u.UserId == user.UserId);
         if (subGroup == null)
         {
-            subGroup = new DatabaseActivityUserGroup(user)
+            subGroup = new DatabaseActivityUserGroup(user, user.UserId)
             {
                 Timestamp = @event.Timestamp,
             };
@@ -299,8 +300,8 @@ public class DatabaseActivityPage
         return subGroup;
     }
 
-    private DatabaseActivityUserGroup GetOrCreateLevelUserGroup(Event @event, GameLevel level)
-        => GetOrCreateLevelUserGroup(@event, level, @event.User);
+    private DatabaseActivityUserGroup GetOrCreateLevelUserGroup(Event @event, GameLevel? level, int levelId)
+        => GetOrCreateLevelUserGroup(@event, level, levelId, @event.User);
 
     #endregion
 }

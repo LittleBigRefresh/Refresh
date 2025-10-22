@@ -32,11 +32,11 @@ public class ApiActivityGroupResponse : IApiResponse, IDataConvertableFrom<ApiAc
 
         if (old is DatabaseActivityLevelGroup levelGroup)
         {
-            group.LevelId = levelGroup.Level.LevelId;
+            group.LevelId = levelGroup.LevelId;
         }
         else if (old is DatabaseActivityUserGroup userGroup)
         {
-            group.UserId = userGroup.User.UserId.ToString();
+            group.UserId = userGroup.UserId.ToString();
         }
 
         return group;

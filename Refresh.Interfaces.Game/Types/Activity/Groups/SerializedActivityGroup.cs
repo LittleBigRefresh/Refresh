@@ -2,6 +2,7 @@ using System.Xml.Serialization;
 using Refresh.Core.Types.Data;
 using Refresh.Database.Models.Activity;
 using Refresh.Database.Models.Levels;
+using Refresh.Database.Models.Users;
 using Refresh.Interfaces.Game.Types.Activity.SerializedEvents;
 using Refresh.Interfaces.Game.Types.Levels;
 
@@ -44,7 +45,9 @@ public abstract class SerializedActivityGroup : IDataConvertableFrom<SerializedA
 
         if (old is DatabaseActivityLevelGroup levelOld)
         {
-            GameLevel level = levelOld.Level;
+            GameLevel? level = levelOld.Level;
+            if (level == null) return null;
+
             bool isStoryLevel = level.StoryId != 0;
 
             return new LevelSerializedActivityGroup
@@ -63,13 +66,16 @@ public abstract class SerializedActivityGroup : IDataConvertableFrom<SerializedA
 
         if (old is DatabaseActivityUserGroup userOld)
         {
+            GameUser? user = userOld.User;
+            if (user == null) return null;
+
             return new UserSerializedActivityGroup
             {
                 Type = "user",
                 Timestamp = timestamp,
                 Events = events,
                 Subgroups = subgroups,
-                Username = userOld.User.Username,
+                Username = user.Username,
             };
         }
 

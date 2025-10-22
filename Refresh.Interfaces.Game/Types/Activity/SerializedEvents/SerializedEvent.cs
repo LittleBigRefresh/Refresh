@@ -83,7 +83,8 @@ public abstract class SerializedEvent : IDataConvertableFrom<SerializedEvent, Ev
             case EventType.NewsPost:
                 return null;
             default:
-                throw new ArgumentOutOfRangeException();
+                // Ignore event types which are unsupported by the game
+                return null;
         }
     }
 
