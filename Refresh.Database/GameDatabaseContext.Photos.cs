@@ -95,7 +95,12 @@ public partial class GameDatabaseContext // Photos
             });
         }
         
-        this.CreatePhotoUploadEvent(publisher, newPhoto);
+        this.CreateEvent(newPhoto, new()
+        {
+            EventType = EventType.PhotoUpload,
+            Actor = publisher,
+            OverType = EventOverType.Activity,
+        });
     }
 
     public void RemovePhoto(GamePhoto photo)

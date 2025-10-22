@@ -6,6 +6,7 @@ using MongoDB.Bson;
 using Refresh.Core.Authentication.Permission;
 using Refresh.Core.Types.Data;
 using Refresh.Database;
+using Refresh.Database.Models.Activity;
 using Refresh.Database.Models.Levels;
 using Refresh.Database.Models.Users;
 using Refresh.Interfaces.APIv3.Endpoints.ApiTypes;
@@ -26,7 +27,13 @@ public class AdminLevelApiEndpoints : EndpointGroup
         if (level == null) return ApiNotFoundError.LevelMissingError;
         
         database.AddTeamPickToLevel(level);
-        database.CreateLevelTeamPickEvent(user, level);
+        database.CreateEvent(level, new()
+        {
+            EventType = EventType.LevelTeamPick,
+            Actor = user,
+            OverType = EventOverType.Activity,
+        });
+        
         return new ApiOkResponse();
     }
     

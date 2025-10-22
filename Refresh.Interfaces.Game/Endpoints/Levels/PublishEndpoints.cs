@@ -12,6 +12,7 @@ using Refresh.Core.Authentication.Permission;
 using Refresh.Core.Configuration;
 using Refresh.Core.Types.Data;
 using Refresh.Database;
+using Refresh.Database.Models.Activity;
 using Refresh.Database.Models.Assets;
 using Refresh.Database.Models.Authentication;
 using Refresh.Database.Models.Levels;
@@ -230,6 +231,7 @@ public class PublishEndpoints : EndpointGroup
             
             bool isFullEdit = body.RootResource != levelToUpdate.RootResource;
             levelToUpdate = dataContext.Database.UpdateLevel(body, levelToUpdate, dataContext.Game);
+            dataContext.Database.UpdateSkillRewardsForLevel(levelToUpdate, body.SkillRewards);
 
             if (isFullEdit)
             {
@@ -238,7 +240,14 @@ public class PublishEndpoints : EndpointGroup
                 dataContext.Database.UpdateLevelModdedStatus(levelToUpdate);
             }
 
-            dataContext.Database.UpdateSkillRewardsForLevel(levelToUpdate, body.SkillRewards);
+            dataContext.Database.CreateEvent(levelToUpdate, new()
+            {
+                EventType = EventType.LevelUpload,
+                Actor = user,
+                IsModified = true,
+                OverType = EventOverType.Activity,
+            });
+            
             return new Response(GameLevelResponse.FromOld(levelToUpdate, dataContext)!, ContentType.Xml);
         }
 
@@ -258,7 +267,13 @@ public class PublishEndpoints : EndpointGroup
         // NOTE: this wont do anything if the slot is uploaded before the level resource,
         //       so we also do this same operation inside of ResourceEndpoints.UploadAsset to catch that case aswell
         dataContext.Database.UpdateLevelModdedStatus(newLevel);
-        dataContext.Database.CreateLevelUploadEvent(user, newLevel);
+        dataContext.Database.CreateEvent(newLevel, new()
+        {
+            EventType = EventType.LevelUpload,
+            Actor = user,
+            IsModified = false,
+            OverType = EventOverType.Activity,
+        });
 
         return new Response(GameLevelResponse.FromOld(newLevel, dataContext)!, ContentType.Xml);
     }

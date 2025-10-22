@@ -58,7 +58,12 @@ public partial class GameDatabaseContext // Leaderboard
             this.GameScores.Add(newScore);
         });
 
-        this.CreateLevelScoreEvent(user, newScore);
+        this.CreateEvent(newScore, new()
+        {
+            EventType = EventType.LevelScore,
+            OverType = EventOverType.Activity,
+            Actor = user,
+        });
 
         // Notify the last #1 users that they've been overtaken
         // Only do this part of notifying after actually adding the new score to the database incase that fails

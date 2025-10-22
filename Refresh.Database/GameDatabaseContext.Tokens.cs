@@ -4,6 +4,7 @@ using Refresh.Common.Time;
 using Refresh.Database.Models.Authentication;
 using Refresh.Database.Models.Users;
 using Refresh.Database.Models.Relations;
+using Refresh.Database.Models.Activity;
 
 namespace Refresh.Database;
 
@@ -55,7 +56,12 @@ public partial class GameDatabaseContext // Tokens
         
         if (user.LastLoginDate == DateTimeOffset.MinValue)
         {
-            this.CreateUserFirstLoginEvent(user);
+            this.CreateEvent(user, new()
+            {
+                EventType = EventType.UserFirstLogin,
+                Actor = user,
+                OverType = EventOverType.Activity,
+            });
         }
 
         this.Write(() =>
