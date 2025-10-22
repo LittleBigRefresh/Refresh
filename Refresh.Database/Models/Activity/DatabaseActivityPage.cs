@@ -52,31 +52,55 @@ public class DatabaseActivityPage
     private void StoreReferencedObjects(GameDatabaseContext database, IReadOnlyCollection<Event> events)
     {
         // Users
-        this.Users.AddRange(events
+        // Add actors
+        List<GameUser> users = events
             .Select(e => e.User)
-            .DistinctBy(e => e.UserId));
+            .DistinctBy(e => e.UserId)
+            .ToList();
 
         this.Users.AddRange(events.Where(e => e.StoredDataType == EventDataType.User)
             .DistinctBy(e => e.StoredObjectId)
             .Select(e => database.GetUserFromEvent(e)!));
+        
+        // Add all involved users which are not null, and all undeleted object users
+        foreach (Event e in events.Where(e => e.StoredDataType == EventDataType.User))
+        {
+            if (e.InvolvedUser != null) users.Add(e.InvolvedUser);
+
+            GameUser? obj = database.GetUserFromEvent(e);
+            if (obj != null) users.Add(obj);
+        }
+
+        // Distinguish users since we've gotten them from 3 different sources, and then add
+        // the resulting list to the class list attribute
+        this.Users.AddRange(users.DistinctBy(u => u.UserId));
 
         // Photos
-        this.Photos.AddRange(events
-            .Where(e => e.StoredDataType == EventDataType.Photo)
-            .DistinctBy(e => e.StoredSequentialId)
-            .Select(e => database.GetPhotoFromEvent(e)!));
+        List<GamePhoto> photos = [];
+        foreach (Event e in events.Where(e => e.StoredDataType == EventDataType.Photo))
+        {
+            GamePhoto? obj = database.GetPhotoFromEvent(e);
+            if (obj != null) photos.Add(obj);
+        }
+        this.Photos.AddRange(photos.DistinctBy(p => p.PhotoId));
         
         // Scores
-        this.Scores.AddRange(events
-            .Where(e => e.StoredDataType == EventDataType.Score)
-            .DistinctBy(e => e.StoredObjectId)
-            .Select(e => database.GetScoreFromEvent(e)!));
+        List<GameScore> scores = [];
+        foreach (Event e in events.Where(e => e.StoredDataType == EventDataType.Score))
+        {
+            GameScore? obj = database.GetScoreFromEvent(e);
+            if (obj != null) scores.Add(obj);
+        }
+        this.Scores.AddRange(scores.DistinctBy(s => s.ScoreId));
         
         // Levels
-        this.Levels.AddRange(events
-            .Where(e => e.StoredDataType == EventDataType.Level)
-            .DistinctBy(e => e.StoredSequentialId)
-            .Select(e => database.GetLevelFromEvent(e)!));
+        List<GameLevel> levels = [];
+        foreach (Event e in events.Where(e => e.StoredDataType == EventDataType.Score))
+        {
+            GameLevel? obj = database.GetLevelFromEvent(e);
+            if (obj != null) levels.Add(obj);
+        }
+        this.Levels.AddRange(levels.DistinctBy(l => l.LevelId));
         
         // Levels (from photos)
         foreach (GamePhoto photo in this.Photos)
@@ -111,6 +135,16 @@ public class DatabaseActivityPage
                     break;
                 case EventDataType.Photo:
                     // This case is handled by the `Level` part, since the game expects photos to appear in the level groups
+                    break;
+                case EventDataType.Review:
+                case EventDataType.UserComment:
+                case EventDataType.LevelComment:
+                case EventDataType.Playlist:
+                case EventDataType.Challenge:
+                case EventDataType.ChallengeScore:
+                case EventDataType.Contest:
+                case EventDataType.Asset:
+                    // Ignore for now. TODO: Implement these aswell
                     break;
                 default:
                     throw new ArgumentOutOfRangeException();
