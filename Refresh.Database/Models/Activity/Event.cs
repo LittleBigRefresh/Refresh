@@ -21,17 +21,28 @@ public partial class Event
     
     public EventType EventType { get; set; }
 
+    /// <summary>
+    /// The user in question that created this event, the "actor".
+    /// </summary>
+    [Required, ForeignKey(nameof(UserId))] public GameUser User { get; set; }
+    [Required] public ObjectId UserId { get; set; }
+
+    #nullable restore
 
     /// <summary>
-    /// The user in question that created this event.
+    /// A reference to the user "involved" in this event. They may also see this event even if it's private.
+    /// Usually the object publisher/owner (eg. level/photo publisher).
     /// </summary>
-    [Required]
-    public GameUser User { get; set; }
+    [ForeignKey(nameof(InvolvedUserId))] public GameUser? InvolvedUser { get; set; }
+    public ObjectId? InvolvedUserId { get; set; }
+
+    #nullable disable
     
     /// <summary>
-    /// Should this event be shown to other users on the server?
+    /// Whether this event is for activity, moderation etc.
+    /// Server should use this to determine who this event is visible to.
     /// </summary>
-    public bool IsPrivate { get; set; }
+    public EventOverType OverType { get; set; }
     
     [XmlElement("timestamp")]
     public DateTimeOffset Timestamp { get; set; }
@@ -40,6 +51,8 @@ public partial class Event
     /// The type of data that this event is referencing.
     /// </summary>
     public EventDataType StoredDataType { get; set; }
+
+    // TODO: Find out and decide how to also store string IDs which are not object IDs (e.g. GameAsset hash or Contest ID)
     
     /// <summary>
     /// The sequential ID of the object this event is referencing. If null, use <see cref="StoredObjectId"/>.
@@ -50,4 +63,15 @@ public partial class Event
     /// The ObjectId of the object this event is referencing. If null, use <see cref="StoredSequentialId"/>.
     /// </summary>
     public ObjectId? StoredObjectId { get; set; }
+
+    /// <summary>
+    /// An additional description of this event. Useful if this event is a moderation action (to store the reason), for example.
+    /// </summary>
+    public string AdditionalInfo { get; set; } = "";
+
+    /// <summary>
+    /// Can be used by various events to indicate whether content has been initially created or edited 
+    /// (can show this for level and review upload events in-game, for instance, or for other UGC edited by staff on the API).
+    /// </summary>
+    public bool IsModified { get; set; }
 }

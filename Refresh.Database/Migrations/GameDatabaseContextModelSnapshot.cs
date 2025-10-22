@@ -28,11 +28,20 @@ namespace Refresh.Database.Migrations
                     b.Property<string>("EventId")
                         .HasColumnType("text");
 
+                    b.Property<string>("AdditionalInfo")
+                        .HasColumnType("text");
+
                     b.Property<byte>("EventType")
                         .HasColumnType("smallint");
 
-                    b.Property<bool>("IsPrivate")
+                    b.Property<string>("InvolvedUserId")
+                        .HasColumnType("text");
+
+                    b.Property<bool>("IsModified")
                         .HasColumnType("boolean");
+
+                    b.Property<byte>("OverType")
+                        .HasColumnType("smallint");
 
                     b.Property<int>("StoredDataType")
                         .HasColumnType("integer");
@@ -51,6 +60,8 @@ namespace Refresh.Database.Migrations
                         .HasColumnType("text");
 
                     b.HasKey("EventId");
+
+                    b.HasIndex("InvolvedUserId");
 
                     b.HasIndex("Timestamp");
 
@@ -1696,11 +1707,17 @@ namespace Refresh.Database.Migrations
 
             modelBuilder.Entity("Refresh.Database.Models.Activity.Event", b =>
                 {
+                    b.HasOne("Refresh.Database.Models.Users.GameUser", "InvolvedUser")
+                        .WithMany()
+                        .HasForeignKey("InvolvedUserId");
+
                     b.HasOne("Refresh.Database.Models.Users.GameUser", "User")
                         .WithMany()
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
+
+                    b.Navigation("InvolvedUser");
 
                     b.Navigation("User");
                 });
