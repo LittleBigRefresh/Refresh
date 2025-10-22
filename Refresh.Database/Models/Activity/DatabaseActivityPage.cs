@@ -58,10 +58,6 @@ public class DatabaseActivityPage
             .Select(e => e.User)
             .DistinctBy(e => e.UserId)
             .ToList();
-
-        this.Users.AddRange(events.Where(e => e.StoredDataType == EventDataType.User)
-            .DistinctBy(e => e.StoredObjectId)
-            .Select(e => database.GetUserFromEvent(e)!));
         
         // Add all involved users which are not null, and all undeleted object users
         foreach (Event e in events.Where(e => e.StoredDataType == EventDataType.User))
