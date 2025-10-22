@@ -178,38 +178,35 @@ public partial class GameDatabaseContext // Leaderboard
             .FirstOrDefault(u => u.ScoreId == id);
     }
     
-    public void DeleteScore(GameScore score)
+    public void DeleteScore(GameScore score, bool saveChanges = true)
     {
         IQueryable<Event> scoreEvents = this.Events
-            .Where(e => e.StoredDataType == EventDataType.Score && e.StoredObjectId == score.ScoreId);
+            .Where(e => e.OverType == EventOverType.Activity
+                && e.StoredDataType == EventDataType.Score 
+                && e.StoredObjectId == score.ScoreId);
         
-        this.Write(() =>
+        foreach (Event e in scoreEvents)
         {
-            this.Events.RemoveRange(scoreEvents);
-            this.GameScores.Remove(score);
-        });
+            e.OverType = EventOverType.DeletedObjectActivity;
+        }
+
+        this.GameScores.Remove(score);
+
+        if (saveChanges) this.SaveChanges();
     }
     
     public void DeleteScoresSetByUser(GameUser user)
     {
         IEnumerable<GameScore> scores = this.GameScores
-            // FIXME: Realm (ahem, I mean the atlas device sdk *rolls eyes*) is a fucking joke.
-            // Realm doesn't support .Contains on IList<T>. Yes, really.
-            // This means we are forced to iterate over EVERY SCORE.
-            // I can't wait for Postgres.
-            .AsEnumerableIfRealm()
-            .Where(s => s.PlayerIdsRaw.Contains(user.UserId.ToString()))
-            .ToArrayIfPostgres();
-        
+            .Where(s => s.PublisherId == user.UserId)
+            .ToArray();
+
+        // TODO: Maybe remove the user's ID from scores they've contributed to aswell
         this.Write(() =>
         {
             foreach (GameScore score in scores)
             {
-                IQueryable<Event> scoreEvents = this.Events
-                    .Where(e => e.StoredDataType == EventDataType.Score && e.StoredObjectId == score.ScoreId);
-                
-                this.Events.RemoveRange(scoreEvents);
-                this.GameScores.Remove(score);
+                this.DeleteScore(score, false);
             }
         });
     }
