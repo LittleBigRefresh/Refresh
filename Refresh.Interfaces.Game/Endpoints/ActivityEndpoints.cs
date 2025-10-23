@@ -64,7 +64,7 @@ public class ActivityEndpoints : EndpointGroup
             ExcludeFavouriteUsers = excludeFavouriteUsers,
             ExcludeMyself = excludeMyself,
             User = user,
-            QuerySource = ActivityQuerySource.Game,
+            IsGameRequest = true,
         }), dataContext);
     }
 
@@ -110,7 +110,7 @@ public class ActivityEndpoints : EndpointGroup
             ExcludeFavouriteUsers = excludeFavouriteUsers,
             ExcludeMyself = excludeMyself,
             User = user,
-            QuerySource = ActivityQuerySource.Game,
+            IsGameRequest = true,
         }), dataContext);
         
         return new Response(page, ContentType.Xml);
@@ -122,7 +122,7 @@ public class ActivityEndpoints : EndpointGroup
     [NullStatusCode(BadRequest)]
     [MinimumRole(GameUserRole.Restricted)]
     public Response GetRecentActivityFromUser(RequestContext context, GameServerConfig config, GameDatabaseContext database, string username,
-        DataContext dataContext)
+        DataContext dataContext, GameUser user)
     {
         if (!config.PermitShowingOnlineUsers)
             return Unauthorized;
@@ -132,10 +132,10 @@ public class ActivityEndpoints : EndpointGroup
         // FIXME: enable below code to have this endpoint return actual recent activity as soon as we find out how to do so without
         // the game rejecting the response and spamming this endpoint
         /*
-        GameUser? user = database.GetUserByUsername(username);
-        if (user == null) return NotFound;
+        GameUser? targetUser = database.GetUserByUsername(username);
+        if (targetUser == null) return NotFound;
 
-        if (user.FakeUser)
+        if (targetUser.FakeUser)
             return new Response(new SerializedActivityPage
             {
                 StartTimestamp = 0,
@@ -160,7 +160,7 @@ public class ActivityEndpoints : EndpointGroup
 
         if (endTimestamp == 0) endTimestamp = timestamp - 86400000 * 7; // 1 week
 
-        return new Response(SerializedActivityPage.FromOld(database.GetRecentActivityFromUser(new ActivityQueryParameters
+        return new Response(SerializedActivityPage.FromOld(database.GetRecentActivityFromUser(targetUser, new ActivityQueryParameters
         {
             Timestamp = timestamp,
             EndTimestamp = endTimestamp,
@@ -169,7 +169,7 @@ public class ActivityEndpoints : EndpointGroup
             ExcludeFavouriteUsers = excludeFavouriteUsers,
             ExcludeMyself = excludeMyself,
             User = user,
-            QuerySource = ActivityQuerySource.Game,
+            IsGameRequest = true,
         }), dataContext), ContentType.Xml);
         */
     }

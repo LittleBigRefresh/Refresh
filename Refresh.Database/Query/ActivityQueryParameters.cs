@@ -14,8 +14,17 @@ public struct ActivityQueryParameters
     public bool ExcludeFavouriteUsers = false;
     public bool ExcludeMyself = false;
 
+    /// <summary>
+    /// The requesting user
+    /// </summary>
     public GameUser? User = null;
-    public ActivityQuerySource QuerySource = ActivityQuerySource.Other;
+    
+    // The defaults for the 3 params below must stay this way, to not risk breaking 
+    // something in-game and also accidentally leaking mod events on Discord
+    public bool IncludeActivity = true;
+    public bool IncludeDeletedActivity = false;
+    public bool IncludeModeration = false;
+    public bool IsGameRequest = false;
 
     public ActivityQueryParameters()
     {}

@@ -26,36 +26,37 @@ public partial class GameDatabaseContext // Activity
         IEnumerable<Event> query = this.Events
             .Where(e => e.Timestamp < timestamp && e.Timestamp >= endTimestamp);
         
+        if (!parameters.IncludeActivity)
+        {
+            query = query.Where(e => e.OverType != EventOverType.Activity);
+        }
+        if (!parameters.IncludeDeletedActivity)
+        {
+            query = query.Where(e => e.OverType != EventOverType.DeletedObjectActivity);
+        }
+        if (!parameters.IncludeModeration)
+        {
+            query = query.Where(e => e.OverType != EventOverType.Moderation);
+        }
+        
         // Filter out all moderation and deleted object events which are irrelevant for the requesting user.
-        // Moderators and above may view all moderation and deleted object events anyway.
-        // Don't bother showing non-activity events in-game to not accidentally break anything.
-        // Users who are not logged into the API may not see non-activity events either.
-        // Also prevent e.g. the Discord integration from accidentally posting mod events in public
-        // by explicitly ensuring the query has originated from the API.
-
-        // For now, ignore the above and only return activity events because both deleted object
-        // event grouping and API activity filtering aren't implemented yet. That will have to be done in a
-        // future PR.
-#if false
-        if (parameters.QuerySource == ActivityQuerySource.Api && parameters.User != null)
+        // Moderators and above may view all moderation and deleted object events.
+        // Users who are not logged into the API may not see non-activity events.
+        // ActivityQueryParameters' defaults already make sure to not show non-activity events outside of the API.
+        if (parameters.User != null)
         {
             query = query.Where(e => e.OverType == EventOverType.Activity
-                // No need to compare the other enum values yet, as Moderation and DeletedObjectActivity are
-                // the only other values for now, both of which are equivalent in visibility.
-                || parameters.User.Role >= GameUserRole.Moderator
-                || e.InvolvedUserId == parameters.User.UserId 
-                || e.UserId == parameters.User.UserId);
+                || parameters.User.Role >= GameUserRole.Admin // TODO: Change to Moderator once the other PR is merged
+                || parameters.User.UserId == e.InvolvedUserId
+                || parameters.User.UserId == e.UserId);
         }
         else
         {
             query = query.Where(e => e.OverType == EventOverType.Activity);
         }
-#else
-        query = query.Where(e => e.OverType == EventOverType.Activity);
-#endif
 
         // If this is a game request, exclude all custom events to not unnessesarily bloat the response
-        if (parameters.QuerySource == ActivityQuerySource.Game)
+        if (parameters.IsGameRequest)
         {
             query = query.Where(e => e.EventType < EventType.UserFirstLogin);
         }
@@ -119,7 +120,7 @@ public partial class GameDatabaseContext // Activity
         
         // step 3: Include statistics for involved users which are not null. Only do this for non-game requests,
         // as involved users can't be shown in-game
-        if (parameters.QuerySource != ActivityQuerySource.Game)
+        if (!parameters.IsGameRequest)
         {
             foreach (Event e in events)
             {
@@ -186,12 +187,10 @@ public partial class GameDatabaseContext // Activity
     }
     
     [Pure]
-    public DatabaseActivityPage GetRecentActivityFromUser(ActivityQueryParameters parameters)
+    public DatabaseActivityPage GetRecentActivityFromUser(GameUser user, ActivityQueryParameters parameters)
     {
-        Debug.Assert(parameters.User != null);
-
         IEnumerable<Event> events = this.GetEvents(parameters)
-            .Where(e => e.User?.UserId == parameters.User.UserId);
+            .Where(e => e.UserId == user.UserId);
         
         return GetRecentActivity(events, parameters);
     }

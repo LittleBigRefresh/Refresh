@@ -13,6 +13,9 @@ public class ApiInternalError : ApiError
 
     public const string HashNotFoundInDatabaseErrorWhen = "The hash was present on the server, but could not be found in the database.";
     public static readonly ApiInternalError HashNotFoundInDatabaseError = new(HashNotFoundInDatabaseErrorWhen);
+
+    public const string ParamParsingFailedWhen = "Failed to parse the given parameters.";
+    public static readonly ApiInternalError ParamParsingFailed = new(ParamParsingFailedWhen);
     
     public ApiInternalError(string message) : base(message, InternalServerError)
     {}
