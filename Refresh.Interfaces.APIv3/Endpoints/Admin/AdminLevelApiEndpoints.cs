@@ -62,7 +62,7 @@ public class AdminLevelApiEndpoints : EndpointGroup
         return ApiGameLevelResponse.FromOld(level, dataContext);
     }
     
-    [ApiV3Endpoint("admin/levels/id/{id}", HttpMethods.Delete), MinimumRole(GameUserRole.Admin)]
+    [ApiV3Endpoint("admin/levels/id/{id}", HttpMethods.Delete), MinimumRole(GameUserRole.Moderator)]
     [DocSummary("Deletes a level.")]
     [DocError(typeof(ApiNotFoundError), ApiNotFoundError.LevelMissingErrorWhen)]
     public ApiOkResponse DeleteLevel(RequestContext context, GameDatabaseContext database, int id)
