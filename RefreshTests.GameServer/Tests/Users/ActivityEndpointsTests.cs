@@ -3,6 +3,7 @@ using Refresh.Database.Models.Users;
 using RefreshTests.GameServer.Extensions;
 using Refresh.Database.Models.Levels;
 using Refresh.Interfaces.Game.Types.News;
+using Refresh.Database.Models.Activity;
 
 namespace RefreshTests.GameServer.Tests.Users;
 
@@ -37,15 +38,31 @@ public class ActivityEndpointsTests : GameServerTest
         
         using HttpClient client = context.GetAuthenticatedClient(TokenType.Game, user);
 
+        context.Database.CreateEvent(level, new()
+        {
+            Actor = user,
+            OverType = EventOverType.Activity,
+            EventType = EventType.LevelPlay,
+        });
+        // Nonsense event, only here to ensure mod events don't appear in-game at all
+        context.Database.CreateEvent(level, new()
+        {
+            Actor = user,
+            OverType = EventOverType.Moderation,
+            EventType = EventType.LevelFavourite,
+        });
+
         HttpResponseMessage message = client.GetAsync($"/lbp/stream").Result;
         Assert.That(message.StatusCode, Is.EqualTo(OK));
         
         //TODO: once we figure out how to parse ActivityPage here, lets do that instead of this mess
         string response = message.Content.ReadAsStringAsync().Result;
         
-        //Ensure that the response contains a first login event, and a user
-        Assert.That(response, Contains.Substring("<event type=\"firstlogin\">"));
+        //Ensure that the response contains a play_level event, a user, but none of the other events, as we are in-game
+        Assert.That(response, Contains.Substring("<event type=\"play_level\">"));
         Assert.That(response, Contains.Substring("<user type=\"user\">"));
+        Assert.That(response, !Contains.Substring("<event type=\"firstlogin\">"));
+        Assert.That(response, !Contains.Substring("<event type=\"heart_level\">"));
     }
     
     [Test]
