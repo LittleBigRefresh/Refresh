@@ -64,7 +64,14 @@ public class AdminLevelApiEndpoints : EndpointGroup
             !dataContext.GuidChecker.IsTextureGuid(level.GameVersion, long.Parse(body.IconHash)))
             return ApiValidationError.InvalidTextureGuidError;
         
-        level = database.UpdateLevel(body, level, user);
+        level = database.UpdateLevel(body, level, user)!;
+        database.CreateEvent(level, new()
+        {
+            Actor = user,
+            EventType = EventType.LevelUpload,
+            IsModified = true,
+            OverType = EventOverType.Moderation,
+        });
 
         return ApiGameLevelResponse.FromOld(level, dataContext);
     }
@@ -72,12 +79,20 @@ public class AdminLevelApiEndpoints : EndpointGroup
     [ApiV3Endpoint("admin/levels/id/{id}", HttpMethods.Delete), MinimumRole(GameUserRole.Admin)]
     [DocSummary("Deletes a level.")]
     [DocError(typeof(ApiNotFoundError), ApiNotFoundError.LevelMissingErrorWhen)]
-    public ApiOkResponse DeleteLevel(RequestContext context, GameDatabaseContext database, int id)
+    public ApiOkResponse DeleteLevel(RequestContext context, GameDatabaseContext database, GameUser user, int id)
     {
         GameLevel? level = database.GetLevelById(id);
         if (level == null) return ApiNotFoundError.LevelMissingError;
         
         database.DeleteLevel(level);
+        database.CreateEvent(level, new()
+        {
+            Actor = user,
+            EventType = EventType.LevelUnpublish,
+            OverType = EventOverType.Moderation,
+            AdditionalInfo = "Your level was deleted by moderation." // TODO: Ability to enter a reason for all these moderation endpoints
+        });
+
         return new ApiOkResponse();
     }
     
