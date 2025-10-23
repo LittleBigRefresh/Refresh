@@ -1,7 +1,9 @@
+using Refresh.Common.Constants;
 using Refresh.Database.Models.Authentication;
 using Refresh.Database.Models.Users;
 using Refresh.Interfaces.APIv3.Endpoints.ApiTypes;
 using Refresh.Interfaces.APIv3.Endpoints.ApiTypes.Errors;
+using Refresh.Interfaces.APIv3.Endpoints.DataTypes.Request;
 using Refresh.Interfaces.APIv3.Endpoints.DataTypes.Request.Authentication;
 using Refresh.Interfaces.APIv3.Endpoints.DataTypes.Response.Categories;
 using Refresh.Interfaces.APIv3.Endpoints.DataTypes.Response.Users;
@@ -159,6 +161,23 @@ public class UserApiTests : GameServerTest
         context.Database.Refresh();
         user = context.Database.GetUserByObjectId(user.UserId)!;
         Assert.That(user.Description, Is.EqualTo(description));
+    }
+
+    [Test]
+    public void UserDescriptionGetsTrimmed()
+    {
+        using TestContext context = this.GetServer();
+        GameUser user = context.CreateUser();
+        
+        using HttpClient client = context.GetAuthenticatedClient(TokenType.Api, user);
+
+        ApiUpdateUserRequest payload = new()
+        {
+            Description = new string('S', 600),
+        };
+        ApiResponse<ApiGameUserResponse>? response = client.PatchData<ApiGameUserResponse>("/api/v3/users/me", payload);
+        Assert.That(response, Is.Not.Null);
+        Assert.That(response!.Data!.Description.Length, Is.EqualTo(UgcLimits.DescriptionLimit));
     }
 
     [Test]

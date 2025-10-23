@@ -37,9 +37,6 @@ public class ApiValidationError : ApiError
 
     public const string DontReviewLevelBeforePlayingWhen = "You may not review levels you haven't played yet";
     public static readonly ApiValidationError DontReviewLevelBeforePlaying = new(DontReviewLevelBeforePlayingWhen);
-
-    public const string ReviewHasInvalidLabelsWhen = "Your review contained invalid labels";
-    public static readonly ApiValidationError ReviewHasInvalidLabels = new(ReviewHasInvalidLabelsWhen);
     
     public const string HashInvalidErrorWhen = "The hash is invalid (should be SHA1 hash)";
     public static readonly ApiValidationError HashInvalidError = new(HashInvalidErrorWhen);

@@ -88,6 +88,30 @@ public class ReviewApiTests : GameServerTest
     }
 
     [Test]
+    public void ReviewContentGetsTrimmed()
+    {
+        using TestContext context = this.GetServer();
+        GameUser publisher = context.CreateUser();
+        GameLevel level = context.CreateLevel(publisher);
+        int id = level.LevelId;
+
+        GameUser reviewer = context.CreateUser();
+        using HttpClient client = context.GetAuthenticatedClient(TokenType.Api, reviewer);
+        context.Database.PlayLevel(level, reviewer, 1);
+
+        ApiSubmitReviewRequest reviewToPost = new()
+        {
+            LevelRating = RatingType.Yay,
+            Content = new string('S', 9000),
+        };
+        ApiResponse<ApiGameReviewResponse>? response = client.PostData<ApiGameReviewResponse>($"/api/v3/levels/id/{id}/reviews", reviewToPost, false);
+
+        Assert.That(response?.Data, Is.Not.Null);
+        Assert.That(response!.Success, Is.True);
+        Assert.That(response.Data!.Text.Length, Is.EqualTo(UgcLimits.CommentLimit));
+    }
+
+    [Test]
     public void CantEditNonexistentReview()
     {
         using TestContext context = this.GetServer();

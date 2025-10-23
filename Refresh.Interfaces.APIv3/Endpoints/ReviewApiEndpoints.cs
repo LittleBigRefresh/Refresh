@@ -84,28 +84,21 @@ public class ReviewApiEndpoints : EndpointGroup
     }
 
     /// <returns>
-    /// The validated list of labels. If null, return BadRequest.
+    /// The validated list of labels. Labels which are duplicates or invalid will be removed.
+    /// Also, the list will be trimmed if there are too many labels.
     /// </returns>
-    private List<Label>? ValidateLabels(List<Label> input)
-    {
-        // Duplicate labels aren't as bad as invalid ones, so just remove them.
-        // Same with too many labels.
-        List<Label> ret = input.Distinct().Take(UgcLimits.MaximumLabels).ToList();
-
-        foreach (Label label in ret)
-        {
-            if (!Enum.IsDefined(label)) return null;
-        }
-
-        return ret;
-    }
+    private List<Label> ValidateLabels(List<Label> input)
+        => input
+            .Distinct()
+            .Where(l => Enum.IsDefined(l))
+            .Take(UgcLimits.MaximumLabels)
+            .ToList();
 
     [ApiV3Endpoint("levels/id/{id}/reviews", HttpMethods.Post)]
     [DocSummary("Posts a review to the specified level. Updates the user's current review if they've already posted one.")]
     [DocError(typeof(ApiNotFoundError), ApiNotFoundError.LevelMissingErrorWhen)]
     [DocError(typeof(ApiValidationError), ApiValidationError.DontReviewOwnLevelWhen)]
     [DocError(typeof(ApiValidationError), ApiValidationError.DontReviewLevelBeforePlayingWhen)]
-    [DocError(typeof(ApiValidationError), ApiValidationError.ReviewHasInvalidLabelsWhen)]
     [DocError(typeof(ApiValidationError), ApiValidationError.RatingParseErrorWhen)]
     public ApiResponse<ApiGameReviewResponse> PostReviewToLevel(RequestContext context,
         GameDatabaseContext database, IDataStore dataStore, GameUser user,
@@ -126,9 +119,6 @@ public class ReviewApiEndpoints : EndpointGroup
         if (body.Labels != null)
         {
             body.Labels = this.ValidateLabels(body.Labels);
-
-            if (body.Labels == null) 
-                return ApiValidationError.ReviewHasInvalidLabels;
         }
         
         if (body.LevelRating != null)
@@ -139,10 +129,9 @@ public class ReviewApiEndpoints : EndpointGroup
             database.RateLevel(level, user, body.LevelRating.Value);
         }
 
-        // TODO: Use the comment char limit constant once the other PR is merged.
-        if (body.Content != null && body.Content.Length > 4096)
+        if (body.Content != null && body.Content.Length > UgcLimits.CommentLimit)
         {
-            body.Content = body.Content[..4096];
+            body.Content = body.Content[..UgcLimits.CommentLimit];
         }
 
         GameReview review = database.AddReviewToLevel(body, level, user);
@@ -153,7 +142,6 @@ public class ReviewApiEndpoints : EndpointGroup
     [DocSummary("Updates a review by ID.")]
     [DocError(typeof(ApiNotFoundError), ApiNotFoundError.ReviewMissingErrorWhen)]
     [DocError(typeof(ApiValidationError), ApiValidationError.NoReviewEditPermissionErrorWhen)]
-    [DocError(typeof(ApiValidationError), ApiValidationError.ReviewHasInvalidLabelsWhen)]
     [DocError(typeof(ApiValidationError), ApiValidationError.RatingParseErrorWhen)]
     public ApiResponse<ApiGameReviewResponse> UpdateReviewById(RequestContext context,
         GameDatabaseContext database, IDataStore dataStore, GameUser user,
@@ -170,9 +158,6 @@ public class ReviewApiEndpoints : EndpointGroup
         if (body.Labels != null)
         {
             body.Labels = this.ValidateLabels(body.Labels);
-
-            if (body.Labels == null) 
-                return ApiValidationError.ReviewHasInvalidLabels;
         }
 
         if (body.LevelRating != null)
@@ -183,9 +168,9 @@ public class ReviewApiEndpoints : EndpointGroup
             database.RateLevel(review.Level, user, body.LevelRating.Value);
         }
 
-        if (body.Content != null && body.Content.Length > 4096)
+        if (body.Content != null && body.Content.Length > UgcLimits.CommentLimit)
         {
-            body.Content = body.Content[..4096];
+            body.Content = body.Content[..UgcLimits.CommentLimit];
         }
         
         review = database.UpdateReview(body, review);

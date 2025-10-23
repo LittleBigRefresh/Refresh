@@ -289,6 +289,32 @@ public class ReviewEndpointsTests : GameServerTest
     }
 
     [Test]
+    public void ReviewContentGetsTrimmed()
+    {
+        using TestContext context = this.GetServer();
+        GameUser user1 = context.CreateUser();
+        GameUser user2 = context.CreateUser();
+        GameLevel level = context.CreateLevel(user2);
+
+        using HttpClient client = context.GetAuthenticatedClient(TokenType.Game, user1);
+
+        //Play the level at least once
+        context.Database.PlayLevel(level, user1, 1);
+
+        SerializedGameReview review = new()
+        {
+            Content = new string('S', 9000),
+        };
+
+        HttpResponseMessage message = client.PostAsync($"/lbp/postReview/user/{level.LevelId}", new StringContent(review.AsXML())).Result;
+        Assert.That(message.StatusCode, Is.EqualTo(OK));
+
+        GameReview? postedReview = context.Database.GetReviewByLevelAndUser(level, user1);
+        Assert.That(postedReview, Is.Not.Null);
+        Assert.That(postedReview!.Content.Length, Is.EqualTo(UgcLimits.CommentLimit));
+    }
+
+    [Test]
     public void SanitizeReviewLabelsIfDuplicates()
     {
         using TestContext context = this.GetServer();
