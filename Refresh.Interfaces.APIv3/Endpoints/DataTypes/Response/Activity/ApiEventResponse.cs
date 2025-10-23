@@ -8,6 +8,7 @@ public class ApiEventResponse : IApiResponse, IDataConvertableFrom<ApiEventRespo
 {
     public required string EventId { get; set; }
     public required int EventType { get; set; }
+    public required EventOverType OverType { get; set; }
     public required string UserId { get; set; }
     public required DateTimeOffset OccurredAt { get; set; }
     public required EventDataType StoredDataType { get; set; }
@@ -22,6 +23,7 @@ public class ApiEventResponse : IApiResponse, IDataConvertableFrom<ApiEventRespo
         {
             EventId = old.EventId.ToString()!,
             EventType = (int)old.EventType,
+            OverType = old.OverType,
             UserId = old.User.UserId.ToString()!,
             OccurredAt = old.Timestamp,
             StoredDataType = old.StoredDataType,
