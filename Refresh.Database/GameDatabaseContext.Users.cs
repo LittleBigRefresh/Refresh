@@ -8,6 +8,7 @@ using Refresh.Database.Models.Levels.Challenges;
 using Refresh.Database.Models.Levels.Scores;
 using Refresh.Database.Models.Levels;
 using Refresh.Database.Models.Photos;
+using Refresh.Database.Models.Assets;
 
 namespace Refresh.Database;
 
@@ -111,16 +112,19 @@ public partial class GameDatabaseContext // Users
                 {
                     case TokenGame.LittleBigPlanet2:
                         user.Lbp2PlanetsHash = data.PlanetsHash;
-                        user.Lbp3PlanetsHash = data.PlanetsHash;
+                        user.AreLbp2PlanetsModded = this.GetPlanetModdedStatus(data.PlanetsHash);
                         break;
                     case TokenGame.LittleBigPlanet3:
                         user.Lbp3PlanetsHash = data.PlanetsHash;
+                        user.AreLbp3PlanetsModded = this.GetPlanetModdedStatus(data.PlanetsHash);
                         break;
                     case TokenGame.LittleBigPlanetVita:
                         user.VitaPlanetsHash = data.PlanetsHash;
+                        user.AreVitaPlanetsModded = this.GetPlanetModdedStatus(data.PlanetsHash);
                         break;
                     case TokenGame.BetaBuild:
                         user.BetaPlanetsHash = data.PlanetsHash;
+                        user.AreBetaPlanetsModded = this.GetPlanetModdedStatus(data.PlanetsHash);
                         break;
                 }
 
@@ -128,7 +132,6 @@ public partial class GameDatabaseContext // Users
             if (data.IconHash != null)
                 switch (game)
                 {
-
                     case TokenGame.LittleBigPlanet1:
                     case TokenGame.LittleBigPlanet2:
                     case TokenGame.LittleBigPlanet3:
@@ -214,6 +217,9 @@ public partial class GameDatabaseContext // Users
             
             if (data.ProfileVisibility != null)
                 user.ProfileVisibility = data.ProfileVisibility.Value;
+            
+            if (data.ShowModdedPlanets != null)
+                user.ShowModdedPlanets = data.ShowModdedPlanets.Value;
 
             if (data.ShowModdedContent != null)
                 user.ShowModdedContent = data.ShowModdedContent.Value;
@@ -224,6 +230,28 @@ public partial class GameDatabaseContext // Users
             if (data.RedirectGriefReportsToPhotos != null)
                 user.RedirectGriefReportsToPhotos = data.RedirectGriefReportsToPhotos.Value;
         });
+    }
+
+    public void UpdatePlanetModdedStatus(GameUser user)
+    {
+        user.AreLbp2PlanetsModded = this.GetPlanetModdedStatus(user.Lbp2PlanetsHash);
+        user.AreLbp3PlanetsModded = this.GetPlanetModdedStatus(user.Lbp3PlanetsHash);
+        user.AreVitaPlanetsModded = this.GetPlanetModdedStatus(user.VitaPlanetsHash);
+        user.AreBetaPlanetsModded = this.GetPlanetModdedStatus(user.BetaPlanetsHash);
+    }
+
+    private bool GetPlanetModdedStatus(string rootAssetHash)
+    {
+        bool modded = false;
+
+        GameAsset? rootAsset = this.GetAssetFromHash(rootAssetHash);
+        rootAsset?.TraverseDependenciesRecursively(this, (_, asset) =>
+        {
+            if (asset != null && (asset.AssetFlags & (AssetFlags.Modded | AssetFlags.ModdedOnPlanets)) != 0)
+                modded = true;
+        });
+        
+        return modded;
     }
 
     [Pure]
@@ -370,12 +398,15 @@ public partial class GameDatabaseContext // Users
 
     public void ResetUserPlanets(GameUser user)
     {
-        this.Write(() =>
-        {
-            user.Lbp2PlanetsHash = "0";
-            user.Lbp3PlanetsHash = "0";
-            user.VitaPlanetsHash = "0";
-        });
+        user.Lbp2PlanetsHash = "0";
+        user.Lbp3PlanetsHash = "0";
+        user.VitaPlanetsHash = "0";
+        user.BetaPlanetsHash = "0";
+        user.AreLbp2PlanetsModded = false;
+        user.AreLbp3PlanetsModded = false;
+        user.AreVitaPlanetsModded = false;
+        user.AreBetaPlanetsModded = false;
+        this.SaveChanges();
     }
 
     public void SetUnescapeXmlSequences(GameUser user, bool value)
@@ -384,6 +415,12 @@ public partial class GameDatabaseContext // Users
         {
             user.UnescapeXmlSequences = value;
         });
+    }
+
+    public void SetShowModdedPlanets(GameUser user, bool value)
+    {
+        user.ShowModdedPlanets = value;
+        this.SaveChanges();
     }
 
     public void SetShowModdedContent(GameUser user, bool value)

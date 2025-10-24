@@ -1488,6 +1488,18 @@ namespace Refresh.Database.Migrations
                     b.Property<bool>("AllowIpAuthentication")
                         .HasColumnType("boolean");
 
+                    b.Property<bool>("AreBetaPlanetsModded")
+                        .HasColumnType("boolean");
+
+                    b.Property<bool>("AreLbp2PlanetsModded")
+                        .HasColumnType("boolean");
+
+                    b.Property<bool>("AreLbp3PlanetsModded")
+                        .HasColumnType("boolean");
+
+                    b.Property<bool>("AreVitaPlanetsModded")
+                        .HasColumnType("boolean");
+
                     b.Property<DateTimeOffset?>("BanExpiryDate")
                         .HasColumnType("timestamp with time zone");
 
@@ -1582,6 +1594,9 @@ namespace Refresh.Database.Migrations
                         .HasColumnType("boolean");
 
                     b.Property<bool>("ShowModdedContent")
+                        .HasColumnType("boolean");
+
+                    b.Property<bool>("ShowModdedPlanets")
                         .HasColumnType("boolean");
 
                     b.Property<bool>("ShowReuploadedContent")

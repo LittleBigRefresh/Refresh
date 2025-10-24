@@ -164,6 +164,35 @@ public class UserApiTests : GameServerTest
     }
 
     [Test]
+    public void UpdateShowModdedPlanets()
+    {
+        using TestContext context = this.GetServer();
+        GameUser user = context.CreateUser();
+        using HttpClient client = context.GetAuthenticatedClient(TokenType.Api, user);
+
+        // Disable and ensure the option is set to hide
+        ApiUpdateUserRequest payload = new()
+        {
+            ShowModdedPlanets = false,
+        };
+        ApiResponse<ApiExtendedGameUserResponse>? response = client.PatchData<ApiExtendedGameUserResponse>("/api/v3/users/me", payload);
+        Assert.That(response, Is.Not.Null);
+        Assert.That(response!.Data!.ShowModdedPlanets, Is.False);
+
+        context.Database.Refresh();
+        Assert.That(context.Database.GetUserByObjectId(user.UserId)!.ShowModdedPlanets, Is.False);
+
+        // Enable again and ensure the option is set to show
+        payload.ShowModdedPlanets = true;
+        response = client.PatchData<ApiExtendedGameUserResponse>("/api/v3/users/me", payload);
+        Assert.That(response, Is.Not.Null);
+        Assert.That(response!.Data!.ShowModdedPlanets, Is.True);
+
+        context.Database.Refresh();
+        Assert.That(context.Database.GetUserByObjectId(user.UserId)!.ShowModdedPlanets, Is.True);
+    }
+    
+    [Test]
     public void UserDescriptionGetsTrimmed()
     {
         using TestContext context = this.GetServer();
