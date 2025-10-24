@@ -8,6 +8,7 @@ using Refresh.Database.Models.Levels.Challenges;
 using Refresh.Database.Models.Levels.Scores;
 using Refresh.Database.Models.Levels;
 using Refresh.Database.Models.Photos;
+using Refresh.Database.Models.Assets;
 
 namespace Refresh.Database;
 
@@ -229,6 +230,28 @@ public partial class GameDatabaseContext // Users
             if (data.RedirectGriefReportsToPhotos != null)
                 user.RedirectGriefReportsToPhotos = data.RedirectGriefReportsToPhotos.Value;
         });
+    }
+
+    public void UpdatePlanetModdedStatus(GameUser user)
+    {
+        user.AreLbp2PlanetsModded = this.GetPlanetModdedStatus(user.Lbp2PlanetsHash);
+        user.AreLbp3PlanetsModded = this.GetPlanetModdedStatus(user.Lbp3PlanetsHash);
+        user.AreVitaPlanetsModded = this.GetPlanetModdedStatus(user.VitaPlanetsHash);
+        user.AreBetaPlanetsModded = this.GetPlanetModdedStatus(user.BetaPlanetsHash);
+    }
+
+    private bool GetPlanetModdedStatus(string rootAssetHash)
+    {
+        bool modded = false;
+
+        GameAsset? rootAsset = this.GetAssetFromHash(rootAssetHash);
+        rootAsset?.TraverseDependenciesRecursively(this, (_, asset) =>
+        {
+            if (asset != null && (asset.AssetFlags & (AssetFlags.Modded | AssetFlags.ModdedOnPlanets)) != 0)
+                modded = true;
+        });
+        
+        return modded;
     }
 
     [Pure]
