@@ -135,10 +135,9 @@ public class ReviewEndpoints : EndpointGroup
         if (level == null)
             return NotFound;
         
-        // TODO: Use the comment char limit constant once the other PR is merged.
-        if (body.Content!.Length > 4096)
+        if (body.Content != null && body.Content.Length > UgcLimits.CommentLimit)
         {
-            body.Content = body.Content[..4096];
+            body.Content = body.Content[..UgcLimits.CommentLimit];
         }
 
         //You cant review a level you haven't played.

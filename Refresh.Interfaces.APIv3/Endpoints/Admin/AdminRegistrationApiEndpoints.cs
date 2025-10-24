@@ -15,7 +15,7 @@ namespace Refresh.Interfaces.APIv3.Endpoints.Admin;
 
 public class AdminRegistrationApiEndpoints : EndpointGroup
 {
-    [ApiV3Endpoint("admin/registrations"), MinimumRole(GameUserRole.Admin)]
+    [ApiV3Endpoint("admin/registrations"), MinimumRole(GameUserRole.Moderator)]
     [DocSummary("Retrieves all queued registrations on the server.")]
     public ApiListResponse<ApiAdminQueuedRegistrationResponse> GetAllQueuedRegistrations(RequestContext context,
         GameDatabaseContext database, DataContext dataContext) 
@@ -37,7 +37,7 @@ public class AdminRegistrationApiEndpoints : EndpointGroup
         return ApiAdminQueuedRegistrationResponse.FromOld(registration, dataContext);
     }
 
-    [ApiV3Endpoint("admin/registrations/{uuid}", HttpMethods.Delete), MinimumRole(GameUserRole.Admin)]
+    [ApiV3Endpoint("admin/registrations/{uuid}", HttpMethods.Delete), MinimumRole(GameUserRole.Moderator)]
     [DocSummary("Deletes a registration by its UUID.")]
     [DocError(typeof(ApiValidationError), ApiValidationError.ObjectIdParseErrorWhen)]
     [DocError(typeof(ApiNotFoundError), "The registration could not be found")]
@@ -53,7 +53,7 @@ public class AdminRegistrationApiEndpoints : EndpointGroup
         return new ApiOkResponse();
     }
     
-    [ApiV3Endpoint("admin/registrations", HttpMethods.Delete), MinimumRole(GameUserRole.Admin)]
+    [ApiV3Endpoint("admin/registrations", HttpMethods.Delete), MinimumRole(GameUserRole.Moderator)]
     [DocSummary("Clears all queued registrations from the server.")]
     public ApiOkResponse DeleteAllQueuedRegistrations(RequestContext context, GameDatabaseContext database)
     {

@@ -5,6 +5,7 @@ using RefreshTests.GameServer.Extensions;
 using Refresh.Database.Models.Levels;
 using Refresh.Interfaces.Game.Types.Comments;
 using Refresh.Interfaces.Game.Types.Lists;
+using Refresh.Common.Constants;
 
 namespace RefreshTests.GameServer.Tests.Comments;
 
@@ -44,7 +45,7 @@ public class LevelCommentTests : GameServerTest
     }
     
     [Test]
-    public void CantPostTooLongLevelComment()
+    public void TooLongLevelCommentGetsTrimmed()
     {
         using TestContext context = this.GetServer();
         GameUser user = context.CreateUser();
@@ -54,14 +55,19 @@ public class LevelCommentTests : GameServerTest
 
         SerializedComment comment = new()
         {
-            Content = new string('S', 5000),
+            Content = new string('S', 9000),
             CommentId = 0,
             Timestamp = 0,
             Handle = null,
         };
 
         HttpResponseMessage response = client.PostAsync($"/lbp/postComment/user/{level.LevelId}", new StringContent(comment.AsXML())).Result;
-        Assert.That(response.StatusCode, Is.EqualTo(BadRequest));
+        Assert.That(response.StatusCode, Is.EqualTo(OK));
+
+        // Ensure the comment was trimmed
+        GameLevelComment? finalComment = context.Database.GetLevelComments(level, 10, 0).Items.FirstOrDefault();
+        Assert.That(finalComment, Is.Not.Null);
+        Assert.That(finalComment!.Content.Length, Is.EqualTo(UgcLimits.CommentLimit));
     }
 
     [Test]

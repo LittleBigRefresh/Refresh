@@ -31,8 +31,7 @@ public class CommentEndpoints : EndpointGroup
 
         if (body.Content.Length > UgcLimits.CommentLimit)
         {
-            database.AddErrorNotification("Failed to post comment", $"Your comment under {profile.Username}'s profile couldn't be posted because it was too long.", user);
-            return BadRequest;
+            body.Content = body.Content[..UgcLimits.CommentLimit];
         }
         
         // TODO: include a check for if the user wants to receive these types of notifications 
@@ -96,8 +95,7 @@ public class CommentEndpoints : EndpointGroup
 
         if (body.Content.Length > UgcLimits.CommentLimit)
         {
-            database.AddErrorNotification("Failed to post comment", $"Your comment under the level '{level.Title}' couldn't be posted because it was too long.", user);
-            return BadRequest;
+            body.Content = body.Content[..UgcLimits.CommentLimit];
         }
 
         if (level.Publisher != null && !level.Publisher.Equals(user)) 

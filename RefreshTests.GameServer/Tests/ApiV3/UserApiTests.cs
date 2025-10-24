@@ -1,3 +1,4 @@
+using Refresh.Common.Constants;
 using Refresh.Database.Models.Authentication;
 using Refresh.Database.Models.Users;
 using Refresh.Interfaces.APIv3.Endpoints.ApiTypes;
@@ -189,6 +190,23 @@ public class UserApiTests : GameServerTest
 
         context.Database.Refresh();
         Assert.That(context.Database.GetUserByObjectId(user.UserId)!.ShowModdedPlanets, Is.True);
+    }
+    
+    [Test]
+    public void UserDescriptionGetsTrimmed()
+    {
+        using TestContext context = this.GetServer();
+        GameUser user = context.CreateUser();
+        
+        using HttpClient client = context.GetAuthenticatedClient(TokenType.Api, user);
+
+        ApiUpdateUserRequest payload = new()
+        {
+            Description = new string('S', 600),
+        };
+        ApiResponse<ApiGameUserResponse>? response = client.PatchData<ApiGameUserResponse>("/api/v3/users/me", payload);
+        Assert.That(response, Is.Not.Null);
+        Assert.That(response!.Data!.Description.Length, Is.EqualTo(UgcLimits.DescriptionLimit));
     }
 
     [Test]
