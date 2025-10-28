@@ -18,23 +18,27 @@ public partial class GameDatabaseContext // Moderation
     
     #region Retrieval
     
-    public DatabaseList<ModerationAction> GetModerationActions(int skip, int count) {
+    public DatabaseList<ModerationAction> GetModerationActions(int skip, int count) 
+    {
         return new(this.ModerationActionsIncluded.OrderByDescending(a => a.Timestamp), skip, count);
     }
 
-    public DatabaseList<ModerationAction> GetModerationActionsByActor(GameUser actor, int skip, int count) {
+    public DatabaseList<ModerationAction> GetModerationActionsByActor(GameUser actor, int skip, int count) 
+    {
         return new(this.ModerationActionsIncluded
             .Where(a => a.ActorId == actor.UserId)
             .OrderByDescending(a => a.Timestamp), skip, count);
     }
 
-    public DatabaseList<ModerationAction> GetModerationActionsForInvolvedUser(GameUser involvedUser, int skip, int count) {
+    public DatabaseList<ModerationAction> GetModerationActionsForInvolvedUser(GameUser involvedUser, int skip, int count) 
+    {
         return new(this.ModerationActionsIncluded
             .Where(a => a.InvolvedUserId == involvedUser.UserId)
             .OrderByDescending(a => a.Timestamp), skip, count);
     }
 
-    public DatabaseList<ModerationAction> GetModerationActionsForObject(string id, ModerationObjectType objectType, int skip, int count) {
+    public DatabaseList<ModerationAction> GetModerationActionsForObject(string id, ModerationObjectType objectType, int skip, int count) 
+    {
         return new(this.ModerationActionsIncluded
             .Where(a => a.ModeratedObjectType == objectType && a.ModeratedObjectId == id)
             .OrderByDescending(a => a.Timestamp), skip, count);

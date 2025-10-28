@@ -9,6 +9,9 @@ public partial class ModerationAction
 {
     [Key] public ObjectId ActionId { get; set; } = ObjectId.GenerateNewId();
     
+    /// <summary>
+    /// Describes what was done with the object.
+    /// </summary>
     public ModerationActionType ActionType { get; set; }
 
     /// <summary>
@@ -17,8 +20,8 @@ public partial class ModerationAction
     public ModerationObjectType ModeratedObjectType { get; set; }
     
     /// <summary>
-    /// The ID of the object that was moderated. May be a UUID, sequential ID, contest ID or a GameAsset hash,
-    /// depending on ObjectType's value
+    /// The ID of the object that was moderated. May be a UUID, sequential ID, or a GameAsset hash,
+    /// depending on ModeratedObjectType's value
     /// </summary>
     [Required] public string ModeratedObjectId { get; set; }
 
