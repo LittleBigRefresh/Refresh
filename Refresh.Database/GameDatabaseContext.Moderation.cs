@@ -86,7 +86,8 @@ public partial class GameDatabaseContext // Moderation
             ActionType = actionType,
             Actor = actor,
             InvolvedUser = involvedUser,
-            Description = description, 
+            Description = description,
+            Timestamp = this._time.Now,
         };
 
         this.ModerationActions.Add(moderationAction);
