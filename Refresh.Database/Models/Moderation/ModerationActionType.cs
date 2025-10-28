@@ -8,6 +8,9 @@ public enum ModerationActionType : byte
     // Users
     UserModification,
     UserDeletion,
+    UserPunishment,
+    UserPardon,
+    PinProgressDeletion,
 
     // Levels
     LevelModification,
@@ -17,6 +20,10 @@ public enum ModerationActionType : byte
     PlaylistModification,
     PlaylistDeletion,
 
+    // Photos
+    PhotoDeletion,
+    PhotosByUserDeletion,
+
     // Scores
     ScoreDeletion,
     ScoresByUserForLevelDeletion,
@@ -24,7 +31,7 @@ public enum ModerationActionType : byte
 
     // Reviews
     ReviewDeletion,
-    ReviewsByUserByUserDeletion,
+    ReviewsByUserDeletion,
     
     // Comments
     LevelCommentDeletion,
