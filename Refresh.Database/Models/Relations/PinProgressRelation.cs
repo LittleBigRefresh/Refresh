@@ -31,7 +31,9 @@ public partial class PinProgressRelation
     /// <summary>
     /// Seperates pin progresses per platform, to not let progress transfer inbetween PS3, RPCS3 and especially Vita,
     /// as that's commonly unwanted behaviour. Maybe figure out how to make this be opt-out in the future?
-    /// Website = this pin is universal across platforms and games (e.g. LBP.me pin)
+    /// 
+    /// Website = this pin is "universal" across platforms and games (e.g. LBP.me pin). 
+    /// In that case ignore both IsBeta and Platform, and show this progress on all games.
     /// </summary>
     public TokenPlatform Platform { get; set; }
 }
