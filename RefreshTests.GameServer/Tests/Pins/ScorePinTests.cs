@@ -43,7 +43,7 @@ public class ScorePinTests : GameServerTest
         Assert.That(message.StatusCode, Is.EqualTo(OK));
 
         // Ensure we now have the pin
-        PinProgressRelation? relation = context.Database.GetUserPinProgress(pinIdToCheck, user, false);
+        PinProgressRelation? relation = context.Database.GetUserPinProgress(pinIdToCheck, user, false, TokenPlatform.PS3);
         Assert.That(relation, Is.Not.Null);
         int progress = relation!.Progress;
 
@@ -61,7 +61,7 @@ public class ScorePinTests : GameServerTest
         Assert.That(message.StatusCode, Is.EqualTo(OK));
 
         // Ensure the pin now has a better progress value (is smaller)
-        relation = context.Database.GetUserPinProgress(pinIdToCheck, user, false);
+        relation = context.Database.GetUserPinProgress(pinIdToCheck, user, false, TokenPlatform.PS3);
         Assert.That(relation, Is.Not.Null);
         Assert.That(relation!.Progress, Is.LessThan(progress));
 
@@ -103,7 +103,7 @@ public class ScorePinTests : GameServerTest
         Assert.That(message.StatusCode, Is.EqualTo(OK));
 
         // Ensure we now have the pin
-        PinProgressRelation? relation = context.Database.GetUserPinProgress(pinIdToCheck, user, false);
+        PinProgressRelation? relation = context.Database.GetUserPinProgress(pinIdToCheck, user, false, TokenPlatform.PS3);
         Assert.That(relation, Is.Not.Null);
         Assert.That(relation!.Progress, Is.EqualTo(1));
 
@@ -129,7 +129,7 @@ public class ScorePinTests : GameServerTest
         context.Database.Refresh();
 
         // Ensure the pin progress has been incremented
-        PinProgressRelation? relation2 = context.Database.GetUserPinProgress(pinIdToCheck, user, false);
+        PinProgressRelation? relation2 = context.Database.GetUserPinProgress(pinIdToCheck, user, false, TokenPlatform.PS3);
         Assert.That(relation2, Is.Not.Null);
         Assert.That(relation2!.Progress, Is.EqualTo(2));
     }
@@ -167,7 +167,7 @@ public class ScorePinTests : GameServerTest
         Assert.That(message.StatusCode, Is.EqualTo(OK));
 
         // Ensure we don't have the pin
-        PinProgressRelation? relation = context.Database.GetUserPinProgress(pinIdToCheck, user, false);
+        PinProgressRelation? relation = context.Database.GetUserPinProgress(pinIdToCheck, user, false, TokenPlatform.PS3);
         Assert.That(relation, Is.Null);
     }
 
@@ -204,7 +204,7 @@ public class ScorePinTests : GameServerTest
         Assert.That(message.StatusCode, Is.EqualTo(OK));
 
         // Ensure we don't have the pin
-        PinProgressRelation? relation = context.Database.GetUserPinProgress(pinIdToCheck, user, false);
+        PinProgressRelation? relation = context.Database.GetUserPinProgress(pinIdToCheck, user, false, TokenPlatform.PS3);
         Assert.That(relation, Is.Null);
     }
 }
