@@ -179,4 +179,16 @@ public partial class GameDatabaseContext // Pins
 
     public DatabaseList<ProfilePinRelation> GetProfilePinsByUser(GameUser user, TokenGame game, TokenPlatform platform, int skip, int count)
         => new(this.GetProfilePinsByUser(user, game, platform), skip, count);
+    
+    public void AddPinProgress(PinProgressRelation relation, bool save)
+    {
+        this.PinProgressRelations.Add(relation);
+        if (save) this.SaveChanges();
+    }
+
+    public void RemovePinProgresses(IEnumerable<PinProgressRelation> relations, bool save)
+    {
+        this.PinProgressRelations.RemoveRange(relations);
+        if (save) this.SaveChanges();
+    }
 }
