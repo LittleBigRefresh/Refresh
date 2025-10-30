@@ -211,12 +211,12 @@ public class LeaderboardEndpoints : EndpointGroup
         if (isStoryLevel)
         {
             dataContext.Database.UpdateUserPinProgressToLowest((long)ServerPins.TopXOfAnyStoryLevelWithOver50Scores,
-                rankingInPercent, user, isGameBetaBuild);
+                rankingInPercent, user, isGameBetaBuild, dataContext.Platform);
         }
         else
         {
             dataContext.Database.UpdateUserPinProgressToLowest((long)ServerPins.TopXOfAnyCommunityLevelWithOver50Scores, 
-                rankingInPercent, user, isGameBetaBuild);
+                rankingInPercent, user, isGameBetaBuild, dataContext.Platform);
         }
 
         // Update on how many story/user levels the user's ranking is in the top 25% (top 1/4th) of the leaderboard or below
@@ -225,12 +225,12 @@ public class LeaderboardEndpoints : EndpointGroup
         if (isStoryLevel)
         {
             dataContext.Database.IncrementUserPinProgress((long)ServerPins.TopFourthOfXStoryLevelsWithOver50Scores, 
-                1, user, isGameBetaBuild);
+                1, user, isGameBetaBuild, dataContext.Platform);
         }
         else
         {
             dataContext.Database.IncrementUserPinProgress((long)ServerPins.TopFourthOfXCommunityLevelsWithOver50Scores, 
-                1, user, isGameBetaBuild);
+                1, user, isGameBetaBuild, dataContext.Platform);
         }
     }
 

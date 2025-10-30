@@ -943,6 +943,9 @@ namespace Refresh.Database.Migrations
                     b.Property<bool>("IsBeta")
                         .HasColumnType("boolean");
 
+                    b.Property<int>("Platform")
+                        .HasColumnType("integer");
+
                     b.Property<DateTimeOffset>("FirstPublished")
                         .HasColumnType("timestamp with time zone");
 
@@ -952,7 +955,7 @@ namespace Refresh.Database.Migrations
                     b.Property<int>("Progress")
                         .HasColumnType("integer");
 
-                    b.HasKey("PinId", "PublisherId", "IsBeta");
+                    b.HasKey("PinId", "PublisherId", "IsBeta", "Platform");
 
                     b.HasIndex("PublisherId");
 
@@ -1024,13 +1027,16 @@ namespace Refresh.Database.Migrations
                     b.Property<int>("Game")
                         .HasColumnType("integer");
 
+                    b.Property<int>("Platform")
+                        .HasColumnType("integer");
+
                     b.Property<long>("PinId")
                         .HasColumnType("bigint");
 
                     b.Property<DateTimeOffset>("Timestamp")
                         .HasColumnType("timestamp with time zone");
 
-                    b.HasKey("Index", "PublisherId", "Game");
+                    b.HasKey("Index", "PublisherId", "Game", "Platform");
 
                     b.HasIndex("PublisherId");
 
