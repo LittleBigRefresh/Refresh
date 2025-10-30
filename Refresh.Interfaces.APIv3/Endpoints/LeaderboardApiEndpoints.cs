@@ -25,7 +25,7 @@ public class LeaderboardApiEndpoints : EndpointGroup
     public ApiListResponse<ApiGameScoreResponse> GetTopScoresForLevel(RequestContext context,
         GameDatabaseContext database, IDataStore dataStore,
         [DocSummary("The ID of the level")] int id,
-        [DocSummary("The leaderboard more (aka the number of players, e.g. 2 for 2-player mode)")]
+        [DocSummary("The leaderboard mode (aka the number of players, e.g. 2 for 2-player mode)")]
         int mode, DataContext dataContext)
     {
         GameLevel? level = database.GetLevelById(id);
@@ -36,7 +36,10 @@ public class LeaderboardApiEndpoints : EndpointGroup
         bool result = bool.TryParse(context.QueryString.Get("showAll") ?? "false", out bool showAll);
         if (!result) return ApiValidationError.BooleanParseError;
 
-        DatabaseList<ScoreWithRank> scores = database.GetTopScoresForLevel(level, count, skip, (byte)mode, showAll);
+        // Don't have type 7 break on APIv3 clients which happen to already use it
+        byte scoreType = (byte)(mode == 7 ? 0 : mode);
+
+        DatabaseList<ScoreWithRank> scores = database.GetTopScoresForLevel(level, count, skip, scoreType, showAll);
         DatabaseList<ApiGameScoreResponse> ret = DatabaseListExtensions.FromOldList<ApiGameScoreResponse, ScoreWithRank>(scores, dataContext);
         return ret;
     }

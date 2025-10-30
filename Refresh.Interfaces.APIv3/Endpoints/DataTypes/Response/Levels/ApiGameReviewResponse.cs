@@ -1,6 +1,8 @@
 using Refresh.Core.Types.Data;
+using Refresh.Database.Models;
 using Refresh.Database.Models.Comments;
 using Refresh.Database.Models.Levels;
+using Refresh.Interfaces.APIv3.Endpoints.DataTypes.Response.Data;
 using Refresh.Interfaces.APIv3.Endpoints.DataTypes.Response.Users;
 
 namespace Refresh.Interfaces.APIv3.Endpoints.DataTypes.Response.Levels;
@@ -15,9 +17,15 @@ public class ApiGameReviewResponse : IApiResponse, IDataConvertableFrom<ApiGameR
     public required List<Label> LabelList { get; set; }
     public required string Labels { get; set; } // TODO: remove this and rename LabelList to Labels in APIv4
     public required string Text { get; set; }
+    public required int LevelRating { get; set; }
+    public required ApiRatingResponse ReviewRating { get; set; }
+    
     public static ApiGameReviewResponse? FromOld(GameReview? old, DataContext dataContext)
     {
         if (old == null) return null;
+
+        DatabaseRating rating = dataContext.Database.GetRatingForReview(old);
+
         return new ApiGameReviewResponse
         {
             ReviewId = old.ReviewId,
@@ -27,6 +35,15 @@ public class ApiGameReviewResponse : IApiResponse, IDataConvertableFrom<ApiGameR
             LabelList = old.Labels,
             Labels = old.Labels.ToLbpCommaList(),
             Text = old.Content,
+            LevelRating = (int?)dataContext.Database.GetRatingByUser(old.Level, old.Publisher) ?? 0,
+            ReviewRating = ApiRatingResponse.FromRating
+            (
+                rating.PositiveRating,
+                rating.NegativeRating,
+                dataContext.User != null 
+                    ? (int?)dataContext.Database.GetRateReviewRelationForReview(dataContext.User, old)?.RatingType 
+                    : null
+            )
         };
     }
 

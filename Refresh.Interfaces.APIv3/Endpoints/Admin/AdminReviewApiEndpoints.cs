@@ -13,7 +13,7 @@ namespace Refresh.Interfaces.APIv3.Endpoints.Admin;
 
 public class AdminReviewApiEndpoints : EndpointGroup
 {
-    [ApiV3Endpoint("admin/reviews/id/{reviewId}", HttpMethods.Delete), MinimumRole(GameUserRole.Admin)]
+    [ApiV3Endpoint("admin/reviews/id/{reviewId}", HttpMethods.Delete), MinimumRole(GameUserRole.Moderator)]
     [DocSummary("Deletes a specific review by ID.")]
     [DocError(typeof(ApiNotFoundError), ApiNotFoundError.ReviewMissingErrorWhen)]
     public ApiOkResponse DeleteReviewById(RequestContext context, GameDatabaseContext database,
@@ -27,7 +27,7 @@ public class AdminReviewApiEndpoints : EndpointGroup
         return new ApiOkResponse();
     }
     
-        [ApiV3Endpoint("admin/comments/profile/id/{commentId}", HttpMethods.Delete), MinimumRole(GameUserRole.Admin)]
+        [ApiV3Endpoint("admin/comments/profile/id/{commentId}", HttpMethods.Delete), MinimumRole(GameUserRole.Moderator)]
     [DocSummary("Deletes a specific profile comment by ID.")]
     [DocError(typeof(ApiNotFoundError), ApiNotFoundError.CommentMissingErrorWhen)]
     public ApiOkResponse DeleteProfileCommentById(RequestContext context, GameDatabaseContext database,
@@ -41,7 +41,7 @@ public class AdminReviewApiEndpoints : EndpointGroup
         return new ApiOkResponse();
     }
     
-    [ApiV3Endpoint("admin/comments/level/id/{commentId}", HttpMethods.Delete), MinimumRole(GameUserRole.Admin)]
+    [ApiV3Endpoint("admin/comments/level/id/{commentId}", HttpMethods.Delete), MinimumRole(GameUserRole.Moderator)]
     [DocSummary("Deletes a specific level comment by ID.")]
     [DocError(typeof(ApiNotFoundError), ApiNotFoundError.CommentMissingErrorWhen)]
     public ApiOkResponse DeleteLevelCommentById(RequestContext context, GameDatabaseContext database,
@@ -55,7 +55,7 @@ public class AdminReviewApiEndpoints : EndpointGroup
         return new ApiOkResponse();
     }
     
-    [ApiV3Endpoint("admin/users/uuid/{uuid}/comments/profile", HttpMethods.Delete), MinimumRole(GameUserRole.Admin)]
+    [ApiV3Endpoint("admin/users/uuid/{uuid}/comments/profile", HttpMethods.Delete), MinimumRole(GameUserRole.Moderator)]
     [DocSummary("Deletes all profile comments posted by a user. Gets user by their UUID.")]
     [DocError(typeof(ApiNotFoundError), ApiNotFoundError.UserMissingErrorWhen)]
     public ApiOkResponse DeleteProfileCommentsByUuid(RequestContext context, GameDatabaseContext database,
@@ -68,7 +68,7 @@ public class AdminReviewApiEndpoints : EndpointGroup
         return new ApiOkResponse();
     }
     
-    [ApiV3Endpoint("admin/users/name/{username}/comments/profile", HttpMethods.Delete), MinimumRole(GameUserRole.Admin)]
+    [ApiV3Endpoint("admin/users/name/{username}/comments/profile", HttpMethods.Delete), MinimumRole(GameUserRole.Moderator)]
     [DocSummary("Deletes all profile comments posted by a user. Gets user by their username.")]
     [DocError(typeof(ApiNotFoundError), ApiNotFoundError.UserMissingErrorWhen)]
     public ApiOkResponse DeleteProfileCommentsByUsername(RequestContext context, GameDatabaseContext database,
@@ -81,7 +81,7 @@ public class AdminReviewApiEndpoints : EndpointGroup
         return new ApiOkResponse();
     }
     
-    [ApiV3Endpoint("admin/users/uuid/{uuid}/comments/level", HttpMethods.Delete), MinimumRole(GameUserRole.Admin)]
+    [ApiV3Endpoint("admin/users/uuid/{uuid}/comments/level", HttpMethods.Delete), MinimumRole(GameUserRole.Moderator)]
     [DocSummary("Deletes all level comments posted by a user. Gets user by their UUID.")]
     [DocError(typeof(ApiNotFoundError), ApiNotFoundError.UserMissingErrorWhen)]
     public ApiOkResponse DeleteLevelCommentsByUuid(RequestContext context, GameDatabaseContext database,
@@ -94,7 +94,7 @@ public class AdminReviewApiEndpoints : EndpointGroup
         return new ApiOkResponse();
     }
     
-    [ApiV3Endpoint("admin/users/name/{username}/comments/level", HttpMethods.Delete), MinimumRole(GameUserRole.Admin)]
+    [ApiV3Endpoint("admin/users/name/{username}/comments/level", HttpMethods.Delete), MinimumRole(GameUserRole.Moderator)]
     [DocSummary("Deletes all level comments posted by a user. Gets user by their username.")]
     [DocError(typeof(ApiNotFoundError), ApiNotFoundError.UserMissingErrorWhen)]
     public ApiOkResponse DeleteLevelCommentsByUsername(RequestContext context, GameDatabaseContext database,
@@ -107,7 +107,7 @@ public class AdminReviewApiEndpoints : EndpointGroup
         return new ApiOkResponse();
     }
     
-    [ApiV3Endpoint("admin/users/uuid/{uuid}/reviews", HttpMethods.Delete), MinimumRole(GameUserRole.Admin)]
+    [ApiV3Endpoint("admin/users/uuid/{uuid}/reviews", HttpMethods.Delete), MinimumRole(GameUserRole.Moderator)]
     [DocSummary("Deletes all reviews posted by a user. Gets user by their UUID.")]
     [DocError(typeof(ApiNotFoundError), ApiNotFoundError.UserMissingErrorWhen)]
     public ApiOkResponse DeleteReviewsPostedByUuid(RequestContext context, GameDatabaseContext database,
@@ -120,7 +120,7 @@ public class AdminReviewApiEndpoints : EndpointGroup
         return new ApiOkResponse();
     }
     
-    [ApiV3Endpoint("admin/users/name/{username}/reviews", HttpMethods.Delete), MinimumRole(GameUserRole.Admin)]
+    [ApiV3Endpoint("admin/users/name/{username}/reviews", HttpMethods.Delete), MinimumRole(GameUserRole.Moderator)]
     [DocSummary("Deletes all reviews posted by a user. Gets user by their username.")]
     [DocError(typeof(ApiNotFoundError), ApiNotFoundError.UserMissingErrorWhen)]
     public ApiOkResponse DeleteReviewsPostedByUsername(RequestContext context, GameDatabaseContext database,

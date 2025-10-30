@@ -2,6 +2,7 @@ using AttribDoc.Attributes;
 using Bunkum.Core;
 using Bunkum.Core.Endpoints;
 using Bunkum.Protocols.Http;
+using Refresh.Common.Constants;
 using Refresh.Core.Types.Data;
 using Refresh.Database;
 using Refresh.Database.Models.Comments;
@@ -42,6 +43,10 @@ public class CommentApiEndpoints : EndpointGroup
     {
         GameUser? profile = dataContext.Database.GetUserByUuid(uuid);
         if (profile == null) return ApiNotFoundError.UserMissingError;
+
+        // Trim content
+        if (body.Content.Length > UgcLimits.CommentLimit) 
+            body.Content = body.Content[..UgcLimits.CommentLimit];
 
         GameProfileComment comment = dataContext.Database.PostCommentToProfile(profile, user, body.Content);
         return ApiProfileCommentResponse.FromOld(comment, dataContext);
@@ -117,6 +122,10 @@ public class CommentApiEndpoints : EndpointGroup
     {
         GameLevel? level = dataContext.Database.GetLevelById(id);
         if (level == null) return ApiNotFoundError.LevelMissingError;
+
+        // Trim content
+        if (body.Content.Length > UgcLimits.CommentLimit) 
+            body.Content = body.Content[..UgcLimits.CommentLimit];
 
         GameLevelComment comment = dataContext.Database.PostCommentToLevel(level, user, body.Content);
         return ApiLevelCommentResponse.FromOld(comment, dataContext);

@@ -232,6 +232,9 @@ namespace Refresh.Database.Migrations
                         .IsRequired()
                         .HasColumnType("text");
 
+                    b.Property<DateTimeOffset>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone");
+
                     b.HasKey("ReviewId");
 
                     b.HasIndex("LevelId");
@@ -571,6 +574,10 @@ namespace Refresh.Database.Migrations
                     b.PrimitiveCollection<List<string>>("PlayerIdsRaw")
                         .HasColumnType("text[]");
 
+                    b.Property<string>("PublisherId")
+                        .IsRequired()
+                        .HasColumnType("text");
+
                     b.Property<int>("Score")
                         .HasColumnType("integer");
 
@@ -583,6 +590,8 @@ namespace Refresh.Database.Migrations
                     b.HasKey("ScoreId");
 
                     b.HasIndex("LevelId");
+
+                    b.HasIndex("PublisherId");
 
                     b.HasIndex("Game", "Score", "ScoreType");
 
@@ -1485,6 +1494,18 @@ namespace Refresh.Database.Migrations
                     b.Property<bool>("AllowIpAuthentication")
                         .HasColumnType("boolean");
 
+                    b.Property<bool>("AreBetaPlanetsModded")
+                        .HasColumnType("boolean");
+
+                    b.Property<bool>("AreLbp2PlanetsModded")
+                        .HasColumnType("boolean");
+
+                    b.Property<bool>("AreLbp3PlanetsModded")
+                        .HasColumnType("boolean");
+
+                    b.Property<bool>("AreVitaPlanetsModded")
+                        .HasColumnType("boolean");
+
                     b.Property<DateTimeOffset?>("BanExpiryDate")
                         .HasColumnType("timestamp with time zone");
 
@@ -1579,6 +1600,9 @@ namespace Refresh.Database.Migrations
                         .HasColumnType("boolean");
 
                     b.Property<bool>("ShowModdedContent")
+                        .HasColumnType("boolean");
+
+                    b.Property<bool>("ShowModdedPlanets")
                         .HasColumnType("boolean");
 
                     b.Property<bool>("ShowReuploadedContent")
@@ -1883,7 +1907,15 @@ namespace Refresh.Database.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
+                    b.HasOne("Refresh.Database.Models.Users.GameUser", "Publisher")
+                        .WithMany()
+                        .HasForeignKey("PublisherId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
                     b.Navigation("Level");
+
+                    b.Navigation("Publisher");
                 });
 
             modelBuilder.Entity("Refresh.Database.Models.Notifications.GameNotification", b =>

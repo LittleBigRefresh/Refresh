@@ -78,6 +78,11 @@ public partial class GameUser : IRateLimitUser
     public string Lbp3PlanetsHash { get; set; } = "0";
     public string VitaPlanetsHash { get; set; } = "0";
 
+    public bool AreBetaPlanetsModded { get; set; }
+    public bool AreLbp2PlanetsModded { get; set; }
+    public bool AreLbp3PlanetsModded { get; set; }
+    public bool AreVitaPlanetsModded { get; set; }
+
     public string YayFaceHash { get; set; } = "0";
     public string BooFaceHash { get; set; } = "0";
     public string MehFaceHash { get; set; } = "0";
@@ -118,6 +123,11 @@ public partial class GameUser : IRateLimitUser
     public bool UnescapeXmlSequences { get; set; }
     
     public GameUserRole Role { get; set; }
+
+    /// <summary>
+    /// Whether planets containing mods or VoiceRecordings should be shown in-game
+    /// </summary>
+    public bool ShowModdedPlanets { get; set; } = true;
 
     /// <summary>
     /// Whether modded content should be shown in level listings

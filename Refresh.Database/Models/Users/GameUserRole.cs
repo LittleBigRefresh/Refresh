@@ -13,6 +13,11 @@ public enum GameUserRole : sbyte
     /// </summary>
     Admin = 127,
     /// <summary>
+    /// A mod. Can moderate (edit and delete) various UGC, curate content like Curators, but doesn't have any permissions 
+    /// over the instance itself.
+    /// </summary>
+    Moderator = 96,
+    /// <summary>
     /// A user that doesn't have moderator powers, but may team pick levels, set re-upload data, and adjust the level's game version.
     /// </summary>
     Curator = 64,

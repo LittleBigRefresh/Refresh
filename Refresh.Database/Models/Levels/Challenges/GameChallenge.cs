@@ -1,3 +1,4 @@
+using MongoDB.Bson;
 using Refresh.Database.Models.Users;
 
 namespace Refresh.Database.Models.Levels.Challenges;
@@ -7,12 +8,14 @@ public partial class GameChallenge : ISequentialId
     [Key] public int ChallengeId { get; set; }
     
     public string Name { get; set; } = "";
-    public GameUser? Publisher { get; set; }
+
+    [ForeignKey(nameof(PublisherUserId))] public GameUser? Publisher { get; set; }
+    public ObjectId? PublisherUserId { get; set; }
 
     #nullable disable
-    [Required]
-    public GameLevel Level { get; set; }
-    #nullable enable
+
+    [Required, ForeignKey(nameof(LevelId))] public GameLevel Level { get; set; }
+    [Required] public int LevelId { get; set; }
 
     /// <summary>
     /// The Uid of the checkpoint this challenge starts on.
@@ -29,7 +32,7 @@ public partial class GameChallenge : ISequentialId
     public GameChallengeCriteriaType Type { get; set; }
 
     public DateTimeOffset PublishDate { get; set; }
-    public DateTimeOffset LastUpdateDate { get; set; }
+    public DateTimeOffset LastUpdateDate { get; set; } // TODO: Consider whether this is even useful
     public DateTimeOffset ExpirationDate { get; set; }
 
     [NotMapped] public int SequentialId

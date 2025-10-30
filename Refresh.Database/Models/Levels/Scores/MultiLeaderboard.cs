@@ -14,12 +14,11 @@ public class MultiLeaderboard
             [1] = database.GetTopScoresForLevel(level, 10, 0, 1),
         };
 
-        //On PSP, theres no multiplayer, so lets skip all the multiplayer/vs scoreboards
+        //On PSP, theres no multiplayer, so lets skip all the multiplayer scoreboards
         if (game == TokenGame.LittleBigPlanetPSP) return;
         
         this.Leaderboards[2] = database.GetTopScoresForLevel(level, 10, 0, 2);
         this.Leaderboards[3] = database.GetTopScoresForLevel(level, 10, 0, 3);
         this.Leaderboards[4] = database.GetTopScoresForLevel(level, 10, 0, 4);
-        this.Leaderboards[7] = database.GetTopScoresForLevel(level, 10, 0, 7);
     }
 }

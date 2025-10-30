@@ -28,7 +28,10 @@ public static class LevelEnumerableExtensions
             TokenGame.LittleBigPlanet3 => levels.Where(l => l.GameVersion <= TokenGame.LittleBigPlanet3),
             TokenGame.LittleBigPlanetVita => levels.Where(l => l.GameVersion == TokenGame.LittleBigPlanetVita),
             TokenGame.LittleBigPlanetPSP => levels.Where(l => l.GameVersion == TokenGame.LittleBigPlanetPSP),
-            TokenGame.BetaBuild => levels.Where(l => l.GameVersion == TokenGame.BetaBuild),
+            // Allow story levels from lbp1-3 to appear in beta builds. Usually developer levels with invalid IDs already
+            // get filtered out by the game. Ignore potential edge cases where the game doesn't filter them, since we only
+            // include them for beta builds anyway.
+            TokenGame.BetaBuild => levels.Where(l => l.GameVersion == TokenGame.BetaBuild || l.StoryId != 0),
             TokenGame.Website => levels,
             _ => throw new ArgumentOutOfRangeException(nameof(gameVersion), gameVersion, null),
         };

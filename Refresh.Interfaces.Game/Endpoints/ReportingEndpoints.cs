@@ -4,6 +4,7 @@ using Bunkum.Core.Endpoints;
 using Bunkum.Core.Responses;
 using Bunkum.Listener.Protocol;
 using Bunkum.Protocols.Http;
+using Refresh.Common.Constants;
 using Refresh.Common.Time;
 using Refresh.Core.Authentication.Permission;
 using Refresh.Core.Configuration;
@@ -20,6 +21,7 @@ namespace Refresh.Interfaces.Game.Endpoints;
 
 public class ReportingEndpoints : EndpointGroup 
 {
+    // TODO: LBP1 beta builds upload all related assets after sending the report itself to this endpoint, handle that case
     [GameEndpoint("grief", HttpMethods.Post, ContentType.Xml)]
     [RequireEmailVerified]
     public Response UploadReport(RequestContext context, GameDatabaseContext database, GameReport body, GameUser user,
@@ -35,6 +37,7 @@ public class ReportingEndpoints : EndpointGroup
             case TokenGame.LittleBigPlanet1:
             case TokenGame.LittleBigPlanet2:
             case TokenGame.LittleBigPlanet3:
+            case TokenGame.BetaBuild:
                 imageSize = new Size(640, 360);
                 break;
             case TokenGame.LittleBigPlanetVita:
@@ -117,6 +120,10 @@ public class ReportingEndpoints : EndpointGroup
                 };
             }));
         }
+
+        // Trim description
+        if (body.Description != null && body.Description.Length > UgcLimits.DescriptionLimit)
+            body.Description = body.Description[..UgcLimits.DescriptionLimit];
 
         GriefReport griefReport = new()
         {

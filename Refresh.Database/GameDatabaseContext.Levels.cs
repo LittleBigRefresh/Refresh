@@ -415,23 +415,15 @@ public partial class GameDatabaseContext // Levels
     
     [Pure]
     public DatabaseList<GameLevel> GetLevelsByTag(int count, int skip, GameUser? user, Tag tag, LevelFilterSettings levelFilterSettings)
-    {
-        IQueryable<TagLevelRelation> tagRelations = this.TagLevelRelations;
-        
-        IEnumerable<GameLevel> filteredTaggedLevels = tagRelations
+        => new(this.TagLevelRelations
             .Include(x => x.Level.Publisher)
             .Include(x => x.Level.Statistics)
             .Where(x => x.Tag == tag)
-            .AsEnumerableIfRealm()
+            .OrderByDescending(r => r.Timestamp)
             .Select(x => x.Level)
             .Distinct()
-            .Where(l => l.StoryId == 0)
-            .OrderByDescending(l => l.PublishDate)
             .FilterByLevelFilterSettings(user, levelFilterSettings)
-            .FilterByGameVersion(levelFilterSettings.GameVersion);
-
-        return new DatabaseList<GameLevel>(filteredTaggedLevels, skip, count);
-    }
+            .FilterByGameVersion(levelFilterSettings.GameVersion), skip, count);
     
     [Pure]
     public DatabaseList<GameLevel> GetMostUniquelyPlayedLevels(int count, int skip, GameUser? user, LevelFilterSettings levelFilterSettings)
@@ -564,6 +556,18 @@ public partial class GameDatabaseContext // Levels
             default:
                 return null;
         }
+    }
+
+    public GameLevel? GetLevelByIdAndType(GameSlotType slotType, int id)
+    {
+        if (id <= 0) return null;
+
+        return slotType switch
+        {
+            GameSlotType.User => this.GetLevelById(id),
+            GameSlotType.Story => this.GetStoryLevelById(id),
+            _ => null,
+        };
     }
 
     public GameLevel? GetLevelByRootResource(string rootResource) => this.GameLevelsIncluded

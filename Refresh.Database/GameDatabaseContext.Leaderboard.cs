@@ -12,20 +12,30 @@ namespace Refresh.Database;
 public partial class GameDatabaseContext // Leaderboard
 {
     private IQueryable<GameScore> GameScoresIncluded => this.GameScores
+        .Include(s => s.Publisher)
         .Include(s => s.Level)
         .Include(s => s.Level.Publisher);
     
-    public GameScore SubmitScore(ISerializedScore score, Token token, GameLevel level)
-        => this.SubmitScore(score, token.User, level, token.TokenGame, token.TokenPlatform);
+    public GameScore SubmitScore(ISerializedScore score, Token token, GameLevel level, IList<GameUser> players)
+        => this.SubmitScore(score, token.User, level, token.TokenGame, token.TokenPlatform, players);
 
-    public GameScore SubmitScore(ISerializedScore score, GameUser user, GameLevel level, TokenGame game, TokenPlatform platform)
+    public GameScore SubmitScore(ISerializedScore score, GameUser user, GameLevel level, TokenGame game, TokenPlatform platform, IList<GameUser> players)
     {
+        // Throw incase the method directly gets called like this in a test
+        if (players.Count <= 0)
+        {
+            throw new ArgumentException("Player list is empty!", nameof(players));
+        }
+
+        IEnumerable<ObjectId> playerIds = players.Select(u => u.UserId);
+
         GameScore newScore = new()
         {
             Score = score.Score,
             ScoreType = score.ScoreType,
             Level = level,
-            PlayerIdsRaw = [ user.UserId.ToString() ],
+            PlayerIdsRaw = playerIds.Select(p => p.ToString()).ToList(),
+            Publisher = user,
             ScoreSubmitted = this._time.Now,
             Game = game,
             Platform = platform,
@@ -34,8 +44,6 @@ public partial class GameDatabaseContext // Leaderboard
         GameScore? currentFirstPlace = this.GameScores
             .Where(s => s.LevelId == level.LevelId && s.ScoreType == score.ScoreType)
             .OrderByDescending(s => s.Score)
-            .ToArray()
-            .DistinctBy(s => s.PlayerIdsRaw[0])
             .FirstOrDefault();
 
         // If the current first score is not 0, is lower than the new score and by a different first player,
@@ -43,7 +51,7 @@ public partial class GameDatabaseContext // Leaderboard
         bool showOvertakeNotification = currentFirstPlace != null
             && currentFirstPlace.Score > 0
             && currentFirstPlace.Score < score.Score 
-            && currentFirstPlace.PlayerIds[0] != user.UserId;
+            && currentFirstPlace.PublisherId != user.UserId;
 
         this.Write(() =>
         {
@@ -52,14 +60,29 @@ public partial class GameDatabaseContext // Leaderboard
 
         this.CreateLevelScoreEvent(user, newScore);
 
+        // Notify the last #1 users that they've been overtaken
         // Only do this part of notifying after actually adding the new score to the database incase that fails
+        // NOTE: If you want to change the notif text, make sure to adjust the respective Assert in 
+        // ScoreLeaderboardTests.OnlySendOvertakeNotifsToRelevantPlayers() aswell!
         if (showOvertakeNotification)
         {
-            // Notify the last #1 users that they've been overtaken
-            foreach (GameUser player in this.GetPlayersFromScore(currentFirstPlace!).ToArray())
+            // Below lines format the shown usernames to look like this: "UserA, UserB, UserC and UserD"
+            IEnumerable<string> usernames = players.Select(u => u.Username);
+
+            // players.Count is guaranteed to be equal to usernames.Count(), both are guaranteed to be > 0
+            string usernamesToShow = players.Count > 1 
+                ? $"{string.Join(", ", usernames.SkipLast(1))} and {usernames.Last()}"
+                : usernames.First();
+
+            // Don't notify users who have participated in both the overtaken and the new score
+            IEnumerable<GameUser> usersToNotify = this.GetPlayersFromScore(currentFirstPlace!)
+                .Where(p => !playerIds.Contains(p.UserId))
+                .ToArray();
+            
+            foreach (GameUser player in usersToNotify)
             {
                 this.AddNotification("Score overtaken", 
-                    $"Your #1 score on {level.Title} has been overtaken by {user.Username}!", 
+                    $"Your #1 score on {level.Title} has been overtaken by {usernamesToShow} in {score.ScoreType}-player-mode!", 
                     player, "medal");   
             }
         }
@@ -67,14 +90,18 @@ public partial class GameDatabaseContext // Leaderboard
         return newScore;
     }
 
-    public DatabaseScoreList GetTopScoresForLevel(GameLevel level, int count, int skip, byte type, bool showDuplicates = false, DateTimeOffset? minAge = null, GameUser? user = null)
+    /// <param name="scoreType">0 = don't filter by type</param>
+    public DatabaseScoreList GetTopScoresForLevel(GameLevel level, int count, int skip, byte scoreType, bool showDuplicates = false, DateTimeOffset? minAge = null, GameUser? user = null)
     {
         IEnumerable<GameScore> scores = this.GameScoresIncluded
-            .Where(s => s.ScoreType == type && s.LevelId == level.LevelId)
+            .Where(s => s.LevelId == level.LevelId)
             .OrderByDescending(s => s.Score);
+        
+        if (scoreType != 0)
+            scores = scores.Where(s => s.ScoreType == scoreType);
 
         if (!showDuplicates)
-            scores = scores.DistinctBy(s => s.PlayerIds[0]);
+            scores = scores.DistinctBy(s => s.PublisherId);
         
         if (minAge != null)
             scores = scores.Where(s => s.ScoreSubmitted >= minAge);
@@ -92,7 +119,7 @@ public partial class GameDatabaseContext // Leaderboard
             .Where(s => s.ScoreType == score.ScoreType && s.LevelId == score.LevelId)
             .OrderByDescending(s => s.Score)
             .ToArray()
-            .DistinctBy(s => s.PlayerIds[0])
+            .DistinctBy(s => s.PublisherId)
             .ToList();
 
         return new
@@ -103,24 +130,28 @@ public partial class GameDatabaseContext // Leaderboard
         );
     }
     
-    public DatabaseScoreList GetLevelTopScoresByFriends(GameUser user, GameLevel level, int count, byte scoreType, DateTimeOffset? minAge = null)
+    /// <param name="scoreType">0 = don't filter by type</param>
+    public DatabaseScoreList GetLevelTopScoresByFriends(GameUser user, GameLevel level, int skip, int count, byte scoreType, DateTimeOffset? minAge = null)
     {
         IEnumerable<ObjectId> mutuals = this.GetUsersMutuals(user)
             .Select(u => u.UserId)
             .Append(user.UserId);
 
         IEnumerable<GameScore> scores = this.GameScoresIncluded
-            .Where(s => s.ScoreType == scoreType && s.LevelId == level.LevelId)
+            .Where(s => s.LevelId == level.LevelId)
             .OrderByDescending(s => s.Score)
             .ToArray()
-            .DistinctBy(s => s.PlayerIds[0])
+            .DistinctBy(s => s.PublisherId)
             //TODO: THIS CALL IS EXTREMELY INEFFECIENT!!! once we are in postgres land, figure out a way to do this effeciently
             .Where(s => s.PlayerIds.Any(p => mutuals.Contains(p)));
+        
+        if (scoreType != 0)
+            scores = scores.Where(s => s.ScoreType == scoreType);
         
         if (minAge != null)
             scores = scores.Where(s => s.ScoreSubmitted >= minAge);
 
-        return new(scores.Select((s, i) => new ScoreWithRank(s, i + 1)), 0, count, user);
+        return new(scores.Select((s, i) => new ScoreWithRank(s, i + 1)), skip, count, user);
     }
 
     [Pure]

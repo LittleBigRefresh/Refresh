@@ -100,6 +100,20 @@ public class CommandService : EndpointService
                 database.SetUnescapeXmlSequences(user, false);
                 break;
             }
+            case "showmodp":
+            case "showmoddedplanet":
+            case "showmoddedplanets":
+            {
+                database.SetShowModdedPlanets(user, true);
+                break;
+            }
+            case "hidemodp":
+            case "hidemoddedplanet":
+            case "hidemoddedplanets":
+            {
+                database.SetShowModdedPlanets(user, false);
+                break;
+            }
             case "showmods":
             {
                 database.SetShowModdedContent(user, true);

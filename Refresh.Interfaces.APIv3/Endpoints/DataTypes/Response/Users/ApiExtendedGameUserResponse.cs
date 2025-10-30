@@ -27,6 +27,7 @@ public class ApiExtendedGameUserResponse : ApiGameUserResponse, IApiResponse, ID
     public required bool ShouldResetPassword { get; set; }
     public required bool AllowIpAuthentication { get; set; }
     
+    public required bool ShowModdedPlanets { get; set; }
     public required bool ShowModdedContent { get; set; }
     public required bool ShowReuploadedContent { get; set; }
     
@@ -71,6 +72,7 @@ public class ApiExtendedGameUserResponse : ApiGameUserResponse, IApiResponse, ID
             ActiveRoom = ApiGameRoomResponse.FromOld(dataContext.Match.RoomAccessor.GetRoomByUser(user), dataContext),
             LevelVisibility = user.LevelVisibility,
             ProfileVisibility = user.ProfileVisibility,
+            ShowModdedPlanets = user.ShowModdedPlanets,
             ShowModdedContent = user.ShowModdedContent,
             ShowReuploadedContent = user.ShowReuploadedContent,
             ConnectedToPresenceServer = user.PresenceServerAuthToken != null,

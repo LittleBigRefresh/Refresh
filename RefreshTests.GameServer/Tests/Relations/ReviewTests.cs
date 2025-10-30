@@ -28,8 +28,8 @@ public class ReviewTests : GameServerTest
 
         SerializedGameReview review = new()
         {
-            Labels = "LABEL_SurvivalChallenge",
-            Text = "moku Sutolokanopu",
+            RawLabels = "LABEL_SurvivalChallenge",
+            Content = "moku Sutolokanopu",
         };
         
         Assert.That(reviewerClient.PostAsync($"/lbp/postReview/{slotType}/{levelId}", new StringContent(review.AsXML())).Result.StatusCode, Is.EqualTo(OK));
@@ -39,7 +39,7 @@ public class ReviewTests : GameServerTest
 
         SerializedGameReviewResponse levelReviews = response.Content.ReadAsXML<SerializedGameReviewResponse>();
         Assert.That(levelReviews.Items, Has.Count.EqualTo(1));
-        Assert.That(levelReviews.Items[0].Text, Is.EqualTo(review.Text));
+        Assert.That(levelReviews.Items[0].Content, Is.EqualTo(review.Content));
         Assert.That(levelReviews.Items[0].Labels, Is.EqualTo(review.Labels));
         
         response = reviewerClient.GetAsync($"/lbp/reviewsBy/{reviewPublisher.Username}").Result;
@@ -47,7 +47,7 @@ public class ReviewTests : GameServerTest
 
         levelReviews = response.Content.ReadAsXML<SerializedGameReviewResponse>();
         Assert.That(levelReviews.Items, Has.Count.EqualTo(1));
-        Assert.That(levelReviews.Items[0].Text, Is.EqualTo(review.Text));
+        Assert.That(levelReviews.Items[0].Content, Is.EqualTo(review.Content));
         Assert.That(levelReviews.Items[0].Labels, Is.EqualTo(review.Labels));
     }
 
@@ -102,8 +102,8 @@ public class ReviewTests : GameServerTest
 
         SerializedGameReview review = new()
         {
-            Labels = "LABEL_SurvivalChallenge",
-            Text = "moku Sutolokanopu",
+            RawLabels = "LABEL_SurvivalChallenge",
+            Content = "moku Sutolokanopu",
         };
         
         Assert.That(reviewerClient.PostAsync($"/lbp/postReview/badType/{level.LevelId}", new StringContent(review.AsXML())).Result.StatusCode, Is.EqualTo(NotFound));
@@ -123,8 +123,8 @@ public class ReviewTests : GameServerTest
 
         SerializedGameReview review = new()
         {
-            Labels = "LABEL_SurvivalChallenge",
-            Text = "moku Sutolokanopu",
+            RawLabels = "LABEL_SurvivalChallenge",
+            Content = "moku Sutolokanopu",
         };
         
         Assert.That(reviewerClient.PostAsync($"/lbp/postReview/user/{int.MaxValue}", new StringContent(review.AsXML())).Result.StatusCode, Is.EqualTo(NotFound));
@@ -144,8 +144,8 @@ public class ReviewTests : GameServerTest
 
         SerializedGameReview review = new()
         {
-            Labels = "LABEL_SurvivalChallenge",
-            Text = "moku Sutolokanopu",
+            RawLabels = "LABEL_SurvivalChallenge",
+            Content = "moku Sutolokanopu",
         };
         
         Assert.That(reviewerClient.PostAsync($"/lbp/postReview/user/{level.LevelId}", new StringContent(review.AsXML())).Result.StatusCode, Is.EqualTo(BadRequest));

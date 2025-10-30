@@ -138,10 +138,10 @@ public class UserEndpoints : EndpointGroup
             return null;
         }
 
+        // Trim description
         if (data.Description is { Length: > UgcLimits.DescriptionLimit })
         {
-            dataContext.Database.AddErrorNotification("Profile update failed", $"Your profile failed to update because the description was too long. The max length is {UgcLimits.DescriptionLimit} characters.", user);
-            return null;
+            data.Description = data.Description[..UgcLimits.DescriptionLimit];
         }
         
         dataContext.Database.UpdateUserData(user, data, dataContext.Game);

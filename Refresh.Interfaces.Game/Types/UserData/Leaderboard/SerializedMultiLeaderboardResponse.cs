@@ -37,7 +37,7 @@ public class SerializedMultiLeaderboardResponse
             int i = 1;
             foreach (ScoreWithRank score in scores.Items)
             {
-                leaderboard.Scores.Add(SerializedLeaderboardScore.FromOld(score.score, dataContext, i));
+                leaderboard.Scores.Add(SerializedLeaderboardScore.FromOld(score.score, i));
                 i += 1;
             }
             

@@ -20,10 +20,10 @@ public class LevelDeletionTests : GameServerTest
         level = context.Database.GetLevelById(level.LevelId);
         Assert.That(level, Is.Not.Null);
         
-        context.Database.DeleteLevel(level);
+        context.Database.DeleteLevel(level!);
         
         context.Database.Refresh();
-        Assert.That(context.Database.GetLevelById(level.LevelId), Is.Null);
+        Assert.That(context.Database.GetLevelById(level!.LevelId), Is.Null);
     }
     
     [Test]
@@ -51,7 +51,7 @@ public class LevelDeletionTests : GameServerTest
         {
             Level = new SerializedPhotoLevel
             {
-                LevelId = level.LevelId,
+                LevelId = level!.LevelId,
                 Title = level.Title,
                 Type = level.SlotType.ToGameType(),
             },
@@ -60,7 +60,7 @@ public class LevelDeletionTests : GameServerTest
             LargeHash = TEST_ASSET_HASH,
             PlanHash = TEST_ASSET_HASH,
             Timestamp = DateTimeOffset.UtcNow.ToUnixTimeSeconds(),
-            AuthorName = author.Username,
+            AuthorName = author!.Username,
             PhotoSubjects =
             [
                 new SerializedPhotoSubject

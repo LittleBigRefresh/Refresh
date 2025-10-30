@@ -1,5 +1,6 @@
 using Bunkum.Core;
 using Bunkum.Core.Endpoints;
+using Bunkum.Core.Endpoints.Debugging;
 using Bunkum.Core.Responses;
 using Bunkum.Listener.Protocol;
 using Bunkum.Protocols.Http;
@@ -103,6 +104,7 @@ public class MetadataEndpoints : EndpointGroup
         });
 
     [GameEndpoint("t_conf")]
+    [GameEndpoint("telemetry.cfg")]
     [MinimumRole(GameUserRole.Restricted)]
     [NullStatusCode(Gone)]
     public string? TelemetryConfig(RequestContext context) 
@@ -209,6 +211,16 @@ public class MetadataEndpoints : EndpointGroup
     }
 
     [GameEndpoint("tags")]
+    [GameEndpoint("tags/popular")]
     [MinimumRole(GameUserRole.Restricted)]
     public string Tags(RequestContext context) => TagExtensions.AllTags;
+
+    // Stub this for now. Nothing will happen if this is unimplemented, and we likely won't use any data sent here for now.
+    [GameEndpoint("rankData", ContentType.Plaintext, HttpMethods.Post)]
+    [RequireEmailVerified]
+    [DebugRequestBody]
+    public Response SubmitRankData(RequestContext context, GameUser user, string body)
+    {
+        return NotImplemented;
+    }
 }
