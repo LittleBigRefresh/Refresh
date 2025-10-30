@@ -177,7 +177,7 @@ public class UserEndpoints : EndpointGroup
 
         if (pinProgresses.Count > 0)
         {
-            dataContext.Database.UpdateUserPinProgress(pinProgresses, user, dataContext.Game == TokenGame.Website, dataContext.Platform);
+            dataContext.Database.UpdateUserPinProgress(pinProgresses, user, dataContext.Game == TokenGame.BetaBuild, dataContext.Platform);
         }
 
         // Users can only have 3 pins set on their profile
