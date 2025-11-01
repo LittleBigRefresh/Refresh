@@ -269,7 +269,7 @@ public partial class GameDatabaseContext // Levels
             this.GameReviews.RemoveRange(r => r.Level == level);
             this.LevelPlaylistRelations.RemoveRange(r => r.Level == level);
             
-            IEnumerable<GameChallenge> challenges = this.GameChallenges.Where(c => c.Level == level);
+            IEnumerable<GameChallenge> challenges = this.GameChallenges.Where(c => c.Level == level).ToArray();
 
             foreach (GameChallenge challenge in challenges)
             {
