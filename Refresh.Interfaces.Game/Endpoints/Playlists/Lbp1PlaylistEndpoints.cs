@@ -1,5 +1,6 @@
 using Bunkum.Core;
 using Bunkum.Core.Endpoints;
+using Bunkum.Core.RateLimit;
 using Bunkum.Core.Responses;
 using Bunkum.Listener.Protocol;
 using Bunkum.Protocols.Http;
@@ -11,6 +12,7 @@ using Refresh.Database;
 using Refresh.Database.Models.Levels;
 using Refresh.Database.Models.Playlists;
 using Refresh.Database.Models.Users;
+using Refresh.Interfaces.Game.Constants.Playlists;
 using Refresh.Interfaces.Game.Types.Levels;
 using Refresh.Interfaces.Game.Types.Lists;
 using Refresh.Interfaces.Game.Types.Playlists;
@@ -19,9 +21,48 @@ namespace Refresh.Interfaces.Game.Endpoints.Playlists;
 
 public class Lbp1PlaylistEndpoints : EndpointGroup
 {
+    private const int UploadTimeoutDuration = PlaylistEndpointLimits.UploadTimeoutDuration;
+    private const int MaxCreateAmount = PlaylistEndpointLimits.MaxCreateAmount;
+    private const int MaxUpdateAmount = PlaylistEndpointLimits.MaxUpdateAmount;
+    private const int UploadBlockDuration = PlaylistEndpointLimits.UploadBlockDuration;
+    private const string CreateBucket = PlaylistEndpointLimits.CreateBucket;
+    private const string UpdateBucket = PlaylistEndpointLimits.UpdateBucket;
+
+    /// <summary>
+    /// Returns a blank hash (0) if the given reference is a GUID which doesn't reference a texture, 
+    /// or a hash referencing an asset which doesn't exist on the server. 
+    /// Returns the passed icon reference if nothing is wrong with it.
+    /// Don't reject requests with invalid icons, as users normally can't control what icon the game will
+    /// include in creation requests, and root playlist creation requests will be spammed + softlock the game
+    /// until the server returns a successful response.
+    /// </summary>
+    private string ValidateIconHash(string iconHash, DataContext dataContext)
+    {
+        if (!string.IsNullOrWhiteSpace(iconHash) && iconHash != "0")
+        {
+            if (iconHash.StartsWith('g'))
+            {
+                //Parse out the GUID
+                long guid = long.Parse(iconHash.AsSpan()[1..]);
+                
+                if (!dataContext.GuidChecker.IsTextureGuid(dataContext.Game, guid))
+                {
+                    return "0";
+                }
+            }
+            else if (!dataContext.DataStore.ExistsInStore(iconHash))
+            {
+                return "0";
+            }
+        }
+
+        return iconHash;
+    }
+
     // Creates a playlist, with an optional parent ID
     [GameEndpoint("createPlaylist", HttpMethods.Post, ContentType.Xml)]
     [RequireEmailVerified]
+    [RateLimitSettings(UploadTimeoutDuration, MaxCreateAmount, UploadBlockDuration, CreateBucket)]
     public Response CreatePlaylist(RequestContext context, DataContext dataContext, GameServerConfig config, SerializedLbp1Playlist body)
     {
         GameUser user = dataContext.User!;
@@ -56,6 +97,9 @@ public class Lbp1PlaylistEndpoints : EndpointGroup
 
         if (body.Description.Length > UgcLimits.DescriptionLimit)
             body.Description = body.Description[..UgcLimits.DescriptionLimit];
+
+        // Validate icon
+        body.Icon = this.ValidateIconHash(body.Icon, dataContext);
 
         // Create the playlist, marking it as the root playlist if the user does not have one set already
         GamePlaylist playlist = dataContext.Database.CreatePlaylist(user, body, rootPlaylist == null);
@@ -150,12 +194,13 @@ public class Lbp1PlaylistEndpoints : EndpointGroup
 
     [GameEndpoint("setPlaylistMetaData/{id}", HttpMethods.Post, ContentType.Xml)]
     [RequireEmailVerified]
-    public Response UpdatePlaylistMetadata(RequestContext context, GameServerConfig config, GameDatabaseContext database, GameUser user, int id, SerializedLbp1Playlist body)
+    [RateLimitSettings(UploadTimeoutDuration, MaxUpdateAmount, UploadBlockDuration, UpdateBucket)]
+    public Response UpdatePlaylistMetadata(RequestContext context, GameServerConfig config, DataContext dataContext, GameUser user, int id, SerializedLbp1Playlist body)
     {
         if (user.IsWriteBlocked(config))
             return Unauthorized;
         
-        GamePlaylist? playlist = database.GetPlaylistById(id);
+        GamePlaylist? playlist = dataContext.Database.GetPlaylistById(id);
         if (playlist == null)
             return NotFound;
 
@@ -170,7 +215,10 @@ public class Lbp1PlaylistEndpoints : EndpointGroup
         if (body.Description.Length > UgcLimits.DescriptionLimit)
             body.Description = body.Description[..UgcLimits.DescriptionLimit];
         
-        database.UpdatePlaylist(playlist, body);
+        // Validate icon
+        body.Icon = this.ValidateIconHash(body.Icon, dataContext);
+        
+        dataContext.Database.UpdatePlaylist(playlist, body);
         return OK;
     }
 
