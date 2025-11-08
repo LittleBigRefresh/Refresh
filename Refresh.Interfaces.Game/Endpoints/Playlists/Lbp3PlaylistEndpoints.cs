@@ -1,5 +1,6 @@
 using Bunkum.Core;
 using Bunkum.Core.Endpoints;
+using Bunkum.Core.RateLimit;
 using Bunkum.Core.Responses;
 using Bunkum.Listener.Protocol;
 using Bunkum.Protocols.Http;
@@ -11,6 +12,7 @@ using Refresh.Database;
 using Refresh.Database.Models.Levels;
 using Refresh.Database.Models.Playlists;
 using Refresh.Database.Models.Users;
+using Refresh.Interfaces.Game.Constants.Playlists;
 using Refresh.Interfaces.Game.Types.Levels;
 using Refresh.Interfaces.Game.Types.Lists;
 using Refresh.Interfaces.Game.Types.Playlists;
@@ -19,8 +21,16 @@ namespace Refresh.Interfaces.Game.Endpoints.Playlists;
 
 public class Lbp3PlaylistEndpoints : EndpointGroup 
 {
+    private const int UploadTimeoutDuration = PlaylistEndpointLimits.UploadTimeoutDuration;
+    private const int MaxCreateAmount = PlaylistEndpointLimits.MaxCreateAmount;
+    private const int MaxUpdateAmount = PlaylistEndpointLimits.MaxUpdateAmount;
+    private const int UploadBlockDuration = PlaylistEndpointLimits.UploadBlockDuration;
+    private const string CreateBucket = PlaylistEndpointLimits.CreateBucket;
+    private const string UpdateBucket = PlaylistEndpointLimits.UpdateBucket;
+
     [GameEndpoint("playlists", HttpMethods.Post, ContentType.Xml)]
     [RequireEmailVerified]
+    [RateLimitSettings(UploadTimeoutDuration, MaxCreateAmount, UploadBlockDuration, CreateBucket)]
     public Response CreatePlaylist(RequestContext context, GameServerConfig config, DataContext dataContext, GameUser user, SerializedLbp3Playlist body)
     {
         if (user.IsWriteBlocked(config))
@@ -48,6 +58,7 @@ public class Lbp3PlaylistEndpoints : EndpointGroup
 
     [GameEndpoint("playlists/{playlistId}", HttpMethods.Post, ContentType.Xml)]
     [RequireEmailVerified]
+    [RateLimitSettings(UploadTimeoutDuration, MaxUpdateAmount, UploadBlockDuration, UpdateBucket)]
     public Response UpdatePlaylist(RequestContext context, GameServerConfig config, DataContext dataContext, GameUser user, SerializedLbp3Playlist body, int playlistId)
     {
         if (user.IsWriteBlocked(config))

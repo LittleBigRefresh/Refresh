@@ -1,5 +1,6 @@
 using Bunkum.Core;
 using Bunkum.Core.Endpoints;
+using Bunkum.Core.RateLimit;
 using Bunkum.Core.Responses;
 using Bunkum.Listener.Protocol;
 using Bunkum.Protocols.Http;
@@ -11,6 +12,7 @@ using Refresh.Database;
 using Refresh.Database.Models.Levels;
 using Refresh.Database.Models.Playlists;
 using Refresh.Database.Models.Users;
+using Refresh.Interfaces.Game.Constants.Playlists;
 using Refresh.Interfaces.Game.Types.Levels;
 using Refresh.Interfaces.Game.Types.Lists;
 using Refresh.Interfaces.Game.Types.Playlists;
@@ -19,9 +21,17 @@ namespace Refresh.Interfaces.Game.Endpoints.Playlists;
 
 public class Lbp1PlaylistEndpoints : EndpointGroup
 {
+    private const int UploadTimeoutDuration = PlaylistEndpointLimits.UploadTimeoutDuration;
+    private const int MaxCreateAmount = PlaylistEndpointLimits.MaxCreateAmount;
+    private const int MaxUpdateAmount = PlaylistEndpointLimits.MaxUpdateAmount;
+    private const int UploadBlockDuration = PlaylistEndpointLimits.UploadBlockDuration;
+    private const string CreateBucket = PlaylistEndpointLimits.CreateBucket;
+    private const string UpdateBucket = PlaylistEndpointLimits.UpdateBucket;
+
     // Creates a playlist, with an optional parent ID
     [GameEndpoint("createPlaylist", HttpMethods.Post, ContentType.Xml)]
     [RequireEmailVerified]
+    [RateLimitSettings(UploadTimeoutDuration, MaxCreateAmount, UploadBlockDuration, CreateBucket)]
     public Response CreatePlaylist(RequestContext context, DataContext dataContext, GameServerConfig config, SerializedLbp1Playlist body)
     {
         GameUser user = dataContext.User!;
@@ -150,6 +160,7 @@ public class Lbp1PlaylistEndpoints : EndpointGroup
 
     [GameEndpoint("setPlaylistMetaData/{id}", HttpMethods.Post, ContentType.Xml)]
     [RequireEmailVerified]
+    [RateLimitSettings(UploadTimeoutDuration, MaxUpdateAmount, UploadBlockDuration, UpdateBucket)]
     public Response UpdatePlaylistMetadata(RequestContext context, GameServerConfig config, GameDatabaseContext database, GameUser user, int id, SerializedLbp1Playlist body)
     {
         if (user.IsWriteBlocked(config))
