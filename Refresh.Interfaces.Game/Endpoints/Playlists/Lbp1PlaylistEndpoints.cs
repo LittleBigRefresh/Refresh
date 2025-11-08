@@ -28,6 +28,37 @@ public class Lbp1PlaylistEndpoints : EndpointGroup
     private const string CreateBucket = PlaylistEndpointLimits.CreateBucket;
     private const string UpdateBucket = PlaylistEndpointLimits.UpdateBucket;
 
+    /// <summary>
+    /// Returns a blank hash (0) if the given reference is a GUID which doesn't reference a texture, 
+    /// or a hash referencing an asset which doesn't exist on the server. 
+    /// Returns the passed icon reference if nothing is wrong with it.
+    /// Don't reject requests with invalid icons, as users normally can't control what icon the game will
+    /// include in creation requests, and root playlist creation requests will be spammed + softlock the game
+    /// until the server returns a successful response.
+    /// </summary>
+    private string ValidateIconHash(string iconHash, DataContext dataContext)
+    {
+        if (!string.IsNullOrWhiteSpace(iconHash) && iconHash != "0")
+        {
+            if (iconHash.StartsWith('g'))
+            {
+                //Parse out the GUID
+                long guid = long.Parse(iconHash.AsSpan()[1..]);
+                
+                if (!dataContext.GuidChecker.IsTextureGuid(dataContext.Game, guid))
+                {
+                    return "0";
+                }
+            }
+            else if (!dataContext.DataStore.ExistsInStore(iconHash))
+            {
+                return "0";
+            }
+        }
+
+        return iconHash;
+    }
+
     // Creates a playlist, with an optional parent ID
     [GameEndpoint("createPlaylist", HttpMethods.Post, ContentType.Xml)]
     [RequireEmailVerified]
@@ -66,6 +97,9 @@ public class Lbp1PlaylistEndpoints : EndpointGroup
 
         if (body.Description.Length > UgcLimits.DescriptionLimit)
             body.Description = body.Description[..UgcLimits.DescriptionLimit];
+
+        // Validate icon
+        body.Icon = this.ValidateIconHash(body.Icon, dataContext);
 
         // Create the playlist, marking it as the root playlist if the user does not have one set already
         GamePlaylist playlist = dataContext.Database.CreatePlaylist(user, body, rootPlaylist == null);
@@ -161,12 +195,12 @@ public class Lbp1PlaylistEndpoints : EndpointGroup
     [GameEndpoint("setPlaylistMetaData/{id}", HttpMethods.Post, ContentType.Xml)]
     [RequireEmailVerified]
     [RateLimitSettings(UploadTimeoutDuration, MaxUpdateAmount, UploadBlockDuration, UpdateBucket)]
-    public Response UpdatePlaylistMetadata(RequestContext context, GameServerConfig config, GameDatabaseContext database, GameUser user, int id, SerializedLbp1Playlist body)
+    public Response UpdatePlaylistMetadata(RequestContext context, GameServerConfig config, DataContext dataContext, GameUser user, int id, SerializedLbp1Playlist body)
     {
         if (user.IsWriteBlocked(config))
             return Unauthorized;
         
-        GamePlaylist? playlist = database.GetPlaylistById(id);
+        GamePlaylist? playlist = dataContext.Database.GetPlaylistById(id);
         if (playlist == null)
             return NotFound;
 
@@ -181,7 +215,10 @@ public class Lbp1PlaylistEndpoints : EndpointGroup
         if (body.Description.Length > UgcLimits.DescriptionLimit)
             body.Description = body.Description[..UgcLimits.DescriptionLimit];
         
-        database.UpdatePlaylist(playlist, body);
+        // Validate icon
+        body.Icon = this.ValidateIconHash(body.Icon, dataContext);
+        
+        dataContext.Database.UpdatePlaylist(playlist, body);
         return OK;
     }
 
