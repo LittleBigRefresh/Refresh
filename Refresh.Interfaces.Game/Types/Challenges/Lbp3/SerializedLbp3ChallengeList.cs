@@ -55,9 +55,8 @@ public class SerializedLbp3ChallengeList
     /// but every challenge has a duration/period of 3 days.
     /// LBP3 doesn't care if any timestamps are in the past, and simply wraps the challenge periods in that case.
     /// </returns>
-    public static SerializedLbp3ChallengeList FromDefault()
-    {
-        return new()
+    public static SerializedLbp3ChallengeList Default
+        => new()
         {
             TotalChallenges = 14,
             EndTime = StartTimestamp + 14 * Duration,
@@ -75,7 +74,7 @@ public class SerializedLbp3ChallengeList
                     LamsDescriptionId = "CHALLENGE_NEWTONBOUNCE_DESC",
                     LamsTitleId = "CHALLENGE_NEWTONBOUNCE_NAME",
                     ScoreMedalPinProgressType = (long)ServerPins.OverLineLbp3ChallengeMedal,
-                    ScoreRankingPinProgressType = (long)ServerPins.OverLineLbp3ChallengeMedal,
+                    ScoreRankingPinProgressType = (long)ServerPins.OverLineLbp3ChallengeRanking,
                     ContentName = "TG_LittleBigPlanet3",
                     PlanetUser = "qd3c781a5a6-GBen",
                     PlanetId = 1085260,
@@ -89,7 +88,7 @@ public class SerializedLbp3ChallengeList
                     LamsDescriptionId = "CHALLENGE_SCREENCHASE_DESC",
                     LamsTitleId = "CHALLENGE_SCREENCHASE_NAME",
                     ScoreMedalPinProgressType = (long)ServerPins.PixelPaceLbp3ChallengeMedal,
-                    ScoreRankingPinProgressType = (long)ServerPins.PixelPaceLbp3ChallengeMedal,
+                    ScoreRankingPinProgressType = (long)ServerPins.PixelPaceLbp3ChallengeRanking,
                     ContentName = "TG_LittleBigPlanet2",
                     PlanetUser = "qd3c781a5a6-GBen",
                     PlanetId = 1102387,
@@ -132,7 +131,7 @@ public class SerializedLbp3ChallengeList
                     LamsDescriptionId = "CHALLENGE_ISLANDRACE_DESC",
                     LamsTitleId = "CHALLENGE_ISLANDRACE_NAME",
                     ScoreMedalPinProgressType = (long)ServerPins.ToggleIslandLbp3ChallengeMedal,
-                    ScoreRankingPinProgressType = (long)ServerPins.ToggleIslandLbp3ChallengeMedal,
+                    ScoreRankingPinProgressType = (long)ServerPins.ToggleIslandLbp3ChallengeRanking,
                     ContentName = "TG_LittleBigPlanet",
                     PlanetUser = "qd3c781a5a6-GBen",
                     PlanetId = 1102858,
@@ -268,5 +267,5 @@ public class SerializedLbp3ChallengeList
                 },
             ],
         };
-    }
+    
 }

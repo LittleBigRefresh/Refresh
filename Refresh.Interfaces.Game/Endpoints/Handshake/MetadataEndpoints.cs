@@ -228,7 +228,7 @@ public class MetadataEndpoints : EndpointGroup
             namespaces.Add("", "");
 
             XmlSerializer serializer = new(typeof(SerializedLbp3ChallengeList));
-            serializer.Serialize(bunkumXmlTextWriter, SerializedLbp3ChallengeList.FromDefault(), namespaces);
+            serializer.Serialize(bunkumXmlTextWriter, SerializedLbp3ChallengeList.Default, namespaces);
             
             ms.Seek(0, SeekOrigin.Begin);
             using StreamReader reader = new(ms);
