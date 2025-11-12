@@ -121,7 +121,7 @@ public class GameUserResponse : IDataConvertableFrom<GameUserResponse, GameUser>
         }
         if (game is not TokenGame.LittleBigPlanet1 or TokenGame.LittleBigPlanetPSP)
         {
-            response.ProfilePins = dataContext.Database.GetProfilePinsByUser(old, dataContext.Game, 0, 3)
+            response.ProfilePins = dataContext.Database.GetProfilePinsByUser(old, dataContext.Game, dataContext.Platform, 0, 3)
                 .Items.Select(p => p.PinId).ToList();
         }
 
