@@ -37,13 +37,20 @@ public class SerializedLbp3Challenge
     public string LamsTitleId { get; set; }
     
     /// <summary>
-    /// The ID of the pin you receive for completing this challenge
+    /// The progress type of the pin indicating whether the user's highscore is bronze, silver or gold (progress value is 1-3 accordingly)
     /// </summary>
     [XmlAttribute("Challenge_PinId")]
-    public ulong PinId { get; set; }
+    public ulong ScoreMedalPinProgressType { get; set; }
     
+    /// <summary>
+    /// The progress type of the Pin indicating whether the user is in the top 50%, 25% or 10% of the leaderboard
+    /// </summary>
+    // TODO: As soon as score submission for adventures/LBP3 challenges is implemented,
+    // find out whether these need to be awarded by the server, and also find out
+    // whether these pins have a descending progress and special case them
+    // in the progress update method if they do.
     [XmlAttribute("Challenge_RankPin")]
-    public ulong RankPin { get; set; }
+    public ulong ScoreRankingPinProgressType { get; set; }
     
     /// <summary>
     /// A PSN DLC id for the DLC associated with this challenge
