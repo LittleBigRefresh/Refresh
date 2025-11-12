@@ -18,32 +18,32 @@ public enum ServerPins : long
     QueueLevelOnWebsite = 2833810997,
 
     // LBP3 challenges
-    NewtonLbp3ChallengeMedal = 3003874881,
-    NewtonLbp3ChallengeRanking = 2922567456,
+    OverLineLbp3ChallengeMedal = 3003874881,
+    OverLineLbp3ChallengeRanking = 2922567456,
 
-    AutoscrollLbp3ChallengeMedal = 282407472,
-    AutoscrollLbp3ChallengeRanking = 3340696069,
+    PixelPaceLbp3ChallengeMedal = 282407472,
+    PixelPaceLbp3ChallengeRanking = 3340696069,
 
-    RabbitBoxerLbp3ChallengeMedal = 2529088759,
-    RabbitBoxerLbp3ChallengeRanking = 958144818,
+    RabbitBoxingLbp3ChallengeMedal = 2529088759,
+    RabbitBoxingLbp3ChallengeRanking = 958144818,
 
     FloatyFluidLbp3ChallengeMedal = 183892581,
     FloatyFluidLbp3ChallengeRanking = 3442917932,
 
-    IslandLbp3ChallengeMedal = 315245769,
-    IslandLbp3ChallengeRanking = 443310584,
+    ToggleIslandLbp3ChallengeMedal = 315245769,
+    ToggleIslandLbp3ChallengeRanking = 443310584,
 
-    DodgeballLbp3ChallengeMedal = 144212050,
-    DodgeballLbp3ChallengeRanking = 2123417147,
+    SpaceDodgeballLbp3ChallengeMedal = 144212050,
+    SpaceDodgeballLbp3ChallengeRanking = 2123417147,
 
-    FirePitsLbp3ChallengeMedal = 249569175,
-    FirePitsLbp3ChallengeRanking = 1943114258,
+    InvisibleMazeLbp3ChallengeMedal = 249569175,
+    InvisibleMazeLbp3ChallengeRanking = 1943114258,
 
     HoverboardLbp3ChallengeMedal = 3478661003,
     HoverboardLbp3ChallengeRanking = 592022798,
 
-    DaVinkiLbp3ChallengeMedal = 216730878,
-    DaVinkiLbp3ChallengeRanking = 545532447,
+    WhoopTowerLbp3ChallengeMedal = 216730878,
+    WhoopTowerLbp3ChallengeRanking = 545532447,
 
     SwoopPanelsLbp3ChallengeMedal = 2054302637,
     SwoopPanelsLbp3ChallengeRanking = 3288689476,
@@ -54,8 +54,8 @@ public enum ServerPins : long
     TieSkipLbp3ChallengeMedal = 3953447125,
     TieSkipLbp3ChallengeRanking = 2556445436,
 
-    JonklerLbp3ChallengeMedal = 1093784294,
-    JonklerLbp3ChallengeRanking = 1757295127,
+    JokerLbp3ChallengeMedal = 1093784294,
+    JokerLbp3ChallengeRanking = 1757295127,
 
     CherryShooterLbp3ChallengeMedal = 1568570416,
     CherryShooterLbp3ChallengeRanking = 3721717765,

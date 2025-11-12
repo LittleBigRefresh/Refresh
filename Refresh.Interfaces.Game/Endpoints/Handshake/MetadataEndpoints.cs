@@ -218,7 +218,7 @@ public class MetadataEndpoints : EndpointGroup
         {
             // Only log this warning once
             if (!created) context.Logger.LogWarning(BunkumCategory.Request, 
-                "ChallengeConfig.xml file is missing! We've defaulted to one which is loosely based off of the original server's config, "+
+                "ChallengeConfig.xml file is missing! We've defaulted to one which is loosely based off of the official server's config, "+
                 "but it might be relevant to you if you are an advanced user.");
             
             using MemoryStream ms = new();

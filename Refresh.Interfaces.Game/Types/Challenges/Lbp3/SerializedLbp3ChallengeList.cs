@@ -46,12 +46,13 @@ public class SerializedLbp3ChallengeList
     public List<SerializedLbp3Challenge> Challenges { get; set; }
 
     [XmlIgnore] private const ulong FromSecondsFactor = 1_000_000; // Factor to multiply with to convert a unix timestamp from seconds to microseconds
-    [XmlIgnore] private const ulong StartTimestamp = 1762872698 * FromSecondsFactor;
+    [XmlIgnore] private const ulong StartTimestamp = 1762872698 * FromSecondsFactor; // 11/11/2025 3:51:38 PM
     [XmlIgnore] private const ulong Duration = 259200 * FromSecondsFactor; // 3 days
 
     /// <returns>
-    /// A config which is loosely based off of the official server's config, but the timestamps
-    /// start from 11/11/2025 3:51:38 PM and every challenge has a duration/period of 3 days.
+    /// A config which is loosely based off of the official server's config (more accurately, 
+    /// https://github.com/LBPUnion/ProjectLighthouse/blob/e593d5c9570bc5b65ccf49ce9158d95a13fb70f4/ProjectLighthouse/Types/Serialization/GameChallenge.cs/#L72), 
+    /// but every challenge has a duration/period of 3 days.
     /// LBP3 doesn't care if any timestamps are in the past, and simply wraps the challenge periods in that case.
     /// </returns>
     public static SerializedLbp3ChallengeList FromDefault()
@@ -73,8 +74,8 @@ public class SerializedLbp3ChallengeList
                     EndTime = StartTimestamp + 1 * Duration,
                     LamsDescriptionId = "CHALLENGE_NEWTONBOUNCE_DESC",
                     LamsTitleId = "CHALLENGE_NEWTONBOUNCE_NAME",
-                    ScoreMedalPinProgressType = (long)ServerPins.NewtonLbp3ChallengeMedal,
-                    ScoreRankingPinProgressType = (long)ServerPins.NewtonLbp3ChallengeRanking,
+                    ScoreMedalPinProgressType = (long)ServerPins.OverLineLbp3ChallengeMedal,
+                    ScoreRankingPinProgressType = (long)ServerPins.OverLineLbp3ChallengeMedal,
                     ContentName = "TG_LittleBigPlanet3",
                     PlanetUser = "qd3c781a5a6-GBen",
                     PlanetId = 1085260,
@@ -87,8 +88,8 @@ public class SerializedLbp3ChallengeList
                     EndTime = StartTimestamp + 2 * Duration,
                     LamsDescriptionId = "CHALLENGE_SCREENCHASE_DESC",
                     LamsTitleId = "CHALLENGE_SCREENCHASE_NAME",
-                    ScoreMedalPinProgressType = (long)ServerPins.AutoscrollLbp3ChallengeMedal,
-                    ScoreRankingPinProgressType = (long)ServerPins.AutoscrollLbp3ChallengeRanking,
+                    ScoreMedalPinProgressType = (long)ServerPins.PixelPaceLbp3ChallengeMedal,
+                    ScoreRankingPinProgressType = (long)ServerPins.PixelPaceLbp3ChallengeMedal,
                     ContentName = "TG_LittleBigPlanet2",
                     PlanetUser = "qd3c781a5a6-GBen",
                     PlanetId = 1102387,
@@ -101,8 +102,8 @@ public class SerializedLbp3ChallengeList
                     EndTime = StartTimestamp + 3 * Duration,
                     LamsDescriptionId = "CHALLENGE_RABBITBOXING_DESC",
                     LamsTitleId = "CHALLENGE_RABBITBOXING_NAME",
-                    ScoreMedalPinProgressType = (long)ServerPins.RabbitBoxerLbp3ChallengeMedal,
-                    ScoreRankingPinProgressType = (long)ServerPins.RabbitBoxerLbp3ChallengeRanking,
+                    ScoreMedalPinProgressType = (long)ServerPins.RabbitBoxingLbp3ChallengeMedal,
+                    ScoreRankingPinProgressType = (long)ServerPins.RabbitBoxingLbp3ChallengeRanking,
                     ContentName = "TG_LittleBigPlanet2",
                     PlanetUser = "qd3c781a5a6-GBen",
                     PlanetId = 1085264,
@@ -130,8 +131,8 @@ public class SerializedLbp3ChallengeList
                     EndTime = StartTimestamp + 5 * Duration,
                     LamsDescriptionId = "CHALLENGE_ISLANDRACE_DESC",
                     LamsTitleId = "CHALLENGE_ISLANDRACE_NAME",
-                    ScoreMedalPinProgressType = (long)ServerPins.IslandLbp3ChallengeMedal,
-                    ScoreRankingPinProgressType = (long)ServerPins.IslandLbp3ChallengeRanking,
+                    ScoreMedalPinProgressType = (long)ServerPins.ToggleIslandLbp3ChallengeMedal,
+                    ScoreRankingPinProgressType = (long)ServerPins.ToggleIslandLbp3ChallengeMedal,
                     ContentName = "TG_LittleBigPlanet",
                     PlanetUser = "qd3c781a5a6-GBen",
                     PlanetId = 1102858,
@@ -144,8 +145,8 @@ public class SerializedLbp3ChallengeList
                     EndTime = StartTimestamp + 6 * Duration,
                     LamsDescriptionId = "CHALLENGE_SPACEDODGING_DESC",
                     LamsTitleId = "CHALLENGE_SPACEDODGING_NAME",
-                    ScoreMedalPinProgressType = (long)ServerPins.DodgeballLbp3ChallengeMedal,
-                    ScoreRankingPinProgressType = (long)ServerPins.DodgeballLbp3ChallengeRanking,
+                    ScoreMedalPinProgressType = (long)ServerPins.SpaceDodgeballLbp3ChallengeMedal,
+                    ScoreRankingPinProgressType = (long)ServerPins.SpaceDodgeballLbp3ChallengeRanking,
                     ContentName = "TG_LittleBigPlanet3",
                     PlanetUser = "qd3c781a5a6-GBen",
                     PlanetId = 1085266,
@@ -158,8 +159,8 @@ public class SerializedLbp3ChallengeList
                     EndTime = StartTimestamp + 7 * Duration,
                     LamsDescriptionId = "CHALLENGE_INVISIBLECIRCUIT_DESC",
                     LamsTitleId = "CHALLENGE_INVISIBLECIRCUIT_NAME",
-                    ScoreMedalPinProgressType = (long)ServerPins.FirePitsLbp3ChallengeMedal,
-                    ScoreRankingPinProgressType = (long)ServerPins.FirePitsLbp3ChallengeRanking,
+                    ScoreMedalPinProgressType = (long)ServerPins.InvisibleMazeLbp3ChallengeMedal,
+                    ScoreRankingPinProgressType = (long)ServerPins.InvisibleMazeLbp3ChallengeRanking,
                     ContentName = "TG_LittleBigPlanet",
                     PlanetUser = "qd3c781a5a6-GBen",
                     PlanetId = 1096814,
@@ -187,8 +188,8 @@ public class SerializedLbp3ChallengeList
                     EndTime = StartTimestamp + 9 * Duration,
                     LamsDescriptionId = "CHALLENGE_TOWERBOOST_DESC",
                     LamsTitleId = "CHALLENGE_TOWERBOOST_NAME",
-                    ScoreMedalPinProgressType = (long)ServerPins.DaVinkiLbp3ChallengeMedal,
-                    ScoreRankingPinProgressType = (long)ServerPins.DaVinkiLbp3ChallengeRanking,
+                    ScoreMedalPinProgressType = (long)ServerPins.WhoopTowerLbp3ChallengeMedal,
+                    ScoreRankingPinProgressType = (long)ServerPins.WhoopTowerLbp3ChallengeRanking,
                     ContentName = "TG_LittleBigPlanet2",
                     PlanetUser = "qd3c781a5a6-GBen",
                     PlanetId = 1092504,
@@ -243,8 +244,8 @@ public class SerializedLbp3ChallengeList
                     EndTime = StartTimestamp + 13 * Duration,
                     LamsDescriptionId = "CHALLENGE_JOKERFUNHOUSE_DESC",
                     LamsTitleId = "CHALLENGE_JOKERFUNHOUSE_NAME",
-                    ScoreMedalPinProgressType = (long)ServerPins.JonklerLbp3ChallengeMedal,
-                    ScoreRankingPinProgressType = (long)ServerPins.JonklerLbp3ChallengeRanking,
+                    ScoreMedalPinProgressType = (long)ServerPins.JokerLbp3ChallengeMedal,
+                    ScoreRankingPinProgressType = (long)ServerPins.JokerLbp3ChallengeRanking,
                     Content = "LBPDLCWBDCLK0001",
                     ContentName = "DCCOMICS_THEME_NAME",
                     PlanetUser = "qd3c781a5a6-GBen",
