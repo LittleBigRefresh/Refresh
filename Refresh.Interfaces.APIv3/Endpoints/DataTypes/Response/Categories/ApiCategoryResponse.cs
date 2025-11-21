@@ -18,7 +18,12 @@ public class ApiCategoryResponse : IApiResponse, IDataConvertableFrom<ApiCategor
     public required bool RequiresUser { get; set; }
     public required bool Hidden { get; set; } = false;
 
+    // Source: https://stackoverflow.com/questions/2254872/using-json-net-converters-to-deserialize-properties/6303853#6303853
+    // This is to fix Newtonsoft not being able to deserialize these attributes in unit tests
+    [JsonProperty(TypeNameHandling = TypeNameHandling.Objects)]
     public IApiResultResponse? PreviewItem { get; set; } = null;
+
+    [JsonProperty( TypeNameHandling = TypeNameHandling.Objects )]
     public IApiResultResponse? PreviewLevel { get; set; } = null; // TODO: Remove and use PreviewItem for levels aswell in APIv4
 
     public static ApiCategoryResponse? FromOld(GameCategory? old, DataContext dataContext)
