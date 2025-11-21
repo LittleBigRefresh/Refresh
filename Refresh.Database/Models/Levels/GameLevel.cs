@@ -1,7 +1,6 @@
 using System.Diagnostics;
 using MongoDB.Bson;
 using Refresh.Database.Models.Authentication;
-using Refresh.Database.Models.Categories;
 using Refresh.Database.Models.Statistics;
 using Refresh.Database.Models.Users;
 
@@ -9,7 +8,7 @@ namespace Refresh.Database.Models.Levels;
 
 [JsonObject(MemberSerialization.OptIn)]
 [Index(nameof(Title), nameof(Description), nameof(StoryId))]
-public partial class GameLevel : ISequentialId, IResultType
+public partial class GameLevel : ISequentialId
 {
     [Key] public int LevelId { get; set; }
     

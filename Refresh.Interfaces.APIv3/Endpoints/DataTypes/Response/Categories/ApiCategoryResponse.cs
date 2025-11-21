@@ -1,8 +1,9 @@
 using Bunkum.Core;
 using Refresh.Core.Types.Categories;
 using Refresh.Core.Types.Data;
-using Refresh.Database.Models.Categories;
 using Refresh.Database.Query;
+using Refresh.Interfaces.APIv3.Endpoints.DataTypes.Response.Levels;
+using Refresh.Interfaces.APIv3.Endpoints.DataTypes.Response.Users;
 
 namespace Refresh.Interfaces.APIv3.Endpoints.DataTypes.Response.Categories;
 
@@ -17,13 +18,13 @@ public class ApiCategoryResponse : IApiResponse, IDataConvertableFrom<ApiCategor
     public required bool RequiresUser { get; set; }
     public required bool Hidden { get; set; } = false;
 
-    public required IResultType? PreviewItem { get; set; }
-    public required IResultType? PreviewLevel { get; set; } // Only here to not break APIv3 clients
+    public IApiResultResponse? PreviewItem { get; set; } = null;
+    public IApiResultResponse? PreviewLevel { get; set; } = null; // TODO: Remove and use PreviewItem for levels aswell in APIv4
 
     public static ApiCategoryResponse? FromOld(GameCategory? old, DataContext dataContext)
         => FromOld(old, null, dataContext);
 
-    public static ApiCategoryResponse? FromOld(GameCategory? old, IResultType? preview, DataContext dataContext)
+    public static ApiCategoryResponse? FromOld(GameCategory? old, IApiResultResponse? preview, DataContext dataContext)
     {
         if (old == null) return null;
 
@@ -36,8 +37,9 @@ public class ApiCategoryResponse : IApiResponse, IDataConvertableFrom<ApiCategor
             ApiRoute = old.ApiRoute,
             RequiresUser = old.RequiresUser,
             Hidden = old.Hidden, 
-            PreviewItem = preview,
-            PreviewLevel = preview,
+            // Save on response size
+            PreviewItem = old.PrimaryResultType != ResultType.Level ? preview : null,
+            PreviewLevel = old.PrimaryResultType == ResultType.Level ? preview : null,
         };
     }
 
@@ -53,9 +55,8 @@ public class ApiCategoryResponse : IApiResponse, IDataConvertableFrom<ApiCategor
             DatabaseResultList? list = category.Fetch(context, 0, 1, dataContext, LevelFilterSettings.FromApiRequest(context), dataContext.User);
 
             // Take a preview, preferring levels over users over playlists
-            IResultType? preview = list?.Levels?.Items.FirstOrDefault();
-            preview ??= list?.Users?.Items.FirstOrDefault();
-            preview ??= list?.Playlists?.Items.FirstOrDefault();
+            IApiResultResponse? preview = ApiGameLevelResponse.FromOld(list?.Levels?.Items.FirstOrDefault(), dataContext);
+            preview ??= ApiGameUserResponse.FromOld(list?.Users?.Items.FirstOrDefault(), dataContext);
 
             return FromOld(category, preview, dataContext);
         }).ToList()!;

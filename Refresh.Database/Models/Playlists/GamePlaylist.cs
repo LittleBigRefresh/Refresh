@@ -1,5 +1,4 @@
 using MongoDB.Bson;
-using Refresh.Database.Models.Categories;
 using Refresh.Database.Models.Statistics;
 using Refresh.Database.Models.Users;
 
@@ -10,7 +9,7 @@ namespace Refresh.Database.Models.Playlists;
 /// <summary>
 /// A user-curated list of levels.
 /// </summary>
-public partial class GamePlaylist : ISequentialId, IResultType
+public partial class GamePlaylist : ISequentialId
 {
     /// <summary>
     /// The unique ID of this playlist, must be > 0
