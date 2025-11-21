@@ -1,13 +1,11 @@
 using Bunkum.Core;
 using Refresh.Core.Types.Data;
-using Refresh.Database;
-using Refresh.Database.Models.Levels;
 using Refresh.Database.Models.Users;
 using Refresh.Database.Query;
 
 namespace Refresh.Core.Types.Categories.Levels;
 
-public class MostHeartedLevelsCategory : GameLevelCategory
+public class MostHeartedLevelsCategory : GameCategory
 {
     internal MostHeartedLevelsCategory() : base("mostHearted", "mostHearted", false)
     {
@@ -15,10 +13,11 @@ public class MostHeartedLevelsCategory : GameLevelCategory
         this.Description = "The all-time most hearted levels!";
         this.FontAwesomeIcon = "heart";
         this.IconHash = "g820607";
+        this.PrimaryResultType = ResultType.Level;
     }
 
-    public override DatabaseList<GameLevel>? Fetch(RequestContext context, int skip, int count,
+    public override DatabaseResultList? Fetch(RequestContext context, int skip, int count,
         DataContext dataContext,
         LevelFilterSettings levelFilterSettings, GameUser? _) 
-        => dataContext.Database.GetMostFavouritedLevels(count, skip, dataContext.User, levelFilterSettings);
+        => new(dataContext.Database.GetMostFavouritedLevels(count, skip, dataContext.User, levelFilterSettings));
 }

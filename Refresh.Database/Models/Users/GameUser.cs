@@ -1,13 +1,13 @@
 using MongoDB.Bson;
 using Bunkum.Core.RateLimit;
-using Refresh.Database.Models.Playlists;
 using Refresh.Database.Models.Statistics;
+using Refresh.Database.Models.Categories;
 
 namespace Refresh.Database.Models.Users;
 
 [JsonObject(MemberSerialization.OptIn)]
 [Index(nameof(Username), nameof(UsernameLower), nameof(EmailAddress), nameof(PasswordBcrypt))]
-public partial class GameUser : IRateLimitUser
+public partial class GameUser : IRateLimitUser, IResultType
 {
     [Key] public ObjectId UserId { get; set; } = ObjectId.GenerateNewId();
     public string Username { get; set; } = string.Empty;

@@ -1,11 +1,11 @@
 using Bunkum.Core;
 using Refresh.Core.Types.Data;
-using Refresh.Database;
 using Refresh.Database.Models.Users;
+using Refresh.Database.Query;
 
 namespace Refresh.Core.Types.Categories.Users;
 
-public class MostHeartedUsersCategory : GameUserCategory
+public class MostHeartedUsersCategory : GameCategory
 {
     public MostHeartedUsersCategory() : base("mostHearted", [], false)
     {
@@ -13,10 +13,12 @@ public class MostHeartedUsersCategory : GameUserCategory
         this.Description = "Our most hearted users!";
         this.FontAwesomeIcon = "heart";
         this.IconHash = "g820627";
+        this.PrimaryResultType = ResultType.User;
     }
 
-    public override DatabaseList<GameUser>? Fetch(RequestContext context, int skip, int count, DataContext dataContext, GameUser? _)
+    public override DatabaseResultList? Fetch(RequestContext context, int skip, int count, DataContext dataContext,
+        LevelFilterSettings levelFilterSettings, GameUser? _)
     {
-        return dataContext.Database.GetMostFavouritedUsers(skip, count);
+        return new(dataContext.Database.GetMostFavouritedUsers(skip, count));
     }
 }

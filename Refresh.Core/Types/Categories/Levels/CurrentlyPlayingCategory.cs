@@ -8,7 +8,7 @@ using Refresh.Database.Query;
 
 namespace Refresh.Core.Types.Categories.Levels;
 
-public class CurrentlyPlayingCategory : GameLevelCategory
+public class CurrentlyPlayingCategory : GameCategory
 {
     internal CurrentlyPlayingCategory() : base("currentlyPlaying", "busiest", false)
     {
@@ -16,9 +16,10 @@ public class CurrentlyPlayingCategory : GameLevelCategory
         this.Description = "Levels people are playing right now!";
         this.IconHash = "g820602";
         this.FontAwesomeIcon = "users";
+        this.PrimaryResultType = ResultType.Level;
     }
 
-    public override DatabaseList<GameLevel>? Fetch(RequestContext context, int skip, int count,
+    public override DatabaseResultList? Fetch(RequestContext context, int skip, int count,
         DataContext dataContext,
         LevelFilterSettings levelFilterSettings, GameUser? _)
     {
@@ -27,9 +28,9 @@ public class CurrentlyPlayingCategory : GameLevelCategory
             .GroupBy(r => dataContext.Database.GetLevelById(r.LevelId))
             .OrderBy(r => r.Sum(room => room.PlayerIds.Count));
 
-        return new DatabaseList<GameLevel>(rooms.Select(r => r.Key)
+        return new(new DatabaseList<GameLevel>(rooms.Select(r => r.Key)
             .Where(l => l != null && l.StoryId == 0)!
             .FilterByLevelFilterSettings(dataContext.User, levelFilterSettings)
-            .FilterByGameVersion(levelFilterSettings.GameVersion), skip, count);
+            .FilterByGameVersion(levelFilterSettings.GameVersion), skip, count));
     }
 }
