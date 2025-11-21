@@ -1,6 +1,5 @@
 using MongoDB.Bson;
 using Bunkum.Core.RateLimit;
-using Refresh.Database.Models.Playlists;
 using Refresh.Database.Models.Statistics;
 
 namespace Refresh.Database.Models.Users;

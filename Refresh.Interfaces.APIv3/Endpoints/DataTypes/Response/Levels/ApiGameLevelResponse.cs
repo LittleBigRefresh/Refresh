@@ -1,8 +1,8 @@
 using System.Diagnostics;
 using Refresh.Core.Types.Data;
 using Refresh.Database.Models.Authentication;
-using Refresh.Database.Models.Comments;
 using Refresh.Database.Models.Levels;
+using Refresh.Interfaces.APIv3.Endpoints.DataTypes.Response.Categories;
 using Refresh.Interfaces.APIv3.Endpoints.DataTypes.Response.Data;
 using Refresh.Interfaces.APIv3.Endpoints.DataTypes.Response.Users;
 using Refresh.Interfaces.APIv3.Extensions;
@@ -10,7 +10,7 @@ using Refresh.Interfaces.APIv3.Extensions;
 namespace Refresh.Interfaces.APIv3.Endpoints.DataTypes.Response.Levels;
 
 [JsonObject(NamingStrategyType = typeof(CamelCaseNamingStrategy))]
-public class ApiGameLevelResponse : IApiResponse, IDataConvertableFrom<ApiGameLevelResponse, GameLevel>
+public class ApiGameLevelResponse : IApiResponse, IDataConvertableFrom<ApiGameLevelResponse, GameLevel>, IApiResultResponse
 {
     public required int LevelId { get; set; }
     public required ApiGameUserResponse? Publisher { get; set; }

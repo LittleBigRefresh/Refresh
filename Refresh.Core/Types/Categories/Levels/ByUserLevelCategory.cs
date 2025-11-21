@@ -1,13 +1,11 @@
 using Bunkum.Core;
 using Refresh.Core.Types.Data;
-using Refresh.Database;
-using Refresh.Database.Models.Levels;
 using Refresh.Database.Models.Users;
 using Refresh.Database.Query;
 
 namespace Refresh.Core.Types.Categories.Levels;
 
-public class ByUserLevelCategory : GameLevelCategory
+public class ByUserLevelCategory : GameCategory
 {
     internal ByUserLevelCategory() : base("byUser", "by", true)
     {
@@ -16,9 +14,10 @@ public class ByUserLevelCategory : GameLevelCategory
         this.Description = "Levels you've shared with the community!";
         this.IconHash = "g820625";
         this.FontAwesomeIcon = "user";
+        this.PrimaryResultType = ResultType.Level;
     }
 
-    public override DatabaseList<GameLevel>? Fetch(RequestContext context, int skip, int count,
+    public override DatabaseResultList? Fetch(RequestContext context, int skip, int count,
         DataContext dataContext,
         LevelFilterSettings levelFilterSettings, GameUser? user)
     {
@@ -28,6 +27,6 @@ public class ByUserLevelCategory : GameLevelCategory
 
         if (user == null) return null;
         
-        return dataContext.Database.GetLevelsByUser(user, count, skip, levelFilterSettings, dataContext.User);
+        return new(dataContext.Database.GetLevelsByUser(user, count, skip, levelFilterSettings, dataContext.User));
     }
 }

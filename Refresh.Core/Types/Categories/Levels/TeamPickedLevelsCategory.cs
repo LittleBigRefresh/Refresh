@@ -1,13 +1,11 @@
 using Bunkum.Core;
 using Refresh.Core.Types.Data;
-using Refresh.Database;
-using Refresh.Database.Models.Levels;
 using Refresh.Database.Models.Users;
 using Refresh.Database.Query;
 
 namespace Refresh.Core.Types.Categories.Levels;
 
-public class TeamPickedLevelsCategory : GameLevelCategory
+public class TeamPickedLevelsCategory : GameCategory
 {
     internal TeamPickedLevelsCategory() : base("teamPicks", "mmpicks", false)
     {
@@ -15,10 +13,11 @@ public class TeamPickedLevelsCategory : GameLevelCategory
         this.Description = "High quality levels, hand-picked by us.";
         this.FontAwesomeIcon = "certificate";
         this.IconHash = "g820626";
+        this.PrimaryResultType = ResultType.Level;
     }
 
-    public override DatabaseList<GameLevel>? Fetch(RequestContext context, int skip, int count,
+    public override DatabaseResultList? Fetch(RequestContext context, int skip, int count,
         DataContext dataContext,
         LevelFilterSettings levelFilterSettings, GameUser? _) 
-        => dataContext.Database.GetTeamPickedLevels(count, skip, dataContext.User, levelFilterSettings);
+        => new(dataContext.Database.GetTeamPickedLevels(count, skip, dataContext.User, levelFilterSettings));
 }

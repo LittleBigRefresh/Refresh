@@ -1,13 +1,11 @@
 using Bunkum.Core;
 using Refresh.Core.Types.Data;
-using Refresh.Database;
-using Refresh.Database.Models.Levels;
 using Refresh.Database.Models.Users;
 using Refresh.Database.Query;
 
 namespace Refresh.Core.Types.Categories.Levels;
 
-public class QueuedLevelsByUserCategory : GameLevelCategory
+public class QueuedLevelsByUserCategory : GameCategory
 {
     internal QueuedLevelsByUserCategory() : base("queued", "lolcatftw", true)
     {
@@ -15,12 +13,13 @@ public class QueuedLevelsByUserCategory : GameLevelCategory
         this.Description = "Levels you'd like to play!";
         this.FontAwesomeIcon = "bell";
         this.IconHash = "g820614";
+        this.PrimaryResultType = ResultType.Level;
     }
     
-    public override DatabaseList<GameLevel>? Fetch(RequestContext context, int skip, int count, DataContext dataContext,
+    public override DatabaseResultList? Fetch(RequestContext context, int skip, int count, DataContext dataContext,
         LevelFilterSettings levelFilterSettings, GameUser? user)
     {
         if (user == null) return null;
-        return dataContext.Database.GetLevelsQueuedByUser(user, count, skip, levelFilterSettings, dataContext.User);
+        return new(dataContext.Database.GetLevelsQueuedByUser(user, count, skip, levelFilterSettings, dataContext.User));
     }
 }

@@ -27,13 +27,13 @@ public class CategoryEndpoints : EndpointGroup
     {
         (int skip, int count) = context.GetPageData();
 
-        IEnumerable<SerializedLevelCategory> levelCategories = categoryService.LevelCategories
+        IEnumerable<SerializedCategory> levelCategories = categoryService.LevelCategories
             .Where(c => !c.Hidden)
-            .Select(c => SerializedLevelCategory.FromLevelCategory(c, context, dataContext, 0, 1));
+            .Select(c => SerializedCategory.FromCategory(c, context, dataContext, 0, 1));
         
-        IEnumerable<SerializedUserCategory> userCategories = config.PermitShowingOnlineUsers ? categoryService.UserCategories
+        IEnumerable<SerializedCategory> userCategories = config.PermitShowingOnlineUsers ? categoryService.UserCategories
             .Where(c => !c.Hidden)
-            .Select(c => SerializedUserCategory.FromUserCategory(c, context, dataContext, 0, 1)) : [];
+            .Select(c => SerializedCategory.FromCategory(c, context, dataContext, 0, 1)) : [];
 
         IEnumerable<SerializedCategory> allCategories = [];
         allCategories = allCategories.Concat(levelCategories).Concat(userCategories);
@@ -55,13 +55,14 @@ public class CategoryEndpoints : EndpointGroup
     [NullStatusCode(NotFound)]
     [MinimumRole(GameUserRole.Restricted)]
     public SerializedCategoryResultsList? GetLevelsFromCategory(RequestContext context, CategoryService categories, GameUser user, 
-        Token token, string apiRoute, DataContext dataContext)
+        string apiRoute, DataContext dataContext)
     {
         (int skip, int count) = context.GetPageData();
 
         DatabaseList<GameLevel>? levels = categories.LevelCategories
             .FirstOrDefault(c => c.ApiRoute.StartsWith(apiRoute))?
-            .Fetch(context, skip, count, dataContext, LevelFilterSettings.FromGameRequest(context, token.TokenGame, true), user);
+            .Fetch(context, skip, count, dataContext, LevelFilterSettings.FromGameRequest(context, dataContext.Game, true), user)?
+            .Levels;
         
         if (levels == null) return null;
         
@@ -85,7 +86,8 @@ public class CategoryEndpoints : EndpointGroup
 
         DatabaseList<GameUser>? users = categories.UserCategories
             .FirstOrDefault(c => c.ApiRoute.StartsWith(apiRoute))?
-            .Fetch(context, skip, count, dataContext, user);
+            .Fetch(context, skip, count, dataContext, LevelFilterSettings.FromGameRequest(context, dataContext.Game, true), user)?
+            .Users;
         
         if (users == null) return null;
         

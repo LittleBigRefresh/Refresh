@@ -6,14 +6,12 @@ namespace Refresh.Interfaces.Game.Types.Lists;
 
 [XmlRoot("categories")]
 [XmlType("categories")]
-[XmlInclude(typeof(SerializedLevelCategory))]
-[XmlInclude(typeof(SerializedUserCategory))]
 public class SerializedCategoryList : SerializedList<SerializedCategory>
 {
     public SerializedCategoryList(IEnumerable<SerializedCategory> items, SearchLevelCategory searchCategory, int total)
     {
         this.Items = items.ToList();
-        this.TextSearchCategory = SerializedLevelCategory.FromLevelCategory(searchCategory);
+        this.TextSearchCategory = SerializedCategory.FromCategory(searchCategory);
         this.Total = total;
     }
 
