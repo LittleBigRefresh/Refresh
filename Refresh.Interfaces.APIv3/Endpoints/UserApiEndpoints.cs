@@ -62,13 +62,13 @@ public class UserApiEndpoints : EndpointGroup
         GameUser user, ApiUpdateUserRequest body, IDataStore dataStore, DataContext dataContext, IntegrationConfig integrationConfig,
         SmtpService smtpService)
     {
-        if (body.IconHash != null && database.GetAssetFromHash(body.IconHash) == null)
+        if (body.IconHash != null && !body.IconHash.IsHashBlank() && database.GetAssetFromHash(body.IconHash) == null)
             return ApiNotFoundError.Instance;
         
-        if (body.VitaIconHash != null && database.GetAssetFromHash(body.VitaIconHash) == null)
+        if (body.VitaIconHash != null && !body.VitaIconHash.IsHashBlank() && database.GetAssetFromHash(body.VitaIconHash) == null)
             return ApiNotFoundError.Instance;
         
-        if (body.BetaIconHash != null && database.GetAssetFromHash(body.BetaIconHash) == null)
+        if (body.BetaIconHash != null && !body.BetaIconHash.IsHashBlank() && database.GetAssetFromHash(body.BetaIconHash) == null)
             return ApiNotFoundError.Instance;
 
         if (body.EmailAddress != null && !smtpService.CheckEmailDomainValidity(body.EmailAddress))

@@ -115,14 +115,11 @@ public class UserEndpoints : EndpointGroup
                     return null; 
                 }
             }
-            else
+            else if (!data.IconHash.IsHashBlank() && !dataContext.DataStore.ExistsInStore(data.IconHash))
             {
                 //If the asset does not exist on the server, block the request
-                if (!dataContext.DataStore.ExistsInStore(data.IconHash))
-                {
-                    dataContext.Database.AddErrorNotification("Profile update failed", "Your avatar failed to update because the asset was missing on the server.", user);
-                    return null;
-                } 
+                dataContext.Database.AddErrorNotification("Profile update failed", "Your avatar failed to update because the asset was missing on the server.", user);
+                return null;
             }
         }
         
