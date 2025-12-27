@@ -10,7 +10,7 @@ public partial class GameDatabaseContext // Assets
     
     public GameAsset? GetAssetFromHash(string hash)
     {
-        if (hash == "0" || hash.StartsWith('g')) return null;
+        if (hash.IsBlankHash() || hash.StartsWith('g')) return null;
         
         return this.GameAssetsIncluded
             .FirstOrDefault(a => a.AssetHash == hash);
