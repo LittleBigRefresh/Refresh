@@ -115,7 +115,13 @@ public class UserEndpoints : EndpointGroup
                     return null; 
                 }
             }
-            else if (!data.IconHash.IsHashBlank() && !dataContext.DataStore.ExistsInStore(data.IconHash))
+            else if (data.IconHash.IsBlankHash())
+            {
+                // Force hash to be a specific value if the icon is supposed to be reset/default to a PSN avatar, 
+                // to not allow uncontrolled values which would still count as blank/empty hash (e.g. unlimited whitespaces)
+                data.IconHash = "0";
+            }
+            else if (!dataContext.DataStore.ExistsInStore(data.IconHash))
             {
                 //If the asset does not exist on the server, block the request
                 dataContext.Database.AddErrorNotification("Profile update failed", "Your avatar failed to update because the asset was missing on the server.", user);
