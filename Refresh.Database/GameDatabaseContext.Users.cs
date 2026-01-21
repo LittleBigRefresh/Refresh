@@ -267,16 +267,16 @@ public partial class GameDatabaseContext // Users
     public void SetUserRole(GameUser user, GameUserRole role)
     {
         if(role == GameUserRole.Banned) throw new InvalidOperationException($"Cannot ban a user with this method. Please use {nameof(this.BanUser)}().");
-        this.Write(() =>
+        
+        if (user.Role is GameUserRole.Banned or GameUserRole.Restricted)
         {
-            if (user.Role is GameUserRole.Banned or GameUserRole.Restricted)
-            {
-                user.BanReason = null;
-                user.BanExpiryDate = null;
-            };
-            
-            user.Role = role;
-        });
+            user.BanReason = null;
+            user.BanExpiryDate = null;
+        };
+        
+        user.Role = role;
+        this.GameUsers.Update(user);
+        this.SaveChanges();
     }
 
     private void PunishUser(GameUser user, string reason, DateTimeOffset expiryDate, GameUserRole role)
