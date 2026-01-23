@@ -4,7 +4,7 @@ using Refresh.Database.Query;
 namespace Refresh.Interfaces.APIv3.Endpoints.DataTypes.Request;
 
 [JsonObject(NamingStrategyType = typeof(CamelCaseNamingStrategy))]
-public class ApiContestRequest : ICreateContestInfo
+public class ApiContestUpdateRequest : IContestUpdateInfo
 {
     public string? OrganizerId { get; set; }
     public DateTimeOffset? StartDate { get; set; }

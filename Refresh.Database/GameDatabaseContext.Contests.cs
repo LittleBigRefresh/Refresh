@@ -8,15 +8,29 @@ namespace Refresh.Database;
 
 public partial class GameDatabaseContext // Contests
 {
-    public void CreateContest(GameContest contest)
+    public GameContest CreateContest(string contestId, IContestCreationInfo createInfo, GameUser organizer, GameLevel? templateLevel)
     {
-        if (this.GetContestById(contest.ContestId) != null) throw new InvalidOperationException("Contest already exists.");
+        if (this.GetContestById(contestId) != null) throw new InvalidOperationException("Contest already exists.");
         
-        this.Write(() =>
+        GameContest contest = new()
         {
-            contest.CreationDate = this._time.Now;
-            this.GameContests.Add(contest);
-        });
+            ContestId = contestId,
+            Organizer = organizer,
+            CreationDate = this._time.Now,
+            StartDate = createInfo.StartDate,
+            EndDate = createInfo.EndDate,
+            ContestTag = createInfo.ContestTag,
+            ContestTitle = createInfo.ContestTitle,
+            ContestSummary = createInfo.ContestSummary,
+            AllowedGames = createInfo.AllowedGames ?? [],
+            BannerUrl = createInfo.BannerUrl,
+            ContestDetails = createInfo.ContestDetails,
+            ContestTheme = createInfo.ContestTheme,
+            TemplateLevel = templateLevel
+        };
+
+        this.GameContests.Add(contest);
+        return contest;
     }
     
     public void DeleteContest(GameContest contest)
@@ -57,7 +71,7 @@ public partial class GameDatabaseContext // Contests
             .FirstOrDefault();
     }
     
-    public GameContest UpdateContest(ICreateContestInfo body, GameContest contest, GameUser? newOrganizer = null)
+    public GameContest UpdateContest(IContestUpdateInfo body, GameContest contest, GameUser? newOrganizer = null, GameLevel? newTemplate = null)
     {
         this.Write(() =>
         {
@@ -82,8 +96,9 @@ public partial class GameDatabaseContext // Contests
                 contest.ContestTheme = body.ContestTheme;
             if (body.AllowedGames != null)
                 contest.AllowedGames = body.AllowedGames;
-            if (body.TemplateLevelId != null)
-                contest.TemplateLevel = this.GetLevelById((int)body.TemplateLevelId);
+
+            if (newTemplate != null)
+                contest.TemplateLevel = newTemplate;
         });
         
         return contest;

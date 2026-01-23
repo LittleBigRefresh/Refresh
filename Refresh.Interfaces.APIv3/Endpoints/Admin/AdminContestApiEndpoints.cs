@@ -7,6 +7,7 @@ using Refresh.Core.Authentication.Permission;
 using Refresh.Core.Types.Data;
 using Refresh.Database;
 using Refresh.Database.Models.Contests;
+using Refresh.Database.Models.Levels;
 using Refresh.Database.Models.Users;
 using Refresh.Interfaces.APIv3.Endpoints.ApiTypes;
 using Refresh.Interfaces.APIv3.Endpoints.ApiTypes.Errors;
@@ -20,40 +21,38 @@ public class AdminContestApiEndpoints : EndpointGroup
     [ApiV3Endpoint("admin/contests/{id}", HttpMethods.Post), MinimumRole(GameUserRole.Admin)]
     [DocSummary("Creates a contest.")]
     [DocError(typeof(ApiValidationError), ApiValidationError.ResourceExistsErrorWhen)]
-    [DocError(typeof(ApiValidationError), ApiValidationError.ObjectIdParseErrorWhen)]
-    [DocError(typeof(ApiNotFoundError), ApiNotFoundError.UserMissingErrorWhen)]
+    [DocError(typeof(ApiValidationError), ApiValidationError.ContestOrganizerIdMissingErrorWhen)]
+    [DocError(typeof(ApiValidationError), ApiValidationError.ContestOrganizerIdParseErrorWhen)]
+    [DocError(typeof(ApiNotFoundError), ApiNotFoundError.ContestOrganizerMissingErrorWhen)]
+    [DocError(typeof(ApiNotFoundError), ApiNotFoundError.TemplateLevelMissingErrorWhen)]
+    [DocError(typeof(ApiValidationError), ApiValidationError.ContestDataMissingErrorWhen)]
     public ApiResponse<ApiContestResponse> CreateContest(RequestContext context, GameDatabaseContext database,
-        ApiContestRequest body, string id, DataContext dataContext)
+        ApiContestCreationRequest body, string id, DataContext dataContext)
     {
         if (database.GetContestById(id) != null)
             return ApiValidationError.ResourceExistsError;
         
-        bool parsed = ObjectId.TryParse(body.OrganizerId, out ObjectId organizerId);
-        if (!parsed)
-            return ApiValidationError.ObjectIdParseError;
+        if (body.OrganizerId == null)
+            return ApiValidationError.ContestOrganizerIdMissingError;
+        
+        bool organizerParsed = ObjectId.TryParse(body.OrganizerId, out ObjectId organizerId);
+        if (!organizerParsed)
+            return ApiValidationError.ContestOrganizerIdParseError;
         
         GameUser? organizer = database.GetUserByObjectId(organizerId);
         if (organizer == null)
-            return ApiNotFoundError.UserMissingError;
-        
-        GameContest contest = new()
+            return ApiNotFoundError.ContestOrganizerMissingError;
+
+        // Allow template level to either be unspecified or valid, but not an ID which is invalid
+        GameLevel? templateLevel = null;
+        if (body.TemplateLevelId != null)
         {
-            ContestId = id,
-            Organizer = organizer,
-            BannerUrl = body.BannerUrl,
-            ContestTitle = body.ContestTitle,
-            ContestSummary = body.ContestSummary,
-            ContestTag = body.ContestTag,
-            ContestDetails = body.ContestDetails,
-            StartDate = body.StartDate!.Value,
-            EndDate = body.EndDate!.Value,
-            ContestTheme = body.ContestTheme,
-            AllowedGames = body.AllowedGames,
-            TemplateLevel = body.TemplateLevelId != null ? database.GetLevelById((int)body.TemplateLevelId) : null,
-        };
-        
-        database.CreateContest(contest);
-        
+            templateLevel = database.GetLevelById(body.TemplateLevelId.Value);
+            if (templateLevel == null)
+                return ApiNotFoundError.TemplateLevelMissingError;
+        }
+
+        GameContest contest = database.CreateContest(id, body, organizer, templateLevel); 
         return ApiContestResponse.FromOld(contest, dataContext);
     }
     

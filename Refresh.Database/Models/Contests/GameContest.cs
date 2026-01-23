@@ -31,11 +31,11 @@ public partial class GameContest
     /// </summary>
     public DateTimeOffset CreationDate { get; set; }
     /// <summary>
-    /// When the contest will begin
+    /// When the contest will begin. Required.
     /// </summary>
     public DateTimeOffset StartDate { get; set; }
     /// <summary>
-    /// When the contest will end
+    /// When the contest will end. Required.
     /// </summary>
     public DateTimeOffset EndDate { get; set; }
     
@@ -44,11 +44,6 @@ public partial class GameContest
     /// </summary>
     /// <example>#LBPCC1</example>
     public string ContestTag { get; set; }
-    
-    /// <summary>
-    /// A URL to an image of a banner to be displayed on the website, 'taking over' the front page.
-    /// </summary>
-    public string BannerUrl { get; set; }
     
     /// <summary>
     /// A friendly name for the contest.
@@ -61,13 +56,30 @@ public partial class GameContest
     public string ContestSummary { get; set; }
     
     /// <summary>
-    /// String containing markdown, describing the contest and its rules in further detail.
+    /// Specifies what games the submitted levels must be made in/published from. If empty,
+    /// all games will be allowed.
     /// </summary>
-    public string ContestDetails { get; set; }
-    
-    [CanBeNull] public string ContestTheme { get; set; }
-    
-    public IList<TokenGame> AllowedGames { get; set; } = [];
+    public IList<TokenGame> AllowedGames { get; set; }
 
-    [CanBeNull] public GameLevel TemplateLevel { get; set; }
+    #nullable restore
+
+    /// <summary>
+    /// A URL to an image of a banner to be displayed on the website, 'taking over' the front page. Optional.
+    /// </summary>
+    public string? BannerUrl { get; set; }
+
+    /// <summary>
+    /// String containing markdown, describing the contest and its rules in further detail. Optional.
+    /// </summary>
+    public string? ContestDetails { get; set; }
+
+    [CanBeNull] public string? ContestTheme { get; set; }
+
+    /// <summary>
+    /// Optional template level, useful to see what the organizer expects.
+    /// </summary>
+    [CanBeNull, ForeignKey(nameof(TemplateLevelId))] 
+    public GameLevel? TemplateLevel { get; set; }
+
+    public int? TemplateLevelId { get; set; }
 }
