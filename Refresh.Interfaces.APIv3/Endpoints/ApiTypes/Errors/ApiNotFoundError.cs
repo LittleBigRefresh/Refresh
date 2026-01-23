@@ -29,10 +29,10 @@ public class ApiNotFoundError : ApiError
     public static readonly ApiNotFoundError ContestMissingError = new(ContestMissingErrorWhen);
     
     public const string ContestOrganizerMissingErrorWhen = "The contest organizer could not be found";
-    public static readonly ApiValidationError ContestOrganizerMissingError = new(ContestOrganizerMissingErrorWhen);
+    public static readonly ApiNotFoundError ContestOrganizerMissingError = new(ContestOrganizerMissingErrorWhen);
     
     public const string TemplateLevelMissingErrorWhen = "The template level specified by ID could not be found";
-    public static readonly ApiValidationError TemplateLevelMissingError = new(TemplateLevelMissingErrorWhen);
+    public static readonly ApiNotFoundError TemplateLevelMissingError = new(TemplateLevelMissingErrorWhen);
 
     public const string VerifiedIpMissingErrorWhen = "The verified IP could not be found";
     public static readonly ApiNotFoundError VerifiedIpMissingError = new(VerifiedIpMissingErrorWhen);

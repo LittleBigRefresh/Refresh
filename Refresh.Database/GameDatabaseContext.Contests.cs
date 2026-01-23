@@ -8,7 +8,7 @@ namespace Refresh.Database;
 
 public partial class GameDatabaseContext // Contests
 {
-    public GameContest CreateContest(string contestId, IContestCreationInfo createInfo, GameUser organizer, GameLevel? templateLevel)
+    public GameContest CreateContest(string contestId, IContestCreationInfo createInfo, GameUser organizer, GameLevel? templateLevel = null)
     {
         if (this.GetContestById(contestId) != null) throw new InvalidOperationException("Contest already exists.");
         
@@ -30,6 +30,7 @@ public partial class GameDatabaseContext // Contests
         };
 
         this.GameContests.Add(contest);
+        this.SaveChanges();
         return contest;
     }
     

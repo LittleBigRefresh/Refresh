@@ -65,9 +65,6 @@ public class ApiValidationError : ApiError
     public const string BadUserLookupIdTypeWhen = "The ID type used to specify the user is not supported";
     public static readonly ApiValidationError BadUserLookupIdType = new(BadUserLookupIdTypeWhen);
 
-    public const string ContestOrganizerIdMissingErrorWhen = "No contest organizer was specified";
-    public static readonly ApiValidationError ContestOrganizerIdMissingError = new(ContestOrganizerIdMissingErrorWhen);
-
     public const string ContestOrganizerIdParseErrorWhen = "The organizer's user ID could not be parsed by the server";
     public static readonly ApiValidationError ContestOrganizerIdParseError = new(ContestOrganizerIdParseErrorWhen);
 

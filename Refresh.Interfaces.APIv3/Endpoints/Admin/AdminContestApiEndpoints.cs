@@ -21,7 +21,6 @@ public class AdminContestApiEndpoints : EndpointGroup
     [ApiV3Endpoint("admin/contests/{id}", HttpMethods.Post), MinimumRole(GameUserRole.Admin)]
     [DocSummary("Creates a contest.")]
     [DocError(typeof(ApiValidationError), ApiValidationError.ResourceExistsErrorWhen)]
-    [DocError(typeof(ApiValidationError), ApiValidationError.ContestOrganizerIdMissingErrorWhen)]
     [DocError(typeof(ApiValidationError), ApiValidationError.ContestOrganizerIdParseErrorWhen)]
     [DocError(typeof(ApiNotFoundError), ApiNotFoundError.ContestOrganizerMissingErrorWhen)]
     [DocError(typeof(ApiNotFoundError), ApiNotFoundError.TemplateLevelMissingErrorWhen)]
@@ -31,9 +30,6 @@ public class AdminContestApiEndpoints : EndpointGroup
     {
         if (database.GetContestById(id) != null)
             return ApiValidationError.ResourceExistsError;
-        
-        if (body.OrganizerId == null)
-            return ApiValidationError.ContestOrganizerIdMissingError;
         
         bool organizerParsed = ObjectId.TryParse(body.OrganizerId, out ObjectId organizerId);
         if (!organizerParsed)
