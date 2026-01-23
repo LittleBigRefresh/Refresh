@@ -31,11 +31,11 @@ public partial class GameContest
     /// </summary>
     public DateTimeOffset CreationDate { get; set; }
     /// <summary>
-    /// When the contest will begin. Required.
+    /// When the contest will begin.
     /// </summary>
     public DateTimeOffset StartDate { get; set; }
     /// <summary>
-    /// When the contest will end. Required.
+    /// When the contest will end.
     /// </summary>
     public DateTimeOffset EndDate { get; set; }
     
@@ -56,20 +56,20 @@ public partial class GameContest
     public string ContestSummary { get; set; }
     
     /// <summary>
-    /// Specifies what games the submitted levels must be made in/published from. If empty,
-    /// all games will be allowed.
+    /// Specifies what games the submitted levels must be made in/published from.
+    /// If empty, all games will be allowed.
     /// </summary>
     public IList<TokenGame> AllowedGames { get; set; }
 
     #nullable restore
 
     /// <summary>
-    /// A URL to an image of a banner to be displayed on the website, 'taking over' the front page. Optional.
+    /// A URL to an image of a banner to be displayed on the website, 'taking over' the front page.
     /// </summary>
     public string? BannerUrl { get; set; }
 
     /// <summary>
-    /// String containing markdown, describing the contest and its rules in further detail. Optional.
+    /// String containing markdown, describing the contest and its rules in further detail.
     /// </summary>
     public string? ContestDetails { get; set; }
 
