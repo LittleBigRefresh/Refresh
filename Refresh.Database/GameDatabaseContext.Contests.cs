@@ -107,10 +107,17 @@ public partial class GameDatabaseContext // Contests
     [Pure]
     public DatabaseList<GameLevel> GetLevelsFromContest(GameContest contest, int count, int skip, GameUser? user, LevelFilterSettings levelFilterSettings)
     {
-        return new DatabaseList<GameLevel>(((IQueryable<GameLevel>)this.GetLevelsByGameVersion(levelFilterSettings.GameVersion)).FilterByLevelFilterSettings(user, levelFilterSettings)
+        IQueryable<GameLevel> levels = this.GetLevelsByGameVersion(levelFilterSettings.GameVersion)
+            .FilterByLevelFilterSettings(user, levelFilterSettings)
             .Where(l => l.Title.Contains(contest.ContestTag))
-            .Where(l => l.PublishDate >= contest.StartDate && l.PublishDate < contest.EndDate)
-            .AsEnumerable() // This shouldn't be a noticeable performance hit, since levels that aren't for the contest have already been filtered out
-            .Where(l => contest.AllowedGames.Contains(l.GameVersion)), skip, count);
+            .Where(l => l.PublishDate >= contest.StartDate && l.PublishDate < contest.EndDate);
+        
+        // Allow levels from all games if there are no allowed games specified
+        if (contest.AllowedGames.Count > 0)
+        {
+            levels = levels.Where(l => contest.AllowedGames.Contains(l.GameVersion));
+        }
+
+        return new(levels.ToArray(), skip, count);
     }
 }
