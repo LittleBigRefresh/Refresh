@@ -31,11 +31,11 @@ public partial class GameContest
     /// </summary>
     public DateTimeOffset CreationDate { get; set; }
     /// <summary>
-    /// When the contest will begin.
+    /// When the contest will begin
     /// </summary>
     public DateTimeOffset StartDate { get; set; }
     /// <summary>
-    /// When the contest will end.
+    /// When the contest will end
     /// </summary>
     public DateTimeOffset EndDate { get; set; }
     
@@ -44,6 +44,11 @@ public partial class GameContest
     /// </summary>
     /// <example>#LBPCC1</example>
     public string ContestTag { get; set; }
+    
+    /// <summary>
+    /// A URL to an image of a banner to be displayed on the website, 'taking over' the front page.
+    /// </summary>
+    public string BannerUrl { get; set; }
     
     /// <summary>
     /// A friendly name for the contest.
@@ -56,24 +61,19 @@ public partial class GameContest
     public string ContestSummary { get; set; }
     
     /// <summary>
+    /// String containing markdown, describing the contest and its rules in further detail.
+    /// </summary>
+    public string ContestDetails { get; set; }
+    
+    [CanBeNull] public string ContestTheme { get; set; }
+    
+    /// <summary>
     /// Specifies what games the submitted levels must be made in/published from.
     /// If empty, all games will be allowed.
     /// </summary>
-    public IList<TokenGame> AllowedGames { get; set; }
+    public IList<TokenGame> AllowedGames { get; set; } = [];
 
     #nullable restore
-
-    /// <summary>
-    /// A URL to an image of a banner to be displayed on the website, 'taking over' the front page.
-    /// </summary>
-    public string? BannerUrl { get; set; }
-
-    /// <summary>
-    /// String containing markdown, describing the contest and its rules in further detail.
-    /// </summary>
-    public string? ContestDetails { get; set; }
-
-    [CanBeNull] public string? ContestTheme { get; set; }
 
     /// <summary>
     /// Optional template level, useful to see what the organizer expects.
