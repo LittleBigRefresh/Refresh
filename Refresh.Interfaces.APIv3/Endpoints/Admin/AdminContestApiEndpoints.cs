@@ -24,7 +24,6 @@ public class AdminContestApiEndpoints : EndpointGroup
     [DocError(typeof(ApiValidationError), ApiValidationError.ContestOrganizerIdParseErrorWhen)]
     [DocError(typeof(ApiNotFoundError), ApiNotFoundError.ContestOrganizerMissingErrorWhen)]
     [DocError(typeof(ApiNotFoundError), ApiNotFoundError.TemplateLevelMissingErrorWhen)]
-    [DocError(typeof(ApiValidationError), ApiValidationError.ContestDataMissingErrorWhen)]
     public ApiResponse<ApiContestResponse> CreateContest(RequestContext context, GameDatabaseContext database,
         ApiContestCreationRequest body, string id, DataContext dataContext)
     {
