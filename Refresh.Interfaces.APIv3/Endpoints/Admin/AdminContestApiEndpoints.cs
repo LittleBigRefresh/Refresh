@@ -19,13 +19,14 @@ namespace Refresh.Interfaces.APIv3.Endpoints.Admin;
 public class AdminContestApiEndpoints : EndpointGroup
 {
     [ApiV3Endpoint("admin/contests/{id}", HttpMethods.Post), MinimumRole(GameUserRole.Admin)]
-    [DocSummary("Creates a contest.")]
+    [DocSummary("Creates a contest. You must at least include the contest's title, aswell as its start and end date.")]
     [DocError(typeof(ApiValidationError), ApiValidationError.ResourceExistsErrorWhen)]
     [DocError(typeof(ApiValidationError), ApiValidationError.ContestOrganizerIdParseErrorWhen)]
     [DocError(typeof(ApiNotFoundError), ApiNotFoundError.ContestOrganizerMissingErrorWhen)]
     [DocError(typeof(ApiNotFoundError), ApiNotFoundError.TemplateLevelMissingErrorWhen)]
+    [DocError(typeof(ApiValidationError), ApiValidationError.ContestDataMissingErrorWhen)]
     public ApiResponse<ApiContestResponse> CreateContest(RequestContext context, GameDatabaseContext database,
-        ApiContestCreationRequest body, string id, DataContext dataContext)
+        ApiContestRequest body, string id, DataContext dataContext)
     {
         if (database.GetContestById(id) != null)
             return ApiValidationError.ResourceExistsError;
@@ -46,6 +47,9 @@ public class AdminContestApiEndpoints : EndpointGroup
             if (templateLevel == null)
                 return ApiNotFoundError.TemplateLevelMissingError;
         }
+
+        if (body.StartDate == null || body.EndDate == null || body.ContestTitle == null)
+            return ApiValidationError.ContestDataMissingError;
 
         GameContest contest = database.CreateContest(id, body, organizer, templateLevel); 
         return ApiContestResponse.FromOld(contest, dataContext);

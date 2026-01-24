@@ -25,7 +25,7 @@ public class ContestTests : GameServerTest
         organizer ??= context.CreateUser();
         GameLevel templateLevel = context.CreateLevel(organizer);
         
-        GameContest contest = context.Database.CreateContest(id, new ApiContestCreationRequest
+        GameContest contest = context.Database.CreateContest(id, new ApiContestRequest
         {
             OrganizerId = organizer.UserId.ToString(),
             BannerUrl = Banner,
@@ -52,7 +52,7 @@ public class ContestTests : GameServerTest
         Assert.That(() =>
         {
             // ReSharper disable once AccessToDisposedClosure
-            context.Database.CreateContest("contest", new ApiContestCreationRequest
+            context.Database.CreateContest("contest", new ApiContestRequest
             {
                 OrganizerId = organizer.UserId.ToString(),
                 BannerUrl = Banner,
@@ -82,12 +82,10 @@ public class ContestTests : GameServerTest
         Assert.That(() =>
         {
             // ReSharper disable once AccessToDisposedClosure
-            context.Database.CreateContest("minicontest", new ApiContestCreationRequest
+            context.Database.CreateContest("minicontest", new ApiContestRequest
             {
                 OrganizerId = organizer.UserId.ToString(),
-                ContestTitle = "The Mini Contest",
-                ContestSummary = "Im new here and I dont wanna set all this up yet",
-                ContestTag = "#papermusic",
+                ContestTitle = "The Lazy Contest",
                 StartDate = DateTimeOffset.FromUnixTimeMilliseconds(1),
                 EndDate = DateTimeOffset.FromUnixTimeMilliseconds(2),
             }, organizer, null);
@@ -106,7 +104,7 @@ public class ContestTests : GameServerTest
         GameLevel templateLevel = context.CreateLevel(organizer);
 
         using HttpClient client = context.GetAuthenticatedClient(TokenType.Api, admin);
-        ApiResponse<ApiContestResponse>? response = client.PostData<ApiContestResponse>("/api/v3/admin/contests/cbt1", new ApiContestCreationRequest
+        ApiResponse<ApiContestResponse>? response = client.PostData<ApiContestResponse>("/api/v3/admin/contests/cbt1", new ApiContestRequest
         {
             OrganizerId = organizer.UserId.ToString(),
             StartDate = context.Time.Now + TimeSpan.FromHours(1),
@@ -137,7 +135,7 @@ public class ContestTests : GameServerTest
         using HttpClient client = context.GetAuthenticatedClient(TokenType.Api, admin);
 
         // Try uploading a contest with an invalid organizer UUID
-        ApiContestCreationRequest request = new()
+        ApiContestRequest request = new()
         {
             OrganizerId = "hi",
             StartDate = context.Time.Now + TimeSpan.FromHours(1),
@@ -167,7 +165,7 @@ public class ContestTests : GameServerTest
         GameUser admin = context.CreateUser(role: GameUserRole.Admin);
 
         using HttpClient client = context.GetAuthenticatedClient(TokenType.Api, admin);
-        ApiResponse<ApiContestResponse>? response = client.PostData<ApiContestResponse>("/api/v3/admin/contests/oc1", new ApiContestCreationRequest
+        ApiResponse<ApiContestResponse>? response = client.PostData<ApiContestResponse>("/api/v3/admin/contests/oc1", new ApiContestRequest
         {
             OrganizerId = ObjectId.GenerateNewId().ToString(),
             StartDate = context.Time.Now + TimeSpan.FromHours(1),
@@ -192,7 +190,7 @@ public class ContestTests : GameServerTest
         GameContest contest = this.CreateContest(context);
 
         using HttpClient client = context.GetAuthenticatedClient(TokenType.Api, admin);
-        ApiResponse<ApiContestResponse>? response = client.PatchData<ApiContestResponse>("/api/v3/contests/ut", new ApiContestUpdateRequest
+        ApiResponse<ApiContestResponse>? response = client.PatchData<ApiContestResponse>("/api/v3/contests/ut", new ApiContestRequest
         {
             OrganizerId = contest.Organizer.UserId.ToString(),
             ContestTag = "#ut2",
@@ -217,7 +215,7 @@ public class ContestTests : GameServerTest
         using HttpClient client = context.GetAuthenticatedClient(TokenType.Api, admin);
 
         // Try setting the organizer to an invalid UUID
-        ApiResponse<ApiContestResponse>? response = client.PatchData<ApiContestResponse>("/api/v3/contests/ut", new ApiContestUpdateRequest
+        ApiResponse<ApiContestResponse>? response = client.PatchData<ApiContestResponse>("/api/v3/contests/ut", new ApiContestRequest
         {
             OrganizerId = "hi",
             ContestTag = "#ut2",
@@ -227,7 +225,7 @@ public class ContestTests : GameServerTest
         Assert.That(response!.Error!.StatusCode, Is.EqualTo(BadRequest));
 
         // Now update it to have a valid UUID which doesn't exist
-        response = client.PatchData<ApiContestResponse>("/api/v3/contests/ut", new ApiContestUpdateRequest
+        response = client.PatchData<ApiContestResponse>("/api/v3/contests/ut", new ApiContestRequest
         {
             OrganizerId = ObjectId.GenerateNewId().ToString(),
             ContestTag = "#ut2",
@@ -245,7 +243,7 @@ public class ContestTests : GameServerTest
         using HttpClient client = context.GetAuthenticatedClient(TokenType.Api, admin);
 
         // Try setting the organizer to an invalid UUID
-        ApiResponse<ApiContestResponse>? response = client.PatchData<ApiContestResponse>("/api/v3/contests/ut", new ApiContestUpdateRequest
+        ApiResponse<ApiContestResponse>? response = client.PatchData<ApiContestResponse>("/api/v3/contests/ut", new ApiContestRequest
         {
             TemplateLevelId = 98765443,
             ContestTag = "#ut2",
@@ -263,7 +261,7 @@ public class ContestTests : GameServerTest
         GameUser randomUser = context.CreateUser();
         
         using HttpClient client = context.GetAuthenticatedClient(TokenType.Api, randomUser);
-        ApiResponse<ApiContestResponse>? response = client.PatchData<ApiContestResponse>("/api/v3/contests/ut", new ApiContestUpdateRequest
+        ApiResponse<ApiContestResponse>? response = client.PatchData<ApiContestResponse>("/api/v3/contests/ut", new ApiContestRequest
         {
             OrganizerId = contest.Organizer.UserId.ToString(),
             ContestTag = "#ut2",

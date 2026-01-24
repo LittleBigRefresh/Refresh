@@ -46,7 +46,7 @@ public class ContestApiEndpoints : EndpointGroup
     [DocError(typeof(ApiNotFoundError), ApiNotFoundError.ContestOrganizerMissingErrorWhen)]
     [DocError(typeof(ApiNotFoundError), ApiNotFoundError.TemplateLevelMissingErrorWhen)]
     public ApiResponse<ApiContestResponse> UpdateContest(RequestContext context, GameDatabaseContext database,
-        string id, ApiContestUpdateRequest body, GameUser user, DataContext dataContext)
+        string id, ApiContestRequest body, GameUser user, DataContext dataContext)
     {
         GameContest? contest = database.GetContestById(id);
         if (contest == null) return ApiNotFoundError.ContestMissingError;

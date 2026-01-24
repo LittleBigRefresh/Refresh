@@ -2,7 +2,7 @@
 
 namespace Refresh.Database.Query;
 
-public interface IContestUpdateInfo
+public interface ICreateContestInfo
 {
     DateTimeOffset? StartDate { get; set; }
     DateTimeOffset? EndDate { get; set; }

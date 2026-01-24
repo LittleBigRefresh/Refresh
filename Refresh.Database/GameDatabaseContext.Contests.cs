@@ -8,7 +8,7 @@ namespace Refresh.Database;
 
 public partial class GameDatabaseContext // Contests
 {
-    public GameContest CreateContest(string contestId, IContestCreationInfo createInfo, GameUser organizer, GameLevel? templateLevel = null)
+    public GameContest CreateContest(string contestId, ICreateContestInfo createInfo, GameUser organizer, GameLevel? templateLevel = null)
     {
         if (this.GetContestById(contestId) != null) throw new InvalidOperationException("Contest already exists.");
         
@@ -17,15 +17,15 @@ public partial class GameDatabaseContext // Contests
             ContestId = contestId,
             Organizer = organizer,
             CreationDate = this._time.Now,
-            StartDate = createInfo.StartDate,
-            EndDate = createInfo.EndDate,
-            ContestTag = createInfo.ContestTag,
-            ContestTitle = createInfo.ContestTitle,
-            ContestSummary = createInfo.ContestSummary,
+            StartDate = createInfo.StartDate!.Value,
+            EndDate = createInfo.EndDate!.Value,
+            ContestTitle = createInfo.ContestTitle!,
+            BannerUrl = createInfo.BannerUrl ?? "",
+            ContestTag = createInfo.ContestTag ?? $"#{contestId}",
+            ContestSummary = createInfo.ContestSummary ?? "",
+            ContestDetails = createInfo.ContestDetails ?? "",
+            ContestTheme = createInfo.ContestTheme ?? "",
             AllowedGames = createInfo.AllowedGames ?? [],
-            BannerUrl = createInfo.BannerUrl,
-            ContestDetails = createInfo.ContestDetails,
-            ContestTheme = createInfo.ContestTheme,
             TemplateLevel = templateLevel
         };
 
@@ -72,7 +72,7 @@ public partial class GameDatabaseContext // Contests
             .FirstOrDefault();
     }
     
-    public GameContest UpdateContest(IContestUpdateInfo body, GameContest contest, GameUser? newOrganizer = null, GameLevel? newTemplate = null)
+    public GameContest UpdateContest(ICreateContestInfo body, GameContest contest, GameUser? newOrganizer = null, GameLevel? newTemplate = null)
     {
         this.Write(() =>
         {
