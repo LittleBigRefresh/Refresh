@@ -78,8 +78,5 @@ public partial class GameContest
     /// <summary>
     /// Optional template level, useful to see what the organizer expects.
     /// </summary>
-    [CanBeNull, ForeignKey(nameof(TemplateLevelId))] 
     public GameLevel? TemplateLevel { get; set; }
-
-    public int? TemplateLevelId { get; set; }
 }
