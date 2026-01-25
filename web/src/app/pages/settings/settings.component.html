@@ -1,0 +1,60 @@
+<div class="lg:grid lg:grid-cols-2 max-lg:flex max-lg:flex-col max-lg:gap-y-3">
+    <div class="justify-self-start">
+        <page-header class="text-3xl">Authentication Settings</page-header>
+        <ng-container>
+            <primary-button class="w-96 inline-block text-center pr-2.5" [icon]="faKey"
+                            text="View IP Authentication Requests" routerLink="/authentication"></primary-button>
+            <br><br>
+            <form-checkbox [icon]="faKey" name="Allow IP Authentication"
+                           [(value)]="allowIpAuth"></form-checkbox>
+            <form-checkbox [icon]="faGamepad" name="Allow PSN (PS3/Vita/PSP) Authentication"
+                           [(value)]="allowPsnAuth"></form-checkbox>
+            <form-checkbox [icon]="faDesktop" name="Allow RPCS3 Authentication"
+                           [(value)]="allowRpcnAuth"></form-checkbox>
+        </ng-container>
+    </div>
+
+    <div class="justify-self-end">
+        <page-header class="text-3xl">Edit My Profile</page-header>
+        <ng-container>
+            <div class="group flex w-48 justify-center items-center aspect-square my-2.5">
+                <input type="file" (change)="avatarChanged($event).then()" class="hidden" id="pfpInput">
+                <label for="pfpInput" class="flex rounded-md bg-[#000000aa] w-48 h-48 justify-center items-center z-10 opacity-0 group-hover:opacity-100 transition-opacity">
+                    <fa-icon [icon]="faPencil" class="text-4xl"></fa-icon>
+                </label>
+                <img [src]="GetAssetImageLink(iconHash)"
+                     class="w-48 max-w-min rounded-md drop-shadow-lg absolute z-0"
+                     onerror="this.onerror=null;this.src='/assets/missingUser.svg';">
+            </div>
+            <form-input [icon]="faPencil" name="Biography" [(value)]="description" [multiline]="true"></form-input>
+        </ng-container>
+    </div>
+
+    <div class="justify-self-start">
+        <page-header class="text-3xl">Account Management</page-header>
+        <form-input [icon]="faEnvelope" name="Email Address" [(value)]="email"></form-input>
+
+        <div class="flex gap-x-2.5 my-2.5">
+            <secondary-button class="w-64 inline-block" [icon]="faEnvelope" text="Verify Email Address"
+                              routerLink="/settings/verifyEmail" *ngIf="!emailVerified"></secondary-button>
+            <secondary-button class="w-56 inline-block" [icon]="faKey" text="Reset Password"
+                              routerLink="/resetPassword"></secondary-button>
+            <dangerous-button text="Delete Account" routerLink="/settings/delete" [icon]="faTrash"></dangerous-button>
+        </div>
+    </div>
+
+    <div class="justify-self-end" *ngIf="themingSupported">
+        <page-header class="text-3xl">Appearance
+            <span-gentle>(beta)</span-gentle>
+        </page-header>
+        <form-dropdown name="Theme" [options]="themes" (change)="themeChanged()" [(value)]="theme"></form-dropdown>
+        <br>
+        <form-checkbox [icon]="faLeftRight" name="Use full page width" (change)="themeChanged()"
+                       [(value)]="useFullPageWidth"></form-checkbox>
+    </div>
+</div>
+
+<div class="flex gap-x-2.5 float-right my-3">
+    <primary-button [icon]="faFloppyDisk" text="Save changes" (click)="saveChanges()"></primary-button>
+    <dangerous-button [icon]="faCancel" text="Cancel" onclick="window.history.back()"></dangerous-button>
+</div>

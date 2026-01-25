@@ -1,0 +1,78 @@
+<page-header *ngIf="!create" class="text-3xl">Manage {{ this.existingContest?.contestTitle ?? "Contest" }}</page-header>
+<page-header *ngIf="create" class="text-3xl">Create New Contest</page-header>
+
+<div *ngIf="newContest" class="mb-3">
+    <span *ngIf="existingContest">
+        Contest ID:
+        <pre class="inline">{{ existingContest.contestId }}</pre>
+    </span>
+
+    <div *ngIf="newContest" class="flex flex-col gap-y-1.5">
+        <h2 class="text-2xl font-bold">Identification</h2>
+        <form-input *ngIf="create" [(value)]="newContest.contestId" [icon]="faMedal" name="Contest ID"></form-input>
+        <form-input [(value)]="newContest.contestTag" [icon]="faHashtag" name="Contest Tag"></form-input>
+        <form-input [(value)]="newContest.organizerId" [icon]="faUser" name="Organizer User ID"></form-input>
+    </div>
+
+    <divider></divider>
+
+    <div *ngIf="newContest" class="flex flex-col gap-y-1.5">
+        <h2 class="text-2xl font-bold">Metadata</h2>
+        <form-input [(value)]="newContest.contestTitle" [icon]="faPencil" name="Title"></form-input>
+        <form-input [(value)]="newContest.contestSummary" [icon]="faBook" name="Short Summary"></form-input>
+        <form-input [(value)]="newContest.contestDetails" [icon]="faBook" [multiline]="true"
+                    name="Details"></form-input>
+        <form-input [(value)]="newContest.bannerUrl" [icon]="faCamera" name="Banner URL"></form-input>
+
+        <container>
+            <h3 class="font-bold text-xl">Banner Preview</h3>
+            <divider></divider>
+            <img [src]=newContest.bannerUrl class="w-full object-contain">
+        </container>
+
+        <form-input [(value)]="newContest.contestTheme" [icon]="faBrush" name="Theme"></form-input>
+
+        <form-input (valueChange)="setTemplateLevelId($event)" [icon]="faCertificate"
+                    [value]="newContest.templateLevelId?.toString()"
+                    name="Template Level Id"></form-input>
+    </div>
+
+    <divider></divider>
+
+    <div *ngIf="newContest" class="flex flex-col gap-y-1.5">
+        <h2 class="text-2xl font-bold">Allowed Games</h2>
+        <form-checkbox
+            (valueChange)="setAllowedGame(game, $event)"
+            *ngFor="let game of
+            [GameVersion.LittleBigPlanet1,
+            GameVersion.LittleBigPlanet2,
+            GameVersion.LittleBigPlanet3,
+            GameVersion.LittleBigPlanetVita,
+            GameVersion.LittleBigPlanetPSP,
+            GameVersion.BetaBuild,
+            GameVersion.Website]"
+
+            [icon]="faGamepad"
+            [name]="GameVersion[game]"
+            [value]="newContest.allowedGames?.includes(game)"
+        ></form-checkbox>
+    </div>
+
+    <divider></divider>
+
+    <div *ngIf="newContest" class="flex flex-col gap-y-1.5">
+        <h2 class="text-2xl font-bold">Time Period</h2>
+        <form-input [(valueDate)]="newContest.startDate" [icon]="faHourglassStart" [title]="'Start Date'"
+                    type="datetime-local"></form-input>
+        <form-input [(valueDate)]="newContest.endDate" [icon]="faHourglassEnd" [title]="'End Date'"
+                    type="datetime-local"></form-input>
+    </div>
+
+</div>
+
+<div class="flex gap-2">
+    <primary-button (click)="submit()" [icon]="faFloppyDisk" [text]="create ? 'Create Contest' : 'Save Contest'"
+                    class="w-48"></primary-button>
+    <secondary-button (click)="cancel()" [icon]="faCancel" class="w-36" text="Cancel"></secondary-button>
+    <dangerous-button (click)="delete()" *ngIf="!create" [icon]="faTrash" text="Delete Contest"></dangerous-button>
+</div>

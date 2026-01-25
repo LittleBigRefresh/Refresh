@@ -1,0 +1,40 @@
+<page-header class="text-3xl">Play Level by Hash</page-header>
+<div class="leading-tight">
+    <p>
+        This page helps players wanting to play levels from the Dry Archive
+        If you want to play a level from the archive, first head to
+        <a href="https://maticzpl.xyz/lbpfind/" class="text-secondary-bright font-bold">LBPFind</a>
+        to find a level you'd like to play.
+    </p>
+    <br/>
+    <p>
+        Once you've found a level, press <b>Info</b> to view the level's data. Copy the <b>Hash</b>.
+    </p>
+    <p>
+        It should look something like this hash: <code>50a197bfe47187c37c36f59ea9c038b1938fa9be</code>
+    </p>
+    <br/>
+    <p>
+        Next, paste that hash below.
+    </p>
+    <br/>
+
+    <form-input name="Level Hash" [icon]="faCertificate" [(value)]="levelHash"></form-input>
+
+    <br/>
+    <p>
+        And then, play!
+    </p>
+
+    <br/>
+    <div class="w-36">
+        <primary-button text="Play Now!" [icon]="faPlay" (click)="setAsOverride()"></primary-button>
+    </div>
+
+    <br/>
+    <p class="text-warning">
+        <fa-icon [icon]="faTriangleExclamation" class="mr-1"></fa-icon>
+        Note that this feature has no safety against accidents.
+        Don't put an invalid hash, or a hash for a future version of the game, otherwise you might crash.
+    </p>
+</div>

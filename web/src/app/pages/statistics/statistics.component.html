@@ -1,0 +1,19 @@
+<page-header class="text-3xl">Statistics for {{instance.instanceName}}</page-header>
+
+<h2 class="font-bold text-2xl">Server Information</h2>
+<p>Server software: {{instance.softwareName}} ({{instance.softwareType}})</p>
+<p>Server version: v{{instance.softwareVersion}}</p>
+
+<br><h2 class="font-bold text-2xl">Things!</h2>
+<p>Registered users: {{statistics.totalUsers | number:''}}</p>
+<p>Submitted levels: {{statistics.totalLevels | number:''}}</p>
+<p>Uploaded photos: {{statistics.totalPhotos | number:''}}</p>
+<p>Events occurred: {{statistics.totalEvents | number:''}}</p>
+
+<br><h2 class="font-bold text-2xl">Requests ({{requests.totalRequests | number:''}} in total)</h2>
+<p>API requests: {{requests.apiRequests | number:''}}</p>
+<p>Game API requests: {{requests.gameRequests | number:''}}</p>
+
+<br><h2 class="font-bold text-2xl">Activity</h2>
+<p>People online now: {{statistics.currentIngamePlayersCount | number:''}}</p>
+<p>Active rooms: {{statistics.currentRoomCount | number:''}}</p>

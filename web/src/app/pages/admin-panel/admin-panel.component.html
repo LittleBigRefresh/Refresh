@@ -1,0 +1,54 @@
+<page-header class="text-3xl">{{instance?.instanceName}} Admin Panel</page-header>
+<p>Howdy, {{user?.username}}! This is where you manage and view information about {{instance?.instanceName}}.</p><br>
+
+<div class="flex gap-10">
+  <container *ngFor="let s of statistics" class="grow text-center rounded">
+    <p class="text-2xl font-bold capitalize">Total {{s.unit}}s</p>
+    <divider></divider>
+    <p class="text-xl">{{s.count}} {{s.unit}}s</p>
+  </container>
+</div>
+
+<div class="mt-3 flex gap-x-2.5">
+  <secondary-button class="w-48" text="View Users" [icon]="faUsers" routerLink="/admin/users"></secondary-button>
+  <secondary-button class="w-80" text="View Queued Registrations" [icon]="faUserPlus" routerLink="/admin/queuedRegistrations"></secondary-button>
+  <secondary-button class="w-48" text="Create Contest" [icon]="faMedal" routerLink="/admin/newContest"></secondary-button>
+</div>
+
+<divider></divider>
+
+<p class="text-2xl font-bold pb-2.5">Announcements</p>
+<div class="flex gap-10">
+  <div class="w-[19rem]">
+    <p class="text-xl font-bold pb-2.5">Create</p>
+    <form class="flex flex-col gap-y-1">
+      <form-input name="Title" [icon]="faBullhorn" [(value)]="announcementTitle"></form-input>
+      <form-input name="Body" [icon]="faPencil" [(value)]="announcementBody"></form-input>
+
+      <primary-button [icon]="faCheck" text="Publish" (click)="postAnnouncement()" class="w-[19rem] text-center my-1.5"></primary-button>
+    </form>
+  </div>
+  <div class="w-full">
+    <p class="text-xl font-bold">Preview</p>
+    <announcement [title]="announcementTitle" [body]="announcementBody"></announcement>
+    <divider></divider>
+    <p class="text-xl font-bold">Live Announcements</p>
+    <p-gentle *ngIf="instance?.announcements?.length === 0">There doesn't seem to be anything here.</p-gentle>
+
+    <div class="flex flex-col gap-2.5">
+      <announcement *ngFor="let announcement of instance?.announcements" [title]="announcement.title" [body]="announcement.text"
+                    [removable]="true" (removeEvent)="removeAnnouncement(announcement)"></announcement>
+    </div>
+  </div>
+</div>
+
+<div *ngIf="instance?.grafanaDashboardUrl !== null">
+  <divider></divider>
+  <iframe [src]="getSanitizedGrafanaURL()" class="min-w-full h-[768px]"></iframe>
+</div>
+
+<!-- should always be last section -->
+<divider></divider>
+<p class="text-2xl font-bold pb-2.5">Other Actions</p>
+<p>To manage users, levels, and other data, you can access administrative actions on their respective pages under
+  '<fa-icon [icon]="faWrench"/> Manage'.</p>

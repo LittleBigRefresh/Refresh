@@ -1,0 +1,13 @@
+<div class="text-left">
+  <div class="bg-teritary focus-within:text-secondary-bright text-secondary px-5 py-2 rounded drop-shadow-lg flex focus-within:outline-secondary-bright focus-within:outline-2 focus-within:outline">
+    <fa-icon [icon]="_icon" class="pr-2 flex-shrink"></fa-icon>
+    <input *ngIf="!multiline && _type != 'datetime-local'" [type]="_type" class="bg-teritary placeholder:focus:text-secondary-bright placeholder:text-secondary text-foreground placeholder:italic flex-grow border-none outline-none overflow-hidden"
+           [placeholder]="_name" [readOnly]="_readonly" [value]="value" (input)="onChange($event)">
+
+    <input *ngIf="!multiline && _type == 'datetime-local'" class="bg-teritary placeholder:focus:text-secondary-bright placeholder:text-secondary text-foreground placeholder:italic flex-grow border-none outline-none overflow-hidden"
+           [type]="_type" [readOnly]="_readonly" [valueAsDate]="_valueDate" (input)="onChange($event)">
+
+    <textarea *ngIf="multiline" class="bg-teritary placeholder:focus:text-secondary-bright placeholder:text-secondary text-foreground placeholder:italic flex-grow border-none outline-none min-h-[1.6rem]"
+              [placeholder]="_name" [readOnly]="_readonly" [value]="value" (input)="onChange($event)"></textarea>
+  </div>
+</div>

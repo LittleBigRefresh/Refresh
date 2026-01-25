@@ -1,0 +1,9 @@
+<page-header class="text-3xl">Contests</page-header>
+
+<div *ngIf="contests" class="flex flex-col gap-2.5">
+    <a *ngFor="let contest of contests" [routerLink]="'/contests/' + contest.contestId">
+        <app-contest-preview [contest]="contest"></app-contest-preview>
+    </a>
+</div>
+
+

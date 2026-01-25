@@ -1,0 +1,132 @@
+<page-header-block *ngIf="level">
+    <div class="flex gap-3.5">
+        <level-avatar [level]="level" size="h-auto w-44 max-md:w-24"></level-avatar>
+        <div class="flex-grow">
+            <div class="font-bold text-3xl mb-1">
+                {{ level.title.length == 0 ? 'Без названия' : level.title }}
+
+                <tooltip text="This level has been team picked." *ngIf="level.teamPicked">
+                    <fa-icon [icon]="faCircleCheck" class="text-xl pr-1"></fa-icon>
+                </tooltip>
+
+                <div class="inline-block text-sm font-normal">
+                    <span-gentle>Создатель:
+                        <tooltip [active]="level.isReUpload"
+                                            [text]="'This level is a re-upload, originally published by ' + (level.originalPublisher === null ? 'an unknown publisher' : level.originalPublisher) + '.'">
+                        <user-link [user]="level.publisher" class="pl-1" *ngIf="level.publisher"
+                                   [ngClass]="level.isReUpload ? 'line-through' : ''"></user-link>
+
+                            <span class="pl-1">{{ level.originalPublisher }}</span>
+                        </tooltip>
+                    </span-gentle>
+                </div>
+                <div class="text-sm font-normal">
+                    <span-gentle>Выпущено для {{ getGameVersion(level.gameVersion) }}</span-gentle>
+                    <span-gentle class="pl-1">
+                        <date [date]="level.publishDate"></date>
+                    </span-gentle>
+                    <span-gentle *ngIf="level.publishDate != level.updateDate">,
+                        последний раз обновляли
+                        <date [date]="level.updateDate"></date>
+                    </span-gentle>
+                </div>
+            </div>
+
+            <level-statistics [level]="level" class="inline-block ml-1 mb-1"></level-statistics>
+
+            <div class="bg-backdrop rounded px-5 py-2.5 drop-shadow-lg whitespace-pre-wrap text-foreground">
+                <p>{{ level.description.length == 0 ? 'Автор решил ничего не писать.' : level.description }}</p>
+            </div>
+        </div>
+    </div>
+</page-header-block>
+<page-header-block> <!-- controls row -->
+    <div class="flex gap-x-2.5 text-foreground">
+        <primary-button text="Play Now!" [icon]="faPlay" (click)="setAsOverride()"
+                        *ngIf="isOwnUserOnline"></primary-button>
+        <secondary-button
+            *ngIf="ownUser && (ownUser?.userId == level?.publisher?.userId || (ownUser?.role ?? 0) >= UserRoles.Curator)"
+            [routerLink]="'/level/' + level?.levelId + '/edit'"
+            class="w-36" text="Edit Level" [icon]="faPencil"></secondary-button>
+    </div>
+</page-header-block>
+
+<page-header-block *ngIf="!level">
+    <div class="flex gap-3.5 animate-pulse">
+        <div class="inline h-44 w-44 bg-secondary rounded-full"></div>
+        <div>
+            <div class="inline-block h-8 w-80 bg-secondary rounded-full"></div>
+            <br>
+            <div class="inline-block h-4 w-48 bg-secondary rounded-full"></div>
+
+            <div class="bg-backdrop rounded px-5 py-2.5 flex">
+                <div class="inline-block h-4 w-96 bg-secondary rounded-full m-1"></div>
+                <div class="inline-block h-4 w-48 bg-secondary rounded-full m-1"></div>
+            </div>
+        </div>
+    </div>
+</page-header-block>
+
+<div class="flex flex-row gap-2.5 max-md:flex-col pt-5">
+    <container class="w-full">
+        <div class="flex">
+            <h2 class="text-3xl font-bold flex-grow">Таблица лидеров</h2>
+            <form-dropdown *ngIf="level?.gameVersion !== 4" name="Score Type" [options]="scoreTypes"
+                           (change)="this.formChanged()" [(value)]="scoreType"></form-dropdown>
+        </div>
+        <divider></divider>
+        <div *ngIf="scores === undefined">
+            <p>Loading scores...</p>
+        </div>
+        <div *ngIf="scores !== undefined && scores!.length === 0" class="text-center">
+            <p class="font-bold text-2xl">Нет победителей для {{ scoreType }}-игрков</p>
+            <p>
+                Никто еще не побеждал этот уровень с {{ scoreType }} игроком (-ами){{ scoreType == '1' ? '' : 's' }}. Погнали!
+            </p>
+        </div>
+        <div *ngFor="let score of scores">
+            <div class="my-5 px-2.5">
+                <a [routerLink]="'/score/' + score.scoreId" class="flex items-center">
+                    <div class="text-2xl">
+                        <span *ngIf="score.rank == 1" class="text-rank-gold pr-2">#{{ score.rank }}</span>
+                        <span *ngIf="score.rank == 2" class="text-rank-silver pr-2">#{{ score.rank }}</span>
+                        <span *ngIf="score.rank == 3" class="text-rank-bronze pr-2">#{{ score.rank }}</span>
+
+                        <span *ngIf="score.rank !== undefined && score.rank > 3"
+                              class="text-rank-other pr-2">#{{ score.rank }}</span>
+                    </div>
+
+                    <div class="flex flex-col">
+                        <span class="text-lg">{{ score.score.toLocaleString(undefined) }} очков</span>
+
+                        <span class="text-sm">
+              Игрок
+              <b><user-link [user]="score.players[0]"></user-link></b>
+              <date [date]="score.scoreSubmitted" class="ml-1"></date>
+            </span>
+                    </div>
+                </a>
+            </div>
+        </div>
+
+        <div *ngIf="this.scores !== undefined && this.scores!.length % 10 == 0 && this.scores!.length !== 0">
+            <secondary-button text="Load more" (click)="loadMoreScores()"></secondary-button>
+        </div>
+    </container>
+    <container class="w-full">
+        <h2 class="text-3xl font-bold">Недавняя активность</h2>
+        <divider></divider>
+
+        <div *ngIf="activity">
+            <div *ngFor="let event of activity.events">
+                <activity-event [event]="event" [page]="activity" [contextIsLevel]="true"></activity-event>
+            </div>
+        </div>
+
+        <div *ngIf="!activity">
+            <div *ngFor="let i of GenerateEmptyList(5)">
+                <activity-event></activity-event>
+            </div>
+        </div>
+    </container>
+</div>

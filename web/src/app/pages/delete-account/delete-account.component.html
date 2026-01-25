@@ -1,0 +1,29 @@
+<div class="text-center flex flex-col items-center">
+  <div class="w-128 bg-form-background rounded-md pl-10 pr-10 pt-5 pb-5">
+    <page-header class="text-3xl">Woah, are you sure about that?</page-header>
+    <div class="h-5"></div>
+
+    <p>You are about to <b>PERMANENTLY</b> erase your account.</p>
+    <p>This action CANNOT BE UNDONE.</p>
+    <br>
+    <page-header class="text-2xl">Consequences</page-header>
+    <ul class="list-disc list-inside">
+      <li>Your uploaded levels will no longer belong to you</li>
+      <li>Your photos will be deleted</li>
+      <li>Your username cannot be reclaimed</li>
+      <li>All stored information will be destroyed</li>
+      <li>You will no longer able to export your data</li>
+    </ul>
+    <br>
+    <p class="font-bold">Are you absolutely sure you want to proceed?</p>
+    <br>
+
+    <dangerous-button class="min-w-full" text="Yes, I want to permanently delete my account." (click)="delete()"></dangerous-button>
+    <div class="my-2.5"></div>
+    <secondary-button class="min-w-full" text="Shit, get me out of here!" (click)="window.history.back()"></secondary-button>
+
+<!--    <divider class="w-full"></divider>-->
+<!--    <p class="pb-2 font-bold">Consider downloading your account's data first.</p>-->
+<!--    <secondary-button text="Export my Data" routerLink="/settings/export"></secondary-button>-->
+  </div>
+</div>
