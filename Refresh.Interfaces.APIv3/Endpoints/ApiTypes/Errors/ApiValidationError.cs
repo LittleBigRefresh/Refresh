@@ -64,6 +64,15 @@ public class ApiValidationError : ApiError
 
     public const string BadUserLookupIdTypeWhen = "The ID type used to specify the user is not supported";
     public static readonly ApiValidationError BadUserLookupIdType = new(BadUserLookupIdTypeWhen);
+
+    public const string MayNotOverwriteRoleErrorWhen = "You may not overwrite user roles because you are not an admin";
+    public static readonly ApiValidationError MayNotOverwriteRoleError = new(MayNotOverwriteRoleErrorWhen);
+
+    public const string WrongRoleUpdateMethodErrorWhen = "The specified role cannot be assigned to the user using this endpoint.";
+    public static readonly ApiValidationError WrongRoleUpdateMethodError = new(WrongRoleUpdateMethodErrorWhen);
+
+    public const string RoleMissingErrorWhen = "The specified role does not exist.";
+    public static readonly ApiValidationError RoleMissingError = new(RoleMissingErrorWhen);
     
     public ApiValidationError(string message) : base(message) {}
 }

@@ -232,6 +232,24 @@ public partial class GameDatabaseContext // Users
         });
     }
 
+    public void UpdateUserData(GameUser user, IApiAdminEditUserRequest data)
+    {
+        if (data.IconHash != null)
+                user.IconHash = data.IconHash;
+            
+        if (data.VitaIconHash != null)
+            user.VitaIconHash = data.VitaIconHash;
+        
+        if (data.BetaIconHash != null)
+            user.BetaIconHash = data.BetaIconHash;
+
+        if (data.Description != null)
+            user.Description = data.Description;
+        
+        this.GameUsers.Update(user);
+        this.SaveChanges();
+    }
+
     public void UpdatePlanetModdedStatus(GameUser user)
     {
         user.AreLbp2PlanetsModded = this.GetPlanetModdedStatus(user.Lbp2PlanetsHash);
