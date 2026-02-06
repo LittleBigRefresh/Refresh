@@ -163,24 +163,11 @@ public class AdminUserApiEndpoints : EndpointGroup
     }
 
     [ApiV3Endpoint("admin/users/{idType}/{id}", HttpMethods.Patch), MinimumRole(GameUserRole.Moderator)]
-    [DocError(typeof(ApiValidationError), ApiValidationError.BadUserLookupIdTypeWhen)]
     [DocSummary("Updates the specified user's profile with the given data")]
     public ApiResponse<ApiExtendedGameUserResponse> UpdateUser(RequestContext context, GameDatabaseContext database,
         GameUser user, ApiAdminUpdateUserRequest body, DataContext dataContext, string idType, string id)
     {
-        GameUser? targetUser;
-
-        // TODO: this should be moved into a separate method accessible by all API endpoint methods
-        switch (idType) {
-            case "username":
-                targetUser = database.GetUserByUsername(id, true);
-                break;
-            case "uuid":
-                targetUser = database.GetUserByUuid(id);
-                break;
-            default:
-                return ApiValidationError.BadUserLookupIdType;
-        }
+        GameUser? targetUser = database.GetUserByIdAndType(idType, id);
 
         if (targetUser == null)
             return ApiNotFoundError.UserMissingError;

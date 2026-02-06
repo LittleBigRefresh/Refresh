@@ -85,6 +85,20 @@ public partial class GameDatabaseContext // Users
         return this.GameUsersIncluded.FirstOrDefault(u => u.UserId == objectId);
     }
 
+    public GameUser? GetUserByIdAndType(string idType, string id)
+    {
+        switch (idType)
+        {
+            case "username":
+            case "name":
+                return this.GetUserByUsername(id, false);
+            case "uuid":
+                return this.GetUserByUuid(id);
+            default:
+                return null;
+        }
+    }
+
     public DatabaseList<GameUser> GetUsers(int count, int skip)
         => new(this.GameUsersIncluded.OrderByDescending(u => u.JoinDate), skip, count);
     

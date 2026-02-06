@@ -62,9 +62,6 @@ public class ApiValidationError : ApiError
     public const string EmailDoesNotActuallyExistErrorWhen = "The email address given does not exist. Are you sure you typed it in correctly?";
     public static readonly ApiValidationError EmailDoesNotActuallyExistError = new(EmailDoesNotActuallyExistErrorWhen);
 
-    public const string BadUserLookupIdTypeWhen = "The ID type used to specify the user is not supported";
-    public static readonly ApiValidationError BadUserLookupIdType = new(BadUserLookupIdTypeWhen);
-
     public const string MayNotOverwriteRoleErrorWhen = "You may not overwrite user roles because you are not an admin";
     public static readonly ApiValidationError MayNotOverwriteRoleError = new(MayNotOverwriteRoleErrorWhen);
 
