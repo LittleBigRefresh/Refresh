@@ -18,7 +18,7 @@ namespace Refresh.Database.Migrations
         {
 #pragma warning disable 612, 618
             modelBuilder
-                .HasAnnotation("ProductVersion", "9.0.9")
+                .HasAnnotation("ProductVersion", "9.0.10")
                 .HasAnnotation("Relational:MaxIdentifierLength", 63);
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
@@ -596,6 +596,43 @@ namespace Refresh.Database.Migrations
                     b.HasIndex("Game", "Score", "ScoreType");
 
                     b.ToTable("GameScores");
+                });
+
+            modelBuilder.Entity("Refresh.Database.Models.Moderation.ModerationAction", b =>
+                {
+                    b.Property<string>("ActionId")
+                        .HasColumnType("text");
+
+                    b.Property<byte>("ActionType")
+                        .HasColumnType("smallint");
+
+                    b.Property<string>("ActorId")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("Description")
+                        .HasColumnType("text");
+
+                    b.Property<string>("InvolvedUserId")
+                        .HasColumnType("text");
+
+                    b.Property<string>("ModeratedObjectId")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<byte>("ModeratedObjectType")
+                        .HasColumnType("smallint");
+
+                    b.Property<DateTimeOffset>("Timestamp")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.HasKey("ActionId");
+
+                    b.HasIndex("ActorId");
+
+                    b.HasIndex("InvolvedUserId");
+
+                    b.ToTable("ModerationActions");
                 });
 
             modelBuilder.Entity("Refresh.Database.Models.Notifications.GameAnnouncement", b =>
@@ -1916,6 +1953,23 @@ namespace Refresh.Database.Migrations
                     b.Navigation("Level");
 
                     b.Navigation("Publisher");
+                });
+
+            modelBuilder.Entity("Refresh.Database.Models.Moderation.ModerationAction", b =>
+                {
+                    b.HasOne("Refresh.Database.Models.Users.GameUser", "Actor")
+                        .WithMany()
+                        .HasForeignKey("ActorId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("Refresh.Database.Models.Users.GameUser", "InvolvedUser")
+                        .WithMany()
+                        .HasForeignKey("InvolvedUserId");
+
+                    b.Navigation("Actor");
+
+                    b.Navigation("InvolvedUser");
                 });
 
             modelBuilder.Entity("Refresh.Database.Models.Notifications.GameNotification", b =>

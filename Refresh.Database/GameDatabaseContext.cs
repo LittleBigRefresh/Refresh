@@ -22,6 +22,7 @@ using Refresh.Database.Models.Reports;
 using Refresh.Database.Models.Statistics;
 using Refresh.Database.Models.Workers;
 using LogLevel = Microsoft.Extensions.Logging.LogLevel;
+using Refresh.Database.Models.Moderation;
 
 namespace Refresh.Database;
 
@@ -79,6 +80,7 @@ public partial class GameDatabaseContext : DbContext, IDatabaseContext
     internal DbSet<WorkerInfo> Workers { get; set; }
     internal DbSet<PersistentJobState> JobStates { get; set; }
     internal DbSet<GameLevelRevision> GameLevelRevisions { get; set; }
+    internal DbSet<ModerationAction> ModerationActions { get; set; }
     
 #pragma warning disable CS8618 // Non-nullable variable must contain a non-null value when exiting constructor. Consider declaring it as nullable.
     internal GameDatabaseContext(Logger logger, IDateTimeProvider time, IDatabaseConfig dbConfig)
