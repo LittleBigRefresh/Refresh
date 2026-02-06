@@ -33,10 +33,16 @@ public class CorrectWebsitePinProgressPlatform : MigrationJob<PinProgressRelatio
             
             foreach (IEnumerable<PinProgressRelation> group in pinsByUser)
             {
+                // Should never happen, but just incase
                 if (!group.Any()) continue;
 
-                // Find and migrate one progress
+                // Find best one by the current user
                 PinProgressRelation relationToMigrate = group.MaxBy(r => r.Progress)!;
+
+                // Remove all already existing progresses to remove duplicates
+                context.Database.RemoveAllPinProgressesByIdAndUser(pinId, relationToMigrate.PublisherId, false);
+
+                // Now take the best progress we've just got and add it as a website pin, preserving other old metadata
                 context.Database.AddPinProgress(new()
                 {
                     PinId = relationToMigrate.PinId,
@@ -47,9 +53,6 @@ public class CorrectWebsitePinProgressPlatform : MigrationJob<PinProgressRelatio
                     IsBeta = false, // doesn't matter here
                     Platform = TokenPlatform.Website,
                 }, false);
-
-                // Remove all others
-                context.Database.RemovePinProgresses(group, false);
             }
         }
 

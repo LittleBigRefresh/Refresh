@@ -2,6 +2,7 @@ using Refresh.Database.Models.Authentication;
 using Refresh.Database.Models.Users;
 using Refresh.Database.Models.Relations;
 using Refresh.Database.Models.Pins;
+using MongoDB.Bson;
 
 namespace Refresh.Database;
 
@@ -179,6 +180,8 @@ public partial class GameDatabaseContext // Pins
 
     public DatabaseList<ProfilePinRelation> GetProfilePinsByUser(GameUser user, TokenGame game, TokenPlatform platform, int skip, int count)
         => new(this.GetProfilePinsByUser(user, game, platform), skip, count);
+
+    #region Migration Methods
     
     public void AddPinProgress(PinProgressRelation relation, bool save)
     {
@@ -186,9 +189,11 @@ public partial class GameDatabaseContext // Pins
         if (save) this.SaveChanges();
     }
 
-    public void RemovePinProgresses(IEnumerable<PinProgressRelation> relations, bool save)
+    public void RemoveAllPinProgressesByIdAndUser(long pinId, ObjectId userId, bool save)
     {
-        this.PinProgressRelations.RemoveRange(relations);
+        this.PinProgressRelations.RemoveRange(p => p.PinId == pinId && p.PublisherId == userId);
         if (save) this.SaveChanges();
     }
+
+    #endregion
 }
