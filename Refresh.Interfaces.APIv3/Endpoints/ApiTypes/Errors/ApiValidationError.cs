@@ -68,7 +68,7 @@ public class ApiValidationError : ApiError
     public const string ContestOrganizerIdParseErrorWhen = "The organizer's user ID could not be parsed by the server";
     public static readonly ApiValidationError ContestOrganizerIdParseError = new(ContestOrganizerIdParseErrorWhen);
 
-    public const string ContestDataMissingErrorWhen = "The contest must atleast have a title, aswell as a start and end date specified";
+    public const string ContestDataMissingErrorWhen = "The contest must at least have a title, aswell as a start and end date specified";
     public static readonly ApiValidationError ContestDataMissingError = new(ContestDataMissingErrorWhen);
     
     public ApiValidationError(string message) : base(message) {}
