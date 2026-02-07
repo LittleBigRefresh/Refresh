@@ -67,7 +67,16 @@ public partial class GameContest
     
     [CanBeNull] public string ContestTheme { get; set; }
     
+    /// <summary>
+    /// Specifies what games the submitted levels must be made in/published from.
+    /// If empty, all games will be allowed.
+    /// </summary>
     public IList<TokenGame> AllowedGames { get; set; } = [];
 
-    [CanBeNull] public GameLevel TemplateLevel { get; set; }
+    #nullable restore
+
+    /// <summary>
+    /// Optional template level, useful to see what the organizer expects.
+    /// </summary>
+    public GameLevel? TemplateLevel { get; set; }
 }
