@@ -12,7 +12,7 @@ using Refresh.Database;
 using Refresh.Database.Models.Levels;
 using Refresh.Database.Models.Playlists;
 using Refresh.Database.Models.Users;
-using Refresh.Core.RateLimits;
+using static Refresh.Core.RateLimits.PlaylistEndpointLimits;
 using Refresh.Interfaces.Game.Types.Levels;
 using Refresh.Interfaces.Game.Types.Lists;
 using Refresh.Interfaces.Game.Types.Playlists;
@@ -21,13 +21,6 @@ namespace Refresh.Interfaces.Game.Endpoints.Playlists;
 
 public class Lbp3PlaylistEndpoints : EndpointGroup 
 {
-    private const int UploadTimeoutDuration = PlaylistEndpointLimits.UploadTimeoutDuration;
-    private const int MaxCreateAmount = PlaylistEndpointLimits.MaxCreateAmount;
-    private const int MaxUpdateAmount = PlaylistEndpointLimits.MaxUpdateAmount;
-    private const int UploadBlockDuration = PlaylistEndpointLimits.UploadBlockDuration;
-    private const string CreateBucket = PlaylistEndpointLimits.CreateBucket;
-    private const string UpdateBucket = PlaylistEndpointLimits.UpdateBucket;
-
     [GameEndpoint("playlists", HttpMethods.Post, ContentType.Xml)]
     [RequireEmailVerified]
     [RateLimitSettings(UploadTimeoutDuration, MaxCreateAmount, UploadBlockDuration, CreateBucket)]
