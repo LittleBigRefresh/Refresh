@@ -24,7 +24,7 @@ public class ApiCategoryResponse : IApiResponse, IDataConvertableFrom<ApiCategor
     public IApiResultResponse? PreviewItem { get; set; } = null;
 
     [JsonProperty( TypeNameHandling = TypeNameHandling.Objects )]
-    public IApiResultResponse? PreviewLevel { get; set; } = null; // TODO: Remove and use PreviewItem for levels aswell in APIv4
+    public IApiResultResponse? PreviewLevel { get; set; } = null; // TODO: Remove PreviewLevel and use PreviewItem for all kinds of preview items in APIv4
 
     public static ApiCategoryResponse? FromOld(GameCategory? old, DataContext dataContext)
         => FromOld(old, null, dataContext);

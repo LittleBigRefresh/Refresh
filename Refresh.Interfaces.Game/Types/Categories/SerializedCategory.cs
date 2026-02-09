@@ -28,7 +28,7 @@ public class SerializedCategory
             ResultType.Level => "levels",
             ResultType.User => "users",
             ResultType.Playlist => "playlists",
-            _ => "other",
+            _ => throw new ArgumentOutOfRangeException(nameof(category.PrimaryResultType), category.PrimaryResultType, "Unknown category type"),
         };
 
         SerializedCategory serializedCategory = new()
