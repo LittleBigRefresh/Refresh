@@ -29,31 +29,28 @@ public class Lbp1PlaylistEndpoints : EndpointGroup
     private const string UpdateBucket = PlaylistEndpointLimits.UpdateBucket;
 
     /// <summary>
-    /// Returns a blank hash (0) if the given reference is a GUID which doesn't reference a texture, 
-    /// or a hash referencing an asset which doesn't exist on the server. 
-    /// Returns the passed icon reference if nothing is wrong with it.
-    /// Don't reject requests with invalid icons, as users normally can't control what icon the game will
-    /// include in creation requests, and root playlist creation requests will be spammed + softlock the game
-    /// until the server returns a successful response.
+    /// Validate the playlist icon. If it's blank, an invalid GUID or a remote asset which doesn't exist on the server, reset to blank hash
+    /// and do not return an error to not upset the game in certain cases (also because the user cannot choose the icon when creating a playlist).
     /// </summary>
     private string ValidateIconHash(string iconHash, DataContext dataContext)
     {
-        if (!string.IsNullOrWhiteSpace(iconHash) && iconHash != "0")
+        if (iconHash.IsBlankHash()) 
         {
-            if (iconHash.StartsWith('g'))
-            {
-                //Parse out the GUID
-                long guid = long.Parse(iconHash.AsSpan()[1..]);
-                
-                if (!dataContext.GuidChecker.IsTextureGuid(dataContext.Game, guid))
-                {
-                    return "0";
-                }
-            }
-            else if (!dataContext.DataStore.ExistsInStore(iconHash))
+            return "0";
+        }
+        else if (iconHash.StartsWith('g'))
+        {
+            //Parse out the GUID
+            long guid = long.Parse(iconHash.AsSpan()[1..]);
+            
+            if (!dataContext.GuidChecker.IsTextureGuid(dataContext.Game, guid))
             {
                 return "0";
             }
+        }
+        else if (!dataContext.DataStore.ExistsInStore(iconHash))
+        {
+            return "0";
         }
 
         return iconHash;
