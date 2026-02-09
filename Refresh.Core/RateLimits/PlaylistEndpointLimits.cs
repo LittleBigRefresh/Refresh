@@ -6,8 +6,8 @@ namespace Refresh.Core.RateLimits;
 public static class PlaylistEndpointLimits
 {
     // rate-limits
-    public const int UploadTimeoutDuration = 300;
-    public const int MaxCreateAmount = 4; // should be enough
+    public const int UploadTimeoutDuration = 450;
+    public const int MaxCreateAmount = 8; // should be enough
     public const int MaxUpdateAmount = 12;
     public const int UploadBlockDuration = 300;
     public const string CreateBucket = "playlist-create";
