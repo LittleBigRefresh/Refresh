@@ -1,5 +1,8 @@
-namespace Refresh.Interfaces.Game.Constants.Playlists;
+namespace Refresh.Core.RateLimits;
 
+/// <summary>
+/// Shared rate limit parameters for game and API playlist endpoints
+/// </summary>
 public static class PlaylistEndpointLimits
 {
     // rate-limits
