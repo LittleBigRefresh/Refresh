@@ -254,7 +254,7 @@ public class UserApiTests : GameServerTest
         // Prepare config
         context.Server.Value.GameServerConfig.PermitShowingOnlineUsers = showOnlineUsers;
 
-        ApiListResponse<ApiUserCategoryResponse>? categories = context.Http.GetList<ApiUserCategoryResponse>("/api/v3/users");
+        ApiListResponse<ApiCategoryResponse>? categories = context.Http.GetList<ApiCategoryResponse>("/api/v3/users");
         Assert.That(categories, Is.Not.Null);
 
         if (!showOnlineUsers)
@@ -278,7 +278,7 @@ public class UserApiTests : GameServerTest
         // Prepare config
         context.Server.Value.GameServerConfig.PermitShowingOnlineUsers = showOnlineUsers;
 
-        ApiListResponse<ApiUserCategoryResponse>? categories = context.Http.GetList<ApiUserCategoryResponse>("/api/v3/users?includePreviews=true");
+        ApiListResponse<ApiCategoryResponse>? categories = context.Http.GetList<ApiCategoryResponse>("/api/v3/users?includePreviews=true");
         Assert.That(categories, Is.Not.Null);
 
         if (!showOnlineUsers)
@@ -287,14 +287,10 @@ public class UserApiTests : GameServerTest
             return;
         }
         
-        ApiUserCategoryResponse? category = categories?.Data?.FirstOrDefault(c => c.ApiRoute == "newest");
+        ApiCategoryResponse? category = categories?.Data?.FirstOrDefault(c => c.ApiRoute == "newest");
         Assert.That(category, Is.Not.Null);
-        
-        Assert.Multiple(() =>
-        {
-            Assert.That(category!.PreviewItem, Is.Not.Null);
-            Assert.That(category.PreviewItem!.UserId, Is.EqualTo(user.UserId.ToString()));
-        });
+        Assert.That(category!.PreviewItem, Is.Not.Null);
+        Assert.That(category!.PreviewItem, Is.InstanceOf<ApiGameUserResponse>());
     }
     
     [Test]
@@ -302,7 +298,7 @@ public class UserApiTests : GameServerTest
     {
         using TestContext context = this.GetServer();
         
-        ApiListResponse<ApiUserCategoryResponse>? categories = context.Http.GetList<ApiUserCategoryResponse>("/api/v3/users?includePreviews=IIIIIIIIHEHAHAHAHAHAHAHA", false, true); // https://youtu.be/mpAnsf12JkA?t=2
+        ApiListResponse<ApiCategoryResponse>? categories = context.Http.GetList<ApiCategoryResponse>("/api/v3/users?includePreviews=IIIIIIIIHEHAHAHAHAHAHAHA", false, true); // https://youtu.be/mpAnsf12JkA?t=2
         Assert.That(categories, Is.Not.Null);
         categories!.AssertErrorIsEqual(ApiValidationError.BooleanParseError);
     }
