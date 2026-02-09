@@ -23,7 +23,7 @@ public class PlaylistUploadTests : GameServerTest
 
         HttpClient client = context.GetAuthenticatedClient(TokenType.Game, TokenGame.LittleBigPlanet1, TokenPlatform.PS3, user);
         
-        // create root playlist
+        // Create root playlist
         SerializedLbp1Playlist request = new()
         {
             Name = "root",
@@ -38,7 +38,7 @@ public class PlaylistUploadTests : GameServerTest
         SerializedLbp1Playlist rootResponse = message.Content.ReadAsXML<SerializedLbp1Playlist>();
         Assert.That(rootResponse.Name, Is.EqualTo("root"));
 
-        // create actual playlist
+        // Create actual playlist
         request = new()
         {
             Name = "real",
@@ -92,7 +92,7 @@ public class PlaylistUploadTests : GameServerTest
 
         HttpClient client = context.GetAuthenticatedClient(TokenType.Game, TokenGame.LittleBigPlanet3, TokenPlatform.PS3, user);
         
-        // create playlist
+        // Create playlist
         SerializedLbp3Playlist request = new()
         {
             Name = "real",
@@ -139,7 +139,7 @@ public class PlaylistUploadTests : GameServerTest
 
         HttpClient client = context.GetAuthenticatedClient(TokenType.Game, TokenGame.LittleBigPlanet1, TokenPlatform.PS3, user);
         
-        // create root playlist
+        // Create root playlist
         SerializedLbp1Playlist request = new()
         {
             Name = new string('*', UgcLimits.TitleLimit * 2),
@@ -180,7 +180,7 @@ public class PlaylistUploadTests : GameServerTest
 
         HttpClient client = context.GetAuthenticatedClient(TokenType.Game, TokenGame.LittleBigPlanet3, TokenPlatform.PS3, user);
         
-        // create root playlist
+        // Create root playlist
         SerializedLbp3Playlist request = new()
         {
             Name = new string('*', UgcLimits.TitleLimit * 2),
@@ -215,7 +215,7 @@ public class PlaylistUploadTests : GameServerTest
     }
 
     [Test]
-    [TestCase("", true, false)]
+    [TestCase("", false, false)]
     [TestCase("0", true, false)]
     [TestCase(ValidIconGuid, true, false)]
     [TestCase(InvalidIconGuid, false, false)]
@@ -236,7 +236,7 @@ public class PlaylistUploadTests : GameServerTest
             Assert.That(assetMessage.StatusCode, Is.EqualTo(OK));
         }
         
-        // create playlist
+        // Create playlist
         SerializedLbp1Playlist request = new()
         {
             Name = "",
