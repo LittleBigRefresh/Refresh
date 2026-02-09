@@ -10,6 +10,7 @@ using Refresh.Core.Services;
 using Refresh.Core.Types.Data;
 using Refresh.Database;
 using Refresh.Database.Models.Authentication;
+using Refresh.Database.Models.Pins;
 using Refresh.Database.Models.Users;
 using Refresh.Interfaces.Game.Endpoints.DataTypes.Response;
 using Refresh.Interfaces.Game.Types.Lists;
@@ -115,14 +116,17 @@ public class UserEndpoints : EndpointGroup
                     return null; 
                 }
             }
-            else
+            else if (data.IconHash.IsBlankHash())
+            {
+                // Force hash to be a specific value if the icon is supposed to be reset/default to a PSN avatar, 
+                // to not allow uncontrolled values which would still count as blank/empty hash (e.g. unlimited whitespaces)
+                data.IconHash = "0";
+            }
+            else if (!dataContext.DataStore.ExistsInStore(data.IconHash))
             {
                 //If the asset does not exist on the server, block the request
-                if (!dataContext.DataStore.ExistsInStore(data.IconHash))
-                {
-                    dataContext.Database.AddErrorNotification("Profile update failed", "Your avatar failed to update because the asset was missing on the server.", user);
-                    return null;
-                } 
+                dataContext.Database.AddErrorNotification("Profile update failed", "Your avatar failed to update because the asset was missing on the server.", user);
+                return null;
             }
         }
         
@@ -176,7 +180,7 @@ public class UserEndpoints : EndpointGroup
 
         if (pinProgresses.Count > 0)
         {
-            dataContext.Database.UpdateUserPinProgress(pinProgresses, user, dataContext.Game);
+            dataContext.Database.UpdateUserPinProgress(pinProgresses, user, dataContext.Game == TokenGame.BetaBuild, dataContext.Platform);
         }
 
         // Users can only have 3 pins set on their profile
@@ -185,7 +189,7 @@ public class UserEndpoints : EndpointGroup
 
         if (body.ProfilePins.Count > 0)
         {
-            dataContext.Database.UpdateUserProfilePins(body.ProfilePins, user, dataContext.Game);
+            dataContext.Database.UpdateUserProfilePins(body.ProfilePins, user, dataContext.Game, dataContext.Platform);
         }
 
         // Return newly updated pins (LBP2 and 3 update their pin progresses if there are higher progress values
@@ -198,6 +202,6 @@ public class UserEndpoints : EndpointGroup
     public SerializedPins GetPins(RequestContext context, DataContext dataContext, GameUser user)
         => SerializedPins.FromOld
         (
-            dataContext.Database.GetPinProgressesByUser(user, dataContext.Game, 0, 999).Items
+            dataContext.Database.GetPinProgressesByUser(user, dataContext.Game == TokenGame.BetaBuild, dataContext.Platform, 0, 999).Items
         );
 }

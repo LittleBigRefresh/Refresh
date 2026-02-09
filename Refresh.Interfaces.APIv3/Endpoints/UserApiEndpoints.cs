@@ -62,14 +62,43 @@ public class UserApiEndpoints : EndpointGroup
         GameUser user, ApiUpdateUserRequest body, IDataStore dataStore, DataContext dataContext, IntegrationConfig integrationConfig,
         SmtpService smtpService)
     {
-        if (body.IconHash != null && database.GetAssetFromHash(body.IconHash) == null)
-            return ApiNotFoundError.Instance;
-        
-        if (body.VitaIconHash != null && database.GetAssetFromHash(body.VitaIconHash) == null)
-            return ApiNotFoundError.Instance;
-        
-        if (body.BetaIconHash != null && database.GetAssetFromHash(body.BetaIconHash) == null)
-            return ApiNotFoundError.Instance;
+        // If any icon is requested to be reset, force its hash to be a specific value, 
+        // to not allow uncontrolled values which would still count as blank/empty hash (e.g. unlimited whitespaces)
+        if (body.IconHash != null)
+        {
+            if (body.IconHash.IsBlankHash())
+            {
+                body.IconHash = "0";
+            }
+            else if (database.GetAssetFromHash(body.IconHash) == null)
+            {
+                return ApiNotFoundError.Instance;
+            }
+        }
+
+        if (body.VitaIconHash != null)
+        {
+            if (body.VitaIconHash.IsBlankHash())
+            {
+                body.VitaIconHash = "0";
+            }
+            else if (database.GetAssetFromHash(body.VitaIconHash) == null)
+            {
+                return ApiNotFoundError.Instance;
+            }
+        }
+
+        if (body.BetaIconHash != null)
+        {
+            if (body.BetaIconHash.IsBlankHash())
+            {
+                body.BetaIconHash = "0";
+            }
+            else if (database.GetAssetFromHash(body.BetaIconHash) == null)
+            {
+                return ApiNotFoundError.Instance;
+            }
+        }
 
         if (body.EmailAddress != null && !smtpService.CheckEmailDomainValidity(body.EmailAddress))
             return ApiValidationError.EmailDoesNotActuallyExistError;

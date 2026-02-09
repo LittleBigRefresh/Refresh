@@ -164,6 +164,41 @@ public class UserApiTests : GameServerTest
     }
 
     [Test]
+    [TestCase("")]
+    [TestCase("0")]
+    public void CanResetOwnIcon(string newIcon)
+    {
+        using TestContext context = this.GetServer();
+        GameUser user = context.CreateUser();
+        using HttpClient client = context.GetAuthenticatedClient(TokenType.Api, user);
+        
+        // Prepare by setting icon to something
+        string fakeIcon = "mmmmm";
+        context.Database.UpdateUserData(user, new ApiUpdateUserRequest()
+        {
+            IconHash = fakeIcon
+        });
+        GameUser? userPrepared = context.Database.GetUserByObjectId(user.UserId);
+        Assert.That(userPrepared, Is.Not.Null);
+        Assert.That(userPrepared!.IconHash, Is.EqualTo(fakeIcon));
+
+        // Now try resetting
+        ApiUpdateUserRequest request = new()
+        {
+            IconHash = newIcon
+        };
+        ApiResponse<ApiGameUserResponse>? response = client.PatchData<ApiGameUserResponse>("/api/v3/users/me", request);
+        Assert.That(response, Is.Not.Null);
+        Assert.That(response!.Data!.IconHash, Is.EqualTo("0"));
+
+        context.Database.Refresh();
+
+        GameUser? userUpdated = context.Database.GetUserByObjectId(user.UserId);
+        Assert.That(userUpdated, Is.Not.Null);
+        Assert.That(userUpdated!.IconHash, Is.EqualTo("0"));
+    }
+
+    [Test]
     public void UpdateShowModdedPlanets()
     {
         using TestContext context = this.GetServer();
