@@ -19,6 +19,9 @@ public class GameLevelResponse : GameMinimalLevelResponse, IDataConvertableFrom<
     [XmlElement("enforceMinMaxPlayers")] public bool EnforceMinMaxPlayers { get; set; }
     [XmlElement("sameScreenGame")] public bool SameScreenGame { get; set; }
     [XmlElement("completionCount")] public int CompletionCount { get; set; }
+    [XmlElement("lbp1CompletionCount")] public int Lbp1CompletionCount { get; set; }
+    [XmlElement("lbp2CompletionCount")] public int Lbp2CompletionCount { get; set; }
+    [XmlElement("lbp3CompletionCount")] public int Lbp3CompletionCount { get; set; }
 
     [XmlElement("yourlbp1PlayCount")] public int YourLbp1PlayCount { get; set; }
     [XmlElement("yourlbp2PlayCount")] public int YourLbp2PlayCount { get; set; }
@@ -57,7 +60,11 @@ public class GameLevelResponse : GameMinimalLevelResponse, IDataConvertableFrom<
             HeartCount = minimal.HeartCount,
             TotalPlayCount = minimal.TotalPlayCount,
             UniquePlayCount = minimal.UniquePlayCount,
-            Lbp3PlayCount = minimal.Lbp3PlayCount,
+            Lbp1TotalPlayCount = minimal.Lbp1TotalPlayCount,
+            Lbp1UniquePlayCount = minimal.Lbp1UniquePlayCount,
+            Lbp2TotalPlayCount = minimal.Lbp2TotalPlayCount,
+            Lbp3TotalPlayCount = minimal.Lbp3TotalPlayCount,
+            Lbp3UniquePlayCount = minimal.Lbp3UniquePlayCount,
             YayCount = minimal.YayCount,
             BooCount = minimal.BooCount,
             AverageStarRating = minimal.AverageStarRating,
@@ -106,6 +113,9 @@ public class GameLevelResponse : GameMinimalLevelResponse, IDataConvertableFrom<
         Debug.Assert(old?.Statistics != null);
 
         response.CompletionCount = old.Statistics.CompletionCount;
+        response.Lbp1CompletionCount = old.Statistics.CompletionCount;
+        response.Lbp2CompletionCount = old.Statistics.CompletionCount;
+        response.Lbp3CompletionCount = old.Statistics.CompletionCount;
         response.PublishDate = old.PublishDate.ToUnixTimeMilliseconds();
         response.UpdateDate = old.UpdateDate.ToUnixTimeMilliseconds();
         response.MinPlayers = old.MinPlayers;
