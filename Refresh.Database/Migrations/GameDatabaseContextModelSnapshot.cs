@@ -18,7 +18,7 @@ namespace Refresh.Database.Migrations
         {
 #pragma warning disable 612, 618
             modelBuilder
-                .HasAnnotation("ProductVersion", "9.0.9")
+                .HasAnnotation("ProductVersion", "9.0.10")
                 .HasAnnotation("Relational:MaxIdentifierLength", 63);
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
@@ -598,6 +598,43 @@ namespace Refresh.Database.Migrations
                     b.ToTable("GameScores");
                 });
 
+            modelBuilder.Entity("Refresh.Database.Models.Moderation.ModerationAction", b =>
+                {
+                    b.Property<string>("ActionId")
+                        .HasColumnType("text");
+
+                    b.Property<byte>("ActionType")
+                        .HasColumnType("smallint");
+
+                    b.Property<string>("ActorId")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("Description")
+                        .HasColumnType("text");
+
+                    b.Property<string>("InvolvedUserId")
+                        .HasColumnType("text");
+
+                    b.Property<string>("ModeratedObjectId")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<byte>("ModeratedObjectType")
+                        .HasColumnType("smallint");
+
+                    b.Property<DateTimeOffset>("Timestamp")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.HasKey("ActionId");
+
+                    b.HasIndex("ActorId");
+
+                    b.HasIndex("InvolvedUserId");
+
+                    b.ToTable("ModerationActions");
+                });
+
             modelBuilder.Entity("Refresh.Database.Models.Notifications.GameAnnouncement", b =>
                 {
                     b.Property<string>("AnnouncementId")
@@ -943,6 +980,9 @@ namespace Refresh.Database.Migrations
                     b.Property<bool>("IsBeta")
                         .HasColumnType("boolean");
 
+                    b.Property<int>("Platform")
+                        .HasColumnType("integer");
+
                     b.Property<DateTimeOffset>("FirstPublished")
                         .HasColumnType("timestamp with time zone");
 
@@ -952,7 +992,7 @@ namespace Refresh.Database.Migrations
                     b.Property<int>("Progress")
                         .HasColumnType("integer");
 
-                    b.HasKey("PinId", "PublisherId", "IsBeta");
+                    b.HasKey("PinId", "PublisherId", "IsBeta", "Platform");
 
                     b.HasIndex("PublisherId");
 
@@ -1024,13 +1064,16 @@ namespace Refresh.Database.Migrations
                     b.Property<int>("Game")
                         .HasColumnType("integer");
 
+                    b.Property<int>("Platform")
+                        .HasColumnType("integer");
+
                     b.Property<long>("PinId")
                         .HasColumnType("bigint");
 
                     b.Property<DateTimeOffset>("Timestamp")
                         .HasColumnType("timestamp with time zone");
 
-                    b.HasKey("Index", "PublisherId", "Game");
+                    b.HasKey("Index", "PublisherId", "Game", "Platform");
 
                     b.HasIndex("PublisherId");
 
@@ -1910,6 +1953,23 @@ namespace Refresh.Database.Migrations
                     b.Navigation("Level");
 
                     b.Navigation("Publisher");
+                });
+
+            modelBuilder.Entity("Refresh.Database.Models.Moderation.ModerationAction", b =>
+                {
+                    b.HasOne("Refresh.Database.Models.Users.GameUser", "Actor")
+                        .WithMany()
+                        .HasForeignKey("ActorId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("Refresh.Database.Models.Users.GameUser", "InvolvedUser")
+                        .WithMany()
+                        .HasForeignKey("InvolvedUserId");
+
+                    b.Navigation("Actor");
+
+                    b.Navigation("InvolvedUser");
                 });
 
             modelBuilder.Entity("Refresh.Database.Models.Notifications.GameNotification", b =>

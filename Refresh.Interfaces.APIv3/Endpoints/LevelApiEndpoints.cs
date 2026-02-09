@@ -9,6 +9,7 @@ using Refresh.Core.Authentication.Permission;
 using Refresh.Core.Services;
 using Refresh.Core.Types.Data;
 using Refresh.Database;
+using Refresh.Database.Models.Authentication;
 using Refresh.Database.Models.Levels;
 using Refresh.Database.Models.Pins;
 using Refresh.Database.Models.Users;
@@ -183,7 +184,7 @@ public class LevelApiEndpoints : EndpointGroup
         database.QueueLevel(level, user);
 
         // Update pin progress for queueing a level through the API
-        database.IncrementUserPinProgress((long)ServerPins.QueueLevelOnWebsite, 1, user);
+        database.IncrementUserPinProgress((long)ServerPins.QueueLevelOnWebsite, 1, user, false, TokenPlatform.Website);
 
         return new ApiOkResponse();
     }
