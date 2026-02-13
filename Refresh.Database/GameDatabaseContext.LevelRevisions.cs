@@ -41,4 +41,16 @@ public partial class GameDatabaseContext // LevelRevisions
 
         return revision;
     }
+
+    private IQueryable<GameLevelRevision> GetLevelRevisionsByUserInternal(GameUser user)
+        => this.GameLevelRevisionsIncluded.Where(r => r.CreatedById == user.UserId);
+
+    public DatabaseList<GameLevelRevision> GetLevelRevisionsByUser(GameUser user, int skip, int count)
+        => new(this.GetLevelRevisionsByUserInternal(user), skip, count);
+    
+    private void UpdateLevelRevisions(IEnumerable<GameLevelRevision> revisions)
+    {
+        this.GameLevelRevisions.UpdateRange(revisions);
+        this.SaveChanges();
+    }
 }

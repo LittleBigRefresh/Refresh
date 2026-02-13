@@ -389,11 +389,27 @@ public partial class GameDatabaseContext // Users
     {
         // do an initial cleanup of everything before deleting the row  
         this.DeleteUser(user);
-        
-        this.Write(() =>
+
+        // Set asset uploader to null to avoid EF throwing when fully deleting the original uploader outside of unit tests.
+        // TODO: Store ID or name of the uploader separately/in a way where it won't be removed when deleting the user.
+        IEnumerable<GameAsset> assets = this.GetAssetsUploadedByUserInternal(user).ToArray();
+        foreach(GameAsset asset in assets)
         {
-            this.GameUsers.Remove(user);
-        });
+            asset.OriginalUploader = null;
+        }
+        this.UpdateAssetsInDatabase(assets);
+
+        // Same applies to level revisions
+        IEnumerable<GameLevelRevision> levelRevisions = this.GetLevelRevisionsByUserInternal(user).ToArray();
+        foreach(GameLevelRevision levelRevision in levelRevisions)
+        {
+            levelRevision.CreatedBy = null;
+        }
+        this.UpdateLevelRevisions(levelRevisions);
+        
+        // Another issue unreproducible in unit tests where we can't just use Remove() on the user object.
+        this.GameUsers.RemoveRange(u => u.UserId == user.UserId);
+        this.SaveChanges();
     }
 
     public void ResetUserPlanets(GameUser user)
