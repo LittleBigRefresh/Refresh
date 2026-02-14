@@ -28,19 +28,19 @@ public class CategoryApiEndpoints : EndpointGroup
     [DocSummary("Retrieves a list of categories you can use to search levels")]
     [DocQueryParam("includePreviews", "If true, a single level will be added to each category representing a level from that category. False by default.")]
     [DocError(typeof(ApiValidationError), "The boolean 'includePreviews' could not be parsed by the server.")]
-    public ApiListResponse<ApiLevelCategoryResponse> GetLevelCategories(RequestContext context, CategoryService categories,
+    public ApiListResponse<ApiCategoryResponse> GetLevelCategories(RequestContext context, CategoryService categories,
         DataContext dataContext)
     {
         bool result = bool.TryParse(context.QueryString.Get("includePreviews") ?? "false", out bool includePreviews);
         if (!result) return ApiValidationError.BooleanParseError;
 
-        IEnumerable<ApiLevelCategoryResponse> resp;
+        IEnumerable<ApiCategoryResponse> resp;
 
         // ReSharper disable once ConvertIfStatementToConditionalTernaryExpression
-        if (includePreviews) resp = ApiLevelCategoryResponse.FromOldList(categories.LevelCategories, context, dataContext);
-        else resp = ApiLevelCategoryResponse.FromOldList(categories.LevelCategories, dataContext);
+        if (includePreviews) resp = ApiCategoryResponse.FromOldList(categories.LevelCategories, context, dataContext);
+        else resp = ApiCategoryResponse.FromOldList(categories.LevelCategories, dataContext);
         
-        return new ApiListResponse<ApiLevelCategoryResponse>(resp);
+        return new ApiListResponse<ApiCategoryResponse>(resp);
     }
 
     [ApiV3Endpoint("levels/{route}"), Authentication(false)]
@@ -67,7 +67,8 @@ public class CategoryApiEndpoints : EndpointGroup
 
         DatabaseList<GameLevel>? list = categories.LevelCategories
             .FirstOrDefault(c => c.ApiRoute.StartsWith(route))?
-            .Fetch(context, skip, count, dataContext, LevelFilterSettings.FromApiRequest(context), user);
+            .Fetch(context, skip, count, dataContext, LevelFilterSettings.FromApiRequest(context), user)?
+            .Levels;
 
         if (list == null) return ApiNotFoundError.Instance;
 
@@ -80,19 +81,19 @@ public class CategoryApiEndpoints : EndpointGroup
     [DocSummary("Retrieves a list of categories you can use to search users. Returns an empty list if the instance doesn't allow showing online users.")]
     [DocQueryParam("includePreviews", "If true, a single user will be added to each category representing a user from that category. False by default.")]
     [DocError(typeof(ApiValidationError), "The boolean 'includePreviews' could not be parsed by the server.")]
-    public ApiListResponse<ApiUserCategoryResponse> GetUserCategories(RequestContext context, CategoryService categories,
+    public ApiListResponse<ApiCategoryResponse> GetUserCategories(RequestContext context, CategoryService categories,
         DataContext dataContext, GameServerConfig config)
     {
         bool result = bool.TryParse(context.QueryString.Get("includePreviews") ?? "false", out bool includePreviews);
         if (!result) return ApiValidationError.BooleanParseError;
 
-        if (!config.PermitShowingOnlineUsers) return new ApiListResponse<ApiUserCategoryResponse>([]);
-        IEnumerable<ApiUserCategoryResponse> resp;
+        if (!config.PermitShowingOnlineUsers) return new ApiListResponse<ApiCategoryResponse>([]);
+        IEnumerable<ApiCategoryResponse> resp;
 
-        if (includePreviews) resp = ApiUserCategoryResponse.FromOldList(categories.UserCategories, context, dataContext);
-        else resp = ApiUserCategoryResponse.FromOldList(categories.UserCategories, dataContext);
+        if (includePreviews) resp = ApiCategoryResponse.FromOldList(categories.UserCategories, context, dataContext);
+        else resp = ApiCategoryResponse.FromOldList(categories.UserCategories, dataContext);
 
-        return new ApiListResponse<ApiUserCategoryResponse>(resp);
+        return new ApiListResponse<ApiCategoryResponse>(resp);
     }
 
     [ApiV3Endpoint("users/{route}"), Authentication(false)]
@@ -124,7 +125,8 @@ public class CategoryApiEndpoints : EndpointGroup
 
         DatabaseList<GameUser>? list = categories.UserCategories
             .FirstOrDefault(c => c.ApiRoute.StartsWith(route))?
-            .Fetch(context, skip, count, dataContext, user);
+            .Fetch(context, skip, count, dataContext, LevelFilterSettings.FromApiRequest(context), user)?
+            .Users;
 
         if (list == null) return ApiNotFoundError.Instance;
 

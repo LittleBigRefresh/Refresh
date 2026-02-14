@@ -1,13 +1,14 @@
 using JetBrains.Annotations;
 using Refresh.Core.Types.Data;
 using Refresh.Database.Models.Users;
+using Refresh.Interfaces.APIv3.Endpoints.DataTypes.Response.Categories;
 using Refresh.Interfaces.APIv3.Endpoints.DataTypes.Response.Data;
 using Refresh.Interfaces.APIv3.Endpoints.DataTypes.Response.Users.Rooms;
 
 namespace Refresh.Interfaces.APIv3.Endpoints.DataTypes.Response.Users;
 
 [JsonObject(NamingStrategyType = typeof(CamelCaseNamingStrategy))]
-public class ApiGameUserResponse : IApiResponse, IDataConvertableFrom<ApiGameUserResponse, GameUser>
+public class ApiGameUserResponse : IApiResponse, IDataConvertableFrom<ApiGameUserResponse, GameUser>, IApiResultResponse
 {
     public required string UserId { get; set; }
     public required string Username { get; set; }

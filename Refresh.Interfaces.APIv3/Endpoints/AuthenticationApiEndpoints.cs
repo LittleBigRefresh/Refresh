@@ -109,7 +109,7 @@ public class AuthenticationApiEndpoints : EndpointGroup
         context.Logger.LogInfo(BunkumCategory.Authentication, $"{user} successfully logged in through the API");
 
         // Update pin progress for signing into the API
-        database.IncrementUserPinProgress((long)ServerPins.SignIntoWebsite, 1, user);
+        database.IncrementUserPinProgress((long)ServerPins.SignIntoWebsite, 1, user, false, TokenPlatform.Website);
 
         return new ApiAuthenticationResponse
         {

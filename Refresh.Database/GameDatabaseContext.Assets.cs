@@ -10,17 +10,20 @@ public partial class GameDatabaseContext // Assets
     
     public GameAsset? GetAssetFromHash(string hash)
     {
-        if (hash == "0" || hash.StartsWith('g')) return null;
+        if (hash.IsBlankHash() || hash.StartsWith('g')) return null;
         
         return this.GameAssetsIncluded
             .FirstOrDefault(a => a.AssetHash == hash);
     }
 
+    public IQueryable<GameAsset> GetAssetsUploadedByUserInternal(GameUser? user)
+        => this.GameAssetsIncluded.Where(a => a.OriginalUploader == user);
+
     public DatabaseList<GameAsset> GetAssetsUploadedByUser(GameUser? user, int skip, int count)
-        => new(this.GameAssetsIncluded.Where(a => a.OriginalUploader == user), skip, count);
+        => new(this.GetAssetsUploadedByUserInternal(user), skip, count);
     
     public DatabaseList<GameAsset> GetAssetsUploadedByUser(GameUser? user, int skip, int count, GameAssetType type)
-        => new(this.GameAssetsIncluded.Where(a => a.OriginalUploader == user && a.AssetType == type), skip, count);
+        => new(this.GetAssetsUploadedByUserInternal(user).Where(a => a.AssetType == type), skip, count);
 
     public GameAssetType? GetConvertedType(string hash)
     {

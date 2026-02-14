@@ -1,13 +1,12 @@
 using Bunkum.Core;
 using Refresh.Core.Types.Data;
-using Refresh.Database;
 using Refresh.Database.Models.Levels;
 using Refresh.Database.Models.Users;
 using Refresh.Database.Query;
 
 namespace Refresh.Core.Types.Categories.Levels;
 
-public class ByTagCategory : GameLevelCategory
+public class ByTagCategory : GameCategory
 {
     internal ByTagCategory() : base("tag", "tag", false)
     {
@@ -17,9 +16,10 @@ public class ByTagCategory : GameLevelCategory
         this.IconHash = "g820605";
         this.FontAwesomeIcon = "tag";
         this.Hidden = true; // The by-tag category is not meant to be shown, as it requires a special implementation on all frontends
+        this.PrimaryResultType = ResultType.Level;
     }
 
-    public override DatabaseList<GameLevel>? Fetch(RequestContext context, int skip, int count,
+    public override DatabaseResultList? Fetch(RequestContext context, int skip, int count,
         DataContext dataContext,
         LevelFilterSettings levelFilterSettings, GameUser? user)
     {
@@ -33,6 +33,6 @@ public class ByTagCategory : GameLevelCategory
         if (tag == null)
             return null;
 
-        return dataContext.Database.GetLevelsByTag(count, skip, user, tag.Value, levelFilterSettings);
+        return new(dataContext.Database.GetLevelsByTag(count, skip, user, tag.Value, levelFilterSettings));
     }
 }

@@ -1,7 +1,9 @@
+using System.Xml.Serialization;
 using Bunkum.Core;
 using Bunkum.Core.Endpoints;
 using Bunkum.Core.Endpoints.Debugging;
 using Bunkum.Core.Responses;
+using Bunkum.Core.Responses.Serialization;
 using Bunkum.Listener.Protocol;
 using Bunkum.Protocols.Http;
 using Refresh.Common.Time;
@@ -191,23 +193,48 @@ public class MetadataEndpoints : EndpointGroup
     // {"currentLevel": ["developer_adventure_planet", 349],"inStore": true,"participants":  ["turecross321","","",""]}
     // {"highlightedSearchResult": ["level",811],"currentLevel": ["pod", 0],"inStore": true,"participants":  ["turecross321","","",""]}
     public string GameState(RequestContext context) => "VALID";
+
+    private static readonly Lazy<string?> ChallengeConfigFile
+        = new(() => 
+        {
+            string path = Path.Combine(Environment.CurrentDirectory, "ChallengeConfig.xml");
+
+            return File.Exists(path) ? File.ReadAllText(path) : null;
+        });
     
     [GameEndpoint("ChallengeConfig.xml", ContentType.Xml)]
     [MinimumRole(GameUserRole.Restricted)]
-    public SerializedLbp3ChallengeList ChallengeConfig(RequestContext context, IDateTimeProvider timeProvider)
+    public string ChallengeConfig(RequestContext context)
     {
-        //TODO: allow this to be controlled by the server owner, right now lets just send the game 0 challenges,
-        //      so nothing appears in the challenges menu
-        return new SerializedLbp3ChallengeList
+        bool created = ChallengeConfigFile.IsValueCreated;
+        string? challengeConfig = ChallengeConfigFile.Value;
+        
+        // If file was read, return its contents. Else serialize and return a hard-coded default list of challenges.
+        if (challengeConfig != null)
         {
-            TotalChallenges = 0,
-            EndTime = (ulong)(timeProvider.Now.ToUnixTimeMilliseconds() * 1000),
-            BronzeRankPercentage = 0,
-            SilverRankPercentage = 0,
-            GoldRankPercentage = 0,
-            CycleTime = 0,
-            Challenges = [],
-        };
+            return challengeConfig;
+        }
+        else
+        {
+            // Only log this warning once
+            if (!created) context.Logger.LogWarning(BunkumCategory.Request, 
+                "ChallengeConfig.xml file is missing! We've defaulted to one which is loosely based off of the official server's config, "+
+                "but it might be relevant to you if you are an advanced user.");
+            
+            using MemoryStream ms = new();
+            using BunkumXmlTextWriter bunkumXmlTextWriter = new(ms);
+
+            XmlSerializerNamespaces namespaces = new();
+            namespaces.Add("", "");
+
+            XmlSerializer serializer = new(typeof(SerializedLbp3ChallengeList));
+            serializer.Serialize(bunkumXmlTextWriter, SerializedLbp3ChallengeList.Default, namespaces);
+            
+            ms.Seek(0, SeekOrigin.Begin);
+            using StreamReader reader = new(ms);
+            
+            return reader.ReadToEnd();
+        }
     }
 
     [GameEndpoint("tags")]
