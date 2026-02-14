@@ -87,7 +87,7 @@ public partial class GameDatabaseContext // Users
 
     public GameUser? GetUserByIdAndType(string idType, string id)
     {
-        switch (idType)
+        switch (idType.ToLower())
         {
             case "username":
             case "name":
