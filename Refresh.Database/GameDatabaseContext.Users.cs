@@ -391,6 +391,10 @@ public partial class GameDatabaseContext // Users
         this.DeleteUser(user);
 
         // Set asset uploader to null to avoid EF throwing when fully deleting the original uploader outside of unit tests.
+        // No cascade-delete because currently, there's no way to delete assets from the data store, because doing so
+        // was ruled to be dangerous due to the risk of accidentally causing in-game issues due to no longer available assets
+        // (this risk is practically minimal, so this ruling is likely to change in the future). 
+        // Also, moderation may be an argument for not cascade-deleting assets.
         // TODO: Store ID or name of the uploader separately/in a way where it won't be removed when deleting the user.
         IEnumerable<GameAsset> assets = this.GetAssetsUploadedByUserInternal(user).ToArray();
         foreach(GameAsset asset in assets)
@@ -399,7 +403,8 @@ public partial class GameDatabaseContext // Users
         }
         this.UpdateAssetsInDatabase(assets);
 
-        // Same applies to level revisions
+        // Same applies to level revisions.
+        // These are not cascade-deleted because GameLevels aren't either; their publisher is set to null and shown as !Deleted.
         IEnumerable<GameLevelRevision> levelRevisions = this.GetLevelRevisionsByUserInternal(user).ToArray();
         foreach(GameLevelRevision levelRevision in levelRevisions)
         {
