@@ -650,6 +650,9 @@ public partial class GameDatabaseContext // Relations
 
     public int GetTotalCompletionsForLevel(GameLevel level) =>
         this.GameScores.Count(s => s.Level == level);
+    
+    public int GetTotalCompletionsForLevelByUser(GameLevel level, GameUser user) =>
+        this.GameScores.Count(s => s.LevelId == level.LevelId && s.PublisherId == user.UserId);
 
     #endregion
 
