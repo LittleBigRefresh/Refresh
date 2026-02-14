@@ -101,12 +101,13 @@ public class TestContext : IDisposable
         return client;
     }
 
-    public GameUser CreateUser(string? username = null, GameUserRole role = GameUserRole.User)
+    public GameUser CreateUser(string? username = null, GameUserRole role = GameUserRole.User, bool verifyEmail = true)
     {
         username ??= this.UserIncrement.ToString();
         
         GameUser user = this.Database.CreateUser(username, $"{username}@{username}.local");
         if (role != GameUserRole.User) this.Database.SetUserRole(user, role);
+        if (verifyEmail) this.Database.VerifyUserEmail(user);
 
         return user;
     }
