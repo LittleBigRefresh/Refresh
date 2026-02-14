@@ -249,7 +249,7 @@ public partial class GameDatabaseContext // Users
     public void UpdateUserData(GameUser user, IApiAdminEditUserRequest data)
     {
         if (data.IconHash != null)
-                user.IconHash = data.IconHash;
+            user.IconHash = data.IconHash;
             
         if (data.VitaIconHash != null)
             user.VitaIconHash = data.VitaIconHash;
