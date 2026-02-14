@@ -7,7 +7,7 @@ namespace Refresh.Core.Types.Categories.Users;
 
 public class HeartedUsersByUserCategory : GameCategory
 {
-    public HeartedUsersByUserCategory() : base("hearted", [], false)
+    public HeartedUsersByUserCategory() : base("hearted", [], true)
     {
         this.Name = "My Hearted Users";
         this.Description = "Users you've hearted.";
