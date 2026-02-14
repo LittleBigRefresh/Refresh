@@ -26,6 +26,7 @@ public class ApiGameUserResponse : IApiResponse, IDataConvertableFrom<ApiGameUse
     public required GameUserRole Role { get; set; }
     
     public required ApiGameUserStatisticsResponse Statistics { get; set; }
+    public required ApiGameUserOwnRelationsResponse? OwnRelations { get; set; }
     public required ApiGameRoomResponse? ActiveRoom { get; set; }
 
     [ContractAnnotation("null => null; notnull => notnull")]
@@ -51,6 +52,7 @@ public class ApiGameUserResponse : IApiResponse, IDataConvertableFrom<ApiGameUse
             LastLoginDate = user.LastLoginDate,
             Role = user.Role,
             Statistics = ApiGameUserStatisticsResponse.FromOld(user, dataContext)!,
+            OwnRelations = ApiGameUserOwnRelationsResponse.FromOld(user, dataContext),
             ActiveRoom = ApiGameRoomResponse.FromOld(dataContext.Match.RoomAccessor.GetRoomByUser(user), dataContext),
         };
     }
