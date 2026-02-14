@@ -260,6 +260,9 @@ public partial class GameDatabaseContext // Users
         if (data.Description != null)
             user.Description = data.Description;
         
+        if (data.Role != null)
+            user.Role = data.Role.Value;
+        
         this.GameUsers.Update(user);
         this.SaveChanges();
     }

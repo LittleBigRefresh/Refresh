@@ -12,6 +12,4 @@ public class ApiAdminUpdateUserRequest : IApiAdminEditUserRequest
     public string? BetaIconHash { get; set; }
     public string? Description { get; set; }
     public GameUserRole? Role { get; set; }
-
-    public string Reason { get; set; } = "";
 }
