@@ -61,6 +61,50 @@ public class ModerationApiTests : GameServerTest
     [TestCase(GameUserRole.Curator)]
     [TestCase(GameUserRole.Moderator)]
     [TestCase(GameUserRole.Admin)]
+    public void MayEditOtherUsersRole(GameUserRole actorRole)
+    {
+        using TestContext context = this.GetServer();
+        GameUser actor = context.CreateUser(null, actorRole);
+        GameUser target = context.CreateUser(null, GameUserRole.User);
+        HttpClient client = context.GetAuthenticatedClient(TokenType.Api, actor);
+
+        ApiAdminUpdateUserRequest request = new()
+        {
+            Role = GameUserRole.Trusted
+        };
+        ApiResponse<ApiExtendedGameUserResponse>? response = client.PatchData<ApiExtendedGameUserResponse>($"/api/v3/admin/users/uuid/{target.UserId}", request, false, false);
+
+        context.Database.Refresh();
+
+        if (actorRole < GameUserRole.Admin)
+        {
+            // Error is either Unauthorized with no body if it was blocked by RoleService, or 400 with a body if it's blocked by the method
+            // (happens if the user is a moderator). Understand both cases as a failure.
+            Assert.That(response?.Data, Is.Null);
+            
+            GameUser? targetUpdated = context.Database.GetUserByObjectId(target.UserId);
+            Assert.That(targetUpdated, Is.Not.Null);
+            Assert.That(targetUpdated!.Role, Is.EqualTo(GameUserRole.User));
+            Assert.That(context.Database.GetModerationActionsForObject(target.UserId.ToString(), ModerationObjectType.User, 0, 1).TotalItems, Is.Zero);
+        }
+        else
+        {
+            Assert.That(response?.Data, Is.Not.Null);
+            Assert.That(response!.Data!.UserId.ToString(), Is.EqualTo(target.UserId.ToString()));
+
+            GameUser? targetUpdated = context.Database.GetUserByObjectId(target.UserId);
+            Assert.That(targetUpdated, Is.Not.Null);
+            Assert.That(targetUpdated!.Role, Is.EqualTo(GameUserRole.Trusted));
+            Assert.That(context.Database.GetModerationActionsForObject(target.UserId.ToString(), ModerationObjectType.User, 0, 1).TotalItems, Is.EqualTo(1));
+        }
+    }
+
+    [Test]
+    [TestCase(GameUserRole.Restricted)]
+    [TestCase(GameUserRole.User)]
+    [TestCase(GameUserRole.Curator)]
+    [TestCase(GameUserRole.Moderator)]
+    [TestCase(GameUserRole.Admin)]
     public void MayRenameOtherUser(GameUserRole actorRole)
     {
         string initialUsername = "hiii";
@@ -102,6 +146,41 @@ public class ModerationApiTests : GameServerTest
             Assert.That(context.Database.GetNotificationCountByUser(target), Is.EqualTo(1));
             Assert.That(context.Database.GetModerationActionsForObject(target.UserId.ToString(), ModerationObjectType.User, 0, 1).TotalItems, Is.EqualTo(1));
         }
+    }
+
+    [Test]
+    [TestCase("")]
+    [TestCase("0")]
+    public void IconGetsReset(string newIcon)
+    {
+        using TestContext context = this.GetServer();
+        GameUser actor = context.CreateUser(null, GameUserRole.Moderator);
+        GameUser target = context.CreateUser(null, GameUserRole.User);
+        HttpClient client = context.GetAuthenticatedClient(TokenType.Api, actor);
+
+        // Prepare
+        string fakeIconHash = "asdfcgvhbjnkmlö";
+        context.Database.UpdateUserData(target, new ApiAdminUpdateUserRequest()
+        {
+            IconHash = fakeIconHash
+        });
+
+        Assert.That(context.Database.GetUserByObjectId(target.UserId)?.IconHash, Is.EqualTo(fakeIconHash));
+
+        // Now try resetting
+        ApiUpdateUserRequest request = new()
+        {
+            IconHash = newIcon
+        };
+        ApiResponse<ApiGameUserResponse>? response = client.PatchData<ApiGameUserResponse>($"/api/v3/admin/users/uuid/{target.UserId}", request);
+        Assert.That(response, Is.Not.Null);
+        Assert.That(response!.Data!.IconHash, Is.EqualTo("0"));
+
+        context.Database.Refresh();
+
+        GameUser? userUpdated = context.Database.GetUserByObjectId(target.UserId);
+        Assert.That(userUpdated, Is.Not.Null);
+        Assert.That(userUpdated!.IconHash, Is.EqualTo("0"));
     }
 
     [Test]

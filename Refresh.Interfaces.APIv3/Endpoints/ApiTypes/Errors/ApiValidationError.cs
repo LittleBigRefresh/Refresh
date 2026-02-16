@@ -80,5 +80,6 @@ public class ApiValidationError : ApiError
     public const string InvalidUsernameErrorWhen = "The username must be valid. The requirements are 3 to 16 alphanumeric characters, plus hyphens and underscores.";
     public static readonly ApiValidationError InvalidUsernameError = new(InvalidUsernameErrorWhen);
     
+    // TODO: Split off error messages which are actually 401 or anything else that isn't 400
     public ApiValidationError(string message) : base(message) {}
 }
