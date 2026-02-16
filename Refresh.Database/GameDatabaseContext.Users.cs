@@ -85,6 +85,20 @@ public partial class GameDatabaseContext // Users
         return this.GameUsersIncluded.FirstOrDefault(u => u.UserId == objectId);
     }
 
+    public GameUser? GetUserByIdAndType(string idType, string id)
+    {
+        switch (idType.ToLower())
+        {
+            case "username":
+            case "name":
+                return this.GetUserByUsername(id, false);
+            case "uuid":
+                return this.GetUserByUuid(id);
+            default:
+                return null;
+        }
+    }
+
     public DatabaseList<GameUser> GetUsers(int count, int skip)
         => new(this.GameUsersIncluded.OrderByDescending(u => u.JoinDate), skip, count);
     
@@ -230,6 +244,27 @@ public partial class GameDatabaseContext // Users
             if (data.RedirectGriefReportsToPhotos != null)
                 user.RedirectGriefReportsToPhotos = data.RedirectGriefReportsToPhotos.Value;
         });
+    }
+
+    public void UpdateUserData(GameUser user, IApiAdminEditUserRequest data)
+    {
+        if (data.IconHash != null)
+            user.IconHash = data.IconHash;
+            
+        if (data.VitaIconHash != null)
+            user.VitaIconHash = data.VitaIconHash;
+        
+        if (data.BetaIconHash != null)
+            user.BetaIconHash = data.BetaIconHash;
+
+        if (data.Description != null)
+            user.Description = data.Description;
+        
+        if (data.Role != null)
+            user.Role = data.Role.Value;
+        
+        this.GameUsers.Update(user);
+        this.SaveChanges();
     }
 
     public void UpdatePlanetModdedStatus(GameUser user)

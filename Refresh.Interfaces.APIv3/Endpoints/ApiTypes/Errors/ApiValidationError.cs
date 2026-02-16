@@ -62,14 +62,24 @@ public class ApiValidationError : ApiError
     public const string EmailDoesNotActuallyExistErrorWhen = "The email address given does not exist. Are you sure you typed it in correctly?";
     public static readonly ApiValidationError EmailDoesNotActuallyExistError = new(EmailDoesNotActuallyExistErrorWhen);
 
-    public const string BadUserLookupIdTypeWhen = "The ID type used to specify the user is not supported";
-    public static readonly ApiValidationError BadUserLookupIdType = new(BadUserLookupIdTypeWhen);
+    public const string MayNotOverwriteRoleErrorWhen = "You may not overwrite user roles because you are not an admin";
+    public static readonly ApiValidationError MayNotOverwriteRoleError = new(MayNotOverwriteRoleErrorWhen);
+
+    public const string WrongRoleUpdateMethodErrorWhen = "The specified role cannot be assigned to the user using this endpoint.";
+    public static readonly ApiValidationError WrongRoleUpdateMethodError = new(WrongRoleUpdateMethodErrorWhen);
+
+    public const string RoleMissingErrorWhen = "The specified role does not exist.";
+    public static readonly ApiValidationError RoleMissingError = new(RoleMissingErrorWhen);
 
     public const string ContestOrganizerIdParseErrorWhen = "The organizer's user ID could not be parsed by the server";
     public static readonly ApiValidationError ContestOrganizerIdParseError = new(ContestOrganizerIdParseErrorWhen);
 
     public const string ContestDataMissingErrorWhen = "The contest must at least have a title, aswell as a start and end date specified";
     public static readonly ApiValidationError ContestDataMissingError = new(ContestDataMissingErrorWhen);
+
+    public const string InvalidUsernameErrorWhen = "The username must be valid. The requirements are 3 to 16 alphanumeric characters, plus hyphens and underscores.";
+    public static readonly ApiValidationError InvalidUsernameError = new(InvalidUsernameErrorWhen);
     
+    // TODO: Split off error messages which are actually 401 or anything else that isn't 400
     public ApiValidationError(string message) : base(message) {}
 }

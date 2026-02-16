@@ -24,6 +24,9 @@ public class ApiNotFoundError : ApiError
     
     public const string PhotoMissingErrorWhen = "The photo could not be found";
     public static readonly ApiNotFoundError PhotoMissingError = new(PhotoMissingErrorWhen);
+
+    public const string IconMissingErrorWhen = "The icon could not be found";
+    public static readonly ApiNotFoundError IconMissingError = new(IconMissingErrorWhen);
     
     public const string ContestMissingErrorWhen = "The contest could not be found";
     public static readonly ApiNotFoundError ContestMissingError = new(ContestMissingErrorWhen);
