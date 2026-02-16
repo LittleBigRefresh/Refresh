@@ -164,8 +164,16 @@ public class AdminUserApiEndpoints : EndpointGroup
 
     [ApiV3Endpoint("admin/users/{idType}/{id}", HttpMethods.Patch), MinimumRole(GameUserRole.Moderator)]
     [DocSummary("Updates the specified user's profile with the given data")]
+    [DocError(typeof(ApiNotFoundError), ApiNotFoundError.UserMissingErrorWhen)]
+    [DocError(typeof(ApiValidationError), ApiValidationError.MayNotOverwriteRoleErrorWhen)]
+    [DocError(typeof(ApiValidationError), ApiValidationError.RoleMissingErrorWhen)]
+    [DocError(typeof(ApiValidationError), ApiValidationError.WrongRoleUpdateMethodErrorWhen)]
+    [DocError(typeof(ApiNotFoundError), ApiNotFoundError.IconMissingErrorWhen)]
+    [DocError(typeof(ApiValidationError), ApiValidationError.InvalidUsernameErrorWhen)]
     public ApiResponse<ApiExtendedGameUserResponse> UpdateUser(RequestContext context, GameDatabaseContext database,
-        GameUser user, ApiAdminUpdateUserRequest body, DataContext dataContext, string idType, string id)
+        GameUser user, ApiAdminUpdateUserRequest body, DataContext dataContext, 
+        [DocSummary("The type of identifier used to look up the user. Can be either 'uuid' or 'username'.")] string idType, 
+        [DocSummary("The UUID or username of the user, depending on the specified ID type.")] string id)
     {
         GameUser? targetUser = database.GetUserByIdAndType(idType, id);
 
@@ -190,20 +198,19 @@ public class AdminUserApiEndpoints : EndpointGroup
         }
 
         if (body.IconHash != null && database.GetAssetFromHash(body.IconHash) == null)
-            return ApiNotFoundError.Instance;
+            return ApiNotFoundError.IconMissingError;
 
         if (body.VitaIconHash != null && database.GetAssetFromHash(body.VitaIconHash) == null)
-            return ApiNotFoundError.Instance;
+            return ApiNotFoundError.IconMissingError;
 
         if (body.BetaIconHash != null && database.GetAssetFromHash(body.BetaIconHash) == null)
-            return ApiNotFoundError.Instance;
+            return ApiNotFoundError.IconMissingError;
 
-        if (body.Username != null) {
+        if (body.Username != null) 
+        {
             if (!database.IsUsernameValid(body.Username))
-                return new ApiValidationError(
-                    "The username must be valid. " +
-                    "The requirements are 3 to 16 alphanumeric characters, plus hyphens and underscores. " +
-                    "Are you sure you used a PSN/RPCN username?");
+                return new ApiValidationError(ApiValidationError.InvalidUsernameErrorWhen
+                    + " Are you sure you used a PSN/RPCN username?");
             
             database.RenameUser(targetUser, body.Username);
         }

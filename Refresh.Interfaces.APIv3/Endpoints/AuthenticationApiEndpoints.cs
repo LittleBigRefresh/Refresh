@@ -288,6 +288,7 @@ public class AuthenticationApiEndpoints : EndpointGroup
 
     [ApiV3Endpoint("register", HttpMethods.Post), Authentication(false)]
     [DocSummary("Registers a new user.")]
+    [DocError(typeof(ApiValidationError), ApiValidationError.InvalidUsernameErrorWhen)]
     [DocRequestBody(typeof(ApiRegisterRequest))]
     #if !DEBUG
     [RateLimitSettings(3600, 10, 3600 / 2, "register")]
@@ -315,10 +316,8 @@ public class AuthenticationApiEndpoints : EndpointGroup
             return new ApiAuthenticationError("You aren't allowed to play on this instance.");
         
         if (!database.IsUsernameValid(body.Username))
-            return new ApiValidationError(
-                "The username must be valid. " +
-                "The requirements are 3 to 16 alphanumeric characters, plus hyphens and underscores. " +
-                "Are you sure you used your PSN/RPCN username?");
+            return new ApiValidationError(ApiValidationError.InvalidUsernameErrorWhen
+                + " Are you sure you used your PSN/RPCN username?");
 
         if (database.IsUsernameQueued(body.Username) || database.IsEmailQueued(body.EmailAddress))
             return UserInQueueError();

@@ -76,6 +76,9 @@ public class ApiValidationError : ApiError
 
     public const string ContestDataMissingErrorWhen = "The contest must at least have a title, aswell as a start and end date specified";
     public static readonly ApiValidationError ContestDataMissingError = new(ContestDataMissingErrorWhen);
+
+    public const string InvalidUsernameErrorWhen = "The username must be valid. The requirements are 3 to 16 alphanumeric characters, plus hyphens and underscores.";
+    public static readonly ApiValidationError InvalidUsernameError = new(InvalidUsernameErrorWhen);
     
     public ApiValidationError(string message) : base(message) {}
 }
