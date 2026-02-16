@@ -143,4 +143,23 @@ public class LevelApiTests : GameServerTest
         Assert.That(response.StatusCode, Is.EqualTo(NotFound));
         Assert.That(context.Database.GetLevelById(id), Is.Not.Null);
     }
+
+    [Test]
+    public void OnlyIncludesOwnUserRelationsWhenSignedIn()
+    {
+        using TestContext context = this.GetServer();
+        GameUser me = context.CreateUser();
+        GameLevel level = context.CreateLevel(me);
+
+        // Try fetching the level without being signed in
+        ApiResponse<ApiGameLevelResponse>? response = context.Http.GetData<ApiGameLevelResponse>($"/api/v3/levels/id/{level.LevelId}");
+        Assert.That(response?.Data, Is.Not.Null);
+        Assert.That(response!.Data!.OwnRelations, Is.Null);
+        
+        // Sign in and then get level again
+        using HttpClient client = context.GetAuthenticatedClient(TokenType.Api, me);
+        response = client.GetData<ApiGameLevelResponse>($"/api/v3/levels/id/{level.LevelId}");
+        Assert.That(response?.Data, Is.Not.Null);
+        Assert.That(response!.Data!.OwnRelations, Is.Not.Null);
+    }
 }
