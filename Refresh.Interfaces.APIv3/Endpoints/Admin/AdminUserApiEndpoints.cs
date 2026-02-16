@@ -197,14 +197,29 @@ public class AdminUserApiEndpoints : EndpointGroup
                 return ApiValidationError.WrongRoleUpdateMethodError;
         }
 
-        if (body.IconHash != null && database.GetAssetFromHash(body.IconHash) == null)
-            return ApiNotFoundError.IconMissingError;
+        if (body.IconHash != null)
+        {
+            if (body.IconHash.IsBlankHash())
+                body.IconHash = "0";
+            else if (database.GetAssetFromHash(body.IconHash) == null)
+                return ApiNotFoundError.IconMissingError;
+        }
 
-        if (body.VitaIconHash != null && database.GetAssetFromHash(body.VitaIconHash) == null)
-            return ApiNotFoundError.IconMissingError;
+        if (body.VitaIconHash != null)
+        {
+            if (body.VitaIconHash.IsBlankHash())
+                body.VitaIconHash = "0";
+            else if (database.GetAssetFromHash(body.VitaIconHash) == null)
+                return ApiNotFoundError.IconMissingError;
+        }
 
-        if (body.BetaIconHash != null && database.GetAssetFromHash(body.BetaIconHash) == null)
-            return ApiNotFoundError.IconMissingError;
+        if (body.BetaIconHash != null)
+        {
+            if (body.BetaIconHash.IsBlankHash())
+                body.BetaIconHash = "0";
+            else if (database.GetAssetFromHash(body.BetaIconHash) == null)
+                return ApiNotFoundError.IconMissingError;
+        }
 
         if (body.Username != null) 
         {
