@@ -19,6 +19,7 @@
     </ItemGroup>
 
     <ItemGroup>
+      <PackageReference Include="JetBrains.Annotations" Version="2025.2.4" />
       <InternalsVisibleTo Include="RefreshTests.GameServer" />
       <ProjectReference Include="..\Refresh.Common\Refresh.Common.csproj" />
     </ItemGroup>
