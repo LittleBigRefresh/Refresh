@@ -145,7 +145,7 @@ public class LevelApiTests : GameServerTest
     }
 
     [Test]
-    public void OnlyIncludesOwnUserRelationsWhenSignedIn()
+    public void OnlyIncludesOwnLevelRelationsWhenSignedIn()
     {
         using TestContext context = this.GetServer();
         GameUser me = context.CreateUser();
