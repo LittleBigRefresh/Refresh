@@ -55,6 +55,7 @@ public class ApiGameLevelResponse : IApiResponse, IDataConvertableFrom<ApiGameLe
     public required bool IsCopyable { get; set; }
     public required float Score { get; set; }
     public required IEnumerable<Tag> Tags { get; set; }
+    public required ApiGameLevelOwnRelationsResponse? OwnRelations { get; set; }
 
     public static ApiGameLevelResponse? FromOld(GameLevel? level, DataContext dataContext)
     {
@@ -102,6 +103,7 @@ public class ApiGameLevelResponse : IApiResponse, IDataConvertableFrom<ApiGameLe
             Reviews = level.Statistics.ReviewCount,
             Tags = dataContext.Database.GetTagsForLevel(level),
             IsModded = level.IsModded,
+            OwnRelations = ApiGameLevelOwnRelationsResponse.FromOld(level, dataContext),
         };
     }
 
