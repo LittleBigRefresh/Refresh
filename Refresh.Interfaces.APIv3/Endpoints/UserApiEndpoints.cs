@@ -9,6 +9,8 @@ using Refresh.Core.Configuration;
 using Refresh.Core.Services;
 using Refresh.Core.Types.Data;
 using Refresh.Database;
+using Refresh.Database.Models.Authentication;
+using Refresh.Database.Models.Pins;
 using Refresh.Database.Models.Users;
 using Refresh.Interfaces.APIv3.Endpoints.ApiTypes;
 using Refresh.Interfaces.APIv3.Endpoints.ApiTypes.Errors;
@@ -44,6 +46,39 @@ public class UserApiEndpoints : EndpointGroup
         if(user == null) return ApiNotFoundError.UserMissingError;
         
         return ApiGameUserResponse.FromOld(user, dataContext);
+    }
+
+    // TODO: Also allow specifying user by username
+    [ApiV3Endpoint("users/uuid/{uuid}/heart", HttpMethods.Post)]
+    [DocSummary("Hearts a user by their UUID")]
+    [DocError(typeof(ApiNotFoundError), ApiNotFoundError.UserMissingErrorWhen)]
+    public ApiOkResponse HeartUserByUuid(RequestContext context, GameDatabaseContext database,
+        [DocSummary("The UUID of the user")] string uuid, DataContext dataContext, GameUser user)
+    {
+        GameUser? target = database.GetUserByUuid(uuid);
+        if(target == null) return ApiNotFoundError.UserMissingError;
+        
+        bool success = database.FavouriteUser(target, user);
+
+        // Only give pin if the user was hearted without having already been hearted.
+        // Won't protect against spam, but this way the pin objective is more accurately implemented.
+        if (success)
+            database.IncrementUserPinProgress((long)ServerPins.HeartPlayerOnWebsite, 1, user, false, TokenPlatform.Website);
+
+        return new ApiOkResponse();
+    }
+
+    [ApiV3Endpoint("users/uuid/{uuid}/unheart", HttpMethods.Post)]
+    [DocSummary("Unhearts a user by their UUID")]
+    [DocError(typeof(ApiNotFoundError), ApiNotFoundError.UserMissingErrorWhen)]
+    public ApiOkResponse UnheartUserByUuid(RequestContext context, GameDatabaseContext database,
+        [DocSummary("The UUID of the user")] string uuid, DataContext dataContext, GameUser user)
+    {
+        GameUser? target = database.GetUserByUuid(uuid);
+        if(target == null) return ApiNotFoundError.UserMissingError;
+        
+        database.UnfavouriteUser(target, user);
+        return new ApiOkResponse();
     }
     
     [ApiV3Endpoint("users/me"), MinimumRole(GameUserRole.Restricted)]

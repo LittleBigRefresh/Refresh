@@ -132,18 +132,13 @@ public class LevelApiEndpoints : EndpointGroup
     [ApiV3Endpoint("levels/id/{id}/relations"), MinimumRole(GameUserRole.Restricted)]
     [DocSummary("Gets your relations to a level by it's ID")]
     [DocError(typeof(ApiNotFoundError), ApiNotFoundError.LevelMissingErrorWhen)]
-    public ApiResponse<ApiGameLevelRelationsResponse> GetLevelRelationsOfUser(RequestContext context, GameDatabaseContext database, GameUser user,
+    public ApiResponse<ApiGameLevelOwnRelationsResponse> GetLevelRelationsOfUser(RequestContext context, DataContext dataContext, GameUser user,
         [DocSummary("The ID of the level")] int id)
     {
-        GameLevel? level = database.GetLevelById(id);
+        GameLevel? level = dataContext.Database.GetLevelById(id);
         if (level == null) return ApiNotFoundError.LevelMissingError;
 
-        return new ApiGameLevelRelationsResponse
-        {
-            IsHearted = database.IsLevelFavouritedByUser(level, user),
-            IsQueued = database.IsLevelQueuedByUser(level, user),
-            MyPlaysCount = database.GetTotalPlaysForLevelByUser(level, user)
-        };
+        return ApiGameLevelOwnRelationsResponse.FromOld(level, dataContext);
     }
 
     [ApiV3Endpoint("levels/id/{id}/heart", HttpMethods.Post)]
@@ -181,10 +176,12 @@ public class LevelApiEndpoints : EndpointGroup
         GameLevel? level = database.GetLevelById(id);
         if (level == null) return ApiNotFoundError.LevelMissingError;
 
-        database.QueueLevel(level, user);
+        bool success = database.QueueLevel(level, user);
 
-        // Update pin progress for queueing a level through the API
-        database.IncrementUserPinProgress((long)ServerPins.QueueLevelOnWebsite, 1, user, false, TokenPlatform.Website);
+        // Only give pin if the level was queued without having already been queued.
+        // Won't protect against spam, but this way the pin objective is more accurately implemented.
+        if (success)
+            database.IncrementUserPinProgress((long)ServerPins.QueueLevelOnWebsite, 1, user, false, TokenPlatform.Website);
 
         return new ApiOkResponse();
     }
