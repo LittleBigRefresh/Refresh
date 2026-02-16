@@ -132,21 +132,13 @@ public class LevelApiEndpoints : EndpointGroup
     [ApiV3Endpoint("levels/id/{id}/relations"), MinimumRole(GameUserRole.Restricted)]
     [DocSummary("Gets your relations to a level by it's ID")]
     [DocError(typeof(ApiNotFoundError), ApiNotFoundError.LevelMissingErrorWhen)]
-    public ApiResponse<ApiGameLevelOwnRelationsResponse> GetLevelRelationsOfUser(RequestContext context, GameDatabaseContext database, GameUser user,
+    public ApiResponse<ApiGameLevelOwnRelationsResponse> GetLevelRelationsOfUser(RequestContext context, DataContext dataContext, GameUser user,
         [DocSummary("The ID of the level")] int id)
     {
-        GameLevel? level = database.GetLevelById(id);
+        GameLevel? level = dataContext.Database.GetLevelById(id);
         if (level == null) return ApiNotFoundError.LevelMissingError;
 
-        return new ApiGameLevelOwnRelationsResponse
-        {
-            IsHearted = database.IsLevelFavouritedByUser(level, user),
-            IsQueued = database.IsLevelQueuedByUser(level, user),
-            LevelRating = (int?)database.GetRatingByUser(level, user) ?? 0,
-            MyPlaysCount = database.GetTotalPlaysForLevelByUser(level, user),
-            CompletionCount = database.GetTotalCompletionsForLevelByUser(level, user),
-            PhotoCount = database.GetTotalPhotosInLevelByUser(level, user)
-        };
+        return ApiGameLevelOwnRelationsResponse.FromOld(level, dataContext);
     }
 
     [ApiV3Endpoint("levels/id/{id}/heart", HttpMethods.Post)]
