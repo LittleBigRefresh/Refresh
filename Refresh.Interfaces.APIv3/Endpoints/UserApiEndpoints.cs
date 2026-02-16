@@ -52,14 +52,18 @@ public class UserApiEndpoints : EndpointGroup
     [ApiV3Endpoint("users/uuid/{uuid}/heart", HttpMethods.Post)]
     [DocSummary("Hearts a user by their UUID")]
     [DocError(typeof(ApiNotFoundError), ApiNotFoundError.UserMissingErrorWhen)]
-    public ApiResponse<ApiOkResponse> HeartUserByUuid(RequestContext context, GameDatabaseContext database,
+    public ApiOkResponse HeartUserByUuid(RequestContext context, GameDatabaseContext database,
         [DocSummary("The UUID of the user")] string uuid, DataContext dataContext, GameUser user)
     {
         GameUser? target = database.GetUserByUuid(uuid);
         if(target == null) return ApiNotFoundError.UserMissingError;
         
-        database.FavouriteUser(target, user);
-        database.IncrementUserPinProgress((long)ServerPins.HeartPlayerOnWebsite, 1, user, false, TokenPlatform.Website);
+        bool success = database.FavouriteUser(target, user);
+
+        // Only give pin if the user was hearted without having already been hearted.
+        // Won't protect against spam, but this way the pin objective is more accurately implemented.
+        if (success)
+            database.IncrementUserPinProgress((long)ServerPins.HeartPlayerOnWebsite, 1, user, false, TokenPlatform.Website);
 
         return new ApiOkResponse();
     }
@@ -67,7 +71,7 @@ public class UserApiEndpoints : EndpointGroup
     [ApiV3Endpoint("users/uuid/{uuid}/unheart", HttpMethods.Post)]
     [DocSummary("Unhearts a user by their UUID")]
     [DocError(typeof(ApiNotFoundError), ApiNotFoundError.UserMissingErrorWhen)]
-    public ApiResponse<ApiOkResponse> UnheartUserByUuid(RequestContext context, GameDatabaseContext database,
+    public ApiOkResponse UnheartUserByUuid(RequestContext context, GameDatabaseContext database,
         [DocSummary("The UUID of the user")] string uuid, DataContext dataContext, GameUser user)
     {
         GameUser? target = database.GetUserByUuid(uuid);
