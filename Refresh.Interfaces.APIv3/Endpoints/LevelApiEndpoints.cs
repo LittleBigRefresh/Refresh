@@ -176,10 +176,12 @@ public class LevelApiEndpoints : EndpointGroup
         GameLevel? level = database.GetLevelById(id);
         if (level == null) return ApiNotFoundError.LevelMissingError;
 
-        database.QueueLevel(level, user);
+        bool success = database.QueueLevel(level, user);
 
-        // Update pin progress for queueing a level through the API
-        database.IncrementUserPinProgress((long)ServerPins.QueueLevelOnWebsite, 1, user, false, TokenPlatform.Website);
+        // Only give pin if the level was queued without having already been queued.
+        // Won't protect against spam, but this way the pin objective is more accurately implemented.
+        if (success)
+            database.IncrementUserPinProgress((long)ServerPins.QueueLevelOnWebsite, 1, user, false, TokenPlatform.Website);
 
         return new ApiOkResponse();
     }

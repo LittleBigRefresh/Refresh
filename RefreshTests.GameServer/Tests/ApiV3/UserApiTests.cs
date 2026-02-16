@@ -343,4 +343,23 @@ public class UserApiTests : GameServerTest
             index++;
         }
     }
+
+    [Test]
+    public void OnlyIncludesOwnUserRelationsWhenSignedIn()
+    {
+        using TestContext context = this.GetServer();
+        GameUser otherUser = context.CreateUser();
+        GameUser me = context.CreateUser();
+
+        // Try fetching the user without being signed in
+        ApiResponse<ApiGameUserResponse>? response = context.Http.GetData<ApiGameUserResponse>($"/api/v3/users/name/{otherUser.Username}");
+        Assert.That(response?.Data, Is.Not.Null);
+        Assert.That(response!.Data!.OwnRelations, Is.Null);
+        
+        // Sign in and then get user again
+        using HttpClient client = context.GetAuthenticatedClient(TokenType.Api, me);
+        response = client.GetData<ApiGameUserResponse>($"/api/v3/users/name/{otherUser.Username}");
+        Assert.That(response?.Data, Is.Not.Null);
+        Assert.That(response!.Data!.OwnRelations, Is.Not.Null);
+    }
 }
