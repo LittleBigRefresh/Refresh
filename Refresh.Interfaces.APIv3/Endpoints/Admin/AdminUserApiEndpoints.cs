@@ -221,11 +221,15 @@ public class AdminUserApiEndpoints : EndpointGroup
                 return ApiNotFoundError.IconMissingError;
         }
 
-        if (body.Username != null) 
+        // Do nothing if the username entered is actually the same as the one already set
+        if (body.Username != null && body.Username != targetUser.Username) 
         {
             if (!body.Username.StartsWith(SystemUsers.SystemPrefix) && !database.IsUsernameValid(body.Username))
                 return new ApiValidationError(ApiValidationError.InvalidUsernameErrorWhen
                     + " Are you sure you used a PSN/RPCN username, or prepended it with ! if it's a fake user?");
+            
+            if (database.IsUsernameTaken(body.Username))
+                return new ApiValidationError("This username is already taken!");
             
             database.RenameUser(targetUser, body.Username);
         }
