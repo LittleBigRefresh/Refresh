@@ -147,10 +147,15 @@ public class CoolLevelsJob : RepeatingJob
         
         // Reward for a good ratio between plays and yays.
         // Doesn't apply to LBP1 levels.
-        float ratingRatio = (positiveRatings - negativeRatings) / (float)uniquePlays;
-        if (ratingRatio > 0.5f && level.GameVersion != TokenGame.LittleBigPlanet1)
+        // Skip this reward entirely if the level has no unique plays, as division by 0.0 floats
+        // results in infinity values, which should never happen and will also screw with API clients.
+        if (uniquePlays > 0) 
         {
-            score += positiveRatings * (positiveRatingPoints * ratingRatio);
+            float ratingRatio = (positiveRatings - negativeRatings) / (float)uniquePlays;
+            if (ratingRatio > 0.5f && level.GameVersion != TokenGame.LittleBigPlanet1)
+            {
+                score += positiveRatings * (positiveRatingPoints * ratingRatio);
+            }
         }
 
         if (level.Publisher?.Role == GameUserRole.Trusted)
