@@ -223,9 +223,9 @@ public class AdminUserApiEndpoints : EndpointGroup
 
         if (body.Username != null) 
         {
-            if (!database.IsUsernameValid(body.Username))
+            if (!body.Username.StartsWith(SystemUsers.SystemPrefix) && !database.IsUsernameValid(body.Username))
                 return new ApiValidationError(ApiValidationError.InvalidUsernameErrorWhen
-                    + " Are you sure you used a PSN/RPCN username?");
+                    + " Are you sure you used a PSN/RPCN username, or prepended it with ! if it's a fake user?");
             
             database.RenameUser(targetUser, body.Username);
         }
