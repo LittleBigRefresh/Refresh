@@ -347,10 +347,22 @@ public partial class GameDatabaseContext // Users
     public DatabaseList<GameUser> GetAllUsersWithRole(GameUserRole role)
         => new(this.GameUsersIncluded.Where(u => u.Role == role));
 
-    public void RenameUser(GameUser user, string newUsername)
+    public void RenameUser(GameUser user, string newUsername, bool force = false)
     {
-        string oldUsername = user.Username;
+        if (!force)
+        {
+            if (!newUsername.StartsWith(SystemUsers.SystemPrefix) && !this.IsUsernameValid(newUsername))
+            {
+                throw new ArgumentException("Username is invalid!", nameof(newUsername));
+            }
 
+            if (this.IsUsernameTaken(newUsername))
+            {
+                throw new ArgumentException("Username is already taken!", nameof(newUsername));
+            }
+        }
+
+        string oldUsername = user.Username;
         user.Username = newUsername;
         this.GameUsers.Update(user);
         this.SaveChanges();

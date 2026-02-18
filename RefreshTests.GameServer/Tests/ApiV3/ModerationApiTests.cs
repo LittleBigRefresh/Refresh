@@ -215,4 +215,73 @@ public class ModerationApiTests : GameServerTest
         Assert.That(response?.Error, Is.Not.Null);
         Assert.That(response!.Error!.StatusCode, Is.EqualTo(NotFound));
     }
+
+    [Test]
+    public void CannotRenameToTakenUsername()
+    {
+        using TestContext context = this.GetServer();
+        string takenUsername = "lel";
+        GameUser actor = context.CreateUser(takenUsername, GameUserRole.Moderator);
+        GameUser target = context.CreateUser(null, GameUserRole.User);
+        HttpClient client = context.GetAuthenticatedClient(TokenType.Api, actor);
+
+        ApiAdminUpdateUserRequest request = new()
+        {
+            Username = takenUsername
+        };
+        ApiResponse<ApiExtendedGameUserResponse>? response = client.PatchData<ApiExtendedGameUserResponse>($"/api/v3/admin/users/uuid/{target.UserId}", request, false, true);
+        Assert.That(response?.Error, Is.Not.Null);
+        Assert.That(response!.Error!.StatusCode, Is.EqualTo(BadRequest));
+
+        context.Database.Refresh();
+
+        GameUser? updated = context.Database.GetUserByObjectId(target.UserId);
+        Assert.That(updated, Is.Not.Null);
+        Assert.That(updated!.Username, Is.EqualTo(target.Username));
+        Assert.That(updated!.Username, Is.Not.EqualTo(takenUsername));
+    }
+
+    [Test]
+    [TestCase("!jeff", true)]
+    [TestCase("dddd", true)]
+    [TestCase("dd", false)]
+    [TestCase("dddddddddddddddddd", false)]
+    [TestCase("jeff?", false)]
+    public void OnlyRenameToValidUsernames(string newUsername, bool isValid)
+    {
+        using TestContext context = this.GetServer();
+        GameUser actor = context.CreateUser(null, GameUserRole.Moderator);
+        GameUser target = context.CreateUser(null, GameUserRole.User);
+        HttpClient client = context.GetAuthenticatedClient(TokenType.Api, actor);
+
+        ApiAdminUpdateUserRequest request = new()
+        {
+            Username = newUsername
+        };
+        ApiResponse<ApiExtendedGameUserResponse>? response = client.PatchData<ApiExtendedGameUserResponse>($"/api/v3/admin/users/uuid/{target.UserId}", request, false, false);
+        
+        context.Database.Refresh();
+
+        if (isValid)
+        {
+            Assert.That(response?.Error, Is.Null);
+            Assert.That(response?.Data, Is.Not.Null);
+            Assert.That(response!.Data!.Username, Is.EqualTo(newUsername));
+
+            GameUser? updated = context.Database.GetUserByObjectId(target.UserId);
+            Assert.That(updated, Is.Not.Null);
+            Assert.That(updated!.Username, Is.EqualTo(newUsername));
+            Assert.That(updated!.Username, Is.Not.EqualTo(target.Username));
+        }
+        else
+        {
+            Assert.That(response?.Error, Is.Not.Null);
+            Assert.That(response!.Error!.StatusCode, Is.EqualTo(BadRequest));
+
+            GameUser? updated = context.Database.GetUserByObjectId(target.UserId);
+            Assert.That(updated, Is.Not.Null);
+            Assert.That(updated!.Username, Is.EqualTo(target.Username));
+            Assert.That(updated!.Username, Is.Not.EqualTo(newUsername));
+        }
+    }
 }

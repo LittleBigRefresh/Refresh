@@ -285,10 +285,10 @@ public class RefreshGameServer : RefreshServer
         return context.ReallowUser(username);
     }
 
-    public void RenameUser(GameUser user, string newUsername)
+    public void RenameUser(GameUser user, string newUsername, bool force = false)
     {
         using GameDatabaseContext context = this.GetContext();
-        context.RenameUser(user, newUsername);
+        context.RenameUser(user, newUsername, force);
     }
     
     public void DeleteUser(GameUser user)

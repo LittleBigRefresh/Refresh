@@ -170,6 +170,7 @@ public class AdminUserApiEndpoints : EndpointGroup
     [DocError(typeof(ApiValidationError), ApiValidationError.WrongRoleUpdateMethodErrorWhen)]
     [DocError(typeof(ApiNotFoundError), ApiNotFoundError.IconMissingErrorWhen)]
     [DocError(typeof(ApiValidationError), ApiValidationError.InvalidUsernameErrorWhen)]
+    [DocError(typeof(ApiValidationError), ApiValidationError.UsernameTakenErrorWhen)]
     public ApiResponse<ApiExtendedGameUserResponse> UpdateUser(RequestContext context, GameDatabaseContext database,
         GameUser user, ApiAdminUpdateUserRequest body, DataContext dataContext, 
         [DocSummary("The type of identifier used to look up the user. Can be either 'uuid' or 'username'.")] string idType, 
@@ -221,11 +222,15 @@ public class AdminUserApiEndpoints : EndpointGroup
                 return ApiNotFoundError.IconMissingError;
         }
 
-        if (body.Username != null) 
+        // Do nothing if the username entered is actually the same as the one already set
+        if (body.Username != null && body.Username != targetUser.Username) 
         {
-            if (!database.IsUsernameValid(body.Username))
+            if (!body.Username.StartsWith(SystemUsers.SystemPrefix) && !database.IsUsernameValid(body.Username))
                 return new ApiValidationError(ApiValidationError.InvalidUsernameErrorWhen
-                    + " Are you sure you used a PSN/RPCN username?");
+                    + " Are you sure you used a PSN/RPCN username, or prepended it with ! if it's a fake user?");
+            
+            if (database.IsUsernameTaken(body.Username))
+                return ApiValidationError.UsernameTakenError;
             
             database.RenameUser(targetUser, body.Username);
         }
