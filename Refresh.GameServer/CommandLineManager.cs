@@ -194,7 +194,7 @@ internal class CommandLineManager
                 Fail("Username must contain content");
             
             GameUser user = this.GetUserOrFail(options);
-            this._server.RenameUser(user, options.RenameUser);
+            this._server.RenameUser(user, options.RenameUser, options.Force);
         }
         else if (options.DeleteUser)
         {
