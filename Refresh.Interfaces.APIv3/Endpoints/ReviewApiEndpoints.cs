@@ -10,6 +10,7 @@ using Refresh.Database.Models.Comments;
 using Refresh.Database.Models.Levels;
 using Refresh.Database.Models.Users;
 using Refresh.Interfaces.APIv3.Documentation.Attributes;
+using Refresh.Interfaces.APIv3.Documentation.Descriptions;
 using Refresh.Interfaces.APIv3.Endpoints.ApiTypes;
 using Refresh.Interfaces.APIv3.Endpoints.ApiTypes.Errors;
 using Refresh.Interfaces.APIv3.Endpoints.DataTypes.Request;
@@ -38,15 +39,15 @@ public class ReviewApiEndpoints : EndpointGroup
         return ret;
     }
 
-    [ApiV3Endpoint("users/{userIdType}/{userId}/reviews"), Authentication(false)]
+    [ApiV3Endpoint("users/{idType}/{id}/reviews"), Authentication(false)]
     [DocUsesPageData, DocSummary("Gets a list of the reviews posted by a user.")]
     [DocError(typeof(ApiNotFoundError), ApiNotFoundError.UserMissingErrorWhen)]
     public ApiListResponse<ApiGameReviewResponse> GetReviewsByUser(RequestContext context,
-        GameDatabaseContext database, IDataStore dataStore, DataContext dataContext,
-        [DocSummary("The type of identifier used to look up the user. Can be either 'uuid' or 'username'.")] string userIdType,
-        [DocSummary("The UUID or username of the user, depending on the specified ID type.")] string userId)
+        GameDatabaseContext database, DataContext dataContext,
+        [DocSummary(SharedParamDescriptions.UserIdParam)] string id, 
+        [DocSummary(SharedParamDescriptions.UserIdTypeParam)] string idType)
     {
-        GameUser? user = database.GetUserByIdAndType(userIdType, userId);
+        GameUser? user = database.GetUserByIdAndType(idType, id);
         if (user == null) return ApiNotFoundError.UserMissingError;
         
         (int skip, int count) = context.GetPageData();
