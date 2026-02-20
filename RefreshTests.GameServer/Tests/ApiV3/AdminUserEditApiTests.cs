@@ -9,7 +9,7 @@ using RefreshTests.GameServer.Extensions;
 
 namespace RefreshTests.GameServer.Tests.ApiV3;
 
-public class ModerationApiTests : GameServerTest
+public class AdminUserEditApiTests : GameServerTest
 {
     [Test]
     [TestCase(GameUserRole.Restricted)]
