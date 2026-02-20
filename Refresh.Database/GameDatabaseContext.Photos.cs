@@ -193,16 +193,12 @@ public partial class GameDatabaseContext // Photos
 
     public void DeletePhotosPostedByUser(GameUser user)
     {
-        IEnumerable<GamePhoto> photos = this.GamePhotos.Where(s => s.PublisherId == user.UserId);
-        
-        this.WriteEnsuringStatistics(user, () =>
+        IEnumerable<GamePhoto> photos = this.GamePhotos.Where(s => s.PublisherId == user.UserId).ToArray();
+
+        foreach (GamePhoto photo in photos)
         {
-            foreach (GamePhoto photo in photos)
-            {
-                this.RemovePhoto(photo);
-            }
-            
-            user.Statistics!.PhotosByUserCount = 0;
-        });
+            // RemovePhoto already takes care of decrementing (effectively resetting) the publisher's photo count
+            this.RemovePhoto(photo);
+        }
     }
 }
