@@ -12,6 +12,7 @@ using Refresh.Database;
 using Refresh.Database.Models.Authentication;
 using Refresh.Database.Models.Pins;
 using Refresh.Database.Models.Users;
+using Refresh.Interfaces.APIv3.Documentation.Descriptions;
 using Refresh.Interfaces.APIv3.Endpoints.ApiTypes;
 using Refresh.Interfaces.APIv3.Endpoints.ApiTypes.Errors;
 using Refresh.Interfaces.APIv3.Endpoints.DataTypes.Request;
@@ -21,41 +22,28 @@ namespace Refresh.Interfaces.APIv3.Endpoints;
 
 public class UserApiEndpoints : EndpointGroup
 {
-    [ApiV3Endpoint("users/name/{username}"), Authentication(false)]
-    [DocSummary("Tries to find a user by the username")]
+    [ApiV3Endpoint("users/{idType}/{id}"), Authentication(false)]
+    [DocSummary("Tries to find a user by name or UUID")]
     [DocError(typeof(ApiNotFoundError), "The user cannot be found")]
-    public ApiResponse<ApiGameUserResponse> GetUserByName(RequestContext context, GameDatabaseContext database,
-        IDataStore dataStore,
-        [DocSummary("The username of the user")]
-        string username, DataContext dataContext)
+    public ApiResponse<ApiGameUserResponse> GetUser(RequestContext context, GameDatabaseContext database,
+        [DocSummary(SharedParamDescriptions.UserIdParam)] string id, 
+        [DocSummary(SharedParamDescriptions.UserIdTypeParam)] string idType, DataContext dataContext)
     {
-        GameUser? user = database.GetUserByUsername(username, false);
-        if(user == null) return ApiNotFoundError.UserMissingError;
-        
-        return ApiGameUserResponse.FromOld(user, dataContext);
-    }
-    
-    [ApiV3Endpoint("users/uuid/{uuid}"), Authentication(false)]
-    [DocSummary("Tries to find a user by the UUID")]
-    [DocError(typeof(ApiNotFoundError), "The user cannot be found")]
-    public ApiResponse<ApiGameUserResponse> GetUserByUuid(RequestContext context, GameDatabaseContext database,
-        IDataStore dataStore,
-        [DocSummary("The UUID of the user")] string uuid, DataContext dataContext)
-    {
-        GameUser? user = database.GetUserByUuid(uuid);
+        GameUser? user = database.GetUserByIdAndType(idType, id);
         if(user == null) return ApiNotFoundError.UserMissingError;
         
         return ApiGameUserResponse.FromOld(user, dataContext);
     }
 
     // TODO: Also allow specifying user by username
-    [ApiV3Endpoint("users/uuid/{uuid}/heart", HttpMethods.Post)]
-    [DocSummary("Hearts a user by their UUID")]
+    [ApiV3Endpoint("users/{idType}/{id}/heart", HttpMethods.Post)]
+    [DocSummary("Hearts a user by their name or UUID")]
     [DocError(typeof(ApiNotFoundError), ApiNotFoundError.UserMissingErrorWhen)]
-    public ApiOkResponse HeartUserByUuid(RequestContext context, GameDatabaseContext database,
-        [DocSummary("The UUID of the user")] string uuid, DataContext dataContext, GameUser user)
+    public ApiOkResponse HeartUser(RequestContext context, GameDatabaseContext database,
+        [DocSummary(SharedParamDescriptions.UserIdParam)] string id, 
+        [DocSummary(SharedParamDescriptions.UserIdTypeParam)] string idType, DataContext dataContext, GameUser user)
     {
-        GameUser? target = database.GetUserByUuid(uuid);
+        GameUser? target = database.GetUserByIdAndType(idType, id);
         if(target == null) return ApiNotFoundError.UserMissingError;
         
         bool success = database.FavouriteUser(target, user);
@@ -68,13 +56,14 @@ public class UserApiEndpoints : EndpointGroup
         return new ApiOkResponse();
     }
 
-    [ApiV3Endpoint("users/uuid/{uuid}/unheart", HttpMethods.Post)]
-    [DocSummary("Unhearts a user by their UUID")]
+    [ApiV3Endpoint("users/{idType}/{id}/unheart", HttpMethods.Post)]
+    [DocSummary("Unhearts a user by their name or UUID")]
     [DocError(typeof(ApiNotFoundError), ApiNotFoundError.UserMissingErrorWhen)]
-    public ApiOkResponse UnheartUserByUuid(RequestContext context, GameDatabaseContext database,
-        [DocSummary("The UUID of the user")] string uuid, DataContext dataContext, GameUser user)
+    public ApiOkResponse UnheartUser(RequestContext context, GameDatabaseContext database,
+        [DocSummary(SharedParamDescriptions.UserIdParam)] string id, 
+        [DocSummary(SharedParamDescriptions.UserIdTypeParam)] string idType, DataContext dataContext, GameUser user)
     {
-        GameUser? target = database.GetUserByUuid(uuid);
+        GameUser? target = database.GetUserByIdAndType(idType, id);
         if(target == null) return ApiNotFoundError.UserMissingError;
         
         database.UnfavouriteUser(target, user);

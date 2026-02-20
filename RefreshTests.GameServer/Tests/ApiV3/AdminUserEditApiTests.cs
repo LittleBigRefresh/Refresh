@@ -9,7 +9,7 @@ using RefreshTests.GameServer.Extensions;
 
 namespace RefreshTests.GameServer.Tests.ApiV3;
 
-public class ModerationApiTests : GameServerTest
+public class AdminUserEditApiTests : GameServerTest
 {
     [Test]
     [TestCase(GameUserRole.Restricted)]
@@ -53,6 +53,33 @@ public class ModerationApiTests : GameServerTest
             Assert.That(targetUpdated!.Description, Is.EqualTo("lol"));
             Assert.That(context.Database.GetModerationActionsForObject(target.UserId.ToString(), ModerationObjectType.User, 0, 1).TotalItems, Is.EqualTo(1));
         }
+    }
+
+    [Test]
+    public void EditsUserByUuidAndName()
+    {
+        using TestContext context = this.GetServer();
+        GameUser mod = context.CreateUser(role: GameUserRole.Moderator);
+        HttpClient client = context.GetAuthenticatedClient(TokenType.Api, mod);
+        GameUser player = context.CreateUser(role: GameUserRole.User);
+
+        // UUID
+        ApiAdminUpdateUserRequest request = new()
+        {
+            Description = "poo"
+        };
+        ApiResponse<ApiExtendedGameUserResponse>? response = client.PatchData<ApiExtendedGameUserResponse>($"/api/v3/admin/users/uuid/{player.UserId}", request);
+        Assert.That(response?.Data, Is.Not.Null);
+        Assert.That(response!.Data!.Description, Is.EqualTo(request.Description));
+
+        // name
+        request = new()
+        {
+            Description = "lmao"
+        };
+        response = client.PatchData<ApiExtendedGameUserResponse>($"/api/v3/admin/users/name/{player.Username}", request);
+        Assert.That(response?.Data, Is.Not.Null);
+        Assert.That(response!.Data!.Description, Is.EqualTo(request.Description));
     }
 
     [Test]

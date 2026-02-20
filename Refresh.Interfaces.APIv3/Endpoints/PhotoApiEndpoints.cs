@@ -9,6 +9,7 @@ using Refresh.Database.Models.Levels;
 using Refresh.Database.Models.Photos;
 using Refresh.Database.Models.Users;
 using Refresh.Interfaces.APIv3.Documentation.Attributes;
+using Refresh.Interfaces.APIv3.Documentation.Descriptions;
 using Refresh.Interfaces.APIv3.Endpoints.ApiTypes;
 using Refresh.Interfaces.APIv3.Endpoints.ApiTypes.Errors;
 using Refresh.Interfaces.APIv3.Endpoints.DataTypes.Response.Users.Photos;
@@ -34,10 +35,16 @@ public class PhotoApiEndpoints : EndpointGroup
         return new ApiOkResponse();
     }
     
-    private static ApiListResponse<ApiGamePhotoResponse> PhotosByUser(RequestContext context,
-        GameDatabaseContext database, GameUser? user, IDataStore dataStore, DataContext dataContext)
+    [ApiV3Endpoint("photos/by/{userIdType}/{id}"), Authentication(false)]
+    [DocUsesPageData, DocSummary("Gets photos uploaded by a user specified by their username or UUID")]
+    [DocError(typeof(ApiNotFoundError), "The user cannot be found")]
+    public ApiListResponse<ApiGamePhotoResponse> PhotosByUser(RequestContext context, GameDatabaseContext database,
+        [DocSummary(SharedParamDescriptions.UserIdParam)] string id, 
+        [DocSummary(SharedParamDescriptions.UserIdTypeParam)] string userIdType, DataContext dataContext) 
     {
+        GameUser? user = database.GetUserByIdAndType(userIdType, id);
         if (user == null) return ApiNotFoundError.Instance;
+
         (int skip, int count) = context.GetPageData();
 
         DatabaseList<GamePhoto> photos = database.GetPhotosByUser(user, count, skip);
@@ -45,61 +52,23 @@ public class PhotoApiEndpoints : EndpointGroup
         return photosResponse;
     }
     
-    private static ApiListResponse<ApiGamePhotoResponse> PhotosWithUser(RequestContext context,
-        GameDatabaseContext database, GameUser? user, IDataStore dataStore, DataContext dataContext)
+    [ApiV3Endpoint("photos/with/{userIdType}/{id}"), Authentication(false)]
+    [DocUsesPageData, DocSummary("Gets photos depicting a user specified by their username or UUID")]
+    [DocError(typeof(ApiNotFoundError), "The user cannot be found")]
+    public ApiListResponse<ApiGamePhotoResponse> PhotosWithUser(RequestContext context,
+        GameDatabaseContext database, DataContext dataContext,
+        [DocSummary(SharedParamDescriptions.UserIdParam)] string id, 
+        [DocSummary(SharedParamDescriptions.UserIdTypeParam)] string userIdType)
     {
+        GameUser? user = database.GetUserByIdAndType(userIdType, id);
         if (user == null) return ApiNotFoundError.Instance;
+
         (int skip, int count) = context.GetPageData();
 
         DatabaseList<GamePhoto> photos = database.GetPhotosWithUser(user, count, skip);
         DatabaseList<ApiGamePhotoResponse> photosResponse = DatabaseListExtensions.FromOldList<ApiGamePhotoResponse, GamePhoto>(photos, dataContext);
         return photosResponse;
     }
-    
-    private static ApiListResponse<ApiGamePhotoResponse> PhotosInLevel(RequestContext context,
-        GameDatabaseContext database, GameLevel? level, IDataStore dataStore, DataContext dataContext)
-    {
-        if (level == null) return ApiNotFoundError.Instance;
-        (int skip, int count) = context.GetPageData();
-
-        DatabaseList<GamePhoto> photos = database.GetPhotosInLevel(level, count, skip);
-        DatabaseList<ApiGamePhotoResponse> photosResponse = DatabaseListExtensions.FromOldList<ApiGamePhotoResponse, GamePhoto>(photos, dataContext);
-        return photosResponse;
-    }
-    
-    [ApiV3Endpoint("photos/by/username/{username}"), Authentication(false)]
-    [DocUsesPageData, DocSummary("Gets photos by a user by their username")]
-    [DocError(typeof(ApiNotFoundError), "The user cannot be found")]
-    public ApiListResponse<ApiGamePhotoResponse> PhotosByUsername(RequestContext context, GameDatabaseContext database,
-        IDataStore dataStore,
-        [DocSummary("The username of the user")]
-        string username, DataContext dataContext) 
-        => PhotosByUser(context, database, database.GetUserByUsername(username), dataStore, dataContext);
-    
-    [ApiV3Endpoint("photos/with/username/{username}"), Authentication(false)]
-    [DocUsesPageData, DocSummary("Gets photos including a user by their username")]
-    [DocError(typeof(ApiNotFoundError), "The user cannot be found")]
-    public ApiListResponse<ApiGamePhotoResponse> PhotosWithUsername(RequestContext context,
-        GameDatabaseContext database, IDataStore dataStore,
-        [DocSummary("The username of the user")]
-        string username, DataContext dataContext)
-        => PhotosWithUser(context, database, database.GetUserByUsername(username), dataStore, dataContext);
-
-    [ApiV3Endpoint("photos/by/uuid/{uuid}"), Authentication(false)]
-    [DocUsesPageData, DocSummary("Gets photos by a user by their uuid")]
-    [DocError(typeof(ApiNotFoundError), "The user cannot be found")]
-    public ApiListResponse<ApiGamePhotoResponse> PhotosByUserUuid(RequestContext context, GameDatabaseContext database,
-        IDataStore dataStore,
-        [DocSummary("The UUID of the user")] string uuid, DataContext dataContext)
-        => PhotosByUser(context, database, database.GetUserByUuid(uuid), dataStore, dataContext);
-
-    [ApiV3Endpoint("photos/with/uuid/{uuid}"), Authentication(false)]
-    [DocUsesPageData, DocSummary("Gets photos including a user by their uuid")]
-    [DocError(typeof(ApiNotFoundError), "The user cannot be found")]
-    public ApiListResponse<ApiGamePhotoResponse> PhotosWithUserUuid(RequestContext context,
-        GameDatabaseContext database, IDataStore dataStore,
-        [DocSummary("The UUID of the user")] string uuid, DataContext dataContext)
-        => PhotosWithUser(context, database, database.GetUserByUuid(uuid), dataStore, dataContext);
 
     [ApiV3Endpoint("levels/id/{id}/photos"), Authentication(false)]
     [DocUsesPageData, DocSummary("Gets photos taken in a level by its id")]
@@ -107,7 +76,16 @@ public class PhotoApiEndpoints : EndpointGroup
     public ApiListResponse<ApiGamePhotoResponse> PhotosInLevelById(RequestContext context, GameDatabaseContext database,
         IDataStore dataStore,
         [DocSummary("The ID of the level")] int id, DataContext dataContext)
-        => PhotosInLevel(context, database, database.GetLevelById(id), dataStore, dataContext);
+    {
+        GameLevel? level = database.GetLevelById(id);
+        if (level == null) return ApiNotFoundError.Instance;
+        
+        (int skip, int count) = context.GetPageData();
+
+        DatabaseList<GamePhoto> photos = database.GetPhotosInLevel(level, count, skip);
+        DatabaseList<ApiGamePhotoResponse> photosResponse = DatabaseListExtensions.FromOldList<ApiGamePhotoResponse, GamePhoto>(photos, dataContext);
+        return photosResponse;
+    }
     
     [ApiV3Endpoint("photos"), Authentication(false)]
     [DocUsesPageData, DocSummary("Get all photos taken recently")]

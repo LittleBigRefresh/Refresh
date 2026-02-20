@@ -10,6 +10,7 @@ using Refresh.Database.Models.Levels;
 using Refresh.Database.Models.Users;
 using Refresh.Database.Query;
 using Refresh.Interfaces.APIv3.Documentation.Attributes;
+using Refresh.Interfaces.APIv3.Documentation.Descriptions;
 using Refresh.Interfaces.APIv3.Endpoints.ApiTypes;
 using Refresh.Interfaces.APIv3.Endpoints.ApiTypes.Errors;
 using Refresh.Interfaces.APIv3.Endpoints.DataTypes.Response.Activity;
@@ -97,14 +98,15 @@ public class ActivityApiEndpoints : EndpointGroup
         return ApiActivityPageResponse.FromOld(page, dataContext);
     }
     
-    [ApiV3Endpoint("users/uuid/{uuid}/activity"), Authentication(false)]
+    [ApiV3Endpoint("users/{idType}/{id}/activity"), Authentication(false)]
     [DocUsesPageData, DocSummary("Fetch a list of recent happenings for a particular user")]
     [DocQueryParam("timestamp", "A timestamp in unix seconds, used to search backwards")]
     [DocError(typeof(ApiValidationError), ApiValidationError.NumberParseErrorWhen)]
     [DocError(typeof(ApiNotFoundError), "The user could not be found")]
-    public ApiResponse<ApiActivityPageResponse> GetRecentActivityForUserUuid(RequestContext context,
-        GameServerConfig config, GameDatabaseContext database, IDataStore dataStore,
-        [DocSummary("The UUID of the user")] string uuid, DataContext dataContext)
+    public ApiResponse<ApiActivityPageResponse> GetRecentActivityForUser(RequestContext context,
+        GameServerConfig config, GameDatabaseContext database, DataContext dataContext,
+        [DocSummary(SharedParamDescriptions.UserIdParam)] string id, 
+        [DocSummary(SharedParamDescriptions.UserIdTypeParam)] string idType)
     {
         if (!config.PermitShowingOnlineUsers)
             return ApiActivityPageResponse.Empty;
@@ -119,48 +121,7 @@ public class ActivityApiEndpoints : EndpointGroup
         string? tsStr = context.QueryString["timestamp"];
         if (tsStr != null && !long.TryParse(tsStr, out timestamp)) return ApiValidationError.NumberParseError;
         
-        GameUser? user = database.GetUserByUuid(uuid);
-        if (user == null) return ApiNotFoundError.Instance;
-        
-        (int skip, int count) = context.GetPageData();
-
-        DatabaseActivityPage page = database.GetRecentActivityFromUser(new ActivityQueryParameters
-        {
-            Timestamp = timestamp,
-            Skip = skip,
-            Count = count,
-            User = user,
-            ExcludeFriends = excludeFriends,
-            ExcludeMyLevels = excludeMyLevels,
-            ExcludeFavouriteUsers = excludeFavouriteUsers,
-            ExcludeMyself = excludeMyself,
-        });
-        return ApiActivityPageResponse.FromOld(page, dataContext);
-    }
-    
-    [ApiV3Endpoint("users/name/{username}/activity"), Authentication(false)]
-    [DocUsesPageData, DocSummary("Fetch a list of recent happenings for a particular user")]
-    [DocQueryParam("timestamp", "A timestamp in unix seconds, used to search backwards")]
-    [DocError(typeof(ApiValidationError), ApiValidationError.NumberParseErrorWhen)]
-    [DocError(typeof(ApiNotFoundError), "The user could not be found")]
-    public ApiResponse<ApiActivityPageResponse> GetRecentActivityForUserUsername(RequestContext context,
-        GameServerConfig config, GameDatabaseContext database, IDataStore dataStore,
-        [DocSummary("The username of the user")] string username, DataContext dataContext)
-    {
-        if (!config.PermitShowingOnlineUsers)
-            return ApiActivityPageResponse.Empty;
-
-        long timestamp = 0;
-        
-        bool excludeMyLevels = bool.Parse(context.QueryString["excludeMyLevels"] ?? "false");
-        bool excludeFriends = bool.Parse(context.QueryString["excludeFriends"] ?? "false");
-        bool excludeFavouriteUsers = bool.Parse(context.QueryString["excludeFavouriteUsers"] ?? "false");
-        bool excludeMyself = bool.Parse(context.QueryString["excludeMyself"] ?? "false");
-
-        string? tsStr = context.QueryString["timestamp"];
-        if (tsStr != null && !long.TryParse(tsStr, out timestamp)) return ApiValidationError.NumberParseError;
-        
-        GameUser? user = database.GetUserByUsername(username);
+        GameUser? user = database.GetUserByIdAndType(idType, id);
         if (user == null) return ApiNotFoundError.Instance;
         
         (int skip, int count) = context.GetPageData();
