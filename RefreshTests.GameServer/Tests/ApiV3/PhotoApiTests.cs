@@ -21,10 +21,6 @@ public class PhotoApiTests : GameServerTest
         Assert.That(response?.Data, Is.Not.Null);
         Assert.That(response!.Data!.Count, Is.EqualTo(1));
 
-        response = context.Http.GetList<ApiGamePhotoResponse>($"/api/v3/photos/by/username/{player.Username}");
-        Assert.That(response?.Data, Is.Not.Null);
-        Assert.That(response!.Data!.Count, Is.EqualTo(1));
-
         response = context.Http.GetList<ApiGamePhotoResponse>($"/api/v3/photos/by/name/{player.Username}");
         Assert.That(response?.Data, Is.Not.Null);
         Assert.That(response!.Data!.Count, Is.EqualTo(1));
@@ -38,10 +34,6 @@ public class PhotoApiTests : GameServerTest
         context.CreatePhotoWithSubject(player, TEST_IMAGE_HASH);
         
         ApiListResponse<ApiGamePhotoResponse>? response = context.Http.GetList<ApiGamePhotoResponse>($"/api/v3/photos/with/uuid/{player.UserId}");
-        Assert.That(response?.Data, Is.Not.Null);
-        Assert.That(response!.Data!.Count, Is.EqualTo(1));
-
-        response = context.Http.GetList<ApiGamePhotoResponse>($"/api/v3/photos/with/username/{player.Username}");
         Assert.That(response?.Data, Is.Not.Null);
         Assert.That(response!.Data!.Count, Is.EqualTo(1));
 
@@ -67,12 +59,6 @@ public class PhotoApiTests : GameServerTest
         // name
         context.CreatePhotoWithSubject(player, TEST_IMAGE_HASH);
         resetResponse = await client.DeleteAsync($"/api/v3/admin/users/name/{player.Username}/photos");
-        Assert.That(resetResponse.IsSuccessStatusCode, Is.True);
-        Assert.That(context.Database.GetTotalPhotosByUser(player), Is.Zero);
-
-        // username
-        context.CreatePhotoWithSubject(player, TEST_IMAGE_HASH);
-        resetResponse = await client.DeleteAsync($"/api/v3/admin/users/username/{player.Username}/photos");
         Assert.That(resetResponse.IsSuccessStatusCode, Is.True);
         Assert.That(context.Database.GetTotalPhotosByUser(player), Is.Zero);
     }

@@ -23,14 +23,12 @@ public class MatchingApiTests : GameServerTest
         match.Initialize();
         GameRoom room = match.CreateRoomByPlayer(player, TokenPlatform.PS3, TokenGame.LittleBigPlanet2, NatType.Open);
         
+        // UUID
         ApiResponse<ApiGameRoomResponse>? response = context.Http.GetData<ApiGameRoomResponse>($"/api/v3/rooms/uuid/{player.UserId}");
         Assert.That(response?.Data, Is.Not.Null);
         Assert.That(response!.Data!.RoomId.ToString(), Is.EqualTo(room.RoomId.ToString()));
 
-        response = context.Http.GetData<ApiGameRoomResponse>($"/api/v3/rooms/username/{player.Username}");
-        Assert.That(response?.Data, Is.Not.Null);
-        Assert.That(response!.Data!.RoomId.ToString(), Is.EqualTo(room.RoomId.ToString()));
-
+        // name
         response = context.Http.GetData<ApiGameRoomResponse>($"/api/v3/rooms/name/{player.Username}");
         Assert.That(response?.Data, Is.Not.Null);
         Assert.That(response!.Data!.RoomId.ToString(), Is.EqualTo(room.RoomId.ToString()));

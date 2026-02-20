@@ -61,8 +61,9 @@ public class AdminUserEditApiTests : GameServerTest
         using TestContext context = this.GetServer();
         GameUser mod = context.CreateUser(role: GameUserRole.Moderator);
         HttpClient client = context.GetAuthenticatedClient(TokenType.Api, mod);
-
         GameUser player = context.CreateUser(role: GameUserRole.User);
+
+        // UUID
         ApiAdminUpdateUserRequest request = new()
         {
             Description = "poo"
@@ -71,14 +72,7 @@ public class AdminUserEditApiTests : GameServerTest
         Assert.That(response?.Data, Is.Not.Null);
         Assert.That(response!.Data!.Description, Is.EqualTo(request.Description));
 
-        request = new()
-        {
-            Description = "pee"
-        };
-        response = client.PatchData<ApiExtendedGameUserResponse>($"/api/v3/admin/users/username/{player.Username}", request);
-        Assert.That(response?.Data, Is.Not.Null);
-        Assert.That(response!.Data!.Description, Is.EqualTo(request.Description));
-
+        // name
         request = new()
         {
             Description = "lmao"
