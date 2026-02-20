@@ -7,6 +7,7 @@ using Refresh.Database.Models.Users;
 using Refresh.Interfaces.APIv3.Endpoints.ApiTypes;
 using Refresh.Interfaces.APIv3.Endpoints.DataTypes.Request;
 using Refresh.Interfaces.APIv3.Endpoints.DataTypes.Response.Levels;
+using Refresh.Interfaces.Game.Types.Reviews;
 using RefreshTests.GameServer.Extensions;
 
 namespace RefreshTests.GameServer.Tests.ApiV3;
@@ -518,5 +519,30 @@ public class ReviewApiTests : GameServerTest
         Assert.That(reviews, Is.Not.Null);
         Assert.That(reviews!.Data, Has.Count.EqualTo(1));
         Assert.That(reviews.Data![0].ReviewId, Is.EqualTo(originalReview.ReviewId));
+    }
+
+    [Test]
+    public async Task DeletesReviewsByPublisherUuidAndName()
+    {
+        using TestContext context = this.GetServer();
+        GameUser mod = context.CreateUser(role: GameUserRole.Moderator);
+        GameLevel level = context.CreateLevel(mod);
+        GameUser publisher = context.CreateUser(role: GameUserRole.User);
+        HttpClient client = context.GetAuthenticatedClient(TokenType.Api, mod);
+        SerializedGameReview reviewToPost = new() { Content = "d" };
+
+        // UUID
+        context.Database.AddReviewToLevel(reviewToPost, level, publisher);
+        Assert.That(context.Database.GetTotalReviewsByUser(publisher), Is.EqualTo(1));
+        HttpResponseMessage resetResponse = await client.DeleteAsync($"/api/v3/admin/users/uuid/{publisher.UserId}/reviews");
+        Assert.That(resetResponse.IsSuccessStatusCode, Is.True);
+        Assert.That(context.Database.GetTotalReviewsByUser(publisher), Is.Zero);
+
+        // name
+        context.Database.AddReviewToLevel(reviewToPost, level, publisher);
+        Assert.That(context.Database.GetTotalReviewsByUser(publisher), Is.EqualTo(1));
+        resetResponse = await client.DeleteAsync($"/api/v3/admin/users/name/{publisher.Username}/reviews");
+        Assert.That(resetResponse.IsSuccessStatusCode, Is.True);
+        Assert.That(context.Database.GetTotalReviewsByUser(publisher), Is.Zero);
     }
 }
