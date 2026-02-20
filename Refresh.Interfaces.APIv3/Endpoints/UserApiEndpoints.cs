@@ -25,7 +25,7 @@ public class UserApiEndpoints : EndpointGroup
     [ApiV3Endpoint("users/{idType}/{id}"), Authentication(false)]
     [DocSummary("Tries to find a user by name or UUID")]
     [DocError(typeof(ApiNotFoundError), "The user cannot be found")]
-    public ApiResponse<ApiGameUserResponse> GetUserByUuid(RequestContext context, GameDatabaseContext database,
+    public ApiResponse<ApiGameUserResponse> GetUser(RequestContext context, GameDatabaseContext database,
         [DocSummary(SharedParamDescriptions.UserIdParam)] string id, 
         [DocSummary(SharedParamDescriptions.UserIdTypeParam)] string idType, DataContext dataContext)
     {
@@ -39,7 +39,7 @@ public class UserApiEndpoints : EndpointGroup
     [ApiV3Endpoint("users/{idType}/{id}/heart", HttpMethods.Post)]
     [DocSummary("Hearts a user by their name or UUID")]
     [DocError(typeof(ApiNotFoundError), ApiNotFoundError.UserMissingErrorWhen)]
-    public ApiOkResponse HeartUserByUuid(RequestContext context, GameDatabaseContext database,
+    public ApiOkResponse HeartUser(RequestContext context, GameDatabaseContext database,
         [DocSummary(SharedParamDescriptions.UserIdParam)] string id, 
         [DocSummary(SharedParamDescriptions.UserIdTypeParam)] string idType, DataContext dataContext, GameUser user)
     {
@@ -57,9 +57,9 @@ public class UserApiEndpoints : EndpointGroup
     }
 
     [ApiV3Endpoint("users/{idType}/{id}/unheart", HttpMethods.Post)]
-    [DocSummary("Unhearts a user by their UUID")]
+    [DocSummary("Unhearts a user by their name or UUID")]
     [DocError(typeof(ApiNotFoundError), ApiNotFoundError.UserMissingErrorWhen)]
-    public ApiOkResponse UnheartUserByUuid(RequestContext context, GameDatabaseContext database,
+    public ApiOkResponse UnheartUser(RequestContext context, GameDatabaseContext database,
         [DocSummary(SharedParamDescriptions.UserIdParam)] string id, 
         [DocSummary(SharedParamDescriptions.UserIdTypeParam)] string idType, DataContext dataContext, GameUser user)
     {

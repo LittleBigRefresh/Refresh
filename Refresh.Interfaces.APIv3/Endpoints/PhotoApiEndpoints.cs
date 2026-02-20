@@ -35,14 +35,14 @@ public class PhotoApiEndpoints : EndpointGroup
         return new ApiOkResponse();
     }
     
-    [ApiV3Endpoint("photos/by/{idType}/{id}"), Authentication(false)]
+    [ApiV3Endpoint("photos/by/{userIdType}/{id}"), Authentication(false)]
     [DocUsesPageData, DocSummary("Gets photos uploaded by a user specified by their username or UUID")]
     [DocError(typeof(ApiNotFoundError), "The user cannot be found")]
-    public ApiListResponse<ApiGamePhotoResponse> PhotosByUsername(RequestContext context, GameDatabaseContext database,
+    public ApiListResponse<ApiGamePhotoResponse> PhotosByUser(RequestContext context, GameDatabaseContext database,
         [DocSummary(SharedParamDescriptions.UserIdParam)] string id, 
-        [DocSummary(SharedParamDescriptions.UserIdTypeParam)] string idType, DataContext dataContext) 
+        [DocSummary(SharedParamDescriptions.UserIdTypeParam)] string userIdType, DataContext dataContext) 
     {
-        GameUser? user = database.GetUserByIdAndType(idType, id);
+        GameUser? user = database.GetUserByIdAndType(userIdType, id);
         if (user == null) return ApiNotFoundError.Instance;
 
         (int skip, int count) = context.GetPageData();
@@ -52,15 +52,15 @@ public class PhotoApiEndpoints : EndpointGroup
         return photosResponse;
     }
     
-    [ApiV3Endpoint("photos/with/{idType}/{id}"), Authentication(false)]
+    [ApiV3Endpoint("photos/with/{userIdType}/{id}"), Authentication(false)]
     [DocUsesPageData, DocSummary("Gets photos depicting a user specified by their username or UUID")]
     [DocError(typeof(ApiNotFoundError), "The user cannot be found")]
-    public ApiListResponse<ApiGamePhotoResponse> PhotosWithUsername(RequestContext context,
+    public ApiListResponse<ApiGamePhotoResponse> PhotosWithUser(RequestContext context,
         GameDatabaseContext database, DataContext dataContext,
         [DocSummary(SharedParamDescriptions.UserIdParam)] string id, 
-        [DocSummary(SharedParamDescriptions.UserIdTypeParam)] string idType)
+        [DocSummary(SharedParamDescriptions.UserIdTypeParam)] string userIdType)
     {
-        GameUser? user = database.GetUserByIdAndType(idType, id);
+        GameUser? user = database.GetUserByIdAndType(userIdType, id);
         if (user == null) return ApiNotFoundError.Instance;
 
         (int skip, int count) = context.GetPageData();

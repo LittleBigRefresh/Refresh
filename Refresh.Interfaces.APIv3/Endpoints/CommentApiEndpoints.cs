@@ -9,6 +9,7 @@ using Refresh.Database.Models.Comments;
 using Refresh.Database.Models.Levels;
 using Refresh.Database.Models.Users;
 using Refresh.Interfaces.APIv3.Documentation.Attributes;
+using Refresh.Interfaces.APIv3.Documentation.Descriptions;
 using Refresh.Interfaces.APIv3.Endpoints.ApiTypes;
 using Refresh.Interfaces.APIv3.Endpoints.ApiTypes.Errors;
 using Refresh.Interfaces.APIv3.Endpoints.DataTypes.Request;
@@ -20,13 +21,15 @@ namespace Refresh.Interfaces.APIv3.Endpoints;
 public class CommentApiEndpoints : EndpointGroup
 {
     #region Profile
-    [ApiV3Endpoint("users/uuid/{uuid}/comments"), Authentication(false)]
+    [ApiV3Endpoint("users/{idType}/{id}/comments"), Authentication(false)]
     [DocSummary("Gets comments posted under the specified user's profile.")]
     [DocError(typeof(ApiNotFoundError), ApiNotFoundError.UserMissingErrorWhen)]
     [DocUsesPageData]
-    public ApiListResponse<ApiProfileCommentResponse> GetCommentsOnProfile(RequestContext context, DataContext dataContext, string uuid)
+    public ApiListResponse<ApiProfileCommentResponse> GetCommentsOnProfile(RequestContext context, DataContext dataContext,
+        [DocSummary(SharedParamDescriptions.UserIdParam)] string id, 
+        [DocSummary(SharedParamDescriptions.UserIdTypeParam)] string idType)
     {
-        GameUser? profile = dataContext.Database.GetUserByUuid(uuid);
+        GameUser? profile = dataContext.Database.GetUserByIdAndType(idType, id);
         if (profile == null) return ApiNotFoundError.UserMissingError;
 
         (int skip, int count) = context.GetPageData();
@@ -35,13 +38,15 @@ public class CommentApiEndpoints : EndpointGroup
         return DatabaseListExtensions.FromOldList<ApiProfileCommentResponse, GameProfileComment>(comments, dataContext);
     }
 
-    [ApiV3Endpoint("users/uuid/{uuid}/comments", HttpMethods.Post)]
+    [ApiV3Endpoint("users/{idType}/{id}/comments", HttpMethods.Post)]
     [DocSummary("Posts the given comment under the specified user's profile.")]
     [DocError(typeof(ApiNotFoundError), ApiNotFoundError.UserMissingErrorWhen)]
     public ApiResponse<ApiProfileCommentResponse> PostCommentOnProfile(RequestContext context,
-        DataContext dataContext, string uuid, GameUser user, ApiCommentPostRequest body)
+        DataContext dataContext, GameUser user, ApiCommentPostRequest body,
+        [DocSummary(SharedParamDescriptions.UserIdParam)] string id, 
+        [DocSummary(SharedParamDescriptions.UserIdTypeParam)] string idType)
     {
-        GameUser? profile = dataContext.Database.GetUserByUuid(uuid);
+        GameUser? profile = dataContext.Database.GetUserByIdAndType(idType, id);
         if (profile == null) return ApiNotFoundError.UserMissingError;
 
         // Trim content

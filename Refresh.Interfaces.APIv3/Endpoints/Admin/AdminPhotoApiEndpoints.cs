@@ -6,6 +6,7 @@ using Refresh.Core.Authentication.Permission;
 using Refresh.Database;
 using Refresh.Database.Models.Photos;
 using Refresh.Database.Models.Users;
+using Refresh.Interfaces.APIv3.Documentation.Descriptions;
 using Refresh.Interfaces.APIv3.Endpoints.ApiTypes;
 using Refresh.Interfaces.APIv3.Endpoints.ApiTypes.Errors;
 
@@ -13,26 +14,14 @@ namespace Refresh.Interfaces.APIv3.Endpoints.Admin;
 
 public class AdminPhotoApiEndpoints : EndpointGroup
 {
-    [ApiV3Endpoint("admin/users/uuid/{uuid}/photos", HttpMethods.Delete), MinimumRole(GameUserRole.Moderator)]
-    [DocSummary("Deletes all photos posted by a user. Gets user by their UUID.")]
+    [ApiV3Endpoint("admin/users/{idType}/{id}/photos", HttpMethods.Delete), MinimumRole(GameUserRole.Moderator)]
+    [DocSummary("Deletes all photos posted by a user. Gets user by their UUID or username.")]
     [DocError(typeof(ApiNotFoundError), ApiNotFoundError.UserMissingErrorWhen)]
-    public ApiOkResponse DeletePhotosPostedByUuid(RequestContext context, GameDatabaseContext database,
-        [DocSummary("The UUID of the user")] string uuid)
+    public ApiOkResponse DeletePhotosPostedByUser(RequestContext context, GameDatabaseContext database,
+        [DocSummary(SharedParamDescriptions.UserIdParam)] string id, 
+        [DocSummary(SharedParamDescriptions.UserIdTypeParam)] string idType)
     {
-        GameUser? user = database.GetUserByUuid(uuid);
-        if (user == null) return ApiNotFoundError.UserMissingError;
-        
-        database.DeletePhotosPostedByUser(user);
-        return new ApiOkResponse();
-    }
-    
-    [ApiV3Endpoint("admin/users/name/{username}/photos", HttpMethods.Delete), MinimumRole(GameUserRole.Moderator)]
-    [DocSummary("Deletes all photos posted by a user. Gets user by their username.")]
-    [DocError(typeof(ApiNotFoundError), ApiNotFoundError.UserMissingErrorWhen)]
-    public ApiOkResponse DeletePhotosPostedByUsername(RequestContext context, GameDatabaseContext database,
-        [DocSummary("The username of the user")] string username)
-    {
-        GameUser? user = database.GetUserByUsername(username);
+        GameUser? user = database.GetUserByIdAndType(idType, id);
         if (user == null) return ApiNotFoundError.UserMissingError;
         
         database.DeletePhotosPostedByUser(user);
