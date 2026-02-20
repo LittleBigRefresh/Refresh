@@ -56,6 +56,39 @@ public class AdminUserEditApiTests : GameServerTest
     }
 
     [Test]
+    public void EditsUserByUuidAndName()
+    {
+        using TestContext context = this.GetServer();
+        GameUser mod = context.CreateUser(role: GameUserRole.Moderator);
+        HttpClient client = context.GetAuthenticatedClient(TokenType.Api, mod);
+
+        GameUser player = context.CreateUser(role: GameUserRole.User);
+        ApiAdminUpdateUserRequest request = new()
+        {
+            Description = "poo"
+        };
+        ApiResponse<ApiExtendedGameUserResponse>? response = client.PatchData<ApiExtendedGameUserResponse>($"/api/v3/admin/users/uuid/{player.UserId}", request);
+        Assert.That(response?.Data, Is.Not.Null);
+        Assert.That(response!.Data!.Description, Is.EqualTo(request.Description));
+
+        request = new()
+        {
+            Description = "pee"
+        };
+        response = client.PatchData<ApiExtendedGameUserResponse>($"/api/v3/admin/users/username/{player.Username}", request);
+        Assert.That(response?.Data, Is.Not.Null);
+        Assert.That(response!.Data!.Description, Is.EqualTo(request.Description));
+
+        request = new()
+        {
+            Description = "lmao"
+        };
+        response = client.PatchData<ApiExtendedGameUserResponse>($"/api/v3/admin/users/name/{player.Username}", request);
+        Assert.That(response?.Data, Is.Not.Null);
+        Assert.That(response!.Data!.Description, Is.EqualTo(request.Description));
+    }
+
+    [Test]
     [TestCase(GameUserRole.Restricted)]
     [TestCase(GameUserRole.User)]
     [TestCase(GameUserRole.Curator)]

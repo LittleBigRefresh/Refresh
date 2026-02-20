@@ -142,6 +142,35 @@ public class TestContext : IDisposable
         return level;
     }
 
+    public void CreatePhotoWithSubject(GameUser author, string imageHash)
+    {
+        // TODO: Return newly created GamePhoto
+        if (this.Database.GetAssetFromHash(imageHash) == null)
+        {
+            this.Database.AddAssetToDatabase(new()
+            {
+                AssetHash = imageHash,
+            });
+        }
+        
+        this.Database.UploadPhoto(new()
+        {
+            AuthorName = author.Username,
+            SmallHash = imageHash,
+            MediumHash = imageHash,
+            LargeHash = imageHash,
+            PhotoSubjects = 
+            [
+                new()
+                {
+                    Username = author.Username,
+                    DisplayName = author.Username,
+                    BoundsList = "10,10,10,10"
+                }
+            ]
+        }, author);
+    }
+
     public void FillLeaderboard(GameLevel level, int count, byte type)
     {
         for (byte i = 0; i < count; i++)
