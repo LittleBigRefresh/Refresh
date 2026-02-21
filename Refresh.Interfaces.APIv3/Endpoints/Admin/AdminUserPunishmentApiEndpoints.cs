@@ -17,44 +17,56 @@ public class AdminUserPunishmentApiEndpoints : EndpointGroup
     [ApiV3Endpoint("admin/users/{idType}/{id}/ban", HttpMethods.Post), MinimumRole(GameUserRole.Moderator)]
     [DocSummary("Bans a user for the specified reason until the given date.")]
     [DocError(typeof(ApiNotFoundError), ApiNotFoundError.UserMissingErrorWhen)]
+    [DocError(typeof(ApiValidationError), ApiValidationError.MayNotModifyUserDueToLowRoleErrorWhen)]
     [DocRequestBody(typeof(ApiPunishUserRequest))]
-    public ApiOkResponse BanUser(RequestContext context, GameDatabaseContext database, ApiPunishUserRequest body,
+    public ApiOkResponse BanUser(RequestContext context, GameDatabaseContext database, ApiPunishUserRequest body, GameUser user,
         [DocSummary(SharedParamDescriptions.UserIdParam)] string id, 
         [DocSummary(SharedParamDescriptions.UserIdTypeParam)] string idType)
     {
-        GameUser? user = database.GetUserByIdAndType(idType, id);
-        if (user == null) return ApiNotFoundError.UserMissingError;
+        GameUser? targetUser = database.GetUserByIdAndType(idType, id);
+        if (targetUser == null) return ApiNotFoundError.UserMissingError;
         
-        database.BanUser(user, body.Reason, body.ExpiryDate);
+        if (!user.MayModifyUser(targetUser))
+            return ApiValidationError.MayNotModifyUserDueToLowRoleError;
+
+        database.BanUser(targetUser, body.Reason, body.ExpiryDate);
         return new ApiOkResponse();
     }
     
     [ApiV3Endpoint("admin/users/{idType}/{id}/restrict", HttpMethods.Post), MinimumRole(GameUserRole.Moderator)]
     [DocSummary("Restricts a user for the specified reason until the given date.")]
     [DocError(typeof(ApiNotFoundError), ApiNotFoundError.UserMissingErrorWhen)]
+    [DocError(typeof(ApiValidationError), ApiValidationError.MayNotModifyUserDueToLowRoleErrorWhen)]
     [DocRequestBody(typeof(ApiPunishUserRequest))]
-    public ApiOkResponse RestrictUser(RequestContext context, GameDatabaseContext database, ApiPunishUserRequest body,
+    public ApiOkResponse RestrictUser(RequestContext context, GameDatabaseContext database, ApiPunishUserRequest body, GameUser user,
         [DocSummary(SharedParamDescriptions.UserIdParam)] string id, 
         [DocSummary(SharedParamDescriptions.UserIdTypeParam)] string idType)
     {
-        GameUser? user = database.GetUserByIdAndType(idType, id);
-        if (user == null) return ApiNotFoundError.UserMissingError;
+        GameUser? targetUser = database.GetUserByIdAndType(idType, id);
+        if (targetUser == null) return ApiNotFoundError.UserMissingError;
         
-        database.RestrictUser(user, body.Reason, body.ExpiryDate);
+        if (!user.MayModifyUser(targetUser))
+            return ApiValidationError.MayNotModifyUserDueToLowRoleError;
+
+        database.RestrictUser(targetUser, body.Reason, body.ExpiryDate);
         return new ApiOkResponse();
     }
     
     [ApiV3Endpoint("admin/users/{idType}/{id}/pardon", HttpMethods.Post), MinimumRole(GameUserRole.Moderator)]
     [DocSummary("Pardons all punishments for the given user.")]
     [DocError(typeof(ApiNotFoundError), ApiNotFoundError.UserMissingErrorWhen)]
-    public ApiOkResponse PardonUser(RequestContext context, GameDatabaseContext database,
+    [DocError(typeof(ApiValidationError), ApiValidationError.MayNotModifyUserDueToLowRoleErrorWhen)]
+    public ApiOkResponse PardonUser(RequestContext context, GameDatabaseContext database, GameUser user,
         [DocSummary(SharedParamDescriptions.UserIdParam)] string id, 
         [DocSummary(SharedParamDescriptions.UserIdTypeParam)] string idType)
     {
-        GameUser? user = database.GetUserByIdAndType(idType, id);
-        if (user == null) return ApiNotFoundError.UserMissingError;
+        GameUser? targetUser = database.GetUserByIdAndType(idType, id);
+        if (targetUser == null) return ApiNotFoundError.UserMissingError;
+
+        if (!user.MayModifyUser(targetUser))
+            return ApiValidationError.MayNotModifyUserDueToLowRoleError;
         
-        database.SetUserRole(user, GameUserRole.User);
+        database.SetUserRole(targetUser, GameUserRole.User);
         return new ApiOkResponse();
     }
 }
