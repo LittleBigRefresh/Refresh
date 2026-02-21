@@ -17,8 +17,9 @@ public partial class GameDatabaseContext // Contests
             ContestId = contestId,
             Organizer = organizer,
             CreationDate = this._time.Now,
-            StartDate = createInfo.StartDate!.Value,
-            EndDate = createInfo.EndDate!.Value,
+            // EF doesn't support timestamps with offsets
+            StartDate = createInfo.StartDate!.Value.UtcDateTime,
+            EndDate = createInfo.EndDate!.Value.UtcDateTime,
             ContestTitle = createInfo.ContestTitle!,
             BannerUrl = createInfo.BannerUrl ?? "",
             ContestTag = createInfo.ContestTag ?? $"#{contestId}",
@@ -80,9 +81,9 @@ public partial class GameDatabaseContext // Contests
                 contest.Organizer = newOrganizer;
             
             if(body.StartDate != null)
-                contest.StartDate = body.StartDate.Value;
+                contest.StartDate = body.StartDate.Value.UtcDateTime;
             if(body.EndDate != null)
-                contest.EndDate = body.EndDate.Value;
+                contest.EndDate = body.EndDate.Value.UtcDateTime;
             if(body.ContestTag != null)
                 contest.ContestTag = body.ContestTag;
             if(body.BannerUrl != null)

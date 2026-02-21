@@ -320,7 +320,7 @@ public partial class GameDatabaseContext // Users
         {
             user.Role = role;
             user.BanReason = reason;
-            user.BanExpiryDate = expiryDate;
+            user.BanExpiryDate = expiryDate.UtcDateTime; // EF doesn't support timestamps with offsets
         });
     }
 

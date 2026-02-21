@@ -24,7 +24,6 @@ public class ContestTests : GameServerTest
     {
         organizer ??= context.CreateUser();
         GameLevel templateLevel = context.CreateLevel(organizer);
-        
         GameContest contest = context.Database.CreateContest(id, new ApiContestRequest
         {
             OrganizerId = organizer.UserId.ToString(),
@@ -93,6 +92,49 @@ public class ContestTests : GameServerTest
 
         GameContest? contest = context.Database.GetContestById("minicontest");
         Assert.That(contest, Is.Not.Null);
+    }
+
+    [Test]
+    public void CanCreateAndUpdateContestWithOffsetTimestamps()
+    {
+        using TestContext context = this.GetServer(false);
+        GameUser organizer = context.CreateUser();
+        DateTime now = context.Time.Now.DateTime;
+        
+        // Create
+        Assert.That(() =>
+        {
+            // ReSharper disable once AccessToDisposedClosure
+            context.Database.CreateContest("contestde", new ApiContestRequest
+            {
+                OrganizerId = organizer.UserId.ToString(),
+                ContestTitle = "geremany contest",
+                StartDate = new(now, new(2, 0, 0)),
+                EndDate = new(now.AddHours(4), new(2, 0, 0)),
+            }, organizer, null);
+        }, Throws.Nothing);
+
+        GameContest? contest = context.Database.GetContestById("contestde");
+        Assert.That(contest, Is.Not.Null);
+        Assert.That(contest!.StartDate.DateTime.Equals(now.AddHours(-2)), Is.True);
+        Assert.That(contest!.EndDate.DateTime.Equals(now.AddHours(2)), Is.True);
+
+        // Update
+        Assert.That(() =>
+        {
+            // ReSharper disable once AccessToDisposedClosure
+            context.Database.UpdateContest(new ApiContestRequest
+            {
+                OrganizerId = organizer.UserId.ToString(),
+                StartDate = new(now, new(4, 0, 0)),
+                EndDate = new(now.AddHours(5), new(4, 0, 0)),
+            }, contest, organizer, null);
+        }, Throws.Nothing);
+
+        GameContest? updated = context.Database.GetContestById("contestde");
+        Assert.That(updated, Is.Not.Null);
+        Assert.That(updated!.StartDate.DateTime.Equals(now.AddHours(-4)), Is.True);
+        Assert.That(updated!.EndDate.DateTime.Equals(now.AddHours(1)), Is.True);
     }
 
     [Test]
