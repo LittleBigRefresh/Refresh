@@ -8,6 +8,7 @@ using Refresh.Interfaces.Game.Types.UserData;
 using Refresh.Interfaces.APIv3.Endpoints.DataTypes.Response.Admin;
 using Refresh.Interfaces.APIv3.Endpoints.ApiTypes;
 using Refresh.Common.Extensions;
+using Refresh.Interfaces.APIv3.Endpoints.DataTypes.Request;
 
 namespace RefreshTests.GameServer.Tests.ApiV3;
 
@@ -96,5 +97,171 @@ public class AdminUserManagementApiTests : GameServerTest
         updated = context.Database.GetUserByObjectId(updated.UserId);
         Assert.That(updated, Is.Not.Null);
         Assert.That(updated!.Lbp3PlanetsHash.IsBlankHash(), Is.True);
+    }
+
+    [Test]
+    public async Task ModeratorsMayNotDeleteAdminsAndModerators()
+    {
+        using TestContext context = this.GetServer();
+        GameUser admin = context.CreateUser(role: GameUserRole.Admin);
+        GameUser mod = context.CreateUser(role: GameUserRole.Moderator);
+        GameUser mod2 = context.CreateUser(role: GameUserRole.Moderator);
+        GameUser user = context.CreateUser(role: GameUserRole.User);
+        HttpClient client = context.GetAuthenticatedClient(TokenType.Api, mod);
+
+        // Admin
+        HttpResponseMessage response = await client.DeleteAsync($"/api/v3/admin/users/uuid/{admin.UserId}");
+        Assert.That(response.IsSuccessStatusCode, Is.False);
+        context.Database.Refresh();
+
+        GameUser? updated = context.Database.GetUserByObjectId(admin.UserId);
+        Assert.That(updated, Is.Not.Null);
+        Assert.That(updated!.Role, Is.EqualTo(GameUserRole.Admin));
+
+        // Mod
+        response = await client.DeleteAsync($"/api/v3/admin/users/uuid/{mod2.UserId}");
+        Assert.That(response.IsSuccessStatusCode, Is.False);
+        context.Database.Refresh();
+
+        updated = context.Database.GetUserByObjectId(mod2.UserId);
+        Assert.That(updated, Is.Not.Null);
+        Assert.That(updated!.Role, Is.EqualTo(GameUserRole.Moderator));
+
+        // User
+        response = await client.DeleteAsync($"/api/v3/admin/users/uuid/{user.UserId}");
+        Assert.That(response.IsSuccessStatusCode, Is.True);
+        context.Database.Refresh();
+
+        updated = context.Database.GetUserByObjectId(user.UserId);
+        Assert.That(updated, Is.Not.Null);
+        Assert.That(updated!.Role, Is.EqualTo(GameUserRole.Banned));
+    }
+
+    [Test]
+    public async Task ModeratorsMayNotBanAdminsAndModerators()
+    {
+        using TestContext context = this.GetServer();
+        GameUser admin = context.CreateUser(role: GameUserRole.Admin);
+        GameUser mod = context.CreateUser(role: GameUserRole.Moderator);
+        GameUser mod2 = context.CreateUser(role: GameUserRole.Moderator);
+        GameUser user = context.CreateUser(role: GameUserRole.User);
+        HttpClient client = context.GetAuthenticatedClient(TokenType.Api, mod);
+        ApiPunishUserRequest request = new()
+        {
+            Reason = "lol",
+            ExpiryDate = new(2036, 8, 12, 4, 20, 9, 213, new())
+        };
+
+        // Admin
+        HttpResponseMessage response = await client.PostAsync($"/api/v3/admin/users/uuid/{admin.UserId}/ban", new StringContent(request.AsJson()));
+        Assert.That(response.IsSuccessStatusCode, Is.False);
+        context.Database.Refresh();
+
+        GameUser? updated = context.Database.GetUserByObjectId(admin.UserId);
+        Assert.That(updated, Is.Not.Null);
+        Assert.That(updated!.Role, Is.EqualTo(GameUserRole.Admin));
+
+        // Mod
+        response = await client.PostAsync($"/api/v3/admin/users/uuid/{mod2.UserId}/ban", new StringContent(request.AsJson()));
+        Assert.That(response.IsSuccessStatusCode, Is.False);
+        context.Database.Refresh();
+
+        updated = context.Database.GetUserByObjectId(mod2.UserId);
+        Assert.That(updated, Is.Not.Null);
+        Assert.That(updated!.Role, Is.EqualTo(GameUserRole.Moderator));
+
+        // User
+        response = await client.PostAsync($"/api/v3/admin/users/uuid/{user.UserId}/ban", new StringContent(request.AsJson()));
+        Assert.That(response.IsSuccessStatusCode, Is.True);
+        context.Database.Refresh();
+
+        updated = context.Database.GetUserByObjectId(user.UserId);
+        Assert.That(updated, Is.Not.Null);
+        Assert.That(updated!.Role, Is.EqualTo(GameUserRole.Banned));
+    }
+
+    [Test]
+    public async Task ModeratorsMayNotRestrictAdminsAndModerators()
+    {
+        using TestContext context = this.GetServer();
+        GameUser admin = context.CreateUser(role: GameUserRole.Admin);
+        GameUser mod = context.CreateUser(role: GameUserRole.Moderator);
+        GameUser mod2 = context.CreateUser(role: GameUserRole.Moderator);
+        GameUser user = context.CreateUser(role: GameUserRole.User);
+        HttpClient client = context.GetAuthenticatedClient(TokenType.Api, mod);
+        ApiPunishUserRequest request = new()
+        {
+            Reason = "lol",
+            ExpiryDate = new(2036, 8, 12, 4, 20, 9, 213, new())
+        };
+
+        // Admin
+        HttpResponseMessage response = await client.PostAsync($"/api/v3/admin/users/uuid/{admin.UserId}/restrict", new StringContent(request.AsJson()));
+        Assert.That(response.IsSuccessStatusCode, Is.False);
+        context.Database.Refresh();
+
+        GameUser? updated = context.Database.GetUserByObjectId(admin.UserId);
+        Assert.That(updated, Is.Not.Null);
+        Assert.That(updated!.Role, Is.EqualTo(GameUserRole.Admin));
+
+        // Mod
+        response = await client.PostAsync($"/api/v3/admin/users/uuid/{mod2.UserId}/restrict", new StringContent(request.AsJson()));
+        Assert.That(response.IsSuccessStatusCode, Is.False);
+        context.Database.Refresh();
+
+        updated = context.Database.GetUserByObjectId(mod2.UserId);
+        Assert.That(updated, Is.Not.Null);
+        Assert.That(updated!.Role, Is.EqualTo(GameUserRole.Moderator));
+
+        // User
+        response = await client.PostAsync($"/api/v3/admin/users/uuid/{user.UserId}/restrict", new StringContent(request.AsJson()));
+        Assert.That(response.IsSuccessStatusCode, Is.True);
+        context.Database.Refresh();
+
+        updated = context.Database.GetUserByObjectId(user.UserId);
+        Assert.That(updated, Is.Not.Null);
+        Assert.That(updated!.Role, Is.EqualTo(GameUserRole.Restricted));
+    }
+
+    [Test]
+    public async Task ModeratorsMayNotResetPasswordOfAdminsAndModerators()
+    {
+        using TestContext context = this.GetServer();
+        GameUser admin = context.CreateUser(role: GameUserRole.Admin);
+        GameUser mod = context.CreateUser(role: GameUserRole.Moderator);
+        GameUser mod2 = context.CreateUser(role: GameUserRole.Moderator);
+        GameUser user = context.CreateUser(role: GameUserRole.User);
+        HttpClient client = context.GetAuthenticatedClient(TokenType.Api, mod);
+        ApiResetPasswordRequest request = new()
+        {
+            PasswordSha512 = HexHelper.BytesToHexString(SHA512.HashData("lmao"u8))
+        };
+
+        // Admin
+        HttpResponseMessage response = await client.PutAsync($"/api/v3/admin/users/uuid/{admin.UserId}/resetPassword", new StringContent(request.AsJson()));
+        Assert.That(response.IsSuccessStatusCode, Is.False);
+        context.Database.Refresh();
+
+        GameUser? updated = context.Database.GetUserByObjectId(admin.UserId);
+        Assert.That(updated, Is.Not.Null);
+        Assert.That(updated!.ShouldResetPassword, Is.False);
+
+        // Mod
+        response = await client.PutAsync($"/api/v3/admin/users/uuid/{mod2.UserId}/resetPassword", new StringContent(request.AsJson()));
+        Assert.That(response.IsSuccessStatusCode, Is.False);
+        context.Database.Refresh();
+
+        updated = context.Database.GetUserByObjectId(mod2.UserId);
+        Assert.That(updated, Is.Not.Null);
+        Assert.That(updated!.ShouldResetPassword, Is.False);
+
+        // User
+        response = await client.PutAsync($"/api/v3/admin/users/uuid/{user.UserId}/resetPassword", new StringContent(request.AsJson()));
+        Assert.That(response.IsSuccessStatusCode, Is.True);
+        context.Database.Refresh();
+
+        updated = context.Database.GetUserByObjectId(user.UserId);
+        Assert.That(updated, Is.Not.Null);
+        Assert.That(updated!.ShouldResetPassword, Is.True);
     }
 }
