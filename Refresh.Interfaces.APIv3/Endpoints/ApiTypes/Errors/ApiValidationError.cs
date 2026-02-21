@@ -65,8 +65,14 @@ public class ApiValidationError : ApiError
     public const string MayNotOverwriteRoleErrorWhen = "You may not overwrite user roles because you are not an admin";
     public static readonly ApiValidationError MayNotOverwriteRoleError = new(MayNotOverwriteRoleErrorWhen);
 
+    public const string MayNotModifyUserDueToLowRoleErrorWhen = "You may not modify this user because their role is above yours, or the same as yours incase you're not an admin.";
+    public static readonly ApiValidationError MayNotModifyUserDueToLowRoleError = new(MayNotModifyUserDueToLowRoleErrorWhen);
+
     public const string WrongRoleUpdateMethodErrorWhen = "The specified role cannot be assigned to the user using this endpoint.";
     public static readonly ApiValidationError WrongRoleUpdateMethodError = new(WrongRoleUpdateMethodErrorWhen);
+
+    public const string UserIsAlreadyPardonedErrorWhen = "This user has no punishments, they are already pardoned.";
+    public static readonly ApiValidationError UserIsAlreadyPardonedError = new(UserIsAlreadyPardonedErrorWhen);
 
     public const string RoleMissingErrorWhen = "The specified role does not exist.";
     public static readonly ApiValidationError RoleMissingError = new(RoleMissingErrorWhen);

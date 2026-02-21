@@ -53,13 +53,17 @@ public class AdminUserApiEndpoints : EndpointGroup
     [ApiV3Endpoint("admin/users/{idType}/{id}/resetPassword", HttpMethods.Put), MinimumRole(GameUserRole.Moderator)]
     [DocSummary("Resets a user's password by their UUID or username.")]
     [DocError(typeof(ApiNotFoundError), ApiNotFoundError.UserMissingErrorWhen)]
+    [DocError(typeof(ApiValidationError), ApiValidationError.MayNotModifyUserDueToLowRoleErrorWhen)]
     [DocRequestBody(typeof(ApiResetUserPasswordRequest))]
-    public ApiOkResponse ResetUserPassword(RequestContext context, GameDatabaseContext database, ApiResetUserPasswordRequest body,
+    public ApiOkResponse ResetUserPassword(RequestContext context, GameDatabaseContext database, ApiResetUserPasswordRequest body, GameUser user,
         [DocSummary(SharedParamDescriptions.UserIdParam)] string id, 
         [DocSummary(SharedParamDescriptions.UserIdTypeParam)] string idType)
     {
-        GameUser? user = database.GetUserByIdAndType(idType, id);
-        if (user == null) return ApiNotFoundError.UserMissingError;
+        GameUser? targetUser = database.GetUserByIdAndType(idType, id);
+        if (targetUser == null) return ApiNotFoundError.UserMissingError;
+
+        if (!user.MayModifyUser(targetUser))
+            return ApiValidationError.MayNotModifyUserDueToLowRoleError;
 
         if (body.PasswordSha512.Length != 128 || !CommonPatterns.Sha512Regex().IsMatch(body.PasswordSha512))
             return new ApiValidationError("Password is definitely not SHA512. Please hash the password.");
@@ -67,7 +71,7 @@ public class AdminUserApiEndpoints : EndpointGroup
         string? passwordBcrypt = BC.HashPassword(body.PasswordSha512, AuthenticationApiEndpoints.WorkFactor);
         if (passwordBcrypt == null) return new ApiInternalError("Could not BCrypt the given password.");
         
-        database.SetUserPassword(user, passwordBcrypt, true);
+        database.SetUserPassword(targetUser, passwordBcrypt, true);
         return new ApiOkResponse();
     }
     
@@ -98,20 +102,25 @@ public class AdminUserApiEndpoints : EndpointGroup
     [ApiV3Endpoint("admin/users/{idType}/{id}/planets", HttpMethods.Delete), MinimumRole(GameUserRole.Moderator)]
     [DocSummary("Resets a user's planets. Gets user by their UUID or username.")]
     [DocError(typeof(ApiNotFoundError), ApiNotFoundError.UserMissingErrorWhen)]
-    public ApiOkResponse ResetUserPlanets(RequestContext context, GameDatabaseContext database,
+    [DocError(typeof(ApiValidationError), ApiValidationError.MayNotModifyUserDueToLowRoleErrorWhen)]
+    public ApiOkResponse ResetUserPlanets(RequestContext context, GameDatabaseContext database, GameUser user,
         [DocSummary(SharedParamDescriptions.UserIdParam)] string id, 
         [DocSummary(SharedParamDescriptions.UserIdTypeParam)] string idType)
     {
-        GameUser? user = database.GetUserByIdAndType(idType, id);
-        if (user == null) return ApiNotFoundError.UserMissingError;
+        GameUser? targetUser = database.GetUserByIdAndType(idType, id);
+        if (targetUser == null) return ApiNotFoundError.UserMissingError;
 
-        database.ResetUserPlanets(user);
+        if (!user.MayModifyUser(targetUser))
+            return ApiValidationError.MayNotModifyUserDueToLowRoleError;
+
+        database.ResetUserPlanets(targetUser);
         return new ApiOkResponse();
     }
 
     [ApiV3Endpoint("admin/users/{idType}/{id}", HttpMethods.Patch), MinimumRole(GameUserRole.Moderator)]
     [DocSummary("Updates the specified user's profile with the given data")]
     [DocError(typeof(ApiNotFoundError), ApiNotFoundError.UserMissingErrorWhen)]
+    [DocError(typeof(ApiValidationError), ApiValidationError.MayNotModifyUserDueToLowRoleErrorWhen)]
     [DocError(typeof(ApiValidationError), ApiValidationError.MayNotOverwriteRoleErrorWhen)]
     [DocError(typeof(ApiValidationError), ApiValidationError.RoleMissingErrorWhen)]
     [DocError(typeof(ApiValidationError), ApiValidationError.WrongRoleUpdateMethodErrorWhen)]
@@ -119,7 +128,7 @@ public class AdminUserApiEndpoints : EndpointGroup
     [DocError(typeof(ApiValidationError), ApiValidationError.InvalidUsernameErrorWhen)]
     [DocError(typeof(ApiValidationError), ApiValidationError.UsernameTakenErrorWhen)]
     public ApiResponse<ApiExtendedGameUserResponse> UpdateUser(RequestContext context, GameDatabaseContext database,
-        GameUser user, ApiAdminUpdateUserRequest body, DataContext dataContext, 
+        GameUser user, ApiAdminUpdateUserRequest body, DataContext dataContext,
         [DocSummary(SharedParamDescriptions.UserIdParam)] string id, 
         [DocSummary(SharedParamDescriptions.UserIdTypeParam)] string idType)
     {
@@ -127,6 +136,9 @@ public class AdminUserApiEndpoints : EndpointGroup
 
         if (targetUser == null)
             return ApiNotFoundError.UserMissingError;
+
+        if (!user.MayModifyUser(targetUser))
+            return ApiValidationError.MayNotModifyUserDueToLowRoleError;
 
         // Only admins may edit anyone's role.
         // TODO: Maybe moderators should also be able to set roles, but only for users below them, and to roles below them?
@@ -196,14 +208,18 @@ public class AdminUserApiEndpoints : EndpointGroup
     [ApiV3Endpoint("admin/users/{idType}/{id}", HttpMethods.Delete), MinimumRole(GameUserRole.Moderator)]
     [DocSummary("Deletes a user by their UUID or username.")]
     [DocError(typeof(ApiNotFoundError), ApiNotFoundError.UserMissingErrorWhen)]
-    public ApiOkResponse DeleteUser(RequestContext context, GameDatabaseContext database, 
+    [DocError(typeof(ApiValidationError), ApiValidationError.MayNotModifyUserDueToLowRoleErrorWhen)]
+    public ApiOkResponse DeleteUser(RequestContext context, GameDatabaseContext database, GameUser user,
         [DocSummary(SharedParamDescriptions.UserIdParam)] string id, 
         [DocSummary(SharedParamDescriptions.UserIdTypeParam)] string idType)
     {
-        GameUser? user = database.GetUserByIdAndType(idType, id);
-        if (user == null) return ApiNotFoundError.UserMissingError;
+        GameUser? targetUser = database.GetUserByIdAndType(idType, id);
+        if (targetUser == null) return ApiNotFoundError.UserMissingError;
 
-        database.DeleteUser(user);
+        if (!user.MayModifyUser(targetUser))
+            return ApiValidationError.MayNotModifyUserDueToLowRoleError;
+
+        database.DeleteUser(targetUser);
         return new ApiOkResponse();
     }
 }
