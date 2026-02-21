@@ -71,6 +71,9 @@ public class ApiValidationError : ApiError
     public const string WrongRoleUpdateMethodErrorWhen = "The specified role cannot be assigned to the user using this endpoint.";
     public static readonly ApiValidationError WrongRoleUpdateMethodError = new(WrongRoleUpdateMethodErrorWhen);
 
+    public const string UserIsAlreadyPardonedErrorWhen = "This user has no punishments, they are already pardoned.";
+    public static readonly ApiValidationError UserIsAlreadyPardonedError = new(UserIsAlreadyPardonedErrorWhen);
+
     public const string RoleMissingErrorWhen = "The specified role does not exist.";
     public static readonly ApiValidationError RoleMissingError = new(RoleMissingErrorWhen);
 

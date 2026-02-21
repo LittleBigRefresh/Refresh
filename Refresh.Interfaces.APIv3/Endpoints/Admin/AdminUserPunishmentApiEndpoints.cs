@@ -55,7 +55,7 @@ public class AdminUserPunishmentApiEndpoints : EndpointGroup
     [ApiV3Endpoint("admin/users/{idType}/{id}/pardon", HttpMethods.Post), MinimumRole(GameUserRole.Moderator)]
     [DocSummary("Pardons all punishments for the given user.")]
     [DocError(typeof(ApiNotFoundError), ApiNotFoundError.UserMissingErrorWhen)]
-    [DocError(typeof(ApiValidationError), ApiValidationError.MayNotModifyUserDueToLowRoleErrorWhen)]
+    [DocError(typeof(ApiValidationError), ApiValidationError.UserIsAlreadyPardonedErrorWhen)]
     public ApiOkResponse PardonUser(RequestContext context, GameDatabaseContext database, GameUser user,
         [DocSummary(SharedParamDescriptions.UserIdParam)] string id, 
         [DocSummary(SharedParamDescriptions.UserIdTypeParam)] string idType)
@@ -63,8 +63,8 @@ public class AdminUserPunishmentApiEndpoints : EndpointGroup
         GameUser? targetUser = database.GetUserByIdAndType(idType, id);
         if (targetUser == null) return ApiNotFoundError.UserMissingError;
 
-        if (!user.MayModifyUser(targetUser))
-            return ApiValidationError.MayNotModifyUserDueToLowRoleError;
+        if (targetUser.Role > GameUserRole.Restricted)
+            return ApiValidationError.UserIsAlreadyPardonedError;
         
         database.SetUserRole(targetUser, GameUserRole.User);
         return new ApiOkResponse();

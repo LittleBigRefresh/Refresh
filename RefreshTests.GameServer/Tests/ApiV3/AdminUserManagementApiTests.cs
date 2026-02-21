@@ -224,6 +224,44 @@ public class AdminUserManagementApiTests : GameServerTest
     }
 
     [Test]
+    public async Task CanOnlyPardonPunishedUsers()
+    {
+        using TestContext context = this.GetServer();
+        GameUser admin = context.CreateUser(role: GameUserRole.Admin);
+        GameUser mod = context.CreateUser(role: GameUserRole.Moderator);
+        GameUser user = context.CreateUser(role: GameUserRole.User);
+        GameUser restricted = context.CreateUser(role: GameUserRole.Restricted);
+        HttpClient client = context.GetAuthenticatedClient(TokenType.Api, mod);
+
+        // Admin
+        HttpResponseMessage response = await client.PostAsync($"/api/v3/admin/users/uuid/{admin.UserId}/pardon", null);
+        Assert.That(response.IsSuccessStatusCode, Is.False);
+        context.Database.Refresh();
+
+        GameUser? updated = context.Database.GetUserByObjectId(admin.UserId);
+        Assert.That(updated, Is.Not.Null);
+        Assert.That(updated!.Role, Is.EqualTo(GameUserRole.Admin));
+
+        // User
+        response = await client.PostAsync($"/api/v3/admin/users/uuid/{user.UserId}/pardon", null);
+        Assert.That(response.IsSuccessStatusCode, Is.False);
+        context.Database.Refresh();
+
+        updated = context.Database.GetUserByObjectId(user.UserId);
+        Assert.That(updated, Is.Not.Null);
+        Assert.That(updated!.Role, Is.EqualTo(GameUserRole.User));
+
+        // Restricted
+        response = await client.PostAsync($"/api/v3/admin/users/uuid/{restricted.UserId}/pardon", null);
+        Assert.That(response.IsSuccessStatusCode, Is.True);
+        context.Database.Refresh();
+
+        updated = context.Database.GetUserByObjectId(restricted.UserId);
+        Assert.That(updated, Is.Not.Null);
+        Assert.That(updated!.Role, Is.EqualTo(GameUserRole.User));
+    }
+
+    [Test]
     public async Task ModeratorsMayNotResetPasswordOfAdminsAndModerators()
     {
         using TestContext context = this.GetServer();
