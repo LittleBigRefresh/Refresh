@@ -19,6 +19,7 @@
     </ItemGroup>
 
     <ItemGroup>
+      <PackageReference Include="Newtonsoft.Json" Version="13.0.4" />
       <InternalsVisibleTo Include="RefreshTests.GameServer" />
       <ProjectReference Include="..\Refresh.Common\Refresh.Common.csproj" />
     </ItemGroup>
