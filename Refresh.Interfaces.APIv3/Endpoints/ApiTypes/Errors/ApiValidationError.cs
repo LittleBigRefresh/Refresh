@@ -102,7 +102,7 @@ public class ApiValidationError : ApiError
     public static readonly ApiValidationError NoPlaylistEditPermissionError = new(NoPlaylistEditPermissionErrorWhen);
 
     public const string NoPlaylistDeletePermissionErrorWhen = "You do not have permission to delete this playlist";
-    public static readonly ApiValidationError NoPlaylistDeletionPermissionError = new(NoPlaylistDeletePermissionErrorWhen);
+    public static readonly ApiValidationError NoPlaylistDeletePermissionError = new(NoPlaylistDeletePermissionErrorWhen);
 
     // TODO: Split off error messages which are actually 401 or anything else that isn't 400
     public ApiValidationError(string message) : base(message) {}
