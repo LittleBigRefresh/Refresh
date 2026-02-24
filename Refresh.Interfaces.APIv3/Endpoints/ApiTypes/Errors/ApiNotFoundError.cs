@@ -39,7 +39,16 @@ public class ApiNotFoundError : ApiError
 
     public const string VerifiedIpMissingErrorWhen = "The verified IP could not be found";
     public static readonly ApiNotFoundError VerifiedIpMissingError = new(VerifiedIpMissingErrorWhen);
-    
+
+    public const string PlaylistMissingErrorWhen = "The playlist could not be found";
+    public static readonly ApiNotFoundError PlaylistMissingError = new(PlaylistMissingErrorWhen);
+
+    public const string ParentPlaylistMissingErrorWhen = "The parent playlist could not be found";
+    public static readonly ApiNotFoundError ParentPlaylistMissingError = new(ParentPlaylistMissingErrorWhen);
+
+    public const string SubPlaylistMissingErrorWhen = "The sub-playlist could not be found";
+    public static readonly ApiNotFoundError SubPlaylistMissingError = new(SubPlaylistMissingErrorWhen);
+
     private ApiNotFoundError() : base("The requested resource was not found", NotFound)
     {}
     
