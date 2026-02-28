@@ -14,6 +14,8 @@ using Refresh.Database.Models.Levels;
 using Refresh.Interfaces.Game.Types.UserData.Leaderboard;
 using Refresh.Workers;
 using Refresh.Interfaces.Game.Endpoints.DataTypes.Request;
+using Refresh.Database.Models.Playlists;
+using Refresh.Interfaces.APIv3.Endpoints.DataTypes.Request;
 
 namespace RefreshTests.GameServer;
 
@@ -195,6 +197,16 @@ public class TestContext : IDisposable
         Assert.That(submittedScore, Is.Not.Null);
 
         return submittedScore;
+    }
+
+    public GamePlaylist CreatePlaylist(GameUser author, string? title = null)
+    {
+        ApiPlaylistCreationRequest playlist = new()
+        {
+            Name = title
+        };
+
+        return this.Database.CreatePlaylist(author, playlist);
     }
 
     [Pure]
