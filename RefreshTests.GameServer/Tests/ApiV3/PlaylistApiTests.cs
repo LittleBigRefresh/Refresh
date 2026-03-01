@@ -110,6 +110,69 @@ public class PlaylistApiTests : GameServerTest
     }
 
     [Test]
+    public void CreatePlaylistInPlaylist()
+    {
+        using TestContext context = this.GetServer();
+        GameUser user = context.CreateUser();
+        GamePlaylist parent = context.CreatePlaylist(user);
+        using HttpClient client = context.GetAuthenticatedClient(TokenType.Api, user);
+        
+        // Create
+        ApiPlaylistCreationRequest request = new()
+        {
+            Name = "Tier 1",
+            Description = "Tier 1 hard levels"
+        };
+        ApiResponse<ApiGamePlaylistResponse>? response = client.PostData<ApiGamePlaylistResponse>($"/api/v3/playlists?parentId={parent.PlaylistId}", request);
+        Assert.That(response?.Data, Is.Not.Null);
+        Assert.That(response!.Data!.Name, Is.EqualTo(request.Name));
+        Assert.That(context.Database.GetTotalPlaylistsInPlaylist(parent), Is.EqualTo(1));
+        // Root playlist should be completely ignored while handling request (unless there is a reason this behaviour should change in the future)
+        Assert.That(context.Database.GetUserRootPlaylist(user), Is.Null);
+    }
+
+    [Test]
+    public void CantCreatePlaylistInsideMissingPlaylist()
+    {
+        using TestContext context = this.GetServer();
+        GameUser user = context.CreateUser();
+        using HttpClient client = context.GetAuthenticatedClient(TokenType.Api, user);
+        
+        // Create
+        ApiPlaylistCreationRequest request = new()
+        {
+            Name = "Tier 2",
+            Description = "Tier 2 hard levels"
+        };
+        ApiResponse<ApiGamePlaylistResponse>? response = client.PostData<ApiGamePlaylistResponse>($"/api/v3/playlists?parentId=67", request, false, true);
+        Assert.That(response?.Error, Is.Not.Null);
+        Assert.That(response!.Error!.StatusCode, Is.EqualTo(NotFound));
+        Assert.That(context.Database.GetTotalPlaylistsByAuthor(user), Is.Zero);
+    }
+
+    [Test]
+    public void CantCreatePlaylistInsideOthersPlaylist()
+    {
+        using TestContext context = this.GetServer();
+        GameUser creator = context.CreateUser();
+        GameUser moron = context.CreateUser();
+        GamePlaylist parent = context.CreatePlaylist(creator);
+        using HttpClient client = context.GetAuthenticatedClient(TokenType.Api, moron);
+        
+        // Create
+        ApiPlaylistCreationRequest request = new()
+        {
+            Name = "Tier 0",
+            Description = "My levels!!"
+        };
+        ApiResponse<ApiGamePlaylistResponse>? response = client.PostData<ApiGamePlaylistResponse>($"/api/v3/playlists?parentId={parent.PlaylistId}", request, false, true);
+        Assert.That(response?.Error, Is.Not.Null);
+        Assert.That(response!.Error!.StatusCode, Is.EqualTo(BadRequest));
+        Assert.That(context.Database.GetTotalPlaylistsByAuthor(moron), Is.Zero);
+        Assert.That(context.Database.GetTotalPlaylistsInPlaylist(parent), Is.Zero);
+    }
+
+    [Test]
     public async Task GetAndDeletePlaylist()
     {
         using TestContext context = this.GetServer();
