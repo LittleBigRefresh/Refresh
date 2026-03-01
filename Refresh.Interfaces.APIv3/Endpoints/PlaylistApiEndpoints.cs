@@ -24,12 +24,15 @@ public class PlaylistApiEndpoints : EndpointGroup
 {
     private ApiError? ValidatePlaylist(ApiPlaylistCreationRequest body, GuidCheckerService guidChecker, GameDatabaseContext database)
     {
-        if (!body.Icon.IsBlankHash())
+        if (body.Icon != null)
         {
-            // playlists only have icons in LBP1 and LBP1-like beta builds, so arbitrarily pass LBP1
-            if (body.Icon!.StartsWith('g'))
+            if (body.Icon.IsBlankHash())
+                body.Icon = "0";
+            
+            else if (body.Icon!.StartsWith('g') && body.Icon.Length > 1)
             {
-                if (!guidChecker.IsTextureGuid(TokenGame.LittleBigPlanet1, long.Parse(body.Icon)))
+                bool isGuid = long.TryParse(body.Icon[1..], out long guid);
+                if (!isGuid || (isGuid && !guidChecker.IsTextureGuid(TokenGame.LittleBigPlanet1, guid)))
                     return ApiValidationError.InvalidTextureGuidError;
             }
             else
@@ -51,7 +54,7 @@ public class PlaylistApiEndpoints : EndpointGroup
         if (body.Description != null && body.Description.Length > UgcLimits.DescriptionLimit)
             body.Description = body.Description[..UgcLimits.DescriptionLimit];
 
-        // Ensure the coordinates are in a valid range (TODO: store and load coordinates as ushort)
+        // Ensure the coordinates are in a valid range
         if (body.Location != null)
         {
             body.Location.X = Math.Clamp(body.Location.X, 0, ushort.MaxValue);
