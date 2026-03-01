@@ -181,11 +181,6 @@ public class PlaylistApiTests : GameServerTest
         using HttpClient client = context.GetAuthenticatedClient(TokenType.Api, user);
 
         // Get (unauthenticated)
-        ApiPlaylistCreationRequest request = new()
-        {
-            Name = "Easiest levels",
-            Description = "for the skill issued"
-        };
         ApiResponse<ApiGamePlaylistResponse>? response = context.Http.GetData<ApiGamePlaylistResponse>($"/api/v3/playlists/id/{playlist.PlaylistId}");
         Assert.That(response?.Data, Is.Not.Null);
         Assert.That(response!.Data!.PlaylistId, Is.EqualTo(playlist.PlaylistId));
