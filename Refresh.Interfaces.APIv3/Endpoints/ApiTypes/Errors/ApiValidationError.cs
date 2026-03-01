@@ -17,6 +17,9 @@ public class ApiValidationError : ApiError
     public const string IpAddressParseErrorWhen = "The IP address could not be parsed by the server";
     public static readonly ApiValidationError IpAddressParseError = new(IpAddressParseErrorWhen);
 
+    public const string InvalidPlaylistIdWhen = "The playlist ID couldn't be parsed by the server";
+    public static readonly ApiValidationError InvalidPlaylistId = new(InvalidPlaylistIdWhen);
+
     public const string NoPhotoDeletionPermissionErrorWhen = "You do not have permission to delete someone else's photo";
     public static readonly ApiValidationError NoPhotoDeletionPermissionError = new(NoPhotoDeletionPermissionErrorWhen);
 
@@ -52,6 +55,12 @@ public class ApiValidationError : ApiError
 
     public const string BodyMustBeImageErrorWhen = "The asset must be a PNG/JPEG file";
     public static readonly ApiValidationError BodyMustBeImageError = new(BodyMustBeImageErrorWhen);
+
+    public const string IconMustBeImageErrorWhen = "The icon must be a PNG/JPEG file";
+    public static readonly ApiValidationError IconMustBeImageError = new(IconMustBeImageErrorWhen);
+
+    public const string IconMissingErrorWhen = "The icon is missing from the server";
+    public static readonly ApiValidationError IconMissingError = new(IconMissingErrorWhen);
     
     public const string ResourceExistsErrorWhen = "The resource you are attempting to create already exists.";
     public static readonly ApiValidationError ResourceExistsError = new(ResourceExistsErrorWhen);
@@ -88,7 +97,13 @@ public class ApiValidationError : ApiError
 
     public const string UsernameTakenErrorWhen = "This username is already taken!";
     public static readonly ApiValidationError UsernameTakenError = new(UsernameTakenErrorWhen);
-    
+
+    public const string NoPlaylistEditPermissionErrorWhen = "You do not have permission to update this playlist";
+    public static readonly ApiValidationError NoPlaylistEditPermissionError = new(NoPlaylistEditPermissionErrorWhen);
+
+    public const string NoPlaylistDeletePermissionErrorWhen = "You do not have permission to delete this playlist";
+    public static readonly ApiValidationError NoPlaylistDeletePermissionError = new(NoPlaylistDeletePermissionErrorWhen);
+
     // TODO: Split off error messages which are actually 401 or anything else that isn't 400
     public ApiValidationError(string message) : base(message) {}
 }

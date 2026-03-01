@@ -72,11 +72,7 @@ public class Lbp3PlaylistEndpoints : EndpointGroup
         if (body.Description != null && body.Description.Length > UgcLimits.DescriptionLimit)
             body.Description = body.Description[..UgcLimits.DescriptionLimit];
         
-        dataContext.Database.UpdatePlaylist(playlist, body);
-        
-        // get playlist from database a second time to respond with it in its updated state
-        // to have it immediately update in-game
-        GamePlaylist newPlaylist = dataContext.Database.GetPlaylistById(playlistId)!;
+        GamePlaylist newPlaylist = dataContext.Database.UpdatePlaylist(playlist, body);
         return new Response(SerializedLbp3Playlist.FromOld(newPlaylist, dataContext), ContentType.Xml);
     }
 

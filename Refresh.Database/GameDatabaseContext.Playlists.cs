@@ -108,19 +108,19 @@ public partial class GameDatabaseContext // Playlists
     public GamePlaylist? GetUserRootPlaylist(GameUser user)
         => this.GamePlaylistsIncluded.FirstOrDefault(p => p.IsRoot && p.PublisherId == user.UserId);
 
-    public void UpdatePlaylist(GamePlaylist playlist, ISerializedCreatePlaylistInfo updateInfo)
+    public GamePlaylist UpdatePlaylist(GamePlaylist playlist, ISerializedCreatePlaylistInfo updateInfo)
     {
         GameLocation location = updateInfo.Location ?? new GameLocation(playlist.LocationX, playlist.LocationY);
         
-        this.Write(() =>
-        {
-            playlist.Name = updateInfo.Name ?? playlist.Name;
-            playlist.Description = updateInfo.Description ?? playlist.Description;
-            playlist.IconHash = updateInfo.Icon ?? playlist.IconHash;
-            playlist.LocationX = location.X;
-            playlist.LocationY = location.Y;
-            playlist.LastUpdateDate = this._time.Now;
-        });
+        playlist.Name = updateInfo.Name ?? playlist.Name;
+        playlist.Description = updateInfo.Description ?? playlist.Description;
+        playlist.IconHash = updateInfo.Icon ?? playlist.IconHash;
+        playlist.LocationX = location.X;
+        playlist.LocationY = location.Y;
+        playlist.LastUpdateDate = this._time.Now;
+        this.SaveChanges();
+
+        return playlist;
     }
 
     public void DeletePlaylist(GamePlaylist playlist)
