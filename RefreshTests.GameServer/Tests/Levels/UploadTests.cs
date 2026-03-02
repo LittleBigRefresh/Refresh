@@ -68,4 +68,61 @@ public class UploadTests : GameServerTest
         context.Database.DeleteLevel(level);
         Assert.That(context.Database.GetLevelById(id), Is.Null);
     }
+
+    [Test]
+    public void LevelRootUpdateChangesUpdateDate()
+    {
+        using TestContext context = this.GetServer(false);
+        GameUser author = context.CreateUser();
+
+        context.Time.TimestampMilliseconds = 1;
+        GameLevel level = context.CreateLevel(author);
+        Assert.Multiple(() =>
+        {
+            Assert.That(level.PublishDate.ToUnixTimeMilliseconds(), Is.EqualTo(1));
+            Assert.That(level.UpdateDate.ToUnixTimeMilliseconds(), Is.EqualTo(1));
+        });
+        
+        GameLevelRequest newLevel = new()
+        {
+            RootResource = "g12345",
+        };
+
+        context.Time.TimestampMilliseconds = 2;
+        context.Database.UpdateLevel(newLevel, level);
+        Assert.Multiple(() =>
+        {
+            Assert.That(level.PublishDate.ToUnixTimeMilliseconds(), Is.EqualTo(1));
+            Assert.That(level.UpdateDate.ToUnixTimeMilliseconds(), Is.EqualTo(2));
+        });
+    }
+    
+    [Test]
+    public void LevelUpdateDoesNotChangeUpdateDateWhenRootUnchanged()
+    {
+        using TestContext context = this.GetServer(false);
+        GameUser author = context.CreateUser();
+
+        context.Time.TimestampMilliseconds = 1;
+        GameLevel level = context.CreateLevel(author);
+        Assert.Multiple(() =>
+        {
+            Assert.That(level.PublishDate.ToUnixTimeMilliseconds(), Is.EqualTo(1));
+            Assert.That(level.UpdateDate.ToUnixTimeMilliseconds(), Is.EqualTo(1));
+        });
+        
+        GameLevelRequest newLevel = new()
+        {
+            Description = "description update",
+            RootResource = level.RootResource,
+        };
+
+        context.Time.TimestampMilliseconds = 2;
+        context.Database.UpdateLevel(newLevel, level);
+        Assert.Multiple(() =>
+        {
+            Assert.That(level.PublishDate.ToUnixTimeMilliseconds(), Is.EqualTo(1));
+            Assert.That(level.UpdateDate.ToUnixTimeMilliseconds(), Is.EqualTo(1));
+        });
+    }
 }

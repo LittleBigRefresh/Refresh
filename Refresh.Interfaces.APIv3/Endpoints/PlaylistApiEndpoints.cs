@@ -4,11 +4,7 @@ using Bunkum.Core.Endpoints;
 using Bunkum.Core.RateLimit;
 using Bunkum.Protocols.Http;
 using Refresh.Common.Constants;
-using Refresh.Core.Services;
 using Refresh.Core.Types.Data;
-using Refresh.Database;
-using Refresh.Database.Models.Assets;
-using Refresh.Database.Models.Authentication;
 using Refresh.Database.Models.Levels;
 using Refresh.Database.Models.Playlists;
 using Refresh.Database.Models.Users;
@@ -16,36 +12,17 @@ using Refresh.Interfaces.APIv3.Endpoints.ApiTypes;
 using Refresh.Interfaces.APIv3.Endpoints.ApiTypes.Errors;
 using Refresh.Interfaces.APIv3.Endpoints.DataTypes.Request;
 using Refresh.Interfaces.APIv3.Endpoints.DataTypes.Response.Playlists;
+using Refresh.Interfaces.APIv3.Extensions;
 using static Refresh.Core.RateLimits.PlaylistEndpointLimits;
 
 namespace Refresh.Interfaces.APIv3.Endpoints;
 
 public class PlaylistApiEndpoints : EndpointGroup
 {
-    private ApiError? ValidatePlaylist(ApiPlaylistCreationRequest body, GuidCheckerService guidChecker, GameDatabaseContext database)
+    private ApiError? ValidatePlaylist(ApiPlaylistCreationRequest body, DataContext dataContext)
     {
-        if (body.Icon != null)
-        {
-            if (body.Icon.IsBlankHash())
-                body.Icon = "0";
-            
-            else if (body.Icon!.StartsWith('g') && body.Icon.Length > 1)
-            {
-                bool isGuid = long.TryParse(body.Icon[1..], out long guid);
-                if (!isGuid || (isGuid && !guidChecker.IsTextureGuid(TokenGame.LittleBigPlanet1, guid)))
-                    return ApiValidationError.InvalidTextureGuidError;
-            }
-            else
-            {
-                GameAsset? icon = database.GetAssetFromHash(body.Icon);
-
-                if (icon == null) 
-                    return ApiValidationError.IconMissingError;
-
-                if (icon.AssetType is not GameAssetType.Jpeg and not GameAssetType.Png)
-                    return ApiValidationError.IconMustBeImageError;
-            }
-        }
+        (body.Icon, ApiError? iconError) = body.Icon.ValidateIcon(dataContext);
+        if (iconError != null) return iconError;
 
         // Trim name and description
         if (body.Name != null && body.Name.Length > UgcLimits.TitleLimit) 
@@ -78,7 +55,7 @@ public class PlaylistApiEndpoints : EndpointGroup
     public ApiResponse<ApiGamePlaylistResponse> CreatePlaylist(RequestContext context, DataContext dataContext,
         GameUser user, ApiPlaylistCreationRequest body)
     {
-        ApiError? error = this.ValidatePlaylist(body, dataContext.GuidChecker, dataContext.Database);
+        ApiError? error = this.ValidatePlaylist(body, dataContext);
         if (error != null) return error;
 
         string? parentIdStr = context.QueryString.Get("parentId");
@@ -125,7 +102,7 @@ public class PlaylistApiEndpoints : EndpointGroup
         if (user.UserId != playlist.PublisherId) 
             return ApiValidationError.NoPlaylistEditPermissionError;
 
-        ApiError? error = this.ValidatePlaylist(body, dataContext.GuidChecker, dataContext.Database);
+        ApiError? error = this.ValidatePlaylist(body, dataContext);
         if (error != null) return error;
 
         playlist = dataContext.Database.UpdatePlaylist(playlist, body);

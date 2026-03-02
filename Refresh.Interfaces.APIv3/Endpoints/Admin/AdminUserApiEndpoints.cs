@@ -157,29 +157,14 @@ public class AdminUserApiEndpoints : EndpointGroup
                 return ApiValidationError.WrongRoleUpdateMethodError;
         }
 
-        if (body.IconHash != null)
-        {
-            if (body.IconHash.IsBlankHash())
-                body.IconHash = "0";
-            else if (database.GetAssetFromHash(body.IconHash) == null)
-                return ApiNotFoundError.IconMissingError;
-        }
+        (body.IconHash, ApiError? mainIconError) = body.IconHash.ValidateIcon(dataContext);
+        if (mainIconError != null) return mainIconError;
 
-        if (body.VitaIconHash != null)
-        {
-            if (body.VitaIconHash.IsBlankHash())
-                body.VitaIconHash = "0";
-            else if (database.GetAssetFromHash(body.VitaIconHash) == null)
-                return ApiNotFoundError.IconMissingError;
-        }
+        (body.VitaIconHash, ApiError? vitaIconError) = body.VitaIconHash.ValidateIcon(dataContext);
+        if (vitaIconError != null) return vitaIconError;
 
-        if (body.BetaIconHash != null)
-        {
-            if (body.BetaIconHash.IsBlankHash())
-                body.BetaIconHash = "0";
-            else if (database.GetAssetFromHash(body.BetaIconHash) == null)
-                return ApiNotFoundError.IconMissingError;
-        }
+        (body.BetaIconHash, ApiError? betaIconError) = body.BetaIconHash.ValidateIcon(dataContext);
+        if (betaIconError != null) return betaIconError;
 
         // Do nothing if the username entered is actually the same as the one already set
         if (body.Username != null && body.Username != targetUser.Username) 
