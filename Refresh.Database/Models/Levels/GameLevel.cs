@@ -26,11 +26,11 @@ public partial class GameLevel : ISequentialId
     public string RootResource { get; set; } = string.Empty;
 
     /// <summary>
-    /// When the level was first published in unix milliseconds
+    /// When the level was first published
     /// </summary>
     public DateTimeOffset PublishDate { get; set; }
     /// <summary>
-    /// When the level was last updated in unix milliseconds
+    /// When the level's root resource was last updated
     /// </summary>
     public DateTimeOffset UpdateDate { get; set; }
     
