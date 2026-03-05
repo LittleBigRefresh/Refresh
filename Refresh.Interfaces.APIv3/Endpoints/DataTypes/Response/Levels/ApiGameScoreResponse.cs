@@ -14,6 +14,7 @@ public class ApiGameScoreResponse : IApiResponse, IDataConvertableFrom<ApiGameSc
     public required ApiMinimalUserResponse Publisher { get; set; }
     public required DateTimeOffset ScoreSubmitted { get; set; }
     public required int Score { get; set; }
+    public required int Rank { get; set; }
     public required byte ScoreType { get; set; }
     
     public required TokenGame Game { get; set; }
@@ -32,6 +33,7 @@ public class ApiGameScoreResponse : IApiResponse, IDataConvertableFrom<ApiGameSc
             ScoreSubmitted = old.ScoreSubmitted,
             Score = old.Score,
             ScoreType = old.ScoreType,
+            Rank = old.Rank,
             Game = old.Game,
             Platform = old.Platform,
         };

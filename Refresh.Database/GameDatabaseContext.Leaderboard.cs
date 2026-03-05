@@ -58,6 +58,7 @@ public partial class GameDatabaseContext // Leaderboard
             this.GameScores.Add(newScore);
         });
 
+        this.RecalculateScoreStatistics(level.LevelId, score.ScoreType);
         this.CreateLevelScoreEvent(user, newScore);
 
         // Notify the last #1 users that they've been overtaken
@@ -101,12 +102,12 @@ public partial class GameDatabaseContext // Leaderboard
             scores = scores.Where(s => s.ScoreType == scoreType);
 
         if (!showDuplicates)
-            scores = scores.DistinctBy(s => s.PublisherId);
+            scores = scores.Where(s => s.Rank != 0);
         
         if (minAge != null)
             scores = scores.Where(s => s.ScoreSubmitted >= minAge);
 
-        return new(scores.ToArray().Select((s, i) => new ScoreWithRank(s, i + 1)), skip, count, user);
+        return new(scores.ToArray().Select(s => new ScoreWithRank(s, s.Rank)), skip, count, user);
     }
 
     public DatabaseScoreList GetRankedScoresAroundScore(GameScore score, int count, GameUser? user = null)
@@ -118,13 +119,12 @@ public partial class GameDatabaseContext // Leaderboard
         List<GameScore> scores = this.GameScoresIncluded
             .Where(s => s.ScoreType == score.ScoreType && s.LevelId == score.LevelId)
             .OrderByDescending(s => s.Score)
-            .ToArray()
-            .DistinctBy(s => s.PublisherId)
+            .Where(s => s.Rank != 0)
             .ToList();
 
         return new
         (
-            scores.Select((s, i) => new ScoreWithRank(s, i + 1)),
+            scores.Select(s => new ScoreWithRank(s, s.Rank)),
             Math.Min(scores.Count, scores.IndexOf(score) - count / 2), // center user's score around other scores
             count, user
         );
@@ -140,8 +140,7 @@ public partial class GameDatabaseContext // Leaderboard
         IEnumerable<GameScore> scores = this.GameScoresIncluded
             .Where(s => s.LevelId == level.LevelId)
             .OrderByDescending(s => s.Score)
-            .ToArray()
-            .DistinctBy(s => s.PublisherId)
+            .Where(s => s.Rank != 0)
             //TODO: THIS CALL IS EXTREMELY INEFFECIENT!!! once we are in postgres land, figure out a way to do this effeciently
             .Where(s => s.PlayerIds.Any(p => mutuals.Contains(p)));
         
@@ -151,7 +150,22 @@ public partial class GameDatabaseContext // Leaderboard
         if (minAge != null)
             scores = scores.Where(s => s.ScoreSubmitted >= minAge);
 
-        return new(scores.Select((s, i) => new ScoreWithRank(s, i + 1)), skip, count, user);
+        return new(scores.ToArray().Select(s => new ScoreWithRank(s, s.Rank)), skip, count, user);
+    }
+
+    /// <param name="scoreType">0 = don't filter by type</param>
+    /// <param name="rank">0 = show all high-scores regardless of rank</param>
+    public DatabaseList<ScoreWithRank> GetScoresByUser(GameUser user, int skip, int count, byte scoreType, int rank)
+    {
+        IQueryable<GameScore> scores = this.GameScoresIncluded
+            .Where(s => s.PublisherId == user.UserId)
+            .Where(s => s.Rank != 0)
+            .OrderBy(s => s.Rank);
+        
+        if (scoreType != 0) scores = scores.Where(s => s.ScoreType == scoreType);
+        if (rank != 0) scores = scores.Where(s => s.Rank == rank);
+        
+        return new(scores.ToArray().Select(s => new ScoreWithRank(s, s.Rank)), skip, count);
     }
 
     [Pure]
