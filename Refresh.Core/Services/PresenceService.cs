@@ -1,6 +1,7 @@
 using System.Net.Http.Headers;
 using Bunkum.Core.Services;
 using NotEnoughLogs;
+using Refresh.Common;
 using Refresh.Core.Configuration;
 using Refresh.Database.Models.Users;
 

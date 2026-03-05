@@ -11,7 +11,6 @@ using Bunkum.Protocols.Http;
 using Refresh.Common;
 using Refresh.Common.Time;
 using Refresh.Common.Verification;
-using Refresh.Core;
 using Refresh.Core.Configuration;
 using Refresh.Core.Extensions;
 using Refresh.Core.Importing;
