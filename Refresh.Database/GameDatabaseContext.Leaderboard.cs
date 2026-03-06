@@ -53,11 +53,13 @@ public partial class GameDatabaseContext // Leaderboard
             && currentFirstPlace.Score < score.Score 
             && currentFirstPlace.PublisherId != user.UserId;
 
-        this.Write(() =>
+        this.WriteEnsuringStatistics(level, () =>
         {
             this.GameScores.Add(newScore);
+            level.Statistics!.CompletionCount++;
         });
 
+        this.RecalculateScoreStatistics(level.LevelId, score.ScoreType);
         this.CreateLevelScoreEvent(user, newScore);
 
         // Notify the last #1 users that they've been overtaken
@@ -101,12 +103,12 @@ public partial class GameDatabaseContext // Leaderboard
             scores = scores.Where(s => s.ScoreType == scoreType);
 
         if (!showDuplicates)
-            scores = scores.DistinctBy(s => s.PublisherId);
+            scores = scores.Where(s => s.Rank != 0);
         
         if (minAge != null)
             scores = scores.Where(s => s.ScoreSubmitted >= minAge);
 
-        return new(scores.ToArray().Select((s, i) => new ScoreWithRank(s, i + 1)), skip, count, user);
+        return new(scores.ToArray().Select(s => new ScoreWithRank(s, s.Rank)), skip, count, user);
     }
 
     public DatabaseScoreList GetRankedScoresAroundScore(GameScore score, int count, GameUser? user = null)
@@ -118,13 +120,12 @@ public partial class GameDatabaseContext // Leaderboard
         List<GameScore> scores = this.GameScoresIncluded
             .Where(s => s.ScoreType == score.ScoreType && s.LevelId == score.LevelId)
             .OrderByDescending(s => s.Score)
-            .ToArray()
-            .DistinctBy(s => s.PublisherId)
+            .Where(s => s.Rank != 0)
             .ToList();
 
         return new
         (
-            scores.Select((s, i) => new ScoreWithRank(s, i + 1)),
+            scores.Select(s => new ScoreWithRank(s, s.Rank)),
             Math.Min(scores.Count, scores.IndexOf(score) - count / 2), // center user's score around other scores
             count, user
         );
@@ -140,10 +141,8 @@ public partial class GameDatabaseContext // Leaderboard
         IEnumerable<GameScore> scores = this.GameScoresIncluded
             .Where(s => s.LevelId == level.LevelId)
             .OrderByDescending(s => s.Score)
-            .ToArray()
-            .DistinctBy(s => s.PublisherId)
-            //TODO: THIS CALL IS EXTREMELY INEFFECIENT!!! once we are in postgres land, figure out a way to do this effeciently
-            .Where(s => s.PlayerIds.Any(p => mutuals.Contains(p)));
+            .Where(s => s.Rank != 0)
+            .Where(s => mutuals.Contains(s.PublisherId));
         
         if (scoreType != 0)
             scores = scores.Where(s => s.ScoreType == scoreType);
@@ -151,7 +150,7 @@ public partial class GameDatabaseContext // Leaderboard
         if (minAge != null)
             scores = scores.Where(s => s.ScoreSubmitted >= minAge);
 
-        return new(scores.Select((s, i) => new ScoreWithRank(s, i + 1)), skip, count, user);
+        return new(scores.ToArray().Select(s => new ScoreWithRank(s, s.Rank)), skip, count, user);
     }
 
     [Pure]
@@ -178,35 +177,35 @@ public partial class GameDatabaseContext // Leaderboard
         IQueryable<Event> scoreEvents = this.Events
             .Where(e => e.StoredDataType == EventDataType.Score && e.StoredObjectId == score.ScoreId);
         
-        this.Write(() =>
-        {
-            this.Events.RemoveRange(scoreEvents);
-            this.GameScores.Remove(score);
-        });
+        this.Events.RemoveRange(scoreEvents);
+        this.GameScores.Remove(score);
+        this.SaveChanges();
+
+        // Only recalculate ranks if the score was a high-score.
+        // Also, separate write transaction because otherwise recalculation would still include the unwanted scores.
+        if (score.Rank != 0)
+            this.RecalculateScoreStatistics(score.LevelId, score.ScoreType, true);
     }
     
     public void DeleteScoresSetByUser(GameUser user)
     {
+        // Find out which leaderboards we will have to recalculate the ranks of.
+        // Only need high-scores for this, as the other, overtaken scores should not affect ranking at all,
+        // and additionally, this way we will always have not more than 1 score per level/score type,
+        // avoiding recalculation of the same leaderboards multiple times.
         IEnumerable<GameScore> scores = this.GameScores
-            // FIXME: Realm (ahem, I mean the atlas device sdk *rolls eyes*) is a fucking joke.
-            // Realm doesn't support .Contains on IList<T>. Yes, really.
-            // This means we are forced to iterate over EVERY SCORE.
-            // I can't wait for Postgres.
-            .AsEnumerableIfRealm()
-            .Where(s => s.PlayerIdsRaw.Contains(user.UserId.ToString()))
-            .ToArrayIfPostgres();
-        
-        this.Write(() =>
+            .Where(s => s.PublisherId == user.UserId && s.Rank != 0)
+            .ToArray();
+
+        this.GameScores.RemoveRange(s => s.PublisherId == user.UserId);
+        this.Events.RemoveRange(s => s.StoredDataType == EventDataType.Score && s.UserId == user.UserId);
+        this.SaveChanges();
+
+        foreach (GameScore score in scores)
         {
-            foreach (GameScore score in scores)
-            {
-                IQueryable<Event> scoreEvents = this.Events
-                    .Where(e => e.StoredDataType == EventDataType.Score && e.StoredObjectId == score.ScoreId);
-                
-                this.Events.RemoveRange(scoreEvents);
-                this.GameScores.Remove(score);
-            }
-        });
+            this.RecalculateScoreStatistics(score.LevelId, score.ScoreType, false);
+        }
+        this.SaveChanges();
     }
 
     public IEnumerable<GameUser> GetPlayersFromScore(GameScore score)

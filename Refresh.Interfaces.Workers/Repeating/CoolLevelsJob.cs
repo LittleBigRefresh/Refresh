@@ -9,7 +9,7 @@
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using NotEnoughLogs;
-using Refresh.Core;
+using Refresh.Common;
 using Refresh.Database;
 using Refresh.Database.Models.Authentication;
 using Refresh.Database.Models.Levels;

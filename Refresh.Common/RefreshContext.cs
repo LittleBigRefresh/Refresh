@@ -1,4 +1,4 @@
-namespace Refresh.Core;
+namespace Refresh.Common;
 
 public enum RefreshContext
 {

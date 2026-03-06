@@ -152,4 +152,7 @@ public partial class GameDatabaseContext // Activity
     }
 
     public int GetTotalEventCount() => this.Events.Count();
+
+    public int GetTotalEventsByUserForDataType(GameUser user, EventDataType dataType) 
+        => this.Events.Count(e => e.UserId == user.UserId && e.StoredDataType == dataType);
 }

@@ -30,4 +30,11 @@ public partial class GameScore
     /// </summary>
     [ForeignKey(nameof(PublisherId)), Required] public GameUser Publisher { get; set; }
     [Required] public ObjectId PublisherId { get; set; }
+
+    /// <summary>
+    /// The rank of this score among all scores for the level and score type. Not stored in a separate
+    /// entity as that would add unnecessary complexity for now (this is the only stat so far).
+    /// Scores which are no longer the high score of their publisher have a rank of 0.
+    /// </summary>
+    public int Rank { get; set; }
 }

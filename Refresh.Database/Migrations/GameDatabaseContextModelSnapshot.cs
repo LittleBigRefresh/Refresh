@@ -578,6 +578,9 @@ namespace Refresh.Database.Migrations
                         .IsRequired()
                         .HasColumnType("text");
 
+                    b.Property<int>("Rank")
+                        .HasColumnType("integer");
+
                     b.Property<int>("Score")
                         .HasColumnType("integer");
 
