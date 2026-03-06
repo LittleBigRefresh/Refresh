@@ -153,21 +153,6 @@ public partial class GameDatabaseContext // Leaderboard
         return new(scores.ToArray().Select(s => new ScoreWithRank(s, s.Rank)), skip, count, user);
     }
 
-    /// <param name="scoreType">0 = don't filter by type</param>
-    /// <param name="rank">0 = show all high-scores regardless of rank</param>
-    public DatabaseList<ScoreWithRank> GetHighScoresByUser(GameUser user, int skip, int count, byte scoreType, int rank)
-    {
-        IQueryable<GameScore> scores = this.GameScoresIncluded
-            .Where(s => s.PublisherId == user.UserId)
-            .Where(s => s.Rank != 0)
-            .OrderBy(s => s.Rank);
-        
-        if (scoreType != 0) scores = scores.Where(s => s.ScoreType == scoreType);
-        if (rank != 0) scores = scores.Where(s => s.Rank == rank);
-        
-        return new(scores.ToArray().Select(s => new ScoreWithRank(s, s.Rank)), skip, count);
-    }
-
     [Pure]
     [ContractAnnotation("null => null; notnull => canbenull")]
     public GameScore? GetScoreByUuid(string? uuid)
