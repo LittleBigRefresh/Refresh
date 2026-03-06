@@ -53,9 +53,10 @@ public partial class GameDatabaseContext // Leaderboard
             && currentFirstPlace.Score < score.Score 
             && currentFirstPlace.PublisherId != user.UserId;
 
-        this.Write(() =>
+        this.WriteEnsuringStatistics(level, () =>
         {
             this.GameScores.Add(newScore);
+            level.Statistics!.CompletionCount++;
         });
 
         this.RecalculateScoreStatistics(level.LevelId, score.ScoreType);
@@ -142,7 +143,7 @@ public partial class GameDatabaseContext // Leaderboard
             .OrderByDescending(s => s.Score)
             .Where(s => s.Rank != 0)
             //TODO: THIS CALL IS EXTREMELY INEFFECIENT!!! once we are in postgres land, figure out a way to do this effeciently
-            .Where(s => s.PlayerIds.Any(p => mutuals.Contains(p)));
+            .Where(s => mutuals.Contains(s.PublisherId));
         
         if (scoreType != 0)
             scores = scores.Where(s => s.ScoreType == scoreType);
