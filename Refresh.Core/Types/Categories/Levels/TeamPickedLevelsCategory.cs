@@ -11,8 +11,8 @@ public class TeamPickedLevelsCategory : GameLevelCategory
 {
     internal TeamPickedLevelsCategory() : base("teamPicks", "mmpicks", false)
     {
-        this.Name = "Team Picks";
-        this.Description = "High quality levels, hand-picked by us.";
+        this.Name = "Выбор команды";
+        this.Description = "Высокое качество, уровни, подобранные нами вручную.";
         this.FontAwesomeIcon = "certificate";
         this.IconHash = "g820626";
     }

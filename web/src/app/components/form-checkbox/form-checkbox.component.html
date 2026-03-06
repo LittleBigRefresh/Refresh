@@ -1,8 +1,0 @@
-<div class="text-left mb-2.5 flex">
-  <div *ngIf="_showLabel" class="text-sm inline">
-    <fa-icon [icon]="_icon" class="pr-1"></fa-icon>
-    <span>{{_name}}</span>
-  </div>
-
-  <input type="checkbox" class="bg-teritary ml-2.5" [readOnly]="_readonly" [checked]="_value" (input)="onChange($event)">
-</div>

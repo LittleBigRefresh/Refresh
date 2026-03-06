@@ -11,8 +11,8 @@ public class NewestLevelsCategory : GameLevelCategory
 {
     internal NewestLevelsCategory() : base("newest", "newest", false)
     {
-        this.Name = "Newest Levels";
-        this.Description = "Levels that were most recently uploaded!";
+        this.Name = "Новейшие уровни!";
+        this.Description = "Уровни, которые были загружены совсем недавно!";
         this.IconHash = "g820623";
         this.FontAwesomeIcon = "calendar";
     }

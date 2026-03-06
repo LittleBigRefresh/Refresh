@@ -24,7 +24,7 @@ public partial class GameDatabaseContext // Leaderboard
         // Throw incase the method directly gets called like this in a test
         if (players.Count <= 0)
         {
-            throw new ArgumentException("Player list is empty!", nameof(players));
+            throw new ArgumentException("Список игроков пуст!", nameof(players));
         }
 
         IEnumerable<ObjectId> playerIds = players.Select(u => u.UserId);
@@ -81,8 +81,8 @@ public partial class GameDatabaseContext // Leaderboard
             
             foreach (GameUser player in usersToNotify)
             {
-                this.AddNotification("Score overtaken", 
-                    $"Your #1 score on {level.Title} has been overtaken by {usernamesToShow} in {score.ScoreType}-player-mode!", 
+                this.AddNotification("Ваш рекорд перебили!", 
+                    $"Ваш результат №1 на уровне {level.Title} превзошел {usernamesToShow} в режиме для {score.ScoreType}-игроков!!", 
                     player, "medal");   
             }
         }

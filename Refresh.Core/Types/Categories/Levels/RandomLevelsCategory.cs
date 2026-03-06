@@ -11,8 +11,8 @@ public class RandomLevelsCategory : GameLevelCategory
 {
     internal RandomLevelsCategory() : base("random", ["lbp2luckydip", "luckydip"], false)
     {
-        this.Name = "Lucky Dip";
-        this.Description = "A random assortment of levels!";
+        this.Name = "'Мне повезет!'";
+        this.Description = "Случайный набор уровней!";
         this.FontAwesomeIcon = "shuffle";
         this.IconHash = "g820605";
     }

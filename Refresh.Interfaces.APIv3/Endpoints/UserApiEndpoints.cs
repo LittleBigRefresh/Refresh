@@ -32,7 +32,7 @@ public class UserApiEndpoints : EndpointGroup
         
         return ApiGameUserResponse.FromOld(user, dataContext);
     }
-    
+
     [ApiV3Endpoint("users/uuid/{uuid}"), Authentication(false)]
     [DocSummary("Tries to find a user by the UUID")]
     [DocError(typeof(ApiNotFoundError), "The user cannot be found")]

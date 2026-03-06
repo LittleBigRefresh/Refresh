@@ -1,8 +1,0 @@
-<div @fadeIn @fadeOut class="container mx-auto bg-{{_color}} p-5 py-3 border-b-2 text-lg overflow-hidden">
-    <fa-icon *ngIf="_id != -1" class="float-right cursor-pointer transition-colors hover:text-dangerous" title="Dismiss" (click)="dismiss()" [icon]="'xmark'"></fa-icon>
-
-    <fa-icon [icon]="_icon" class="pr-2"></fa-icon>
-    <span class="font-bold">{{_title}}</span>
-
-    <p class="text-sm">{{_text}}</p>
-</div>

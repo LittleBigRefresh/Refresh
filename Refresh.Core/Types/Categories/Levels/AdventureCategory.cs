@@ -11,8 +11,8 @@ public class AdventureCategory : GameLevelCategory
 {
     public AdventureCategory() : base("adventure", [], false)
     {
-        this.Name = "Adventures";
-        this.Description = "Storylines and other big projects by the community.";
+        this.Name = "Приключения";
+        this.Description = "Сюжетные линии и другие крупные проекты сообщества.";
         this.FontAwesomeIcon = "book-bookmark";
         this.IconHash = "g820625";
     }

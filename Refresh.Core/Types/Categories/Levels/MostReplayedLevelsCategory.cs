@@ -11,8 +11,8 @@ public class MostReplayedLevelsCategory : GameLevelCategory
 {
     internal MostReplayedLevelsCategory() : base("mostReplayed", "mostPlays", false)
     {
-        this.Name = "Replayable Levels";
-        this.Description = "Levels people love to play over and over!";
+        this.Name = "Реиграбельные уровни";
+        this.Description = "Уровни, в которые люди любят играть снова и снова!";
         this.FontAwesomeIcon = "forward";
         this.IconHash = "g820608";
     }

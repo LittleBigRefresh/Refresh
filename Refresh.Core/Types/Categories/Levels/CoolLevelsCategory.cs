@@ -11,8 +11,8 @@ public class CoolLevelsCategory : GameLevelCategory
 {
     public CoolLevelsCategory() : base("coolLevels", ["lbpcool", "lbp2cool", "cool", "hot"], false)
     {
-        this.Name = "Cool Levels";
-        this.Description = "Levels trending with players like you!";
+        this.Name = "Классные уровни";
+        this.Description = "Популярные уровни среди игроков, как вы!";
         this.FontAwesomeIcon = "fire";
         this.IconHash = "g820625";
     }

@@ -1,9 +1,0 @@
-<div class="flex justify-center items-center gap-x-5 bg-header-background text-header-foreground rounded px-5 py-2.5 drop-shadow-lg">
-  <app-carousel-cycle-button side="left" (click)="decrement()" *ngIf="canDecrement()"></app-carousel-cycle-button>
-
-  <div class="flex gap-x-5 justify-center items-center flex-grow flex-wrap h-24" #items>
-    <ng-content></ng-content>
-  </div>
-
-  <app-carousel-cycle-button side="right" (click)="increment()" *ngIf="canIncrement()"></app-carousel-cycle-button>
-</div>

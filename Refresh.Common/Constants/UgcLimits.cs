@@ -3,7 +3,7 @@ namespace Refresh.Common.Constants;
 public static class UgcLimits
 {
     // Object limits
-    public const int MaximumLevels = 9_999;
+    public const int MaximumLevels = 936;
     public const int MaximumLabels = 5;
 
     // String limits

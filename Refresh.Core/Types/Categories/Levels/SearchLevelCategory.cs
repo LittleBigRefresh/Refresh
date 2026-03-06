@@ -11,8 +11,8 @@ public class SearchLevelCategory : GameLevelCategory
 {
     internal SearchLevelCategory() : base("search", "search", false)
     {
-        this.Name = "Search";
-        this.Description = "Search for new levels.";
+        this.Name = "Поиск";
+        this.Description = "Исследуйте новые уровни!";
         this.FontAwesomeIcon = "magnifying-glass";
         // no icon for now, too lazy to find
         this.Hidden = true; // The search category is not meant to be shown, as it requires a special implementation on all frontends

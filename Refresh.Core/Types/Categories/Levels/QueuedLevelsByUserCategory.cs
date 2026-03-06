@@ -11,8 +11,8 @@ public class QueuedLevelsByUserCategory : GameLevelCategory
 {
     internal QueuedLevelsByUserCategory() : base("queued", "lolcatftw", true)
     {
-        this.Name = "My Queue";
-        this.Description = "Levels you'd like to play!";
+        this.Name = "Моя очередь";
+        this.Description = "Уровни, в которые вы хотели бы поиграть!";
         this.FontAwesomeIcon = "bell";
         this.IconHash = "g820614";
     }

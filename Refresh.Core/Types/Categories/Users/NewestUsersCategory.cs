@@ -9,8 +9,8 @@ public class NewestUsersCategory : GameUserCategory
 {
     public NewestUsersCategory() : base("newest", [], false)
     {
-        this.Name = "Newest Players";
-        this.Description = "Our newest server users.";
+        this.Name = "Новички!";
+        this.Description = "Ты новичок? Ты новичок? Ты новичок? Ты новичок? ";
         this.FontAwesomeIcon = "user-plus";
         this.IconHash = "g820602";
     }

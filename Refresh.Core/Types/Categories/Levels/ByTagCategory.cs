@@ -12,8 +12,8 @@ public class ByTagCategory : GameLevelCategory
     internal ByTagCategory() : base("tag", "tag", false)
     {
         // Technically this category can apply to any user, but since we fallback to the regular user this name & description still applies
-        this.Name = "Tag Search";
-        this.Description = "Search for levels using tags given by users like you!";
+        this.Name = "Поиск по ТЕГАМ";
+        this.Description = "Ищите уровни по тегам, указанным такими же пользователями, как вы!";
         this.IconHash = "g820605";
         this.FontAwesomeIcon = "tag";
         this.Hidden = true; // The by-tag category is not meant to be shown, as it requires a special implementation on all frontends

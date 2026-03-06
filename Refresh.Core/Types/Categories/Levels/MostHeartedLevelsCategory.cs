@@ -11,8 +11,8 @@ public class MostHeartedLevelsCategory : GameLevelCategory
 {
     internal MostHeartedLevelsCategory() : base("mostHearted", "mostHearted", false)
     {
-        this.Name = "Community's Favorites";
-        this.Description = "The all-time most hearted levels!";
+        this.Name = "Избранное сообщества";
+        this.Description = "Самые любимые уровни сообщества за все время!";
         this.FontAwesomeIcon = "heart";
         this.IconHash = "g820607";
     }

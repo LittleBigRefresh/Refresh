@@ -13,11 +13,11 @@ public static class SystemUsers
     public const char ClanPrefix = '$';
     
     public const string DeletedUserName = "!DeletedUser";
-    public const string DeletedUserDescription = "I'm a fake user that represents deleted users for levels.";
+    public const string DeletedUserDescription = "Я поддельный пользователь, который представляет удаленных пользователей для уровней.";
 
     public const string UnknownUserName = "!Unknown";
-    public const string UnknownUserDescription = "I'm a fake user that represents a non existent publisher for re-published levels.";
+    public const string UnknownUserDescription = "Я фальшивый пользователь, представляющий несуществующего издателя для переизданных уровней.";
     
     public const string HashedUserName = "!Hashed";
-    public const string HashedUserDescription = "I'm a fake user that represents an unknown publisher for hashed levels.";
+    public const string HashedUserDescription = "Я фальшивый пользователь, представляющий неизвестного издателя хэшированных уровней.";
 }

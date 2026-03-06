@@ -11,8 +11,8 @@ public class DeveloperLevelsCategory : GameLevelCategory
 {
     internal DeveloperLevelsCategory() : base("developer", [], false)
     {
-        this.Name = "Story Levels";
-        this.Description = "Levels from LittleBigPlanet's story mode.";
+        this.Name = "Уровни сюжетные";
+        this.Description = "Уровни из сюжетного режима LittleBigPlanet.";
         this.FontAwesomeIcon = "certificate";
         this.IconHash = "g820604";
         this.Hidden = true; // TODO: Set to false when we import story level names

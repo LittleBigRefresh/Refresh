@@ -12,8 +12,8 @@ public class ContestCategory : GameLevelCategory
 {
     public ContestCategory() : base("contest", [], false)
     {
-        this.Name = "Contests";
-        this.Description = "Levels from a contest.";
+        this.Name = "Конкурс";
+        this.Description = "Уровни с конкурса.";
         this.FontAwesomeIcon = "certificate";
         this.IconHash = "g820608";
     }

@@ -11,8 +11,8 @@ public class HeartedLevelsByUserCategory : GameLevelCategory
 {
     internal HeartedLevelsByUserCategory() : base("hearted", "favouriteSlots", true)
     {
-        this.Name = "My Favorites";
-        this.Description = "Your personal list filled with your favourite levels!";
+        this.Name = "Мне нравится!";
+        this.Description = "Ваш личный список, заполненный вашими любимыми уровнями!";
         this.FontAwesomeIcon = "heart";
         this.IconHash = "g820611";
     }

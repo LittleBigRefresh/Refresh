@@ -1,6 +1,0 @@
-<form-holder>
-  <menu-link [icon]="faUser" link="/user/me" title="View Profile"></menu-link>
-  <menu-link [icon]="faSignOut" link="/logout" title="Log Out"></menu-link>
-  <divider></divider>
-  <menu-link *ngFor="let link of links" [icon]="link.icon" [link]="link.link" [title]="link.title" [raw]="link.raw"></menu-link>
-</form-holder>

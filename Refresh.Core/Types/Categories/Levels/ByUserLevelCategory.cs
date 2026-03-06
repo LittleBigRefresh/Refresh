@@ -12,8 +12,8 @@ public class ByUserLevelCategory : GameLevelCategory
     internal ByUserLevelCategory() : base("byUser", "by", true)
     {
         // Technically this category can apply to any user, but since we fallback to the regular user this name & description still applies
-        this.Name = "My Published Levels";
-        this.Description = "Levels you've shared with the community!";
+        this.Name = "Мои уровни";
+        this.Description = "Уровни ваши!";
         this.IconHash = "g820625";
         this.FontAwesomeIcon = "user";
     }

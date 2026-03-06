@@ -11,8 +11,8 @@ public class HighestRatedLevelsCategory : GameLevelCategory
 {
     internal HighestRatedLevelsCategory() : base("mostLiked", ["thumbs", "highestRated"], false)
     {
-        this.Name = "Highest Rated";
-        this.Description = "Levels with the most Yays!";
+        this.Name = "Высший пилотаж!";
+        this.Description = "Уровни с наибольшим количеством 'Ура'!";
         this.FontAwesomeIcon = "thumbs-up";
         this.IconHash = "g820603";
     }

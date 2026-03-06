@@ -11,8 +11,8 @@ public class MostUniquelyPlayedLevelsCategory : GameLevelCategory
 {
     internal MostUniquelyPlayedLevelsCategory() : base("mostPlayed", "mostUniquePlays", false)
     {
-        this.Name = "Starter Pack";
-        this.Description = "Levels that many people have played.";
+        this.Name = "С чего начать";
+        this.Description = "Уровни, в которые играли больше людей.";
         this.FontAwesomeIcon = "play";
         this.IconHash = "g820608";
     }

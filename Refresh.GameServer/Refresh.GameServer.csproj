@@ -6,6 +6,7 @@
         <Nullable>enable</Nullable>
         <Configurations>Debug;Release;DebugLocalBunkum</Configurations>
         <Platforms>AnyCPU</Platforms>
+        <RuntimeIdentifier>linux-x64</RuntimeIdentifier> 
         <ServerGarbageCollection>true</ServerGarbageCollection>
         <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
         <WarningsNotAsErrors>612,618</WarningsNotAsErrors>
@@ -18,25 +19,25 @@
     
     <ItemGroup Condition="'$(Configuration)'=='DebugLocalBunkum'">
         <Reference Include="Bunkum.Core">
-            <HintPath>..\..\Bunkum\Bunkum.Core\bin\Debug\net8.0\Bunkum.Core.dll</HintPath>
+            <HintPath>..\..\Bunkum\Bunkum.Core\bin\Debug\net8.0\qqq\Bunkum.Core.dll</HintPath>
         </Reference>
         <Reference Include="Bunkum.Listener">
-            <HintPath>..\..\Bunkum\Bunkum.Listener\bin\Debug\net8.0\Bunkum.Listener.dll</HintPath>
+            <HintPath>..\..\Bunkum\Bunkum.Listener\bin\Debug\net8.0\qqq\Bunkum.Listener.dll</HintPath>
         </Reference>
         <Reference Include="Bunkum.Protocols.Http">
-            <HintPath>..\..\Bunkum\Bunkum.Protocols.Http\bin\Debug\net8.0\Bunkum.Protocols.Http.dll</HintPath>
+            <HintPath>..\..\Bunkum\Bunkum.Protocols.Http\bin\Debug\net8.0\qqq\Bunkum.Protocols.Http.dll</HintPath>
         </Reference>
         <Reference Include="Bunkum.RealmDatabase">
-            <HintPath>..\..\Bunkum\Bunkum.RealmDatabase\bin\Debug\net8.0\Bunkum.RealmDatabase.dll</HintPath>
+            <HintPath>..\..\Bunkum\Bunkum.RealmDatabase\bin\Debug\net8.0\qqq\Bunkum.RealmDatabase.dll</HintPath>
         </Reference>
         <Reference Include="Bunkum.AutoDiscover">
-            <HintPath>..\..\Bunkum\Bunkum.AutoDiscover\bin\Debug\net8.0\Bunkum.AutoDiscover.dll</HintPath>
+            <HintPath>..\..\Bunkum\Bunkum.AutoDiscover\bin\Debug\net8.0\qqq\Bunkum.AutoDiscover.dll</HintPath>
         </Reference>
         <Reference Include="Bunkum.HealthChecks">
-            <HintPath>..\..\Bunkum\Bunkum.HealthChecks\bin\Debug\net8.0\Bunkum.HealthChecks.dll</HintPath>
+            <HintPath>..\..\Bunkum\Bunkum.HealthChecks\bin\Debug\net8.0\qqq\Bunkum.HealthChecks.dll</HintPath>
         </Reference>
         <Reference Include="Bunkum.HealthChecks.RealmDatabase">
-            <HintPath>..\..\Bunkum\Bunkum.HealthChecks.RealmDatabase\bin\Debug\net8.0\Bunkum.HealthChecks.RealmDatabase.dll</HintPath>
+            <HintPath>..\..\Bunkum\Bunkum.HealthChecks.RealmDatabase\bin\Debug\net8.0\qqq\Bunkum.HealthChecks.RealmDatabase.dll</HintPath>
         </Reference>
 
         <!-- Package references must match Bunkum.HttpServer's csproj -->

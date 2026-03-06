@@ -12,8 +12,8 @@ public class CurrentlyPlayingCategory : GameLevelCategory
 {
     internal CurrentlyPlayingCategory() : base("currentlyPlaying", "busiest", false)
     {
-        this.Name = "Popular Now";
-        this.Description = "Levels people are playing right now!";
+        this.Name = "Сейчас Популярно";
+        this.Description = "Уровни, в которые люди играют прямо сейчас!";
         this.IconHash = "g820602";
         this.FontAwesomeIcon = "users";
     }
