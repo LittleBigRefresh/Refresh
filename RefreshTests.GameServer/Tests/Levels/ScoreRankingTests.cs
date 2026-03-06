@@ -56,7 +56,7 @@ public class ScoreRankingTests : GameServerTest
     }
 
     [Test]
-    public void OwnOvertakenScoresRankGetsReset()
+    public void RankOfOwnOvertakenScoreGetsReset()
     {
         using TestContext context = this.GetServer();
         GameUser user = context.CreateUser();
