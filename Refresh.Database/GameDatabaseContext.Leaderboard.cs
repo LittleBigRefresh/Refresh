@@ -155,7 +155,7 @@ public partial class GameDatabaseContext // Leaderboard
 
     /// <param name="scoreType">0 = don't filter by type</param>
     /// <param name="rank">0 = show all high-scores regardless of rank</param>
-    public DatabaseList<ScoreWithRank> GetScoresByUser(GameUser user, int skip, int count, byte scoreType, int rank)
+    public DatabaseList<ScoreWithRank> GetHighScoresByUser(GameUser user, int skip, int count, byte scoreType, int rank)
     {
         IQueryable<GameScore> scores = this.GameScoresIncluded
             .Where(s => s.PublisherId == user.UserId)
@@ -192,35 +192,35 @@ public partial class GameDatabaseContext // Leaderboard
         IQueryable<Event> scoreEvents = this.Events
             .Where(e => e.StoredDataType == EventDataType.Score && e.StoredObjectId == score.ScoreId);
         
-        this.Write(() =>
-        {
-            this.Events.RemoveRange(scoreEvents);
-            this.GameScores.Remove(score);
-        });
+        this.Events.RemoveRange(scoreEvents);
+        this.GameScores.Remove(score);
+        this.SaveChanges();
+
+        // Only recalculate ranks if the score was a high-score.
+        // Also, separate write transaction because otherwise recalculation would still include the unwanted scores.
+        if (score.Rank != 0)
+            this.RecalculateScoreStatistics(score.LevelId, score.ScoreType, true);
     }
     
     public void DeleteScoresSetByUser(GameUser user)
     {
+        // Find out which leaderboards we will have to recalculate the ranks of.
+        // Only need high-scores for this, as the other, overtaken scores should not affect ranking at all,
+        // and additionally, this way we will always have not more than 1 score per level/score type,
+        // avoiding recalculation of the same leaderboards multiple times.
         IEnumerable<GameScore> scores = this.GameScores
-            // FIXME: Realm (ahem, I mean the atlas device sdk *rolls eyes*) is a fucking joke.
-            // Realm doesn't support .Contains on IList<T>. Yes, really.
-            // This means we are forced to iterate over EVERY SCORE.
-            // I can't wait for Postgres.
-            .AsEnumerableIfRealm()
-            .Where(s => s.PlayerIdsRaw.Contains(user.UserId.ToString()))
-            .ToArrayIfPostgres();
-        
-        this.Write(() =>
+            .Where(s => s.PublisherId == user.UserId && s.Rank != 0)
+            .ToArray();
+
+        this.GameScores.RemoveRange(s => s.PublisherId == user.UserId);
+        this.Events.RemoveRange(s => s.StoredDataType == EventDataType.Score && s.UserId == user.UserId);
+        this.SaveChanges();
+
+        foreach (GameScore score in scores)
         {
-            foreach (GameScore score in scores)
-            {
-                IQueryable<Event> scoreEvents = this.Events
-                    .Where(e => e.StoredDataType == EventDataType.Score && e.StoredObjectId == score.ScoreId);
-                
-                this.Events.RemoveRange(scoreEvents);
-                this.GameScores.Remove(score);
-            }
-        });
+            this.RecalculateScoreStatistics(score.LevelId, score.ScoreType, false);
+        }
+        this.SaveChanges();
     }
 
     public IEnumerable<GameUser> GetPlayersFromScore(GameScore score)
