@@ -252,16 +252,16 @@ public partial class GameDatabaseContext // Statistics
             previousScore = score.Score;
         }
 
-        this.SaveChanges();
+        if (saveChanges) this.SaveChanges();
     }
 
-    public void RecalculateScoreStatistics(GameLevel level)
+    public void RecalculateScoreStatistics(GameLevel level, bool saveChanges = true)
     {
         this.RecalculateScoreStatistics(level.LevelId, 1, false);
         this.RecalculateScoreStatistics(level.LevelId, 2, false);
         this.RecalculateScoreStatistics(level.LevelId, 3, false);
         this.RecalculateScoreStatistics(level.LevelId, 4, false);
-        this.SaveChanges();
+        if (saveChanges) this.SaveChanges();
     }
     
     #endregion
