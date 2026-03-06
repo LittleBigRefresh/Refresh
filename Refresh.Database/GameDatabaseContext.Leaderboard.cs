@@ -142,7 +142,6 @@ public partial class GameDatabaseContext // Leaderboard
             .Where(s => s.LevelId == level.LevelId)
             .OrderByDescending(s => s.Score)
             .Where(s => s.Rank != 0)
-            //TODO: THIS CALL IS EXTREMELY INEFFECIENT!!! once we are in postgres land, figure out a way to do this effeciently
             .Where(s => mutuals.Contains(s.PublisherId));
         
         if (scoreType != 0)

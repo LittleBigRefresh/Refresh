@@ -221,9 +221,6 @@ public partial class GameDatabaseContext // Statistics
     public void RecalculateScoreStatistics(int levelId, byte scoreType, bool saveChanges = true)
     {
         List<GameScore> scores = this.GameScores
-#if DEBUG
-            .Include(s => s.Publisher)
-#endif
             .Where(s => s.LevelId == levelId && s.ScoreType == scoreType)
             .OrderByDescending(s => s.Score)
             .ToList();
@@ -231,7 +228,6 @@ public partial class GameDatabaseContext // Statistics
         // Step 1: Reset all ranks
         foreach (GameScore score in scores)
         {
-            this._logger.LogDebug(RefreshContext.Database, $"Reset {score.ScoreId} ({score.Score} by {score.Publisher}) rank to 0");
             score.Rank = 0;
         }
         
@@ -247,8 +243,6 @@ public partial class GameDatabaseContext // Statistics
                 rank++;
 
             score.Rank = rank;
-            this._logger.LogDebug(RefreshContext.Database, $"Set {score.ScoreId} ({score.Score} by {score.Publisher}) rank to {rank}");
-
             previousScore = score.Score;
         }
 
