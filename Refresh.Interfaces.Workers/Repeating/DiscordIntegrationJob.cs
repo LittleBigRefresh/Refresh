@@ -1,6 +1,6 @@
 using Discord;
 using Discord.Webhook;
-using Refresh.Core;
+using Refresh.Common;
 using Refresh.Core.Configuration;
 using Refresh.Database;
 using Refresh.Database.Models.Activity;

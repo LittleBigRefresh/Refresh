@@ -1,5 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore.Storage;
-using Refresh.Core;
+using Refresh.Common;
 using Refresh.Database.Models.Workers;
 using Refresh.Workers.State;
 

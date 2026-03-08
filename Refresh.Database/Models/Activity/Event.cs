@@ -25,8 +25,9 @@ public partial class Event
     /// <summary>
     /// The user in question that created this event.
     /// </summary>
-    [Required]
-    public GameUser User { get; set; }
+    [ForeignKey(nameof(UserId))]
+    [Required] public GameUser User { get; set; }
+    [Required] public ObjectId UserId { get; set; }
     
     /// <summary>
     /// Should this event be shown to other users on the server?

@@ -2,6 +2,7 @@ using Refresh.Database.Models.Authentication;
 using Refresh.Database.Models.Users;
 using Refresh.Database.Models.Levels.Scores;
 using Refresh.Database.Models.Levels;
+using Refresh.Database.Models.Activity;
 
 namespace RefreshTests.GameServer.Tests.Levels;
 
@@ -18,12 +19,14 @@ public class ScoreModerationTests : GameServerTest
         
         GameScore score = context.SubmitScore(1, 1, level, user, TokenGame.LittleBigPlanet2, TokenPlatform.PS3);
         string uuid = score.ScoreId.ToString();
+        Assert.That(context.Database.GetTotalEventsByUserForDataType(user, EventDataType.Score), Is.EqualTo(1));
         
         // Act
         context.Database.DeleteScore(context.Database.GetScoreByUuid(uuid)!);
         
         // Assert
         Assert.That(context.Database.GetScoreByUuid(uuid), Is.Null);
+        Assert.That(context.Database.GetTotalEventsByUserForDataType(user, EventDataType.Score), Is.Zero);
     }
     
     [Test]
@@ -83,6 +86,7 @@ public class ScoreModerationTests : GameServerTest
         GameScore score2 = context.SubmitScore(1, 1, level2, user, TokenGame.LittleBigPlanet2, TokenPlatform.PS3);
         string uuid1 = score1.ScoreId.ToString();
         string uuid2 = score2.ScoreId.ToString();
+        Assert.That(context.Database.GetTotalEventsByUserForDataType(user, EventDataType.Score), Is.EqualTo(2));
         
         // Act
         context.Database.DeleteScoresSetByUser(user);
@@ -90,5 +94,6 @@ public class ScoreModerationTests : GameServerTest
         // Assert
         Assert.That(context.Database.GetScoreByUuid(uuid1), Is.Null);
         Assert.That(context.Database.GetScoreByUuid(uuid2), Is.Null);
+        Assert.That(context.Database.GetTotalEventsByUserForDataType(user, EventDataType.Score), Is.Zero);
     }
 }

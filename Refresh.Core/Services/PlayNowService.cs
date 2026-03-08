@@ -1,6 +1,7 @@
 using Bunkum.Core.Services;
 using MongoDB.Bson;
 using NotEnoughLogs;
+using Refresh.Common;
 using Refresh.Database;
 using Refresh.Database.Models.Authentication;
 using Refresh.Database.Models.Levels;

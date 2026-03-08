@@ -26,6 +26,7 @@ public static class RefreshWorkerManager
         manager.AddJob<ClampPlayerLimitsMigration>();
         manager.AddJob<BackfillModdedPlanetFlagsMigration>();
         manager.AddJob<CorrectWebsitePinProgressPlatform>();
+        manager.AddJob<CalculateScoreRanksMigration>();
 
         return manager;
     }
