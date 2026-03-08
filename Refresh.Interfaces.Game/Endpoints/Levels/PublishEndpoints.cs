@@ -27,7 +27,8 @@ public class PublishEndpoints : EndpointGroup
     private const int RequestTimeoutDuration = 900; // 15 minutes
     private const int MaxRequestAmount = 15;
     private const int RequestBlockDuration = RequestTimeoutDuration;
-    private const string BucketName = "level-publish";
+    private const string PublishBucket = "level-publish";
+    private const string StartPublishBucket = "level-start-publish";
     
     /// <summary>
     /// Does basic verification on a level
@@ -113,6 +114,7 @@ public class PublishEndpoints : EndpointGroup
 
     [GameEndpoint("startPublish", ContentType.Xml, HttpMethods.Post)]
     [RequireEmailVerified]
+    [RateLimitSettings(RequestTimeoutDuration, MaxRequestAmount, RequestBlockDuration, StartPublishBucket)]
     public Response StartPublish(RequestContext context,
         GameLevelRequest body,
         DataContext dataContext,
@@ -166,7 +168,7 @@ public class PublishEndpoints : EndpointGroup
 
     [GameEndpoint("publish", ContentType.Xml, HttpMethods.Post)]
     [RequireEmailVerified]
-    [RateLimitSettings(RequestTimeoutDuration, MaxRequestAmount, RequestBlockDuration, BucketName)]
+    [RateLimitSettings(RequestTimeoutDuration, MaxRequestAmount, RequestBlockDuration, PublishBucket)]
     public Response PublishLevel(RequestContext context,
         GameLevelRequest body,
         DataContext dataContext,

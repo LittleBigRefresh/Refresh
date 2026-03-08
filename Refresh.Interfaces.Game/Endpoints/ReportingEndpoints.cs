@@ -1,6 +1,7 @@
 using System.Drawing;
 using Bunkum.Core;
 using Bunkum.Core.Endpoints;
+using Bunkum.Core.RateLimit;
 using Bunkum.Core.Responses;
 using Bunkum.Listener.Protocol;
 using Bunkum.Protocols.Http;
@@ -24,6 +25,7 @@ public class ReportingEndpoints : EndpointGroup
     // TODO: LBP1 beta builds upload all related assets after sending the report itself to this endpoint, handle that case
     [GameEndpoint("grief", HttpMethods.Post, ContentType.Xml)]
     [RequireEmailVerified]
+    [RateLimitSettings(600, 6, 300, "grief-report-upload")]
     public Response UploadReport(RequestContext context, GameDatabaseContext database, GameReport body, GameUser user,
         IDateTimeProvider time, Token token, GameServerConfig config)
     {

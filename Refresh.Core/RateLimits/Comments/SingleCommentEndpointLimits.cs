@@ -1,4 +1,4 @@
-namespace Refresh.Core.RateLimits.Comment;
+namespace Refresh.Core.RateLimits.Comments;
 
 public static class SingleCommentEndpointLimits
 {

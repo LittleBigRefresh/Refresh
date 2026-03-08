@@ -1,5 +1,6 @@
 using Bunkum.Core;
 using Bunkum.Core.Endpoints;
+using Bunkum.Core.RateLimit;
 using Bunkum.Core.Responses;
 using Bunkum.Listener.Protocol;
 using Bunkum.Protocols.Http;
@@ -7,6 +8,8 @@ using Refresh.Common.Constants;
 using Refresh.Common.Time;
 using Refresh.Core.Authentication.Permission;
 using Refresh.Core.Configuration;
+using Refresh.Core.RateLimits.Comments;
+using Refresh.Core.RateLimits.Relations;
 using Refresh.Core.Types.Data;
 using Refresh.Database;
 using Refresh.Database.Models.Comments;
@@ -21,6 +24,8 @@ public class CommentEndpoints : EndpointGroup
 {
     [GameEndpoint("postUserComment/{username}", ContentType.Xml, HttpMethods.Post)]
     [RequireEmailVerified]
+    [RateLimitSettings(CommentUploadEndpointLimits.TimeoutDuration, CommentUploadEndpointLimits.RequestAmount, 
+                            CommentUploadEndpointLimits.BlockDuration, CommentUploadEndpointLimits.RequestBucket)]
     public Response PostProfileComment(RequestContext context, GameDatabaseContext database, string username, SerializedComment body, GameUser user, IDateTimeProvider timeProvider, GameServerConfig config)
     {
         if (user.IsWriteBlocked(config))
@@ -47,6 +52,8 @@ public class CommentEndpoints : EndpointGroup
     [GameEndpoint("userComments/{username}", ContentType.Xml)]
     [NullStatusCode(NotFound)]
     [MinimumRole(GameUserRole.Restricted)]
+    [RateLimitSettings(CommentListEndpointLimits.TimeoutDuration, CommentListEndpointLimits.RequestAmount, 
+                            CommentListEndpointLimits.BlockDuration, CommentListEndpointLimits.RequestBucket)]
     public SerializedCommentList? GetProfileComments(RequestContext context, GameDatabaseContext database, GameUser user, DataContext dataContext, string username)
     {
         GameUser? profile = database.GetUserByUsername(username);
@@ -84,6 +91,8 @@ public class CommentEndpoints : EndpointGroup
 
     [GameEndpoint("postComment/{slotType}/{id}", ContentType.Xml, HttpMethods.Post)]
     [RequireEmailVerified]
+    [RateLimitSettings(CommentUploadEndpointLimits.TimeoutDuration, CommentUploadEndpointLimits.RequestAmount, 
+                            CommentUploadEndpointLimits.BlockDuration, CommentUploadEndpointLimits.RequestBucket)]
     public Response PostLevelComment(RequestContext context, GameDatabaseContext database, string slotType, int id,
         SerializedComment body, GameUser user, GameServerConfig config)
     {
@@ -110,6 +119,8 @@ public class CommentEndpoints : EndpointGroup
     [GameEndpoint("comments/{slotType}/{id}", ContentType.Xml)]
     [NullStatusCode(NotFound)]
     [MinimumRole(GameUserRole.Restricted)]
+    [RateLimitSettings(CommentListEndpointLimits.TimeoutDuration, CommentListEndpointLimits.RequestAmount, 
+                            CommentListEndpointLimits.BlockDuration, CommentListEndpointLimits.RequestBucket)]
     public SerializedCommentList? GetLevelComments(RequestContext context, GameDatabaseContext database, GameUser user, DataContext dataContext,
         string slotType, int id)
     {
@@ -147,6 +158,8 @@ public class CommentEndpoints : EndpointGroup
     }
     
     [GameEndpoint("rateUserComment/{content}", HttpMethods.Post)] // profile comments
+    [RateLimitSettings(CommonRelationEndpointLimits.TimeoutDuration, CommonRelationEndpointLimits.RequestAmount, 
+                            CommonRelationEndpointLimits.BlockDuration, CommonRelationEndpointLimits.RequestBucket)]
     public Response RateProfileComment(RequestContext context, GameDatabaseContext database, GameUser user, string content)
     {
         if (!int.TryParse(context.QueryString["commentId"], out int commentId)) return BadRequest;
@@ -161,6 +174,8 @@ public class CommentEndpoints : EndpointGroup
     }
     
     [GameEndpoint("rateComment/{slotType}/{content}", HttpMethods.Post)]
+    [RateLimitSettings(CommonRelationEndpointLimits.TimeoutDuration, CommonRelationEndpointLimits.RequestAmount, 
+                            CommonRelationEndpointLimits.BlockDuration, CommonRelationEndpointLimits.RequestBucket)]
     public Response RateLevelComment(RequestContext context, GameDatabaseContext database, GameUser user, string slotType, string content)
     {
         if (!int.TryParse(context.QueryString["commentId"], out int commentId)) return BadRequest;

@@ -4,7 +4,7 @@ using Bunkum.Core.Endpoints;
 using Bunkum.Core.RateLimit;
 using Bunkum.Core.Storage;
 using Bunkum.Protocols.Http;
-using Refresh.Core.RateLimits;
+using Refresh.Core.RateLimits.Photos;
 using Refresh.Core.Types.Data;
 using Refresh.Database;
 using Refresh.Database.Models.Levels;

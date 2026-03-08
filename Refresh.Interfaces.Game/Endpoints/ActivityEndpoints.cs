@@ -9,6 +9,7 @@ using Bunkum.Protocols.Http;
 using Refresh.Common.Time;
 using Refresh.Core.Authentication.Permission;
 using Refresh.Core.Configuration;
+using Refresh.Core.RateLimits.Activity;
 using Refresh.Core.Types.Data;
 using Refresh.Database;
 using Refresh.Database.Models.Authentication;
@@ -24,14 +25,11 @@ namespace Refresh.Interfaces.Game.Endpoints;
 
 public class ActivityEndpoints : EndpointGroup
 {
-    private const int RequestTimeoutDuration = 60;
-    private const int MaxRequestAmount = 80;
-    private const int RequestBlockDuration = 60;
-    private const string BucketName = "activity";
 
     [GameEndpoint("stream", ContentType.Xml)]
     [GameEndpoint("stream", ContentType.Xml, HttpMethods.Post)]
-    [RateLimitSettings(RequestTimeoutDuration, MaxRequestAmount, RequestBlockDuration, BucketName)]
+    [RateLimitSettings(ActivityPageEndpointLimits.TimeoutDuration, ActivityPageEndpointLimits.GameRequestAmount, 
+                            ActivityPageEndpointLimits.BlockDuration, ActivityPageEndpointLimits.GameRequestBucket)]
     [NullStatusCode(BadRequest)]
     [MinimumRole(GameUserRole.Restricted)]
     public SerializedActivityPage? GetRecentActivity(RequestContext context, GameServerConfig config, GameDatabaseContext database, GameUser? user,
@@ -68,9 +66,10 @@ public class ActivityEndpoints : EndpointGroup
     }
 
     [GameEndpoint("stream/slot/{type}/{id}", ContentType.Xml)]
-    [RateLimitSettings(RequestTimeoutDuration, MaxRequestAmount, RequestBlockDuration, BucketName)]
     [NullStatusCode(BadRequest)]
     [MinimumRole(GameUserRole.Restricted)]
+    [RateLimitSettings(ActivityPageEndpointLimits.TimeoutDuration, ActivityPageEndpointLimits.GameRequestAmount, 
+                            ActivityPageEndpointLimits.BlockDuration, ActivityPageEndpointLimits.GameRequestBucket)]
     public Response GetRecentActivityForLevel(RequestContext context, GameServerConfig config, GameDatabaseContext database, GameUser? user,
         string type, int id, DataContext dataContext)
     {
@@ -116,9 +115,10 @@ public class ActivityEndpoints : EndpointGroup
     }
 
     [GameEndpoint("stream/user2/{username}", ContentType.Xml)]
-    [RateLimitSettings(RequestTimeoutDuration, MaxRequestAmount, RequestBlockDuration, BucketName)]
     [NullStatusCode(BadRequest)]
     [MinimumRole(GameUserRole.Restricted)]
+    [RateLimitSettings(ActivityPageEndpointLimits.TimeoutDuration, ActivityPageEndpointLimits.GameRequestAmount, 
+                            ActivityPageEndpointLimits.BlockDuration, ActivityPageEndpointLimits.GameRequestBucket)]
     public Response GetRecentActivityFromUser(RequestContext context, GameServerConfig config, GameDatabaseContext database, string username,
         DataContext dataContext)
     {
@@ -174,6 +174,8 @@ public class ActivityEndpoints : EndpointGroup
     [GameEndpoint("news", ContentType.Xml)]
     [Authentication(false)]
     [MinimumRole(GameUserRole.Restricted)]
+    [RateLimitSettings(ActivityPageEndpointLimits.TimeoutDuration, ActivityPageEndpointLimits.GameRequestAmount, 
+                            ActivityPageEndpointLimits.BlockDuration, ActivityPageEndpointLimits.GameRequestBucket)]
     public Response GetNews(RequestContext context, GameDatabaseContext database, IDateTimeProvider time, Token? token)
     {
         List<GameNewsItem> items = new();
