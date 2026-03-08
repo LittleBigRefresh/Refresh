@@ -58,10 +58,9 @@ public class PhotoEndpoints : EndpointGroup
                 return Unauthorized;
         }
 
-        GameLevel? level = database.GetLevelByIdAndType(body.Level.Type, body.Level.LevelId);
+        GameLevel? level = body.Level == null ? null : database.GetLevelByIdAndType(body.Level.Type, body.Level.LevelId);
 
         database.UploadPhoto(body, body.PhotoSubjects, user, level);
-
         return OK;
     }
 
