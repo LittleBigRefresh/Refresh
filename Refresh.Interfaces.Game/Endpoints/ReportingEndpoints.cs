@@ -88,14 +88,10 @@ public class ReportingEndpoints : EndpointGroup
                 {
                     LevelId = level.LevelId,
                     Title = level.Title,
-                    Type = level.SlotType switch {
-                        GameSlotType.User => "user",
-                        GameSlotType.Story => "developer",
-                        _ => throw new ArgumentOutOfRangeException(),
-                    },
+                    Type = level.SlotType.ToGameType()
                 },
                 PhotoSubjects = subjects,
-            }, user);
+            }, subjects, user, level);
         
             return OK; // just upload photo
         }
