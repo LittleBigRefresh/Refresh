@@ -55,12 +55,7 @@ public class ReportingEndpoints : EndpointGroup
         }
         
         string jpegHash = body.JpegHash;
-        
-        //If the level is specified but its invalid, set it to 0, to indicate the level is unknown
-        //This case is hit when someone makes a grief report from a non-existent level, which we allow
-        if (body.LevelId != 0 && level == null)
-            body.LevelId = 0;
-        
+
         //Basic validation
         if (body.Players is { Length: > 4 } || body.ScreenElements is { Player.Length: > 4 })
             // Return OK on PSP, since if we dont, it will error when trying to access the community moon and soft-lock the save file
@@ -86,18 +81,14 @@ public class ReportingEndpoints : EndpointGroup
                 MediumHash = jpegHash,
                 LargeHash = jpegHash,
                 PlanHash = "0",
-                Level = body.LevelId == 0 || level == null ? null : new SerializedPhotoLevel
+                Level = new SerializedPhotoLevel
                 {
-                    LevelId = level.LevelId,
-                    Title = level.Title,
-                    Type = level.SlotType switch {
-                        GameSlotType.User => "user",
-                        GameSlotType.Story => "developer",
-                        _ => throw new ArgumentOutOfRangeException(),
-                    },
+                    LevelId = body.LevelId,
+                    Title = level?.Title ?? "",
+                    Type = body.LevelType
                 },
                 PhotoSubjects = subjects,
-            }, user);
+            }, subjects, user, level);
         
             return OK; // just upload photo
         }

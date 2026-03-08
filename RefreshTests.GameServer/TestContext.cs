@@ -16,6 +16,7 @@ using Refresh.Workers;
 using Refresh.Interfaces.Game.Endpoints.DataTypes.Request;
 using Refresh.Database.Models.Playlists;
 using Refresh.Interfaces.APIv3.Endpoints.DataTypes.Request;
+using Refresh.Database.Models.Photos;
 
 namespace RefreshTests.GameServer;
 
@@ -144,7 +145,7 @@ public class TestContext : IDisposable
         return level;
     }
 
-    public void CreatePhotoWithSubject(GameUser author, string imageHash)
+    public GamePhoto CreatePhotoWithSubject(GameUser author, string imageHash, GameLevel? level = null)
     {
         // TODO: Return newly created GamePhoto
         if (this.Database.GetAssetFromHash(imageHash) == null)
@@ -155,22 +156,25 @@ public class TestContext : IDisposable
             });
         }
         
-        this.Database.UploadPhoto(new()
+        SerializedPhoto photo = new()
         {
             AuthorName = author.Username,
             SmallHash = imageHash,
             MediumHash = imageHash,
             LargeHash = imageHash,
-            PhotoSubjects = 
-            [
-                new()
-                {
-                    Username = author.Username,
-                    DisplayName = author.Username,
-                    BoundsList = "10,10,10,10"
-                }
-            ]
-        }, author);
+            
+        };
+        IEnumerable<SerializedPhotoSubject> subjects = 
+        [
+            new()
+            {
+                Username = author.Username,
+                DisplayName = author.Username,
+                BoundsList = "10,10,10,10"
+            }
+        ];
+
+        return this.Database.UploadPhoto(photo, subjects, author, level);
     }
 
     public void FillLeaderboard(GameLevel level, int count, byte type)
