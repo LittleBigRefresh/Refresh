@@ -47,8 +47,6 @@ public partial class GameDatabaseContext // Photos
             PublishedAt = this._time.Now,
         };
 
-        float[] bounds = new float[PhotoHelper.SubjectBoundCount];
-
         List<GamePhotoSubject> gameSubjects = new(subjects.Count());
         foreach (IPhotoUploadSubject subject in subjects)
         {
@@ -57,7 +55,7 @@ public partial class GameDatabaseContext // Photos
             if (!string.IsNullOrEmpty(subject.Username)) 
                 subjectUser = this.GetUserByUsername(subject.Username);
             
-            PhotoHelper.ParseBoundsList(subject.BoundsList, bounds);
+            float[] bounds = PhotoHelper.ParseBoundsList(subject.BoundsList);
 
             gameSubjects.Add(new GamePhotoSubject(subjectUser, subject.DisplayName, bounds));
 

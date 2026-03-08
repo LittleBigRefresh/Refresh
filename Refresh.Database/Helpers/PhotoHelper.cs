@@ -4,30 +4,29 @@ namespace Refresh.Database.Helpers;
 
 public abstract class PhotoHelper
 {
-    public const byte SubjectBoundCount = 4;
+    public const byte SubjectBoundaryCount = 4;
     
-    public static void ParseBoundsList(ReadOnlySpan<char> input, float[] floats)
+    public static float[] ParseBoundsList(string input)
     {
-        byte start = 0;
-        byte floatIndex = 0;
+        if (string.IsNullOrWhiteSpace(input))
+            throw new ArgumentException($"Bounds are empty");
 
-        for (byte i = 0; i < input.Length; i++)
+        string[] boundsStr = input.Split(',');
+        if (boundsStr.Length != SubjectBoundaryCount)
+            throw new ArgumentException($"Number of bounds is invalid ({boundsStr.Length} instead of {SubjectBoundaryCount})");
+
+        float[] boundsParsed = new float[SubjectBoundaryCount];
+        for (int i = 0; i < SubjectBoundaryCount; i++)
         {
-            if(floatIndex == SubjectBoundCount - 1) break; // won't catch the last float - not worth reading
-            if (input[i] != ',') continue;
-            
-            if (!float.TryParse(input.Slice(start, i - start), NumberFormatInfo.InvariantInfo, out float f))
-                throw new FormatException("Invalid format");
-                
-            floats[floatIndex] = f;
-            floatIndex++;
-            start = (byte)(i + 1);
-        }
-        
-        // parse the last float value - bounds does not end with comma
-        if (!float.TryParse(input[start..], NumberFormatInfo.InvariantInfo, out float lastFloat))
-            throw new FormatException("Invalid format");
+            // No OutOfRangeExceptions as both arrays are ensured to be as long as the constant
+            string boundaryStr = boundsStr[i];
 
-        floats[SubjectBoundCount - 1] = lastFloat;
+            if (!float.TryParse(boundaryStr, NumberFormatInfo.InvariantInfo, out float f))
+                throw new FormatException($"Boundary {boundaryStr} ({i+1}/{SubjectBoundaryCount}) is not a float");
+
+            boundsParsed[i] = f;
+        }
+
+        return boundsParsed;
     }
 }
