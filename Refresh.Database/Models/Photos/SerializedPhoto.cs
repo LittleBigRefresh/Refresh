@@ -1,4 +1,5 @@
 using System.Xml.Serialization;
+using Refresh.Database.Query;
 
 namespace Refresh.Database.Models.Photos;
 
@@ -6,7 +7,7 @@ namespace Refresh.Database.Models.Photos;
 
 [XmlRoot("photo")]
 [XmlType("photo")]
-public class SerializedPhoto
+public class SerializedPhoto : IPhotoUpload
 {
     [XmlAttribute("timestamp")]
     public long Timestamp { get; set; }
@@ -23,6 +24,9 @@ public class SerializedPhoto
     [XmlElement("plan")] public string PlanHash { get; set; }
     
     [XmlElement("slot")] public SerializedPhotoLevel Level { get; set; }
+    [XmlIgnore] public int LevelId => this.Level.LevelId;
+    [XmlIgnore] public string LevelType => this.Level.Type;
+    [XmlIgnore] public string LevelTitle => this.Level.Title;
     
-    [XmlArray("subjects")] public List<SerializedPhotoSubject> PhotoSubjects { get; set; }
+    [XmlArray("subjects")] public List<SerializedPhotoSubject> PhotoSubjects { get; set; } = [];
 }

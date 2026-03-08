@@ -1,4 +1,5 @@
 using System.Xml.Serialization;
+using Refresh.Database.Query;
 
 namespace Refresh.Database.Models.Photos;
 
@@ -6,7 +7,7 @@ namespace Refresh.Database.Models.Photos;
 
 [XmlRoot("subject")]
 [XmlType("subject")]
-public class SerializedPhotoSubject
+public class SerializedPhotoSubject : IPhotoUploadSubject
 {
     [XmlElement("npHandle")]
     public string Username { get; set; }

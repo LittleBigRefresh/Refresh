@@ -3,6 +3,8 @@ using Refresh.Database.Models.Activity;
 using Refresh.Database.Models.Users;
 using Refresh.Database.Models.Levels;
 using Refresh.Database.Models.Photos;
+using Refresh.Database.Query;
+using Refresh.Database.Helpers;
 
 namespace Refresh.Database;
 
@@ -26,7 +28,7 @@ public partial class GameDatabaseContext // Photos
         .Include(p => p.Subject4User)
         .Include(p => p.Subject4User!.Statistics);
     
-    public void UploadPhoto(SerializedPhoto photo, GameUser publisher)
+    public void UploadPhoto(IPhotoUpload photo, IEnumerable<IPhotoUploadSubject> subjects, GameUser publisher, GameLevel? level)
     {
         GamePhoto newPhoto = new()
         {
@@ -36,33 +38,26 @@ public partial class GameDatabaseContext // Photos
             PlanHash = photo.PlanHash,
             
             Publisher = publisher,
-            LevelType = photo.Level?.Type ?? "",
-            OriginalLevelId = photo.Level?.LevelId ?? 0,
-            OriginalLevelName = photo.Level?.Title ?? "",
+            Level = level,
+            LevelType = photo.LevelSlotType,
+            OriginalLevelId = photo.LevelId,
+            OriginalLevelName = photo.LevelTitle,
 
             TakenAt = DateTimeOffset.FromUnixTimeSeconds(Math.Clamp(photo.Timestamp, this._time.EarliestDate, this._time.TimestampSeconds)),
             PublishedAt = this._time.Now,
         };
 
-        GameLevel? level = null;
+        float[] bounds = new float[PhotoHelper.SubjectBoundCount];
 
-        if (photo.Level?.Type is "user" or "developer") 
-        {
-            level = this.GetLevelByIdAndType(photo.Level.Type, photo.Level.LevelId);
-            newPhoto.Level = level;
-        }
-
-        float[] bounds = new float[SerializedPhotoSubject.FloatCount];
-
-        List<GamePhotoSubject> gameSubjects = new(photo.PhotoSubjects.Count);
-        foreach (SerializedPhotoSubject subject in photo.PhotoSubjects)
+        List<GamePhotoSubject> gameSubjects = new(subjects.Count());
+        foreach (IPhotoUploadSubject subject in subjects)
         {
             GameUser? subjectUser = null;
             
             if (!string.IsNullOrEmpty(subject.Username)) 
                 subjectUser = this.GetUserByUsername(subject.Username);
             
-            SerializedPhotoSubject.ParseBoundsList(subject.BoundsList, bounds);
+            PhotoHelper.ParseBoundsList(subject.BoundsList, bounds);
 
             gameSubjects.Add(new GamePhotoSubject(subjectUser, subject.DisplayName, bounds));
 
