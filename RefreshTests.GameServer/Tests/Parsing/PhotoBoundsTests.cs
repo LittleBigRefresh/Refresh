@@ -1,4 +1,4 @@
-using Refresh.Database.Models.Photos;
+using Refresh.Database.Helpers;
 
 namespace RefreshTests.GameServer.Tests.Parsing;
 
@@ -8,9 +8,9 @@ public class PhotoBoundsTests
     public void ParsesBounds()
     {
         ReadOnlySpan<char> bounds = "0.652369,0.710704,0.838377,0.997791";
-        float[] floats = new float[SerializedPhotoSubject.FloatCount];
+        float[] floats = new float[PhotoHelper.SubjectBoundCount];
         
-        SerializedPhotoSubject.ParseBoundsList(bounds, floats);
+        PhotoHelper.ParseBoundsList(bounds, floats);
 
 #pragma warning disable NUnit2045
         Assert.That(floats[0], Is.EqualTo(0.652369f));
@@ -23,14 +23,14 @@ public class PhotoBoundsTests
     [Test]
     public void CatchesInvalidFormat()
     {
-        float[] floats = new float[SerializedPhotoSubject.FloatCount];
+        float[] floats = new float[PhotoHelper.SubjectBoundCount];
         const string bounds1 = "0.652369,0.71a0704,0.838377,0.997791";
         const string bounds2 = "0.652369,0.710704,0.838377,0.9977a91";
         
         Assert.Multiple(() =>
         {
-            Assert.That(() => SerializedPhotoSubject.ParseBoundsList(bounds1, floats), Throws.TypeOf<FormatException>());
-            Assert.That(() => SerializedPhotoSubject.ParseBoundsList(bounds2, floats), Throws.TypeOf<FormatException>());
+            Assert.That(() => PhotoHelper.ParseBoundsList(bounds1, floats), Throws.TypeOf<FormatException>());
+            Assert.That(() => PhotoHelper.ParseBoundsList(bounds2, floats), Throws.TypeOf<FormatException>());
         });
     }
 }
