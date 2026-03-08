@@ -203,11 +203,11 @@ public class AuthenticationApiEndpoints : EndpointGroup
     }
 
     private const int IpVerificationTimeoutDuration = 300;
-    private const int IpVerificationListAmount = 250;
-    private const int IpVerificationActionAmount = 10;
+    private const int IpVerificationListAmount = 12;
+    private const int IpVerificationActionAmount = 18;
     private const int IpVerificationBlockDuration = 300;
-    private const string IpVerificationListBucket = "score";
-    private const string IpVerificationActionBucket = "score-submission";
+    private const string IpVerificationListBucket = "ip-verification-list";
+    private const string IpVerificationActionBucket = "ip-verification-action";
     
     // IP Verification
     [ApiV3Endpoint("verificationRequests"), MinimumRole(GameUserRole.Restricted)]
