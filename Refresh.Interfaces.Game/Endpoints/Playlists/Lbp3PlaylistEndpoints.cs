@@ -12,10 +12,10 @@ using Refresh.Database;
 using Refresh.Database.Models.Levels;
 using Refresh.Database.Models.Playlists;
 using Refresh.Database.Models.Users;
-using static Refresh.Core.RateLimits.PlaylistEndpointLimits;
 using Refresh.Interfaces.Game.Types.Levels;
 using Refresh.Interfaces.Game.Types.Lists;
 using Refresh.Interfaces.Game.Types.Playlists;
+using Refresh.Core.RateLimits.Playlists;
 
 namespace Refresh.Interfaces.Game.Endpoints.Playlists;
 
@@ -23,7 +23,8 @@ public class Lbp3PlaylistEndpoints : EndpointGroup
 {
     [GameEndpoint("playlists", HttpMethods.Post, ContentType.Xml)]
     [RequireEmailVerified]
-    [RateLimitSettings(UploadTimeoutDuration, MaxCreateAmount, UploadBlockDuration, CreateBucket)]
+    [RateLimitSettings(PlaylistCreationEndpointLimits.UploadTimeoutDuration, PlaylistCreationEndpointLimits.MaxCreateAmount, 
+                            PlaylistCreationEndpointLimits.UploadBlockDuration, PlaylistCreationEndpointLimits.CreateBucket)]
     public Response CreatePlaylist(RequestContext context, GameServerConfig config, DataContext dataContext, GameUser user, SerializedLbp3Playlist body)
     {
         if (user.IsWriteBlocked(config))
@@ -51,7 +52,8 @@ public class Lbp3PlaylistEndpoints : EndpointGroup
 
     [GameEndpoint("playlists/{playlistId}", HttpMethods.Post, ContentType.Xml)]
     [RequireEmailVerified]
-    [RateLimitSettings(UploadTimeoutDuration, MaxUpdateAmount, UploadBlockDuration, UpdateBucket)]
+    [RateLimitSettings(PlaylistCreationEndpointLimits.UploadTimeoutDuration, PlaylistCreationEndpointLimits.MaxCreateAmount, 
+                                PlaylistCreationEndpointLimits.UploadBlockDuration, PlaylistCreationEndpointLimits.CreateBucket)]
     public Response UpdatePlaylist(RequestContext context, GameServerConfig config, DataContext dataContext, GameUser user, SerializedLbp3Playlist body, int playlistId)
     {
         if (user.IsWriteBlocked(config))
@@ -116,6 +118,8 @@ public class Lbp3PlaylistEndpoints : EndpointGroup
 
     [GameEndpoint("playlists/{playlistId}/slots", HttpMethods.Post, ContentType.Xml)]
     [RequireEmailVerified]
+    [RateLimitSettings(PlaylistModificationEndpointLimits.TimeoutDuration, PlaylistModificationEndpointLimits.RequestAmount, 
+                                PlaylistModificationEndpointLimits.BlockDuration, PlaylistModificationEndpointLimits.RequestBucket)]
     public Response AddLevelsToPlaylist(RequestContext context, GameServerConfig config, DataContext dataContext, SerializedLevelIdList body, GameUser user, int playlistId)
     {
         if (user.IsWriteBlocked(config))
@@ -129,19 +133,18 @@ public class Lbp3PlaylistEndpoints : EndpointGroup
         if (playlist.PublisherId != user.UserId) 
             return Unauthorized;
 
-        foreach (int levelId in body.LevelIds)
-        {
-            GameLevel? level = dataContext.Database.GetLevelById(levelId);
-            if (level == null) continue;
+        // LBP3 always sends exactly 1 level here (unused feature to add multiple levels instantly?)
+        GameLevel? level = dataContext.Database.GetLevelById(body.LevelIds.FirstOrDefault());
+        if (level == null) return NotFound;
 
-            dataContext.Database.AddLevelToPlaylist(level, playlist);
-        }
-
+        dataContext.Database.AddLevelToPlaylist(level, playlist);
         return OK;
     }
 
     [GameEndpoint("playlists/{playlistId}/order_slots", HttpMethods.Post, ContentType.Xml)]
     [RequireEmailVerified]
+    [RateLimitSettings(PlaylistModificationEndpointLimits.TimeoutDuration, PlaylistModificationEndpointLimits.RequestAmount, 
+                                PlaylistModificationEndpointLimits.BlockDuration, PlaylistModificationEndpointLimits.RequestBucket)]
     public Response ReorderPlaylistLevels(RequestContext context, GameServerConfig config, DataContext dataContext, SerializedLevelIdList body, GameUser user, int playlistId)
     {
         if (user.IsWriteBlocked(config))
@@ -161,6 +164,8 @@ public class Lbp3PlaylistEndpoints : EndpointGroup
 
     [GameEndpoint("playlists/{playlistId}/slots/{levelId}/delete", HttpMethods.Post, ContentType.Xml)]
     [RequireEmailVerified]
+    [RateLimitSettings(PlaylistModificationEndpointLimits.TimeoutDuration, PlaylistModificationEndpointLimits.RequestAmount, 
+                                PlaylistModificationEndpointLimits.BlockDuration, PlaylistModificationEndpointLimits.RequestBucket)]
     public Response RemoveLevelFromPlaylist(RequestContext context, GameServerConfig config, DataContext dataContext, GameUser user, int playlistId, int levelId)
     {
         if (user.IsWriteBlocked(config))
