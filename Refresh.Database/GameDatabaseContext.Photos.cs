@@ -39,9 +39,9 @@ public partial class GameDatabaseContext // Photos
             
             Publisher = publisher,
             Level = level,
-            LevelType = photo.LevelType,
-            OriginalLevelId = photo.LevelId,
-            OriginalLevelName = photo.LevelTitle,
+            LevelType = photo.LevelType ?? "",
+            OriginalLevelId = photo.LevelId ?? 0,
+            OriginalLevelName = photo.LevelTitle ?? "",
 
             TakenAt = DateTimeOffset.FromUnixTimeSeconds(Math.Clamp(photo.Timestamp, this._time.EarliestDate, this._time.TimestampSeconds)),
             PublishedAt = this._time.Now,
