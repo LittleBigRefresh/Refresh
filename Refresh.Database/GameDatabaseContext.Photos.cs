@@ -28,7 +28,7 @@ public partial class GameDatabaseContext // Photos
         .Include(p => p.Subject4User)
         .Include(p => p.Subject4User!.Statistics);
     
-    public void UploadPhoto(IPhotoUpload photo, IEnumerable<IPhotoUploadSubject> subjects, GameUser publisher, GameLevel? level)
+    public GamePhoto UploadPhoto(IPhotoUpload photo, IEnumerable<IPhotoUploadSubject> subjects, GameUser publisher, GameLevel? level)
     {
         GamePhoto newPhoto = new()
         {
@@ -39,7 +39,7 @@ public partial class GameDatabaseContext // Photos
             
             Publisher = publisher,
             Level = level,
-            LevelType = photo.LevelSlotType,
+            LevelType = photo.LevelType,
             OriginalLevelId = photo.LevelId,
             OriginalLevelName = photo.LevelTitle,
 
@@ -91,6 +91,7 @@ public partial class GameDatabaseContext // Photos
         }
         
         this.CreatePhotoUploadEvent(publisher, newPhoto);
+        return newPhoto;
     }
 
     public void RemovePhoto(GamePhoto photo)
