@@ -46,32 +46,28 @@ public partial class GamePhoto : ISequentialId
 
     #nullable restore
     
-    //private static string subjectObsoleteMessage = "All of these are obsolete due to GamePhotoSubjects now having their own DB table, "
-    //                                              +"but we have to keep these attributes for migration anyway";
-    public ObjectId? Subject1UserId { get; set; }
-    [ForeignKey(nameof(Subject1UserId))]
-    public GameUser? Subject1User { get; set; }
-    public string? Subject1DisplayName { get; set; }
+    private const string subjectObsoleteMessage = "GamePhotoSubjects are now in their own DB table. This attribute only exists to allow migration.";
+
+    [Obsolete(subjectObsoleteMessage)] public ObjectId? Subject1UserId { get; set; }
+    [Obsolete(subjectObsoleteMessage)] public GameUser? Subject1User { get; set; }
+    [Obsolete(subjectObsoleteMessage)] public string? Subject1DisplayName { get; set; }
     
-    public ObjectId? Subject2UserId { get; set; }
-    [ForeignKey(nameof(Subject2UserId))]
-    public GameUser? Subject2User { get; set; }
-    public string? Subject2DisplayName { get; set; }
+    [Obsolete(subjectObsoleteMessage)] public ObjectId? Subject2UserId { get; set; }
+    [Obsolete(subjectObsoleteMessage)] public GameUser? Subject2User { get; set; }
+    [Obsolete(subjectObsoleteMessage)] public string? Subject2DisplayName { get; set; }
     
-    public ObjectId? Subject3UserId { get; set; }
-    [ForeignKey(nameof(Subject3UserId))]
-    public GameUser? Subject3User { get; set; }
-    public string? Subject3DisplayName { get; set; }
+    [Obsolete(subjectObsoleteMessage)] public ObjectId? Subject3UserId { get; set; }
+    [Obsolete(subjectObsoleteMessage)] public GameUser? Subject3User { get; set; }
+    [Obsolete(subjectObsoleteMessage)] public string? Subject3DisplayName { get; set; }
     
-    public ObjectId? Subject4UserId { get; set; }
-    [ForeignKey(nameof(Subject4UserId))]
-    public GameUser? Subject4User { get; set; }
-    public string? Subject4DisplayName { get; set; }
+    [Obsolete(subjectObsoleteMessage)] public ObjectId? Subject4UserId { get; set; }
+    [Obsolete(subjectObsoleteMessage)] public GameUser? Subject4User { get; set; }
+    [Obsolete(subjectObsoleteMessage)] public string? Subject4DisplayName { get; set; }
     
-    public List<float> Subject1Bounds { get; set; } = [];
-    public List<float> Subject2Bounds { get; set; } = [];
-    public List<float> Subject3Bounds { get; set; } = [];
-    public List<float> Subject4Bounds { get; set; } = [];
+    [Obsolete(subjectObsoleteMessage)] public List<float> Subject1Bounds { get; set; } = [];
+    [Obsolete(subjectObsoleteMessage)] public List<float> Subject2Bounds { get; set; } = [];
+    [Obsolete(subjectObsoleteMessage)] public List<float> Subject3Bounds { get; set; } = [];
+    [Obsolete(subjectObsoleteMessage)] public List<float> Subject4Bounds { get; set; } = [];
     
     #nullable disable
     
