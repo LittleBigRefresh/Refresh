@@ -22,7 +22,7 @@ public abstract class PhotoHelper
             string boundaryStr = boundsStr[i];
 
             if (!float.TryParse(boundaryStr, NumberFormatInfo.InvariantInfo, out float f))
-                throw new FormatException($"Boundary {boundaryStr} ({i+1}/{SubjectBoundaryCount}) is not a float");
+                throw new FormatException($"Boundary '{boundaryStr}' ({i+1}/{SubjectBoundaryCount}) is not a float");
 
             boundsParsed[i] = f;
         }

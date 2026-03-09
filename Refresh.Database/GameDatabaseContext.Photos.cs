@@ -31,7 +31,10 @@ public partial class GameDatabaseContext // Photos
         .Include(p => p.Photo!.Publisher.Statistics)
         .Include(p => p.Photo!.Level)
         .Include(p => p.Photo!.Level!.Publisher)
-        .Include(p => p.Photo!.Level!.Publisher!.Statistics);
+        .Include(p => p.Photo!.Level!.Publisher!.Statistics)
+        .Include(p => p.Photo!.LargeAsset)
+        .Include(p => p.Photo!.MediumAsset)
+        .Include(p => p.Photo!.SmallAsset);
     
     public GamePhoto UploadPhoto(IPhotoUpload photo, IEnumerable<IPhotoUploadSubject> subjects, GameUser publisher, GameLevel? level)
     {
@@ -85,7 +88,7 @@ public partial class GameDatabaseContext // Photos
             }
             catch (Exception ex)
             {
-                this._logger.LogWarning(BunkumCategory.UserPhotos, $"Could not parse {subject.DisplayName}'s photo bounds: {ex.GetType()} {ex.Message}");
+                this._logger.LogWarning(BunkumCategory.UserPhotos, $"Could not parse {subject.DisplayName}'s photo bounds: {ex.GetType()} - {ex.Message}");
             }
 
             GameUser? subjectUser = string.IsNullOrWhiteSpace(subject.Username) ? null : this.GetUserByUsername(subject.Username);
@@ -179,7 +182,7 @@ public partial class GameDatabaseContext // Photos
 
     public void RemovePhoto(GamePhoto photo)
     {
-        foreach (GameUser subjectUser in this.GetUsersInPhoto(photo))
+        foreach (GameUser subjectUser in this.GetUsersInPhoto(photo).ToArray())
         {
             this.WriteEnsuringStatistics(subjectUser, () =>
             {
