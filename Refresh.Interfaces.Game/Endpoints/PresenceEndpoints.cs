@@ -15,7 +15,7 @@ namespace Refresh.Interfaces.Game.Endpoints;
 public class PresenceEndpoints : EndpointGroup
 {
     private const int TimeoutDuration = 420;
-    private const int RequestAmount = 10;
+    private const int RequestAmount = 12;
     private const int BlockDuration = 300;
     private const string RequestBucket = "game-stats";
 

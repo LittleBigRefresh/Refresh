@@ -5,8 +5,8 @@ namespace Refresh.Core.RateLimits.Playlists;
 /// </summary>
 public static class Lbp3PlaylistLevelListEndpointLimits
 {
-    public const int TimeoutDuration = 450;
-    public const int RequestAmount = 200;
-    public const int BlockDuration = 300;
+    public const int TimeoutDuration = 360;
+    public const int RequestAmount = 80;
+    public const int BlockDuration = 260;
     public const string RequestBucket = "playlist-level-list-lbp3";
 }

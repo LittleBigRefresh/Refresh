@@ -205,7 +205,7 @@ public class AuthenticationApiEndpoints : EndpointGroup
     private const int IpVerificationTimeoutDuration = 300;
     private const int IpVerificationListAmount = 12;
     private const int IpVerificationActionAmount = 18;
-    private const int IpVerificationBlockDuration = 300;
+    private const int IpVerificationBlockDuration = 240;
     private const string IpVerificationListBucket = "ip-verification-list";
     private const string IpVerificationActionBucket = "ip-verification-action";
     
