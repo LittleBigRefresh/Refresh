@@ -12,6 +12,9 @@ namespace Refresh.Database;
 public partial class GameDatabaseContext // Photos
 {
     private IQueryable<GamePhoto> GamePhotosIncluded => this.GamePhotos
+        .Include(p => p.LargeAsset)
+        .Include(p => p.MediumAsset)
+        .Include(p => p.SmallAsset)
         .Include(p => p.Publisher)
         .Include(p => p.Publisher.Statistics)
         .Include(p => p.Level)
