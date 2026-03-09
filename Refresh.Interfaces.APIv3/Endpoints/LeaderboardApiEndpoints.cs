@@ -24,8 +24,8 @@ public class LeaderboardApiEndpoints : EndpointGroup
                               "If true, all scores will be shown no matter what. False by default.")]
     [DocError(typeof(ApiNotFoundError), ApiNotFoundError.LevelMissingErrorWhen)]
     [DocError(typeof(ApiValidationError), "The boolean 'showAll' could not be parsed by the server.")]
-    [RateLimitSettings(ScoreListEndpointLimits.TimeoutDuration, ScoreListEndpointLimits.RequestAmount, 
-                                ScoreListEndpointLimits.BlockDuration, ScoreListEndpointLimits.RequestBucket)]
+    [RateLimitSettings(ScoreListEndpointLimits.TimeoutDuration, ScoreListEndpointLimits.ApiRequestAmount, 
+                                ScoreListEndpointLimits.BlockDuration, ScoreListEndpointLimits.ApiRequestBucket)]
     public ApiListResponse<ApiGameScoreResponse> GetTopScoresForLevel(RequestContext context,
         GameDatabaseContext database, IDataStore dataStore,
         [DocSummary("The ID of the level")] int id,
