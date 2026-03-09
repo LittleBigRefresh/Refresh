@@ -91,7 +91,7 @@ public partial class GameDatabaseContext // Photos
                 Photo = newPhoto,
                 User = subjectUser,
                 DisplayName = subject.DisplayName,
-                PlayerId = i,
+                PlayerId = i + 1, // Player number 1 - 4
                 Bounds = bounds
             });
 
@@ -109,6 +109,69 @@ public partial class GameDatabaseContext // Photos
         
         this.CreatePhotoUploadEvent(publisher, newPhoto);
         return newPhoto;
+    }
+
+    /// <remarks>
+    /// Migration only!!
+    /// </remarks>
+    public void MigratePhotoSubjects(GamePhoto photo, bool saveChanges)
+    {
+        List<GamePhotoSubject> subjects = [];
+
+#pragma warning disable CS0618 // obsoletion
+        
+        // If DisplayName is not null, there is a subject in that spot
+        if (photo.Subject1DisplayName != null)
+        {
+            subjects.Add(new()
+            {
+                Photo = photo,
+                PlayerId = 1,
+                DisplayName = photo.Subject1DisplayName,
+                User = photo.Subject1User,
+                Bounds = photo.Subject1Bounds,
+            });
+        }
+
+        if (photo.Subject2DisplayName != null)
+        {
+            subjects.Add(new()
+            {
+                Photo = photo,
+                PlayerId = 2,
+                DisplayName = photo.Subject2DisplayName,
+                User = photo.Subject2User,
+                Bounds = photo.Subject2Bounds,
+            });
+        }
+
+        if (photo.Subject3DisplayName != null)
+        {
+            subjects.Add(new()
+            {
+                Photo = photo,
+                PlayerId = 3,
+                DisplayName = photo.Subject3DisplayName,
+                User = photo.Subject3User,
+                Bounds = photo.Subject3Bounds,
+            });
+        }
+
+        if (photo.Subject4DisplayName != null)
+        {
+            subjects.Add(new()
+            {
+                Photo = photo,
+                PlayerId = 4,
+                DisplayName = photo.Subject4DisplayName,
+                User = photo.Subject4User,
+                Bounds = photo.Subject4Bounds,
+            });
+        }
+#pragma warning restore CS0618
+
+        this.GamePhotoSubjects.AddRange(subjects);
+        if (saveChanges) this.SaveChanges();
     }
 
     public void RemovePhoto(GamePhoto photo)
