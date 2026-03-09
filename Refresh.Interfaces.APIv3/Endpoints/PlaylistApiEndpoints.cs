@@ -13,7 +13,7 @@ using Refresh.Interfaces.APIv3.Endpoints.ApiTypes.Errors;
 using Refresh.Interfaces.APIv3.Endpoints.DataTypes.Request;
 using Refresh.Interfaces.APIv3.Endpoints.DataTypes.Response.Playlists;
 using Refresh.Interfaces.APIv3.Extensions;
-using static Refresh.Core.RateLimits.PlaylistEndpointLimits;
+using Refresh.Core.RateLimits.Playlists;
 
 namespace Refresh.Interfaces.APIv3.Endpoints;
 
@@ -49,7 +49,8 @@ public class PlaylistApiEndpoints : EndpointGroup
     [DocError(typeof(ApiValidationError), ApiValidationError.IconMissingErrorWhen)]
     [DocError(typeof(ApiValidationError), ApiValidationError.IconMustBeImageErrorWhen)]
     [DocError(typeof(ApiValidationError), ApiValidationError.InvalidTextureGuidErrorWhen)]
-    [RateLimitSettings(UploadTimeoutDuration, MaxCreateAmount, UploadBlockDuration, CreateBucket)]
+    [RateLimitSettings(PlaylistCreationEndpointLimits.UploadTimeoutDuration, PlaylistCreationEndpointLimits.MaxCreateAmount, 
+                                PlaylistCreationEndpointLimits.UploadBlockDuration, PlaylistCreationEndpointLimits.CreateBucket)]
     [DocQueryParam("parentId", "If set, the new playlist will be added to the playlist specified by ID here instead of the root playlist. "
         + "If the specified playlist doesn't exist or is not owned by the user calling this endpoint, nothing will happen.")]
     public ApiResponse<ApiGamePlaylistResponse> CreatePlaylist(RequestContext context, DataContext dataContext,
@@ -92,7 +93,8 @@ public class PlaylistApiEndpoints : EndpointGroup
     [DocError(typeof(ApiValidationError), ApiValidationError.IconMissingErrorWhen)]
     [DocError(typeof(ApiValidationError), ApiValidationError.IconMustBeImageErrorWhen)]
     [DocError(typeof(ApiValidationError), ApiValidationError.InvalidTextureGuidErrorWhen)]
-    [RateLimitSettings(UploadTimeoutDuration, MaxUpdateAmount, UploadBlockDuration, UpdateBucket)]
+    [RateLimitSettings(PlaylistCreationEndpointLimits.UploadTimeoutDuration, PlaylistCreationEndpointLimits.MaxCreateAmount, 
+                        PlaylistCreationEndpointLimits.UploadBlockDuration, PlaylistCreationEndpointLimits.CreateBucket)]
     public ApiResponse<ApiGamePlaylistResponse> UpdatePlaylist(RequestContext context, DataContext dataContext,
         GameUser user, ApiPlaylistCreationRequest body, int id)
     {
@@ -129,6 +131,8 @@ public class PlaylistApiEndpoints : EndpointGroup
     [ApiV3Endpoint("playlists/id/{id}"), Authentication(false)]
     [DocSummary("Gets a playlist specified by ID")]
     [DocError(typeof(ApiNotFoundError), ApiNotFoundError.PlaylistMissingErrorWhen)]
+    [RateLimitSettings(SinglePlaylistEndpointLimits.TimeoutDuration, SinglePlaylistEndpointLimits.RequestAmount, 
+                            SinglePlaylistEndpointLimits.BlockDuration, SinglePlaylistEndpointLimits.RequestBucket)]
     public ApiResponse<ApiGamePlaylistResponse> GetPlaylistById(RequestContext context, DataContext dataContext, int id)
     {
         GamePlaylist? playlist = dataContext.Database.GetPlaylistById(id);
@@ -142,6 +146,8 @@ public class PlaylistApiEndpoints : EndpointGroup
     [DocError(typeof(ApiNotFoundError), ApiNotFoundError.ParentPlaylistMissingErrorWhen)]
     [DocError(typeof(ApiValidationError), ApiValidationError.NoPlaylistEditPermissionErrorWhen)]
     [DocError(typeof(ApiNotFoundError), ApiNotFoundError.LevelMissingErrorWhen)]
+    [RateLimitSettings(PlaylistModificationEndpointLimits.TimeoutDuration, PlaylistModificationEndpointLimits.RequestAmount, 
+                                PlaylistModificationEndpointLimits.BlockDuration, PlaylistModificationEndpointLimits.RequestBucket)]
     public ApiOkResponse AddLevelToPlaylist(RequestContext context, DataContext dataContext,
         GameUser user, int playlistId, int levelId)
     {
@@ -163,6 +169,8 @@ public class PlaylistApiEndpoints : EndpointGroup
     [DocError(typeof(ApiNotFoundError), ApiNotFoundError.ParentPlaylistMissingErrorWhen)]
     [DocError(typeof(ApiValidationError), ApiValidationError.NoPlaylistEditPermissionErrorWhen)]
     [DocError(typeof(ApiNotFoundError), ApiNotFoundError.LevelMissingErrorWhen)]
+    [RateLimitSettings(PlaylistModificationEndpointLimits.TimeoutDuration, PlaylistModificationEndpointLimits.RequestAmount, 
+                                PlaylistModificationEndpointLimits.BlockDuration, PlaylistModificationEndpointLimits.RequestBucket)]
     public ApiOkResponse RemoveLevelFromPlaylist(RequestContext context, DataContext dataContext,
         GameUser user, int playlistId, int levelId)
     {
@@ -184,6 +192,8 @@ public class PlaylistApiEndpoints : EndpointGroup
     [DocError(typeof(ApiNotFoundError), ApiNotFoundError.ParentPlaylistMissingErrorWhen)]
     [DocError(typeof(ApiValidationError), ApiValidationError.NoPlaylistEditPermissionErrorWhen)]
     [DocError(typeof(ApiNotFoundError), ApiNotFoundError.SubPlaylistMissingErrorWhen)]
+    [RateLimitSettings(PlaylistModificationEndpointLimits.TimeoutDuration, PlaylistModificationEndpointLimits.RequestAmount, 
+                                PlaylistModificationEndpointLimits.BlockDuration, PlaylistModificationEndpointLimits.RequestBucket)]
     public ApiOkResponse AddPlaylistToPlaylist(RequestContext context, DataContext dataContext,
         GameUser user, int playlistId, int subPlaylistId)
     {
@@ -205,6 +215,8 @@ public class PlaylistApiEndpoints : EndpointGroup
     [DocError(typeof(ApiNotFoundError), ApiNotFoundError.ParentPlaylistMissingErrorWhen)]
     [DocError(typeof(ApiValidationError), ApiValidationError.NoPlaylistEditPermissionErrorWhen)]
     [DocError(typeof(ApiNotFoundError), ApiNotFoundError.SubPlaylistMissingErrorWhen)]
+    [RateLimitSettings(PlaylistModificationEndpointLimits.TimeoutDuration, PlaylistModificationEndpointLimits.RequestAmount, 
+                                PlaylistModificationEndpointLimits.BlockDuration, PlaylistModificationEndpointLimits.RequestBucket)]
     public ApiOkResponse RemovePlaylistFromPlaylist(RequestContext context, DataContext dataContext,
         GameUser user, int playlistId, int subPlaylistId)
     {

@@ -1,5 +1,6 @@
 using Bunkum.Core;
 using Bunkum.Core.Endpoints;
+using Bunkum.Core.RateLimit;
 using Bunkum.Listener.Protocol;
 using Bunkum.Protocols.Http;
 using Refresh.Core.Authentication.Permission;
@@ -45,6 +46,7 @@ public class ModerationEndpoints : EndpointGroup
     /// <returns>The string shown in-game.</returns>
     [GameEndpoint("filter", HttpMethods.Post)]
     [AllowEmptyBody]
+    [RateLimitSettings(180, 100, 120, "filter")]
     public string Filter(RequestContext context, CommandService commandService, string body, GameUser user, Token token, GameDatabaseContext database)
     {
         // TODO: Add actual filtering/censoring

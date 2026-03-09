@@ -1,11 +1,10 @@
-namespace Refresh.Core.RateLimits;
+namespace Refresh.Core.RateLimits.Playlists;
 
 /// <summary>
 /// Shared rate limit parameters for game and API playlist endpoints
 /// </summary>
-public static class PlaylistEndpointLimits
+public static class PlaylistCreationEndpointLimits
 {
-    // rate-limits
     public const int UploadTimeoutDuration = 450;
     public const int MaxCreateAmount = 8; // should be enough
     public const int MaxUpdateAmount = 12;

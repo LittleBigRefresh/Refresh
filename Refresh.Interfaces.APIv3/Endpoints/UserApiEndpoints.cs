@@ -1,11 +1,14 @@
 using AttribDoc.Attributes;
 using Bunkum.Core;
 using Bunkum.Core.Endpoints;
+using Bunkum.Core.RateLimit;
 using Bunkum.Core.Storage;
 using Bunkum.Protocols.Http;
 using Refresh.Common.Constants;
 using Refresh.Core.Authentication.Permission;
 using Refresh.Core.Configuration;
+using Refresh.Core.RateLimits.Relations;
+using Refresh.Core.RateLimits.Users;
 using Refresh.Core.Services;
 using Refresh.Core.Types.Data;
 using Refresh.Database;
@@ -26,6 +29,8 @@ public class UserApiEndpoints : EndpointGroup
     [ApiV3Endpoint("users/{idType}/{id}"), Authentication(false)]
     [DocSummary("Tries to find a user by name or UUID")]
     [DocError(typeof(ApiNotFoundError), "The user cannot be found")]
+    [RateLimitSettings(SingleUserEndpointLimits.TimeoutDuration, SingleUserEndpointLimits.ApiRequestAmount, 
+                            SingleUserEndpointLimits.BlockDuration, SingleUserEndpointLimits.ApiRequestBucket)]
     public ApiResponse<ApiGameUserResponse> GetUser(RequestContext context, GameDatabaseContext database,
         [DocSummary(SharedParamDescriptions.UserIdParam)] string id, 
         [DocSummary(SharedParamDescriptions.UserIdTypeParam)] string idType, DataContext dataContext)
@@ -40,6 +45,8 @@ public class UserApiEndpoints : EndpointGroup
     [ApiV3Endpoint("users/{idType}/{id}/heart", HttpMethods.Post)]
     [DocSummary("Hearts a user by their name or UUID")]
     [DocError(typeof(ApiNotFoundError), ApiNotFoundError.UserMissingErrorWhen)]
+    [RateLimitSettings(CommonRelationEndpointLimits.TimeoutDuration, CommonRelationEndpointLimits.RequestAmount, 
+                            CommonRelationEndpointLimits.BlockDuration, CommonRelationEndpointLimits.RequestBucket)]
     public ApiOkResponse HeartUser(RequestContext context, GameDatabaseContext database,
         [DocSummary(SharedParamDescriptions.UserIdParam)] string id, 
         [DocSummary(SharedParamDescriptions.UserIdTypeParam)] string idType, DataContext dataContext, GameUser user)
@@ -60,6 +67,8 @@ public class UserApiEndpoints : EndpointGroup
     [ApiV3Endpoint("users/{idType}/{id}/unheart", HttpMethods.Post)]
     [DocSummary("Unhearts a user by their name or UUID")]
     [DocError(typeof(ApiNotFoundError), ApiNotFoundError.UserMissingErrorWhen)]
+    [RateLimitSettings(CommonRelationEndpointLimits.TimeoutDuration, CommonRelationEndpointLimits.RequestAmount, 
+                            CommonRelationEndpointLimits.BlockDuration, CommonRelationEndpointLimits.RequestBucket)]
     public ApiOkResponse UnheartUser(RequestContext context, GameDatabaseContext database,
         [DocSummary(SharedParamDescriptions.UserIdParam)] string id, 
         [DocSummary(SharedParamDescriptions.UserIdTypeParam)] string idType, DataContext dataContext, GameUser user)
@@ -74,6 +83,7 @@ public class UserApiEndpoints : EndpointGroup
     [ApiV3Endpoint("users/me"), MinimumRole(GameUserRole.Restricted)]
     [DocSummary("Returns your own user, provided you are authenticated")]
     [DocError(typeof(ApiAuthenticationError), "You are not authenticated")]
+    [RateLimitSettings(120, 35, 80, "me-api")]
     public ApiResponse<ApiExtendedGameUserResponse> GetMyUser(RequestContext context, GameUser? user,
         GameDatabaseContext database, IDataStore dataStore, DataContext dataContext)
     {
@@ -83,6 +93,8 @@ public class UserApiEndpoints : EndpointGroup
     
     [ApiV3Endpoint("users/me", HttpMethods.Patch)]
     [DocSummary("Updates your profile with the given data")]
+    [RateLimitSettings(UserModificationEndpointLimits.TimeoutDuration, UserModificationEndpointLimits.ApiRequestAmount, 
+                            UserModificationEndpointLimits.BlockDuration, UserModificationEndpointLimits.ApiRequestBucket)]
     public ApiResponse<ApiExtendedGameUserResponse> UpdateUser(RequestContext context, GameDatabaseContext database,
         GameUser user, ApiUpdateUserRequest body, IDataStore dataStore, DataContext dataContext, IntegrationConfig integrationConfig,
         SmtpService smtpService)

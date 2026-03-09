@@ -1,10 +1,12 @@
 using Bunkum.Core;
 using Bunkum.Core.Endpoints;
+using Bunkum.Core.RateLimit;
 using Bunkum.Core.Responses;
 using Bunkum.Core.Storage;
 using Bunkum.Listener.Protocol;
 using Refresh.Common.Constants;
 using Refresh.Core.Authentication.Permission;
+using Refresh.Core.RateLimits.Levels;
 using Refresh.Core.Services;
 using Refresh.Core.Types.Categories;
 using Refresh.Core.Types.Data;
@@ -25,6 +27,8 @@ public class LevelEndpoints : EndpointGroup
 {
     [GameEndpoint("slots/{route}", ContentType.Xml)]
     [MinimumRole(GameUserRole.Restricted)]
+    [RateLimitSettings(LevelListEndpointLimits.TimeoutDuration, LevelListEndpointLimits.RequestAmount, 
+                                LevelListEndpointLimits.BlockDuration, LevelListEndpointLimits.RequestBucket)]
     public SerializedMinimalLevelList? GetLevels(RequestContext context,
         GameDatabaseContext database,
         CategoryService categoryService,
@@ -101,6 +105,8 @@ public class LevelEndpoints : EndpointGroup
     [GameEndpoint("slots/{route}/{username}", ContentType.Xml)]
     [MinimumRole(GameUserRole.Restricted)]
     [NullStatusCode(NotFound)]
+    [RateLimitSettings(LevelListEndpointLimits.TimeoutDuration, LevelListEndpointLimits.RequestAmount, 
+                                LevelListEndpointLimits.BlockDuration, LevelListEndpointLimits.RequestBucket)]
     public SerializedMinimalLevelList? GetLevelsWithPlayer(RequestContext context,
         GameDatabaseContext database,
         CategoryService categories,
@@ -120,6 +126,8 @@ public class LevelEndpoints : EndpointGroup
     // The syntax error in the query params (& instead of ?) makes Bunkum include them as part of the ID route param
     [GameEndpoint("slots/like/{slotType}/{id}", ContentType.Xml)]
     [MinimumRole(GameUserRole.Restricted)]
+    [RateLimitSettings(LevelListEndpointLimits.TimeoutDuration, LevelListEndpointLimits.RequestAmount, 
+                                LevelListEndpointLimits.BlockDuration, LevelListEndpointLimits.RequestBucket)]
     public Response GetLevelsLikeLevel(RequestContext context, DataContext dataContext, GameUser user, string slotType, string id)
     {
         string levelIdStr;
@@ -169,6 +177,8 @@ public class LevelEndpoints : EndpointGroup
     [GameEndpoint("s/{slotType}/{id}", ContentType.Xml)]
     [NullStatusCode(NotFound)]
     [MinimumRole(GameUserRole.Restricted)]
+    [RateLimitSettings(SingleLevelEndpointLimits.TimeoutDuration, SingleLevelEndpointLimits.GameRequestAmount, 
+                                SingleLevelEndpointLimits.BlockDuration, SingleLevelEndpointLimits.GameRequestBucket)]
     public GameLevelResponse? LevelById(RequestContext context, GameDatabaseContext database, Token token,
         string slotType, int id,
         PlayNowService overrideService, DataContext dataContext)
@@ -184,6 +194,8 @@ public class LevelEndpoints : EndpointGroup
     [GameEndpoint("slotList", ContentType.Xml)]
     [NullStatusCode(BadRequest)]
     [MinimumRole(GameUserRole.Restricted)]
+    [RateLimitSettings(LevelListEndpointLimits.TimeoutDuration, LevelListEndpointLimits.RequestAmount, 
+                                LevelListEndpointLimits.BlockDuration, LevelListEndpointLimits.RequestBucket)]
     public SerializedLevelList? GetMultipleLevels(RequestContext context, GameDatabaseContext database,
         GameUser user, Token token, DataContext dataContext)
     {
@@ -220,6 +232,8 @@ public class LevelEndpoints : EndpointGroup
 
     [GameEndpoint("slots", ContentType.Xml)]
     [MinimumRole(GameUserRole.Restricted)]
+    [RateLimitSettings(LevelListEndpointLimits.TimeoutDuration, LevelListEndpointLimits.RequestAmount, 
+                                LevelListEndpointLimits.BlockDuration, LevelListEndpointLimits.RequestBucket)]
     public SerializedMinimalLevelList? NewestLevels(RequestContext context,
         GameDatabaseContext database,
         CategoryService categories,
@@ -234,6 +248,8 @@ public class LevelEndpoints : EndpointGroup
     [GameEndpoint("favouriteSlots/{username}", ContentType.Xml)]
     [NullStatusCode(NotFound)]
     [MinimumRole(GameUserRole.Restricted)]
+    [RateLimitSettings(LevelListEndpointLimits.TimeoutDuration, LevelListEndpointLimits.RequestAmount, 
+                                LevelListEndpointLimits.BlockDuration, LevelListEndpointLimits.RequestBucket)]
     public SerializedMinimalFavouriteLevelList? FavouriteLevels(RequestContext context,
         GameDatabaseContext database,
         CategoryService categories,
