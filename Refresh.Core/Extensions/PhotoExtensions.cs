@@ -19,10 +19,10 @@ public static class PhotoExtensions
             MediumHash = dataContext.Database.GetAssetFromHash(photo.MediumAsset.AssetHash)?.GetAsPhoto(dataContext.Game, dataContext) ?? photo.MediumAsset.AssetHash,
             SmallHash = dataContext.Database.GetAssetFromHash(photo.SmallAsset.AssetHash)?.GetAsPhoto(dataContext.Game, dataContext) ?? photo.SmallAsset.AssetHash,
             PlanHash = photo.PlanHash,
-            PhotoSubjects = new List<SerializedPhotoSubject>(photo.Subjects.Count),
+            PhotoSubjects = [],
         };
         
-        foreach (GamePhotoSubject subject in photo.Subjects)
+        foreach (GamePhotoSubject subject in dataContext.Database.GetSubjectsInPhoto(photo).ToList())
         {
             SerializedPhotoSubject newSubject = new()
             {
