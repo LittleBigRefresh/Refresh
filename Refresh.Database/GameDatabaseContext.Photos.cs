@@ -114,6 +114,8 @@ public partial class GameDatabaseContext // Photos
         this.SaveChanges();
         
         this.CreatePhotoUploadEvent(publisher, newPhoto);
+
+        newPhoto.Subjects = finalSubjectsList.ToList();
         return newPhoto;
     }
 
