@@ -20,7 +20,7 @@ public partial class GameDatabaseContext // Photos
         .Include(p => p.Level)
         .Include(p => p.Level!.Publisher)
         .Include(p => p.Level!.Publisher!.Statistics)
-        .Include(p => p.Subjects);
+        .Include(p => p.Subjects.OrderBy(s => s.PlayerId));
 
     private IQueryable<GamePhotoSubject> GamePhotoSubjectsIncluded => this.GamePhotoSubjects
         .Include(p => p.User)
@@ -34,7 +34,7 @@ public partial class GameDatabaseContext // Photos
         .Include(p => p.Photo!.LargeAsset)
         .Include(p => p.Photo!.MediumAsset)
         .Include(p => p.Photo!.SmallAsset)
-        .Include(p => p.Photo!.Subjects);
+        .Include(p => p.Photo!.Subjects.OrderBy(s => s.PlayerId));
     
     public GamePhoto UploadPhoto(IPhotoUpload photo, IEnumerable<IPhotoUploadSubject> subjects, GameUser publisher, GameLevel? level)
     {
@@ -221,11 +221,14 @@ public partial class GameDatabaseContext // Photos
     }
 
     public IQueryable<GamePhotoSubject> GetSubjectsInPhoto(GamePhoto photo)
-        => this.GamePhotoSubjectsIncluded.Where(s => s.PhotoId == photo.PhotoId);
+        => this.GamePhotoSubjectsIncluded
+            .Where(s => s.PhotoId == photo.PhotoId)
+            .OrderBy(s => s.PlayerId);
     
     public IQueryable<GameUser> GetUsersInPhoto(GamePhoto photo)
         => this.GetSubjectsInPhoto(photo)
             .Where(s => s.User != null)
+            .OrderBy(s => s.PlayerId)
             .Select(s => s.User!);
 
     public int GetTotalPhotoCount() => this.GamePhotos.Count();
@@ -253,7 +256,8 @@ public partial class GameDatabaseContext // Photos
     public DatabaseList<GamePhoto> GetPhotosWithUser(GameUser user, int count, int skip) =>
         new(this.GamePhotoSubjectsIncluded
             .Where(s => s.UserId == user.UserId)
-            .Select(s => s.Photo), skip, count);
+            .Select(s => s.Photo)
+            .OrderByDescending(p => p.TakenAt), skip, count);
     
     [Pure]
     public int GetTotalPhotosWithUser(GameUser user)
