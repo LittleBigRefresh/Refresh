@@ -77,7 +77,7 @@ public abstract class SerializedEvent : IDataConvertableFrom<SerializedEvent, Ev
             case EventType.LevelPlay:
                 return SerializedLevelPlayEvent.FromSerializedLevelEvent(FromOldLevelEvent(old, level!));
             case EventType.PhotoUpload:
-                return SerializedPhotoUploadEvent.FromSerializedLevelEvent(FromOldLevelEvent(old, level!), photo!, dataContext);
+                return SerializedPhotoUploadEvent.FromSerializedLevelEvent(FromOldLevelEvent(old, level!), photo!);
             case EventType.LevelScore:
                 return SerializedScoreSubmitEvent.FromSerializedLevelEvent(FromOldLevelEvent(old, level!), score!);
             case EventType.NewsPost:

@@ -47,7 +47,7 @@ public class ApiGamePhotoResponse : IApiResponse, IDataConvertableFrom<ApiGamePh
             LargeHash = old.LargeAsset.IsPSP ? $"psp/{old.LargeAsset.AssetHash}" : old.LargeAsset.AssetHash,
             PlanHash = old.PlanHash,
 
-            Subjects = ApiGamePhotoSubjectResponse.FromOldList(dataContext.Database.GetSubjectsInPhoto(old), dataContext),
+            Subjects = ApiGamePhotoSubjectResponse.FromOldList(old.Subjects, dataContext),
         };
     }
 

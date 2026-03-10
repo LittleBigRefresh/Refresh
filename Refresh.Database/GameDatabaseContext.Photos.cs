@@ -19,7 +19,8 @@ public partial class GameDatabaseContext // Photos
         .Include(p => p.Publisher.Statistics)
         .Include(p => p.Level)
         .Include(p => p.Level!.Publisher)
-        .Include(p => p.Level!.Publisher!.Statistics);
+        .Include(p => p.Level!.Publisher!.Statistics)
+        .Include(p => p.Subjects);
 
     private IQueryable<GamePhotoSubject> GamePhotoSubjectsIncluded => this.GamePhotoSubjects
         .Include(p => p.User)
@@ -32,7 +33,8 @@ public partial class GameDatabaseContext // Photos
         .Include(p => p.Photo!.Level!.Publisher!.Statistics)
         .Include(p => p.Photo!.LargeAsset)
         .Include(p => p.Photo!.MediumAsset)
-        .Include(p => p.Photo!.SmallAsset);
+        .Include(p => p.Photo!.SmallAsset)
+        .Include(p => p.Photo!.Subjects);
     
     public GamePhoto UploadPhoto(IPhotoUpload photo, IEnumerable<IPhotoUploadSubject> subjects, GameUser publisher, GameLevel? level)
     {

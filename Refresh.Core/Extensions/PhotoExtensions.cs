@@ -22,7 +22,7 @@ public static class PhotoExtensions
             PhotoSubjects = [],
         };
         
-        foreach (GamePhotoSubject subject in dataContext.Database.GetSubjectsInPhoto(photo).ToList())
+        foreach (GamePhotoSubject subject in photo.Subjects)
         {
             SerializedPhotoSubject newSubject = new()
             {

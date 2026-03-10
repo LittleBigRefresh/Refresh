@@ -43,6 +43,10 @@ public partial class GamePhoto : ISequentialId
     public string PlanHash { get; set; }
 
     #region Subjects
+    /// <summary>
+    /// A list of subjects, initialized using Include()
+    /// </summary>
+    public List<GamePhotoSubject> Subjects { get; set; }
 
     #nullable restore
     
