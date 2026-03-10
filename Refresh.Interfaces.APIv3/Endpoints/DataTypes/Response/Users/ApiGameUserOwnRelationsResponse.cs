@@ -1,4 +1,5 @@
 using Refresh.Core.Types.Data;
+using Refresh.Core.Types.Relations;
 using Refresh.Database.Models.Users;
 
 namespace Refresh.Interfaces.APIv3.Endpoints.DataTypes.Response.Users;
@@ -12,10 +13,12 @@ public class ApiGameUserOwnRelationsResponse : IApiResponse
     {
         if (dataContext.User == null) 
             return null;
+        
+        OwnUserRelations relations = dataContext.Cache.GetOwnUserRelations(dataContext.User, user, dataContext.Database);
 
         return new()
         {
-            IsHearted = dataContext.Database.IsUserFavouritedByUser(user, dataContext.User),
+            IsHearted = relations.IsHearted,
         };
     }
 }
