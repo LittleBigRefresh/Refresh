@@ -401,7 +401,7 @@ public partial class GameDatabaseContext // Users
             user.PsnAuthenticationAllowed = false;
             user.RpcnAuthenticationAllowed = false;
             
-            foreach (GamePhotoSubject subject in this.GamePhotoSubjects.Where(s => s.UserId == user.UserId))
+            foreach (GamePhotoSubject subject in this.GamePhotoSubjects.Where(s => s.UserId == user.UserId).ToList())
             {
                 subject.UserId = null;
             }
@@ -410,7 +410,6 @@ public partial class GameDatabaseContext // Users
             this.FavouriteUserRelations.RemoveRange(r => r.UserToFavourite == user);
             this.FavouriteUserRelations.RemoveRange(r => r.UserFavouriting == user);
             this.QueueLevelRelations.RemoveRange(r => r.User == user);
-            this.GamePhotoSubjects.RemoveRange(s => s.Photo.PublisherId == user.UserId);
             this.GamePhotos.RemoveRange(p => p.Publisher == user);
             this.GameUserVerifiedIpRelations.RemoveRange(p => p.User == user);
             
