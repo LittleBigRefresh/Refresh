@@ -27,6 +27,7 @@ public static class RefreshWorkerManager
         manager.AddJob<BackfillModdedPlanetFlagsMigration>();
         manager.AddJob<CorrectWebsitePinProgressPlatform>();
         manager.AddJob<CalculateScoreRanksMigration>();
+        manager.AddJob<MoveSubjectsOutOfGamePhotosMigration>();
 
         return manager;
     }

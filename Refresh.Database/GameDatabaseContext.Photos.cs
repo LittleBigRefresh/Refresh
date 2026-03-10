@@ -5,6 +5,7 @@ using Refresh.Database.Models.Levels;
 using Refresh.Database.Models.Photos;
 using Refresh.Database.Query;
 using Refresh.Database.Helpers;
+using Bunkum.Core;
 
 namespace Refresh.Database;
 
@@ -19,14 +20,21 @@ public partial class GameDatabaseContext // Photos
         .Include(p => p.Level)
         .Include(p => p.Level!.Publisher)
         .Include(p => p.Level!.Publisher!.Statistics)
-        .Include(p => p.Subject1User)
-        .Include(p => p.Subject1User!.Statistics)
-        .Include(p => p.Subject2User)
-        .Include(p => p.Subject2User!.Statistics)
-        .Include(p => p.Subject3User)
-        .Include(p => p.Subject3User!.Statistics)
-        .Include(p => p.Subject4User)
-        .Include(p => p.Subject4User!.Statistics);
+        .Include(p => p.Subjects.OrderBy(s => s.PlayerId));
+
+    private IQueryable<GamePhotoSubject> GamePhotoSubjectsIncluded => this.GamePhotoSubjects
+        .Include(p => p.User)
+        .Include(p => p.User!.Statistics)
+        .Include(p => p.Photo)
+        .Include(p => p.Photo!.Publisher)
+        .Include(p => p.Photo!.Publisher.Statistics)
+        .Include(p => p.Photo!.Level)
+        .Include(p => p.Photo!.Level!.Publisher)
+        .Include(p => p.Photo!.Level!.Publisher!.Statistics)
+        .Include(p => p.Photo!.LargeAsset)
+        .Include(p => p.Photo!.MediumAsset)
+        .Include(p => p.Photo!.SmallAsset)
+        .Include(p => p.Photo!.Subjects.OrderBy(s => s.PlayerId));
     
     public GamePhoto UploadPhoto(IPhotoUpload photo, IEnumerable<IPhotoUploadSubject> subjects, GameUser publisher, GameLevel? level)
     {
@@ -47,29 +55,6 @@ public partial class GameDatabaseContext // Photos
             PublishedAt = this._time.Now,
         };
 
-        List<GamePhotoSubject> gameSubjects = new(subjects.Count());
-        foreach (IPhotoUploadSubject subject in subjects)
-        {
-            GameUser? subjectUser = null;
-            
-            if (!string.IsNullOrEmpty(subject.Username)) 
-                subjectUser = this.GetUserByUsername(subject.Username);
-            
-            float[] bounds = PhotoHelper.ParseBoundsList(subject.BoundsList);
-
-            gameSubjects.Add(new GamePhotoSubject(subjectUser, subject.DisplayName, bounds));
-
-            if (subjectUser != null)
-            {
-                this.WriteEnsuringStatistics(subjectUser, () =>
-                {
-                    subjectUser.Statistics!.PhotosWithUserCount++;
-                });
-            }
-        }
-
-        newPhoto.Subjects = gameSubjects;
-
         this.WriteEnsuringStatistics(publisher, () =>
         {
             this.GamePhotos.Add(newPhoto);
@@ -87,22 +72,124 @@ public partial class GameDatabaseContext // Photos
                 }
             });
         }
+
+        List<IPhotoUploadSubject> subjectsList = subjects.ToList();
+        List<GamePhotoSubject> finalSubjectsList = [];
+
+        // Take care of subjects after saving the photo itself to keep the photo, even if its subjects are malformed
+        for (int i = 0; i < subjectsList.Count; i++)
+        {
+            IPhotoUploadSubject subject = subjectsList[i];
+
+            float[] bounds = new float[PhotoHelper.SubjectBoundaryCount];
+            try
+            {
+                bounds = PhotoHelper.ParseBoundsList(subject.BoundsList);
+            }
+            catch (Exception ex)
+            {
+                this._logger.LogWarning(BunkumCategory.UserPhotos, $"Could not parse {subject.DisplayName}'s photo bounds: {ex.GetType()} - {ex.Message}");
+            }
+
+            GameUser? subjectUser = string.IsNullOrWhiteSpace(subject.Username) ? null : this.GetUserByUsername(subject.Username);
+            finalSubjectsList.Add(new()
+            {
+                Photo = newPhoto,
+                User = subjectUser,
+                DisplayName = subject.DisplayName,
+                PlayerId = i + 1, // Player number 1 - 4
+                Bounds = bounds
+            });
+
+            if (subjectUser != null)
+            {
+                this.WriteEnsuringStatistics(subjectUser, () =>
+                {
+                    subjectUser.Statistics!.PhotosWithUserCount++;
+                });
+            }
+        }
+
+        this.GamePhotoSubjects.AddRange(finalSubjectsList);
+        this.SaveChanges();
         
         this.CreatePhotoUploadEvent(publisher, newPhoto);
+
+        newPhoto.Subjects = finalSubjectsList.ToList();
         return newPhoto;
+    }
+
+    /// <remarks>
+    /// Migration only!!
+    /// </remarks>
+    public void MigratePhotoSubjects(GamePhoto photo, bool saveChanges)
+    {
+        List<GamePhotoSubject> subjects = [];
+
+#pragma warning disable CS0618 // obsoletion
+        
+        // If DisplayName is not null, there is a subject in that spot
+        if (photo.Subject1DisplayName != null)
+        {
+            subjects.Add(new()
+            {
+                Photo = photo,
+                PlayerId = 1,
+                DisplayName = photo.Subject1DisplayName,
+                User = photo.Subject1User,
+                Bounds = photo.Subject1Bounds,
+            });
+        }
+
+        if (photo.Subject2DisplayName != null)
+        {
+            subjects.Add(new()
+            {
+                Photo = photo,
+                PlayerId = 2,
+                DisplayName = photo.Subject2DisplayName,
+                User = photo.Subject2User,
+                Bounds = photo.Subject2Bounds,
+            });
+        }
+
+        if (photo.Subject3DisplayName != null)
+        {
+            subjects.Add(new()
+            {
+                Photo = photo,
+                PlayerId = 3,
+                DisplayName = photo.Subject3DisplayName,
+                User = photo.Subject3User,
+                Bounds = photo.Subject3Bounds,
+            });
+        }
+
+        if (photo.Subject4DisplayName != null)
+        {
+            subjects.Add(new()
+            {
+                Photo = photo,
+                PlayerId = 4,
+                DisplayName = photo.Subject4DisplayName,
+                User = photo.Subject4User,
+                Bounds = photo.Subject4Bounds,
+            });
+        }
+#pragma warning restore CS0618
+
+        this.GamePhotoSubjects.AddRange(subjects);
+        if (saveChanges) this.SaveChanges();
     }
 
     public void RemovePhoto(GamePhoto photo)
     {
-        foreach (GamePhotoSubject subject in photo.Subjects)
+        foreach (GameUser subjectUser in this.GetUsersInPhoto(photo).ToArray())
         {
-            if (subject.User != null)
+            this.WriteEnsuringStatistics(subjectUser, () =>
             {
-                this.WriteEnsuringStatistics(subject.User, () =>
-                {
-                    subject.User.Statistics!.PhotosWithUserCount--;
-                });
-            }
+                subjectUser.Statistics!.PhotosWithUserCount--;
+            });
         }
 
         if (photo.Level != null)
@@ -124,6 +211,9 @@ public partial class GameDatabaseContext // Photos
                 
             // Remove all events referencing the photo
             this.Events.RemoveRange(photoEvents);
+
+            // Remove all subjects
+            this.GamePhotoSubjects.RemoveRange(s => s.PhotoId == photo.PhotoId);
             
             // Remove the photo
             this.GamePhotos.Remove(photo);
@@ -131,6 +221,17 @@ public partial class GameDatabaseContext // Photos
             photo.Publisher.Statistics!.PhotosByUserCount--;
         });
     }
+
+    public IQueryable<GamePhotoSubject> GetSubjectsInPhoto(GamePhoto photo)
+        => this.GamePhotoSubjectsIncluded
+            .Where(s => s.PhotoId == photo.PhotoId)
+            .OrderBy(s => s.PlayerId);
+    
+    public IQueryable<GameUser> GetUsersInPhoto(GamePhoto photo)
+        => this.GetSubjectsInPhoto(photo)
+            .Where(s => s.User != null)
+            .OrderBy(s => s.PlayerId)
+            .Select(s => s.User!);
 
     public int GetTotalPhotoCount() => this.GamePhotos.Count();
     
@@ -155,14 +256,14 @@ public partial class GameDatabaseContext // Photos
 
     [Pure]
     public DatabaseList<GamePhoto> GetPhotosWithUser(GameUser user, int count, int skip) =>
-        new(this.GamePhotosIncluded
-            .Where(p => p.Subject1UserId == user.UserId || p.Subject2UserId == user.UserId || p.Subject3UserId == user.UserId || p.Subject4UserId == user.UserId)
+        new(this.GamePhotoSubjectsIncluded
+            .Where(s => s.UserId == user.UserId)
+            .Select(s => s.Photo)
             .OrderByDescending(p => p.TakenAt), skip, count);
     
     [Pure]
     public int GetTotalPhotosWithUser(GameUser user)
-        => this.GamePhotos
-            .Count(p => p.Subject1UserId == user.UserId || p.Subject2UserId == user.UserId || p.Subject3UserId == user.UserId || p.Subject4UserId == user.UserId);
+        => this.GamePhotoSubjects.Count(s => s.UserId == user.UserId);
 
     [Pure]
     public DatabaseList<GamePhoto> GetPhotosInLevel(GameLevel level, int count, int skip)

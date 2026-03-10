@@ -401,10 +401,11 @@ public partial class GameDatabaseContext // Users
             user.PsnAuthenticationAllowed = false;
             user.RpcnAuthenticationAllowed = false;
             
-            foreach (GamePhoto photo in this.GetPhotosWithUser(user, int.MaxValue, 0).Items)
-                foreach (GamePhotoSubject subject in photo.Subjects.Where(s => s.User?.UserId == user.UserId))
-                    subject.User = null;
-            
+            foreach (GamePhotoSubject subject in this.GamePhotoSubjects.Where(s => s.UserId == user.UserId).ToList())
+            {
+                subject.UserId = null;
+            }
+
             this.FavouriteLevelRelations.RemoveRange(r => r.User == user);
             this.FavouriteUserRelations.RemoveRange(r => r.UserToFavourite == user);
             this.FavouriteUserRelations.RemoveRange(r => r.UserFavouriting == user);

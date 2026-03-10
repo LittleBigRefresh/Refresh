@@ -53,6 +53,7 @@ public partial class GameDatabaseContext : DbContext, IDatabaseContext
     internal DbSet<GameAsset> GameAssets { get; set; }
     internal DbSet<GameNotification> GameNotifications { get; set; }
     internal DbSet<GamePhoto> GamePhotos { get; set; }
+    internal DbSet<GamePhotoSubject> GamePhotoSubjects { get; set; }
     internal DbSet<GameIpVerificationRequest> GameIpVerificationRequests { get; set; }
     internal DbSet<GameAnnouncement> GameAnnouncements { get; set; }
     internal DbSet<QueuedRegistration> QueuedRegistrations { get; set; }

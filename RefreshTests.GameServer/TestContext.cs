@@ -145,7 +145,7 @@ public class TestContext : IDisposable
         return level;
     }
 
-    public GamePhoto CreatePhotoWithSubject(GameUser author, string imageHash, GameLevel? level = null)
+    public GamePhoto CreatePhotoWithSubject(GameUser author, string imageHash, GameLevel? level = null, List<SerializedPhotoSubject>? subjects = null)
     {
         // TODO: Return newly created GamePhoto
         if (this.Database.GetAssetFromHash(imageHash) == null)
@@ -164,7 +164,7 @@ public class TestContext : IDisposable
             LargeHash = imageHash,
             
         };
-        IEnumerable<SerializedPhotoSubject> subjects = 
+        subjects ??= 
         [
             new()
             {

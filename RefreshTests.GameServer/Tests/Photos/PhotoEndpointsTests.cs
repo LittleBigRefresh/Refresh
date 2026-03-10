@@ -157,15 +157,17 @@ public class PhotoEndpointsTests : GameServerTest
         Assert.That(gamePhoto!.LargeAssetHash, Is.EqualTo(TEST_ASSET_HASH));
         Assert.That(gamePhoto!.PlanHash, Is.EqualTo(TEST_ASSET_HASH));
 
-        Assert.That(gamePhoto!.Subjects.Count, Is.EqualTo(2));
-        Assert.That(gamePhoto!.Subjects[0].Bounds, Is.EqualTo(PhotoHelper.ParseBoundsList("1,1,1,1")));
-        Assert.That(gamePhoto!.Subjects[0].DisplayName, Is.EqualTo(user.Username));
-        Assert.That(gamePhoto!.Subjects[0].User, Is.Not.Null);
-        Assert.That(gamePhoto!.Subjects[0].User!.UserId, Is.EqualTo(user.UserId));
+        List<GamePhotoSubject> subjects = context.Database.GetSubjectsInPhoto(gamePhoto).ToList();
 
-        Assert.That(gamePhoto!.Subjects[1].Bounds, Is.EqualTo(PhotoHelper.ParseBoundsList("2,4,5,6")));
-        Assert.That(gamePhoto!.Subjects[1].DisplayName, Is.EqualTo("SecretAlt"));
-        Assert.That(gamePhoto!.Subjects[1].User, Is.Null);
+        Assert.That(subjects.Count, Is.EqualTo(2));
+        Assert.That(subjects[0].Bounds, Is.EqualTo(PhotoHelper.ParseBoundsList("1,1,1,1")));
+        Assert.That(subjects[0].DisplayName, Is.EqualTo(user.Username));
+        Assert.That(subjects[0].User, Is.Not.Null);
+        Assert.That(subjects[0].User!.UserId, Is.EqualTo(user.UserId));
+
+        Assert.That(subjects[1].Bounds, Is.EqualTo(PhotoHelper.ParseBoundsList("2,4,5,6")));
+        Assert.That(subjects[1].DisplayName, Is.EqualTo("SecretAlt"));
+        Assert.That(subjects[1].User, Is.Null);
     }
     
     [Test]

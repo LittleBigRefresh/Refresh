@@ -793,6 +793,32 @@ namespace Refresh.Database.Migrations
                     b.ToTable("GamePhotos");
                 });
 
+            modelBuilder.Entity("Refresh.Database.Models.Photos.GamePhotoSubject", b =>
+                {
+                    b.Property<int>("PhotoId")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("PlayerId")
+                        .HasColumnType("integer");
+
+                    b.PrimitiveCollection<float[]>("Bounds")
+                        .IsRequired()
+                        .HasColumnType("real[]");
+
+                    b.Property<string>("DisplayName")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("UserId")
+                        .HasColumnType("text");
+
+                    b.HasKey("PhotoId", "PlayerId");
+
+                    b.HasIndex("UserId");
+
+                    b.ToTable("GamePhotoSubjects");
+                });
+
             modelBuilder.Entity("Refresh.Database.Models.Playlists.GamePlaylist", b =>
                 {
                     b.Property<int>("PlaylistId")
@@ -2049,6 +2075,23 @@ namespace Refresh.Database.Migrations
                     b.Navigation("Subject3User");
 
                     b.Navigation("Subject4User");
+                });
+
+            modelBuilder.Entity("Refresh.Database.Models.Photos.GamePhotoSubject", b =>
+                {
+                    b.HasOne("Refresh.Database.Models.Photos.GamePhoto", "Photo")
+                        .WithMany()
+                        .HasForeignKey("PhotoId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("Refresh.Database.Models.Users.GameUser", "User")
+                        .WithMany()
+                        .HasForeignKey("UserId");
+
+                    b.Navigation("Photo");
+
+                    b.Navigation("User");
                 });
 
             modelBuilder.Entity("Refresh.Database.Models.Playlists.GamePlaylist", b =>
