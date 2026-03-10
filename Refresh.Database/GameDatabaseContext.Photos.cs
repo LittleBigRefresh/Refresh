@@ -20,12 +20,10 @@ public partial class GameDatabaseContext // Photos
         .Include(p => p.Level)
         .Include(p => p.Level!.Publisher)
         .Include(p => p.Level!.Publisher!.Statistics);
-    
-    private IQueryable<GamePhotoSubject> GamePhotoSubjectsIncludingUsers => this.GamePhotoSubjects
+
+    private IQueryable<GamePhotoSubject> GamePhotoSubjectsIncluded => this.GamePhotoSubjects
         .Include(p => p.User)
-        .Include(p => p.User!.Statistics);
-    
-    private IQueryable<GamePhotoSubject> GamePhotoSubjectsIncludingPhotos => this.GamePhotoSubjects
+        .Include(p => p.User!.Statistics)
         .Include(p => p.Photo)
         .Include(p => p.Photo!.Publisher)
         .Include(p => p.Photo!.Publisher.Statistics)
@@ -221,7 +219,7 @@ public partial class GameDatabaseContext // Photos
     }
 
     public IQueryable<GamePhotoSubject> GetSubjectsInPhoto(GamePhoto photo)
-        => this.GamePhotoSubjectsIncludingUsers.Where(s => s.PhotoId == photo.PhotoId);
+        => this.GamePhotoSubjectsIncluded.Where(s => s.PhotoId == photo.PhotoId);
     
     public IQueryable<GameUser> GetUsersInPhoto(GamePhoto photo)
         => this.GetSubjectsInPhoto(photo)
@@ -251,7 +249,7 @@ public partial class GameDatabaseContext // Photos
 
     [Pure]
     public DatabaseList<GamePhoto> GetPhotosWithUser(GameUser user, int count, int skip) =>
-        new(this.GamePhotoSubjectsIncludingPhotos
+        new(this.GamePhotoSubjectsIncluded
             .Where(s => s.UserId == user.UserId)
             .Select(s => s.Photo), skip, count);
     
