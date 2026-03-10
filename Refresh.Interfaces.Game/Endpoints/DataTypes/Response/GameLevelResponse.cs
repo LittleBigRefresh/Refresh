@@ -154,7 +154,7 @@ public class GameLevelResponse : GameMinimalLevelResponse, IDataConvertableFrom<
                 });
             }
 
-            response.SkillRewards = dataContext.Database.GetSkillRewardsForLevel(old).ToList();
+            response.SkillRewards = dataContext.Cache.GetSkillRewards(old, dataContext.Database);
         }
         
         return response;

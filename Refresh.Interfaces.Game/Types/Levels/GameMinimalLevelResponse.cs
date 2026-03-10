@@ -200,7 +200,7 @@ public class GameMinimalLevelResponse : IDataConvertableFrom<GameMinimalLevelRes
 
         if (dataContext.Game is TokenGame.LittleBigPlanet1 or TokenGame.BetaBuild)
         {
-            response.Tags = string.Join(',', dataContext.Database.GetTagsForLevel(old).Select(t => t.ToLbpString()));
+            response.Tags = string.Join(',', dataContext.Cache.GetTags(old, dataContext.Database).Select(t => t.ToLbpString()));
         }
 
         if (dataContext.Game is not TokenGame.LittleBigPlanet1 or TokenGame.LittleBigPlanetPSP)
@@ -210,7 +210,7 @@ public class GameMinimalLevelResponse : IDataConvertableFrom<GameMinimalLevelRes
             response.PublisherLabels = old.Labels.ToLbpCommaList(dataContext.Game);
         }
         
-        response.IconHash = dataContext.Database.GetAssetFromHash(old.IconHash)?.GetAsIcon(dataContext.Game, dataContext) ?? old.IconHash;
+        response.IconHash = dataContext.GetIconFromHash(old.IconHash);
         return response;
     }
     

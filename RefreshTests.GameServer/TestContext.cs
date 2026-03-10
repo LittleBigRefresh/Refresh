@@ -227,6 +227,7 @@ public class TestContext : IDisposable
             Match = this.GetService<MatchService>(),
             Token = token,
             GuidChecker = this.GetService<GuidCheckerService>(),
+            Cache = this.GetService<CacheService>(),
         };
     }
     

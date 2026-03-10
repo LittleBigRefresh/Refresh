@@ -91,7 +91,7 @@ public class LevelApiEndpoints : EndpointGroup
     [DocSummary("Deletes a level by the level's numerical ID")]
     [DocError(typeof(ApiNotFoundError), ApiNotFoundError.LevelMissingErrorWhen)]
     [DocError(typeof(ApiAuthenticationError), ApiAuthenticationError.NoPermissionsForObjectWhen)]
-    public ApiOkResponse DeleteLevelById(RequestContext context, GameDatabaseContext database, GameUser user,
+    public ApiOkResponse DeleteLevelById(RequestContext context, GameDatabaseContext database, GameUser user, DataContext dataContext,
         [DocSummary("The ID of the level")] int id)
     {
         GameLevel? level = database.GetLevelById(id);
@@ -101,6 +101,7 @@ public class LevelApiEndpoints : EndpointGroup
             return ApiAuthenticationError.NoPermissionsForObject;
 
         database.DeleteLevel(level);
+        dataContext.Cache.RemoveLevelData(level);
 
         return new ApiOkResponse();
     }

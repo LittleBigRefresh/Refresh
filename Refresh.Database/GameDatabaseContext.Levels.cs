@@ -624,9 +624,10 @@ public partial class GameDatabaseContext // Levels
         return this.GameSkillRewards.Where(r => r.LevelId == level.LevelId);
     }
 
-    public void UpdateSkillRewardsForLevel(GameLevel level, IEnumerable<GameSkillReward> rewards)
+    public List<GameSkillReward> UpdateSkillRewardsForLevel(GameLevel level, IEnumerable<GameSkillReward> rewards)
     {
         this.GameSkillRewards.RemoveRange(this.GetSkillRewardsForLevel(level));
+        List<GameSkillReward> ret = [];
         
         this.Write(() =>
         {
@@ -643,8 +644,11 @@ public partial class GameDatabaseContext // Levels
                 };
                 
                 this.GameSkillRewards.Add(newReward);
+                ret.Add(newReward);
             }
         });
+
+        return ret;
     }
     
     public void ApplyLevelMetadataFromAttributes(GameLevel level, bool save = false)

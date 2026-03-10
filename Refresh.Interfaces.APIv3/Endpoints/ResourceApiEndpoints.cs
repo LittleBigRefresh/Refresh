@@ -76,7 +76,7 @@ public class ResourceApiEndpoints : EndpointGroup
     [DocError(typeof(ApiValidationError), ApiValidationError.HashMissingErrorWhen)]
     [RateLimitSettings(RequestTimeoutDuration, ImageAssetRequestAmount, RequestBlockDuration, ImageAssetBucket)]
     public Response DownloadGameAssetAsImage(RequestContext context, IDataStore dataStore, GameDatabaseContext database,
-        [DocSummary("The SHA1 hash of the asset")] string hash, ImageImporter imageImport, AssetImporter assetImport)
+        [DocSummary("The SHA1 hash of the asset")] string hash, ImageImporter imageImport, AssetImporter assetImport, DataContext dataContext)
     {
         bool isPspAsset = hash.StartsWith("psp/");
 
@@ -99,7 +99,7 @@ public class ResourceApiEndpoints : EndpointGroup
             else
             {
                 //Import the asset as normal
-                GameAsset? asset = database.GetAssetFromHash(realHash);
+                GameAsset? asset = dataContext.Cache.GetAssetInfo(realHash, database);
                 imageImport.ImportAsset(realHash, isPspAsset, asset?.AssetType, dataStore);
             }
         }
@@ -118,8 +118,8 @@ public class ResourceApiEndpoints : EndpointGroup
     [DocError(typeof(ApiValidationError), ApiValidationError.HashMissingErrorWhen)]
     [RateLimitSettings(RequestTimeoutDuration, ImageAssetRequestAmount, RequestBlockDuration, ImageAssetBucket)]
     public Response DownloadPspGameAssetAsImage(RequestContext context, IDataStore dataStore, GameDatabaseContext database,
-        [DocSummary("The SHA1 hash of the asset")] string hash, ImageImporter imageImport, AssetImporter assetImport) 
-        => this.DownloadGameAssetAsImage(context, dataStore, database, $"psp/{hash}", imageImport, assetImport);
+        [DocSummary("The SHA1 hash of the asset")] string hash, ImageImporter imageImport, AssetImporter assetImport, DataContext dataContext) 
+        => this.DownloadGameAssetAsImage(context, dataStore, database, $"psp/{hash}", imageImport, assetImport, dataContext);
 
     [ApiV3Endpoint("assets/{hash}"), Authentication(false)]
     [DocSummary("Gets information from the database about a particular hash. Includes user who uploaded, dependencies, timestamps, etc.")]
@@ -138,7 +138,7 @@ public class ResourceApiEndpoints : EndpointGroup
         if (!CommonPatterns.Sha1Regex().IsMatch(realHash)) return ApiValidationError.HashInvalidError;
         if (string.IsNullOrWhiteSpace(realHash)) return ApiValidationError.HashMissingError;
 
-        GameAsset? asset = database.GetAssetFromHash(realHash);
+        GameAsset? asset = dataContext.Cache.GetAssetInfo(realHash, database);
         if (asset == null) return ApiNotFoundError.Instance;
 
         return ApiGameAssetResponse.FromOld(asset, dataContext);
@@ -212,6 +212,7 @@ public class ResourceApiEndpoints : EndpointGroup
         }
         
         database.AddAssetToDatabase(gameAsset);
+        dataContext.Cache.CacheAsset(gameAsset.AssetHash, gameAsset);
 
         return new ApiResponse<ApiGameAssetResponse>(ApiGameAssetResponse.FromOld(gameAsset, dataContext)!, Created);
     }

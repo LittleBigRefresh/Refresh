@@ -83,7 +83,7 @@ public class ApiGameLevelResponse : IApiResponse, IDataConvertableFrom<ApiGameLe
             MaxPlayers = level.MaxPlayers,
             EnforceMinMaxPlayers = level.EnforceMinMaxPlayers,
             SameScreenGame = level.SameScreenGame,
-            SkillRewards = ApiGameSkillRewardResponse.FromOldList(dataContext.Database.GetSkillRewardsForLevel(level), dataContext),
+            SkillRewards = ApiGameSkillRewardResponse.FromOldList(dataContext.Cache.GetSkillRewards(level, dataContext.Database), dataContext),
             YayRatings = level.Statistics.YayCount,
             BooRatings = level.Statistics.BooCount,
             Hearts = level.Statistics.FavouriteCount,
@@ -101,7 +101,7 @@ public class ApiGameLevelResponse : IApiResponse, IDataConvertableFrom<ApiGameLe
             PhotosTaken = level.Statistics.PhotoInLevelCount,
             LevelComments = level.Statistics.CommentCount,
             Reviews = level.Statistics.ReviewCount,
-            Tags = dataContext.Database.GetTagsForLevel(level),
+            Tags = dataContext.Cache.GetTags(level, dataContext.Database),
             IsModded = level.IsModded,
             OwnRelations = ApiGameLevelOwnRelationsResponse.FromOld(level, dataContext),
         };

@@ -152,7 +152,7 @@ public class RelationEndpoints : EndpointGroup
     [RequireEmailVerified]
     [RateLimitSettings(LevelTaggingEndpointLimits.TimeoutDuration, LevelTaggingEndpointLimits.RequestAmount, 
                             LevelTaggingEndpointLimits.BlockDuration, LevelTaggingEndpointLimits.RequestBucket)]
-    public Response SubmitTagsForLevel(RequestContext context, GameDatabaseContext database, GameUser user,
+    public Response SubmitTagsForLevel(RequestContext context, GameDatabaseContext database, GameUser user, DataContext dataContext,
         string slotType, int id, string body, GameServerConfig config)
     {
         if (user.IsWriteBlocked(config))
@@ -174,6 +174,7 @@ public class RelationEndpoints : EndpointGroup
             return BadRequest;
         
         database.AddTagRelation(user, level, tag.Value);
+        dataContext.Cache.RemoveTags(level); // Reset
         
         return OK;
     }

@@ -240,12 +240,14 @@ public class PublishEndpoints : EndpointGroup
                 dataContext.Database.UpdateLevelModdedStatus(levelToUpdate);
             }
 
-            dataContext.Database.UpdateSkillRewardsForLevel(levelToUpdate, body.SkillRewards);
+            List<GameSkillReward> updatedRewards = dataContext.Database.UpdateSkillRewardsForLevel(levelToUpdate, body.SkillRewards);
+            dataContext.Cache.CacheSkillRewards(levelToUpdate, updatedRewards);
             return new Response(GameLevelResponse.FromOld(levelToUpdate, dataContext)!, ContentType.Xml);
         }
 
         GameLevel newLevel = dataContext.Database.AddLevel(body, dataContext.Game, user);
-        dataContext.Database.UpdateSkillRewardsForLevel(newLevel, body.SkillRewards);
+        List<GameSkillReward> newRewards = dataContext.Database.UpdateSkillRewardsForLevel(newLevel, body.SkillRewards);
+        dataContext.Cache.CacheSkillRewards(newLevel, newRewards);
 
         context.Logger.LogInfo(BunkumCategory.UserContent, "User {0} (id: {1}) uploaded level id {2}", user.Username, user.UserId, newLevel.LevelId);
 
@@ -266,7 +268,7 @@ public class PublishEndpoints : EndpointGroup
     }
 
     [GameEndpoint("unpublish/{id}", ContentType.Xml, HttpMethods.Post)]
-    public Response DeleteLevel(RequestContext context, GameUser user, GameDatabaseContext database, int id)
+    public Response DeleteLevel(RequestContext context, GameUser user, GameDatabaseContext database, int id, DataContext dataContext)
     {
         GameLevel? level = database.GetLevelById(id);
         if (level == null) return NotFound;
@@ -274,6 +276,7 @@ public class PublishEndpoints : EndpointGroup
         if (level.Publisher?.UserId != user.UserId) return Unauthorized;
 
         database.DeleteLevel(level);
+        dataContext.Cache.RemoveLevelData(level);
         return OK;
     }
 }
