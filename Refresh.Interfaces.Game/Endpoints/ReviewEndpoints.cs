@@ -27,7 +27,7 @@ public class ReviewEndpoints : EndpointGroup
     [RateLimitSettings(CommonRelationEndpointLimits.TimeoutDuration, CommonRelationEndpointLimits.RequestAmount, 
                             CommonRelationEndpointLimits.BlockDuration, CommonRelationEndpointLimits.RequestBucket)]
     public Response SubmitRating(RequestContext context, GameDatabaseContext database, GameUser user, string slotType,
-        int id, GameServerConfig config)
+        int id, GameServerConfig config, DataContext dataContext)
     {
         if (user.IsWriteBlocked(config))
             return Unauthorized;
@@ -47,6 +47,8 @@ public class ReviewEndpoints : EndpointGroup
         if (rating is > 1 or < -1) return BadRequest;
         
         bool rated = database.RateLevel(level, user, (RatingType)rating);
+        dataContext.Cache.UpdateLevelRatingByUser(user, level, rating, database);
+
         return rated ? OK : Unauthorized;
     }
     
@@ -55,7 +57,8 @@ public class ReviewEndpoints : EndpointGroup
     [RequireEmailVerified]
     [RateLimitSettings(CommonRelationEndpointLimits.TimeoutDuration, CommonRelationEndpointLimits.RequestAmount, 
                             CommonRelationEndpointLimits.BlockDuration, CommonRelationEndpointLimits.RequestBucket)]
-    public Response RateUserLevel(RequestContext context, GameDatabaseContext database, GameUser user, string slotType, int id)
+    public Response RateUserLevel(RequestContext context, GameDatabaseContext database, GameUser user, string slotType, int id, 
+        DataContext dataContext)
     {
         GameLevel? level = database.GetLevelByIdAndType(slotType, id);
         if (level == null) return NotFound;
@@ -87,7 +90,9 @@ public class ReviewEndpoints : EndpointGroup
                 return BadRequest;
         }
 
-        return database.RateLevel(level, user, rating) ? OK : Unauthorized;
+        database.RateLevel(level, user, rating);
+        dataContext.Cache.UpdateLevelRatingByUser(user, level, (int)rating, database);
+        return OK;
     }
 
     [GameEndpoint("reviewsFor/{slotType}/{id}", ContentType.Xml)]
@@ -179,6 +184,7 @@ public class ReviewEndpoints : EndpointGroup
         // Update the user's rating if valid
         if (body.Thumb is > 1 or < -1) return BadRequest;
         database.RateLevel(level, user, (RatingType)body.Thumb);
+        dataContext.Cache.UpdateLevelRatingByUser(user, level, body.Thumb, database);
 
         // Return the review
         return new Response(SerializedGameReview.FromOld(review, dataContext), ContentType.Xml);
