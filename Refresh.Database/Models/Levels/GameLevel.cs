@@ -129,4 +129,10 @@ public partial class GameLevel : ISequentialId
     {
         return (GameLevel)this.MemberwiseClone();
     }
+
+    public override string ToString()
+    {
+        string shortenedTitle = this.Title.Length > 20 ? string.Concat(this.Title.AsSpan(0, 20), "-") : this.Title;
+        return $"'{shortenedTitle}' ({this.GameVersion} / {this.LevelId})";
+    } 
 }
