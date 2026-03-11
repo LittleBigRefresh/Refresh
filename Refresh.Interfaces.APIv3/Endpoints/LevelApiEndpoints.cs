@@ -163,7 +163,7 @@ public class LevelApiEndpoints : EndpointGroup
     [RateLimitSettings(CommonRelationEndpointLimits.TimeoutDuration, CommonRelationEndpointLimits.RequestAmount, 
                             CommonRelationEndpointLimits.BlockDuration, CommonRelationEndpointLimits.RequestBucket)]
     public ApiOkResponse FavouriteLevel(RequestContext context, GameDatabaseContext database, GameUser user,
-        [DocSummary("The ID of the level")] int id) 
+        [DocSummary("The ID of the level")] int id, DataContext dataContext) 
     {
         GameLevel? level = database.GetLevelById(id);
         if (level == null) return ApiNotFoundError.LevelMissingError;
@@ -178,7 +178,7 @@ public class LevelApiEndpoints : EndpointGroup
     [RateLimitSettings(CommonRelationEndpointLimits.TimeoutDuration, CommonRelationEndpointLimits.RequestAmount, 
                             CommonRelationEndpointLimits.BlockDuration, CommonRelationEndpointLimits.RequestBucket)]
     public ApiOkResponse UnheartLevel(RequestContext context, GameDatabaseContext database, GameUser user,
-        [DocSummary("The ID of the level")] int id) 
+        [DocSummary("The ID of the level")] int id, DataContext dataContext) 
     {
         GameLevel? level = database.GetLevelById(id);
         if (level == null) return ApiNotFoundError.LevelMissingError;
@@ -193,7 +193,7 @@ public class LevelApiEndpoints : EndpointGroup
     [RateLimitSettings(CommonRelationEndpointLimits.TimeoutDuration, CommonRelationEndpointLimits.RequestAmount, 
                             CommonRelationEndpointLimits.BlockDuration, CommonRelationEndpointLimits.RequestBucket)]
     public ApiOkResponse QueueLevel(RequestContext context, GameDatabaseContext database, GameUser user,
-        [DocSummary("The ID of the level")] int id) 
+        [DocSummary("The ID of the level")] int id, DataContext dataContext) 
     {
         GameLevel? level = database.GetLevelById(id);
         if (level == null) return ApiNotFoundError.LevelMissingError;
@@ -214,7 +214,7 @@ public class LevelApiEndpoints : EndpointGroup
     [RateLimitSettings(CommonRelationEndpointLimits.TimeoutDuration, CommonRelationEndpointLimits.RequestAmount, 
                             CommonRelationEndpointLimits.BlockDuration, CommonRelationEndpointLimits.RequestBucket)]
     public ApiOkResponse DequeueLevel(RequestContext context, GameDatabaseContext database, GameUser user,
-        [DocSummary("The ID of the level")] int id) 
+        [DocSummary("The ID of the level")] int id, DataContext dataContext) 
     {
         GameLevel? level = database.GetLevelById(id);
         if (level == null) return ApiNotFoundError.LevelMissingError;
