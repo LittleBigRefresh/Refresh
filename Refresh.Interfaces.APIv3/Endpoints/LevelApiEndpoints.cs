@@ -235,7 +235,7 @@ public class LevelApiEndpoints : EndpointGroup
         IDataStore dataStore, GameUser user, DataContext dataContext) 
     {
         database.ClearQueue(user);
-        dataContext.Cache.DequeueAllLevelsByUser(user);
+        dataContext.Cache.ClearQueueByUser(user);
         return new ApiOkResponse();
     }
 }

@@ -192,7 +192,7 @@ public class PublishEndpoints : EndpointGroup
         //Make sure the root resource exists in the data store
         if (!dataContext.DataStore.ExistsInStore(rootResourcePath)) return NotFound;
 
-        GameAsset? asset = dataContext.Database.GetAssetFromHash(body.RootResource);
+        GameAsset? asset = dataContext.Cache.GetAssetInfo(body.RootResource, dataContext.Database);
         if (asset != null && dataContext.Game != TokenGame.LittleBigPlanetPSP)
         {
             // ReSharper disable once ConvertIfStatementToSwitchStatement

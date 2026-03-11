@@ -25,7 +25,7 @@ public class PhotoApiEndpoints : EndpointGroup
     [DocSummary("Deletes an uploaded photo")]
     [DocError(typeof(ApiNotFoundError), ApiNotFoundError.PhotoMissingErrorWhen)]
     [DocError(typeof(ApiValidationError), ApiValidationError.NoPhotoDeletionPermissionErrorWhen)]
-    public ApiResponse<ApiEmptyResponse> DeletePhoto(RequestContext context, GameDatabaseContext database, GameUser user, int id)
+    public ApiResponse<ApiEmptyResponse> DeletePhoto(RequestContext context, GameDatabaseContext database, GameUser user, int id, DataContext dataContext)
     {
         GamePhoto? photo = database.GetPhotoById(id);
         if (photo == null) return ApiNotFoundError.PhotoMissingError;
@@ -34,6 +34,8 @@ public class PhotoApiEndpoints : EndpointGroup
             return ApiValidationError.NoPhotoDeletionPermissionError;
 
         database.RemovePhoto(photo);
+        if (photo.Level != null)
+            dataContext.Cache.IncrementLevelPhotosByUser(photo.Publisher, photo.Level, -1, database);
         return new ApiOkResponse();
     }
     

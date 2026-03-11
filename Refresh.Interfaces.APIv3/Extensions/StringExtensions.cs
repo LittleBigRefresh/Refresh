@@ -28,7 +28,7 @@ public static class StringExtensions
         }
         else
         {
-            GameAsset? asset = dataContext.Database.GetAssetFromHash(iconReference);
+            GameAsset? asset = dataContext.Cache.GetAssetInfo(iconReference, dataContext.Database);
 
             if (asset == null) 
                 return (null, ApiValidationError.IconMissingError);

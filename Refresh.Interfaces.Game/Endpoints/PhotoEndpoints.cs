@@ -55,7 +55,7 @@ public class PhotoEndpoints : EndpointGroup
         List<string> hashes = [body.LargeHash, body.MediumHash, body.SmallHash];
         foreach (string hash in hashes.Distinct())
         {
-            GameAsset? gameAsset = database.GetAssetFromHash(hash);
+            GameAsset? gameAsset = dataContext.Cache.GetAssetInfo(hash, database);
             if(gameAsset == null) continue;
             if (aipi != null && aipi.ScanAndHandleAsset(dataContext, gameAsset))
                 return Unauthorized;
@@ -64,11 +64,14 @@ public class PhotoEndpoints : EndpointGroup
         GameLevel? level = body.Level == null ? null : database.GetLevelByIdAndType(body.Level.Type, body.Level.LevelId);
 
         database.UploadPhoto(body, body.PhotoSubjects, user, level);
+        if (level != null)
+            dataContext.Cache.IncrementLevelPhotosByUser(user, level, 1, database);
+
         return OK;
     }
 
     [GameEndpoint("deletePhoto/{id}", HttpMethods.Post)]
-    public Response DeletePhoto(RequestContext context, GameDatabaseContext database, GameUser user, int id)
+    public Response DeletePhoto(RequestContext context, GameDatabaseContext database, GameUser user, int id, DataContext dataContext)
     {
         GamePhoto? photo = database.GetPhotoById(id);
         if (photo == null) return NotFound;
@@ -77,6 +80,9 @@ public class PhotoEndpoints : EndpointGroup
             return Unauthorized;
         
         database.RemovePhoto(photo);
+        if (photo.Level != null)
+            dataContext.Cache.IncrementLevelPhotosByUser(photo.Publisher, photo.Level, -1, database);
+
         return OK;
     }
     

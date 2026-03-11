@@ -123,7 +123,7 @@ public class ResourceEndpoints : EndpointGroup
 
         // Part of a workaround to prevent LBP Hub from breaking challenge ghost replay.
         // See ChallengeGhostRateLimitService's summary for more information.
-        if (token.TokenGame == TokenGame.BetaBuild && dataContext.Database.GetAssetFromHash(hash)?.AssetType == GameAssetType.ChallengeGhost)
+        if (token.TokenGame == TokenGame.BetaBuild && dataContext.Cache.GetAssetInfo(hash, dataContext.Database)?.AssetType == GameAssetType.ChallengeGhost)
         {
             if (ghostService.IsUserRateLimited(user.UserId))
             {

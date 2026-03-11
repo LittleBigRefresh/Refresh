@@ -151,7 +151,7 @@ public class RelationEndpoints : EndpointGroup
     public Response ClearQueue(RequestContext context, GameDatabaseContext database, GameUser user, DataContext dataContext)
     {
         database.ClearQueue(user);
-        dataContext.Cache.DequeueAllLevelsByUser(user);
+        dataContext.Cache.ClearQueueByUser(user);
         return OK;
     }
     

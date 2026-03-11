@@ -182,7 +182,7 @@ public class ResourceApiEndpoints : EndpointGroup
 
         if (dataStore.ExistsInStore(hash))
         {
-            GameAsset? existingAsset = database.GetAssetFromHash(hash);
+            GameAsset? existingAsset = dataContext.Cache.GetAssetInfo(hash, database);
             if (existingAsset == null)
                 return ApiInternalError.HashNotFoundInDatabaseError;
 

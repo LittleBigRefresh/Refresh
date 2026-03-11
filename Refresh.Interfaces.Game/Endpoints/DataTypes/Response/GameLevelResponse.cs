@@ -144,7 +144,7 @@ public class GameLevelResponse : GameMinimalLevelResponse, IDataConvertableFrom<
         
         if (dataContext.Game is TokenGame.LittleBigPlanetVita or TokenGame.BetaBuild)
         {
-            GameAsset? rootResourceAsset = dataContext.Database.GetAssetFromHash(response.RootResource);
+            GameAsset? rootResourceAsset = dataContext.Cache.GetAssetInfo(response.RootResource, dataContext.Database);
             if (rootResourceAsset != null)
             {
                 rootResourceAsset.TraverseDependenciesRecursively(dataContext.Database, (_, asset) =>
