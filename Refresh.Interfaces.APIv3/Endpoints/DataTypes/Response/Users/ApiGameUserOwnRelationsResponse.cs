@@ -14,7 +14,7 @@ public class ApiGameUserOwnRelationsResponse : IApiResponse
         if (dataContext.User == null) 
             return null;
         
-        OwnUserRelations relations = dataContext.Cache.GetOwnUserRelations(dataContext.User, user, dataContext.Database);
+        OwnUserRelations relations = dataContext.Cache.GetOwnUserRelations(dataContext.User, user, dataContext.Database).Content;
 
         return new()
         {
