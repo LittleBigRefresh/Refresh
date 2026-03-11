@@ -301,7 +301,7 @@ public class CacheService : EndpointService
     public void CacheOwnLevelRelations(GameUser source, GameLevel target, OwnLevelRelations newData)
     {
         DateTimeOffset expiresAt = this._time.TimeProvider.Now.AddSeconds(LevelCacheDurationSeconds);
-        this.Log("Refreshing OwnUserRelations cache by user {0} for level {1}, they will expire at {2}", source, target, expiresAt);
+        this.Log("Refreshing OwnLevelRelations cache by user {0} for level {1}, they will expire at {2}", source, target, expiresAt);
 
         if (!this._cachedOwnLevelRelations.ContainsKey(source.UserId)) 
             this._cachedOwnLevelRelations[source.UserId] = [];
@@ -316,7 +316,7 @@ public class CacheService : EndpointService
 
         if (this.HasCacheExpired(fromCache))
         {
-            this.Log("Looking up OwnUserRelations by user {0} for level {1} in DB", source, target);
+            this.Log("Looking up OwnLevelRelations by user {0} for level {1} in DB", source, target);
             OwnLevelRelations refreshed = new()
             {
                 IsHearted = database.IsLevelFavouritedByUser(target, source),
