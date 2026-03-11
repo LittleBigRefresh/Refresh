@@ -126,6 +126,7 @@ public class ReviewApiEndpoints : EndpointGroup
                 return ApiValidationError.RatingParseError;
             
             database.RateLevel(level, user, body.LevelRating.Value);
+            dataContext.Cache.UpdateLevelRatingByUser(user, level, (int)body.LevelRating.Value, database);
         }
 
         if (body.Content != null && body.Content.Length > UgcLimits.CommentLimit)
@@ -167,6 +168,7 @@ public class ReviewApiEndpoints : EndpointGroup
                 return ApiValidationError.RatingParseError;
             
             database.RateLevel(review.Level, user, body.LevelRating.Value);
+            dataContext.Cache.UpdateLevelRatingByUser(user, review.Level, (int)body.LevelRating.Value, database);
         }
 
         if (body.Content != null && body.Content.Length > UgcLimits.CommentLimit)
