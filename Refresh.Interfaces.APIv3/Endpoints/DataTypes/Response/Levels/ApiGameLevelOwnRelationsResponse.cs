@@ -23,7 +23,7 @@ public class ApiGameLevelOwnRelationsResponse : IApiResponse
         if (dataContext.User == null) 
             return null;
         
-        OwnLevelRelations relations = dataContext.Cache.GetOwnLevelRelations(dataContext.User, level, dataContext.Database);
+        OwnLevelRelations relations = dataContext.Cache.GetOwnLevelRelations(dataContext.User, level, dataContext.Database).Content;
 
         return new()
         {

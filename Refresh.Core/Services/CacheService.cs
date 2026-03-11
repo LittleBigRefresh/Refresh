@@ -39,6 +39,7 @@ public class CacheService : EndpointService
         this.Logger.LogDebug(BunkumCategory.UserPhotos, $"CacheAsset {hash} - will expire in {expiresAt} Ä");
     }
 
+    // currently not necessary to return these with CachedReturn...
     public GameAsset? GetAssetInfo(string hash, GameDatabaseContext database)
     {
         CachedData<GameAsset?>? fromCache = this._cachedAssetData.GetValueOrDefault(hash);
@@ -135,14 +136,6 @@ public class CacheService : EndpointService
 
     #region Own User Relations
 
-    private OwnUserRelations CreateUserRelations(GameUser source, GameUser target, GameDatabaseContext database)
-    {
-        return new()
-        {
-            IsHearted = database.IsUserFavouritedByUser(target, source),
-        };
-    }
-
     public void CacheOwnUserRelations(GameUser source, GameUser target, OwnUserRelations newData)
     {
         DateTimeOffset expiresAt = this._time.TimeProvider.Now.AddSeconds(LevelCacheDurationSeconds);
@@ -155,45 +148,37 @@ public class CacheService : EndpointService
         this._cachedOwnUserRelations.GetValueOrDefault(source.UserId)?.Remove(target.UserId);
     }
 
-    public OwnUserRelations GetOwnUserRelations(GameUser source, GameUser target, GameDatabaseContext database)
+    public CachedReturn<OwnUserRelations> GetOwnUserRelations(GameUser source, GameUser target, GameDatabaseContext database)
     {
         CachedData<OwnUserRelations>? fromCache = this._cachedOwnUserRelations.GetValueOrDefault(source.UserId)?.GetValueOrDefault(target.UserId);
         this.Logger.LogDebug(BunkumCategory.UserPhotos, $"GetOwnUserRelations s {source.UserId} t {target.UserId} - cached {fromCache} expires in {fromCache?.ExpiresAt} Ä");
 
         if (this.HasCacheExpired(fromCache))
         {
-            OwnUserRelations refreshed = this.CreateUserRelations(source, target, database);
+            OwnUserRelations refreshed = new()
+            {
+                IsHearted = database.IsUserFavouritedByUser(target, source),
+            };
             this.Logger.LogDebug(BunkumCategory.UserPhotos, $"GetOwnUserRelations s {source.UserId} t {target.UserId} - gotten from DB {refreshed} Ä");
 
             this.CacheOwnUserRelations(source, target, refreshed);
-            return refreshed;
+            return new(refreshed, true);
         }
 
-        return fromCache!.Content;
+        return new(fromCache!.Content, false);
     }
 
     public void UpdateUserHeartedStatusByUser(GameUser source, GameUser target, bool newValue, GameDatabaseContext database)
     {
-        OwnUserRelations fromCache = this.GetOwnUserRelations(source, target, database);
-        fromCache.IsHearted = newValue;
-        this.CacheOwnUserRelations(source, target, fromCache);
+        CachedReturn<OwnUserRelations> fromCache = this.GetOwnUserRelations(source, target, database);
+        if (fromCache.WasRefreshed) return; // value is already up-to-date
+
+        fromCache.Content.IsHearted = newValue;
+        this.CacheOwnUserRelations(source, target, fromCache.Content);
     }
 
     #endregion
     #region Own Level Relations
-
-    private OwnLevelRelations CreateLevelRelations(GameUser source, GameLevel target, GameDatabaseContext database)
-    {
-        return new()
-        {
-            IsHearted = database.IsLevelFavouritedByUser(target, source),
-            IsQueued = database.IsLevelQueuedByUser(target, source),
-            LevelRating = (int?)database.GetRatingByUser(target, source) ?? 0,
-            TotalPlayCount = database.GetTotalPlaysForLevelByUser(target, source),
-            TotalCompletionCount = database.GetTotalCompletionsForLevelByUser(target, source),
-            PhotoCount = database.GetTotalPhotosInLevelByUser(target, source),
-        };
-    }
 
     public void CacheOwnLevelRelations(GameUser source, GameLevel target, OwnLevelRelations newData)
     {
@@ -214,7 +199,15 @@ public class CacheService : EndpointService
 
         if (this.HasCacheExpired(fromCache))
         {
-            OwnLevelRelations refreshed = this.CreateLevelRelations(source, target, database);
+            OwnLevelRelations refreshed = new()
+            {
+                IsHearted = database.IsLevelFavouritedByUser(target, source),
+                IsQueued = database.IsLevelQueuedByUser(target, source),
+                LevelRating = (int?)database.GetRatingByUser(target, source) ?? 0,
+                TotalPlayCount = database.GetTotalPlaysForLevelByUser(target, source),
+                TotalCompletionCount = database.GetTotalCompletionsForLevelByUser(target, source),
+                PhotoCount = database.GetTotalPhotosInLevelByUser(target, source),
+            };
             this.Logger.LogDebug(BunkumCategory.UserPhotos, $"GetOwnLevelRelations s {source.UserId} t {target.LevelId} - gotten from DB {refreshed} plays {refreshed.TotalPlayCount} Ä");
 
             this.CacheOwnLevelRelations(source, target, refreshed);
