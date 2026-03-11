@@ -252,6 +252,8 @@ public partial class GameDatabaseContext // Relations
 
     public void ClearQueue(GameUser user)
     {
+        if (this.GetTotalLevelsQueuedByUser(user) <= 0) return;
+        
         this.WriteEnsuringStatistics(user, () =>
         {
             user.Statistics!.QueueCount = 0;
