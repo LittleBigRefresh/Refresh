@@ -1,8 +1,13 @@
 namespace Refresh.Core.Types.Cache;
 
-// TODO: use this to cache various data
 public class CachedData<TData>
 {
-    public TData? Cached { get; set; }
+    public TData Content { get; set; }
     public DateTimeOffset ExpiresAt { get; set; }
+
+    public CachedData(TData content, DateTimeOffset expiresAt)
+    {
+        Content = content;
+        ExpiresAt = expiresAt;
+    }
 }

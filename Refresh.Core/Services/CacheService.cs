@@ -14,7 +14,7 @@ namespace Refresh.Core.Services;
 public class CacheService : EndpointService
 {
     private readonly TimeProviderService _time;
-    private readonly Dictionary<string, CachedData<GameAsset>> _cachedAssetData = []; // hash -> data
+    private readonly Dictionary<string, CachedData<GameAsset?>> _cachedAssetData = []; // hash -> data
     private readonly Dictionary<int, CachedData<List<GameSkillReward>>> _cachedSkillRewards = []; // level ID -> data
     private readonly Dictionary<int, CachedData<List<Tag>>> _cachedLevelTags = []; // level ID -> data
 
@@ -35,20 +35,16 @@ public class CacheService : EndpointService
     public void CacheAsset(string hash, GameAsset? asset)
     {
         DateTimeOffset expiresAt = this._time.TimeProvider.Now.AddSeconds(AssetCacheDurationSeconds);
-        this._cachedAssetData[hash] = new()
-        {
-            Cached = asset,
-            ExpiresAt = expiresAt
-        };
+        this._cachedAssetData[hash] = new(asset, expiresAt);
         this.Logger.LogDebug(BunkumCategory.UserPhotos, $"CacheAsset {hash} - will expire in {expiresAt} Ä");
     }
 
     public GameAsset? GetAssetInfo(string hash, GameDatabaseContext database)
     {
-        CachedData<GameAsset>? cached = this._cachedAssetData.GetValueOrDefault(hash);
-        this.Logger.LogDebug(BunkumCategory.UserPhotos, $"GetAssetInfo {hash} - cached {cached} expires in {cached?.ExpiresAt} Ä");
+        CachedData<GameAsset?>? fromCache = this._cachedAssetData.GetValueOrDefault(hash);
+        this.Logger.LogDebug(BunkumCategory.UserPhotos, $"GetAssetInfo {hash} - cached {fromCache} expires in {fromCache?.ExpiresAt} Ä");
 
-        if (this.HasCacheExpired(cached))
+        if (this.HasCacheExpired(fromCache))
         {
             GameAsset? refreshed = database.GetAssetFromHash(hash);
             this.Logger.LogDebug(BunkumCategory.UserPhotos, $"GetAssetInfo {hash} - gotten from DB {refreshed} Ä");
@@ -59,7 +55,7 @@ public class CacheService : EndpointService
             return refreshed;
         }
 
-        return cached!.Cached;
+        return fromCache?.Content;
     }
 
     #endregion
@@ -75,11 +71,7 @@ public class CacheService : EndpointService
     public void CacheSkillRewards(GameLevel level, List<GameSkillReward> rewards)
     {
         DateTimeOffset expiresAt = this._time.TimeProvider.Now.AddSeconds(LevelCacheDurationSeconds);
-        this._cachedSkillRewards[level.LevelId] = new()
-        {
-            Cached = rewards,
-            ExpiresAt = expiresAt
-        };
+        this._cachedSkillRewards[level.LevelId] = new(rewards, expiresAt);
         this.Logger.LogDebug(BunkumCategory.UserPhotos, $"CacheSkillRewards {level.LevelId} - will expire in {expiresAt} Ä");
     }
 
@@ -90,10 +82,10 @@ public class CacheService : EndpointService
 
     public List<GameSkillReward> GetSkillRewards(GameLevel level, GameDatabaseContext database)
     {
-        CachedData<List<GameSkillReward>>? cached = this._cachedSkillRewards.GetValueOrDefault(level.LevelId);
-        this.Logger.LogDebug(BunkumCategory.UserPhotos, $"GetSkillRewards {level.LevelId} - cached {cached} expires in {cached?.ExpiresAt} Ä");
+        CachedData<List<GameSkillReward>>? fromCache = this._cachedSkillRewards.GetValueOrDefault(level.LevelId);
+        this.Logger.LogDebug(BunkumCategory.UserPhotos, $"GetSkillRewards {level.LevelId} - cached {fromCache} expires in {fromCache?.ExpiresAt} Ä");
 
-        if (this.HasCacheExpired(cached))
+        if (this.HasCacheExpired(fromCache))
         {
             List<GameSkillReward> refreshed = database.GetSkillRewardsForLevel(level).ToList();
             this.Logger.LogDebug(BunkumCategory.UserPhotos, $"GetSkillRewards {level.LevelId} - gotten from DB {refreshed} Ä");
@@ -102,7 +94,7 @@ public class CacheService : EndpointService
             return refreshed;
         }
 
-        return cached!.Cached ?? []; // should never be null, but incase
+        return fromCache!.Content;
     }
 
     #endregion
@@ -111,11 +103,7 @@ public class CacheService : EndpointService
     public void CacheTags(GameLevel level, List<Tag> tags)
     {
         DateTimeOffset expiresAt = this._time.TimeProvider.Now.AddSeconds(LevelCacheDurationSeconds);
-        this._cachedLevelTags[level.LevelId] = new()
-        {
-            Cached = tags,
-            ExpiresAt = expiresAt
-        };
+        this._cachedLevelTags[level.LevelId] = new(tags, expiresAt);
         this.Logger.LogDebug(BunkumCategory.UserPhotos, $"CacheTags {level.LevelId} - will expire in {expiresAt} Ä");
     }
 
@@ -128,10 +116,10 @@ public class CacheService : EndpointService
 
     public List<Tag> GetTags(GameLevel level, GameDatabaseContext database)
     {
-        CachedData<List<Tag>>? cached = this._cachedLevelTags.GetValueOrDefault(level.LevelId);
-        this.Logger.LogDebug(BunkumCategory.UserPhotos, $"GetTags {level.LevelId} - cached {cached} expires in {cached?.ExpiresAt} Ä");
+        CachedData<List<Tag>>? fromCache = this._cachedLevelTags.GetValueOrDefault(level.LevelId);
+        this.Logger.LogDebug(BunkumCategory.UserPhotos, $"GetTags {level.LevelId} - cached {fromCache} expires in {fromCache?.ExpiresAt} Ä");
 
-        if (this.HasCacheExpired(cached))
+        if (this.HasCacheExpired(fromCache))
         {
             List<Tag> refreshed = database.GetTagsForLevel(level).ToList();
             this.Logger.LogDebug(BunkumCategory.UserPhotos, $"GetTags {level.LevelId} - gotten from DB {refreshed} Ä");
@@ -140,7 +128,7 @@ public class CacheService : EndpointService
             return refreshed;
         }
 
-        return cached!.Cached ?? [];
+        return fromCache!.Content;
     }
 
     #endregion
@@ -158,28 +146,21 @@ public class CacheService : EndpointService
     public void CacheOwnUserRelations(GameUser source, GameUser target, OwnUserRelations newData)
     {
         DateTimeOffset expiresAt = this._time.TimeProvider.Now.AddSeconds(LevelCacheDurationSeconds);
-        this._cachedOwnUserRelations[source.UserId][target.UserId] = new()
-        {
-            Cached = newData,
-            ExpiresAt = expiresAt
-        };
+        this._cachedOwnUserRelations[source.UserId][target.UserId] = new(newData, expiresAt);
         this.Logger.LogDebug(BunkumCategory.UserPhotos, $"CacheOwnUserRelations s {source.UserId} t {target.UserId} - will expire in {expiresAt} Ä");
     }
 
-    // TODO: minimal chance of wrong cached value if refreshed from DB
-    public void UpdateUserHeart(GameUser source, GameUser target, bool newValue, GameDatabaseContext database)
+    public void RemoveOwnUserRelations(GameUser source, GameUser target)
     {
-        OwnUserRelations existing = this.GetOwnUserRelations(source, target, database);
-        existing.IsHearted = newValue;
-        this.CacheOwnUserRelations(source, target, existing);
+        this._cachedOwnUserRelations.GetValueOrDefault(source.UserId)?.Remove(target.UserId);
     }
 
     public OwnUserRelations GetOwnUserRelations(GameUser source, GameUser target, GameDatabaseContext database)
     {
-        CachedData<OwnUserRelations>? cached = this._cachedOwnUserRelations.GetValueOrDefault(source.UserId)?.GetValueOrDefault(target.UserId);
-        this.Logger.LogDebug(BunkumCategory.UserPhotos, $"GetOwnUserRelations s {source.UserId} t {target.UserId} - cached {cached} expires in {cached?.ExpiresAt} Ä");
+        CachedData<OwnUserRelations>? fromCache = this._cachedOwnUserRelations.GetValueOrDefault(source.UserId)?.GetValueOrDefault(target.UserId);
+        this.Logger.LogDebug(BunkumCategory.UserPhotos, $"GetOwnUserRelations s {source.UserId} t {target.UserId} - cached {fromCache} expires in {fromCache?.ExpiresAt} Ä");
 
-        if (this.HasCacheExpired(cached))
+        if (this.HasCacheExpired(fromCache))
         {
             OwnUserRelations refreshed = this.CreateUserRelations(source, target, database);
             this.Logger.LogDebug(BunkumCategory.UserPhotos, $"GetOwnUserRelations s {source.UserId} t {target.UserId} - gotten from DB {refreshed} Ä");
@@ -188,7 +169,14 @@ public class CacheService : EndpointService
             return refreshed;
         }
 
-        return cached!.Cached!;
+        return fromCache!.Content;
+    }
+
+    public void UpdateUserHeartedStatusByUser(GameUser source, GameUser target, bool newValue, GameDatabaseContext database)
+    {
+        OwnUserRelations fromCache = this.GetOwnUserRelations(source, target, database);
+        fromCache.IsHearted = newValue;
+        this.CacheOwnUserRelations(source, target, fromCache);
     }
 
     #endregion
@@ -207,86 +195,100 @@ public class CacheService : EndpointService
         };
     }
 
-    public void UpdateLevelHeart(GameUser source, GameLevel target, bool newValue, GameDatabaseContext database)
+    public void CacheOwnLevelRelations(GameUser source, GameLevel target, OwnLevelRelations newData)
     {
-        OwnLevelRelations existing = this.GetOwnLevelRelations(source, target, database);
-        existing.IsHearted = newValue;
-        this.CacheOwnLevelRelations(source, target, existing);
+        DateTimeOffset expiresAt = this._time.TimeProvider.Now.AddSeconds(LevelCacheDurationSeconds);
+        this._cachedOwnLevelRelations[source.UserId][target.LevelId] = new(newData, expiresAt);
+        this.Logger.LogDebug(BunkumCategory.UserPhotos, $"CacheOwnLevelRelations s {source.UserId} t {target.LevelId} - will expire in {expiresAt} Ä");
     }
 
-    public void UpdateLevelQueue(GameUser source, GameLevel target, bool newValue, GameDatabaseContext database)
+    public void RemoveOwnLevelRelations(GameUser source, GameLevel target)
     {
-        OwnLevelRelations existing = this.GetOwnLevelRelations(source, target, database);
-        existing.IsHearted = newValue;
-        this.CacheOwnLevelRelations(source, target, existing);
+        this._cachedOwnLevelRelations.GetValueOrDefault(source.UserId)?.Remove(target.LevelId);
     }
 
-    public void DequeueAllLevels(GameUser source, GameDatabaseContext database)
+    public CachedReturn<OwnLevelRelations> GetOwnLevelRelations(GameUser source, GameLevel target, GameDatabaseContext database)
+    {
+        CachedData<OwnLevelRelations>? fromCache = this._cachedOwnLevelRelations.GetValueOrDefault(source.UserId)?.GetValueOrDefault(target.LevelId);
+        this.Logger.LogDebug(BunkumCategory.UserPhotos, $"GetOwnLevelRelations s {source.UserId} t {target.LevelId} - cached {fromCache} expires in {fromCache} Ä");
+
+        if (this.HasCacheExpired(fromCache))
+        {
+            OwnLevelRelations refreshed = this.CreateLevelRelations(source, target, database);
+            this.Logger.LogDebug(BunkumCategory.UserPhotos, $"GetOwnLevelRelations s {source.UserId} t {target.LevelId} - gotten from DB {refreshed} plays {refreshed.TotalPlayCount} Ä");
+
+            this.CacheOwnLevelRelations(source, target, refreshed);
+            return new(refreshed, true);
+        }
+
+        return new(fromCache!.Content, false);
+    }
+
+    public void UpdateLevelHeartedStatusByUser(GameUser source, GameLevel target, bool newValue, GameDatabaseContext database)
+    {
+        CachedReturn<OwnLevelRelations> fromCache = this.GetOwnLevelRelations(source, target, database);
+        if (fromCache.WasRefreshed) return; // value is already up-to-date
+
+        fromCache.Content.IsHearted = newValue;
+        this.CacheOwnLevelRelations(source, target, fromCache.Content);
+    }
+
+    public void UpdateLevelQueuedStatusByUser(GameUser source, GameLevel target, bool newValue, GameDatabaseContext database)
+    {
+        CachedReturn<OwnLevelRelations> fromCache = this.GetOwnLevelRelations(source, target, database);
+        if (fromCache.WasRefreshed) return; // value is already up-to-date
+
+        fromCache.Content.IsQueued = newValue;
+        this.CacheOwnLevelRelations(source, target, fromCache.Content);
+    }
+
+    public void DequeueAllLevelsByUser(GameUser source)
     {
         foreach (KeyValuePair<int, CachedData<OwnLevelRelations>> relations in this._cachedOwnLevelRelations.GetValueOrDefault(source.UserId)?.ToArray() ?? [])
         {
             // will be refreshed later anyway; don't want too many DB calls here (e.g. user had 100 levels queued, this method would in that case send 600 DB queries)
             if (this.HasCacheExpired(relations.Value)) continue;
 
-            relations.Value.Cached!.IsQueued = false;
+            relations.Value.Content.IsQueued = false;
+            this.Logger.LogDebug(BunkumCategory.UserLevels, $"DequeueAllLevels level {relations.Key} was queued by {source}");
             this._cachedOwnLevelRelations[source.UserId][relations.Key] = relations.Value;
         }
     }
 
-    public void UpdateLevelRating(GameUser source, GameLevel target, int newRating, GameDatabaseContext database)
+    public void UpdateLevelRatingByUser(GameUser source, GameLevel target, int newRating, GameDatabaseContext database)
     {
-        OwnLevelRelations existing = this.GetOwnLevelRelations(source, target, database);
-        existing.LevelRating = newRating;
-        this.CacheOwnLevelRelations(source, target, existing);
+        CachedReturn<OwnLevelRelations> fromCache = this.GetOwnLevelRelations(source, target, database);
+        if (fromCache.WasRefreshed) return; // value is already up-to-date
+
+        fromCache.Content.LevelRating = newRating;
+        this.CacheOwnLevelRelations(source, target, fromCache.Content);
     }
 
-    public void IncrementLevelTotalPlays(GameUser source, GameLevel target, int incrementor, GameDatabaseContext database)
+    public void IncrementLevelTotalPlaysByUser(GameUser source, GameLevel target, int incrementor, GameDatabaseContext database)
     {
-        OwnLevelRelations existing = this.GetOwnLevelRelations(source, target, database);
-        existing.TotalPlayCount += incrementor;
-        this.CacheOwnLevelRelations(source, target, existing);
+        CachedReturn<OwnLevelRelations> fromCache = this.GetOwnLevelRelations(source, target, database);
+        if (fromCache.WasRefreshed) return; // value is already up-to-date
+
+        fromCache.Content.TotalPlayCount += incrementor;
+        this.CacheOwnLevelRelations(source, target, fromCache.Content);
     }
 
-    public void IncrementLevelTotalCompletions(GameUser source, GameLevel target, int incrementor, GameDatabaseContext database)
+    public void IncrementLevelTotalCompletionsByUser(GameUser source, GameLevel target, int incrementor, GameDatabaseContext database)
     {
-        OwnLevelRelations existing = this.GetOwnLevelRelations(source, target, database);
-        existing.TotalCompletionCount += incrementor;
-        this.CacheOwnLevelRelations(source, target, existing);
+        CachedReturn<OwnLevelRelations> fromCache = this.GetOwnLevelRelations(source, target, database);
+        if (fromCache.WasRefreshed) return; // value is already up-to-date
+
+        fromCache.Content.TotalCompletionCount += incrementor;
+        this.CacheOwnLevelRelations(source, target, fromCache.Content);
     }
 
-    public void IncrementLevelPhotos(GameUser source, GameLevel target, int incrementor, GameDatabaseContext database)
+    public void IncrementLevelPhotosByUser(GameUser source, GameLevel target, int incrementor, GameDatabaseContext database)
     {
-        OwnLevelRelations existing = this.GetOwnLevelRelations(source, target, database);
-        existing.PhotoCount += incrementor;
-        this.CacheOwnLevelRelations(source, target, existing);
-    }
+        CachedReturn<OwnLevelRelations> fromCache = this.GetOwnLevelRelations(source, target, database);
+        if (fromCache.WasRefreshed) return; // value is already up-to-date
 
-    public void CacheOwnLevelRelations(GameUser source, GameLevel target, OwnLevelRelations newData)
-    {
-        DateTimeOffset expiresAt = this._time.TimeProvider.Now.AddSeconds(LevelCacheDurationSeconds);
-        this._cachedOwnLevelRelations[source.UserId][target.LevelId] = new()
-        {
-            Cached = newData,
-            ExpiresAt = expiresAt
-        };
-        this.Logger.LogDebug(BunkumCategory.UserPhotos, $"CacheOwnLevelRelations s {source.UserId} t {target.LevelId} - will expire in {expiresAt} Ä");
-    }
-
-    public OwnLevelRelations GetOwnLevelRelations(GameUser source, GameLevel target, GameDatabaseContext database)
-    {
-        CachedData<OwnLevelRelations>? cached = this._cachedOwnLevelRelations.GetValueOrDefault(source.UserId)?.GetValueOrDefault(target.LevelId);
-        this.Logger.LogDebug(BunkumCategory.UserPhotos, $"GetOwnLevelRelations s {source.UserId} t {target.LevelId} - cached {cached} expires in {cached?.ExpiresAt} Ä");
-
-        if (this.HasCacheExpired(cached))
-        {
-            OwnLevelRelations refreshed = this.CreateLevelRelations(source, target, database);
-            this.Logger.LogDebug(BunkumCategory.UserPhotos, $"GetOwnLevelRelations s {source.UserId} t {target.LevelId} - gotten from DB {refreshed} plays {refreshed.TotalPlayCount} Ä");
-
-            this.CacheOwnLevelRelations(source, target, refreshed);
-            return refreshed;
-        }
-
-        return cached!.Cached!;
+        fromCache.Content.PhotoCount += incrementor;
+        this.CacheOwnLevelRelations(source, target, fromCache.Content);
     }
 
     #endregion

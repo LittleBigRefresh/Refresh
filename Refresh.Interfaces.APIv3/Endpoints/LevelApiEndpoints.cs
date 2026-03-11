@@ -158,7 +158,7 @@ public class LevelApiEndpoints : EndpointGroup
     }
 
     [ApiV3Endpoint("levels/id/{id}/heart", HttpMethods.Post)]
-    [DocSummary("Adds a specific level by it's ID to your hearted levels")]
+    [DocSummary("Adds a specific level by its ID to your hearted levels")]
     [DocError(typeof(ApiNotFoundError), ApiNotFoundError.LevelMissingErrorWhen)]
     [RateLimitSettings(CommonRelationEndpointLimits.TimeoutDuration, CommonRelationEndpointLimits.RequestAmount, 
                             CommonRelationEndpointLimits.BlockDuration, CommonRelationEndpointLimits.RequestBucket)]
@@ -169,11 +169,12 @@ public class LevelApiEndpoints : EndpointGroup
         if (level == null) return ApiNotFoundError.LevelMissingError;
 
         database.FavouriteLevel(level, user);
+        dataContext.Cache.UpdateLevelHeartedStatusByUser(user, level, true, database);
         return new ApiOkResponse();
     }
 
     [ApiV3Endpoint("levels/id/{id}/unheart", HttpMethods.Post)]
-    [DocSummary("Removes a specific level by it's ID from your hearted levels")]
+    [DocSummary("Removes a specific level by its ID from your hearted levels")]
     [DocError(typeof(ApiNotFoundError), ApiNotFoundError.LevelMissingErrorWhen)]
     [RateLimitSettings(CommonRelationEndpointLimits.TimeoutDuration, CommonRelationEndpointLimits.RequestAmount, 
                             CommonRelationEndpointLimits.BlockDuration, CommonRelationEndpointLimits.RequestBucket)]
@@ -184,11 +185,12 @@ public class LevelApiEndpoints : EndpointGroup
         if (level == null) return ApiNotFoundError.LevelMissingError;
 
         database.UnfavouriteLevel(level, user);
+        dataContext.Cache.UpdateLevelHeartedStatusByUser(user, level, false, database);
         return new ApiOkResponse();
     }
 
     [ApiV3Endpoint("levels/id/{id}/queue", HttpMethods.Post)]
-    [DocSummary("Adds a specific level by it's ID to your queue")]
+    [DocSummary("Adds a specific level by its ID to your queue")]
     [DocError(typeof(ApiNotFoundError), ApiNotFoundError.LevelMissingErrorWhen)]
     [RateLimitSettings(CommonRelationEndpointLimits.TimeoutDuration, CommonRelationEndpointLimits.RequestAmount, 
                             CommonRelationEndpointLimits.BlockDuration, CommonRelationEndpointLimits.RequestBucket)]
@@ -199,6 +201,7 @@ public class LevelApiEndpoints : EndpointGroup
         if (level == null) return ApiNotFoundError.LevelMissingError;
 
         bool success = database.QueueLevel(level, user);
+        dataContext.Cache.UpdateLevelQueuedStatusByUser(user, level, true, database);
 
         // Only give pin if the level was queued without having already been queued.
         // Won't protect against spam, but this way the pin objective is more accurately implemented.
@@ -209,7 +212,7 @@ public class LevelApiEndpoints : EndpointGroup
     }
 
     [ApiV3Endpoint("levels/id/{id}/dequeue", HttpMethods.Post)]
-    [DocSummary("Removes a specific level by it's ID from your queue")]
+    [DocSummary("Removes a specific level by its ID from your queue")]
     [DocError(typeof(ApiNotFoundError), ApiNotFoundError.LevelMissingErrorWhen)]
     [RateLimitSettings(CommonRelationEndpointLimits.TimeoutDuration, CommonRelationEndpointLimits.RequestAmount, 
                             CommonRelationEndpointLimits.BlockDuration, CommonRelationEndpointLimits.RequestBucket)]
@@ -220,6 +223,7 @@ public class LevelApiEndpoints : EndpointGroup
         if (level == null) return ApiNotFoundError.LevelMissingError;
 
         database.DequeueLevel(level, user);
+        dataContext.Cache.UpdateLevelQueuedStatusByUser(user, level, false, database);
         return new ApiOkResponse();
     }
 
@@ -231,6 +235,7 @@ public class LevelApiEndpoints : EndpointGroup
         IDataStore dataStore, GameUser user, DataContext dataContext) 
     {
         database.ClearQueue(user);
+        dataContext.Cache.DequeueAllLevelsByUser(user);
         return new ApiOkResponse();
     }
 }

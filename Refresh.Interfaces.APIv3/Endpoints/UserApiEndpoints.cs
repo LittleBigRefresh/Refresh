@@ -55,6 +55,7 @@ public class UserApiEndpoints : EndpointGroup
         if(target == null) return ApiNotFoundError.UserMissingError;
         
         bool success = database.FavouriteUser(target, user);
+        dataContext.Cache.UpdateUserHeartedStatusByUser(user, target, true, database);
 
         // Only give pin if the user was hearted without having already been hearted.
         // Won't protect against spam, but this way the pin objective is more accurately implemented.
@@ -77,6 +78,7 @@ public class UserApiEndpoints : EndpointGroup
         if(target == null) return ApiNotFoundError.UserMissingError;
         
         database.UnfavouriteUser(target, user);
+        dataContext.Cache.UpdateUserHeartedStatusByUser(user, target, false, database);
         return new ApiOkResponse();
     }
     
