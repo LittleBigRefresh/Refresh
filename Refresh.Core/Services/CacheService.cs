@@ -34,6 +34,7 @@ public class CacheService : EndpointService
     #region Assets
     public void CacheAsset(string hash, GameAsset? asset)
     {
+        if (hash.StartsWith('g') || hash.IsBlankHash()) return;
         DateTimeOffset expiresAt = this._time.TimeProvider.Now.AddSeconds(AssetCacheDurationSeconds);
         this._cachedAssetData[hash] = new(asset, expiresAt);
         this.Logger.LogDebug(BunkumCategory.UserPhotos, $"CacheAsset {hash} - will expire in {expiresAt} Ä");
@@ -42,6 +43,8 @@ public class CacheService : EndpointService
     // currently not necessary to return these with CachedReturn...
     public GameAsset? GetAssetInfo(string hash, GameDatabaseContext database)
     {
+        if (hash.StartsWith('g') || hash.IsBlankHash()) return null;
+
         CachedData<GameAsset?>? fromCache = this._cachedAssetData.GetValueOrDefault(hash);
         this.Logger.LogDebug(BunkumCategory.UserPhotos, $"GetAssetInfo {hash} - cached {fromCache} expires in {fromCache?.ExpiresAt} Ä");
 
