@@ -335,7 +335,6 @@ public class CacheService : EndpointService
             CachedReturn<OwnUserRelations> fromCache = this.GetOwnUserRelations(source, target, database);
             if (fromCache.WasRefreshed) return; // value is already up-to-date
 
-            // dictionaries are already ensured to exist
             this.Log(LogLevel.Debug, "Lazily setting hearted status by user {0} for user {1} to {2}", source, target, newValue);
             this._cachedOwnUserRelations.First(c => c.SourceKey == source.UserId && c.TargetKey == target.UserId).Content.IsHearted = newValue;
         }
@@ -409,7 +408,6 @@ public class CacheService : EndpointService
             CachedReturn<OwnLevelRelations> fromCache = this.GetOwnLevelRelations(source, target, database);
             if (fromCache.WasRefreshed) return; // value is already up-to-date
 
-            // dictionaries are already ensured to exist
             this.Log(LogLevel.Debug, "Lazily setting hearted status by user {0} for level {1} to {2}", source, target, newValue);
             this._cachedOwnLevelRelations.First(c => c.SourceKey == source.UserId && c.TargetKey == target.LevelId).Content.IsHearted = newValue;
         }
@@ -426,7 +424,6 @@ public class CacheService : EndpointService
             CachedReturn<OwnLevelRelations> fromCache = this.GetOwnLevelRelations(source, target, database);
             if (fromCache.WasRefreshed) return; // value is already up-to-date
 
-            // dictionaries are already ensured to exist
             this.Log(LogLevel.Debug, "Lazily setting queued status by user {0} for level {1} to {2}", source, target, newValue);
             this._cachedOwnLevelRelations.First(c => c.SourceKey == source.UserId && c.TargetKey == target.LevelId).Content.IsQueued = newValue;
         }
@@ -464,7 +461,6 @@ public class CacheService : EndpointService
             CachedReturn<OwnLevelRelations> fromCache = this.GetOwnLevelRelations(source, target, database);
             if (fromCache.WasRefreshed) return; // value is already up-to-date
 
-            // dictionaries are already ensured to exist
             this.Log(LogLevel.Debug, "Lazily setting level rating by user {0} for level {1} to {2}", source, target, newRating);
             this._cachedOwnLevelRelations.First(c => c.SourceKey == source.UserId && c.TargetKey == target.LevelId).Content.LevelRating = newRating;
         }
@@ -481,7 +477,6 @@ public class CacheService : EndpointService
             CachedReturn<OwnLevelRelations> fromCache = this.GetOwnLevelRelations(source, target, database);
             if (fromCache.WasRefreshed) return; // value is already up-to-date
 
-            // dictionaries are already ensured to exist
             this.Log(LogLevel.Debug, "Lazily incrementing total plays by user {0} for level {1} by {2}", source, target, incrementor);
             this._cachedOwnLevelRelations.First(c => c.SourceKey == source.UserId && c.TargetKey == target.LevelId).Content.TotalPlayCount += incrementor;
         }
@@ -498,7 +493,6 @@ public class CacheService : EndpointService
             CachedReturn<OwnLevelRelations> fromCache = this.GetOwnLevelRelations(source, target, database);
             if (fromCache.WasRefreshed) return; // value is already up-to-date
 
-            // dictionaries are already ensured to exist
             this.Log(LogLevel.Debug, "Lazily incrementing total completions by user {0} for level {1} by {2}", source, target, incrementor);
             this._cachedOwnLevelRelations.First(c => c.SourceKey == source.UserId && c.TargetKey == target.LevelId).Content.TotalCompletionCount += incrementor;
         }
@@ -516,7 +510,6 @@ public class CacheService : EndpointService
         {
             foreach (CachedRelationData<ObjectId, int, OwnLevelRelations> relations in this._cachedOwnLevelRelations.Where(c => c.SourceKey == source.UserId))
             {
-                // will be refreshed later anyway; don't want too many DB calls here (e.g. user had 100 levels queued, this method would in that case send 600 DB queries)
                 if (relations.ExpiresAt < now) continue;
 
                 this.Log(LogLevel.Debug, "Resetting total completions by user {0} for level {1}", source, relations.TargetKey);
@@ -536,7 +529,6 @@ public class CacheService : EndpointService
             CachedReturn<OwnLevelRelations> fromCache = this.GetOwnLevelRelations(source, target, database);
             if (fromCache.WasRefreshed) return; // value is already up-to-date
 
-            // dictionaries are already ensured to exist
             this.Log(LogLevel.Debug, "Lazily incrementing total photos by user {0} for level {1} by {2}", source, target, incrementor);
             this._cachedOwnLevelRelations.First(c => c.SourceKey == source.UserId && c.TargetKey == target.LevelId).Content.PhotoCount += incrementor;
         }
@@ -554,7 +546,6 @@ public class CacheService : EndpointService
         {
             foreach (CachedRelationData<ObjectId, int, OwnLevelRelations> relations in this._cachedOwnLevelRelations.Where(c => c.SourceKey == source.UserId))
             {
-                // will be refreshed later anyway; don't want too many DB calls here (e.g. user had 100 levels queued, this method would in that case send 600 DB queries)
                 if (relations.ExpiresAt < now) continue;
 
                 this.Log(LogLevel.Debug, "Resetting total photos by user {0} for level {1}", source, relations.TargetKey);
