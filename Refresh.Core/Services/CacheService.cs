@@ -23,14 +23,16 @@ namespace Refresh.Core.Services;
 public class CacheService : EndpointService
 {
     private readonly TimeProviderService _time;
-    private readonly Dictionary<string, CachedData<GameAsset?>> _cachedAssetData = []; // hash -> data
-    private readonly Dictionary<int, CachedData<List<GameSkillReward>>> _cachedSkillRewards = []; // level ID -> data
-    private readonly Dictionary<int, CachedData<List<Tag>>> _cachedLevelTags = []; // level ID -> data
+    // not using nested Dictionaries anymore because these flat Lists are easier to handle and less likely to throw exceptions (e.g. due to race conditions)
+    // without being too inefficient compared to the former
+    private readonly List<CachedData<string, GameAsset?>> _cachedAssetData = []; // hash -> data
+    private readonly List<CachedData<int, List<GameSkillReward>>> _cachedSkillRewards = []; // level ID -> data
+    private readonly List<CachedData<int, List<Tag>>> _cachedLevelTags = []; // level ID -> data
 
-    private readonly Dictionary<ObjectId, Dictionary<ObjectId, CachedData<OwnUserRelations>>> _cachedOwnUserRelations = []; // source user UUID -> target user UUID -> data
-    private readonly Dictionary<ObjectId, Dictionary<int, CachedData<OwnLevelRelations>>> _cachedOwnLevelRelations = []; // source user UUID -> level ID -> data
+    private List<CachedRelationData<ObjectId, ObjectId, OwnUserRelations>> _cachedOwnUserRelations = []; // source user UUID -> target user UUID -> data
+    private List<CachedRelationData<ObjectId, int, OwnLevelRelations>> _cachedOwnLevelRelations = []; // source user UUID -> target level ID -> data
 
-    private const int LevelCacheDurationSeconds = 60 * 10;
+    private const int LevelCacheDurationSeconds = 60 * 5;
     private const int AssetCacheDurationSeconds = 60 * 60; // GameAssets basically never change for now
 
     // TODO: unit tests for this
@@ -40,9 +42,9 @@ public class CacheService : EndpointService
     }
 
     [Conditional("CACHE_DEBUG")]
-    private void Log(ReadOnlySpan<char> format, params object[] args)
+    private void Log(LogLevel level, ReadOnlySpan<char> format, params object[] args)
     {
-        this.Logger.LogDebug(RefreshContext.CacheService, format, args);
+        this.Logger.Log(level, RefreshContext.CacheService, format, args);
     }
 
     public override void Initialize()
@@ -64,84 +66,41 @@ public class CacheService : EndpointService
 
     private void RemoveExpiredCache()
     {
-        this.Log("Automatically removing expired cache...");
+        this.Log(LogLevel.Debug, "Automatically removing expired cache...");
         DateTimeOffset now = this._time.TimeProvider.Now;
+        int removed = 0;
 
-        foreach(KeyValuePair<string, CachedData<GameAsset?>> cache in this._cachedAssetData)
+        try
         {
-            if (this.HasCacheExpired(cache.Value, now))
-            {
-                this.Log("Automatically removing expired GameAsset taken by hash {0}", cache.Key);
-                this._cachedAssetData.Remove(cache.Key);
-            }
+            removed += this._cachedAssetData.RemoveAll(c => c.ExpiresAt < now);
+            removed += this._cachedSkillRewards.RemoveAll(c => c.ExpiresAt < now);
+            removed += this._cachedLevelTags.RemoveAll(c => c.ExpiresAt < now);
+            removed += this._cachedOwnUserRelations.RemoveAll(c => c.ExpiresAt < now);
+            removed += this._cachedOwnLevelRelations.RemoveAll(c => c.ExpiresAt < now);
+        }
+        catch (Exception ex)
+        {
+            this.Logger.LogError(RefreshContext.CacheService, $"Exception when RemoveExpiredCache {ex.Message} {ex.Source} {ex.StackTrace}");
         }
 
-        foreach(KeyValuePair<int, CachedData<List<GameSkillReward>>> cache in this._cachedSkillRewards)
-        {
-            if (this.HasCacheExpired(cache.Value, now))
-            {
-                this.Log("Automatically removing expired GameSkillReward list taken from level {0}", cache.Key);
-                this._cachedSkillRewards.Remove(cache.Key);
-            }
-        }
-
-        foreach(KeyValuePair<int, CachedData<List<Tag>>> cache in this._cachedLevelTags)
-        {
-            if (this.HasCacheExpired(cache.Value, now))
-            {
-                this.Log("Automatically removing expired Tag list taken from level {0}", cache.Key);
-                this._cachedLevelTags.Remove(cache.Key);
-            }
-        }
-
-        foreach(KeyValuePair<ObjectId, Dictionary<ObjectId, CachedData<OwnUserRelations>>> cache in this._cachedOwnUserRelations)
-        {
-            foreach(KeyValuePair<ObjectId, CachedData<OwnUserRelations>> innerCache in cache.Value)
-            {
-                if (this.HasCacheExpired(innerCache.Value, now)) 
-                {
-                    this.Log("Automatically removing expired OwnUserRelations by user {0} for user {1}", cache.Key, innerCache.Key);
-                    cache.Value.Remove(innerCache.Key);
-                }
-            }
-
-            if (cache.Value.Count <= 0)
-            {
-                this.Log("Automatically removing empty OwnUserRelations dictionary by user {0}", cache.Key);
-                this._cachedOwnUserRelations.Remove(cache.Key);
-            }
-        }
-
-        foreach(KeyValuePair<ObjectId, Dictionary<int, CachedData<OwnLevelRelations>>> cache in this._cachedOwnLevelRelations)
-        {
-            foreach(KeyValuePair<int, CachedData<OwnLevelRelations>> innerCache in cache.Value)
-            {
-                if (this.HasCacheExpired(innerCache.Value, now)) 
-                {
-                    this.Log("Automatically removing expired OwnLevelRelations by user {0} for level {1}", cache.Key, innerCache.Key);
-                    cache.Value.Remove(innerCache.Key);
-                }
-            }
-
-            if (cache.Value.Count <= 0)
-            {
-                this.Log("Automatically removing empty OwnLevelRelations dictionary by user {0}", cache.Key);
-                this._cachedOwnLevelRelations.Remove(cache.Key);
-            }
-        }
+        this.Log(LogLevel.Debug, $"Automatically removed {removed} items");
     }
-
-    private bool HasCacheExpired<TData>(CachedData<TData>? cached, DateTimeOffset? now = null)
-        => cached == null || cached.ExpiresAt < (now ?? this._time.TimeProvider.Now);
 
     #region Assets
     public void CacheAsset(string hash, GameAsset? asset)
     {
         if (hash.StartsWith('g') || hash.IsBlankHash()) return;
 
-        DateTimeOffset expiresAt = this._time.TimeProvider.Now.AddSeconds(AssetCacheDurationSeconds);
-        this.Log("Refreshing GameAsset {0} cache, it will expire at {1}", hash, expiresAt);
-        this._cachedAssetData[hash] = new(asset, expiresAt);
+        try
+        {
+            DateTimeOffset expiresAt = this._time.TimeProvider.Now.AddSeconds(AssetCacheDurationSeconds);
+            this.Log(LogLevel.Debug, "Caching GameAsset {0}, it will expire at {1}", hash, expiresAt);
+            this._cachedAssetData.Add(new(hash, asset, expiresAt));
+        }
+        catch (Exception ex)
+        {
+            this.Logger.LogError(RefreshContext.CacheService, $"Exception when CacheAsset({hash}) {ex.Message} {ex.Source} {ex.StackTrace}");
+        }
     }
 
     // currently not necessary to return these with CachedReturn...
@@ -149,63 +108,100 @@ public class CacheService : EndpointService
     {
         if (hash.StartsWith('g') || hash.IsBlankHash()) return null;
 
-        this.Log("Looking up GameAsset {0} in cache", hash);
-        CachedData<GameAsset?>? fromCache = this._cachedAssetData.GetValueOrDefault(hash);
-
-        if (this.HasCacheExpired(fromCache))
+        try
         {
-            this.Log("Looking up GameAsset {0} in DB", hash);
-            GameAsset? refreshed = database.GetAssetFromHash(hash);
+            this.Log(LogLevel.Debug, "Looking up GameAsset {0} in cache", hash);
+            CachedData<string, GameAsset?>? fromCache = this._cachedAssetData.FirstOrDefault(c => c.Key == hash);
 
-            // Cache anyway, even if asset was not found in DB, for the same reason we're caching everything else
-            // If the asset ever happens to be added to DB, it will be added to cache aswell by whatever is handling the upload/import anyway
-            this.CacheAsset(hash, refreshed);
-            return refreshed;
+            if (fromCache == null)
+            {
+                this.Log(LogLevel.Debug, "Looking up GameAsset {0} in DB", hash);
+                GameAsset? refreshed = database.GetAssetFromHash(hash);
+
+                // Cache anyway, even if asset was not found in DB, for the same reason we're caching everything else
+                // If the asset ever happens to be added to DB, it will be added to cache aswell by whatever is handling the upload/import anyway
+                this.CacheAsset(hash, refreshed);
+                return refreshed;
+            }
+
+            this.Log(LogLevel.Debug, "Found asset info {0} in cache, it will expire at {1}", hash, fromCache!.ExpiresAt);
+            return fromCache!.Content;
         }
-
-        this.Log("Found unexpired GameAsset {0} in cache, it will expire at {1}", hash, fromCache!.ExpiresAt);
-        return fromCache!.Content;
+        catch (Exception ex)
+        {
+            this.Logger.LogError(RefreshContext.CacheService, $"Exception when GetAssetInfo({hash}) {ex.Message} {ex.Source} {ex.StackTrace}");
+            return database.GetAssetFromHash(hash);
+        }
     }
 
     #endregion
 
     public void RemoveLevelData(GameLevel level)
     {
-        this.RemoveSkillRewards(level);
-        this.RemoveTags(level);
+        try
+        {
+            this.RemoveSkillRewards(level);
+            this.RemoveTags(level);
+        }
+        catch (Exception ex)
+        {
+            this.Log(LogLevel.Error, $"Exception when RemoveLevelData({level}) {ex.Message} {ex.Source} {ex.StackTrace}");
+        }
     }
 
     #region Skill Rewards
 
     public void CacheSkillRewards(GameLevel level, List<GameSkillReward> rewards)
     {
-        DateTimeOffset expiresAt = this._time.TimeProvider.Now.AddSeconds(LevelCacheDurationSeconds);
-        this.Log("Refreshing GameSkillRewards cache for level {0}, they will expire at {1}", level, expiresAt);
-        this._cachedSkillRewards[level.LevelId] = new(rewards, expiresAt);
+        try
+        {
+            DateTimeOffset expiresAt = this._time.TimeProvider.Now.AddSeconds(LevelCacheDurationSeconds);
+            this.Log(LogLevel.Debug, "Caching GameSkillRewards for level {0}, they will expire at {1}", level, expiresAt);
+            this._cachedSkillRewards.Add(new(level.LevelId, rewards, expiresAt));
+        }
+        catch (Exception ex)
+        {
+            this.Logger.LogError(RefreshContext.CacheService, $"Exception when CacheSkillRewards({level}) {ex.Message} {ex.Source} {ex.StackTrace}");
+        }
     }
 
     public void RemoveSkillRewards(GameLevel level)
     {
-        this.Log("Removing GameSkillRewards cache for level {0}", level);
-        this._cachedSkillRewards.Remove(level.LevelId);
+        try
+        {
+            this.Log(LogLevel.Debug, "Removing GameSkillRewards cache for level {0}", level);
+            this._cachedSkillRewards.RemoveAll(c => c.Key == level.LevelId);
+        }
+        catch (Exception ex)
+        {
+            this.Logger.LogError(RefreshContext.CacheService, $"Exception when RemoveSkillRewards({level}) {ex.Message} {ex.Source} {ex.StackTrace}");
+        }
     }
 
     public List<GameSkillReward> GetSkillRewards(GameLevel level, GameDatabaseContext database)
     {
-        this.Log("Looking up GameSkillRewards for level {0} in cache", level);
-        CachedData<List<GameSkillReward>>? fromCache = this._cachedSkillRewards.GetValueOrDefault(level.LevelId);
-
-        if (this.HasCacheExpired(fromCache))
+        try
         {
-            this.Log("Looking up GameSkillRewards for level {0} in DB", level);
-            List<GameSkillReward> refreshed = database.GetSkillRewardsForLevel(level).ToList();
+            this.Log(LogLevel.Debug, "Looking up GameSkillRewards for level {0} in cache", level);
+            CachedData<int, List<GameSkillReward>>? fromCache = this._cachedSkillRewards.FirstOrDefault(c => c.Key == level.LevelId);
 
-            this.CacheSkillRewards(level, refreshed);
-            return refreshed;
+            if (fromCache == null)
+            {
+                this.Log(LogLevel.Debug, "Looking up GameSkillRewards for level {0} in DB", level);
+                List<GameSkillReward> refreshed = database.GetSkillRewardsForLevel(level).ToList();
+
+                this.CacheSkillRewards(level, refreshed);
+                return refreshed;
+            }
+
+            this.Log(LogLevel.Debug, "Found GameSkillRewards for level {0} in cache, they will expire at {1}", level, fromCache!.ExpiresAt);
+            return fromCache!.Content;
         }
-
-        this.Log("Found unexpired GameSkillRewards for level {0} in cache, they will expire at {1}", level, fromCache!.ExpiresAt);
-        return fromCache!.Content;
+        catch (Exception ex)
+        {
+            this.Logger.LogError(RefreshContext.CacheService, $"Exception when GetSkillRewards({level}) {ex.Message} {ex.Source} {ex.StackTrace}");
+            return database.GetSkillRewardsForLevel(level).ToList();
+        }
     }
 
     #endregion
@@ -213,35 +209,57 @@ public class CacheService : EndpointService
 
     public void CacheTags(GameLevel level, List<Tag> tags)
     {
-        DateTimeOffset expiresAt = this._time.TimeProvider.Now.AddSeconds(LevelCacheDurationSeconds);
-        this.Log("Refreshing Tags cache for level {0}, they will expire at {1}", level, expiresAt);
-        this._cachedLevelTags[level.LevelId] = new(tags, expiresAt);
+        try
+        {
+            DateTimeOffset expiresAt = this._time.TimeProvider.Now.AddSeconds(LevelCacheDurationSeconds);
+            this.Log(LogLevel.Debug, "Caching Tags for level {0}, they will expire at {1}", level, expiresAt);
+            this._cachedLevelTags.Add(new(level.LevelId, tags, expiresAt));
+        }
+        catch (Exception ex)
+        {
+            this.Logger.LogError(RefreshContext.CacheService, $"Exception when CacheTags({level}) {ex.Message} {ex.Source} {ex.StackTrace}");
+        }
     }
 
     // Make service re-get tags the next time they're requested, incase a tag is added or removed.
     // Can't just lazily add or remove tag to/from the cache because they're grouped and sorted by frequency (data we don't have here).
     public void RemoveTags(GameLevel level)
     {
-        this.Log("Removing Tags cache for level {0}", level);
-        this._cachedLevelTags.Remove(level.LevelId);
+        try
+        {
+            this.Log(LogLevel.Debug, "Removing Tags cache for level {0}", level);
+            this._cachedLevelTags.RemoveAll(c => c.Key == level.LevelId);
+        }
+        catch (Exception ex)
+        {
+            this.Logger.LogError(RefreshContext.CacheService, $"Exception when RemoveTags({level}) {ex.Message} {ex.Source} {ex.StackTrace}");
+        }
     }
 
     public List<Tag> GetTags(GameLevel level, GameDatabaseContext database)
     {
-        this.Log("Looking up Tags for level {0} in cache", level);
-        CachedData<List<Tag>>? fromCache = this._cachedLevelTags.GetValueOrDefault(level.LevelId);
-
-        if (this.HasCacheExpired(fromCache))
+        try
         {
-            this.Log("Looking up Tags for level {0} in DB", level);
-            List<Tag> refreshed = database.GetTagsForLevel(level).ToList();
+            this.Log(LogLevel.Debug, "Looking up Tags for level {0} in cache", level);
+            CachedData<int, List<Tag>>? fromCache = this._cachedLevelTags.FirstOrDefault(c => c.Key == level.LevelId);
 
-            this.CacheTags(level, refreshed);
-            return refreshed;
+            if (fromCache == null)
+            {
+                this.Log(LogLevel.Debug, "Looking up Tags for level {0} in DB", level);
+                List<Tag> refreshed = database.GetTagsForLevel(level).ToList();
+
+                this.CacheTags(level, refreshed);
+                return refreshed;
+            }
+
+            this.Log(LogLevel.Debug, "Found Tags for level {0} in cache, they will expire at {1}", level, fromCache!.ExpiresAt);
+            return fromCache!.Content;
         }
-
-        this.Log("Found unexpired GameSkillRewards for level {0} in cache, they will expire at {1}", level, fromCache!.ExpiresAt);
-        return fromCache!.Content;
+        catch (Exception ex)
+        {
+            this.Logger.LogError(RefreshContext.CacheService, $"Exception when GetTags({level}) {ex.Message} {ex.Source} {ex.StackTrace}");
+            return database.GetTagsForLevel(level).ToList();
+        }
     }
 
     #endregion
@@ -250,49 +268,81 @@ public class CacheService : EndpointService
 
     public void CacheOwnUserRelations(GameUser source, GameUser target, OwnUserRelations newData)
     {
-        DateTimeOffset expiresAt = this._time.TimeProvider.Now.AddSeconds(LevelCacheDurationSeconds);
-        if (!this._cachedOwnUserRelations.ContainsKey(source.UserId)) 
-            this._cachedOwnUserRelations[source.UserId] = [];
+        try
+        {
+            DateTimeOffset expiresAt = this._time.TimeProvider.Now.AddSeconds(LevelCacheDurationSeconds);
 
-        this.Log("Refreshing OwnUserRelations cache by user {0} for user {1}, they will expire at {2}", source, target, expiresAt);
-        this._cachedOwnUserRelations[source.UserId][target.UserId] = new(newData, expiresAt);
+            this.Log(LogLevel.Debug, "Caching OwnUserRelations by user {0} for user {1}, they will expire at {2}", source, target, expiresAt);
+            this._cachedOwnUserRelations.Add(new(source.UserId, target.UserId, newData, expiresAt));
+        }
+        catch (Exception ex)
+        {
+            this.Logger.LogError(RefreshContext.CacheService, $"Exception when CacheOwnUserRelations({source}, {target}) {ex.Message} {ex.Source} {ex.StackTrace}");
+        }
     }
 
     public void RemoveOwnUserRelations(GameUser source, GameUser target)
     {
-        this.Log("Resetting OwnUserRelations by user {0}", source);
-        this._cachedOwnUserRelations.GetValueOrDefault(source.UserId)?.Remove(target.UserId);
+        try
+        {
+            this.Log(LogLevel.Debug, "Resetting OwnUserRelations by user {0}", source);
+            this._cachedOwnUserRelations.RemoveAll(c => c.SourceKey == source.UserId && c.TargetKey == target.UserId);
+        }
+        catch (Exception ex)
+        {
+            this.Logger.LogError(RefreshContext.CacheService, $"Exception when RemoveOwnUserRelations({source}, {target}) {ex.Message} {ex.Source} {ex.StackTrace}");
+        }
+    }
+
+    private OwnUserRelations GetOwnUserRelationsFromDb(GameUser source, GameUser target, GameDatabaseContext database)
+    {
+        return new()
+        {
+            IsHearted = database.IsUserFavouritedByUser(target, source),
+        };
     }
 
     public CachedReturn<OwnUserRelations> GetOwnUserRelations(GameUser source, GameUser target, GameDatabaseContext database)
     {
-        this.Log("Looking up OwnUserRelations by user {0} for user {0} in cache", source, target);
-        CachedData<OwnUserRelations>? fromCache = this._cachedOwnUserRelations.GetValueOrDefault(source.UserId)?.GetValueOrDefault(target.UserId);
-
-        if (this.HasCacheExpired(fromCache))
+        try
         {
-            this.Log("Looking up OwnUserRelations by user {0} for user {1} in DB", source, target);
-            OwnUserRelations refreshed = new()
+            this.Log(LogLevel.Debug, "Looking up OwnUserRelations by user {0} for user {0} in cache", source, target);
+            CachedRelationData<ObjectId, ObjectId, OwnUserRelations>? fromCache = this._cachedOwnUserRelations.FirstOrDefault(c => c.SourceKey == source.UserId && c.TargetKey == target.UserId);
+
+            if (fromCache == null)
             {
-                IsHearted = database.IsUserFavouritedByUser(target, source),
-            };
+                this.Log(LogLevel.Debug, "Looking up OwnUserRelations by user {0} for user {1} in DB", source, target);
+                OwnUserRelations refreshed = this.GetOwnUserRelationsFromDb(source, target, database);
 
-            this.CacheOwnUserRelations(source, target, refreshed);
-            return new(refreshed, true);
+                this.CacheOwnUserRelations(source, target, refreshed);
+                return new(refreshed, true);
+            }
+
+            this.Log(LogLevel.Debug, "Found OwnUserRelations by user {0} for user {1} in cache, they will expire at {2}", source, target, fromCache!.ExpiresAt);
+            return new(fromCache!.Content, false);
         }
-
-        this.Log("Found unexpired OwnUserRelations by user {0} for user {1} in cache, they will expire at {2}", source, target, fromCache!.ExpiresAt);
-        return new(fromCache!.Content, false);
+        catch (Exception ex)
+        {
+            this.Logger.LogError(RefreshContext.CacheService, $"Exception when GetOwnUserRelations({source}, {target}) {ex.Message} {ex.Source} {ex.StackTrace}");
+            return new(this.GetOwnUserRelationsFromDb(source, target, database), true);
+        }
     }
 
     public void UpdateUserHeartedStatusByUser(GameUser source, GameUser target, bool newValue, GameDatabaseContext database)
     {
-        CachedReturn<OwnUserRelations> fromCache = this.GetOwnUserRelations(source, target, database);
-        if (fromCache.WasRefreshed) return; // value is already up-to-date
+        try
+        {
+            CachedReturn<OwnUserRelations> fromCache = this.GetOwnUserRelations(source, target, database);
+            if (fromCache.WasRefreshed) return; // value is already up-to-date
 
-        // dictionaries are already ensured to exist
-        this.Log("Lazily setting hearted status by user {0} for user {1} to {2}", source, target, newValue);
-        this._cachedOwnUserRelations[source.UserId][target.UserId].Content.IsHearted = newValue;
+            // dictionaries are already ensured to exist
+            this.Log(LogLevel.Debug, "Lazily setting hearted status by user {0} for user {1} to {2}", source, target, newValue);
+            this._cachedOwnUserRelations.First(c => c.SourceKey == source.UserId && c.TargetKey == target.UserId).Content.IsHearted = newValue;
+        }
+        catch (Exception ex)
+        {
+            this.Logger.LogError(RefreshContext.CacheService, $"Exception when UpdateUserHeartedStatusByUser({source}, {target}, {newValue}) {ex.Message} {ex.Source} {ex.StackTrace}");
+        }
     }
 
     #endregion
@@ -300,141 +350,220 @@ public class CacheService : EndpointService
 
     public void CacheOwnLevelRelations(GameUser source, GameLevel target, OwnLevelRelations newData)
     {
-        DateTimeOffset expiresAt = this._time.TimeProvider.Now.AddSeconds(LevelCacheDurationSeconds);
-        this.Log("Refreshing OwnLevelRelations cache by user {0} for level {1}, they will expire at {2}", source, target, expiresAt);
+        try
+        {
+            DateTimeOffset expiresAt = this._time.TimeProvider.Now.AddSeconds(LevelCacheDurationSeconds);
+            this.Log(LogLevel.Debug, "Caching OwnLevelRelations by user {0} for level {1}, they will expire at {2}", source, target, expiresAt);
 
-        if (!this._cachedOwnLevelRelations.ContainsKey(source.UserId)) 
-            this._cachedOwnLevelRelations[source.UserId] = [];
+            this._cachedOwnLevelRelations.Add(new(source.UserId, target.LevelId, newData, expiresAt));
+        }
+        catch (Exception ex)
+        {
+            this.Logger.LogError(RefreshContext.CacheService, $"Exception when CacheOwnLevelRelations({source}, {target}) {ex.Message} {ex.Source} {ex.StackTrace}");
+        }
+    }
 
-        this._cachedOwnLevelRelations[source.UserId][target.LevelId] = new(newData, expiresAt);
+    private OwnLevelRelations GetOwnLevelRelationsFromDb(GameUser source, GameLevel target, GameDatabaseContext database)
+    {
+        return new()
+        {
+            IsHearted = database.IsLevelFavouritedByUser(target, source),
+            IsQueued = database.IsLevelQueuedByUser(target, source),
+            LevelRating = (int?)database.GetRatingByUser(target, source) ?? 0,
+            TotalPlayCount = database.GetTotalPlaysForLevelByUser(target, source),
+            TotalCompletionCount = database.GetTotalCompletionsForLevelByUser(target, source),
+            PhotoCount = database.GetTotalPhotosInLevelByUser(target, source),
+        };
     }
 
     public CachedReturn<OwnLevelRelations> GetOwnLevelRelations(GameUser source, GameLevel target, GameDatabaseContext database)
     {
-        this.Log("Looking up OwnLevelRelations by user {0} for level {0} in cache", source, target);
-        CachedData<OwnLevelRelations>? fromCache = this._cachedOwnLevelRelations.GetValueOrDefault(source.UserId)?.GetValueOrDefault(target.LevelId);
-
-        if (this.HasCacheExpired(fromCache))
+        this.Log(LogLevel.Debug, "Looking up OwnLevelRelations by user {0} for level {0} in cache", source, target);
+        try
         {
-            this.Log("Looking up OwnLevelRelations by user {0} for level {1} in DB", source, target);
-            OwnLevelRelations refreshed = new()
+            CachedRelationData<ObjectId, int, OwnLevelRelations>? fromCache = this._cachedOwnLevelRelations.FirstOrDefault(c => c.SourceKey == source.UserId && c.TargetKey == target.LevelId);
+
+            if (fromCache == null)
             {
-                IsHearted = database.IsLevelFavouritedByUser(target, source),
-                IsQueued = database.IsLevelQueuedByUser(target, source),
-                LevelRating = (int?)database.GetRatingByUser(target, source) ?? 0,
-                TotalPlayCount = database.GetTotalPlaysForLevelByUser(target, source),
-                TotalCompletionCount = database.GetTotalCompletionsForLevelByUser(target, source),
-                PhotoCount = database.GetTotalPhotosInLevelByUser(target, source),
-            };
+                this.Log(LogLevel.Debug, "Looking up OwnLevelRelations by user {0} for level {1} in DB", source, target);
+                OwnLevelRelations refreshed = this.GetOwnLevelRelationsFromDb(source, target, database);
 
-            this.CacheOwnLevelRelations(source, target, refreshed);
-            return new(refreshed, true);
+                this.CacheOwnLevelRelations(source, target, refreshed);
+                return new(refreshed, true);
+            }
+
+            this.Log(LogLevel.Debug, "Found OwnLevelRelations by user {0} for level {1} in cache, they will expire at {2}", source, target, fromCache!.ExpiresAt);
+            return new(fromCache!.Content, false);
         }
-
-        this.Log("Found unexpired OwnLevelRelations by user {0} for level {1} in cache, they will expire at {2}", source, target, fromCache!.ExpiresAt);
-        return new(fromCache!.Content, false);
+        catch (Exception ex)
+        {
+            this.Logger.LogError(RefreshContext.CacheService, $"Exception when GetOwnLevelRelations({source}, {target}) {ex.Message} {ex.Source} {ex.StackTrace}");
+            return new(this.GetOwnLevelRelationsFromDb(source, target, database), true);
+        }
     }
 
     public void UpdateLevelHeartedStatusByUser(GameUser source, GameLevel target, bool newValue, GameDatabaseContext database)
     {
-        CachedReturn<OwnLevelRelations> fromCache = this.GetOwnLevelRelations(source, target, database);
-        if (fromCache.WasRefreshed) return; // value is already up-to-date
+        try
+        {
+            CachedReturn<OwnLevelRelations> fromCache = this.GetOwnLevelRelations(source, target, database);
+            if (fromCache.WasRefreshed) return; // value is already up-to-date
 
-        // dictionaries are already ensured to exist
-        this.Log("Lazily setting hearted status by user {0} for level {1} to {2}", source, target, newValue);
-        this._cachedOwnLevelRelations[source.UserId][target.LevelId].Content.IsHearted = newValue;
+            // dictionaries are already ensured to exist
+            this.Log(LogLevel.Debug, "Lazily setting hearted status by user {0} for level {1} to {2}", source, target, newValue);
+            this._cachedOwnLevelRelations.First(c => c.SourceKey == source.UserId && c.TargetKey == target.LevelId).Content.IsHearted = newValue;
+        }
+        catch (Exception ex)
+        {
+            this.Logger.LogError(RefreshContext.CacheService, $"Exception when UpdateLevelHeartedStatusByUser({source}, {target}, {newValue}) {ex.Message} {ex.Source} {ex.StackTrace}");
+        }
     }
 
     public void UpdateLevelQueuedStatusByUser(GameUser source, GameLevel target, bool newValue, GameDatabaseContext database)
     {
-        CachedReturn<OwnLevelRelations> fromCache = this.GetOwnLevelRelations(source, target, database);
-        if (fromCache.WasRefreshed) return; // value is already up-to-date
+        try
+        {
+            CachedReturn<OwnLevelRelations> fromCache = this.GetOwnLevelRelations(source, target, database);
+            if (fromCache.WasRefreshed) return; // value is already up-to-date
 
-        // dictionaries are already ensured to exist
-        this.Log("Lazily setting queued status by user {0} for level {1} to {2}", source, target, newValue);
-        this._cachedOwnLevelRelations[source.UserId][target.LevelId].Content.IsQueued = newValue;
+            // dictionaries are already ensured to exist
+            this.Log(LogLevel.Debug, "Lazily setting queued status by user {0} for level {1} to {2}", source, target, newValue);
+            this._cachedOwnLevelRelations.First(c => c.SourceKey == source.UserId && c.TargetKey == target.LevelId).Content.IsQueued = newValue;
+        }
+        catch (Exception ex)
+        {
+            this.Logger.LogError(RefreshContext.CacheService, $"Exception when UpdateLevelQueuedStatusByUser({source}, {target}, {newValue}) {ex.Message} {ex.Source} {ex.StackTrace}");
+        }
     }
 
     public void ClearQueueByUser(GameUser source)
     {
-        this.Log("Resetting queued stati by user {0}", source);
-
-        foreach (KeyValuePair<int, CachedData<OwnLevelRelations>> relations in this._cachedOwnLevelRelations.GetValueOrDefault(source.UserId)?.ToArray() ?? [])
+        this.Log(LogLevel.Debug, "Resetting queued stati by user {0}", source);
+        DateTimeOffset now = this._time.TimeProvider.Now;
+        try
         {
-            // will be refreshed later anyway; don't want too many DB calls here (e.g. user had 100 levels queued, this method would in that case send 600 DB queries)
-            if (this.HasCacheExpired(relations.Value)) continue;
+            foreach (CachedRelationData<ObjectId, int, OwnLevelRelations> relations in this._cachedOwnLevelRelations.Where(c => c.SourceKey == source.UserId))
+            {
+                // will be refreshed later anyway; don't want too many DB calls here (e.g. user had 100 levels queued, this method would in that case send 600 DB queries)
+                if (relations.ExpiresAt < now) continue;
 
-            this.Log("Resetting queued status by user {0} for level {1}", source, relations.Key);
-            relations.Value.Content.IsQueued = false;
-            this._cachedOwnLevelRelations[source.UserId][relations.Key] = relations.Value;
+                this.Log(LogLevel.Debug, "Resetting queued status by user {0} for level {1}", source, relations.TargetKey);
+                relations.Content.IsQueued = false;
+            }
+        }
+        catch (Exception ex)
+        {
+            this.Logger.LogError(RefreshContext.CacheService, $"Exception when ClearQueueByUser({source}) {ex.Message} {ex.Source} {ex.StackTrace}");
         }
     }
 
     public void UpdateLevelRatingByUser(GameUser source, GameLevel target, int newRating, GameDatabaseContext database)
     {
-        CachedReturn<OwnLevelRelations> fromCache = this.GetOwnLevelRelations(source, target, database);
-        if (fromCache.WasRefreshed) return; // value is already up-to-date
+        try
+        {
+            CachedReturn<OwnLevelRelations> fromCache = this.GetOwnLevelRelations(source, target, database);
+            if (fromCache.WasRefreshed) return; // value is already up-to-date
 
-        // dictionaries are already ensured to exist
-        this.Log("Lazily setting level rating by user {0} for level {1} to {2}", source, target, newRating);
-        this._cachedOwnLevelRelations[source.UserId][target.LevelId].Content.LevelRating = newRating;
+            // dictionaries are already ensured to exist
+            this.Log(LogLevel.Debug, "Lazily setting level rating by user {0} for level {1} to {2}", source, target, newRating);
+            this._cachedOwnLevelRelations.First(c => c.SourceKey == source.UserId && c.TargetKey == target.LevelId).Content.LevelRating = newRating;
+        }
+        catch (Exception ex)
+        {
+            this.Logger.LogError(RefreshContext.CacheService, $"Exception when UpdateLevelRatingByUser({source}, {target}, {newRating}) {ex.Message} {ex.Source} {ex.StackTrace}");
+        }
     }
 
     public void IncrementLevelTotalPlaysByUser(GameUser source, GameLevel target, int incrementor, GameDatabaseContext database)
     {
-        CachedReturn<OwnLevelRelations> fromCache = this.GetOwnLevelRelations(source, target, database);
-        if (fromCache.WasRefreshed) return; // value is already up-to-date
+        try
+        {
+            CachedReturn<OwnLevelRelations> fromCache = this.GetOwnLevelRelations(source, target, database);
+            if (fromCache.WasRefreshed) return; // value is already up-to-date
 
-        // dictionaries are already ensured to exist
-        this.Log("Lazily incrementing total plays by user {0} for level {1} to {2}", source, target, incrementor);
-        this._cachedOwnLevelRelations[source.UserId][target.LevelId].Content.TotalPlayCount += incrementor;
+            // dictionaries are already ensured to exist
+            this.Log(LogLevel.Debug, "Lazily incrementing total plays by user {0} for level {1} by {2}", source, target, incrementor);
+            this._cachedOwnLevelRelations.First(c => c.SourceKey == source.UserId && c.TargetKey == target.LevelId).Content.TotalPlayCount += incrementor;
+        }
+        catch (Exception ex)
+        {
+            this.Logger.LogError(RefreshContext.CacheService, $"Exception when IncrementLevelTotalPlaysByUser({source}, {target}, {incrementor}) {ex.Message} {ex.Source} {ex.StackTrace}");
+        }
     }
 
     public void IncrementLevelTotalCompletionsByUser(GameUser source, GameLevel target, int incrementor, GameDatabaseContext database)
     {
-        CachedReturn<OwnLevelRelations> fromCache = this.GetOwnLevelRelations(source, target, database);
-        if (fromCache.WasRefreshed) return; // value is already up-to-date
+        try
+        {
+            CachedReturn<OwnLevelRelations> fromCache = this.GetOwnLevelRelations(source, target, database);
+            if (fromCache.WasRefreshed) return; // value is already up-to-date
 
-        // dictionaries are already ensured to exist
-        this.Log("Lazily incrementing total completions by user {0} for level {1} to {2}", source, target, incrementor);
-        this._cachedOwnLevelRelations[source.UserId][target.LevelId].Content.TotalCompletionCount += incrementor;
+            // dictionaries are already ensured to exist
+            this.Log(LogLevel.Debug, "Lazily incrementing total completions by user {0} for level {1} by {2}", source, target, incrementor);
+            this._cachedOwnLevelRelations.First(c => c.SourceKey == source.UserId && c.TargetKey == target.LevelId).Content.TotalCompletionCount += incrementor;
+        }
+        catch (Exception ex)
+        {
+            this.Logger.LogError(RefreshContext.CacheService, $"Exception when IncrementLevelTotalCompletionsByUser({source}, {target}, {incrementor}) {ex.Message} {ex.Source} {ex.StackTrace}");
+        }
     }
 
     public void ResetLevelCompletionCountByUser(GameUser source)
     {
-        this.Log("Resetting total completions by user {0}", source);
-
-        foreach (KeyValuePair<int, CachedData<OwnLevelRelations>> relations in this._cachedOwnLevelRelations.GetValueOrDefault(source.UserId)?.ToArray() ?? [])
+        this.Log(LogLevel.Debug, "Resetting total completions by user {0}", source);
+        DateTimeOffset now = this._time.TimeProvider.Now;
+        try
         {
-            if (this.HasCacheExpired(relations.Value)) continue;
+            foreach (CachedRelationData<ObjectId, int, OwnLevelRelations> relations in this._cachedOwnLevelRelations.Where(c => c.SourceKey == source.UserId))
+            {
+                // will be refreshed later anyway; don't want too many DB calls here (e.g. user had 100 levels queued, this method would in that case send 600 DB queries)
+                if (relations.ExpiresAt < now) continue;
 
-            this.Log("Resetting total completions by user {0} for level {1}", source, relations.Key);
-            relations.Value.Content.TotalCompletionCount = 0;
-            this._cachedOwnLevelRelations[source.UserId][relations.Key] = relations.Value;
+                this.Log(LogLevel.Debug, "Resetting total completions by user {0} for level {1}", source, relations.TargetKey);
+                relations.Content.TotalCompletionCount = 0;
+            }
+        }
+        catch (Exception ex)
+        {
+            this.Logger.LogError(RefreshContext.CacheService, $"Exception when ResetLevelCompletionCountByUser({source}) {ex.Message} {ex.Source} {ex.StackTrace}");
         }
     }
 
     public void IncrementLevelPhotosByUser(GameUser source, GameLevel target, int incrementor, GameDatabaseContext database)
     {
-        CachedReturn<OwnLevelRelations> fromCache = this.GetOwnLevelRelations(source, target, database);
-        if (fromCache.WasRefreshed) return; // value is already up-to-date
+        try
+        {
+            CachedReturn<OwnLevelRelations> fromCache = this.GetOwnLevelRelations(source, target, database);
+            if (fromCache.WasRefreshed) return; // value is already up-to-date
 
-        // dictionaries are already ensured to exist
-        this.Log("Lazily incrementing total photos by user {0} for level {1} to {2}", source, target, incrementor);
-        this._cachedOwnLevelRelations[source.UserId][target.LevelId].Content.PhotoCount += incrementor;
+            // dictionaries are already ensured to exist
+            this.Log(LogLevel.Debug, "Lazily incrementing total photos by user {0} for level {1} by {2}", source, target, incrementor);
+            this._cachedOwnLevelRelations.First(c => c.SourceKey == source.UserId && c.TargetKey == target.LevelId).Content.PhotoCount += incrementor;
+        }
+        catch (Exception ex)
+        {
+            this.Logger.LogError(RefreshContext.CacheService, $"Exception when IncrementLevelPhotosByUser({source}, {target}, {incrementor}) {ex.Message} {ex.Source} {ex.StackTrace}");
+        }
     }
 
     public void ResetLevelPhotoCountsByUser(GameUser source)
     {
-        this.Log("Resetting total photos by user {0}", source);
-
-        foreach (KeyValuePair<int, CachedData<OwnLevelRelations>> relations in this._cachedOwnLevelRelations.GetValueOrDefault(source.UserId)?.ToArray() ?? [])
+        this.Log(LogLevel.Debug, "Resetting total photos by user {0}", source);
+        DateTimeOffset now = this._time.TimeProvider.Now;
+        try
         {
-            if (this.HasCacheExpired(relations.Value)) continue;
+            foreach (CachedRelationData<ObjectId, int, OwnLevelRelations> relations in this._cachedOwnLevelRelations.Where(c => c.SourceKey == source.UserId))
+            {
+                // will be refreshed later anyway; don't want too many DB calls here (e.g. user had 100 levels queued, this method would in that case send 600 DB queries)
+                if (relations.ExpiresAt < now) continue;
 
-            this.Log("Resetting total photos by user {0} for level {1}", source, relations.Key);
-            relations.Value.Content.PhotoCount = 0;
-            this._cachedOwnLevelRelations[source.UserId][relations.Key] = relations.Value;
+                this.Log(LogLevel.Debug, "Resetting total photos by user {0} for level {1}", source, relations.TargetKey);
+                relations.Content.PhotoCount = 0;
+            }
+        }
+        catch (Exception ex)
+        {
+            this.Logger.LogError(RefreshContext.CacheService, $"Exception when ResetLevelPhotoCountsByUser({source}) {ex.Message} {ex.Source} {ex.StackTrace}");
         }
     }
 
