@@ -269,6 +269,96 @@ public class AdminUserEditApiTests : GameServerTest
     }
 
     [Test]
+    public void CannotRenameToOtherUsersPreviousName()
+    {
+        using TestContext context = this.GetServer();
+
+        GameUser mod = context.CreateUser(null, GameUserRole.Moderator);
+        GameUser owner = context.CreateUser("original", GameUserRole.User);
+        GameUser target = context.CreateUser("stinker", GameUserRole.User);
+
+        context.Database.RenameUser(owner, "original_2");
+        GameUser? modifiedOwner = context.Database.GetUserByObjectId(owner.UserId);
+        Assert.That(modifiedOwner, Is.Not.Null);
+        Assert.That(modifiedOwner!.Username, Is.EqualTo("original_2"));
+
+        HttpClient client = context.GetAuthenticatedClient(TokenType.Api, mod);
+        ApiAdminUpdateUserRequest request = new()
+        {
+            Username = "original"
+        };
+
+        ApiResponse<ApiExtendedGameUserResponse>? response = client.PatchData<ApiExtendedGameUserResponse>($"/api/v3/admin/users/uuid/{target.UserId}", request, false, true);
+        Assert.That(response?.Error, Is.Not.Null);
+        Assert.That(response!.Error!.StatusCode, Is.EqualTo(BadRequest));
+
+        context.Database.Refresh();
+
+        GameUser? modifiedTarget = context.Database.GetUserByObjectId(target.UserId);
+        Assert.That(modifiedTarget, Is.Not.Null);
+        Assert.That(modifiedTarget!.Username, Is.EqualTo("stinker"));
+    }
+
+    [Test]
+    public void CanRenameUserBackToTheirPreviousName()
+    {
+        using TestContext context = this.GetServer();
+
+        GameUser mod = context.CreateUser(null, GameUserRole.Moderator);
+        GameUser owner = context.CreateUser("original", GameUserRole.User);
+
+        context.Database.RenameUser(owner, "original_2");
+        GameUser? modifiedOwner = context.Database.GetUserByObjectId(owner.UserId);
+        Assert.That(modifiedOwner, Is.Not.Null);
+        Assert.That(modifiedOwner!.Username, Is.EqualTo("original_2"));
+
+        HttpClient client = context.GetAuthenticatedClient(TokenType.Api, mod);
+        ApiAdminUpdateUserRequest request = new()
+        {
+            Username = "original"
+        };
+
+        ApiResponse<ApiExtendedGameUserResponse>? response = client.PatchData<ApiExtendedGameUserResponse>($"/api/v3/admin/users/uuid/{owner.UserId}", request);
+        Assert.That(response?.Data, Is.Not.Null);
+        Assert.That(response!.Data!.Username == "original");
+
+        context.Database.Refresh();
+
+        GameUser? modifiedOwner2 = context.Database.GetUserByObjectId(owner.UserId);
+        Assert.That(modifiedOwner2, Is.Not.Null);
+        Assert.That(modifiedOwner2!.Username, Is.EqualTo("original"));
+    }
+
+    [Test]
+    public void CanRenameUserBackAndForth()
+    {
+        using TestContext context = this.GetServer();
+
+        GameUser mod = context.CreateUser(null, GameUserRole.Moderator);
+        GameUser owner = context.CreateUser("original", GameUserRole.User);
+
+        context.Database.RenameUser(owner, "original_2");
+        GameUser? modifiedOwner = context.Database.GetUserByObjectId(owner.UserId);
+        Assert.That(modifiedOwner, Is.Not.Null);
+        Assert.That(modifiedOwner!.Username, Is.EqualTo("original_2"));
+
+        context.Database.RenameUser(owner, "original");
+        modifiedOwner = context.Database.GetUserByObjectId(owner.UserId);
+        Assert.That(modifiedOwner, Is.Not.Null);
+        Assert.That(modifiedOwner!.Username, Is.EqualTo("original"));
+
+        context.Database.RenameUser(owner, "original_2");
+        modifiedOwner = context.Database.GetUserByObjectId(owner.UserId);
+        Assert.That(modifiedOwner, Is.Not.Null);
+        Assert.That(modifiedOwner!.Username, Is.EqualTo("original_2"));
+
+        context.Database.RenameUser(owner, "original");
+        modifiedOwner = context.Database.GetUserByObjectId(owner.UserId);
+        Assert.That(modifiedOwner, Is.Not.Null);
+        Assert.That(modifiedOwner!.Username, Is.EqualTo("original"));
+    }
+
+    [Test]
     [TestCase("!jeff", true)]
     [TestCase("dddd", true)]
     [TestCase("dd", false)]
