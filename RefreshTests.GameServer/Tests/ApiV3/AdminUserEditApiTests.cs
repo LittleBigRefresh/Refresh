@@ -342,15 +342,21 @@ public class AdminUserEditApiTests : GameServerTest
         Assert.That(modifiedOwner, Is.Not.Null);
         Assert.That(modifiedOwner!.Username, Is.EqualTo("original_2"));
 
+        context.Time.TimestampMilliseconds += 1000;
+
         context.Database.RenameUser(owner, "original");
         modifiedOwner = context.Database.GetUserByObjectId(owner.UserId);
         Assert.That(modifiedOwner, Is.Not.Null);
         Assert.That(modifiedOwner!.Username, Is.EqualTo("original"));
 
+        context.Time.TimestampMilliseconds += 1000;
+
         context.Database.RenameUser(owner, "original_2");
         modifiedOwner = context.Database.GetUserByObjectId(owner.UserId);
         Assert.That(modifiedOwner, Is.Not.Null);
         Assert.That(modifiedOwner!.Username, Is.EqualTo("original_2"));
+
+        context.Time.TimestampMilliseconds += 1000;
 
         context.Database.RenameUser(owner, "original");
         modifiedOwner = context.Database.GetUserByObjectId(owner.UserId);
