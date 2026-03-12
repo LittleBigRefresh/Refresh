@@ -9,7 +9,11 @@ namespace Refresh.Database.Models.Relations;
 public partial class LevelCommentRelation : ICommentRelation<GameLevelComment>
 {
     [Key] public ObjectId CommentRelationId { get; set; } = ObjectId.GenerateNewId();
-    [Required] public GameUser User { get; set; }
+
+    [ForeignKey(nameof(UserId)), Required]
+    public GameUser User { get; set; }
+    [Required] public ObjectId UserId { get; set; }
+    
     [Required] public GameLevelComment Comment { get; set; }
     public RatingType RatingType { get; set; }
     public DateTimeOffset Timestamp { get; set; }
