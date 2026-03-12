@@ -34,7 +34,7 @@ public class LeaderboardEndpoints : EndpointGroup
     [MinimumRole(GameUserRole.Restricted)]
     [RateLimitSettings(PlayLevelEndpointLimits.TimeoutDuration, PlayLevelEndpointLimits.RequestAmount, 
                             PlayLevelEndpointLimits.BlockDuration, PlayLevelEndpointLimits.RequestBucket)]
-    public Response PlayLevel(RequestContext context, GameUser user, GameDatabaseContext database, string slotType, int id)
+    public Response PlayLevel(RequestContext context, GameUser user, GameDatabaseContext database, string slotType, int id, DataContext dataContext)
     {
         GameLevel? level = database.GetLevelByIdAndType(slotType, id);
         if (level == null) return NotFound;
@@ -61,6 +61,7 @@ public class LeaderboardEndpoints : EndpointGroup
         }
         
         database.PlayLevel(level, user, count);
+        dataContext.Cache.IncrementLevelTotalPlaysByUser(user, level, count, database);
         return OK;
     }
     
@@ -185,6 +186,7 @@ public class LeaderboardEndpoints : EndpointGroup
         DatabaseList<ScoreWithRank> scores = database.GetRankedScoresAroundScore(score, 5);
 
         this.AwardScoreboardPins(scores, dataContext, user, level);
+        dataContext.Cache.IncrementLevelTotalCompletionsByUser(user, level, 1, database);
 
         return new Response(SerializedScoreLeaderboardList.FromDatabaseList(scores, dataContext), ContentType.Xml);
     }

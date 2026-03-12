@@ -1,4 +1,5 @@
 using Refresh.Core.Types.Data;
+using Refresh.Core.Types.Relations;
 using Refresh.Database.Models.Levels;
 
 namespace Refresh.Interfaces.APIv3.Endpoints.DataTypes.Response.Levels;
@@ -21,16 +22,17 @@ public class ApiGameLevelOwnRelationsResponse : IApiResponse
     {
         if (dataContext.User == null) 
             return null;
+        
+        OwnLevelRelations relations = dataContext.Cache.GetOwnLevelRelations(dataContext.User, level, dataContext.Database).Content;
 
         return new()
         {
-            // TODO: Probably cache these stats aswell
-            IsHearted = dataContext.Database.IsLevelFavouritedByUser(level, dataContext.User),
-            IsQueued = dataContext.Database.IsLevelQueuedByUser(level, dataContext.User),
-            LevelRating = (int?)dataContext.Database.GetRatingByUser(level, dataContext.User) ?? 0,
-            MyPlaysCount = dataContext.Database.GetTotalPlaysForLevelByUser(level, dataContext.User),
-            CompletionCount = dataContext.Database.GetTotalCompletionsForLevelByUser(level, dataContext.User),
-            PhotoCount = dataContext.Database.GetTotalPhotosInLevelByUser(level, dataContext.User)
+            IsHearted = relations.IsHearted,
+            IsQueued = relations.IsQueued,
+            LevelRating = relations.LevelRating,
+            MyPlaysCount = relations.TotalPlayCount,
+            CompletionCount = relations.TotalCompletionCount,
+            PhotoCount = relations.PhotoCount
         };
     }
 }

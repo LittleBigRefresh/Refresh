@@ -12,4 +12,5 @@ public enum RefreshContext
     Aipi,
     Presence,
     Database,
+    CacheService,
 }

@@ -10,6 +10,7 @@ using Bunkum.Protocols.Http;
 using Refresh.Common.Time;
 using Refresh.Core.Authentication.Permission;
 using Refresh.Core.Configuration;
+using Refresh.Core.Types.Data;
 using Refresh.Database;
 using Refresh.Database.Models.Levels;
 using Refresh.Database.Models.Users;
@@ -47,7 +48,7 @@ public class MetadataEndpoints : EndpointGroup
 
     [GameEndpoint("npdata", ContentType.Xml, HttpMethods.Post)]
     [RateLimitSettings(480, 8, 420, "game-npdata")]
-    public Response SetFriendData(RequestContext context, GameUser user, GameDatabaseContext database, SerializedFriendData body)
+    public Response SetFriendData(RequestContext context, GameUser user, GameDatabaseContext database, SerializedFriendData body, DataContext dataContext)
     {
         IEnumerable<GameUser> friends = body.FriendsList.Names
             .Take(128) // should be way more than enough - we'll see if this becomes a problem
@@ -55,7 +56,10 @@ public class MetadataEndpoints : EndpointGroup
             .Where(u => u != null)!;
         
         foreach (GameUser userToFavourite in friends)
+        {
             database.FavouriteUser(userToFavourite, user);
+            dataContext.Cache.RemoveOwnUserRelations(user, userToFavourite); // really don't want to refresh the relations of up to 128 users in the worst case
+        }
         
         return OK;
     }
