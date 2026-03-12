@@ -27,7 +27,7 @@ public class ContestApiEndpoints : EndpointGroup
     public ApiListResponse<ApiContestResponse> GetAllContests(RequestContext context, GameDatabaseContext database,
         DataContext dataContext)
     {
-        return new ApiListResponse<ApiContestResponse>(ApiContestResponse.FromOldList(database.GetAllContests(), dataContext));
+        return new ApiListResponse<ApiContestResponse>(ApiContestResponse.FromOldList(database.GetAllContests().ToArray(), dataContext));
     }
     
     [ApiV3Endpoint("contests/{id}"), Authentication(false)]
