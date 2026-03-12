@@ -1715,6 +1715,25 @@ namespace Refresh.Database.Migrations
                     b.ToTable("GameUsers");
                 });
 
+            modelBuilder.Entity("Refresh.Database.Models.Users.PreviousUsername", b =>
+                {
+                    b.Property<string>("Username")
+                        .HasColumnType("text");
+
+                    b.Property<DateTimeOffset>("ReplacedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("UserId")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.HasKey("Username", "ReplacedAt");
+
+                    b.HasIndex("UserId");
+
+                    b.ToTable("PreviousUsernames");
+                });
+
             modelBuilder.Entity("Refresh.Database.Models.Users.QueuedRegistration", b =>
                 {
                     b.Property<string>("RegistrationId")
@@ -2080,7 +2099,7 @@ namespace Refresh.Database.Migrations
             modelBuilder.Entity("Refresh.Database.Models.Photos.GamePhotoSubject", b =>
                 {
                     b.HasOne("Refresh.Database.Models.Photos.GamePhoto", "Photo")
-                        .WithMany()
+                        .WithMany("Subjects")
                         .HasForeignKey("PhotoId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
@@ -2462,6 +2481,22 @@ namespace Refresh.Database.Migrations
                         .HasForeignKey("StatisticsUserId");
 
                     b.Navigation("Statistics");
+                });
+
+            modelBuilder.Entity("Refresh.Database.Models.Users.PreviousUsername", b =>
+                {
+                    b.HasOne("Refresh.Database.Models.Users.GameUser", "User")
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("User");
+                });
+
+            modelBuilder.Entity("Refresh.Database.Models.Photos.GamePhoto", b =>
+                {
+                    b.Navigation("Subjects");
                 });
 
             modelBuilder.Entity("Refresh.Database.Models.Reports.GriefReport", b =>

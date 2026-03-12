@@ -34,6 +34,7 @@ public partial class GameDatabaseContext : DbContext, IDatabaseContext
     private readonly Logger _logger;
 
     internal DbSet<GameUser> GameUsers { get; set; }
+    internal DbSet<PreviousUsername> PreviousUsernames { get; set; }
     internal DbSet<GameUserStatistics> GameUserStatistics { get; set; }
     internal DbSet<Token> Tokens { get; set; }
     internal DbSet<GameLevel> GameLevels { get; set; }

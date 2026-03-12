@@ -356,7 +356,7 @@ public partial class GameDatabaseContext // Users
                 throw new ArgumentException("Username is invalid!", nameof(newUsername));
             }
 
-            if (this.IsUsernameTaken(newUsername))
+            if (this.IsUsernameTaken(newUsername, user))
             {
                 throw new ArgumentException("Username is already taken!", nameof(newUsername));
             }
@@ -364,6 +364,13 @@ public partial class GameDatabaseContext // Users
 
         string oldUsername = user.Username;
         user.Username = newUsername;
+
+        this.PreviousUsernames.Add(new()
+        {
+            Username = oldUsername,
+            User = user,
+            ReplacedAt = this._time.Now,
+        });
         this.GameUsers.Update(user);
         this.SaveChanges();
         
