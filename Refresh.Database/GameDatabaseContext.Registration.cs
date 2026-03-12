@@ -100,6 +100,7 @@ public partial class GameDatabaseContext // Registration
     {
         if (this.GameUsers.Any(u => u.Username == username)) return true;
         if (this.QueuedRegistrations.Any(r => r.Username == username)) return true;
+        if (this.IsUserDisallowed(username)) return true;
         
         PreviousUsername? previous = this.PreviousUsernames.FirstOrDefault(p => p.Username == username);
         // no one has ever had this name before
@@ -113,7 +114,8 @@ public partial class GameDatabaseContext // Registration
     public bool IsEmailTaken(string emailAddress)
     {
         return this.GameUsers.Any(u => u.EmailAddress == emailAddress) ||
-               this.QueuedRegistrations.Any(r => r.EmailAddress == emailAddress);
+               this.QueuedRegistrations.Any(r => r.EmailAddress == emailAddress) ||
+               this.IsEmailDisallowed(emailAddress);
     }
 
     public void AddRegistrationToQueue(string username, string emailAddress, string passwordBcrypt)
@@ -249,5 +251,36 @@ public partial class GameDatabaseContext // Registration
     public bool IsUserDisallowed(string username)
     {
         return this.DisallowedUsers.FirstOrDefault(u => u.Username == username) != null;
+    }
+
+    public bool DisallowEmail(string email)
+    {
+        if (this.IsEmailDisallowed(email)) 
+            return false;
+        
+        this.DisallowedEmails.Add(new()
+        {
+            Email = email,
+        });
+        this.SaveChanges();
+        
+        return true;
+    }
+    
+    public bool ReallowEmail(string email)
+    {
+        DisallowedEmail? disallowedEmail = this.DisallowedEmails.FirstOrDefault(u => u.Email == email);
+        if (disallowedEmail == null) 
+            return false;
+        
+        this.DisallowedEmails.Remove(disallowedEmail);
+        this.SaveChanges();
+        
+        return true;
+    }
+    
+    public bool IsEmailDisallowed(string email)
+    {
+        return this.DisallowedEmails.Any(u => u.Email == email);
     }
 }

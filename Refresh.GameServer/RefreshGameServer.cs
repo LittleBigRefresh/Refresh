@@ -285,6 +285,20 @@ public class RefreshGameServer : RefreshServer
         return context.ReallowUser(username);
     }
 
+    public bool DisallowEmail(string email)
+    {
+        using GameDatabaseContext context = this.GetContext();
+        
+        return context.DisallowEmail(email);
+    }
+    
+    public bool ReallowEmail(string email)
+    {
+        using GameDatabaseContext context = this.GetContext();
+        
+        return context.ReallowEmail(email);
+    }
+
     public void RenameUser(GameUser user, string newUsername, bool force = false)
     {
         using GameDatabaseContext context = this.GetContext();

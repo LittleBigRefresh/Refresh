@@ -389,6 +389,8 @@ public partial class GameDatabaseContext // Users
         this.BanUser(user, deletedReason, DateTimeOffset.MaxValue);
         this.RevokeAllTokensForUser(user);
         this.DeleteNotificationsByUser(user);
+        if (user.EmailAddress != null)
+            this.DisallowEmail(user.EmailAddress);
         
         this.Write(() =>
         {
@@ -402,7 +404,14 @@ public partial class GameDatabaseContext // Users
             user.Lbp2PlanetsHash = "0";
             user.Lbp3PlanetsHash = "0";
             user.VitaPlanetsHash = "0";
+            user.BetaPlanetsHash = "0";
             user.IconHash = "0";
+            user.VitaIconHash = "0";
+            user.BetaIconHash = "0";
+            user.PspIconHash = "0";
+            user.YayFaceHash = "0";
+            user.BooFaceHash = "0";
+            user.MehFaceHash = "0";
             user.AllowIpAuthentication = false;
             user.EmailAddressVerified = false;
             user.PsnAuthenticationAllowed = false;
@@ -413,27 +422,36 @@ public partial class GameDatabaseContext // Users
                 subject.UserId = null;
             }
 
-            this.FavouriteLevelRelations.RemoveRange(r => r.User == user);
-            this.FavouriteUserRelations.RemoveRange(r => r.UserToFavourite == user);
-            this.FavouriteUserRelations.RemoveRange(r => r.UserFavouriting == user);
-            this.QueueLevelRelations.RemoveRange(r => r.User == user);
-            this.GamePhotos.RemoveRange(p => p.Publisher == user);
-            this.GameUserVerifiedIpRelations.RemoveRange(p => p.User == user);
+            this.FavouriteLevelRelations.RemoveRange(r => r.UserId == user.UserId);
+            this.FavouriteUserRelations.RemoveRange(r => r.UserToFavouriteId == user.UserId);
+            this.FavouriteUserRelations.RemoveRange(r => r.UserFavouritingId == user.UserId);
+            this.QueueLevelRelations.RemoveRange(r => r.UserId == user.UserId);
+            this.TagLevelRelations.RemoveRange(r => r.UserId == user.UserId);
+            this.GameUserVerifiedIpRelations.RemoveRange(p => p.UserId == user.UserId);
+
+            this.GameNotifications.RemoveRange(s => s.UserId == user.UserId);
+            this.GamePhotos.RemoveRange(p => p.PublisherId == user.UserId);
+            this.Events.RemoveRange(e => e.UserId == user.UserId);
+            this.GameScores.RemoveRange(s => s.PublisherId == user.UserId);
+            this.GameChallengeScores.RemoveRange(s => s.PublisherUserId == user.UserId);
+
+            this.GameLevelComments.RemoveRange(s => s.AuthorUserId == user.UserId);
+            this.LevelCommentRelations.RemoveRange(s => s.UserId == user.UserId);
+            this.GameProfileComments.RemoveRange(s => s.AuthorUserId == user.UserId);
+            this.ProfileCommentRelations.RemoveRange(s => s.UserId == user.UserId);
+            this.GameReviews.RemoveRange(s => s.PublisherUserId == user.UserId);
+            this.RateReviewRelations.RemoveRange(s => s.UserId == user.UserId);
             
-            foreach (GameScore score in this.GameScores.ToList())
-            {
-                if (!score.PlayerIds.Contains(user.UserId)) continue;
-                this.GameScores.Remove(score);
-            }
-            
-            foreach (GameLevel level in this.GameLevels.Where(l => l.Publisher == user))
+            this.PinProgressRelations.RemoveRange(s => s.PublisherId == user.UserId);
+            this.ProfilePinRelations.RemoveRange(s => s.PublisherId == user.UserId);
+            this.GamePlaylists.RemoveRange(s => s.PublisherId == user.UserId);
+
+            foreach (GameLevel level in this.GameLevels.Where(l => l.PublisherUserId == user.UserId))
             {
                 level.Publisher = null;
             }
 
-            this.GameChallengeScores.RemoveRange(s => s.Publisher == user);
-
-            foreach (GameChallenge challenge in this.GameChallenges.Where(c => c.Publisher == user))
+            foreach (GameChallenge challenge in this.GameChallenges.Where(c => c.PublisherUserId == user.UserId))
             {
                 challenge.Publisher = null;
             }
