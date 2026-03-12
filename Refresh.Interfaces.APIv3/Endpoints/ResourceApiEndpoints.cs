@@ -194,6 +194,12 @@ public class ResourceApiEndpoints : EndpointGroup
             return new ApiValidationError($"The asset must be under 2MB. Your file was {body.Length:N0} bytes.");
         }
 
+        if (body.Length + user.FilesizeQuotaUsage > config.UserFilesizeQuota)
+        {
+            context.Logger.LogWarning(BunkumCategory.UserContent, "User {0} has hit the filesize quota ({1} bytes), rejecting.", user.Username, config.UserFilesizeQuota);
+            return new ApiValidationError($"You have exceeded your filesize quota.");
+        }
+
         GameAsset? gameAsset = importer.ReadAndVerifyAsset(hash, body, TokenPlatform.Website, database);
         if (gameAsset == null)
             return ApiValidationError.CannotReadAssetError;
@@ -213,6 +219,7 @@ public class ResourceApiEndpoints : EndpointGroup
         
         database.AddAssetToDatabase(gameAsset);
         dataContext.Cache.CacheAsset(gameAsset.AssetHash, gameAsset);
+        database.IncrementUserFilesizeQuota(user, body.Length);
 
         return new ApiResponse<ApiGameAssetResponse>(ApiGameAssetResponse.FromOld(gameAsset, dataContext)!, Created);
     }
