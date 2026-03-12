@@ -45,6 +45,28 @@ public class UserApiTests : GameServerTest
         context.Database.Refresh();
         Assert.That(context.Database.GetUserByUsername(username), Is.Not.EqualTo(null));
     }
+
+    [Test]
+    public void CannotRegisterAccountWithDisallowedEmail()
+    {
+        using TestContext context = this.GetServer();
+
+        const string email = "guy@lil.com";
+        context.Database.DisallowEmail(email);
+        
+        ApiResponse<ApiAuthenticationResponse>? response = context.Http.PostData<ApiAuthenticationResponse>("/api/v3/register", new ApiRegisterRequest
+        {
+            Username = "a_lil_guy",
+            EmailAddress = email,
+            PasswordSha512 = "ee26b0dd4af7e749aa1a8ee3c10ae9923f618980772e473f8819a5d4940e0db27ac185f8a0e1d5f84f88bc887fd67b143732c304cc5fa9ad8e6f57f50028a8ff",
+        }, false, true);
+        Assert.That(response, Is.Not.Null);
+        Assert.That(response!.Error, Is.Not.Null);
+        Assert.That(response.Error!.Name, Is.EqualTo("ApiAuthenticationError"));
+        
+        context.Database.Refresh();
+        Assert.That(context.Database.GetUserByEmailAddress(email), Is.Null);
+    }
     
     [Test]
     public void CannotRegisterAccountWithDisallowedUsername()

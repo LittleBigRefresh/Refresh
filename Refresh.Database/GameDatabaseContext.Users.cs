@@ -389,13 +389,15 @@ public partial class GameDatabaseContext // Users
         this.BanUser(user, deletedReason, DateTimeOffset.MaxValue);
         this.RevokeAllTokensForUser(user);
         this.DeleteNotificationsByUser(user);
+        if (user.EmailAddress != null)
+            this.DisallowEmail(user.EmailAddress);
         
         this.Write(() =>
         {
             user.LocationX = 0;
             user.LocationY = 0;
             user.Description = deletedReason;
-            //user.EmailAddress = null; // should not be reset for now, to prevent them from just registering with it again
+            user.EmailAddress = null;
             user.PasswordBcrypt = "deleted";
             user.JoinDate = DateTimeOffset.MinValue;
             user.LastLoginDate = DateTimeOffset.MinValue;

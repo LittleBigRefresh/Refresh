@@ -81,4 +81,20 @@ public class UserActionTests : GameServerTest
         Assert.That(userUpdated, Is.Not.Null);
         Assert.That(userUpdated!.IconHash, Is.EqualTo("0"));
     }
+
+    [Test]
+    public void DeletingUserDisallowsEmail()
+    {
+        using TestContext context = this.GetServer();
+        GameUser publisher = context.CreateUser();
+        Assert.That(publisher.EmailAddress, Is.Not.Null);
+        Assert.That(context.Database.IsEmailDisallowed(publisher.EmailAddress!), Is.False);
+        string email = publisher.EmailAddress!;
+
+        // Delete publisher
+        context.Database.DeleteUser(publisher);
+        context.Database.Refresh();
+        
+        Assert.That(context.Database.IsEmailDisallowed(email), Is.True);
+    }
 }

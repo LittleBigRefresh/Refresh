@@ -1510,6 +1510,16 @@ namespace Refresh.Database.Migrations
                     b.ToTable("RequestStatistics");
                 });
 
+            modelBuilder.Entity("Refresh.Database.Models.Users.DisallowedEmail", b =>
+                {
+                    b.Property<string>("Email")
+                        .HasColumnType("text");
+
+                    b.HasKey("Email");
+
+                    b.ToTable("DisallowedEmails");
+                });
+
             modelBuilder.Entity("Refresh.Database.Models.Users.DisallowedUser", b =>
                 {
                     b.Property<string>("Username")
