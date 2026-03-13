@@ -76,14 +76,13 @@ public class GameAuthenticationProvider : IAuthenticationProvider<Token>
         if ((this._config?.MaintenanceMode ?? false) && user.Role != GameUserRole.Admin)
             return null;
         
-        // Additional validation of the token gotten from DB
+        // Additional validation of the token gotten from DB. Exceptions will be caught, logged and InternalServerError will be returned automatically.
         if (token.TokenData != tokenData)
         {
 #if DEBUG
             if(Debugger.IsAttached) Debugger.Break();
 #endif
-            this._logger.LogError(BunkumCategory.Authentication, $"Token from DB does not match token received from client! Rejecting...");
-            return null;
+            throw new InvalidDataException($"{typeof(GameAuthenticationProvider)} - Token from DB does not match token received from client!");
         }
 
         if (token.User.UserId != token.UserId)
@@ -91,8 +90,7 @@ public class GameAuthenticationProvider : IAuthenticationProvider<Token>
 #if DEBUG
             if(Debugger.IsAttached) Debugger.Break();
 #endif
-            this._logger.LogError(BunkumCategory.Authentication, $"GameUser included with token is not the token owner! Rejecting...");
-            return null;
+            throw new InvalidDataException($"{typeof(GameAuthenticationProvider)} - GameUser included with token is not the token owner!");
         }
 
         return token;
