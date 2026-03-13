@@ -1,3 +1,4 @@
+using System.Diagnostics;
 using System.Xml.Serialization;
 using Bunkum.Core;
 using Bunkum.Core.Endpoints;
@@ -70,6 +71,15 @@ public class AuthenticationEndpoints : EndpointGroup
                 
                 user = database.CreateUserFromQueuedRegistration(registration, platform);
                 
+                // Additional check to prevent spamming random users with emails
+                if (user.Username != ticket.Username)
+                {
+#if DEBUG
+                    if(Debugger.IsAttached) Debugger.Break();
+#endif
+                    throw new InvalidDataException($"Game login - Username {user.Username} from registration does not match username {ticket.Username} in NP ticket!");
+                }
+
                 if (integrationConfig.SmtpEnabled)
                 {
                     EmailVerificationCode code = database.CreateEmailVerificationCode(user);
@@ -187,6 +197,14 @@ public class AuthenticationEndpoints : EndpointGroup
             database.AddLoginFailNotification("The server detected you are not using the latest version of Patchwork. Please update or install it.", user);
             context.Logger.LogWarning(BunkumCategory.Authentication, $"{ticket.Username}'s Patchwork version is invalid: {context.RequestHeaders["User-Agent"]}");
             return null;
+        }
+
+        if (user.Username != ticket.Username)
+        {
+#if DEBUG
+            if(Debugger.IsAttached) Debugger.Break();
+#endif
+            throw new InvalidDataException($"Game login - Username {user.Username} from DB GameUser does not match username {ticket.Username} in NP ticket!");
         }
         
         // !!

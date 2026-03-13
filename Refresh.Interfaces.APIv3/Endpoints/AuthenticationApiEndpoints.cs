@@ -1,3 +1,4 @@
+using System.Diagnostics;
 using System.Net;
 using AttribDoc.Attributes;
 using Bunkum.Core;
@@ -105,6 +106,21 @@ public class AuthenticationApiEndpoints : EndpointGroup
 
         Token token = database.GenerateTokenForUser(user, TokenType.Api, TokenGame.Website, TokenPlatform.Website, ipAddress);
         Token refreshToken = database.GenerateTokenForUser(user, TokenType.ApiRefresh, TokenGame.Website, TokenPlatform.Website, ipAddress, GameDatabaseContext.RefreshTokenExpirySeconds);
+
+        if (user.UserId != token.UserId)
+        {
+#if DEBUG
+            if(Debugger.IsAttached) Debugger.Break();
+#endif
+            throw new InvalidDataException($"API login - API token owner ({token.User}) does not match user received from DB ({user})!");
+        }
+        if (user.UserId != refreshToken.UserId)
+        {
+#if DEBUG
+            if(Debugger.IsAttached) Debugger.Break();
+#endif
+            throw new InvalidDataException($"API login - Refresh token owner ({refreshToken.User}) does not match user received from DB ({user})!");
+        }
         
         context.Logger.LogInfo(BunkumCategory.Authentication, $"{user} successfully logged in through the API");
 
@@ -131,8 +147,15 @@ public class AuthenticationApiEndpoints : EndpointGroup
         GameUser user = refreshToken.User;
 
         Token token = database.GenerateTokenForUser(user, TokenType.Api, TokenGame.Website, TokenPlatform.Website, context.RemoteIp());
+        if (token.UserId != refreshToken.UserId)
+        {
+#if DEBUG
+            if(Debugger.IsAttached) Debugger.Break();
+#endif
+            throw new InvalidDataException($"RefreshToken - Owner of new token ({token.User}) does not match owner of refresh token ({refreshToken.User})!");
+        }
+
         database.ResetApiRefreshTokenExpiry(refreshToken);
-        
         context.Logger.LogInfo(BunkumCategory.Authentication, $"{user} successfully refreshed their token through the API");
 
         return new ApiAuthenticationResponse
