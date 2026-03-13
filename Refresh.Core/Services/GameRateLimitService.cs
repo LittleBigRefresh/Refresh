@@ -16,8 +16,7 @@ public class GameRateLimitService : Service
     private readonly IRateLimiter _rateLimiter;
     private readonly GameAuthenticationService _authService;
 
-    internal GameRateLimitService(Logger logger, GameAuthenticationService authService, IRateLimiter rateLimiter)
-        : base(logger)
+    internal GameRateLimitService(Logger logger, GameAuthenticationService authService, IRateLimiter rateLimiter) : base(logger)
     {
         this._rateLimiter = rateLimiter;
         this._authService = authService;

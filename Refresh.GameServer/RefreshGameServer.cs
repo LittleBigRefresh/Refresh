@@ -93,7 +93,7 @@ public class RefreshGameServer : RefreshServer
 
             this.WorkerManager?.Stop();
             
-            authProvider ??= new GameAuthenticationProvider(this._configStore.GameServer);
+            authProvider ??= new GameAuthenticationProvider(this._configStore.GameServer, this.Logger);
 
             this.InjectBaseServices(provider, authProvider, this._dataStore);
         });

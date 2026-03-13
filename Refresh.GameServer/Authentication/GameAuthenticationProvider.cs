@@ -9,16 +9,20 @@ using Refresh.Database;
 using Refresh.Interfaces.APIv3;
 using Refresh.Interfaces.Game;
 using Refresh.Interfaces.Internal;
+using NotEnoughLogs;
+using Bunkum.Core;
 
 namespace Refresh.GameServer.Authentication;
 
 public class GameAuthenticationProvider : IAuthenticationProvider<Token>
 {
     private readonly GameServerConfig? _config;
+    private readonly Logger _logger;
 
-    public GameAuthenticationProvider(GameServerConfig? config)
+    public GameAuthenticationProvider(GameServerConfig? config, Logger logger)
     {
         this._config = config;
+        this._logger = logger;
     }
 
     public Token? AuthenticateToken(ListenerContext request, Lazy<IDatabaseContext> db)
@@ -71,6 +75,25 @@ public class GameAuthenticationProvider : IAuthenticationProvider<Token>
         // we don't actually receive tokens in endpoints (except during logout, aka token revocation)
         if ((this._config?.MaintenanceMode ?? false) && user.Role != GameUserRole.Admin)
             return null;
+        
+        // Additional validation of the token gotten from DB
+        if (token.TokenData != tokenData)
+        {
+#if DEBUG
+            if(Debugger.IsAttached) Debugger.Break();
+#endif
+            this._logger.LogError(BunkumCategory.Authentication, $"Token from DB does not match token received from client! Rejecting...");
+            return null;
+        }
+
+        if (token.User.UserId != token.UserId)
+        {
+#if DEBUG
+            if(Debugger.IsAttached) Debugger.Break();
+#endif
+            this._logger.LogError(BunkumCategory.Authentication, $"GameUser included with token is not the token owner! Rejecting...");
+            return null;
+        }
 
         return token;
     }

@@ -18,8 +18,7 @@ public class GameAuthenticationService : Service
 {
     private readonly IAuthenticationProvider<Token> _provider;
 
-    public GameAuthenticationService(Logger logger,
-        IAuthenticationProvider<Token> provider) : base(logger)
+    public GameAuthenticationService(Logger logger, IAuthenticationProvider<Token> provider) : base(logger)
     {
         this._provider = provider;
     }
