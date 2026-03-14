@@ -58,4 +58,20 @@ public static class HttpClientExtensions
             Assert.That(response.StatusCode, Is.Not.EqualTo(OK));
         return ReadData<TData>(response.Content);
     }
+
+    public static ApiResponse<TData>? DeleteData<TData>(this HttpClient client, string endpoint, object data, bool ensureSuccessful = true, bool ensureFailure = false) where TData : class, IApiResponse
+    {
+        // HttpClient's DeleteAsync method does not allow us to include a body
+        HttpRequestMessage request = new(HttpMethod.Delete, endpoint)
+        {
+            Content = new StringContent(data.AsJson())
+        };
+        HttpResponseMessage response = client.SendAsync(request).Result;
+
+        if (ensureSuccessful)
+            Assert.That(response.StatusCode, Is.EqualTo(OK));
+        else if (ensureFailure)
+            Assert.That(response.StatusCode, Is.Not.EqualTo(OK));
+        return ReadData<TData>(response.Content);
+    }
 }
