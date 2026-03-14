@@ -12,14 +12,14 @@ using Refresh.Database.Models.Users;
 namespace Refresh.Core.Services;
 
 /// <summary>
-/// A service that hooks into the AuthenticationService, adding extra checks for roles.
+/// A service that hooks into the GameAuthenticationService, adding extra checks for roles.
 /// </summary>
 public class RoleService : Service
 {
-    private readonly AuthenticationService _authService;
+    private readonly GameAuthenticationService _authService;
     private readonly GameServerConfig _config;
     
-    internal RoleService(AuthenticationService authService, GameServerConfig config, Logger logger) : base(logger)
+    internal RoleService(GameAuthenticationService authService, GameServerConfig config, Logger logger) : base(logger)
     {
         this._authService = authService;
         this._config = config;
@@ -39,14 +39,12 @@ public class RoleService : Service
         // if the user's role is lower than the minimum role for this endpoint, then return unauthorized
         if (user.Role < minimumRole)
         {
-            this._authService.RemoveTokenFromCache();
             return Unauthorized;
         }
 
         RequireEmailVerifiedAttribute? emailAttrib = method.GetCustomAttribute<RequireEmailVerifiedAttribute>();
         if (emailAttrib != null && !user.EmailAddressVerified)
         {
-            this._authService.RemoveTokenFromCache();
             return Unauthorized;
         }
 
@@ -64,7 +62,6 @@ public class RoleService : Service
         // If user isn't an admin, then stop the request here, ignoring all
         if (user.Role != GameUserRole.Admin)
         {
-            this._authService.RemoveTokenFromCache();
             return Forbidden;
         }
         

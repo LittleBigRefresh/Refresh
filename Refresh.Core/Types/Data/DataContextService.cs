@@ -14,11 +14,11 @@ public class DataContextService : Service
 {
     private readonly StorageService _storageService;
     private readonly MatchService _matchService;
-    private readonly AuthenticationService _authService;
+    private readonly GameAuthenticationService _authService;
     private readonly GuidCheckerService _guidCheckerService;
     private readonly CacheService _cacheService;
 
-    public DataContextService(StorageService storage, MatchService match, AuthenticationService auth, Logger logger, GuidCheckerService guidChecker, CacheService cache) : base(logger)
+    public DataContextService(StorageService storage, MatchService match, GameAuthenticationService auth, Logger logger, GuidCheckerService guidChecker, CacheService cache) : base(logger)
     {
         this._storageService = storage;
         this._matchService = match;

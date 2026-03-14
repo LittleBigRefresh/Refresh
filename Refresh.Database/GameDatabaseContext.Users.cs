@@ -9,6 +9,7 @@ using Refresh.Database.Models.Levels.Scores;
 using Refresh.Database.Models.Levels;
 using Refresh.Database.Models.Photos;
 using Refresh.Database.Models.Assets;
+using System.Diagnostics;
 
 namespace Refresh.Database;
 
@@ -64,8 +65,20 @@ public partial class GameDatabaseContext // Users
     public GameUser? GetUserByEmailAddress(string? emailAddress)
     {
         if (emailAddress == null) return null;
+
         emailAddress = emailAddress.ToLowerInvariant();
-        return this.GameUsersIncluded.FirstOrDefault(u => u.EmailAddress == emailAddress);
+        GameUser? user = this.GameUsersIncluded.FirstOrDefault(u => u.EmailAddress == emailAddress);
+        if (user == null) return null;
+
+        if (user.EmailAddress != emailAddress)
+        {
+#if DEBUG
+            if(Debugger.IsAttached) Debugger.Break();
+#endif
+            throw new InvalidDataException($"GetUserByEmailAddress - Found user's email does not match given email!");
+        }
+
+        return user;
     }
 
     [Pure]
