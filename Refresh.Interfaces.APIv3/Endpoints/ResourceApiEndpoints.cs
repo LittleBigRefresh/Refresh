@@ -25,9 +25,13 @@ namespace Refresh.Interfaces.APIv3.Endpoints;
 public class ResourceApiEndpoints : EndpointGroup
 {
     private const int RequestTimeoutDuration = 60;
-    private const int MaxRequestAmount = 50 * RequestTimeoutDuration; // requests per second
+    private const int RawAssetRequestAmount = 70;
+    private const int ImageAssetRequestAmount = 100;
+    private const int AssetInfoRequestAmount = 40;
     private const int RequestBlockDuration = 30;
-    private const string BucketName = "resource-api";
+    private const string RawAssetBucket = "raw-asset-api";
+    private const string ImageAssetBucket = "image-asset-api";
+    private const string AssetInfoBucket = "asset-info-api";
     
     [ApiV3Endpoint("assets/{hash}/download"), Authentication(false)]
     [ClientCacheResponse(31556952)] // 1 year, we don't expect the data to change
@@ -35,7 +39,7 @@ public class ResourceApiEndpoints : EndpointGroup
     [DocError(typeof(ApiNotFoundError), "The asset could not be found")]
     [DocError(typeof(ApiInternalError), ApiInternalError.CouldNotGetAssetErrorWhen)]
     [DocError(typeof(ApiValidationError), ApiValidationError.HashMissingErrorWhen)]
-    [RateLimitSettings(RequestTimeoutDuration, MaxRequestAmount, RequestBlockDuration, BucketName)]
+    [RateLimitSettings(RequestTimeoutDuration, RawAssetRequestAmount, RequestBlockDuration, RawAssetBucket)]
     public Response DownloadGameAsset(RequestContext context, IDataStore dataStore,
         [DocSummary("The SHA1 hash of the asset")] string hash)
     {
@@ -59,7 +63,7 @@ public class ResourceApiEndpoints : EndpointGroup
     [DocError(typeof(ApiNotFoundError), "The asset could not be found")]
     [DocError(typeof(ApiInternalError), ApiInternalError.CouldNotGetAssetErrorWhen)]
     [DocError(typeof(ApiValidationError), ApiValidationError.HashMissingErrorWhen)]
-    [RateLimitSettings(RequestTimeoutDuration, MaxRequestAmount, RequestBlockDuration, BucketName)]
+    [RateLimitSettings(RequestTimeoutDuration, RawAssetRequestAmount, RequestBlockDuration, RawAssetBucket)]
     public Response DownloadPspGameAsset(RequestContext context, IDataStore dataStore,
         [DocSummary("The SHA1 hash of the asset")] string hash)
         => this.DownloadGameAsset(context, dataStore, $"psp/{hash}");
@@ -70,8 +74,9 @@ public class ResourceApiEndpoints : EndpointGroup
     [DocError(typeof(ApiNotFoundError), "The asset could not be found")]
     [DocError(typeof(ApiInternalError), ApiInternalError.CouldNotGetAssetErrorWhen)]
     [DocError(typeof(ApiValidationError), ApiValidationError.HashMissingErrorWhen)]
+    [RateLimitSettings(RequestTimeoutDuration, ImageAssetRequestAmount, RequestBlockDuration, ImageAssetBucket)]
     public Response DownloadGameAssetAsImage(RequestContext context, IDataStore dataStore, GameDatabaseContext database,
-        [DocSummary("The SHA1 hash of the asset")] string hash, ImageImporter imageImport, AssetImporter assetImport)
+        [DocSummary("The SHA1 hash of the asset")] string hash, ImageImporter imageImport, AssetImporter assetImport, DataContext dataContext)
     {
         bool isPspAsset = hash.StartsWith("psp/");
 
@@ -94,7 +99,7 @@ public class ResourceApiEndpoints : EndpointGroup
             else
             {
                 //Import the asset as normal
-                GameAsset? asset = database.GetAssetFromHash(realHash);
+                GameAsset? asset = dataContext.Cache.GetAssetInfo(realHash, database);
                 imageImport.ImportAsset(realHash, isPspAsset, asset?.AssetType, dataStore);
             }
         }
@@ -111,14 +116,16 @@ public class ResourceApiEndpoints : EndpointGroup
     [DocError(typeof(ApiNotFoundError), "The asset could not be found")]
     [DocError(typeof(ApiInternalError), ApiInternalError.CouldNotGetAssetErrorWhen)]
     [DocError(typeof(ApiValidationError), ApiValidationError.HashMissingErrorWhen)]
+    [RateLimitSettings(RequestTimeoutDuration, ImageAssetRequestAmount, RequestBlockDuration, ImageAssetBucket)]
     public Response DownloadPspGameAssetAsImage(RequestContext context, IDataStore dataStore, GameDatabaseContext database,
-        [DocSummary("The SHA1 hash of the asset")] string hash, ImageImporter imageImport, AssetImporter assetImport) 
-        => this.DownloadGameAssetAsImage(context, dataStore, database, $"psp/{hash}", imageImport, assetImport);
+        [DocSummary("The SHA1 hash of the asset")] string hash, ImageImporter imageImport, AssetImporter assetImport, DataContext dataContext) 
+        => this.DownloadGameAssetAsImage(context, dataStore, database, $"psp/{hash}", imageImport, assetImport, dataContext);
 
     [ApiV3Endpoint("assets/{hash}"), Authentication(false)]
     [DocSummary("Gets information from the database about a particular hash. Includes user who uploaded, dependencies, timestamps, etc.")]
     [DocError(typeof(ApiNotFoundError), "The asset could not be found")]
     [DocError(typeof(ApiValidationError), ApiValidationError.HashMissingErrorWhen)]
+    [RateLimitSettings(RequestTimeoutDuration, AssetInfoRequestAmount, RequestBlockDuration, AssetInfoBucket)]
     public ApiResponse<ApiGameAssetResponse> GetAssetInfo(RequestContext context, GameDatabaseContext database,
         IDataStore dataStore,
         [DocSummary("The SHA1 hash of the asset")]
@@ -131,7 +138,7 @@ public class ResourceApiEndpoints : EndpointGroup
         if (!CommonPatterns.Sha1Regex().IsMatch(realHash)) return ApiValidationError.HashInvalidError;
         if (string.IsNullOrWhiteSpace(realHash)) return ApiValidationError.HashMissingError;
 
-        GameAsset? asset = database.GetAssetFromHash(realHash);
+        GameAsset? asset = dataContext.Cache.GetAssetInfo(realHash, database);
         if (asset == null) return ApiNotFoundError.Instance;
 
         return ApiGameAssetResponse.FromOld(asset, dataContext);
@@ -141,6 +148,7 @@ public class ResourceApiEndpoints : EndpointGroup
     [DocSummary("Gets information from the database about a particular PSP hash. Includes user who uploaded, dependencies, timestamps, etc.")]
     [DocError(typeof(ApiValidationError), ApiValidationError.HashMissingErrorWhen)]
     [DocError(typeof(ApiNotFoundError), "The asset could not be found")]
+    [RateLimitSettings(RequestTimeoutDuration, AssetInfoRequestAmount, RequestBlockDuration, AssetInfoBucket)]
     public ApiResponse<ApiGameAssetResponse> GetPspAssetInfo(RequestContext context, GameDatabaseContext database,
         IDataStore dataStore,
         [DocSummary("The SHA1 hash of the asset")]
@@ -154,6 +162,7 @@ public class ResourceApiEndpoints : EndpointGroup
     [DocError(typeof(ApiValidationError), ApiValidationError.CannotReadAssetErrorWhen)]
     [DocError(typeof(ApiValidationError), ApiValidationError.BodyMustBeImageErrorWhen)]
     [DocError(typeof(ApiAuthenticationError), ApiAuthenticationError.NoPermissionsForCreationWhen)]
+    [RateLimitSettings(420, 10, 300, "image-upload-api")]
     public ApiResponse<ApiGameAssetResponse> UploadImageAsset(RequestContext context, GameDatabaseContext database,
         IDataStore dataStore, AssetImporter importer, GameServerConfig config,
         [DocSummary("The SHA1 hash of the asset")]
@@ -173,7 +182,7 @@ public class ResourceApiEndpoints : EndpointGroup
 
         if (dataStore.ExistsInStore(hash))
         {
-            GameAsset? existingAsset = database.GetAssetFromHash(hash);
+            GameAsset? existingAsset = dataContext.Cache.GetAssetInfo(hash, database);
             if (existingAsset == null)
                 return ApiInternalError.HashNotFoundInDatabaseError;
 
@@ -183,6 +192,12 @@ public class ResourceApiEndpoints : EndpointGroup
         if (body.Length > 1_048_576 * 2)
         {
             return new ApiValidationError($"The asset must be under 2MB. Your file was {body.Length:N0} bytes.");
+        }
+
+        if (body.Length + user.FilesizeQuotaUsage > config.UserFilesizeQuota)
+        {
+            context.Logger.LogWarning(BunkumCategory.UserContent, "User {0} has hit the filesize quota ({1} bytes), rejecting.", user.Username, config.UserFilesizeQuota);
+            return new ApiValidationError($"You have exceeded your filesize quota.");
         }
 
         GameAsset? gameAsset = importer.ReadAndVerifyAsset(hash, body, TokenPlatform.Website, database);
@@ -203,6 +218,8 @@ public class ResourceApiEndpoints : EndpointGroup
         }
         
         database.AddAssetToDatabase(gameAsset);
+        dataContext.Cache.CacheAsset(gameAsset.AssetHash, gameAsset);
+        database.IncrementUserFilesizeQuota(user, body.Length);
 
         return new ApiResponse<ApiGameAssetResponse>(ApiGameAssetResponse.FromOld(gameAsset, dataContext)!, Created);
     }

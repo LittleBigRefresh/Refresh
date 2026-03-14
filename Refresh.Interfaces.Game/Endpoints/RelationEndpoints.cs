@@ -1,10 +1,13 @@
 using Bunkum.Core;
 using Bunkum.Core.Endpoints;
+using Bunkum.Core.RateLimit;
 using Bunkum.Core.Responses;
 using Bunkum.Listener.Protocol;
 using Bunkum.Protocols.Http;
 using Refresh.Core.Authentication.Permission;
 using Refresh.Core.Configuration;
+using Refresh.Core.RateLimits.Relations;
+using Refresh.Core.RateLimits.Users;
 using Refresh.Core.Types.Data;
 using Refresh.Database;
 using Refresh.Database.Models.Levels;
@@ -18,8 +21,10 @@ public class RelationEndpoints : EndpointGroup
 {
     [GameEndpoint("favourite/slot/{slotType}/{id}", HttpMethods.Post)]
     [RequireEmailVerified]
+    [RateLimitSettings(CommonRelationEndpointLimits.TimeoutDuration, CommonRelationEndpointLimits.RequestAmount, 
+                            CommonRelationEndpointLimits.BlockDuration, CommonRelationEndpointLimits.RequestBucket)]
     public Response FavouriteLevel(RequestContext context, GameDatabaseContext database, GameUser user, string slotType,
-        int id, GameServerConfig config)
+        int id, GameServerConfig config, DataContext dataContext)
     {
         if (user.IsWriteBlocked(config))
             return context.IsPSP() ? OK : Unauthorized; // See comment below
@@ -30,13 +35,16 @@ public class RelationEndpoints : EndpointGroup
         if (level == null) return context.IsPSP() ? OK : NotFound;
 
         database.FavouriteLevel(level, user);
+        dataContext.Cache.UpdateLevelHeartedStatusByUser(user, level, true, database);
         return OK;
     }
     
     [GameEndpoint("unfavourite/slot/{slotType}/{id}", HttpMethods.Post)]
     [RequireEmailVerified]
+    [RateLimitSettings(CommonRelationEndpointLimits.TimeoutDuration, CommonRelationEndpointLimits.RequestAmount, 
+                            CommonRelationEndpointLimits.BlockDuration, CommonRelationEndpointLimits.RequestBucket)]
     public Response UnfavouriteLevel(RequestContext context, GameDatabaseContext database, GameUser user,
-        string slotType, int id, GameServerConfig config)
+        string slotType, int id, GameServerConfig config, DataContext dataContext)
     {
         if (user.IsWriteBlocked(config))
             return context.IsPSP() ? OK : Unauthorized; // See comment below
@@ -47,13 +55,16 @@ public class RelationEndpoints : EndpointGroup
         if (level == null) return context.IsPSP() ? OK : NotFound;
 
         database.UnfavouriteLevel(level, user);
+        dataContext.Cache.UpdateLevelHeartedStatusByUser(user, level, false, database);
         return OK;
     }
     
     [GameEndpoint("favourite/user/{username}", HttpMethods.Post)]
     [RequireEmailVerified]
+    [RateLimitSettings(CommonRelationEndpointLimits.TimeoutDuration, CommonRelationEndpointLimits.RequestAmount, 
+                            CommonRelationEndpointLimits.BlockDuration, CommonRelationEndpointLimits.RequestBucket)]
     public Response FavouriteUser(RequestContext context, GameDatabaseContext database, GameUser user, string username,
-        GameServerConfig config)
+        GameServerConfig config, DataContext dataContext)
     {
         if (user.IsWriteBlocked(config))
             return context.IsPSP() ? OK : Unauthorized; // See comment below
@@ -64,13 +75,16 @@ public class RelationEndpoints : EndpointGroup
         if (userToFavourite == null) return context.IsPSP() ? OK : NotFound;
 
         database.FavouriteUser(userToFavourite, user);
+        dataContext.Cache.UpdateUserHeartedStatusByUser(user, userToFavourite, true, database);
         return OK;
     }
     
     [GameEndpoint("unfavourite/user/{username}", HttpMethods.Post)]
     [RequireEmailVerified]
+    [RateLimitSettings(CommonRelationEndpointLimits.TimeoutDuration, CommonRelationEndpointLimits.RequestAmount, 
+                            CommonRelationEndpointLimits.BlockDuration, CommonRelationEndpointLimits.RequestBucket)]
     public Response UnfavouriteUser(RequestContext context, GameDatabaseContext database, GameUser user,
-        string username, GameServerConfig config)
+        string username, GameServerConfig config, DataContext dataContext)
     {
         if (user.IsWriteBlocked(config))
             return context.IsPSP() ? OK : Unauthorized; // See comment below
@@ -81,12 +95,15 @@ public class RelationEndpoints : EndpointGroup
         if (userToFavourite == null) return context.IsPSP() ? OK : NotFound;
 
         database.UnfavouriteUser(userToFavourite, user);
+        dataContext.Cache.UpdateUserHeartedStatusByUser(user, userToFavourite, false, database);
         return OK;
     }
 
     [GameEndpoint("favouriteUsers/{username}", ContentType.Xml)]
     [NullStatusCode(NotFound)]
     [MinimumRole(GameUserRole.Restricted)]
+    [RateLimitSettings(UserListEndpointLimits.TimeoutDuration, UserListEndpointLimits.RequestAmount, 
+                            UserListEndpointLimits.BlockDuration, UserListEndpointLimits.RequestBucket)]
     public SerializedFavouriteUserList? GetFavouriteUsers(RequestContext context, GameDatabaseContext database,
         string username, DataContext dataContext)
     {
@@ -100,35 +117,49 @@ public class RelationEndpoints : EndpointGroup
     }
 
     [GameEndpoint("lolcatftw/add/{slotType}/{id}", HttpMethods.Post)]
-    public Response QueueLevel(RequestContext context, GameDatabaseContext database, GameUser user, string slotType, int id)
+    [RequireEmailVerified]
+    [RateLimitSettings(CommonRelationEndpointLimits.TimeoutDuration, CommonRelationEndpointLimits.RequestAmount, 
+                            CommonRelationEndpointLimits.BlockDuration, CommonRelationEndpointLimits.RequestBucket)]
+    public Response QueueLevel(RequestContext context, GameDatabaseContext database, GameUser user, string slotType, int id, DataContext dataContext)
     {
         GameLevel? level = database.GetLevelByIdAndType(slotType, id);
         if (level == null) return NotFound;
 
         database.QueueLevel(level, user);
+        dataContext.Cache.UpdateLevelQueuedStatusByUser(user, level, true, database);
         return OK;
     }
     
     [GameEndpoint("lolcatftw/remove/{slotType}/{id}", HttpMethods.Post)]
-    public Response DequeueLevel(RequestContext context, GameDatabaseContext database, GameUser user, string slotType, int id)
+    [RequireEmailVerified]
+    [RateLimitSettings(CommonRelationEndpointLimits.TimeoutDuration, CommonRelationEndpointLimits.RequestAmount, 
+                            CommonRelationEndpointLimits.BlockDuration, CommonRelationEndpointLimits.RequestBucket)]
+    public Response DequeueLevel(RequestContext context, GameDatabaseContext database, GameUser user, string slotType, int id, DataContext dataContext)
     {
         GameLevel? level = database.GetLevelByIdAndType(slotType, id);
         if (level == null) return NotFound;
 
         database.DequeueLevel(level, user);
+        dataContext.Cache.UpdateLevelQueuedStatusByUser(user, level, false, database);
         return OK;
     }
 
     [GameEndpoint("lolcatftw/clear", HttpMethods.Post)]
-    public Response ClearQueue(RequestContext context, GameDatabaseContext database, GameUser user)
+    [RequireEmailVerified]
+    [RateLimitSettings(CommonRelationEndpointLimits.TimeoutDuration, CommonRelationEndpointLimits.RequestAmount, 
+                            CommonRelationEndpointLimits.BlockDuration, CommonRelationEndpointLimits.RequestBucket)]
+    public Response ClearQueue(RequestContext context, GameDatabaseContext database, GameUser user, DataContext dataContext)
     {
         database.ClearQueue(user);
+        dataContext.Cache.ClearQueueByUser(user);
         return OK;
     }
     
     [GameEndpoint("tag/{slotType}/{id}", HttpMethods.Post)]
     [RequireEmailVerified]
-    public Response SubmitTagsForLevel(RequestContext context, GameDatabaseContext database, GameUser user,
+    [RateLimitSettings(LevelTaggingEndpointLimits.TimeoutDuration, LevelTaggingEndpointLimits.RequestAmount, 
+                            LevelTaggingEndpointLimits.BlockDuration, LevelTaggingEndpointLimits.RequestBucket)]
+    public Response SubmitTagsForLevel(RequestContext context, GameDatabaseContext database, GameUser user, DataContext dataContext,
         string slotType, int id, string body, GameServerConfig config)
     {
         if (user.IsWriteBlocked(config))
@@ -150,6 +181,7 @@ public class RelationEndpoints : EndpointGroup
             return BadRequest;
         
         database.AddTagRelation(user, level, tag.Value);
+        dataContext.Cache.RemoveTags(level); // Reset
         
         return OK;
     }

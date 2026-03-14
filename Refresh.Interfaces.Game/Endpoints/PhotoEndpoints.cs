@@ -1,11 +1,13 @@
 using Bunkum.Core;
 using Bunkum.Core.Endpoints;
+using Bunkum.Core.RateLimit;
 using Bunkum.Core.Responses;
 using Bunkum.Core.Storage;
 using Bunkum.Listener.Protocol;
 using Bunkum.Protocols.Http;
 using Refresh.Core.Authentication.Permission;
 using Refresh.Core.Configuration;
+using Refresh.Core.RateLimits.Photos;
 using Refresh.Core.Services;
 using Refresh.Core.Types.Data;
 using Refresh.Database;
@@ -21,6 +23,7 @@ public class PhotoEndpoints : EndpointGroup
 {
     [GameEndpoint("uploadPhoto", HttpMethods.Post, ContentType.Xml)]
     [RequireEmailVerified]
+    [RateLimitSettings(500, 12, 400, "upload-photo")]
     public Response UploadPhoto(RequestContext context, SerializedPhoto body, GameDatabaseContext database,
         GameUser user, IDataStore dataStore,
         DataContext dataContext, AipiService aipi, GameServerConfig config)
@@ -52,19 +55,23 @@ public class PhotoEndpoints : EndpointGroup
         List<string> hashes = [body.LargeHash, body.MediumHash, body.SmallHash];
         foreach (string hash in hashes.Distinct())
         {
-            GameAsset? gameAsset = database.GetAssetFromHash(hash);
+            GameAsset? gameAsset = dataContext.Cache.GetAssetInfo(hash, database);
             if(gameAsset == null) continue;
             if (aipi != null && aipi.ScanAndHandleAsset(dataContext, gameAsset))
                 return Unauthorized;
         }
 
-        database.UploadPhoto(body, user);
+        GameLevel? level = body.Level == null ? null : database.GetLevelByIdAndType(body.Level.Type, body.Level.LevelId);
+
+        database.UploadPhoto(body, body.PhotoSubjects, user, level);
+        if (level != null)
+            dataContext.Cache.IncrementLevelPhotosByUser(user, level, 1, database);
 
         return OK;
     }
 
     [GameEndpoint("deletePhoto/{id}", HttpMethods.Post)]
-    public Response DeletePhoto(RequestContext context, GameDatabaseContext database, GameUser user, int id)
+    public Response DeletePhoto(RequestContext context, GameDatabaseContext database, GameUser user, int id, DataContext dataContext)
     {
         GamePhoto? photo = database.GetPhotoById(id);
         if (photo == null) return NotFound;
@@ -73,6 +80,9 @@ public class PhotoEndpoints : EndpointGroup
             return Unauthorized;
         
         database.RemovePhoto(photo);
+        if (photo.Level != null)
+            dataContext.Cache.IncrementLevelPhotosByUser(photo.Publisher, photo.Level, -1, database);
+
         return OK;
     }
     
@@ -98,16 +108,23 @@ public class PhotoEndpoints : EndpointGroup
     [GameEndpoint("photos/with", ContentType.Xml)]
     [Authentication(false)]
     [MinimumRole(GameUserRole.Restricted)]
+    [RateLimitSettings(PhotoListEndpointLimits.TimeoutDuration, PhotoListEndpointLimits.GameRequestAmount, 
+                            PhotoListEndpointLimits.BlockDuration, PhotoListEndpointLimits.GameRequestBucket)]
     public Response PhotosWithUser(RequestContext context, GameDatabaseContext database, DataContext dataContext) 
         => GetPhotos(context, database, dataContext, database.GetPhotosWithUser);
     
     [GameEndpoint("photos/by", ContentType.Xml)]
     [Authentication(false)]
     [MinimumRole(GameUserRole.Restricted)]
+    [RateLimitSettings(PhotoListEndpointLimits.TimeoutDuration, PhotoListEndpointLimits.GameRequestAmount, 
+                            PhotoListEndpointLimits.BlockDuration, PhotoListEndpointLimits.GameRequestBucket)]
     public Response PhotosByUser(RequestContext context, GameDatabaseContext database, DataContext dataContext) 
         => GetPhotos(context, database, dataContext, database.GetPhotosByUser);
 
     [GameEndpoint("photos/{slotType}/{levelId}", ContentType.Xml)]
+    [MinimumRole(GameUserRole.Restricted)]
+    [RateLimitSettings(PhotoListEndpointLimits.TimeoutDuration, PhotoListEndpointLimits.GameRequestAmount, 
+                            PhotoListEndpointLimits.BlockDuration, PhotoListEndpointLimits.GameRequestBucket)]
     public SerializedPhotoList? GetPhotosOnLevel(RequestContext context, DataContext dataContext, string slotType, int levelId)
     {
         GameLevel? level = dataContext.Database.GetLevelByIdAndType(slotType, levelId);
@@ -133,6 +150,9 @@ public class PhotoEndpoints : EndpointGroup
 
     [GameEndpoint("photo/{id}", ContentType.Xml)]
     [NullStatusCode(NotFound)]
+    [MinimumRole(GameUserRole.Restricted)]
+    [RateLimitSettings(SinglePhotoEndpointLimits.TimeoutDuration, SinglePhotoEndpointLimits.RequestAmount, 
+                            SinglePhotoEndpointLimits.BlockDuration, SinglePhotoEndpointLimits.RequestBucket)]
     public SerializedPhoto? GetPhotoById(RequestContext context, DataContext dataContext, int id)
     {
         GamePhoto? photo = dataContext.Database.GetPhotoById(id);

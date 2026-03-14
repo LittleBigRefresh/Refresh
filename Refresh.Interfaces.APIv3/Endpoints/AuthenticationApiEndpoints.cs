@@ -4,9 +4,9 @@ using Bunkum.Core;
 using Bunkum.Core.Endpoints;
 using Bunkum.Core.RateLimit;
 using Bunkum.Protocols.Http;
+using Refresh.Common;
 using Refresh.Common.Time;
 using Refresh.Common.Verification;
-using Refresh.Core;
 using Refresh.Core.Authentication.Permission;
 using Refresh.Core.Configuration;
 using Refresh.Core.Services;
@@ -109,7 +109,7 @@ public class AuthenticationApiEndpoints : EndpointGroup
         context.Logger.LogInfo(BunkumCategory.Authentication, $"{user} successfully logged in through the API");
 
         // Update pin progress for signing into the API
-        database.IncrementUserPinProgress((long)ServerPins.SignIntoWebsite, 1, user);
+        database.IncrementUserPinProgress((long)ServerPins.SignIntoWebsite, 1, user, false, TokenPlatform.Website);
 
         return new ApiAuthenticationResponse
         {
@@ -201,10 +201,18 @@ public class AuthenticationApiEndpoints : EndpointGroup
         database.RevokeToken(token);
         return new ApiOkResponse();
     }
+
+    private const int IpVerificationTimeoutDuration = 300;
+    private const int IpVerificationListAmount = 12;
+    private const int IpVerificationActionAmount = 18;
+    private const int IpVerificationBlockDuration = 240;
+    private const string IpVerificationListBucket = "ip-verification-list";
+    private const string IpVerificationActionBucket = "ip-verification-action";
     
     // IP Verification
     [ApiV3Endpoint("verificationRequests"), MinimumRole(GameUserRole.Restricted)]
     [DocSummary("Retrieves a list of IP addresses that have attempted to connect.")]
+    [RateLimitSettings(IpVerificationTimeoutDuration, IpVerificationListAmount, IpVerificationBlockDuration, IpVerificationListBucket)]
     public ApiListResponse<ApiGameIpVerificationRequestResponse> GetVerificationRequests(RequestContext context,
         GameDatabaseContext database, GameUser user, DataContext dataContext)
     {
@@ -216,6 +224,7 @@ public class AuthenticationApiEndpoints : EndpointGroup
 
     [ApiV3Endpoint("verifiedIps"), MinimumRole(GameUserRole.Restricted)]
     [DocSummary("Retrieves the list of IP addresses that have been verified by the logged in user.")]
+    [RateLimitSettings(IpVerificationTimeoutDuration, IpVerificationListAmount, IpVerificationBlockDuration, IpVerificationListBucket)]
     public ApiListResponse<ApiGameUserVerifiedIpResponse> GetVerifiedIps(RequestContext context,
         GameDatabaseContext database, DataContext dataContext, GameUser user)
     {
@@ -231,6 +240,7 @@ public class AuthenticationApiEndpoints : EndpointGroup
     [DocError(typeof(ApiValidationError), ApiValidationError.IpAddressParseErrorWhen)]
     [DocError(typeof(ApiNotFoundError), ApiNotFoundError.VerifiedIpMissingErrorWhen)]
     [DocRequestBody("127.0.0.1")]
+    [RateLimitSettings(IpVerificationTimeoutDuration, IpVerificationActionAmount, IpVerificationBlockDuration, IpVerificationActionBucket)]
     public ApiOkResponse RemoveVerifiedIp(
         RequestContext context, 
         GameDatabaseContext database, 
@@ -252,6 +262,7 @@ public class AuthenticationApiEndpoints : EndpointGroup
     [DocSummary("Approves a given IP, and clears all remaining verification requests. Send the IP in the body.")]
     [DocError(typeof(ApiValidationError), ApiValidationError.IpAddressParseErrorWhen)]
     [DocRequestBody("127.0.0.1")]
+    [RateLimitSettings(IpVerificationTimeoutDuration, IpVerificationActionAmount, IpVerificationBlockDuration, IpVerificationActionBucket)]
     public ApiOkResponse ApproveVerificationRequest(
         RequestContext context,
         GameDatabaseContext database,
@@ -274,6 +285,7 @@ public class AuthenticationApiEndpoints : EndpointGroup
     [DocSummary("Denies all verification requests matching a given IP. Send the IP in the body.")]
     [DocError(typeof(ApiValidationError), ApiValidationError.IpAddressParseErrorWhen)]
     [DocRequestBody("127.0.0.1")]
+    [RateLimitSettings(IpVerificationTimeoutDuration, IpVerificationActionAmount, IpVerificationBlockDuration, IpVerificationActionBucket)]
     public ApiOkResponse DenyVerificationRequest(RequestContext context, GameDatabaseContext database, GameUser user, string body)
     {
         string ipAddress = body.Trim();
@@ -288,6 +300,7 @@ public class AuthenticationApiEndpoints : EndpointGroup
 
     [ApiV3Endpoint("register", HttpMethods.Post), Authentication(false)]
     [DocSummary("Registers a new user.")]
+    [DocError(typeof(ApiValidationError), ApiValidationError.InvalidUsernameErrorWhen)]
     [DocRequestBody(typeof(ApiRegisterRequest))]
     #if !DEBUG
     [RateLimitSettings(3600, 10, 3600 / 2, "register")]
@@ -311,14 +324,12 @@ public class AuthenticationApiEndpoints : EndpointGroup
         if (!smtpService.CheckEmailDomainValidity(body.EmailAddress))
             return ApiValidationError.EmailDoesNotActuallyExistError;
         
-        if (database.IsUserDisallowed(body.Username))
+        if (database.IsUserDisallowed(body.Username) || database.IsEmailDisallowed(body.EmailAddress))
             return new ApiAuthenticationError("You aren't allowed to play on this instance.");
         
         if (!database.IsUsernameValid(body.Username))
-            return new ApiValidationError(
-                "The username must be valid. " +
-                "The requirements are 3 to 16 alphanumeric characters, plus hyphens and underscores. " +
-                "Are you sure you used your PSN/RPCN username?");
+            return new ApiValidationError(ApiValidationError.InvalidUsernameErrorWhen
+                + " Are you sure you used your PSN/RPCN username?");
 
         if (database.IsUsernameQueued(body.Username) || database.IsEmailQueued(body.EmailAddress))
             return UserInQueueError();

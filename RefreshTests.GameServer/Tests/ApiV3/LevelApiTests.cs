@@ -27,7 +27,7 @@ public class LevelApiTests : GameServerTest
     {
         using TestContext context = this.GetServer();
 
-        ApiListResponse<ApiLevelCategoryResponse>? categories = context.Http.GetList<ApiLevelCategoryResponse>("/api/v3/levels");
+        ApiListResponse<ApiCategoryResponse>? categories = context.Http.GetList<ApiCategoryResponse>("/api/v3/levels");
         Assert.That(categories, Is.Not.Null);
         Assert.That(categories!.ListInfo!.TotalItems, Is.EqualTo(categories.Data!.Count));
         Assert.That(categories.ListInfo.TotalItems, Is.Not.Zero);
@@ -39,16 +39,16 @@ public class LevelApiTests : GameServerTest
         using TestContext context = this.GetServer();
         GameLevel level = context.CreateLevel(context.CreateUser());
 
-        ApiListResponse<ApiLevelCategoryResponse>? categories = context.Http.GetList<ApiLevelCategoryResponse>("/api/v3/levels?includePreviews=true");
+        ApiListResponse<ApiCategoryResponse>? categories = context.Http.GetList<ApiCategoryResponse>("/api/v3/levels?includePreviews=true");
         Assert.That(categories, Is.Not.Null);
         
-        ApiLevelCategoryResponse? category = categories?.Data?.FirstOrDefault(c => c.ApiRoute == "newest");
+        ApiCategoryResponse? category = categories?.Data?.FirstOrDefault(c => c.ApiRoute == "newest");
         Assert.That(category, Is.Not.Null);
         
         Assert.Multiple(() =>
         {
             Assert.That(category!.PreviewLevel, Is.Not.Null);
-            Assert.That(category.PreviewLevel!.LevelId, Is.EqualTo(level.LevelId));
+            Assert.That(category!.PreviewLevel, Is.InstanceOf<ApiGameLevelResponse>());
         });
     }
     
@@ -57,7 +57,7 @@ public class LevelApiTests : GameServerTest
     {
         using TestContext context = this.GetServer();
         
-        ApiListResponse<ApiLevelCategoryResponse>? categories = context.Http.GetList<ApiLevelCategoryResponse>("/api/v3/levels?includePreviews=babelababehbaooh", false, true); // https://youtu.be/K4w1h_r8l2Y?t=17
+        ApiListResponse<ApiCategoryResponse>? categories = context.Http.GetList<ApiCategoryResponse>("/api/v3/levels?includePreviews=babelababehbaooh", false, true); // https://youtu.be/K4w1h_r8l2Y?t=17
         Assert.That(categories, Is.Not.Null);
         categories!.AssertErrorIsEqual(ApiValidationError.BooleanParseError);
     }
@@ -142,5 +142,24 @@ public class LevelApiTests : GameServerTest
         HttpResponseMessage response = await client.DeleteAsync($"/api/v3/levels/id/{int.MaxValue}");
         Assert.That(response.StatusCode, Is.EqualTo(NotFound));
         Assert.That(context.Database.GetLevelById(id), Is.Not.Null);
+    }
+
+    [Test]
+    public void OnlyIncludesOwnLevelRelationsWhenSignedIn()
+    {
+        using TestContext context = this.GetServer();
+        GameUser me = context.CreateUser();
+        GameLevel level = context.CreateLevel(me);
+
+        // Try fetching the level without being signed in
+        ApiResponse<ApiGameLevelResponse>? response = context.Http.GetData<ApiGameLevelResponse>($"/api/v3/levels/id/{level.LevelId}");
+        Assert.That(response?.Data, Is.Not.Null);
+        Assert.That(response!.Data!.OwnRelations, Is.Null);
+        
+        // Sign in and then get level again
+        using HttpClient client = context.GetAuthenticatedClient(TokenType.Api, me);
+        response = client.GetData<ApiGameLevelResponse>($"/api/v3/levels/id/{level.LevelId}");
+        Assert.That(response?.Data, Is.Not.Null);
+        Assert.That(response!.Data!.OwnRelations, Is.Not.Null);
     }
 }

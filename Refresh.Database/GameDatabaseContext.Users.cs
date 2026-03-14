@@ -85,6 +85,20 @@ public partial class GameDatabaseContext // Users
         return this.GameUsersIncluded.FirstOrDefault(u => u.UserId == objectId);
     }
 
+    public GameUser? GetUserByIdAndType(string idType, string id)
+    {
+        switch (idType.ToLower())
+        {
+            case "username":
+            case "name":
+                return this.GetUserByUsername(id, false);
+            case "uuid":
+                return this.GetUserByUuid(id);
+            default:
+                return null;
+        }
+    }
+
     public DatabaseList<GameUser> GetUsers(int count, int skip)
         => new(this.GameUsersIncluded.OrderByDescending(u => u.JoinDate), skip, count);
     
@@ -232,6 +246,27 @@ public partial class GameDatabaseContext // Users
         });
     }
 
+    public void UpdateUserData(GameUser user, IApiAdminEditUserRequest data)
+    {
+        if (data.IconHash != null)
+            user.IconHash = data.IconHash;
+            
+        if (data.VitaIconHash != null)
+            user.VitaIconHash = data.VitaIconHash;
+        
+        if (data.BetaIconHash != null)
+            user.BetaIconHash = data.BetaIconHash;
+
+        if (data.Description != null)
+            user.Description = data.Description;
+        
+        if (data.Role != null)
+            user.Role = data.Role.Value;
+        
+        this.GameUsers.Update(user);
+        this.SaveChanges();
+    }
+
     public void UpdatePlanetModdedStatus(GameUser user)
     {
         user.AreLbp2PlanetsModded = this.GetPlanetModdedStatus(user.Lbp2PlanetsHash);
@@ -267,16 +302,16 @@ public partial class GameDatabaseContext // Users
     public void SetUserRole(GameUser user, GameUserRole role)
     {
         if(role == GameUserRole.Banned) throw new InvalidOperationException($"Cannot ban a user with this method. Please use {nameof(this.BanUser)}().");
-        this.Write(() =>
+        
+        if (user.Role is GameUserRole.Banned or GameUserRole.Restricted)
         {
-            if (user.Role is GameUserRole.Banned or GameUserRole.Restricted)
-            {
-                user.BanReason = null;
-                user.BanExpiryDate = null;
-            };
-            
-            user.Role = role;
-        });
+            user.BanReason = null;
+            user.BanExpiryDate = null;
+        };
+        
+        user.Role = role;
+        this.GameUsers.Update(user);
+        this.SaveChanges();
     }
 
     private void PunishUser(GameUser user, string reason, DateTimeOffset expiryDate, GameUserRole role)
@@ -312,11 +347,30 @@ public partial class GameDatabaseContext // Users
     public DatabaseList<GameUser> GetAllUsersWithRole(GameUserRole role)
         => new(this.GameUsersIncluded.Where(u => u.Role == role));
 
-    public void RenameUser(GameUser user, string newUsername)
+    public void RenameUser(GameUser user, string newUsername, bool force = false)
     {
-        string oldUsername = user.Username;
+        if (!force)
+        {
+            if (!newUsername.StartsWith(SystemUsers.SystemPrefix) && !this.IsUsernameValid(newUsername))
+            {
+                throw new ArgumentException("Username is invalid!", nameof(newUsername));
+            }
 
+            if (this.IsUsernameTaken(newUsername, user))
+            {
+                throw new ArgumentException("Username is already taken!", nameof(newUsername));
+            }
+        }
+
+        string oldUsername = user.Username;
         user.Username = newUsername;
+
+        this.PreviousUsernames.Add(new()
+        {
+            Username = oldUsername,
+            User = user,
+            ReplacedAt = this._time.Now,
+        });
         this.GameUsers.Update(user);
         this.SaveChanges();
         
@@ -335,6 +389,8 @@ public partial class GameDatabaseContext // Users
         this.BanUser(user, deletedReason, DateTimeOffset.MaxValue);
         this.RevokeAllTokensForUser(user);
         this.DeleteNotificationsByUser(user);
+        if (user.EmailAddress != null)
+            this.DisallowEmail(user.EmailAddress);
         
         this.Write(() =>
         {
@@ -348,37 +404,54 @@ public partial class GameDatabaseContext // Users
             user.Lbp2PlanetsHash = "0";
             user.Lbp3PlanetsHash = "0";
             user.VitaPlanetsHash = "0";
+            user.BetaPlanetsHash = "0";
             user.IconHash = "0";
+            user.VitaIconHash = "0";
+            user.BetaIconHash = "0";
+            user.PspIconHash = "0";
+            user.YayFaceHash = "0";
+            user.BooFaceHash = "0";
+            user.MehFaceHash = "0";
             user.AllowIpAuthentication = false;
             user.EmailAddressVerified = false;
             user.PsnAuthenticationAllowed = false;
             user.RpcnAuthenticationAllowed = false;
             
-            foreach (GamePhoto photo in this.GetPhotosWithUser(user, int.MaxValue, 0).Items)
-                foreach (GamePhotoSubject subject in photo.Subjects.Where(s => s.User?.UserId == user.UserId))
-                    subject.User = null;
-            
-            this.FavouriteLevelRelations.RemoveRange(r => r.User == user);
-            this.FavouriteUserRelations.RemoveRange(r => r.UserToFavourite == user);
-            this.FavouriteUserRelations.RemoveRange(r => r.UserFavouriting == user);
-            this.QueueLevelRelations.RemoveRange(r => r.User == user);
-            this.GamePhotos.RemoveRange(p => p.Publisher == user);
-            this.GameUserVerifiedIpRelations.RemoveRange(p => p.User == user);
-            
-            foreach (GameScore score in this.GameScores.ToList())
+            foreach (GamePhotoSubject subject in this.GamePhotoSubjects.Where(s => s.UserId == user.UserId).ToList())
             {
-                if (!score.PlayerIds.Contains(user.UserId)) continue;
-                this.GameScores.Remove(score);
+                subject.UserId = null;
             }
+
+            this.FavouriteLevelRelations.RemoveRange(r => r.UserId == user.UserId);
+            this.FavouriteUserRelations.RemoveRange(r => r.UserToFavouriteId == user.UserId);
+            this.FavouriteUserRelations.RemoveRange(r => r.UserFavouritingId == user.UserId);
+            this.QueueLevelRelations.RemoveRange(r => r.UserId == user.UserId);
+            this.TagLevelRelations.RemoveRange(r => r.UserId == user.UserId);
+            this.GameUserVerifiedIpRelations.RemoveRange(p => p.UserId == user.UserId);
+
+            this.GameNotifications.RemoveRange(s => s.UserId == user.UserId);
+            this.GamePhotos.RemoveRange(p => p.PublisherId == user.UserId);
+            this.Events.RemoveRange(e => e.UserId == user.UserId);
+            this.GameScores.RemoveRange(s => s.PublisherId == user.UserId);
+            this.GameChallengeScores.RemoveRange(s => s.PublisherUserId == user.UserId);
+
+            this.GameLevelComments.RemoveRange(s => s.AuthorUserId == user.UserId);
+            this.LevelCommentRelations.RemoveRange(s => s.UserId == user.UserId);
+            this.GameProfileComments.RemoveRange(s => s.AuthorUserId == user.UserId);
+            this.ProfileCommentRelations.RemoveRange(s => s.UserId == user.UserId);
+            this.GameReviews.RemoveRange(s => s.PublisherUserId == user.UserId);
+            this.RateReviewRelations.RemoveRange(s => s.UserId == user.UserId);
             
-            foreach (GameLevel level in this.GameLevels.Where(l => l.Publisher == user))
+            this.PinProgressRelations.RemoveRange(s => s.PublisherId == user.UserId);
+            this.ProfilePinRelations.RemoveRange(s => s.PublisherId == user.UserId);
+            this.GamePlaylists.RemoveRange(s => s.PublisherId == user.UserId);
+
+            foreach (GameLevel level in this.GameLevels.Where(l => l.PublisherUserId == user.UserId))
             {
                 level.Publisher = null;
             }
 
-            this.GameChallengeScores.RemoveRange(s => s.Publisher == user);
-
-            foreach (GameChallenge challenge in this.GameChallenges.Where(c => c.Publisher == user))
+            foreach (GameChallenge challenge in this.GameChallenges.Where(c => c.PublisherUserId == user.UserId))
             {
                 challenge.Publisher = null;
             }
@@ -389,11 +462,32 @@ public partial class GameDatabaseContext // Users
     {
         // do an initial cleanup of everything before deleting the row  
         this.DeleteUser(user);
-        
-        this.Write(() =>
+
+        // Set asset uploader to null to avoid EF throwing when fully deleting the original uploader outside of unit tests.
+        // No cascade-delete because currently, there's no way to delete assets from the data store, because doing so
+        // was ruled to be dangerous due to the risk of accidentally causing in-game issues due to no longer available assets
+        // (this risk is practically minimal, so this ruling is likely to change in the future). 
+        // Also, moderation may be an argument for not cascade-deleting assets.
+        // TODO: Store ID or name of the uploader separately/in a way where it won't be removed when deleting the user.
+        IEnumerable<GameAsset> assets = this.GetAssetsUploadedByUserInternal(user).ToArray();
+        foreach(GameAsset asset in assets)
         {
-            this.GameUsers.Remove(user);
-        });
+            asset.OriginalUploader = null;
+        }
+        this.UpdateAssetsInDatabase(assets);
+
+        // Same applies to level revisions.
+        // These are not cascade-deleted because GameLevels aren't either; their publisher is set to null and shown as !Deleted.
+        IEnumerable<GameLevelRevision> levelRevisions = this.GetLevelRevisionsByUserInternal(user).ToArray();
+        foreach(GameLevelRevision levelRevision in levelRevisions)
+        {
+            levelRevision.CreatedBy = null;
+        }
+        this.UpdateLevelRevisions(levelRevisions);
+        
+        // Another issue unreproducible in unit tests where we can't just use Remove() on the user object.
+        this.GameUsers.RemoveRange(u => u.UserId == user.UserId);
+        this.SaveChanges();
     }
 
     public void ResetUserPlanets(GameUser user)

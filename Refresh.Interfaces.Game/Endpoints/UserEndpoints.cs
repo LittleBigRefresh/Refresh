@@ -1,11 +1,13 @@
 using System.Xml.Serialization;
 using Bunkum.Core;
 using Bunkum.Core.Endpoints;
+using Bunkum.Core.RateLimit;
 using Bunkum.Core.Storage;
 using Bunkum.Listener.Protocol;
 using Bunkum.Protocols.Http;
 using Refresh.Common.Constants;
 using Refresh.Core.Authentication.Permission;
+using Refresh.Core.RateLimits.Users;
 using Refresh.Core.Services;
 using Refresh.Core.Types.Data;
 using Refresh.Database;
@@ -22,12 +24,16 @@ public class UserEndpoints : EndpointGroup
 {
     [GameEndpoint("user/{name}", HttpMethods.Get, ContentType.Xml)]
     [MinimumRole(GameUserRole.Restricted)]
+    [RateLimitSettings(SingleUserEndpointLimits.TimeoutDuration, SingleUserEndpointLimits.GameRequestAmount, 
+                            SingleUserEndpointLimits.BlockDuration, SingleUserEndpointLimits.GameRequestBucket)]
     public GameUserResponse? GetUser(RequestContext context, GameDatabaseContext database, string name, Token token,
         IDataStore dataStore, DataContext dataContext) 
         => GameUserResponse.FromOld(database.GetUserByUsername(name), dataContext);
 
     [GameEndpoint("users", HttpMethods.Get, ContentType.Xml)]
     [MinimumRole(GameUserRole.Restricted)]
+    [RateLimitSettings(UserListEndpointLimits.TimeoutDuration, UserListEndpointLimits.RequestAmount, 
+                            UserListEndpointLimits.BlockDuration, UserListEndpointLimits.RequestBucket)]
     public SerializedUserList GetMultipleUsers(RequestContext context, GameDatabaseContext database, Token token,
         IDataStore dataStore, DataContext dataContext)
     {
@@ -53,6 +59,8 @@ public class UserEndpoints : EndpointGroup
     [GameEndpoint("myFriends", HttpMethods.Get, ContentType.Xml)]
     [NullStatusCode(NotFound)]
     [MinimumRole(GameUserRole.Restricted)]
+    [RateLimitSettings(UserListEndpointLimits.TimeoutDuration, UserListEndpointLimits.RequestAmount, 
+                            UserListEndpointLimits.BlockDuration, UserListEndpointLimits.RequestBucket)]
     public SerializedFriendsList GetFriends(RequestContext context, GameDatabaseContext database,
         GameUser user, DataContext dataContext)
     {
@@ -62,6 +70,8 @@ public class UserEndpoints : EndpointGroup
 
     [GameEndpoint("updateUser", HttpMethods.Post, ContentType.Xml)]
     [NullStatusCode(BadRequest)]
+    [RateLimitSettings(UserModificationEndpointLimits.TimeoutDuration, UserModificationEndpointLimits.GameRequestAmount, 
+                            UserModificationEndpointLimits.BlockDuration, UserModificationEndpointLimits.GameRequestBucket)]
     public string? UpdateUser(RequestContext context, DataContext dataContext, GameUser user, string body, GuidCheckerService guidChecker)
     {
         SerializedUpdateData? data = null;
@@ -115,14 +125,17 @@ public class UserEndpoints : EndpointGroup
                     return null; 
                 }
             }
-            else
+            else if (data.IconHash.IsBlankHash())
+            {
+                // Force hash to be a specific value if the icon is supposed to be reset/default to a PSN avatar, 
+                // to not allow uncontrolled values which would still count as blank/empty hash (e.g. unlimited whitespaces)
+                data.IconHash = "0";
+            }
+            else if (!dataContext.DataStore.ExistsInStore(data.IconHash))
             {
                 //If the asset does not exist on the server, block the request
-                if (!dataContext.DataStore.ExistsInStore(data.IconHash))
-                {
-                    dataContext.Database.AddErrorNotification("Profile update failed", "Your avatar failed to update because the asset was missing on the server.", user);
-                    return null;
-                } 
+                dataContext.Database.AddErrorNotification("Profile update failed", "Your avatar failed to update because the asset was missing on the server.", user);
+                return null;
             }
         }
         
@@ -147,9 +160,15 @@ public class UserEndpoints : EndpointGroup
         return string.Empty;
     }
 
+    private const int PinTimeoutDuration = 480;
+    private const int PinRequestAmount = 8;
+    private const int PinBlockDuration = 420;
+    private const string PinBucket = "game-pins"; // Amount could aswell be 1, considering the default intervall in the NWS (5 minutes), but profile pin updating exists...
+
     [GameEndpoint("update_my_pins", HttpMethods.Post, ContentType.Json)]
     [RequireEmailVerified]
     [NullStatusCode(BadRequest)]
+    [RateLimitSettings(PinTimeoutDuration, PinRequestAmount, PinBlockDuration, PinBucket)]
     public SerializedPins? UpdatePins(RequestContext context, DataContext dataContext, GameUser user, SerializedPins body)
     {
         // Try to convert pin progress
@@ -176,7 +195,7 @@ public class UserEndpoints : EndpointGroup
 
         if (pinProgresses.Count > 0)
         {
-            dataContext.Database.UpdateUserPinProgress(pinProgresses, user, dataContext.Game);
+            dataContext.Database.UpdateUserPinProgress(pinProgresses, user, dataContext.Game == TokenGame.BetaBuild, dataContext.Platform);
         }
 
         // Users can only have 3 pins set on their profile
@@ -185,7 +204,7 @@ public class UserEndpoints : EndpointGroup
 
         if (body.ProfilePins.Count > 0)
         {
-            dataContext.Database.UpdateUserProfilePins(body.ProfilePins, user, dataContext.Game);
+            dataContext.Database.UpdateUserProfilePins(body.ProfilePins, user, dataContext.Game, dataContext.Platform);
         }
 
         // Return newly updated pins (LBP2 and 3 update their pin progresses if there are higher progress values
@@ -195,9 +214,10 @@ public class UserEndpoints : EndpointGroup
 
     [GameEndpoint("get_my_pins", HttpMethods.Get, ContentType.Json)]
     [MinimumRole(GameUserRole.Restricted)]
+    [RateLimitSettings(PinTimeoutDuration, PinRequestAmount, PinBlockDuration, PinBucket)]
     public SerializedPins GetPins(RequestContext context, DataContext dataContext, GameUser user)
         => SerializedPins.FromOld
         (
-            dataContext.Database.GetPinProgressesByUser(user, dataContext.Game, 0, 999).Items
+            dataContext.Database.GetPinProgressesByUser(user, dataContext.Game == TokenGame.BetaBuild, dataContext.Platform, 0, 999).Items
         );
 }

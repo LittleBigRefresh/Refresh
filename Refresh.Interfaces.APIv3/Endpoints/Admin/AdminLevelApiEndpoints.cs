@@ -3,6 +3,7 @@ using Bunkum.Core;
 using Bunkum.Core.Endpoints;
 using Bunkum.Protocols.Http;
 using MongoDB.Bson;
+using Refresh.Common.Constants;
 using Refresh.Core.Authentication.Permission;
 using Refresh.Core.Types.Data;
 using Refresh.Database;
@@ -12,6 +13,7 @@ using Refresh.Interfaces.APIv3.Endpoints.ApiTypes;
 using Refresh.Interfaces.APIv3.Endpoints.ApiTypes.Errors;
 using Refresh.Interfaces.APIv3.Endpoints.DataTypes.Request;
 using Refresh.Interfaces.APIv3.Endpoints.DataTypes.Response.Levels;
+using Refresh.Interfaces.APIv3.Extensions;
 
 namespace Refresh.Interfaces.APIv3.Endpoints.Admin;
 
@@ -53,9 +55,15 @@ public class AdminLevelApiEndpoints : EndpointGroup
         GameLevel? level = database.GetLevelById(id);
         if (level == null) return ApiNotFoundError.LevelMissingError;
 
-        if (body.IconHash != null && body.IconHash.StartsWith('g') &&
-            !dataContext.GuidChecker.IsTextureGuid(level.GameVersion, long.Parse(body.IconHash)))
-            return ApiValidationError.InvalidTextureGuidError;
+        (body.IconHash, ApiError? iconError) = body.IconHash.ValidateIcon(dataContext);
+        if (iconError != null) return iconError;
+        
+        // Trim title and description
+        if (body.Title != null && body.Title.Length > UgcLimits.TitleLimit) 
+            body.Title = body.Title[..UgcLimits.TitleLimit];
+
+        if (body.Description != null && body.Description.Length > UgcLimits.DescriptionLimit)
+            body.Description = body.Description[..UgcLimits.DescriptionLimit];
         
         level = database.UpdateLevel(body, level, user);
 
@@ -65,12 +73,13 @@ public class AdminLevelApiEndpoints : EndpointGroup
     [ApiV3Endpoint("admin/levels/id/{id}", HttpMethods.Delete), MinimumRole(GameUserRole.Moderator)]
     [DocSummary("Deletes a level.")]
     [DocError(typeof(ApiNotFoundError), ApiNotFoundError.LevelMissingErrorWhen)]
-    public ApiOkResponse DeleteLevel(RequestContext context, GameDatabaseContext database, int id)
+    public ApiOkResponse DeleteLevel(RequestContext context, GameDatabaseContext database, int id, DataContext dataContext)
     {
         GameLevel? level = database.GetLevelById(id);
         if (level == null) return ApiNotFoundError.LevelMissingError;
         
         database.DeleteLevel(level);
+        dataContext.Cache.RemoveLevelData(level);
         return new ApiOkResponse();
     }
     

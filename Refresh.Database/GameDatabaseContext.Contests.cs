@@ -8,15 +8,30 @@ namespace Refresh.Database;
 
 public partial class GameDatabaseContext // Contests
 {
-    public void CreateContest(GameContest contest)
+    public GameContest CreateContest(string contestId, ICreateContestInfo createInfo, GameUser organizer, GameLevel? templateLevel = null)
     {
-        if (this.GetContestById(contest.ContestId) != null) throw new InvalidOperationException("Contest already exists.");
+        if (this.GetContestById(contestId) != null) throw new InvalidOperationException("Contest already exists.");
         
-        this.Write(() =>
+        GameContest contest = new()
         {
-            contest.CreationDate = this._time.Now;
-            this.GameContests.Add(contest);
-        });
+            ContestId = contestId,
+            Organizer = organizer,
+            CreationDate = this._time.Now,
+            StartDate = createInfo.StartDate!.Value,
+            EndDate = createInfo.EndDate!.Value,
+            ContestTitle = createInfo.ContestTitle!,
+            BannerUrl = createInfo.BannerUrl ?? "",
+            ContestTag = createInfo.ContestTag ?? $"#{contestId}",
+            ContestSummary = createInfo.ContestSummary ?? "",
+            ContestDetails = createInfo.ContestDetails ?? "",
+            ContestTheme = createInfo.ContestTheme ?? "",
+            AllowedGames = createInfo.AllowedGames ?? [],
+            TemplateLevel = templateLevel
+        };
+
+        this.GameContests.Add(contest);
+        this.SaveChanges();
+        return contest;
     }
     
     public void DeleteContest(GameContest contest)
@@ -57,7 +72,7 @@ public partial class GameDatabaseContext // Contests
             .FirstOrDefault();
     }
     
-    public GameContest UpdateContest(ICreateContestInfo body, GameContest contest, GameUser? newOrganizer = null)
+    public GameContest UpdateContest(ICreateContestInfo body, GameContest contest, GameUser? newOrganizer = null, GameLevel? newTemplate = null)
     {
         this.Write(() =>
         {
@@ -82,8 +97,9 @@ public partial class GameDatabaseContext // Contests
                 contest.ContestTheme = body.ContestTheme;
             if (body.AllowedGames != null)
                 contest.AllowedGames = body.AllowedGames;
-            if (body.TemplateLevelId != null)
-                contest.TemplateLevel = this.GetLevelById((int)body.TemplateLevelId);
+
+            if (newTemplate != null)
+                contest.TemplateLevel = newTemplate;
         });
         
         return contest;
@@ -92,10 +108,17 @@ public partial class GameDatabaseContext // Contests
     [Pure]
     public DatabaseList<GameLevel> GetLevelsFromContest(GameContest contest, int count, int skip, GameUser? user, LevelFilterSettings levelFilterSettings)
     {
-        return new DatabaseList<GameLevel>(((IQueryable<GameLevel>)this.GetLevelsByGameVersion(levelFilterSettings.GameVersion)).FilterByLevelFilterSettings(user, levelFilterSettings)
+        IQueryable<GameLevel> levels = this.GetLevelsByGameVersion(levelFilterSettings.GameVersion)
+            .FilterByLevelFilterSettings(user, levelFilterSettings)
             .Where(l => l.Title.Contains(contest.ContestTag))
-            .Where(l => l.PublishDate >= contest.StartDate && l.PublishDate < contest.EndDate)
-            .AsEnumerable() // This shouldn't be a noticeable performance hit, since levels that aren't for the contest have already been filtered out
-            .Where(l => contest.AllowedGames.Contains(l.GameVersion)), skip, count);
+            .Where(l => l.PublishDate >= contest.StartDate && l.PublishDate < contest.EndDate);
+        
+        // Allow levels from all games if there are no allowed games specified
+        if (contest.AllowedGames.Count > 0)
+        {
+            levels = levels.Where(l => contest.AllowedGames.Contains(l.GameVersion));
+        }
+
+        return new(levels.ToArray(), skip, count);
     }
 }

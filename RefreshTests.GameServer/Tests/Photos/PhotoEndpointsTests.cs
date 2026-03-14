@@ -6,6 +6,7 @@ using RefreshTests.GameServer.Extensions;
 using Refresh.Database.Models.Levels;
 using Refresh.Database.Models.Photos;
 using Refresh.Interfaces.Game.Types.Lists;
+using Refresh.Database.Helpers;
 
 namespace RefreshTests.GameServer.Tests.Photos;
 
@@ -82,6 +83,91 @@ public class PhotoEndpointsTests : GameServerTest
 
         response = message.Content.ReadAsXML<SerializedPhotoList>();
         Assert.That(response.Items, Has.Count.EqualTo(0));
+    }
+
+    [Test]
+    public void UploadPhotoAndValidateAttributes()
+    {
+        using TestContext context = this.GetServer();
+        GameUser user = context.CreateUser();
+        GameLevel level = context.Database.GetStoryLevelById(420);
+
+        using HttpClient client = context.GetAuthenticatedClient(TokenType.Game, user);
+
+        //Upload our """photo"""
+        HttpResponseMessage message = client.PostAsync($"/lbp/upload/{TEST_ASSET_HASH}", new ReadOnlyMemoryContent(TestAsset)).Result;
+        Assert.That(message.StatusCode, Is.EqualTo(OK));
+        DateTimeOffset takenAt = context.Time.Now;
+        context.Time.TimestampMilliseconds += 2000; // Increase to differentiate between creation and publish date
+        
+        SerializedPhoto photo = new()
+        {
+            Timestamp = takenAt.ToUnixTimeSeconds(),
+            AuthorName = user.Username,
+            SmallHash = TEST_ASSET_HASH,
+            MediumHash = TEST_ASSET_HASH,
+            LargeHash = TEST_ASSET_HASH,
+            PlanHash = TEST_ASSET_HASH,
+            Level = new SerializedPhotoLevel
+            {
+                LevelId = level.StoryId,
+                Title = "real title",
+                Type = "developer",
+            },
+            PhotoSubjects = new List<SerializedPhotoSubject>
+            {
+                new()
+                {
+                    Username = user.Username,
+                    DisplayName = user.Username,
+                    BoundsList = "1,1,1,1",
+                },
+                new()
+                {
+                    Username = "SecretAlt",
+                    DisplayName = "SecretAlt",
+                    BoundsList = "2,4,5,6",
+                },
+            }
+        };
+        message = client.PostAsync($"/lbp/uploadPhoto", new StringContent(photo.AsXML())).Result;
+        Assert.That(message.StatusCode, Is.EqualTo(OK));
+
+        // Get the photo
+        GamePhoto? gamePhoto = context.Database.GetPhotosByUser(user, 100, 0).Items.FirstOrDefault();
+        Assert.That(gamePhoto, Is.Not.Null);
+
+        Assert.That(gamePhoto!.PublisherId, Is.EqualTo(user.UserId));
+        Assert.That(gamePhoto!.Publisher.UserId, Is.EqualTo(user.UserId));
+        Assert.That(gamePhoto!.PublisherId, Is.EqualTo(user.UserId));
+
+        Assert.That(gamePhoto!.TakenAt, Is.EqualTo(takenAt));
+        Assert.That(gamePhoto!.PublishedAt, Is.EqualTo(context.Time.Now));
+        Assert.That(gamePhoto!.PublishedAt, Is.Not.EqualTo(gamePhoto.TakenAt)); // Should be apart by 2 seconds (see above)
+
+        Assert.That(gamePhoto!.Level!, Is.Not.Null);
+        Assert.That(gamePhoto!.Level!.LevelId, Is.EqualTo(level.LevelId));
+        Assert.That(gamePhoto!.LevelId, Is.EqualTo(level.LevelId));
+        Assert.That(gamePhoto!.OriginalLevelId, Is.EqualTo(level.StoryId));
+        Assert.That(gamePhoto!.LevelType, Is.EqualTo("developer"));
+        Assert.That(gamePhoto!.OriginalLevelName, Is.EqualTo("real title"));
+
+        Assert.That(gamePhoto!.SmallAssetHash, Is.EqualTo(TEST_ASSET_HASH));
+        Assert.That(gamePhoto!.MediumAssetHash, Is.EqualTo(TEST_ASSET_HASH));
+        Assert.That(gamePhoto!.LargeAssetHash, Is.EqualTo(TEST_ASSET_HASH));
+        Assert.That(gamePhoto!.PlanHash, Is.EqualTo(TEST_ASSET_HASH));
+
+        List<GamePhotoSubject> subjects = context.Database.GetSubjectsInPhoto(gamePhoto).ToList();
+
+        Assert.That(subjects.Count, Is.EqualTo(2));
+        Assert.That(subjects[0].Bounds, Is.EqualTo(PhotoHelper.ParseBoundsList("1,1,1,1")));
+        Assert.That(subjects[0].DisplayName, Is.EqualTo(user.Username));
+        Assert.That(subjects[0].User, Is.Not.Null);
+        Assert.That(subjects[0].User!.UserId, Is.EqualTo(user.UserId));
+
+        Assert.That(subjects[1].Bounds, Is.EqualTo(PhotoHelper.ParseBoundsList("2,4,5,6")));
+        Assert.That(subjects[1].DisplayName, Is.EqualTo("SecretAlt"));
+        Assert.That(subjects[1].User, Is.Null);
     }
     
     [Test]

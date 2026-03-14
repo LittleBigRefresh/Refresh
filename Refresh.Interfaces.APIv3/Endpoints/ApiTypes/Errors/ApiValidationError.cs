@@ -17,6 +17,9 @@ public class ApiValidationError : ApiError
     public const string IpAddressParseErrorWhen = "The IP address could not be parsed by the server";
     public static readonly ApiValidationError IpAddressParseError = new(IpAddressParseErrorWhen);
 
+    public const string InvalidPlaylistIdWhen = "The playlist ID couldn't be parsed by the server";
+    public static readonly ApiValidationError InvalidPlaylistId = new(InvalidPlaylistIdWhen);
+
     public const string NoPhotoDeletionPermissionErrorWhen = "You do not have permission to delete someone else's photo";
     public static readonly ApiValidationError NoPhotoDeletionPermissionError = new(NoPhotoDeletionPermissionErrorWhen);
 
@@ -52,6 +55,12 @@ public class ApiValidationError : ApiError
 
     public const string BodyMustBeImageErrorWhen = "The asset must be a PNG/JPEG file";
     public static readonly ApiValidationError BodyMustBeImageError = new(BodyMustBeImageErrorWhen);
+
+    public const string IconMustBeImageErrorWhen = "The icon must be a PNG/JPEG file";
+    public static readonly ApiValidationError IconMustBeImageError = new(IconMustBeImageErrorWhen);
+
+    public const string IconMissingErrorWhen = "The icon is missing from the server";
+    public static readonly ApiValidationError IconMissingError = new(IconMissingErrorWhen);
     
     public const string ResourceExistsErrorWhen = "The resource you are attempting to create already exists.";
     public static readonly ApiValidationError ResourceExistsError = new(ResourceExistsErrorWhen);
@@ -62,8 +71,39 @@ public class ApiValidationError : ApiError
     public const string EmailDoesNotActuallyExistErrorWhen = "The email address given does not exist. Are you sure you typed it in correctly?";
     public static readonly ApiValidationError EmailDoesNotActuallyExistError = new(EmailDoesNotActuallyExistErrorWhen);
 
-    public const string BadUserLookupIdTypeWhen = "The ID type used to specify the user is not supported";
-    public static readonly ApiValidationError BadUserLookupIdType = new(BadUserLookupIdTypeWhen);
-    
+    public const string MayNotOverwriteRoleErrorWhen = "You may not overwrite user roles because you are not an admin";
+    public static readonly ApiValidationError MayNotOverwriteRoleError = new(MayNotOverwriteRoleErrorWhen);
+
+    public const string MayNotModifyUserDueToLowRoleErrorWhen = "You may not modify this user because their role is above yours, or the same as yours incase you're not an admin.";
+    public static readonly ApiValidationError MayNotModifyUserDueToLowRoleError = new(MayNotModifyUserDueToLowRoleErrorWhen);
+
+    public const string WrongRoleUpdateMethodErrorWhen = "The specified role cannot be assigned to the user using this endpoint.";
+    public static readonly ApiValidationError WrongRoleUpdateMethodError = new(WrongRoleUpdateMethodErrorWhen);
+
+    public const string UserIsAlreadyPardonedErrorWhen = "This user has no punishments, they are already pardoned.";
+    public static readonly ApiValidationError UserIsAlreadyPardonedError = new(UserIsAlreadyPardonedErrorWhen);
+
+    public const string RoleMissingErrorWhen = "The specified role does not exist.";
+    public static readonly ApiValidationError RoleMissingError = new(RoleMissingErrorWhen);
+
+    public const string ContestOrganizerIdParseErrorWhen = "The organizer's user ID could not be parsed by the server";
+    public static readonly ApiValidationError ContestOrganizerIdParseError = new(ContestOrganizerIdParseErrorWhen);
+
+    public const string ContestDataMissingErrorWhen = "The contest must at least have a title, aswell as a start and end date specified";
+    public static readonly ApiValidationError ContestDataMissingError = new(ContestDataMissingErrorWhen);
+
+    public const string InvalidUsernameErrorWhen = "The username must be valid. The requirements are 3 to 16 alphanumeric characters, plus hyphens and underscores.";
+    public static readonly ApiValidationError InvalidUsernameError = new(InvalidUsernameErrorWhen);
+
+    public const string UsernameTakenErrorWhen = "This username is already taken!";
+    public static readonly ApiValidationError UsernameTakenError = new(UsernameTakenErrorWhen);
+
+    public const string NoPlaylistEditPermissionErrorWhen = "You do not have permission to update this playlist";
+    public static readonly ApiValidationError NoPlaylistEditPermissionError = new(NoPlaylistEditPermissionErrorWhen);
+
+    public const string NoPlaylistDeletePermissionErrorWhen = "You do not have permission to delete this playlist";
+    public static readonly ApiValidationError NoPlaylistDeletePermissionError = new(NoPlaylistDeletePermissionErrorWhen);
+
+    // TODO: Split off error messages which are actually 401 or anything else that isn't 400
     public ApiValidationError(string message) : base(message) {}
 }

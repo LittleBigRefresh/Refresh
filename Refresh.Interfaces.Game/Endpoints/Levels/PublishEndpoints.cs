@@ -4,10 +4,10 @@ using Bunkum.Core.RateLimit;
 using Bunkum.Core.Responses;
 using Bunkum.Listener.Protocol;
 using Bunkum.Protocols.Http;
+using Refresh.Common;
 using Refresh.Common.Constants;
 using Refresh.Common.Time;
 using Refresh.Common.Verification;
-using Refresh.Core;
 using Refresh.Core.Authentication.Permission;
 using Refresh.Core.Configuration;
 using Refresh.Core.Types.Data;
@@ -27,7 +27,8 @@ public class PublishEndpoints : EndpointGroup
     private const int RequestTimeoutDuration = 900; // 15 minutes
     private const int MaxRequestAmount = 15;
     private const int RequestBlockDuration = RequestTimeoutDuration;
-    private const string BucketName = "level-publish";
+    private const string PublishBucket = "level-publish";
+    private const string StartPublishBucket = "level-start-publish";
     
     /// <summary>
     /// Does basic verification on a level
@@ -113,6 +114,7 @@ public class PublishEndpoints : EndpointGroup
 
     [GameEndpoint("startPublish", ContentType.Xml, HttpMethods.Post)]
     [RequireEmailVerified]
+    [RateLimitSettings(RequestTimeoutDuration, MaxRequestAmount, RequestBlockDuration, StartPublishBucket)]
     public Response StartPublish(RequestContext context,
         GameLevelRequest body,
         DataContext dataContext,
@@ -166,7 +168,7 @@ public class PublishEndpoints : EndpointGroup
 
     [GameEndpoint("publish", ContentType.Xml, HttpMethods.Post)]
     [RequireEmailVerified]
-    [RateLimitSettings(RequestTimeoutDuration, MaxRequestAmount, RequestBlockDuration, BucketName)]
+    [RateLimitSettings(RequestTimeoutDuration, MaxRequestAmount, RequestBlockDuration, PublishBucket)]
     public Response PublishLevel(RequestContext context,
         GameLevelRequest body,
         DataContext dataContext,
@@ -190,7 +192,7 @@ public class PublishEndpoints : EndpointGroup
         //Make sure the root resource exists in the data store
         if (!dataContext.DataStore.ExistsInStore(rootResourcePath)) return NotFound;
 
-        GameAsset? asset = dataContext.Database.GetAssetFromHash(body.RootResource);
+        GameAsset? asset = dataContext.Cache.GetAssetInfo(body.RootResource, dataContext.Database);
         if (asset != null && dataContext.Game != TokenGame.LittleBigPlanetPSP)
         {
             // ReSharper disable once ConvertIfStatementToSwitchStatement
@@ -238,12 +240,14 @@ public class PublishEndpoints : EndpointGroup
                 dataContext.Database.UpdateLevelModdedStatus(levelToUpdate);
             }
 
-            dataContext.Database.UpdateSkillRewardsForLevel(levelToUpdate, body.SkillRewards);
+            List<GameSkillReward> updatedRewards = dataContext.Database.UpdateSkillRewardsForLevel(levelToUpdate, body.SkillRewards);
+            dataContext.Cache.CacheSkillRewards(levelToUpdate, updatedRewards);
             return new Response(GameLevelResponse.FromOld(levelToUpdate, dataContext)!, ContentType.Xml);
         }
 
         GameLevel newLevel = dataContext.Database.AddLevel(body, dataContext.Game, user);
-        dataContext.Database.UpdateSkillRewardsForLevel(newLevel, body.SkillRewards);
+        List<GameSkillReward> newRewards = dataContext.Database.UpdateSkillRewardsForLevel(newLevel, body.SkillRewards);
+        dataContext.Cache.CacheSkillRewards(newLevel, newRewards);
 
         context.Logger.LogInfo(BunkumCategory.UserContent, "User {0} (id: {1}) uploaded level id {2}", user.Username, user.UserId, newLevel.LevelId);
 
@@ -264,7 +268,7 @@ public class PublishEndpoints : EndpointGroup
     }
 
     [GameEndpoint("unpublish/{id}", ContentType.Xml, HttpMethods.Post)]
-    public Response DeleteLevel(RequestContext context, GameUser user, GameDatabaseContext database, int id)
+    public Response DeleteLevel(RequestContext context, GameUser user, GameDatabaseContext database, int id, DataContext dataContext)
     {
         GameLevel? level = database.GetLevelById(id);
         if (level == null) return NotFound;
@@ -272,6 +276,7 @@ public class PublishEndpoints : EndpointGroup
         if (level.Publisher?.UserId != user.UserId) return Unauthorized;
 
         database.DeleteLevel(level);
+        dataContext.Cache.RemoveLevelData(level);
         return OK;
     }
 }

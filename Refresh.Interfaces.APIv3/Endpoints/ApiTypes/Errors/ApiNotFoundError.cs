@@ -24,13 +24,31 @@ public class ApiNotFoundError : ApiError
     
     public const string PhotoMissingErrorWhen = "The photo could not be found";
     public static readonly ApiNotFoundError PhotoMissingError = new(PhotoMissingErrorWhen);
+
+    public const string IconMissingErrorWhen = "The icon could not be found";
+    public static readonly ApiNotFoundError IconMissingError = new(IconMissingErrorWhen);
     
     public const string ContestMissingErrorWhen = "The contest could not be found";
     public static readonly ApiNotFoundError ContestMissingError = new(ContestMissingErrorWhen);
     
+    public const string ContestOrganizerMissingErrorWhen = "The contest organizer could not be found";
+    public static readonly ApiNotFoundError ContestOrganizerMissingError = new(ContestOrganizerMissingErrorWhen);
+    
+    public const string TemplateLevelMissingErrorWhen = "The template level specified by ID could not be found";
+    public static readonly ApiNotFoundError TemplateLevelMissingError = new(TemplateLevelMissingErrorWhen);
+
     public const string VerifiedIpMissingErrorWhen = "The verified IP could not be found";
     public static readonly ApiNotFoundError VerifiedIpMissingError = new(VerifiedIpMissingErrorWhen);
-    
+
+    public const string PlaylistMissingErrorWhen = "The playlist could not be found";
+    public static readonly ApiNotFoundError PlaylistMissingError = new(PlaylistMissingErrorWhen);
+
+    public const string ParentPlaylistMissingErrorWhen = "The parent playlist could not be found";
+    public static readonly ApiNotFoundError ParentPlaylistMissingError = new(ParentPlaylistMissingErrorWhen);
+
+    public const string SubPlaylistMissingErrorWhen = "The sub-playlist could not be found";
+    public static readonly ApiNotFoundError SubPlaylistMissingError = new(SubPlaylistMissingErrorWhen);
+
     private ApiNotFoundError() : base("The requested resource was not found", NotFound)
     {}
     

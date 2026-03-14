@@ -1,11 +1,12 @@
 using MongoDB.Bson;
+using Refresh.Database.Models.Authentication;
 using Refresh.Database.Models.Users;
 
 namespace Refresh.Database.Models.Relations;
 
 #nullable disable
 
-[PrimaryKey(nameof(PinId), nameof(PublisherId), nameof(IsBeta))]
+[PrimaryKey(nameof(PinId), nameof(PublisherId), nameof(IsBeta), nameof(Platform))]
 public partial class PinProgressRelation
 {
     /// <summary>
@@ -26,4 +27,13 @@ public partial class PinProgressRelation
     /// for these game groups seperately.
     /// </summary>
     public bool IsBeta { get; set; }
+
+    /// <summary>
+    /// Seperates pin progresses per platform, to not let progress transfer inbetween PS3, RPCS3 and especially Vita,
+    /// as that's commonly unwanted behaviour.
+    /// 
+    /// Website = this pin is "universal" across platforms and games (e.g. LBP.me pin). 
+    /// In that case ignore both IsBeta and Platform, and show this progress on all games.
+    /// </summary>
+    public TokenPlatform Platform { get; set; }
 }

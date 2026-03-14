@@ -286,4 +286,52 @@ public class CommentApiTests : GameServerTest
         Assert.That(response.IsSuccessStatusCode, Is.False);
         Assert.That(context.Database.GetProfileCommentRatingByUser(comment, rater), Is.Null);
     }
+
+    [Test]
+    public async Task DeletesProfileCommentsByPublisherUuidAndName()
+    {
+        using TestContext context = this.GetServer();
+        GameUser mod = context.CreateUser(role: GameUserRole.Moderator);
+        GameUser publisher = context.CreateUser(role: GameUserRole.User);
+        GameUser profile = context.CreateUser(role: GameUserRole.User);
+        HttpClient client = context.GetAuthenticatedClient(TokenType.Api, mod);
+
+        // UUID
+        context.Database.PostCommentToProfile(profile, publisher, "you stink");
+        Assert.That(context.Database.GetTotalCommentsForProfile(profile), Is.EqualTo(1)); // TODO: Actually check number of comments by publisher
+        HttpResponseMessage resetResponse = await client.DeleteAsync($"/api/v3/admin/users/uuid/{publisher.UserId}/comments/profile");
+        Assert.That(resetResponse.IsSuccessStatusCode, Is.True);
+        Assert.That(context.Database.GetTotalCommentsForProfile(profile), Is.Zero);
+
+        // name
+        context.Database.PostCommentToProfile(profile, publisher, "you stink");
+        Assert.That(context.Database.GetTotalCommentsForProfile(profile), Is.EqualTo(1));
+        resetResponse = await client.DeleteAsync($"/api/v3/admin/users/name/{publisher.Username}/comments/profile");
+        Assert.That(resetResponse.IsSuccessStatusCode, Is.True);
+        Assert.That(context.Database.GetTotalCommentsForProfile(profile), Is.Zero);
+    }
+
+    [Test]
+    public async Task DeletesLevelCommentsByPublisherUuidAndName()
+    {
+        using TestContext context = this.GetServer();
+        GameUser mod = context.CreateUser(role: GameUserRole.Moderator);
+        GameLevel level = context.CreateLevel(mod);
+        GameUser publisher = context.CreateUser(role: GameUserRole.User);
+        HttpClient client = context.GetAuthenticatedClient(TokenType.Api, mod);
+
+        // UUID
+        context.Database.PostCommentToLevel(level, publisher, "you stink");
+        Assert.That(context.Database.GetTotalCommentsForLevel(level), Is.EqualTo(1)); // TODO: Actually check number of comments by publisher
+        HttpResponseMessage resetResponse = await client.DeleteAsync($"/api/v3/admin/users/uuid/{publisher.UserId}/comments/level");
+        Assert.That(resetResponse.IsSuccessStatusCode, Is.True);
+        Assert.That(context.Database.GetTotalCommentsForLevel(level), Is.Zero);
+
+        // name
+        context.Database.PostCommentToLevel(level, publisher, "you stink");
+        Assert.That(context.Database.GetTotalCommentsForLevel(level), Is.EqualTo(1));
+        resetResponse = await client.DeleteAsync($"/api/v3/admin/users/name/{publisher.Username}/comments/level");
+        Assert.That(resetResponse.IsSuccessStatusCode, Is.True);
+        Assert.That(context.Database.GetTotalCommentsForLevel(level), Is.Zero);
+    }
 }

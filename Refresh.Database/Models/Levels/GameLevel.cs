@@ -26,11 +26,11 @@ public partial class GameLevel : ISequentialId
     public string RootResource { get; set; } = string.Empty;
 
     /// <summary>
-    /// When the level was first published in unix milliseconds
+    /// When the level was first published
     /// </summary>
     public DateTimeOffset PublishDate { get; set; }
     /// <summary>
-    /// When the level was last updated in unix milliseconds
+    /// When the level's root resource was last updated
     /// </summary>
     public DateTimeOffset UpdateDate { get; set; }
     
@@ -129,4 +129,10 @@ public partial class GameLevel : ISequentialId
     {
         return (GameLevel)this.MemberwiseClone();
     }
+
+    public override string ToString()
+    {
+        string shortenedTitle = this.Title.Length > 20 ? string.Concat(this.Title.AsSpan(0, 20), "-") : this.Title;
+        return $"'{shortenedTitle}' ({this.GameVersion} / {this.LevelId})";
+    } 
 }

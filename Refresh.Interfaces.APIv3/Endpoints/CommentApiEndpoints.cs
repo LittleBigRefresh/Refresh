@@ -1,14 +1,18 @@
 using AttribDoc.Attributes;
 using Bunkum.Core;
 using Bunkum.Core.Endpoints;
+using Bunkum.Core.RateLimit;
 using Bunkum.Protocols.Http;
 using Refresh.Common.Constants;
+using Refresh.Core.RateLimits.Comments;
+using Refresh.Core.RateLimits.Relations;
 using Refresh.Core.Types.Data;
 using Refresh.Database;
 using Refresh.Database.Models.Comments;
 using Refresh.Database.Models.Levels;
 using Refresh.Database.Models.Users;
 using Refresh.Interfaces.APIv3.Documentation.Attributes;
+using Refresh.Interfaces.APIv3.Documentation.Descriptions;
 using Refresh.Interfaces.APIv3.Endpoints.ApiTypes;
 using Refresh.Interfaces.APIv3.Endpoints.ApiTypes.Errors;
 using Refresh.Interfaces.APIv3.Endpoints.DataTypes.Request;
@@ -20,13 +24,17 @@ namespace Refresh.Interfaces.APIv3.Endpoints;
 public class CommentApiEndpoints : EndpointGroup
 {
     #region Profile
-    [ApiV3Endpoint("users/uuid/{uuid}/comments"), Authentication(false)]
+    [ApiV3Endpoint("users/{idType}/{id}/comments"), Authentication(false)]
     [DocSummary("Gets comments posted under the specified user's profile.")]
     [DocError(typeof(ApiNotFoundError), ApiNotFoundError.UserMissingErrorWhen)]
     [DocUsesPageData]
-    public ApiListResponse<ApiProfileCommentResponse> GetCommentsOnProfile(RequestContext context, DataContext dataContext, string uuid)
+    [RateLimitSettings(CommentListEndpointLimits.TimeoutDuration, CommentListEndpointLimits.RequestAmount, 
+                            CommentListEndpointLimits.BlockDuration, CommentListEndpointLimits.RequestBucket)]
+    public ApiListResponse<ApiProfileCommentResponse> GetCommentsOnProfile(RequestContext context, DataContext dataContext,
+        [DocSummary(SharedParamDescriptions.UserIdParam)] string id, 
+        [DocSummary(SharedParamDescriptions.UserIdTypeParam)] string idType)
     {
-        GameUser? profile = dataContext.Database.GetUserByUuid(uuid);
+        GameUser? profile = dataContext.Database.GetUserByIdAndType(idType, id);
         if (profile == null) return ApiNotFoundError.UserMissingError;
 
         (int skip, int count) = context.GetPageData();
@@ -35,13 +43,17 @@ public class CommentApiEndpoints : EndpointGroup
         return DatabaseListExtensions.FromOldList<ApiProfileCommentResponse, GameProfileComment>(comments, dataContext);
     }
 
-    [ApiV3Endpoint("users/uuid/{uuid}/comments", HttpMethods.Post)]
+    [ApiV3Endpoint("users/{idType}/{id}/comments", HttpMethods.Post)]
     [DocSummary("Posts the given comment under the specified user's profile.")]
     [DocError(typeof(ApiNotFoundError), ApiNotFoundError.UserMissingErrorWhen)]
+    [RateLimitSettings(CommentUploadEndpointLimits.TimeoutDuration, CommentUploadEndpointLimits.RequestAmount, 
+                            CommentUploadEndpointLimits.BlockDuration, CommentUploadEndpointLimits.RequestBucket)]
     public ApiResponse<ApiProfileCommentResponse> PostCommentOnProfile(RequestContext context,
-        DataContext dataContext, string uuid, GameUser user, ApiCommentPostRequest body)
+        DataContext dataContext, GameUser user, ApiCommentPostRequest body,
+        [DocSummary(SharedParamDescriptions.UserIdParam)] string id, 
+        [DocSummary(SharedParamDescriptions.UserIdTypeParam)] string idType)
     {
-        GameUser? profile = dataContext.Database.GetUserByUuid(uuid);
+        GameUser? profile = dataContext.Database.GetUserByIdAndType(idType, id);
         if (profile == null) return ApiNotFoundError.UserMissingError;
 
         // Trim content
@@ -55,6 +67,8 @@ public class CommentApiEndpoints : EndpointGroup
     [ApiV3Endpoint("profileComments/id/{id}"), Authentication(false)]
     [DocSummary("Gets the profile comment specified by its ID.")]
     [DocError(typeof(ApiNotFoundError), ApiNotFoundError.CommentMissingErrorWhen)]
+    [RateLimitSettings(SingleCommentEndpointLimits.TimeoutDuration, SingleCommentEndpointLimits.RequestAmount, 
+                            SingleCommentEndpointLimits.BlockDuration, SingleCommentEndpointLimits.RequestBucket)]
     public ApiResponse<ApiProfileCommentResponse> GetProfileComment(RequestContext context, DataContext dataContext, int id)
     {
         GameProfileComment? comment = dataContext.Database.GetProfileCommentById(id);
@@ -82,6 +96,8 @@ public class CommentApiEndpoints : EndpointGroup
     [DocSummary("Rates the profile comment specified by its ID.")]
     [DocError(typeof(ApiNotFoundError), ApiNotFoundError.CommentMissingErrorWhen)]
     [DocError(typeof(ApiValidationError), ApiValidationError.RatingParseErrorWhen)]
+    [RateLimitSettings(CommonRelationEndpointLimits.TimeoutDuration, CommonRelationEndpointLimits.RequestAmount, 
+                            CommonRelationEndpointLimits.BlockDuration, CommonRelationEndpointLimits.RequestBucket)]
     public ApiOkResponse RateProfileComment(RequestContext context, DataContext dataContext, GameUser user, int id, 
         [DocSummary("The user's new rating for the comment. -1 = dislike, 0 = neutral, 1 = like.")] string rawRating)
     {
@@ -103,6 +119,8 @@ public class CommentApiEndpoints : EndpointGroup
     [DocSummary("Gets comments posted under the specified level.")]
     [DocError(typeof(ApiNotFoundError), ApiNotFoundError.LevelMissingErrorWhen)]
     [DocUsesPageData]
+    [RateLimitSettings(CommentListEndpointLimits.TimeoutDuration, CommentListEndpointLimits.RequestAmount, 
+                            CommentListEndpointLimits.BlockDuration, CommentListEndpointLimits.RequestBucket)]
     public ApiListResponse<ApiLevelCommentResponse> GetCommentsOnLevel(RequestContext context, DataContext dataContext, int id)
     {
         GameLevel? level = dataContext.Database.GetLevelById(id);
@@ -117,6 +135,8 @@ public class CommentApiEndpoints : EndpointGroup
     [ApiV3Endpoint("levels/id/{id}/comments", HttpMethods.Post)]
     [DocSummary("Posts the given comment under the specified level.")]
     [DocError(typeof(ApiNotFoundError), ApiNotFoundError.LevelMissingErrorWhen)]
+    [RateLimitSettings(CommentUploadEndpointLimits.TimeoutDuration, CommentUploadEndpointLimits.RequestAmount, 
+                            CommentUploadEndpointLimits.BlockDuration, CommentUploadEndpointLimits.RequestBucket)]
     public ApiResponse<ApiLevelCommentResponse> PostCommentOnLevel(RequestContext context,
         DataContext dataContext, int id, GameUser user, ApiCommentPostRequest body)
     {
@@ -134,6 +154,8 @@ public class CommentApiEndpoints : EndpointGroup
     [ApiV3Endpoint("levelComments/id/{id}"), Authentication(false)]
     [DocSummary("Gets the level comment specified by its ID.")]
     [DocError(typeof(ApiNotFoundError), ApiNotFoundError.CommentMissingErrorWhen)]
+    [RateLimitSettings(SingleCommentEndpointLimits.TimeoutDuration, SingleCommentEndpointLimits.RequestAmount, 
+                            SingleCommentEndpointLimits.BlockDuration, SingleCommentEndpointLimits.RequestBucket)]
     public ApiResponse<ApiLevelCommentResponse> GetLevelComment(RequestContext context, DataContext dataContext, int id)
     {
         GameLevelComment? comment = dataContext.Database.GetLevelCommentById(id);
@@ -161,6 +183,8 @@ public class CommentApiEndpoints : EndpointGroup
     [DocSummary("Rates the level comment specified by its ID.")]
     [DocError(typeof(ApiNotFoundError), ApiNotFoundError.CommentMissingErrorWhen)]
     [DocError(typeof(ApiValidationError), ApiValidationError.RatingParseErrorWhen)]
+    [RateLimitSettings(CommonRelationEndpointLimits.TimeoutDuration, CommonRelationEndpointLimits.RequestAmount, 
+                            CommonRelationEndpointLimits.BlockDuration, CommonRelationEndpointLimits.RequestBucket)]
     public ApiOkResponse RateLevelComment(RequestContext context, DataContext dataContext, GameUser user, int id, 
         [DocSummary("The user's new rating for the comment. -1 = dislike, 0 = neutral, 1 = like.")] string rawRating)
     {

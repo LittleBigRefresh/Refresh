@@ -240,6 +240,7 @@ public class ReportingEndpointsTests : GameServerTest
     [TestCase(TokenGame.LittleBigPlanet3)]
     [TestCase(TokenGame.LittleBigPlanetVita)]
     [TestCase(TokenGame.LittleBigPlanetPSP)]
+    [TestCase(TokenGame.BetaBuild)]
     public void RedirectGriefReportToPhoto(TokenGame game)
     {
         using TestContext context = this.GetServer();
@@ -271,6 +272,7 @@ public class ReportingEndpointsTests : GameServerTest
                 },
             },
             LevelId = level.LevelId,
+            LevelType = "user",
             JpegHash = TEST_ASSET_HASH,
         }.AsXML())).Result;
         Assert.That(response.StatusCode, Is.EqualTo(OK));
@@ -282,6 +284,11 @@ public class ReportingEndpointsTests : GameServerTest
 
         GamePhoto photo = photos.Items.First();
         Assert.That(photo.Publisher.UserId, Is.EqualTo(user.UserId));
+
+        Assert.That(photo.OriginalLevelId, Is.EqualTo(level.LevelId));
+        Assert.That(photo.LevelId, Is.EqualTo(level.LevelId));
+        Assert.That(photo.LevelType, Is.EqualTo("user"));
+        Assert.That(photo.OriginalLevelName, Is.EqualTo(level.Title));
     }
     
     [TestCase(TokenGame.LittleBigPlanet1)]
@@ -289,6 +296,7 @@ public class ReportingEndpointsTests : GameServerTest
     [TestCase(TokenGame.LittleBigPlanet3)]
     [TestCase(TokenGame.LittleBigPlanetVita)]
     [TestCase(TokenGame.LittleBigPlanetPSP)]
+    [TestCase(TokenGame.BetaBuild)]
     public void RedirectGriefReportToPhotoDeveloperLevel(TokenGame game)
     {
         using TestContext context = this.GetServer();
@@ -318,7 +326,8 @@ public class ReportingEndpointsTests : GameServerTest
                     },
                 },
             },
-            LevelId = level.LevelId,
+            LevelId = level.StoryId,
+            LevelType = "developer",
             JpegHash = TEST_ASSET_HASH,
         }.AsXML())).Result;
         Assert.That(response.StatusCode, Is.EqualTo(OK));
@@ -330,6 +339,119 @@ public class ReportingEndpointsTests : GameServerTest
 
         GamePhoto photo = photos.Items.First();
         Assert.That(photo.Publisher.UserId, Is.EqualTo(user.UserId));
+
+        Assert.That(photo.OriginalLevelId, Is.EqualTo(level.StoryId));
+        Assert.That(photo.LevelId, Is.EqualTo(level.LevelId));
+        Assert.That(photo.LevelType, Is.EqualTo("developer"));
+        Assert.That(photo.OriginalLevelName, Is.EqualTo(level.Title));
+    }
+
+    [TestCase(TokenGame.LittleBigPlanet1)]
+    [TestCase(TokenGame.LittleBigPlanet2)]
+    [TestCase(TokenGame.LittleBigPlanet3)]
+    [TestCase(TokenGame.LittleBigPlanetVita)]
+    [TestCase(TokenGame.LittleBigPlanetPSP)]
+    [TestCase(TokenGame.BetaBuild)]
+    public void RedirectGriefReportToPhotoWhenNotUserOrDeveloperSlot(TokenGame game)
+    {
+        using TestContext context = this.GetServer();
+        GameUser user = context.CreateUser();
+        user.RedirectGriefReportsToPhotos = true;
+
+        using HttpClient client = context.GetAuthenticatedClient(TokenType.Game, game, TokenPlatform.PS3, user);
+
+        //Upload our """photo"""
+        HttpResponseMessage message = client.PostAsync($"/lbp/upload/{TEST_ASSET_HASH}", new ReadOnlyMemoryContent(TestAsset)).Result;
+        Assert.That(message.StatusCode, Is.EqualTo(OK));
+        
+        HttpResponseMessage response = client.PostAsync("/lbp/grief", new StringContent(new GameReport
+        {
+            Players = new Player[]
+            {
+                new()
+                {
+                    Username = user.Username,
+                    Rectangle = new Rect
+                    {
+                        Top = 10,
+                        Left = 10,
+                        Bottom = 20,
+                        Right = 20,
+                    },
+                },
+            },
+            LevelId = 0,
+            LevelType = "pod",
+            JpegHash = TEST_ASSET_HASH,
+        }.AsXML())).Result;
+        Assert.That(response.StatusCode, Is.EqualTo(OK));
+        
+        context.Database.Refresh();
+
+        DatabaseList<GamePhoto> photos = context.Database.GetPhotosByUser(user, 10, 0);
+        Assert.That(photos.TotalItems, Is.EqualTo(1));
+
+        GamePhoto photo = photos.Items.First();
+        Assert.That(photo.Publisher.UserId, Is.EqualTo(user.UserId));
+
+        Assert.That(photo.OriginalLevelId, Is.EqualTo(0));
+        Assert.That(photo.LevelId, Is.Null);
+        Assert.That(photo.LevelType, Is.EqualTo("pod"));
+        Assert.That(photo.OriginalLevelName, Is.Empty);
+    }
+
+    [TestCase(TokenGame.LittleBigPlanet1)]
+    [TestCase(TokenGame.LittleBigPlanet2)]
+    [TestCase(TokenGame.LittleBigPlanet3)]
+    [TestCase(TokenGame.LittleBigPlanetVita)]
+    [TestCase(TokenGame.LittleBigPlanetPSP)]
+    [TestCase(TokenGame.BetaBuild)]
+    public void RedirectGriefReportToPhotoWhenMissingLevel(TokenGame game)
+    {
+        using TestContext context = this.GetServer();
+        GameUser user = context.CreateUser();
+        user.RedirectGriefReportsToPhotos = true;
+
+        using HttpClient client = context.GetAuthenticatedClient(TokenType.Game, game, TokenPlatform.PS3, user);
+
+        //Upload our """photo"""
+        HttpResponseMessage message = client.PostAsync($"/lbp/upload/{TEST_ASSET_HASH}", new ReadOnlyMemoryContent(TestAsset)).Result;
+        Assert.That(message.StatusCode, Is.EqualTo(OK));
+        
+        HttpResponseMessage response = client.PostAsync("/lbp/grief", new StringContent(new GameReport
+        {
+            Players = new Player[]
+            {
+                new()
+                {
+                    Username = user.Username,
+                    Rectangle = new Rect
+                    {
+                        Top = 10,
+                        Left = 10,
+                        Bottom = 20,
+                        Right = 20,
+                    },
+                },
+            },
+            LevelId = 1,
+            LevelType = "user",
+            JpegHash = TEST_ASSET_HASH,
+        }.AsXML())).Result;
+        Assert.That(response.StatusCode, Is.EqualTo(OK));
+        
+        context.Database.Refresh();
+
+        DatabaseList<GamePhoto> photos = context.Database.GetPhotosByUser(user, 10, 0);
+        Assert.That(photos.TotalItems, Is.EqualTo(1));
+
+        GamePhoto photo = photos.Items.First();
+        Assert.That(photo.Publisher.UserId, Is.EqualTo(user.UserId));
+
+        Assert.That(photo.OriginalLevelId, Is.EqualTo(1));
+        Assert.That(photo.LevelId, Is.Null);
+        Assert.That(photo.LevelType, Is.EqualTo("user"));
+        Assert.That(photo.OriginalLevelName, Is.Empty);
     }
     
     [Test]

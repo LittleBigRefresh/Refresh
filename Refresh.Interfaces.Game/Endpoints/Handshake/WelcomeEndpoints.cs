@@ -1,6 +1,7 @@
 using System.Text;
 using Bunkum.Core;
 using Bunkum.Core.Endpoints;
+using Bunkum.Core.RateLimit;
 using Refresh.Core.Authentication.Permission;
 using Refresh.Core.Configuration;
 using Refresh.Database.Models.Users;
@@ -27,6 +28,7 @@ public class WelcomeEndpoints : EndpointGroup
     
     [GameEndpoint("eula")]
     [MinimumRole(GameUserRole.Restricted)]
+    [RateLimitSettings(480, 20, 420, "eula")]
     public string License(RequestContext context, GameServerConfig config, ContactInfoConfig contact)
     {
         StringBuilder builder = new();

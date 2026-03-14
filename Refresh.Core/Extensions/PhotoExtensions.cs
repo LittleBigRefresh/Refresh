@@ -15,11 +15,11 @@ public static class PhotoExtensions
             // NOTE: we usually would do `if psp, prepend psp/ to the hashes`,
             // but since we are converting the psp TGA assets to PNG in FillInExtraData, we don't need to!
             // also, I think the game would get mad if we did that
-            LargeHash = dataContext.Database.GetAssetFromHash(photo.LargeAsset.AssetHash)?.GetAsPhoto(dataContext.Game, dataContext) ?? photo.LargeAsset.AssetHash,
-            MediumHash = dataContext.Database.GetAssetFromHash(photo.MediumAsset.AssetHash)?.GetAsPhoto(dataContext.Game, dataContext) ?? photo.MediumAsset.AssetHash,
-            SmallHash = dataContext.Database.GetAssetFromHash(photo.SmallAsset.AssetHash)?.GetAsPhoto(dataContext.Game, dataContext) ?? photo.SmallAsset.AssetHash,
+            LargeHash = photo.LargeAsset.GetAsPhoto(dataContext.Game, dataContext) ?? photo.LargeAsset.AssetHash,
+            MediumHash = photo.MediumAsset.GetAsPhoto(dataContext.Game, dataContext) ?? photo.MediumAsset.AssetHash,
+            SmallHash = photo.SmallAsset.GetAsPhoto(dataContext.Game, dataContext) ?? photo.SmallAsset.AssetHash,
             PlanHash = photo.PlanHash,
-            PhotoSubjects = new List<SerializedPhotoSubject>(photo.Subjects.Count),
+            PhotoSubjects = [],
         };
         
         foreach (GamePhotoSubject subject in photo.Subjects)

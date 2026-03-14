@@ -8,7 +8,7 @@ public static class GameLevelExtensions
 {
     public static string GetIconHash(this GameLevel level, DataContext dataContext)
     {
-        string hash = dataContext.Database.GetAssetFromHash(level.IconHash)?.GetAsIcon(TokenGame.Website, dataContext) ?? level.IconHash;
+        string hash = dataContext.GetIconFromHash(level.IconHash);
         return level.GameVersion == TokenGame.LittleBigPlanetPSP
             ? "psp/" + hash
             : hash;

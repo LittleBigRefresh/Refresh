@@ -36,7 +36,7 @@ public class SerializedLbp1Playlist : IDataConvertableFrom<SerializedLbp1Playlis
             Id = old.PlaylistId,
             Name = old.Name,
             Description = old.Description,
-            Icon = old.IconHash,
+            Icon = dataContext.GetIconFromHash(old.IconHash),
             Location = new GameLocation(old.LocationX, old.LocationY),
         };
     }

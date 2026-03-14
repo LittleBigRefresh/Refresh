@@ -73,7 +73,7 @@ public class LevelDeletionTests : GameServerTest
             ],
         };
 
-        context.Database.UploadPhoto(photo, author);
+        context.Database.UploadPhoto(photo, photo.PhotoSubjects, author, level);
         context.Database.Refresh();
         
         level = context.Database.GetLevelById(level.LevelId);

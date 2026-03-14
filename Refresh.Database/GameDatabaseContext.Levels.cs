@@ -212,30 +212,27 @@ public partial class GameDatabaseContext // Levels
         this.SaveChanges();
         return level;
     }
+
+    public GameLevel? UpdateLevel(IApiAdminEditLevelRequest body, GameLevel level, GameUser? updatingUser)
+    {
+        level.Title = body.Title ?? level.Title;
+        level.IconHash = body.IconHash ?? level.IconHash;
+        level.Description = body.Description ?? level.Description;
+        level.GameVersion = body.GameVersion ?? level.GameVersion;
+        level.IsReUpload = body.IsReUpload ?? level.IsReUpload;
+        level.OriginalPublisher = body.OriginalPublisher ?? level.OriginalPublisher;
+
+        this.ApplyLevelMetadataFromAttributes(level);
+        this.CreateRevisionForLevel(level, updatingUser);
+        this.SaveChanges();
+        return level;
+    }
     
     public GameLevel? UpdateLevel(IApiEditLevelRequest body, GameLevel level, GameUser? updatingUser)
     {
-        if (body.Title is { Length: > UgcLimits.TitleLimit })
-            body.Title = body.Title[..UgcLimits.TitleLimit];
-
-        if (body.Description is { Length: > UgcLimits.DescriptionLimit })
-            body.Description = body.Description[..UgcLimits.DescriptionLimit];
-        
-        PropertyInfo[] userProps = body.GetType().GetProperties();
-        foreach (PropertyInfo prop in userProps)
-        {
-            if (!prop.CanWrite || !prop.CanRead) continue;
-                
-            object? propValue = prop.GetValue(body);
-            if(propValue == null) continue;
-
-            PropertyInfo? gameLevelProp = level.GetType().GetProperty(prop.Name);
-            Debug.Assert(gameLevelProp != null, $"Invalid property {prop.Name} on {nameof(IApiEditLevelRequest)}");
-                
-            gameLevelProp.SetValue(level, prop.GetValue(body));
-        }
-            
-        level.UpdateDate = this._time.Now;
+        level.Title = body.Title ?? level.Title;
+        level.IconHash = body.IconHash ?? level.IconHash;
+        level.Description = body.Description ?? level.Description;
 
         this.ApplyLevelMetadataFromAttributes(level);
         this.CreateRevisionForLevel(level, updatingUser);
@@ -627,9 +624,10 @@ public partial class GameDatabaseContext // Levels
         return this.GameSkillRewards.Where(r => r.LevelId == level.LevelId);
     }
 
-    public void UpdateSkillRewardsForLevel(GameLevel level, IEnumerable<GameSkillReward> rewards)
+    public List<GameSkillReward> UpdateSkillRewardsForLevel(GameLevel level, IEnumerable<GameSkillReward> rewards)
     {
         this.GameSkillRewards.RemoveRange(this.GetSkillRewardsForLevel(level));
+        List<GameSkillReward> ret = [];
         
         this.Write(() =>
         {
@@ -646,8 +644,11 @@ public partial class GameDatabaseContext // Levels
                 };
                 
                 this.GameSkillRewards.Add(newReward);
+                ret.Add(newReward);
             }
         });
+
+        return ret;
     }
     
     public void ApplyLevelMetadataFromAttributes(GameLevel level, bool save = false)

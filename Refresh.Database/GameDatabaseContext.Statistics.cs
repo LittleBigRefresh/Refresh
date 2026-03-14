@@ -1,8 +1,10 @@
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
+using Refresh.Common;
 using Refresh.Common.Constants;
 using Refresh.Database.Models.Comments;
 using Refresh.Database.Models.Levels;
+using Refresh.Database.Models.Levels.Scores;
 using Refresh.Database.Models.Playlists;
 using Refresh.Database.Models.Statistics;
 using Refresh.Database.Models.Users;
@@ -212,6 +214,50 @@ public partial class GameDatabaseContext // Statistics
         if(level.Statistics.RecalculateAt == null)
             level.Statistics.RecalculateAt = this._time.Now + TimeSpan.FromMinutes(5);
     }
+    #endregion
+
+    #region Level Scores
+
+    public void RecalculateScoreStatistics(int levelId, byte scoreType, bool saveChanges = true)
+    {
+        List<GameScore> scores = this.GameScores
+            .Where(s => s.LevelId == levelId && s.ScoreType == scoreType)
+            .OrderByDescending(s => s.Score)
+            .ToList();
+        
+        // Step 1: Reset all ranks
+        foreach (GameScore score in scores)
+        {
+            score.Rank = 0;
+        }
+        
+        // Step 2: Assign ranks to high scores
+        // Exclude all scores which are not high scores now
+        int rank = 1;
+        int? previousScore = null;
+        foreach (GameScore score in scores.DistinctBy(s => s.PublisherId).ToList())
+        {
+            // Scores with the same value should have the same rank.
+            // Increment rank if there was a previous score and it was higher.
+            if (previousScore != null && previousScore > score.Score)
+                rank++;
+
+            score.Rank = rank;
+            previousScore = score.Score;
+        }
+
+        if (saveChanges) this.SaveChanges();
+    }
+
+    public void RecalculateScoreStatistics(GameLevel level, bool saveChanges = true)
+    {
+        this.RecalculateScoreStatistics(level.LevelId, 1, false);
+        this.RecalculateScoreStatistics(level.LevelId, 2, false);
+        this.RecalculateScoreStatistics(level.LevelId, 3, false);
+        this.RecalculateScoreStatistics(level.LevelId, 4, false);
+        if (saveChanges) this.SaveChanges();
+    }
+    
     #endregion
 
     #region Users

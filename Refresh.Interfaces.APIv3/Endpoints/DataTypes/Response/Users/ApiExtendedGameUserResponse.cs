@@ -69,6 +69,7 @@ public class ApiExtendedGameUserResponse : ApiGameUserResponse, IApiResponse, ID
             UnescapeXmlSequences = user.UnescapeXmlSequences,
             FilesizeQuotaUsage = user.FilesizeQuotaUsage,
             Statistics = ApiGameUserStatisticsResponse.FromOld(user, dataContext)!,
+            OwnRelations = ApiGameUserOwnRelationsResponse.FromOld(user, dataContext),
             ActiveRoom = ApiGameRoomResponse.FromOld(dataContext.Match.RoomAccessor.GetRoomByUser(user), dataContext),
             LevelVisibility = user.LevelVisibility,
             ProfileVisibility = user.ProfileVisibility,

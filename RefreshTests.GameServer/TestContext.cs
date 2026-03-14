@@ -14,6 +14,9 @@ using Refresh.Database.Models.Levels;
 using Refresh.Interfaces.Game.Types.UserData.Leaderboard;
 using Refresh.Workers;
 using Refresh.Interfaces.Game.Endpoints.DataTypes.Request;
+using Refresh.Database.Models.Playlists;
+using Refresh.Interfaces.APIv3.Endpoints.DataTypes.Request;
+using Refresh.Database.Models.Photos;
 
 namespace RefreshTests.GameServer;
 
@@ -101,12 +104,13 @@ public class TestContext : IDisposable
         return client;
     }
 
-    public GameUser CreateUser(string? username = null, GameUserRole role = GameUserRole.User)
+    public GameUser CreateUser(string? username = null, GameUserRole role = GameUserRole.User, bool verifyEmail = true)
     {
         username ??= this.UserIncrement.ToString();
         
         GameUser user = this.Database.CreateUser(username, $"{username}@{username}.local");
         if (role != GameUserRole.User) this.Database.SetUserRole(user, role);
+        if (verifyEmail) this.Database.VerifyUserEmail(user);
 
         return user;
     }
@@ -141,6 +145,38 @@ public class TestContext : IDisposable
         return level;
     }
 
+    public GamePhoto CreatePhotoWithSubject(GameUser author, string imageHash, GameLevel? level = null, List<SerializedPhotoSubject>? subjects = null)
+    {
+        // TODO: Return newly created GamePhoto
+        if (this.Database.GetAssetFromHash(imageHash) == null)
+        {
+            this.Database.AddAssetToDatabase(new()
+            {
+                AssetHash = imageHash,
+            });
+        }
+        
+        SerializedPhoto photo = new()
+        {
+            AuthorName = author.Username,
+            SmallHash = imageHash,
+            MediumHash = imageHash,
+            LargeHash = imageHash,
+            
+        };
+        subjects ??= 
+        [
+            new()
+            {
+                Username = author.Username,
+                DisplayName = author.Username,
+                BoundsList = "10,10,10,10"
+            }
+        ];
+
+        return this.Database.UploadPhoto(photo, subjects, author, level);
+    }
+
     public void FillLeaderboard(GameLevel level, int count, byte type)
     {
         for (byte i = 0; i < count; i++)
@@ -167,6 +203,16 @@ public class TestContext : IDisposable
         return submittedScore;
     }
 
+    public GamePlaylist CreatePlaylist(GameUser author, string? title = null)
+    {
+        ApiPlaylistCreationRequest playlist = new()
+        {
+            Name = title
+        };
+
+        return this.Database.CreatePlaylist(author, playlist);
+    }
+
     [Pure]
     public TService GetService<TService>() where TService : Service => this.Server.Value.GetService<TService>();
 
@@ -181,6 +227,7 @@ public class TestContext : IDisposable
             Match = this.GetService<MatchService>(),
             Token = token,
             GuidChecker = this.GetService<GuidCheckerService>(),
+            Cache = this.GetService<CacheService>(),
         };
     }
     

@@ -11,7 +11,6 @@ using Bunkum.Protocols.Http;
 using Refresh.Common;
 using Refresh.Common.Time;
 using Refresh.Common.Verification;
-using Refresh.Core;
 using Refresh.Core.Configuration;
 using Refresh.Core.Extensions;
 using Refresh.Core.Importing;
@@ -142,7 +141,7 @@ public class RefreshGameServer : RefreshServer
     protected override void SetupServices()
     {
         this.Server.AddService<TimeProviderService>(this.GetTimeProvider());
-        this.Server.AddRateLimitService(new RateLimitSettings(60, 400, 30, "global"));
+        this.Server.AddRateLimitService(new RateLimitSettings(90, 380, 45, "global"));
         this.Server.AddService<CategoryService>();
         this.Server.AddService(new MatchService(this.Server.Logger, this._configStore.GameServer));
         this.Server.AddService<ImportService>();
@@ -169,6 +168,7 @@ public class RefreshGameServer : RefreshServer
         this.Server.AddService<CommandService>();
         this.Server.AddService<ChallengeGhostRateLimitService>();
         this.Server.AddService<DiscordStaffService>();
+        this.Server.AddService<CacheService>();
 
         if(this._configStore.Integration!.AipiEnabled)
             this.Server.AddService<AipiService>();
@@ -285,10 +285,24 @@ public class RefreshGameServer : RefreshServer
         return context.ReallowUser(username);
     }
 
-    public void RenameUser(GameUser user, string newUsername)
+    public bool DisallowEmail(string email)
     {
         using GameDatabaseContext context = this.GetContext();
-        context.RenameUser(user, newUsername);
+        
+        return context.DisallowEmail(email);
+    }
+    
+    public bool ReallowEmail(string email)
+    {
+        using GameDatabaseContext context = this.GetContext();
+        
+        return context.ReallowEmail(email);
+    }
+
+    public void RenameUser(GameUser user, string newUsername, bool force = false)
+    {
+        using GameDatabaseContext context = this.GetContext();
+        context.RenameUser(user, newUsername, force);
     }
     
     public void DeleteUser(GameUser user)

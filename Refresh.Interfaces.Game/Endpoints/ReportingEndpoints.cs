@@ -1,6 +1,7 @@
 using System.Drawing;
 using Bunkum.Core;
 using Bunkum.Core.Endpoints;
+using Bunkum.Core.RateLimit;
 using Bunkum.Core.Responses;
 using Bunkum.Listener.Protocol;
 using Bunkum.Protocols.Http;
@@ -24,6 +25,7 @@ public class ReportingEndpoints : EndpointGroup
     // TODO: LBP1 beta builds upload all related assets after sending the report itself to this endpoint, handle that case
     [GameEndpoint("grief", HttpMethods.Post, ContentType.Xml)]
     [RequireEmailVerified]
+    [RateLimitSettings(600, 10, 300, "grief-report-upload")]
     public Response UploadReport(RequestContext context, GameDatabaseContext database, GameReport body, GameUser user,
         IDateTimeProvider time, Token token, GameServerConfig config)
     {
@@ -53,12 +55,7 @@ public class ReportingEndpoints : EndpointGroup
         }
         
         string jpegHash = body.JpegHash;
-        
-        //If the level is specified but its invalid, set it to 0, to indicate the level is unknown
-        //This case is hit when someone makes a grief report from a non-existent level, which we allow
-        if (body.LevelId != 0 && level == null)
-            body.LevelId = 0;
-        
+
         //Basic validation
         if (body.Players is { Length: > 4 } || body.ScreenElements is { Player.Length: > 4 })
             // Return OK on PSP, since if we dont, it will error when trying to access the community moon and soft-lock the save file
@@ -84,18 +81,14 @@ public class ReportingEndpoints : EndpointGroup
                 MediumHash = jpegHash,
                 LargeHash = jpegHash,
                 PlanHash = "0",
-                Level = body.LevelId == 0 || level == null ? null : new SerializedPhotoLevel
+                Level = new SerializedPhotoLevel
                 {
-                    LevelId = level.LevelId,
-                    Title = level.Title,
-                    Type = level.SlotType switch {
-                        GameSlotType.User => "user",
-                        GameSlotType.Story => "developer",
-                        _ => throw new ArgumentOutOfRangeException(),
-                    },
+                    LevelId = body.LevelId,
+                    Title = level?.Title ?? "",
+                    Type = body.LevelType
                 },
                 PhotoSubjects = subjects,
-            }, user);
+            }, subjects, user, level);
         
             return OK; // just upload photo
         }

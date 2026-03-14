@@ -1,8 +1,11 @@
 using Bunkum.Core;
 using Bunkum.Core.Endpoints;
+using Bunkum.Core.RateLimit;
 using Bunkum.Listener.Protocol;
 using Refresh.Core.Authentication.Permission;
 using Refresh.Core.Configuration;
+using Refresh.Core.RateLimits.Levels;
+using Refresh.Core.RateLimits.Users;
 using Refresh.Core.Types.Categories;
 using Refresh.Core.Types.Categories.Levels;
 using Refresh.Core.Types.Data;
@@ -23,17 +26,18 @@ public class CategoryEndpoints : EndpointGroup
     [GameEndpoint("searches", ContentType.Xml)]
     [GameEndpoint("genres", ContentType.Xml)]
     [MinimumRole(GameUserRole.Restricted)]
+    [RateLimitSettings(420, 20, 300, "categories-game")]
     public SerializedCategoryList GetModernCategories(RequestContext context, CategoryService categoryService, DataContext dataContext, GameServerConfig config)
     {
         (int skip, int count) = context.GetPageData();
 
-        IEnumerable<SerializedLevelCategory> levelCategories = categoryService.LevelCategories
+        IEnumerable<SerializedCategory> levelCategories = categoryService.LevelCategories
             .Where(c => !c.Hidden)
-            .Select(c => SerializedLevelCategory.FromLevelCategory(c, context, dataContext, 0, 1));
+            .Select(c => SerializedCategory.FromCategory(c, context, dataContext, 0, 1));
         
-        IEnumerable<SerializedUserCategory> userCategories = config.PermitShowingOnlineUsers ? categoryService.UserCategories
+        IEnumerable<SerializedCategory> userCategories = config.PermitShowingOnlineUsers ? categoryService.UserCategories
             .Where(c => !c.Hidden)
-            .Select(c => SerializedUserCategory.FromUserCategory(c, context, dataContext, 0, 1)) : [];
+            .Select(c => SerializedCategory.FromCategory(c, context, dataContext, 0, 1)) : [];
 
         IEnumerable<SerializedCategory> allCategories = [];
         allCategories = allCategories.Concat(levelCategories).Concat(userCategories);
@@ -54,14 +58,17 @@ public class CategoryEndpoints : EndpointGroup
     [GameEndpoint("searches/levels/{apiRoute}", ContentType.Xml)]
     [NullStatusCode(NotFound)]
     [MinimumRole(GameUserRole.Restricted)]
+    [RateLimitSettings(LevelListEndpointLimits.TimeoutDuration, LevelListEndpointLimits.RequestAmount, 
+                            LevelListEndpointLimits.BlockDuration, LevelListEndpointLimits.RequestBucket)]
     public SerializedCategoryResultsList? GetLevelsFromCategory(RequestContext context, CategoryService categories, GameUser user, 
-        Token token, string apiRoute, DataContext dataContext)
+        string apiRoute, DataContext dataContext)
     {
         (int skip, int count) = context.GetPageData();
 
         DatabaseList<GameLevel>? levels = categories.LevelCategories
             .FirstOrDefault(c => c.ApiRoute.StartsWith(apiRoute))?
-            .Fetch(context, skip, count, dataContext, LevelFilterSettings.FromGameRequest(context, token.TokenGame, true), user);
+            .Fetch(context, skip, count, dataContext, LevelFilterSettings.FromGameRequest(context, dataContext.Game, true), user)?
+            .Levels;
         
         if (levels == null) return null;
         
@@ -76,6 +83,8 @@ public class CategoryEndpoints : EndpointGroup
     [GameEndpoint("searches/users/{apiRoute}", ContentType.Xml)]
     [NullStatusCode(NotFound)]
     [MinimumRole(GameUserRole.Restricted)]
+    [RateLimitSettings(UserListEndpointLimits.TimeoutDuration, UserListEndpointLimits.RequestAmount, 
+                            UserListEndpointLimits.BlockDuration, UserListEndpointLimits.RequestBucket)]
     public SerializedCategoryResultsList? GetUsersFromCategory(RequestContext context, CategoryService categories, GameUser user, 
         string apiRoute, DataContext dataContext, GameServerConfig config)
     {
@@ -85,7 +94,8 @@ public class CategoryEndpoints : EndpointGroup
 
         DatabaseList<GameUser>? users = categories.UserCategories
             .FirstOrDefault(c => c.ApiRoute.StartsWith(apiRoute))?
-            .Fetch(context, skip, count, dataContext, user);
+            .Fetch(context, skip, count, dataContext, LevelFilterSettings.FromGameRequest(context, dataContext.Game, true), user)?
+            .Users;
         
         if (users == null) return null;
         

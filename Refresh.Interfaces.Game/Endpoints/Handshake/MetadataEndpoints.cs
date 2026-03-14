@@ -1,12 +1,16 @@
+using System.Xml.Serialization;
 using Bunkum.Core;
 using Bunkum.Core.Endpoints;
 using Bunkum.Core.Endpoints.Debugging;
+using Bunkum.Core.RateLimit;
 using Bunkum.Core.Responses;
+using Bunkum.Core.Responses.Serialization;
 using Bunkum.Listener.Protocol;
 using Bunkum.Protocols.Http;
 using Refresh.Common.Time;
 using Refresh.Core.Authentication.Permission;
 using Refresh.Core.Configuration;
+using Refresh.Core.Types.Data;
 using Refresh.Database;
 using Refresh.Database.Models.Levels;
 using Refresh.Database.Models.Users;
@@ -17,6 +21,11 @@ namespace Refresh.Interfaces.Game.Endpoints.Handshake;
 
 public class MetadataEndpoints : EndpointGroup
 {
+    private const int ConfigRequestTimeoutDuration = 480;
+    private const int ConfigRequestAmount = 40;
+    private const int ConfigBlockDuration = 420;
+    private const string ConfigBucket = "game-configs";
+
     [GameEndpoint("privacySettings", ContentType.Xml)]
     [MinimumRole(GameUserRole.Restricted)]
     public SerializedPrivacySettings GetPrivacySettings(RequestContext context, GameUser user)
@@ -38,7 +47,8 @@ public class MetadataEndpoints : EndpointGroup
     }
 
     [GameEndpoint("npdata", ContentType.Xml, HttpMethods.Post)]
-    public Response SetFriendData(RequestContext context, GameUser user, GameDatabaseContext database, SerializedFriendData body)
+    [RateLimitSettings(480, 8, 420, "game-npdata")]
+    public Response SetFriendData(RequestContext context, GameUser user, GameDatabaseContext database, SerializedFriendData body, DataContext dataContext)
     {
         IEnumerable<GameUser> friends = body.FriendsList.Names
             .Take(128) // should be way more than enough - we'll see if this becomes a problem
@@ -46,7 +56,10 @@ public class MetadataEndpoints : EndpointGroup
             .Where(u => u != null)!;
         
         foreach (GameUser userToFavourite in friends)
+        {
             database.FavouriteUser(userToFavourite, user);
+            dataContext.Cache.RemoveOwnUserRelations(user, userToFavourite); // really don't want to refresh the relations of up to 128 users in the worst case
+        }
         
         return OK;
     }
@@ -61,6 +74,7 @@ public class MetadataEndpoints : EndpointGroup
     
     [GameEndpoint("network_settings.nws")]
     [MinimumRole(GameUserRole.Restricted)]
+    [RateLimitSettings(ConfigRequestTimeoutDuration, ConfigRequestAmount, ConfigBlockDuration, ConfigBucket)]
     public string NetworkSettings(RequestContext context, GameServerConfig config)
     {
         string? networkSettings = NetworkSettingsFile.Value;
@@ -74,6 +88,7 @@ public class MetadataEndpoints : EndpointGroup
         // OverheatingThreshholdDisallowMidgameJoin is set to >1.0 so that it never triggers
         // ShowLevelBoos, EnableCommunityDecorations, EnablePlayedFilter enable various game features
         // DisableDLCPublishCheck disables the game's DLC publish check.
+        // SECONDS_BETWEEN_PINS_AWARDED_UPLOADS is forced to the value which both LBP2 and 3 default to (5 minutes) incase a beta build sets a different value.
         networkSettings ??= $"""
                             AllowOnlineCreate true
                             ShowErrorNumbers true
@@ -89,7 +104,7 @@ public class MetadataEndpoints : EndpointGroup
                             EnableHackChecks false
                             DisableDLCPublishCheck true
                             AlexDB true
-
+                            SECONDS_BETWEEN_PINS_AWARDED_UPLOADS 300.0
                             """;
         
         return networkSettings;
@@ -107,6 +122,7 @@ public class MetadataEndpoints : EndpointGroup
     [GameEndpoint("telemetry.cfg")]
     [MinimumRole(GameUserRole.Restricted)]
     [NullStatusCode(Gone)]
+    [RateLimitSettings(ConfigRequestTimeoutDuration, ConfigRequestAmount, ConfigBlockDuration, ConfigBucket)]
     public string? TelemetryConfig(RequestContext context) 
     {
         bool created = TelemetryConfigFile.IsValueCreated;
@@ -132,6 +148,7 @@ public class MetadataEndpoints : EndpointGroup
     [GameEndpoint("promotions")]
     [NullStatusCode(OK)]
     [MinimumRole(GameUserRole.Restricted)]
+    [RateLimitSettings(ConfigRequestTimeoutDuration, ConfigRequestAmount, ConfigBlockDuration, ConfigBucket)]
     public string? Promotions(RequestContext context) 
     {
         bool created = PromotionsFile.IsValueCreated;
@@ -164,6 +181,7 @@ public class MetadataEndpoints : EndpointGroup
     [GameEndpoint("developer_videos")]
     [MinimumRole(GameUserRole.Restricted)]
     [NullStatusCode(OK)]
+    [RateLimitSettings(ConfigRequestTimeoutDuration, ConfigRequestAmount, ConfigBlockDuration, ConfigBucket)]
     public string? DeveloperVideos(RequestContext context)
     {
         bool created = DeveloperVideosFile.IsValueCreated;
@@ -191,28 +209,55 @@ public class MetadataEndpoints : EndpointGroup
     // {"currentLevel": ["developer_adventure_planet", 349],"inStore": true,"participants":  ["turecross321","","",""]}
     // {"highlightedSearchResult": ["level",811],"currentLevel": ["pod", 0],"inStore": true,"participants":  ["turecross321","","",""]}
     public string GameState(RequestContext context) => "VALID";
+
+    private static readonly Lazy<string?> ChallengeConfigFile
+        = new(() => 
+        {
+            string path = Path.Combine(Environment.CurrentDirectory, "ChallengeConfig.xml");
+
+            return File.Exists(path) ? File.ReadAllText(path) : null;
+        });
     
     [GameEndpoint("ChallengeConfig.xml", ContentType.Xml)]
     [MinimumRole(GameUserRole.Restricted)]
-    public SerializedLbp3ChallengeList ChallengeConfig(RequestContext context, IDateTimeProvider timeProvider)
+    [RateLimitSettings(ConfigRequestTimeoutDuration, ConfigRequestAmount, ConfigBlockDuration, ConfigBucket)]
+    public string ChallengeConfig(RequestContext context)
     {
-        //TODO: allow this to be controlled by the server owner, right now lets just send the game 0 challenges,
-        //      so nothing appears in the challenges menu
-        return new SerializedLbp3ChallengeList
+        bool created = ChallengeConfigFile.IsValueCreated;
+        string? challengeConfig = ChallengeConfigFile.Value;
+        
+        // If file was read, return its contents. Else serialize and return a hard-coded default list of challenges.
+        if (challengeConfig != null)
         {
-            TotalChallenges = 0,
-            EndTime = (ulong)(timeProvider.Now.ToUnixTimeMilliseconds() * 1000),
-            BronzeRankPercentage = 0,
-            SilverRankPercentage = 0,
-            GoldRankPercentage = 0,
-            CycleTime = 0,
-            Challenges = [],
-        };
+            return challengeConfig;
+        }
+        else
+        {
+            // Only log this warning once
+            if (!created) context.Logger.LogWarning(BunkumCategory.Request, 
+                "ChallengeConfig.xml file is missing! We've defaulted to one which is loosely based off of the official server's config, "+
+                "but it might be relevant to you if you are an advanced user.");
+            
+            using MemoryStream ms = new();
+            using BunkumXmlTextWriter bunkumXmlTextWriter = new(ms);
+
+            XmlSerializerNamespaces namespaces = new();
+            namespaces.Add("", "");
+
+            XmlSerializer serializer = new(typeof(SerializedLbp3ChallengeList));
+            serializer.Serialize(bunkumXmlTextWriter, SerializedLbp3ChallengeList.Default, namespaces);
+            
+            ms.Seek(0, SeekOrigin.Begin);
+            using StreamReader reader = new(ms);
+            
+            return reader.ReadToEnd();
+        }
     }
 
     [GameEndpoint("tags")]
     [GameEndpoint("tags/popular")]
     [MinimumRole(GameUserRole.Restricted)]
+    [RateLimitSettings(ConfigRequestTimeoutDuration, ConfigRequestAmount, ConfigBlockDuration, ConfigBucket)]
     public string Tags(RequestContext context) => TagExtensions.AllTags;
 
     // Stub this for now. Nothing will happen if this is unimplemented, and we likely won't use any data sent here for now.

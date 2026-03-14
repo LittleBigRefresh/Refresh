@@ -14,6 +14,7 @@ public class DataContext : IDataContext
     public required IDataStore DataStore { get; init; }
     public required MatchService Match { get; init; }
     public required GuidCheckerService GuidChecker { get; init; }
+    public required CacheService Cache { get; init; }
     
     public required Token? Token;
     public GameUser? User => this.Token?.User;
@@ -22,6 +23,6 @@ public class DataContext : IDataContext
 
     public string GetIconFromHash(string hash)
     {
-        return this.Database.GetAssetFromHash(hash)?.GetAsIcon(this.Game, this) ?? hash;
+        return this.Cache.GetAssetInfo(hash, this.Database)?.GetAsIcon(this.Game, this) ?? hash;
     }
 }

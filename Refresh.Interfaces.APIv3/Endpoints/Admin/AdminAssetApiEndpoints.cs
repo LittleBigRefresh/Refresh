@@ -6,6 +6,7 @@ using Refresh.Core.Types.Data;
 using Refresh.Database;
 using Refresh.Database.Models.Assets;
 using Refresh.Database.Models.Users;
+using Refresh.Interfaces.APIv3.Documentation.Descriptions;
 using Refresh.Interfaces.APIv3.Endpoints.ApiTypes;
 using Refresh.Interfaces.APIv3.Endpoints.ApiTypes.Errors;
 using Refresh.Interfaces.APIv3.Endpoints.DataTypes.Response.Data;
@@ -15,15 +16,16 @@ namespace Refresh.Interfaces.APIv3.Endpoints.Admin;
 
 public class AdminAssetApiEndpoints : EndpointGroup
 {
-    [ApiV3Endpoint("admin/users/uuid/{uuid}/assets"), MinimumRole(GameUserRole.Moderator)]
+    [ApiV3Endpoint("admin/users/{idType}/{id}/assets"), MinimumRole(GameUserRole.Moderator)]
     [DocSummary("Retrieves a list of assets uploaded by the user.")]
     [DocQueryParam("assetType", "The asset type to filter by. Can be excluded to list all types.")]
     [DocError(typeof(ApiNotFoundError), ApiNotFoundError.UserMissingErrorWhen)]
     [DocError(typeof(ApiValidationError), "The asset type could not be parsed.")]
     public ApiListResponse<ApiMinimalGameAssetResponse> GetAssetsByUser(RequestContext context, GameDatabaseContext database, DataContext dataContext,
-        [DocSummary("The UUID of the user.")] string uuid)
+        [DocSummary(SharedParamDescriptions.UserIdParam)] string id, 
+        [DocSummary(SharedParamDescriptions.UserIdTypeParam)] string idType)
     {
-        GameUser? user = database.GetUserByUuid(uuid);
+        GameUser? user = database.GetUserByIdAndType(idType, id);
         if (user == null) return ApiNotFoundError.UserMissingError;
         
         (int skip, int count) = context.GetPageData(1000);

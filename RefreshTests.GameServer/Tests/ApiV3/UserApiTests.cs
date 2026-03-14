@@ -45,6 +45,28 @@ public class UserApiTests : GameServerTest
         context.Database.Refresh();
         Assert.That(context.Database.GetUserByUsername(username), Is.Not.EqualTo(null));
     }
+
+    [Test]
+    public void CannotRegisterAccountWithDisallowedEmail()
+    {
+        using TestContext context = this.GetServer();
+
+        const string email = "guy@lil.com";
+        context.Database.DisallowEmail(email);
+        
+        ApiResponse<ApiAuthenticationResponse>? response = context.Http.PostData<ApiAuthenticationResponse>("/api/v3/register", new ApiRegisterRequest
+        {
+            Username = "a_lil_guy",
+            EmailAddress = email,
+            PasswordSha512 = "ee26b0dd4af7e749aa1a8ee3c10ae9923f618980772e473f8819a5d4940e0db27ac185f8a0e1d5f84f88bc887fd67b143732c304cc5fa9ad8e6f57f50028a8ff",
+        }, false, true);
+        Assert.That(response, Is.Not.Null);
+        Assert.That(response!.Error, Is.Not.Null);
+        Assert.That(response.Error!.Name, Is.EqualTo("ApiAuthenticationError"));
+        
+        context.Database.Refresh();
+        Assert.That(context.Database.GetUserByEmailAddress(email), Is.Null);
+    }
     
     [Test]
     public void CannotRegisterAccountWithDisallowedUsername()
@@ -67,6 +89,31 @@ public class UserApiTests : GameServerTest
         
         context.Database.Refresh();
         Assert.That(context.Database.GetUserByUsername(username), Is.EqualTo(null));
+    }
+
+    [Test]
+    public void CannotRegisterAccountWithPreviouslyTakenUsername()
+    {
+        using TestContext context = this.GetServer();
+        GameUser owner = context.CreateUser("original", GameUserRole.User);
+
+        context.Database.RenameUser(owner, "original_2");
+        GameUser? modifiedOwner = context.Database.GetUserByObjectId(owner.UserId);
+        Assert.That(modifiedOwner, Is.Not.Null);
+        Assert.That(modifiedOwner!.Username, Is.EqualTo("original_2"));
+        
+        ApiResponse<ApiAuthenticationResponse>? response = context.Http.PostData<ApiAuthenticationResponse>("/api/v3/register", new ApiRegisterRequest
+        {
+            Username = "original",
+            EmailAddress = "guy@lil.com",
+            PasswordSha512 = "ee26b0dd4af7e749aa1a8ee3c10ae9923f618980772e473f8819a5d4940e0db27ac185f8a0e1d5f84f88bc887fd67b143732c304cc5fa9ad8e6f57f50028a8ff",
+        }, false, true);
+        Assert.That(response, Is.Not.Null);
+        Assert.That(response!.Error, Is.Not.EqualTo(null));
+        Assert.That(response.Error!.Name, Is.EqualTo("ApiAuthenticationError"));
+        
+        context.Database.Refresh();
+        Assert.That(context.Database.GetTotalUserCount(), Is.EqualTo(1));
     }
     
     [TestCase("4")]
@@ -164,6 +211,41 @@ public class UserApiTests : GameServerTest
     }
 
     [Test]
+    [TestCase("")]
+    [TestCase("0")]
+    public void CanResetOwnIcon(string newIcon)
+    {
+        using TestContext context = this.GetServer();
+        GameUser user = context.CreateUser();
+        using HttpClient client = context.GetAuthenticatedClient(TokenType.Api, user);
+        
+        // Prepare by setting icon to something
+        string fakeIcon = "mmmmm";
+        context.Database.UpdateUserData(user, new ApiUpdateUserRequest()
+        {
+            IconHash = fakeIcon
+        });
+        GameUser? userPrepared = context.Database.GetUserByObjectId(user.UserId);
+        Assert.That(userPrepared, Is.Not.Null);
+        Assert.That(userPrepared!.IconHash, Is.EqualTo(fakeIcon));
+
+        // Now try resetting
+        ApiUpdateUserRequest request = new()
+        {
+            IconHash = newIcon
+        };
+        ApiResponse<ApiGameUserResponse>? response = client.PatchData<ApiGameUserResponse>("/api/v3/users/me", request);
+        Assert.That(response, Is.Not.Null);
+        Assert.That(response!.Data!.IconHash, Is.EqualTo("0"));
+
+        context.Database.Refresh();
+
+        GameUser? userUpdated = context.Database.GetUserByObjectId(user.UserId);
+        Assert.That(userUpdated, Is.Not.Null);
+        Assert.That(userUpdated!.IconHash, Is.EqualTo("0"));
+    }
+
+    [Test]
     public void UpdateShowModdedPlanets()
     {
         using TestContext context = this.GetServer();
@@ -219,7 +301,7 @@ public class UserApiTests : GameServerTest
         // Prepare config
         context.Server.Value.GameServerConfig.PermitShowingOnlineUsers = showOnlineUsers;
 
-        ApiListResponse<ApiUserCategoryResponse>? categories = context.Http.GetList<ApiUserCategoryResponse>("/api/v3/users");
+        ApiListResponse<ApiCategoryResponse>? categories = context.Http.GetList<ApiCategoryResponse>("/api/v3/users");
         Assert.That(categories, Is.Not.Null);
 
         if (!showOnlineUsers)
@@ -243,7 +325,7 @@ public class UserApiTests : GameServerTest
         // Prepare config
         context.Server.Value.GameServerConfig.PermitShowingOnlineUsers = showOnlineUsers;
 
-        ApiListResponse<ApiUserCategoryResponse>? categories = context.Http.GetList<ApiUserCategoryResponse>("/api/v3/users?includePreviews=true");
+        ApiListResponse<ApiCategoryResponse>? categories = context.Http.GetList<ApiCategoryResponse>("/api/v3/users?includePreviews=true");
         Assert.That(categories, Is.Not.Null);
 
         if (!showOnlineUsers)
@@ -252,14 +334,10 @@ public class UserApiTests : GameServerTest
             return;
         }
         
-        ApiUserCategoryResponse? category = categories?.Data?.FirstOrDefault(c => c.ApiRoute == "newest");
+        ApiCategoryResponse? category = categories?.Data?.FirstOrDefault(c => c.ApiRoute == "newest");
         Assert.That(category, Is.Not.Null);
-        
-        Assert.Multiple(() =>
-        {
-            Assert.That(category!.PreviewItem, Is.Not.Null);
-            Assert.That(category.PreviewItem!.UserId, Is.EqualTo(user.UserId.ToString()));
-        });
+        Assert.That(category!.PreviewItem, Is.Not.Null);
+        Assert.That(category!.PreviewItem, Is.InstanceOf<ApiGameUserResponse>());
     }
     
     [Test]
@@ -267,7 +345,7 @@ public class UserApiTests : GameServerTest
     {
         using TestContext context = this.GetServer();
         
-        ApiListResponse<ApiUserCategoryResponse>? categories = context.Http.GetList<ApiUserCategoryResponse>("/api/v3/users?includePreviews=IIIIIIIIHEHAHAHAHAHAHAHA", false, true); // https://youtu.be/mpAnsf12JkA?t=2
+        ApiListResponse<ApiCategoryResponse>? categories = context.Http.GetList<ApiCategoryResponse>("/api/v3/users?includePreviews=IIIIIIIIHEHAHAHAHAHAHAHA", false, true); // https://youtu.be/mpAnsf12JkA?t=2
         Assert.That(categories, Is.Not.Null);
         categories!.AssertErrorIsEqual(ApiValidationError.BooleanParseError);
     }
@@ -311,5 +389,24 @@ public class UserApiTests : GameServerTest
             Assert.That(user.UserId, Is.EqualTo(users[index].UserId.ToString()));
             index++;
         }
+    }
+
+    [Test]
+    public void OnlyIncludesOwnUserRelationsWhenSignedIn()
+    {
+        using TestContext context = this.GetServer();
+        GameUser otherUser = context.CreateUser();
+        GameUser me = context.CreateUser();
+
+        // Try fetching the user without being signed in
+        ApiResponse<ApiGameUserResponse>? response = context.Http.GetData<ApiGameUserResponse>($"/api/v3/users/name/{otherUser.Username}");
+        Assert.That(response?.Data, Is.Not.Null);
+        Assert.That(response!.Data!.OwnRelations, Is.Null);
+        
+        // Sign in and then get user again
+        using HttpClient client = context.GetAuthenticatedClient(TokenType.Api, me);
+        response = client.GetData<ApiGameUserResponse>($"/api/v3/users/name/{otherUser.Username}");
+        Assert.That(response?.Data, Is.Not.Null);
+        Assert.That(response!.Data!.OwnRelations, Is.Not.Null);
     }
 }

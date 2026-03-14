@@ -578,6 +578,9 @@ namespace Refresh.Database.Migrations
                         .IsRequired()
                         .HasColumnType("text");
 
+                    b.Property<int>("Rank")
+                        .HasColumnType("integer");
+
                     b.Property<int>("Score")
                         .HasColumnType("integer");
 
@@ -790,6 +793,32 @@ namespace Refresh.Database.Migrations
                     b.ToTable("GamePhotos");
                 });
 
+            modelBuilder.Entity("Refresh.Database.Models.Photos.GamePhotoSubject", b =>
+                {
+                    b.Property<int>("PhotoId")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("PlayerId")
+                        .HasColumnType("integer");
+
+                    b.PrimitiveCollection<float[]>("Bounds")
+                        .IsRequired()
+                        .HasColumnType("real[]");
+
+                    b.Property<string>("DisplayName")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("UserId")
+                        .HasColumnType("text");
+
+                    b.HasKey("PhotoId", "PlayerId");
+
+                    b.HasIndex("UserId");
+
+                    b.ToTable("GamePhotoSubjects");
+                });
+
             modelBuilder.Entity("Refresh.Database.Models.Playlists.GamePlaylist", b =>
                 {
                     b.Property<int>("PlaylistId")
@@ -980,6 +1009,9 @@ namespace Refresh.Database.Migrations
                     b.Property<bool>("IsBeta")
                         .HasColumnType("boolean");
 
+                    b.Property<int>("Platform")
+                        .HasColumnType("integer");
+
                     b.Property<DateTimeOffset>("FirstPublished")
                         .HasColumnType("timestamp with time zone");
 
@@ -989,7 +1021,7 @@ namespace Refresh.Database.Migrations
                     b.Property<int>("Progress")
                         .HasColumnType("integer");
 
-                    b.HasKey("PinId", "PublisherId", "IsBeta");
+                    b.HasKey("PinId", "PublisherId", "IsBeta", "Platform");
 
                     b.HasIndex("PublisherId");
 
@@ -1061,13 +1093,16 @@ namespace Refresh.Database.Migrations
                     b.Property<int>("Game")
                         .HasColumnType("integer");
 
+                    b.Property<int>("Platform")
+                        .HasColumnType("integer");
+
                     b.Property<long>("PinId")
                         .HasColumnType("bigint");
 
                     b.Property<DateTimeOffset>("Timestamp")
                         .HasColumnType("timestamp with time zone");
 
-                    b.HasKey("Index", "PublisherId", "Game");
+                    b.HasKey("Index", "PublisherId", "Game", "Platform");
 
                     b.HasIndex("PublisherId");
 
@@ -1475,6 +1510,16 @@ namespace Refresh.Database.Migrations
                     b.ToTable("RequestStatistics");
                 });
 
+            modelBuilder.Entity("Refresh.Database.Models.Users.DisallowedEmail", b =>
+                {
+                    b.Property<string>("Email")
+                        .HasColumnType("text");
+
+                    b.HasKey("Email");
+
+                    b.ToTable("DisallowedEmails");
+                });
+
             modelBuilder.Entity("Refresh.Database.Models.Users.DisallowedUser", b =>
                 {
                     b.Property<string>("Username")
@@ -1678,6 +1723,25 @@ namespace Refresh.Database.Migrations
                     b.HasIndex("Username", "UsernameLower", "EmailAddress", "PasswordBcrypt");
 
                     b.ToTable("GameUsers");
+                });
+
+            modelBuilder.Entity("Refresh.Database.Models.Users.PreviousUsername", b =>
+                {
+                    b.Property<string>("Username")
+                        .HasColumnType("text");
+
+                    b.Property<DateTimeOffset>("ReplacedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("UserId")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.HasKey("Username", "ReplacedAt");
+
+                    b.HasIndex("UserId");
+
+                    b.ToTable("PreviousUsernames");
                 });
 
             modelBuilder.Entity("Refresh.Database.Models.Users.QueuedRegistration", b =>
@@ -2040,6 +2104,23 @@ namespace Refresh.Database.Migrations
                     b.Navigation("Subject3User");
 
                     b.Navigation("Subject4User");
+                });
+
+            modelBuilder.Entity("Refresh.Database.Models.Photos.GamePhotoSubject", b =>
+                {
+                    b.HasOne("Refresh.Database.Models.Photos.GamePhoto", "Photo")
+                        .WithMany("Subjects")
+                        .HasForeignKey("PhotoId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("Refresh.Database.Models.Users.GameUser", "User")
+                        .WithMany()
+                        .HasForeignKey("UserId");
+
+                    b.Navigation("Photo");
+
+                    b.Navigation("User");
                 });
 
             modelBuilder.Entity("Refresh.Database.Models.Playlists.GamePlaylist", b =>
@@ -2410,6 +2491,22 @@ namespace Refresh.Database.Migrations
                         .HasForeignKey("StatisticsUserId");
 
                     b.Navigation("Statistics");
+                });
+
+            modelBuilder.Entity("Refresh.Database.Models.Users.PreviousUsername", b =>
+                {
+                    b.HasOne("Refresh.Database.Models.Users.GameUser", "User")
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("User");
+                });
+
+            modelBuilder.Entity("Refresh.Database.Models.Photos.GamePhoto", b =>
+                {
+                    b.Navigation("Subjects");
                 });
 
             modelBuilder.Entity("Refresh.Database.Models.Reports.GriefReport", b =>

@@ -34,7 +34,13 @@ public class GameMinimalLevelResponse : IDataConvertableFrom<GameMinimalLevelRes
     
     [XmlElement("playCount")] public required int TotalPlayCount { get; set; }
     [XmlElement("uniquePlayCount")] public required int UniquePlayCount { get; set; }
-    [XmlElement("lbp3PlayCount")] public required int Lbp3PlayCount { get; set; }
+    [XmlElement("lbp1PlayCount")] public required int Lbp1TotalPlayCount { get; set; }
+    [XmlElement("lbp1UniquePlayCount")] public required int Lbp1UniquePlayCount { get; set; }
+    [XmlElement("lbp2PlayCount")] public required int Lbp2TotalPlayCount { get; set; }
+    // There is no lbp2UniquePlayCount attribute in the packet captures
+    [XmlElement("lbp3PlayCount")] public required int Lbp3TotalPlayCount { get; set; }
+    [XmlElement("lbp3UniquePlayCount")] public required int Lbp3UniquePlayCount { get; set; }
+
     [XmlElement("thumbsup")] public required int YayCount { get; set; }
     [XmlElement("thumbsdown")] public required int BooCount { get; set; }
     [XmlElement("averageRating")] public double AverageStarRating { get; set; }
@@ -87,7 +93,11 @@ public class GameMinimalLevelResponse : IDataConvertableFrom<GameMinimalLevelRes
             HeartCount = 0,
             TotalPlayCount = 0,
             UniquePlayCount = 0,
-            Lbp3PlayCount = 0,
+            Lbp1TotalPlayCount = 0,
+            Lbp1UniquePlayCount = 0,
+            Lbp2TotalPlayCount = 0,
+            Lbp3TotalPlayCount = 0,
+            Lbp3UniquePlayCount = 0,
             YayCount = 0,
             BooCount = 0,
             AverageStarRating = 0,
@@ -131,7 +141,11 @@ public class GameMinimalLevelResponse : IDataConvertableFrom<GameMinimalLevelRes
             HeartCount = old.Statistics.FavouriteCount,
             TotalPlayCount = old.Statistics.PlayCount,
             UniquePlayCount = old.Statistics.UniquePlayCount,
-            Lbp3PlayCount = old.Statistics.UniquePlayCount,
+            Lbp1TotalPlayCount = old.Statistics.PlayCount,
+            Lbp1UniquePlayCount = old.Statistics.UniquePlayCount,
+            Lbp2TotalPlayCount = old.Statistics.PlayCount,
+            Lbp3TotalPlayCount = old.Statistics.PlayCount,
+            Lbp3UniquePlayCount = old.Statistics.UniquePlayCount,
             YayCount = old.Statistics.YayCount,
             BooCount = old.Statistics.BooCount,
             TeamPicked = old.TeamPicked,
@@ -186,7 +200,7 @@ public class GameMinimalLevelResponse : IDataConvertableFrom<GameMinimalLevelRes
 
         if (dataContext.Game is TokenGame.LittleBigPlanet1 or TokenGame.BetaBuild)
         {
-            response.Tags = string.Join(',', dataContext.Database.GetTagsForLevel(old).Select(t => t.ToLbpString()));
+            response.Tags = string.Join(',', dataContext.Cache.GetTags(old, dataContext.Database).Select(t => t.ToLbpString()));
         }
 
         if (dataContext.Game is not TokenGame.LittleBigPlanet1 or TokenGame.LittleBigPlanetPSP)
@@ -196,7 +210,7 @@ public class GameMinimalLevelResponse : IDataConvertableFrom<GameMinimalLevelRes
             response.PublisherLabels = old.Labels.ToLbpCommaList(dataContext.Game);
         }
         
-        response.IconHash = dataContext.Database.GetAssetFromHash(old.IconHash)?.GetAsIcon(dataContext.Game, dataContext) ?? old.IconHash;
+        response.IconHash = dataContext.GetIconFromHash(old.IconHash);
         return response;
     }
     
@@ -223,7 +237,11 @@ public class GameMinimalLevelResponse : IDataConvertableFrom<GameMinimalLevelRes
             HeartCount = 0, 
             TotalPlayCount = 0,
             UniquePlayCount = 0,
-            Lbp3PlayCount = 0,
+            Lbp1TotalPlayCount = 0,
+            Lbp1UniquePlayCount = 0,
+            Lbp2TotalPlayCount = 0,
+            Lbp3TotalPlayCount = 0,
+            Lbp3UniquePlayCount = 0,
             YayCount = 0, 
             BooCount = 0,
             AverageStarRating = 0,

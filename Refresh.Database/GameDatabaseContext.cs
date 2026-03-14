@@ -34,6 +34,7 @@ public partial class GameDatabaseContext : DbContext, IDatabaseContext
     private readonly Logger _logger;
 
     internal DbSet<GameUser> GameUsers { get; set; }
+    internal DbSet<PreviousUsername> PreviousUsernames { get; set; }
     internal DbSet<GameUserStatistics> GameUserStatistics { get; set; }
     internal DbSet<Token> Tokens { get; set; }
     internal DbSet<GameLevel> GameLevels { get; set; }
@@ -53,6 +54,7 @@ public partial class GameDatabaseContext : DbContext, IDatabaseContext
     internal DbSet<GameAsset> GameAssets { get; set; }
     internal DbSet<GameNotification> GameNotifications { get; set; }
     internal DbSet<GamePhoto> GamePhotos { get; set; }
+    internal DbSet<GamePhotoSubject> GamePhotoSubjects { get; set; }
     internal DbSet<GameIpVerificationRequest> GameIpVerificationRequests { get; set; }
     internal DbSet<GameAnnouncement> GameAnnouncements { get; set; }
     internal DbSet<QueuedRegistration> QueuedRegistrations { get; set; }
@@ -62,6 +64,7 @@ public partial class GameDatabaseContext : DbContext, IDatabaseContext
     internal DbSet<AssetDependencyRelation> AssetDependencyRelations { get; set; }
     internal DbSet<GameReview> GameReviews { get; set; }
     internal DbSet<DisallowedUser> DisallowedUsers { get; set; }
+    internal DbSet<DisallowedEmail> DisallowedEmails { get; set; }
     internal DbSet<RateReviewRelation> RateReviewRelations { get; set; }
     internal DbSet<TagLevelRelation> TagLevelRelations { get; set; }
     internal DbSet<GamePlaylist> GamePlaylists { get; set; }

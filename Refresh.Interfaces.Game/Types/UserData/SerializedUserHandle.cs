@@ -17,7 +17,7 @@ public class SerializedUserHandle
         return new SerializedUserHandle
         {
             Username = user.Username,
-            IconHash = dataContext.Database.GetAssetFromHash(user.IconHash)?.GetAsIcon(dataContext.Game, dataContext) ?? user.IconHash,
+            IconHash = dataContext.GetIconFromHash(user.IconHash),
         };
     }
 }

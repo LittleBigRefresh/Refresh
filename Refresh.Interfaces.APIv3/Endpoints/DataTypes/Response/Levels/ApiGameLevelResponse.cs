@@ -1,8 +1,8 @@
 using System.Diagnostics;
 using Refresh.Core.Types.Data;
 using Refresh.Database.Models.Authentication;
-using Refresh.Database.Models.Comments;
 using Refresh.Database.Models.Levels;
+using Refresh.Interfaces.APIv3.Endpoints.DataTypes.Response.Categories;
 using Refresh.Interfaces.APIv3.Endpoints.DataTypes.Response.Data;
 using Refresh.Interfaces.APIv3.Endpoints.DataTypes.Response.Users;
 using Refresh.Interfaces.APIv3.Extensions;
@@ -10,7 +10,7 @@ using Refresh.Interfaces.APIv3.Extensions;
 namespace Refresh.Interfaces.APIv3.Endpoints.DataTypes.Response.Levels;
 
 [JsonObject(NamingStrategyType = typeof(CamelCaseNamingStrategy))]
-public class ApiGameLevelResponse : IApiResponse, IDataConvertableFrom<ApiGameLevelResponse, GameLevel>
+public class ApiGameLevelResponse : IApiResponse, IDataConvertableFrom<ApiGameLevelResponse, GameLevel>, IApiResultResponse
 {
     public required int LevelId { get; set; }
     public required ApiGameUserResponse? Publisher { get; set; }
@@ -55,6 +55,7 @@ public class ApiGameLevelResponse : IApiResponse, IDataConvertableFrom<ApiGameLe
     public required bool IsCopyable { get; set; }
     public required float Score { get; set; }
     public required IEnumerable<Tag> Tags { get; set; }
+    public required ApiGameLevelOwnRelationsResponse? OwnRelations { get; set; }
 
     public static ApiGameLevelResponse? FromOld(GameLevel? level, DataContext dataContext)
     {
@@ -82,7 +83,7 @@ public class ApiGameLevelResponse : IApiResponse, IDataConvertableFrom<ApiGameLe
             MaxPlayers = level.MaxPlayers,
             EnforceMinMaxPlayers = level.EnforceMinMaxPlayers,
             SameScreenGame = level.SameScreenGame,
-            SkillRewards = ApiGameSkillRewardResponse.FromOldList(dataContext.Database.GetSkillRewardsForLevel(level), dataContext),
+            SkillRewards = ApiGameSkillRewardResponse.FromOldList(dataContext.Cache.GetSkillRewards(level, dataContext.Database), dataContext),
             YayRatings = level.Statistics.YayCount,
             BooRatings = level.Statistics.BooCount,
             Hearts = level.Statistics.FavouriteCount,
@@ -100,8 +101,9 @@ public class ApiGameLevelResponse : IApiResponse, IDataConvertableFrom<ApiGameLe
             PhotosTaken = level.Statistics.PhotoInLevelCount,
             LevelComments = level.Statistics.CommentCount,
             Reviews = level.Statistics.ReviewCount,
-            Tags = dataContext.Database.GetTagsForLevel(level),
+            Tags = dataContext.Cache.GetTags(level, dataContext.Database),
             IsModded = level.IsModded,
+            OwnRelations = ApiGameLevelOwnRelationsResponse.FromOld(level, dataContext),
         };
     }
 
