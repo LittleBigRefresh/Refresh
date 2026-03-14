@@ -93,7 +93,7 @@ public class RefreshGameServer : RefreshServer
 
             this.WorkerManager?.Stop();
             
-            authProvider ??= new GameAuthenticationProvider(this._configStore.GameServer);
+            authProvider ??= new GameAuthenticationProvider(this._configStore.GameServer, this.Logger);
 
             this.InjectBaseServices(provider, authProvider, this._dataStore);
         });
@@ -107,7 +107,7 @@ public class RefreshGameServer : RefreshServer
     private void InjectBaseServices(GameDatabaseProvider databaseProvider, IAuthenticationProvider<Token> authProvider, IDataStore dataStore)
     {
         this.Server.UseDatabaseProvider(databaseProvider);
-        this.Server.AddAuthenticationService(authProvider, true);
+        this.Server.AddService(new GameAuthenticationService(this.Server.Logger, authProvider));
         this.Server.AddStorageService(dataStore);
     }
 
@@ -141,7 +141,7 @@ public class RefreshGameServer : RefreshServer
     protected override void SetupServices()
     {
         this.Server.AddService<TimeProviderService>(this.GetTimeProvider());
-        this.Server.AddRateLimitService(new RateLimitSettings(90, 380, 45, "global"));
+        this.Server.AddService<GameRateLimitService>(new RateLimiter(new RateLimitSettings(90, 380, 45, "global")));
         this.Server.AddService<CategoryService>();
         this.Server.AddService(new MatchService(this.Server.Logger, this._configStore.GameServer));
         this.Server.AddService<ImportService>();

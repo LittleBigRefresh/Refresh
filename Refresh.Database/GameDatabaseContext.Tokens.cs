@@ -4,6 +4,7 @@ using Refresh.Common.Time;
 using Refresh.Database.Models.Authentication;
 using Refresh.Database.Models.Users;
 using Refresh.Database.Models.Relations;
+using System.Diagnostics;
 
 namespace Refresh.Database;
 
@@ -82,6 +83,14 @@ public partial class GameDatabaseContext // Tokens
         {
             this.RevokeToken(token);
             return null;
+        }
+
+        if (token.TokenData != tokenData || token.TokenType != type)
+        {
+#if DEBUG
+            if(Debugger.IsAttached) Debugger.Break();
+#endif
+            throw new InvalidDataException($"GetTokenFromTokenData - Token data or type does not match!");
         }
 
         return token;

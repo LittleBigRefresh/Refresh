@@ -28,8 +28,9 @@ public partial class Token : IToken<GameUser>
     [Required]
     public string IpAddress { get; set; }
 
-    [Required]
-    public GameUser User { get; set; }
+    [ForeignKey(nameof(UserId))]
+    [Required] public GameUser User { get; set; }
+    [Required] public ObjectId UserId { get; set; }
     
     /// <summary>
     /// The digest key to use with this token, determined from the first game request created by this token
