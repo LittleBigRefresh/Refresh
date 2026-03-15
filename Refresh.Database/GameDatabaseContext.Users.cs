@@ -402,8 +402,6 @@ public partial class GameDatabaseContext // Users
         this.BanUser(user, deletedReason, DateTimeOffset.MaxValue);
         this.RevokeAllTokensForUser(user);
         this.DeleteNotificationsByUser(user);
-        if (user.EmailAddress != null)
-            this.DisallowEmail(user.EmailAddress);
         
         this.Write(() =>
         {

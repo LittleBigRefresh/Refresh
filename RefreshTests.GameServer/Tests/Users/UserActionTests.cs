@@ -83,7 +83,7 @@ public class UserActionTests : GameServerTest
     }
 
     [Test]
-    public void DeletingUserDisallowsEmail()
+    public void DeletingUserDoesNotDisallowEmail()
     {
         using TestContext context = this.GetServer();
         GameUser publisher = context.CreateUser();
@@ -95,6 +95,6 @@ public class UserActionTests : GameServerTest
         context.Database.DeleteUser(publisher);
         context.Database.Refresh();
         
-        Assert.That(context.Database.IsEmailDisallowed(email), Is.True);
+        Assert.That(context.Database.IsEmailDisallowed(email), Is.False);
     }
 }
