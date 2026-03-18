@@ -221,11 +221,8 @@ public class Lbp1PlaylistEndpoints : EndpointGroup
 
     [GameEndpoint("deletePlaylist/{id}", HttpMethods.Post)]
     [RequireEmailVerified]
-    public Response DeletePlaylist(RequestContext context, GameServerConfig config, GameDatabaseContext database, GameUser user, int id)
+    public Response DeletePlaylist(RequestContext context, GameDatabaseContext database, GameUser user, int id)
     {
-        if (user.IsWriteBlocked(config))
-            return Unauthorized;
-        
         GamePlaylist? playlist = database.GetPlaylistById(id);
         if (playlist == null)
             return NotFound;
@@ -379,6 +376,9 @@ public class Lbp1PlaylistEndpoints : EndpointGroup
                             PlaylistModificationEndpointLimits.BlockDuration, PlaylistModificationEndpointLimits.RequestBucket)]
     public Response MoveSlotFromPlaylist(RequestContext context, GameServerConfig config, GameDatabaseContext database, GameUser user, int from)     
     {
+        if (user.IsWriteBlocked(config))
+            return Unauthorized;
+
         if (!int.TryParse(context.QueryString["to"], out int to))
             return BadRequest;
 
