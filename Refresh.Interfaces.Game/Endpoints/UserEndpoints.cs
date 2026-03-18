@@ -7,6 +7,7 @@ using Bunkum.Listener.Protocol;
 using Bunkum.Protocols.Http;
 using Refresh.Common.Constants;
 using Refresh.Core.Authentication.Permission;
+using Refresh.Core.Configuration;
 using Refresh.Core.RateLimits.Users;
 using Refresh.Core.Services;
 using Refresh.Core.Types.Data;
@@ -169,8 +170,11 @@ public class UserEndpoints : EndpointGroup
     [RequireEmailVerified]
     [NullStatusCode(BadRequest)]
     [RateLimitSettings(PinTimeoutDuration, PinRequestAmount, PinBlockDuration, PinBucket)]
-    public SerializedPins? UpdatePins(RequestContext context, DataContext dataContext, GameUser user, SerializedPins body)
+    public SerializedPins? UpdatePins(RequestContext context, DataContext dataContext, GameUser user, SerializedPins body, GameServerConfig config)
     {
+        if (user.IsWriteBlocked(config)) 
+            return null;
+
         // Try to convert pin progress
         Dictionary<long, int> pinProgresses = [];
         try
@@ -209,15 +213,22 @@ public class UserEndpoints : EndpointGroup
 
         // Return newly updated pins (LBP2 and 3 update their pin progresses if there are higher progress values
         // in the response, but seemingly ignore the profile pins in the response)
-        return this.GetPins(context, dataContext, user);
+        return this.GetPins(context, dataContext, user, config);
     }
 
     [GameEndpoint("get_my_pins", HttpMethods.Get, ContentType.Json)]
     [MinimumRole(GameUserRole.Restricted)]
+    [NullStatusCode(Unauthorized)]
     [RateLimitSettings(PinTimeoutDuration, PinRequestAmount, PinBlockDuration, PinBucket)]
-    public SerializedPins GetPins(RequestContext context, DataContext dataContext, GameUser user)
-        => SerializedPins.FromOld
+    public SerializedPins? GetPins(RequestContext context, DataContext dataContext, GameUser user, GameServerConfig config)
+    {
+        if (user.IsWriteBlocked(config)) 
+            return null;
+
+        return SerializedPins.FromOld
         (
             dataContext.Database.GetPinProgressesByUser(user, dataContext.Game == TokenGame.BetaBuild, dataContext.Platform, 0, 999).Items
         );
+        
+    }
 }
