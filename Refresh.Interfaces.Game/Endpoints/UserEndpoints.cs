@@ -222,9 +222,6 @@ public class UserEndpoints : EndpointGroup
     [RateLimitSettings(PinTimeoutDuration, PinRequestAmount, PinBlockDuration, PinBucket)]
     public SerializedPins? GetPins(RequestContext context, DataContext dataContext, GameUser user, GameServerConfig config)
     {
-        if (user.IsWriteBlocked(config)) 
-            return null;
-
         return SerializedPins.FromOld
         (
             dataContext.Database.GetPinProgressesByUser(user, dataContext.Game == TokenGame.BetaBuild, dataContext.Platform, 0, 999).Items
