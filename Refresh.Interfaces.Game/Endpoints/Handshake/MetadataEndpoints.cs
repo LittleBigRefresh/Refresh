@@ -51,7 +51,7 @@ public class MetadataEndpoints : EndpointGroup
     public Response SetFriendData(RequestContext context, GameUser user, GameDatabaseContext database, SerializedFriendData body, DataContext dataContext, GameServerConfig config)
     {
         if (user.IsWriteBlocked(config))
-            return Unauthorized;
+            return OK; // else the game will send a new request for this every minute
 
         IEnumerable<GameUser> friends = body.FriendsList.Names
             .Take(128) // should be way more than enough - we'll see if this becomes a problem
