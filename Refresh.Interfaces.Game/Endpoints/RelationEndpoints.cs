@@ -120,8 +120,11 @@ public class RelationEndpoints : EndpointGroup
     [RequireEmailVerified]
     [RateLimitSettings(CommonRelationEndpointLimits.TimeoutDuration, CommonRelationEndpointLimits.RequestAmount, 
                             CommonRelationEndpointLimits.BlockDuration, CommonRelationEndpointLimits.RequestBucket)]
-    public Response QueueLevel(RequestContext context, GameDatabaseContext database, GameUser user, string slotType, int id, DataContext dataContext)
+    public Response QueueLevel(RequestContext context, GameDatabaseContext database, GameUser user, string slotType, int id, DataContext dataContext, GameServerConfig config)
     {
+        if (user.IsWriteBlocked(config)) 
+            return Unauthorized;
+
         GameLevel? level = database.GetLevelByIdAndType(slotType, id);
         if (level == null) return NotFound;
 
@@ -134,8 +137,11 @@ public class RelationEndpoints : EndpointGroup
     [RequireEmailVerified]
     [RateLimitSettings(CommonRelationEndpointLimits.TimeoutDuration, CommonRelationEndpointLimits.RequestAmount, 
                             CommonRelationEndpointLimits.BlockDuration, CommonRelationEndpointLimits.RequestBucket)]
-    public Response DequeueLevel(RequestContext context, GameDatabaseContext database, GameUser user, string slotType, int id, DataContext dataContext)
+    public Response DequeueLevel(RequestContext context, GameDatabaseContext database, GameUser user, string slotType, int id, DataContext dataContext, GameServerConfig config)
     {
+        if (user.IsWriteBlocked(config)) 
+            return Unauthorized;
+
         GameLevel? level = database.GetLevelByIdAndType(slotType, id);
         if (level == null) return NotFound;
 
@@ -148,8 +154,11 @@ public class RelationEndpoints : EndpointGroup
     [RequireEmailVerified]
     [RateLimitSettings(CommonRelationEndpointLimits.TimeoutDuration, CommonRelationEndpointLimits.RequestAmount, 
                             CommonRelationEndpointLimits.BlockDuration, CommonRelationEndpointLimits.RequestBucket)]
-    public Response ClearQueue(RequestContext context, GameDatabaseContext database, GameUser user, DataContext dataContext)
+    public Response ClearQueue(RequestContext context, GameDatabaseContext database, GameUser user, DataContext dataContext, GameServerConfig config)
     {
+        if (user.IsWriteBlocked(config)) 
+            return Unauthorized;
+
         database.ClearQueue(user);
         dataContext.Cache.ClearQueueByUser(user);
         return OK;

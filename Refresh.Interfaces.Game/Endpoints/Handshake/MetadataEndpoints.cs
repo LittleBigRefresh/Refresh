@@ -48,8 +48,11 @@ public class MetadataEndpoints : EndpointGroup
 
     [GameEndpoint("npdata", ContentType.Xml, HttpMethods.Post)]
     [RateLimitSettings(480, 8, 420, "game-npdata")]
-    public Response SetFriendData(RequestContext context, GameUser user, GameDatabaseContext database, SerializedFriendData body, DataContext dataContext)
+    public Response SetFriendData(RequestContext context, GameUser user, GameDatabaseContext database, SerializedFriendData body, DataContext dataContext, GameServerConfig config)
     {
+        if (user.IsWriteBlocked(config))
+            return OK; // else the game will send a new request for this every minute
+
         IEnumerable<GameUser> friends = body.FriendsList.Names
             .Take(128) // should be way more than enough - we'll see if this becomes a problem
             .Select(username => database.GetUserByUsername(username))
