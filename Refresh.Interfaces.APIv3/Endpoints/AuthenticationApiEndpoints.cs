@@ -425,9 +425,15 @@ public class AuthenticationApiEndpoints : EndpointGroup
     }
 
     [ApiV3Endpoint("users/me", HttpMethods.Delete), MinimumRole(GameUserRole.Restricted)]
-    [DocSummary("Deletes your own account. This action is non-reversible.")]
-    public ApiOkResponse DeleteMyAccount(RequestContext context, GameUser user, GameDatabaseContext database)
+    [DocSummary("Deletes your own account. This action is non-reversible. This endpoint now requires you to include your own password while being authenticated.")]
+    public ApiOkResponse DeleteMyAccount(RequestContext context, GameUser user, ApiOwnUserDeletionRequest body, GameDatabaseContext database)
     {
+        if (string.IsNullOrWhiteSpace(body.PasswordSha512))
+            return new ApiValidationError("You must enter your password to delete your account.");
+
+        if (!BC.Verify(body.PasswordSha512, user.PasswordBcrypt))
+            return new ApiValidationError("The password was incorrect.");
+
         database.DeleteUser(user);
         return new ApiOkResponse();
     }
