@@ -59,11 +59,12 @@ public class Lbp1PlaylistEndpoints : EndpointGroup
     {
         GameUser user = dataContext.User!;
         
-        if (user.IsWriteBlocked(config))
-            return Unauthorized;
-        
         GamePlaylist? parent = null;
         GamePlaylist? rootPlaylist = dataContext.Database.GetUserRootPlaylist(user);
+
+        // Don't block root playlist creation, as the game will otherwise spam requests and softlock
+        if (user.IsWriteBlocked(config) && rootPlaylist != null)
+            return Unauthorized;
 
         // If the parent ID is specified, try to parse that out
         if (int.TryParse(context.QueryString["parent_id"], out int parentId))
