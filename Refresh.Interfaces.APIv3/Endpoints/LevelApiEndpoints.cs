@@ -119,11 +119,8 @@ public class LevelApiEndpoints : EndpointGroup
         GameDatabaseContext database, 
         GameUser user, 
         PlayNowService overrideService,
-        [DocSummary("The ID of the level")] int id, GameServerConfig config)
+        [DocSummary("The ID of the level")] int id)
     {
-        if (user.IsWriteBlocked(config)) 
-            return ApiAuthenticationError.ReadOnlyError;
-
         GameLevel? level = database.GetLevelById(id);
         if (level == null) return ApiNotFoundError.LevelMissingError;
 
@@ -139,11 +136,8 @@ public class LevelApiEndpoints : EndpointGroup
     [RateLimitSettings(LevelOverrideEndpointLimits.TimeoutDuration, LevelOverrideEndpointLimits.RequestAmount, 
                             LevelOverrideEndpointLimits.BlockDuration, LevelOverrideEndpointLimits.RequestBucket)]
     public ApiOkResponse SetLevelAsOverrideByHash(RequestContext context, GameDatabaseContext database, GameUser user,
-        PlayNowService service, PresenceService presenceService, [DocSummary("The hash of level root resource")] string hash, GameServerConfig config)
+        PlayNowService service, PresenceService presenceService, [DocSummary("The hash of level root resource")] string hash)
     {
-        if (user.IsWriteBlocked(config)) 
-            return ApiAuthenticationError.ReadOnlyError;
-
         if (!CommonPatterns.Sha1Regex().IsMatch(hash)) 
             return ApiValidationError.HashInvalidError;
 
@@ -172,7 +166,7 @@ public class LevelApiEndpoints : EndpointGroup
     [DocError(typeof(ApiNotFoundError), ApiNotFoundError.LevelMissingErrorWhen)]
     [RateLimitSettings(CommonRelationEndpointLimits.TimeoutDuration, CommonRelationEndpointLimits.RequestAmount, 
                             CommonRelationEndpointLimits.BlockDuration, CommonRelationEndpointLimits.RequestBucket)]
-    public ApiOkResponse FavouriteLevel(RequestContext context, GameDatabaseContext database, GameUser user,
+    public ApiOkResponse HeartLevel(RequestContext context, GameDatabaseContext database, GameUser user,
         [DocSummary("The ID of the level")] int id, DataContext dataContext, GameServerConfig config) 
     {
         if (user.IsWriteBlocked(config)) 
@@ -211,11 +205,8 @@ public class LevelApiEndpoints : EndpointGroup
     [RateLimitSettings(CommonRelationEndpointLimits.TimeoutDuration, CommonRelationEndpointLimits.RequestAmount, 
                             CommonRelationEndpointLimits.BlockDuration, CommonRelationEndpointLimits.RequestBucket)]
     public ApiOkResponse QueueLevel(RequestContext context, GameDatabaseContext database, GameUser user,
-        [DocSummary("The ID of the level")] int id, DataContext dataContext, GameServerConfig config) 
+        [DocSummary("The ID of the level")] int id, DataContext dataContext) 
     {
-        if (user.IsWriteBlocked(config)) 
-            return ApiAuthenticationError.ReadOnlyError;
-        
         GameLevel? level = database.GetLevelById(id);
         if (level == null) return ApiNotFoundError.LevelMissingError;
 
@@ -236,11 +227,8 @@ public class LevelApiEndpoints : EndpointGroup
     [RateLimitSettings(CommonRelationEndpointLimits.TimeoutDuration, CommonRelationEndpointLimits.RequestAmount, 
                             CommonRelationEndpointLimits.BlockDuration, CommonRelationEndpointLimits.RequestBucket)]
     public ApiOkResponse DequeueLevel(RequestContext context, GameDatabaseContext database, GameUser user,
-        [DocSummary("The ID of the level")] int id, DataContext dataContext, GameServerConfig config) 
+        [DocSummary("The ID of the level")] int id, DataContext dataContext) 
     {
-        if (user.IsWriteBlocked(config)) 
-            return ApiAuthenticationError.ReadOnlyError;
-        
         GameLevel? level = database.GetLevelById(id);
         if (level == null) return ApiNotFoundError.LevelMissingError;
 
@@ -254,11 +242,8 @@ public class LevelApiEndpoints : EndpointGroup
     [RateLimitSettings(CommonRelationEndpointLimits.TimeoutDuration, CommonRelationEndpointLimits.RequestAmount, 
                             CommonRelationEndpointLimits.BlockDuration, CommonRelationEndpointLimits.RequestBucket)]
     public ApiOkResponse ClearQueuedLevels(RequestContext context, GameDatabaseContext database,
-        IDataStore dataStore, GameUser user, DataContext dataContext, GameServerConfig config) 
+        GameUser user, DataContext dataContext) 
     {
-        if (user.IsWriteBlocked(config)) 
-            return ApiAuthenticationError.ReadOnlyError;
-        
         database.ClearQueue(user);
         dataContext.Cache.ClearQueueByUser(user);
         return new ApiOkResponse();

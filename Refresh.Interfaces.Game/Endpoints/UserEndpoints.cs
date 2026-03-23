@@ -213,14 +213,14 @@ public class UserEndpoints : EndpointGroup
 
         // Return newly updated pins (LBP2 and 3 update their pin progresses if there are higher progress values
         // in the response, but seemingly ignore the profile pins in the response)
-        return this.GetPins(context, dataContext, user, config);
+        return this.GetPins(context, dataContext, user);
     }
 
     [GameEndpoint("get_my_pins", HttpMethods.Get, ContentType.Json)]
     [MinimumRole(GameUserRole.Restricted)]
     [NullStatusCode(Unauthorized)]
     [RateLimitSettings(PinTimeoutDuration, PinRequestAmount, PinBlockDuration, PinBucket)]
-    public SerializedPins? GetPins(RequestContext context, DataContext dataContext, GameUser user, GameServerConfig config)
+    public SerializedPins? GetPins(RequestContext context, DataContext dataContext, GameUser user)
     {
         return SerializedPins.FromOld
         (
