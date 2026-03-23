@@ -90,7 +90,7 @@ public partial class GameDatabaseContext // Tokens
 #if DEBUG
             if(Debugger.IsAttached) Debugger.Break();
 #endif
-            throw new InvalidDataException($"GetTokenFromTokenData - Token data or type does not match!");
+            throw new InvalidDataException($"GetTokenFromTokenData - Token data or type does not match (expected {tokenData} | {type}, got {token.TokenData} | {token.TokenType} by {token.User})!");
         }
 
         return token;
