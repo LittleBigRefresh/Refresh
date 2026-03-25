@@ -30,7 +30,7 @@ public class ResourceEndpoints : EndpointGroup
     [GameEndpoint("upload/{hash}", HttpMethods.Post)]
     [RequireEmailVerified]
     [SuppressMessage("ReSharper", "ConvertIfStatementToReturnStatement")]
-    [RateLimitSettings(450, 180, 300, "game-asset-upload")]
+    [RateLimitSettings(300, 200, 240, "game-asset-upload")]
     public Response UploadAsset(RequestContext context, string hash, string type, byte[] body, IDataStore dataStore,
         GameDatabaseContext database, GameUser user, AssetImporter importer, GameServerConfig config, IDateTimeProvider timeProvider, Token token,
         DataContext dataContext)
@@ -106,7 +106,7 @@ public class ResourceEndpoints : EndpointGroup
 
     [GameEndpoint("r/{hash}")]
     [MinimumRole(GameUserRole.Restricted)]
-    [RateLimitSettings(450, 250, 300, "game-asset-download")]
+    [RateLimitSettings(300, 340, 240, "game-asset-download")]
     public Response GetResource(RequestContext context, GameUser user, Token token, string hash, DataContext dataContext, ChallengeGhostRateLimitService ghostService)
     {
         if (!CommonPatterns.Sha1Regex().IsMatch(hash)) return BadRequest;

@@ -5,8 +5,8 @@ namespace Refresh.Core.RateLimits.Presence;
 /// </summary>
 public static class GamePresenceEndpointLimits
 {
-    public const int TimeoutDuration = 450;
-    public const int RequestAmount = 30;
-    public const int BlockDuration = 300;
+    public const int TimeoutDuration = 300;
+    public const int RequestAmount = 80;
+    public const int BlockDuration = 240;
     public const string RequestBucket = "game-presence";
 }
