@@ -50,6 +50,13 @@ public partial class GameDatabaseContext // Workers
         return JsonConvert.DeserializeObject(state.State, type);
     }
 
+    public IQueryable<string> GetAllJobIds(WorkerClass? workerClass)
+    {
+        IQueryable<PersistentJobState> states = this.JobStates;
+        if (workerClass != null) states = states.Where(s => s.Class == workerClass);
+        return states.Select(s => s.JobId);
+    }
+
     public void UpdateOrCreateJobState(string jobId, object state, WorkerClass workerClass)
     {
         PersistentJobState? jobState = this.JobStates.FirstOrDefault(s => s.JobId == jobId && s.Class == workerClass);
@@ -65,5 +72,11 @@ public partial class GameDatabaseContext // Workers
         
         jobState.State = JsonConvert.SerializeObject(state, Formatting.None);
         this.SaveChanges();
+    }
+
+    public void RemoveJobState(string jobId, bool save = true)
+    {
+        this.JobStates.RemoveRange(s => s.JobId == jobId);
+        if (save) this.SaveChanges();
     }
 }

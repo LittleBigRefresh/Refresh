@@ -105,6 +105,20 @@ public class WorkerManager
         this._threadShouldRun = true;
         Thread thread = new(() =>
         {
+            GameDatabaseContext database = this._databaseProvider.GetContext();
+            string[] jobsFromWorkerManager = this._jobs.Select(j => j.GetType().Name).ToArray();
+            string[] jobsFromDatabase = database.GetAllJobIds(WorkerClass.Refresh).ToArray();
+            
+            foreach (string jobId in jobsFromDatabase)
+            {
+                if (!jobsFromWorkerManager.Any(j => j == jobId))
+                {
+                    this._logger.LogInfo(RefreshContext.Worker, $"Removing job state for {jobId} because it doesn't exist in RefreshWorkerManager (likely from a newer/different Refresh build).");
+                    database.RemoveJobState(jobId, false);
+                }
+            }
+            database.SaveChanges();
+
             while (this._threadShouldRun)
             {
                 try
