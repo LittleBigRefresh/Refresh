@@ -122,7 +122,10 @@ public class PublishEndpoints : EndpointGroup
         IDateTimeProvider dateTimeProvider)
     {
         if (dataContext.User!.IsWriteBlocked(config))
+        {
+            dataContext.Database.AddPublishFailNotification("The server is in read-only mode.", body.Title, dataContext.User!);
             return Unauthorized;
+        }
         
         if (IsTimedLevelLimitReached(dataContext, dataContext.User!, body.Title, config.TimedLevelUploadLimits, dateTimeProvider.Now)) 
             return Unauthorized;

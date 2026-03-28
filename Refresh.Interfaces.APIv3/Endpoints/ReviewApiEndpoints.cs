@@ -5,6 +5,7 @@ using Bunkum.Core.RateLimit;
 using Bunkum.Core.Storage;
 using Bunkum.Protocols.Http;
 using Refresh.Common.Constants;
+using Refresh.Core.Configuration;
 using Refresh.Core.RateLimits.Relations;
 using Refresh.Core.RateLimits.Reviews;
 using Refresh.Core.Types.Data;
@@ -101,8 +102,11 @@ public class ReviewApiEndpoints : EndpointGroup
                             ReviewUploadEndpointLimits.BlockDuration, ReviewUploadEndpointLimits.RequestBucket)]
     public ApiResponse<ApiGameReviewResponse> PostReviewToLevel(RequestContext context,
         GameDatabaseContext database, IDataStore dataStore, GameUser user,
-        [DocSummary("The ID of the level")] int id, ApiSubmitReviewRequest body, DataContext dataContext)
+        [DocSummary("The ID of the level")] int id, ApiSubmitReviewRequest body, DataContext dataContext, GameServerConfig config)
     {
+        if (user.IsWriteBlocked(config)) 
+            return ApiAuthenticationError.ReadOnlyError;
+
         GameLevel? level = database.GetLevelById(id);
         if (level == null) return ApiNotFoundError.LevelMissingError;
 
@@ -147,8 +151,11 @@ public class ReviewApiEndpoints : EndpointGroup
                             ReviewUploadEndpointLimits.BlockDuration, ReviewUploadEndpointLimits.RequestBucket)]
     public ApiResponse<ApiGameReviewResponse> UpdateReviewById(RequestContext context,
         GameDatabaseContext database, IDataStore dataStore, GameUser user,
-        [DocSummary("The ID of the review")] int id, ApiSubmitReviewRequest body, DataContext dataContext)
+        [DocSummary("The ID of the review")] int id, ApiSubmitReviewRequest body, DataContext dataContext, GameServerConfig config)
     {
+        if (user.IsWriteBlocked(config)) 
+            return ApiAuthenticationError.ReadOnlyError;
+
         GameReview? review = database.GetReviewById(id);
         if (review == null) return ApiNotFoundError.ReviewMissingError;
 
@@ -209,8 +216,11 @@ public class ReviewApiEndpoints : EndpointGroup
     public ApiOkResponse RateReviewById(RequestContext context,
         GameDatabaseContext database, IDataStore dataStore, GameUser user,
         [DocSummary("The ID of the review")] int id, DataContext dataContext,
-        [DocSummary("The user's new rating. -1 = dislike, 0 = neutral, 1 = like.")] string rawRating)
+        [DocSummary("The user's new rating. -1 = dislike, 0 = neutral, 1 = like.")] string rawRating, GameServerConfig config)
     {
+        if (user.IsWriteBlocked(config)) 
+            return ApiAuthenticationError.ReadOnlyError;
+
         GameReview? review = database.GetReviewById(id);
         if (review == null) return ApiNotFoundError.ReviewMissingError;
 
