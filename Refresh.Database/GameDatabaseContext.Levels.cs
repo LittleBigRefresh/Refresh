@@ -52,7 +52,7 @@ public partial class GameDatabaseContext // Levels
             EnforceMinMaxPlayers = createInfo.EnforceMinMaxPlayers,
             SameScreenGame = createInfo.SameScreenGame,
             BackgroundGuid = createInfo.BackgroundGuid,
-            PublisherUserId = publisher.UserId,
+            Publisher = publisher,
             GameVersion = game,
             PublishDate = timestamp,
             UpdateDate = timestamp,
@@ -61,31 +61,24 @@ public partial class GameDatabaseContext // Levels
         this.ApplyLevelMetadataFromAttributes(level);
         this.GameLevels.Add(level);
 
+        // Seems unnecessary, but prevents EF from trying to INSERT both unconditionally in unit tests
+        this.GameUsers.Update(publisher);
+        if (publisher.Statistics != null)
+            this.GameUserStatistics.Update(publisher.Statistics);
+
         this.SaveChanges();
 
-        this.CreateRevisionForLevel(level, level.Publisher);
-        this.GameLevelStatistics.Add(level.Statistics = new GameLevelStatistics
+        this.WriteEnsuringStatistics(publisher, () =>
         {
-            LevelId = level.LevelId,
+            this.GameLevelStatistics.Add(level.Statistics = new GameLevelStatistics
+            {
+                LevelId = level.LevelId,
+            });
+
+            this.CreateRevisionForLevel(level, level.Publisher);
+            publisher.Statistics!.LevelCount++;
         });
 
-        this.SaveChanges();
-
-        if (publisher != null)
-        {
-            this.WriteEnsuringStatistics(publisher, () =>
-            {
-                // even if the level count does get updated, ChangeTracker.HasChanges() will return false anyways
-                // (in unit tests atleast), failing the assert
-                this.GameUsers.Update(publisher);
-                publisher.Statistics!.LevelCount++;
-            });
-        }
-
-        // setting Publisher on an untracked object prevents EF from unconditionally trying to INSERT the publisher into the 
-        // GameUsers table on the next SaveChanges() call in unit tests, causing a duplicate key exception
-        level = level.Clone();
-        level.Publisher = publisher;
         return level;
     }
 
