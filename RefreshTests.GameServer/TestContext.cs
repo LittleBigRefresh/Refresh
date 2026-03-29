@@ -237,9 +237,14 @@ public class TestContext : IDisposable
         {
             Database = this.Database,
             Logger = this.Server.Value.Logger,
-            DataStore = (IDataStore)this.GetService<StorageService>()
-                .AddParameterToEndpoint(null!, new BunkumParameterInfo(typeof(IDataStore), ""), null!)!,
+            DataStore = this.GetDataStore(),
         };
+    }
+
+    public IDataStore GetDataStore()
+    {
+        return (IDataStore)this.GetService<StorageService>()
+            .AddParameterToEndpoint(null!, new BunkumParameterInfo(typeof(IDataStore), ""), null!)!;
     }
 
     public void Dispose()
