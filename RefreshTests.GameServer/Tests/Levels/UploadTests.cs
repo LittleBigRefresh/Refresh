@@ -25,6 +25,18 @@ public class UploadTests : GameServerTest
     }
 
     [Test]
+    public void CanCreateTwoLevelsWhileRefreshing()
+    {
+        using TestContext context = this.GetServer(false);
+        GameUser user = context.CreateUser();
+        context.Database.Refresh();
+        GameLevel level1 = context.CreateLevel(user);
+        context.Database.Refresh();
+        GameLevel level2 = context.CreateLevel(user);
+        context.Database.Refresh();
+    }
+
+    [Test]
     public void CanUpdateLevel()
     {
         using TestContext context = this.GetServer(false);

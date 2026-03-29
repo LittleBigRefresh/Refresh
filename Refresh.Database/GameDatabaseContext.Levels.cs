@@ -52,7 +52,7 @@ public partial class GameDatabaseContext // Levels
             EnforceMinMaxPlayers = createInfo.EnforceMinMaxPlayers,
             SameScreenGame = createInfo.SameScreenGame,
             BackgroundGuid = createInfo.BackgroundGuid,
-            Publisher = publisher,
+            PublisherUserId = publisher.UserId,
             GameVersion = game,
             PublishDate = timestamp,
             UpdateDate = timestamp,
@@ -71,14 +71,21 @@ public partial class GameDatabaseContext // Levels
 
         this.SaveChanges();
 
-        if (level.Publisher != null)
+        if (publisher != null)
         {
-            this.WriteEnsuringStatistics(level.Publisher, () =>
+            this.WriteEnsuringStatistics(publisher, () =>
             {
-                level.Publisher.Statistics!.LevelCount++;
+                // even if the level count does get updated, ChangeTracker.HasChanges() will return false anyways
+                // (in unit tests atleast), failing the assert
+                this.GameUsers.Update(publisher);
+                publisher.Statistics!.LevelCount++;
             });
         }
 
+        // setting Publisher on an untracked object prevents EF from unconditionally trying to INSERT the publisher into the 
+        // GameUsers table on the next SaveChanges() call in unit tests, causing a duplicate key exception
+        level = level.Clone();
+        level.Publisher = publisher;
         return level;
     }
 
