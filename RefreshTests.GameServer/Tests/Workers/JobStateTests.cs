@@ -113,8 +113,9 @@ public class JobStateTests : GameServerTest
         Assert.That(firstLevelMigrated!.Title, Does.EndWith(" test"));
         context.Database.Refresh();
 
-        // While we do automatically apply whatever new change we've migrated existing entities to for real migrations (photo subjects, player limits etc.),
-        // we don't auto-append " test" to new levels here, so we can safely create this level now, which would need migration aswell because of this.
+        // We can ignore the fact that this level's title won't end on " test", since when we add a real migration job for a certain entity,
+        // we also adjust that entity's creation/update methods in order to apply whatever change we want to new entities aswell.
+        // We don't do it here, and it doesn't matter in this test.
         GameLevel secondLevel = context.CreateLevel(user);
         // Should skip job because it's still "complete", so the new level won't be migrated.
         manager.RunWorkCycle();
@@ -134,17 +135,23 @@ public class JobStateTests : GameServerTest
         // Simulate a roll-back, meaning the job wouldn't be in the WorkerManager anymore, so no migrations will happen, and the job state would be
         // auto-removed by WorkerManager.Start() in real cases.
         manager = new(Logger, dataStore, context.DatabaseProvider);
+        GameLevel thirdLevel = context.CreateLevel(user);
+
         manager.RemoveUnusedJobStates();
         manager.RunWorkCycle();
         context.Database.Refresh();
 
-        // Second level was not migrated, and the job state was removed
+        // No new levels were migrated, and the job state was removed
         stateObject = context.Database.GetJobState(typeof(TestMigrationJob).Name, typeof(MigrationJobState), WorkerClass.Refresh);
         Assert.That(stateObject, Is.Null);
 
         GameLevel? secondLevelMigrated = context.Database.GetLevelById(secondLevel.LevelId);
         Assert.That(secondLevelMigrated, Is.Not.Null);
         Assert.That(secondLevelMigrated!.Title, Does.Not.EndWith(" test"));
+
+        GameLevel? thirdLevelMigrated = context.Database.GetLevelById(thirdLevel.LevelId);
+        Assert.That(thirdLevelMigrated, Is.Not.Null);
+        Assert.That(thirdLevelMigrated!.Title, Does.Not.EndWith(" test"));
 
         // Now simulate a re-update, where the job is in the WorkerManager again
         manager = new(Logger, dataStore, context.DatabaseProvider);
@@ -159,10 +166,14 @@ public class JobStateTests : GameServerTest
 
         jobState = (MigrationJobState)stateObject!;
         Assert.That(jobState.Complete, Is.True);
-        Assert.That(jobState.Processed, Is.EqualTo(2));
+        Assert.That(jobState.Processed, Is.EqualTo(3));
 
         secondLevelMigrated = context.Database.GetLevelById(secondLevel.LevelId);
         Assert.That(secondLevelMigrated, Is.Not.Null);
         Assert.That(secondLevelMigrated!.Title, Does.EndWith(" test"));
+
+        thirdLevelMigrated = context.Database.GetLevelById(thirdLevel.LevelId);
+        Assert.That(thirdLevelMigrated, Is.Not.Null);
+        Assert.That(thirdLevelMigrated!.Title, Does.EndWith(" test"));
     }
 }
