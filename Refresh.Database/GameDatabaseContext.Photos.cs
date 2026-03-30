@@ -119,67 +119,20 @@ public partial class GameDatabaseContext // Photos
         return newPhoto;
     }
 
-    /// <remarks>
-    /// Migration only!!
-    /// </remarks>
-    public void MigratePhotoSubjects(GamePhoto photo, bool saveChanges)
+    public GamePhotoSubject AddSubjectForPhoto(GamePhoto photo, int playerId, string displayName, GameUser? user, List<float> bounds, bool save = true)
     {
-        List<GamePhotoSubject> subjects = [];
-
-#pragma warning disable CS0618 // obsoletion
-        
-        // If DisplayName is not null, there is a subject in that spot
-        if (photo.Subject1DisplayName != null)
+        GamePhotoSubject subject = new()
         {
-            subjects.Add(new()
-            {
-                Photo = photo,
-                PlayerId = 1,
-                DisplayName = photo.Subject1DisplayName,
-                User = photo.Subject1User,
-                Bounds = photo.Subject1Bounds,
-            });
-        }
+            Photo = photo,
+            PlayerId = playerId,
+            DisplayName = displayName,
+            User = user,
+            Bounds = bounds,
+        };
 
-        if (photo.Subject2DisplayName != null)
-        {
-            subjects.Add(new()
-            {
-                Photo = photo,
-                PlayerId = 2,
-                DisplayName = photo.Subject2DisplayName,
-                User = photo.Subject2User,
-                Bounds = photo.Subject2Bounds,
-            });
-        }
-
-        if (photo.Subject3DisplayName != null)
-        {
-            subjects.Add(new()
-            {
-                Photo = photo,
-                PlayerId = 3,
-                DisplayName = photo.Subject3DisplayName,
-                User = photo.Subject3User,
-                Bounds = photo.Subject3Bounds,
-            });
-        }
-
-        if (photo.Subject4DisplayName != null)
-        {
-            subjects.Add(new()
-            {
-                Photo = photo,
-                PlayerId = 4,
-                DisplayName = photo.Subject4DisplayName,
-                User = photo.Subject4User,
-                Bounds = photo.Subject4Bounds,
-            });
-        }
-#pragma warning restore CS0618
-
-        this.GamePhotoSubjects.AddRange(subjects);
-        if (saveChanges) this.SaveChanges();
+        this.GamePhotoSubjects.Add(subject);
+        if (save) this.SaveChanges();
+        return subject;
     }
 
     public void RemovePhoto(GamePhoto photo)
@@ -226,6 +179,9 @@ public partial class GameDatabaseContext // Photos
         => this.GamePhotoSubjectsIncluded
             .Where(s => s.PhotoId == photo.PhotoId)
             .OrderBy(s => s.PlayerId);
+    
+    public int GetTotalSubjectsInPhoto(GamePhoto photo)
+        => this.GamePhotoSubjects.Count(s => s.PhotoId == photo.PhotoId);
     
     public IQueryable<GameUser> GetUsersInPhoto(GamePhoto photo)
         => this.GetSubjectsInPhoto(photo)
