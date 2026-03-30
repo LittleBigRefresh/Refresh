@@ -47,6 +47,8 @@ public abstract class MigrationJob<TEntity> : WorkerJob, IJobStoresState where T
         state.Processed += entitiesLeftCount;
         state.Total = state.Total - batch.Length + entitiesLeftCount;
         context.Logger.LogInfo(RefreshContext.Database, $"{this.JobId} migrated {batch.Length} objects ({state.Processed}/{state.Total}, complete: {state.Complete})");
+
+        context.Database.UpdateOrCreateJobState(this.GetType().Name, state, this.JobClass);
     }
     
     protected abstract IQueryable<TEntity> SortAndFilter(IQueryable<TEntity> query);
