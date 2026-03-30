@@ -40,6 +40,18 @@ public class UploadTests : GameServerTest
     }
 
     [Test]
+    public void LevelReferencesAreSetAfterCreation()
+    {
+        using TestContext context = this.GetServer(false);
+        GameUser user = context.CreateUser();
+
+        context.Database.Refresh();
+        GameLevel level = context.CreateLevel(user);
+        Assert.That(level.Publisher, Is.Not.Null);
+        Assert.That(level.Statistics, Is.Not.Null);
+    }
+
+    [Test]
     public void CanUpdateLevel()
     {
         using TestContext context = this.GetServer(false);
