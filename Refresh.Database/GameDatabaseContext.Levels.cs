@@ -58,13 +58,12 @@ public partial class GameDatabaseContext // Levels
             UpdateDate = timestamp,
         };
 
+        // This prevents EF from trying to INSERT both the user and their stats in unit tests, 
+        // just because of us setting the level.Publisher reference, and throwing a duplicate key exception that way.
+        this.Entry(level.Publisher).State = EntityState.Unchanged;
+
         this.ApplyLevelMetadataFromAttributes(level);
         this.GameLevels.Add(level);
-
-        // Seems unnecessary, but prevents EF from trying to INSERT both unconditionally in unit tests
-        this.GameUsers.Update(publisher);
-        if (publisher.Statistics != null)
-            this.GameUserStatistics.Update(publisher.Statistics);
 
         this.SaveChanges();
 

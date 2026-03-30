@@ -135,6 +135,7 @@ public class JobStateTests : GameServerTest
         // Simulate a roll-back, meaning the job wouldn't be in the WorkerManager anymore, so no migrations will happen, and the job state would be
         // auto-removed by WorkerManager.Start() in real cases.
         manager = new(Logger, dataStore, context.DatabaseProvider);
+        context.Database.Refresh();
         GameLevel thirdLevel = context.CreateLevel(user);
 
         manager.RemoveUnusedJobStates();
