@@ -6,7 +6,7 @@ namespace Refresh.Interfaces.Workers.Migrations;
 
 public class BackfillReviewLabelsMigration : MigrationJob<GameReview>
 {
-    protected override void Migrate(WorkContext context, GameReview[] batch)
+    protected override int Migrate(WorkContext context, GameReview[] batch)
     {
         foreach (GameReview review in batch)
         {
@@ -19,6 +19,7 @@ public class BackfillReviewLabelsMigration : MigrationJob<GameReview>
         }
 
         context.Database.SaveChanges();
+        return batch.Length;
     }
 
     protected override IQueryable<GameReview> SortAndFilter(IQueryable<GameReview> query)

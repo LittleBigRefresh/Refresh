@@ -40,15 +40,21 @@ public abstract class MigrationJob<TEntity> : WorkerJob, IJobStoresState where T
 
         TEntity[] batch = query.ToArray();
         
-        Migrate(context, batch);
+        int entitiesLeftCount = Migrate(context, batch);
         context.Database.SaveChanges();
         transaction.Commit();
 
-        state.Processed += batch.Length;
+        state.Processed += entitiesLeftCount;
+        state.Total = state.Total - batch.Length + entitiesLeftCount;
         context.Logger.LogInfo(RefreshContext.Database, $"{this.JobId} migrated {batch.Length} objects ({state.Processed}/{state.Total}, complete: {state.Complete})");
     }
     
     protected abstract IQueryable<TEntity> SortAndFilter(IQueryable<TEntity> query);
 
-    protected abstract void Migrate(WorkContext context, TEntity[] batch);
+    /// <returns>
+    /// The number of entities in the batch, minus the number of entities removed from DB during this migration.
+    /// E.g. if 1000 items are in the given batch, and 5 got removed from DB during migration, 
+    /// the returned number will be 1000 - 5 = 995
+    /// </returns>
+    protected abstract int Migrate(WorkContext context, TEntity[] batch);
 }
