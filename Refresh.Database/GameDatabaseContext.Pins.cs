@@ -180,8 +180,6 @@ public partial class GameDatabaseContext // Pins
 
     public DatabaseList<ProfilePinRelation> GetProfilePinsByUser(GameUser user, TokenGame game, TokenPlatform platform, int skip, int count)
         => new(this.GetProfilePinsByUser(user, game, platform), skip, count);
-
-    #region Migration Methods
     
     public void AddPinProgress(PinProgressRelation relation, bool save)
     {
@@ -189,11 +187,12 @@ public partial class GameDatabaseContext // Pins
         if (save) this.SaveChanges();
     }
 
-    public void RemoveAllPinProgressesByIdAndUser(long pinId, ObjectId userId, bool save)
+    public void RemovePinProgress(PinProgressRelation relation, bool save)
     {
-        this.PinProgressRelations.RemoveRange(p => p.PinId == pinId && p.PublisherId == userId);
+        this.PinProgressRelations.Remove(relation);
         if (save) this.SaveChanges();
     }
 
-    #endregion
+    public int GetTotalPinProgresses()
+        => this.PinProgressRelations.Count();
 }

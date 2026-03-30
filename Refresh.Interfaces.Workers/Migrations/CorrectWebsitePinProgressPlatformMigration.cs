@@ -7,9 +7,9 @@ using Refresh.Workers;
 
 namespace Refresh.Interfaces.Workers.Migrations;
 
-public class CorrectWebsitePinProgressPlatform : MigrationJob<PinProgressRelation>
+public class CorrectWebsitePinProgressPlatformMigration : MigrationJob<PinProgressRelation>
 {
-    private List<long> websitePinIds =
+    private readonly List<long> WebsitePinIds =
     [
         (long)ServerPins.HeartPlayerOnWebsite,
         (long)ServerPins.QueueLevelOnWebsite,
@@ -19,13 +19,15 @@ public class CorrectWebsitePinProgressPlatform : MigrationJob<PinProgressRelatio
     protected override IQueryable<PinProgressRelation> SortAndFilter(IQueryable<PinProgressRelation> query)
     {
         return query
-            .Where(p => this.websitePinIds.Contains(p.PinId))
+            .Where(p => this.WebsitePinIds.Contains(p.PinId))
             .OrderBy(p => p.PinId);
     }
 
-    protected override void Migrate(WorkContext context, PinProgressRelation[] batch)
+    protected override int Migrate(WorkContext context, PinProgressRelation[] batch)
     {
-        foreach (long pinId in this.websitePinIds)
+        int pinsLeft = batch.Length;
+
+        foreach (long pinId in this.WebsitePinIds)
         {
             IEnumerable<IGrouping<ObjectId, PinProgressRelation>> pinsByUser = batch
                 .Where(r => r.PinId == pinId)
@@ -38,12 +40,16 @@ public class CorrectWebsitePinProgressPlatform : MigrationJob<PinProgressRelatio
 
                 // Find best one by the current user
                 PinProgressRelation relationToMigrate = group.MaxBy(r => r.Progress)!;
+                List<PinProgressRelation> relationsToRemove = group.ToList();
 
-                // Remove all already existing progresses to remove duplicates
-                context.Database.RemoveAllPinProgressesByIdAndUser(pinId, relationToMigrate.PublisherId, false);
+                foreach (PinProgressRelation relation in group)
+                {
+                    context.Database.RemovePinProgress(relation, false);
+                    pinsLeft--;
+                }
 
                 // Now take the best progress we've just got and add it as a website pin, preserving other old metadata
-                context.Database.AddPinProgress(new()
+                PinProgressRelation newRelation = new()
                 {
                     PinId = relationToMigrate.PinId,
                     Progress = relationToMigrate.Progress,
@@ -52,10 +58,14 @@ public class CorrectWebsitePinProgressPlatform : MigrationJob<PinProgressRelatio
                     LastUpdated = relationToMigrate.LastUpdated,
                     IsBeta = false, // doesn't matter here
                     Platform = TokenPlatform.Website,
-                }, false);
+                };
+
+                context.Database.AddPinProgress(newRelation, false);
+                pinsLeft++;
             }
         }
 
         context.Database.SaveChanges();
+        return pinsLeft;
     }
 }
