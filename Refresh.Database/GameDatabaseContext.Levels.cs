@@ -52,15 +52,11 @@ public partial class GameDatabaseContext // Levels
             EnforceMinMaxPlayers = createInfo.EnforceMinMaxPlayers,
             SameScreenGame = createInfo.SameScreenGame,
             BackgroundGuid = createInfo.BackgroundGuid,
-            Publisher = publisher,
+            PublisherUserId = publisher.UserId,
             GameVersion = game,
             PublishDate = timestamp,
             UpdateDate = timestamp,
         };
-
-        // This prevents EF from trying to INSERT both the user and their stats in unit tests, 
-        // just because of us setting the level.Publisher reference, and throwing a duplicate key exception that way.
-        this.Entry(level.Publisher).State = EntityState.Unchanged;
 
         this.ApplyLevelMetadataFromAttributes(level);
         this.GameLevels.Add(level);
@@ -78,6 +74,8 @@ public partial class GameDatabaseContext // Levels
             publisher.Statistics!.LevelCount++;
         });
 
+        level.Publisher = publisher;
+        this.Entry(level.Publisher).State = EntityState.Unchanged;
         return level;
     }
 

@@ -17,6 +17,7 @@ using Refresh.Interfaces.Game.Endpoints.DataTypes.Request;
 using Refresh.Database.Models.Playlists;
 using Refresh.Interfaces.APIv3.Endpoints.DataTypes.Request;
 using Refresh.Database.Models.Photos;
+using Microsoft.EntityFrameworkCore;
 
 namespace RefreshTests.GameServer;
 
@@ -111,6 +112,7 @@ public class TestContext : IDisposable
         GameUser user = this.Database.CreateUser(username, $"{username}@{username}.local");
         if (role != GameUserRole.User) this.Database.SetUserRole(user, role);
         if (verifyEmail) this.Database.VerifyUserEmail(user);
+        this.Database.Entry(user).State = EntityState.Unchanged;
 
         return user;
     }
