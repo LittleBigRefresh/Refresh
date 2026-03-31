@@ -290,7 +290,7 @@ public partial class GameDatabaseContext // Registration
     public bool DisallowEmailDomainByAddress(string emailAddress)
         => this.DisallowEmailDomain(this.GetEmailDomainFromAddress(emailAddress));
 
-    public bool DisallowEmailDomain(string emailDomain)
+    private bool DisallowEmailDomain(string emailDomain)
     {
         if (this.IsEmailDomainDisallowed(emailDomain)) 
             return false;
@@ -307,7 +307,7 @@ public partial class GameDatabaseContext // Registration
     public bool ReallowEmailDomainByAddress(string emailAddress)
         => this.ReallowEmailDomain(this.GetEmailDomainFromAddress(emailAddress));
     
-    public bool ReallowEmailDomain(string emailDomain)
+    private bool ReallowEmailDomain(string emailDomain)
     {
         DisallowedEmailDomain? disallowedDomain = this.DisallowedEmailDomains.FirstOrDefault(u => u.Domain == emailDomain);
         if (disallowedDomain == null) 
@@ -322,7 +322,7 @@ public partial class GameDatabaseContext // Registration
     public bool IsEmailDomainDisallowedByAddress(string emailAddress)
         => this.IsEmailDomainDisallowed(this.GetEmailDomainFromAddress(emailAddress));
 
-    public bool IsEmailDomainDisallowed(string emailDomain)
+    private bool IsEmailDomainDisallowed(string emailDomain)
     {
         return this.DisallowedEmailDomains.Any(u => u.Domain == emailDomain);
     }
