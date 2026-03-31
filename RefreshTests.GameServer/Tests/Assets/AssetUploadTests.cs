@@ -71,7 +71,7 @@ public class AssetUploadTests : GameServerTest
     {
         using TestContext context = this.GetServer();
 
-        context.Server.Value.GameServerConfig.ReadOnlyMode = true;
+        context.Server.Value.GameServerConfig.NormalUserPermissions.ReadOnlyMode = true;
             
         context.Server.Value.Server.AddService<ImportService>();
         GameUser user = context.CreateUser();
@@ -95,8 +95,8 @@ public class AssetUploadTests : GameServerTest
     {
         using TestContext context = this.GetServer();
         context.Server.Value.Server.AddService<ImportService>();
-        context.Server.Value.GameServerConfig.ReadOnlyMode = true;
-        context.Server.Value.GameServerConfig.ReadonlyModeForTrustedUsers = false;
+        context.Server.Value.GameServerConfig.NormalUserPermissions.ReadOnlyMode = true;
+        context.Server.Value.GameServerConfig.TrustedUserPermissions.ReadOnlyMode = false;
         
         GameUser user = context.CreateUser();
         context.Database.SetUserRole(user, GameUserRole.Trusted);
@@ -121,8 +121,8 @@ public class AssetUploadTests : GameServerTest
     {
         using TestContext context = this.GetServer();
         context.Server.Value.Server.AddService<ImportService>();
-        context.Server.Value.GameServerConfig.ReadOnlyMode = true;
-        context.Server.Value.GameServerConfig.ReadonlyModeForTrustedUsers = true;
+        context.Server.Value.GameServerConfig.NormalUserPermissions.ReadOnlyMode = true;
+        context.Server.Value.GameServerConfig.TrustedUserPermissions.ReadOnlyMode = true;
         
         GameUser user = context.CreateUser();
         context.Database.SetUserRole(user, GameUserRole.Admin);
@@ -146,13 +146,13 @@ public class AssetUploadTests : GameServerTest
     {
         using TestContext context = this.GetServer();
         context.Server.Value.Server.AddService<ImportService>();
-        context.Server.Value.GameServerConfig.BlockedAssetFlags = new ConfigAssetFlags
+        context.Server.Value.GameServerConfig.NormalUserPermissions.BlockedAssetFlags = new ConfigAssetFlags
         {
             Modded = true,
             Media = true,
             Dangerous = true,
         };
-        context.Server.Value.GameServerConfig.BlockedAssetFlagsForTrustedUsers = new ConfigAssetFlags
+        context.Server.Value.GameServerConfig.TrustedUserPermissions.BlockedAssetFlags = new ConfigAssetFlags
         {
             Dangerous = true,
             Modded = true,
@@ -178,13 +178,13 @@ public class AssetUploadTests : GameServerTest
     {
         using TestContext context = this.GetServer();
         context.Server.Value.Server.AddService<ImportService>();
-        context.Server.Value.GameServerConfig.BlockedAssetFlags = new ConfigAssetFlags
+        context.Server.Value.GameServerConfig.NormalUserPermissions.BlockedAssetFlags = new ConfigAssetFlags
         {
             Dangerous = true,
             Modded = true,
             Media = true,
         };
-        context.Server.Value.GameServerConfig.BlockedAssetFlagsForTrustedUsers = new ConfigAssetFlags
+        context.Server.Value.GameServerConfig.TrustedUserPermissions.BlockedAssetFlags = new ConfigAssetFlags
         {
             Dangerous = true,
             Modded = true,
@@ -209,7 +209,7 @@ public class AssetUploadTests : GameServerTest
     {
         using TestContext context = this.GetServer();
         context.Server.Value.Server.AddService<ImportService>();
-        context.Server.Value.GameServerConfig.BlockedAssetFlags = new ConfigAssetFlags
+        context.Server.Value.GameServerConfig.NormalUserPermissions.BlockedAssetFlags = new ConfigAssetFlags
         {
             Dangerous = true,
             Modded = true,
@@ -236,7 +236,7 @@ public class AssetUploadTests : GameServerTest
     {
         using TestContext context = this.GetServer();
         context.Server.Value.Server.AddService<ImportService>();
-        context.Server.Value.GameServerConfig.BlockedAssetFlags = new ConfigAssetFlags
+        context.Server.Value.GameServerConfig.NormalUserPermissions.BlockedAssetFlags = new ConfigAssetFlags
         {
             Dangerous = true,
             Modded = true,

@@ -7,12 +7,7 @@ public static class GameUserExtensions
 {
     public static bool IsWriteBlocked(this GameUser user, GameServerConfig config)
     {
-        if (config.ReadOnlyMode && user.Role != GameUserRole.Admin)
-        {
-            return user.Role < GameUserRole.Trusted || config.ReadonlyModeForTrustedUsers;
-        }
-
-        return false;
+        return GetRolePermissionsForUser(user, config).ReadOnlyMode;
     }
 
     public static bool MayModifyUser(this GameUser user, GameUser targetUser)
@@ -26,5 +21,13 @@ public static class GameUserExtensions
             return false;
 
         return true;
+    }
+
+    public static RolePermissions GetRolePermissionsForUser(this GameUser user, GameServerConfig config)
+    {
+        if (user.Role >= GameUserRole.Trusted)
+            return config.TrustedUserPermissions;
+        
+        return config.NormalUserPermissions;
     }
 }
