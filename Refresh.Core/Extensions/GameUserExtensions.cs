@@ -7,6 +7,7 @@ public static class GameUserExtensions
 {
     public static bool IsWriteBlocked(this GameUser user, GameServerConfig config)
     {
+        if (user.Role == GameUserRole.Admin) return false;
         return GetRolePermissionsForUser(user, config).ReadOnlyMode;
     }
 
