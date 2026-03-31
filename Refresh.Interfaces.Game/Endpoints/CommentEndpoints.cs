@@ -160,8 +160,11 @@ public class CommentEndpoints : EndpointGroup
     [GameEndpoint("rateUserComment/{content}", HttpMethods.Post)] // profile comments
     [RateLimitSettings(CommonRelationEndpointLimits.TimeoutDuration, CommonRelationEndpointLimits.RequestAmount, 
                             CommonRelationEndpointLimits.BlockDuration, CommonRelationEndpointLimits.RequestBucket)]
-    public Response RateProfileComment(RequestContext context, GameDatabaseContext database, GameUser user, string content)
+    public Response RateProfileComment(RequestContext context, GameDatabaseContext database, GameUser user, string content, GameServerConfig config)
     {
+        if (user.IsWriteBlocked(config)) 
+            return Unauthorized;
+
         if (!int.TryParse(context.QueryString["commentId"], out int commentId)) return BadRequest;
         if (!Enum.TryParse(context.QueryString["rating"], out RatingType ratingType)) return BadRequest;
 
@@ -176,8 +179,11 @@ public class CommentEndpoints : EndpointGroup
     [GameEndpoint("rateComment/{slotType}/{content}", HttpMethods.Post)]
     [RateLimitSettings(CommonRelationEndpointLimits.TimeoutDuration, CommonRelationEndpointLimits.RequestAmount, 
                             CommonRelationEndpointLimits.BlockDuration, CommonRelationEndpointLimits.RequestBucket)]
-    public Response RateLevelComment(RequestContext context, GameDatabaseContext database, GameUser user, string slotType, string content)
+    public Response RateLevelComment(RequestContext context, GameDatabaseContext database, GameUser user, string slotType, string content, GameServerConfig config)
     {
+        if (user.IsWriteBlocked(config)) 
+            return Unauthorized;
+
         if (!int.TryParse(context.QueryString["commentId"], out int commentId)) return BadRequest;
         if (!Enum.TryParse(context.QueryString["rating"], out RatingType ratingType)) return BadRequest;
 

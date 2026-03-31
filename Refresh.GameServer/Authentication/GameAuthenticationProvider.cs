@@ -76,13 +76,16 @@ public class GameAuthenticationProvider : IAuthenticationProvider<Token>
         if ((this._config?.MaintenanceMode ?? false) && user.Role != GameUserRole.Admin)
             return null;
         
+        if (this._config?.PrintAuthenticationData ?? false)
+            this._logger.LogInfo(BunkumCategory.Authentication, $"Authenticating request from {request.RemoteEndpoint} to {request.Uri.AbsolutePath} by {user} using token {tokenData}");
+        
         // Additional validation of the token gotten from DB. Exceptions will be caught, logged and InternalServerError will be returned automatically.
         if (token.TokenData != tokenData)
         {
 #if DEBUG
             if(Debugger.IsAttached) Debugger.Break();
 #endif
-            throw new InvalidDataException($"{typeof(GameAuthenticationProvider)} - Token from DB does not match token received from client!");
+            throw new InvalidDataException($"{typeof(GameAuthenticationProvider)} - Token from DB ({token.TokenData}) does not match token received from client ({tokenData})!");
         }
 
         if (token.User.UserId != token.UserId)

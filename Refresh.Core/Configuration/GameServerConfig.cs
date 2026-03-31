@@ -10,7 +10,7 @@ namespace Refresh.Core.Configuration;
 [SuppressMessage("ReSharper", "RedundantDefaultMemberInitializer")]
 public class GameServerConfig : Config
 {
-    public override int CurrentConfigVersion => 25;
+    public override int CurrentConfigVersion => 26;
     public override int Version { get; set; } = 0;
     
     protected override void Migrate(int oldVer, dynamic oldConfig)
@@ -116,6 +116,11 @@ public class GameServerConfig : Config
     /// Whether to print the room state whenever a `FindBestRoom` match returns no results
     /// </summary>
     public bool PrintRoomStateWhenNoFoundRooms { get; set; } = true;
+
+    /// <summary>
+    /// Whether to unconditionally print data like token, token owner, remote IP, request URI etc during authentication outside of exceptions
+    /// </summary>
+    public bool PrintAuthenticationData { get; set; } = false;
 
     public string[] Sha1DigestKeys = ["CustomServerDigest"];
     public string[] HmacDigestKeys = ["CustomServerDigest"];

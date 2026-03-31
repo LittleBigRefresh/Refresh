@@ -161,7 +161,6 @@ public class ResourceApiEndpoints : EndpointGroup
     [DocError(typeof(ApiValidationError), ApiValidationError.BodyTooLongErrorWhen)]
     [DocError(typeof(ApiValidationError), ApiValidationError.CannotReadAssetErrorWhen)]
     [DocError(typeof(ApiValidationError), ApiValidationError.BodyMustBeImageErrorWhen)]
-    [DocError(typeof(ApiAuthenticationError), ApiAuthenticationError.NoPermissionsForCreationWhen)]
     [RateLimitSettings(420, 10, 300, "image-upload-api")]
     public ApiResponse<ApiGameAssetResponse> UploadImageAsset(RequestContext context, GameDatabaseContext database,
         IDataStore dataStore, AssetImporter importer, GameServerConfig config,
@@ -176,7 +175,7 @@ public class ResourceApiEndpoints : EndpointGroup
         // If we're blocking asset uploads, throw unless the user is an admin.
         // We also have the ability to block asset uploads for trusted users (when they would normally bypass this)
         if (user.IsWriteBlocked(config)) 
-            return ApiAuthenticationError.NoPermissionsForCreation;
+            return ApiAuthenticationError.ReadOnlyError;
         
         if (!CommonPatterns.Sha1Regex().IsMatch(hash)) return ApiValidationError.HashInvalidError;
 

@@ -14,6 +14,7 @@ using Refresh.Interfaces.APIv3.Endpoints.DataTypes.Request;
 using Refresh.Interfaces.APIv3.Endpoints.DataTypes.Response.Playlists;
 using Refresh.Interfaces.APIv3.Extensions;
 using Refresh.Core.RateLimits.Playlists;
+using Refresh.Core.Configuration;
 
 namespace Refresh.Interfaces.APIv3.Endpoints;
 
@@ -54,8 +55,11 @@ public class PlaylistApiEndpoints : EndpointGroup
     [DocQueryParam("parentId", "If set, the new playlist will be added to the playlist specified by ID here instead of the root playlist. "
         + "If the specified playlist doesn't exist or is not owned by the user calling this endpoint, nothing will happen.")]
     public ApiResponse<ApiGamePlaylistResponse> CreatePlaylist(RequestContext context, DataContext dataContext,
-        GameUser user, ApiPlaylistCreationRequest body)
+        GameUser user, ApiPlaylistCreationRequest body, GameServerConfig config)
     {
+        if (user.IsWriteBlocked(config)) 
+            return ApiAuthenticationError.ReadOnlyError;
+
         ApiError? error = this.ValidatePlaylist(body, dataContext);
         if (error != null) return error;
 
@@ -96,8 +100,11 @@ public class PlaylistApiEndpoints : EndpointGroup
     [RateLimitSettings(PlaylistCreationEndpointLimits.UploadTimeoutDuration, PlaylistCreationEndpointLimits.MaxCreateAmount, 
                         PlaylistCreationEndpointLimits.UploadBlockDuration, PlaylistCreationEndpointLimits.CreateBucket)]
     public ApiResponse<ApiGamePlaylistResponse> UpdatePlaylist(RequestContext context, DataContext dataContext,
-        GameUser user, ApiPlaylistCreationRequest body, int id)
+        GameUser user, ApiPlaylistCreationRequest body, int id, GameServerConfig config)
     {
+        if (user.IsWriteBlocked(config)) 
+            return ApiAuthenticationError.ReadOnlyError;
+
         GamePlaylist? playlist = dataContext.Database.GetPlaylistById(id);
         if (playlist == null) return ApiNotFoundError.PlaylistMissingError;
 
@@ -149,8 +156,11 @@ public class PlaylistApiEndpoints : EndpointGroup
     [RateLimitSettings(PlaylistModificationEndpointLimits.TimeoutDuration, PlaylistModificationEndpointLimits.RequestAmount, 
                                 PlaylistModificationEndpointLimits.BlockDuration, PlaylistModificationEndpointLimits.RequestBucket)]
     public ApiOkResponse AddLevelToPlaylist(RequestContext context, DataContext dataContext,
-        GameUser user, int playlistId, int levelId)
+        GameUser user, int playlistId, int levelId, GameServerConfig config)
     {
+        if (user.IsWriteBlocked(config)) 
+            return ApiAuthenticationError.ReadOnlyError;
+
         GamePlaylist? playlist = dataContext.Database.GetPlaylistById(playlistId);
         if (playlist == null) return ApiNotFoundError.ParentPlaylistMissingError;
 
@@ -172,8 +182,11 @@ public class PlaylistApiEndpoints : EndpointGroup
     [RateLimitSettings(PlaylistModificationEndpointLimits.TimeoutDuration, PlaylistModificationEndpointLimits.RequestAmount, 
                                 PlaylistModificationEndpointLimits.BlockDuration, PlaylistModificationEndpointLimits.RequestBucket)]
     public ApiOkResponse RemoveLevelFromPlaylist(RequestContext context, DataContext dataContext,
-        GameUser user, int playlistId, int levelId)
+        GameUser user, int playlistId, int levelId, GameServerConfig config)
     {
+        if (user.IsWriteBlocked(config)) 
+            return ApiAuthenticationError.ReadOnlyError;
+
         GamePlaylist? playlist = dataContext.Database.GetPlaylistById(playlistId);
         if (playlist == null) return ApiNotFoundError.ParentPlaylistMissingError;
 
@@ -195,8 +208,11 @@ public class PlaylistApiEndpoints : EndpointGroup
     [RateLimitSettings(PlaylistModificationEndpointLimits.TimeoutDuration, PlaylistModificationEndpointLimits.RequestAmount, 
                                 PlaylistModificationEndpointLimits.BlockDuration, PlaylistModificationEndpointLimits.RequestBucket)]
     public ApiOkResponse AddPlaylistToPlaylist(RequestContext context, DataContext dataContext,
-        GameUser user, int playlistId, int subPlaylistId)
+        GameUser user, int playlistId, int subPlaylistId, GameServerConfig config)
     {
+        if (user.IsWriteBlocked(config)) 
+            return ApiAuthenticationError.ReadOnlyError;
+
         GamePlaylist? parent = dataContext.Database.GetPlaylistById(playlistId);
         if (parent == null) return ApiNotFoundError.ParentPlaylistMissingError;
 
@@ -218,8 +234,11 @@ public class PlaylistApiEndpoints : EndpointGroup
     [RateLimitSettings(PlaylistModificationEndpointLimits.TimeoutDuration, PlaylistModificationEndpointLimits.RequestAmount, 
                                 PlaylistModificationEndpointLimits.BlockDuration, PlaylistModificationEndpointLimits.RequestBucket)]
     public ApiOkResponse RemovePlaylistFromPlaylist(RequestContext context, DataContext dataContext,
-        GameUser user, int playlistId, int subPlaylistId)
+        GameUser user, int playlistId, int subPlaylistId, GameServerConfig config)
     {
+        if (user.IsWriteBlocked(config)) 
+            return ApiAuthenticationError.ReadOnlyError;
+
         GamePlaylist? parent = dataContext.Database.GetPlaylistById(playlistId);
         if (parent == null) return ApiNotFoundError.ParentPlaylistMissingError;
 

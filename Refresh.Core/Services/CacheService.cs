@@ -53,15 +53,16 @@ public class CacheService : EndpointService
 
         // periodically automatically remove expired data if it hasn't been removed somehow else before,
         // to not keep unused data for a potentially undefined time
-        Thread expirationThread = new(() =>
+        Task expirationTask = new(async () =>
         {
             while(true)
             {
-                Thread.Sleep(1000 * 60 * 2);
+                await Task.Delay(1000 * 60 * 2);
                 this.RemoveExpiredCache();
             }
         });
-        expirationThread.Start();
+
+        expirationTask.Start();
     }
 
     private void RemoveExpiredCache()

@@ -49,8 +49,11 @@ public class UserApiEndpoints : EndpointGroup
                             CommonRelationEndpointLimits.BlockDuration, CommonRelationEndpointLimits.RequestBucket)]
     public ApiOkResponse HeartUser(RequestContext context, GameDatabaseContext database,
         [DocSummary(SharedParamDescriptions.UserIdParam)] string id, 
-        [DocSummary(SharedParamDescriptions.UserIdTypeParam)] string idType, DataContext dataContext, GameUser user)
+        [DocSummary(SharedParamDescriptions.UserIdTypeParam)] string idType, DataContext dataContext, GameUser user, GameServerConfig config)
     {
+        if (user.IsWriteBlocked(config)) 
+            return ApiAuthenticationError.ReadOnlyError;
+
         GameUser? target = database.GetUserByIdAndType(idType, id);
         if(target == null) return ApiNotFoundError.UserMissingError;
         
@@ -72,8 +75,11 @@ public class UserApiEndpoints : EndpointGroup
                             CommonRelationEndpointLimits.BlockDuration, CommonRelationEndpointLimits.RequestBucket)]
     public ApiOkResponse UnheartUser(RequestContext context, GameDatabaseContext database,
         [DocSummary(SharedParamDescriptions.UserIdParam)] string id, 
-        [DocSummary(SharedParamDescriptions.UserIdTypeParam)] string idType, DataContext dataContext, GameUser user)
+        [DocSummary(SharedParamDescriptions.UserIdTypeParam)] string idType, DataContext dataContext, GameUser user, GameServerConfig config)
     {
+        if (user.IsWriteBlocked(config)) 
+            return ApiAuthenticationError.ReadOnlyError;
+
         GameUser? target = database.GetUserByIdAndType(idType, id);
         if(target == null) return ApiNotFoundError.UserMissingError;
         
