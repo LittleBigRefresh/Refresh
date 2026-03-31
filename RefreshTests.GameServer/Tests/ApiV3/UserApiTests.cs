@@ -47,12 +47,12 @@ public class UserApiTests : GameServerTest
     }
 
     [Test]
-    public void CannotRegisterAccountWithDisallowedEmail()
+    public void CannotRegisterAccountWithDisallowedEmailAddress()
     {
         using TestContext context = this.GetServer();
 
         const string email = "guy@lil.com";
-        context.Database.DisallowEmail(email);
+        context.Database.DisallowEmailAddress(email);
         
         ApiResponse<ApiAuthenticationResponse>? response = context.Http.PostData<ApiAuthenticationResponse>("/api/v3/register", new ApiRegisterRequest
         {

@@ -64,7 +64,8 @@ public partial class GameDatabaseContext : DbContext, IDatabaseContext
     internal DbSet<AssetDependencyRelation> AssetDependencyRelations { get; set; }
     internal DbSet<GameReview> GameReviews { get; set; }
     internal DbSet<DisallowedUser> DisallowedUsers { get; set; }
-    internal DbSet<DisallowedEmail> DisallowedEmails { get; set; }
+    internal DbSet<DisallowedEmailAddress> DisallowedEmailAddresses { get; set; }
+    internal DbSet<DisallowedEmailDomain> DisallowedEmailDomains { get; set; }
     internal DbSet<RateReviewRelation> RateReviewRelations { get; set; }
     internal DbSet<TagLevelRelation> TagLevelRelations { get; set; }
     internal DbSet<GamePlaylist> GamePlaylists { get; set; }

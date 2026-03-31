@@ -115,7 +115,7 @@ public partial class GameDatabaseContext // Registration
     {
         return this.GameUsers.Any(u => u.EmailAddress == emailAddress) ||
                this.QueuedRegistrations.Any(r => r.EmailAddress == emailAddress) ||
-               this.IsEmailDisallowed(emailAddress);
+               this.IsEmailAddressDisallowed(emailAddress);
     }
 
     public void AddRegistrationToQueue(string username, string emailAddress, string passwordBcrypt)
@@ -253,34 +253,77 @@ public partial class GameDatabaseContext // Registration
         return this.DisallowedUsers.FirstOrDefault(u => u.Username == username) != null;
     }
 
-    public bool DisallowEmail(string email)
+    public bool DisallowEmailAddress(string emailAddress)
     {
-        if (this.IsEmailDisallowed(email)) 
+        if (this.IsEmailAddressDisallowed(emailAddress)) 
             return false;
         
-        this.DisallowedEmails.Add(new()
+        this.DisallowedEmailAddresses.Add(new()
         {
-            Email = email,
+            Address = emailAddress,
         });
         this.SaveChanges();
         
         return true;
     }
     
-    public bool ReallowEmail(string email)
+    public bool ReallowEmailAddress(string emailAddress)
     {
-        DisallowedEmail? disallowedEmail = this.DisallowedEmails.FirstOrDefault(u => u.Email == email);
-        if (disallowedEmail == null) 
+        DisallowedEmailAddress? DisallowedEmailAddress = this.DisallowedEmailAddresses.FirstOrDefault(u => u.Address == emailAddress);
+        if (DisallowedEmailAddress == null) 
             return false;
         
-        this.DisallowedEmails.Remove(disallowedEmail);
+        this.DisallowedEmailAddresses.Remove(DisallowedEmailAddress);
         this.SaveChanges();
         
         return true;
     }
     
-    public bool IsEmailDisallowed(string email)
+    public bool IsEmailAddressDisallowed(string emailAddress)
     {
-        return this.DisallowedEmails.Any(u => u.Email == email);
+        return this.DisallowedEmailAddresses.Any(u => u.Address == emailAddress);
+    }
+
+    private string GetEmailDomainFromAddress(string emailAddress)
+        => emailAddress.Split('@').Last();
+
+    public bool DisallowEmailDomainByAddress(string emailAddress)
+        => this.DisallowEmailDomain(this.GetEmailDomainFromAddress(emailAddress));
+
+    public bool DisallowEmailDomain(string emailDomain)
+    {
+        if (this.IsEmailDomainDisallowed(emailDomain)) 
+            return false;
+        
+        this.DisallowedEmailDomains.Add(new()
+        {
+            Domain = emailDomain,
+        });
+        this.SaveChanges();
+        
+        return true;
+    }
+
+    public bool ReallowEmailDomainByAddress(string emailAddress)
+        => this.ReallowEmailDomain(this.GetEmailDomainFromAddress(emailAddress));
+    
+    public bool ReallowEmailDomain(string emailDomain)
+    {
+        DisallowedEmailDomain? disallowedDomain = this.DisallowedEmailDomains.FirstOrDefault(u => u.Domain == emailDomain);
+        if (disallowedDomain == null) 
+            return false;
+        
+        this.DisallowedEmailDomains.Remove(disallowedDomain);
+        this.SaveChanges();
+        
+        return true;
+    }
+
+    public bool IsEmailDomainDisallowedByAddress(string emailAddress)
+        => this.IsEmailDomainDisallowed(this.GetEmailDomainFromAddress(emailAddress));
+
+    public bool IsEmailDomainDisallowed(string emailDomain)
+    {
+        return this.DisallowedEmailDomains.Any(u => u.Domain == emailDomain);
     }
 }
