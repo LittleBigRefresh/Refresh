@@ -13,7 +13,7 @@ public class ClampPlayerLimitsMigration : MigrationJob<GameLevel>
         return query.OrderBy(l => l.LevelId);
     }
 
-    protected override void Migrate(WorkContext context, GameLevel[] batch)
+    protected override int Migrate(WorkContext context, GameLevel[] batch)
     {
         foreach (GameLevel level in batch)
         {
@@ -26,5 +26,7 @@ public class ClampPlayerLimitsMigration : MigrationJob<GameLevel>
             level.MinPlayers = Math.Clamp(level.MinPlayers, 1, 4);
             level.MaxPlayers = Math.Clamp(level.MaxPlayers, 1, 4);
         }
+
+        return batch.Length;
     }
 }

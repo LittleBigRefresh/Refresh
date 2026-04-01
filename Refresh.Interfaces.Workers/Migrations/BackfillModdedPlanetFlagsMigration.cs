@@ -16,7 +16,7 @@ public class BackfillModdedPlanetFlagsMigration : MigrationJob<GameUser>
             || u.BetaPlanetsHash != "0");
     }
 
-    protected override void Migrate(WorkContext context, GameUser[] batch)
+    protected override int Migrate(WorkContext context, GameUser[] batch)
     {
         foreach (GameUser user in batch)
         {
@@ -24,5 +24,6 @@ public class BackfillModdedPlanetFlagsMigration : MigrationJob<GameUser>
         }
 
         context.Database.SaveChanges();
+        return batch.Length;
     }
 }

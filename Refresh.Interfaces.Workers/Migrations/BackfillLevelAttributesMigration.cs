@@ -12,7 +12,7 @@ public class BackfillLevelAttributesMigration : MigrationJob<GameLevel>
             .OrderBy(l => l.LevelId);
     }
 
-    protected override void Migrate(WorkContext context, GameLevel[] batch)
+    protected override int Migrate(WorkContext context, GameLevel[] batch)
     {
         foreach (GameLevel level in batch)
         {
@@ -20,5 +20,6 @@ public class BackfillLevelAttributesMigration : MigrationJob<GameLevel>
         }
 
         context.Database.SaveChanges();
+        return batch.Length;
     }
 }
