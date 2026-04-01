@@ -7,6 +7,7 @@ using Bunkum.Protocols.Http;
 using Refresh.Common.Constants;
 using Refresh.Common.Verification;
 using Refresh.Core.Authentication.Permission;
+using Refresh.Core.Configuration;
 using Refresh.Core.RateLimits.Levels;
 using Refresh.Core.RateLimits.Playlists;
 using Refresh.Core.RateLimits.Presence;
@@ -63,9 +64,12 @@ public class LevelApiEndpoints : EndpointGroup
     [DocError(typeof(ApiNotFoundError), ApiNotFoundError.LevelMissingErrorWhen)]
     [DocError(typeof(ApiAuthenticationError), ApiAuthenticationError.NoPermissionsForObjectWhen)]
     [RateLimitSettings(420, 8, 300, "level-update-api")]
-    public ApiResponse<ApiGameLevelResponse> EditLevelById(RequestContext context,
-        [DocSummary("The ID of the level")] int id, ApiEditLevelRequest body, DataContext dataContext)
+    public ApiResponse<ApiGameLevelResponse> EditLevelById(RequestContext context, GameUser user,
+        [DocSummary("The ID of the level")] int id, ApiEditLevelRequest body, DataContext dataContext, GameServerConfig config)
     {
+        if (user.IsWriteBlocked(config)) 
+            return ApiAuthenticationError.ReadOnlyError;
+
         GameLevel? level = dataContext.Database.GetLevelById(id);
         if (level == null) return ApiNotFoundError.LevelMissingError;
         
@@ -162,9 +166,12 @@ public class LevelApiEndpoints : EndpointGroup
     [DocError(typeof(ApiNotFoundError), ApiNotFoundError.LevelMissingErrorWhen)]
     [RateLimitSettings(CommonRelationEndpointLimits.TimeoutDuration, CommonRelationEndpointLimits.RequestAmount, 
                             CommonRelationEndpointLimits.BlockDuration, CommonRelationEndpointLimits.RequestBucket)]
-    public ApiOkResponse FavouriteLevel(RequestContext context, GameDatabaseContext database, GameUser user,
-        [DocSummary("The ID of the level")] int id, DataContext dataContext) 
+    public ApiOkResponse HeartLevel(RequestContext context, GameDatabaseContext database, GameUser user,
+        [DocSummary("The ID of the level")] int id, DataContext dataContext, GameServerConfig config) 
     {
+        if (user.IsWriteBlocked(config)) 
+            return ApiAuthenticationError.ReadOnlyError;
+
         GameLevel? level = database.GetLevelById(id);
         if (level == null) return ApiNotFoundError.LevelMissingError;
 
@@ -179,8 +186,11 @@ public class LevelApiEndpoints : EndpointGroup
     [RateLimitSettings(CommonRelationEndpointLimits.TimeoutDuration, CommonRelationEndpointLimits.RequestAmount, 
                             CommonRelationEndpointLimits.BlockDuration, CommonRelationEndpointLimits.RequestBucket)]
     public ApiOkResponse UnheartLevel(RequestContext context, GameDatabaseContext database, GameUser user,
-        [DocSummary("The ID of the level")] int id, DataContext dataContext) 
+        [DocSummary("The ID of the level")] int id, DataContext dataContext, GameServerConfig config) 
     {
+        if (user.IsWriteBlocked(config)) 
+            return ApiAuthenticationError.ReadOnlyError;
+        
         GameLevel? level = database.GetLevelById(id);
         if (level == null) return ApiNotFoundError.LevelMissingError;
 
@@ -232,7 +242,7 @@ public class LevelApiEndpoints : EndpointGroup
     [RateLimitSettings(CommonRelationEndpointLimits.TimeoutDuration, CommonRelationEndpointLimits.RequestAmount, 
                             CommonRelationEndpointLimits.BlockDuration, CommonRelationEndpointLimits.RequestBucket)]
     public ApiOkResponse ClearQueuedLevels(RequestContext context, GameDatabaseContext database,
-        IDataStore dataStore, GameUser user, DataContext dataContext) 
+        GameUser user, DataContext dataContext) 
     {
         database.ClearQueue(user);
         dataContext.Cache.ClearQueueByUser(user);
