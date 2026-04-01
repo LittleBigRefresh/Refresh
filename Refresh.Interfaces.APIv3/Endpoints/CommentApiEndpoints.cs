@@ -4,6 +4,7 @@ using Bunkum.Core.Endpoints;
 using Bunkum.Core.RateLimit;
 using Bunkum.Protocols.Http;
 using Refresh.Common.Constants;
+using Refresh.Core.Configuration;
 using Refresh.Core.RateLimits.Comments;
 using Refresh.Core.RateLimits.Relations;
 using Refresh.Core.Types.Data;
@@ -51,8 +52,11 @@ public class CommentApiEndpoints : EndpointGroup
     public ApiResponse<ApiProfileCommentResponse> PostCommentOnProfile(RequestContext context,
         DataContext dataContext, GameUser user, ApiCommentPostRequest body,
         [DocSummary(SharedParamDescriptions.UserIdParam)] string id, 
-        [DocSummary(SharedParamDescriptions.UserIdTypeParam)] string idType)
+        [DocSummary(SharedParamDescriptions.UserIdTypeParam)] string idType, GameServerConfig config)
     {
+        if (user.IsWriteBlocked(config)) 
+            return ApiAuthenticationError.ReadOnlyError;
+        
         GameUser? profile = dataContext.Database.GetUserByIdAndType(idType, id);
         if (profile == null) return ApiNotFoundError.UserMissingError;
 
@@ -99,8 +103,11 @@ public class CommentApiEndpoints : EndpointGroup
     [RateLimitSettings(CommonRelationEndpointLimits.TimeoutDuration, CommonRelationEndpointLimits.RequestAmount, 
                             CommonRelationEndpointLimits.BlockDuration, CommonRelationEndpointLimits.RequestBucket)]
     public ApiOkResponse RateProfileComment(RequestContext context, DataContext dataContext, GameUser user, int id, 
-        [DocSummary("The user's new rating for the comment. -1 = dislike, 0 = neutral, 1 = like.")] string rawRating)
+        [DocSummary("The user's new rating for the comment. -1 = dislike, 0 = neutral, 1 = like.")] string rawRating, GameServerConfig config)
     {
+        if (user.IsWriteBlocked(config)) 
+            return ApiAuthenticationError.ReadOnlyError;
+        
         GameProfileComment? comment = dataContext.Database.GetProfileCommentById(id);
         if (comment == null) return ApiNotFoundError.CommentMissingError;
 
@@ -138,8 +145,11 @@ public class CommentApiEndpoints : EndpointGroup
     [RateLimitSettings(CommentUploadEndpointLimits.TimeoutDuration, CommentUploadEndpointLimits.RequestAmount, 
                             CommentUploadEndpointLimits.BlockDuration, CommentUploadEndpointLimits.RequestBucket)]
     public ApiResponse<ApiLevelCommentResponse> PostCommentOnLevel(RequestContext context,
-        DataContext dataContext, int id, GameUser user, ApiCommentPostRequest body)
+        DataContext dataContext, int id, GameUser user, ApiCommentPostRequest body, GameServerConfig config)
     {
+        if (user.IsWriteBlocked(config)) 
+            return ApiAuthenticationError.ReadOnlyError;
+        
         GameLevel? level = dataContext.Database.GetLevelById(id);
         if (level == null) return ApiNotFoundError.LevelMissingError;
 
@@ -186,8 +196,11 @@ public class CommentApiEndpoints : EndpointGroup
     [RateLimitSettings(CommonRelationEndpointLimits.TimeoutDuration, CommonRelationEndpointLimits.RequestAmount, 
                             CommonRelationEndpointLimits.BlockDuration, CommonRelationEndpointLimits.RequestBucket)]
     public ApiOkResponse RateLevelComment(RequestContext context, DataContext dataContext, GameUser user, int id, 
-        [DocSummary("The user's new rating for the comment. -1 = dislike, 0 = neutral, 1 = like.")] string rawRating)
+        [DocSummary("The user's new rating for the comment. -1 = dislike, 0 = neutral, 1 = like.")] string rawRating, GameServerConfig config)
     {
+        if (user.IsWriteBlocked(config)) 
+            return ApiAuthenticationError.ReadOnlyError;
+        
         GameLevelComment? comment = dataContext.Database.GetLevelCommentById(id);
         if (comment == null) return ApiNotFoundError.CommentMissingError;
 

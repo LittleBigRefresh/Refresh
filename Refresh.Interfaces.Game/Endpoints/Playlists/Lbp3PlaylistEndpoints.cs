@@ -81,11 +81,8 @@ public class Lbp3PlaylistEndpoints : EndpointGroup
 
     [GameEndpoint("playlists/{playlistId}/delete", HttpMethods.Post, ContentType.Xml)]
     [RequireEmailVerified]
-    public Response DeletePlaylist(RequestContext context, GameServerConfig config, DataContext dataContext, GameUser user, int playlistId)
+    public Response DeletePlaylist(RequestContext context, DataContext dataContext, GameUser user, int playlistId)
     {
-        if (user.IsWriteBlocked(config))
-            return Unauthorized;
-
         GamePlaylist? playlist = dataContext.Database.GetPlaylistById(playlistId);
         if (playlist == null) 
             return NotFound;

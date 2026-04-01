@@ -58,8 +58,11 @@ public class ReviewEndpoints : EndpointGroup
     [RateLimitSettings(CommonRelationEndpointLimits.TimeoutDuration, CommonRelationEndpointLimits.RequestAmount, 
                             CommonRelationEndpointLimits.BlockDuration, CommonRelationEndpointLimits.RequestBucket)]
     public Response RateUserLevel(RequestContext context, GameDatabaseContext database, GameUser user, string slotType, int id, 
-        DataContext dataContext)
+        DataContext dataContext, GameServerConfig config)
     {
+        if (user.IsWriteBlocked(config)) 
+            return Unauthorized;
+
         GameLevel? level = database.GetLevelByIdAndType(slotType, id);
         if (level == null) return NotFound;
 

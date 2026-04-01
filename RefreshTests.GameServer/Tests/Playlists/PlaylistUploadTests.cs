@@ -1,4 +1,5 @@
 using Refresh.Common.Constants;
+using Refresh.Core.Configuration;
 using Refresh.Database;
 using Refresh.Database.Models;
 using Refresh.Database.Models.Authentication;
@@ -82,6 +83,96 @@ public class PlaylistUploadTests : GameServerTest
         GamePlaylist? updated = context.Database.GetPlaylistById(subResponse.Id);
         Assert.That(updated, Is.Not.Null);
         Assert.That(updated!.Name, Is.EqualTo("legit"));
+    }
+
+    [Test]
+    public void CreateSubPlaylist()
+    {
+        using TestContext context = this.GetServer();
+
+        GameUser user = context.CreateUser();
+        GamePlaylist root = context.Database.CreatePlaylist(user, new SerializedLbp1Playlist()
+        {
+            Name = "root",
+            Icon = ValidIconGuid,
+            Description = "d",
+            Location = GameLocation.Zero
+        }, true);
+        Assert.That(context.Database.GetUserRootPlaylist(user), Is.Not.Null);
+        HttpClient client = context.GetAuthenticatedClient(TokenType.Game, TokenGame.LittleBigPlanet1, TokenPlatform.PS3, user);
+        
+        // Create sub-playlist of root
+        SerializedLbp1Playlist request = new()
+        {
+            Name = "hi",
+            Icon = ValidIconGuid,
+            Description = "DESCRIPTION",
+            Location = new GameLocation(),
+        };
+
+        HttpResponseMessage message = client.PostAsync($"/lbp/createPlaylist?parent_id={root.PlaylistId}", new StringContent(request.AsXML())).Result;
+        Assert.That(message.StatusCode, Is.EqualTo(OK));
+
+        Assert.That(context.Database.GetTotalPlaylistsInPlaylist(root), Is.EqualTo(1));
+        Assert.That(context.Database.GetTotalPlaylistsByAuthor(user), Is.EqualTo(1)); // does not include root
+    }
+
+    [Test]
+    public void CannotCreateSubPlaylistWhileReadOnlyMode()
+    {
+        using TestContext context = this.GetServer();
+        GameServerConfig config = context.Server.Value.GameServerConfig;
+        config.ReadOnlyMode = true;
+        config.ReadonlyModeForTrustedUsers = true;
+
+        GameUser user = context.CreateUser();
+        GamePlaylist root = context.Database.CreatePlaylist(user, new SerializedLbp1Playlist()
+        {
+            Name = "root",
+            Icon = ValidIconGuid,
+            Description = "d",
+            Location = GameLocation.Zero
+        }, true);
+        Assert.That(context.Database.GetUserRootPlaylist(user), Is.Not.Null);
+        HttpClient client = context.GetAuthenticatedClient(TokenType.Game, TokenGame.LittleBigPlanet1, TokenPlatform.PS3, user);
+        
+        // Create sub-playlist of root
+        SerializedLbp1Playlist request = new()
+        {
+            Name = "hi",
+            Icon = ValidIconGuid,
+            Description = "DESCRIPTION",
+            Location = new GameLocation(),
+        };
+
+        HttpResponseMessage message = client.PostAsync($"/lbp/createPlaylist?parent_id={root.PlaylistId}", new StringContent(request.AsXML())).Result;
+        Assert.That(message.StatusCode, Is.EqualTo(Unauthorized));
+        Assert.That(context.Database.GetTotalPlaylistsByAuthor(user), Is.Zero); // does not include root
+    }
+
+    [Test]
+    public void CanCreateRootPlaylistWhileReadOnlyMode()
+    {
+        using TestContext context = this.GetServer();
+        GameServerConfig config = context.Server.Value.GameServerConfig;
+        config.ReadOnlyMode = true;
+        config.ReadonlyModeForTrustedUsers = true;
+
+        GameUser user = context.CreateUser();
+        HttpClient client = context.GetAuthenticatedClient(TokenType.Game, TokenGame.LittleBigPlanet1, TokenPlatform.PS3, user);
+        
+        // Create root playlist
+        SerializedLbp1Playlist request = new()
+        {
+            Name = "root",
+            Icon = ValidIconGuid,
+            Description = "DESCRIPTION",
+            Location = new GameLocation(),
+        };
+
+        HttpResponseMessage message = client.PostAsync("/lbp/createPlaylist", new StringContent(request.AsXML())).Result;
+        Assert.That(message.StatusCode, Is.EqualTo(OK));
+        Assert.That(context.Database.GetUserRootPlaylist(user), Is.Not.Null);
     }
 
     [Test]
