@@ -1,5 +1,6 @@
 using Refresh.Database.Models.Authentication;
 using Refresh.Database.Models.Pins;
+using Refresh.Database.Models.Relations;
 using Refresh.Database.Models.Users;
 using Refresh.Database.Models.Workers;
 using Refresh.Interfaces.Workers.Migrations;
@@ -46,7 +47,7 @@ public class PinMigrationTests : GameServerTest
         CorrectWebsitePinProgressPlatformMigration job = new();
         context.Database.UpdateOrCreateJobState(typeof(CorrectWebsitePinProgressPlatformMigration).Name, new MigrationJobState()
         {
-            Total = 100 // Since we already have to manually create the state
+            Total = 50,
         }, WorkerClass.Refresh);
         context.Database.Refresh();
 
@@ -68,6 +69,121 @@ public class PinMigrationTests : GameServerTest
         Assert.That(jobState.Total, Is.EqualTo(50));
         Assert.That(jobState.Complete, Is.True);
 
-        Assert.That(context.Database.GetTotalPinProgresses(), Is.EqualTo(50));
+        Assert.That(context.Database.GetTotalPinProgresses(), Is.EqualTo(50)); // Pins were deduplicated
+    }
+
+    [Test]
+    [TestCase(ServerPins.SignIntoWebsite)]
+    [TestCase(ServerPins.HeartPlayerOnWebsite)]
+    [TestCase(ServerPins.QueueLevelOnWebsite)]
+    public void WebsitePinMigrationProperlyOverwritesPlatform(long pinId)
+    {
+        using TestContext context = this.GetServer();
+
+        GameUser user = context.CreateUser();
+        context.Database.AddPinProgress(new()
+        {
+            PinId = pinId,
+            Progress = 20,
+            Publisher = user,
+            FirstPublished = new(),
+            LastUpdated = new(),
+            IsBeta = false,
+            Platform = TokenPlatform.RPCS3,
+        }, true);
+
+        context.Database.AddPinProgress(new()
+        {
+            PinId = pinId,
+            Progress = 30,
+            Publisher = user,
+            FirstPublished = new(),
+            LastUpdated = new(),
+            IsBeta = true,
+            Platform = TokenPlatform.RPCS3,
+        }, true);
+
+        Assert.That(context.Database.GetTotalPinProgresses(), Is.EqualTo(2));
+
+        // Prepare migration
+        CorrectWebsitePinProgressPlatformMigration job = new();
+        context.Database.UpdateOrCreateJobState(typeof(CorrectWebsitePinProgressPlatformMigration).Name, new MigrationJobState()
+        {
+            Total = 1
+        }, WorkerClass.Refresh);
+        context.Database.Refresh();
+
+        object? stateObject = context.Database.GetJobState(typeof(CorrectWebsitePinProgressPlatformMigration).Name, typeof(MigrationJobState), WorkerClass.Refresh);
+        Assert.That(stateObject, Is.Not.Null);
+        job.JobState = stateObject!;
+        
+        // Migrate
+        job.ExecuteJob(context.GetWorkContext());
+        context.Database.Refresh();
+
+        List<PinProgressRelation> relations = context.Database.GetAllPinProgressesByUserAndId(user, pinId).ToList();
+        Assert.That(relations.Count, Is.EqualTo(1));
+        Assert.That(relations[0].Platform, Is.EqualTo(TokenPlatform.Website));
+        Assert.That(relations[0].Progress, Is.EqualTo(30));
+    }
+
+    [Test]
+    [TestCase(ServerPins.SignIntoWebsite, ServerPins.CherryShooterLbp3ChallengeMedal)]
+    [TestCase(ServerPins.HeartPlayerOnWebsite, ServerPins.TopFourthOfXCommunityLevelsWithOver50Scores)]
+    [TestCase(ServerPins.QueueLevelOnWebsite, 420)]
+    public void WebsitePinMigrationOnlyMigratesWebsitePins(long websitePinId, long otherPinId)
+    {
+        using TestContext context = this.GetServer();
+
+        GameUser user = context.CreateUser();
+        context.Database.AddPinProgress(new()
+        {
+            PinId = websitePinId,
+            Progress = 20,
+            Publisher = user,
+            FirstPublished = new(),
+            LastUpdated = new(),
+            IsBeta = false,
+            Platform = TokenPlatform.RPCS3,
+        }, true);
+
+        context.Database.AddPinProgress(new()
+        {
+            PinId = otherPinId,
+            Progress = 30,
+            Publisher = user,
+            FirstPublished = new(),
+            LastUpdated = new(),
+            IsBeta = true,
+            Platform = TokenPlatform.RPCS3,
+        }, true);
+
+        Assert.That(context.Database.GetTotalPinProgresses(), Is.EqualTo(2));
+
+        // Prepare migration
+        CorrectWebsitePinProgressPlatformMigration job = new();
+        context.Database.UpdateOrCreateJobState(typeof(CorrectWebsitePinProgressPlatformMigration).Name, new MigrationJobState()
+        {
+            Total = 1
+        }, WorkerClass.Refresh);
+        context.Database.Refresh();
+
+        object? stateObject = context.Database.GetJobState(typeof(CorrectWebsitePinProgressPlatformMigration).Name, typeof(MigrationJobState), WorkerClass.Refresh);
+        Assert.That(stateObject, Is.Not.Null);
+        job.JobState = stateObject!;
+
+        // Migrate
+        job.ExecuteJob(context.GetWorkContext());
+        context.Database.Refresh();
+
+        List<PinProgressRelation> websitePins = context.Database.GetAllPinProgressesByUserAndId(user, websitePinId).ToList();
+        Assert.That(websitePins.Count, Is.EqualTo(1));
+        Assert.That(websitePins[0].Platform, Is.EqualTo(TokenPlatform.Website));
+        Assert.That(websitePins[0].Progress, Is.EqualTo(20));
+
+        List<PinProgressRelation> otherPins = context.Database.GetAllPinProgressesByUserAndId(user, otherPinId).ToList();
+        Assert.That(otherPins.Count, Is.EqualTo(1));
+        Assert.That(otherPins[0].Platform, Is.EqualTo(TokenPlatform.RPCS3));
+        Assert.That(otherPins[0].Progress, Is.EqualTo(30));
     }
 }
