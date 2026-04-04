@@ -347,7 +347,7 @@ public class AuthenticationApiEndpoints : EndpointGroup
         if (!smtpService.CheckEmailDomainValidity(body.EmailAddress))
             return ApiValidationError.EmailDoesNotActuallyExistError;
         
-        if (database.IsUserDisallowed(body.Username) || database.IsEmailAddressDisallowed(body.EmailAddress) || database.IsEmailDomainDisallowedByAddress(body.EmailAddress))
+        if (database.IsUserDisallowed(body.Username) || database.IsEmailAddressDisallowed(body.EmailAddress) || database.IsEmailDomainDisallowed(body.EmailAddress))
             return new ApiAuthenticationError("You aren't allowed to play on this instance.");
         
         if (!database.IsUsernameValid(body.Username))

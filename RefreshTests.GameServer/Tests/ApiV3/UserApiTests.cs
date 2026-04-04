@@ -85,11 +85,11 @@ public class UserApiTests : GameServerTest
 
         const string email = "guy@moron.com";
         // Not somehow already disallowed
-        Assert.That(context.Database.IsEmailDomainDisallowedByAddress(email), Is.False);
-        context.Database.DisallowEmailDomainByAddress(email);
+        Assert.That(context.Database.IsEmailDomainDisallowed(email), Is.False);
+        context.Database.DisallowEmailDomain(email);
 
         context.Database.Refresh();
-        Assert.That(context.Database.IsEmailDomainDisallowedByAddress(email), Is.True);
+        Assert.That(context.Database.IsEmailDomainDisallowed(email), Is.True);
         
         // Attempt 1 (block)
         ApiResponse<ApiAuthenticationResponse>? response = context.Http.PostData<ApiAuthenticationResponse>("/api/v3/register", new ApiRegisterRequest
@@ -148,9 +148,9 @@ public class UserApiTests : GameServerTest
         Assert.That(quacker!.Username, Is.EqualTo("a_lil_guy"));
 
         // Undo
-        context.Database.ReallowEmailDomainByAddress(email);
+        context.Database.ReallowEmailDomain(email);
         context.Database.Refresh();
-        Assert.That(context.Database.IsEmailDomainDisallowedByAddress(email), Is.False);
+        Assert.That(context.Database.IsEmailDomainDisallowed(email), Is.False);
     }
     
     [Test]

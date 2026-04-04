@@ -303,14 +303,14 @@ public class RefreshGameServer : RefreshServer
     {
         using GameDatabaseContext context = this.GetContext();
 
-        return context.DisallowEmailDomainByAddress(domain);
+        return context.DisallowEmailDomain(domain);
     }
     
     public bool ReallowEmailDomain(string domain)
     {
         using GameDatabaseContext context = this.GetContext();
 
-        return context.ReallowEmailDomainByAddress(domain);
+        return context.ReallowEmailDomain(domain);
     }
 
     public void RenameUser(GameUser user, string newUsername, bool force = false)
