@@ -169,6 +169,9 @@ public partial class GameDatabaseContext // Pins
     public DatabaseList<PinProgressRelation> GetPinProgressesByUser(GameUser user, bool isBeta, TokenPlatform platform, int skip, int count)
         => new(this.GetPinProgressesByUser(user, isBeta, platform), skip, count);
 
+    public IQueryable<PinProgressRelation> GetAllPinProgressesByUserAndId(GameUser user, long pinId)
+        => this.PinProgressRelations.Where(p => p.PublisherId == user.UserId && p.PinId == pinId);
+
     public PinProgressRelation? GetUserPinProgress(long pinId, GameUser user, bool isBeta, TokenPlatform platform)
         => this.PinProgressRelations.FirstOrDefault(p => p.PinId == pinId && p.PublisherId == user.UserId 
             && (p.IsBeta == isBeta && p.Platform == platform || p.Platform == TokenPlatform.Website));
@@ -180,8 +183,6 @@ public partial class GameDatabaseContext // Pins
 
     public DatabaseList<ProfilePinRelation> GetProfilePinsByUser(GameUser user, TokenGame game, TokenPlatform platform, int skip, int count)
         => new(this.GetProfilePinsByUser(user, game, platform), skip, count);
-
-    #region Migration Methods
     
     public void AddPinProgress(PinProgressRelation relation, bool save)
     {
@@ -189,11 +190,12 @@ public partial class GameDatabaseContext // Pins
         if (save) this.SaveChanges();
     }
 
-    public void RemoveAllPinProgressesByIdAndUser(long pinId, ObjectId userId, bool save)
+    public void RemovePinProgress(PinProgressRelation relation, bool save)
     {
-        this.PinProgressRelations.RemoveRange(p => p.PinId == pinId && p.PublisherId == userId);
+        this.PinProgressRelations.Remove(relation);
         if (save) this.SaveChanges();
     }
 
-    #endregion
+    public int GetTotalPinProgresses()
+        => this.PinProgressRelations.Count();
 }

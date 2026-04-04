@@ -477,20 +477,6 @@ public partial class GameDatabaseContext // Relations
         this.SaveChanges();
         return review;
     }
-
-    public void MigrateReviewLabels(IEnumerable<GameReview> reviews)
-    {
-        foreach (GameReview review in reviews)
-        {
-#pragma warning disable CS0618 // LabelsString is obsolete          
-            if (string.IsNullOrWhiteSpace(review.LabelsString)) continue;
-
-            review.Labels = LabelExtensions.FromLbpCommaList(review.LabelsString).ToList();
-#pragma warning restore CS0618
-        }
-
-        this.SaveChanges();
-    }
     
     public void DeleteReviewsPostedByUser(GameUser user)
     {

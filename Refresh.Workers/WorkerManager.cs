@@ -42,7 +42,7 @@ public class WorkerManager
         this._jobs.Add(worker);
     }
 
-    private void RunWorkCycle()
+    public void RunWorkCycle()
     {
         WorkContext context = new()
         {
@@ -99,12 +99,31 @@ public class WorkerManager
         }
     }
 
+    public void RemoveUnusedJobStates()
+    {
+        GameDatabaseContext database = this._databaseProvider.GetContext();
+        string[] jobsFromWorkerManager = this._jobs.Select(j => j.GetType().Name).ToArray();
+        string[] jobsFromDatabase = database.GetAllJobIds(WorkerClass.Refresh).ToArray();
+        
+        foreach (string jobId in jobsFromDatabase)
+        {
+            if (!jobsFromWorkerManager.Any(j => j == jobId))
+            {
+                this._logger.LogInfo(RefreshContext.Worker, $"Removing job state for {jobId} because it doesn't exist in RefreshWorkerManager (likely from a newer/different Refresh build).");
+                database.RemoveJobState(jobId, false);
+            }
+        }
+        database.SaveChanges();
+    }
+
     public void Start()
     {
         this._logger.LogDebug(RefreshContext.Startup, "Starting the worker thread");
         this._threadShouldRun = true;
         Thread thread = new(() =>
         {
+            this.RemoveUnusedJobStates();
+
             while (this._threadShouldRun)
             {
                 try
