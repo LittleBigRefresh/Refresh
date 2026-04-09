@@ -14,4 +14,9 @@ public class RolePermissions
         TimeSpanHours = 24,
         LevelQuota = 10,
     };
+
+    /// <summary>
+    /// The amount of data the user is allowed to upload before all resource uploads get blocked, defaults to 100mb.
+    /// </summary>
+    public int UserFilesizeQuota { get; set; } = 100 * 1_048_576;
 }

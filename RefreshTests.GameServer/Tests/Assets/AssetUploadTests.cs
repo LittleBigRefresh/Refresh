@@ -39,7 +39,8 @@ public class AssetUploadTests : GameServerTest
     {
         using TestContext context = this.GetServer();
         
-        context.Server.Value.GameServerConfig.UserFilesizeQuota = 8;
+        context.Server.Value.GameServerConfig.NormalUserPermissions.UserFilesizeQuota = 8;
+        context.Server.Value.GameServerConfig.TrustedUserPermissions.UserFilesizeQuota = 8;
         
         context.Server.Value.Server.AddService<ImportService>();
         GameUser user = context.CreateUser();

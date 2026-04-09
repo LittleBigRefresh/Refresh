@@ -14,11 +14,25 @@ public class GameServerConfig : Config
     protected override void Migrate(int oldVer, dynamic oldConfig)
     {
         // In version 27, various (mostly already role-specific) perms, like blocked assets and read-only mode, were moved to dedicated child objects,
-        // to better split them between certain roles.
+        // to more cleanly split the perms between certain roles, and to make their enforcement easier.
         if (oldVer < 27)
         {
             this.NormalUserPermissions = new();
             this.TrustedUserPermissions = new();
+
+            // filesize quota limit was added during version 11, but the version wasn't bumped, so catch error to be safe
+            if (oldVer >= 11)
+            {
+                try
+                {
+                    this.NormalUserPermissions.UserFilesizeQuota = (int)oldConfig.UserFilesizeQuota;
+                    this.TrustedUserPermissions.UserFilesizeQuota = (int)oldConfig.UserFilesizeQuota;
+                }
+                catch (RuntimeBinderException)
+                {
+                    // do nothing
+                }
+            }
 
             if (oldVer >= 18)
             {
@@ -138,10 +152,6 @@ public class GameServerConfig : Config
     /// </summary>
     public string GameConfigStorageUrl { get; set; } = "https://refresh.example.com/lbp";
     public bool AllowInvalidTextureGuids { get; set; } = false;
-    /// <summary>
-    /// The amount of data the user is allowed to upload before all resource uploads get blocked, defaults to 100mb.
-    /// </summary>
-    public int UserFilesizeQuota { get; set; } = 100 * 1_048_576;
     
     /// <summary>
     /// Whether to print the room state whenever a `FindBestRoom` match returns no results

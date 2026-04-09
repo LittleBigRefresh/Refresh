@@ -193,9 +193,10 @@ public class ResourceApiEndpoints : EndpointGroup
             return new ApiValidationError($"The asset must be under 2MB. Your file was {body.Length:N0} bytes.");
         }
 
-        if (body.Length + user.FilesizeQuotaUsage > config.UserFilesizeQuota)
+        RolePermissions rolePerms = user.GetRolePermissionsForUser(config);
+        if (body.Length + user.FilesizeQuotaUsage > rolePerms.UserFilesizeQuota)
         {
-            context.Logger.LogWarning(BunkumCategory.UserContent, "User {0} has hit the filesize quota ({1} bytes), rejecting.", user.Username, config.UserFilesizeQuota);
+            context.Logger.LogWarning(BunkumCategory.UserContent, "User {0} has hit the filesize quota ({1} bytes), rejecting.", user.Username, rolePerms.UserFilesizeQuota);
             return new ApiValidationError($"You have exceeded your filesize quota.");
         }
 

@@ -24,4 +24,5 @@ public class TestGameServerConfig : GameServerConfig
 
     public int MaximumAssetSafetyLevel { get; set; } = 0;
     public int MaximumAssetSafetyLevelForTrustedUsers { get; set; } = 0;
+    public int UserFilesizeQuota { get; set; } = 141;
 }

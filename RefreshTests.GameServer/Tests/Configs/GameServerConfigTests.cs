@@ -20,6 +20,7 @@ public class GameServerConfigTests : GameServerTest
             },
             BlockedAssetFlags = new(AssetFlags.Dangerous | AssetFlags.Media),
             BlockedAssetFlagsForTrustedUsers = new(AssetFlags.Modded),
+            UserFilesizeQuota = 141,
         };
 
         config.TestMigration();
@@ -38,6 +39,9 @@ public class GameServerConfigTests : GameServerTest
 
         Assert.That(config.NormalUserPermissions.BlockedAssetFlags.ToAssetFlags(), Is.EqualTo(AssetFlags.Dangerous | AssetFlags.Media));
         Assert.That(config.TrustedUserPermissions.BlockedAssetFlags.ToAssetFlags(), Is.EqualTo(AssetFlags.Modded));
+
+        Assert.That(config.NormalUserPermissions.UserFilesizeQuota, Is.EqualTo(141));
+        Assert.That(config.TrustedUserPermissions.UserFilesizeQuota, Is.EqualTo(141));
     }
 
     [Test]
