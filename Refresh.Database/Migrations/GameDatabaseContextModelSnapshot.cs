@@ -1510,14 +1510,24 @@ namespace Refresh.Database.Migrations
                     b.ToTable("RequestStatistics");
                 });
 
-            modelBuilder.Entity("Refresh.Database.Models.Users.DisallowedEmail", b =>
+            modelBuilder.Entity("Refresh.Database.Models.Users.DisallowedEmailAddress", b =>
                 {
-                    b.Property<string>("Email")
+                    b.Property<string>("Address")
                         .HasColumnType("text");
 
-                    b.HasKey("Email");
+                    b.HasKey("Address");
 
-                    b.ToTable("DisallowedEmails");
+                    b.ToTable("DisallowedEmailAddresses");
+                });
+
+            modelBuilder.Entity("Refresh.Database.Models.Users.DisallowedEmailDomain", b =>
+                {
+                    b.Property<string>("Domain")
+                        .HasColumnType("text");
+
+                    b.HasKey("Domain");
+
+                    b.ToTable("DisallowedEmailDomains");
                 });
 
             modelBuilder.Entity("Refresh.Database.Models.Users.DisallowedUser", b =>

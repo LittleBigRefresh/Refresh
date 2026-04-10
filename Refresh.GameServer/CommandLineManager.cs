@@ -60,11 +60,17 @@ internal class CommandLineManager
         [Option("reallow-user", HelpText = "Re-allow a user to register. Username option is required if this is set.")]
         public bool ReallowUser { get; set; }
 
-        [Option("disallow-email", HelpText = "Disallow the email from being used by anyone in the future. Email option is required if this is set.")]
-        public bool DisallowEmail { get; set; }
+        [Option("disallow-email", HelpText = "Disallow the email address from being used by anyone in the future. Email option is required if this is set.")]
+        public bool DisallowEmailAddress { get; set; }
         
-        [Option("reallow-email", HelpText = "Re-allow the email to be used by anyone. Email option is required if this is set")]
-        public bool ReallowEmail { get; set; }
+        [Option("reallow-email", HelpText = "Re-allow the email address to be used for account registration. Email option is required if this is set")]
+        public bool ReallowEmailAddress { get; set; }
+
+        [Option("disallow-email-domain", HelpText = "Disallow the email domain from being used by anyone in the future. Email option is required if this is set. If a whole Email address is given, only the substring after the last @ will be used.")]
+        public bool DisallowEmailDomain { get; set; }
+        
+        [Option("reallow-email-domain", HelpText = "Re-allow the email domain to be used by anyone. Email option is required if this is set. If a whole Email address is given, only the substring after the last @ will be used.")]
+        public bool ReallowEmailDomain { get; set; }
         
         [Option("rename-user", HelpText = "Changes a user's username. (old) username or Email option is required if this is set.")]
         public string? RenameUser { get; set; }
@@ -194,23 +200,41 @@ internal class CommandLineManager
             }
             else Fail("No username was provided");
         }
-        else if (options.DisallowEmail)
+        else if (options.DisallowEmailAddress)
         {
             if (options.EmailAddress != null)
             {
-                if (!this._server.DisallowEmail(options.EmailAddress))
+                if (!this._server.DisallowEmailAddress(options.EmailAddress))
                     Fail("Email address is already disallowed");
             }
             else Fail("No email address was provided");
         }
-        else if (options.ReallowEmail)
+        else if (options.ReallowEmailAddress)
         {
             if (options.EmailAddress != null)
             {
-                if (!this._server.ReallowEmail(options.EmailAddress))
+                if (!this._server.ReallowEmailAddress(options.EmailAddress))
                     Fail("Email address is already allowed");
             }
             else Fail("No email address was provided");
+        }
+        else if (options.DisallowEmailDomain)
+        {
+            if (options.EmailAddress != null)
+            {
+                if (!this._server.DisallowEmailDomain(options.EmailAddress))
+                    Fail("Email domain is already disallowed");
+            }
+            else Fail("No email domain was provided");
+        }
+        else if (options.ReallowEmailDomain)
+        {
+            if (options.EmailAddress != null)
+            {
+                if (!this._server.ReallowEmailDomain(options.EmailAddress))
+                    Fail("Email domain is already allowed");
+            }
+            else Fail("No email domain was provided");
         }
         else if (options.RenameUser != null)
         {
