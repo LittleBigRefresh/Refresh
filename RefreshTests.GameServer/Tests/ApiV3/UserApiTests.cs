@@ -47,12 +47,17 @@ public class UserApiTests : GameServerTest
     }
 
     [Test]
-    public void CannotRegisterAccountWithDisallowedEmail()
+    public void CannotRegisterAccountWithDisallowedEmailAddress()
     {
         using TestContext context = this.GetServer();
 
         const string email = "guy@lil.com";
-        context.Database.DisallowEmail(email);
+        // Not somehow already disallowed
+        Assert.That(context.Database.IsEmailAddressDisallowed(email), Is.False);
+        context.Database.DisallowEmailAddress(email);
+
+        context.Database.Refresh();
+        Assert.That(context.Database.IsEmailAddressDisallowed(email), Is.True);
         
         ApiResponse<ApiAuthenticationResponse>? response = context.Http.PostData<ApiAuthenticationResponse>("/api/v3/register", new ApiRegisterRequest
         {
@@ -66,6 +71,87 @@ public class UserApiTests : GameServerTest
         
         context.Database.Refresh();
         Assert.That(context.Database.GetUserByEmailAddress(email), Is.Null);
+
+        // Undo
+        context.Database.ReallowEmailAddress(email);
+        context.Database.Refresh();
+        Assert.That(context.Database.IsEmailAddressDisallowed(email), Is.False);
+    }
+
+    [Test]
+    [TestCase("guy@moron.com")] // whole address
+    [TestCase("moron.com")] // just the domain
+    public void CannotRegisterAccountsWithDisallowedEmailDomain(string addressToBlockWith)
+    {
+        using TestContext context = this.GetServer();
+
+        // Not somehow already disallowed
+        Assert.That(context.Database.IsEmailDomainDisallowed(addressToBlockWith), Is.False);
+        context.Database.DisallowEmailDomain(addressToBlockWith);
+
+        context.Database.Refresh();
+        Assert.That(context.Database.IsEmailDomainDisallowed(addressToBlockWith), Is.True);
+        
+        // Attempt 1 (block)
+        ApiResponse<ApiAuthenticationResponse>? response = context.Http.PostData<ApiAuthenticationResponse>("/api/v3/register", new ApiRegisterRequest
+        {
+            Username = "a_lil_guy",
+            EmailAddress = "pisser@moron.com",
+            PasswordSha512 = "ee26b0dd4af7e749aa1a8ee3c10ae9923f618980772e473f8819a5d4940e0db27ac185f8a0e1d5f84f88bc887fd67b143732c304cc5fa9ad8e6f57f50028a8ff",
+        }, false, true);
+        Assert.That(response, Is.Not.Null);
+        Assert.That(response!.Error, Is.Not.Null);
+        Assert.That(response.Error!.Name, Is.EqualTo("ApiAuthenticationError"));
+        context.Database.Refresh();
+        Assert.That(context.Database.GetUserByEmailAddress("pisser@moron.com"), Is.Null);
+
+        // Attempt 2 (block)
+        response = context.Http.PostData<ApiAuthenticationResponse>("/api/v3/register", new ApiRegisterRequest
+        {
+            Username = "a_lil_guy",
+            EmailAddress = "shitter@moron.com",
+            PasswordSha512 = "ee26b0dd4af7e749aa1a8ee3c10ae9923f618980772e473f8819a5d4940e0db27ac185f8a0e1d5f84f88bc887fd67b143732c304cc5fa9ad8e6f57f50028a8ff",
+        }, false, true);
+        Assert.That(response, Is.Not.Null);
+        Assert.That(response!.Error, Is.Not.Null);
+        Assert.That(response.Error!.Name, Is.EqualTo("ApiAuthenticationError"));
+        context.Database.Refresh();
+        Assert.That(context.Database.GetUserByEmailAddress("shitter@moron.com"), Is.Null);
+
+        // Attempt 3 (block)
+        response = context.Http.PostData<ApiAuthenticationResponse>("/api/v3/register", new ApiRegisterRequest
+        {
+            Username = "a_lil_guy",
+            EmailAddress = ".@moron.com",
+            PasswordSha512 = "ee26b0dd4af7e749aa1a8ee3c10ae9923f618980772e473f8819a5d4940e0db27ac185f8a0e1d5f84f88bc887fd67b143732c304cc5fa9ad8e6f57f50028a8ff",
+        }, false, true);
+        Assert.That(response, Is.Not.Null);
+        Assert.That(response!.Error, Is.Not.Null);
+        Assert.That(response.Error!.Name, Is.EqualTo("ApiAuthenticationError"));
+        context.Database.Refresh();
+        Assert.That(context.Database.GetUserByEmailAddress(".@moron.com"), Is.Null);
+
+        // Attempt 4 (allow)
+        response = context.Http.PostData<ApiAuthenticationResponse>("/api/v3/register", new ApiRegisterRequest
+        {
+            Username = "a_lil_guy",
+            EmailAddress = "quacker@hi.com",
+            PasswordSha512 = "ee26b0dd4af7e749aa1a8ee3c10ae9923f618980772e473f8819a5d4940e0db27ac185f8a0e1d5f84f88bc887fd67b143732c304cc5fa9ad8e6f57f50028a8ff",
+        });
+        Assert.That(response, Is.Not.Null);
+        Assert.That(response!.Error, Is.Null);
+        Assert.That(response!.Data, Is.Not.Null);
+        context.Database.Refresh();
+
+        GameUser? quacker = context.Database.GetUserByEmailAddress("quacker@hi.com");
+        Assert.That(quacker, Is.Not.Null);
+        Assert.That(quacker!.UserId.ToString(), Is.EqualTo(response.Data!.UserId));
+        Assert.That(quacker!.Username, Is.EqualTo("a_lil_guy"));
+
+        // Undo
+        context.Database.ReallowEmailDomain(addressToBlockWith);
+        context.Database.Refresh();
+        Assert.That(context.Database.IsEmailDomainDisallowed(addressToBlockWith), Is.False);
     }
     
     [Test]

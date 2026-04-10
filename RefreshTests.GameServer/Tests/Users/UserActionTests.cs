@@ -88,13 +88,13 @@ public class UserActionTests : GameServerTest
         using TestContext context = this.GetServer();
         GameUser publisher = context.CreateUser();
         Assert.That(publisher.EmailAddress, Is.Not.Null);
-        Assert.That(context.Database.IsEmailDisallowed(publisher.EmailAddress!), Is.False);
+        Assert.That(context.Database.IsEmailAddressDisallowed(publisher.EmailAddress!), Is.False);
         string email = publisher.EmailAddress!;
 
         // Delete publisher
         context.Database.DeleteUser(publisher);
         context.Database.Refresh();
         
-        Assert.That(context.Database.IsEmailDisallowed(email), Is.False);
+        Assert.That(context.Database.IsEmailAddressDisallowed(email), Is.False);
     }
 }

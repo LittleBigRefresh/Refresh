@@ -15,12 +15,13 @@ public class EnsureDeletedUsersDeletedMigration : MigrationJob<GameUser>
             .OrderBy(u => u.UserId); // can't use join date here as we're changing the join date when we delete data
     }
 
-    protected override void Migrate(WorkContext context, GameUser[] batch)
+    protected override int Migrate(WorkContext context, GameUser[] batch)
     {
         foreach (GameUser user in batch)
         {
             context.Logger.LogWarning(RefreshContext.Worker, $"Deleting {user.Username}'s account again to ensure data has been wiped...");
             context.Database.DeleteUser(user);
         }
+        return batch.Length;
     }
 }

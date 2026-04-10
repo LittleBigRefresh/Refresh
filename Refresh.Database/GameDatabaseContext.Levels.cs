@@ -52,7 +52,7 @@ public partial class GameDatabaseContext // Levels
             EnforceMinMaxPlayers = createInfo.EnforceMinMaxPlayers,
             SameScreenGame = createInfo.SameScreenGame,
             BackgroundGuid = createInfo.BackgroundGuid,
-            Publisher = publisher,
+            PublisherUserId = publisher.UserId,
             GameVersion = game,
             PublishDate = timestamp,
             UpdateDate = timestamp,
@@ -63,22 +63,19 @@ public partial class GameDatabaseContext // Levels
 
         this.SaveChanges();
 
-        this.CreateRevisionForLevel(level, level.Publisher);
-        this.GameLevelStatistics.Add(level.Statistics = new GameLevelStatistics
+        this.WriteEnsuringStatistics(publisher, () =>
         {
-            LevelId = level.LevelId,
+            this.GameLevelStatistics.Add(level.Statistics = new GameLevelStatistics
+            {
+                LevelId = level.LevelId,
+            });
+
+            this.CreateRevisionForLevel(level, level.Publisher);
+            publisher.Statistics!.LevelCount++;
         });
 
-        this.SaveChanges();
-
-        if (level.Publisher != null)
-        {
-            this.WriteEnsuringStatistics(level.Publisher, () =>
-            {
-                level.Publisher.Statistics!.LevelCount++;
-            });
-        }
-
+        level.Publisher = publisher;
+        this.Entry(level.Publisher).State = EntityState.Unchanged;
         return level;
     }
 
