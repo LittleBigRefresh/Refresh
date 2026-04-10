@@ -79,17 +79,18 @@ public class UserApiTests : GameServerTest
     }
 
     [Test]
-    public void CannotRegisterAccountsWithDisallowedEmailDomain()
+    [TestCase("guy@moron.com")] // whole address
+    [TestCase("moron.com")] // just the domain
+    public void CannotRegisterAccountsWithDisallowedEmailDomain(string addressToBlockWith)
     {
         using TestContext context = this.GetServer();
 
-        const string email = "guy@moron.com";
         // Not somehow already disallowed
-        Assert.That(context.Database.IsEmailDomainDisallowed(email), Is.False);
-        context.Database.DisallowEmailDomain(email);
+        Assert.That(context.Database.IsEmailDomainDisallowed(addressToBlockWith), Is.False);
+        context.Database.DisallowEmailDomain(addressToBlockWith);
 
         context.Database.Refresh();
-        Assert.That(context.Database.IsEmailDomainDisallowed(email), Is.True);
+        Assert.That(context.Database.IsEmailDomainDisallowed(addressToBlockWith), Is.True);
         
         // Attempt 1 (block)
         ApiResponse<ApiAuthenticationResponse>? response = context.Http.PostData<ApiAuthenticationResponse>("/api/v3/register", new ApiRegisterRequest
@@ -148,9 +149,9 @@ public class UserApiTests : GameServerTest
         Assert.That(quacker!.Username, Is.EqualTo("a_lil_guy"));
 
         // Undo
-        context.Database.ReallowEmailDomain(email);
+        context.Database.ReallowEmailDomain(addressToBlockWith);
         context.Database.Refresh();
-        Assert.That(context.Database.IsEmailDomainDisallowed(email), Is.False);
+        Assert.That(context.Database.IsEmailDomainDisallowed(addressToBlockWith), Is.False);
     }
     
     [Test]
