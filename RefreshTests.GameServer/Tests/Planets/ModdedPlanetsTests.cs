@@ -54,7 +54,7 @@ public class ModdedPlanetsTests : GameServerTest
     {
         // Prepare config so normal users may upload modded assets
         GameServerConfig config = context.Server.Value.GameServerConfig;
-        config.BlockedAssetFlags = new(AssetFlags.Dangerous);
+        config.NormalUserPermissions.BlockedAssetFlags = new(AssetFlags.Dangerous);
 
         // Upload planet dependency and make the planet level depend on the voice recording
         HttpResponseMessage message = client.PostAsync($"/lbp/upload/{TEST_MESH_HASH}", new ReadOnlyMemoryContent("MSHb"u8.ToArray())).Result;
@@ -171,7 +171,7 @@ public class ModdedPlanetsTests : GameServerTest
 
         // Prepare config so normal users may upload modded assets
         GameServerConfig config = context.Server.Value.GameServerConfig;
-        config.BlockedAssetFlags = new(AssetFlags.Dangerous);
+        config.NormalUserPermissions.BlockedAssetFlags = new(AssetFlags.Dangerous);
 
         GameUser publisher = context.CreateUser();
         using HttpClient client2LBP2 = context.GetAuthenticatedClient(TokenType.Game, TokenGame.LittleBigPlanet2, TokenPlatform.PS3, out string _, publisher);
