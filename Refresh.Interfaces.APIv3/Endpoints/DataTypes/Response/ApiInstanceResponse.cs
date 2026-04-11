@@ -47,6 +47,7 @@ public class ApiInstanceResponse : IApiResponse
     
     public required bool MaintenanceModeEnabled { get; set; }
     public required string? GrafanaDashboardUrl { get; set; }
+    public required string? ServerStatusUrl { get; set; }
     
     public required string WebsiteLogoUrl { get; set; }
     public required string? WebsiteDefaultTheme { get; set; }
@@ -54,4 +55,10 @@ public class ApiInstanceResponse : IApiResponse
     public required ApiContactInfoResponse ContactInfo { get; set; }
     
     public required ApiContestResponse? ActiveContest { get; set; }
+
+    public required ApiRolePermissionsResponse NormalUserPermissions { get; set; }
+    public required ApiRolePermissionsResponse TrustedUserPermissions { get; set; }
+
+    public required bool IsPresenceServerEnabled { get; set; }
+    // TODO: similar attribute for CWLib integration
 }
