@@ -23,6 +23,26 @@ namespace Refresh.Database.Migrations
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
 
+            modelBuilder.Entity("DisallowedAsset", b =>
+                {
+                    b.Property<string>("AssetHash")
+                        .HasColumnType("text");
+
+                    b.Property<int>("AssetType")
+                        .HasColumnType("integer");
+
+                    b.Property<DateTimeOffset>("DisallowedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("Reason")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.HasKey("AssetHash");
+
+                    b.ToTable("DisallowedAssets");
+                });
+
             modelBuilder.Entity("Refresh.Database.Models.Activity.Event", b =>
                 {
                     b.Property<string>("EventId")
