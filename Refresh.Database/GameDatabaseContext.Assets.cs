@@ -111,7 +111,7 @@ public partial class GameDatabaseContext // Assets
             asset.AsMainlinePhotoHash = hash;
         });
     
-    public DisallowedAsset? GetAssetDisallowanceInfo(string hash)
+    public DisallowedAsset? GetDisallowedAssetInfo(string hash)
         => this.DisallowedAssets.FirstOrDefault(d => d.AssetHash == hash);
     
     /// <returns>
@@ -121,7 +121,7 @@ public partial class GameDatabaseContext // Assets
     // and make their entities also store more info (reason, timestamp etc.)
     public (DisallowedAsset, bool) DisallowAsset(string hash, GameAssetType type, string reason)
     {
-        DisallowedAsset? existing = this.GetAssetDisallowanceInfo(hash);
+        DisallowedAsset? existing = this.GetDisallowedAssetInfo(hash);
         if (existing != null) return (existing, false);
 
         DisallowedAsset disallowed = new()
@@ -136,7 +136,7 @@ public partial class GameDatabaseContext // Assets
 
     public bool ReallowAsset(string hash)
     {
-        DisallowedAsset? existing = this.GetAssetDisallowanceInfo(hash);
+        DisallowedAsset? existing = this.GetDisallowedAssetInfo(hash);
         if (existing == null) return false;
 
         this.DisallowedAssets.Remove(existing);
@@ -147,4 +147,10 @@ public partial class GameDatabaseContext // Assets
         => this.DisallowedAssets
             .Where(d => hashes.Contains(d.AssetHash))
             .Select(d => d.AssetHash);
+
+    public DatabaseList<DisallowedAsset> GetDisallowedAssets(int skip, int count)
+        => new(this.DisallowedAssets, skip, count);
+    
+    public DatabaseList<DisallowedAsset> GetDisallowedAssetsByType(GameAssetType type, int skip, int count)
+        => new(this.DisallowedAssets.Where(d => d.AssetType == type), skip, count);
 }
