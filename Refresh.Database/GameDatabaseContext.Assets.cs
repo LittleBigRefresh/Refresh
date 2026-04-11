@@ -110,4 +110,51 @@ public partial class GameDatabaseContext // Assets
         {
             asset.AsMainlinePhotoHash = hash;
         });
+    
+    public DisallowedAsset? GetDisallowedAssetInfo(string hash)
+        => this.DisallowedAssets.FirstOrDefault(d => d.AssetHash == hash);
+    
+    /// <returns>
+    /// The asset's disallowance info + whether the asset wasn't already disallowed before
+    /// </returns
+    // TODO: have the disallowance methods of other similar entities also return the entity itself aswell,
+    // and make their entities also store more info (reason, timestamp etc.)
+    public (DisallowedAsset, bool) DisallowAsset(string hash, GameAssetType type, string reason)
+    {
+        DisallowedAsset? existing = this.GetDisallowedAssetInfo(hash);
+        if (existing != null) return (existing, false);
+
+        DisallowedAsset disallowed = new()
+        {
+            AssetHash = hash,
+            AssetType = type,
+            Reason = reason,
+            DisallowedAt = this._time.Now,
+        };
+
+        this.DisallowedAssets.Add(disallowed);
+        this.SaveChanges();
+        return (disallowed, true);
+    }
+
+    public bool ReallowAsset(string hash)
+    {
+        DisallowedAsset? existing = this.GetDisallowedAssetInfo(hash);
+        if (existing == null) return false;
+
+        this.DisallowedAssets.Remove(existing);
+        this.SaveChanges();
+        return true;
+    }
+
+    public IQueryable<string> FilterOutAllowedAssets(List<string> hashes)
+        => this.DisallowedAssets
+            .Where(d => hashes.Contains(d.AssetHash))
+            .Select(d => d.AssetHash);
+
+    public DatabaseList<DisallowedAsset> GetDisallowedAssets(int skip, int count)
+        => new(this.DisallowedAssets, skip, count);
+    
+    public DatabaseList<DisallowedAsset> GetDisallowedAssetsByType(GameAssetType type, int skip, int count)
+        => new(this.DisallowedAssets.Where(d => d.AssetType == type), skip, count);
 }

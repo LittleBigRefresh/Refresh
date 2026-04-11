@@ -6,6 +6,7 @@ using Bunkum.Protocols.Http;
 using Refresh.Core.Authentication.Permission;
 using Refresh.Core.Services;
 using Refresh.Core.Types.Commands;
+using Refresh.Core.Types.Data;
 using Refresh.Database;
 using Refresh.Database.Models.Authentication;
 using Refresh.Database.Models.Users;
@@ -26,11 +27,11 @@ public class ModerationEndpoints : EndpointGroup
     }
 
     [GameEndpoint("showModerated", HttpMethods.Post, ContentType.Xml)]
-    public SerializedModeratedResourceList ModerateResources(RequestContext context, SerializedModeratedResourceList body)
+    public SerializedModeratedResourceList ModerateResources(RequestContext context, SerializedModeratedResourceList body, DataContext dataContext)
     {
         return new SerializedModeratedResourceList
         {
-            Resources = new List<string>(),
+            Resources = dataContext.Database.FilterOutAllowedAssets(body.Resources).ToList(),
         };
     }
 
