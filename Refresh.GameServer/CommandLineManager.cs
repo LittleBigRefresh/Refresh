@@ -73,14 +73,14 @@ internal class CommandLineManager
         [Option("reallow-email-domain", HelpText = "Re-allow the email domain to be used by anyone. Email option is required if this is set. If a whole Email address is given, only the substring after the last @ will be used.")]
         public bool ReallowEmailDomain { get; set; }
 
-        [Option("disallow-asset", HelpText = "Disallow an asset by hash. While this won't delete the asset if it already exists on the server, it will prevent it from being uploaded if it doesn't exist yet, and will do various other things (reset icons, instruct the game to censor this asset, prevent publishing levels/photos which use this asset, etc)."
+        [Option("disallow-asset", HelpText = "Disallow an asset by hash. While this won't delete the asset, it will prevent it from being uploaded in the future, and do other actions, such as instructing the game to censor this asset. "
                                            + "Asset option is required if this is set, and both the Type and Reason options are optional.")]
         public bool DisallowAsset { get; set; }
         
         [Option("reallow-asset", HelpText = "Re-allow an asset by hash. It may be uploaded and used in various UGC again. Asset option is required if this is set.")]
         public bool ReallowAsset { get; set; }
 
-        [Option("asset", HelpText = "The hash of the asset to operate with.")]
+        [Option("asset", HelpText = "The hash of the asset to operate on.")]
         public string? AssetHash { get; set; }
 
         [Option("type", HelpText = "The type of the asset to use. If this isn't set, we will use the corrensponding GameAsset's type from DB instead, if it exists.")]
