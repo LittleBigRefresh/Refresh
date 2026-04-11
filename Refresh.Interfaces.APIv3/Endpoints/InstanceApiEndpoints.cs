@@ -41,6 +41,12 @@ public class InstanceApiEndpoints : EndpointGroup
         };
     }
 
+    [ApiV3Endpoint("announcements"), Authentication(false), AllowDuringMaintenance]
+    [DocSummary("Retrieves all current announcements.")]
+    [RateLimitSettings(300, 60, 240, "announcements-api")]
+    public ApiResponse<List<ApiGameAnnouncementResponse>> GetAllAnnouncements(RequestContext context, DataContext dataContext) 
+        => ApiGameAnnouncementResponse.FromOldList(dataContext.Database.GetAnnouncements().ToArray(), dataContext).ToList();
+
     [ApiV3Endpoint("instance"), Authentication(false), AllowDuringMaintenance]
     [ClientCacheResponse(3600)] // One hour
     [DocSummary("Retrieves various information and metadata about the Refresh instance.")]

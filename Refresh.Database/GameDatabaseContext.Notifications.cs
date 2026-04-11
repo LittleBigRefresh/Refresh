@@ -81,7 +81,7 @@ public partial class GameDatabaseContext // Notifications
         });
     }
 
-    public IEnumerable<GameAnnouncement> GetAnnouncements() => this.GameAnnouncements;
+    public IEnumerable<GameAnnouncement> GetAnnouncements() => this.GameAnnouncements.OrderByDescending(a => a.CreatedAt);
     
     public GameAnnouncement? GetAnnouncementById(ObjectId id) => this.GameAnnouncements.FirstOrDefault(a => a.AnnouncementId == id);
     
