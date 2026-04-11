@@ -7,7 +7,7 @@ namespace Refresh.Core.Configuration;
 /// </summary>
 public class IntegrationConfig : Config
 {
-    public override int CurrentConfigVersion => 8;
+    public override int CurrentConfigVersion => 9;
     public override int Version { get; set; }
     protected override void Migrate(int oldVer, dynamic oldConfig)
     {
@@ -69,6 +69,7 @@ public class IntegrationConfig : Config
     #endregion
     
     public string? GrafanaDashboardUrl { get; set; }
+    public string? ServerStatusUrl { get; set; }
     
     /// <summary>
     /// A link to a .SVG or .PNG containing the logo to use for branding.
