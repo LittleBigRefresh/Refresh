@@ -110,4 +110,41 @@ public partial class GameDatabaseContext // Assets
         {
             asset.AsMainlinePhotoHash = hash;
         });
+    
+    public DisallowedAsset? GetAssetDisallowanceInfo(string hash)
+        => this.DisallowedAssets.FirstOrDefault(d => d.AssetHash == hash);
+    
+    /// <returns>
+    /// The asset's disallowance info + whether the asset wasn't already disallowed before
+    /// </returns
+    // TODO: have the disallowance methods of other similar entities also return the entity itself aswell,
+    // and make their entities also store more info (reason, timestamp etc.)
+    public (DisallowedAsset, bool) DisallowAsset(string hash, GameAssetType type, string reason)
+    {
+        DisallowedAsset? existing = this.GetAssetDisallowanceInfo(hash);
+        if (existing != null) return (existing, false);
+
+        DisallowedAsset disallowed = new()
+        {
+            AssetHash = hash,
+            AssetType = type,
+            Reason = reason,
+        };
+        this.DisallowedAssets.Add(disallowed);
+        return (disallowed, true);
+    }
+
+    public bool ReallowAsset(string hash)
+    {
+        DisallowedAsset? existing = this.GetAssetDisallowanceInfo(hash);
+        if (existing == null) return false;
+
+        this.DisallowedAssets.Remove(existing);
+        return true;
+    }
+
+    public IQueryable<string> FilterOutAllowedAssets(List<string> hashes)
+        => this.DisallowedAssets
+            .Where(d => hashes.Contains(d.AssetHash))
+            .Select(d => d.AssetHash);
 }
