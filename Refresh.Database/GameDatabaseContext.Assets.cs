@@ -129,6 +129,7 @@ public partial class GameDatabaseContext // Assets
             AssetHash = hash,
             AssetType = type,
             Reason = reason,
+            DisallowedAt = this._time.Now,
         };
 
         this.DisallowedAssets.Add(disallowed);
