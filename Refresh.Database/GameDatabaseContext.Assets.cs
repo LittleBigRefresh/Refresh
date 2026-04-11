@@ -130,7 +130,9 @@ public partial class GameDatabaseContext // Assets
             AssetType = type,
             Reason = reason,
         };
+
         this.DisallowedAssets.Add(disallowed);
+        this.SaveChanges();
         return (disallowed, true);
     }
 
@@ -140,6 +142,7 @@ public partial class GameDatabaseContext // Assets
         if (existing == null) return false;
 
         this.DisallowedAssets.Remove(existing);
+        this.SaveChanges();
         return true;
     }
 
