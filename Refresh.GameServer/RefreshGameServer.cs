@@ -32,6 +32,7 @@ using Refresh.Interfaces.Internal;
 using Refresh.Interfaces.Workers;
 using Refresh.Interfaces.Workers.Repeating;
 using Refresh.Workers;
+using Refresh.Database.Models.Assets;
 
 namespace Refresh.GameServer;
 
@@ -311,6 +312,22 @@ public class RefreshGameServer : RefreshServer
         using GameDatabaseContext context = this.GetContext();
 
         return context.ReallowEmailDomain(domain);
+    }
+
+    public bool DisallowAsset(string hash, GameAssetType? type, string? reason)
+    {
+        using GameDatabaseContext context = this.GetContext();
+        type ??= context.GetAssetFromHash(hash)?.AssetType;
+
+        (DisallowedAsset disallowed, bool success) = context.DisallowAsset(hash, type ?? GameAssetType.Unknown, reason ?? "");
+        return success;
+    }
+    
+    public bool ReallowAsset(string hash)
+    {
+        using GameDatabaseContext context = this.GetContext();
+
+        return context.ReallowAsset(hash);
     }
 
     public void RenameUser(GameUser user, string newUsername, bool force = false)
