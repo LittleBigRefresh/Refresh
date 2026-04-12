@@ -1,6 +1,10 @@
+using System.Security.Cryptography;
 using Refresh.Database.Models.Assets;
 using Refresh.Database.Models.Authentication;
 using Refresh.Database.Models.Users;
+using Refresh.Interfaces.APIv3.Endpoints.ApiTypes;
+using Refresh.Interfaces.APIv3.Endpoints.ApiTypes.Errors;
+using Refresh.Interfaces.APIv3.Endpoints.DataTypes.Response.Data;
 using Refresh.Interfaces.Game.Types.UserData;
 using RefreshTests.GameServer.Extensions;
 
@@ -114,5 +118,44 @@ public class AssetDisallowanceTests : GameServerTest
         Assert.That(response.Resources.Count, Is.EqualTo(2));
         Assert.That(response.Resources.Contains("3"), Is.True);
         Assert.That(response.Resources.Contains("7"), Is.True);
+    }
+
+    [Test]
+    public void CannotUploadDisallowedAssetFromGame()
+    {
+        using TestContext context = this.GetServer();
+        GameUser user = context.CreateUser();
+        HttpClient client = context.GetAuthenticatedClient(TokenType.Game, user);
+
+        ReadOnlySpan<byte> data = "TEX a"u8;
+        
+        string hash = BitConverter.ToString(SHA1.HashData(data))
+            .Replace("-", "")
+            .ToLower();
+
+        context.Database.DisallowAsset(hash, GameAssetType.Texture, "Weegee");
+
+        HttpResponseMessage message = client.PostAsync($"/lbp/upload/{hash}", new ByteArrayContent(data.ToArray())).Result;
+        Assert.That(message.StatusCode, Is.EqualTo(Unauthorized));
+    }
+
+    [Test]
+    public void CannotUploadDisallowedAssetFromApi()
+    {
+        using TestContext context = this.GetServer();
+        GameUser user = context.CreateUser();
+        HttpClient client = context.GetAuthenticatedClient(TokenType.Api, user);
+
+        ReadOnlySpan<byte> data = [0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A];
+        
+        string hash = BitConverter.ToString(SHA1.HashData(data))
+            .Replace("-", "")
+            .ToLower();
+
+        context.Database.DisallowAsset(hash, GameAssetType.Png, "Weegee");
+
+        ApiResponse<ApiGameAssetResponse>? response = client.PostData<ApiGameAssetResponse>($"/api/v3/assets/{hash}", new ByteArrayContent(data.ToArray()), false, true);
+        Assert.That(response?.Error, Is.Not.Null);
+        Assert.That(response!.Error!.Name, Is.EqualTo(nameof(ApiModerationError)));
     }
 }
