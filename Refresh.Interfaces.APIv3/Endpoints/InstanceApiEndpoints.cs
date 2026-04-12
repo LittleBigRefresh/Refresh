@@ -78,6 +78,11 @@ public class InstanceApiEndpoints : EndpointGroup
             GrafanaDashboardUrl = integrationConfig.GrafanaDashboardUrl,
             WebsiteLogoUrl = integrationConfig.WebsiteLogoUrl,
             WebsiteDefaultTheme = integrationConfig.WebsiteDefaultTheme,
+            IsPresenceServerEnabled = integrationConfig.PresenceEnabled,
+            ServerStatusUrl = integrationConfig.ServerStatusUrl,
+
+            NormalUserPermissions = ApiRolePermissionsResponse.FromOld(gameConfig.NormalUserPermissions),
+            TrustedUserPermissions = ApiRolePermissionsResponse.FromOld(gameConfig.TrustedUserPermissions),
             
             ContactInfo = new ApiContactInfoResponse
             {
