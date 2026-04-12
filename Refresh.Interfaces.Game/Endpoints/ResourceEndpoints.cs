@@ -48,9 +48,11 @@ public class ResourceEndpoints : EndpointGroup
         if (dataStore.ExistsInStore(assetPath))
             return Conflict;
         
-        if (body.Length + user.FilesizeQuotaUsage > config.UserFilesizeQuota)
+        RolePermissions rolePerms = user.GetRolePermissionsForUser(config);
+        
+        if (body.Length + user.FilesizeQuotaUsage > rolePerms.UserFilesizeQuota)
         {
-            context.Logger.LogWarning(BunkumCategory.UserContent, "User {0} has hit the filesize quota ({1} bytes), rejecting.", user.Username, config.UserFilesizeQuota);
+            context.Logger.LogWarning(BunkumCategory.UserContent, "User {0} has hit the filesize quota ({1} bytes), rejecting.", user.Username, rolePerms.UserFilesizeQuota);
             return RequestEntityTooLarge;
         }
         
@@ -66,9 +68,7 @@ public class ResourceEndpoints : EndpointGroup
 
         gameAsset.UploadDate = DateTimeOffset.FromUnixTimeSeconds(Math.Clamp(gameAsset.UploadDate.ToUnixTimeSeconds(), timeProvider.EarliestDate, timeProvider.TimestampSeconds));
 
-        AssetFlags blockedAssetFlags = config.BlockedAssetFlags.ToAssetFlags();
-        if (user.Role >= GameUserRole.Trusted)
-            blockedAssetFlags = config.BlockedAssetFlagsForTrustedUsers.ToAssetFlags();
+        AssetFlags blockedAssetFlags = rolePerms.BlockedAssetFlags.ToAssetFlags();
        
         // Don't block any assets uploaded from PSP, else block any unwanted assets,
         // For example, if the "blocked asset flags" has the "Media" bit set, and so does the asset,

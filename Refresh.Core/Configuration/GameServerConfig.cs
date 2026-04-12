@@ -1,8 +1,6 @@
 using System.Diagnostics.CodeAnalysis;
 using Bunkum.Core.Configuration;
 using Microsoft.CSharp.RuntimeBinder;
-using Refresh.Database.Models.Assets;
-using Refresh.Database.Models.Users;
 
 namespace Refresh.Core.Configuration;
 
@@ -10,52 +8,109 @@ namespace Refresh.Core.Configuration;
 [SuppressMessage("ReSharper", "RedundantDefaultMemberInitializer")]
 public class GameServerConfig : Config
 {
-    public override int CurrentConfigVersion => 26;
+    public override int CurrentConfigVersion => 27;
     public override int Version { get; set; } = 0;
     
     protected override void Migrate(int oldVer, dynamic oldConfig)
     {
-        if (oldVer < 18)
+        // In version 27, various (mostly already role-specific) perms, like blocked assets and read-only mode, were moved to dedicated child objects,
+        // to more cleanly split the perms between certain roles, and to make their enforcement easier.
+        if (oldVer < 27)
         {
-            // Asset safety level was added in config version 2, so dont try to migrate if we are coming from an older version than that
-            if (oldVer >= 2)
-            {
-                int oldSafetyLevel = (int)oldConfig.MaximumAssetSafetyLevel;
-                this.BlockedAssetFlags = new ConfigAssetFlags
-                {
-                    Dangerous = oldSafetyLevel < 3,
-                    Modded = oldSafetyLevel < 2,
-                    Media = oldSafetyLevel < 1,
-                };
-            }
+            this.NormalUserPermissions = new();
+            this.TrustedUserPermissions = new();
 
-            // Asset safety level for trusted users was added in config version 12, so dont try to migrate if we are coming from a version older than that
-            if (oldVer >= 12)
+            // filesize quota limit was added during version 11, but the version wasn't bumped, so catch error to be safe
+            if (oldVer >= 11)
             {
-                // There was no version bump for trusted users being added, so we just have to catch this error :/
                 try
                 {
-                    int oldTrustedSafetyLevel = (int)oldConfig.MaximumAssetSafetyLevelForTrustedUsers;
-                    this.BlockedAssetFlagsForTrustedUsers = new ConfigAssetFlags
-                    {
-                        Dangerous = oldTrustedSafetyLevel < 3,
-                        Modded = oldTrustedSafetyLevel < 2,
-                        Media = oldTrustedSafetyLevel < 1,
-                    };
+                    this.NormalUserPermissions.UserFilesizeQuota = (int)oldConfig.UserFilesizeQuota;
+                    this.TrustedUserPermissions.UserFilesizeQuota = (int)oldConfig.UserFilesizeQuota;
                 }
                 catch (RuntimeBinderException)
                 {
-                    this.BlockedAssetFlagsForTrustedUsers = this.BlockedAssetFlags;
+                    // do nothing
                 }
+            }
+
+            if (oldVer >= 18)
+            {
+                this.NormalUserPermissions.BlockedAssetFlags.Dangerous = (bool)oldConfig.BlockedAssetFlags.Dangerous;
+                this.NormalUserPermissions.BlockedAssetFlags.Media = (bool)oldConfig.BlockedAssetFlags.Media;
+                this.NormalUserPermissions.BlockedAssetFlags.Modded = (bool)oldConfig.BlockedAssetFlags.Modded;
+
+                this.TrustedUserPermissions.BlockedAssetFlags.Dangerous = (bool)oldConfig.BlockedAssetFlagsForTrustedUsers.Dangerous;
+                this.TrustedUserPermissions.BlockedAssetFlags.Media = (bool)oldConfig.BlockedAssetFlagsForTrustedUsers.Media;
+                this.TrustedUserPermissions.BlockedAssetFlags.Modded = (bool)oldConfig.BlockedAssetFlagsForTrustedUsers.Modded;
+            }
+            else
+            {
+                // Asset safety level was added in config version 2, so dont try to migrate if we are coming from an older version than that
+                if (oldVer >= 2)
+                {
+                    int oldSafetyLevel = (int)oldConfig.MaximumAssetSafetyLevel;
+                    this.NormalUserPermissions.BlockedAssetFlags = new ConfigAssetFlags
+                    {
+                        Dangerous = oldSafetyLevel < 3,
+                        Modded = oldSafetyLevel < 2,
+                        Media = oldSafetyLevel < 1,
+                    };
+                }
+
+                // Asset safety level for trusted users was added in config version 12, so dont try to migrate if we are coming from a version older than that
+                if (oldVer >= 12)
+                {
+                    // There was no version bump for trusted users being added, so we just have to catch this error :/
+                    try
+                    {
+                        int oldTrustedSafetyLevel = (int)oldConfig.MaximumAssetSafetyLevelForTrustedUsers;
+                        this.TrustedUserPermissions.BlockedAssetFlags = new ConfigAssetFlags
+                        {
+                            Dangerous = oldTrustedSafetyLevel < 3,
+                            Modded = oldTrustedSafetyLevel < 2,
+                            Media = oldTrustedSafetyLevel < 1,
+                        };
+                    }
+                    catch (RuntimeBinderException)
+                    {
+                        this.TrustedUserPermissions.BlockedAssetFlags = this.NormalUserPermissions.BlockedAssetFlags;
+                    }
+                }
+            }
+
+            // Timed level upload limits were added in version 19.
+            if (oldVer >= 19)
+            {
+                this.NormalUserPermissions.TimedLevelUploadLimits.Enabled = (bool)oldConfig.TimedLevelUploadLimits.Enabled;
+                this.NormalUserPermissions.TimedLevelUploadLimits.TimeSpanHours = (int)oldConfig.TimedLevelUploadLimits.TimeSpanHours;
+                this.NormalUserPermissions.TimedLevelUploadLimits.LevelQuota = (int)oldConfig.TimedLevelUploadLimits.LevelQuota;
+
+                this.TrustedUserPermissions.TimedLevelUploadLimits.Enabled = (bool)oldConfig.TimedLevelUploadLimits.Enabled;
+                this.TrustedUserPermissions.TimedLevelUploadLimits.TimeSpanHours = (int)oldConfig.TimedLevelUploadLimits.TimeSpanHours;
+                this.TrustedUserPermissions.TimedLevelUploadLimits.LevelQuota = (int)oldConfig.TimedLevelUploadLimits.LevelQuota;
+            }
+
+            // Read-only mode was added for both normal and trusted users in version 20.
+            if (oldVer >= 20)
+            {
+                this.NormalUserPermissions.ReadOnlyMode = (bool)oldConfig.ReadOnlyMode;
+                this.TrustedUserPermissions.ReadOnlyMode = (bool)oldConfig.ReadonlyModeForTrustedUsers;
             }
         }
     }
 
     public string LicenseText { get; set; } = "Welcome to Refresh!";
 
-    public ConfigAssetFlags BlockedAssetFlags { get; set; } = new(AssetFlags.Dangerous | AssetFlags.Modded);
-    /// <seealso cref="GameUserRole.Trusted"/>
-    public ConfigAssetFlags BlockedAssetFlagsForTrustedUsers { get; set; } = new(AssetFlags.Dangerous | AssetFlags.Modded);
+    /// <summary>
+    /// Role-specific permissions for normal users and below
+    /// </summary>
+    public RolePermissions NormalUserPermissions = new();
+    /// <summary>
+    /// Role-specific permissions for trusted users and above
+    /// </summary>
+    public RolePermissions TrustedUserPermissions = new();
+
     public bool AllowUsersToUseIpAuthentication { get; set; } = false;
     public bool PermitPsnLogin { get; set; } = true;
     public bool PermitRpcnLogin { get; set; } = true;
@@ -97,20 +152,6 @@ public class GameServerConfig : Config
     /// </summary>
     public string GameConfigStorageUrl { get; set; } = "https://refresh.example.com/lbp";
     public bool AllowInvalidTextureGuids { get; set; } = false;
-    public bool ReadOnlyMode { get; set; } = false;
-    /// <seealso cref="GameUserRole.Trusted"/>
-    public bool ReadonlyModeForTrustedUsers { get; set; } = false;
-    /// <summary>
-    /// The amount of data the user is allowed to upload before all resource uploads get blocked, defaults to 100mb.
-    /// </summary>
-    public int UserFilesizeQuota { get; set; } = 100 * 1_048_576;
-
-    public TimedLevelUploadLimitProperties TimedLevelUploadLimits { get; set; } = new()
-    {
-        Enabled = false,
-        TimeSpanHours = 24,
-        LevelQuota = 10,
-    };
     
     /// <summary>
     /// Whether to print the room state whenever a `FindBestRoom` match returns no results

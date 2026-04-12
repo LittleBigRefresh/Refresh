@@ -285,18 +285,32 @@ public class RefreshGameServer : RefreshServer
         return context.ReallowUser(username);
     }
 
-    public bool DisallowEmail(string email)
+    public bool DisallowEmailAddress(string address)
     {
         using GameDatabaseContext context = this.GetContext();
-        
-        return context.DisallowEmail(email);
+
+        return context.DisallowEmailAddress(address);
     }
     
-    public bool ReallowEmail(string email)
+    public bool ReallowEmailAddress(string address)
     {
         using GameDatabaseContext context = this.GetContext();
-        
-        return context.ReallowEmail(email);
+
+        return context.ReallowEmailAddress(address);
+    }
+
+    public bool DisallowEmailDomain(string domain)
+    {
+        using GameDatabaseContext context = this.GetContext();
+
+        return context.DisallowEmailDomain(domain);
+    }
+    
+    public bool ReallowEmailDomain(string domain)
+    {
+        using GameDatabaseContext context = this.GetContext();
+
+        return context.ReallowEmailDomain(domain);
     }
 
     public void RenameUser(GameUser user, string newUsername, bool force = false)

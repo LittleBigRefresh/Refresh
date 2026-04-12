@@ -122,8 +122,8 @@ public class PlaylistUploadTests : GameServerTest
     {
         using TestContext context = this.GetServer();
         GameServerConfig config = context.Server.Value.GameServerConfig;
-        config.ReadOnlyMode = true;
-        config.ReadonlyModeForTrustedUsers = true;
+        config.NormalUserPermissions.ReadOnlyMode = true;
+        config.TrustedUserPermissions.ReadOnlyMode = true;
 
         GameUser user = context.CreateUser();
         GamePlaylist root = context.Database.CreatePlaylist(user, new SerializedLbp1Playlist()
@@ -155,8 +155,8 @@ public class PlaylistUploadTests : GameServerTest
     {
         using TestContext context = this.GetServer();
         GameServerConfig config = context.Server.Value.GameServerConfig;
-        config.ReadOnlyMode = true;
-        config.ReadonlyModeForTrustedUsers = true;
+        config.NormalUserPermissions.ReadOnlyMode = true;
+        config.TrustedUserPermissions.ReadOnlyMode = true;
 
         GameUser user = context.CreateUser();
         HttpClient client = context.GetAuthenticatedClient(TokenType.Game, TokenGame.LittleBigPlanet1, TokenPlatform.PS3, user);

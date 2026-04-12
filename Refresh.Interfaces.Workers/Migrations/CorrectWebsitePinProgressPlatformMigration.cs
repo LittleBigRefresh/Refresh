@@ -1,13 +1,13 @@
-﻿using MongoDB.Bson;
-using Refresh.Common.Time;
-using Refresh.Database.Models.Authentication;
+﻿using Refresh.Database.Models.Authentication;
 using Refresh.Database.Models.Pins;
 using Refresh.Database.Models.Relations;
+using Refresh.Database.Models.Users;
 using Refresh.Workers;
 
 namespace Refresh.Interfaces.Workers.Migrations;
 
-public class CorrectWebsitePinProgressPlatformMigration : MigrationJob<PinProgressRelation>
+// Easier to do this by user than by pin relation, to avoid various pagination issues
+public class CorrectWebsitePinProgressPlatformMigration : MigrationJob<GameUser>
 {
     private readonly List<long> WebsitePinIds =
     [
@@ -16,36 +16,25 @@ public class CorrectWebsitePinProgressPlatformMigration : MigrationJob<PinProgre
         (long)ServerPins.SignIntoWebsite,
     ];
 
-    protected override IQueryable<PinProgressRelation> SortAndFilter(IQueryable<PinProgressRelation> query)
+    protected override IQueryable<GameUser> SortAndFilter(IQueryable<GameUser> query)
     {
-        return query
-            .Where(p => this.WebsitePinIds.Contains(p.PinId))
-            .OrderBy(p => p.PinId);
+        return query.OrderBy(u => u.UserId);
     }
 
-    protected override int Migrate(WorkContext context, PinProgressRelation[] batch)
+    protected override int Migrate(WorkContext context, GameUser[] batch)
     {
-        int pinsLeft = batch.Length;
-
-        foreach (long pinId in this.WebsitePinIds)
+        foreach (GameUser user in batch)
         {
-            IEnumerable<IGrouping<ObjectId, PinProgressRelation>> pinsByUser = batch
-                .Where(r => r.PinId == pinId)
-                .GroupBy(r => r.PublisherId);
-            
-            foreach (IEnumerable<PinProgressRelation> group in pinsByUser)
+            foreach (long pinId in this.WebsitePinIds)
             {
-                // Should never happen, but just incase
-                if (!group.Any()) continue;
+                List<PinProgressRelation> pinsByUserAndId = context.Database.GetAllPinProgressesByUserAndId(user, pinId).ToList();
+                if (pinsByUserAndId.Count <= 0) continue; // no need to deduplicate if there is nothing (do still migrate if there's only 1 pin, to overwrite its platform)
 
-                // Find best one by the current user
-                PinProgressRelation relationToMigrate = group.MaxBy(r => r.Progress)!;
-                List<PinProgressRelation> relationsToRemove = group.ToList();
+                PinProgressRelation relationToMigrate = pinsByUserAndId.MaxBy(r => r.Progress)!;
 
-                foreach (PinProgressRelation relation in group)
+                foreach (PinProgressRelation relation in pinsByUserAndId)
                 {
                     context.Database.RemovePinProgress(relation, false);
-                    pinsLeft--;
                 }
 
                 // Now take the best progress we've just got and add it as a website pin, preserving other old metadata
@@ -61,11 +50,10 @@ public class CorrectWebsitePinProgressPlatformMigration : MigrationJob<PinProgre
                 };
 
                 context.Database.AddPinProgress(newRelation, false);
-                pinsLeft++;
             }
         }
 
         context.Database.SaveChanges();
-        return pinsLeft;
+        return batch.Length;
     }
 }

@@ -119,7 +119,8 @@ public class PublishEndpoints : EndpointGroup
         GameLevelRequest body,
         DataContext dataContext,
         GameServerConfig config,
-        IDateTimeProvider dateTimeProvider)
+        IDateTimeProvider dateTimeProvider,
+        GameUser user)
     {
         if (dataContext.User!.IsWriteBlocked(config))
         {
@@ -127,7 +128,7 @@ public class PublishEndpoints : EndpointGroup
             return Unauthorized;
         }
         
-        if (IsTimedLevelLimitReached(dataContext, dataContext.User!, body.Title, config.TimedLevelUploadLimits, dateTimeProvider.Now)) 
+        if (IsTimedLevelLimitReached(dataContext, dataContext.User!, body.Title, user.GetRolePermissionsForUser(config).TimedLevelUploadLimits, dateTimeProvider.Now)) 
             return Unauthorized;
 
         //If verifying the request fails, return BadRequest
@@ -182,7 +183,8 @@ public class PublishEndpoints : EndpointGroup
         if (user.IsWriteBlocked(config))
             return Unauthorized;
         
-        if (IsTimedLevelLimitReached(dataContext, user, body.Title, config.TimedLevelUploadLimits, dateTimeProvider.Now))
+        TimedLevelUploadLimitProperties timedLevelLimit = user.GetRolePermissionsForUser(config).TimedLevelUploadLimits;
+        if (IsTimedLevelLimitReached(dataContext, user, body.Title, timedLevelLimit, dateTimeProvider.Now))
             return Unauthorized;
 
         //If verifying the request fails, return BadRequest
@@ -256,9 +258,9 @@ public class PublishEndpoints : EndpointGroup
 
         // Only increment if the level can be uploaded (right after the previous checks + adding the level),
         // don't want to increment for failed uploads
-        if (config.TimedLevelUploadLimits.Enabled)
+        if (timedLevelLimit.Enabled)
         {
-            dataContext.Database.IncrementTimedLevelLimit(user, config.TimedLevelUploadLimits.TimeSpanHours);
+            dataContext.Database.IncrementTimedLevelLimit(user, timedLevelLimit.TimeSpanHours);
         }
 
         // Update the modded status of the level
