@@ -41,6 +41,12 @@ public class InstanceApiEndpoints : EndpointGroup
         };
     }
 
+    [ApiV3Endpoint("announcements"), Authentication(false), AllowDuringMaintenance]
+    [DocSummary("Retrieves all current announcements.")]
+    [RateLimitSettings(300, 60, 240, "announcements-api")]
+    public ApiResponse<List<ApiGameAnnouncementResponse>> GetAllAnnouncements(RequestContext context, DataContext dataContext) 
+        => ApiGameAnnouncementResponse.FromOldList(dataContext.Database.GetAnnouncements().ToArray(), dataContext).ToList();
+
     [ApiV3Endpoint("instance"), Authentication(false), AllowDuringMaintenance]
     [ClientCacheResponse(3600)] // One hour
     [DocSummary("Retrieves various information and metadata about the Refresh instance.")]
@@ -72,6 +78,11 @@ public class InstanceApiEndpoints : EndpointGroup
             GrafanaDashboardUrl = integrationConfig.GrafanaDashboardUrl,
             WebsiteLogoUrl = integrationConfig.WebsiteLogoUrl,
             WebsiteDefaultTheme = integrationConfig.WebsiteDefaultTheme,
+            IsPresenceServerEnabled = integrationConfig.PresenceEnabled,
+            ServerStatusUrl = integrationConfig.ServerStatusUrl,
+
+            NormalUserPermissions = ApiRolePermissionsResponse.FromOld(gameConfig.NormalUserPermissions),
+            TrustedUserPermissions = ApiRolePermissionsResponse.FromOld(gameConfig.TrustedUserPermissions),
             
             ContactInfo = new ApiContactInfoResponse
             {
