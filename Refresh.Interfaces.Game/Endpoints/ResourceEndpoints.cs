@@ -61,6 +61,12 @@ public class ResourceEndpoints : EndpointGroup
             context.Logger.LogWarning(BunkumCategory.UserContent, "{0} is above 2MB ({1} bytes), rejecting.", hash, body.Length);
             return RequestEntityTooLarge;
         }
+
+        if (database.GetDisallowedAssetInfo(hash) != null)
+        {
+            context.Logger.LogWarning(BunkumCategory.UserContent, "User {0} has tried to upload a disallowed asset, rejecting.", user);
+            return Unauthorized;
+        }
         
         GameAsset? gameAsset = importer.ReadAndVerifyAsset(hash, body, token.TokenPlatform, database);
         if (gameAsset == null)

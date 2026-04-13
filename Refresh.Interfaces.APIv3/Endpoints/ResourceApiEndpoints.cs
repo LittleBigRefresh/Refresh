@@ -200,6 +200,12 @@ public class ResourceApiEndpoints : EndpointGroup
             return new ApiValidationError($"You have exceeded your filesize quota.");
         }
 
+        if (database.GetDisallowedAssetInfo(hash) != null)
+        {
+            context.Logger.LogWarning(BunkumCategory.UserContent, "User {0} has tried to upload a disallowed asset, rejecting.", user);
+            return ApiModerationError.AssetDisallowedError;
+        }
+
         GameAsset? gameAsset = importer.ReadAndVerifyAsset(hash, body, TokenPlatform.Website, database);
         if (gameAsset == null)
             return ApiValidationError.CannotReadAssetError;
@@ -214,7 +220,7 @@ public class ResourceApiEndpoints : EndpointGroup
         
         if (aipi != null && aipi.ScanAndHandleAsset(dataContext, gameAsset))
         {
-            return ApiModerationError.Instance;
+            return ApiModerationError.AssetAutoFlaggedError;
         }
         
         database.AddAssetToDatabase(gameAsset);
