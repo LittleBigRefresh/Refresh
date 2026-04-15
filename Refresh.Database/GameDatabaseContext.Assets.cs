@@ -117,8 +117,6 @@ public partial class GameDatabaseContext // Assets
     /// <returns>
     /// The asset's disallowance info + whether the asset wasn't already disallowed before
     /// </returns
-    // TODO: have the disallowance methods of other similar entities also return the entity itself aswell,
-    // and make their entities also store more info (reason, timestamp etc.)
     public (DisallowedAsset, bool) DisallowAsset(string hash, GameAssetType type, string reason)
     {
         DisallowedAsset? existing = this.GetDisallowedAssetInfo(hash);

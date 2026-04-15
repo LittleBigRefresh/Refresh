@@ -203,7 +203,7 @@ internal class CommandLineManager
         {
             if (options.Username != null)
             {
-                if (!this._server.DisallowUser(options.Username))
+                if (!this._server.DisallowUser(options.Username, options.Reason))
                     Fail("User is already disallowed");
             }
             else Fail("No username was provided");
@@ -221,7 +221,7 @@ internal class CommandLineManager
         {
             if (options.EmailAddress != null)
             {
-                if (!this._server.DisallowEmailAddress(options.EmailAddress))
+                if (!this._server.DisallowEmailAddress(options.EmailAddress, options.Reason))
                     Fail("Email address is already disallowed");
             }
             else Fail("No email address was provided");
@@ -239,7 +239,7 @@ internal class CommandLineManager
         {
             if (options.EmailAddress != null)
             {
-                if (!this._server.DisallowEmailDomain(options.EmailAddress))
+                if (!this._server.DisallowEmailDomain(options.EmailAddress, options.Reason))
                     Fail("Email domain is already disallowed");
             }
             else Fail("No email domain was provided");
