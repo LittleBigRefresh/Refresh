@@ -150,9 +150,10 @@ public partial class GameDatabaseContext // Assets
             .Where(d => hashes.Contains(d.AssetHash))
             .Select(d => d.AssetHash);
 
-    public DatabaseList<DisallowedAsset> GetDisallowedAssets(int skip, int count)
-        => new(this.DisallowedAssets, skip, count);
-    
-    public DatabaseList<DisallowedAsset> GetDisallowedAssetsByType(GameAssetType type, int skip, int count)
-        => new(this.DisallowedAssets.Where(d => d.AssetType == type), skip, count);
+    public DatabaseList<DisallowedAsset> GetDisallowedAssets(GameAssetType? type, int skip, int count)
+    {
+        IQueryable<DisallowedAsset> disallowedList = this.DisallowedAssets.OrderByDescending(d => d.DisallowedAt);
+        if (type != null) disallowedList = disallowedList.Where(d => d.AssetType == type);
+        return new(disallowedList, skip, count);
+    }
 }

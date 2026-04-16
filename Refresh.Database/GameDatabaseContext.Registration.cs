@@ -225,7 +225,7 @@ public partial class GameDatabaseContext // Registration
         => this.DisallowedUsers.FirstOrDefault(d => d.Username == username);
     
     public DatabaseList<DisallowedUser> GetDisallowedUsers(int skip, int count)
-        => new(this.DisallowedUsers, skip, count);
+        => new(this.DisallowedUsers.OrderByDescending(d => d.DisallowedAt), skip, count);
     
     public (DisallowedUser, bool) DisallowUser(string username, string reason)
     {
@@ -263,7 +263,7 @@ public partial class GameDatabaseContext // Registration
         => this.DisallowedEmailAddresses.FirstOrDefault(d => d.Address == emailAddress);
 
     public DatabaseList<DisallowedEmailAddress> GetDisallowedEmailAddresses(int skip, int count)
-        => new(this.DisallowedEmailAddresses, skip, count);
+        => new(this.DisallowedEmailAddresses.OrderByDescending(d => d.DisallowedAt), skip, count);
 
     public (DisallowedEmailAddress, bool) DisallowEmailAddress(string emailAddress, string reason)
     {
@@ -310,7 +310,7 @@ public partial class GameDatabaseContext // Registration
     }
 
     public DatabaseList<DisallowedEmailDomain> GetDisallowedEmailDomains(int skip, int count)
-        => new(this.DisallowedEmailDomains, skip, count);
+        => new(this.DisallowedEmailDomains.OrderByDescending(d => d.DisallowedAt), skip, count);
 
     public (DisallowedEmailDomain, bool) DisallowEmailDomain(string emailAddress, string reason)
     {
