@@ -52,12 +52,18 @@ public class UserApiTests : GameServerTest
         using TestContext context = this.GetServer();
 
         const string email = "guy@lil.com";
+        const string disallowReason = "being lil";
         // Not somehow already disallowed
         Assert.That(context.Database.IsEmailAddressDisallowed(email), Is.False);
-        context.Database.DisallowEmailAddress(email);
+        Assert.That(context.Database.GetDisallowedEmailAddressInfo(email), Is.Null);
+        context.Database.DisallowEmailAddress(email, disallowReason);
 
         context.Database.Refresh();
         Assert.That(context.Database.IsEmailAddressDisallowed(email), Is.True);
+        DisallowedEmailAddress? disallowed = context.Database.GetDisallowedEmailAddressInfo(email);
+        Assert.That(disallowed, Is.Not.Null);
+        Assert.That(disallowed!.Address, Is.EqualTo(email));
+        Assert.That(disallowed!.Reason, Is.EqualTo(disallowReason));
         
         ApiResponse<ApiAuthenticationResponse>? response = context.Http.PostData<ApiAuthenticationResponse>("/api/v3/register", new ApiRegisterRequest
         {
@@ -76,6 +82,7 @@ public class UserApiTests : GameServerTest
         context.Database.ReallowEmailAddress(email);
         context.Database.Refresh();
         Assert.That(context.Database.IsEmailAddressDisallowed(email), Is.False);
+        Assert.That(context.Database.GetDisallowedEmailAddressInfo(email), Is.Null);
     }
 
     [Test]
@@ -84,13 +91,22 @@ public class UserApiTests : GameServerTest
     public void CannotRegisterAccountsWithDisallowedEmailDomain(string addressToBlockWith)
     {
         using TestContext context = this.GetServer();
+        const string disallowReason = "moron email moment";
+        const string domain = "moron.com";
 
         // Not somehow already disallowed
         Assert.That(context.Database.IsEmailDomainDisallowed(addressToBlockWith), Is.False);
-        context.Database.DisallowEmailDomain(addressToBlockWith);
+        Assert.That(context.Database.IsEmailDomainDisallowed(domain), Is.False);
+        Assert.That(context.Database.GetDisallowedEmailDomainInfo(addressToBlockWith), Is.Null);
+        context.Database.DisallowEmailDomain(addressToBlockWith, disallowReason);
 
         context.Database.Refresh();
         Assert.That(context.Database.IsEmailDomainDisallowed(addressToBlockWith), Is.True);
+        Assert.That(context.Database.IsEmailDomainDisallowed(domain), Is.True);
+        DisallowedEmailDomain? disallowed = context.Database.GetDisallowedEmailDomainInfo(addressToBlockWith);
+        Assert.That(disallowed, Is.Not.Null);
+        Assert.That(disallowed!.Domain, Is.EqualTo(domain));
+        Assert.That(disallowed!.Reason, Is.EqualTo(disallowReason));
         
         // Attempt 1 (block)
         ApiResponse<ApiAuthenticationResponse>? response = context.Http.PostData<ApiAuthenticationResponse>("/api/v3/register", new ApiRegisterRequest
@@ -152,16 +168,29 @@ public class UserApiTests : GameServerTest
         context.Database.ReallowEmailDomain(addressToBlockWith);
         context.Database.Refresh();
         Assert.That(context.Database.IsEmailDomainDisallowed(addressToBlockWith), Is.False);
+        Assert.That(context.Database.IsEmailDomainDisallowed(domain), Is.False);
+        Assert.That(context.Database.GetDisallowedEmailDomainInfo(addressToBlockWith), Is.Null);
     }
     
     [Test]
     public void CannotRegisterAccountWithDisallowedUsername()
     {
         using TestContext context = this.GetServer();
-
         const string username = "a_lil_guy";
+        const string disallowReason = "writing these is fun lol";
 
-        context.Database.DisallowUser(username);
+        // Not somehow already disallowed
+        Assert.That(context.Database.IsUserDisallowed(username), Is.False);
+        Assert.That(context.Database.GetDisallowedUserInfo(username), Is.Null);
+
+        context.Database.DisallowUser(username, disallowReason);
+        context.Database.Refresh();
+
+        Assert.That(context.Database.IsUserDisallowed(username), Is.True);
+        DisallowedUser? disallowed = context.Database.GetDisallowedUserInfo(username);
+        Assert.That(disallowed, Is.Not.Null);
+        Assert.That(disallowed!.Username, Is.EqualTo(username));
+        Assert.That(disallowed!.Reason, Is.EqualTo(disallowReason));
         
         ApiResponse<ApiAuthenticationResponse>? response = context.Http.PostData<ApiAuthenticationResponse>("/api/v3/register", new ApiRegisterRequest
         {
@@ -172,9 +201,15 @@ public class UserApiTests : GameServerTest
         Assert.That(response, Is.Not.Null);
         Assert.That(response!.Error, Is.Not.EqualTo(null));
         Assert.That(response.Error!.Name, Is.EqualTo("ApiAuthenticationError"));
-        
+
         context.Database.Refresh();
-        Assert.That(context.Database.GetUserByUsername(username), Is.EqualTo(null));
+        Assert.That(context.Database.GetUserByUsername(username), Is.Null);
+        
+        // Undo
+        context.Database.ReallowUser(username);
+        context.Database.Refresh();
+        Assert.That(context.Database.IsUserDisallowed(username), Is.False);
+        Assert.That(context.Database.GetDisallowedUserInfo(username), Is.Null);
     }
 
     [Test]

@@ -272,11 +272,12 @@ public class RefreshGameServer : RefreshServer
         context.SetUserRole(user, role);
     }
     
-    public bool DisallowUser(string username)
+    public bool DisallowUser(string username, string? reason)
     {
         using GameDatabaseContext context = this.GetContext();
         
-        return context.DisallowUser(username);
+        (DisallowedUser disallowed, bool success) = context.DisallowUser(username, reason ?? "");
+        return success;
     }
     
     public bool ReallowUser(string username)
@@ -286,11 +287,12 @@ public class RefreshGameServer : RefreshServer
         return context.ReallowUser(username);
     }
 
-    public bool DisallowEmailAddress(string address)
+    public bool DisallowEmailAddress(string address, string? reason)
     {
         using GameDatabaseContext context = this.GetContext();
 
-        return context.DisallowEmailAddress(address);
+        (DisallowedEmailAddress disallowed, bool success) = context.DisallowEmailAddress(address, reason ?? "");
+        return success;
     }
     
     public bool ReallowEmailAddress(string address)
@@ -300,11 +302,12 @@ public class RefreshGameServer : RefreshServer
         return context.ReallowEmailAddress(address);
     }
 
-    public bool DisallowEmailDomain(string domain)
+    public bool DisallowEmailDomain(string domain, string? reason)
     {
         using GameDatabaseContext context = this.GetContext();
 
-        return context.DisallowEmailDomain(domain);
+        (DisallowedEmailDomain disallowed, bool success) = context.DisallowEmailDomain(domain, reason ?? "");
+        return success;
     }
     
     public bool ReallowEmailDomain(string domain)
