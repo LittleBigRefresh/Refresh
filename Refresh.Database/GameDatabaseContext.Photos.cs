@@ -135,6 +135,13 @@ public partial class GameDatabaseContext // Photos
         return subject;
     }
 
+    public GamePhoto? GetPhotoByAnyHash(string smallHash, string mediumHash, string largeHash, string planHash)
+        => this.GamePhotosIncluded.FirstOrDefault(p => 
+            p.SmallAssetHash == smallHash ||
+            p.MediumAssetHash == mediumHash ||
+            p.LargeAssetHash == largeHash ||
+            p.PlanHash == planHash);
+
     public void RemovePhoto(GamePhoto photo)
     {
         foreach (GameUser subjectUser in this.GetUsersInPhoto(photo).ToArray())

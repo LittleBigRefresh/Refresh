@@ -7,6 +7,7 @@ using Refresh.Database.Models.Levels;
 using Refresh.Database.Models.Photos;
 using Refresh.Interfaces.Game.Types.Lists;
 using Refresh.Database.Helpers;
+using System.Security.Cryptography;
 
 namespace RefreshTests.GameServer.Tests.Photos;
 
@@ -318,7 +319,7 @@ public class PhotoEndpointsTests : GameServerTest
         Assert.That(message.StatusCode, Is.EqualTo(NotFound));
     }
     
-        [Test]
+    [Test]
     public void CantDeleteOthersPhoto()
     {
         using TestContext context = this.GetServer();
@@ -380,5 +381,131 @@ public class PhotoEndpointsTests : GameServerTest
 
         response = message.Content.ReadAsXML<SerializedPhotoList>();
         Assert.That(response.Items, Has.Count.EqualTo(1));
+    }
+
+    [Test]
+    public void CannotUploadPhotoIfDuplicateImage()
+    {
+        using TestContext context = this.GetServer();
+        GameUser user = context.CreateUser();
+        using HttpClient client = context.GetAuthenticatedClient(TokenType.Game, user);
+
+        //Upload our """photo"""
+        HttpResponseMessage message = client.PostAsync($"/lbp/upload/{TEST_ASSET_HASH}", new ReadOnlyMemoryContent(TestAsset)).Result;
+        Assert.That(message.StatusCode, Is.EqualTo(OK));
+
+        //Upload our """plan"""
+        ReadOnlySpan<byte> planData = "PLNbum"u8;
+        string planHash = HexHelper.BytesToHexString(SHA1.HashData(planData));
+        message = client.PostAsync("/lbp/upload/" + planHash, new ByteArrayContent(planData.ToArray())).Result;
+
+        //Upload another """plan"""
+        ReadOnlySpan<byte> anotherPlanData = "PLNble"u8;
+        string anotherPlanHash = HexHelper.BytesToHexString(SHA1.HashData(anotherPlanData));
+        message = client.PostAsync("/lbp/upload/" + anotherPlanHash, new ByteArrayContent(anotherPlanData.ToArray())).Result;
+        
+        SerializedPhoto photo1 = new()
+        {
+            Timestamp = DateTimeOffset.UtcNow.ToUnixTimeSeconds(),
+            AuthorName = user.Username,
+            SmallHash = TEST_ASSET_HASH,
+            MediumHash = TEST_ASSET_HASH,
+            LargeHash = TEST_ASSET_HASH,
+            PlanHash = planHash,
+            Level = new SerializedPhotoLevel
+            {
+                LevelId = 0,
+                Title = "",
+                Type = "pod",
+            }
+        };
+        
+        //Upload photo once
+        message = client.PostAsync($"/lbp/uploadPhoto", new StringContent(photo1.AsXML())).Result;
+        Assert.That(message.StatusCode, Is.EqualTo(OK));
+
+        //Upload photo again (different plan hash)
+        SerializedPhoto photo2 = new()
+        {
+            Timestamp = DateTimeOffset.UtcNow.ToUnixTimeSeconds(),
+            AuthorName = user.Username,
+            SmallHash = TEST_ASSET_HASH,
+            MediumHash = TEST_ASSET_HASH,
+            LargeHash = TEST_ASSET_HASH,
+            PlanHash = anotherPlanHash,
+            Level = new SerializedPhotoLevel
+            {
+                LevelId = 0,
+                Title = "",
+                Type = "pod",
+            }
+        };
+        message = client.PostAsync($"/lbp/uploadPhoto", new StringContent(photo2.AsXML())).Result;
+        Assert.That(message.StatusCode, Is.EqualTo(BadRequest));
+        Assert.That(context.Database.GetNotificationCountByUser(user), Is.EqualTo(1));
+    }
+
+    [Test]
+    public void CannotUploadPhotoIfDuplicatePlan()
+    {
+        using TestContext context = this.GetServer();
+        GameUser user = context.CreateUser();
+        using HttpClient client = context.GetAuthenticatedClient(TokenType.Game, user);
+
+        //Upload our """photo"""
+        HttpResponseMessage message = client.PostAsync($"/lbp/upload/{TEST_ASSET_HASH}", new ReadOnlyMemoryContent(TestAsset)).Result;
+        Assert.That(message.StatusCode, Is.EqualTo(OK));
+
+        //Upload another """photo"""
+        ReadOnlySpan<byte> anotherTextureData = "TEX r"u8;
+        string anotherTextureHash = HexHelper.BytesToHexString(SHA1.HashData(anotherTextureData));
+        message = client.PostAsync("/lbp/upload/" + anotherTextureHash, new ByteArrayContent(anotherTextureData.ToArray())).Result;
+        Assert.That(message.StatusCode, Is.EqualTo(OK));
+
+        //Upload our """plan"""
+        ReadOnlySpan<byte> planData = "PLNb"u8;
+        string planHash = HexHelper.BytesToHexString(SHA1.HashData(planData));
+        message = client.PostAsync("/lbp/upload/" + planHash, new ByteArrayContent(planData.ToArray())).Result;
+        Assert.That(message.StatusCode, Is.EqualTo(OK));
+        
+        SerializedPhoto photo1 = new()
+        {
+            Timestamp = DateTimeOffset.UtcNow.ToUnixTimeSeconds(),
+            AuthorName = user.Username,
+            SmallHash = TEST_ASSET_HASH,
+            MediumHash = TEST_ASSET_HASH,
+            LargeHash = TEST_ASSET_HASH,
+            PlanHash = planHash,
+            Level = new SerializedPhotoLevel
+            {
+                LevelId = 0,
+                Title = "",
+                Type = "pod",
+            }
+        };
+        
+        //Upload photo once
+        message = client.PostAsync($"/lbp/uploadPhoto", new StringContent(photo1.AsXML())).Result;
+        Assert.That(message.StatusCode, Is.EqualTo(OK));
+
+        //Upload photo again (different image hashes)
+        SerializedPhoto photo2 = new()
+        {
+            Timestamp = DateTimeOffset.UtcNow.ToUnixTimeSeconds(),
+            AuthorName = user.Username,
+            SmallHash = anotherTextureHash,
+            MediumHash = anotherTextureHash,
+            LargeHash = anotherTextureHash,
+            PlanHash = planHash,
+            Level = new SerializedPhotoLevel
+            {
+                LevelId = 0,
+                Title = "",
+                Type = "pod",
+            }
+        };
+        message = client.PostAsync($"/lbp/uploadPhoto", new StringContent(photo2.AsXML())).Result;
+        Assert.That(message.StatusCode, Is.EqualTo(BadRequest));
+        Assert.That(context.Database.GetNotificationCountByUser(user), Is.EqualTo(1));
     }
 }
