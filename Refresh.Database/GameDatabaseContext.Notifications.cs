@@ -57,8 +57,10 @@ public partial class GameDatabaseContext // Notifications
             .Count(n => n.User == user);
     
     [Pure]
-    public DatabaseList<GameNotification> GetNotificationsByUser(GameUser user, int count, int skip) =>
-        new(this.GameNotifications.Where(n => n.User == user), skip, count);
+    public DatabaseList<GameNotification> GetNotificationsByUser(GameUser user, int count, int skip)
+        => new(this.GameNotifications
+            .Where(n => n.UserId == user.UserId)
+            .OrderByDescending(n => n.CreatedAt), skip, count);
 
     [Pure]
     public GameNotification? GetNotificationByUuid(GameUser user, ObjectId id) 
