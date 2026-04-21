@@ -43,6 +43,7 @@ public class PhotoEndpoints : EndpointGroup
         if (body.PhotoSubjects.Count > 4)
         {
             context.Logger.LogWarning(BunkumCategory.UserContent, $"Too many subjects in photo, rejecting photo upload. Uploader: {user.UserId}");
+            database.AddErrorNotification("Photo upload failed", "The photo had more than 4 players", user);
             return BadRequest;
         }
 
@@ -50,6 +51,14 @@ public class PhotoEndpoints : EndpointGroup
         {
             context.Logger.LogWarning(BunkumCategory.UserContent, $"Photo contains disallowed subjects, rejecting photo upload. Uploader: {user.UserId}");
             return Unauthorized;
+        }
+
+        GamePhoto? existingPhoto = database.GetPhotoByAnyHash(body.SmallHash, body.MediumHash, body.LargeHash, body.PlanHash);
+        if (existingPhoto != null)
+        {
+            // TODO: show photo names in these error notifications once we start to deserialize and store plan data
+            database.AddErrorNotification("Photo upload failed", "The photo already exists on the server", user);
+            return BadRequest;
         }
 
         List<string> hashes = [body.LargeHash, body.MediumHash, body.SmallHash];
