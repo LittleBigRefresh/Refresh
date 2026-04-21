@@ -1594,6 +1594,25 @@ namespace Refresh.Database.Migrations
                     b.ToTable("EmailVerificationCodes");
                 });
 
+            modelBuilder.Entity("Refresh.Database.Models.Users.EntityUploadRateLimit", b =>
+                {
+                    b.Property<string>("UserId")
+                        .HasColumnType("text");
+
+                    b.Property<byte>("Entity")
+                        .HasColumnType("smallint");
+
+                    b.Property<int>("EntityQuota")
+                        .HasColumnType("integer");
+
+                    b.Property<DateTimeOffset>("ExpiryDate")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.HasKey("UserId", "Entity");
+
+                    b.ToTable("EntityUploadRateLimits");
+                });
+
             modelBuilder.Entity("Refresh.Database.Models.Users.GameIpVerificationRequest", b =>
                 {
                     b.Property<string>("UserId")
@@ -1734,12 +1753,6 @@ namespace Refresh.Database.Migrations
 
                     b.Property<string>("StatisticsUserId")
                         .HasColumnType("text");
-
-                    b.Property<DateTimeOffset?>("TimedLevelUploadExpiryDate")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<int>("TimedLevelUploads")
-                        .HasColumnType("integer");
 
                     b.Property<bool>("UnescapeXmlSequences")
                         .HasColumnType("boolean");
@@ -2511,6 +2524,17 @@ namespace Refresh.Database.Migrations
                 });
 
             modelBuilder.Entity("Refresh.Database.Models.Users.EmailVerificationCode", b =>
+                {
+                    b.HasOne("Refresh.Database.Models.Users.GameUser", "User")
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("User");
+                });
+
+            modelBuilder.Entity("Refresh.Database.Models.Users.EntityUploadRateLimit", b =>
                 {
                     b.HasOne("Refresh.Database.Models.Users.GameUser", "User")
                         .WithMany()

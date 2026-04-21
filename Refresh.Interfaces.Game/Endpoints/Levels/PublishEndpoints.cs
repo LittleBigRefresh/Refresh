@@ -12,6 +12,7 @@ using Refresh.Core.Authentication.Permission;
 using Refresh.Core.Configuration;
 using Refresh.Core.Types.Data;
 using Refresh.Database;
+using Refresh.Database.Models;
 using Refresh.Database.Models.Assets;
 using Refresh.Database.Models.Authentication;
 using Refresh.Database.Models.Levels;
@@ -78,29 +79,27 @@ public class PublishEndpoints : EndpointGroup
         return true;
     }
 
-    private static bool IsTimedLevelLimitReached(DataContext dataContext, GameUser user, string levelTitle, TimedLevelUploadLimitProperties config, DateTimeOffset now)
+    private static bool IsTimedLevelLimitReached(DataContext dataContext, GameUser user, string levelTitle, EntityUploadRateLimitProperties config, DateTimeOffset now)
     {
-        if (!config.Enabled || user.TimedLevelUploads <= 0 || user.TimedLevelUploadExpiryDate == null)
-        {
-            return false;
-        }
+        if (!config.Enabled) return false;
 
-        DateTimeOffset expiryDate = user.TimedLevelUploadExpiryDate.Value;
+        EntityUploadRateLimit? rateLimit = dataContext.Database.GetUploadRateLimit(user, GameDatabaseEntity.Level);
+        if (rateLimit == null) return false;
 
         // If the expiration date has expired (less than now), reset user's limit and continue.
-        if (now >= expiryDate)
+        if (now >= rateLimit.ExpiryDate)
         {
-            dataContext.Database.ResetTimedLevelLimit(user);
+            dataContext.Database.ResetUploadRateLimit(user, GameDatabaseEntity.Level);
             return false;
         }
         // If expiration date has not expired yet and the user has reached the limit, block.
-        else if (user.TimedLevelUploads >= config.LevelQuota)
+        else if (rateLimit.EntityQuota >= config.EntityQuota)
         {
-            TimeSpan remainingTime = expiryDate - now;
+            TimeSpan remainingTime = rateLimit.ExpiryDate - now;
             dataContext.Database.AddPublishFailNotification
             (
-                $"You have reached the timed level upload limit of {config.LevelQuota} levels per {config.TimeSpanHours} hours. " +
-                $"Your limit will expire in around {remainingTime.Hours} hours and {remainingTime.Minutes} minutes. After that, try publishing your level again!", 
+                $"You have reached your timed level upload limit of {config.EntityQuota} levels per {config.TimeSpanHours} hours. " +
+                $"Your limit will expire in {remainingTime.Hours} hours and {remainingTime.Minutes} minutes. After that, try publishing your level again!", 
                 levelTitle, 
                 user
             );
@@ -128,7 +127,7 @@ public class PublishEndpoints : EndpointGroup
             return Unauthorized;
         }
         
-        if (IsTimedLevelLimitReached(dataContext, dataContext.User!, body.Title, user.GetRolePermissionsForUser(config).TimedLevelUploadLimits, dateTimeProvider.Now)) 
+        if (IsTimedLevelLimitReached(dataContext, dataContext.User!, body.Title, user.GetRolePermissionsForUser(config).LevelUploadRateLimit, dateTimeProvider.Now)) 
             return Unauthorized;
 
         //If verifying the request fails, return BadRequest
@@ -183,7 +182,7 @@ public class PublishEndpoints : EndpointGroup
         if (user.IsWriteBlocked(config))
             return Unauthorized;
         
-        TimedLevelUploadLimitProperties timedLevelLimit = user.GetRolePermissionsForUser(config).TimedLevelUploadLimits;
+        EntityUploadRateLimitProperties timedLevelLimit = user.GetRolePermissionsForUser(config).LevelUploadRateLimit;
         if (IsTimedLevelLimitReached(dataContext, user, body.Title, timedLevelLimit, dateTimeProvider.Now))
             return Unauthorized;
 
@@ -260,7 +259,7 @@ public class PublishEndpoints : EndpointGroup
         // don't want to increment for failed uploads
         if (timedLevelLimit.Enabled)
         {
-            dataContext.Database.IncrementTimedLevelLimit(user, timedLevelLimit.TimeSpanHours);
+            dataContext.Database.IncrementUploadRateLimitForEntity(user, GameDatabaseEntity.Level, timedLevelLimit.TimeSpanHours);
         }
 
         // Update the modded status of the level

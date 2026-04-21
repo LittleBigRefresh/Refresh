@@ -10,6 +10,7 @@ using Refresh.Database.Models.Levels;
 using Refresh.Database.Models.Photos;
 using Refresh.Database.Models.Assets;
 using System.Diagnostics;
+using Refresh.Database.Models;
 
 namespace Refresh.Database;
 
@@ -620,7 +621,6 @@ public partial class GameDatabaseContext // Users
         });
     }
 
-
     public void SetUserPresenceAuthToken(GameUser user, string? token)
     {
         this.Write(() =>
@@ -628,23 +628,37 @@ public partial class GameDatabaseContext // Users
             user.PresenceServerAuthToken = token;
         });
     }
+
+    public EntityUploadRateLimit? GetUploadRateLimit(GameUser user, GameDatabaseEntity entity)
+        => this.EntityUploadRateLimits.FirstOrDefault(r => r.UserId == user.UserId && r.Entity == entity);
     
-    public void IncrementTimedLevelLimit(GameUser user, int hours)
+    public void IncrementUploadRateLimitForEntity(GameUser user, GameDatabaseEntity entity, int timeSpanHours)
     {
-        this.Write(() => 
+        EntityUploadRateLimit? existingLimit = this.GetUploadRateLimit(user, entity);
+        DateTimeOffset now = this._time.Now;
+
+        if (existingLimit == null || existingLimit.ExpiryDate <= now)
         {
-            // Set expiry date if the timed limits have been reset previously
-            user.TimedLevelUploadExpiryDate ??= this._time.Now + TimeSpan.FromHours(hours);
-            user.TimedLevelUploads++;
-        });
+            EntityUploadRateLimit newLimit = new()
+            {
+                Entity = entity,
+                User = user,
+                EntityQuota = 1,
+                ExpiryDate = now + TimeSpan.FromHours(timeSpanHours),
+            };
+            this.EntityUploadRateLimits.Add(newLimit);
+        }
+        else
+        {
+            this.EntityUploadRateLimits.Update(existingLimit);
+            existingLimit.EntityQuota++;
+        }
+
+        this.SaveChanges();
     }
 
-    public void ResetTimedLevelLimit(GameUser user)
+    public void ResetUploadRateLimit(GameUser user, GameDatabaseEntity entity)
     {
-        this.Write(() => 
-        {
-            user.TimedLevelUploadExpiryDate = null;
-            user.TimedLevelUploads = 0;
-        });
+        this.EntityUploadRateLimits.RemoveRange(r => r.UserId == user.UserId && r.Entity == entity);
     }
 }

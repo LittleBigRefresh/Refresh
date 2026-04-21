@@ -8,11 +8,25 @@ public class RolePermissions
 
     public bool ReadOnlyMode { get; set; } = false;
     public ConfigAssetFlags BlockedAssetFlags { get; set; } = new(AssetFlags.Dangerous | AssetFlags.Modded);
-    public TimedLevelUploadLimitProperties TimedLevelUploadLimits = new()
+    public EntityUploadRateLimitProperties LevelUploadRateLimit = new()
     {
         Enabled = false,
         TimeSpanHours = 24,
-        LevelQuota = 10,
+        EntityQuota = 10,
+    };
+
+    public EntityUploadRateLimitProperties PhotoUploadRateLimit = new()
+    {
+        Enabled = false,
+        TimeSpanHours = 24,
+        EntityQuota = 10,
+    };
+
+    public EntityUploadRateLimitProperties PlaylistUploadRateLimit = new()
+    {
+        Enabled = false,
+        TimeSpanHours = 24,
+        EntityQuota = 8,
     };
 
     /// <summary>
