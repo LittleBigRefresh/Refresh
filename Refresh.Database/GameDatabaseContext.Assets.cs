@@ -117,8 +117,6 @@ public partial class GameDatabaseContext // Assets
     /// <returns>
     /// The asset's disallowance info + whether the asset wasn't already disallowed before
     /// </returns
-    // TODO: have the disallowance methods of other similar entities also return the entity itself aswell,
-    // and make their entities also store more info (reason, timestamp etc.)
     public (DisallowedAsset, bool) DisallowAsset(string hash, GameAssetType type, string reason)
     {
         DisallowedAsset? existing = this.GetDisallowedAssetInfo(hash);
@@ -152,9 +150,10 @@ public partial class GameDatabaseContext // Assets
             .Where(d => hashes.Contains(d.AssetHash))
             .Select(d => d.AssetHash);
 
-    public DatabaseList<DisallowedAsset> GetDisallowedAssets(int skip, int count)
-        => new(this.DisallowedAssets, skip, count);
-    
-    public DatabaseList<DisallowedAsset> GetDisallowedAssetsByType(GameAssetType type, int skip, int count)
-        => new(this.DisallowedAssets.Where(d => d.AssetType == type), skip, count);
+    public DatabaseList<DisallowedAsset> GetDisallowedAssets(GameAssetType? type, int skip, int count)
+    {
+        IQueryable<DisallowedAsset> disallowedList = this.DisallowedAssets.OrderByDescending(d => d.DisallowedAt);
+        if (type != null) disallowedList = disallowedList.Where(d => d.AssetType == type);
+        return new(disallowedList, skip, count);
+    }
 }

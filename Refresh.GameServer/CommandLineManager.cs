@@ -80,13 +80,13 @@ internal class CommandLineManager
         [Option("reallow-asset", HelpText = "Re-allow an asset by hash. It may be uploaded and used in various UGC again. Asset option is required if this is set.")]
         public bool ReallowAsset { get; set; }
 
-        [Option("asset", HelpText = "The hash of the asset to operate on.")]
+        [Option('h', "asset", HelpText = "The hash of the asset to operate on.")]
         public string? AssetHash { get; set; }
 
-        [Option("type", HelpText = "The type of the asset to use. If this isn't set, we will use the corrensponding GameAsset's type from DB instead, if it exists.")]
+        [Option('t', "type", HelpText = "The type of the asset to use. If this isn't set, we will use the corresponding GameAsset's type from DB instead, if it exists.")]
         public string? AssetType { get; set; }
 
-        [Option("reason", HelpText = "The (usually optional) reason for a moderation action, such as asset disallowance.")]
+        [Option('r', "reason", HelpText = "The (usually optional) reason for a moderation action, such as asset disallowance.")]
         public string? Reason { get; set; }
         
         [Option("rename-user", HelpText = "Changes a user's username. (old) username or Email option is required if this is set.")]
@@ -203,7 +203,7 @@ internal class CommandLineManager
         {
             if (options.Username != null)
             {
-                if (!this._server.DisallowUser(options.Username))
+                if (!this._server.DisallowUser(options.Username, options.Reason))
                     Fail("User is already disallowed");
             }
             else Fail("No username was provided");
@@ -221,7 +221,7 @@ internal class CommandLineManager
         {
             if (options.EmailAddress != null)
             {
-                if (!this._server.DisallowEmailAddress(options.EmailAddress))
+                if (!this._server.DisallowEmailAddress(options.EmailAddress, options.Reason))
                     Fail("Email address is already disallowed");
             }
             else Fail("No email address was provided");
@@ -239,7 +239,7 @@ internal class CommandLineManager
         {
             if (options.EmailAddress != null)
             {
-                if (!this._server.DisallowEmailDomain(options.EmailAddress))
+                if (!this._server.DisallowEmailDomain(options.EmailAddress, options.Reason))
                     Fail("Email domain is already disallowed");
             }
             else Fail("No email domain was provided");

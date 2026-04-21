@@ -1,4 +1,5 @@
 using System.Security.Cryptography;
+using Refresh.Database;
 using Refresh.Database.Models.Assets;
 using Refresh.Database.Models.Authentication;
 using Refresh.Database.Models.Users;
@@ -157,5 +158,27 @@ public class AssetDisallowanceTests : GameServerTest
         ApiResponse<ApiGameAssetResponse>? response = client.PostData<ApiGameAssetResponse>($"/api/v3/assets/{hash}", new ByteArrayContent(data.ToArray()), false, true);
         Assert.That(response?.Error, Is.Not.Null);
         Assert.That(response!.Error!.Name, Is.EqualTo(nameof(ApiModerationError)));
+    }
+
+    [Test]
+    public void FiltersDisallowedAssetListByType()
+    {
+        using TestContext context = this.GetServer();
+
+        context.Database.DisallowAsset("3", GameAssetType.Texture, "");
+        context.Database.DisallowAsset("7", GameAssetType.Plan, "");
+        context.Database.DisallowAsset("9", GameAssetType.Mesh, "");
+
+        Assert.That(context.Database.GetDisallowedAssetInfo("3"), Is.Not.Null);
+        Assert.That(context.Database.GetDisallowedAssetInfo("7"), Is.Not.Null);
+        Assert.That(context.Database.GetDisallowedAssetInfo("9"), Is.Not.Null);
+
+        DatabaseList<DisallowedAsset> completeList = context.Database.GetDisallowedAssets(null, 0, 10);
+        Assert.That(completeList.TotalItems, Is.EqualTo(3));
+        Assert.That(completeList.Items.Count(), Is.EqualTo(3));
+
+        DatabaseList<DisallowedAsset> filteredList = context.Database.GetDisallowedAssets(GameAssetType.Texture, 0, 10);
+        Assert.That(filteredList.TotalItems, Is.EqualTo(1));
+        Assert.That(filteredList.Items.Count(), Is.EqualTo(1));
     }
 }
