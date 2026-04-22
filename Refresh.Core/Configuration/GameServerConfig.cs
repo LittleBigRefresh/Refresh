@@ -8,7 +8,7 @@ namespace Refresh.Core.Configuration;
 [SuppressMessage("ReSharper", "RedundantDefaultMemberInitializer")]
 public class GameServerConfig : Config
 {
-    public override int CurrentConfigVersion => 27;
+    public override int CurrentConfigVersion => 28;
     public override int Version { get; set; } = 0;
     
     protected override void Migrate(int oldVer, dynamic oldConfig)
@@ -82,13 +82,13 @@ public class GameServerConfig : Config
             // Timed level upload limits were added in version 19.
             if (oldVer >= 19)
             {
-                this.NormalUserPermissions.TimedLevelUploadLimits.Enabled = (bool)oldConfig.TimedLevelUploadLimits.Enabled;
-                this.NormalUserPermissions.TimedLevelUploadLimits.TimeSpanHours = (int)oldConfig.TimedLevelUploadLimits.TimeSpanHours;
-                this.NormalUserPermissions.TimedLevelUploadLimits.LevelQuota = (int)oldConfig.TimedLevelUploadLimits.LevelQuota;
+                this.NormalUserPermissions.LevelUploadRateLimit.Enabled = (bool)oldConfig.TimedLevelUploadLimits.Enabled;
+                this.NormalUserPermissions.LevelUploadRateLimit.TimeSpanHours = (int)oldConfig.TimedLevelUploadLimits.TimeSpanHours;
+                this.NormalUserPermissions.LevelUploadRateLimit.EntityQuota = (int)oldConfig.TimedLevelUploadLimits.LevelQuota;
 
-                this.TrustedUserPermissions.TimedLevelUploadLimits.Enabled = (bool)oldConfig.TimedLevelUploadLimits.Enabled;
-                this.TrustedUserPermissions.TimedLevelUploadLimits.TimeSpanHours = (int)oldConfig.TimedLevelUploadLimits.TimeSpanHours;
-                this.TrustedUserPermissions.TimedLevelUploadLimits.LevelQuota = (int)oldConfig.TimedLevelUploadLimits.LevelQuota;
+                this.TrustedUserPermissions.LevelUploadRateLimit.Enabled = (bool)oldConfig.TimedLevelUploadLimits.Enabled;
+                this.TrustedUserPermissions.LevelUploadRateLimit.TimeSpanHours = (int)oldConfig.TimedLevelUploadLimits.TimeSpanHours;
+                this.TrustedUserPermissions.LevelUploadRateLimit.EntityQuota = (int)oldConfig.TimedLevelUploadLimits.LevelQuota;
             }
 
             // Read-only mode was added for both normal and trusted users in version 20.
@@ -97,6 +97,20 @@ public class GameServerConfig : Config
                 this.NormalUserPermissions.ReadOnlyMode = (bool)oldConfig.ReadOnlyMode;
                 this.TrustedUserPermissions.ReadOnlyMode = (bool)oldConfig.ReadonlyModeForTrustedUsers;
             }
+        }
+
+        // In version 28, PhotoUploadRateLimit and PlaylistUploadRateLimit were added to RolePermissions, and various renamings related to level upload rate-limiting
+        // were done to prepare for this: the class TimedLevelUploadLimitProperties was renamed to EntityUploadRateLimitProperties, its attribute LevelQuota was renamed to EntityQuota, 
+        // and RolePermissions' attribute TimedLevelUploadLimits was renamed to LevelUploadRateLimit
+        else if (oldVer == 27)
+        {
+            this.NormalUserPermissions.LevelUploadRateLimit.Enabled = (bool)oldConfig.NormalUserPermissions.TimedLevelUploadLimits.Enabled;
+            this.NormalUserPermissions.LevelUploadRateLimit.TimeSpanHours = (int)oldConfig.NormalUserPermissions.TimedLevelUploadLimits.TimeSpanHours;
+            this.NormalUserPermissions.LevelUploadRateLimit.EntityQuota = (int)oldConfig.NormalUserPermissions.TimedLevelUploadLimits.LevelQuota;
+
+            this.TrustedUserPermissions.LevelUploadRateLimit.Enabled = (bool)oldConfig.TrustedUserPermissions.TimedLevelUploadLimits.Enabled;
+            this.TrustedUserPermissions.LevelUploadRateLimit.TimeSpanHours = (int)oldConfig.TrustedUserPermissions.TimedLevelUploadLimits.TimeSpanHours;
+            this.TrustedUserPermissions.LevelUploadRateLimit.EntityQuota = (int)oldConfig.TrustedUserPermissions.TimedLevelUploadLimits.LevelQuota;
         }
     }
 
