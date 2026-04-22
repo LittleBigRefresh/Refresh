@@ -1,7 +1,7 @@
 using Refresh.Core.Configuration;
 using Refresh.Database.Models.Assets;
 
-namespace RefreshTests.GameServer.GameServer;
+namespace RefreshTests.GameServer.GameServer.Configuration;
 
 public class TestGameServerConfig : GameServerConfig
 {
@@ -15,7 +15,7 @@ public class TestGameServerConfig : GameServerConfig
     public ConfigAssetFlags BlockedAssetFlagsForTrustedUsers { get; set; } = new(AssetFlags.Dangerous | AssetFlags.Modded);
     public bool ReadOnlyMode { get; set; } = false;
     public bool ReadonlyModeForTrustedUsers { get; set; } = false;
-    public TimedLevelUploadLimitProperties TimedLevelUploadLimits { get; set; } = new()
+    public TestEntityUploadRateLimitProperties TimedLevelUploadLimits { get; set; } = new()
     {
         Enabled = false,
         TimeSpanHours = 24,
