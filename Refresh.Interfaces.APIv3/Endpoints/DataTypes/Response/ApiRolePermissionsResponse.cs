@@ -7,7 +7,9 @@ public class ApiRolePermissionsResponse : IApiResponse
 {
     public required ConfigAssetFlags BlockedAssetFlags { get; set; }
     public required bool ReadOnlyMode { get; set; }
-    public required ApiTimedLevelLimitResponse? TimedLevelUploadLimits { get; set; }
+    public required ApiEntityRateLimitResponse? LevelUploadRateLimit { get; set; }
+    public required ApiEntityRateLimitResponse? PhotoUploadRateLimit { get; set; }
+    public required ApiEntityRateLimitResponse? PlaylistUploadRateLimit { get; set; }
     public required int UserFilesizeQuota { get; set; }
 
     public static ApiRolePermissionsResponse FromOld(RolePermissions old)
@@ -16,11 +18,9 @@ public class ApiRolePermissionsResponse : IApiResponse
         {
             BlockedAssetFlags = old.BlockedAssetFlags,
             ReadOnlyMode = old.ReadOnlyMode,
-            TimedLevelUploadLimits = old.TimedLevelUploadLimits.Enabled ? new ApiTimedLevelLimitResponse()
-            {
-                TimeSpanHours = old.TimedLevelUploadLimits.TimeSpanHours,
-                LevelQuota = old.TimedLevelUploadLimits.LevelQuota,
-            } : null,
+            LevelUploadRateLimit = ApiEntityRateLimitResponse.FromOld(old.LevelUploadRateLimit),
+            PhotoUploadRateLimit = ApiEntityRateLimitResponse.FromOld(old.PhotoUploadRateLimit),
+            PlaylistUploadRateLimit = ApiEntityRateLimitResponse.FromOld(old.PlaylistUploadRateLimit),
             UserFilesizeQuota = old.UserFilesizeQuota,
         };
     }
