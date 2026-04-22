@@ -12,6 +12,8 @@ using Refresh.Interfaces.APIv3.Endpoints.DataTypes.Request;
 using Refresh.Interfaces.Game.Endpoints.DataTypes.Request;
 using Refresh.Interfaces.Game.Endpoints.DataTypes.Response;
 using Refresh.Interfaces.Game.Types.Levels;
+using System.Security.Cryptography;
+using System.Text;
 
 namespace RefreshTests.GameServer.Tests.Levels;
 
@@ -495,7 +497,6 @@ public class PublishEndpointsTests : GameServerTest
 
     [Test]
     [TestCase(2, 2)]
-    [Ignore("needs to change lvl hash every iteration")] // TODO
     public void CantPublishAfterExceedingTimedLevelLimit(int levelQuota, int uploadAttemptsAfterExceeding)
     {
         using TestContext context = this.GetServer();
@@ -518,12 +519,12 @@ public class PublishEndpointsTests : GameServerTest
         Assert.That(assetUploadMessage.StatusCode, Is.EqualTo(OK));
 
         // Fill up quota
-        SpamSuccessfulUploads(timedLevelLimit.EntityQuota, client);
+        SpamSuccessfulUploads(timedLevelLimit.EntityQuota, client, 0);
         
         // Try to upload more levels after exceeding quota
         for (int i = 0; i < uploadAttemptsAfterExceeding; i++)
         {
-            GameLevelRequest level = CreateValidTestLevel(i + 1);
+            GameLevelRequest level = PrepareLevelPublishRequest(client, i + timedLevelLimit.EntityQuota);
 
             HttpResponseMessage message = client.PostAsync("/lbp/startPublish", new StringContent(level.AsXML())).Result;
             Assert.That(message.StatusCode, Is.EqualTo(Unauthorized));
@@ -542,7 +543,6 @@ public class PublishEndpointsTests : GameServerTest
 
     [Test]
     [TestCase(2, 2)]
-    [Ignore("needs to change lvl hash every iteration")] // TODO
     public void ResetTimedLevelLimitAfterExpiry(int levelQuota, int uploadAttemptsAfterExceeding)
     {
         using TestContext context = this.GetServer();
@@ -567,10 +567,10 @@ public class PublishEndpointsTests : GameServerTest
         Assert.That(message.StatusCode, Is.EqualTo(OK));
 
         // Fill up quota
-        SpamSuccessfulUploads(timedLevelLimit.EntityQuota, client);
+        SpamSuccessfulUploads(timedLevelLimit.EntityQuota, client, 0);
         
         // Try to upload more levels after exceeding quota
-        SpamSuccessfulUploads(uploadAttemptsAfterExceeding, client);
+        SpamSuccessfulUploads(uploadAttemptsAfterExceeding, client, timedLevelLimit.EntityQuota);
 
         // Check amount of levels
         DatabaseList<GameLevel> levelsByUser = context.Database.GetLevelsByUser(user, 1000, 0, new(TokenGame.LittleBigPlanet3), user);
@@ -581,13 +581,13 @@ public class PublishEndpointsTests : GameServerTest
         Assert.That(newNotifications.TotalItems, Is.EqualTo(0));
     }
 
-    private void SpamSuccessfulUploads(int uploads, HttpClient client)
+    private void SpamSuccessfulUploads(int uploads, HttpClient client, int startIndex)
     {
         for (int i = 0; i < uploads; i++)
         {
-            GameLevelRequest level = CreateValidTestLevel(i + 1);
-
             // Upload level
+            GameLevelRequest level = PrepareLevelPublishRequest(client, startIndex + i);
+
             HttpResponseMessage message = client.PostAsync("/lbp/startPublish", new StringContent(level.AsXML())).Result;
             Assert.That(message.StatusCode, Is.EqualTo(OK));
             message = client.PostAsync("/lbp/publish", new StringContent(level.AsXML())).Result;
@@ -595,15 +595,26 @@ public class PublishEndpointsTests : GameServerTest
         }
     }
 
-    private GameLevelRequest CreateValidTestLevel(int id)
-        => new()
+    private GameLevelRequest PrepareLevelPublishRequest(HttpClient client, int uniqueValue)
+    {
+        // upload root asset
+        ReadOnlySpan<byte> rootResource = new(Encoding.ASCII.GetBytes($"LVLb {uniqueValue}"));
+
+        string rootHash = BitConverter.ToString(SHA1.HashData(rootResource))
+            .Replace("-", "")
+            .ToLower();
+
+        HttpResponseMessage message = client.PostAsync($"/lbp/upload/{rootHash}", new ReadOnlyMemoryContent(rootResource.ToArray())).Result;
+        Assert.That(message.StatusCode, Is.EqualTo(OK));
+
+        // prepare request body
+        return new()
         {
-            Title = "Test level! " + id,
-            IconHash = "g0",
+            Title = "Test level! " + uniqueValue,
             Description = "Test description",
-            Location = new GameLocation(),
-            RootResource = TEST_ASSET_HASH,
+            RootResource = rootHash,
         };
+    }
 
     [Test]
     public void CanPublishLevelWithSkillRewards()
