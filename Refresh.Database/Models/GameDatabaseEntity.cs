@@ -5,6 +5,7 @@ public enum GameDatabaseEntity : byte
     User,
     Level,
     Score,
+    RateLevelRelation,
     Photo,
     Review,
     LevelComment,
