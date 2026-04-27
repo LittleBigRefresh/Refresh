@@ -11,6 +11,7 @@ using Refresh.Core.RateLimits.Photos;
 using Refresh.Core.Services;
 using Refresh.Core.Types.Data;
 using Refresh.Database;
+using Refresh.Database.Models;
 using Refresh.Database.Models.Assets;
 using Refresh.Database.Models.Levels;
 using Refresh.Database.Models.Photos;
@@ -30,6 +31,23 @@ public class PhotoEndpoints : EndpointGroup
     {
         if (user.IsWriteBlocked(config))
             return Unauthorized;
+        
+        EntityUploadRateLimitProperties uploadLimit = user.GetRolePermissionsForUser(config).PhotoUploadRateLimit;
+        if (uploadLimit.Enabled)
+        {
+            TimeSpan? rateLimitExpiresIn = database.GetRemainingTimeIfUploadRateLimitReached(user, GameDatabaseEntity.Photo, uploadLimit.EntityQuota);
+            if (rateLimitExpiresIn != null)
+            {
+                dataContext.Database.AddErrorNotification
+                (
+                    "Photo upload failed",
+                    $"You have uploaded too many photos recently! Your limit is {uploadLimit.EntityQuota} photos per {uploadLimit.TimeSpanHours} hours. " +
+                    $"Try again in {rateLimitExpiresIn.Value.Hours} hours and {rateLimitExpiresIn.Value.Minutes} minutes.", 
+                    user
+                );
+                return Unauthorized;
+            }
+        }
         
         if (!dataStore.ExistsInStore(body.SmallHash) ||
             !dataStore.ExistsInStore(body.MediumHash) ||

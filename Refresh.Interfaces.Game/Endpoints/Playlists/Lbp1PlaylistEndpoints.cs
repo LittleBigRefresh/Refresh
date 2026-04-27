@@ -11,6 +11,7 @@ using Refresh.Core.RateLimits.Levels;
 using Refresh.Core.RateLimits.Playlists;
 using Refresh.Core.Types.Data;
 using Refresh.Database;
+using Refresh.Database.Models;
 using Refresh.Database.Models.Levels;
 using Refresh.Database.Models.Playlists;
 using Refresh.Database.Models.Users;
@@ -63,8 +64,21 @@ public class Lbp1PlaylistEndpoints : EndpointGroup
         GamePlaylist? rootPlaylist = dataContext.Database.GetUserRootPlaylist(user);
 
         // Don't block root playlist creation, as the game will otherwise spam requests and softlock
-        if (user.IsWriteBlocked(config) && rootPlaylist != null)
-            return Unauthorized;
+        if (rootPlaylist != null)
+        {
+            if (user.IsWriteBlocked(config)) return Unauthorized;
+            
+            EntityUploadRateLimitProperties uploadLimit = user.GetRolePermissionsForUser(config).PlaylistUploadRateLimit;
+            if (uploadLimit.Enabled)
+            {
+                TimeSpan? rateLimitExpiresIn = dataContext.Database.GetRemainingTimeIfUploadRateLimitReached(user, GameDatabaseEntity.Playlist, uploadLimit.EntityQuota);
+                if (rateLimitExpiresIn != null)
+                {
+                    // no need for a notification, because playlists are cheap and i don't really want the game's obscure spam bugs to cause these notifs to be spammed
+                    return Unauthorized;
+                }
+            }
+        }
 
         // If the parent ID is specified, try to parse that out
         if (int.TryParse(context.QueryString["parent_id"], out int parentId))

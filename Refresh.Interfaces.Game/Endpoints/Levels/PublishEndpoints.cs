@@ -79,36 +79,24 @@ public class PublishEndpoints : EndpointGroup
         return true;
     }
 
-    private static bool IsTimedLevelLimitReached(DataContext dataContext, GameUser user, string levelTitle, EntityUploadRateLimitProperties config, DateTimeOffset now)
+    private static bool IsTimedLevelLimitReached(DataContext dataContext, GameUser user, string levelTitle, EntityUploadRateLimitProperties levelLimit)
     {
-        if (!config.Enabled) return false;
+        if (!levelLimit.Enabled) return false;
 
-        EntityUploadRateLimit? rateLimit = dataContext.Database.GetUploadRateLimit(user, GameDatabaseEntity.Level);
-        if (rateLimit == null) return false;
-
-        // If the expiration date has expired (less than now), reset user's limit and continue.
-        if (now >= rateLimit.ExpiryDate)
+        TimeSpan? rateLimitExpiresIn = dataContext.Database.GetRemainingTimeIfUploadRateLimitReached(user, GameDatabaseEntity.Photo, levelLimit.EntityQuota);
+        if (rateLimitExpiresIn != null)
         {
-            dataContext.Database.ResetUploadRateLimit(user, GameDatabaseEntity.Level);
-            return false;
-        }
-        // If expiration date has not expired yet and the user has reached the limit, block.
-        else if (rateLimit.EntityQuota >= config.EntityQuota)
-        {
-            TimeSpan remainingTime = rateLimit.ExpiryDate - now;
             dataContext.Database.AddPublishFailNotification
             (
-                $"You have reached your timed level upload limit of {config.EntityQuota} levels per {config.TimeSpanHours} hours. " +
-                $"Your limit will expire in {remainingTime.Hours} hours and {remainingTime.Minutes} minutes. After that, try publishing your level again!", 
-                levelTitle, 
+                $"You have published too many levels recently! Your limit is {levelLimit.EntityQuota} levels per {levelLimit.TimeSpanHours} hours. " +
+                $"Try again in {rateLimitExpiresIn.Value.Hours} hours and {rateLimitExpiresIn.Value.Minutes} minutes.", 
+                levelTitle,
                 user
             );
             return true;
         }
-        else
-        {
-            return false;
-        }
+        
+        return false;
     }
 
     [GameEndpoint("startPublish", ContentType.Xml, HttpMethods.Post)]
@@ -118,7 +106,6 @@ public class PublishEndpoints : EndpointGroup
         GameLevelRequest body,
         DataContext dataContext,
         GameServerConfig config,
-        IDateTimeProvider dateTimeProvider,
         GameUser user)
     {
         if (dataContext.User!.IsWriteBlocked(config))
@@ -127,7 +114,7 @@ public class PublishEndpoints : EndpointGroup
             return Unauthorized;
         }
         
-        if (IsTimedLevelLimitReached(dataContext, dataContext.User!, body.Title, user.GetRolePermissionsForUser(config).LevelUploadRateLimit, dateTimeProvider.Now)) 
+        if (IsTimedLevelLimitReached(dataContext, dataContext.User!, body.Title, user.GetRolePermissionsForUser(config).LevelUploadRateLimit)) 
             return Unauthorized;
 
         //If verifying the request fails, return BadRequest
@@ -176,14 +163,13 @@ public class PublishEndpoints : EndpointGroup
         GameLevelRequest body,
         DataContext dataContext,
         GameUser user,
-        GameServerConfig config,
-        IDateTimeProvider dateTimeProvider)
+        GameServerConfig config)
     {
         if (user.IsWriteBlocked(config))
             return Unauthorized;
         
         EntityUploadRateLimitProperties timedLevelLimit = user.GetRolePermissionsForUser(config).LevelUploadRateLimit;
-        if (IsTimedLevelLimitReached(dataContext, user, body.Title, timedLevelLimit, dateTimeProvider.Now))
+        if (IsTimedLevelLimitReached(dataContext, user, body.Title, timedLevelLimit))
             return Unauthorized;
 
         //If verifying the request fails, return BadRequest
