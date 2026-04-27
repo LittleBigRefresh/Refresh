@@ -629,21 +629,49 @@ public partial class GameDatabaseContext // Users
         });
     }
 
-    public EntityUploadRateLimit? GetUploadRateLimit(GameUser user, GameDatabaseEntity entity)
-        => this.EntityUploadRateLimits.FirstOrDefault(r => r.UserId == user.UserId && r.Entity == entity);
+    public EntityUploadRateLimit? GetUploadRateLimit(GameUser user, GameDatabaseEntity entity, bool save = true)
+    {
+        EntityUploadRateLimit? limit = this.EntityUploadRateLimits.FirstOrDefault(r => r.UserId == user.UserId && r.Entity == entity);
+    
+        // remove if expired
+        if (limit != null && limit.ExpiryDate <= this._time.Now)
+        {
+            this.EntityUploadRateLimits.Remove(limit);
+            if (save) this.SaveChanges();
+            return null;
+        }
+
+        return limit;
+    }
+
+    /// <returns>
+    /// Time until expiry date if the corresponding upload rate-limit has been reached, otherwise null
+    /// </returns>
+    public TimeSpan? GetRemainingTimeIfUploadRateLimitReached(GameUser user, GameDatabaseEntity entity, int uploadQuota)
+    {
+        EntityUploadRateLimit? limit = this.GetUploadRateLimit(user, entity); // will be null if expired already, see above
+        DateTimeOffset now = this._time.Now;
+
+        if (limit != null && limit.UploadCount >= uploadQuota)
+        {
+            return limit.ExpiryDate - now;
+        }
+
+        return null;
+    }
     
     public void IncrementUploadRateLimitForEntity(GameUser user, GameDatabaseEntity entity, int timeSpanHours)
     {
-        EntityUploadRateLimit? existingLimit = this.GetUploadRateLimit(user, entity);
+        EntityUploadRateLimit? existingLimit = this.GetUploadRateLimit(user, entity, false); // will be null if expired already, see above
         DateTimeOffset now = this._time.Now;
 
-        if (existingLimit == null || existingLimit.ExpiryDate <= now)
+        if (existingLimit == null)
         {
             EntityUploadRateLimit newLimit = new()
             {
                 Entity = entity,
                 User = user,
-                EntityQuota = 1,
+                UploadCount = 1,
                 ExpiryDate = now + TimeSpan.FromHours(timeSpanHours),
             };
             this.EntityUploadRateLimits.Add(newLimit);
@@ -651,7 +679,7 @@ public partial class GameDatabaseContext // Users
         else
         {
             this.EntityUploadRateLimits.Update(existingLimit);
-            existingLimit.EntityQuota++;
+            existingLimit.UploadCount++;
         }
 
         this.SaveChanges();
