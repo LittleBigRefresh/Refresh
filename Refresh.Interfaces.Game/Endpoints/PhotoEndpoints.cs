@@ -24,7 +24,7 @@ public class PhotoEndpoints : EndpointGroup
 {
     [GameEndpoint("uploadPhoto", HttpMethods.Post, ContentType.Xml)]
     [RequireEmailVerified]
-    [RateLimitSettings(500, 12, 400, "upload-photo")]
+    [RateLimitSettings(300, 30, 240, "upload-photo")]
     public Response UploadPhoto(RequestContext context, SerializedPhoto body, GameDatabaseContext database,
         GameUser user, IDataStore dataStore,
         DataContext dataContext, AipiService aipi, GameServerConfig config)
