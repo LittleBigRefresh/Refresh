@@ -18,7 +18,7 @@ public partial class EntityUploadRateLimit
     /// <summary>
     /// How many entites of the specified type the user has uploaded during the rate-limit
     /// </summary>
-    public int EntityQuota { get; set; }
+    public int UploadCount { get; set; }
     /// <summary>
     /// When this rate-limit should be expired
     /// </summary>

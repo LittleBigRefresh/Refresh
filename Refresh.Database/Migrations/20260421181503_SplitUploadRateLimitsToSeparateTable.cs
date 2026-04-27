@@ -29,7 +29,7 @@ namespace Refresh.Database.Migrations
                 {
                     Entity = table.Column<byte>(type: "smallint", nullable: false),
                     UserId = table.Column<string>(type: "text", nullable: false),
-                    EntityQuota = table.Column<int>(type: "integer", nullable: false),
+                    UploadCount = table.Column<int>(type: "integer", nullable: false),
                     ExpiryDate = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: false)
                 },
                 constraints: table =>

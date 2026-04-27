@@ -1602,7 +1602,7 @@ namespace Refresh.Database.Migrations
                     b.Property<byte>("Entity")
                         .HasColumnType("smallint");
 
-                    b.Property<int>("EntityQuota")
+                    b.Property<int>("UploadCount")
                         .HasColumnType("integer");
 
                     b.Property<DateTimeOffset>("ExpiryDate")

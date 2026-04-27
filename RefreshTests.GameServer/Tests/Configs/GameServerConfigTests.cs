@@ -35,8 +35,8 @@ public class GameServerConfigTests : GameServerTest
         Assert.That(config.NormalUserPermissions.LevelUploadRateLimit.TimeSpanHours, Is.EqualTo(67));
         Assert.That(config.TrustedUserPermissions.LevelUploadRateLimit.TimeSpanHours, Is.EqualTo(67));
 
-        Assert.That(config.NormalUserPermissions.LevelUploadRateLimit.EntityQuota, Is.EqualTo(2));
-        Assert.That(config.TrustedUserPermissions.LevelUploadRateLimit.EntityQuota, Is.EqualTo(2));
+        Assert.That(config.NormalUserPermissions.LevelUploadRateLimit.UploadQuota, Is.EqualTo(2));
+        Assert.That(config.TrustedUserPermissions.LevelUploadRateLimit.UploadQuota, Is.EqualTo(2));
 
         Assert.That(config.NormalUserPermissions.BlockedAssetFlags.ToAssetFlags(), Is.EqualTo(AssetFlags.Dangerous | AssetFlags.Media));
         Assert.That(config.TrustedUserPermissions.BlockedAssetFlags.ToAssetFlags(), Is.EqualTo(AssetFlags.Modded));
@@ -75,11 +75,11 @@ public class GameServerConfigTests : GameServerTest
 
         Assert.That(config.NormalUserPermissions.LevelUploadRateLimit.Enabled, Is.True);
         Assert.That(config.NormalUserPermissions.LevelUploadRateLimit.TimeSpanHours, Is.EqualTo(1234567));
-        Assert.That(config.NormalUserPermissions.LevelUploadRateLimit.EntityQuota, Is.EqualTo(852094));
+        Assert.That(config.NormalUserPermissions.LevelUploadRateLimit.UploadQuota, Is.EqualTo(852094));
 
         Assert.That(config.TrustedUserPermissions.LevelUploadRateLimit.Enabled, Is.False);
         Assert.That(config.TrustedUserPermissions.LevelUploadRateLimit.TimeSpanHours, Is.EqualTo(230));
-        Assert.That(config.TrustedUserPermissions.LevelUploadRateLimit.EntityQuota, Is.EqualTo(7122036));
+        Assert.That(config.TrustedUserPermissions.LevelUploadRateLimit.UploadQuota, Is.EqualTo(7122036));
     }
 
     [Test]

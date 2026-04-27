@@ -6,7 +6,7 @@ namespace Refresh.Interfaces.APIv3.Endpoints.DataTypes.Response;
 public class ApiEntityRateLimitResponse : IApiResponse
 {
     public required int TimeSpanHours { get; set; }
-    public required int EntityQuota { get; set; }
+    public required int UploadQuota { get; set; }
 
     public static ApiEntityRateLimitResponse? FromOld(EntityUploadRateLimitProperties old)
     {
@@ -15,7 +15,7 @@ public class ApiEntityRateLimitResponse : IApiResponse
         return new()
         {
             TimeSpanHours = old.TimeSpanHours,
-            EntityQuota = old.EntityQuota,
+            UploadQuota = old.UploadQuota,
         };
     }
 }

@@ -35,7 +35,7 @@ public class Lbp3PlaylistEndpoints : EndpointGroup
         EntityUploadRateLimitProperties uploadLimit = user.GetRolePermissionsForUser(config).PlaylistUploadRateLimit;
         if (uploadLimit.Enabled)
         {
-            TimeSpan? rateLimitExpiresIn = dataContext.Database.GetRemainingTimeIfUploadRateLimitReached(user, GameDatabaseEntity.Playlist, uploadLimit.EntityQuota);
+            TimeSpan? rateLimitExpiresIn = dataContext.Database.GetRemainingTimeIfUploadRateLimitReached(user, GameDatabaseEntity.Playlist, uploadLimit.UploadQuota);
             if (rateLimitExpiresIn != null)
             {
                 // no need for a notification, because playlists are cheap, especially in lbp3

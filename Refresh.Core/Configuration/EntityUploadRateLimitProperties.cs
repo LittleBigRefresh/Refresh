@@ -13,7 +13,7 @@ public class EntityUploadRateLimitProperties
     /// </summary>
     public int TimeSpanHours { get; set; }
     /// <summary>
-    /// The amount of entities (levels/photos/playlists) the user is allowed to upload during the specified time span
+    /// The amount of entities the user is allowed to upload during the specified time span
     /// </summary>
-    public int EntityQuota { get; set; }
+    public int UploadQuota { get; set; }
 }

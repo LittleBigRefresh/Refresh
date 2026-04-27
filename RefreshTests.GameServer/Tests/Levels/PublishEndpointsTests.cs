@@ -507,7 +507,7 @@ public class PublishEndpointsTests : GameServerTest
         EntityUploadRateLimitProperties timedLevelLimit = new()
         {
             Enabled = true,
-            EntityQuota = levelQuota,
+            UploadQuota = levelQuota,
             TimeSpanHours = 1,
         };
         config.NormalUserPermissions.LevelUploadRateLimit = timedLevelLimit;
@@ -519,12 +519,12 @@ public class PublishEndpointsTests : GameServerTest
         Assert.That(assetUploadMessage.StatusCode, Is.EqualTo(OK));
 
         // Fill up quota
-        SpamSuccessfulUploads(timedLevelLimit.EntityQuota, client, 0);
+        SpamSuccessfulUploads(timedLevelLimit.UploadQuota, client, 0);
         
         // Try to upload more levels after exceeding quota
         for (int i = 0; i < uploadAttemptsAfterExceeding; i++)
         {
-            GameLevelRequest level = PrepareLevelPublishRequest(client, i + timedLevelLimit.EntityQuota);
+            GameLevelRequest level = PrepareLevelPublishRequest(client, i + timedLevelLimit.UploadQuota);
 
             HttpResponseMessage message = client.PostAsync("/lbp/startPublish", new StringContent(level.AsXML())).Result;
             Assert.That(message.StatusCode, Is.EqualTo(Unauthorized));
@@ -534,7 +534,7 @@ public class PublishEndpointsTests : GameServerTest
 
         // Check amount of levels
         DatabaseList<GameLevel> levelsByUser = context.Database.GetLevelsByUser(user, 1000, 0, new(TokenGame.LittleBigPlanet3), user);
-        Assert.That(levelsByUser.TotalItems, Is.EqualTo(timedLevelLimit.EntityQuota));
+        Assert.That(levelsByUser.TotalItems, Is.EqualTo(timedLevelLimit.UploadQuota));
 
         // Ensure there were error notifications sent for each blocked request to both /startPublish and /publish
         DatabaseList<GameNotification> newNotifications = context.Database.GetNotificationsByUser(user, 1000, 0);
@@ -553,7 +553,7 @@ public class PublishEndpointsTests : GameServerTest
         EntityUploadRateLimitProperties timedLevelLimit = new()
         {
             Enabled = true,
-            EntityQuota = levelQuota,
+            UploadQuota = levelQuota,
             // Having this be 0 causes the server to always set the expiry date to now, making the expiry date be not null but always expired,
             // causing both /startPublish and /publish to always reset the limit after setting it in a previous /publish request, and allowing publish requests
             TimeSpanHours = 0,
@@ -567,14 +567,14 @@ public class PublishEndpointsTests : GameServerTest
         Assert.That(message.StatusCode, Is.EqualTo(OK));
 
         // Fill up quota
-        SpamSuccessfulUploads(timedLevelLimit.EntityQuota, client, 0);
+        SpamSuccessfulUploads(timedLevelLimit.UploadQuota, client, 0);
         
         // Try to upload more levels after exceeding quota
-        SpamSuccessfulUploads(uploadAttemptsAfterExceeding, client, timedLevelLimit.EntityQuota);
+        SpamSuccessfulUploads(uploadAttemptsAfterExceeding, client, timedLevelLimit.UploadQuota);
 
         // Check amount of levels
         DatabaseList<GameLevel> levelsByUser = context.Database.GetLevelsByUser(user, 1000, 0, new(TokenGame.LittleBigPlanet3), user);
-        Assert.That(levelsByUser.TotalItems, Is.EqualTo(timedLevelLimit.EntityQuota + uploadAttemptsAfterExceeding));
+        Assert.That(levelsByUser.TotalItems, Is.EqualTo(timedLevelLimit.UploadQuota + uploadAttemptsAfterExceeding));
 
         // Ensure there were no notifications sent
         DatabaseList<GameNotification> newNotifications = context.Database.GetNotificationsByUser(user, 1000, 0);

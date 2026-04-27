@@ -35,13 +35,13 @@ public class PhotoEndpoints : EndpointGroup
         EntityUploadRateLimitProperties uploadLimit = user.GetRolePermissionsForUser(config).PhotoUploadRateLimit;
         if (uploadLimit.Enabled)
         {
-            TimeSpan? rateLimitExpiresIn = database.GetRemainingTimeIfUploadRateLimitReached(user, GameDatabaseEntity.Photo, uploadLimit.EntityQuota);
+            TimeSpan? rateLimitExpiresIn = database.GetRemainingTimeIfUploadRateLimitReached(user, GameDatabaseEntity.Photo, uploadLimit.UploadQuota);
             if (rateLimitExpiresIn != null)
             {
                 dataContext.Database.AddErrorNotification
                 (
                     "Photo upload failed",
-                    $"You have uploaded too many photos recently! Your limit is {uploadLimit.EntityQuota} photos per {uploadLimit.TimeSpanHours} hours. " +
+                    $"You have uploaded too many photos recently! Your limit is {uploadLimit.UploadQuota} photos per {uploadLimit.TimeSpanHours} hours. " +
                     $"Try again in {rateLimitExpiresIn.Value.Hours} hours and {rateLimitExpiresIn.Value.Minutes} minutes.", 
                     user
                 );

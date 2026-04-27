@@ -83,12 +83,12 @@ public class PublishEndpoints : EndpointGroup
     {
         if (!levelLimit.Enabled) return false;
 
-        TimeSpan? rateLimitExpiresIn = dataContext.Database.GetRemainingTimeIfUploadRateLimitReached(user, GameDatabaseEntity.Photo, levelLimit.EntityQuota);
+        TimeSpan? rateLimitExpiresIn = dataContext.Database.GetRemainingTimeIfUploadRateLimitReached(user, GameDatabaseEntity.Photo, levelLimit.UploadQuota);
         if (rateLimitExpiresIn != null)
         {
             dataContext.Database.AddPublishFailNotification
             (
-                $"You have published too many levels recently! Your limit is {levelLimit.EntityQuota} levels per {levelLimit.TimeSpanHours} hours. " +
+                $"You have published too many levels recently! Your limit is {levelLimit.UploadQuota} levels per {levelLimit.TimeSpanHours} hours. " +
                 $"Try again in {rateLimitExpiresIn.Value.Hours} hours and {rateLimitExpiresIn.Value.Minutes} minutes.", 
                 levelTitle,
                 user

@@ -12,21 +12,21 @@ public class RolePermissions
     {
         Enabled = false,
         TimeSpanHours = 24,
-        EntityQuota = 10,
+        UploadQuota = 10,
     };
 
     public EntityUploadRateLimitProperties PhotoUploadRateLimit = new()
     {
         Enabled = false,
         TimeSpanHours = 24,
-        EntityQuota = 10,
+        UploadQuota = 10,
     };
 
     public EntityUploadRateLimitProperties PlaylistUploadRateLimit = new()
     {
         Enabled = false,
         TimeSpanHours = 24,
-        EntityQuota = 8,
+        UploadQuota = 8,
     };
 
     /// <summary>
