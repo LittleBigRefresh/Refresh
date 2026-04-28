@@ -83,7 +83,7 @@ public class PublishEndpoints : EndpointGroup
     {
         if (!levelLimit.Enabled) return false;
 
-        TimeSpan? rateLimitExpiresIn = dataContext.Database.GetRemainingTimeIfUploadRateLimitReached(user, GameDatabaseEntity.Photo, levelLimit.UploadQuota);
+        TimeSpan? rateLimitExpiresIn = dataContext.Database.GetRemainingTimeIfUploadRateLimitReached(user, GameDatabaseEntity.Level, levelLimit.UploadQuota);
         if (rateLimitExpiresIn != null)
         {
             dataContext.Database.AddPublishFailNotification
