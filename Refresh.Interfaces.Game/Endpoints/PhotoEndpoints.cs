@@ -93,6 +93,11 @@ public class PhotoEndpoints : EndpointGroup
         database.UploadPhoto(body, body.PhotoSubjects, user, level);
         if (level != null)
             dataContext.Cache.IncrementLevelPhotosByUser(user, level, 1, database);
+        
+        if (uploadLimit.Enabled)
+        {
+            database.IncrementUploadRateLimitForEntity(user, GameDatabaseEntity.Photo, uploadLimit.TimeSpanHours);
+        }
 
         return OK;
     }

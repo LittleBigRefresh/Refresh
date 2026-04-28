@@ -57,6 +57,10 @@ public class Lbp3PlaylistEndpoints : EndpointGroup
 
         // create the actual playlist and add it to the root playlist
         GamePlaylist playlist = dataContext.Database.CreatePlaylist(user, body);
+        if (uploadLimit.Enabled)
+        {
+            dataContext.Database.IncrementUploadRateLimitForEntity(user, GameDatabaseEntity.Playlist, uploadLimit.TimeSpanHours);
+        }
         dataContext.Database.AddPlaylistToPlaylist(playlist, rootPlaylist!);
 
         // return the playlist we just created to have the game open to it immediately

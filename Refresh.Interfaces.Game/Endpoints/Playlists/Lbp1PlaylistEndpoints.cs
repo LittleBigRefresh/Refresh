@@ -62,13 +62,13 @@ public class Lbp1PlaylistEndpoints : EndpointGroup
         
         GamePlaylist? parent = null;
         GamePlaylist? rootPlaylist = dataContext.Database.GetUserRootPlaylist(user);
+        EntityUploadRateLimitProperties uploadLimit = user.GetRolePermissionsForUser(config).PlaylistUploadRateLimit;
 
         // Don't block root playlist creation, as the game will otherwise spam requests and softlock
         if (rootPlaylist != null)
         {
             if (user.IsWriteBlocked(config)) return Unauthorized;
-            
-            EntityUploadRateLimitProperties uploadLimit = user.GetRolePermissionsForUser(config).PlaylistUploadRateLimit;
+
             if (uploadLimit.Enabled)
             {
                 TimeSpan? rateLimitExpiresIn = dataContext.Database.GetRemainingTimeIfUploadRateLimitReached(user, GameDatabaseEntity.Playlist, uploadLimit.UploadQuota);
@@ -110,6 +110,11 @@ public class Lbp1PlaylistEndpoints : EndpointGroup
 
         // Create the playlist, marking it as the root playlist if the user does not have one set already
         GamePlaylist playlist = dataContext.Database.CreatePlaylist(user, body, rootPlaylist == null);
+
+        if (rootPlaylist != null && uploadLimit.Enabled)
+        {
+            dataContext.Database.IncrementUploadRateLimitForEntity(user, GameDatabaseEntity.Playlist, uploadLimit.TimeSpanHours);
+        }
 
         // If there is a parent, add the new playlist to the parent
         if (parent != null) 
