@@ -15,6 +15,7 @@ using Refresh.Interfaces.APIv3.Endpoints.DataTypes.Response.Playlists;
 using Refresh.Interfaces.APIv3.Extensions;
 using Refresh.Core.RateLimits.Playlists;
 using Refresh.Core.Configuration;
+using Refresh.Database.Models;
 
 namespace Refresh.Interfaces.APIv3.Endpoints;
 
@@ -59,6 +60,20 @@ public class PlaylistApiEndpoints : EndpointGroup
     {
         if (user.IsWriteBlocked(config)) 
             return ApiAuthenticationError.ReadOnlyError;
+        
+        EntityUploadRateLimitProperties uploadLimit = user.GetRolePermissionsForUser(config).PlaylistUploadRateLimit;
+        if (uploadLimit.Enabled)
+        {
+            TimeSpan? rateLimitExpiresIn = dataContext.Database.GetRemainingTimeIfUploadRateLimitReached(user, GameDatabaseEntity.Playlist, uploadLimit.UploadQuota);
+            if (rateLimitExpiresIn != null)
+            {
+                return new ApiValidationError
+                (
+                    $"You have created too many playlists recently! Your limit is {uploadLimit.UploadQuota} playlists per {uploadLimit.TimeSpanHours} hours. "+
+                    $"Try again in {rateLimitExpiresIn.Value.Hours} hours and {rateLimitExpiresIn.Value.Minutes} minutes."
+                );
+            }
+        }
 
         ApiError? error = this.ValidatePlaylist(body, dataContext);
         if (error != null) return error;
@@ -85,6 +100,10 @@ public class PlaylistApiEndpoints : EndpointGroup
         }
 
         GamePlaylist playlist = dataContext.Database.CreatePlaylist(user, body, false);
+        if (uploadLimit.Enabled)
+        {
+            dataContext.Database.IncrementUploadRateLimitForEntity(user, GameDatabaseEntity.Playlist, uploadLimit.TimeSpanHours);
+        }
         dataContext.Database.AddPlaylistToPlaylist(playlist, parent);
 
         return ApiGamePlaylistResponse.FromOld(playlist, dataContext);
