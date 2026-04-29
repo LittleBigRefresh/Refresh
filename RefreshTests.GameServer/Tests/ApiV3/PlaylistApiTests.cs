@@ -9,6 +9,9 @@ using Refresh.Database.Models.Levels;
 using Refresh.Common.Constants;
 using Refresh.Common.Extensions;
 using Refresh.Database.Models.Assets;
+using Refresh.Core.Configuration;
+using Refresh.Database.Models;
+using System.Net;
 
 namespace RefreshTests.GameServer.Tests.ApiV3;
 
@@ -219,6 +222,88 @@ public class PlaylistApiTests : GameServerTest
             Assert.That(response!.Data, Is.Not.Null);
             Assert.That(response.Data!.IconHash, Is.EqualTo(icon.IsBlankHash() ? "0" : icon));
         }
+    }
+
+    [Test]
+    [TestCase(4, 4, 1)]
+    public void PlaylistUploadsGetRateLimitedTemporarily(int playlistQuota, int uploadAttemptsAfterExceeding, int timeSpanHours)
+    {
+        using TestContext context = this.GetServer();
+        GameUser user = context.CreateUser("PlaylistOTrolle");
+
+        // Prepare config
+        GameServerConfig config = context.Server.Value.GameServerConfig;
+        EntityUploadRateLimitProperties uploadConfig = new()
+        {
+            Enabled = true,
+            UploadQuota = playlistQuota,
+            TimeSpanHours = timeSpanHours,
+        };
+        config.NormalUserPermissions.PlaylistUploadRateLimit = uploadConfig;
+
+        using HttpClient client = context.GetAuthenticatedClient(TokenType.Api, user);
+        int publishAttempts = 0;
+
+        // Not blocked yet
+        Assert.That(context.Database.GetUploadRateLimit(user, GameDatabaseEntity.Playlist), Is.Null);
+        Assert.That(context.Database.GetRemainingTimeIfUploadRateLimitReached(user, GameDatabaseEntity.Playlist, uploadConfig.UploadQuota), Is.Null);
+
+        // Fill up half of quota
+        publishAttempts += SpamUploadPlaylists(uploadConfig.UploadQuota / 2, client);
+        context.Database.Refresh();
+
+        // There is rate-limit data in DB, but the rate-limit hasn't been triggered yet
+        EntityUploadRateLimit? uploadLimit = context.Database.GetUploadRateLimit(user, GameDatabaseEntity.Playlist);
+        Assert.That(uploadLimit, Is.Not.Null);
+        Assert.That(uploadLimit!.UploadCount, Is.EqualTo(uploadConfig.UploadQuota / 2));
+        Assert.That(context.Database.GetRemainingTimeIfUploadRateLimitReached(user, GameDatabaseEntity.Playlist, uploadConfig.UploadQuota), Is.Null);
+        
+        // Try to upload more playlists
+        publishAttempts += SpamUploadPlaylists(uploadConfig.UploadQuota / 2, client);
+        context.Database.Refresh();
+
+        // There is rate-limit data in DB, and the rate-limit has been triggered
+        uploadLimit = context.Database.GetUploadRateLimit(user, GameDatabaseEntity.Playlist);
+        Assert.That(uploadLimit, Is.Not.Null);
+        Assert.That(uploadLimit!.UploadCount, Is.EqualTo(uploadConfig.UploadQuota));
+        Assert.That(context.Database.GetRemainingTimeIfUploadRateLimitReached(user, GameDatabaseEntity.Playlist, uploadConfig.UploadQuota), Is.Not.Null);
+
+        // Playlists are blocked
+        publishAttempts += SpamUploadPlaylists(uploadAttemptsAfterExceeding, client, BadRequest);
+        context.Database.Refresh();
+
+        // Check amount of playlists
+        Assert.That(context.Database.GetTotalPlaylistsByAuthor(user), Is.EqualTo(uploadConfig.UploadQuota));
+
+        // Expire limit naturally by trying to publish again later
+        context.Time.TimestampMilliseconds = 1000 * 60 * 60 * timeSpanHours + 10;
+        publishAttempts += SpamUploadPlaylists(uploadAttemptsAfterExceeding, client);
+        context.Database.Refresh();
+
+        // there are more playlists now
+        Assert.That(context.Database.GetTotalPlaylistsByAuthor(user), Is.EqualTo(uploadConfig.UploadQuota * 2));
+    }
+
+    private int SpamUploadPlaylists(int uploads, HttpClient client, HttpStatusCode expectedStatus = OK)
+    {
+        for (int i = 0; i < uploads; i++)
+        {
+            // Playlist requests currently don't need to reference unique assets
+            ApiPlaylistCreationRequest playlist = new()
+            {
+                Name = "hi",
+                Icon = "0",
+                Description = "hi",
+                Location = GameLocation.Random,
+            };
+
+            bool expectSuccess = expectedStatus == OK;
+            ApiResponse<ApiGamePlaylistResponse>? response = client.PostData<ApiGamePlaylistResponse>($"/api/v3/playlists", playlist, expectSuccess, !expectSuccess);
+            if (expectSuccess) Assert.That(response?.Data, Is.Not.Null);
+            else               Assert.That(response?.Error, Is.Not.Null);
+        }
+
+        return uploads;
     }
 
     [Test]
