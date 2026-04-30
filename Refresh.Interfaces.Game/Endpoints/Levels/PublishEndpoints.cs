@@ -12,6 +12,7 @@ using Refresh.Core.Authentication.Permission;
 using Refresh.Core.Configuration;
 using Refresh.Core.Types.Data;
 using Refresh.Database;
+using Refresh.Database.Models;
 using Refresh.Database.Models.Assets;
 using Refresh.Database.Models.Authentication;
 using Refresh.Database.Models.Levels;
@@ -78,38 +79,24 @@ public class PublishEndpoints : EndpointGroup
         return true;
     }
 
-    private static bool IsTimedLevelLimitReached(DataContext dataContext, GameUser user, string levelTitle, TimedLevelUploadLimitProperties config, DateTimeOffset now)
+    private static bool IsTimedLevelLimitReached(DataContext dataContext, GameUser user, string levelTitle, EntityUploadRateLimitProperties levelLimit)
     {
-        if (!config.Enabled || user.TimedLevelUploads <= 0 || user.TimedLevelUploadExpiryDate == null)
-        {
-            return false;
-        }
+        if (!levelLimit.Enabled) return false;
 
-        DateTimeOffset expiryDate = user.TimedLevelUploadExpiryDate.Value;
-
-        // If the expiration date has expired (less than now), reset user's limit and continue.
-        if (now >= expiryDate)
+        TimeSpan? rateLimitExpiresIn = dataContext.Database.GetRemainingTimeIfUploadRateLimitReached(user, GameDatabaseEntity.Level, levelLimit.UploadQuota);
+        if (rateLimitExpiresIn != null)
         {
-            dataContext.Database.ResetTimedLevelLimit(user);
-            return false;
-        }
-        // If expiration date has not expired yet and the user has reached the limit, block.
-        else if (user.TimedLevelUploads >= config.LevelQuota)
-        {
-            TimeSpan remainingTime = expiryDate - now;
             dataContext.Database.AddPublishFailNotification
             (
-                $"You have reached the timed level upload limit of {config.LevelQuota} levels per {config.TimeSpanHours} hours. " +
-                $"Your limit will expire in around {remainingTime.Hours} hours and {remainingTime.Minutes} minutes. After that, try publishing your level again!", 
-                levelTitle, 
+                $"You have published too many levels recently! Your limit is {levelLimit.UploadQuota} levels per {levelLimit.TimeSpanHours} hours. " +
+                $"Try again in {rateLimitExpiresIn.Value.Hours} hours and {rateLimitExpiresIn.Value.Minutes} minutes.", 
+                levelTitle,
                 user
             );
             return true;
         }
-        else
-        {
-            return false;
-        }
+        
+        return false;
     }
 
     [GameEndpoint("startPublish", ContentType.Xml, HttpMethods.Post)]
@@ -119,7 +106,6 @@ public class PublishEndpoints : EndpointGroup
         GameLevelRequest body,
         DataContext dataContext,
         GameServerConfig config,
-        IDateTimeProvider dateTimeProvider,
         GameUser user)
     {
         if (dataContext.User!.IsWriteBlocked(config))
@@ -128,7 +114,7 @@ public class PublishEndpoints : EndpointGroup
             return Unauthorized;
         }
         
-        if (IsTimedLevelLimitReached(dataContext, dataContext.User!, body.Title, user.GetRolePermissionsForUser(config).TimedLevelUploadLimits, dateTimeProvider.Now)) 
+        if (IsTimedLevelLimitReached(dataContext, dataContext.User!, body.Title, user.GetRolePermissionsForUser(config).LevelUploadRateLimit)) 
             return Unauthorized;
 
         //If verifying the request fails, return BadRequest
@@ -177,14 +163,13 @@ public class PublishEndpoints : EndpointGroup
         GameLevelRequest body,
         DataContext dataContext,
         GameUser user,
-        GameServerConfig config,
-        IDateTimeProvider dateTimeProvider)
+        GameServerConfig config)
     {
         if (user.IsWriteBlocked(config))
             return Unauthorized;
         
-        TimedLevelUploadLimitProperties timedLevelLimit = user.GetRolePermissionsForUser(config).TimedLevelUploadLimits;
-        if (IsTimedLevelLimitReached(dataContext, user, body.Title, timedLevelLimit, dateTimeProvider.Now))
+        EntityUploadRateLimitProperties timedLevelLimit = user.GetRolePermissionsForUser(config).LevelUploadRateLimit;
+        if (IsTimedLevelLimitReached(dataContext, user, body.Title, timedLevelLimit))
             return Unauthorized;
 
         //If verifying the request fails, return BadRequest
@@ -260,7 +245,7 @@ public class PublishEndpoints : EndpointGroup
         // don't want to increment for failed uploads
         if (timedLevelLimit.Enabled)
         {
-            dataContext.Database.IncrementTimedLevelLimit(user, timedLevelLimit.TimeSpanHours);
+            dataContext.Database.IncrementUploadRateLimitForEntity(user, GameDatabaseEntity.Level, timedLevelLimit.TimeSpanHours);
         }
 
         // Update the modded status of the level

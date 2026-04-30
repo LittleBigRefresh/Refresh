@@ -11,6 +11,7 @@ using Refresh.Core.RateLimits.Photos;
 using Refresh.Core.Services;
 using Refresh.Core.Types.Data;
 using Refresh.Database;
+using Refresh.Database.Models;
 using Refresh.Database.Models.Assets;
 using Refresh.Database.Models.Levels;
 using Refresh.Database.Models.Photos;
@@ -23,13 +24,30 @@ public class PhotoEndpoints : EndpointGroup
 {
     [GameEndpoint("uploadPhoto", HttpMethods.Post, ContentType.Xml)]
     [RequireEmailVerified]
-    [RateLimitSettings(500, 12, 400, "upload-photo")]
+    [RateLimitSettings(300, 30, 240, "upload-photo")]
     public Response UploadPhoto(RequestContext context, SerializedPhoto body, GameDatabaseContext database,
         GameUser user, IDataStore dataStore,
         DataContext dataContext, AipiService aipi, GameServerConfig config)
     {
         if (user.IsWriteBlocked(config))
             return Unauthorized;
+        
+        EntityUploadRateLimitProperties uploadLimit = user.GetRolePermissionsForUser(config).PhotoUploadRateLimit;
+        if (uploadLimit.Enabled)
+        {
+            TimeSpan? rateLimitExpiresIn = database.GetRemainingTimeIfUploadRateLimitReached(user, GameDatabaseEntity.Photo, uploadLimit.UploadQuota);
+            if (rateLimitExpiresIn != null)
+            {
+                dataContext.Database.AddErrorNotification
+                (
+                    "Photo upload failed",
+                    $"You have uploaded too many photos recently! Your limit is {uploadLimit.UploadQuota} photos per {uploadLimit.TimeSpanHours} hours. " +
+                    $"Try again in {rateLimitExpiresIn.Value.Hours} hours and {rateLimitExpiresIn.Value.Minutes} minutes.", 
+                    user
+                );
+                return Unauthorized;
+            }
+        }
         
         if (!dataStore.ExistsInStore(body.SmallHash) ||
             !dataStore.ExistsInStore(body.MediumHash) ||
@@ -75,6 +93,11 @@ public class PhotoEndpoints : EndpointGroup
         database.UploadPhoto(body, body.PhotoSubjects, user, level);
         if (level != null)
             dataContext.Cache.IncrementLevelPhotosByUser(user, level, 1, database);
+        
+        if (uploadLimit.Enabled)
+        {
+            database.IncrementUploadRateLimitForEntity(user, GameDatabaseEntity.Photo, uploadLimit.TimeSpanHours);
+        }
 
         return OK;
     }

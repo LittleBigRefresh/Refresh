@@ -8,6 +8,10 @@ using Refresh.Database.Models.Photos;
 using Refresh.Interfaces.Game.Types.Lists;
 using Refresh.Database.Helpers;
 using System.Security.Cryptography;
+using Refresh.Core.Configuration;
+using Refresh.Database.Models;
+using System.Text;
+using System.Net;
 
 namespace RefreshTests.GameServer.Tests.Photos;
 
@@ -507,5 +511,116 @@ public class PhotoEndpointsTests : GameServerTest
         message = client.PostAsync($"/lbp/uploadPhoto", new StringContent(photo2.AsXML())).Result;
         Assert.That(message.StatusCode, Is.EqualTo(BadRequest));
         Assert.That(context.Database.GetNotificationCountByUser(user), Is.EqualTo(1));
+    }
+
+    [Test]
+    [TestCase(4, 4, 1)]
+    public void PhotoUploadsGetRateLimitedTemporarily(int photoQuota, int uploadAttemptsAfterExceeding, int timeSpanHours)
+    {
+        using TestContext context = this.GetServer();
+        GameUser user = context.CreateUser("thepublisher");
+        GameLevel level = context.CreateLevel(user);
+
+        // Prepare config
+        GameServerConfig config = context.Server.Value.GameServerConfig;
+        EntityUploadRateLimitProperties uploadConfig = new()
+        {
+            Enabled = true,
+            UploadQuota = photoQuota,
+            TimeSpanHours = timeSpanHours,
+        };
+        config.NormalUserPermissions.PhotoUploadRateLimit = uploadConfig;
+
+        using HttpClient client = context.GetAuthenticatedClient(TokenType.Game, user);
+        int publishAttempts = 0;
+
+        // Not blocked yet
+        Assert.That(context.Database.GetUploadRateLimit(user, GameDatabaseEntity.Photo), Is.Null);
+        Assert.That(context.Database.GetRemainingTimeIfUploadRateLimitReached(user, GameDatabaseEntity.Photo, uploadConfig.UploadQuota), Is.Null);
+
+        // Fill up half of quota
+        publishAttempts += SpamUploadUniquePhotos(uploadConfig.UploadQuota / 2, client, publishAttempts, level);
+        context.Database.Refresh();
+
+        // There is rate-limit data in DB, but the rate-limit hasn't been triggered yet
+        EntityUploadRateLimit? uploadLimit = context.Database.GetUploadRateLimit(user, GameDatabaseEntity.Photo);
+        Assert.That(uploadLimit, Is.Not.Null);
+        Assert.That(uploadLimit!.UploadCount, Is.EqualTo(uploadConfig.UploadQuota / 2));
+        Assert.That(context.Database.GetRemainingTimeIfUploadRateLimitReached(user, GameDatabaseEntity.Photo, uploadConfig.UploadQuota), Is.Null);
+        
+        // Try to upload more photos to reach quota
+        publishAttempts += SpamUploadUniquePhotos(uploadConfig.UploadQuota / 2, client, publishAttempts, level);
+        context.Database.Refresh();
+
+        // Ensure there were no notifications sent
+        Assert.That(context.Database.GetNotificationCountByUser(user), Is.Zero);
+
+        // There is rate-limit data in DB, and the rate-limit has been triggered
+        uploadLimit = context.Database.GetUploadRateLimit(user, GameDatabaseEntity.Photo);
+        Assert.That(uploadLimit, Is.Not.Null);
+        Assert.That(uploadLimit!.UploadCount, Is.EqualTo(uploadConfig.UploadQuota));
+        Assert.That(context.Database.GetRemainingTimeIfUploadRateLimitReached(user, GameDatabaseEntity.Photo, uploadConfig.UploadQuota), Is.Not.Null);
+
+        // photos are blocked
+        publishAttempts += SpamUploadUniquePhotos(uploadAttemptsAfterExceeding, client, publishAttempts, level, Unauthorized);
+        context.Database.Refresh();
+
+        // Check amount of photos, and ensure there were notifications sent for every failed photo
+        Assert.That(context.Database.GetTotalPhotosByUser(user), Is.EqualTo(uploadConfig.UploadQuota));
+        Assert.That(context.Database.GetNotificationCountByUser(user), Is.EqualTo(uploadAttemptsAfterExceeding));
+
+        // Expire limit naturally by trying to publish again later
+        context.Time.TimestampMilliseconds = 1000 * 60 * 60 * timeSpanHours + 10;
+        publishAttempts += SpamUploadUniquePhotos(uploadAttemptsAfterExceeding, client, publishAttempts, level);
+        context.Database.Refresh();
+
+        // there are more levels now, and no new notifications
+        Assert.That(context.Database.GetTotalPhotosByUser(user), Is.EqualTo(uploadConfig.UploadQuota * 2));
+        Assert.That(context.Database.GetNotificationCountByUser(user), Is.EqualTo(uploadAttemptsAfterExceeding));
+    }
+
+    private int SpamUploadUniquePhotos(int uploads, HttpClient client, int startIndex, GameLevel level, HttpStatusCode expectedStatus = OK)
+    {
+        for (int i = 0; i < uploads; i++)
+        {
+            // Upload level
+            SerializedPhoto photo = PrepareUniquePhotoUploadRequest(client, level, startIndex + i);
+
+            HttpResponseMessage message = client.PostAsync($"/lbp/uploadPhoto", new StringContent(photo.AsXML())).Result;
+            Assert.That(message.StatusCode, Is.EqualTo(expectedStatus));
+        }
+
+        return uploads;
+    }
+
+    private SerializedPhoto PrepareUniquePhotoUploadRequest(HttpClient client, GameLevel level, int uniqueValue)
+    {
+        // upload """photo"""
+        ReadOnlySpan<byte> imageResource = new(Encoding.ASCII.GetBytes($"TEX  {uniqueValue}"));
+        string imageHash = BitConverter.ToString(SHA1.HashData(imageResource)).Replace("-", "").ToLower();
+        HttpResponseMessage message = client.PostAsync($"/lbp/upload/{imageHash}", new ReadOnlyMemoryContent(imageResource.ToArray())).Result;
+        Assert.That(message.StatusCode, Is.EqualTo(OK));
+
+        // upload """plan"""
+        ReadOnlySpan<byte> planResource = new(Encoding.ASCII.GetBytes($"PLNb {uniqueValue}"));
+        string planHash = BitConverter.ToString(SHA1.HashData(planResource)).Replace("-", "").ToLower();
+        message = client.PostAsync($"/lbp/upload/{planHash}", new ReadOnlyMemoryContent(planResource.ToArray())).Result;
+        Assert.That(message.StatusCode, Is.EqualTo(OK));
+
+        // prepare request body
+        return new()
+        {
+            Timestamp = DateTimeOffset.UtcNow.ToUnixTimeSeconds(),
+            SmallHash = imageHash,
+            MediumHash = imageHash,
+            LargeHash = imageHash,
+            PlanHash = planHash,
+            Level = new SerializedPhotoLevel
+            {
+                LevelId = level.LevelId,
+                Title = level.Title,
+                Type = "user",
+            },
+        };
     }
 }

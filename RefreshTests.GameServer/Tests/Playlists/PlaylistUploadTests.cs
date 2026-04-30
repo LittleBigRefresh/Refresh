@@ -1,3 +1,4 @@
+using System.Net;
 using Refresh.Common.Constants;
 using Refresh.Core.Configuration;
 using Refresh.Database;
@@ -25,22 +26,10 @@ public class PlaylistUploadTests : GameServerTest
         HttpClient client = context.GetAuthenticatedClient(TokenType.Game, TokenGame.LittleBigPlanet1, TokenPlatform.PS3, user);
         
         // Create root playlist
-        SerializedLbp1Playlist request = new()
-        {
-            Name = "root",
-            Icon = ValidIconGuid,
-            Description = "DESCRIPTION",
-            Location = new GameLocation(),
-        };
-
-        HttpResponseMessage message = client.PostAsync("/lbp/createPlaylist", new StringContent(request.AsXML())).Result;
-        Assert.That(message.StatusCode, Is.EqualTo(OK));
-
-        SerializedLbp1Playlist rootResponse = message.Content.ReadAsXML<SerializedLbp1Playlist>();
-        Assert.That(rootResponse.Name, Is.EqualTo("root"));
+        GamePlaylist root = SuccessfullyUploadRootPlaylistViaLBP1(client, user, context.Database);
 
         // Create actual playlist
-        request = new()
+        SerializedLbp1Playlist request = new()
         {
             Name = "real",
             Icon = ValidIconGuid,
@@ -48,18 +37,13 @@ public class PlaylistUploadTests : GameServerTest
             Location = new GameLocation(),
         };
 
-        message = client.PostAsync($"/lbp/createPlaylist?parent_id={rootResponse.Id}", new StringContent(request.AsXML())).Result;
+        HttpResponseMessage message = client.PostAsync($"/lbp/createPlaylist?parent_id={root.PlaylistId}", new StringContent(request.AsXML())).Result;
         Assert.That(message.StatusCode, Is.EqualTo(OK));
 
         SerializedLbp1Playlist subResponse = message.Content.ReadAsXML<SerializedLbp1Playlist>();
         Assert.That(subResponse.Name, Is.EqualTo("real"));
 
-        // Ensure the playlists are properly fetchable
-        GamePlaylist? root = context.Database.GetUserRootPlaylist(user);
-        Assert.That(root, Is.Not.Null);
-        Assert.That(root!.PlaylistId, Is.EqualTo(rootResponse.Id));
-        Assert.That(root!.PublisherId, Is.EqualTo(user.UserId));
-
+        // Ensure the playlists are properly fetchable (root by itself is already asserted in its helper method)
         DatabaseList<GamePlaylist> playlists = context.Database.GetPlaylistsByAuthor(user, 0, 10);
         Assert.That(playlists.Items.Count, Is.EqualTo(1));
 
@@ -83,6 +67,31 @@ public class PlaylistUploadTests : GameServerTest
         GamePlaylist? updated = context.Database.GetPlaylistById(subResponse.Id);
         Assert.That(updated, Is.Not.Null);
         Assert.That(updated!.Name, Is.EqualTo("legit"));
+    }
+
+    private GamePlaylist SuccessfullyUploadRootPlaylistViaLBP1(HttpClient client, GameUser user, GameDatabaseContext database)
+    {
+        SerializedLbp1Playlist request = new()
+        {
+            Name = "root",
+            Icon = ValidIconGuid,
+            Description = "DESCRIPTION",
+            Location = new GameLocation(),
+        };
+
+        HttpResponseMessage message = client.PostAsync("/lbp/createPlaylist", new StringContent(request.AsXML())).Result;
+        Assert.That(message.StatusCode, Is.EqualTo(OK));
+
+        SerializedLbp1Playlist rootResponse = message.Content.ReadAsXML<SerializedLbp1Playlist>();
+        Assert.That(rootResponse.Name, Is.EqualTo("root"));
+
+        GamePlaylist? root = database.GetUserRootPlaylist(user);
+        Assert.That(root, Is.Not.Null);
+        Assert.That(root!.IsRoot, Is.True);
+        Assert.That(root!.PlaylistId, Is.EqualTo(rootResponse.Id));
+        Assert.That(root!.Name, Is.EqualTo("root"));
+
+        return root;
     }
 
     [Test]
@@ -349,5 +358,110 @@ public class PlaylistUploadTests : GameServerTest
         GamePlaylist? updated = context.Database.GetPlaylistById(response.Id);
         Assert.That(updated, Is.Not.Null);
         Assert.That(updated!.IconHash, Is.EqualTo(isValid ? iconHash : "0"));
+    }
+
+    [Test]
+    [TestCase(4, 4, 1)]
+    public void PlaylistUploadsGetRateLimitedTemporarily(int playlistQuota, int uploadAttemptsAfterExceeding, int timeSpanHours)
+    {
+        using TestContext context = this.GetServer();
+        GameUser user = context.CreateUser("PlaylistOTrolle");
+
+        // Prepare config
+        GameServerConfig config = context.Server.Value.GameServerConfig;
+        EntityUploadRateLimitProperties uploadConfig = new()
+        {
+            Enabled = true,
+            UploadQuota = playlistQuota,
+            TimeSpanHours = timeSpanHours,
+        };
+        config.NormalUserPermissions.PlaylistUploadRateLimit = uploadConfig;
+
+        using HttpClient client = context.GetAuthenticatedClient(TokenType.Game, user);
+        int publishAttempts = 0;
+
+        // create root via LBP1 first; since root doesn't count towards the rate-limit, we can, this way, both ensure that the rate-limit properly
+        // starts tracking the spam uploads below, and we can properly ensure that roots do, infact, not count towards the rate-limit here
+        SuccessfullyUploadRootPlaylistViaLBP1(client, user, context.Database);
+
+        // Not blocked yet
+        Assert.That(context.Database.GetUploadRateLimit(user, GameDatabaseEntity.Playlist), Is.Null);
+        Assert.That(context.Database.GetRemainingTimeIfUploadRateLimitReached(user, GameDatabaseEntity.Playlist, uploadConfig.UploadQuota), Is.Null);
+
+        // Fill up half of quota in lbp1
+        publishAttempts += SpamUploadPlaylistsInLBP1(uploadConfig.UploadQuota / 2, client);
+        context.Database.Refresh();
+
+        // There is rate-limit data in DB, but the rate-limit hasn't been triggered yet
+        EntityUploadRateLimit? uploadLimit = context.Database.GetUploadRateLimit(user, GameDatabaseEntity.Playlist);
+        Assert.That(uploadLimit, Is.Not.Null);
+        Assert.That(uploadLimit!.UploadCount, Is.EqualTo(uploadConfig.UploadQuota / 2));
+        Assert.That(context.Database.GetRemainingTimeIfUploadRateLimitReached(user, GameDatabaseEntity.Playlist, uploadConfig.UploadQuota), Is.Null);
+        
+        // Try to upload more playlists (in lbp3 now) to reach quota, this way we also ensure that both endpoints share the same rate-limit
+        publishAttempts += SpamUploadPlaylistsInLBP3(uploadConfig.UploadQuota / 2, client);
+        context.Database.Refresh();
+
+        // Ensure there were no notifications sent
+        Assert.That(context.Database.GetNotificationCountByUser(user), Is.Zero);
+
+        // There is rate-limit data in DB, and the rate-limit has been triggered
+        uploadLimit = context.Database.GetUploadRateLimit(user, GameDatabaseEntity.Playlist);
+        Assert.That(uploadLimit, Is.Not.Null);
+        Assert.That(uploadLimit!.UploadCount, Is.EqualTo(uploadConfig.UploadQuota));
+        Assert.That(context.Database.GetRemainingTimeIfUploadRateLimitReached(user, GameDatabaseEntity.Playlist, uploadConfig.UploadQuota), Is.Not.Null);
+
+        // Playlists are blocked
+        publishAttempts += SpamUploadPlaylistsInLBP1(uploadAttemptsAfterExceeding, client, Unauthorized);
+        context.Database.Refresh();
+
+        // Check amount of playlists
+        Assert.That(context.Database.GetTotalPlaylistsByAuthor(user), Is.EqualTo(uploadConfig.UploadQuota));
+
+        // Expire limit naturally by trying to publish again later
+        context.Time.TimestampMilliseconds = 1000 * 60 * 60 * timeSpanHours + 10;
+        publishAttempts += SpamUploadPlaylistsInLBP3(uploadAttemptsAfterExceeding, client);
+        context.Database.Refresh();
+
+        // there are more playlists now
+        Assert.That(context.Database.GetTotalPlaylistsByAuthor(user), Is.EqualTo(uploadConfig.UploadQuota * 2));
+    }
+
+    private int SpamUploadPlaylistsInLBP1(int uploads, HttpClient client, HttpStatusCode expectedStatus = OK)
+    {
+        for (int i = 0; i < uploads; i++)
+        {
+            // Playlist requests currently don't need to reference unique assets
+            SerializedLbp1Playlist playlist = new()
+            {
+                Name = "hi",
+                Icon = "0",
+                Description = "i'm not gonna stop spamming playlists",
+                Location = GameLocation.Random,
+            };
+
+            HttpResponseMessage message = client.PostAsync($"/lbp/createPlaylist", new StringContent(playlist.AsXML())).Result;
+            Assert.That(message.StatusCode, Is.EqualTo(expectedStatus));
+        }
+
+        return uploads;
+    }
+
+    private int SpamUploadPlaylistsInLBP3(int uploads, HttpClient client, HttpStatusCode expectedStatus = OK)
+    {
+        for (int i = 0; i < uploads; i++)
+        {
+            // Playlist requests currently don't need to reference unique assets
+            SerializedLbp3Playlist playlist = new()
+            {
+                Name = "hi",
+                Description = "i didn't stop spamming playlists",
+            };
+
+            HttpResponseMessage message = client.PostAsync($"/lbp/playlists", new StringContent(playlist.AsXML())).Result;
+            Assert.That(message.StatusCode, Is.EqualTo(expectedStatus));
+        }
+
+        return uploads;
     }
 }

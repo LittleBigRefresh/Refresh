@@ -17,6 +17,7 @@ using Refresh.Interfaces.Game.Types.Lists;
 using Refresh.Interfaces.Game.Types.Playlists;
 using Refresh.Core.RateLimits.Playlists;
 using Refresh.Core.RateLimits.Relations;
+using Refresh.Database.Models;
 
 namespace Refresh.Interfaces.Game.Endpoints.Playlists;
 
@@ -30,6 +31,17 @@ public class Lbp3PlaylistEndpoints : EndpointGroup
     {
         if (user.IsWriteBlocked(config))
             return Unauthorized;
+            
+        EntityUploadRateLimitProperties uploadLimit = user.GetRolePermissionsForUser(config).PlaylistUploadRateLimit;
+        if (uploadLimit.Enabled)
+        {
+            TimeSpan? rateLimitExpiresIn = dataContext.Database.GetRemainingTimeIfUploadRateLimitReached(user, GameDatabaseEntity.Playlist, uploadLimit.UploadQuota);
+            if (rateLimitExpiresIn != null)
+            {
+                // no need for a notification, because playlists are cheap, especially in lbp3
+                return Unauthorized;
+            }
+        }
 
         GamePlaylist? rootPlaylist = dataContext.Database.GetUserRootPlaylist(user);
 
@@ -45,6 +57,10 @@ public class Lbp3PlaylistEndpoints : EndpointGroup
 
         // create the actual playlist and add it to the root playlist
         GamePlaylist playlist = dataContext.Database.CreatePlaylist(user, body);
+        if (uploadLimit.Enabled)
+        {
+            dataContext.Database.IncrementUploadRateLimitForEntity(user, GameDatabaseEntity.Playlist, uploadLimit.TimeSpanHours);
+        }
         dataContext.Database.AddPlaylistToPlaylist(playlist, rootPlaylist!);
 
         // return the playlist we just created to have the game open to it immediately

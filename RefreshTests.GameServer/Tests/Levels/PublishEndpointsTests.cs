@@ -12,6 +12,9 @@ using Refresh.Interfaces.APIv3.Endpoints.DataTypes.Request;
 using Refresh.Interfaces.Game.Endpoints.DataTypes.Request;
 using Refresh.Interfaces.Game.Endpoints.DataTypes.Response;
 using Refresh.Interfaces.Game.Types.Levels;
+using System.Security.Cryptography;
+using System.Text;
+using System.Net;
 
 namespace RefreshTests.GameServer.Tests.Levels;
 
@@ -494,116 +497,103 @@ public class PublishEndpointsTests : GameServerTest
     }
 
     [Test]
-    [TestCase(2, 2)]
-    [Ignore("needs to change lvl hash every iteration")] // TODO
-    public void CantPublishAfterExceedingTimedLevelLimit(int levelQuota, int uploadAttemptsAfterExceeding)
+    [TestCase(4, 4, 1)]
+    public void LevelUploadsGetRateLimitedTemporarily(int levelQuota, int uploadAttemptsAfterExceeding, int timeSpanHours)
     {
         using TestContext context = this.GetServer();
         GameUser user = context.CreateUser("thepublisher");
 
         // Prepare config
         GameServerConfig config = context.Server.Value.GameServerConfig;
-        TimedLevelUploadLimitProperties timedLevelLimit = new()
+        EntityUploadRateLimitProperties uploadConfig = new()
         {
             Enabled = true,
-            LevelQuota = levelQuota,
-            TimeSpanHours = 1,
+            UploadQuota = levelQuota,
+            TimeSpanHours = timeSpanHours,
         };
-        config.NormalUserPermissions.TimedLevelUploadLimits = timedLevelLimit;
+        config.NormalUserPermissions.LevelUploadRateLimit = uploadConfig;
 
         using HttpClient client = context.GetAuthenticatedClient(TokenType.Game, user);
+        int publishAttempts = 0;
 
-        // Upload level asset
-        HttpResponseMessage assetUploadMessage = client.PostAsync($"/lbp/upload/{TEST_ASSET_HASH}", new ReadOnlyMemoryContent("LVLb"u8.ToArray())).Result;
-        Assert.That(assetUploadMessage.StatusCode, Is.EqualTo(OK));
+        // Not blocked yet
+        Assert.That(context.Database.GetUploadRateLimit(user, GameDatabaseEntity.Level), Is.Null);
+        Assert.That(context.Database.GetRemainingTimeIfUploadRateLimitReached(user, GameDatabaseEntity.Level, uploadConfig.UploadQuota), Is.Null);
 
-        // Fill up quota
-        SpamSuccessfulUploads(timedLevelLimit.LevelQuota, client);
+        // Fill up half of quota
+        publishAttempts += SpamPublishUniqueLevels(uploadConfig.UploadQuota / 2, client, publishAttempts);
+        context.Database.Refresh();
+
+        // There is rate-limit data in DB, but the rate-limit hasn't been triggered yet
+        EntityUploadRateLimit? uploadLimit = context.Database.GetUploadRateLimit(user, GameDatabaseEntity.Level);
+        Assert.That(uploadLimit, Is.Not.Null);
+        Assert.That(uploadLimit!.UploadCount, Is.EqualTo(uploadConfig.UploadQuota / 2));
+        Assert.That(context.Database.GetRemainingTimeIfUploadRateLimitReached(user, GameDatabaseEntity.Level, uploadConfig.UploadQuota), Is.Null);
         
-        // Try to upload more levels after exceeding quota
-        for (int i = 0; i < uploadAttemptsAfterExceeding; i++)
-        {
-            GameLevelRequest level = CreateValidTestLevel(i + 1);
-
-            HttpResponseMessage message = client.PostAsync("/lbp/startPublish", new StringContent(level.AsXML())).Result;
-            Assert.That(message.StatusCode, Is.EqualTo(Unauthorized));
-            message = client.PostAsync("/lbp/publish", new StringContent(level.AsXML())).Result;
-            Assert.That(message.StatusCode, Is.EqualTo(Unauthorized));
-        }
-
-        // Check amount of levels
-        DatabaseList<GameLevel> levelsByUser = context.Database.GetLevelsByUser(user, 1000, 0, new(TokenGame.LittleBigPlanet3), user);
-        Assert.That(levelsByUser.TotalItems, Is.EqualTo(timedLevelLimit.LevelQuota));
-
-        // Ensure there were error notifications sent for each blocked request to both /startPublish and /publish
-        DatabaseList<GameNotification> newNotifications = context.Database.GetNotificationsByUser(user, 1000, 0);
-        Assert.That(newNotifications.TotalItems, Is.EqualTo(uploadAttemptsAfterExceeding * 2));
-    }
-
-    [Test]
-    [TestCase(2, 2)]
-    [Ignore("needs to change lvl hash every iteration")] // TODO
-    public void ResetTimedLevelLimitAfterExpiry(int levelQuota, int uploadAttemptsAfterExceeding)
-    {
-        using TestContext context = this.GetServer();
-        GameUser user = context.CreateUser("thepublisher");
-
-        // Prepare config
-        GameServerConfig config = context.Server.Value.GameServerConfig;
-        TimedLevelUploadLimitProperties timedLevelLimit = new()
-        {
-            Enabled = true,
-            LevelQuota = levelQuota,
-            // Having this be 0 causes the server to always set the expiry date to now, making the expiry date be not null but always expired,
-            // causing both /startPublish and /publish to always reset the limit after setting it in a previous /publish request, and allowing publish requests
-            TimeSpanHours = 0,
-        };
-        config.NormalUserPermissions.TimedLevelUploadLimits = timedLevelLimit;
-
-        using HttpClient client = context.GetAuthenticatedClient(TokenType.Game, user);
-
-        // Upload level asset
-        HttpResponseMessage message = client.PostAsync($"/lbp/upload/{TEST_ASSET_HASH}", new ReadOnlyMemoryContent("LVLb"u8.ToArray())).Result;
-        Assert.That(message.StatusCode, Is.EqualTo(OK));
-
-        // Fill up quota
-        SpamSuccessfulUploads(timedLevelLimit.LevelQuota, client);
-        
-        // Try to upload more levels after exceeding quota
-        SpamSuccessfulUploads(uploadAttemptsAfterExceeding, client);
-
-        // Check amount of levels
-        DatabaseList<GameLevel> levelsByUser = context.Database.GetLevelsByUser(user, 1000, 0, new(TokenGame.LittleBigPlanet3), user);
-        Assert.That(levelsByUser.TotalItems, Is.EqualTo(timedLevelLimit.LevelQuota + uploadAttemptsAfterExceeding));
+        // Try to upload more levels to reach quota
+        publishAttempts += SpamPublishUniqueLevels(uploadConfig.UploadQuota / 2, client, publishAttempts);
+        context.Database.Refresh();
 
         // Ensure there were no notifications sent
-        DatabaseList<GameNotification> newNotifications = context.Database.GetNotificationsByUser(user, 1000, 0);
-        Assert.That(newNotifications.TotalItems, Is.EqualTo(0));
+        Assert.That(context.Database.GetNotificationCountByUser(user), Is.Zero);
+
+        // There is rate-limit data in DB, and the rate-limit has been triggered
+        uploadLimit = context.Database.GetUploadRateLimit(user, GameDatabaseEntity.Level);
+        Assert.That(uploadLimit, Is.Not.Null);
+        Assert.That(uploadLimit!.UploadCount, Is.EqualTo(uploadConfig.UploadQuota));
+        Assert.That(context.Database.GetRemainingTimeIfUploadRateLimitReached(user, GameDatabaseEntity.Level, uploadConfig.UploadQuota), Is.Not.Null);
+
+        // levels are blocked
+        publishAttempts += SpamPublishUniqueLevels(uploadAttemptsAfterExceeding, client, publishAttempts, Unauthorized);
+        context.Database.Refresh();
+
+        // Check amount of levels, and ensure there were notifications sent for every failed level
+        Assert.That(context.Database.GetTotalLevelsByUser(user), Is.EqualTo(uploadConfig.UploadQuota));
+        Assert.That(context.Database.GetNotificationCountByUser(user), Is.EqualTo(uploadAttemptsAfterExceeding * 2));
+
+        // Expire limit naturally by trying to publish again later
+        context.Time.TimestampMilliseconds = 1000 * 60 * 60 * timeSpanHours + 10;
+        publishAttempts += SpamPublishUniqueLevels(uploadAttemptsAfterExceeding, client, publishAttempts);
+        context.Database.Refresh();
+
+        // there are more levels now, and no new notifications
+        Assert.That(context.Database.GetTotalLevelsByUser(user), Is.EqualTo(uploadConfig.UploadQuota * 2));
+        Assert.That(context.Database.GetNotificationCountByUser(user), Is.EqualTo(uploadAttemptsAfterExceeding * 2));
     }
 
-    private void SpamSuccessfulUploads(int uploads, HttpClient client)
+    private int SpamPublishUniqueLevels(int uploads, HttpClient client, int startIndex, HttpStatusCode expectedStatus = OK)
     {
         for (int i = 0; i < uploads; i++)
         {
-            GameLevelRequest level = CreateValidTestLevel(i + 1);
-
             // Upload level
+            GameLevelRequest level = PrepareUniqueLevelPublishRequest(client, startIndex + i);
+
             HttpResponseMessage message = client.PostAsync("/lbp/startPublish", new StringContent(level.AsXML())).Result;
-            Assert.That(message.StatusCode, Is.EqualTo(OK));
+            Assert.That(message.StatusCode, Is.EqualTo(expectedStatus));
             message = client.PostAsync("/lbp/publish", new StringContent(level.AsXML())).Result;
-            Assert.That(message.StatusCode, Is.EqualTo(OK));
+            Assert.That(message.StatusCode, Is.EqualTo(expectedStatus));
         }
+
+        return uploads;
     }
 
-    private GameLevelRequest CreateValidTestLevel(int id)
-        => new()
+    private GameLevelRequest PrepareUniqueLevelPublishRequest(HttpClient client, int uniqueValue)
+    {
+        // upload root asset
+        ReadOnlySpan<byte> rootResource = new(Encoding.ASCII.GetBytes($"LVLb {uniqueValue}"));
+        string rootHash = BitConverter.ToString(SHA1.HashData(rootResource)).Replace("-", "").ToLower();
+
+        HttpResponseMessage message = client.PostAsync($"/lbp/upload/{rootHash}", new ReadOnlyMemoryContent(rootResource.ToArray())).Result;
+        Assert.That(message.StatusCode, Is.EqualTo(OK));
+
+        // prepare request body
+        return new()
         {
-            Title = "Test level! " + id,
-            IconHash = "g0",
+            Title = "Test level! " + uniqueValue,
             Description = "Test description",
-            Location = new GameLocation(),
-            RootResource = TEST_ASSET_HASH,
+            RootResource = rootHash,
         };
+    }
 
     [Test]
     public void CanPublishLevelWithSkillRewards()
