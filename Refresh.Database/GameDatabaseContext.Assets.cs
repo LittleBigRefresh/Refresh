@@ -112,19 +112,23 @@ public partial class GameDatabaseContext // Assets
         });
     
     public DisallowedAsset? GetDisallowedAssetInfo(string hash)
-        => this.DisallowedAssets.FirstOrDefault(d => d.AssetHash == hash);
+    {
+        string hashLower = hash.ToLower();
+        return this.DisallowedAssets.FirstOrDefault(d => d.AssetHash == hashLower);
+    }
     
     /// <returns>
     /// The asset's disallowance info + whether the asset wasn't already disallowed before
     /// </returns
     public (DisallowedAsset, bool) DisallowAsset(string hash, GameAssetType type, string reason)
     {
-        DisallowedAsset? existing = this.GetDisallowedAssetInfo(hash);
+        string hashLower = hash.ToLower();
+        DisallowedAsset? existing = this.GetDisallowedAssetInfo(hashLower);
         if (existing != null) return (existing, false);
 
         DisallowedAsset disallowed = new()
         {
-            AssetHash = hash,
+            AssetHash = hashLower,
             AssetType = type,
             Reason = reason,
             DisallowedAt = this._time.Now,
@@ -137,7 +141,8 @@ public partial class GameDatabaseContext // Assets
 
     public bool ReallowAsset(string hash)
     {
-        DisallowedAsset? existing = this.GetDisallowedAssetInfo(hash);
+        string hashLower = hash.ToLower();
+        DisallowedAsset? existing = this.GetDisallowedAssetInfo(hashLower);
         if (existing == null) return false;
 
         this.DisallowedAssets.Remove(existing);
