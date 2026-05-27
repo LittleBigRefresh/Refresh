@@ -1602,11 +1602,12 @@ namespace Refresh.Database.Migrations
                     b.Property<byte>("Entity")
                         .HasColumnType("smallint");
 
-                    b.Property<int>("UploadCount")
-                        .HasColumnType("integer");
-
                     b.Property<DateTimeOffset>("ExpiryDate")
                         .HasColumnType("timestamp with time zone");
+
+                    // EF badly wanted to move this below ExpiryDate fsr
+                    b.Property<int>("UploadCount")
+                        .HasColumnType("integer");
 
                     b.HasKey("UserId", "Entity");
 
