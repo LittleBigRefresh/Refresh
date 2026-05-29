@@ -11,9 +11,9 @@ namespace Refresh.Core.Types.Assets.Validation;
 public struct AssetValidationParameters
 {
     /// <summary>
-    /// The hash/guid/blank to validate
+    /// The reference (hash/guid/blank) to validate
     /// </summary>
-    public string AssetKey { get; set; } = "0";
+    public string AssetRef { get; set; } = "0";
     public GameUser? User { get; set; }
     public TokenGame GameToUseIn { get; set; }
     public TokenPlatform PlatformToUseIn { get; set; }
@@ -37,16 +37,16 @@ public struct AssetValidationParameters
     public string? AssetContextTypeStr { get; set; }
 
     /// <summary>
-    /// Callback which is called with the new asset reference/key as parameter when constructing <see cref="ValidatedAssetResult"/>;
+    /// Callback which is called with the new asset reference as parameter when constructing <see cref="ValidatedAssetResult"/>;
     /// useful to update asset references of entities during validation without requiring the caller to manually reassign them after validation;
     /// this way similar attributes like photo images or face icons can simply be iterated.
     /// If null, this will be skipped.
     /// </summary>
-    public Action<string>? OnNewAssetKeyCallback { get; set; }
+    public Action<string>? OnNewAssetRefCallback { get; set; }
 
     public AssetValidationParameters(string assetKey, DataContext dataContext, AssetImporter assetImporter, AipiService? aipi = null)
     {
-        this.AssetKey = assetKey;
+        this.AssetRef = assetKey;
         this.User = dataContext.User;
         this.GameToUseIn = dataContext.Game;
         this.PlatformToUseIn = dataContext.Platform;

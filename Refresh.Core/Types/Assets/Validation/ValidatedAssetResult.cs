@@ -13,9 +13,9 @@ public struct ValidatedAssetResult
     public HttpStatusCode Status { get; set; }
 
     /// <summary>
-    /// new hash/guid/blank to use
+    /// new reference (hash/guid/blank) to use
     /// </summary>
-    public string NewKey { get; set; }
+    public string NewAssetRef { get; set; }
 
     /// <summary>
     /// message to show to the user.
@@ -27,17 +27,17 @@ public struct ValidatedAssetResult
     public DisallowedAsset? DisallowanceInfo { get; set; }
     public bool ExistsInDataStore { get; set; }
 
-    public ValidatedAssetResult(HttpStatusCode status, string? newKey = null, string? errorMessage = null, Action<string>? onNewAssetKeyCallback = null,
+    public ValidatedAssetResult(HttpStatusCode status, string? newAssetRef = null, string? errorMessage = null, Action<string>? onNewAssetRefCallback = null,
         GameAsset? assetInfo = null, DisallowedAsset? disallowanceInfo = null, bool existsInDataStore = false)
     {
         this.Status = status;
-        this.NewKey = newKey ?? "0";
+        this.NewAssetRef = newAssetRef ?? "0";
         this.ErrorMessage = errorMessage;
         this.AssetInfo = assetInfo;
         this.DisallowanceInfo = disallowanceInfo;
         this.ExistsInDataStore = existsInDataStore;
 
-        if (onNewAssetKeyCallback != null)
-            onNewAssetKeyCallback(this.NewKey);
+        if (onNewAssetRefCallback != null)
+            onNewAssetRefCallback(this.NewAssetRef);
     }
 }
