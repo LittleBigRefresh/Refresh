@@ -1,0 +1,43 @@
+using System.Net;
+using Refresh.Database.Models.Assets;
+
+namespace Refresh.Core.Types.Assets.Validation;
+
+// key = blank/guid/hash, whatever is used to identify the asset
+public struct ValidatedAssetResult
+{
+    /// <summary>
+    /// HTTP code to return if validation failed.
+    /// OK: don't cancel request and proceed.
+    /// </summary>
+    public HttpStatusCode Status { get; set; }
+
+    /// <summary>
+    /// new hash/guid/blank to use
+    /// </summary>
+    public string NewKey { get; set; }
+
+    /// <summary>
+    /// message to show to the user.
+    /// null: don't show anything.
+    /// </summary>
+    public string? ErrorMessage { get; set; }
+
+    public GameAsset? AssetInfo { get; set; }
+    public DisallowedAsset? DisallowanceInfo { get; set; }
+    public bool ExistsInDataStore { get; set; }
+
+    public ValidatedAssetResult(HttpStatusCode status, string? newKey = null, string? errorMessage = null, Action<string>? onNewAssetKeyCallback = null,
+        GameAsset? assetInfo = null, DisallowedAsset? disallowanceInfo = null, bool existsInDataStore = false)
+    {
+        this.Status = status;
+        this.NewKey = newKey ?? "0";
+        this.ErrorMessage = errorMessage;
+        this.AssetInfo = assetInfo;
+        this.DisallowanceInfo = disallowanceInfo;
+        this.ExistsInDataStore = existsInDataStore;
+
+        if (onNewAssetKeyCallback != null)
+            onNewAssetKeyCallback(this.NewKey);
+    }
+}
