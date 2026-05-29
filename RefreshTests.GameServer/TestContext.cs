@@ -56,7 +56,7 @@ public class TestContext : IDisposable
         int tokenExpirySeconds = GameDatabaseContext.DefaultTokenExpirySeconds,
         string? ipAddress = null)
     {
-        return this.GetAuthenticatedClient(type, game, platform, out _, user, tokenExpirySeconds, ipAddress);
+        return this.GetAuthenticatedClient(type, game, platform, out string _, user, tokenExpirySeconds, ipAddress);
     }
 
     public HttpClient GetAuthenticatedClient(TokenType type, out string tokenData,
@@ -86,23 +86,39 @@ public class TestContext : IDisposable
         int tokenExpirySeconds = GameDatabaseContext.DefaultTokenExpirySeconds, 
         string? ipAddress = null)
     {
-        user ??= this.CreateUser();
-
-        Token token = this.Database.GenerateTokenForUser(user, type, game, platform, ipAddress ?? "0.0.0.0", tokenExpirySeconds);
+        Token token = this.GenerateToken(user, type, game, platform, ipAddress, tokenExpirySeconds);
         tokenData = token.TokenData;
-        
+        return this.GetAuthenticatedClient(token.TokenData, type);
+    }
+
+    public HttpClient GetAuthenticatedClient(TokenType type, TokenGame game, TokenPlatform platform, out Token token,
+        GameUser? user = null,
+        int tokenExpirySeconds = GameDatabaseContext.DefaultTokenExpirySeconds, 
+        string? ipAddress = null)
+    {
+        token = this.GenerateToken(user, type, game, platform, ipAddress, tokenExpirySeconds);
+        return this.GetAuthenticatedClient(token.TokenData, type);
+    }
+
+    public HttpClient GetAuthenticatedClient(string tokenData, TokenType type)
+    {
         HttpClient client = this.Listener.GetClient();
 
         if (type == TokenType.Game)
         {
-            client.DefaultRequestHeaders.Add("Cookie", "MM_AUTH=" + token.TokenData);
+            client.DefaultRequestHeaders.Add("Cookie", "MM_AUTH=" + tokenData);
         }
         else
         {
-            client.DefaultRequestHeaders.TryAddWithoutValidation("Authorization", token.TokenData);
+            client.DefaultRequestHeaders.TryAddWithoutValidation("Authorization", tokenData);
         }
 
         return client;
+    }
+
+    public Token GenerateToken(GameUser? user, TokenType type, TokenGame game, TokenPlatform platform, string? ipAddress, int tokenExpirySeconds)
+    {
+        return this.Database.GenerateTokenForUser(user ?? this.CreateUser(), type, game, platform, ipAddress ?? "0.0.0.0", tokenExpirySeconds);
     }
 
     public GameUser CreateUser(string? username = null, GameUserRole role = GameUserRole.User, bool verifyEmail = true)
@@ -218,13 +234,13 @@ public class TestContext : IDisposable
     [Pure]
     public TService GetService<TService>() where TService : Service => this.Server.Value.GetService<TService>();
 
-    public DataContext GetDataContext(Token? token = null)
+    public DataContext GetDataContext(Token? token = null, IDataStore? dataStore = null)
     {
         return new DataContext
         {
             Database = this.Database,
             Logger = this.Server.Value.Logger,
-            DataStore = (IDataStore)this.GetService<StorageService>()
+            DataStore = dataStore ?? (IDataStore)this.GetService<StorageService>()
                 .AddParameterToEndpoint(null!, new BunkumParameterInfo(typeof(IDataStore), ""), null!)!,
             Match = this.GetService<MatchService>(),
             Token = token,
