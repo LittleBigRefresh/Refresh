@@ -4,6 +4,9 @@ namespace Refresh.Database.Models.Users;
 
 public partial class DisallowedUser
 {
+    /// <summary>
+    /// Lower-case username to allow case-insensitive lookup.
+    /// </summary>
     [Key]
     public string Username { get; set; }
     public string Reason { get; set; }
