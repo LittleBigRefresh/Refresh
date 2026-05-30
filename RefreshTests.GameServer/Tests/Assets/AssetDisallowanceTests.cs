@@ -14,35 +14,42 @@ namespace RefreshTests.GameServer.Tests.Assets;
 public class AssetDisallowanceTests : GameServerTest
 {
     [Test]
-    public void CanDisallowAndReallowAsset()
+    [TestCase("trash")]
+    [TestCase("Trash")]
+    [TestCase("TRASH")]
+    public void CanDisallowAndReallowAssetCaseInsensitively(string hash)
     {
         using TestContext context = this.GetServer();
         
-        string hash = "trash";
+        string hashLower = hash.ToLower();
         GameAssetType type = GameAssetType.Mesh;
 
         // Ensure that the asset isn't already disallowed
+        Assert.That(context.Database.IsAssetDisallowed(hash), Is.False);
         Assert.That(context.Database.GetDisallowedAssetInfo(hash), Is.Null);
 
         // Disallow
         (DisallowedAsset disallowed, bool success) = context.Database.DisallowAsset(hash, type, "too ugly");
         Assert.That(success, Is.True);
-        Assert.That(disallowed.AssetHash, Is.EqualTo(hash));
+        Assert.That(disallowed.AssetHash, Is.EqualTo(hashLower));
         Assert.That(disallowed.AssetType, Is.EqualTo(type));
         Assert.That(disallowed.Reason, Is.EqualTo("too ugly"));
+        context.Database.Refresh();
 
-        // Ensure that the same entity is gotten again, and the DB method doesn't try to insert a new one
+        // Try to disallow again, and ensure the DB method doesn't try to insert a new one
         (disallowed, success) = context.Database.DisallowAsset(hash, type, "too ugly");
         Assert.That(success, Is.False);
-        Assert.That(disallowed.AssetHash, Is.EqualTo(hash));
+        Assert.That(disallowed.AssetHash, Is.EqualTo(hashLower));
         Assert.That(disallowed.AssetType, Is.EqualTo(type));
         Assert.That(disallowed.Reason, Is.EqualTo("too ugly"));
+        context.Database.Refresh();
 
         // ensure that the separately gotten entity is also the same
+        Assert.That(context.Database.IsAssetDisallowed(hash), Is.True);
         DisallowedAsset? gottenAgain = context.Database.GetDisallowedAssetInfo(hash);
         Assert.That(gottenAgain, Is.Not.Null);
         Assert.That(success, Is.False);
-        Assert.That(disallowed.AssetHash, Is.EqualTo(hash));
+        Assert.That(disallowed.AssetHash, Is.EqualTo(hashLower));
         Assert.That(disallowed.AssetType, Is.EqualTo(type));
         Assert.That(disallowed.Reason, Is.EqualTo("too ugly"));
 
@@ -52,11 +59,13 @@ public class AssetDisallowanceTests : GameServerTest
         // Reallow
         success = context.Database.ReallowAsset(hash);
         Assert.That(success, Is.True);
+        Assert.That(context.Database.IsAssetDisallowed(hash), Is.False);
         Assert.That(context.Database.GetDisallowedAssetInfo(hash), Is.Null);
 
         // Reallow again
         success = context.Database.ReallowAsset(hash);
         Assert.That(success, Is.False);
+        Assert.That(context.Database.IsAssetDisallowed(hash), Is.False);
         Assert.That(context.Database.GetDisallowedAssetInfo(hash), Is.Null);
     }
 
