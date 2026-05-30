@@ -221,13 +221,13 @@ public partial class GameDatabaseContext // Registration
     public bool IsUserDisallowed(string username)
     {
         string lowercaseUsername = username.ToLower();
-        return this.DisallowedUsers.Any(u => u.Username == username);
+        return this.DisallowedUsers.Any(u => u.Username == lowercaseUsername);
     }
     
     public DisallowedUser? GetDisallowedUserInfo(string username)
     {
         string lowercaseUsername = username.ToLower();
-        return this.DisallowedUsers.FirstOrDefault(d => d.Username == username);
+        return this.DisallowedUsers.FirstOrDefault(d => d.Username == lowercaseUsername);
     }
     
     public DatabaseList<DisallowedUser> GetDisallowedUsers(int skip, int count)
