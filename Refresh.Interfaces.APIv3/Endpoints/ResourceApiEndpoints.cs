@@ -200,7 +200,7 @@ public class ResourceApiEndpoints : EndpointGroup
             return new ApiValidationError($"You have exceeded your filesize quota.");
         }
 
-        if (database.GetDisallowedAssetInfo(hash) != null)
+        if (database.IsAssetDisallowed(hash))
         {
             context.Logger.LogWarning(BunkumCategory.UserContent, "User {0} has tried to upload a disallowed asset, rejecting.", user);
             return ApiModerationError.AssetDisallowedError;

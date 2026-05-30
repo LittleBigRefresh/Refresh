@@ -111,6 +111,12 @@ public partial class GameDatabaseContext // Assets
             asset.AsMainlinePhotoHash = hash;
         });
     
+    public bool IsAssetDisallowed(string hash)
+    {
+        string hashLower = hash.ToLower();
+        return this.DisallowedAssets.Any(u => u.AssetHash == hashLower);
+    }
+    
     public DisallowedAsset? GetDisallowedAssetInfo(string hash)
     {
         string hashLower = hash.ToLower();
