@@ -136,7 +136,7 @@ public class DisallowanceApiTests : GameServerTest
         string address = "thefunny@brickshitter.real";
 
         // Ensure it's not already there
-        Assert.That(context.Database.IsUserDisallowed(address), Is.False);
+        Assert.That(context.Database.IsEmailAddressDisallowed(address), Is.False);
         ApiListResponse<ApiDisallowedEmailAddressResponse>? disallowedList = client.GetList<ApiDisallowedEmailAddressResponse>("/api/v3/admin/disallowed/emailAddresses");
         Assert.That(disallowedList?.Data, Is.Not.Null);
         Assert.That(disallowedList!.Data, Is.Empty);
@@ -163,7 +163,7 @@ public class DisallowanceApiTests : GameServerTest
         context.Database.Refresh();
 
         // Ensure it now appears in listings
-        Assert.That(context.Database.IsUserDisallowed(address), Is.True);
+        Assert.That(context.Database.IsEmailAddressDisallowed(address), Is.True);
         disallowedList = client.GetList<ApiDisallowedEmailAddressResponse>($"/api/v3/admin/disallowed/emailAddresses");
         Assert.That(disallowedList?.Data, Is.Not.Null);
         Assert.That(disallowedList!.Data!.Count(), Is.EqualTo(1));
@@ -174,7 +174,7 @@ public class DisallowanceApiTests : GameServerTest
         context.Database.Refresh();
 
         // Ensure it's no longer there
-        Assert.That(context.Database.IsUserDisallowed(address), Is.False);
+        Assert.That(context.Database.IsEmailAddressDisallowed(address), Is.False);
         disallowedList = client.GetList<ApiDisallowedEmailAddressResponse>($"/api/v3/admin/disallowed/emailAddresses");
         Assert.That(disallowedList?.Data, Is.Not.Null);
         Assert.That(disallowedList!.Data, Is.Empty);
