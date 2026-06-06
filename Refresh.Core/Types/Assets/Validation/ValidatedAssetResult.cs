@@ -3,7 +3,6 @@ using Refresh.Database.Models.Assets;
 
 namespace Refresh.Core.Types.Assets.Validation;
 
-// key = blank/guid/hash, whatever is used to identify the asset
 public struct ValidatedAssetResult
 {
     /// <summary>
@@ -37,7 +36,6 @@ public struct ValidatedAssetResult
         this.DisallowanceInfo = disallowanceInfo;
         this.ExistsInDataStore = existsInDataStore;
 
-        if (onNewAssetRefCallback != null)
-            onNewAssetRefCallback(this.NewAssetRef);
+        onNewAssetRefCallback?.Invoke(this.NewAssetRef);
     }
 }
