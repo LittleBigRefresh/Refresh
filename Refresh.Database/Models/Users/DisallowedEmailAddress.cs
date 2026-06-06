@@ -8,7 +8,7 @@ public partial class DisallowedEmailAddress
     /// Lower-case email address to allow case-insensitive lookup.
     /// </summary>
     [Key]
-    public string Address { get; set; }
+    public string AddressLower { get; set; }
     public string Reason { get; set; }
     public DateTimeOffset DisallowedAt { get; set; }
 }

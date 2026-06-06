@@ -1532,7 +1532,7 @@ namespace Refresh.Database.Migrations
 
             modelBuilder.Entity("Refresh.Database.Models.Users.DisallowedEmailAddress", b =>
                 {
-                    b.Property<string>("Address")
+                    b.Property<string>("AddressLower")
                         .HasColumnType("text");
 
                     b.Property<DateTimeOffset>("DisallowedAt")
@@ -1541,14 +1541,14 @@ namespace Refresh.Database.Migrations
                     b.Property<string>("Reason")
                         .HasColumnType("text");
 
-                    b.HasKey("Address");
+                    b.HasKey("AddressLower");
 
                     b.ToTable("DisallowedEmailAddresses");
                 });
 
             modelBuilder.Entity("Refresh.Database.Models.Users.DisallowedEmailDomain", b =>
                 {
-                    b.Property<string>("Domain")
+                    b.Property<string>("DomainLower")
                         .HasColumnType("text");
 
                     b.Property<DateTimeOffset>("DisallowedAt")
@@ -1557,14 +1557,14 @@ namespace Refresh.Database.Migrations
                     b.Property<string>("Reason")
                         .HasColumnType("text");
 
-                    b.HasKey("Domain");
+                    b.HasKey("DomainLower");
 
                     b.ToTable("DisallowedEmailDomains");
                 });
 
             modelBuilder.Entity("Refresh.Database.Models.Users.DisallowedUser", b =>
                 {
-                    b.Property<string>("Username")
+                    b.Property<string>("UsernameLower")
                         .HasColumnType("text");
 
                     b.Property<DateTimeOffset>("DisallowedAt")
@@ -1573,7 +1573,7 @@ namespace Refresh.Database.Migrations
                     b.Property<string>("Reason")
                         .HasColumnType("text");
 
-                    b.HasKey("Username");
+                    b.HasKey("UsernameLower");
 
                     b.ToTable("DisallowedUsers");
                 });
@@ -1605,7 +1605,6 @@ namespace Refresh.Database.Migrations
                     b.Property<DateTimeOffset>("ExpiryDate")
                         .HasColumnType("timestamp with time zone");
 
-                    // EF badly wanted to move this below ExpiryDate fsr
                     b.Property<int>("UploadCount")
                         .HasColumnType("integer");
 

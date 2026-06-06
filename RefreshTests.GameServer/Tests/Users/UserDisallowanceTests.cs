@@ -24,14 +24,14 @@ public class UserDisallowanceTests : GameServerTest
 
         // Disallow
         (DisallowedEmailAddress disallowanceReturn, bool success) = context.Database.DisallowEmailAddress(emailAddress, disallowReason);
-        Assert.That(disallowanceReturn.Address, Is.EqualTo(emailAddressLower));
+        Assert.That(disallowanceReturn.AddressLower, Is.EqualTo(emailAddressLower));
         Assert.That(disallowanceReturn.Reason, Is.EqualTo(disallowReason));
         Assert.That(success, Is.True);
         context.Database.Refresh();
 
         // Try to disallow again
         (disallowanceReturn, success) = context.Database.DisallowEmailAddress(emailAddress, disallowReason);
-        Assert.That(disallowanceReturn.Address, Is.EqualTo(emailAddressLower));
+        Assert.That(disallowanceReturn.AddressLower, Is.EqualTo(emailAddressLower));
         Assert.That(disallowanceReturn.Reason, Is.EqualTo(disallowReason));
         Assert.That(success, Is.False);
         context.Database.Refresh();
@@ -40,7 +40,7 @@ public class UserDisallowanceTests : GameServerTest
         Assert.That(context.Database.IsEmailAddressDisallowed(emailAddress), Is.True);
         DisallowedEmailAddress? disallowed = context.Database.GetDisallowedEmailAddressInfo(emailAddress);
         Assert.That(disallowed, Is.Not.Null);
-        Assert.That(disallowed!.Address, Is.EqualTo(emailAddressLower));
+        Assert.That(disallowed!.AddressLower, Is.EqualTo(emailAddressLower));
         Assert.That(disallowed!.Reason, Is.EqualTo(disallowReason));
         
         // Try to register
@@ -90,14 +90,14 @@ public class UserDisallowanceTests : GameServerTest
 
         // Disallow
         (DisallowedEmailDomain disallowanceReturn, bool success) = context.Database.DisallowEmailDomain(addressToBlockWith, disallowReason);
-        Assert.That(disallowanceReturn.Domain, Is.EqualTo(domain));
+        Assert.That(disallowanceReturn.DomainLower, Is.EqualTo(domain));
         Assert.That(disallowanceReturn.Reason, Is.EqualTo(disallowReason));
         Assert.That(success, Is.True);
         context.Database.Refresh();
 
         // Try to disallow again
         (disallowanceReturn, success) = context.Database.DisallowEmailDomain(addressToBlockWith, disallowReason);
-        Assert.That(disallowanceReturn.Domain, Is.EqualTo(domain));
+        Assert.That(disallowanceReturn.DomainLower, Is.EqualTo(domain));
         Assert.That(disallowanceReturn.Reason, Is.EqualTo(disallowReason));
         Assert.That(success, Is.False);
         context.Database.Refresh();
@@ -107,7 +107,7 @@ public class UserDisallowanceTests : GameServerTest
         Assert.That(context.Database.IsEmailDomainDisallowed(domain), Is.True);
         DisallowedEmailDomain? disallowed = context.Database.GetDisallowedEmailDomainInfo(addressToBlockWith);
         Assert.That(disallowed, Is.Not.Null);
-        Assert.That(disallowed!.Domain, Is.EqualTo(domain));
+        Assert.That(disallowed!.DomainLower, Is.EqualTo(domain));
         Assert.That(disallowed!.Reason, Is.EqualTo(disallowReason));
         
         // Attempt 1 (block)
@@ -200,14 +200,14 @@ public class UserDisallowanceTests : GameServerTest
 
         // Disallow
         (DisallowedUser disallowanceReturn, bool success) = context.Database.DisallowUser(username, disallowReason);
-        Assert.That(disallowanceReturn.Username, Is.EqualTo(usernameLower));
+        Assert.That(disallowanceReturn.UsernameLower, Is.EqualTo(usernameLower));
         Assert.That(disallowanceReturn.Reason, Is.EqualTo(disallowReason));
         Assert.That(success, Is.True);
         context.Database.Refresh();
 
         // Try to disallow again
         (disallowanceReturn, success) = context.Database.DisallowUser(username, disallowReason);
-        Assert.That(disallowanceReturn.Username, Is.EqualTo(usernameLower));
+        Assert.That(disallowanceReturn.UsernameLower, Is.EqualTo(usernameLower));
         Assert.That(disallowanceReturn.Reason, Is.EqualTo(disallowReason));
         Assert.That(success, Is.False);
         context.Database.Refresh();
@@ -216,7 +216,7 @@ public class UserDisallowanceTests : GameServerTest
         Assert.That(context.Database.IsUserDisallowed(username), Is.True);
         DisallowedUser? disallowed = context.Database.GetDisallowedUserInfo(username);
         Assert.That(disallowed, Is.Not.Null);
-        Assert.That(disallowed!.Username, Is.EqualTo(usernameLower));
+        Assert.That(disallowed!.UsernameLower, Is.EqualTo(usernameLower));
         Assert.That(disallowed!.Reason, Is.EqualTo(disallowReason));
         
         // Try to register
