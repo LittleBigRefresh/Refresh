@@ -107,32 +107,40 @@ public abstract class Importer
     /// <returns>Whether the file is likely of TGA format</returns>
     private static bool IsPspTga(ReadOnlySpan<byte> data)
     {
-        byte imageIdLength = data[0];
-        byte colorMapType = data[1];
-        byte imageType = data[2];
-        ReadOnlySpan<byte> colorMapSpecification = data[3..8];
-        ReadOnlySpan<byte> imageSpecification = data[8..18];
-        short xOrigin = BinaryPrimitives.ReadInt16LittleEndian(imageSpecification[..2]);
-        short yOrigin = BinaryPrimitives.ReadInt16LittleEndian(imageSpecification[2..4]);
-        ushort width = BinaryPrimitives.ReadUInt16LittleEndian(imageSpecification[4..6]);
-        ushort height = BinaryPrimitives.ReadUInt16LittleEndian(imageSpecification[6..8]);
-        byte depth = imageSpecification[8];
-        byte descriptor = imageSpecification[9];
+        try
+        {
+            byte imageIdLength = data[0];
+            byte colorMapType = data[1];
+            byte imageType = data[2];
+            ReadOnlySpan<byte> colorMapSpecification = data[3..8];
+            ReadOnlySpan<byte> imageSpecification = data[8..18];
+            short xOrigin = BinaryPrimitives.ReadInt16LittleEndian(imageSpecification[..2]);
+            short yOrigin = BinaryPrimitives.ReadInt16LittleEndian(imageSpecification[2..4]);
+            ushort width = BinaryPrimitives.ReadUInt16LittleEndian(imageSpecification[4..6]);
+            ushort height = BinaryPrimitives.ReadUInt16LittleEndian(imageSpecification[6..8]);
+            byte depth = imageSpecification[8];
+            byte descriptor = imageSpecification[9];
 
-        //PSP does not seem to fill out this information
-        if (imageIdLength != 0) return false;
-        if (xOrigin != 0) return false;
-        if (yOrigin != 0) return false;
-        //These are the fields set by PSP, that shouldn't change from image to image
-        if (colorMapType != 1) return false;
-        if (descriptor != 0) return false;
-        if (imageType != 1) return false;
-        if (depth != 8) return false;
-        //Reasonable validation checks (PSP seems to only send images of max size 480x272)
-        if (width > 500) return false;
-        if (height > 300) return false;
-        
-        return true;
+            //PSP does not seem to fill out this information
+            if (imageIdLength != 0) return false;
+            if (xOrigin != 0) return false;
+            if (yOrigin != 0) return false;
+            //These are the fields set by PSP, that shouldn't change from image to image
+            if (colorMapType != 1) return false;
+            if (descriptor != 0) return false;
+            if (imageType != 1) return false;
+            if (depth != 8) return false;
+            //Reasonable validation checks (PSP seems to only send images of max size 480x272)
+            if (width > 500) return false;
+            if (height > 300) return false;
+            
+            return true;
+        }
+        catch
+        {
+            //If the data couldn't be read, it's not a TGA
+            return false;
+        }
     }
 
     private bool IsMip(Span<byte> rawData)

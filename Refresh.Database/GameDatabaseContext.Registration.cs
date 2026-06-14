@@ -219,22 +219,29 @@ public partial class GameDatabaseContext // Registration
     }
 
     public bool IsUserDisallowed(string username)
-        => this.DisallowedUsers.Any(u => u.Username == username);
+    {
+        string lowercaseUsername = username.ToLower();
+        return this.DisallowedUsers.Any(u => u.UsernameLower == lowercaseUsername);
+    }
     
     public DisallowedUser? GetDisallowedUserInfo(string username)
-        => this.DisallowedUsers.FirstOrDefault(d => d.Username == username);
+    {
+        string lowercaseUsername = username.ToLower();
+        return this.DisallowedUsers.FirstOrDefault(d => d.UsernameLower == lowercaseUsername);
+    }
     
     public DatabaseList<DisallowedUser> GetDisallowedUsers(int skip, int count)
         => new(this.DisallowedUsers.OrderByDescending(d => d.DisallowedAt), skip, count);
     
     public (DisallowedUser, bool) DisallowUser(string username, string reason)
     {
-        DisallowedUser? existing = this.GetDisallowedUserInfo(username);
+        string lowercaseUsername = username.ToLower();
+        DisallowedUser? existing = this.GetDisallowedUserInfo(lowercaseUsername);
         if (existing != null) return (existing, false);
         
         DisallowedUser disallowed = new()
         {
-            Username = username,
+            UsernameLower = lowercaseUsername,
             Reason = reason,
             DisallowedAt = this._time.Now,
         };
@@ -246,7 +253,8 @@ public partial class GameDatabaseContext // Registration
     
     public bool ReallowUser(string username)
     {
-        DisallowedUser? disallowedUser = this.GetDisallowedUserInfo(username);
+        string lowercaseUsername = username.ToLower();
+        DisallowedUser? disallowedUser = this.GetDisallowedUserInfo(lowercaseUsername);
         if (disallowedUser == null) 
             return false;
         
@@ -257,22 +265,29 @@ public partial class GameDatabaseContext // Registration
     }
 
     public bool IsEmailAddressDisallowed(string emailAddress)
-        => this.DisallowedEmailAddresses.Any(u => u.Address == emailAddress);
+    {
+        string emailAddressLower = emailAddress.ToLowerInvariant();
+        return this.DisallowedEmailAddresses.Any(u => u.AddressLower == emailAddressLower);
+    }
 
     public DisallowedEmailAddress? GetDisallowedEmailAddressInfo(string emailAddress)
-        => this.DisallowedEmailAddresses.FirstOrDefault(d => d.Address == emailAddress);
+    {
+        string emailAddressLower = emailAddress.ToLowerInvariant();
+        return this.DisallowedEmailAddresses.FirstOrDefault(d => d.AddressLower == emailAddressLower);
+    }
 
     public DatabaseList<DisallowedEmailAddress> GetDisallowedEmailAddresses(int skip, int count)
         => new(this.DisallowedEmailAddresses.OrderByDescending(d => d.DisallowedAt), skip, count);
 
     public (DisallowedEmailAddress, bool) DisallowEmailAddress(string emailAddress, string reason)
     {
-        DisallowedEmailAddress? existing = this.GetDisallowedEmailAddressInfo(emailAddress);
+        string emailAddressLower = emailAddress.ToLowerInvariant();
+        DisallowedEmailAddress? existing = this.GetDisallowedEmailAddressInfo(emailAddressLower);
         if (existing != null) return (existing, false);
         
         DisallowedEmailAddress disallowed = new()
         {
-            Address = emailAddress,
+            AddressLower = emailAddressLower,
             Reason = reason,
             DisallowedAt = this._time.Now,
         };
@@ -284,7 +299,8 @@ public partial class GameDatabaseContext // Registration
     
     public bool ReallowEmailAddress(string emailAddress)
     {
-        DisallowedEmailAddress? disallowed = this.GetDisallowedEmailAddressInfo(emailAddress);
+        string emailAddressLower = emailAddress.ToLowerInvariant();
+        DisallowedEmailAddress? disallowed = this.GetDisallowedEmailAddressInfo(emailAddressLower);
         if (disallowed == null) 
             return false;
         
@@ -294,19 +310,19 @@ public partial class GameDatabaseContext // Registration
         return true;
     }
 
-    private string GetEmailDomainFromAddress(string emailAddress)
-        => emailAddress.Split('@').Last();
+    private string GetLowercaseEmailDomainFromAddress(string emailAddress)
+        => emailAddress.Split('@').Last().ToLowerInvariant();
     
     public bool IsEmailDomainDisallowed(string emailAddress)
     {
-        string emailDomain = this.GetEmailDomainFromAddress(emailAddress);
-        return this.DisallowedEmailDomains.Any(u => u.Domain == emailDomain);
+        string emailDomainLower = this.GetLowercaseEmailDomainFromAddress(emailAddress);
+        return this.DisallowedEmailDomains.Any(u => u.DomainLower == emailDomainLower);
     }
 
     public DisallowedEmailDomain? GetDisallowedEmailDomainInfo(string emailAddress)
     {
-        string emailDomain = this.GetEmailDomainFromAddress(emailAddress);
-        return this.DisallowedEmailDomains.FirstOrDefault(d => d.Domain == emailDomain);
+        string emailDomainLower = this.GetLowercaseEmailDomainFromAddress(emailAddress);
+        return this.DisallowedEmailDomains.FirstOrDefault(d => d.DomainLower == emailDomainLower);
     }
 
     public DatabaseList<DisallowedEmailDomain> GetDisallowedEmailDomains(int skip, int count)
@@ -314,13 +330,13 @@ public partial class GameDatabaseContext // Registration
 
     public (DisallowedEmailDomain, bool) DisallowEmailDomain(string emailAddress, string reason)
     {
-        string emailDomain = this.GetEmailDomainFromAddress(emailAddress);
-        DisallowedEmailDomain? existing = this.GetDisallowedEmailDomainInfo(emailDomain);
+        string emailDomainLower = this.GetLowercaseEmailDomainFromAddress(emailAddress);
+        DisallowedEmailDomain? existing = this.GetDisallowedEmailDomainInfo(emailDomainLower);
         if (existing != null) return (existing, false);
         
         DisallowedEmailDomain disallowed = new()
         {
-            Domain = emailDomain,
+            DomainLower = emailDomainLower,
             Reason = reason,
             DisallowedAt = this._time.Now,
         };
@@ -332,8 +348,8 @@ public partial class GameDatabaseContext // Registration
 
     public bool ReallowEmailDomain(string emailAddress)
     {
-        string emailDomain = this.GetEmailDomainFromAddress(emailAddress);
-        DisallowedEmailDomain? disallowedDomain = this.GetDisallowedEmailDomainInfo(emailDomain);
+        string emailDomainLower = this.GetLowercaseEmailDomainFromAddress(emailAddress);
+        DisallowedEmailDomain? disallowedDomain = this.GetDisallowedEmailDomainInfo(emailDomainLower);
         if (disallowedDomain == null) 
             return false;
         

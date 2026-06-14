@@ -62,7 +62,7 @@ public class ResourceEndpoints : EndpointGroup
             return RequestEntityTooLarge;
         }
 
-        if (database.GetDisallowedAssetInfo(hash) != null)
+        if (database.IsAssetDisallowed(hash))
         {
             context.Logger.LogWarning(BunkumCategory.UserContent, "User {0} has tried to upload a disallowed asset, rejecting.", user);
             return Unauthorized;
