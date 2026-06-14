@@ -597,12 +597,10 @@ public partial class GameDatabaseContext // Levels
         this.SaveChanges();
     }
     
-    public void SetLevelModdedStatus(GameLevel level, bool modded)
+    public void SetLevelModdedStatus(GameLevel level, bool modded, bool save = true)
     {
-        this.Write(() =>
-        {
-            level.IsModded = modded;
-        });
+        level.IsModded = modded;
+        if (save) this.SaveChanges();
     }
     
     public void SetLevelModdedStatuses(Dictionary<GameLevel, bool> levels)

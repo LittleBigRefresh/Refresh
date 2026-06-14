@@ -163,6 +163,17 @@ public class TestContext : IDisposable
         return level;
     }
 
+    public GameLevel CreateLevelWithRootResource(GameUser author, string rootResource, TokenGame gameVersion = TokenGame.LittleBigPlanet1)
+    {
+        GameLevelRequest levelRequest = new()
+        {
+            RootResource = rootResource,
+        };
+
+        GameLevel level = this.Database.AddLevel(levelRequest, gameVersion, author);
+        return level;
+    }
+
     public GamePhoto CreatePhotoWithSubject(GameUser author, string imageHash, GameLevel? level = null, List<SerializedPhotoSubject>? subjects = null)
     {
         // TODO: Return newly created GamePhoto

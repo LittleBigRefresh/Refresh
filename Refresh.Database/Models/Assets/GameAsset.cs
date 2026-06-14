@@ -25,6 +25,13 @@ public partial class GameAsset
             if (VanillaHashChecker.IsVanillaHash(this.AssetHash))
                 flags &= ~AssetFlags.Modded;
             
+            // If this is a PSP asset, strip both modded and dangerous flags
+            if (this.IsPSP)
+            {
+                flags &= ~AssetFlags.Modded;
+                flags &= ~AssetFlags.Dangerous;
+            }
+            
             return flags;
         }
     }

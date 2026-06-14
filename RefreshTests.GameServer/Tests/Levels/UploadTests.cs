@@ -2,6 +2,9 @@ using Refresh.Database.Models.Users;
 using Refresh.Database.Models.Levels;
 using Refresh.Interfaces.Game.Endpoints.DataTypes.Request;
 using Refresh.Database.Models.Authentication;
+using System.Security.Cryptography;
+using Refresh.Core.Extensions;
+using Refresh.Database.Models.Assets;
 
 namespace RefreshTests.GameServer.Tests.Levels;
 
@@ -151,5 +154,39 @@ public class UploadTests : GameServerTest
             Assert.That(level.PublishDate.ToUnixTimeMilliseconds(), Is.EqualTo(1));
             Assert.That(level.UpdateDate.ToUnixTimeMilliseconds(), Is.EqualTo(1));
         });
+    }
+
+    [Test]
+    public void PspLevelWithUnknownRootTypeDoesNotGetMarkedAsModded()
+    {
+        using TestContext context = this.GetServer();
+        GameUser user = context.CreateUser();
+
+        using HttpClient client = context.GetAuthenticatedClient(TokenType.Game, TokenGame.LittleBigPlanetPSP, TokenPlatform.PSP, user);
+        client.DefaultRequestHeaders.UserAgent.TryParseAdd("LBPPSP CLIENT");
+
+        // upload asset from PSP
+        ReadOnlySpan<byte> data = "MMMMMMMMMMMMMMMMMMMMM"u8;
+        string hash = BitConverter.ToString(SHA1.HashData(data)).Replace("-", "").ToLower();
+        
+        HttpResponseMessage response = client.PostAsync("/lbp/upload/" + hash, new ByteArrayContent(data.ToArray())).Result;
+        Assert.That(response.StatusCode, Is.EqualTo(OK));
+
+        GameAsset? rootAsset = context.Database.GetAssetFromHash(hash);
+        Assert.That(rootAsset, Is.Not.Null);
+        Assert.That(rootAsset!.IsPSP, Is.True);
+        Assert.That(rootAsset!.AssetType, Is.EqualTo(GameAssetType.Unknown));
+        Assert.That(rootAsset!.AssetFormat, Is.EqualTo(GameAssetFormat.Unknown));
+
+        GameLevel level = context.CreateLevelWithRootResource(user, hash, TokenGame.LittleBigPlanetPSP);
+        context.Database.UpdateLevelModdedStatus(level);
+
+        context.Database.Refresh();
+
+        GameLevel? updatedLevel = context.Database.GetLevelById(level.LevelId);
+        Assert.That(updatedLevel, Is.Not.Null);
+        Assert.That(updatedLevel!.LevelId, Is.EqualTo(level.LevelId));
+        Assert.That(updatedLevel!.RootResource, Is.EqualTo(hash));
+        Assert.That(updatedLevel!.IsModded, Is.False);
     }
 }
