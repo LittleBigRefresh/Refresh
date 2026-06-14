@@ -1,6 +1,7 @@
 using System.Security.Cryptography;
 using Refresh.Core.Configuration;
 using Refresh.Core.Services;
+using Refresh.Database.Models.Assets;
 using Refresh.Database.Models.Authentication;
 using Refresh.Database.Models.Users;
 using Refresh.Interfaces.Game.Types.Lists;
@@ -257,6 +258,53 @@ public class AssetUploadTests : GameServerTest
 
         HttpResponseMessage response = client.PostAsync("/lbp/upload/" + hash, new ByteArrayContent(data.ToArray())).Result;
         Assert.That(response.StatusCode, Is.EqualTo(OK));
+    }
+
+    [Test]
+    public void UnreadablePspAssetsAreNotMarkedAsModdedDangerous()
+    {
+        using TestContext context = this.GetServer();
+        GameUser user = context.CreateUser();
+        
+        using HttpClient client = context.GetAuthenticatedClient(TokenType.Game, TokenGame.LittleBigPlanetPSP, TokenPlatform.PSP, user);
+        client.DefaultRequestHeaders.UserAgent.TryParseAdd("LBPPSP CLIENT");
+        
+        ReadOnlySpan<byte> data = "MMMMMMMMMMMMMMMMMMMMM"u8;
+        
+        string hash = BitConverter.ToString(SHA1.HashData(data))
+            .Replace("-", "")
+            .ToLower();
+
+        HttpResponseMessage response = client.PostAsync("/lbp/upload/" + hash, new ByteArrayContent(data.ToArray())).Result;
+        Assert.That(response.StatusCode, Is.EqualTo(OK));
+
+        GameAsset? assetInfo = context.Database.GetAssetFromHash(hash);
+        Assert.That(assetInfo, Is.Not.Null);
+        Assert.That(assetInfo!.AssetType, Is.EqualTo(GameAssetType.Unknown));
+        Assert.That(assetInfo!.AssetFormat, Is.EqualTo(GameAssetFormat.Unknown));
+        Assert.That(assetInfo!.IsPSP, Is.True);
+        Assert.That(assetInfo!.AssetFlags, Is.EqualTo(AssetFlags.None));
+    }
+
+    [Test]
+    public void CantUploadUnreadableAssetFromNonPsp()
+    {
+        using TestContext context = this.GetServer();
+        GameUser user = context.CreateUser();
+        
+        using HttpClient client = context.GetAuthenticatedClient(TokenType.Game, TokenGame.LittleBigPlanet2, TokenPlatform.PS3, user);
+        
+        ReadOnlySpan<byte> data = "MMMMMMMMMMMMMMMMMMMMM"u8;
+        
+        string hash = BitConverter.ToString(SHA1.HashData(data))
+            .Replace("-", "")
+            .ToLower();
+
+        HttpResponseMessage response = client.PostAsync("/lbp/upload/" + hash, new ByteArrayContent(data.ToArray())).Result;
+        Assert.That(response.StatusCode, Is.EqualTo(Unauthorized));
+
+        GameAsset? assetInfo = context.Database.GetAssetFromHash(hash);
+        Assert.That(assetInfo, Is.Null);
     }
     
     [Test]

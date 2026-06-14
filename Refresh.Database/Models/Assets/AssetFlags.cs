@@ -20,6 +20,10 @@ public enum AssetFlags
     /// A planet is considered modded if it depends on this asset, or if the asset already has the Modded flag above.
     /// </summary>
     ModdedOnPlanets = 1 << 3,
+    /// <summary>
+    /// This asset is a texture or contains imagery, for now only given to asset types handled by image conversion.
+    /// </summary>
+    Imagery = 1 << 4,
 }
 
 public static class AssetSafetyLevelExtensions
@@ -30,33 +34,33 @@ public static class AssetSafetyLevelExtensions
         {
             // Common asset types created by the game
             GameAssetType.Level => AssetFlags.None,
-            GameAssetType.StreamingLevelChunk => AssetFlags.None | AssetFlags.ModdedOnPlanets,
+            GameAssetType.StreamingLevelChunk => AssetFlags.ModdedOnPlanets,
             GameAssetType.Plan => AssetFlags.None,
-            GameAssetType.ThingRecording => AssetFlags.None | AssetFlags.ModdedOnPlanets,
-            GameAssetType.SyncedProfile => AssetFlags.None | AssetFlags.ModdedOnPlanets,
-            GameAssetType.GriefSongState => AssetFlags.None | AssetFlags.ModdedOnPlanets,
-            GameAssetType.Quest => AssetFlags.None | AssetFlags.ModdedOnPlanets,
-            GameAssetType.AdventureSharedData => AssetFlags.None | AssetFlags.ModdedOnPlanets,
-            GameAssetType.AdventureCreateProfile => AssetFlags.None | AssetFlags.ModdedOnPlanets,
-            GameAssetType.ChallengeGhost => AssetFlags.None | AssetFlags.ModdedOnPlanets,
+            GameAssetType.ThingRecording => AssetFlags.ModdedOnPlanets,
+            GameAssetType.SyncedProfile => AssetFlags.ModdedOnPlanets,
+            GameAssetType.GriefSongState => AssetFlags.ModdedOnPlanets,
+            GameAssetType.Quest => AssetFlags.ModdedOnPlanets,
+            GameAssetType.AdventureSharedData => AssetFlags.ModdedOnPlanets,
+            GameAssetType.AdventureCreateProfile => AssetFlags.ModdedOnPlanets,
+            GameAssetType.ChallengeGhost => AssetFlags.ModdedOnPlanets,
             
             // Common media types created by the game
             GameAssetType.VoiceRecording => AssetFlags.Media | AssetFlags.ModdedOnPlanets,
             GameAssetType.Painting => AssetFlags.Media,
-            GameAssetType.Texture => AssetFlags.Media,
-            GameAssetType.Jpeg => AssetFlags.Media,
-            GameAssetType.Png => AssetFlags.Media,
-            GameAssetType.Tga => AssetFlags.Media | AssetFlags.ModdedOnPlanets,
-            GameAssetType.Mip => AssetFlags.Media | AssetFlags.ModdedOnPlanets,
+            GameAssetType.Texture => AssetFlags.Media | AssetFlags.Imagery,
+            GameAssetType.Jpeg => AssetFlags.Media | AssetFlags.Imagery,
+            GameAssetType.Png => AssetFlags.Media | AssetFlags.Imagery,
+            GameAssetType.Tga => AssetFlags.Media | AssetFlags.Imagery | AssetFlags.ModdedOnPlanets,
+            GameAssetType.Mip => AssetFlags.Media | AssetFlags.Imagery | AssetFlags.ModdedOnPlanets,
             
             // Uncommon, but still vanilla assets created by the game in niche scenarios.
             // While not image/audio data like the other media types, GfxMaterial is marked as media because this file can contain full PS3 shaders.
             GameAssetType.GfxMaterial => AssetFlags.Media | AssetFlags.ModdedOnPlanets, 
-            GameAssetType.Material => AssetFlags.None | AssetFlags.ModdedOnPlanets,
-            GameAssetType.Bevel => AssetFlags.None | AssetFlags.ModdedOnPlanets,
+            GameAssetType.Material => AssetFlags.ModdedOnPlanets,
+            GameAssetType.Bevel => AssetFlags.ModdedOnPlanets,
             
             // Modded media types
-            GameAssetType.GameDataTexture => AssetFlags.Media | AssetFlags.Modded,
+            GameAssetType.GameDataTexture => AssetFlags.Media | AssetFlags.Modded | AssetFlags.Imagery,
             GameAssetType.AnimatedTexture => AssetFlags.Media | AssetFlags.Modded,
             
             // Normal modded assets
