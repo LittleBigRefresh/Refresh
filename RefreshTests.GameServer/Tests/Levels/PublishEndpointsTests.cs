@@ -348,7 +348,6 @@ public class PublishEndpointsTests : GameServerTest
         string hash = BitConverter.ToString(SHA1.HashData(data)).Replace("-", "").ToLower();
         // Don't write to store
 
-        context.Database.DisallowAsset(hash, GameAssetType.Level, "too many bs obstacles");
         using HttpClient client = context.GetAuthenticatedClient(TokenType.Game, user);
 
         GameLevelRequest level = new()
@@ -359,10 +358,10 @@ public class PublishEndpointsTests : GameServerTest
         };
 
         HttpResponseMessage message = client.PostAsync("/lbp/startPublish", new StringContent(level.AsXML())).Result;
-        Assert.That(message.StatusCode, Is.EqualTo(Unauthorized));
+        Assert.That(message.StatusCode, Is.EqualTo(OK));
         
         message = client.PostAsync("/lbp/publish", new StringContent(level.AsXML())).Result;
-        Assert.That(message.StatusCode, Is.EqualTo(Unauthorized));
+        Assert.That(message.StatusCode, Is.EqualTo(NotFound));
     }
     
     [Test]
@@ -483,6 +482,38 @@ public class PublishEndpointsTests : GameServerTest
         
         message = client.PostAsync("/lbp/publish", new StringContent(level.AsXML())).Result;
         Assert.That(message.StatusCode, Is.EqualTo(success ? OK : BadRequest));
+    }
+
+    [Test]
+    [TestCase("LVLb")]
+    [TestCase("PLNb")]
+    [TestCase("CHKb")]
+    [TestCase("TEX ")]
+    [TestCase("wasedrthzjtgerw")]
+    public void LevelRootResourceTypeIsIgnoredIfPSP(string resource)
+    {
+        using TestContext context = this.GetServer();
+        GameUser user = context.CreateUser();
+
+        ReadOnlySpan<byte> data = new(Encoding.UTF8.GetBytes(resource));
+        string hash = BitConverter.ToString(SHA1.HashData(data)).Replace("-", "").ToLower();
+        context.GetDataStore().WriteToStore($"psp/{hash}", data);
+
+        using HttpClient client = context.GetAuthenticatedClient(TokenType.Game, TokenGame.LittleBigPlanetPSP, TokenPlatform.PSP, user);
+        client.DefaultRequestHeaders.UserAgent.TryParseAdd("LBPPSP CLIENT");
+
+        GameLevelRequest level = new()
+        {
+            Title = "totally a level!",
+            IsAdventure = false,
+            RootResource = hash,
+        };
+
+        HttpResponseMessage message = client.PostAsync("/lbp/startPublish", new StringContent(level.AsXML())).Result;
+        Assert.That(message.StatusCode, Is.EqualTo(OK));
+        
+        message = client.PostAsync("/lbp/publish", new StringContent(level.AsXML())).Result;
+        Assert.That(message.StatusCode, Is.EqualTo(OK));
     }
 
     [Test]
