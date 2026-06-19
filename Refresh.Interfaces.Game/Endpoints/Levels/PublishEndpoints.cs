@@ -94,7 +94,7 @@ public class PublishEndpoints : EndpointGroup
         if (!isInnerLevel)
         {
             // Validate root resource
-            AssetValidationParameters rootParams = new(body.RootResource, dataContext, importer, aipi)
+            AssetValidationParameters rootParams = new(body.RootResource, dataContext, importer)
             {
                 MayBeBlank = false,
                 MayBeGuid = false,
@@ -245,7 +245,7 @@ public class PublishEndpoints : EndpointGroup
         if (IsTimedLevelLimitReached(dataContext, user, body.Title, timedLevelLimit))
             return Unauthorized;
 
-        HttpStatusCode validationResult = VerifyLevel(body, dataContext, importer, aipi, false);
+        HttpStatusCode validationResult = VerifyLevel(body, dataContext, importer, aipi, true);
         if (validationResult != OK)
         {
             context.Logger.LogInfo(RefreshContext.Publishing, "Failed to verify level");
