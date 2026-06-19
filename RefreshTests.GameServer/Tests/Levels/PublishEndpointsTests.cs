@@ -835,7 +835,7 @@ public class PublishEndpointsTests : GameServerTest
         
         //As user 2, try to publish a level with the same root hash
         message = client2.PostAsync("/lbp/publish", new StringContent(level.AsXML())).Result;
-        Assert.That(message.StatusCode, Is.EqualTo(BadRequest));
+        Assert.That(message.StatusCode, Is.EqualTo(Unauthorized));
     }
     
     [Test]
