@@ -1,3 +1,4 @@
+using System.Net;
 using Bunkum.Core;
 using Bunkum.Core.Endpoints;
 using Bunkum.Core.RateLimit;
@@ -10,6 +11,10 @@ using Refresh.Common.Time;
 using Refresh.Common.Verification;
 using Refresh.Core.Authentication.Permission;
 using Refresh.Core.Configuration;
+using Refresh.Core.Helpers;
+using Refresh.Core.Importing;
+using Refresh.Core.Services;
+using Refresh.Core.Types.Assets.Validation;
 using Refresh.Core.Types.Data;
 using Refresh.Database;
 using Refresh.Database.Models;
@@ -36,8 +41,8 @@ public class PublishEndpoints : EndpointGroup
     /// </summary>
     /// <param name="body">The level to verify</param>
     /// <param name="dataContext">The data context associated with the request</param>
-    /// <returns>Whether validation succeeded</returns>
-    private static bool VerifyLevel(GameLevelRequest body, DataContext dataContext)
+    /// <returns>Whether validation succeeded. OK = success; everything else = failure</returns>
+    private static HttpStatusCode VerifyLevel(GameLevelRequest body, DataContext dataContext, AssetImporter importer, AipiService aipi, bool isActualPublish, bool isInnerLevel = false)
     {
         if (body.Title.Length > UgcLimits.TitleLimit) 
             body.Title = body.Title[..UgcLimits.TitleLimit];
@@ -46,24 +51,87 @@ public class PublishEndpoints : EndpointGroup
             body.Description = body.Description[..UgcLimits.DescriptionLimit];
             
         if (body.MaxPlayers is > 4 or < 0 || body.MinPlayers is > 4 or < 0)
-            return false;
-
-        //If the icon hash is a GUID hash, verify that its a valid texture GUID
-        if (body.IconHash.StartsWith('g') && !dataContext.GuidChecker.IsTextureGuid(dataContext.Game, long.Parse(body.IconHash.AsSpan()[1..]))) 
-            return false;
-
-        if (body.IsAdventure && dataContext.Game != TokenGame.LittleBigPlanet3)
-            return false;
-
-        GameLevel? existingLevel = dataContext.Database.GetLevelByRootResource(body.RootResource);
-        // If all are true:
-        // - there is an existing level with this root hash
-        // - this isn't an update request
-        // then block the upload
-        if (existingLevel != null && body.LevelId != existingLevel.LevelId)
         {
-            dataContext.Database.AddPublishFailNotification("The level you tried to publish has already been uploaded by another user.", body.Title, dataContext.User!);
-            return false;
+            dataContext.Database.AddPublishFailNotification("Your player number restrictions were invalid.", body.Title, dataContext.User!);
+            return BadRequest;
+        }
+
+        if (body.IsAdventure && isInnerLevel)
+        {
+            dataContext.Database.AddPublishFailNotification("Adventures may not include inner adventures.", body.Title, dataContext.User!);
+            return BadRequest;
+        }
+
+        if (body.IsAdventure && dataContext.Game != TokenGame.LittleBigPlanet3 && dataContext.Game != TokenGame.BetaBuild)
+        {
+            dataContext.Database.AddPublishFailNotification("You may only publish adventures in LBP3 or beta builds.", body.Title, dataContext.User!);
+            return BadRequest;
+        }
+
+        if (!body.IsAdventure && body.Slots != null && body.Slots.Length > 0)
+        {
+            dataContext.Database.AddPublishFailNotification("Only adventures may include inner levels.", body.Title, dataContext.User!);
+            return BadRequest;
+        }
+
+        // Validate icon
+        AssetValidationParameters iconParams = new(body.IconHash, dataContext, importer, aipi)
+        {
+            MustBeTexture = true,
+            MustBeInDataStoreIfHash = isActualPublish, // in most cases no assets will be uploaded yet when startPublish is called
+            AssetContextTypeStr = "icon",
+            OnNewAssetRefCallback = delegate(string newRef) { body.IconHash = newRef; }
+        };
+        ValidatedAssetResult iconResult = ResourceValidationHelper.ValidateReference(iconParams, dataContext.Logger);
+        if (iconResult.Status != OK)
+        {
+            if (iconResult.ErrorMessage != null) dataContext.Database.AddPublishFailNotification(iconResult.ErrorMessage, body.Title, dataContext.User!);
+            return iconResult.Status;
+        }
+        
+        // For some stupid reason, inner adventure levels don't include their root hash in the request.
+        // TODO: validate their root hash once we finally start to read them from the adventure root asset itself, as it is included there.
+        if (!isInnerLevel)
+        {
+            // Validate root resource
+            AssetValidationParameters rootParams = new(body.RootResource, dataContext, importer, aipi)
+            {
+                MayBeBlank = false,
+                MayBeGuid = false,
+                MustBeInDataStoreIfHash = isActualPublish, // in most cases no assets will be uploaded yet when startPublish is called
+                AssetContextTypeStr = body.IsAdventure ? "adventure asset" : "level asset",
+                OnNewAssetRefCallback = delegate(string newRef) { body.RootResource = newRef; }
+            };
+            ValidatedAssetResult rootResult = ResourceValidationHelper.ValidateReference(rootParams, dataContext.Logger);
+            if (rootResult.Status != OK)
+            {
+                if (rootResult.ErrorMessage != null) dataContext.Database.AddPublishFailNotification(rootResult.ErrorMessage, body.Title, dataContext.User!);
+                return rootResult.Status;
+            }
+            else if (rootResult.AssetInfo != null && dataContext.Game != TokenGame.LittleBigPlanetPSP) // PSP uses a completely different asset type which we don't validate yet
+            {
+                if (body.IsAdventure && rootResult.AssetInfo.AssetType != GameAssetType.AdventureCreateProfile)
+                {
+                    if (rootResult.ErrorMessage != null) dataContext.Database.AddPublishFailNotification("The adventure asset was badly formatted.", body.Title, dataContext.User!);
+                    return BadRequest;
+                }
+                if (!body.IsAdventure && rootResult.AssetInfo.AssetType != GameAssetType.Level)
+                {
+                    if (rootResult.ErrorMessage != null) dataContext.Database.AddPublishFailNotification("The level asset was badly formatted.", body.Title, dataContext.User!);
+                    return BadRequest;
+                }
+            }
+
+            GameLevel? existingLevel = dataContext.Database.GetLevelByRootResource(body.RootResource);
+            // If all are true:
+            // - there is an existing level with this root hash
+            // - this isn't an update request
+            // then block the upload
+            if (existingLevel != null && body.LevelId != existingLevel.LevelId)
+            {
+                dataContext.Database.AddPublishFailNotification("The level you tried to publish has already been uploaded by another user.", body.Title, dataContext.User!);
+                return Unauthorized;
+            }
         }
 
         if (!string.IsNullOrWhiteSpace(body.PublisherLabels))
@@ -76,7 +144,19 @@ public class PublishEndpoints : EndpointGroup
                 .Take(UgcLimits.MaximumLabels);
         }
 
-        return true;
+        if (body.Slots != null)
+        {
+            foreach (GameLevelRequest innerLevel in body.Slots)
+            {
+                HttpStatusCode innerValidationResult = VerifyLevel(innerLevel, dataContext, importer, aipi, isActualPublish, true);
+                if (innerValidationResult == OK) continue;
+
+                dataContext.Logger.LogInfo(RefreshContext.Publishing, "Failed to verify inner level {0}", innerLevel.LevelId);
+                return innerValidationResult;
+            }
+        }
+
+        return OK;
     }
 
     private static bool IsTimedLevelLimitReached(DataContext dataContext, GameUser user, string levelTitle, EntityUploadRateLimitProperties levelLimit)
@@ -106,6 +186,8 @@ public class PublishEndpoints : EndpointGroup
         GameLevelRequest body,
         DataContext dataContext,
         GameServerConfig config,
+        AssetImporter importer,
+        AipiService aipi,
         GameUser user)
     {
         if (dataContext.User!.IsWriteBlocked(config))
@@ -117,22 +199,11 @@ public class PublishEndpoints : EndpointGroup
         if (IsTimedLevelLimitReached(dataContext, dataContext.User!, body.Title, user.GetRolePermissionsForUser(config).LevelUploadRateLimit)) 
             return Unauthorized;
 
-        //If verifying the request fails, return BadRequest
-        if (!VerifyLevel(body, dataContext))
+        HttpStatusCode validationResult = VerifyLevel(body, dataContext, importer, aipi, false);
+        if (validationResult != OK)
         {
-            context.Logger.LogInfo(RefreshContext.Publishing, "Failed to verify root level");
-            return BadRequest;
-        }
-
-        if (body.Slots != null)
-        {
-            foreach (GameLevelRequest innerLevel in body.Slots)
-            {
-                if (VerifyLevel(innerLevel, dataContext)) continue;
-
-                context.Logger.LogInfo(RefreshContext.Publishing, "Failed to verify inner level {0}", innerLevel.LevelId);
-                return BadRequest;
-            }
+            context.Logger.LogInfo(RefreshContext.Publishing, "Failed to verify level");
+            return validationResult;
         }
 
         List<string> hashes =
@@ -163,6 +234,8 @@ public class PublishEndpoints : EndpointGroup
         GameLevelRequest body,
         DataContext dataContext,
         GameUser user,
+        AssetImporter importer,
+        AipiService aipi,
         GameServerConfig config)
     {
         if (user.IsWriteBlocked(config))
@@ -172,31 +245,11 @@ public class PublishEndpoints : EndpointGroup
         if (IsTimedLevelLimitReached(dataContext, user, body.Title, timedLevelLimit))
             return Unauthorized;
 
-        //If verifying the request fails, return BadRequest
-        if (!VerifyLevel(body, dataContext)) return BadRequest;
-
-        string rootResourcePath = context.IsPSP() ? $"psp/{body.RootResource}" : body.RootResource;
-
-        //Check if the root resource is a SHA1 hash
-        if (!CommonPatterns.Sha1Regex().IsMatch(body.RootResource)) return BadRequest;
-        //Make sure the root resource exists in the data store
-        if (!dataContext.DataStore.ExistsInStore(rootResourcePath)) return NotFound;
-
-        GameAsset? asset = dataContext.Cache.GetAssetInfo(body.RootResource, dataContext.Database);
-        if (asset != null && dataContext.Game != TokenGame.LittleBigPlanetPSP)
+        HttpStatusCode validationResult = VerifyLevel(body, dataContext, importer, aipi, false);
+        if (validationResult != OK)
         {
-            // ReSharper disable once ConvertIfStatementToSwitchStatement
-            if (body.IsAdventure && asset.AssetType != GameAssetType.AdventureCreateProfile)
-            {
-                dataContext.Database.AddPublishFailNotification("The uploaded adventure data was corrupted.", body.Title, dataContext.User!);
-                return BadRequest;
-            }
-
-            if (!body.IsAdventure && asset.AssetType != GameAssetType.Level)
-            {
-                dataContext.Database.AddPublishFailNotification("The uploaded level data was corrupted.", body.Title, dataContext.User!);
-                return BadRequest;
-            }
+            context.Logger.LogInfo(RefreshContext.Publishing, "Failed to verify level");
+            return validationResult;
         }
 
         if (body.LevelId != 0) // Republish requests contain the id of the old level
