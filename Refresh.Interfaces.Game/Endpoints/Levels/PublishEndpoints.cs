@@ -58,14 +58,14 @@ public class PublishEndpoints : EndpointGroup
 
         if (body.IsAdventure && isInnerLevel)
         {
-            dataContext.Database.AddPublishFailNotification("Adventures may not include inner adventures.", body.Title, dataContext.User!);
+            dataContext.Database.AddPublishFailNotification("An adventure may not include inner adventures.", body.Title, dataContext.User!);
             return BadRequest;
         }
 
         if (body.IsAdventure && dataContext.Game != TokenGame.LittleBigPlanet3 && dataContext.Game != TokenGame.BetaBuild)
         {
             dataContext.Database.AddPublishFailNotification("You may only publish adventures in LBP3 or beta builds.", body.Title, dataContext.User!);
-            return BadRequest;
+            return Unauthorized;
         }
 
         if (!body.IsAdventure && body.Slots != null && body.Slots.Length > 0)

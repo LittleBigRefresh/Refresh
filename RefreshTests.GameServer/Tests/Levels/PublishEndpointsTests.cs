@@ -15,6 +15,8 @@ using Refresh.Interfaces.Game.Types.Levels;
 using System.Security.Cryptography;
 using System.Text;
 using System.Net;
+using Refresh.Database.Models.Assets;
+using Bunkum.Core.Storage;
 
 namespace RefreshTests.GameServer.Tests.Levels;
 
@@ -22,6 +24,14 @@ public class PublishEndpointsTests : GameServerTest
 {
     private const string TEST_ASSET_HASH = "acddf3f9251c1ddb675ad81ba34ba16135b54aca";
     private const string TEST_MISSING_ASSET_HASH = "acddf3f9251c1ddb675ad81ba34ba16135b54acb";
+
+    private string UploadLevelAsset(IDataStore dataStore)
+    {
+        ReadOnlySpan<byte> data = "LVLb"u8;
+        string hash = BitConverter.ToString(SHA1.HashData(data)).Replace("-", "").ToLower();
+        dataStore.WriteToStore(hash, data);
+        return hash;
+    }
     
     [Test]
     public void PublishLevel()
@@ -210,55 +220,51 @@ public class PublishEndpointsTests : GameServerTest
         message = client.PostAsync("/lbp/publish", new StringContent(level.AsXML())).Result;
         Assert.That(message.StatusCode, Is.EqualTo(BadRequest));
     }
-    
-    [TestCase(TokenGame.LittleBigPlanet1)]
-    [TestCase(TokenGame.LittleBigPlanet2)]
-    [TestCase(TokenGame.LittleBigPlanet3)]
-    [TestCase(TokenGame.LittleBigPlanetVita)]
-    public void CantPublishLevelWithInvalidIconGuid(TokenGame game)
+
+    [Test]
+    public void CantPublishLevelWithDisallowedRootResource()
     {
         using TestContext context = this.GetServer();
         GameUser user = context.CreateUser();
 
-        using HttpClient client = context.GetAuthenticatedClient(TokenType.Game, game, TokenPlatform.PS3, user);
+        ReadOnlySpan<byte> data = "LVLb"u8;
+        string hash = BitConverter.ToString(SHA1.HashData(data)).Replace("-", "").ToLower();
+        context.GetDataStore().WriteToStore(hash, data);
+
+        context.Database.DisallowAsset(hash, GameAssetType.Level, "too many bs obstacles");
+        using HttpClient client = context.GetAuthenticatedClient(TokenType.Game, user);
 
         GameLevelRequest level = new()
         {
-            Title = "Normal Title!",
-            IconHash = "g0",
-            Description = "Normal Description",
-            Location = new GameLocation(),
-            RootResource = "I AM INVALID!!!",
+            Title = "Boom Town 2",
+            RootResource = hash,
         };
 
         HttpResponseMessage message = client.PostAsync("/lbp/startPublish", new StringContent(level.AsXML())).Result;
-        Assert.That(message.StatusCode, Is.EqualTo(BadRequest));
+        Assert.That(message.StatusCode, Is.EqualTo(Unauthorized));
         
         message = client.PostAsync("/lbp/publish", new StringContent(level.AsXML())).Result;
-        Assert.That(message.StatusCode, Is.EqualTo(BadRequest));
+        Assert.That(message.StatusCode, Is.EqualTo(Unauthorized));
     }
-    
-    public void CanPublishLevelWithInvalidIconGuidPsp()
+
+    [Test]
+    public void CantPublishLevelWithNoRootResource()
     {
         using TestContext context = this.GetServer();
         GameUser user = context.CreateUser();
-
-        using HttpClient client = context.GetAuthenticatedClient(TokenType.Game, TokenGame.LittleBigPlanetPSP, TokenPlatform.PS3, user);
+        using HttpClient client = context.GetAuthenticatedClient(TokenType.Game, user);
 
         GameLevelRequest level = new()
         {
-            Title = "Normal Title!",
-            IconHash = "g0",
-            Description = "Normal Description",
-            Location = new GameLocation(),
-            RootResource = "I AM INVALID!!!",
+            Title = "The best level you've ever played !!!",
+            RootResource = "0",
         };
 
         HttpResponseMessage message = client.PostAsync("/lbp/startPublish", new StringContent(level.AsXML())).Result;
-        Assert.That(message.StatusCode, Is.EqualTo(OK));
+        Assert.That(message.StatusCode, Is.EqualTo(BadRequest));
         
         message = client.PostAsync("/lbp/publish", new StringContent(level.AsXML())).Result;
-        Assert.That(message.StatusCode, Is.EqualTo(OK));
+        Assert.That(message.StatusCode, Is.EqualTo(BadRequest));
     }
     
     [Test]
@@ -283,6 +289,356 @@ public class PublishEndpointsTests : GameServerTest
         
         message = client.PostAsync("/lbp/publish", new StringContent(level.AsXML())).Result;
         Assert.That(message.StatusCode, Is.EqualTo(NotFound));
+    }
+    
+    [TestCase(TokenGame.LittleBigPlanet1)]
+    [TestCase(TokenGame.LittleBigPlanet2)]
+    [TestCase(TokenGame.LittleBigPlanet3)]
+    [TestCase(TokenGame.LittleBigPlanetVita)]
+    public void CantPublishLevelWithInvalidIconGuid(TokenGame game)
+    {
+        using TestContext context = this.GetServer();
+        GameUser user = context.CreateUser();
+
+        using HttpClient client = context.GetAuthenticatedClient(TokenType.Game, game, TokenPlatform.PS3, user);
+
+        GameLevelRequest level = new()
+        {
+            Title = "Normal Title!",
+            IconHash = "g1087",
+            RootResource = this.UploadLevelAsset(context.GetDataStore()),
+        };
+
+        HttpResponseMessage message = client.PostAsync("/lbp/startPublish", new StringContent(level.AsXML())).Result;
+        Assert.That(message.StatusCode, Is.EqualTo(BadRequest));
+        
+        message = client.PostAsync("/lbp/publish", new StringContent(level.AsXML())).Result;
+        Assert.That(message.StatusCode, Is.EqualTo(BadRequest));
+    }
+    
+    [Test]
+    public void CantPublishLevelWithInvalidIconGuidPsp()
+    {
+        using TestContext context = this.GetServer();
+        GameUser user = context.CreateUser();
+
+        using HttpClient client = context.GetAuthenticatedClient(TokenType.Game, TokenGame.LittleBigPlanetPSP, TokenPlatform.PS3, user);
+
+        GameLevelRequest level = new()
+        {
+            Title = "Normal Title!",
+            IconHash = "g67", // max is g63
+            RootResource = this.UploadLevelAsset(context.GetDataStore()),
+        };
+
+        HttpResponseMessage message = client.PostAsync("/lbp/startPublish", new StringContent(level.AsXML())).Result;
+        Assert.That(message.StatusCode, Is.EqualTo(BadRequest));
+        
+        message = client.PostAsync("/lbp/publish", new StringContent(level.AsXML())).Result;
+        Assert.That(message.StatusCode, Is.EqualTo(BadRequest));
+    }
+
+    [Test]
+    public void CantPublishLevelWithMissingCustomIcon()
+    {
+        using TestContext context = this.GetServer();
+        GameUser user = context.CreateUser();
+
+        ReadOnlySpan<byte> data = "TEX "u8;
+        string hash = BitConverter.ToString(SHA1.HashData(data)).Replace("-", "").ToLower();
+        // Don't write to store
+
+        context.Database.DisallowAsset(hash, GameAssetType.Level, "too many bs obstacles");
+        using HttpClient client = context.GetAuthenticatedClient(TokenType.Game, user);
+
+        GameLevelRequest level = new()
+        {
+            Title = "67",
+            IconHash = hash,
+            RootResource = this.UploadLevelAsset(context.GetDataStore()),
+        };
+
+        HttpResponseMessage message = client.PostAsync("/lbp/startPublish", new StringContent(level.AsXML())).Result;
+        Assert.That(message.StatusCode, Is.EqualTo(Unauthorized));
+        
+        message = client.PostAsync("/lbp/publish", new StringContent(level.AsXML())).Result;
+        Assert.That(message.StatusCode, Is.EqualTo(Unauthorized));
+    }
+    
+    [Test]
+    public void CantPublishLevelWithDisallowedIcon()
+    {
+        using TestContext context = this.GetServer();
+        GameUser user = context.CreateUser();
+
+        ReadOnlySpan<byte> data = "TEX "u8;
+        string hash = BitConverter.ToString(SHA1.HashData(data)).Replace("-", "").ToLower();
+        context.GetDataStore().WriteToStore(hash, data);
+
+        context.Database.DisallowAsset(hash, GameAssetType.Texture, "too cringe");
+        using HttpClient client = context.GetAuthenticatedClient(TokenType.Game, user);
+
+        GameLevelRequest level = new()
+        {
+            Title = "67",
+            IconHash = hash,
+            RootResource = this.UploadLevelAsset(context.GetDataStore()),
+        };
+
+        HttpResponseMessage message = client.PostAsync("/lbp/startPublish", new StringContent(level.AsXML())).Result;
+        Assert.That(message.StatusCode, Is.EqualTo(Unauthorized));
+        
+        message = client.PostAsync("/lbp/publish", new StringContent(level.AsXML())).Result;
+        Assert.That(message.StatusCode, Is.EqualTo(Unauthorized));
+    }
+
+    [Test]
+    [TestCase(TokenGame.LittleBigPlanet1, false)]
+    [TestCase(TokenGame.LittleBigPlanetPSP, false)]
+    [TestCase(TokenGame.LittleBigPlanet3, true)]
+    [TestCase(TokenGame.BetaBuild, true)]
+    public void TestAdventureUploadsFromVariousGames(TokenGame game, bool success)
+    {
+        using TestContext context = this.GetServer();
+        GameUser user = context.CreateUser();
+
+        ReadOnlySpan<byte> data = "ADCb"u8;
+        string hash = BitConverter.ToString(SHA1.HashData(data)).Replace("-", "").ToLower();
+        context.GetDataStore().WriteToStore(hash, data);
+
+        using HttpClient client = context.GetAuthenticatedClient(TokenType.Game, game, TokenPlatform.PS3, user);
+
+        GameLevelRequest level = new()
+        {
+            Title = "adventure time!",
+            IsAdventure = true,
+            Description = "epic joke please laugh",
+            RootResource = hash,
+        };
+
+        HttpResponseMessage message = client.PostAsync("/lbp/startPublish", new StringContent(level.AsXML())).Result;
+        Assert.That(message.StatusCode, Is.EqualTo(success ? OK : Unauthorized));
+        
+        message = client.PostAsync("/lbp/publish", new StringContent(level.AsXML())).Result;
+        Assert.That(message.StatusCode, Is.EqualTo(success ? OK : Unauthorized));
+    }
+
+    [Test]
+    [TestCase("LVLb", false)]
+    [TestCase("PLNb", false)]
+    [TestCase("CHKb", false)]
+    [TestCase("TEX ", false)]
+    [TestCase("ADCb", true)]
+    public void TestAdventureRootResourceTypes(string resource, bool success)
+    {
+        using TestContext context = this.GetServer();
+        GameUser user = context.CreateUser();
+
+        ReadOnlySpan<byte> data = new(Encoding.UTF8.GetBytes(resource));
+        string hash = BitConverter.ToString(SHA1.HashData(data)).Replace("-", "").ToLower();
+        context.GetDataStore().WriteToStore(hash, data);
+
+        using HttpClient client = context.GetAuthenticatedClient(TokenType.Game, TokenGame.LittleBigPlanet3, TokenPlatform.PS3, user);
+
+        GameLevelRequest level = new()
+        {
+            Title = "totally an adventure!",
+            IsAdventure = true,
+            RootResource = hash,
+        };
+
+        HttpResponseMessage message = client.PostAsync("/lbp/startPublish", new StringContent(level.AsXML())).Result;
+        Assert.That(message.StatusCode, Is.EqualTo(success ? OK : BadRequest));
+        
+        message = client.PostAsync("/lbp/publish", new StringContent(level.AsXML())).Result;
+        Assert.That(message.StatusCode, Is.EqualTo(success ? OK : BadRequest));
+    }
+
+    [Test]
+    [TestCase("LVLb", true)]
+    [TestCase("PLNb", false)]
+    [TestCase("CHKb", false)]
+    [TestCase("TEX ", false)]
+    [TestCase("ADCb", false)]
+    public void TestLevelRootResourceTypes(string resource, bool success)
+    {
+        using TestContext context = this.GetServer();
+        GameUser user = context.CreateUser();
+
+        ReadOnlySpan<byte> data = new(Encoding.UTF8.GetBytes(resource));
+        string hash = BitConverter.ToString(SHA1.HashData(data)).Replace("-", "").ToLower();
+        context.GetDataStore().WriteToStore(hash, data);
+
+        using HttpClient client = context.GetAuthenticatedClient(TokenType.Game, TokenGame.LittleBigPlanet3, TokenPlatform.PS3, user);
+
+        GameLevelRequest level = new()
+        {
+            Title = "totally a level!",
+            IsAdventure = false,
+            RootResource = hash,
+        };
+
+        HttpResponseMessage message = client.PostAsync("/lbp/startPublish", new StringContent(level.AsXML())).Result;
+        Assert.That(message.StatusCode, Is.EqualTo(success ? OK : BadRequest));
+        
+        message = client.PostAsync("/lbp/publish", new StringContent(level.AsXML())).Result;
+        Assert.That(message.StatusCode, Is.EqualTo(success ? OK : BadRequest));
+    }
+
+    [Test]
+    public void CantPublishRegularLevelWithInnerLevels()
+    {
+        using TestContext context = this.GetServer();
+        GameUser user = context.CreateUser();
+
+        ReadOnlySpan<byte> data = "LVLb"u8;
+        string hash = BitConverter.ToString(SHA1.HashData(data)).Replace("-", "").ToLower();
+        context.GetDataStore().WriteToStore(hash, data);
+
+        using HttpClient client = context.GetAuthenticatedClient(TokenType.Game, TokenGame.LittleBigPlanet3, TokenPlatform.PS3, user);
+
+        GameLevelRequest level = new()
+        {
+            Title = "totally an adventure!",
+            IsAdventure = false,
+            RootResource = hash,
+            Slots =
+            [
+                new()
+                {
+                    Title = "Hi lol",
+                    RootResource = "",
+                }
+            ]
+        };
+
+        HttpResponseMessage message = client.PostAsync("/lbp/startPublish", new StringContent(level.AsXML())).Result;
+        Assert.That(message.StatusCode, Is.EqualTo(BadRequest));
+        
+        message = client.PostAsync("/lbp/publish", new StringContent(level.AsXML())).Result;
+        Assert.That(message.StatusCode, Is.EqualTo(BadRequest));
+    }
+
+    [Test]
+    public void CanPublishAdventureWithInnerLevels()
+    {
+        using TestContext context = this.GetServer();
+        GameUser user = context.CreateUser();
+
+        ReadOnlySpan<byte> data = "ADCb"u8;
+        string hash = BitConverter.ToString(SHA1.HashData(data)).Replace("-", "").ToLower();
+        context.GetDataStore().WriteToStore(hash, data);
+
+        using HttpClient client = context.GetAuthenticatedClient(TokenType.Game, TokenGame.LittleBigPlanet3, TokenPlatform.PS3, user);
+
+        GameLevelRequest level = new()
+        {
+            Title = "totally an adventure!",
+            IsAdventure = true,
+            RootResource = hash,
+            Slots =
+            [
+                new()
+                {
+                    Title = "Hi lol",
+                    RootResource = "",
+                }
+            ]
+        };
+
+        HttpResponseMessage message = client.PostAsync("/lbp/startPublish", new StringContent(level.AsXML())).Result;
+        Assert.That(message.StatusCode, Is.EqualTo(OK));
+        
+        message = client.PostAsync("/lbp/publish", new StringContent(level.AsXML())).Result;
+        Assert.That(message.StatusCode, Is.EqualTo(OK));
+    }
+
+    [Test]
+    public void CantPublishAdventureWithRecursiveInnerLevels()
+    {
+        using TestContext context = this.GetServer();
+        GameUser user = context.CreateUser();
+
+        ReadOnlySpan<byte> data = "ADCb"u8;
+        string hash = BitConverter.ToString(SHA1.HashData(data)).Replace("-", "").ToLower();
+        context.GetDataStore().WriteToStore(hash, data);
+
+        using HttpClient client = context.GetAuthenticatedClient(TokenType.Game, TokenGame.LittleBigPlanet3, TokenPlatform.PS3, user);
+
+        GameLevelRequest level = new()
+        {
+            Title = "Deep adventure",
+            IsAdventure = true,
+            RootResource = hash,
+            Slots =
+            [
+                new()
+                {
+                    Title = "Hi lol",
+                    IsAdventure = false,
+                    RootResource = "",
+                    Slots = 
+                    [
+                        new()
+                        {
+                            Title = "Super secret",
+                            IsAdventure = false,
+                            RootResource = "",
+                            Slots = 
+                            [
+                                new()
+                                {
+                                    Title = "This is getting ridiculous...",
+                                    IsAdventure = false,
+                                    RootResource = "",
+                                }
+                            ]
+                        }
+                    ]
+                }
+            ]
+        };
+
+        HttpResponseMessage message = client.PostAsync("/lbp/startPublish", new StringContent(level.AsXML())).Result;
+        Assert.That(message.StatusCode, Is.EqualTo(BadRequest));
+        
+        message = client.PostAsync("/lbp/publish", new StringContent(level.AsXML())).Result;
+        Assert.That(message.StatusCode, Is.EqualTo(BadRequest));
+    }
+
+    [Test]
+    public void CantPublishAdventureWithInnerAdventures()
+    {
+        using TestContext context = this.GetServer();
+        GameUser user = context.CreateUser();
+
+        ReadOnlySpan<byte> data = "ADCb"u8;
+        string hash = BitConverter.ToString(SHA1.HashData(data)).Replace("-", "").ToLower();
+        context.GetDataStore().WriteToStore(hash, data);
+
+        using HttpClient client = context.GetAuthenticatedClient(TokenType.Game, TokenGame.LittleBigPlanet3, TokenPlatform.PS3, user);
+
+        GameLevelRequest level = new()
+        {
+            Title = "Very adventurous",
+            IsAdventure = true,
+            RootResource = hash,
+            Slots =
+            [
+                new()
+                {
+                    Title = "Hi lol",
+                    IsAdventure = true,
+                    RootResource = "",
+                }
+            ]
+        };
+
+        HttpResponseMessage message = client.PostAsync("/lbp/startPublish", new StringContent(level.AsXML())).Result;
+        Assert.That(message.StatusCode, Is.EqualTo(BadRequest));
+        
+        message = client.PostAsync("/lbp/publish", new StringContent(level.AsXML())).Result;
+        Assert.That(message.StatusCode, Is.EqualTo(BadRequest));
     }
 
     [Test]
