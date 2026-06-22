@@ -227,7 +227,7 @@ public class PhotoEndpointsTests : GameServerTest
         string imageHash = BitConverter.ToString(SHA1.HashData(imageData)).Replace("-", "").ToLower();
         context.GetDataStore().WriteToStore(imageHash, imageData);
 
-        // bad small image 
+        // bad plan 
         SerializedPhoto photo = new()
         {
             Timestamp = DateTimeOffset.UtcNow.ToUnixTimeSeconds(),
@@ -274,7 +274,6 @@ public class PhotoEndpointsTests : GameServerTest
         string badImageHash = BitConverter.ToString(SHA1.HashData(badImageData)).Replace("-", "").ToLower();
         // Don't add to store
 
-        // content doesn't matter here but let's test like this anyway
         ReadOnlySpan<byte> badPlanData = "PLNb m"u8;
         string badPlanHash = BitConverter.ToString(SHA1.HashData(badPlanData)).Replace("-", "").ToLower();
         // Don't add to store
@@ -301,7 +300,7 @@ public class PhotoEndpointsTests : GameServerTest
         context.Database.DisallowAsset(badPlanHash, GameAssetType.Plan, "");
 
         this.TryUploadPhotosWithInvalidImage(context, client, user, badImageHash, Unauthorized);
-        this.TryUploadPhotoWithInvalidPlan(context, client, user, badImageHash, Unauthorized);
+        this.TryUploadPhotoWithInvalidPlan(context, client, user, badPlanHash, Unauthorized);
     }
     
     [Test]
