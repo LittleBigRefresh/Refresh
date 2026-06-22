@@ -6,7 +6,7 @@ namespace Refresh.Interfaces.APIv3.Endpoints.DataTypes.Response.Disallowed;
 [JsonObject(NamingStrategyType = typeof(CamelCaseNamingStrategy))]
 public class ApiDisallowedEmailDomainResponse : IApiResponse, IDataConvertableFrom<ApiDisallowedEmailDomainResponse, DisallowedEmailDomain>
 {
-    public required string Domain { get; set; }
+    public required string DomainLower { get; set; }
     public required string Reason { get; set; }
     public required DateTimeOffset DisallowedAt { get; set; }
     
@@ -16,7 +16,7 @@ public class ApiDisallowedEmailDomainResponse : IApiResponse, IDataConvertableFr
 
         return new ApiDisallowedEmailDomainResponse
         {
-            Domain = old.Domain,
+            DomainLower = old.DomainLower,
             Reason = old.Reason,
             DisallowedAt = old.DisallowedAt,
         };
