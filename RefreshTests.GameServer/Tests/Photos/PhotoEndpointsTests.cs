@@ -34,6 +34,11 @@ public class PhotoEndpointsTests : GameServerTest
         HttpResponseMessage message = client.PostAsync($"/lbp/upload/{TEST_ASSET_HASH}", new ReadOnlyMemoryContent(TestAsset)).Result;
         Assert.That(message.StatusCode, Is.EqualTo(OK));
         
+        //Upload out """plan"""
+        ReadOnlySpan<byte> planData = "PLNb"u8;
+        string planHash = BitConverter.ToString(SHA1.HashData(planData)).Replace("-", "").ToLower();
+        context.GetDataStore().WriteToStore(planHash, planData);
+        
         SerializedPhoto photo = new()
         {
             Timestamp = DateTimeOffset.UtcNow.ToUnixTimeSeconds(),
@@ -41,7 +46,7 @@ public class PhotoEndpointsTests : GameServerTest
             SmallHash = TEST_ASSET_HASH,
             MediumHash = TEST_ASSET_HASH,
             LargeHash = TEST_ASSET_HASH,
-            PlanHash = TEST_ASSET_HASH,
+            PlanHash = planHash,
             Level = new SerializedPhotoLevel
             {
                 LevelId = level.LevelId,
@@ -104,6 +109,12 @@ public class PhotoEndpointsTests : GameServerTest
         HttpResponseMessage message = client.PostAsync($"/lbp/upload/{TEST_ASSET_HASH}", new ReadOnlyMemoryContent(TestAsset)).Result;
         Assert.That(message.StatusCode, Is.EqualTo(OK));
         DateTimeOffset takenAt = context.Time.Now;
+        
+        //Upload out """plan"""
+        ReadOnlySpan<byte> planData = "PLNb"u8;
+        string planHash = BitConverter.ToString(SHA1.HashData(planData)).Replace("-", "").ToLower();
+        context.GetDataStore().WriteToStore(planHash, planData);
+        
         context.Time.TimestampMilliseconds += 2000; // Increase to differentiate between creation and publish date
         
         SerializedPhoto photo = new()
@@ -113,7 +124,7 @@ public class PhotoEndpointsTests : GameServerTest
             SmallHash = TEST_ASSET_HASH,
             MediumHash = TEST_ASSET_HASH,
             LargeHash = TEST_ASSET_HASH,
-            PlanHash = TEST_ASSET_HASH,
+            PlanHash = planHash,
             Level = new SerializedPhotoLevel
             {
                 LevelId = level.StoryId,
@@ -161,7 +172,7 @@ public class PhotoEndpointsTests : GameServerTest
         Assert.That(gamePhoto!.SmallAssetHash, Is.EqualTo(TEST_ASSET_HASH));
         Assert.That(gamePhoto!.MediumAssetHash, Is.EqualTo(TEST_ASSET_HASH));
         Assert.That(gamePhoto!.LargeAssetHash, Is.EqualTo(TEST_ASSET_HASH));
-        Assert.That(gamePhoto!.PlanHash, Is.EqualTo(TEST_ASSET_HASH));
+        Assert.That(gamePhoto!.PlanHash, Is.EqualTo(planHash));
 
         List<GamePhotoSubject> subjects = context.Database.GetSubjectsInPhoto(gamePhoto).ToList();
 
@@ -331,6 +342,11 @@ public class PhotoEndpointsTests : GameServerTest
         HttpResponseMessage message = client.PostAsync($"/lbp/upload/{TEST_ASSET_HASH}", new ReadOnlyMemoryContent(TestAsset)).Result;
         Assert.That(message.StatusCode, Is.EqualTo(OK));
         
+        //Upload out """plan"""
+        ReadOnlySpan<byte> planData = "PLNb"u8;
+        string planHash = BitConverter.ToString(SHA1.HashData(planData)).Replace("-", "").ToLower();
+        context.GetDataStore().WriteToStore(planHash, planData);
+        
         SerializedPhoto photo = new()
         {
             Timestamp = DateTimeOffset.UtcNow.ToUnixTimeSeconds(),
@@ -338,7 +354,7 @@ public class PhotoEndpointsTests : GameServerTest
             SmallHash = TEST_ASSET_HASH,
             MediumHash = TEST_ASSET_HASH,
             LargeHash = TEST_ASSET_HASH,
-            PlanHash = TEST_ASSET_HASH,
+            PlanHash = planHash,
             Level = new SerializedPhotoLevel
             {
                 LevelId = level.LevelId,
@@ -443,6 +459,11 @@ public class PhotoEndpointsTests : GameServerTest
         HttpResponseMessage message = client1.PostAsync($"/lbp/upload/{TEST_ASSET_HASH}", new ReadOnlyMemoryContent(TestAsset)).Result;
         Assert.That(message.StatusCode, Is.EqualTo(OK));
         
+        //Upload out """plan"""
+        ReadOnlySpan<byte> planData = "PLNb"u8;
+        string planHash = BitConverter.ToString(SHA1.HashData(planData)).Replace("-", "").ToLower();
+        context.GetDataStore().WriteToStore(planHash, planData);
+        
         SerializedPhoto photo = new()
         {
             Timestamp = DateTimeOffset.UtcNow.ToUnixTimeSeconds(),
@@ -450,7 +471,7 @@ public class PhotoEndpointsTests : GameServerTest
             SmallHash = TEST_ASSET_HASH,
             MediumHash = TEST_ASSET_HASH,
             LargeHash = TEST_ASSET_HASH,
-            PlanHash = TEST_ASSET_HASH,
+            PlanHash = planHash,
             Level = new SerializedPhotoLevel
             {
                 LevelId = level.LevelId,
