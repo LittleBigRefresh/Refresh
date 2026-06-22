@@ -96,7 +96,7 @@ public class DisallowanceApiTests : GameServerTest
 
         ApiResponse<ApiDisallowedUsernameResponse>? response = client.PostData<ApiDisallowedUsernameResponse>($"/api/v3/admin/disallowed/usernames/name/{name}", request, false);
         Assert.That(response?.Data, Is.Not.Null);
-        Assert.That(response!.Data!.Username, Is.EqualTo(name));
+        Assert.That(response!.Data!.UsernameLower, Is.EqualTo(name));
         Assert.That(response!.Data!.Reason, Is.EqualTo(request.Reason));
 
         context.Database.Refresh();
@@ -104,7 +104,7 @@ public class DisallowanceApiTests : GameServerTest
         // Try to create again
         response = client.PostData<ApiDisallowedUsernameResponse>($"/api/v3/admin/disallowed/usernames/name/{name}", request, false);
         Assert.That(response?.Data, Is.Not.Null);
-        Assert.That(response!.Data!.Username, Is.EqualTo(name));
+        Assert.That(response!.Data!.UsernameLower, Is.EqualTo(name));
         Assert.That(response!.Data!.Reason, Is.EqualTo(request.Reason));
 
         context.Database.Refresh();
@@ -114,7 +114,7 @@ public class DisallowanceApiTests : GameServerTest
         disallowedList = client.GetList<ApiDisallowedUsernameResponse>($"/api/v3/admin/disallowed/usernames");
         Assert.That(disallowedList?.Data, Is.Not.Null);
         Assert.That(disallowedList!.Data!.Count(), Is.EqualTo(1));
-        Assert.That(disallowedList!.Data![0].Username, Is.EqualTo(name));
+        Assert.That(disallowedList!.Data![0].UsernameLower, Is.EqualTo(name));
 
         // Remove
         client.DeleteData<ApiDisallowedAssetResponse>($"/api/v3/admin/disallowed/usernames/name/{name}", request);
@@ -149,7 +149,7 @@ public class DisallowanceApiTests : GameServerTest
 
         ApiResponse<ApiDisallowedEmailAddressResponse>? response = client.PostData<ApiDisallowedEmailAddressResponse>($"/api/v3/admin/disallowed/emailAddresses/address/{address}", request, false);
         Assert.That(response?.Data, Is.Not.Null);
-        Assert.That(response!.Data!.Address, Is.EqualTo(address));
+        Assert.That(response!.Data!.AddressLower, Is.EqualTo(address));
         Assert.That(response!.Data!.Reason, Is.EqualTo(request.Reason));
 
         context.Database.Refresh();
@@ -157,7 +157,7 @@ public class DisallowanceApiTests : GameServerTest
         // Try to create again
         response = client.PostData<ApiDisallowedEmailAddressResponse>($"/api/v3/admin/disallowed/emailAddresses/address/{address}", request, false);
         Assert.That(response?.Data, Is.Not.Null);
-        Assert.That(response!.Data!.Address, Is.EqualTo(address));
+        Assert.That(response!.Data!.AddressLower, Is.EqualTo(address));
         Assert.That(response!.Data!.Reason, Is.EqualTo(request.Reason));
 
         context.Database.Refresh();
@@ -167,7 +167,7 @@ public class DisallowanceApiTests : GameServerTest
         disallowedList = client.GetList<ApiDisallowedEmailAddressResponse>($"/api/v3/admin/disallowed/emailAddresses");
         Assert.That(disallowedList?.Data, Is.Not.Null);
         Assert.That(disallowedList!.Data!.Count(), Is.EqualTo(1));
-        Assert.That(disallowedList!.Data![0].Address, Is.EqualTo(address));
+        Assert.That(disallowedList!.Data![0].AddressLower, Is.EqualTo(address));
 
         // Remove
         client.DeleteData<ApiDisallowedAssetResponse>($"/api/v3/admin/disallowed/emailAddresses/address/{address}", request);
@@ -203,7 +203,7 @@ public class DisallowanceApiTests : GameServerTest
 
         ApiResponse<ApiDisallowedEmailDomainResponse>? response = client.PostData<ApiDisallowedEmailDomainResponse>($"/api/v3/admin/disallowed/emailDomains/domain/{address}", request, false);
         Assert.That(response?.Data, Is.Not.Null);
-        Assert.That(response!.Data!.Domain, Is.EqualTo(domain));
+        Assert.That(response!.Data!.DomainLower, Is.EqualTo(domain));
         Assert.That(response!.Data!.Reason, Is.EqualTo(request.Reason));
 
         context.Database.Refresh();
@@ -211,7 +211,7 @@ public class DisallowanceApiTests : GameServerTest
         // Try to create again
         response = client.PostData<ApiDisallowedEmailDomainResponse>($"/api/v3/admin/disallowed/emailDomains/domain/{address}", request, false);
         Assert.That(response?.Data, Is.Not.Null);
-        Assert.That(response!.Data!.Domain, Is.EqualTo(domain));
+        Assert.That(response!.Data!.DomainLower, Is.EqualTo(domain));
         Assert.That(response!.Data!.Reason, Is.EqualTo(request.Reason));
 
         context.Database.Refresh();
@@ -221,7 +221,7 @@ public class DisallowanceApiTests : GameServerTest
         disallowedList = client.GetList<ApiDisallowedEmailDomainResponse>($"/api/v3/admin/disallowed/emailDomains");
         Assert.That(disallowedList?.Data, Is.Not.Null);
         Assert.That(disallowedList!.Data!.Count(), Is.EqualTo(1));
-        Assert.That(disallowedList!.Data![0].Domain, Is.EqualTo(domain));
+        Assert.That(disallowedList!.Data![0].DomainLower, Is.EqualTo(domain));
 
         // Remove
         client.DeleteData<ApiDisallowedAssetResponse>($"/api/v3/admin/disallowed/emailDomains/domain/{address}", request);
