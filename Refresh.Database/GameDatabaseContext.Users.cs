@@ -370,7 +370,7 @@ public partial class GameDatabaseContext // Users
                 throw new ArgumentException("Username is invalid!", nameof(newUsername));
             }
 
-            if (this.IsUsernameTaken(newUsername, user))
+            if (this.IsUsernameTaken(newUsername))
             {
                 throw new ArgumentException("Username is already taken!", nameof(newUsername));
             }

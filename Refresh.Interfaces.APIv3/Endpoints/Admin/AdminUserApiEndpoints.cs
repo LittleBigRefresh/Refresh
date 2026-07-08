@@ -173,7 +173,7 @@ public class AdminUserApiEndpoints : EndpointGroup
                 return new ApiValidationError(ApiValidationError.InvalidUsernameErrorWhen
                     + " Are you sure you used a PSN/RPCN username, or prepended it with ! if it's a fake user?");
             
-            if (database.IsUsernameTaken(body.Username, targetUser))
+            if (database.IsUsernameTaken(body.Username))
                 return ApiValidationError.UsernameTakenError;
             
             database.RenameUser(targetUser, body.Username);
