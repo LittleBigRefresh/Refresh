@@ -15,6 +15,7 @@ using Refresh.Database;
 using Refresh.Database.Models.Authentication;
 using Refresh.Database.Models.Pins;
 using Refresh.Database.Models.Users;
+using Refresh.Interfaces.APIv3.Documentation.Attributes;
 using Refresh.Interfaces.APIv3.Documentation.Descriptions;
 using Refresh.Interfaces.APIv3.Endpoints.ApiTypes;
 using Refresh.Interfaces.APIv3.Endpoints.ApiTypes.Errors;
@@ -97,6 +98,18 @@ public class UserApiEndpoints : EndpointGroup
     {
         if (user == null) return ApiAuthenticationError.NotAuthenticated;
         return ApiExtendedGameUserResponse.FromOld(user, dataContext);
+    }
+    
+    [ApiV3Endpoint("users/me/previousUsernames"), MinimumRole(GameUserRole.Moderator)]
+    [DocSummary("Gets all previous usernames which you have used.")]
+    [DocUsesPageData]
+    [RateLimitSettings(120, 35, 80, "me-api")] // TODO remove when we clean up rate-limit stats
+    public ApiListResponse<ApiExtendedPreviousUsernameResponse> GetMyPreviousUsernames(RequestContext context,
+        GameDatabaseContext database, IDataStore dataStore, DataContext dataContext, GameUser user)
+    {
+        (int skip, int count) = context.GetPageData();
+        DatabaseList<PreviousUsername> previousNames = database.GetPreviousUsernameRecordsByUser(user, skip, count);
+        return DatabaseListExtensions.FromOldList<ApiExtendedPreviousUsernameResponse, PreviousUsername>(previousNames, dataContext);
     }
     
     [ApiV3Endpoint("users/me", HttpMethods.Patch)]
