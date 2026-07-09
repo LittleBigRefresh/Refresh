@@ -103,6 +103,11 @@ public partial class GameDatabaseContext // Registration
 
         return false;
     }
+    
+    public bool WasUsernamePreviouslyTaken(string username)
+    {
+        return this.PreviousUsernames.Any(u => u.Username == username);
+    }
 
     public bool IsEmailTaken(string emailAddress)
     {
