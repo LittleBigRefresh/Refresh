@@ -707,4 +707,54 @@ public class PublishEndpointsTests : GameServerTest
             Assert.That(dbLevel.OriginalPublisher, Is.EqualTo("glotchmeister69"));
         }
     }
+    
+    [Test]
+    public void CannotPublishLevelIfRestricted()
+    {
+        using TestContext context = this.GetServer();
+        GameUser user = context.CreateUser(role: GameUserRole.User, verifyEmail: true);
+        context.Database.RestrictUser(user, "no", DateTimeOffset.MaxValue);
+
+        using HttpClient client = context.GetAuthenticatedClient(TokenType.Game, user);
+
+        GameLevelRequest level = new()
+        {
+            RootResource = TEST_ASSET_HASH,
+        };
+
+        HttpResponseMessage message = client.PostAsync("/lbp/startPublish", new StringContent(level.AsXML())).Result;
+        Assert.That(message.StatusCode, Is.EqualTo(Unauthorized));
+
+        //Upload our """level""" (even though we got an error)
+        message = client.PostAsync($"/lbp/upload/{TEST_ASSET_HASH}", new ReadOnlyMemoryContent("LVLb"u8.ToArray())).Result;
+        Assert.That(message.StatusCode, Is.EqualTo(Unauthorized));
+        
+        message = client.PostAsync("/lbp/publish", new StringContent(level.AsXML())).Result;
+        Assert.That(message.StatusCode, Is.EqualTo(Unauthorized));
+    }
+    
+    [Test]
+    public void CannotPublishLevelIfBanned()
+    {
+        using TestContext context = this.GetServer();
+        GameUser user = context.CreateUser(role: GameUserRole.User, verifyEmail: true);
+        context.Database.BanUser(user, "no", DateTimeOffset.MaxValue);
+
+        using HttpClient client = context.GetAuthenticatedClient(TokenType.Game, user);
+
+        GameLevelRequest level = new()
+        {
+            RootResource = TEST_ASSET_HASH,
+        };
+
+        HttpResponseMessage message = client.PostAsync("/lbp/startPublish", new StringContent(level.AsXML())).Result;
+        Assert.That(message.StatusCode, Is.EqualTo(Unauthorized));
+
+        //Upload our """level""" (even though we got an error)
+        message = client.PostAsync($"/lbp/upload/{TEST_ASSET_HASH}", new ReadOnlyMemoryContent("LVLb"u8.ToArray())).Result;
+        Assert.That(message.StatusCode, Is.EqualTo(Unauthorized));
+        
+        message = client.PostAsync("/lbp/publish", new StringContent(level.AsXML())).Result;
+        Assert.That(message.StatusCode, Is.EqualTo(Unauthorized));
+    }
 }
