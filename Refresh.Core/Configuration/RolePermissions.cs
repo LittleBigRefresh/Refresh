@@ -38,8 +38,8 @@ public class RolePermissions
     public static RolePermissions FromRestrictedUser => new()
     {
         ReadOnlyMode = true,
-        BlockedAssetFlags = new(),
-        // Not enabled because restricted may not upload UGC anyway
+        BlockedAssetFlags = new(AssetFlags.Dangerous | AssetFlags.Modded | AssetFlags.Media),
+        // Not enabled because restricted may not upload UGC anyway, also we already enable read-only mode for them
         LevelUploadRateLimit = new()
         {
             Enabled = false,
