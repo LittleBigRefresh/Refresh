@@ -26,9 +26,12 @@ public static class GameUserExtensions
 
     public static RolePermissions GetRolePermissionsForUser(this GameUser user, GameServerConfig config)
     {
-        if (user.Role >= GameUserRole.Trusted)
-            return config.TrustedUserPermissions;
-        
-        return config.NormalUserPermissions;
+        return user.Role switch
+        {
+            >= GameUserRole.Trusted => config.TrustedUserPermissions,
+            GameUserRole.User => config.NormalUserPermissions,
+            GameUserRole.NewUser => config.NewUserPermissions,
+            _ => RolePermissions.FromRestrictedUser,
+        };
     }
 }
