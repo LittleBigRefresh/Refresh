@@ -30,6 +30,11 @@ public enum GameUserRole : sbyte
     /// </summary>
     User = 0,
     /// <summary>
+    /// A newly registered user. Can have different, usually more restrictive configurable perms than regular users, to make spam harder.
+    /// The duration in which an account's age makes it "new" is defined by config.
+    /// </summary>
+    NewUser = -32,
+    /// <summary>
     /// A user with read-only permissions. May log in and play, but cannot do things such as publish levels or post comments.
     /// </summary>
     Restricted = -126,

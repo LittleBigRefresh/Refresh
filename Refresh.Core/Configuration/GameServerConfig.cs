@@ -8,7 +8,7 @@ namespace Refresh.Core.Configuration;
 [SuppressMessage("ReSharper", "RedundantDefaultMemberInitializer")]
 public class GameServerConfig : Config
 {
-    public override int CurrentConfigVersion => 28;
+    public override int CurrentConfigVersion => 29;
     public override int Version { get; set; } = 0;
     
     protected override void Migrate(int oldVer, dynamic oldConfig)
@@ -17,14 +17,17 @@ public class GameServerConfig : Config
         // to more cleanly split the perms between certain roles, and to make their enforcement easier.
         if (oldVer < 27)
         {
+            this.NewUserPermissions = new();
             this.NormalUserPermissions = new();
             this.TrustedUserPermissions = new();
 
             // filesize quota limit was added during version 11, but the version wasn't bumped, so catch error to be safe
+            // Migrate filesize quota
             if (oldVer >= 11)
             {
                 try
                 {
+                    this.NewUserPermissions.UserFilesizeQuota = (int)oldConfig.UserFilesizeQuota;
                     this.NormalUserPermissions.UserFilesizeQuota = (int)oldConfig.UserFilesizeQuota;
                     this.TrustedUserPermissions.UserFilesizeQuota = (int)oldConfig.UserFilesizeQuota;
                 }
@@ -34,8 +37,13 @@ public class GameServerConfig : Config
                 }
             }
 
+            // Migrate asset flags/safety level
             if (oldVer >= 18)
             {
+                this.NewUserPermissions.BlockedAssetFlags.Dangerous = (bool)oldConfig.BlockedAssetFlags.Dangerous;
+                this.NewUserPermissions.BlockedAssetFlags.Media = (bool)oldConfig.BlockedAssetFlags.Media;
+                this.NewUserPermissions.BlockedAssetFlags.Modded = (bool)oldConfig.BlockedAssetFlags.Modded;
+                
                 this.NormalUserPermissions.BlockedAssetFlags.Dangerous = (bool)oldConfig.BlockedAssetFlags.Dangerous;
                 this.NormalUserPermissions.BlockedAssetFlags.Media = (bool)oldConfig.BlockedAssetFlags.Media;
                 this.NormalUserPermissions.BlockedAssetFlags.Modded = (bool)oldConfig.BlockedAssetFlags.Modded;
@@ -50,12 +58,14 @@ public class GameServerConfig : Config
                 if (oldVer >= 2)
                 {
                     int oldSafetyLevel = (int)oldConfig.MaximumAssetSafetyLevel;
-                    this.NormalUserPermissions.BlockedAssetFlags = new ConfigAssetFlags
+                    ConfigAssetFlags fromSafetyLevel = new ConfigAssetFlags
                     {
                         Dangerous = oldSafetyLevel < 3,
                         Modded = oldSafetyLevel < 2,
                         Media = oldSafetyLevel < 1,
                     };
+                    this.NormalUserPermissions.BlockedAssetFlags = fromSafetyLevel;
+                    this.NewUserPermissions.BlockedAssetFlags = fromSafetyLevel;
                 }
 
                 // Asset safety level for trusted users was added in config version 12, so dont try to migrate if we are coming from a version older than that
@@ -80,8 +90,13 @@ public class GameServerConfig : Config
             }
 
             // Timed level upload limits were added in version 19.
+            // Migrate level limits
             if (oldVer >= 19)
             {
+                this.NewUserPermissions.LevelUploadRateLimit.Enabled = (bool)oldConfig.TimedLevelUploadLimits.Enabled;
+                this.NewUserPermissions.LevelUploadRateLimit.TimeSpanHours = (int)oldConfig.TimedLevelUploadLimits.TimeSpanHours;
+                this.NewUserPermissions.LevelUploadRateLimit.UploadQuota = (int)oldConfig.TimedLevelUploadLimits.LevelQuota;
+                
                 this.NormalUserPermissions.LevelUploadRateLimit.Enabled = (bool)oldConfig.TimedLevelUploadLimits.Enabled;
                 this.NormalUserPermissions.LevelUploadRateLimit.TimeSpanHours = (int)oldConfig.TimedLevelUploadLimits.TimeSpanHours;
                 this.NormalUserPermissions.LevelUploadRateLimit.UploadQuota = (int)oldConfig.TimedLevelUploadLimits.LevelQuota;
@@ -94,16 +109,20 @@ public class GameServerConfig : Config
             // Read-only mode was added for both normal and trusted users in version 20.
             if (oldVer >= 20)
             {
+                this.NewUserPermissions.ReadOnlyMode = (bool)oldConfig.ReadOnlyMode;
                 this.NormalUserPermissions.ReadOnlyMode = (bool)oldConfig.ReadOnlyMode;
                 this.TrustedUserPermissions.ReadOnlyMode = (bool)oldConfig.ReadonlyModeForTrustedUsers;
             }
         }
 
-        // In version 28, PhotoUploadRateLimit and PlaylistUploadRateLimit were added to RolePermissions, and various renamings related to level upload rate-limiting
-        // were done to prepare for this: the class TimedLevelUploadLimitProperties was renamed to EntityUploadRateLimitProperties, its attribute LevelQuota was renamed to UploadQuota, 
-        // and RolePermissions' attribute TimedLevelUploadLimits was renamed to LevelUploadRateLimit
+        // In version 28, PhotoUploadRateLimit and PlaylistUploadRateLimit were added to RolePermissions
+        // and various attributes related to level rate-limiting were renamed
         else if (oldVer == 27)
         {
+            this.NormalUserPermissions.LevelUploadRateLimit.Enabled = (bool)oldConfig.NormalUserPermissions.TimedLevelUploadLimits.Enabled;
+            this.NormalUserPermissions.LevelUploadRateLimit.TimeSpanHours = (int)oldConfig.NormalUserPermissions.TimedLevelUploadLimits.TimeSpanHours;
+            this.NormalUserPermissions.LevelUploadRateLimit.UploadQuota = (int)oldConfig.NormalUserPermissions.TimedLevelUploadLimits.LevelQuota;
+            
             this.NormalUserPermissions.LevelUploadRateLimit.Enabled = (bool)oldConfig.NormalUserPermissions.TimedLevelUploadLimits.Enabled;
             this.NormalUserPermissions.LevelUploadRateLimit.TimeSpanHours = (int)oldConfig.NormalUserPermissions.TimedLevelUploadLimits.TimeSpanHours;
             this.NormalUserPermissions.LevelUploadRateLimit.UploadQuota = (int)oldConfig.NormalUserPermissions.TimedLevelUploadLimits.LevelQuota;
@@ -112,12 +131,22 @@ public class GameServerConfig : Config
             this.TrustedUserPermissions.LevelUploadRateLimit.TimeSpanHours = (int)oldConfig.TrustedUserPermissions.TimedLevelUploadLimits.TimeSpanHours;
             this.TrustedUserPermissions.LevelUploadRateLimit.UploadQuota = (int)oldConfig.TrustedUserPermissions.TimedLevelUploadLimits.LevelQuota;
         }
+        
+        // In version 29, role perms for new users were added
+        else if (oldVer < 29)
+        {
+            this.NewUserPermissions = oldConfig.NormalUserPermissions;
+        }
     }
 
     public string LicenseText { get; set; } = "Welcome to Refresh!";
 
     /// <summary>
-    /// Role-specific permissions for normal users and below
+    /// Role-specific permissions for new users.
+    /// </summary>
+    public RolePermissions NewUserPermissions = new();
+    /// <summary>
+    /// Role-specific permissions for normal, not-new users and restricted users (if applicable)
     /// </summary>
     public RolePermissions NormalUserPermissions = new();
     /// <summary>
@@ -125,6 +154,13 @@ public class GameServerConfig : Config
     /// </summary>
     public RolePermissions TrustedUserPermissions = new();
 
+    /// <summary>
+    /// How long we should wait (in hours) until we should mark a new account as no longer new.
+    /// Once their account hits this age, we will start applying NormalUserPermissions instead of NewUserPermissions
+    /// as their role-perms.
+    /// </summary>
+    public int HoursUntilNewAccountNoLongerNew { get; set; } = 48; // TODO better naming probably
+    
     public bool AllowUsersToUseIpAuthentication { get; set; } = false;
     public bool PermitPsnLogin { get; set; } = true;
     public bool PermitRpcnLogin { get; set; } = true;
@@ -181,5 +217,12 @@ public class GameServerConfig : Config
     public string[] HmacDigestKeys = ["CustomServerDigest"];
 
     public bool PermitShowingOnlineUsers { get; set; } = true;
+    
+    /// <summary>
+    /// Whether users that are considered "new" should be shown on user categories, and whether their
+    /// rooms should be exposed via API.
+    /// </summary>
+    public bool PermitShowingNewUsers { get; set; } = true;
+    
     public bool EnableDiveIn { get; set; } = true;
 }
