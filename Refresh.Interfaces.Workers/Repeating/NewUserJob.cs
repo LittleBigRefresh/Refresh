@@ -24,14 +24,16 @@ public class NewUserJob : RepeatingJob
         DateTimeOffset now = context.TimeProvider.Now;
         DatabaseList<GameUser> newUsers = context.Database.GetAllUsersWithRole(GameUserRole.NewUser);
 
-        foreach (GameUser user in newUsers.Items)
+        foreach (GameUser user in newUsers.Items.ToList())
         {
             // If an account is, e.g., 2 hours and 40 minutes old, and max age for new users is 3 hours, we wouldn't
             // consider max to be reached yet, so floor the difference.
             long accountAge = (long)Math.Floor(now.Subtract(user.JoinDate).TotalHours);
+            
+            context.Logger.LogDebug(RefreshContext.Worker, $"{nameof(NewUserJob)} - new user: {user}, join date: {user.JoinDate}, current time: {now}, account age: {accountAge}h, configured required age: {this._requiredAccountAge}h.");
             if (accountAge < this._requiredAccountAge) continue; // Don't promote user if they haven't reached max age yet
             
-            context.Logger.LogInfo(RefreshContext.Worker, $"Promoting {user} to regular user since their account is {accountAge}/{this._requiredAccountAge} hours old now.");
+            context.Logger.LogInfo(RefreshContext.Worker, $"Promoting {user} to regular user since their account is {accountAge} hours old now (required configured age: {this._requiredAccountAge}h).");
             context.Database.SetUserRole(user, GameUserRole.User);
         }
     }
