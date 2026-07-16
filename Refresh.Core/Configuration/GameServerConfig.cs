@@ -132,7 +132,8 @@ public class GameServerConfig : Config
             this.TrustedUserPermissions.LevelUploadRateLimit.UploadQuota = (int)oldConfig.TrustedUserPermissions.TimedLevelUploadLimits.LevelQuota;
         }
         
-        // In version 29, role perms for new users were added
+        // In version 29, the NewUser role and its related config options
+        // (new user role perms and SetNewUserToNormalUserAfterHoursPassed) were added
         else if (oldVer < 29)
         {
             this.NewUserPermissions = oldConfig.NormalUserPermissions;
@@ -155,11 +156,12 @@ public class GameServerConfig : Config
     public RolePermissions TrustedUserPermissions = new();
 
     /// <summary>
-    /// How long we should wait (in hours) until we should mark a new account as no longer new.
+    /// How long we should wait (in hours) until we should use NewUserJob to set a new user's role from NewUser to User,
+    /// effectively marking them as no longer new.
     /// Once their account hits this age, we will start applying NormalUserPermissions instead of NewUserPermissions
     /// as their role-perms.
     /// </summary>
-    public int HoursUntilNewAccountNoLongerNew { get; set; } = 48; // TODO better naming probably
+    public int HoursUntilNewAccountNoLongerNew { get; set; } = 24 * 7; // TODO should we think of a better name?
     
     public bool AllowUsersToUseIpAuthentication { get; set; } = false;
     public bool PermitPsnLogin { get; set; } = true;
@@ -217,12 +219,6 @@ public class GameServerConfig : Config
     public string[] HmacDigestKeys = ["CustomServerDigest"];
 
     public bool PermitShowingOnlineUsers { get; set; } = true;
-    
-    /// <summary>
-    /// Whether users that are considered "new" should be shown on user categories, and whether their
-    /// rooms should be exposed via API.
-    /// </summary>
-    public bool PermitShowingNewUsers { get; set; } = true;
     
     public bool EnableDiveIn { get; set; } = true;
 }
