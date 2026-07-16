@@ -30,8 +30,9 @@ public enum GameUserRole : sbyte
     /// </summary>
     User = 0,
     /// <summary>
-    /// A newly registered user. Can have different, usually more restrictive configurable perms than regular users, to make spam harder.
-    /// The duration in which an account's age makes it "new" is defined by config.
+    /// A newly registered user. Can have different, usually more restrictive configurable perms than regular users.
+    /// Useful to make spam more difficult, for example. The duration in which an account's age makes it "new" is defined by config.
+    /// Automatically promoted to User by NewUserJob.
     /// </summary>
     NewUser = -32,
     /// <summary>
