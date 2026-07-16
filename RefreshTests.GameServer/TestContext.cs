@@ -126,7 +126,7 @@ public class TestContext : IDisposable
         username ??= this.UserIncrement.ToString();
         
         GameUser user = this.Database.CreateUser(username, $"{username}@{username}.local");
-        if (role != GameUserRole.User) this.Database.SetUserRole(user, role);
+        if (user.Role != GameUserRole.User) this.Database.SetUserRole(user, role);
         if (verifyEmail) this.Database.VerifyUserEmail(user);
         this.Database.Entry(user).State = EntityState.Unchanged;
 
