@@ -315,9 +315,7 @@ public partial class GameDatabaseContext // Users
 
     public void SetUserRole(GameUser user, GameUserRole role)
     {
-        // TODO allow restricting/banning/pardoning via CLI
         if(role == GameUserRole.Banned) throw new InvalidOperationException($"Cannot ban a user with this method. Please use {nameof(this.BanUser)}().");
-        if(role == GameUserRole.Restricted) throw new InvalidOperationException($"Cannot restrict a user with this method. Please use {nameof(this.RestrictUser)}().");
         
         if (user.Role is GameUserRole.Banned or GameUserRole.Restricted)
         {

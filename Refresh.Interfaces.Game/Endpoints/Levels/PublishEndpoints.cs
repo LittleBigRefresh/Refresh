@@ -110,7 +110,7 @@ public class PublishEndpoints : EndpointGroup
     {
         if (dataContext.User!.IsWriteBlocked(config))
         {
-            dataContext.Database.AddPublishFailNotification($"Your user role ({user.Role}) is currently set to read-only by the server.", body.Title, dataContext.User!);
+            dataContext.Database.AddPublishFailNotification($"The server is in read-only mode.", body.Title, dataContext.User!);
             return Unauthorized;
         }
         
