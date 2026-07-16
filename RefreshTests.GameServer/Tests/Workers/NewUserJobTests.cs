@@ -14,17 +14,11 @@ public class NewUserJobTests : GameServerTest
     public void NewUsersGetPromotedIfOldEnough(long fastForwardMinutes, GameUserRole resultingRole)
     {
         using TestContext context = this.GetServer();
-        GameUser user = context.CreateUser();
+        GameUser user = context.CreateUser(role: GameUserRole.NewUser);
         Assert.That(user.Role, Is.EqualTo(GameUserRole.NewUser));
         
         // Prepare
-        WorkContext workContext = new()
-        {
-            Database = context.Database,
-            DataStore = context.GetDataStore(),
-            Logger = context.Server.Value.Logger,
-            TimeProvider = context.Time,
-        };
+        WorkContext workContext = context.GetWorkContext();
         NewUserJob job = new(2); // Set required age to 2 hours
         
         // Ensure job doesn't promote the user immediately
@@ -39,7 +33,7 @@ public class NewUserJobTests : GameServerTest
         job.ExecuteJob(workContext);
         context.Database.Refresh();
         
-        // Ensure job has promoted the user this time
+        // Ensure job has promoted the user this time (if enough time has passed)
         updatedUser = context.Database.GetUserByObjectId(user.UserId);
         Assert.That(updatedUser, Is.Not.Null);
         Assert.That(updatedUser!.Role, Is.EqualTo(resultingRole));

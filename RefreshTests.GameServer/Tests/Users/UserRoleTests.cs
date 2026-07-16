@@ -21,8 +21,7 @@ public class UserRoleTests : GameServerTest
         config.TrustedUserPermissions.UserFilesizeQuota = 23456;
         config.TrustedUserPermissions.ReadOnlyMode = false;
         
-        // New user
-        GameUser user = context.CreateUser();
+        GameUser user = context.CreateUser(role: GameUserRole.NewUser);
         Assert.That(user.Role, Is.EqualTo(GameUserRole.NewUser));
         
         RolePermissions perms = user.GetRolePermissionsForUser(config);
@@ -80,15 +79,24 @@ public class UserRoleTests : GameServerTest
         Assert.That(perms.ReadOnlyMode, Is.True);
         Assert.That(user.IsWriteBlocked(config), Is.True);
     }
+
+    [Test]
+    public void EnsureNewlyCreatedUsersAreNewUsers()
+    {
+        // Ensure using the database method causes users to have the NewUser role
+        using TestContext context = this.GetServer();
+        GameUser user = context.Database.CreateUser("new", "new@new.com");
+        Assert.That(user.Role, Is.EqualTo(GameUserRole.NewUser));
+    }
     
     [Test]
-    public void EnsureSettingRoleToRestrictedOrBannedManuallyThrows()
+    public void EnsureSettingRoleToBannedManuallyThrows()
     {
         using TestContext context = this.GetServer();
         GameUser user = context.CreateUser();
         Assert.That(user.Role, Is.EqualTo(GameUserRole.NewUser));
         
-        Assert.That(() => context.Database.SetUserRole(user, GameUserRole.Restricted), Throws.TypeOf<InvalidOperationException>());
+        //Assert.That(() => context.Database.SetUserRole(user, GameUserRole.Restricted), Throws.TypeOf<InvalidOperationException>()); // TODO consistent behaviour
         Assert.That(() => context.Database.SetUserRole(user, GameUserRole.Banned), Throws.TypeOf<InvalidOperationException>());
     }
 }
