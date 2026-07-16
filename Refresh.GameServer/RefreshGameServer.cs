@@ -186,7 +186,7 @@ public class RefreshGameServer : RefreshServer
 
     protected virtual void SetupWorkers()
     {
-        this.WorkerManager = RefreshWorkerManager.Create(this.Logger, this._dataStore, this._databaseProvider);
+        this.WorkerManager = RefreshWorkerManager.Create(this.Logger, this._dataStore, this._databaseProvider, this.GetTimeProvider());
         
         if (this._configStore.Integration.DiscordWebhookEnabled && this._configStore.GameServer.PermitShowingOnlineUsers)
         {

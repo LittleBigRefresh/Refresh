@@ -14,7 +14,7 @@ public class JobStateTests : GameServerTest
     {
         using TestContext context = this.GetServer();
         IDataStore dataStore = context.GetDataStore();
-        WorkerManager manager = new(Logger, dataStore, context.DatabaseProvider);
+        WorkerManager manager = new(Logger, dataStore, context.DatabaseProvider, context.Time);
 
         context.Database.UpdateOrCreateJobState(typeof(TestMigrationJob).Name, new MigrationJobState(), WorkerClass.Refresh);
         Assert.That(context.Database.GetJobState(typeof(TestMigrationJob).Name, typeof(MigrationJobState), WorkerClass.Refresh), Is.Not.Null);
@@ -34,7 +34,7 @@ public class JobStateTests : GameServerTest
     {
         using TestContext context = this.GetServer();
         IDataStore dataStore = context.GetDataStore();
-        WorkerManager manager = new(Logger, dataStore, context.DatabaseProvider);
+        WorkerManager manager = new(Logger, dataStore, context.DatabaseProvider, context.Time);
         TestMigrationJob job = new();
         manager.AddJob(job);
 
@@ -68,7 +68,7 @@ public class JobStateTests : GameServerTest
     {
         using TestContext context = this.GetServer();
         IDataStore dataStore = context.GetDataStore();
-        WorkerManager manager = new(Logger, dataStore, context.DatabaseProvider);
+        WorkerManager manager = new(Logger, dataStore, context.DatabaseProvider, context.Time);
         
         context.Database.UpdateOrCreateJobState(typeof(TestMigrationJob).Name, new MigrationJobState(), WorkerClass.Craftworld);
         Assert.That(context.Database.GetJobState(typeof(TestMigrationJob).Name, typeof(MigrationJobState), WorkerClass.Craftworld), Is.Not.Null);
@@ -89,7 +89,7 @@ public class JobStateTests : GameServerTest
     {
         using TestContext context = this.GetServer();
         IDataStore dataStore = context.GetDataStore();
-        WorkerManager manager = new(Logger, dataStore, context.DatabaseProvider);
+        WorkerManager manager = new(Logger, dataStore, context.DatabaseProvider, context.Time);
         TestMigrationJob job = new();
         manager.AddJob(job);
 
@@ -135,7 +135,7 @@ public class JobStateTests : GameServerTest
         // Simulate a roll-back, meaning the job wouldn't be in the WorkerManager anymore, so no migrations will happen, and the job state would be
         // auto-removed by WorkerManager.Start() in real cases.
         context.Database.Refresh();
-        manager = new(Logger, dataStore, context.DatabaseProvider);
+        manager = new(Logger, dataStore, context.DatabaseProvider, context.Time);
         GameLevel thirdLevel = context.CreateLevel(user);
 
         manager.RemoveUnusedJobStates();
@@ -155,7 +155,7 @@ public class JobStateTests : GameServerTest
         Assert.That(thirdLevelMigrated!.Title, Does.Not.EndWith(" test"));
 
         // Now simulate a re-update, where the job is in the WorkerManager again
-        manager = new(Logger, dataStore, context.DatabaseProvider);
+        manager = new(Logger, dataStore, context.DatabaseProvider, context.Time);
         job = new();
         manager.AddJob(job);
         manager.RemoveUnusedJobStates();

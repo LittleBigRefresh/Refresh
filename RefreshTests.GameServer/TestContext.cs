@@ -267,6 +267,7 @@ public class TestContext : IDisposable
             Database = this.Database,
             Logger = this.Server.Value.Logger,
             DataStore = this.GetDataStore(),
+            TimeProvider = this.Time,
         };
     }
 

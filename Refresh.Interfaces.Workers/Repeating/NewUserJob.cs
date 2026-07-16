@@ -21,7 +21,7 @@ public class NewUserJob : RepeatingJob
 
     public override void ExecuteJob(WorkContext context)
     {
-        DateTimeOffset now = DateTimeOffset.Now; // TODO use IDateTimeProvider for getting time in jobs
+        DateTimeOffset now = context.TimeProvider.Now;
         DatabaseList<GameUser> newUsers = context.Database.GetAllUsersWithRole(GameUserRole.NewUser);
 
         foreach (GameUser user in newUsers.Items)
