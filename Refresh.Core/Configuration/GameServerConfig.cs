@@ -133,7 +133,7 @@ public class GameServerConfig : Config
         }
         
         // In version 29, the NewUser role and its related config options
-        // (new user role perms and SetNewUserToNormalUserAfterHoursPassed) were added
+        // (new user role perms and HoursUntilNewAccountNoLongerNew) were added
         else if (oldVer < 29)
         {
             this.NewUserPermissions = oldConfig.NormalUserPermissions;
