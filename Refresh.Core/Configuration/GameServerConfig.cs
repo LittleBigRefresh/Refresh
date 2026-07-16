@@ -147,11 +147,11 @@ public class GameServerConfig : Config
     /// </summary>
     public RolePermissions NewUserPermissions = new();
     /// <summary>
-    /// Role-specific permissions for normal, not-new users and restricted users (if applicable)
+    /// Role-specific permissions for normal, not-new users.
     /// </summary>
     public RolePermissions NormalUserPermissions = new();
     /// <summary>
-    /// Role-specific permissions for trusted users and above
+    /// Role-specific permissions for trusted users and above.
     /// </summary>
     public RolePermissions TrustedUserPermissions = new();
 
