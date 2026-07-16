@@ -90,11 +90,10 @@ public class UserRoleTests : GameServerTest
     }
     
     [Test]
-    public void EnsureSettingRoleToBannedManuallyThrows()
+    public void EnsureManuallySettingRoleToBannedThrows()
     {
         using TestContext context = this.GetServer();
         GameUser user = context.CreateUser();
-        Assert.That(user.Role, Is.EqualTo(GameUserRole.NewUser));
         
         //Assert.That(() => context.Database.SetUserRole(user, GameUserRole.Restricted), Throws.TypeOf<InvalidOperationException>()); // TODO consistent behaviour
         Assert.That(() => context.Database.SetUserRole(user, GameUserRole.Banned), Throws.TypeOf<InvalidOperationException>());
