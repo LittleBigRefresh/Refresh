@@ -178,7 +178,6 @@ public class UserEndpoints : EndpointGroup
                 // blank = reset planets, but GUIDs should never happen
                 MayBeGuid = false,
                 AssetContextTypeStr = "planet asset",
-                OnNewAssetRefCallback = delegate(string newRef) { data.PlanetsHash = newRef; }
             }, context.Logger);
             data.PlanetsHash = planetResult.NewAssetRef;
             
