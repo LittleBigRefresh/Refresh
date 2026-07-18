@@ -27,14 +27,10 @@ public class AssetReferenceValidationTests : GameServerTest
         DataContext dataContext = context.GetDataContext(token);
         AssetImporter importer = new(dataContext.Logger, context.Time);
 
-        string newRefSetByCallback = "unset lol";
-        ValidatedAssetResult result = ResourceValidationHelper.ValidateReference(new(blankHashVariation, dataContext, importer)
-        {
-            OnNewAssetRefCallback = delegate(string NewAssetRef) { newRefSetByCallback = NewAssetRef; },
-        }, dataContext.Logger);
+        ValidatedAssetResult result = ResourceValidationHelper.ValidateReference(new(blankHashVariation, dataContext, importer), dataContext.Logger);
+        
         Assert.That(result.Status, Is.EqualTo(OK));
         Assert.That(result.NewAssetRef, Is.EqualTo("0"));
-        Assert.That(newRefSetByCallback, Is.EqualTo("0"));
         Assert.That(result.AssetInfo, Is.Null);
     }
 
@@ -51,16 +47,14 @@ public class AssetReferenceValidationTests : GameServerTest
         DataContext dataContext = context.GetDataContext(token);
         AssetImporter importer = new(dataContext.Logger, context.Time);
 
-        string newRefSetByCallback = "unset lol";
         ValidatedAssetResult result = ResourceValidationHelper.ValidateReference(new(blankHashVariation, dataContext, importer)
         {
             MayBeBlank = false,
-            OnNewAssetRefCallback = delegate(string NewAssetRef) { newRefSetByCallback = NewAssetRef; },
         }, dataContext.Logger);
+        
         Assert.That(result.Status, Is.EqualTo(BadRequest));
         Assert.That(result.ErrorMessage, Is.Not.Null);
         Assert.That(result.NewAssetRef, Is.EqualTo("0"));
-        Assert.That(newRefSetByCallback, Is.EqualTo("0"));
     }
 
     [Test]
@@ -74,14 +68,10 @@ public class AssetReferenceValidationTests : GameServerTest
         DataContext dataContext = context.GetDataContext(token);
         AssetImporter importer = new(dataContext.Logger, context.Time);
 
-        string newRefSetByCallback = "unset lol";
-        ValidatedAssetResult result = ResourceValidationHelper.ValidateReference(new(guid, dataContext, importer)
-        {
-            OnNewAssetRefCallback = delegate(string NewAssetRef) { newRefSetByCallback = NewAssetRef; },
-        }, dataContext.Logger);
+        ValidatedAssetResult result = ResourceValidationHelper.ValidateReference(new(guid, dataContext, importer), dataContext.Logger);
+        
         Assert.That(result.Status, Is.EqualTo(OK));
         Assert.That(result.NewAssetRef, Is.EqualTo(guid));
-        Assert.That(newRefSetByCallback, Is.EqualTo(guid));
         Assert.That(result.ErrorMessage, Is.Null);
     }
 
@@ -96,16 +86,14 @@ public class AssetReferenceValidationTests : GameServerTest
         DataContext dataContext = context.GetDataContext(token);
         AssetImporter importer = new(dataContext.Logger, context.Time);
 
-        string newRefSetByCallback = "unset lol";
         ValidatedAssetResult result = ResourceValidationHelper.ValidateReference(new(guid, dataContext, importer)
         {
             MayBeGuid = false,
-            OnNewAssetRefCallback = delegate(string NewAssetRef) { newRefSetByCallback = NewAssetRef; },
         }, dataContext.Logger);
+        
         Assert.That(result.Status, Is.EqualTo(BadRequest));
         Assert.That(result.ErrorMessage, Is.Not.Null);
         Assert.That(result.NewAssetRef, Is.EqualTo("0"));
-        Assert.That(newRefSetByCallback, Is.EqualTo("0"));
     }
 
     [Test]
@@ -120,15 +108,11 @@ public class AssetReferenceValidationTests : GameServerTest
         DataContext dataContext = context.GetDataContext(token);
         AssetImporter importer = new(dataContext.Logger, context.Time);
 
-        string newRefSetByCallback = "unset lol";
-        ValidatedAssetResult result = ResourceValidationHelper.ValidateReference(new(guid, dataContext, importer)
-        {
-            OnNewAssetRefCallback = delegate(string NewAssetRef) { newRefSetByCallback = NewAssetRef; },
-        }, dataContext.Logger);
+        ValidatedAssetResult result = ResourceValidationHelper.ValidateReference(new(guid, dataContext, importer), dataContext.Logger);
+        
         Assert.That(result.Status, Is.EqualTo(BadRequest));
         Assert.That(result.ErrorMessage, Is.Not.Null);
         Assert.That(result.NewAssetRef, Is.EqualTo("0"));
-        Assert.That(newRefSetByCallback, Is.EqualTo("0"));
     }
 
     [Test]
@@ -141,16 +125,14 @@ public class AssetReferenceValidationTests : GameServerTest
         DataContext dataContext = context.GetDataContext(token);
         AssetImporter importer = new(dataContext.Logger, context.Time);
 
-        string newRefSetByCallback = "unset lol";
         ValidatedAssetResult result = ResourceValidationHelper.ValidateReference(new(guid, dataContext, importer)
         {
             MustBeTexture = true,
-            OnNewAssetRefCallback = delegate(string NewAssetRef) { newRefSetByCallback = NewAssetRef; },
         }, dataContext.Logger);
+        
         Assert.That(result.Status, Is.EqualTo(BadRequest));
         Assert.That(result.ErrorMessage, Is.Not.Null);
         Assert.That(result.NewAssetRef, Is.EqualTo("0"));
-        Assert.That(newRefSetByCallback, Is.EqualTo("0"));
     }
 
     [Test]
@@ -163,16 +145,14 @@ public class AssetReferenceValidationTests : GameServerTest
         DataContext dataContext = context.GetDataContext(token);
         AssetImporter importer = new(dataContext.Logger, context.Time);
 
-        string newRefSetByCallback = "unset lol";
         ValidatedAssetResult result = ResourceValidationHelper.ValidateReference(new(guid, dataContext, importer)
         {
             MustBeTexture = true,
-            OnNewAssetRefCallback = delegate(string NewAssetRef) { newRefSetByCallback = NewAssetRef; },
         }, dataContext.Logger);
+        
         Assert.That(result.Status, Is.EqualTo(OK));
         Assert.That(result.AssetInfo, Is.Null);
         Assert.That(result.NewAssetRef, Is.EqualTo(guid));
-        Assert.That(newRefSetByCallback, Is.EqualTo(guid));
     }
 
     [Test]
@@ -198,11 +178,9 @@ public class AssetReferenceValidationTests : GameServerTest
             dataContext.DataStore.WriteToStore(hash, data);
         }
 
-        string newRefSetByCallback = "unset lol";
         ValidatedAssetResult result = ResourceValidationHelper.ValidateReference(new(hash, dataContext, importer)
         {
             MustBeInDataStoreIfHash = mustBeInDataStore,
-            OnNewAssetRefCallback = delegate(string NewAssetRef) { newRefSetByCallback = NewAssetRef; },
         }, dataContext.Logger);
 
         if (expectDataStoreFailure)
@@ -210,7 +188,6 @@ public class AssetReferenceValidationTests : GameServerTest
             Assert.That(result.Status, Is.EqualTo(NotFound));
             Assert.That(result.AssetInfo, Is.Null);
             Assert.That(result.NewAssetRef, Is.EqualTo("0"));
-            Assert.That(newRefSetByCallback, Is.EqualTo("0"));
         }
         else if (addToDataStore)
         {
@@ -219,14 +196,12 @@ public class AssetReferenceValidationTests : GameServerTest
             Assert.That(result.AssetInfo!.AssetHash, Is.EqualTo(hash));
             Assert.That(result.AssetInfo!.AssetType, Is.EqualTo(GameAssetType.Level));
             Assert.That(result.NewAssetRef, Is.EqualTo(hash));
-            Assert.That(newRefSetByCallback, Is.EqualTo(hash));
         }
         else
         {
             Assert.That(result.Status, Is.EqualTo(OK));
             Assert.That(result.AssetInfo, Is.Null); // not auto-imported and also not in DB before
             Assert.That(result.NewAssetRef, Is.EqualTo(hash));
-            Assert.That(newRefSetByCallback, Is.EqualTo(hash));
         }
 
         Assert.That(result.DisallowanceInfo, Is.Null);
@@ -247,11 +222,9 @@ public class AssetReferenceValidationTests : GameServerTest
         ReadOnlySpan<byte> data = "LVLb"u8;
         string hash = BitConverter.ToString(SHA1.HashData(data)).Replace("-", "").ToLower();
 
-        string newRefSetByCallback = "unset lol";
         ValidatedAssetResult result = ResourceValidationHelper.ValidateReference(new(hash, dataContext, importer)
         {
             MustBeInDataStoreIfHash = true,
-            OnNewAssetRefCallback = delegate(string NewAssetRef) { newRefSetByCallback = NewAssetRef; },
         }, dataContext.Logger);
 
         Assert.That(result.Status, Is.EqualTo(InternalServerError));
@@ -259,7 +232,6 @@ public class AssetReferenceValidationTests : GameServerTest
         Assert.That(result.DisallowanceInfo, Is.Null);
         Assert.That(result.ExistsInDataStore, Is.True);
         Assert.That(result.NewAssetRef, Is.EqualTo("0"));
-        Assert.That(newRefSetByCallback, Is.EqualTo("0"));
     }
 
     [Test]
@@ -276,11 +248,9 @@ public class AssetReferenceValidationTests : GameServerTest
         string fakeHash = BitConverter.ToString(SHA1.HashData("veryreallevel"u8)).Replace("-", "").ToLower();
         dataContext.DataStore.WriteToStore(fakeHash, data);
 
-        string newRefSetByCallback = "unset lol";
         ValidatedAssetResult result = ResourceValidationHelper.ValidateReference(new(fakeHash, dataContext, importer)
         {
             MustBeInDataStoreIfHash = true,
-            OnNewAssetRefCallback = delegate(string NewAssetRef) { newRefSetByCallback = NewAssetRef; },
         }, dataContext.Logger);
 
         Assert.That(result.Status, Is.EqualTo(BadRequest));
@@ -289,7 +259,6 @@ public class AssetReferenceValidationTests : GameServerTest
         Assert.That(result.ExistsInDataStore, Is.True);
         Assert.That(result.ErrorMessage, Is.Not.Null);
         Assert.That(result.NewAssetRef, Is.EqualTo("0"));
-        Assert.That(newRefSetByCallback, Is.EqualTo("0"));
     }
 
     [Test]
@@ -301,11 +270,9 @@ public class AssetReferenceValidationTests : GameServerTest
         DataContext dataContext = context.GetDataContext(token);
         AssetImporter importer = new(dataContext.Logger, context.Time);
 
-        string newRefSetByCallback = "unset lol";
         ValidatedAssetResult result = ResourceValidationHelper.ValidateReference(new("lololol", dataContext, importer)
         {
             MustBeInDataStoreIfHash = true,
-            OnNewAssetRefCallback = delegate(string NewAssetRef) { newRefSetByCallback = NewAssetRef; },
         }, dataContext.Logger);
 
         Assert.That(result.Status, Is.EqualTo(BadRequest));
@@ -313,7 +280,6 @@ public class AssetReferenceValidationTests : GameServerTest
         Assert.That(result.DisallowanceInfo, Is.Null);
         Assert.That(result.ExistsInDataStore, Is.False); // Cancelled before actually wasting time looking it up
         Assert.That(result.NewAssetRef, Is.EqualTo("0"));
-        Assert.That(newRefSetByCallback, Is.EqualTo("0"));
     }
 
     [Test]
@@ -331,11 +297,9 @@ public class AssetReferenceValidationTests : GameServerTest
 
         context.Database.Refresh();
 
-        string newRefSetByCallback = "unset lol";
         ValidatedAssetResult result = ResourceValidationHelper.ValidateReference(new(hash, dataContext, importer)
         {
             MustBeInDataStoreIfHash = true, // Ensure disallowance is checked before the data store check
-            OnNewAssetRefCallback = delegate(string NewAssetRef) { newRefSetByCallback = NewAssetRef; },
         }, dataContext.Logger);
 
         Assert.That(result.Status, Is.EqualTo(Unauthorized));
@@ -343,7 +307,6 @@ public class AssetReferenceValidationTests : GameServerTest
         Assert.That(result.AssetInfo, Is.Null);
         Assert.That(result.DisallowanceInfo, Is.Not.Null);
         Assert.That(result.NewAssetRef, Is.EqualTo("0"));
-        Assert.That(newRefSetByCallback, Is.EqualTo("0"));
     }
 
     [Test]
@@ -358,11 +321,9 @@ public class AssetReferenceValidationTests : GameServerTest
         ReadOnlySpan<byte> data = "LVLb"u8;
         string hash = BitConverter.ToString(SHA1.HashData(data)).Replace("-", "").ToLower();
 
-        string newRefSetByCallback = "unset lol";
         ValidatedAssetResult result = ResourceValidationHelper.ValidateReference(new(hash, dataContext, importer)
         {
             MayBeHash = false,
-            OnNewAssetRefCallback = delegate(string NewAssetRef) { newRefSetByCallback = NewAssetRef; },
         }, dataContext.Logger);
 
         Assert.That(result.Status, Is.EqualTo(BadRequest));
@@ -370,7 +331,6 @@ public class AssetReferenceValidationTests : GameServerTest
         Assert.That(result.AssetInfo, Is.Null);
         Assert.That(result.DisallowanceInfo, Is.Null);
         Assert.That(result.NewAssetRef, Is.EqualTo("0"));
-        Assert.That(newRefSetByCallback, Is.EqualTo("0"));
     }
 
     [Test]
@@ -396,17 +356,14 @@ public class AssetReferenceValidationTests : GameServerTest
 
         context.Database.Refresh();
 
-        string newRefSetByCallback = "unset lol";
         ValidatedAssetResult result = ResourceValidationHelper.ValidateReference(new(hash, dataContext, importer)
         {
             MustBeTexture = true,
             MustBeInDataStoreIfHash = false, // not tested in this one
-            OnNewAssetRefCallback = delegate(string NewAssetRef) { newRefSetByCallback = NewAssetRef; },
         }, dataContext.Logger);
 
         Assert.That(result.Status, Is.EqualTo(OK));
         Assert.That(result.NewAssetRef, Is.EqualTo(hash));
-        Assert.That(newRefSetByCallback, Is.EqualTo(hash));
         Assert.That(result.AssetInfo, Is.Not.Null);
         Assert.That(result.AssetInfo!.AssetHash, Is.EqualTo(hash));
         Assert.That(result.AssetInfo!.AssetType, Is.EqualTo(GameAssetType.Texture));
@@ -437,17 +394,14 @@ public class AssetReferenceValidationTests : GameServerTest
 
         context.Database.Refresh();
 
-        string newRefSetByCallback = "unset lol";
         ValidatedAssetResult result = ResourceValidationHelper.ValidateReference(new(hash, dataContext, importer)
         {
             MustBeTexture = true,
             MustBeInDataStoreIfHash = false, // not tested in this one
-            OnNewAssetRefCallback = delegate(string NewAssetRef) { newRefSetByCallback = NewAssetRef; },
         }, dataContext.Logger);
 
         Assert.That(result.Status, Is.EqualTo(BadRequest));
         Assert.That(result.NewAssetRef, Is.EqualTo("0"));
-        Assert.That(newRefSetByCallback, Is.EqualTo("0"));
         Assert.That(result.AssetInfo, Is.Not.Null);
         Assert.That(result.AssetInfo!.AssetHash, Is.EqualTo(hash));
         Assert.That(result.AssetInfo!.AssetType, Is.EqualTo(GameAssetType.Level));
@@ -472,17 +426,14 @@ public class AssetReferenceValidationTests : GameServerTest
 
         context.Database.Refresh();
 
-        string newRefSetByCallback = "unset lol";
         ValidatedAssetResult result = ResourceValidationHelper.ValidateReference(new(hash, dataContext, importer)
         {
             MustBeTexture = true,
             MustBeInDataStoreIfHash = true,
-            OnNewAssetRefCallback = delegate(string NewAssetRef) { newRefSetByCallback = NewAssetRef; },
         }, dataContext.Logger);
 
         Assert.That(result.Status, Is.EqualTo(OK));
         Assert.That(result.NewAssetRef, Is.EqualTo(hash));
-        Assert.That(newRefSetByCallback, Is.EqualTo(hash));
         Assert.That(result.AssetInfo, Is.Not.Null);
         Assert.That(result.AssetInfo!.AssetHash, Is.EqualTo(hash));
         Assert.That(result.AssetInfo!.AssetType, Is.EqualTo(GameAssetType.Unknown));
@@ -506,17 +457,14 @@ public class AssetReferenceValidationTests : GameServerTest
 
         context.Database.Refresh();
 
-        string newRefSetByCallback = "unset lol";
         ValidatedAssetResult result = ResourceValidationHelper.ValidateReference(new(hash, dataContext, importer)
         {
             MustBeTexture = true,
             MustBeInDataStoreIfHash = true,
-            OnNewAssetRefCallback = delegate(string NewAssetRef) { newRefSetByCallback = NewAssetRef; },
         }, dataContext.Logger);
 
         Assert.That(result.Status, Is.EqualTo(BadRequest));
         Assert.That(result.NewAssetRef, Is.EqualTo("0"));
-        Assert.That(newRefSetByCallback, Is.EqualTo("0"));
         Assert.That(result.AssetInfo, Is.Not.Null);
         Assert.That(result.AssetInfo!.AssetHash, Is.EqualTo(hash));
         Assert.That(result.AssetInfo!.AssetType, Is.EqualTo(GameAssetType.Unknown));
