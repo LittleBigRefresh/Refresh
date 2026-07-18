@@ -80,9 +80,9 @@ public class PublishEndpoints : EndpointGroup
             MustBeTexture = true,
             MustBeInDataStoreIfHash = isActualPublish, // in most cases no assets will be uploaded yet when startPublish is called
             AssetContextTypeStr = "icon",
-            OnNewAssetRefCallback = delegate(string newRef) { body.IconHash = newRef; }
         };
         ValidatedAssetResult iconResult = ResourceValidationHelper.ValidateReference(iconParams, dataContext.Logger);
+        body.IconHash = iconResult.NewAssetRef;
         if (iconResult.Status != OK)
         {
             if (iconResult.ErrorMessage != null) dataContext.Database.AddPublishFailNotification(iconResult.ErrorMessage, body.Title, dataContext.User!);
@@ -100,9 +100,9 @@ public class PublishEndpoints : EndpointGroup
                 MayBeGuid = false,
                 MustBeInDataStoreIfHash = isActualPublish, // in most cases no assets will be uploaded yet when startPublish is called
                 AssetContextTypeStr = body.IsAdventure ? "adventure asset" : "level asset",
-                OnNewAssetRefCallback = delegate(string newRef) { body.RootResource = newRef; }
             };
             ValidatedAssetResult rootResult = ResourceValidationHelper.ValidateReference(rootParams, dataContext.Logger);
+            body.RootResource = rootResult.NewAssetRef;
             if (rootResult.Status != OK)
             {
                 if (rootResult.ErrorMessage != null) dataContext.Database.AddPublishFailNotification(rootResult.ErrorMessage, body.Title, dataContext.User!);
