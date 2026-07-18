@@ -26,7 +26,7 @@ public struct ValidatedAssetResult
     public DisallowedAsset? DisallowanceInfo { get; set; }
     public bool ExistsInDataStore { get; set; }
 
-    public ValidatedAssetResult(HttpStatusCode status, string? newAssetRef = null, string? errorMessage = null, Action<string>? onNewAssetRefCallback = null,
+    public ValidatedAssetResult(HttpStatusCode status, string? newAssetRef = null, string? errorMessage = null,
         GameAsset? assetInfo = null, DisallowedAsset? disallowanceInfo = null, bool existsInDataStore = false)
     {
         this.Status = status;
@@ -35,7 +35,5 @@ public struct ValidatedAssetResult
         this.AssetInfo = assetInfo;
         this.DisallowanceInfo = disallowanceInfo;
         this.ExistsInDataStore = existsInDataStore;
-
-        onNewAssetRefCallback?.Invoke(this.NewAssetRef);
     }
 }
