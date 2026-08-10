@@ -96,9 +96,8 @@ public class PhotoEndpoints : EndpointGroup
             return BadRequest;
         }
 
-        // Don't just iterate because we might eventually want to go further and also validate each format's type
+        // Don't just iterate the images because we might eventually want to go further and also validate each format's type
         // (e.g. for mainline, small and medium are TEX, while large is JPEG), see https://github.com/LittleBigRefresh/Refresh/issues/977
-        // Also thinking of dropping the callback param because it's useless after all...
         // Small image
         AssetValidationParameters imageParams = new(body.SmallHash, dataContext, importer, aipi)
         {
