@@ -268,6 +268,27 @@ public class PublishEndpointsTests : GameServerTest
     }
     
     [Test]
+    public void CantPublishLevelWithGuidRootResource()
+    {
+        using TestContext context = this.GetServer();
+        GameUser user = context.CreateUser();
+
+        using HttpClient client = context.GetAuthenticatedClient(TokenType.Game, user);
+
+        GameLevelRequest level = new()
+        {
+            Title = "Garbage!",
+            RootResource = "g26417",
+        };
+
+        HttpResponseMessage message = client.PostAsync("/lbp/startPublish", new StringContent(level.AsXML())).Result;
+        Assert.That(message.StatusCode, Is.EqualTo(BadRequest));
+        
+        message = client.PostAsync("/lbp/publish", new StringContent(level.AsXML())).Result;
+        Assert.That(message.StatusCode, Is.EqualTo(BadRequest));
+    }
+    
+    [Test]
     public void CantPublishLevelWithMissingRootResource()
     {
         using TestContext context = this.GetServer();
