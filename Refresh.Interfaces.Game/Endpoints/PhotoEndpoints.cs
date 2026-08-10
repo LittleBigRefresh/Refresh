@@ -7,8 +7,11 @@ using Bunkum.Listener.Protocol;
 using Bunkum.Protocols.Http;
 using Refresh.Core.Authentication.Permission;
 using Refresh.Core.Configuration;
+using Refresh.Core.Helpers;
+using Refresh.Core.Importing;
 using Refresh.Core.RateLimits.Photos;
 using Refresh.Core.Services;
+using Refresh.Core.Types.Assets.Validation;
 using Refresh.Core.Types.Data;
 using Refresh.Database;
 using Refresh.Database.Models;
@@ -26,7 +29,7 @@ public class PhotoEndpoints : EndpointGroup
     [RequireEmailVerified]
     [RateLimitSettings(300, 30, 240, "upload-photo")]
     public Response UploadPhoto(RequestContext context, SerializedPhoto body, GameDatabaseContext database,
-        GameUser user, IDataStore dataStore,
+        GameUser user, IDataStore dataStore, AssetImporter importer,
         DataContext dataContext, AipiService aipi, GameServerConfig config)
     {
         if (user.IsWriteBlocked(config))
@@ -47,15 +50,6 @@ public class PhotoEndpoints : EndpointGroup
                 );
                 return Unauthorized;
             }
-        }
-        
-        if (!dataStore.ExistsInStore(body.SmallHash) ||
-            !dataStore.ExistsInStore(body.MediumHash) ||
-            !dataStore.ExistsInStore(body.LargeHash) ||
-            !dataStore.ExistsInStore(body.PlanHash))
-        {
-            database.AddErrorNotification("Photo upload failed", "The required assets were not available.", user);
-            return BadRequest;
         }
 
         if (body.PhotoSubjects.Count > 4)
@@ -79,13 +73,68 @@ public class PhotoEndpoints : EndpointGroup
             return BadRequest;
         }
 
-        List<string> hashes = [body.LargeHash, body.MediumHash, body.SmallHash];
-        foreach (string hash in hashes.Distinct())
+        // Plan
+        // TODO validate content
+        AssetValidationParameters planParams = new(body.PlanHash, dataContext, importer)
         {
-            GameAsset? gameAsset = dataContext.Cache.GetAssetInfo(hash, database);
-            if(gameAsset == null) continue;
-            if (aipi != null && aipi.ScanAndHandleAsset(dataContext, gameAsset))
-                return Unauthorized;
+            MayBeBlank = false,
+            MayBeGuid = false,
+            AssetContextTypeStr = "metadata asset",
+        };
+        ValidatedAssetResult planResult = ResourceValidationHelper.ValidateReference(planParams, context.Logger);
+        body.PlanHash = planResult.NewAssetRef;
+
+        if (planResult.Status != OK)
+        {
+            if (planResult.ErrorMessage != null) database.AddErrorNotification("Photo upload failed", planResult.ErrorMessage, user);
+            return planResult.Status;
+        }
+        // should never be null at this point, but let's just be extra safe
+        else if (planResult.AssetInfo != null && planResult.AssetInfo.AssetType != GameAssetType.Plan)
+        {
+            database.AddErrorNotification("Photo upload failed", "The metadata asset was badly formatted.", user);
+            return BadRequest;
+        }
+
+        // Don't just iterate the images because we might eventually want to go further and also validate each format's type
+        // (e.g. for mainline, small and medium are TEX, while large is JPEG), see https://github.com/LittleBigRefresh/Refresh/issues/977
+        // Small image
+        AssetValidationParameters imageParams = new(body.SmallHash, dataContext, importer, aipi)
+        {
+            MayBeBlank = false,
+            MayBeGuid = false,
+            MustBeTexture = true,
+            AssetContextTypeStr = "image",
+        };
+        ValidatedAssetResult imageResult = ResourceValidationHelper.ValidateReference(imageParams, context.Logger);
+        body.SmallHash = imageResult.NewAssetRef;
+
+        if (imageResult.Status != OK)
+        {
+            if (imageResult.ErrorMessage != null) database.AddErrorNotification("Photo upload failed", imageResult.ErrorMessage, user);
+            return imageResult.Status;
+        }
+
+        // Medium image
+        imageParams.AssetRef = body.MediumHash;
+        imageResult = ResourceValidationHelper.ValidateReference(imageParams, context.Logger);
+        body.MediumHash = imageResult.NewAssetRef;
+
+        if (imageResult.Status != OK)
+        {
+            if (imageResult.ErrorMessage != null) database.AddErrorNotification("Photo upload failed", imageResult.ErrorMessage, user);
+            return imageResult.Status;
+        }
+
+        // Large image
+        imageParams.AssetRef = body.LargeHash;
+        imageResult = ResourceValidationHelper.ValidateReference(imageParams, context.Logger);
+        body.LargeHash = imageResult.NewAssetRef;
+
+        if (imageResult.Status != OK)
+        {
+            if (imageResult.ErrorMessage != null) database.AddErrorNotification("Photo upload failed", imageResult.ErrorMessage, user);
+            return imageResult.Status;
         }
 
         GameLevel? level = body.Level == null ? null : database.GetLevelByIdAndType(body.Level.Type, body.Level.LevelId);
