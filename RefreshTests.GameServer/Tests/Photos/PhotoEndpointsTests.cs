@@ -34,7 +34,7 @@ public class PhotoEndpointsTests : GameServerTest
         HttpResponseMessage message = client.PostAsync($"/lbp/upload/{TEST_ASSET_HASH}", new ReadOnlyMemoryContent(TestAsset)).Result;
         Assert.That(message.StatusCode, Is.EqualTo(OK));
         
-        //Upload out """plan"""
+        //Upload our """plan"""
         ReadOnlySpan<byte> planData = "PLNb"u8;
         string planHash = BitConverter.ToString(SHA1.HashData(planData)).Replace("-", "").ToLower();
         context.GetDataStore().WriteToStore(planHash, planData);
@@ -110,7 +110,7 @@ public class PhotoEndpointsTests : GameServerTest
         Assert.That(message.StatusCode, Is.EqualTo(OK));
         DateTimeOffset takenAt = context.Time.Now;
         
-        //Upload out """plan"""
+        //Upload our """plan"""
         ReadOnlySpan<byte> planData = "PLNb"u8;
         string planHash = BitConverter.ToString(SHA1.HashData(planData)).Replace("-", "").ToLower();
         context.GetDataStore().WriteToStore(planHash, planData);
@@ -342,7 +342,7 @@ public class PhotoEndpointsTests : GameServerTest
         HttpResponseMessage message = client.PostAsync($"/lbp/upload/{TEST_ASSET_HASH}", new ReadOnlyMemoryContent(TestAsset)).Result;
         Assert.That(message.StatusCode, Is.EqualTo(OK));
         
-        //Upload out """plan"""
+        //Upload our """plan"""
         ReadOnlySpan<byte> planData = "PLNb"u8;
         string planHash = BitConverter.ToString(SHA1.HashData(planData)).Replace("-", "").ToLower();
         context.GetDataStore().WriteToStore(planHash, planData);
@@ -459,7 +459,7 @@ public class PhotoEndpointsTests : GameServerTest
         HttpResponseMessage message = client1.PostAsync($"/lbp/upload/{TEST_ASSET_HASH}", new ReadOnlyMemoryContent(TestAsset)).Result;
         Assert.That(message.StatusCode, Is.EqualTo(OK));
         
-        //Upload out """plan"""
+        //Upload our """plan"""
         ReadOnlySpan<byte> planData = "PLNb"u8;
         string planHash = BitConverter.ToString(SHA1.HashData(planData)).Replace("-", "").ToLower();
         context.GetDataStore().WriteToStore(planHash, planData);
