@@ -13,4 +13,5 @@ public enum RefreshContext
     Presence,
     Database,
     CacheService,
+    RateLimit,
 }
