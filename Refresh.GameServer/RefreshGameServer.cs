@@ -142,7 +142,7 @@ public class RefreshGameServer : RefreshServer
     protected override void SetupServices()
     {
         this.Server.AddService<TimeProviderService>(this.GetTimeProvider());
-        this.Server.AddService<GameRateLimitService>(new RateLimiter(new RateLimitSettings(90, 380, 45, "global")));
+        this.Server.AddService<GameRateLimitService>();
         this.Server.AddService<CategoryService>();
         this.Server.AddService(new MatchService(this.Server.Logger, this._configStore.GameServer));
         this.Server.AddService<ImportService>();
