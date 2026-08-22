@@ -6,6 +6,7 @@ using Bunkum.Core.Storage;
 using Bunkum.Listener.Protocol;
 using Refresh.Common.Constants;
 using Refresh.Core.Authentication.Permission;
+using Refresh.Core.RateLimits.EndpointRateLimiting;
 using Refresh.Core.RateLimits.Levels;
 using Refresh.Core.Services;
 using Refresh.Core.Types.Categories;
@@ -177,8 +178,7 @@ public class LevelEndpoints : EndpointGroup
     [GameEndpoint("s/{slotType}/{id}", ContentType.Xml)]
     [NullStatusCode(NotFound)]
     [MinimumRole(GameUserRole.Restricted)]
-    [RateLimitSettings(SingleLevelEndpointLimits.TimeoutDuration, SingleLevelEndpointLimits.GameRequestAmount, 
-                                SingleLevelEndpointLimits.BlockDuration, SingleLevelEndpointLimits.GameRequestBucket)]
+    [EndpointRateLimit(EndpointBucketId.GameGetSingleLevel)]
     public GameLevelResponse? LevelById(RequestContext context, GameDatabaseContext database, Token token,
         string slotType, int id,
         PlayNowService overrideService, DataContext dataContext)

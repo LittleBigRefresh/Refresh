@@ -8,8 +8,7 @@ using Refresh.Common.Constants;
 using Refresh.Common.Verification;
 using Refresh.Core.Authentication.Permission;
 using Refresh.Core.Configuration;
-using Refresh.Core.RateLimits.Levels;
-using Refresh.Core.RateLimits.Playlists;
+using Refresh.Core.RateLimits.EndpointRateLimiting;
 using Refresh.Core.RateLimits.Presence;
 using Refresh.Core.RateLimits.Relations;
 using Refresh.Core.Services;
@@ -32,8 +31,7 @@ public class LevelApiEndpoints : EndpointGroup
     [ApiV3Endpoint("levels/id/{id}"), Authentication(false)]
     [DocSummary("Gets an individual level by a numerical ID")]
     [DocError(typeof(ApiNotFoundError), "The level cannot be found")]
-    [RateLimitSettings(SingleLevelEndpointLimits.TimeoutDuration, SingleLevelEndpointLimits.ApiRequestAmount, 
-                                SingleLevelEndpointLimits.BlockDuration, SingleLevelEndpointLimits.ApiRequestBucket)]
+    [EndpointRateLimit(EndpointBucketId.ApiGetSingleLevel)]
     public ApiResponse<ApiGameLevelResponse> GetLevelById(RequestContext context, GameDatabaseContext database,
         IDataStore dataStore,
         [DocSummary("The ID of the level")] int id, DataContext dataContext)
@@ -47,8 +45,7 @@ public class LevelApiEndpoints : EndpointGroup
     [ApiV3Endpoint("levels/hash/{hash}"), Authentication(false)]
     [DocSummary("Gets an individual level by the level's RootResource hash")]
     [DocError(typeof(ApiNotFoundError), "The level cannot be found")]
-    [RateLimitSettings(SingleLevelEndpointLimits.TimeoutDuration, SingleLevelEndpointLimits.ApiRequestAmount, 
-                                SingleLevelEndpointLimits.BlockDuration, SingleLevelEndpointLimits.ApiRequestBucket)]
+    [EndpointRateLimit(EndpointBucketId.ApiGetSingleLevel)]
     public ApiResponse<ApiGameLevelResponse> GetLevelByRootResource(RequestContext context, GameDatabaseContext database,
         IDataStore dataStore,
         [DocSummary("The RootResource hash of the level")] string hash, DataContext dataContext)
