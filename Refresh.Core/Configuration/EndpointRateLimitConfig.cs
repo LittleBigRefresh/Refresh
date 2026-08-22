@@ -1,5 +1,5 @@
 using Bunkum.Core.Configuration;
-using Refresh.Core.RateLimits.EndpointRateLimiting.Buckets;
+using Refresh.Core.RateLimits.EndpointRateLimiting;
 
 namespace Refresh.Core.Configuration;
 
@@ -22,7 +22,7 @@ public class EndpointRateLimitConfig : Config
     private void AddMissingBucketsFromDefaults()
     {
         // then fill in missing buckets from defaults
-        foreach (KeyValuePair<EndpointBucketName, ConfigRateLimitBucket> defaultPair in EndpointBucketDefaults.Buckets)
+        foreach (KeyValuePair<EndpointBucketId, ConfigRateLimitBucket> defaultPair in EndpointBucketDefaults.Buckets)
         {
             string bucketName = defaultPair.Key.ToString();
             ConfigRateLimitBucket bucket = defaultPair.Value;
