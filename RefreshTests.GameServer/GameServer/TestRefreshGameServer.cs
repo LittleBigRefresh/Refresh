@@ -30,6 +30,7 @@ public class TestRefreshGameServer : RefreshGameServer
     }
 
     public GameServerConfig GameServerConfig => this._configStore.GameServer;
+    public EndpointRateLimitConfig EndpointRateLimitConfig => this._configStore.EndpointRateLimits;
 
     public override void Start()
     {
@@ -65,6 +66,7 @@ public class TestRefreshGameServer : RefreshGameServer
     protected override void SetupServices()
     {
         this.Server.AddService<TimeProviderService>(this.DateTimeProvider);
+        this.Server.AddService<GameRateLimitService>();
         this.Server.AddService<CategoryService>();
         this.Server.AddService<MatchService>();
         this.Server.AddService<ImportService>();

@@ -19,7 +19,7 @@ public class EndpointRateLimitConfig : Config
         // think of how exactly to overwrite in the future
     }
     
-    private void AddMissingBucketsFromDefaults()
+    public void AddMissingBucketsFromDefaults()
     {
         // then fill in missing buckets from defaults
         foreach (KeyValuePair<EndpointBucketId, ConfigRateLimitBucket> defaultPair in EndpointBucketDefaults.Buckets)
