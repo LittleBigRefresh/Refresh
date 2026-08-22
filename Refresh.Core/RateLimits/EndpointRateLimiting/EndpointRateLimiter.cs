@@ -44,12 +44,12 @@ public class EndpointRateLimiter
         this._buckets = validBuckets.ToFrozenDictionary();
     }
 
-    private LoadedBucketData GetBucketNameAndData(ListenerContext context, MethodInfo? method, bool isPsp)
+    private LoadedBucketData GetBucketNameAndData(ListenerContext context, MethodInfo? method)
     {
         EndpointRateLimitAttribute? attribute = method?.GetCustomAttribute<EndpointRateLimitAttribute>();
 
         EndpointBucketId bucketName = EndpointBucketId.Default;
-        if (attribute != null) bucketName = isPsp ? attribute.PspBucket : attribute.MainBucket;
+        if (attribute != null) bucketName = attribute.MainBucket;
 
         ConfigRateLimitBucket? bucketData = this._buckets.GetValueOrDefault(bucketName);
 
@@ -67,9 +67,9 @@ public class EndpointRateLimiter
         return new LoadedBucketData(bucketName, bucketData);
     }
 
-    public bool UserViolatesRateLimit(ListenerContext context, MethodInfo method, bool isPsp, GameUser user)
+    public bool UserViolatesRateLimit(ListenerContext context, MethodInfo method, GameUser user)
     {
-        LoadedBucketData bucketData = this.GetBucketNameAndData(context, method, isPsp);
+        LoadedBucketData bucketData = this.GetBucketNameAndData(context, method);
 
         lock (this._userInfos)
         {
@@ -93,7 +93,7 @@ public class EndpointRateLimiter
     {
         IPAddress ipAddress = context.RemoteEndpoint.Address;
 
-        LoadedBucketData bucketData = this.GetBucketNameAndData(context, method, false);
+        LoadedBucketData bucketData = this.GetBucketNameAndData(context, method);
 
         lock (this._remoteEndpointInfos)
         {

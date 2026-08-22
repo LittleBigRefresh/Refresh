@@ -26,15 +26,11 @@ public class GameRateLimitService : Service
     public override Response? OnRequestHandled(ListenerContext context, MethodInfo method, Lazy<IDatabaseContext> database)
     {
         Token? token = this._authService.AuthenticateToken(context, database);
-        
-        // Don't rely on user-agent so users couldn't just bypass the rate-limit by overwriting their user agent
-        // TODO don't rely on PSP user agent in other places either, for similar reasons
-        bool isPsp = token?.TokenGame == TokenGame.LittleBigPlanetPSP;
 
         bool violated = false;
 
         if (token != null)
-            violated = this._rateLimiter.UserViolatesRateLimit(context, method, isPsp, token.User);
+            violated = this._rateLimiter.UserViolatesRateLimit(context, method, token.User);
         else
             violated = this._rateLimiter.RemoteEndpointViolatesRateLimit(context, method);
 
