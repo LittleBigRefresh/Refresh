@@ -117,6 +117,8 @@ public class EndpointRateLimiter
     {
         int now = (int)this._timeProvider.TimestampSeconds;
         
+        this._logger.LogTrace(RefreshContext.RateLimit, $"{this.GetType().Name}.{nameof(this.ViolatesRateLimit)}() - Request times count: {info.RequestTimes.Count}, limited until: {info.LimitedUntil}.");
+        
         if (info.LimitedUntil != 0)
         {
             // TODO also track requests received while the client is already rate-limited, to increase their block duration as punishment
