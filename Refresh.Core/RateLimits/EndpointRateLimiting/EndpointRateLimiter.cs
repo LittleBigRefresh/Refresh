@@ -52,8 +52,9 @@ public class EndpointRateLimiter
             if (config.PrintMissingBuckets)
             {
                 logger.LogWarning(RefreshContext.RateLimit, $"Bucket {defaultPair.Key} is missing from your config, we will use its hardcoded defaults instead.");
-                validBuckets.Add(defaultPair.Key, defaultPair.Value);
             }
+            
+            validBuckets.Add(defaultPair.Key, defaultPair.Value);
         }
 
         this._buckets = validBuckets.ToFrozenDictionary();
