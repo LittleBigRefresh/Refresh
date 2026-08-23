@@ -16,10 +16,10 @@ public class EndpointRateLimiter
 {
     private readonly Logger _logger;
     private readonly IDateTimeProvider _timeProvider;
-    private readonly FrozenDictionary<EndpointBucketId, ConfigRateLimitBucket> _buckets;
+    protected FrozenDictionary<EndpointBucketId, ConfigRateLimitBucket> Buckets;
 
-    private readonly List<TrackedClientBucketData<ObjectId>> _userInfos = new(25);
-    private readonly List<TrackedClientBucketData<IPAddress>> _remoteEndpointInfos = new(25);
+    protected List<TrackedClientBucketData<ObjectId>> UserInfos = new(25);
+    protected List<TrackedClientBucketData<IPAddress>> RemoteEndpointInfos = new(25);
 
     public EndpointRateLimiter(IDateTimeProvider timeProvider, Logger logger, EndpointRateLimitConfig config)
     {
@@ -57,7 +57,7 @@ public class EndpointRateLimiter
             validBuckets.Add(defaultPair.Key, defaultPair.Value);
         }
 
-        this._buckets = validBuckets.ToFrozenDictionary();
+        this.Buckets = validBuckets.ToFrozenDictionary();
     }
 
     private LoadedBucketData GetBucketNameAndData(ListenerContext context, MethodInfo? method)
@@ -67,7 +67,7 @@ public class EndpointRateLimiter
         EndpointBucketId bucketName = EndpointBucketId.Default;
         if (attribute != null) bucketName = attribute.MainBucket;
 
-        ConfigRateLimitBucket? bucketData = this._buckets.GetValueOrDefault(bucketName);
+        ConfigRateLimitBucket? bucketData = this.Buckets.GetValueOrDefault(bucketName);
 
         if (bucketData == null)
         {
@@ -83,15 +83,15 @@ public class EndpointRateLimiter
     {
         LoadedBucketData bucketData = this.GetBucketNameAndData(context, method);
 
-        lock (this._userInfos)
+        lock (this.UserInfos)
         {
-            TrackedClientBucketData<ObjectId>? info = this._userInfos
+            TrackedClientBucketData<ObjectId>? info = this.UserInfos
                 .FirstOrDefault(i => user.UserId.Equals(i.ClientId) && i.Bucket == bucketData.Id);
 
             if (info == null)
             {
                 info = new TrackedClientBucketData<ObjectId>(user.UserId, bucketData.Id);
-                this._userInfos.Add(info);
+                this.UserInfos.Add(info);
             }
 
             lock (info)
@@ -107,15 +107,15 @@ public class EndpointRateLimiter
 
         LoadedBucketData bucketData = this.GetBucketNameAndData(context, method);
 
-        lock (this._remoteEndpointInfos)
+        lock (this.RemoteEndpointInfos)
         {
-            TrackedClientBucketData<IPAddress>? info = this._remoteEndpointInfos
+            TrackedClientBucketData<IPAddress>? info = this.RemoteEndpointInfos
                 .FirstOrDefault(i => ipAddress.Equals(i.ClientId) && i.Bucket == bucketData.Id);
 
             if (info == null)
             {
                 info = new TrackedClientBucketData<IPAddress>(ipAddress, bucketData.Id);
-                this._remoteEndpointInfos.Add(info);
+                this.RemoteEndpointInfos.Add(info);
             }
 
             lock (info)
