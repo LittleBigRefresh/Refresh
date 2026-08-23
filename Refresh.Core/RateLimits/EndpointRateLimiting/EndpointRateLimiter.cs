@@ -21,7 +21,7 @@ public class EndpointRateLimiter
     private readonly List<TrackedClientBucketData<ObjectId>> _userInfos = new(25);
     private readonly List<TrackedClientBucketData<IPAddress>> _remoteEndpointInfos = new(25);
 
-    public EndpointRateLimiter(IDateTimeProvider timeProvider, Logger logger, Dictionary<string, ConfigRateLimitBucket> configBuckets)
+    public EndpointRateLimiter(IDateTimeProvider timeProvider, Logger logger, EndpointRateLimitConfig config)
     {
         this._timeProvider = timeProvider;
         this._logger = logger;
@@ -29,7 +29,7 @@ public class EndpointRateLimiter
         // Copy the buckets over, converting the string bucket names to their corresponding enum values.
         Dictionary<EndpointBucketId, ConfigRateLimitBucket> validBuckets = new();
 
-        foreach (KeyValuePair<string, ConfigRateLimitBucket> bucket in configBuckets)
+        foreach (KeyValuePair<string, ConfigRateLimitBucket> bucket in config.Buckets)
         {
             bool parsed = Enum.TryParse(bucket.Key, true, out EndpointBucketId nameParsed);
             if (!parsed)
@@ -39,6 +39,21 @@ public class EndpointRateLimiter
             }
 
             validBuckets.Add(nameParsed, bucket.Value);
+        }
+        
+        // check for any buckets missing from the config, and insert default buckets in their place.
+        // this way, instead of logging the missing bucket every single time it's looked up during a request,
+        // we instead just print it once here.
+        foreach (KeyValuePair<EndpointBucketId, ConfigRateLimitBucket> defaultPair in EndpointBucketDefaults.Buckets)
+        {
+            bool existsInConfig = validBuckets.ContainsKey(defaultPair.Key);
+            if (existsInConfig) continue;
+
+            if (config.PrintMissingBuckets)
+            {
+                logger.LogWarning(RefreshContext.RateLimit, $"Bucket {defaultPair.Key} is missing from your config, we will use its hardcoded defaults instead.");
+                validBuckets.Add(defaultPair.Key, defaultPair.Value);
+            }
         }
 
         this._buckets = validBuckets.ToFrozenDictionary();
@@ -55,13 +70,9 @@ public class EndpointRateLimiter
 
         if (bucketData == null)
         {
-            this._logger.LogDebug(RefreshContext.RateLimit, $"Could not find bucket '{bucketName}' in config, falling back to hardcoded defaults.");
-            bucketData = EndpointBucketDefaults.Buckets.GetValueOrDefault(bucketName);
-
-            if (bucketData == null)
-            {
-                throw new NotImplementedException($"Could not find bucket '{bucketName}' in neither the config file nor the hardcoded defaults! You should open an issue about this.");
-            }
+            // Don't look this bucket up in the defaults, because we've already merged with the defaults in the constructor above,
+            // so all buckets missing from the config should already have their default versions in the map we use here.
+            throw new NotImplementedException($"Could not find bucket '{bucketName}' in neither the config file nor the hardcoded defaults! You should open an issue about this.");
         }
 
         return new LoadedBucketData(bucketName, bucketData);

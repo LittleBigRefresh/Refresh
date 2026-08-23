@@ -19,7 +19,7 @@ public class GameRateLimitService : Service
 
     internal GameRateLimitService(Logger logger, TimeProviderService timeService, GameAuthenticationService authService, EndpointRateLimitConfig config) : base(logger)
     {
-        this._rateLimiter = new(timeService.TimeProvider, logger, config.Buckets);
+        this._rateLimiter = new(timeService.TimeProvider, logger, config);
         this._authService = authService;
     }
 

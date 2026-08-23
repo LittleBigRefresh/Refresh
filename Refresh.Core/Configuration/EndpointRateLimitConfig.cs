@@ -21,7 +21,6 @@ public class EndpointRateLimitConfig : Config
     
     public void AddMissingBucketsFromDefaults()
     {
-        // then fill in missing buckets from defaults
         foreach (KeyValuePair<EndpointBucketId, ConfigRateLimitBucket> defaultPair in EndpointBucketDefaults.Buckets)
         {
             string bucketName = defaultPair.Key.ToString();
@@ -37,5 +36,11 @@ public class EndpointRateLimitConfig : Config
     /// Although this option does nothing for now, it already exists so owners can already decide to opt out of this ahead of time.
     /// </summary>
     public bool OverwriteBucketValuesIfDefaultsAreUpdated { get; set; } = true;
+    
+    /// <summary>
+    /// Whether we should print the IDs of all buckets that are missing from the config, but exist in the default map,
+    /// while the <see cref="EndpointRateLimiter"/> is being initialized. These logs will be printed as warnings if enabled.
+    /// </summary>
+    public bool PrintMissingBuckets { get; set; } = false;
     public Dictionary<string, ConfigRateLimitBucket> Buckets { get; set; } = new();
 }
