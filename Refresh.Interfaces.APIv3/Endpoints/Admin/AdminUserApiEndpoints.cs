@@ -61,13 +61,13 @@ public class AdminUserApiEndpoints : EndpointGroup
         return DatabaseListExtensions.FromOldList<ApiExtendedPreviousUsernameResponse, PreviousUsername>(previousNames, dataContext);
     }
 
-    [ApiV3Endpoint("admin/previousUsernames/byUserUuid/{uuid}"), MinimumRole(GameUserRole.Moderator)]
+    [ApiV3Endpoint("admin/previousUsernames/byUser/{idType}/{id}"), MinimumRole(GameUserRole.Moderator)]
     [DocSummary("Gets all previous usernames which have once been used by the specified user.")]
     [DocUsesPageData]
     public ApiListResponse<ApiExtendedPreviousUsernameResponse> GetExtendedPreviousUsernamesByUser(RequestContext context,
-        GameDatabaseContext database, IDataStore dataStore, DataContext dataContext, string uuid)
+        GameDatabaseContext database, IDataStore dataStore, DataContext dataContext, string idType, string id)
     {
-        GameUser? user = database.GetUserByUuid(uuid);
+        GameUser? user = database.GetUserByIdAndType(idType, id);
         if (user == null) return ApiNotFoundError.UserMissingError;
         
         (int skip, int count) = context.GetPageData();
