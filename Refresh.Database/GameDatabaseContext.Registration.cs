@@ -99,17 +99,10 @@ public partial class GameDatabaseContext // Registration
         return this.QueuedRegistrations.Any(r => r.EmailAddress == emailAddress);
     }
 
-    public bool IsUsernameTaken(string username, GameUser? userToName = null)
+    public bool IsUsernameTaken(string username)
     {
         if (this.GameUsers.Any(u => u.Username == username)) return true;
         if (this.QueuedRegistrations.Any(r => r.Username == username)) return true;
-        if (this.IsUserDisallowed(username)) return true;
-        
-        PreviousUsername? previous = this.PreviousUsernames.FirstOrDefault(p => p.Username == username);
-        // no one has ever had this name before
-        if (previous == null) return false;
-        // this is not the initial owner of the name (only previous owners may be renamed back)
-        if (userToName == null || userToName.UserId != previous.UserId) return true;
 
         return false;
     }
