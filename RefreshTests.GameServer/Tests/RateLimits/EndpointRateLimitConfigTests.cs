@@ -50,7 +50,7 @@ public class EndpointRateLimitConfigTests : GameServerTest
         
         // initialize config, rate-limiter and service
         EndpointRateLimitConfig config = server.EndpointRateLimitConfig;
-        config.AddMissingBucketsFromDefaults();
+        config.AddMissingBucketsFromDefaults(); // act as if these buckets were already in the config
         
         TestEndpointRateLimiter rateLimiter = new(context.Time, server.Logger, config);
         server.Server.AddService(new GameRateLimitService(server.Logger, rateLimiter, server.GetService<GameAuthenticationService>()));
@@ -94,5 +94,31 @@ public class EndpointRateLimitConfigTests : GameServerTest
         HttpResponseMessage rateLimitMessage = client.GetAsync(endpoint).Result;
         Assert.That(rateLimitMessage.IsSuccessStatusCode, Is.False);
         Assert.That(rateLimitMessage.StatusCode, Is.EqualTo(TooManyRequests));
+    }
+    
+    [Test]
+    [TestCase(true)]
+    [TestCase(false)]
+    public void BucketMissingFromConfigIsSubstitutedOnInit(bool printMissingBucket)
+    {
+        using TestContext context = this.GetServer();
+        GameLevel level = context.CreateLevelWithRootResource(context.CreateUser(), "12345");
+        TestRefreshGameServer server = context.Server.Value;
+        
+        EndpointRateLimitConfig config = server.EndpointRateLimitConfig;
+        // don't fill config map, expect rate-limiter to do so for itself
+        TestEndpointRateLimiter rateLimiter = new(context.Time, server.Logger, config);
+        server.Server.AddService(new GameRateLimitService(server.Logger, rateLimiter, server.GetService<GameAuthenticationService>()));
+        
+        // ensure no buckets are in the config, but the rate-limiter does have buckets anyway
+        Assert.That(config.Buckets, Has.Count.EqualTo(0));
+        Assert.That(rateLimiter.GetBucketMap, Has.Count.GreaterThan(0));
+        Assert.That(rateLimiter.GetBucketMap.ContainsKey(EndpointBucketId.ApiGetSingleLevel), Is.True);
+        
+        // Do send at least one message to ensure the rate-limiter won't throw (due to missing buckets).
+        // Not spamming the endpoint to trigger rate-limit here since we'd have to send 51 requests currently (default setting);
+        // this may be a unit test, but I still don't want too much unreasonable effort/log spam here.
+        HttpResponseMessage message = context.Http.GetAsync($"/api/v3/levels/hash/{level.RootResource}").Result;
+        Assert.That(message.IsSuccessStatusCode, Is.True);
     }
 }
