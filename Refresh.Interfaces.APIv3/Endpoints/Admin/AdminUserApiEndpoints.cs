@@ -57,7 +57,7 @@ public class AdminUserApiEndpoints : EndpointGroup
         GameDatabaseContext database, IDataStore dataStore, DataContext dataContext, string username)
     {
         (int skip, int count) = context.GetPageData();
-        DatabaseList<PreviousUsername> previousNames = database.GetPreviousUsernameRecordsForUsername(username, skip, count);
+        DatabaseList<PreviousUsername> previousNames = database.GetPreviousUsernameRecordsByName(username, skip, count);
         return DatabaseListExtensions.FromOldList<ApiExtendedPreviousUsernameResponse, PreviousUsername>(previousNames, dataContext);
     }
 

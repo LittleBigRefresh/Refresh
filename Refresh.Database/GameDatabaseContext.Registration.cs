@@ -8,9 +8,6 @@ namespace Refresh.Database;
 
 public partial class GameDatabaseContext // Registration
 {
-    private IQueryable<PreviousUsername> PreviousUsernamesIncluded => this.PreviousUsernames
-        .Include(p => p.User);
-    
     public GameUser CreateUser(string username, string emailAddress, bool skipChecks = false)
     {
         if (!skipChecks)
@@ -110,20 +107,6 @@ public partial class GameDatabaseContext // Registration
     public bool WasUsernamePreviouslyTaken(string username)
     {
         return this.PreviousUsernames.Any(u => u.Username == username);
-    }
-    
-    public DatabaseList<PreviousUsername> GetPreviousUsernameRecordsForUsername(string username, int skip, int count)
-    {
-        return new(this.PreviousUsernamesIncluded
-            .Where(u => u.Username == username)
-            .OrderByDescending(u => u.ReplacedAt), skip, count);
-    }
-    
-    public DatabaseList<PreviousUsername> GetPreviousUsernameRecordsByUser(GameUser user, int skip, int count)
-    {
-        return new(this.PreviousUsernamesIncluded
-            .Where(u => u.UserId == user.UserId)
-            .OrderByDescending(u => u.ReplacedAt), skip, count);
     }
 
     public bool IsEmailTaken(string emailAddress)

@@ -128,7 +128,15 @@ public partial class GameDatabaseContext // Users
     public DatabaseList<PreviousUsername> GetPreviousUsernameRecordsByName(string username, int skip, int count)
     {
         return new(this.PreviousUsernamesIncluded
-            .Where(u => u.Username == username), skip, count);
+            .Where(u => u.Username == username)
+            .OrderByDescending(u => u.ReplacedAt), skip, count);
+    }
+    
+    public DatabaseList<PreviousUsername> GetPreviousUsernameRecordsByUser(GameUser user, int skip, int count)
+    {
+        return new(this.PreviousUsernamesIncluded
+            .Where(u => u.UserId == user.UserId)
+            .OrderByDescending(u => u.ReplacedAt), skip, count);
     }
 
     public void UpdateUserData(GameUser user, ISerializedEditUser data, TokenGame game)
