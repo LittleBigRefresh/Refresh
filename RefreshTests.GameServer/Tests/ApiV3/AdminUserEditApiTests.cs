@@ -1,4 +1,5 @@
 using MongoDB.Bson;
+using Refresh.Database;
 using Refresh.Database.Models.Authentication;
 using Refresh.Database.Models.Moderation;
 using Refresh.Database.Models.Users;
@@ -269,38 +270,58 @@ public class AdminUserEditApiTests : GameServerTest
     }
 
     [Test]
-    public void CannotRenameToOtherUsersPreviousName()
+    public void CanRenameUserToDifferentUsersPreviousName()
     {
         using TestContext context = this.GetServer();
 
         GameUser mod = context.CreateUser(null, GameUserRole.Moderator);
         GameUser owner = context.CreateUser("original", GameUserRole.User);
         GameUser target = context.CreateUser("stinker", GameUserRole.User);
+        
+        // Ensure we're tracking neither usernames
+        Assert.That(!context.Database.WasUsernamePreviouslyTaken("original"));
+        Assert.That(!context.Database.WasUsernamePreviouslyTaken("stinker"));
 
         context.Database.RenameUser(owner, "original_2");
         GameUser? modifiedOwner = context.Database.GetUserByObjectId(owner.UserId);
         Assert.That(modifiedOwner, Is.Not.Null);
         Assert.That(modifiedOwner!.Username, Is.EqualTo("original_2"));
 
+        // Try to rename stinker to original's previous name
         HttpClient client = context.GetAuthenticatedClient(TokenType.Api, mod);
         ApiAdminUpdateUserRequest request = new()
         {
             Username = "original"
         };
 
-        ApiResponse<ApiExtendedGameUserResponse>? response = client.PatchData<ApiExtendedGameUserResponse>($"/api/v3/admin/users/uuid/{target.UserId}", request, false, true);
-        Assert.That(response?.Error, Is.Not.Null);
-        Assert.That(response!.Error!.StatusCode, Is.EqualTo(BadRequest));
+        ApiResponse<ApiExtendedGameUserResponse>? response = client.PatchData<ApiExtendedGameUserResponse>($"/api/v3/admin/users/uuid/{target.UserId}", request, true, false);
+        Assert.That(response?.Data, Is.Not.Null);
+        Assert.That(response!.Data!.Username, Is.EqualTo("original"));
+        Assert.That(response!.Data!.UserId, Is.EqualTo(target.UserId.ToString()));
 
         context.Database.Refresh();
 
         GameUser? modifiedTarget = context.Database.GetUserByObjectId(target.UserId);
         Assert.That(modifiedTarget, Is.Not.Null);
-        Assert.That(modifiedTarget!.Username, Is.EqualTo("stinker"));
+        Assert.That(modifiedTarget!.Username, Is.EqualTo("original"));
+        
+        // Ensure we're tracking both usernames
+        Assert.That(context.Database.WasUsernamePreviouslyTaken("original"));
+        Assert.That(context.Database.WasUsernamePreviouslyTaken("stinker"));
+        
+        // Ensure "original" is tracked as previously owned by owner
+        DatabaseList<PreviousUsername> originalHistory = context.Database.GetPreviousUsernameRecordsByName("original", 0, 10);
+        Assert.That(originalHistory.Items.Count, Is.EqualTo(1));
+        Assert.That(originalHistory.Items.First().UserId.ToString(), Is.EqualTo(owner.UserId.ToString()));
+        
+        // Ensure "stinker" is tracked as previously owned by target
+        DatabaseList<PreviousUsername> stinkerHistory = context.Database.GetPreviousUsernameRecordsByName("stinker", 0, 10);
+        Assert.That(stinkerHistory.Items.Count, Is.EqualTo(1));
+        Assert.That(stinkerHistory.Items.First().UserId.ToString(), Is.EqualTo(target.UserId.ToString()));
     }
 
     [Test]
-    public void CanRenameUserBackToTheirPreviousName()
+    public void CanRenameUserBackToTheirOwnPreviousName()
     {
         using TestContext context = this.GetServer();
 
@@ -327,6 +348,11 @@ public class AdminUserEditApiTests : GameServerTest
         GameUser? modifiedOwner2 = context.Database.GetUserByObjectId(owner.UserId);
         Assert.That(modifiedOwner2, Is.Not.Null);
         Assert.That(modifiedOwner2!.Username, Is.EqualTo("original"));
+        
+        // Ensure "original" is still also tracked as previously owned by owner
+        DatabaseList<PreviousUsername> originalHistory = context.Database.GetPreviousUsernameRecordsByName("original", 0, 10);
+        Assert.That(originalHistory.Items.Count, Is.EqualTo(1));
+        Assert.That(originalHistory.Items.First().UserId.ToString(), Is.EqualTo(owner.UserId.ToString()));
     }
 
     [Test]
