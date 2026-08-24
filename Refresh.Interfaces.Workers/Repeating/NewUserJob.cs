@@ -6,12 +6,12 @@ using Refresh.Workers;
 namespace Refresh.Interfaces.Workers.Repeating;
 
 /// <summary>
-/// A worker that handles setting new users as regular users, depending on their account age and the server config.
+/// A job that handles promoting new users to regular users, depending on their account age and the server config.
 /// </summary>
 // TODO also set users back as "new" if duration in config is updated to result in user being "new" again
 public class NewUserJob : RepeatingJob
 {
-    private int _requiredAccountAge;
+    private readonly int _requiredAccountAge;
     protected override int Interval => 60_000 * 5; // 5 minutes, no need to execute too often
     
     public NewUserJob(int requiredAccountAge)
@@ -33,7 +33,7 @@ public class NewUserJob : RepeatingJob
             context.Logger.LogDebug(RefreshContext.Worker, $"{nameof(NewUserJob)} - new user: {user}, join date: {user.JoinDate}, current time: {now}, account age: {accountAge}h, configured required age: {this._requiredAccountAge}h.");
             if (accountAge < this._requiredAccountAge) continue; // Don't promote user if they haven't reached max age yet
             
-            context.Logger.LogInfo(RefreshContext.Worker, $"Promoting {user} to regular user since their account is {accountAge} hours old now (required configured age: {this._requiredAccountAge}h).");
+            context.Logger.LogInfo(RefreshContext.Worker, $"Promoting {user} to regular user since their account is {accountAge} hours old now (configured required age: {this._requiredAccountAge}h).");
             context.Database.SetUserRole(user, GameUserRole.User);
         }
     }
