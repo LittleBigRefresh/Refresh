@@ -19,6 +19,10 @@ public partial class GameDatabaseContext // Users
     private IQueryable<GameUser> GameUsersIncluded => this.GameUsers
         .Include(u => u.Statistics);
     
+    private IQueryable<PreviousUsername> PreviousUsernamesIncluded => this.PreviousUsernames
+        .Include(u => u.User)
+        .Include(u => u.User.Statistics);
+    
     [Pure]
     [ContractAnnotation("username:null => null; username:notnull => canbenull")]
     public GameUser? GetUserByUsername(string? username, bool caseSensitive = true)
@@ -120,6 +124,12 @@ public partial class GameDatabaseContext // Users
         => new(this.GameUsersIncluded
             .Where(u => u.Statistics!.FavouriteCount > 0)
             .OrderByDescending(u => u.Statistics!.FavouriteCount), skip, count);
+
+    public DatabaseList<PreviousUsername> GetPreviousUsernameRecordsByName(string username, int skip, int count)
+    {
+        return new(this.PreviousUsernamesIncluded
+            .Where(u => u.Username == username), skip, count);
+    }
 
     public void UpdateUserData(GameUser user, ISerializedEditUser data, TokenGame game)
     {
