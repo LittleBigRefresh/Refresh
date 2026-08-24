@@ -385,7 +385,15 @@ public partial class GameDatabaseContext // Users
             User = user,
             ReplacedAt = this._time.Now,
         });
+
+        // Postgres/EF will try to insert untracked entities by default, which will fail if such entities already exist in DB.
+        // We can't guarantee that both user and its referenced entities (currently just statistics cache) are tracked here,
+        // so we should explicitly update user and explicitly track statistics as unchanged to avoid random inconsistent failures.
+        // TODO do explicitly track referenced entities in other similar DB modification methods as well, to also avoid occasional insertion there.
         this.GameUsers.Update(user);
+        if (user.Statistics != null)
+            this.GameUserStatistics.Attach(user.Statistics);
+
         this.SaveChanges();
         
         this.AddNotification("Username Updated", $"An admin has updated your account's username from '{oldUsername}' to '{newUsername}'. " +
