@@ -34,22 +34,14 @@ public class UserApiEndpoints : EndpointGroup
     [DocError(typeof(ApiNotFoundError), "The user cannot be found")]
     [RateLimitSettings(SingleUserEndpointLimits.TimeoutDuration, SingleUserEndpointLimits.ApiRequestAmount, 
                             SingleUserEndpointLimits.BlockDuration, SingleUserEndpointLimits.ApiRequestBucket)]
-    public Response GetUser(RequestContext context, GameDatabaseContext database, GameUser? user,
+    public ApiResponse<ApiGameUserResponse> GetUser(RequestContext context, GameDatabaseContext database,
         [DocSummary(SharedParamDescriptions.UserIdParam)] string id, 
         [DocSummary(SharedParamDescriptions.UserIdTypeParam)] string idType, DataContext dataContext)
     {
-        // Hack to prevent Bunkum from routing other endpoints' requests to here until we finally fix Bunkum's routing
-        // to prioritize methods with less route params
-        if (id == "previousUsernames")
-        {
-            if (user == null) return ApiAuthenticationError.NotAuthenticated;
-            return new(this.GetMyPreviousUsernames(context, database, dataContext, user), ContentType.Json);
-        }
+        GameUser? user = database.GetUserByIdAndType(idType, id);
+        if(user == null) return ApiNotFoundError.UserMissingError;
         
-        GameUser? targetUser = database.GetUserByIdAndType(idType, id);
-        if (targetUser == null) return ApiNotFoundError.UserMissingError;
-        
-        return new(ApiGameUserResponse.FromOld(targetUser, dataContext), ContentType.Json);
+        return ApiGameUserResponse.FromOld(user, dataContext);
     }
 
     [ApiV3Endpoint("users/{idType}/{id}/heart", HttpMethods.Post)]
@@ -109,10 +101,19 @@ public class UserApiEndpoints : EndpointGroup
         return ApiExtendedGameUserResponse.FromOld(user, dataContext);
     }
     
+    /*
+     * TODO enable this function/endpoint once Bunkum stops routing requests addressed at this endpoint to GetUser() instead.
+     * Such a fix could be making Bunkum's router prefer endpoints with the least route parameters,
+     * since the issue here is that requests meant for this endpoint have their route match with /users/{idType}/{id},
+     * where "me" is used for the idType param and "previousUsernames" is used for the id param.
+     *
+     * Wanted to do a hack for this first, just like with /users/me vs /users/{route}, but this time it got too complicated.
+     * Should just fix the underlying problem at this point.
+     */ 
+    /*
     [ApiV3Endpoint("users/me/previousUsernames"), MinimumRole(GameUserRole.Moderator)]
     [DocSummary("Gets all previous usernames which you have used.")]
     [DocUsesPageData]
-    [RateLimitSettings(120, 35, 80, "me-api")] // TODO remove when we clean up rate-limit stats
     public ApiListResponse<ApiPreviousUsernameResponse> GetMyPreviousUsernames(RequestContext context,
         GameDatabaseContext database, DataContext dataContext, GameUser user)
     {
@@ -120,6 +121,7 @@ public class UserApiEndpoints : EndpointGroup
         DatabaseList<PreviousUsername> previousNames = database.GetPreviousUsernameRecordsByUser(user, skip, count);
         return DatabaseListExtensions.FromOldList<ApiPreviousUsernameResponse, PreviousUsername>(previousNames, dataContext);
     }
+    */
     
     [ApiV3Endpoint("users/me", HttpMethods.Patch)]
     [DocSummary("Updates your profile with the given data")]
