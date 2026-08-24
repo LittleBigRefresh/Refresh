@@ -2,7 +2,9 @@ using AttribDoc.Attributes;
 using Bunkum.Core;
 using Bunkum.Core.Endpoints;
 using Bunkum.Core.RateLimit;
+using Bunkum.Core.Responses;
 using Bunkum.Core.Storage;
+using Bunkum.Listener.Protocol;
 using Bunkum.Protocols.Http;
 using Refresh.Common.Constants;
 using Refresh.Core.Authentication.Permission;
@@ -32,17 +34,24 @@ public class UserApiEndpoints : EndpointGroup
     [DocError(typeof(ApiNotFoundError), "The user cannot be found")]
     [RateLimitSettings(SingleUserEndpointLimits.TimeoutDuration, SingleUserEndpointLimits.ApiRequestAmount, 
                             SingleUserEndpointLimits.BlockDuration, SingleUserEndpointLimits.ApiRequestBucket)]
-    public ApiResponse<ApiGameUserResponse> GetUser(RequestContext context, GameDatabaseContext database,
+    public Response GetUser(RequestContext context, GameDatabaseContext database, GameUser? user,
         [DocSummary(SharedParamDescriptions.UserIdParam)] string id, 
         [DocSummary(SharedParamDescriptions.UserIdTypeParam)] string idType, DataContext dataContext)
     {
-        GameUser? user = database.GetUserByIdAndType(idType, id);
-        if(user == null) return ApiNotFoundError.UserMissingError;
+        // Hack to prevent Bunkum from routing other endpoints' requests to here until we finally fix Bunkum's routing
+        // to prioritize methods with less route params
+        if (id == "previousUsernames")
+        {
+            if (user == null) return ApiAuthenticationError.NotAuthenticated;
+            return new(this.GetMyPreviousUsernames(context, database, dataContext, user), ContentType.Json);
+        }
         
-        return ApiGameUserResponse.FromOld(user, dataContext);
+        GameUser? targetUser = database.GetUserByIdAndType(idType, id);
+        if (targetUser == null) return ApiNotFoundError.UserMissingError;
+        
+        return new(ApiGameUserResponse.FromOld(targetUser, dataContext), ContentType.Json);
     }
 
-    // TODO: Also allow specifying user by username
     [ApiV3Endpoint("users/{idType}/{id}/heart", HttpMethods.Post)]
     [DocSummary("Hearts a user by their name or UUID")]
     [DocError(typeof(ApiNotFoundError), ApiNotFoundError.UserMissingErrorWhen)]
@@ -104,12 +113,12 @@ public class UserApiEndpoints : EndpointGroup
     [DocSummary("Gets all previous usernames which you have used.")]
     [DocUsesPageData]
     [RateLimitSettings(120, 35, 80, "me-api")] // TODO remove when we clean up rate-limit stats
-    public ApiListResponse<ApiExtendedPreviousUsernameResponse> GetMyPreviousUsernames(RequestContext context,
-        GameDatabaseContext database, IDataStore dataStore, DataContext dataContext, GameUser user)
+    public ApiListResponse<ApiPreviousUsernameResponse> GetMyPreviousUsernames(RequestContext context,
+        GameDatabaseContext database, DataContext dataContext, GameUser user)
     {
         (int skip, int count) = context.GetPageData();
         DatabaseList<PreviousUsername> previousNames = database.GetPreviousUsernameRecordsByUser(user, skip, count);
-        return DatabaseListExtensions.FromOldList<ApiExtendedPreviousUsernameResponse, PreviousUsername>(previousNames, dataContext);
+        return DatabaseListExtensions.FromOldList<ApiPreviousUsernameResponse, PreviousUsername>(previousNames, dataContext);
     }
     
     [ApiV3Endpoint("users/me", HttpMethods.Patch)]
