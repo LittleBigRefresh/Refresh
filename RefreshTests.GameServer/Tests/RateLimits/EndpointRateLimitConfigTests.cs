@@ -1,5 +1,6 @@
 using Refresh.Core.Configuration;
 using Refresh.Core.RateLimits.EndpointRateLimiting;
+using Refresh.Core.Services;
 using Refresh.Database.Models.Authentication;
 using Refresh.Database.Models.Levels;
 using Refresh.Database.Models.Users;
@@ -44,11 +45,15 @@ public class EndpointRateLimitConfigTests : GameServerTest
         GameUser user = context.CreateUser();
         GameLevel level = context.CreateLevelWithRootResource(user, "12345");
         
-        context.Server.Value.Server.AddEndpointGroup<TestEndpoints>();
+        TestRefreshGameServer server = context.Server.Value;
         using HttpClient authedGameClient = context.GetAuthenticatedClient(TokenType.Game, user);
         
-        EndpointRateLimitConfig config = context.Server.Value.EndpointRateLimitConfig;
+        // initialize config, rate-limiter and service
+        EndpointRateLimitConfig config = server.EndpointRateLimitConfig;
         config.AddMissingBucketsFromDefaults();
+        
+        TestEndpointRateLimiter rateLimiter = new(context.Time, server.Logger, config);
+        server.Server.AddService(new GameRateLimitService(server.Logger, rateLimiter, server.GetService<GameAuthenticationService>()));
         
         // ensure buckets are in the config
         Assert.That(config.Buckets.ContainsKey(nameof(EndpointBucketId.ApiGetSingleLevel)), Is.True);
@@ -62,15 +67,19 @@ public class EndpointRateLimitConfigTests : GameServerTest
         
         // ensure that the endpoints use their configured rate-limit.
         // this also ensures that rate-limits are enforced for both authed and unauthed users.
+        // also look into the actual data tracked by the rate-limiter
         this.TriggerRateLimit(context.Http, $"/api/v3/levels/id/{level.LevelId}", 1);
         this.TriggerRateLimit(authedGameClient, $"/lbp/s/user/{level.LevelId}", 2);
         
         // this one should fall back to the default bucket.
         // these test endpoints will definitely not have any dedicated buckets in the future
+        server.Server.AddEndpointGroup<TestEndpoints>();
         this.TriggerRateLimit(context.Http, $"/api/v3/test", 3);
         
         // ensure this one is already blocked because we've spammed the other endpoint from the same bucket
         this.TriggerRateLimit(context.Http, $"/api/v3/levels/hash/{level.RootResource}", 0);
+
+        // TODO also check number of tracked user/IP requests once the TODOs in the rate-limiting logic are resolved
     }
 
     private void TriggerRateLimit(HttpClient client, string endpoint, int maxRequestAmount)
