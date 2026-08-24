@@ -121,12 +121,16 @@ public partial class GameDatabaseContext // Registration
     
     public DatabaseList<PreviousUsername> GetPreviousUsernameRecordsForUsername(string username, int skip, int count)
     {
-        return new(this.PreviousUsernamesIncluded.Where(u => u.Username == username), skip, count);
+        return new(this.PreviousUsernamesIncluded
+            .Where(u => u.Username == username)
+            .OrderByDescending(u => u.ReplacedAt), skip, count);
     }
     
     public DatabaseList<PreviousUsername> GetPreviousUsernameRecordsByUser(GameUser user, int skip, int count)
     {
-        return new(this.PreviousUsernamesIncluded.Where(u => u.UserId == user.UserId), skip, count);
+        return new(this.PreviousUsernamesIncluded
+            .Where(u => u.UserId == user.UserId)
+            .OrderByDescending(u => u.ReplacedAt), skip, count);
     }
 
     public bool IsEmailTaken(string emailAddress)
