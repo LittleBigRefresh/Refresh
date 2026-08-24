@@ -12,6 +12,7 @@ using Refresh.Core.Configuration;
 using Refresh.Database.Models;
 using System.Text;
 using System.Net;
+using Refresh.Database.Models.Assets;
 
 namespace RefreshTests.GameServer.Tests.Photos;
 
@@ -33,6 +34,11 @@ public class PhotoEndpointsTests : GameServerTest
         HttpResponseMessage message = client.PostAsync($"/lbp/upload/{TEST_ASSET_HASH}", new ReadOnlyMemoryContent(TestAsset)).Result;
         Assert.That(message.StatusCode, Is.EqualTo(OK));
         
+        //Upload our """plan"""
+        ReadOnlySpan<byte> planData = "PLNb"u8;
+        string planHash = BitConverter.ToString(SHA1.HashData(planData)).Replace("-", "").ToLower();
+        context.GetDataStore().WriteToStore(planHash, planData);
+        
         SerializedPhoto photo = new()
         {
             Timestamp = DateTimeOffset.UtcNow.ToUnixTimeSeconds(),
@@ -40,7 +46,7 @@ public class PhotoEndpointsTests : GameServerTest
             SmallHash = TEST_ASSET_HASH,
             MediumHash = TEST_ASSET_HASH,
             LargeHash = TEST_ASSET_HASH,
-            PlanHash = TEST_ASSET_HASH,
+            PlanHash = planHash,
             Level = new SerializedPhotoLevel
             {
                 LevelId = level.LevelId,
@@ -103,6 +109,12 @@ public class PhotoEndpointsTests : GameServerTest
         HttpResponseMessage message = client.PostAsync($"/lbp/upload/{TEST_ASSET_HASH}", new ReadOnlyMemoryContent(TestAsset)).Result;
         Assert.That(message.StatusCode, Is.EqualTo(OK));
         DateTimeOffset takenAt = context.Time.Now;
+        
+        //Upload our """plan"""
+        ReadOnlySpan<byte> planData = "PLNb"u8;
+        string planHash = BitConverter.ToString(SHA1.HashData(planData)).Replace("-", "").ToLower();
+        context.GetDataStore().WriteToStore(planHash, planData);
+        
         context.Time.TimestampMilliseconds += 2000; // Increase to differentiate between creation and publish date
         
         SerializedPhoto photo = new()
@@ -112,7 +124,7 @@ public class PhotoEndpointsTests : GameServerTest
             SmallHash = TEST_ASSET_HASH,
             MediumHash = TEST_ASSET_HASH,
             LargeHash = TEST_ASSET_HASH,
-            PlanHash = TEST_ASSET_HASH,
+            PlanHash = planHash,
             Level = new SerializedPhotoLevel
             {
                 LevelId = level.StoryId,
@@ -160,7 +172,7 @@ public class PhotoEndpointsTests : GameServerTest
         Assert.That(gamePhoto!.SmallAssetHash, Is.EqualTo(TEST_ASSET_HASH));
         Assert.That(gamePhoto!.MediumAssetHash, Is.EqualTo(TEST_ASSET_HASH));
         Assert.That(gamePhoto!.LargeAssetHash, Is.EqualTo(TEST_ASSET_HASH));
-        Assert.That(gamePhoto!.PlanHash, Is.EqualTo(TEST_ASSET_HASH));
+        Assert.That(gamePhoto!.PlanHash, Is.EqualTo(planHash));
 
         List<GamePhotoSubject> subjects = context.Database.GetSubjectsInPhoto(gamePhoto).ToList();
 
@@ -174,43 +186,147 @@ public class PhotoEndpointsTests : GameServerTest
         Assert.That(subjects[1].DisplayName, Is.EqualTo("SecretAlt"));
         Assert.That(subjects[1].User, Is.Null);
     }
+
+    private void TryUploadPhotosWithInvalidImage(TestContext context, HttpClient client, GameUser user, string invalidHash, HttpStatusCode expectedStatus)
+    {
+        ReadOnlySpan<byte> imageData = "TEX "u8;
+        string imageHash = BitConverter.ToString(SHA1.HashData(imageData)).Replace("-", "").ToLower();
+        context.GetDataStore().WriteToStore(imageHash, imageData);
+
+        ReadOnlySpan<byte> planData = "PLNb"u8;
+        string planHash = BitConverter.ToString(SHA1.HashData(planData)).Replace("-", "").ToLower();
+        context.GetDataStore().WriteToStore(planHash, planData);
+
+        // bad small image 
+        SerializedPhoto photo = new()
+        {
+            Timestamp = DateTimeOffset.UtcNow.ToUnixTimeSeconds(),
+            AuthorName = user.Username,
+            SmallHash = invalidHash,
+            MediumHash = imageHash,
+            LargeHash = imageHash,
+            PlanHash = planHash,
+            Level = new SerializedPhotoLevel
+            {
+                LevelId = 0,
+                Title = "",
+                Type = "pod",
+            },
+        };
+        
+        HttpResponseMessage message = client.PostAsync($"/lbp/uploadPhoto", new StringContent(photo.AsXML())).Result;
+        Assert.That(message.StatusCode, Is.EqualTo(expectedStatus));
+
+        // bad medium image
+        photo.SmallHash = imageHash; 
+        photo.MediumHash = invalidHash;
+        
+        message = client.PostAsync($"/lbp/uploadPhoto", new StringContent(photo.AsXML())).Result;
+        Assert.That(message.StatusCode, Is.EqualTo(expectedStatus));
+
+        // bad large image
+        photo.MediumHash = imageHash;
+        photo.LargeHash = invalidHash;
+        
+        message = client.PostAsync($"/lbp/uploadPhoto", new StringContent(photo.AsXML())).Result;
+        Assert.That(message.StatusCode, Is.EqualTo(expectedStatus));
+    }
+
+    private void TryUploadPhotoWithInvalidPlan(TestContext context, HttpClient client, GameUser user, string invalidHash, HttpStatusCode expectedStatus)
+    {
+        ReadOnlySpan<byte> imageData = "TEX "u8;
+        string imageHash = BitConverter.ToString(SHA1.HashData(imageData)).Replace("-", "").ToLower();
+        context.GetDataStore().WriteToStore(imageHash, imageData);
+
+        // bad plan 
+        SerializedPhoto photo = new()
+        {
+            Timestamp = DateTimeOffset.UtcNow.ToUnixTimeSeconds(),
+            AuthorName = user.Username,
+            SmallHash = imageHash,
+            MediumHash = imageHash,
+            LargeHash = imageHash,
+            PlanHash = invalidHash,
+            Level = new SerializedPhotoLevel
+            {
+                LevelId = 0,
+                Title = "",
+                Type = "pod",
+            },
+        };
+        
+        HttpResponseMessage message = client.PostAsync($"/lbp/uploadPhoto", new StringContent(photo.AsXML())).Result;
+        Assert.That(message.StatusCode, Is.EqualTo(expectedStatus));
+    }
+
+    [Test]
+    [TestCase("")]
+    [TestCase("0")]
+    [TestCase("g1087")]
+    [TestCase("g18451")]
+    public void RejectPhotosWithNonHashAssets(string invalidHash)
+    {
+        using TestContext context = this.GetServer();
+        GameUser user = context.CreateUser();
+        using HttpClient client = context.GetAuthenticatedClient(TokenType.Game, user);
+
+        this.TryUploadPhotosWithInvalidImage(context, client, user, invalidHash, BadRequest);
+        this.TryUploadPhotoWithInvalidPlan(context, client, user, invalidHash, BadRequest);
+    }
     
     [Test]
     public void CantUploadPhotoWithMissingAssets()
     {
         using TestContext context = this.GetServer();
         GameUser user = context.CreateUser();
-        GameLevel level = context.CreateLevel(user);
-
         using HttpClient client = context.GetAuthenticatedClient(TokenType.Game, user);
-        
-        SerializedPhoto photo = new()
-        {
-            Timestamp = DateTimeOffset.UtcNow.ToUnixTimeSeconds(),
-            AuthorName = user.Username,
-            SmallHash = TEST_ASSET_HASH,
-            MediumHash = TEST_ASSET_HASH,
-            LargeHash = TEST_ASSET_HASH,
-            PlanHash = TEST_ASSET_HASH,
-            Level = new SerializedPhotoLevel
-            {
-                LevelId = level.LevelId,
-                Title = level.Title,
-                Type = "user",
-            },
-            PhotoSubjects = new List<SerializedPhotoSubject>
-            {
-                new()
-                {
-                    Username = user.Username,
-                    DisplayName = user.Username,
-                    BoundsList = "1,1,1,1",
-                },
-            }
-        };
-        
-        HttpResponseMessage message = client.PostAsync($"/lbp/uploadPhoto", new StringContent(photo.AsXML())).Result;
-        Assert.That(message.StatusCode, Is.EqualTo(BadRequest));
+
+        ReadOnlySpan<byte> badImageData = "TEX m"u8;
+        string badImageHash = BitConverter.ToString(SHA1.HashData(badImageData)).Replace("-", "").ToLower();
+        // Don't add to store
+
+        ReadOnlySpan<byte> badPlanData = "PLNb m"u8;
+        string badPlanHash = BitConverter.ToString(SHA1.HashData(badPlanData)).Replace("-", "").ToLower();
+        // Don't add to store
+
+        this.TryUploadPhotosWithInvalidImage(context, client, user, badImageHash, NotFound);
+        this.TryUploadPhotoWithInvalidPlan(context, client, user, badPlanHash, NotFound);
+    }
+    
+    [Test]
+    public void CantUploadPhotoWithDisallowedAssets()
+    {
+        using TestContext context = this.GetServer();
+        GameUser user = context.CreateUser();
+        using HttpClient client = context.GetAuthenticatedClient(TokenType.Game, user);
+
+        ReadOnlySpan<byte> badImageData = "TEX d"u8;
+        string badImageHash = BitConverter.ToString(SHA1.HashData(badImageData)).Replace("-", "").ToLower();
+        context.GetDataStore().WriteToStore(badImageHash, badImageData);
+        context.Database.DisallowAsset(badImageHash, GameAssetType.Texture, "");
+
+        ReadOnlySpan<byte> badPlanData = "PLNb m"u8;
+        string badPlanHash = BitConverter.ToString(SHA1.HashData(badPlanData)).Replace("-", "").ToLower();
+        context.GetDataStore().WriteToStore(badPlanHash, badPlanData);
+        context.Database.DisallowAsset(badPlanHash, GameAssetType.Plan, "");
+
+        this.TryUploadPhotosWithInvalidImage(context, client, user, badImageHash, Unauthorized);
+        this.TryUploadPhotoWithInvalidPlan(context, client, user, badPlanHash, Unauthorized);
+    }
+    
+    [Test]
+    public void CantUploadPhotoWithInvalidAssets()
+    {
+        using TestContext context = this.GetServer();
+        GameUser user = context.CreateUser();
+        using HttpClient client = context.GetAuthenticatedClient(TokenType.Game, user);
+
+        ReadOnlySpan<byte> meshData = "MSHb"u8;
+        string meshHash = BitConverter.ToString(SHA1.HashData(meshData)).Replace("-", "").ToLower();
+        context.GetDataStore().WriteToStore(meshHash, meshData);
+
+        this.TryUploadPhotosWithInvalidImage(context, client, user, meshHash, BadRequest);
+        this.TryUploadPhotoWithInvalidPlan(context, client, user, meshHash, BadRequest);
     }
     
     [Test]
@@ -226,6 +342,11 @@ public class PhotoEndpointsTests : GameServerTest
         HttpResponseMessage message = client.PostAsync($"/lbp/upload/{TEST_ASSET_HASH}", new ReadOnlyMemoryContent(TestAsset)).Result;
         Assert.That(message.StatusCode, Is.EqualTo(OK));
         
+        //Upload our """plan"""
+        ReadOnlySpan<byte> planData = "PLNb"u8;
+        string planHash = BitConverter.ToString(SHA1.HashData(planData)).Replace("-", "").ToLower();
+        context.GetDataStore().WriteToStore(planHash, planData);
+        
         SerializedPhoto photo = new()
         {
             Timestamp = DateTimeOffset.UtcNow.ToUnixTimeSeconds(),
@@ -233,7 +354,7 @@ public class PhotoEndpointsTests : GameServerTest
             SmallHash = TEST_ASSET_HASH,
             MediumHash = TEST_ASSET_HASH,
             LargeHash = TEST_ASSET_HASH,
-            PlanHash = TEST_ASSET_HASH,
+            PlanHash = planHash,
             Level = new SerializedPhotoLevel
             {
                 LevelId = level.LevelId,
@@ -338,6 +459,11 @@ public class PhotoEndpointsTests : GameServerTest
         HttpResponseMessage message = client1.PostAsync($"/lbp/upload/{TEST_ASSET_HASH}", new ReadOnlyMemoryContent(TestAsset)).Result;
         Assert.That(message.StatusCode, Is.EqualTo(OK));
         
+        //Upload our """plan"""
+        ReadOnlySpan<byte> planData = "PLNb"u8;
+        string planHash = BitConverter.ToString(SHA1.HashData(planData)).Replace("-", "").ToLower();
+        context.GetDataStore().WriteToStore(planHash, planData);
+        
         SerializedPhoto photo = new()
         {
             Timestamp = DateTimeOffset.UtcNow.ToUnixTimeSeconds(),
@@ -345,7 +471,7 @@ public class PhotoEndpointsTests : GameServerTest
             SmallHash = TEST_ASSET_HASH,
             MediumHash = TEST_ASSET_HASH,
             LargeHash = TEST_ASSET_HASH,
-            PlanHash = TEST_ASSET_HASH,
+            PlanHash = planHash,
             Level = new SerializedPhotoLevel
             {
                 LevelId = level.LevelId,

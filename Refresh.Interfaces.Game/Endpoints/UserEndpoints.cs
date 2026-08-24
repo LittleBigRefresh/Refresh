@@ -2,16 +2,21 @@ using System.Xml.Serialization;
 using Bunkum.Core;
 using Bunkum.Core.Endpoints;
 using Bunkum.Core.RateLimit;
+using Bunkum.Core.Responses;
 using Bunkum.Core.Storage;
 using Bunkum.Listener.Protocol;
 using Bunkum.Protocols.Http;
 using Refresh.Common.Constants;
 using Refresh.Core.Authentication.Permission;
 using Refresh.Core.Configuration;
+using Refresh.Core.Helpers;
+using Refresh.Core.Importing;
 using Refresh.Core.RateLimits.Users;
 using Refresh.Core.Services;
+using Refresh.Core.Types.Assets.Validation;
 using Refresh.Core.Types.Data;
 using Refresh.Database;
+using Refresh.Database.Models.Assets;
 using Refresh.Database.Models.Authentication;
 using Refresh.Database.Models.Users;
 using Refresh.Interfaces.Game.Endpoints.DataTypes.Response;
@@ -73,7 +78,8 @@ public class UserEndpoints : EndpointGroup
     [NullStatusCode(BadRequest)]
     [RateLimitSettings(UserModificationEndpointLimits.TimeoutDuration, UserModificationEndpointLimits.GameRequestAmount, 
                             UserModificationEndpointLimits.BlockDuration, UserModificationEndpointLimits.GameRequestBucket)]
-    public string? UpdateUser(RequestContext context, DataContext dataContext, GameUser user, string body, GuidCheckerService guidChecker)
+    public Response UpdateUser(RequestContext context, DataContext dataContext, GameUser user, string body, GuidCheckerService guidChecker, 
+        AssetImporter importer, AipiService aipi)
     {
         SerializedUpdateData? data = null;
         
@@ -83,7 +89,7 @@ public class UserEndpoints : EndpointGroup
         {
             XmlSerializer profileSerializer = new(typeof(SerializedUpdateDataProfile));
             if (profileSerializer.Deserialize(new StringReader(body)) is not SerializedUpdateDataProfile profileData)
-                return null;
+                return BadRequest;
             
             data ??= profileData;
         }
@@ -96,7 +102,7 @@ public class UserEndpoints : EndpointGroup
         {
             XmlSerializer planetSerializer = new(typeof(SerializedUpdateDataPlanets));
             if (planetSerializer.Deserialize(new StringReader(body)) is not SerializedUpdateDataPlanets planetsData)
-                return null;
+                return BadRequest;
             
             data ??= planetsData;
         }
@@ -108,47 +114,84 @@ public class UserEndpoints : EndpointGroup
         if (data == null)
         {
             dataContext.Database.AddErrorNotification("Profile update failed", "Your profile failed to update because the data could not be read.", user);
-            return null;
+            return BadRequest;
         }
 
         if (data.IconHash != null)
         {
-            //If the icon is a GUID
-            if (data.IconHash.StartsWith('g'))
+            ValidatedAssetResult iconResult = ResourceValidationHelper.ValidateReference(new(data.IconHash, dataContext, importer, aipi)
             {
-                //Parse out the GUID
-                long guid = long.Parse(data.IconHash.AsSpan()[1..]);
-                
-                //If its not a valid GUID, block the request
-                if (data.IconHash.StartsWith('g') && !guidChecker.IsTextureGuid(dataContext.Game, guid))
-                {
-                    dataContext.Database.AddErrorNotification("Profile update failed", "Your avatar failed to update because the asset was an invalid GUID.", user);
-                    return null; 
-                }
-            }
-            else if (data.IconHash.IsBlankHash())
+                MustBeTexture = true,
+                AssetContextTypeStr = "avatar",
+            }, context.Logger);
+            data.IconHash = iconResult.NewAssetRef;
+            
+            if (iconResult.Status != OK)
             {
-                // Force hash to be a specific value if the icon is supposed to be reset/default to a PSN avatar, 
-                // to not allow uncontrolled values which would still count as blank/empty hash (e.g. unlimited whitespaces)
-                data.IconHash = "0";
-            }
-            else if (!dataContext.DataStore.ExistsInStore(data.IconHash))
-            {
-                //If the asset does not exist on the server, block the request
-                dataContext.Database.AddErrorNotification("Profile update failed", "Your avatar failed to update because the asset was missing on the server.", user);
-                return null;
+                if (iconResult.ErrorMessage != null) dataContext.Database.AddErrorNotification("Profile update failed", iconResult.ErrorMessage, user);
+                return iconResult.Status;
             }
         }
         
-        if (data.LevelLocations != null && data.LevelLocations.Count > 0)
+        AssetValidationParameters faceParams = new(null!, dataContext, importer, aipi)
         {
-            dataContext.Database.UpdateLevelLocations(data.LevelLocations, user);
+            MayBeBlank = false,
+            MayBeGuid = false,
+            MustBeTexture = true,
+            AssetContextTypeStr = "image",
+        };
+
+        if (data.YayFaceHash != null)
+        {
+            faceParams.AssetRef = data.YayFaceHash;
+            ValidatedAssetResult yayResult = ResourceValidationHelper.ValidateReference(faceParams, context.Logger);
+            data.YayFaceHash = yayResult.NewAssetRef;
+
+            if (yayResult.Status != OK) return yayResult.Status; // no need to notify, these are always updated in the background
         }
-        
-        if (!string.IsNullOrEmpty(data.PlanetsHash) && data.PlanetsHash != "0" /* Empty planets */ && !dataContext.DataStore.ExistsInStore(data.PlanetsHash))
+
+        if (data.MehFaceHash != null)
         {
-            dataContext.Database.AddErrorNotification("Profile update failed", "Your planets failed to update because the asset was missing on the server.", user);
-            return null;
+            faceParams.AssetRef = data.MehFaceHash;
+            ValidatedAssetResult mehResult = ResourceValidationHelper.ValidateReference(faceParams, context.Logger);
+            data.MehFaceHash = mehResult.NewAssetRef;
+
+            if (mehResult.Status != OK) return mehResult.Status;
+        }
+
+        if (data.BooFaceHash != null)
+        {
+            faceParams.AssetRef = data.BooFaceHash;
+            ValidatedAssetResult booResult = ResourceValidationHelper.ValidateReference(faceParams, context.Logger);
+            data.BooFaceHash = booResult.NewAssetRef;
+
+            if (booResult.Status != OK) return booResult.Status;
+        }
+
+        if (data.PlanetsHash != null)
+        {
+            // Some LBP2 alpha builds like to insert newlines here
+            data.PlanetsHash = data.PlanetsHash.Replace("\n", "");
+
+            ValidatedAssetResult planetResult = ResourceValidationHelper.ValidateReference(new(data.PlanetsHash, dataContext, importer)
+            { 
+                // blank = reset planets, but GUIDs should never happen
+                MayBeGuid = false,
+                AssetContextTypeStr = "planet asset",
+            }, context.Logger);
+            data.PlanetsHash = planetResult.NewAssetRef;
+            
+            if (planetResult.Status != OK)
+            {
+                if (planetResult.ErrorMessage != null) dataContext.Database.AddErrorNotification("Planet update failed", planetResult.ErrorMessage, user);
+                return planetResult.Status;
+            }
+            // TODO also read contents and ensure the asset actually contains an earth and a moon
+            else if (planetResult.AssetInfo != null && planetResult.AssetInfo.AssetType != GameAssetType.Level)
+            {
+                if (planetResult.ErrorMessage != null) dataContext.Database.AddErrorNotification("Planet update failed", "The asset was badly formatted.", user);
+                return BadRequest;
+            }
         }
 
         // Trim description
@@ -157,8 +200,13 @@ public class UserEndpoints : EndpointGroup
             data.Description = data.Description[..UgcLimits.DescriptionLimit];
         }
         
+        if (data.LevelLocations != null && data.LevelLocations.Count > 0)
+        {
+            dataContext.Database.UpdateLevelLocations(data.LevelLocations, user);
+        }
+
         dataContext.Database.UpdateUserData(user, data, dataContext.Game);
-        return string.Empty;
+        return OK;
     }
 
     private const int PinTimeoutDuration = 480;
