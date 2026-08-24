@@ -17,10 +17,10 @@ public class GameRateLimitService : Service
     protected readonly EndpointRateLimiter RateLimiter;
     protected readonly GameAuthenticationService AuthService;
 
-    protected GameRateLimitService(Logger logger, TimeProviderService timeService, GameAuthenticationService authService, EndpointRateLimitConfig config) 
+    public GameRateLimitService(Logger logger, TimeProviderService timeService, GameAuthenticationService authService, EndpointRateLimitConfig config) 
         : this(logger, new(timeService.TimeProvider, logger, config), authService) {}
 
-    protected GameRateLimitService(Logger logger, EndpointRateLimiter rateLimiter, GameAuthenticationService authService) : base(logger)
+    public GameRateLimitService(Logger logger, EndpointRateLimiter rateLimiter, GameAuthenticationService authService) : base(logger)
     {
         this.RateLimiter = rateLimiter;
         this.AuthService = authService;
