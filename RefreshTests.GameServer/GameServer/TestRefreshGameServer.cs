@@ -66,7 +66,6 @@ public class TestRefreshGameServer : RefreshGameServer
     protected override void SetupServices()
     {
         this.Server.AddService<TimeProviderService>(this.DateTimeProvider);
-        this.Server.AddService<GameRateLimitService>();
         this.Server.AddService<CategoryService>();
         this.Server.AddService<MatchService>();
         this.Server.AddService<ImportService>();
