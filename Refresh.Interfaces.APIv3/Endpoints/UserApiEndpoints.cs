@@ -101,28 +101,6 @@ public class UserApiEndpoints : EndpointGroup
         return ApiExtendedGameUserResponse.FromOld(user, dataContext);
     }
     
-    /*
-     * TODO enable this function/endpoint once Bunkum stops routing requests addressed at this endpoint to GetUser() instead.
-     * Such a fix could be making Bunkum's router prefer endpoints with the least route parameters,
-     * since the issue here is that requests meant for this endpoint have their route match with /users/{idType}/{id},
-     * where "me" is used for the idType param and "previousUsernames" is used for the id param.
-     *
-     * Wanted to do a hack for this first, just like with /users/me vs /users/{route}, but this time it got too complicated.
-     * Should just fix the underlying problem at this point.
-     */ 
-    /*
-    [ApiV3Endpoint("users/me/previousUsernames"), MinimumRole(GameUserRole.Moderator)]
-    [DocSummary("Gets all previous usernames which you have used.")]
-    [DocUsesPageData]
-    public ApiListResponse<ApiPreviousUsernameResponse> GetMyPreviousUsernames(RequestContext context,
-        GameDatabaseContext database, DataContext dataContext, GameUser user)
-    {
-        (int skip, int count) = context.GetPageData();
-        DatabaseList<PreviousUsername> previousNames = database.GetPreviousUsernameRecordsByUser(user, skip, count);
-        return DatabaseListExtensions.FromOldList<ApiPreviousUsernameResponse, PreviousUsername>(previousNames, dataContext);
-    }
-    */
-    
     [ApiV3Endpoint("users/me", HttpMethods.Patch)]
     [DocSummary("Updates your profile with the given data")]
     [RateLimitSettings(UserModificationEndpointLimits.TimeoutDuration, UserModificationEndpointLimits.ApiRequestAmount, 
