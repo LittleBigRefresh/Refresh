@@ -158,12 +158,12 @@ public class AipiService : EndpointService
         
         return true;
     }
+}
     
-    private class AipiResponse<TData>
-    {
-        public bool Success { get; set; }
-    
-        public TData? Data { get; set; }
-        public string? Reason { get; set; }
-    }
+public class AipiResponse<TData>
+{
+    public bool Success { get; set; }
+
+    public TData? Data { get; set; }
+    public string? Reason { get; set; }
 }
