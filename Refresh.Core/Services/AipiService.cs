@@ -1,12 +1,14 @@
 using System.Diagnostics;
 using System.Net.Http.Json;
 using Bunkum.Core.Services;
+using Bunkum.Core.Storage;
 using JetBrains.Annotations;
 using NotEnoughLogs;
 using Refresh.Common;
 using Refresh.Core.Configuration;
 using Refresh.Core.Importing;
 using Refresh.Core.Types.Data;
+using Refresh.Database;
 using Refresh.Database.Models.Assets;
 using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.Formats;
@@ -120,6 +122,11 @@ public class AipiService : EndpointService
 
     public bool ScanAndHandleAsset(DataContext context, GameAsset asset)
     {
+        return this.ScanAndHandleAsset(context.Database, context.DataStore, asset);
+    }
+    
+    public bool ScanAndHandleAsset(GameDatabaseContext database, IDataStore dataStore, GameAsset asset)
+    {
         // guard the fact that assets have an owner
         Debug.Assert(asset.OriginalUploader != null, $"Asset {asset.AssetHash} had no original uploader when trying to scan");
         if (asset.OriginalUploader == null)
@@ -128,24 +135,25 @@ public class AipiService : EndpointService
         // import the asset as png
         bool isPspAsset = asset.AssetHash.StartsWith("psp/");
 
-        if (!context.DataStore.ExistsInStore("png/" + asset.AssetHash))
+        if (!dataStore.ExistsInStore("png/" + asset.AssetHash))
         {
-            this._importer.ImportAsset(asset.AssetHash, isPspAsset, asset.AssetType, context.DataStore);
+            this._importer.ImportAsset(asset.AssetHash, isPspAsset, asset.AssetType, dataStore);
         }
 
         // do actual prediction
-        using Stream stream = context.DataStore.GetStreamFromStore("png/" + asset.AssetHash);
+        using Stream stream = dataStore.GetStreamFromStore("png/" + asset.AssetHash);
         Dictionary<string, float> results = this.PredictEvaAsync(stream).Result;
 
         if (!results.Any(r => this._config.AipiBannedTags.Contains(r.Key)))
             return false;
         
         this._discord?.PostPredictionResult(results, asset);
+        // TODO also log this in our own mod log
 
         if (this._config.AipiRestrictAccountOnDetection)
         {
             const string reason = "Automatic restriction for posting disallowed content. This will usually be undone within 24 hours if this is a mistake.";
-            context.Database.RestrictUser(asset.OriginalUploader, reason, DateTimeOffset.MaxValue);
+            database.RestrictUser(asset.OriginalUploader, reason, DateTimeOffset.MaxValue);
         }
         
         return true;
