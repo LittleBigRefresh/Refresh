@@ -79,7 +79,7 @@ public class UserEndpoints : EndpointGroup
     [RateLimitSettings(UserModificationEndpointLimits.TimeoutDuration, UserModificationEndpointLimits.GameRequestAmount, 
                             UserModificationEndpointLimits.BlockDuration, UserModificationEndpointLimits.GameRequestBucket)]
     public Response UpdateUser(RequestContext context, DataContext dataContext, GameUser user, string body, GuidCheckerService guidChecker, 
-        AssetImporter importer, AipiService aipi)
+        AssetImporter importer, AipiService? aipi)
     {
         SerializedUpdateData? data = null;
         

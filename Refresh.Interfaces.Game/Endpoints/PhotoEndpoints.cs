@@ -30,7 +30,7 @@ public class PhotoEndpoints : EndpointGroup
     [RateLimitSettings(300, 30, 240, "upload-photo")]
     public Response UploadPhoto(RequestContext context, SerializedPhoto body, GameDatabaseContext database,
         GameUser user, IDataStore dataStore, AssetImporter importer,
-        DataContext dataContext, AipiService aipi, GameServerConfig config)
+        DataContext dataContext, AipiService? aipi, GameServerConfig config)
     {
         if (user.IsWriteBlocked(config))
             return Unauthorized;
