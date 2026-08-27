@@ -80,7 +80,7 @@ public class AipiService : EndpointService
         return aipiResponse.Data!;
     }
     
-    private async Task<Dictionary<string, float>> PredictEvaAsync(Stream data)
+    private async Task<Dictionary<string, float>> PredictEvaAsync(Stream data, string imageHash, GameUser user)
     {
         Stopwatch stopwatch = new();
         this.Logger.LogTrace(RefreshContext.Aipi, "Pre-processing image data...");
@@ -110,7 +110,7 @@ public class AipiService : EndpointService
 
         float threshold = this._config.AipiThreshold;
         
-        this.Logger.LogDebug(RefreshContext.Aipi, $"Running prediction for image @ threshold={threshold}...");
+        this.Logger.LogInfo(RefreshContext.Aipi, $"Running prediction for image '{imageHash}' @ threshold={threshold} by {user}...");
 
         stopwatch.Start();
         Dictionary<string, float> prediction = await this.PostAsync<Dictionary<string, float>>($"/eva/predict?threshold={threshold}", processedData);    
@@ -142,7 +142,7 @@ public class AipiService : EndpointService
 
         // do actual prediction
         using Stream stream = dataStore.GetStreamFromStore("png/" + asset.AssetHash);
-        Dictionary<string, float> results = this.PredictEvaAsync(stream).Result;
+        Dictionary<string, float> results = this.PredictEvaAsync(stream, asset.AssetHash, user).Result;
 
         if (!results.Any(r => this._config.AipiBannedTags.Contains(r.Key)))
             return false;
