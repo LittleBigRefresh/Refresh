@@ -97,7 +97,11 @@ public abstract class ResourceValidationHelper
                     logger.LogDebug(BunkumCategory.UserContent, $"Failed to get '{filename}' after {sw.ElapsedMilliseconds}ms.");
                     return new(BadRequest, null, $"The used {assetTypeStr} was invalid or corrupt.", existsInDataStore: existsInDataStore);
                 }
-
+                
+                // Assume that the user using this asset might also be the uploader. We should never trust that uploader = creator anyway.
+                asset.OriginalUploader = parameters.User;
+                parameters.Database.AddAssetToDatabase(asset);
+                
                 sw.Stop();
                 logger.LogInfo(BunkumCategory.UserContent, $"Successfully imported '{filename}' in {sw.ElapsedMilliseconds}ms.");
             }
