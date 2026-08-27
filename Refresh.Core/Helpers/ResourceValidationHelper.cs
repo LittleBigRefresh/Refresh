@@ -110,7 +110,16 @@ public abstract class ResourceValidationHelper
                 if (parameters.MustBeTexture && !isHashedTexture)
                     return new(BadRequest, null, $"The used {assetTypeStr} was not a valid custom image.", assetInfo: asset, existsInDataStore: existsInDataStore);
                 
-                // TODO: actually use AIPI to scan image if not null
+                if (isHashedTexture && parameters.Aipi != null)
+                {
+                    // Since AIPI is available, we should use it to scan this image
+                    logger.LogDebug(BunkumCategory.UserContent, $"Sending {filename} ({parameters.AssetContextTypeStr}) to AIPI for image scanning...");
+                    if (parameters.Aipi.ScanAndHandleAsset(parameters.Database, parameters.DataStore, asset))
+                    {
+                        logger.LogWarning(BunkumCategory.UserContent, $"{parameters.User}'s usage of {parameters.AssetContextTypeStr} '{filename}' was blocked by AIPI scan!");
+                        return new(UnprocessableContent, assetInfo: asset, existsInDataStore: existsInDataStore);
+                    }
+                }
             }
         }
 
