@@ -14,11 +14,10 @@ public class ApiGameUserOwnRelationsResponse : IApiResponse
         if (dataContext.User == null) 
             return null;
         
-        OwnUserRelations relations = dataContext.Cache.GetOwnUserRelations(dataContext.User, user, dataContext.Database).Content;
-
+        // TODO cache user-user relations
         return new()
         {
-            IsHearted = relations.IsHearted,
+            IsHearted = dataContext.Database.IsUserFavouritedByUser(user, dataContext.User),
         };
     }
 }

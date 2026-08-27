@@ -47,7 +47,6 @@ public class ReviewEndpoints : EndpointGroup
         if (rating is > 1 or < -1) return BadRequest;
         
         bool rated = database.RateLevel(level, user, (RatingType)rating);
-        dataContext.Cache.UpdateLevelRatingByUser(user, level, rating, database);
 
         return rated ? OK : Unauthorized;
     }
@@ -94,7 +93,6 @@ public class ReviewEndpoints : EndpointGroup
         }
 
         database.RateLevel(level, user, rating);
-        dataContext.Cache.UpdateLevelRatingByUser(user, level, (int)rating, database);
         return OK;
     }
 
@@ -187,7 +185,6 @@ public class ReviewEndpoints : EndpointGroup
         // Update the user's rating if valid
         if (body.Thumb is > 1 or < -1) return BadRequest;
         database.RateLevel(level, user, (RatingType)body.Thumb);
-        dataContext.Cache.UpdateLevelRatingByUser(user, level, body.Thumb, database);
 
         // Return the review
         return new Response(SerializedGameReview.FromOld(review, dataContext), ContentType.Xml);
