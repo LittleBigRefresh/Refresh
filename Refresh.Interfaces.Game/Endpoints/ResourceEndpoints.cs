@@ -31,7 +31,7 @@ public class ResourceEndpoints : EndpointGroup
     [RequireEmailVerified]
     [SuppressMessage("ReSharper", "ConvertIfStatementToReturnStatement")]
     [RateLimitSettings(300, 200, 240, "game-asset-upload")]
-    public Response UploadAsset(RequestContext context, string hash, string type, byte[] body, IDataStore dataStore,
+    public Response UploadAsset(RequestContext context, string hash, string? type, byte[] body, IDataStore dataStore,
         GameDatabaseContext database, GameUser user, AssetImporter importer, GameServerConfig config, IDateTimeProvider timeProvider, Token token,
         DataContext dataContext)
     {
