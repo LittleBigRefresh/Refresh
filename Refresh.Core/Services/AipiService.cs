@@ -19,7 +19,7 @@ namespace Refresh.Core.Services;
 // Referenced from DO.
 public class AipiService : EndpointService
 {
-    private readonly HttpClient _client;
+    protected HttpClient _client { get; init; }
     private readonly IntegrationConfig _config;
     private readonly DiscordStaffService? _discord;
 
@@ -152,6 +152,7 @@ public class AipiService : EndpointService
 
         if (this._config.AipiRestrictAccountOnDetection)
         {
+            this.Logger.LogInfo(RefreshContext.Aipi, $"Auto-restricting user {asset.OriginalUploader} because their asset '{asset.AssetHash}' was determined to contain forbidden content.");
             const string reason = "Automatic restriction for posting disallowed content. This will usually be undone within 24 hours if this is a mistake.";
             database.RestrictUser(asset.OriginalUploader, reason, DateTimeOffset.MaxValue);
         }
