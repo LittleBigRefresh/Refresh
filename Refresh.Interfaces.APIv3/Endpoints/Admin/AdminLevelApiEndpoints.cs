@@ -79,7 +79,6 @@ public class AdminLevelApiEndpoints : EndpointGroup
         if (level == null) return ApiNotFoundError.LevelMissingError;
         
         database.DeleteLevel(level);
-        dataContext.Cache.RemoveLevelData(level);
         return new ApiOkResponse();
     }
     

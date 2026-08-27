@@ -144,17 +144,17 @@ public class GameLevelResponse : GameMinimalLevelResponse, IDataConvertableFrom<
         
         if (dataContext.Game is TokenGame.LittleBigPlanetVita or TokenGame.BetaBuild)
         {
-            GameAsset? rootResourceAsset = dataContext.Cache.GetAssetInfo(response.RootResource, dataContext.Database);
+            GameAsset? rootResourceAsset = dataContext.Database.GetAssetFromHash(response.RootResource);
             if (rootResourceAsset != null)
             {
                 rootResourceAsset.TraverseDependenciesRecursively(dataContext.Database, (_, asset) =>
                 {
                     if (asset != null)
-                        response.SizeOfResourcesInBytes += asset.SizeInBytes;
+                        response.SizeOfResourcesInBytes += asset.SizeInBytes; // TODO cache this total size
                 });
             }
 
-            response.SkillRewards = dataContext.Cache.GetSkillRewards(old, dataContext.Database);
+            response.SkillRewards = dataContext.Database.GetSkillRewardsForLevel(old).ToList();
         }
         
         return response;
