@@ -73,7 +73,7 @@ public abstract class ResourceValidationHelper
                     return new(NotFound, null, $"The used {assetTypeStr} did not exist on the server.");
             }
 
-            asset = parameters.Cache.GetAssetInfo(parameters.AssetRef, parameters.Database);
+            asset = parameters.Database.GetAssetFromHash(parameters.AssetRef);
 
             // Only try to import if the asset exists in the data store
             if (existsInDataStore && asset == null)

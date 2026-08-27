@@ -26,7 +26,6 @@ public class AdminPhotoApiEndpoints : EndpointGroup
         if (user == null) return ApiNotFoundError.UserMissingError;
         
         database.DeletePhotosPostedByUser(user);
-        dataContext.Cache.ResetLevelPhotoCountsByUser(user);
         return new ApiOkResponse();
     }
     
@@ -39,8 +38,6 @@ public class AdminPhotoApiEndpoints : EndpointGroup
         if (photo == null) return ApiNotFoundError.PhotoMissingError;
         
         database.RemovePhoto(photo);
-        if (photo.Level != null)
-            dataContext.Cache.IncrementLevelPhotosByUser(photo.Publisher, photo.Level, -1, database);
 
         return new ApiOkResponse();
     }

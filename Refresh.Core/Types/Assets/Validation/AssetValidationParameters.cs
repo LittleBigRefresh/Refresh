@@ -19,7 +19,6 @@ public struct AssetValidationParameters
     public TokenPlatform PlatformToUseIn { get; set; }
     public GameDatabaseContext Database { get; set; } = null!;
     public IDataStore DataStore { get; set; } = null!;
-    public CacheService Cache { get; set; } = null!;
     public GuidCheckerService GuidChecker { get; set; } = null!;
     public AssetImporter AssetImporter { get; set; } = null!;
     public AipiService? Aipi { get; set; }
@@ -44,7 +43,6 @@ public struct AssetValidationParameters
         this.PlatformToUseIn = dataContext.Platform;
         this.Database = dataContext.Database;
         this.DataStore = dataContext.DataStore;
-        this.Cache = dataContext.Cache;
         this.GuidChecker = dataContext.GuidChecker;
         this.AssetImporter = assetImporter;
         this.Aipi = aipi;

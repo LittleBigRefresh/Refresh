@@ -154,7 +154,6 @@ public static class GameAssetExtensions
             hash => 
             {
                 dataContext.Database.SetMainlinePhotoHash(asset, hash);
-                dataContext.Cache.CacheAsset(asset.AssetHash, asset);
             },
             () => throw new NotSupportedException(),
             _ => throw new NotSupportedException()
@@ -179,13 +178,11 @@ public static class GameAssetExtensions
             hash => 
             {
                 dataContext.Database.SetMainlineIconHash(asset, hash);
-                dataContext.Cache.CacheAsset(asset.AssetHash, asset);
             },
             () => asset.AsMipIconHash,
             hash => 
             {
                 dataContext.Database.SetMipIconHash(asset, hash);
-                dataContext.Cache.CacheAsset(asset.AssetHash, asset);
             }
         );
     }
