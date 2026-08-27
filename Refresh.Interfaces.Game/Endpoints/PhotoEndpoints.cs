@@ -140,8 +140,6 @@ public class PhotoEndpoints : EndpointGroup
         GameLevel? level = body.Level == null ? null : database.GetLevelByIdAndType(body.Level.Type, body.Level.LevelId);
 
         database.UploadPhoto(body, body.PhotoSubjects, user, level);
-        if (level != null)
-            dataContext.Cache.IncrementLevelPhotosByUser(user, level, 1, database);
         
         if (uploadLimit.Enabled)
         {
@@ -161,8 +159,6 @@ public class PhotoEndpoints : EndpointGroup
             return Unauthorized;
         
         database.RemovePhoto(photo);
-        if (photo.Level != null)
-            dataContext.Cache.IncrementLevelPhotosByUser(photo.Publisher, photo.Level, -1, database);
 
         return OK;
     }

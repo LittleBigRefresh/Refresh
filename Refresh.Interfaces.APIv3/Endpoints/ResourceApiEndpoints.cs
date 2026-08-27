@@ -99,7 +99,7 @@ public class ResourceApiEndpoints : EndpointGroup
             else
             {
                 //Import the asset as normal
-                GameAsset? asset = dataContext.Cache.GetAssetInfo(realHash, database);
+                GameAsset? asset = database.GetAssetFromHash(hash);
                 imageImport.ImportAsset(realHash, isPspAsset, asset?.AssetType, dataStore);
             }
         }
@@ -138,7 +138,7 @@ public class ResourceApiEndpoints : EndpointGroup
         if (!CommonPatterns.Sha1Regex().IsMatch(realHash)) return ApiValidationError.HashInvalidError;
         if (string.IsNullOrWhiteSpace(realHash)) return ApiValidationError.HashMissingError;
 
-        GameAsset? asset = dataContext.Cache.GetAssetInfo(realHash, database);
+        GameAsset? asset = database.GetAssetFromHash(hash);
         if (asset == null) return ApiNotFoundError.Instance;
 
         return ApiGameAssetResponse.FromOld(asset, dataContext);
@@ -181,7 +181,7 @@ public class ResourceApiEndpoints : EndpointGroup
 
         if (dataStore.ExistsInStore(hash))
         {
-            GameAsset? existingAsset = dataContext.Cache.GetAssetInfo(hash, database);
+            GameAsset? existingAsset = database.GetAssetFromHash(hash);
             if (existingAsset == null)
                 return ApiInternalError.HashNotFoundInDatabaseError;
 
@@ -224,7 +224,6 @@ public class ResourceApiEndpoints : EndpointGroup
         }
         
         database.AddAssetToDatabase(gameAsset);
-        dataContext.Cache.CacheAsset(gameAsset.AssetHash, gameAsset);
         database.IncrementUserFilesizeQuota(user, body.Length);
 
         return new ApiResponse<ApiGameAssetResponse>(ApiGameAssetResponse.FromOld(gameAsset, dataContext)!, Created);

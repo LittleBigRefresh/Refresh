@@ -34,8 +34,6 @@ public class PhotoApiEndpoints : EndpointGroup
             return ApiValidationError.NoPhotoDeletionPermissionError;
 
         database.RemovePhoto(photo);
-        if (photo.Level != null)
-            dataContext.Cache.IncrementLevelPhotosByUser(photo.Publisher, photo.Level, -1, database);
         return new ApiOkResponse();
     }
     
