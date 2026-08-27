@@ -218,7 +218,7 @@ public class ResourceApiEndpoints : EndpointGroup
         
         gameAsset.OriginalUploader = user;
         
-        if (aipi != null && aipi.ScanAndHandleAsset(dataContext, gameAsset))
+        if (aipi != null && aipi.ScanAndHandleAsset(dataContext, gameAsset, user))
         {
             return ApiModerationError.AssetAutoFlaggedError;
         }

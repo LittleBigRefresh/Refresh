@@ -88,15 +88,16 @@ public class AipiTests : GameServerTest
         TestAipiService aipi = new(server.Logger, integration, importer, null!, context.Http);
         aipi.Initialize();
         
+        uploader ??= context.CreateUser();
         GameAsset metadata = new()
         {
             AssetHash = hash,
             AssetType = GameAssetType.Png,
-            OriginalUploader = uploader ?? context.CreateUser(),
+            OriginalUploader = uploader,
             SizeInBytes = TestAsset.Length,
             IsPSP = false,
         };
-        return aipi.ScanAndHandleAsset(context.Database, dataStore, metadata);
+        return aipi.ScanAndHandleAsset(context.Database, dataStore, metadata, uploader);
     }
 
     [Test]
