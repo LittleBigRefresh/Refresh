@@ -42,7 +42,7 @@ public class PublishEndpoints : EndpointGroup
     /// <param name="body">The level to verify</param>
     /// <param name="dataContext">The data context associated with the request</param>
     /// <returns>Whether validation succeeded. OK = success; everything else = failure</returns>
-    private static HttpStatusCode VerifyLevel(GameLevelRequest body, DataContext dataContext, AssetImporter importer, AipiService aipi, bool isActualPublish, bool isInnerLevel = false)
+    private static HttpStatusCode VerifyLevel(GameLevelRequest body, DataContext dataContext, AssetImporter importer, AipiService? aipi, bool isActualPublish, bool isInnerLevel = false)
     {
         if (body.Title.Length > UgcLimits.TitleLimit) 
             body.Title = body.Title[..UgcLimits.TitleLimit];
@@ -187,7 +187,7 @@ public class PublishEndpoints : EndpointGroup
         DataContext dataContext,
         GameServerConfig config,
         AssetImporter importer,
-        AipiService aipi,
+        AipiService? aipi,
         GameUser user)
     {
         if (dataContext.User!.IsWriteBlocked(config))
@@ -235,7 +235,7 @@ public class PublishEndpoints : EndpointGroup
         DataContext dataContext,
         GameUser user,
         AssetImporter importer,
-        AipiService aipi,
+        AipiService? aipi,
         GameServerConfig config)
     {
         if (user.IsWriteBlocked(config))

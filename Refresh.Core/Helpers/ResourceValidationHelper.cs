@@ -97,7 +97,11 @@ public abstract class ResourceValidationHelper
                     logger.LogDebug(BunkumCategory.UserContent, $"Failed to get '{filename}' after {sw.ElapsedMilliseconds}ms.");
                     return new(BadRequest, null, $"The used {assetTypeStr} was invalid or corrupt.", existsInDataStore: existsInDataStore);
                 }
-
+                
+                // Assume that the user using this asset might also be the uploader. We should never trust that uploader = creator anyway.
+                asset.OriginalUploader = parameters.User;
+                parameters.Database.AddAssetToDatabase(asset);
+                
                 sw.Stop();
                 logger.LogInfo(BunkumCategory.UserContent, $"Successfully imported '{filename}' in {sw.ElapsedMilliseconds}ms.");
             }
@@ -110,7 +114,16 @@ public abstract class ResourceValidationHelper
                 if (parameters.MustBeTexture && !isHashedTexture)
                     return new(BadRequest, null, $"The used {assetTypeStr} was not a valid custom image.", assetInfo: asset, existsInDataStore: existsInDataStore);
                 
-                // TODO: actually use AIPI to scan image if not null
+                if (isHashedTexture && parameters.Aipi != null)
+                {
+                    // Since AIPI is available, we should use it to scan this image
+                    logger.LogDebug(BunkumCategory.UserContent, $"Sending {filename} ({parameters.AssetContextTypeStr}) to AIPI for image scanning...");
+                    if (parameters.Aipi.ScanAndHandleAsset(parameters.Database, parameters.DataStore, asset, parameters.User!))
+                    {
+                        logger.LogWarning(BunkumCategory.UserContent, $"{parameters.User}'s usage of {parameters.AssetContextTypeStr} '{filename}' was blocked by AIPI scan!");
+                        return new(UnprocessableContent, assetInfo: asset, existsInDataStore: existsInDataStore);
+                    }
+                }
             }
         }
 

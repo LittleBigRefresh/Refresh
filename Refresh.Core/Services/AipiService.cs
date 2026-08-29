@@ -127,7 +127,7 @@ public class AipiService : EndpointService
     }
     
     // Use the passed user instead of the asset's OriginalUploader because the user trying to use this asset
-    // is not necessarily also its uploader. If we really want to, we should auto-punish the user instead of the uploader,
+    // is not necessarily also its uploader. If we really want to auto-punish a user, we should do so with the user instead of the uploader,
     // and since OriginalUploader can be null here, punishing the uploader will not always work anyway.
     // Also, we should expect asset upload endpoints to pass the uploader as parameter anyway.
     public bool ScanAndHandleAsset(GameDatabaseContext database, IDataStore dataStore, GameAsset asset, GameUser user)

@@ -75,11 +75,15 @@ public partial class GameDatabaseContext // Assets
         this.GameAssetsIncluded
             .Where(a => a.AssetType == type);
 
-    public void AddAssetToDatabase(GameAsset asset) =>
-        this.Write(() =>
-        {
-            this.GameAssets.Add(asset);
-        });
+    public void AddAssetToDatabase(GameAsset asset)
+    {
+        // Ensure that we're tracking the user as unchanged so postgres won't try to insert them
+        if (asset.OriginalUploader != null)
+            this.GameUsers.Attach(asset.OriginalUploader);
+        
+        this.GameAssets.Add(asset);
+        this.SaveChanges();
+    }
     
     public void AddAssetsToDatabase(IEnumerable<GameAsset> assets)
     {
