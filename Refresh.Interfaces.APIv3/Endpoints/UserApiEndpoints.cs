@@ -2,7 +2,9 @@ using AttribDoc.Attributes;
 using Bunkum.Core;
 using Bunkum.Core.Endpoints;
 using Bunkum.Core.RateLimit;
+using Bunkum.Core.Responses;
 using Bunkum.Core.Storage;
+using Bunkum.Listener.Protocol;
 using Bunkum.Protocols.Http;
 using Refresh.Common.Constants;
 using Refresh.Core.Authentication.Permission;
@@ -15,6 +17,7 @@ using Refresh.Database;
 using Refresh.Database.Models.Authentication;
 using Refresh.Database.Models.Pins;
 using Refresh.Database.Models.Users;
+using Refresh.Interfaces.APIv3.Documentation.Attributes;
 using Refresh.Interfaces.APIv3.Documentation.Descriptions;
 using Refresh.Interfaces.APIv3.Endpoints.ApiTypes;
 using Refresh.Interfaces.APIv3.Endpoints.ApiTypes.Errors;
@@ -41,7 +44,6 @@ public class UserApiEndpoints : EndpointGroup
         return ApiGameUserResponse.FromOld(user, dataContext);
     }
 
-    // TODO: Also allow specifying user by username
     [ApiV3Endpoint("users/{idType}/{id}/heart", HttpMethods.Post)]
     [DocSummary("Hearts a user by their name or UUID")]
     [DocError(typeof(ApiNotFoundError), ApiNotFoundError.UserMissingErrorWhen)]
@@ -58,7 +60,6 @@ public class UserApiEndpoints : EndpointGroup
         if(target == null) return ApiNotFoundError.UserMissingError;
         
         bool success = database.FavouriteUser(target, user);
-        dataContext.Cache.UpdateUserHeartedStatusByUser(user, target, true, database);
 
         // Only give pin if the user was hearted without having already been hearted.
         // Won't protect against spam, but this way the pin objective is more accurately implemented.
@@ -84,7 +85,6 @@ public class UserApiEndpoints : EndpointGroup
         if(target == null) return ApiNotFoundError.UserMissingError;
         
         database.UnfavouriteUser(target, user);
-        dataContext.Cache.UpdateUserHeartedStatusByUser(user, target, false, database);
         return new ApiOkResponse();
     }
     

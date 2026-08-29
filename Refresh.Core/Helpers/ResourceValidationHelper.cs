@@ -20,38 +20,37 @@ public abstract class ResourceValidationHelper
         GameAsset? asset = null;
         bool existsInDataStore = false;
         bool isPSP = parameters.GameToUseIn == TokenGame.LittleBigPlanetPSP;
-        Action<string>? onNewAssetRefCallback = parameters.OnNewAssetRefCallback;
 
         if (parameters.AssetRef.IsBlankHash())
         {
-            if (!parameters.MayBeBlank) return new(BadRequest, "0", $"The {assetTypeStr} must be set.", onNewAssetRefCallback);
-            else return new(OK, "0", null, onNewAssetRefCallback);
+            if (!parameters.MayBeBlank) return new(BadRequest, "0", $"The {assetTypeStr} must be set.");
+            else return new(OK, "0", null);
         }
 
         else if (parameters.AssetRef.StartsWith('g'))
         {
-            if (!parameters.MayBeGuid) return new(BadRequest, null, $"The {assetTypeStr} may not be an in-game asset.", onNewAssetRefCallback);
-            if (parameters.AssetRef.Length < 2) return new(BadRequest, null, $"The used in-game {assetTypeStr} is invalid (empty GUID).", onNewAssetRefCallback);
+            if (!parameters.MayBeGuid) return new(BadRequest, null, $"The {assetTypeStr} may not be an in-game asset.");
+            if (parameters.AssetRef.Length < 2) return new(BadRequest, null, $"The used in-game {assetTypeStr} is invalid (empty GUID).");
 
             // This should only happen if the user is messing with mods/the API/beta builds, so give them a more detailed response
             bool canParseGuid = long.TryParse(parameters.AssetRef[1..], out long guid);
             if (!canParseGuid)
-                return new(BadRequest, null, $"The used in-game {assetTypeStr} is invalid (badly formatted GUID).", onNewAssetRefCallback);
+                return new(BadRequest, null, $"The used in-game {assetTypeStr} is invalid (badly formatted GUID).");
 
             if (parameters.MustBeTexture && !parameters.GuidChecker.IsTextureGuid(parameters.GameToUseIn, guid))
-                return new(BadRequest, null, $"The used in-game {assetTypeStr} was not a valid image (unknown GUID).", onNewAssetRefCallback);
+                return new(BadRequest, null, $"The used in-game {assetTypeStr} was not a valid image (unknown GUID).");
         }
 
         // At this point the reference is a hash
         else if (!parameters.MayBeHash)
         {
-            return new(BadRequest, null, $"The {assetTypeStr} may not be a custom asset.", onNewAssetRefCallback);
+            return new(BadRequest, null, $"The {assetTypeStr} may not be a custom asset.");
         }
 
         else if (!CommonPatterns.Sha1Regex().IsMatch(parameters.AssetRef))
         {
             // This should only happen if a player is messing with mods/the API, so give them a more detailed response
-            return new(BadRequest, null, $"The used {assetTypeStr} had an invalid hash.", onNewAssetRefCallback);
+            return new(BadRequest, null, $"The used {assetTypeStr} had an invalid hash.");
         }
 
         else
@@ -60,7 +59,7 @@ public abstract class ResourceValidationHelper
             if (disallowed != null)
             {
                 logger.LogWarning(BunkumCategory.UserContent, $"{parameters.User} tried to use a manually disallowed {assetTypeStr}.");
-                return new(Unauthorized, disallowanceInfo: disallowed, onNewAssetRefCallback: onNewAssetRefCallback);
+                return new(Unauthorized, disallowanceInfo: disallowed);
             }
 
             string filename = isPSP ? $"psp/{parameters.AssetRef}" : parameters.AssetRef;
@@ -71,10 +70,10 @@ public abstract class ResourceValidationHelper
                 logger.LogDebug(BunkumCategory.UserContent, $"Referenced asset '{filename}' could not be found in data store.");
 
                 if (parameters.MustBeInDataStoreIfHash)
-                    return new(NotFound, null, $"The used {assetTypeStr} did not exist on the server.", onNewAssetRefCallback);
+                    return new(NotFound, null, $"The used {assetTypeStr} did not exist on the server.");
             }
 
-            asset = parameters.Cache.GetAssetInfo(parameters.AssetRef, parameters.Database);
+            asset = parameters.Database.GetAssetFromHash(parameters.AssetRef);
 
             // Only try to import if the asset exists in the data store
             if (existsInDataStore && asset == null)
@@ -88,7 +87,7 @@ public abstract class ResourceValidationHelper
                     sw.Stop();
                     logger.LogError(BunkumCategory.UserContent, $"Failed to read '{filename}' from data store!");
                     logger.LogDebug(BunkumCategory.UserContent, $"Failed to get '{filename}' after {sw.ElapsedMilliseconds}ms.");
-                    return new(InternalServerError, null, $"Failed to read {assetTypeStr} internally. Please report this to the server owner.", onNewAssetRefCallback, existsInDataStore: existsInDataStore);
+                    return new(InternalServerError, null, $"Failed to read {assetTypeStr} internally. Please report this to the server owner.", existsInDataStore: existsInDataStore);
                 }
 
                 asset = parameters.AssetImporter.ReadAndVerifyAsset(parameters.AssetRef, assetData, parameters.PlatformToUseIn, parameters.Database);
@@ -96,9 +95,13 @@ public abstract class ResourceValidationHelper
                 {
                     sw.Stop();
                     logger.LogDebug(BunkumCategory.UserContent, $"Failed to get '{filename}' after {sw.ElapsedMilliseconds}ms.");
-                    return new(BadRequest, null, $"The used {assetTypeStr} was invalid or corrupt.", onNewAssetRefCallback, existsInDataStore: existsInDataStore);
+                    return new(BadRequest, null, $"The used {assetTypeStr} was invalid or corrupt.", existsInDataStore: existsInDataStore);
                 }
-
+                
+                // Assume that the user using this asset might also be the uploader. We should never trust that uploader = creator anyway.
+                asset.OriginalUploader = parameters.User;
+                parameters.Database.AddAssetToDatabase(asset);
+                
                 sw.Stop();
                 logger.LogInfo(BunkumCategory.UserContent, $"Successfully imported '{filename}' in {sw.ElapsedMilliseconds}ms.");
             }
@@ -109,12 +112,21 @@ public abstract class ResourceValidationHelper
                 bool isHashedTexture = (asset.AssetFlags & AssetFlags.Imagery) != 0;
 
                 if (parameters.MustBeTexture && !isHashedTexture)
-                    return new(BadRequest, null, $"The used {assetTypeStr} was not a valid custom image.", onNewAssetRefCallback, assetInfo: asset, existsInDataStore: existsInDataStore);
+                    return new(BadRequest, null, $"The used {assetTypeStr} was not a valid custom image.", assetInfo: asset, existsInDataStore: existsInDataStore);
                 
-                // TODO: actually use AIPI to scan image if not null
+                if (isHashedTexture && parameters.Aipi != null)
+                {
+                    // Since AIPI is available, we should use it to scan this image
+                    logger.LogDebug(BunkumCategory.UserContent, $"Sending {filename} ({parameters.AssetContextTypeStr}) to AIPI for image scanning...");
+                    if (parameters.Aipi.ScanAndHandleAsset(parameters.Database, parameters.DataStore, asset, parameters.User!))
+                    {
+                        logger.LogWarning(BunkumCategory.UserContent, $"{parameters.User}'s usage of {parameters.AssetContextTypeStr} '{filename}' was blocked by AIPI scan!");
+                        return new(UnprocessableContent, assetInfo: asset, existsInDataStore: existsInDataStore);
+                    }
+                }
             }
         }
 
-        return new(OK, parameters.AssetRef, null, onNewAssetRefCallback, assetInfo: asset, existsInDataStore: existsInDataStore);
+        return new(OK, parameters.AssetRef, assetInfo: asset, existsInDataStore: existsInDataStore);
     }
 }

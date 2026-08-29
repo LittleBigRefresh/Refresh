@@ -61,7 +61,6 @@ public class LeaderboardEndpoints : EndpointGroup
         }
         
         database.PlayLevel(level, user, count);
-        dataContext.Cache.IncrementLevelTotalPlaysByUser(user, level, count, database);
         return OK;
     }
     
@@ -186,7 +185,6 @@ public class LeaderboardEndpoints : EndpointGroup
         DatabaseList<ScoreWithRank> scores = database.GetRankedScoresAroundScore(score, 5);
 
         this.AwardScoreboardPins(scores, dataContext, user, level);
-        dataContext.Cache.IncrementLevelTotalCompletionsByUser(user, level, 1, database);
 
         return new Response(SerializedScoreLeaderboardList.FromDatabaseList(scores, dataContext), ContentType.Xml);
     }

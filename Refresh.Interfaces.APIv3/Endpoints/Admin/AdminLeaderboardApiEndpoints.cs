@@ -25,7 +25,6 @@ public class AdminLeaderboardApiEndpoints : EndpointGroup
         if (score == null) return ApiNotFoundError.Instance;
         
         database.DeleteScore(score);
-        dataContext.Cache.IncrementLevelTotalCompletionsByUser(score.Publisher, score.Level, -1, database);
         
         return new ApiOkResponse();
     }
@@ -41,7 +40,6 @@ public class AdminLeaderboardApiEndpoints : EndpointGroup
         if (user == null) return ApiNotFoundError.UserMissingError;
         
         database.DeleteScoresSetByUser(user);
-        dataContext.Cache.ResetLevelCompletionCountByUser(user);
         return new ApiOkResponse();
     }
 }

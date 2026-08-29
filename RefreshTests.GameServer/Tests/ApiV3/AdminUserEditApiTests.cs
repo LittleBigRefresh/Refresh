@@ -1,4 +1,5 @@
 using MongoDB.Bson;
+using Refresh.Database;
 using Refresh.Database.Models.Authentication;
 using Refresh.Database.Models.Moderation;
 using Refresh.Database.Models.Users;
@@ -269,38 +270,58 @@ public class AdminUserEditApiTests : GameServerTest
     }
 
     [Test]
-    public void CannotRenameToOtherUsersPreviousName()
+    public void CanRenameUserToDifferentUsersPreviousName()
     {
         using TestContext context = this.GetServer();
 
         GameUser mod = context.CreateUser(null, GameUserRole.Moderator);
         GameUser owner = context.CreateUser("original", GameUserRole.User);
         GameUser target = context.CreateUser("stinker", GameUserRole.User);
+        
+        // Ensure we're tracking neither usernames
+        Assert.That(!context.Database.WasUsernamePreviouslyTaken("original"));
+        Assert.That(!context.Database.WasUsernamePreviouslyTaken("stinker"));
 
         context.Database.RenameUser(owner, "original_2");
         GameUser? modifiedOwner = context.Database.GetUserByObjectId(owner.UserId);
         Assert.That(modifiedOwner, Is.Not.Null);
         Assert.That(modifiedOwner!.Username, Is.EqualTo("original_2"));
 
+        // Try to rename stinker to original's previous name
         HttpClient client = context.GetAuthenticatedClient(TokenType.Api, mod);
         ApiAdminUpdateUserRequest request = new()
         {
             Username = "original"
         };
 
-        ApiResponse<ApiExtendedGameUserResponse>? response = client.PatchData<ApiExtendedGameUserResponse>($"/api/v3/admin/users/uuid/{target.UserId}", request, false, true);
-        Assert.That(response?.Error, Is.Not.Null);
-        Assert.That(response!.Error!.StatusCode, Is.EqualTo(BadRequest));
+        ApiResponse<ApiExtendedGameUserResponse>? response = client.PatchData<ApiExtendedGameUserResponse>($"/api/v3/admin/users/uuid/{target.UserId}", request, true, false);
+        Assert.That(response?.Data, Is.Not.Null);
+        Assert.That(response!.Data!.Username, Is.EqualTo("original"));
+        Assert.That(response!.Data!.UserId, Is.EqualTo(target.UserId.ToString()));
 
         context.Database.Refresh();
 
         GameUser? modifiedTarget = context.Database.GetUserByObjectId(target.UserId);
         Assert.That(modifiedTarget, Is.Not.Null);
-        Assert.That(modifiedTarget!.Username, Is.EqualTo("stinker"));
+        Assert.That(modifiedTarget!.Username, Is.EqualTo("original"));
+        
+        // Ensure we're tracking both usernames
+        Assert.That(context.Database.WasUsernamePreviouslyTaken("original"));
+        Assert.That(context.Database.WasUsernamePreviouslyTaken("stinker"));
+        
+        // Ensure "original" is tracked as previously owned by owner
+        DatabaseList<PreviousUsername> originalHistory = context.Database.GetPreviousUsernameRecordsByName("original", 0, 10);
+        Assert.That(originalHistory.Items.Count, Is.EqualTo(1));
+        Assert.That(originalHistory.Items.First().UserId.ToString(), Is.EqualTo(owner.UserId.ToString()));
+        
+        // Ensure "stinker" is tracked as previously owned by target
+        DatabaseList<PreviousUsername> stinkerHistory = context.Database.GetPreviousUsernameRecordsByName("stinker", 0, 10);
+        Assert.That(stinkerHistory.Items.Count, Is.EqualTo(1));
+        Assert.That(stinkerHistory.Items.First().UserId.ToString(), Is.EqualTo(target.UserId.ToString()));
     }
 
     [Test]
-    public void CanRenameUserBackToTheirPreviousName()
+    public void CanRenameUserBackToTheirOwnPreviousName()
     {
         using TestContext context = this.GetServer();
 
@@ -327,6 +348,102 @@ public class AdminUserEditApiTests : GameServerTest
         GameUser? modifiedOwner2 = context.Database.GetUserByObjectId(owner.UserId);
         Assert.That(modifiedOwner2, Is.Not.Null);
         Assert.That(modifiedOwner2!.Username, Is.EqualTo("original"));
+        
+        // Ensure "original" is still also tracked as previously owned by owner
+        DatabaseList<PreviousUsername> originalHistory = context.Database.GetPreviousUsernameRecordsByName("original", 0, 10);
+        Assert.That(originalHistory.Items.Count, Is.EqualTo(1));
+        Assert.That(originalHistory.Items.First().UserId.ToString(), Is.EqualTo(owner.UserId.ToString()));
+    }
+    
+    [Test]
+    public void PreviousUsernameAdminEndpointsRequireAuth()
+    {
+        using TestContext context = this.GetServer();
+        GameUser target = context.CreateUser("theName");
+        
+        // test with at least one actual rename
+        context.Database.RenameUser(target, "theCoolerName");
+        
+        // cannot access
+        HttpResponseMessage response = context.Http.GetAsync($"/api/v3/admin/previousUsernames/byUser/uuid/{target.UserId}").Result;
+        Assert.That(response.StatusCode, Is.EqualTo(Forbidden));
+        
+        response = context.Http.GetAsync($"/api/v3/admin/previousUsernames/byUser/name/{target.Username}").Result;
+        Assert.That(response.StatusCode, Is.EqualTo(Forbidden));
+        
+        response = context.Http.GetAsync($"/api/v3/admin/previousUsernames/byName/theName").Result;
+        Assert.That(response.StatusCode, Is.EqualTo(Forbidden));
+    }
+    
+    [Test]
+    [TestCase(GameUserRole.Restricted, false)]
+    [TestCase(GameUserRole.User, false)]
+    [TestCase(GameUserRole.Trusted, false)]
+    [TestCase(GameUserRole.Curator, false)]
+    [TestCase(GameUserRole.Moderator, true)]
+    [TestCase(GameUserRole.Admin, true)]
+    public void PreviousUsernameAdminEndpointsAreGuardedByRole(GameUserRole accessorRole, bool mayAccess)
+    {
+        using TestContext context = this.GetServer();
+        GameUser accessor = context.CreateUser("accessor", accessorRole);
+        HttpClient client = context.GetAuthenticatedClient(TokenType.Api, accessor);
+        
+        // Prepare
+        GameUser target1 = context.CreateUser("coolName1");
+        GameUser target2 = context.CreateUser("coolName2");
+        context.Database.RenameUser(target1, "rename1");
+        context.Database.RenameUser(target2, "rename2");
+        
+        Action<ApiListResponse<ApiExtendedPreviousUsernameResponse>?, ApiListResponse<ApiExtendedPreviousUsernameResponse>?> assertionCB 
+            = delegate(ApiListResponse<ApiExtendedPreviousUsernameResponse>? response1, ApiListResponse<ApiExtendedPreviousUsernameResponse>? response2)
+            {
+                if (mayAccess)
+                {
+                    Assert.That(response1?.Data, Is.Not.Null);
+                    Assert.That(response1?.ListInfo, Is.Not.Null);
+                
+                    Assert.That(response1!.Data!.Count, Is.EqualTo(1));
+                    Assert.That(response1!.ListInfo!.TotalItems, Is.EqualTo(1));
+                
+                    Assert.That(response1.Data!.First().Username, Is.EqualTo("coolName1"));
+                    Assert.That(response1.Data!.First().User.Username, Is.EqualTo("rename1"));
+                    Assert.That(response1.Data!.First().User.UserId.ToString(), Is.EqualTo(target1.UserId.ToString()));
+                
+                    Assert.That(response2?.Data, Is.Not.Null);
+                    Assert.That(response2?.ListInfo, Is.Not.Null);
+                
+                    Assert.That(response2!.Data!.Count, Is.EqualTo(1));
+                    Assert.That(response2!.ListInfo!.TotalItems, Is.EqualTo(1));
+                
+                    Assert.That(response2.Data!.First().Username, Is.EqualTo("coolName2"));
+                    Assert.That(response2.Data!.First().User.Username, Is.EqualTo("rename2"));
+                    Assert.That(response2.Data!.First().User.UserId.ToString(), Is.EqualTo(target2.UserId.ToString()));
+                }
+                else
+                {
+                    Assert.That(response1, Is.Null);
+                    Assert.That(response2, Is.Null);
+                }
+            };
+        
+        // Now test
+        ApiListResponse<ApiExtendedPreviousUsernameResponse>? response1 = client.GetList<ApiExtendedPreviousUsernameResponse>(
+            $"/api/v3/admin/previousUsernames/byUser/uuid/{target1.UserId}", mayAccess, !mayAccess);
+        ApiListResponse<ApiExtendedPreviousUsernameResponse>? response2 = client.GetList<ApiExtendedPreviousUsernameResponse>(
+            $"/api/v3/admin/previousUsernames/byUser/uuid/{target2.UserId}", mayAccess, !mayAccess);
+        assertionCB(response1, response2);
+        
+        ApiListResponse<ApiExtendedPreviousUsernameResponse>? response3 = client.GetList<ApiExtendedPreviousUsernameResponse>(
+            $"/api/v3/admin/previousUsernames/byUser/name/{target1.Username}", mayAccess, !mayAccess);
+        ApiListResponse<ApiExtendedPreviousUsernameResponse>? response4 = client.GetList<ApiExtendedPreviousUsernameResponse>(
+            $"/api/v3/admin/previousUsernames/byUser/name/{target2.Username}", mayAccess, !mayAccess);
+        assertionCB(response3, response4);
+        
+        ApiListResponse<ApiExtendedPreviousUsernameResponse>? response5 = client.GetList<ApiExtendedPreviousUsernameResponse>(
+            $"/api/v3/admin/previousUsernames/byName/coolName1", mayAccess, !mayAccess);
+        ApiListResponse<ApiExtendedPreviousUsernameResponse>? response6 = client.GetList<ApiExtendedPreviousUsernameResponse>(
+            $"/api/v3/admin/previousUsernames/byName/coolName2", mayAccess, !mayAccess);
+        assertionCB(response5, response6);
     }
 
     [Test]

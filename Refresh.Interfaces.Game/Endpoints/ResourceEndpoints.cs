@@ -31,7 +31,7 @@ public class ResourceEndpoints : EndpointGroup
     [RequireEmailVerified]
     [SuppressMessage("ReSharper", "ConvertIfStatementToReturnStatement")]
     [RateLimitSettings(300, 200, 240, "game-asset-upload")]
-    public Response UploadAsset(RequestContext context, string hash, string type, byte[] body, IDataStore dataStore,
+    public Response UploadAsset(RequestContext context, string hash, string? type, byte[] body, IDataStore dataStore,
         GameDatabaseContext database, GameUser user, AssetImporter importer, GameServerConfig config, IDateTimeProvider timeProvider, Token token,
         DataContext dataContext)
     {
@@ -97,7 +97,6 @@ public class ResourceEndpoints : EndpointGroup
 
         gameAsset.OriginalUploader = user;
         database.AddAssetToDatabase(gameAsset);
-        dataContext.Cache.CacheAsset(gameAsset.AssetHash, gameAsset);
         
         database.IncrementUserFilesizeQuota(user, body.Length);
 
@@ -129,7 +128,8 @@ public class ResourceEndpoints : EndpointGroup
 
         // Part of a workaround to prevent LBP Hub from breaking challenge ghost replay.
         // See ChallengeGhostRateLimitService's summary for more information.
-        if (token.TokenGame == TokenGame.BetaBuild && dataContext.Cache.GetAssetInfo(hash, dataContext.Database)?.AssetType == GameAssetType.ChallengeGhost)
+        // TODO maybe we could use the ghost service to cache ghost asset hashes? Since the game will always request the ones we return in our score lists.
+        if (token.TokenGame == TokenGame.BetaBuild && dataContext.Database.GetAssetFromHash(hash)?.AssetType == GameAssetType.ChallengeGhost)
         {
             if (ghostService.IsUserRateLimited(user.UserId))
             {

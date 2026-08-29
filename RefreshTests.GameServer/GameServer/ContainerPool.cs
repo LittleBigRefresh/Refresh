@@ -14,7 +14,9 @@ public class ContainerPool : IDisposable
         // PostgreSqlContainer? container = null;
         if (this._containers.TryDequeue(out PostgreSqlContainer? container))
         {
-            return container;
+            if (container != null) return container;
+
+            Console.WriteLine("Dequeuing postgres container succeeded but container itself is null!!");
         }
         
         container = new PostgreSqlBuilder()
