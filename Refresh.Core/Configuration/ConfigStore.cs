@@ -14,6 +14,7 @@ public class ConfigStore
     public RichPresenceConfig RichPresence { get; }
 
     public DryArchiveConfig DryArchive { get; }
+    public EndpointRateLimitConfig EndpointRateLimits { get; }
 
     private static readonly Lock ConfigLock = new();
     public ConfigStore(Logger logger)
@@ -28,6 +29,7 @@ public class ConfigStore
             this.RichPresence = Config.LoadFromJsonFile<RichPresenceConfig>("rpc.json", logger);
         
             this.DryArchive = Config.LoadFromJsonFile<DryArchiveConfig>("dry.json", logger);
+            this.EndpointRateLimits = Config.LoadFromJsonFile<EndpointRateLimitConfig>("endpointRateLimits.json", logger);
         }
     }
 
@@ -41,6 +43,7 @@ public class ConfigStore
         this.RichPresence = new RichPresenceConfig();
 
         this.DryArchive = new DryArchiveConfig();
+        this.EndpointRateLimits = new EndpointRateLimitConfig();
     }
 
     public void AddToBunkum(BunkumServer server)
@@ -51,5 +54,6 @@ public class ConfigStore
         server.AddConfig(this.Integration);
         server.AddConfig(this.RichPresence);
         server.AddConfig(this.DryArchive);
+        server.AddConfig(this.EndpointRateLimits);
     }
 }
