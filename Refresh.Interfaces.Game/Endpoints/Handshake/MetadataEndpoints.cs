@@ -61,7 +61,6 @@ public class MetadataEndpoints : EndpointGroup
         foreach (GameUser userToFavourite in friends)
         {
             database.FavouriteUser(userToFavourite, user);
-            dataContext.Cache.RemoveOwnUserRelations(user, userToFavourite); // really don't want to refresh the relations of up to 128 users in the worst case
         }
         
         return OK;

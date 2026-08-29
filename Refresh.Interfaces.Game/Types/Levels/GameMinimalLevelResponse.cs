@@ -200,10 +200,10 @@ public class GameMinimalLevelResponse : IDataConvertableFrom<GameMinimalLevelRes
 
         if (dataContext.Game is TokenGame.LittleBigPlanet1 or TokenGame.BetaBuild)
         {
-            response.Tags = string.Join(',', dataContext.Cache.GetTags(old, dataContext.Database).Select(t => t.ToLbpString()));
+            response.Tags = string.Join(',', dataContext.Database.GetTagsForLevel(old).Select(t => t.ToLbpString()));
         }
 
-        if (dataContext.Game is not TokenGame.LittleBigPlanet1 or TokenGame.LittleBigPlanetPSP)
+        if (dataContext.Game is not TokenGame.LittleBigPlanet1 and not TokenGame.LittleBigPlanetPSP)
         {
             // Try to deduplicate labels if the same ones appear among both the publisher and recurring labels
             response.AllLabels = old.Statistics.RecurringLabels.Concat(old.Labels).Distinct().ToLbpCommaList(dataContext.Game);
