@@ -1,13 +1,16 @@
 using System.Diagnostics;
 using System.Net.Http.Json;
 using Bunkum.Core.Services;
+using Bunkum.Core.Storage;
 using JetBrains.Annotations;
 using NotEnoughLogs;
 using Refresh.Common;
 using Refresh.Core.Configuration;
 using Refresh.Core.Importing;
 using Refresh.Core.Types.Data;
+using Refresh.Database;
 using Refresh.Database.Models.Assets;
+using Refresh.Database.Models.Users;
 using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.Formats;
 using SixLabors.ImageSharp.Processing;
@@ -17,7 +20,7 @@ namespace Refresh.Core.Services;
 // Referenced from DO.
 public class AipiService : EndpointService
 {
-    private readonly HttpClient _client;
+    protected HttpClient _client { get; init; }
     private readonly IntegrationConfig _config;
     private readonly DiscordStaffService? _discord;
 
@@ -77,7 +80,7 @@ public class AipiService : EndpointService
         return aipiResponse.Data!;
     }
     
-    private async Task<Dictionary<string, float>> PredictEvaAsync(Stream data)
+    private async Task<Dictionary<string, float>> PredictEvaAsync(Stream data, string imageHash, GameUser user)
     {
         Stopwatch stopwatch = new();
         this.Logger.LogTrace(RefreshContext.Aipi, "Pre-processing image data...");
@@ -107,7 +110,7 @@ public class AipiService : EndpointService
 
         float threshold = this._config.AipiThreshold;
         
-        this.Logger.LogDebug(RefreshContext.Aipi, $"Running prediction for image @ threshold={threshold}...");
+        this.Logger.LogInfo(RefreshContext.Aipi, $"Running prediction for image '{imageHash}' @ threshold={threshold} by {user}...");
 
         stopwatch.Start();
         Dictionary<string, float> prediction = await this.PostAsync<Dictionary<string, float>>($"/eva/predict?threshold={threshold}", processedData);    
@@ -118,44 +121,50 @@ public class AipiService : EndpointService
         return prediction;
     }
 
-    public bool ScanAndHandleAsset(DataContext context, GameAsset asset)
+    public bool ScanAndHandleAsset(DataContext context, GameAsset asset, GameUser user)
     {
-        // guard the fact that assets have an owner
-        Debug.Assert(asset.OriginalUploader != null, $"Asset {asset.AssetHash} had no original uploader when trying to scan");
-        if (asset.OriginalUploader == null)
-            return false;
-
+        return this.ScanAndHandleAsset(context.Database, context.DataStore, asset, user);
+    }
+    
+    // Use the passed user instead of the asset's OriginalUploader because the user trying to use this asset
+    // is not necessarily also its uploader. If we really want to, we should auto-punish the user instead of the uploader,
+    // and since OriginalUploader can be null here, punishing the uploader will not always work anyway.
+    // Also, we should expect asset upload endpoints to pass the uploader as parameter anyway.
+    public bool ScanAndHandleAsset(GameDatabaseContext database, IDataStore dataStore, GameAsset asset, GameUser user)
+    {
         // import the asset as png
         bool isPspAsset = asset.AssetHash.StartsWith("psp/");
 
-        if (!context.DataStore.ExistsInStore("png/" + asset.AssetHash))
+        if (!dataStore.ExistsInStore("png/" + asset.AssetHash))
         {
-            this._importer.ImportAsset(asset.AssetHash, isPspAsset, asset.AssetType, context.DataStore);
+            this._importer.ImportAsset(asset.AssetHash, isPspAsset, asset.AssetType, dataStore);
         }
 
         // do actual prediction
-        using Stream stream = context.DataStore.GetStreamFromStore("png/" + asset.AssetHash);
-        Dictionary<string, float> results = this.PredictEvaAsync(stream).Result;
+        using Stream stream = dataStore.GetStreamFromStore("png/" + asset.AssetHash);
+        Dictionary<string, float> results = this.PredictEvaAsync(stream, asset.AssetHash, user).Result;
 
         if (!results.Any(r => this._config.AipiBannedTags.Contains(r.Key)))
             return false;
         
-        this._discord?.PostPredictionResult(results, asset);
+        this._discord?.PostPredictionResult(results, asset, user);
+        // TODO also log this in our own mod log
 
         if (this._config.AipiRestrictAccountOnDetection)
         {
-            const string reason = "Automatic restriction for posting disallowed content. This will usually be undone within 24 hours if this is a mistake.";
-            context.Database.RestrictUser(asset.OriginalUploader, reason, DateTimeOffset.MaxValue);
+            this.Logger.LogInfo(RefreshContext.Aipi, $"Auto-restricting {user} because their image '{asset.AssetHash}' was determined to contain disallowed content.");
+            const string reason = "Automatic restriction for posting or using disallowed content. This will usually be undone within 24 hours if this is a mistake.";
+            database.RestrictUser(user, reason, DateTimeOffset.MaxValue);
         }
         
         return true;
     }
+}
     
-    private class AipiResponse<TData>
-    {
-        public bool Success { get; set; }
-    
-        public TData? Data { get; set; }
-        public string? Reason { get; set; }
-    }
+public class AipiResponse<TData>
+{
+    public bool Success { get; set; }
+
+    public TData? Data { get; set; }
+    public string? Reason { get; set; }
 }

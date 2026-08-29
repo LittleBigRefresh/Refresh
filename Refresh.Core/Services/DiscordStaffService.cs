@@ -53,12 +53,12 @@ public class DiscordStaffService : EndpointService
         this.Logger.LogInfo(RefreshContext.Discord, $"Posted webhook {id}: '{message}'");
     }
 
-    public void PostPredictionResult(Dictionary<string, float> results, GameAsset asset)
+    public void PostPredictionResult(Dictionary<string, float> results, GameAsset asset, GameUser user)
     {
-        GameUser author = asset.OriginalUploader!;
+        GameUser author = user;
 
         EmbedBuilder builder = new EmbedBuilder()
-            .WithAuthor($"Image posted by @{author.Username} (id: {author.UserId})", this.GetAssetUrl(author.IconHash))
+            .WithAuthor($"Image posted or used by @{author.Username} (id: {author.UserId})", this.GetAssetUrl(author.IconHash))
             .WithDescription(DefaultResultsDescription)
             .WithUrl(this.GetAssetInfoUrl(asset.AssetHash))
             .WithTitle($"AI Analysis of `{asset.AssetHash}`");
