@@ -30,6 +30,7 @@ public class TestRefreshGameServer : RefreshGameServer
     }
 
     public GameServerConfig GameServerConfig => this._configStore.GameServer;
+    public EndpointRateLimitConfig EndpointRateLimitConfig => this._configStore.EndpointRateLimits;
 
     public override void Start()
     {
