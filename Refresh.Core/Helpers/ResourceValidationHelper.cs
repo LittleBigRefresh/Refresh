@@ -118,7 +118,7 @@ public abstract class ResourceValidationHelper
                 {
                     // Since AIPI is available, we should use it to scan this image
                     logger.LogDebug(BunkumCategory.UserContent, $"Sending {filename} ({parameters.AssetContextTypeStr}) to AIPI for image scanning...");
-                    if (parameters.Aipi.ScanAndHandleAsset(parameters.Database, parameters.DataStore, asset))
+                    if (parameters.Aipi.ScanAndHandleAsset(parameters.Database, parameters.DataStore, asset, parameters.User!))
                     {
                         logger.LogWarning(BunkumCategory.UserContent, $"{parameters.User}'s usage of {parameters.AssetContextTypeStr} '{filename}' was blocked by AIPI scan!");
                         return new(UnprocessableContent, assetInfo: asset, existsInDataStore: existsInDataStore);
