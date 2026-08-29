@@ -1,6 +1,7 @@
 using Bunkum.Core.Storage;
 using NotEnoughLogs;
 using Refresh.Common;
+using Refresh.Common.Time;
 using Refresh.Database;
 using Refresh.Database.Models.Workers;
 using Refresh.Workers.State;
@@ -12,6 +13,7 @@ public class WorkerManager
     private readonly Logger _logger;
     private readonly IDataStore _dataStore;
     private readonly GameDatabaseProvider _databaseProvider;
+    private readonly IDateTimeProvider _timeProvider;
 
     private readonly int _workerId;
     
@@ -22,11 +24,12 @@ public class WorkerManager
 
     private readonly List<WorkerJob> _jobs = [];
 
-    public WorkerManager(Logger logger, IDataStore dataStore, GameDatabaseProvider databaseProvider)
+    public WorkerManager(Logger logger, IDataStore dataStore, GameDatabaseProvider databaseProvider, IDateTimeProvider timeProvider)
     {
         this._dataStore = dataStore;
         this._databaseProvider = databaseProvider;
         this._logger = logger;
+        this._timeProvider = timeProvider;
         
         using GameDatabaseContext context = this._databaseProvider.GetContext();
         this._workerId = context.CreateWorker();
@@ -49,6 +52,7 @@ public class WorkerManager
             Database = this._databaseProvider.GetContext(),
             Logger = this._logger,
             DataStore = this._dataStore,
+            TimeProvider = this._timeProvider,
         };
         
         foreach (WorkerJob job in this._jobs)

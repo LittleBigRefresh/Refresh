@@ -31,12 +31,13 @@ public class RoleService : Service
         if (!(authAttrib?.Required ?? true)) return null;
         
         MinimumRoleAttribute? roleAttrib = method.GetCustomAttribute<MinimumRoleAttribute>();
-        GameUserRole minimumRole = roleAttrib?.MinimumRole ?? GameUserRole.User;
+        GameUserRole minimumRole = roleAttrib?.MinimumRole ?? GameUserRole.NewUser;
 
         GameUser? user = (GameUser?)this._authService.AuthenticateToken(context, database)?.User;
         if (user == null) return null; // Let AuthenticationProvider handle 401
         
         // if the user's role is lower than the minimum role for this endpoint, then return unauthorized
+        // by default, Restricted and Banned will be rejected by this since the default role is NewUser
         if (user.Role < minimumRole)
         {
             return Unauthorized;

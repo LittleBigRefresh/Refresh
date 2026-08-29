@@ -33,4 +33,25 @@ public class RolePermissions
     /// The amount of data the user is allowed to upload before all resource uploads get blocked, defaults to 100mb.
     /// </summary>
     public int UserFilesizeQuota { get; set; } = 100 * 1_048_576;
+
+    // Not configurable because "Restricted" and "Banned" already imply a user has no uploading perms.
+    public static RolePermissions FromRestrictedUser => new()
+    {
+        ReadOnlyMode = true,
+        BlockedAssetFlags = new(AssetFlags.Dangerous | AssetFlags.Modded | AssetFlags.Media),
+        // Not enabled because restricted may not upload UGC anyway, also we already enable read-only mode for them
+        LevelUploadRateLimit = new()
+        {
+            Enabled = false,
+        },
+        PhotoUploadRateLimit = new()
+        {
+            Enabled = false,
+        },
+        PlaylistUploadRateLimit = new()
+        {
+            Enabled = false,
+        },
+        UserFilesizeQuota = 0,
+    };
 }

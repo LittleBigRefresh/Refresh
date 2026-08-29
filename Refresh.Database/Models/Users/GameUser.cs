@@ -105,8 +105,8 @@ public partial class GameUser : IRateLimitUser
     /// If `true`, unescape XML tags sent to /filter
     /// </summary>
     public bool UnescapeXmlSequences { get; set; }
-    
-    public GameUserRole Role { get; set; }
+
+    public GameUserRole Role { get; set; } = GameUserRole.NewUser;
 
     /// <summary>
     /// Whether planets containing mods or VoiceRecordings should be shown in-game

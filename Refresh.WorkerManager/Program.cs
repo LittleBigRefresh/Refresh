@@ -2,6 +2,7 @@
 using Bunkum.Core.Storage;
 using NotEnoughLogs;
 using NotEnoughLogs.Behaviour;
+using Refresh.Common.Time;
 using Refresh.Core.Configuration;
 using Refresh.Database;
 using Refresh.Database.Configuration;
@@ -33,7 +34,7 @@ logger.LogInfo(BunkumCategory.Startup, "Warming up database...");
 database.Warmup();
 
 logger.LogInfo(BunkumCategory.Startup, "Starting worker manager!");
-WorkerManager manager = RefreshWorkerManager.Create(logger, new FileSystemDataStore(), database);
+WorkerManager manager = RefreshWorkerManager.Create(logger, new FileSystemDataStore(), database, new SystemDateTimeProvider());
 
 manager.Start();
 manager.WaitForExit();

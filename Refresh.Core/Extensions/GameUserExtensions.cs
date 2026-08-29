@@ -7,8 +7,14 @@ public static class GameUserExtensions
 {
     public static bool IsWriteBlocked(this GameUser user, GameServerConfig config)
     {
+        // Admins may always bypass this
         if (user.Role == GameUserRole.Admin) return false;
-        return GetRolePermissionsForUser(user, config).ReadOnlyMode;
+        
+        // Restricted and Banned may not upload/edit any UGC, they also have no role perms because unnecessary
+        else if (user.Role <= GameUserRole.Restricted) return true;
+        
+        // Determine based on role perms
+        else return GetRolePermissionsForUser(user, config).ReadOnlyMode;
     }
 
     public static bool MayModifyUser(this GameUser user, GameUser targetUser)
@@ -26,9 +32,12 @@ public static class GameUserExtensions
 
     public static RolePermissions GetRolePermissionsForUser(this GameUser user, GameServerConfig config)
     {
-        if (user.Role >= GameUserRole.Trusted)
-            return config.TrustedUserPermissions;
-        
-        return config.NormalUserPermissions;
+        return user.Role switch
+        {
+            >= GameUserRole.Trusted => config.TrustedUserPermissions,
+            GameUserRole.User => config.NormalUserPermissions,
+            GameUserRole.NewUser => config.NewUserPermissions,
+            _ => RolePermissions.FromRestrictedUser,
+        };
     }
 }

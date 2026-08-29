@@ -30,4 +30,19 @@ public class RegistrationQueueTests : GameServerTest
         Assert.That(context.Database.GetUserByUsername(wrongUsername, false)?.UserId, Is.EqualTo(context.Database.GetUserByUsername(correctUsername, false)?.UserId));
         Assert.That(context.Database.GetUserByUsername(wrongUsername, true)?.Username, Is.Null);
     }
+    
+    [Test]
+    public void UsersCreatedFromQueueAreNewUsers()
+    {
+        using TestContext context = this.GetServer();
+        context.Database.AddRegistrationToQueue("new", "new@new.new", "some amazing credentials!");
+
+        QueuedRegistration? registration = context.Database.GetQueuedRegistrationByUsername("new");
+        Assert.That(registration, Is.Not.Null);
+
+        // Now use it to create an account
+        GameUser user = context.Database.CreateUserFromQueuedRegistration(registration, TokenPlatform.PS3);
+        Assert.That(user.Username, Is.EqualTo("new"));
+        Assert.That(user.Role, Is.EqualTo(GameUserRole.NewUser));
+    }
 }

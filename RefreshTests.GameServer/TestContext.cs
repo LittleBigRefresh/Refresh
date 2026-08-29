@@ -121,12 +121,13 @@ public class TestContext : IDisposable
         return this.Database.GenerateTokenForUser(user ?? this.CreateUser(), type, game, platform, ipAddress ?? "0.0.0.0", tokenExpirySeconds);
     }
 
+    // Not changing default role to NewUser because I don't want to potentially break over 500 usages.
     public GameUser CreateUser(string? username = null, GameUserRole role = GameUserRole.User, bool verifyEmail = true)
     {
         username ??= this.UserIncrement.ToString();
         
         GameUser user = this.Database.CreateUser(username, $"{username}@{username}.local");
-        if (role != GameUserRole.User) this.Database.SetUserRole(user, role);
+        if (user.Role != role) this.Database.SetUserRole(user, role);
         if (verifyEmail) this.Database.VerifyUserEmail(user);
         this.Database.Entry(user).State = EntityState.Unchanged;
 
@@ -266,6 +267,7 @@ public class TestContext : IDisposable
             Database = this.Database,
             Logger = this.Server.Value.Logger,
             DataStore = this.GetDataStore(),
+            TimeProvider = this.Time,
         };
     }
 
