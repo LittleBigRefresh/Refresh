@@ -35,7 +35,6 @@ public class RelationEndpoints : EndpointGroup
         if (level == null) return context.IsPSP() ? OK : NotFound;
 
         database.FavouriteLevel(level, user);
-        dataContext.Cache.UpdateLevelHeartedStatusByUser(user, level, true, database);
         return OK;
     }
     
@@ -55,7 +54,6 @@ public class RelationEndpoints : EndpointGroup
         if (level == null) return context.IsPSP() ? OK : NotFound;
 
         database.UnfavouriteLevel(level, user);
-        dataContext.Cache.UpdateLevelHeartedStatusByUser(user, level, false, database);
         return OK;
     }
     
@@ -75,7 +73,6 @@ public class RelationEndpoints : EndpointGroup
         if (userToFavourite == null) return context.IsPSP() ? OK : NotFound;
 
         database.FavouriteUser(userToFavourite, user);
-        dataContext.Cache.UpdateUserHeartedStatusByUser(user, userToFavourite, true, database);
         return OK;
     }
     
@@ -95,7 +92,6 @@ public class RelationEndpoints : EndpointGroup
         if (userToFavourite == null) return context.IsPSP() ? OK : NotFound;
 
         database.UnfavouriteUser(userToFavourite, user);
-        dataContext.Cache.UpdateUserHeartedStatusByUser(user, userToFavourite, false, database);
         return OK;
     }
 
@@ -126,7 +122,6 @@ public class RelationEndpoints : EndpointGroup
         if (level == null) return NotFound;
 
         database.QueueLevel(level, user);
-        dataContext.Cache.UpdateLevelQueuedStatusByUser(user, level, true, database);
         return OK;
     }
     
@@ -140,7 +135,6 @@ public class RelationEndpoints : EndpointGroup
         if (level == null) return NotFound;
 
         database.DequeueLevel(level, user);
-        dataContext.Cache.UpdateLevelQueuedStatusByUser(user, level, false, database);
         return OK;
     }
 
@@ -151,7 +145,6 @@ public class RelationEndpoints : EndpointGroup
     public Response ClearQueue(RequestContext context, GameDatabaseContext database, GameUser user, DataContext dataContext)
     {
         database.ClearQueue(user);
-        dataContext.Cache.ClearQueueByUser(user);
         return OK;
     }
     
@@ -181,7 +174,6 @@ public class RelationEndpoints : EndpointGroup
             return BadRequest;
         
         database.AddTagRelation(user, level, tag.Value);
-        dataContext.Cache.RemoveTags(level); // Reset
         
         return OK;
     }

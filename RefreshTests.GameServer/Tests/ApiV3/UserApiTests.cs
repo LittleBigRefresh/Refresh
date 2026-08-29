@@ -47,7 +47,7 @@ public class UserApiTests : GameServerTest
     }
 
     [Test]
-    public void CannotRegisterAccountWithPreviouslyTakenUsername()
+    public void CanRegisterAccountWithPreviouslyTakenUsername()
     {
         using TestContext context = this.GetServer();
         GameUser owner = context.CreateUser("original", GameUserRole.User);
@@ -62,13 +62,46 @@ public class UserApiTests : GameServerTest
             Username = "original",
             EmailAddress = "guy@lil.com",
             PasswordSha512 = "ee26b0dd4af7e749aa1a8ee3c10ae9923f618980772e473f8819a5d4940e0db27ac185f8a0e1d5f84f88bc887fd67b143732c304cc5fa9ad8e6f57f50028a8ff",
-        }, false, true);
+        }, true, false);
         Assert.That(response, Is.Not.Null);
-        Assert.That(response!.Error, Is.Not.EqualTo(null));
-        Assert.That(response.Error!.Name, Is.EqualTo("ApiAuthenticationError"));
+        Assert.That(response!.Data, Is.Not.Null);
         
         context.Database.Refresh();
-        Assert.That(context.Database.GetTotalUserCount(), Is.EqualTo(1));
+        GameUser? newUser = context.Database.GetUserByUuid(response!.Data!.UserId);
+        Assert.That(newUser, Is.Not.Null);
+        Assert.That(newUser!.Username, Is.EqualTo("original"));
+        
+        // Ensure the original "original" usage is tracked
+        Assert.That(context.Database.WasUsernamePreviouslyTaken("original"));
+    }
+
+    [Test]
+    public void CannotRegisterAccountWithCurrentlyTakenUsername()
+    {
+        using TestContext context = this.GetServer();
+        GameUser owner = context.CreateUser("original", GameUserRole.User);
+
+        ApiRegisterRequest request = new ApiRegisterRequest
+        {
+            Username = "original",
+            EmailAddress = "guy@lil.com",
+            PasswordSha512 = "ee26b0dd4af7e749aa1a8ee3c10ae9923f618980772e473f8819a5d4940e0db27ac185f8a0e1d5f84f88bc887fd67b143732c304cc5fa9ad8e6f57f50028a8ff",
+        };
+        ApiResponse<ApiAuthenticationResponse>? response = context.Http.PostData<ApiAuthenticationResponse>("/api/v3/register", request, false, true);
+        Assert.That(response, Is.Not.Null);
+        Assert.That(response!.Error, Is.Not.Null);
+        
+        context.Database.Refresh();
+        
+        // Our initial user still exists and hasn't been touched
+        GameUser? newUser = context.Database.GetUserByObjectId(owner.UserId);
+        Assert.That(newUser, Is.Not.Null);
+        Assert.That(newUser!.Username, Is.EqualTo("original"));
+        Assert.That(newUser!.EmailAddress, Is.Not.EqualTo(request.EmailAddress));
+        Assert.That(newUser!.PasswordBcrypt, Is.Not.EqualTo(request.PasswordSha512));
+        
+        // Ensure there is nothing tracked as no rename has happened
+        Assert.That(!context.Database.WasUsernamePreviouslyTaken("original"));
     }
     
     [TestCase("4")]

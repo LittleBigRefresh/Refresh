@@ -19,6 +19,10 @@ public partial class GameDatabaseContext // Users
     private IQueryable<GameUser> GameUsersIncluded => this.GameUsers
         .Include(u => u.Statistics);
     
+    private IQueryable<PreviousUsername> PreviousUsernamesIncluded => this.PreviousUsernames
+        .Include(u => u.User)
+        .Include(u => u.User.Statistics);
+    
     [Pure]
     [ContractAnnotation("username:null => null; username:notnull => canbenull")]
     public GameUser? GetUserByUsername(string? username, bool caseSensitive = true)
@@ -120,6 +124,20 @@ public partial class GameDatabaseContext // Users
         => new(this.GameUsersIncluded
             .Where(u => u.Statistics!.FavouriteCount > 0)
             .OrderByDescending(u => u.Statistics!.FavouriteCount), skip, count);
+
+    public DatabaseList<PreviousUsername> GetPreviousUsernameRecordsByName(string username, int skip, int count)
+    {
+        return new(this.PreviousUsernamesIncluded
+            .Where(u => u.Username == username)
+            .OrderByDescending(u => u.ReplacedAt), skip, count);
+    }
+    
+    public DatabaseList<PreviousUsername> GetPreviousUsernameRecordsByUser(GameUser user, int skip, int count)
+    {
+        return new(this.PreviousUsernamesIncluded
+            .Where(u => u.UserId == user.UserId)
+            .OrderByDescending(u => u.ReplacedAt), skip, count);
+    }
 
     public void UpdateUserData(GameUser user, ISerializedEditUser data, TokenGame game)
     {
@@ -370,7 +388,7 @@ public partial class GameDatabaseContext // Users
                 throw new ArgumentException("Username is invalid!", nameof(newUsername));
             }
 
-            if (this.IsUsernameTaken(newUsername, user))
+            if (this.IsUsernameTaken(newUsername))
             {
                 throw new ArgumentException("Username is already taken!", nameof(newUsername));
             }
@@ -385,7 +403,15 @@ public partial class GameDatabaseContext // Users
             User = user,
             ReplacedAt = this._time.Now,
         });
+
+        // Postgres/EF will try to insert untracked entities by default, which will fail if such entities already exist in DB.
+        // We can't guarantee that both user and its referenced entities (currently just statistics cache) are tracked here,
+        // so we should explicitly update user and explicitly track statistics as unchanged to avoid random inconsistent failures.
+        // TODO do explicitly track referenced entities in other similar DB modification methods as well, to also avoid occasional insertion there.
         this.GameUsers.Update(user);
+        if (user.Statistics != null)
+            this.GameUserStatistics.Attach(user.Statistics);
+
         this.SaveChanges();
         
         this.AddNotification("Username Updated", $"An admin has updated your account's username from '{oldUsername}' to '{newUsername}'. " +

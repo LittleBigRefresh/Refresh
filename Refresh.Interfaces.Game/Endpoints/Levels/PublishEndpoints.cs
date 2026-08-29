@@ -284,13 +284,11 @@ public class PublishEndpoints : EndpointGroup
             }
 
             List<GameSkillReward> updatedRewards = dataContext.Database.UpdateSkillRewardsForLevel(levelToUpdate, body.SkillRewards);
-            dataContext.Cache.CacheSkillRewards(levelToUpdate, updatedRewards);
             return new Response(GameLevelResponse.FromOld(levelToUpdate, dataContext)!, ContentType.Xml);
         }
 
         GameLevel newLevel = dataContext.Database.AddLevel(body, dataContext.Game, user);
         List<GameSkillReward> newRewards = dataContext.Database.UpdateSkillRewardsForLevel(newLevel, body.SkillRewards);
-        dataContext.Cache.CacheSkillRewards(newLevel, newRewards);
 
         context.Logger.LogInfo(BunkumCategory.UserContent, "User {0} (id: {1}) uploaded level id {2}", user.Username, user.UserId, newLevel.LevelId);
 
@@ -319,7 +317,6 @@ public class PublishEndpoints : EndpointGroup
         if (level.Publisher?.UserId != user.UserId) return Unauthorized;
 
         database.DeleteLevel(level);
-        dataContext.Cache.RemoveLevelData(level);
         return OK;
     }
 }

@@ -50,6 +50,31 @@ public class AdminUserApiEndpoints : EndpointGroup
         return list;
     }
 
+    [ApiV3Endpoint("admin/previousUsernames/byName/{username}"), MinimumRole(GameUserRole.Moderator)]
+    [DocSummary("Gets all users (with extended information) who have once used the specified username.")]
+    [DocUsesPageData]
+    public ApiListResponse<ApiExtendedPreviousUsernameResponse> GetExtendedPreviousUsernamesByUsername(RequestContext context,
+        GameDatabaseContext database, IDataStore dataStore, DataContext dataContext, string username)
+    {
+        (int skip, int count) = context.GetPageData();
+        DatabaseList<PreviousUsername> previousNames = database.GetPreviousUsernameRecordsByName(username, skip, count);
+        return DatabaseListExtensions.FromOldList<ApiExtendedPreviousUsernameResponse, PreviousUsername>(previousNames, dataContext);
+    }
+
+    [ApiV3Endpoint("admin/previousUsernames/byUser/{idType}/{id}"), MinimumRole(GameUserRole.Moderator)]
+    [DocSummary("Gets all previous usernames which have once been used by the specified user.")]
+    [DocUsesPageData]
+    public ApiListResponse<ApiExtendedPreviousUsernameResponse> GetExtendedPreviousUsernamesByUser(RequestContext context,
+        GameDatabaseContext database, IDataStore dataStore, DataContext dataContext, string idType, string id)
+    {
+        GameUser? user = database.GetUserByIdAndType(idType, id);
+        if (user == null) return ApiNotFoundError.UserMissingError;
+        
+        (int skip, int count) = context.GetPageData();
+        DatabaseList<PreviousUsername> previousNames = database.GetPreviousUsernameRecordsByUser(user, skip, count);
+        return DatabaseListExtensions.FromOldList<ApiExtendedPreviousUsernameResponse, PreviousUsername>(previousNames, dataContext);
+    }
+
     [ApiV3Endpoint("admin/users/{idType}/{id}/resetPassword", HttpMethods.Put), MinimumRole(GameUserRole.Moderator)]
     [DocSummary("Resets a user's password by their UUID or username.")]
     [DocError(typeof(ApiNotFoundError), ApiNotFoundError.UserMissingErrorWhen)]
@@ -173,7 +198,7 @@ public class AdminUserApiEndpoints : EndpointGroup
                 return new ApiValidationError(ApiValidationError.InvalidUsernameErrorWhen
                     + " Are you sure you used a PSN/RPCN username, or prepended it with ! if it's a fake user?");
             
-            if (database.IsUsernameTaken(body.Username, targetUser))
+            if (database.IsUsernameTaken(body.Username))
                 return ApiValidationError.UsernameTakenError;
             
             database.RenameUser(targetUser, body.Username);

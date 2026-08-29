@@ -16,15 +16,13 @@ public class DataContextService : Service
     private readonly MatchService _matchService;
     private readonly GameAuthenticationService _authService;
     private readonly GuidCheckerService _guidCheckerService;
-    private readonly CacheService _cacheService;
 
-    public DataContextService(StorageService storage, MatchService match, GameAuthenticationService auth, Logger logger, GuidCheckerService guidChecker, CacheService cache) : base(logger)
+    public DataContextService(StorageService storage, MatchService match, GameAuthenticationService auth, Logger logger, GuidCheckerService guidChecker) : base(logger)
     {
         this._storageService = storage;
         this._matchService = match;
         this._authService = auth;
         this._guidCheckerService = guidChecker;
-        this._cacheService = cache;
     }
     
     private static T StealInjection<T>(Service service, ListenerContext? context = null, Lazy<IDatabaseContext>? database = null, string name = "")
@@ -44,7 +42,6 @@ public class DataContextService : Service
                 Match = this._matchService,
                 Token = StealInjection<Token>(this._authService, context, database),
                 GuidChecker = this._guidCheckerService,
-                Cache = this._cacheService,
             };
         }
         

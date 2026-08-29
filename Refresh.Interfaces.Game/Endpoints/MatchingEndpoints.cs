@@ -131,7 +131,6 @@ public class MatchingEndpoints : EndpointGroup
             if (level != null && roomSlotType == RoomSlotType.Online && room.LevelId != id && room.LevelType != roomSlotType)
             {
                 dataContext.Database.PlayLevel(level, token.User, 1);
-                dataContext.Cache.IncrementLevelTotalPlaysByUser(token.User, level, 1, dataContext.Database);
             }
 
             room.LevelType = roomSlotType;
