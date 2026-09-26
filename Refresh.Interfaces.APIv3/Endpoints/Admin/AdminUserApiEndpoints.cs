@@ -6,16 +6,19 @@ using Bunkum.Protocols.Http;
 using Refresh.Common.Constants;
 using Refresh.Common.Verification;
 using Refresh.Core.Authentication.Permission;
+using Refresh.Core.Types.Categories;
 using Refresh.Core.Types.Data;
 using Refresh.Database;
 using Refresh.Database.Models.Moderation;
 using Refresh.Database.Models.Users;
+using Refresh.Database.Query;
 using Refresh.Interfaces.APIv3.Documentation.Attributes;
 using Refresh.Interfaces.APIv3.Documentation.Descriptions;
 using Refresh.Interfaces.APIv3.Endpoints.ApiTypes;
 using Refresh.Interfaces.APIv3.Endpoints.ApiTypes.Errors;
 using Refresh.Interfaces.APIv3.Endpoints.DataTypes.Request;
 using Refresh.Interfaces.APIv3.Endpoints.DataTypes.Response.Admin;
+using Refresh.Interfaces.APIv3.Endpoints.DataTypes.Response.Categories;
 using Refresh.Interfaces.APIv3.Endpoints.DataTypes.Response.Users;
 using Refresh.Interfaces.APIv3.Extensions;
 
@@ -39,15 +42,52 @@ public class AdminUserApiEndpoints : EndpointGroup
         return ApiExtendedGameUserResponse.FromOld(user, dataContext);
     }
 
-    [ApiV3Endpoint("admin/users"), MinimumRole(GameUserRole.Moderator)]
-    [DocSummary("Gets all users with extended information.")]
+    [ApiV3Endpoint("admin/userCategories"), MinimumRole(GameUserRole.Moderator)]
+    [ClientCacheResponse(1800)] // cache for half an hour
+    [DocQueryParam("includePreviews", "If true, a single user will be added to each category representing a user from that category. False by default.")]
+    [DocSummary("Gets all staff-only user categories.")]
+    public ApiListResponse<ApiCategoryResponse> GetAdminUserCategories(RequestContext context,
+        DataContext dataContext, CategoryService categories, string route)
+    {
+        bool result = bool.TryParse(context.QueryString.Get("includePreviews") ?? "false", out bool includePreviews);
+        if (!result) return ApiValidationError.BooleanParseError; // TODO actually name the failed bool param
+        
+        // Ignore the PermitShowingOnlineUsers config option, since this is mods-only
+        
+        IEnumerable<ApiCategoryResponse> resp;
+        if (includePreviews) resp = ApiCategoryResponse.FromOldList(categories.AdminUserCategories, context, dataContext);
+        else resp = ApiCategoryResponse.FromOldList(categories.AdminUserCategories, dataContext);
+
+        // No need for extended info for previews (yet)
+        return new ApiListResponse<ApiCategoryResponse>(resp);
+    }
+
+    [ApiV3Endpoint("admin/userCategories/{route}"), MinimumRole(GameUserRole.Moderator)]
+    [DocSummary("Gets all users with extended information from a staff-only category.")]
     [DocUsesPageData]
-    public ApiListResponse<ApiExtendedGameUserResponse> GetExtendedUsers(RequestContext context,
-        GameDatabaseContext database, IDataStore dataStore, DataContext dataContext)
+    public ApiListResponse<ApiExtendedGameUserResponse> GetExtendedUsersViaCategory(RequestContext context,
+        DataContext dataContext, CategoryService categories, GameUser user, string route)
     {
         (int skip, int count) = context.GetPageData();
-        DatabaseList<ApiExtendedGameUserResponse> list = DatabaseListExtensions.FromOldList<ApiExtendedGameUserResponse, GameUser>(database.GetUsers(count, skip), dataContext);
-        return list;
+        
+        DatabaseList<GameUser>? list = categories.AdminUserCategories
+            .FirstOrDefault(c => c.ApiRoute.StartsWith(route))?
+            .Fetch(context, skip, count, dataContext, LevelFilterSettings.FromApiRequest(context), user)?
+            .Users;
+
+        if (list == null) return ApiNotFoundError.Instance;
+
+        DatabaseList<ApiExtendedGameUserResponse> levels = DatabaseListExtensions.FromOldList<ApiExtendedGameUserResponse, GameUser>(list, dataContext);
+        return levels;
+    }
+
+    [ApiV3Endpoint("admin/users"), MinimumRole(GameUserRole.Moderator)]
+    [DocSummary("Gets the newest users with extended information. Redirects to /admin/userCategories/newest now.")]
+    [DocUsesPageData]
+    public ApiListResponse<ApiExtendedGameUserResponse> GetExtendedUsers(RequestContext context, DataContext dataContext, 
+        GameUser user, CategoryService categories)
+    {
+        return this.GetExtendedUsersViaCategory(context, dataContext, categories, user, "newest");
     }
 
     [ApiV3Endpoint("admin/previousUsernames/byName/{username}"), MinimumRole(GameUserRole.Moderator)]
