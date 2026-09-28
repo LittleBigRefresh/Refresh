@@ -114,20 +114,20 @@ public class LeaderboardApiTests : GameServerTest
         {
             // Show either just the one best score on this level, or also include the 2 overtaken ones.
             // UUID
-            ApiListResponse<ApiGameScoreResponse>? response = context.Http.GetList<ApiGameScoreResponse>($"/api/v3/users/uuid/{uploader.UserId.ToString()}/scores?mode={mode}&showOvertaken={showOvertaken}");
+            ApiListResponse<ApiGameScoreResponse>? response = context.Http.GetList<ApiGameScoreResponse>($"/api/v3/users/uuid/{uploader.UserId.ToString()}/scores?mode={mode}&showAll={showOvertaken}");
             this.AssertResponseListCount(response,  showOvertaken ? 3 : 1);
             
             // name
-            response = context.Http.GetList<ApiGameScoreResponse>($"/api/v3/users/name/{uploader.Username}/scores?mode={mode}&showOvertaken={showOvertaken}");
+            response = context.Http.GetList<ApiGameScoreResponse>($"/api/v3/users/name/{uploader.Username}/scores?mode={mode}&showAll={showOvertaken}");
             this.AssertResponseListCount(response, showOvertaken ? 3 : 1);
         }
         
         // Ensure that no mode and mode 0 will both return all scores.
         // Will either return just the best score per mode, or all of them.
-        ApiListResponse<ApiGameScoreResponse>? bigResponse = context.Http.GetList<ApiGameScoreResponse>($"/api/v3/users/name/{uploader.Username}/scores?showOvertaken={showOvertaken}");
+        ApiListResponse<ApiGameScoreResponse>? bigResponse = context.Http.GetList<ApiGameScoreResponse>($"/api/v3/users/name/{uploader.Username}/scores?showAll={showOvertaken}");
         this.AssertResponseListCount(bigResponse, showOvertaken ? 12 : 4);
         
-        bigResponse = context.Http.GetList<ApiGameScoreResponse>($"/api/v3/users/name/{uploader.Username}/scores?mode=0&showOvertaken={showOvertaken}");
+        bigResponse = context.Http.GetList<ApiGameScoreResponse>($"/api/v3/users/name/{uploader.Username}/scores?mode=0&showAll={showOvertaken}");
         this.AssertResponseListCount(bigResponse, showOvertaken ? 12 : 4);
     }
     
@@ -175,17 +175,17 @@ public class LeaderboardApiTests : GameServerTest
         {
             // Show either just the one best score on this level, or also include the 2 overtaken ones.
             // UUID
-            ApiListResponse<ApiGameScoreResponse>? response = context.Http.GetList<ApiGameScoreResponse>($"/api/v3/users/uuid/{uploader.UserId.ToString()}/scores?mode={mode}&showOvertaken={showOvertaken}");
+            ApiListResponse<ApiGameScoreResponse>? response = context.Http.GetList<ApiGameScoreResponse>($"/api/v3/users/uuid/{uploader.UserId.ToString()}/scores?mode={mode}&showAll={showOvertaken}");
             this.AssertResponseListCount(response,  1); // user still has just one of this type, regardless of whether we're showing all scores by them
             
             response = context.Http.GetList<ApiGameScoreResponse>($"/api/v3/scores/{level.LevelId}/{mode}?showAll={showOvertaken}");
             this.AssertResponseListCount(response,  3); // the user's score + the ones by the 2 extra users
         }
         
-        ApiListResponse<ApiGameScoreResponse>? bigResponse = context.Http.GetList<ApiGameScoreResponse>($"/api/v3/users/uuid/{uploader.UserId.ToString()}/scores?showOvertaken={showOvertaken}");
+        ApiListResponse<ApiGameScoreResponse>? bigResponse = context.Http.GetList<ApiGameScoreResponse>($"/api/v3/users/uuid/{uploader.UserId.ToString()}/scores?showAll={showOvertaken}");
         this.AssertResponseListCount(bigResponse,  4); // user still has just one per type, and they're all not overtaken by themselves
             
-        bigResponse = context.Http.GetList<ApiGameScoreResponse>($"/api/v3/scores/{level.LevelId}/0?showOvertaken={showOvertaken}");
+        bigResponse = context.Http.GetList<ApiGameScoreResponse>($"/api/v3/scores/{level.LevelId}/0?showAll={showOvertaken}");
         this.AssertResponseListCount(bigResponse,  12); // all scores by all users regardless of type
     }
 }
