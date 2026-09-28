@@ -188,4 +188,65 @@ public class LeaderboardApiTests : GameServerTest
         bigResponse = context.Http.GetList<ApiGameScoreResponse>($"/api/v3/scores/{level.LevelId}/0?showAll={showOvertaken}");
         this.AssertResponseListCount(bigResponse,  12); // all scores by all users regardless of type
     }
+    
+    [Test]
+    public void CanFilterUserScoresByRank()
+    {
+        using TestContext context = this.GetServer();
+        GameUser uploader = context.CreateUser();
+
+        // Upload scores by the same user on various levels
+        for (int i = 0; i < 10; i++)
+        {
+            GameLevel anotherLevel = context.CreateLevel(uploader);
+            SerializedScore score = new()
+            {
+                Host = true,
+                ScoreType = 1,
+                Score = i,
+                PlayerUsernames = [uploader.Username],
+            };
+            context.Database.SubmitScore(score, uploader, anotherLevel, TokenGame.LittleBigPlanet1, TokenPlatform.RPCS3, [uploader]);
+            
+            // Also put scores by others there, so the uploader has a score per level, and these scores all have different ranks
+            for (int u = 0; u < 10; u++)
+            {
+                GameUser anotherUploader = context.CreateUser();
+                SerializedScore anotherScore = new()
+                {
+                    Host = true,
+                    ScoreType = 1,
+                    Score = u,
+                    PlayerUsernames = [anotherUploader.Username],
+                };
+                context.Database.SubmitScore(anotherScore, anotherUploader, anotherLevel, TokenGame.LittleBigPlanet1, TokenPlatform.RPCS3, [anotherUploader]);
+            }
+        }
+        
+        context.Database.Refresh();
+        
+        // No filters
+        ApiListResponse<ApiGameScoreResponse>? bigResponse = context.Http.GetList<ApiGameScoreResponse>($"/api/v3/users/uuid/{uploader.UserId.ToString()}/scores");
+        this.AssertResponseListCount(bigResponse, 10);
+        
+        // Settings filters to 0 is the same as no filter
+        bigResponse = context.Http.GetList<ApiGameScoreResponse>($"/api/v3/users/uuid/{uploader.UserId.ToString()}/scores?minRank=0&maxRank=0");
+        this.AssertResponseListCount(bigResponse, 10);
+
+        // Can use just minRank
+        bigResponse = context.Http.GetList<ApiGameScoreResponse>($"/api/v3/users/uuid/{uploader.UserId.ToString()}/scores?minRank=5");
+        this.AssertResponseListCount(bigResponse, 6);
+
+        // Can use just maxRank
+        bigResponse = context.Http.GetList<ApiGameScoreResponse>($"/api/v3/users/uuid/{uploader.UserId.ToString()}/scores?maxRank=3");
+        this.AssertResponseListCount(bigResponse, 3);
+
+        // Can use both
+        bigResponse = context.Http.GetList<ApiGameScoreResponse>($"/api/v3/users/uuid/{uploader.UserId.ToString()}/scores?minRank=4&maxRank=7");
+        this.AssertResponseListCount(bigResponse, 4);
+
+        // Can use both to return all scores of just one rank
+        bigResponse = context.Http.GetList<ApiGameScoreResponse>($"/api/v3/users/uuid/{uploader.UserId.ToString()}/scores?minRank=1&maxRank=1");
+        this.AssertResponseListCount(bigResponse, 1);
+    }
 }

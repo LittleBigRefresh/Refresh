@@ -57,9 +57,16 @@ public class LeaderboardApiEndpoints : EndpointGroup
                               "If true, all scores will be shown no matter what. False by default.")]
     [DocQueryParam("mode", "The leaderboard mode (aka the number of players, e.g. 2 for 2-player mode)." +
                               "If 0 or missing, scores won't be filtered by mode.")]
+    [DocQueryParam("minRank", "The minimum rank all scores have to be at (among their levels' main leaderboard)." +
+                              "For example, minRank 1 and maxRank 3 will only keep all scores which are currently rank 1, 2 or 3." +
+                              "If 0 or missing, scores won't be filtered by minimum rank.")]
+    [DocQueryParam("maxRank", "The maximum rank all scores have to be at (among their levels' main leaderboard)." +
+                              "For example, minRank 1 and maxRank 3 will only keep all scores which are currently rank 1, 2 or 3." +
+                              "If 0 or missing, scores won't be filtered by minimum rank.")]
     [DocError(typeof(ApiNotFoundError), ApiNotFoundError.UserMissingErrorWhen)]
     [DocError(typeof(ApiValidationError), "The boolean 'showAll' could not be parsed by the server.")]
     [DocError(typeof(ApiNotFoundError), ApiValidationError.ScoreModeInvalidErrorWhen)]
+    [DocError(typeof(ApiNotFoundError), ApiValidationError.ScoreRanksInvalidErrorWhen)]
     public ApiListResponse<ApiGameScoreResponse> GetTopScoresByUser(RequestContext context,
         [DocSummary(SharedParamDescriptions.UserIdParam)] string userId,
         [DocSummary(SharedParamDescriptions.UserIdTypeParam)] string idType,
@@ -77,7 +84,14 @@ public class LeaderboardApiEndpoints : EndpointGroup
         bool modeParsed = byte.TryParse(context.QueryString.Get("mode") ?? "0", out byte mode);
         if (!modeParsed || mode > 4) return ApiValidationError.ScoreModeInvalidError;
 
-        DatabaseList<ScoreWithRank> scores = dataContext.Database.GetTopScoresByUser(user, count, skip, mode, showAll);
+        bool minRankParsed = uint.TryParse(context.QueryString.Get("minRank") ?? "0", out uint minRank);
+        bool maxRankParsed = uint.TryParse(context.QueryString.Get("maxRank") ?? "0", out uint maxRank);
+        // Don't think it's necessary to check whether min is higher than max.
+        // Could be friendly and warn the client instead of just returning an empty list, but that's just unnecessary
+        // extra work for us for nearly no reason, so whatever.
+        if (!minRankParsed || !maxRankParsed) return ApiValidationError.ScoreRanksInvalidError;
+
+        DatabaseList<ScoreWithRank> scores = dataContext.Database.GetTopScoresByUser(user, count, skip, mode, minRank, maxRank, showAll);
         DatabaseList<ApiGameScoreResponse> ret = DatabaseListExtensions.FromOldList<ApiGameScoreResponse, ScoreWithRank>(scores, dataContext);
         return ret;
     }

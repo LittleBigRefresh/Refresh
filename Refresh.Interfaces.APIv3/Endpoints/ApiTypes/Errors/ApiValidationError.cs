@@ -107,6 +107,9 @@ public class ApiValidationError : ApiError
     public const string ScoreModeInvalidErrorWhen = "The score mode was not a number or higher than 4.";
     public static readonly ApiValidationError ScoreModeInvalidError = new(ScoreModeInvalidErrorWhen);
 
+    public const string ScoreRanksInvalidErrorWhen = "The minRank or maxRank parameters were not numbers.";
+    public static readonly ApiValidationError ScoreRanksInvalidError = new(ScoreRanksInvalidErrorWhen);
+
     // TODO: Split off error messages which are actually 401 or anything else that isn't 400
     public ApiValidationError(string message) : base(message) {}
 }
