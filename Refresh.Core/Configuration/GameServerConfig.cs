@@ -17,7 +17,6 @@ public class GameServerConfig : Config
         // to more cleanly split the perms between certain roles, and to make their enforcement easier.
         if (oldVer < 27)
         {
-            this.NewUserPermissions = new();
             this.NormalUserPermissions = new();
             this.TrustedUserPermissions = new();
 
@@ -27,7 +26,6 @@ public class GameServerConfig : Config
             {
                 try
                 {
-                    this.NewUserPermissions.UserFilesizeQuota = (int)oldConfig.UserFilesizeQuota;
                     this.NormalUserPermissions.UserFilesizeQuota = (int)oldConfig.UserFilesizeQuota;
                     this.TrustedUserPermissions.UserFilesizeQuota = (int)oldConfig.UserFilesizeQuota;
                 }
@@ -40,10 +38,6 @@ public class GameServerConfig : Config
             // Migrate asset flags/safety level
             if (oldVer >= 18)
             {
-                this.NewUserPermissions.BlockedAssetFlags.Dangerous = (bool)oldConfig.BlockedAssetFlags.Dangerous;
-                this.NewUserPermissions.BlockedAssetFlags.Media = (bool)oldConfig.BlockedAssetFlags.Media;
-                this.NewUserPermissions.BlockedAssetFlags.Modded = (bool)oldConfig.BlockedAssetFlags.Modded;
-                
                 this.NormalUserPermissions.BlockedAssetFlags.Dangerous = (bool)oldConfig.BlockedAssetFlags.Dangerous;
                 this.NormalUserPermissions.BlockedAssetFlags.Media = (bool)oldConfig.BlockedAssetFlags.Media;
                 this.NormalUserPermissions.BlockedAssetFlags.Modded = (bool)oldConfig.BlockedAssetFlags.Modded;
@@ -65,7 +59,6 @@ public class GameServerConfig : Config
                         Media = oldSafetyLevel < 1,
                     };
                     this.NormalUserPermissions.BlockedAssetFlags = fromSafetyLevel;
-                    this.NewUserPermissions.BlockedAssetFlags = fromSafetyLevel;
                 }
 
                 // Asset safety level for trusted users was added in config version 12, so dont try to migrate if we are coming from a version older than that
@@ -93,10 +86,6 @@ public class GameServerConfig : Config
             // Migrate level limits
             if (oldVer >= 19)
             {
-                this.NewUserPermissions.LevelUploadRateLimit.Enabled = (bool)oldConfig.TimedLevelUploadLimits.Enabled;
-                this.NewUserPermissions.LevelUploadRateLimit.TimeSpanHours = (int)oldConfig.TimedLevelUploadLimits.TimeSpanHours;
-                this.NewUserPermissions.LevelUploadRateLimit.UploadQuota = (int)oldConfig.TimedLevelUploadLimits.LevelQuota;
-                
                 this.NormalUserPermissions.LevelUploadRateLimit.Enabled = (bool)oldConfig.TimedLevelUploadLimits.Enabled;
                 this.NormalUserPermissions.LevelUploadRateLimit.TimeSpanHours = (int)oldConfig.TimedLevelUploadLimits.TimeSpanHours;
                 this.NormalUserPermissions.LevelUploadRateLimit.UploadQuota = (int)oldConfig.TimedLevelUploadLimits.LevelQuota;
@@ -109,7 +98,6 @@ public class GameServerConfig : Config
             // Read-only mode was added for both normal and trusted users in version 20.
             if (oldVer >= 20)
             {
-                this.NewUserPermissions.ReadOnlyMode = (bool)oldConfig.ReadOnlyMode;
                 this.NormalUserPermissions.ReadOnlyMode = (bool)oldConfig.ReadOnlyMode;
                 this.TrustedUserPermissions.ReadOnlyMode = (bool)oldConfig.ReadonlyModeForTrustedUsers;
             }
@@ -122,10 +110,6 @@ public class GameServerConfig : Config
             this.NormalUserPermissions.LevelUploadRateLimit.Enabled = (bool)oldConfig.NormalUserPermissions.TimedLevelUploadLimits.Enabled;
             this.NormalUserPermissions.LevelUploadRateLimit.TimeSpanHours = (int)oldConfig.NormalUserPermissions.TimedLevelUploadLimits.TimeSpanHours;
             this.NormalUserPermissions.LevelUploadRateLimit.UploadQuota = (int)oldConfig.NormalUserPermissions.TimedLevelUploadLimits.LevelQuota;
-            
-            this.NormalUserPermissions.LevelUploadRateLimit.Enabled = (bool)oldConfig.NormalUserPermissions.TimedLevelUploadLimits.Enabled;
-            this.NormalUserPermissions.LevelUploadRateLimit.TimeSpanHours = (int)oldConfig.NormalUserPermissions.TimedLevelUploadLimits.TimeSpanHours;
-            this.NormalUserPermissions.LevelUploadRateLimit.UploadQuota = (int)oldConfig.NormalUserPermissions.TimedLevelUploadLimits.LevelQuota;
 
             this.TrustedUserPermissions.LevelUploadRateLimit.Enabled = (bool)oldConfig.TrustedUserPermissions.TimedLevelUploadLimits.Enabled;
             this.TrustedUserPermissions.LevelUploadRateLimit.TimeSpanHours = (int)oldConfig.TrustedUserPermissions.TimedLevelUploadLimits.TimeSpanHours;
@@ -133,10 +117,11 @@ public class GameServerConfig : Config
         }
         
         // In version 29, the NewUser role and its related config options
-        // (NewUserPermissions and HoursUntilNewAccountNoLongerNew) were added
+        // (NewUserPermissions and HoursUntilNewAccountNoLongerNew) were added.
+        // At this point, NormalUserPermissions will already be fully migrated, so we can just copy it.
         else if (oldVer < 29)
         {
-            this.NewUserPermissions = oldConfig.NormalUserPermissions;
+            this.NewUserPermissions = this.NormalUserPermissions;
         }
     }
 
