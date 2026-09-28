@@ -110,6 +110,21 @@ public partial class GameDatabaseContext // Leaderboard
 
         return new(scores.ToArray().Select(s => new ScoreWithRank(s, s.Rank)), skip, count, user);
     }
+    
+    public DatabaseList<ScoreWithRank> GetTopScoresByUser(GameUser user, int count, int skip, byte scoreType, bool showDuplicates = false)
+    {
+        IEnumerable<GameScore> scores = this.GameScoresIncluded
+            .Where(s => s.PublisherId == user.UserId)
+            .OrderByDescending(s => s.Score);
+        
+        if (scoreType != 0)
+            scores = scores.Where(s => s.ScoreType == scoreType);
+
+        if (!showDuplicates)
+            scores = scores.Where(s => s.Rank != 0);
+
+        return new(scores.ToArray().Select(s => new ScoreWithRank(s, s.Rank)), skip, count);
+    }
 
     public DatabaseScoreList GetRankedScoresAroundScore(GameScore score, int count, GameUser? user = null)
     {
