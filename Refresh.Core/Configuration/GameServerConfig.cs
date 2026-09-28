@@ -119,7 +119,7 @@ public class GameServerConfig : Config
         // In version 29, the NewUser role and its related config options
         // (NewUserPermissions and HoursUntilNewAccountNoLongerNew) were added.
         // At this point, NormalUserPermissions will already be fully migrated, so we can just copy it.
-        else if (oldVer < 29)
+        if (oldVer < 29)
         {
             this.NewUserPermissions = this.NormalUserPermissions;
         }
