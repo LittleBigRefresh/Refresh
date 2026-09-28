@@ -26,21 +26,28 @@ public class GameServerConfigTests : GameServerTest
 
         config.TestMigration();
 
+        // new is now the same as normal
+        Assert.That(config.NewUserPermissions.ReadOnlyMode, Is.True);
         Assert.That(config.NormalUserPermissions.ReadOnlyMode, Is.True);
         Assert.That(config.TrustedUserPermissions.ReadOnlyMode, Is.False);
 
+        Assert.That(config.NewUserPermissions.LevelUploadRateLimit.Enabled, Is.True);
         Assert.That(config.NormalUserPermissions.LevelUploadRateLimit.Enabled, Is.True);
         Assert.That(config.TrustedUserPermissions.LevelUploadRateLimit.Enabled, Is.True);
 
+        Assert.That(config.NewUserPermissions.LevelUploadRateLimit.TimeSpanHours, Is.EqualTo(67));
         Assert.That(config.NormalUserPermissions.LevelUploadRateLimit.TimeSpanHours, Is.EqualTo(67));
         Assert.That(config.TrustedUserPermissions.LevelUploadRateLimit.TimeSpanHours, Is.EqualTo(67));
 
+        Assert.That(config.NewUserPermissions.LevelUploadRateLimit.UploadQuota, Is.EqualTo(2));
         Assert.That(config.NormalUserPermissions.LevelUploadRateLimit.UploadQuota, Is.EqualTo(2));
         Assert.That(config.TrustedUserPermissions.LevelUploadRateLimit.UploadQuota, Is.EqualTo(2));
 
+        Assert.That(config.NewUserPermissions.BlockedAssetFlags.ToAssetFlags(), Is.EqualTo(AssetFlags.Dangerous | AssetFlags.Media));
         Assert.That(config.NormalUserPermissions.BlockedAssetFlags.ToAssetFlags(), Is.EqualTo(AssetFlags.Dangerous | AssetFlags.Media));
         Assert.That(config.TrustedUserPermissions.BlockedAssetFlags.ToAssetFlags(), Is.EqualTo(AssetFlags.Modded));
 
+        Assert.That(config.NewUserPermissions.UserFilesizeQuota, Is.EqualTo(141));
         Assert.That(config.NormalUserPermissions.UserFilesizeQuota, Is.EqualTo(141));
         Assert.That(config.TrustedUserPermissions.UserFilesizeQuota, Is.EqualTo(141));
     }
@@ -73,6 +80,11 @@ public class GameServerConfigTests : GameServerTest
 
         config.TestMigration();
 
+        // Same as normal
+        Assert.That(config.NewUserPermissions.LevelUploadRateLimit.Enabled, Is.True);
+        Assert.That(config.NewUserPermissions.LevelUploadRateLimit.TimeSpanHours, Is.EqualTo(1234567));
+        Assert.That(config.NewUserPermissions.LevelUploadRateLimit.UploadQuota, Is.EqualTo(852094));
+
         Assert.That(config.NormalUserPermissions.LevelUploadRateLimit.Enabled, Is.True);
         Assert.That(config.NormalUserPermissions.LevelUploadRateLimit.TimeSpanHours, Is.EqualTo(1234567));
         Assert.That(config.NormalUserPermissions.LevelUploadRateLimit.UploadQuota, Is.EqualTo(852094));
@@ -94,7 +106,38 @@ public class GameServerConfigTests : GameServerTest
 
         config.TestMigration();
 
+        Assert.That(config.NewUserPermissions.BlockedAssetFlags.ToAssetFlags(), Is.EqualTo(AssetFlags.Dangerous | AssetFlags.Modded)); // same as normal
         Assert.That(config.NormalUserPermissions.BlockedAssetFlags.ToAssetFlags(), Is.EqualTo(AssetFlags.Dangerous | AssetFlags.Modded));
         Assert.That(config.TrustedUserPermissions.BlockedAssetFlags.ToAssetFlags(), Is.EqualTo(AssetFlags.Dangerous));
+    }
+
+    [Test]
+    public void MigratesNewUserPermsFromVersion28()
+    {
+        TestGameServerConfig config = new()
+        {
+            Version = 28,
+            NormalUserPermissions = new()
+            {
+                LevelUploadRateLimit = new()
+                {
+                    Enabled = true,
+                    TimeSpanHours = 22222,
+                    UploadQuota = 4,
+                },
+                BlockedAssetFlags = new(AssetFlags.Dangerous | AssetFlags.Modded),
+                ReadOnlyMode = true,
+            },
+        };
+        config.TestMigration();
+        
+        // Ensure it's exactly the same as normal user now
+        Assert.That(config.NewUserPermissions.LevelUploadRateLimit.Enabled, Is.True);
+        Assert.That(config.NewUserPermissions.LevelUploadRateLimit.TimeSpanHours, Is.EqualTo(22222));
+        Assert.That(config.NewUserPermissions.LevelUploadRateLimit.UploadQuota, Is.EqualTo(4));
+        Assert.That(config.NewUserPermissions.BlockedAssetFlags.Dangerous, Is.True);
+        Assert.That(config.NewUserPermissions.BlockedAssetFlags.Modded, Is.True);
+        Assert.That(config.NewUserPermissions.BlockedAssetFlags.Media, Is.False);
+        Assert.That(config.NewUserPermissions.ReadOnlyMode, Is.True);
     }
 }
