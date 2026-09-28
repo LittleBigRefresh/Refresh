@@ -1,6 +1,10 @@
 using Refresh.Database.Models.Authentication;
 using Refresh.Database.Models.Levels;
 using Refresh.Database.Models.Users;
+using Refresh.Interfaces.APIv3.Endpoints.ApiTypes;
+using Refresh.Interfaces.APIv3.Endpoints.DataTypes.Response.Levels;
+using Refresh.Interfaces.Game.Types.UserData.Leaderboard;
+using RefreshTests.GameServer.Extensions;
 
 namespace RefreshTests.GameServer.Tests.ApiV3;
 
@@ -28,5 +32,160 @@ public class LeaderboardApiTests : GameServerTest
         resetResponse = await client.DeleteAsync($"/api/v3/admin/users/name/{publisher.Username}/scores");
         Assert.That(resetResponse.IsSuccessStatusCode, Is.True);
         Assert.That(context.Database.GetTopScoresForLevel(level, 100, 0, 1).TotalItems, Is.Zero);
+    }
+
+    private void AssertResponseListCount(ApiListResponse<ApiGameScoreResponse>? response, int count)
+    {
+        Assert.That(response?.Data, Is.Not.Null);
+        Assert.That(response.ListInfo, Is.Not.Null);
+        Assert.That(response.Data.Count, Is.EqualTo(count));
+        Assert.That(response.ListInfo.TotalItems, Is.EqualTo(count));
+    }
+    
+    [Test]
+    public void GetsScoresByUserOnVariousLevels()
+    {
+        using TestContext context = this.GetServer();
+        GameUser uploader = context.CreateUser();
+        
+        // Post 1 score per mode per level, 3 levels in total, each score is slightly higher than the previous one.
+        for (int i = 0; i < 3; i++)
+        {
+            GameLevel level = context.CreateLevel(uploader);
+            for (byte mode = 1; mode <= 4; mode++)
+            {
+                SerializedScore score = new()
+                {
+                    Host = true,
+                    ScoreType = mode,
+                    Score = 434834,
+                    PlayerUsernames = [uploader.Username],
+                };
+                context.Database.SubmitScore(score, uploader, level, TokenGame.LittleBigPlanet1, TokenPlatform.RPCS3, [uploader]);
+            }
+        }
+
+        for (byte mode = 1; mode <= 4; mode++)
+        {
+            // UUID
+            ApiListResponse<ApiGameScoreResponse>? response = context.Http.GetList<ApiGameScoreResponse>($"/api/v3/users/uuid/{uploader.UserId.ToString()}/scores?mode={mode}");
+            this.AssertResponseListCount(response, 3);
+            
+            // name
+            response = context.Http.GetList<ApiGameScoreResponse>($"/api/v3/users/name/{uploader.Username}/scores?mode={mode}");
+            this.AssertResponseListCount(response, 3);
+        }
+        
+        // Ensure that no mode and mode 0 will both return all scores.
+        ApiListResponse<ApiGameScoreResponse>? bigResponse = context.Http.GetList<ApiGameScoreResponse>($"/api/v3/users/name/{uploader.Username}/scores");
+        this.AssertResponseListCount(bigResponse, 12);
+        
+        bigResponse = context.Http.GetList<ApiGameScoreResponse>($"/api/v3/users/name/{uploader.Username}/scores?mode=0");
+        this.AssertResponseListCount(bigResponse, 12);
+    }
+    
+    [Test]
+    [TestCase(false)]
+    [TestCase(true)]
+    public void GetsScoresByUserOnSameLevel(bool showOvertaken)
+    {
+        using TestContext context = this.GetServer();
+        GameUser uploader = context.CreateUser();
+        GameLevel level = context.CreateLevel(uploader);
+        
+        // Post 3 scores per mode to the same level, each score is slightly higher than the previous one,
+        // so the user will end up overtaking their own score.
+        for (int i = 0; i < 3; i++)
+        {
+            for (byte mode = 1; mode <= 4; mode++)
+            {
+                SerializedScore score = new()
+                {
+                    Host = true,
+                    ScoreType = mode,
+                    Score = 434834 + i,
+                    PlayerUsernames = [uploader.Username],
+                };
+                context.Database.SubmitScore(score, uploader, level, TokenGame.LittleBigPlanet1, TokenPlatform.RPCS3, [uploader]);
+            }
+        }
+
+        for (byte mode = 1; mode <= 4; mode++)
+        {
+            // Show either just the one best score on this level, or also include the 2 overtaken ones.
+            // UUID
+            ApiListResponse<ApiGameScoreResponse>? response = context.Http.GetList<ApiGameScoreResponse>($"/api/v3/users/uuid/{uploader.UserId.ToString()}/scores?mode={mode}&showOvertaken={showOvertaken}");
+            this.AssertResponseListCount(response,  showOvertaken ? 3 : 1);
+            
+            // name
+            response = context.Http.GetList<ApiGameScoreResponse>($"/api/v3/users/name/{uploader.Username}/scores?mode={mode}&showOvertaken={showOvertaken}");
+            this.AssertResponseListCount(response, showOvertaken ? 3 : 1);
+        }
+        
+        // Ensure that no mode and mode 0 will both return all scores.
+        // Will either return just the best score per mode, or all of them.
+        ApiListResponse<ApiGameScoreResponse>? bigResponse = context.Http.GetList<ApiGameScoreResponse>($"/api/v3/users/name/{uploader.Username}/scores?showOvertaken={showOvertaken}");
+        this.AssertResponseListCount(bigResponse, showOvertaken ? 12 : 4);
+        
+        bigResponse = context.Http.GetList<ApiGameScoreResponse>($"/api/v3/users/name/{uploader.Username}/scores?mode=0&showOvertaken={showOvertaken}");
+        this.AssertResponseListCount(bigResponse, showOvertaken ? 12 : 4);
+    }
+    
+    [Test]
+    [TestCase(false)]
+    [TestCase(true)]
+    public void DontFilterOutScoresNotOvertakenByOwnPublisher(bool showOvertaken)
+    {
+        using TestContext context = this.GetServer();
+        GameUser uploader = context.CreateUser();
+        GameLevel level = context.CreateLevel(uploader);
+
+        // Upload the scores of the user we want, one per type
+        for (byte mode = 1; mode <= 4; mode++)
+        {
+            SerializedScore ogScore = new()
+            {
+                Host = true,
+                ScoreType = mode,
+                Score = 2344,
+                PlayerUsernames = [uploader.Username],
+            };
+            context.Database.SubmitScore(ogScore, uploader, level, TokenGame.LittleBigPlanet1, TokenPlatform.RPCS3, [uploader]);
+        }
+
+        // Post 1 score per extra user per mode to the same level, each score is slightly higher than the previous one,
+        // so we will have 4 scores by a different user each per mode.
+        for (int i = 0; i < 2; i++)
+        {
+            GameUser anotherUploader = context.CreateUser();
+            for (byte mode = 1; mode <= 4; mode++)
+            {
+                SerializedScore score = new()
+                {
+                    Host = true,
+                    ScoreType = mode,
+                    Score = 434834 + i,
+                    PlayerUsernames = [anotherUploader.Username],
+                };
+                context.Database.SubmitScore(score, anotherUploader, level, TokenGame.LittleBigPlanet1, TokenPlatform.RPCS3, [anotherUploader]);
+            }
+        }
+
+        for (byte mode = 1; mode <= 4; mode++)
+        {
+            // Show either just the one best score on this level, or also include the 2 overtaken ones.
+            // UUID
+            ApiListResponse<ApiGameScoreResponse>? response = context.Http.GetList<ApiGameScoreResponse>($"/api/v3/users/uuid/{uploader.UserId.ToString()}/scores?mode={mode}&showOvertaken={showOvertaken}");
+            this.AssertResponseListCount(response,  1); // user still has just one of this type, regardless of whether we're showing all scores by them
+            
+            response = context.Http.GetList<ApiGameScoreResponse>($"/api/v3/scores/{level.LevelId}/{mode}?showAll={showOvertaken}");
+            this.AssertResponseListCount(response,  3); // the user's score + the ones by the 2 extra users
+        }
+        
+        ApiListResponse<ApiGameScoreResponse>? bigResponse = context.Http.GetList<ApiGameScoreResponse>($"/api/v3/users/uuid/{uploader.UserId.ToString()}/scores?showOvertaken={showOvertaken}");
+        this.AssertResponseListCount(bigResponse,  4); // user still has just one per type, and they're all not overtaken by themselves
+            
+        bigResponse = context.Http.GetList<ApiGameScoreResponse>($"/api/v3/scores/{level.LevelId}/0?showOvertaken={showOvertaken}");
+        this.AssertResponseListCount(bigResponse,  12); // all scores by all users regardless of type
     }
 }
