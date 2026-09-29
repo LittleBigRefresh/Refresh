@@ -101,7 +101,7 @@ public class LevelEndpoints : EndpointGroup
         }   
         
         IEnumerable<GameUserResponse> users = GameUserResponse.FromOldList(results.Users?.Items ?? [], dataContext);
-        return new SerializedMinimalLevelList(slots, results.TotalItemsMax + injectedAmount, skip + count, users);
+        return new SerializedMinimalLevelList(slots, results.TotalItemsSum + injectedAmount, skip + count, users);
     }
 
     [GameEndpoint("slots/{route}/{username}", ContentType.Xml)]

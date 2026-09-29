@@ -76,7 +76,7 @@ public class CategoryEndpoints : EndpointGroup
         (
             GameMinimalLevelResponse.FromOldList(results.Levels?.Items.ToArray() ?? [], dataContext),
             GameUserResponse.FromOldList(results.Users?.Items.ToArray() ?? [], dataContext),
-            results.TotalItemsMax,
+            results.TotalItemsSum,
             results.NextPageIndexMax
         );
     }
