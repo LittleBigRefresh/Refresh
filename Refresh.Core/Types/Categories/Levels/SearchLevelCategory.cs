@@ -57,6 +57,15 @@ public class SearchLevelCategory : GameCategory
         DatabaseList<GameUser>? users = !levelFilterSettings.DisplayUsers || context.IsApi() // won't be able to return users anyway there
             ? null
             : dataContext.Database.SearchForUsers(userCount, userSkip, query);
+
+        if (users != null && users.NextPageIndex > 0)
+        {
+            // If there is a next page for users, fix its NextPageIndex to use the original count/skip
+            // instead of our fake ones. This way, if NextPageIndex for users is larger than that of levels,
+            // our slots endpoint will know to return this, and the game will correctly request the next page,
+            // of which we will divide count and skip again.
+            users.NextPageIndex = skip + count + 1;
+        }
         
         // TODO also allow searching and returning playlists
         

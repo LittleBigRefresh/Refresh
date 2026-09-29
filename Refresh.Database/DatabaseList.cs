@@ -42,5 +42,5 @@ public class DatabaseList<TObject> where TObject : class
 
     public IEnumerable<TObject> Items { get; private init; }
     public int TotalItems { get; }
-    public int NextPageIndex { get; }
+    public int NextPageIndex { get; set; }
 }
