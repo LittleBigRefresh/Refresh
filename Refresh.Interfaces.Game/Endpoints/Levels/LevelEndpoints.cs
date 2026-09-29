@@ -76,32 +76,15 @@ public class LevelEndpoints : EndpointGroup
         IEnumerable<GameMinimalLevelResponse> slots = results.Levels?.Items.ToArray()
             .Select(l => GameMinimalLevelResponse.FromOld(l, dataContext)!) ?? [];
 
-        int injectedAmount = 0;
-        
-        // TODO remove this mess, return playlists using the related categories
-        // Special case the `by` route for LBP1 requests, to inject the user's playlist info
-        if (route == "by" && dataContext.Game == TokenGame.LittleBigPlanet1)
+        // Insert playlists into slots if there are any. If they're not needed, the category itself will avoid looking them up.
+        if (results.Playlists != null)
         {
-            // Get the requested user's root playlist
-            GameUser? requestedUser = database.GetUserByUsername(context.QueryString.Get("u"));
-            GamePlaylist? rootPlaylist = requestedUser == null ? null : database.GetUserRootPlaylist(requestedUser);
-
-            // If it was found, inject it into the response info
-            if (rootPlaylist != null)
-            {
-                DatabaseList<GamePlaylist> playlists = database.GetPlaylistsInPlaylist(rootPlaylist, skip, count);
-                slots = GameMinimalLevelResponse.FromOldList(playlists.Items.ToArray(), dataContext).Concat(slots);
-
-                // While this does technically return more slot results than the game is expecting,
-                // because we tell the game exactly what the "next page index" is (its not based on count sent),
-                // pagination still seems to work perfectly fine in LBP1!
-                // The injected items are basically just fake slots which "follow" the current page.
-                injectedAmount += playlists.TotalItems;
-            }
-        }   
+            slots = slots.Concat(results.Playlists.Items.ToArray()
+                .Select(p => GameMinimalLevelResponse.FromOld(p, dataContext)!));
+        }
         
         IEnumerable<GameUserResponse> users = GameUserResponse.FromOldList(results.Users?.Items ?? [], dataContext);
-        return new SerializedMinimalLevelList(slots, results.TotalItemsSum + injectedAmount, skip + count, users);
+        return new SerializedMinimalLevelList(slots, results.TotalItemsSum, results.NextPageIndexMax, users);
     }
 
     [GameEndpoint("slots/{route}/{username}", ContentType.Xml)]
