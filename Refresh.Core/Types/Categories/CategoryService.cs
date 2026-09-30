@@ -45,7 +45,8 @@ public class CategoryService : EndpointService
     [
         new HeartedUsersByUserCategory(),
         new MostHeartedUsersCategory(),
-        new NewestUsersCategory()
+        new NewestUsersCategory(),
+        new SearchUserCategory(),
     ];
 
     internal CategoryService(Logger logger) : base(logger)
