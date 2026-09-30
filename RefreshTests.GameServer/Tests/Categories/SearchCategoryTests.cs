@@ -1,5 +1,8 @@
 using Refresh.Database.Models.Authentication;
 using Refresh.Database.Models.Users;
+using Refresh.Interfaces.APIv3.Endpoints.ApiTypes;
+using Refresh.Interfaces.APIv3.Endpoints.DataTypes.Response.Levels;
+using Refresh.Interfaces.APIv3.Endpoints.DataTypes.Response.Users;
 using Refresh.Interfaces.Game.Types.Lists;
 using RefreshTests.GameServer.Extensions;
 
@@ -240,5 +243,31 @@ public class SearchCategoryTests : GameServerTest
         Assert.That(result.Levels, Has.Count.Zero);
         Assert.That(result.Total, Is.EqualTo(42));
         Assert.That(result.NextPageStart, Is.EqualTo(41));
+    }
+    
+    [Test]
+    public void ApiReceivesEntitiesFromVariousSearchCategories()
+    {
+        using TestContext context = this.GetServer();
+        this.SpamCreateEntities(context, 42, 44);
+        
+        // No need to test pagination here since we don't do anything fancy here, such as returning multiple lists at once,
+        // or determining which NextPageIndex to use. We can still test the returned pagination data however.
+        ApiListResponse<ApiGameLevelResponse>? levels = context.Http.GetList<ApiGameLevelResponse>($"/api/v3/levels/search?query=some&count=40&skip=0");
+        Assert.That(levels?.Data, Is.Not.Null);
+        Assert.That(levels!.ListInfo, Is.Not.Null);
+        
+        Assert.That(levels.Data, Has.Count.EqualTo(40));
+        Assert.That(levels.ListInfo.TotalItems, Is.EqualTo(42));
+        Assert.That(levels.ListInfo.NextPageIndex, Is.EqualTo(41));
+        
+        // Ensure we can search for users using a separate category
+        ApiListResponse<ApiGameUserResponse>? users = context.Http.GetList<ApiGameUserResponse>($"/api/v3/users/search?query=some&count=40&skip=0");
+        Assert.That(users?.Data, Is.Not.Null);
+        Assert.That(users!.ListInfo, Is.Not.Null);
+        
+        Assert.That(users.Data, Has.Count.EqualTo(40));
+        Assert.That(users.ListInfo.TotalItems, Is.EqualTo(44));
+        Assert.That(users.ListInfo.NextPageIndex, Is.EqualTo(41));
     }
 }
