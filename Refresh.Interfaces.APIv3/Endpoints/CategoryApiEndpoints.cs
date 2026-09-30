@@ -70,7 +70,7 @@ public class CategoryApiEndpoints : EndpointGroup
         }
         
         (int skip, int count) = context.GetPageData();
-        
+
         DatabaseList<GameLevel>? list = categories.LevelCategories
             .FirstOrDefault(c => c.ApiRoute.StartsWith(route))?
             .Fetch(context, skip, count, dataContext, LevelFilterSettings.FromApiRequest(context), user)?
@@ -131,7 +131,7 @@ public class CategoryApiEndpoints : EndpointGroup
 
         if (!config.PermitShowingOnlineUsers) return ApiNotFoundError.Instance;
         (int skip, int count) = context.GetPageData();
-        
+
         DatabaseList<GameUser>? list = categories.UserCategories
             .FirstOrDefault(c => c.ApiRoute.StartsWith(route))?
             .Fetch(context, skip, count, dataContext, LevelFilterSettings.FromApiRequest(context), user)?

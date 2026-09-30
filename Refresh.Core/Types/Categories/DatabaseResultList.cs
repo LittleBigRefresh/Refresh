@@ -17,7 +17,7 @@ public class DatabaseResultList
     public int TotalItemsSum => (this.Levels?.TotalItems ?? 0) + (this.Users?.TotalItems ?? 0) + (this.Playlists?.TotalItems ?? 0);
     
     /// <summary>
-    /// The NextPageIndex value of the DatabaseList with the highest NextPageValue, so the client could load all pages.
+    /// The NextPageIndex value of the DatabaseList with the highest one, so the client could load all pages.
     /// If a DatabaseList has the last items of its list, its NextPageIndex will be 0, so we can simply take the highest one.
     /// </summary>
     public int NextPageIndexMax => Math.Max(Math.Max(this.Levels?.NextPageIndex ?? 0, this.Users?.NextPageIndex ?? 0), this.Playlists?.NextPageIndex ?? 0);
