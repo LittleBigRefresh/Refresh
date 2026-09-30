@@ -15,7 +15,7 @@ public class SerializedMinimalLevelList : SerializedList<GameMinimalLevelRespons
         this.Total = total;
         this.Items = list.ToList();
         this.Users = users?.ToList();
-        this.NextPageStart = skip + 1;
+        this.NextPageStart = skip;
     }
 
     [XmlElement("slot")]
