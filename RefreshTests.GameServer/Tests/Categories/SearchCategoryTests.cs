@@ -99,8 +99,8 @@ public class SearchCategoryTests : GameServerTest
     public void ReturningLessUsersInLBP1DoesntBreakPagination()
     {
         using TestContext context = this.GetServer();
-        GameUser publisher = context.CreateUser();
-        using HttpClient client = context.GetAuthenticatedClient(TokenType.Game, TokenGame.LittleBigPlanet1, TokenPlatform.PS3, publisher);
+        GameUser player = context.CreateUser();
+        using HttpClient client = context.GetAuthenticatedClient(TokenType.Game, TokenGame.LittleBigPlanet1, TokenPlatform.PS3, player);
         
         // This way we can both test pages only having a third of the requested user count (10 instead of the usual 30),
         // and also ensure we can still go to the third page for the last few users, even though there is no third page for levels.
