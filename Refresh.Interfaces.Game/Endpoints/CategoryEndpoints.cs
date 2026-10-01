@@ -1,6 +1,7 @@
 using Bunkum.Core;
 using Bunkum.Core.Endpoints;
 using Bunkum.Listener.Protocol;
+using Refresh.Common;
 using Refresh.Core.Authentication.Permission;
 using Refresh.Core.Configuration;
 using Refresh.Core.RateLimits.EndpointRateLimiting;
@@ -62,18 +63,18 @@ public class CategoryEndpoints : EndpointGroup
     {
         (int skip, int count) = context.GetPageData();
 
-        DatabaseList<GameLevel>? levels = categories.LevelCategories
+        DatabaseResultList? results = categories.LevelCategories
             .FirstOrDefault(c => c.ApiRoute.StartsWith(apiRoute))?
-            .Fetch(context, skip, count, dataContext, LevelFilterSettings.FromGameRequest(context, dataContext.Game, true), user)?
-            .Levels;
+            .Fetch(context, skip, count, dataContext, LevelFilterSettings.FromGameRequest(context, dataContext.Game, true), user);
         
-        if (levels == null) return null;
+        if (results == null) return null;
         
         return new SerializedCategoryResultsList
         (
-            levels.Items.ToArray().Select(l => GameMinimalLevelResponse.FromOld(l, dataContext))!,
-            levels.TotalItems,
-            levels.NextPageIndex
+            GameMinimalLevelResponse.FromOldList(results.Levels?.Items.ToArray() ?? [], dataContext),
+            GameUserResponse.FromOldList(results.Users?.Items.ToArray() ?? [], dataContext),
+            results.NextPageIndexMax,
+            results.TotalItemsSum
         );
     }
 
@@ -95,6 +96,7 @@ public class CategoryEndpoints : EndpointGroup
         
         if (users == null) return null;
         
+        // No user categories which return levels or playlists yet.
         return new SerializedCategoryResultsList
         (
             users.Items.ToArray().Select(u => GameUserResponse.FromOld(u, dataContext))!,

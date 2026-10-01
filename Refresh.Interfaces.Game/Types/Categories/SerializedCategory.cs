@@ -62,7 +62,7 @@ public class SerializedCategory
             {
                 Levels = GameMinimalLevelResponse.FromOldList(results.Levels?.Items.ToArray() ?? [], dataContext).ToList(),
                 Users = GameUserResponse.FromOldList(results.Users?.Items.ToArray() ?? [], dataContext).ToList(),
-                Total = results.TotalItems,
+                Total = results.TotalItemsSum,
                 NextPageStart = -1
             };
         }
