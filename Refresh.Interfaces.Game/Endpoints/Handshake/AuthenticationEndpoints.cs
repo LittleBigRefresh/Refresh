@@ -212,7 +212,11 @@ public class AuthenticationEndpoints : EndpointGroup
         // !!
 
         Token token = database.GenerateTokenForUser(user, TokenType.Game, game.Value, platform.Value, ipAddress, GameDatabaseContext.GameTokenExpirySeconds); // 4 hours
-
+        
+        // Let the metrics know that this user has started a new session, so the time between login and first room update
+        // should be ignored.
+        database.UpdateLoginDateOnUserMetrics(user, game.Value, platform.Value);
+        
         // Clear the user's force match
         database.ClearForceMatch(user);
         
