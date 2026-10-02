@@ -23,5 +23,4 @@ public class UserGameMetric
     // total time the user has spent on this game, regardless of slot type. Not just a sum of all UserSlotMetrics,
     // since those won't record time spent if it's below a configured threshold.
     public long TotalPlayTimeMinutes { get; set; } 
-    public long TotalLogins { get; set; }
 }
