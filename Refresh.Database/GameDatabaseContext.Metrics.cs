@@ -1,5 +1,5 @@
+using Refresh.Common;
 using Refresh.Database.Models.Authentication;
-using Refresh.Database.Models.Levels;
 using Refresh.Database.Models.Metrics;
 using Refresh.Database.Models.Users;
 
@@ -24,29 +24,15 @@ public partial class GameDatabaseContext // Metrics
                 User = user,
                 Game = game,
                 Platform = platform,
-                LastSlotChangeAt = DateTimeOffset.MinValue,
-                LastSlotType = GameSlotType.Pod,
-                LastSlotId = 0,
+                LastLoginAt = DateTimeOffset.MinValue,
+                LastRoomUpdateAt = DateTimeOffset.MinValue,
                 TotalPlayTimeMinutes = 0,
-                TotalLogins = 0,
             };
             this.UserGameMetrics.Add(metric);
             this.Entry(user).State = EntityState.Unchanged; // avoid inserting user
             this.SaveChanges();
         }
 
-        return metric;
-    }
-    
-    public UserGameMetric UpdateLoginDateOnUserMetrics(GameUser user, TokenGame game, TokenPlatform platform)
-    {
-        UserGameMetric metric = this.GetGameMetric(user, game, platform);
-        
-        metric.LastLoginAt = this._time.Now;
-        metric.TotalLogins++;
-        this.Entry(user).State = EntityState.Unchanged; // avoid inserting user
-        
-        this.SaveChanges();
         return metric;
     }
 
@@ -57,58 +43,43 @@ public partial class GameDatabaseContext // Metrics
             .Sum(m => m.TotalPlayTimeMinutes);
     }
     
+    public UserGameMetric UpdateLoginDateOnUserMetrics(GameUser user, TokenGame game, TokenPlatform platform)
+    {
+        UserGameMetric metric = this.GetGameMetric(user, game, platform);
+        DateTimeOffset now = this._time.Now;
+        
+        this._logger.LogDebug(RefreshContext.UserMetrics, $"Updating {user}'s last login date for game {game}/platform {platform}: from {metric.LastLoginAt} to {now}.");
+        metric.LastLoginAt = now;
+        this.Entry(user).State = EntityState.Unchanged; // avoid inserting user
+        
+        this.SaveChanges();
+        return metric;
+    }
+    
     // TODO should we also consider slot ID, or should we stick to just type for now?
     public UserGameMetric UpdatePlayTimeOnUserMetrics(GameUser user, TokenGame game, TokenPlatform platform)
     {
-        UserGameMetric gameMetric = this.GetGameMetric(user, game, platform);
+        UserGameMetric metric = this.GetGameMetric(user, game, platform);
         DateTimeOffset now = this._time.Now;
+        this._logger.LogDebug(RefreshContext.UserMetrics, $"Checking whether to update {user}'s playtime for game {game}/platform {platform}: last login at {metric.LastLoginAt}, last room update at {metric.LastRoomUpdateAt}.");
 
-        // Only actually increment if this is at least the second update request for this session.
-        // We only want to track from the first /match onward, excluding time between login and first /match.
-        // Technically we don't have to compare against MinValue since LastUpdateAt would also be MinValue in that case,
-        // but probably doesn't hurt doing this explicitly as well.
-        if (gameMetric.LastUpdateAt > gameMetric.LastLoginAt && gameMetric.LastUpdateAt > DateTimeOffset.MinValue)
+        // Don't count the time between login and first /match, only count the time between /match requests,
+        // which we would consider to be actual playtime. Also, explicitly don't increment time if this metric
+        // hasn't been initialized yet. In that case LastLoginAt is also at MinValue, but it might be better to just
+        // check for it explicitly anyway.
+        if (metric.LastRoomUpdateAt > metric.LastLoginAt && metric.LastRoomUpdateAt > DateTimeOffset.MinValue)
         {
-            long additionalMinutes = (now.ToUnixTimeSeconds() - gameMetric.LastUpdateAt.ToUnixTimeSeconds()) / 60;
-            long minutesSinceSlotChange = (now.ToUnixTimeSeconds() - gameMetric.LastSlotChangeAt.ToUnixTimeSeconds()) / 60;
-            
-            // Always update play time for game, and only update play time for slot if above threshold.
-            // If type has changed, update LastSlotChangeAt, idk whether we should change it if only ID changes though.
-            if (minutesSinceSlotChange >= minThreshold)
-            {
-        
-                // If we've also changed type, update the last metric's time instead of the current one
-                if (currentSlotType != gameMetric.LastSlotType)
-                {
-                    UserSlotMetric lastSlotMetric = this.GetSlotMetric(user, gameMetric.LastSlotType, game, platform);
-                    lastSlotMetric.TotalPlayTimeMinutes += additionalMinutes;
-                    lastSlotMetric.LastUpdateAt = now;
-                    this.UserSlotMetrics.Update(lastSlotMetric);
-
-                    currentSlotMetric.LastEnteredAt = now;
-                }
-                else
-                {
-                    currentSlotMetric.TotalPlayTimeMinutes += additionalMinutes;
-                }
-                
-                currentSlotMetric.LastUpdateAt = now;
-                this.UserSlotMetrics.Update(currentSlotMetric);
-            }
-        }
-
-        if (gameMetric.LastSlotType != currentSlotType)
-        {
-            gameMetric.LastSlotChangeAt = now;
-            gameMetric.LastSlotType = currentSlotType;
+            long additionalMinutes = (now.ToUnixTimeSeconds() - metric.LastRoomUpdateAt.ToUnixTimeSeconds()) / 60;
+            this._logger.LogDebug(RefreshContext.UserMetrics, $"Updating {user}'s playtime for game {game}/platform {platform}: {metric.TotalPlayTimeMinutes} min + {additionalMinutes} min");
+            metric.TotalPlayTimeMinutes += additionalMinutes;
         }
         
         // Always update this, since we will use it to determine whether we should update other metrics the next time (see above).
-        gameMetric.LastUpdateAt = now;
+        metric.LastRoomUpdateAt = now;
         
-        this.UserGameMetrics.Update(gameMetric);
+        this.UserGameMetrics.Update(metric);
         this.Entry(user).State = EntityState.Unchanged; // avoid inserting user
         this.SaveChanges();
-        return gameMetric;
+        return metric;
     }
 }
