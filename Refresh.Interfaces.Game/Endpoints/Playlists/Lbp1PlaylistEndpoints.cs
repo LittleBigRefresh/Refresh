@@ -1,14 +1,12 @@
 using Bunkum.Core;
 using Bunkum.Core.Endpoints;
-using Bunkum.Core.RateLimit;
 using Bunkum.Core.Responses;
 using Bunkum.Listener.Protocol;
 using Bunkum.Protocols.Http;
 using Refresh.Common.Constants;
 using Refresh.Core.Authentication.Permission;
 using Refresh.Core.Configuration;
-using Refresh.Core.RateLimits.Levels;
-using Refresh.Core.RateLimits.Playlists;
+using Refresh.Core.RateLimits.EndpointRateLimiting;
 using Refresh.Core.Types.Data;
 using Refresh.Database;
 using Refresh.Database.Models;
@@ -54,8 +52,7 @@ public class Lbp1PlaylistEndpoints : EndpointGroup
     // Creates a playlist, with an optional parent ID
     [GameEndpoint("createPlaylist", HttpMethods.Post, ContentType.Xml)]
     [RequireEmailVerified]
-    [RateLimitSettings(PlaylistCreationEndpointLimits.UploadTimeoutDuration, PlaylistCreationEndpointLimits.MaxCreateAmount, 
-                                PlaylistCreationEndpointLimits.UploadBlockDuration, PlaylistCreationEndpointLimits.CreateBucket)]
+    [EndpointRateLimit(EndpointBucketId.CreatePlaylist)]
     public Response CreatePlaylist(RequestContext context, DataContext dataContext, GameServerConfig config, SerializedLbp1Playlist body)
     {
         GameUser user = dataContext.User!;
@@ -128,8 +125,7 @@ public class Lbp1PlaylistEndpoints : EndpointGroup
     [GameEndpoint("playlist/{id}", HttpMethods.Get, ContentType.Xml)]
     [NullStatusCode(NotFound)]
     [MinimumRole(GameUserRole.Restricted)]
-    [RateLimitSettings(LevelListEndpointLimits.TimeoutDuration, LevelListEndpointLimits.RequestAmount, 
-                                LevelListEndpointLimits.BlockDuration, LevelListEndpointLimits.RequestBucket)]
+    [EndpointRateLimit(EndpointBucketId.Lbp1GetPlaylistContents)]
     public SerializedMinimalLevelList? GetPlaylistSlots(RequestContext context, DataContext dataContext, int id)
     {
         GamePlaylist? playlist = dataContext.Database.GetPlaylistById(id);
@@ -158,8 +154,7 @@ public class Lbp1PlaylistEndpoints : EndpointGroup
     [GameEndpoint("playlistsContainingSlot/{slotType}/{slotId}", ContentType.Xml)]
     [MinimumRole(GameUserRole.Restricted)]
     [NullStatusCode(NotFound)]
-    [RateLimitSettings(PlaylistListEndpointLimits.TimeoutDuration, PlaylistListEndpointLimits.RequestAmount, 
-                                PlaylistListEndpointLimits.BlockDuration, PlaylistListEndpointLimits.RequestBucket)]
+    [EndpointRateLimit(EndpointBucketId.Lbp1GetListOfPlaylists)]
     public SerializedMinimalLevelList? PlaylistsContainingSlot(RequestContext context, DataContext dataContext,
         string slotType, int slotId)
     {
@@ -210,8 +205,7 @@ public class Lbp1PlaylistEndpoints : EndpointGroup
 
     [GameEndpoint("setPlaylistMetaData/{id}", HttpMethods.Post, ContentType.Xml)]
     [RequireEmailVerified]
-    [RateLimitSettings(PlaylistCreationEndpointLimits.UploadTimeoutDuration, PlaylistCreationEndpointLimits.MaxCreateAmount, 
-                                PlaylistCreationEndpointLimits.UploadBlockDuration, PlaylistCreationEndpointLimits.CreateBucket)]
+    [EndpointRateLimit(EndpointBucketId.UpdatePlaylistMetadata)]
     public Response UpdatePlaylistMetadata(RequestContext context, GameServerConfig config, DataContext dataContext, GameUser user, int id, SerializedLbp1Playlist body)
     {
         if (user.IsWriteBlocked(config))
@@ -241,6 +235,7 @@ public class Lbp1PlaylistEndpoints : EndpointGroup
 
     [GameEndpoint("deletePlaylist/{id}", HttpMethods.Post)]
     [RequireEmailVerified]
+    [EndpointRateLimit(EndpointBucketId.DeletePlaylist)]
     public Response DeletePlaylist(RequestContext context, GameDatabaseContext database, GameUser user, int id)
     {
         GamePlaylist? playlist = database.GetPlaylistById(id);
@@ -257,8 +252,7 @@ public class Lbp1PlaylistEndpoints : EndpointGroup
 
     [GameEndpoint("addToPlaylist/{playlistId}", HttpMethods.Post)]
     [RequireEmailVerified]
-    [RateLimitSettings(PlaylistModificationEndpointLimits.TimeoutDuration, PlaylistModificationEndpointLimits.RequestAmount, 
-                            PlaylistModificationEndpointLimits.BlockDuration, PlaylistModificationEndpointLimits.RequestBucket)]
+    [EndpointRateLimit(EndpointBucketId.UpdatePlaylistContents)]
     public Response AddSlotToPlaylist(RequestContext context, GameServerConfig config, GameDatabaseContext database, GameUser user, int playlistId)
     {
         if (user.IsWriteBlocked(config))
@@ -339,8 +333,7 @@ public class Lbp1PlaylistEndpoints : EndpointGroup
 
     [GameEndpoint("removeFromPlaylist/{playlistId}", HttpMethods.Post)]
     [RequireEmailVerified]
-    [RateLimitSettings(PlaylistModificationEndpointLimits.TimeoutDuration, PlaylistModificationEndpointLimits.RequestAmount, 
-                            PlaylistModificationEndpointLimits.BlockDuration, PlaylistModificationEndpointLimits.RequestBucket)]
+    [EndpointRateLimit(EndpointBucketId.UpdatePlaylistContents)]
     public Response RemoveSlotFromPlaylist(RequestContext context, GameServerConfig config, GameDatabaseContext database, GameUser user,
         int playlistId)
     {
@@ -392,8 +385,7 @@ public class Lbp1PlaylistEndpoints : EndpointGroup
 
     [GameEndpoint("moveFromPlaylist/{from}", HttpMethods.Post, ContentType.Xml)]
     [RequireEmailVerified]
-    [RateLimitSettings(PlaylistModificationEndpointLimits.TimeoutDuration, PlaylistModificationEndpointLimits.RequestAmount, 
-                            PlaylistModificationEndpointLimits.BlockDuration, PlaylistModificationEndpointLimits.RequestBucket)]
+    [EndpointRateLimit(EndpointBucketId.UpdatePlaylistContents)]
     public Response MoveSlotFromPlaylist(RequestContext context, GameServerConfig config, GameDatabaseContext database, GameUser user, int from)     
     {
         if (user.IsWriteBlocked(config))

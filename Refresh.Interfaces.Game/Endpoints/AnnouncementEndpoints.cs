@@ -3,13 +3,12 @@ using System.Text;
 using System.Xml.Serialization;
 using Bunkum.Core;
 using Bunkum.Core.Endpoints;
-using Bunkum.Core.RateLimit;
 using Bunkum.Core.Responses.Serialization;
 using Bunkum.Listener.Protocol;
 using Refresh.Common.Time;
 using Refresh.Core.Authentication.Permission;
 using Refresh.Core.Configuration;
-using Refresh.Core.RateLimits.Users;
+using Refresh.Core.RateLimits.EndpointRateLimiting;
 using Refresh.Core.Services;
 using Refresh.Core.Types.Matching;
 using Refresh.Database;
@@ -79,7 +78,7 @@ public class AnnouncementEndpoints : EndpointGroup
     [GameEndpoint("announce")]
     [MinimumRole(GameUserRole.Restricted)]
     [SuppressMessage("ReSharper", "RedundantAssignment")]
-    [RateLimitSettings(420, 12, 380, "announcements-game")]
+    [EndpointRateLimit(EndpointBucketId.GameGetListOfAnnouncements)]
     public string Announce(RequestContext context, GameServerConfig config, GameUser user, GameDatabaseContext database, Token token, IDateTimeProvider timeProvider)
     {
         if (user.Role == GameUserRole.Restricted)
@@ -129,8 +128,7 @@ public class AnnouncementEndpoints : EndpointGroup
 
     [GameEndpoint("notification", ContentType.Xml)]
     [MinimumRole(GameUserRole.Restricted)]
-    [RateLimitSettings(NotificationsEndpointLimits.TimeoutDuration, NotificationsEndpointLimits.GameRequestAmount, 
-                            NotificationsEndpointLimits.BlockDuration, NotificationsEndpointLimits.GameRequestBucket)]
+    [EndpointRateLimit(EndpointBucketId.GameGetListOfNotifications)]
     public string Notification(RequestContext context, GameServerConfig config, Token token, GameDatabaseContext database, MatchService matchService)
     {
         // On LBP1 the only regular ticking request is /notification,

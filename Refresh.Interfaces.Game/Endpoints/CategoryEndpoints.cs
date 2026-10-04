@@ -1,12 +1,10 @@
 using Bunkum.Core;
 using Bunkum.Core.Endpoints;
-using Bunkum.Core.RateLimit;
 using Bunkum.Listener.Protocol;
 using Refresh.Common;
 using Refresh.Core.Authentication.Permission;
 using Refresh.Core.Configuration;
-using Refresh.Core.RateLimits.Levels;
-using Refresh.Core.RateLimits.Users;
+using Refresh.Core.RateLimits.EndpointRateLimiting;
 using Refresh.Core.Types.Categories;
 using Refresh.Core.Types.Categories.Levels;
 using Refresh.Core.Types.Data;
@@ -27,7 +25,7 @@ public class CategoryEndpoints : EndpointGroup
     [GameEndpoint("searches", ContentType.Xml)]
     [GameEndpoint("genres", ContentType.Xml)]
     [MinimumRole(GameUserRole.Restricted)]
-    [RateLimitSettings(420, 20, 300, "categories-game")]
+    [EndpointRateLimit(EndpointBucketId.GameGetListOfCategories)]
     public SerializedCategoryList GetModernCategories(RequestContext context, CategoryService categoryService, DataContext dataContext, GameServerConfig config)
     {
         (int skip, int count) = context.GetPageData();
@@ -59,8 +57,7 @@ public class CategoryEndpoints : EndpointGroup
     [GameEndpoint("searches/levels/{apiRoute}", ContentType.Xml)]
     [NullStatusCode(NotFound)]
     [MinimumRole(GameUserRole.Restricted)]
-    [RateLimitSettings(LevelListEndpointLimits.TimeoutDuration, LevelListEndpointLimits.RequestAmount, 
-                            LevelListEndpointLimits.BlockDuration, LevelListEndpointLimits.RequestBucket)]
+    [EndpointRateLimit(EndpointBucketId.GameGetListOfLevels)]
     public SerializedCategoryResultsList? GetLevelsFromCategory(RequestContext context, CategoryService categories, GameUser user, 
         string apiRoute, DataContext dataContext)
     {
@@ -84,8 +81,7 @@ public class CategoryEndpoints : EndpointGroup
     [GameEndpoint("searches/users/{apiRoute}", ContentType.Xml)]
     [NullStatusCode(NotFound)]
     [MinimumRole(GameUserRole.Restricted)]
-    [RateLimitSettings(UserListEndpointLimits.TimeoutDuration, UserListEndpointLimits.RequestAmount, 
-                            UserListEndpointLimits.BlockDuration, UserListEndpointLimits.RequestBucket)]
+    [EndpointRateLimit(EndpointBucketId.GameGetListOfUsers)]
     public SerializedCategoryResultsList? GetUsersFromCategory(RequestContext context, CategoryService categories, GameUser user, 
         string apiRoute, DataContext dataContext, GameServerConfig config)
     {
