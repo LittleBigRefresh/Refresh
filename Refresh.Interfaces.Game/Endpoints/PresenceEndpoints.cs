@@ -1,10 +1,10 @@
 using System.Xml.Serialization;
 using Bunkum.Core;
 using Bunkum.Core.Endpoints;
-using Bunkum.Core.RateLimit;
 using Bunkum.Listener.Protocol;
 using Bunkum.Protocols.Http;
 using Refresh.Core.Authentication.Permission;
+using Refresh.Core.RateLimits.EndpointRateLimiting;
 using Refresh.Core.Services;
 using Refresh.Database;
 using Refresh.Database.Models.Authentication;
@@ -14,30 +14,25 @@ namespace Refresh.Interfaces.Game.Endpoints;
 
 public class PresenceEndpoints : EndpointGroup
 {
-    private const int TimeoutDuration = 420;
-    private const int RequestAmount = 12;
-    private const int BlockDuration = 300;
-    private const string RequestBucket = "game-stats";
-
     [GameEndpoint("playersInPodCount")]
     [MinimumRole(GameUserRole.Restricted)]
-    [RateLimitSettings(TimeoutDuration, RequestAmount, BlockDuration, RequestBucket)]
+    [EndpointRateLimit(EndpointBucketId.GameGetInstanceStats)]
     public int TotalPlayersInPod(RequestContext context, MatchService match) => match.RoomAccessor.GetStatistics().PlayersInPodCount;
 
     [GameEndpoint("totalPlayerCount")]
     [MinimumRole(GameUserRole.Restricted)]
-    [RateLimitSettings(TimeoutDuration, RequestAmount, BlockDuration, RequestBucket)]
+    [EndpointRateLimit(EndpointBucketId.GameGetInstanceStats)]
     public int TotalPlayers(RequestContext context, MatchService match) => match.RoomAccessor.GetStatistics().PlayerCount;
 
     [GameEndpoint("planetStats/highestSlotId")]
     [GameEndpoint("planetStats/totalLevelCount")]
     [MinimumRole(GameUserRole.Restricted)]
-    [RateLimitSettings(TimeoutDuration, RequestAmount, BlockDuration, RequestBucket)]
+    [EndpointRateLimit(EndpointBucketId.GameGetInstanceStats)]
     public int GetTotalLevelCount(RequestContext context, GameDatabaseContext database, Token token) => database.GetTotalLevelCount(token.TokenGame);
     
     [GameEndpoint("planetStats", HttpMethods.Get, ContentType.Xml)]
     [MinimumRole(GameUserRole.Restricted)]
-    [RateLimitSettings(TimeoutDuration, RequestAmount, BlockDuration, RequestBucket)]
+    [EndpointRateLimit(EndpointBucketId.GameGetInstanceStats)]
     public SerializedLevelStatisticsResponse GetLevelStatistics(RequestContext context, GameDatabaseContext database, Token token) => new()
     {
         TotalLevels = database.GetTotalLevelCount(token.TokenGame),

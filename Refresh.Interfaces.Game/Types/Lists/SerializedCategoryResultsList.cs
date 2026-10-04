@@ -24,6 +24,14 @@ public class SerializedCategoryResultsList : SerializedPaginationData
         this.Total = totalItems;
     }
 
+    public SerializedCategoryResultsList(IEnumerable<GameMinimalLevelResponse> levels, IEnumerable<GameUserResponse> users, int nextPageIndex, int totalItems)
+    {
+        this.Levels = levels.ToList();
+        this.Users = users.ToList();
+        this.NextPageStart = nextPageIndex!;
+        this.Total = totalItems;
+    }
+
     [XmlElement("slot")] public List<GameMinimalLevelResponse> Levels { get; set; } = [];
     [XmlElement("user")] public List<GameUserResponse> Users { get; set; } = [];
 }

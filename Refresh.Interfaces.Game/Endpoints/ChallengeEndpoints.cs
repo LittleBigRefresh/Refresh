@@ -1,13 +1,12 @@
 using Bunkum.Core;
 using Bunkum.Core.Endpoints;
-using Bunkum.Core.RateLimit;
 using Bunkum.Core.Responses;
 using Bunkum.Listener.Protocol;
 using Bunkum.Protocols.Http;
 using Refresh.Common.Constants;
 using Refresh.Core.Authentication.Permission;
 using Refresh.Core.Configuration;
-using Refresh.Core.RateLimits.Challenges;
+using Refresh.Core.RateLimits.EndpointRateLimiting;
 using Refresh.Core.Services;
 using Refresh.Core.Types.Data;
 using Refresh.Core.Types.Matching;
@@ -30,8 +29,7 @@ public class ChallengeEndpoints : EndpointGroup
 
     [GameEndpoint("challenge", HttpMethods.Post, ContentType.Xml)]
     [RequireEmailVerified]
-    [RateLimitSettings(ChallengeUploadEndpointLimits.TimeoutDuration, ChallengeUploadEndpointLimits.RequestAmount, 
-                                ChallengeUploadEndpointLimits.BlockDuration, ChallengeUploadEndpointLimits.RequestBucket)]
+    [EndpointRateLimit(EndpointBucketId.GameUploadPlayerChallenge)]
     public Response UploadChallenge(RequestContext context, DataContext dataContext, GameUser user, SerializedChallenge body, GameServerConfig config)
     {
         if (user.IsWriteBlocked(config))
@@ -111,8 +109,7 @@ public class ChallengeEndpoints : EndpointGroup
 
     [GameEndpoint("user/{username}/challenges", HttpMethods.Get, ContentType.Xml)]
     [MinimumRole(GameUserRole.Restricted)]
-    [RateLimitSettings(ChallengeListEndpointLimits.TimeoutDuration, ChallengeListEndpointLimits.RequestAmount, 
-                                ChallengeListEndpointLimits.BlockDuration, ChallengeListEndpointLimits.RequestBucket)]
+    [EndpointRateLimit(EndpointBucketId.GameGetListOfPlayerChallenges)]
     public Response GetChallengesByUser(RequestContext context, GameUser user, DataContext dataContext)
     {
         GameRoom? room = dataContext.Match.RoomAccessor.GetRoomByUser(user, dataContext.Platform, dataContext.Game);
@@ -165,8 +162,7 @@ public class ChallengeEndpoints : EndpointGroup
     [GameEndpoint("user/{username}/challenges/joined", HttpMethods.Get, ContentType.Xml)]
     [MinimumRole(GameUserRole.Restricted)]
     [NullStatusCode(NotFound)]
-    [RateLimitSettings(ChallengeListEndpointLimits.TimeoutDuration, ChallengeListEndpointLimits.RequestAmount, 
-                                ChallengeListEndpointLimits.BlockDuration, ChallengeListEndpointLimits.RequestBucket)]
+    [EndpointRateLimit(EndpointBucketId.GameGetListOfPlayerChallenges)]
     public Response GetJoinedChallenges(RequestContext context, GameUser user, DataContext dataContext)
     {
         // Ignore username since this is only ever called for the calling user. 
@@ -187,8 +183,7 @@ public class ChallengeEndpoints : EndpointGroup
     /// </summary>
     [GameEndpoint("challenge/{challengeId}/scoreboard", HttpMethods.Post, ContentType.Xml)]
     [RequireEmailVerified]
-    [RateLimitSettings(ChallengeScoreUploadEndpointLimits.TimeoutDuration, ChallengeScoreUploadEndpointLimits.RequestAmount, 
-                                ChallengeScoreUploadEndpointLimits.BlockDuration, ChallengeScoreUploadEndpointLimits.RequestBucket)]
+    [EndpointRateLimit(EndpointBucketId.GameUploadPlayerChallengeScore)]
     public Response SubmitChallengeScore(RequestContext context, DataContext dataContext, GameUser user,
         SerializedChallengeAttempt body, int challengeId, ChallengeGhostRateLimitService ghostService,
         GameServerConfig config)
@@ -242,8 +237,7 @@ public class ChallengeEndpoints : EndpointGroup
     [GameEndpoint("challenge/{challengeId}/scoreboard/{username}", HttpMethods.Get, ContentType.Xml)]
     [MinimumRole(GameUserRole.Restricted)]
     [NullStatusCode(NotFound)]
-    [RateLimitSettings(ChallengeSingleScoreEndpointLimits.TimeoutDuration, ChallengeSingleScoreEndpointLimits.RequestAmount, 
-                                ChallengeSingleScoreEndpointLimits.BlockDuration, ChallengeSingleScoreEndpointLimits.RequestBucket)]
+    [EndpointRateLimit(EndpointBucketId.GameGetSinglePlayerChallengeScore)]
     public SerializedChallengeScore? GetUsersHighScoreForChallenge(RequestContext context, DataContext dataContext, GameUser user, int challengeId, string username, ChallengeGhostRateLimitService ghostService) 
     {
         ghostService.RemoveUserFromRateLimit(user.UserId);
@@ -263,8 +257,7 @@ public class ChallengeEndpoints : EndpointGroup
     [GameEndpoint("challenge/{challengeId}/scoreboard", HttpMethods.Get, ContentType.Xml)]
     [MinimumRole(GameUserRole.Restricted)]
     [NullStatusCode(NotFound)]
-    [RateLimitSettings(ChallengeScoreListEndpointLimits.TimeoutDuration, ChallengeScoreListEndpointLimits.RequestAmount, 
-                                ChallengeScoreListEndpointLimits.BlockDuration, ChallengeScoreListEndpointLimits.RequestBucket)]
+    [EndpointRateLimit(EndpointBucketId.GameGetListOfPlayerChallengeScores)]
     public SerializedChallengeScoreList? GetScoresForChallenge(RequestContext context, DataContext dataContext, GameUser user, int challengeId, ChallengeGhostRateLimitService ghostService)
     {
         ghostService.RemoveUserFromRateLimit(user.UserId);
@@ -298,8 +291,7 @@ public class ChallengeEndpoints : EndpointGroup
     [GameEndpoint("challenge/{challengeId}/scoreboard/{username}/contextual", HttpMethods.Get, ContentType.Xml)]
     [MinimumRole(GameUserRole.Restricted)]
     [NullStatusCode(NotFound)]
-    [RateLimitSettings(ChallengeScoreListEndpointLimits.TimeoutDuration, ChallengeScoreListEndpointLimits.RequestAmount, 
-                                ChallengeScoreListEndpointLimits.BlockDuration, ChallengeScoreListEndpointLimits.RequestBucket)]
+    [EndpointRateLimit(EndpointBucketId.GameGetListOfPlayerChallengeScores)]
     public SerializedChallengeScoreList? GetContextualScoresForChallenge(RequestContext context, DataContext dataContext, GameUser user, int challengeId, ChallengeGhostRateLimitService ghostService) 
     {
         ghostService.RemoveUserFromRateLimit(user.UserId);
