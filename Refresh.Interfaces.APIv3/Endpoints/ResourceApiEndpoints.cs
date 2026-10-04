@@ -1,7 +1,6 @@
 using AttribDoc.Attributes;
 using Bunkum.Core;
 using Bunkum.Core.Endpoints;
-using Bunkum.Core.RateLimit;
 using Bunkum.Core.Responses;
 using Bunkum.Core.Storage;
 using Bunkum.Listener.Protocol;
@@ -10,6 +9,7 @@ using Refresh.Common.Verification;
 using Refresh.Core.Authentication.Permission;
 using Refresh.Core.Configuration;
 using Refresh.Core.Importing;
+using Refresh.Core.RateLimits.EndpointRateLimiting;
 using Refresh.Core.Services;
 using Refresh.Core.Types.Data;
 using Refresh.Database;
@@ -24,22 +24,13 @@ namespace Refresh.Interfaces.APIv3.Endpoints;
 
 public class ResourceApiEndpoints : EndpointGroup
 {
-    private const int RequestTimeoutDuration = 60;
-    private const int RawAssetRequestAmount = 70;
-    private const int ImageAssetRequestAmount = 100;
-    private const int AssetInfoRequestAmount = 40;
-    private const int RequestBlockDuration = 30;
-    private const string RawAssetBucket = "raw-asset-api";
-    private const string ImageAssetBucket = "image-asset-api";
-    private const string AssetInfoBucket = "asset-info-api";
-    
     [ApiV3Endpoint("assets/{hash}/download"), Authentication(false)]
     [ClientCacheResponse(31556952)] // 1 year, we don't expect the data to change
     [DocSummary("Downloads the raw data for an asset hash. Sent as application/octet-stream")]
     [DocError(typeof(ApiNotFoundError), "The asset could not be found")]
     [DocError(typeof(ApiInternalError), ApiInternalError.CouldNotGetAssetErrorWhen)]
     [DocError(typeof(ApiValidationError), ApiValidationError.HashMissingErrorWhen)]
-    [RateLimitSettings(RequestTimeoutDuration, RawAssetRequestAmount, RequestBlockDuration, RawAssetBucket)]
+    [EndpointRateLimit(EndpointBucketId.ApiDownloadAsset)]
     public Response DownloadGameAsset(RequestContext context, IDataStore dataStore,
         [DocSummary("The SHA1 hash of the asset")] string hash)
     {
@@ -63,7 +54,7 @@ public class ResourceApiEndpoints : EndpointGroup
     [DocError(typeof(ApiNotFoundError), "The asset could not be found")]
     [DocError(typeof(ApiInternalError), ApiInternalError.CouldNotGetAssetErrorWhen)]
     [DocError(typeof(ApiValidationError), ApiValidationError.HashMissingErrorWhen)]
-    [RateLimitSettings(RequestTimeoutDuration, RawAssetRequestAmount, RequestBlockDuration, RawAssetBucket)]
+    [EndpointRateLimit(EndpointBucketId.ApiDownloadAsset)]
     public Response DownloadPspGameAsset(RequestContext context, IDataStore dataStore,
         [DocSummary("The SHA1 hash of the asset")] string hash)
         => this.DownloadGameAsset(context, dataStore, $"psp/{hash}");
@@ -74,7 +65,7 @@ public class ResourceApiEndpoints : EndpointGroup
     [DocError(typeof(ApiNotFoundError), "The asset could not be found")]
     [DocError(typeof(ApiInternalError), ApiInternalError.CouldNotGetAssetErrorWhen)]
     [DocError(typeof(ApiValidationError), ApiValidationError.HashMissingErrorWhen)]
-    [RateLimitSettings(RequestTimeoutDuration, ImageAssetRequestAmount, RequestBlockDuration, ImageAssetBucket)]
+    [EndpointRateLimit(EndpointBucketId.ApiDownloadImage)]
     public Response DownloadGameAssetAsImage(RequestContext context, IDataStore dataStore, GameDatabaseContext database,
         [DocSummary("The SHA1 hash of the asset")] string hash, ImageImporter imageImport, AssetImporter assetImport, DataContext dataContext)
     {
@@ -116,7 +107,7 @@ public class ResourceApiEndpoints : EndpointGroup
     [DocError(typeof(ApiNotFoundError), "The asset could not be found")]
     [DocError(typeof(ApiInternalError), ApiInternalError.CouldNotGetAssetErrorWhen)]
     [DocError(typeof(ApiValidationError), ApiValidationError.HashMissingErrorWhen)]
-    [RateLimitSettings(RequestTimeoutDuration, ImageAssetRequestAmount, RequestBlockDuration, ImageAssetBucket)]
+    [EndpointRateLimit(EndpointBucketId.ApiDownloadImage)]
     public Response DownloadPspGameAssetAsImage(RequestContext context, IDataStore dataStore, GameDatabaseContext database,
         [DocSummary("The SHA1 hash of the asset")] string hash, ImageImporter imageImport, AssetImporter assetImport, DataContext dataContext) 
         => this.DownloadGameAssetAsImage(context, dataStore, database, $"psp/{hash}", imageImport, assetImport, dataContext);
@@ -125,7 +116,7 @@ public class ResourceApiEndpoints : EndpointGroup
     [DocSummary("Gets information from the database about a particular hash. Includes user who uploaded, dependencies, timestamps, etc.")]
     [DocError(typeof(ApiNotFoundError), "The asset could not be found")]
     [DocError(typeof(ApiValidationError), ApiValidationError.HashMissingErrorWhen)]
-    [RateLimitSettings(RequestTimeoutDuration, AssetInfoRequestAmount, RequestBlockDuration, AssetInfoBucket)]
+    [EndpointRateLimit(EndpointBucketId.ApiGetAssetMetadata)]
     public ApiResponse<ApiGameAssetResponse> GetAssetInfo(RequestContext context, GameDatabaseContext database,
         IDataStore dataStore,
         [DocSummary("The SHA1 hash of the asset")]
@@ -148,7 +139,7 @@ public class ResourceApiEndpoints : EndpointGroup
     [DocSummary("Gets information from the database about a particular PSP hash. Includes user who uploaded, dependencies, timestamps, etc.")]
     [DocError(typeof(ApiValidationError), ApiValidationError.HashMissingErrorWhen)]
     [DocError(typeof(ApiNotFoundError), "The asset could not be found")]
-    [RateLimitSettings(RequestTimeoutDuration, AssetInfoRequestAmount, RequestBlockDuration, AssetInfoBucket)]
+    [EndpointRateLimit(EndpointBucketId.ApiGetAssetMetadata)]
     public ApiResponse<ApiGameAssetResponse> GetPspAssetInfo(RequestContext context, GameDatabaseContext database,
         IDataStore dataStore,
         [DocSummary("The SHA1 hash of the asset")]
@@ -161,7 +152,7 @@ public class ResourceApiEndpoints : EndpointGroup
     [DocError(typeof(ApiValidationError), ApiValidationError.BodyTooLongErrorWhen)]
     [DocError(typeof(ApiValidationError), ApiValidationError.CannotReadAssetErrorWhen)]
     [DocError(typeof(ApiValidationError), ApiValidationError.BodyMustBeImageErrorWhen)]
-    [RateLimitSettings(420, 10, 300, "image-upload-api")]
+    [EndpointRateLimit(EndpointBucketId.ApiUploadImage)]
     public ApiResponse<ApiGameAssetResponse> UploadImageAsset(RequestContext context, GameDatabaseContext database,
         IDataStore dataStore, AssetImporter importer, GameServerConfig config,
         [DocSummary("The SHA1 hash of the asset")]

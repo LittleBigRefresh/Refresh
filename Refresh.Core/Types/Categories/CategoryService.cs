@@ -45,7 +45,8 @@ public class CategoryService : EndpointService
     [
         new HeartedUsersByUserCategory(),
         new MostHeartedUsersCategory(),
-        new NewestUsersCategory()
+        new NewestUsersCategory(),
+        new SearchUserCategory(),
     ];
 
     // User Categories which may only be accessed by mods/admins and only via API.

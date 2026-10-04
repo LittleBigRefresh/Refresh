@@ -1,7 +1,6 @@
 using AttribDoc.Attributes;
 using Bunkum.Core;
 using Bunkum.Core.Endpoints;
-using Bunkum.Core.RateLimit;
 using Bunkum.Core.Storage;
 using Bunkum.Protocols.Http;
 using Refresh.Common.Constants;
@@ -9,8 +8,6 @@ using Refresh.Common.Verification;
 using Refresh.Core.Authentication.Permission;
 using Refresh.Core.Configuration;
 using Refresh.Core.RateLimits.EndpointRateLimiting;
-using Refresh.Core.RateLimits.Presence;
-using Refresh.Core.RateLimits.Relations;
 using Refresh.Core.Services;
 using Refresh.Core.Types.Data;
 using Refresh.Database;
@@ -60,7 +57,7 @@ public class LevelApiEndpoints : EndpointGroup
     [DocSummary("Edits a level by the level's numerical ID")]
     [DocError(typeof(ApiNotFoundError), ApiNotFoundError.LevelMissingErrorWhen)]
     [DocError(typeof(ApiAuthenticationError), ApiAuthenticationError.NoPermissionsForObjectWhen)]
-    [RateLimitSettings(420, 8, 300, "level-update-api")]
+    [EndpointRateLimit(EndpointBucketId.ApiEditLevel)]
     public ApiResponse<ApiGameLevelResponse> EditLevelById(RequestContext context, GameUser user,
         [DocSummary("The ID of the level")] int id, ApiEditLevelRequest body, DataContext dataContext, GameServerConfig config)
     {
@@ -92,6 +89,7 @@ public class LevelApiEndpoints : EndpointGroup
     [DocSummary("Deletes a level by the level's numerical ID")]
     [DocError(typeof(ApiNotFoundError), ApiNotFoundError.LevelMissingErrorWhen)]
     [DocError(typeof(ApiAuthenticationError), ApiAuthenticationError.NoPermissionsForObjectWhen)]
+    [EndpointRateLimit(EndpointBucketId.DeleteLevel)]
     public ApiOkResponse DeleteLevelById(RequestContext context, GameDatabaseContext database, GameUser user, DataContext dataContext,
         [DocSummary("The ID of the level")] int id)
     {
@@ -109,8 +107,7 @@ public class LevelApiEndpoints : EndpointGroup
     [ApiV3Endpoint("levels/id/{id}/setAsOverride", HttpMethods.Post)]
     [DocSummary("Marks the level to show in the next slot list gotten from the game")]
     [DocError(typeof(ApiNotFoundError), ApiNotFoundError.LevelMissingErrorWhen)]
-    [RateLimitSettings(LevelOverrideEndpointLimits.TimeoutDuration, LevelOverrideEndpointLimits.RequestAmount, 
-                            LevelOverrideEndpointLimits.BlockDuration, LevelOverrideEndpointLimits.RequestBucket)]
+    [EndpointRateLimit(EndpointBucketId.ApiOverrideLevel)]
     public ApiOkResponse SetLevelAsOverrideById(RequestContext context, 
         GameDatabaseContext database, 
         GameUser user, 
@@ -129,8 +126,7 @@ public class LevelApiEndpoints : EndpointGroup
     [ApiV3Endpoint("levels/hash/{hash}/setAsOverride", HttpMethods.Post)]
     [DocSummary("Marks the level hash to show in the next slot list gotten from the game")]
     [DocError(typeof(ApiValidationError), ApiValidationError.HashInvalidErrorWhen)]
-    [RateLimitSettings(LevelOverrideEndpointLimits.TimeoutDuration, LevelOverrideEndpointLimits.RequestAmount, 
-                            LevelOverrideEndpointLimits.BlockDuration, LevelOverrideEndpointLimits.RequestBucket)]
+    [EndpointRateLimit(EndpointBucketId.ApiOverrideLevel)]
     public ApiOkResponse SetLevelAsOverrideByHash(RequestContext context, GameDatabaseContext database, GameUser user,
         PlayNowService service, PresenceService presenceService, [DocSummary("The hash of level root resource")] string hash)
     {
@@ -147,7 +143,7 @@ public class LevelApiEndpoints : EndpointGroup
     [ApiV3Endpoint("levels/id/{id}/relations"), MinimumRole(GameUserRole.Restricted)]
     [DocSummary("Gets your relations to a level by it's ID")]
     [DocError(typeof(ApiNotFoundError), ApiNotFoundError.LevelMissingErrorWhen)]
-    [RateLimitSettings(420, 20, 300, "legacy-own-level-relations-api")] // no longer used by refresh-web, so count should be low for now
+    [EndpointRateLimit(EndpointBucketId.ApiGetOwnRelationsToLevel)]
     public ApiResponse<ApiGameLevelOwnRelationsResponse> GetLevelRelationsOfUser(RequestContext context, DataContext dataContext, GameUser user,
         [DocSummary("The ID of the level")] int id)
     {
@@ -160,8 +156,7 @@ public class LevelApiEndpoints : EndpointGroup
     [ApiV3Endpoint("levels/id/{id}/heart", HttpMethods.Post)]
     [DocSummary("Adds a specific level by its ID to your hearted levels")]
     [DocError(typeof(ApiNotFoundError), ApiNotFoundError.LevelMissingErrorWhen)]
-    [RateLimitSettings(CommonRelationEndpointLimits.TimeoutDuration, CommonRelationEndpointLimits.RequestAmount, 
-                            CommonRelationEndpointLimits.BlockDuration, CommonRelationEndpointLimits.RequestBucket)]
+    [EndpointRateLimit(EndpointBucketId.HeartLevel)]
     public ApiOkResponse HeartLevel(RequestContext context, GameDatabaseContext database, GameUser user,
         [DocSummary("The ID of the level")] int id, DataContext dataContext, GameServerConfig config) 
     {
@@ -178,8 +173,7 @@ public class LevelApiEndpoints : EndpointGroup
     [ApiV3Endpoint("levels/id/{id}/unheart", HttpMethods.Post)]
     [DocSummary("Removes a specific level by its ID from your hearted levels")]
     [DocError(typeof(ApiNotFoundError), ApiNotFoundError.LevelMissingErrorWhen)]
-    [RateLimitSettings(CommonRelationEndpointLimits.TimeoutDuration, CommonRelationEndpointLimits.RequestAmount, 
-                            CommonRelationEndpointLimits.BlockDuration, CommonRelationEndpointLimits.RequestBucket)]
+    [EndpointRateLimit(EndpointBucketId.HeartLevel)]
     public ApiOkResponse UnheartLevel(RequestContext context, GameDatabaseContext database, GameUser user,
         [DocSummary("The ID of the level")] int id, DataContext dataContext, GameServerConfig config) 
     {
@@ -196,8 +190,7 @@ public class LevelApiEndpoints : EndpointGroup
     [ApiV3Endpoint("levels/id/{id}/queue", HttpMethods.Post)]
     [DocSummary("Adds a specific level by its ID to your queue")]
     [DocError(typeof(ApiNotFoundError), ApiNotFoundError.LevelMissingErrorWhen)]
-    [RateLimitSettings(CommonRelationEndpointLimits.TimeoutDuration, CommonRelationEndpointLimits.RequestAmount, 
-                            CommonRelationEndpointLimits.BlockDuration, CommonRelationEndpointLimits.RequestBucket)]
+    [EndpointRateLimit(EndpointBucketId.QueueLevel)]
     public ApiOkResponse QueueLevel(RequestContext context, GameDatabaseContext database, GameUser user,
         [DocSummary("The ID of the level")] int id, DataContext dataContext) 
     {
@@ -217,8 +210,7 @@ public class LevelApiEndpoints : EndpointGroup
     [ApiV3Endpoint("levels/id/{id}/dequeue", HttpMethods.Post)]
     [DocSummary("Removes a specific level by its ID from your queue")]
     [DocError(typeof(ApiNotFoundError), ApiNotFoundError.LevelMissingErrorWhen)]
-    [RateLimitSettings(CommonRelationEndpointLimits.TimeoutDuration, CommonRelationEndpointLimits.RequestAmount, 
-                            CommonRelationEndpointLimits.BlockDuration, CommonRelationEndpointLimits.RequestBucket)]
+    [EndpointRateLimit(EndpointBucketId.QueueLevel)]
     public ApiOkResponse DequeueLevel(RequestContext context, GameDatabaseContext database, GameUser user,
         [DocSummary("The ID of the level")] int id, DataContext dataContext) 
     {
@@ -231,8 +223,7 @@ public class LevelApiEndpoints : EndpointGroup
 
     [ApiV3Endpoint("levels/queued/clear", HttpMethods.Post)]
     [DocSummary("Clears your level queue")]
-    [RateLimitSettings(CommonRelationEndpointLimits.TimeoutDuration, CommonRelationEndpointLimits.RequestAmount, 
-                            CommonRelationEndpointLimits.BlockDuration, CommonRelationEndpointLimits.RequestBucket)]
+    [EndpointRateLimit(EndpointBucketId.QueueLevel)]
     public ApiOkResponse ClearQueuedLevels(RequestContext context, GameDatabaseContext database,
         GameUser user, DataContext dataContext) 
     {
