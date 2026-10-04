@@ -9,6 +9,15 @@ public enum EndpointBucketId
 
     #region Authentication
     GameLogin,
+    
+    ApiLogin,
+    ApiRegister,
+    ApiRequestEmail,
+    ApiVerifyEmailAddress,
+    ApiResetPassword,
+    ApiGetListOfIpAddresses,
+    ApiApproveOrDenyIpAddress,
+    ApiDeleteOwnUser,
     #endregion
 
     #region Instance
@@ -17,19 +26,32 @@ public enum EndpointBucketId
 
     GameGetEula,
     GameGetListOfAnnouncements,
+    
+    ApiGetInstanceStats,
+    ApiGetInstanceInfo,
+    ApiGetDocumentation,
+
+    ApiGetListOfAnnouncements,
     #endregion
 
     #region Categories
     GameGetListOfCategories,
+    ApiGetListOfCategories,
     #endregion
 
     #region Levels
-    GameGetListOfLevels,
-    GameGetSingleLevel,
-    ApiGetSingleLevel,
-
     GamePrepareLevelPublish,
     GameRealLevelPublish,
+    
+    GameGetListOfLevels,
+    GameGetSingleLevel,
+    
+    ApiGetSingleLevel,
+    ApiGetOwnRelationsToLevel,
+    ApiGetListOfLevels,
+
+    ApiEditLevel,
+    ApiOverrideLevel,
 
     DeleteLevel,
     HeartLevel,
@@ -43,12 +65,18 @@ public enum EndpointBucketId
     GameUploadLevelScore,
     
     GamePlayLevel,
+    
+    ApiGetListOfLevelScores,
+    ApiGetSingleLevelScore,
     #endregion
 
     #region Reviews
     GameGetListOfReviews,
     GameGetSingleReview,
-
+    
+    ApiGetListOfReviews,
+    ApiGetSingleReview,
+    
     UploadReview,
     RateReview,
     DeleteReview,
@@ -57,37 +85,58 @@ public enum EndpointBucketId
     #region Comments (both Profile and Level)
     GameGetListOfComments, 
     GameGetSingleComment,
-
+    
+    ApiGetListOfComments,
+    ApiGetSingleComment,
+    
     UploadComment,
     RateComment,
     DeleteComment,
     #endregion
 
     #region Photos
+    GameUploadPhoto,
+    
     GameGetListOfPhotos,
     GameGetSinglePhoto,
-
-    GameUploadPhoto,
+    
+    ApiGetListOfPhotos,
+    ApiGetSinglePhoto,
+    
     DeletePhoto,
     #endregion
 
     #region Users
     GameGetListOfUsers,
     GameGetSingleUser,
-
-    UpdateUser,
+    
     GameUploadFriendData,
     GameSyncUserPrivacySettings,
+    
+    ApiGetListOfUsers,
+    ApiGetSingleUser,
+    ApiGetOwnUser,
+
+    UpdateUser,
     HeartUser,
     #endregion
 
     #region Assets
     GameUploadAsset,
     GameDownloadAsset,
+    
+    ApiDownloadAsset,
+    ApiDownloadImage,
+    
+    ApiGetAssetMetadata,
+    ApiUploadImage,
     #endregion
 
     #region Matching
     GameUpdateRoomOrGetRooms,
+    
+    ApiGetListOfRooms,
+    ApiGetSingleRoom,
     #endregion
 
     #region Playlists
@@ -96,7 +145,10 @@ public enum EndpointBucketId
 
     Lbp3GetListOfPlaylists,
     Lbp3GetPlaylistContents,
-
+    
+    ApiGetListOfPlaylists,
+    ApiGetSinglePlaylist,
+    
     CreatePlaylist,
     UpdatePlaylistMetadata,
     UpdatePlaylistContents,
@@ -106,10 +158,21 @@ public enum EndpointBucketId
 
     #region Activity
     GameGetActivityPage,
+    
+    ApiGetActivityPage,
     #endregion
 
     #region Notifications
     GameGetListOfNotifications,
+    
+    ApiGetListOfNotifications,
+    ApiGetSingleNotification,
+    ApiDeleteNotification,
+    #endregion
+
+    #region Contests
+    ApiGetListOfContests,
+    ApiGetSingleContest,
     #endregion
 
     #region Moderation

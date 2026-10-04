@@ -17,6 +17,18 @@ public static class EndpointBucketDefaults
 
         #region Authentication
         {EndpointBucketId.GameLogin, new(300, 10, 300)},
+      
+        {EndpointBucketId.ApiLogin, new(300, 10, 300)},
+        {EndpointBucketId.ApiRegister, new(3600, 10, 1800)},
+
+        {EndpointBucketId.ApiRequestEmail, new(300, 10, 300)},
+        {EndpointBucketId.ApiVerifyEmailAddress, new(300, 10, 300)},
+        {EndpointBucketId.ApiResetPassword, new(300, 10, 300)},
+
+        {EndpointBucketId.ApiGetListOfIpAddresses, new(300, 30, 240)},
+        {EndpointBucketId.ApiApproveOrDenyIpAddress, new(300, 30, 240)},
+
+        {EndpointBucketId.ApiDeleteOwnUser, new(600, 6, 480)},
         #endregion
 
         #region Instance
@@ -24,11 +36,17 @@ public static class EndpointBucketDefaults
         {EndpointBucketId.GameGetInstanceStats, new(240, 30, 180)},
         {EndpointBucketId.GameGetEula, new(240, 30, 180)},
         {EndpointBucketId.GameGetListOfAnnouncements, new(240, 30, 180)},
+      
+        {EndpointBucketId.ApiGetInstanceInfo, new(240, 30, 180)},
+        {EndpointBucketId.ApiGetInstanceStats, new(240, 30, 180)},
+        {EndpointBucketId.ApiGetDocumentation, new(240, 30, 180)},
+        {EndpointBucketId.ApiGetListOfAnnouncements, new(240, 30, 180)},
         #endregion
 
         #region Categories
         // LBP3 spams if fetching Genre categories fails, so keep a little higher than reasonable
         {EndpointBucketId.GameGetListOfCategories, new(240, 40, 180)},
+        {EndpointBucketId.ApiGetListOfCategories, new(240, 20, 180)},
         #endregion
         
         #region Levels
@@ -36,17 +54,23 @@ public static class EndpointBucketDefaults
         
         // Game sometimes requests many levels in bursts.
         {EndpointBucketId.GameGetSingleLevel, new(240, 200, 180)},
-        {EndpointBucketId.ApiGetSingleLevel, new(240, 50, 180)},
-        
+      
         // Should use separate buckets for each publish endpoint so we don't end up allowing /startPublish but blocking /publish
         // Also, keeping these buckets separate might avoid confusion by the server owner where they might wonder why 
         // it takes them less publish attempts to hit the limit than the actual limit they've set.
         {EndpointBucketId.GamePrepareLevelPublish, new(600, 20, 360)},
         {EndpointBucketId.GameRealLevelPublish, new(600, 20, 360)},
-        
+
+        {EndpointBucketId.ApiGetSingleLevel, new(240, 50, 180)},
+        {EndpointBucketId.ApiGetOwnRelationsToLevel, new(240, 50, 180)},
+        {EndpointBucketId.ApiGetListOfLevels, new(240, 50, 180)},
+
+        {EndpointBucketId.ApiEditLevel, new(300, 20, 180)},
+        {EndpointBucketId.ApiOverrideLevel, new(300, 20, 180)},
+
         {EndpointBucketId.DeleteLevel, new(300, 20, 180)},
         {EndpointBucketId.HeartLevel, new(300, 30, 180)},
-        {EndpointBucketId.QueueLevel, new(300, 50, 180)}, // lbp3 has a hacky feature where you can mass-queue levels from playlists
+        {EndpointBucketId.QueueLevel, new(300, 50, 180)},
         {EndpointBucketId.TagLevel, new(300, 10, 180)},
         {EndpointBucketId.RateLevel, new(300, 20, 180)},
         #endregion
@@ -56,11 +80,17 @@ public static class EndpointBucketDefaults
         {EndpointBucketId.GameUploadLevelScore, new(300, 30, 180)},
 
         {EndpointBucketId.GamePlayLevel, new(300, 30, 180)},
+      
+        {EndpointBucketId.ApiGetListOfLevelScores, new(300, 40, 180)},
+        {EndpointBucketId.ApiGetSingleLevelScore, new(300, 40, 180)},
         #endregion
 
         #region Reviews
         {EndpointBucketId.GameGetListOfReviews, new(300, 40, 180)},
         {EndpointBucketId.GameGetSingleReview, new(300, 40, 180)},
+
+        {EndpointBucketId.ApiGetListOfReviews, new(300, 40, 180)},
+        {EndpointBucketId.ApiGetSingleReview, new(300, 40, 180)},
 
         {EndpointBucketId.UploadReview, new(300, 12, 180)},
         {EndpointBucketId.RateReview, new(300, 40, 180)},
@@ -70,6 +100,9 @@ public static class EndpointBucketDefaults
         #region Comments (both Profile and Level)
         {EndpointBucketId.GameGetListOfComments, new(300, 40, 180)},
         {EndpointBucketId.GameGetSingleComment, new(300, 40, 180)},
+      
+        {EndpointBucketId.ApiGetListOfComments, new(300, 40, 180)},
+        {EndpointBucketId.ApiGetSingleComment, new(300, 40, 180)},
 
         {EndpointBucketId.UploadComment, new(300, 18, 180)},
         {EndpointBucketId.RateComment, new(300, 40, 180)},
@@ -77,33 +110,53 @@ public static class EndpointBucketDefaults
         #endregion
 
         #region Photos
+        {EndpointBucketId.GameUploadPhoto, new(300, 25, 180)},
         {EndpointBucketId.GameGetListOfPhotos, new(300, 40, 180)},
         {EndpointBucketId.GameGetSinglePhoto, new(300, 40, 180)},
+      
+        {EndpointBucketId.ApiGetListOfPhotos, new(300, 40, 180)},
+        {EndpointBucketId.ApiGetSinglePhoto, new(300, 40, 180)},
         
-        {EndpointBucketId.GameUploadPhoto, new(300, 25, 180)},
         {EndpointBucketId.DeletePhoto, new(300, 30, 180)},
         #endregion
 
         #region Users
-        {EndpointBucketId.GameGetListOfUsers, new(300, 60, 180)},
-        {EndpointBucketId.GameGetSingleUser, new(300, 60, 180)},
-
-        {EndpointBucketId.UpdateUser, new(300, 20, 180)},
         {EndpointBucketId.GameUploadFriendData, new(240, 6, 180)},
         {EndpointBucketId.GameSyncUserPrivacySettings, new(300, 10, 180)},
+      
+        {EndpointBucketId.GameGetListOfUsers, new(300, 60, 180)},
+        {EndpointBucketId.GameGetSingleUser, new(300, 60, 180)},
+      
+        {EndpointBucketId.ApiGetListOfUsers, new(300, 60, 180)},
+        {EndpointBucketId.ApiGetSingleUser, new(300, 60, 180)},
+        // this should stay relatively high because currently, both websites will call this to find out whether the user
+        // is still authed every time they're refreshed, but also every time the user visits a new page
+        {EndpointBucketId.ApiGetOwnUser, new(300, 70, 180)},
+
+        {EndpointBucketId.UpdateUser, new(300, 20, 180)},
         {EndpointBucketId.HeartUser, new(300, 30, 180)},
         #endregion
 
         #region Assets
-        // Regular download limits should be high on both game and API because both the game and third party API clients
+        // Regular download limits are this high on both game and API because both the game and third party API clients
         // (e.g. archive_dl) are likely to download many of these at times depending on what level they're trying to load
-        // (additionally, adventures will usually have even more dependencies than regular levels!)
-        {EndpointBucketId.GameUploadAsset, new(300, 150, 180)},
+        // (additionally, adventures can have even more dependencies!)
         {EndpointBucketId.GameDownloadAsset, new(240, 500, 120)},
+        {EndpointBucketId.GameUploadAsset, new(300, 150, 180)},
+      
+        {EndpointBucketId.ApiDownloadAsset, new(240, 500, 120)},
+        {EndpointBucketId.ApiDownloadImage, new(240, 250, 120)},
+
+        {EndpointBucketId.ApiGetAssetMetadata, new(240, 250, 120)},
+        {EndpointBucketId.ApiUploadImage, new(300, 20, 180)},
         #endregion
 
         #region Matching
         {EndpointBucketId.GameUpdateRoomOrGetRooms, new(240, 30, 120)},
+      
+        // this high because of beta website's fake live updating (sends new request every few seconds), which we have to deal with for now
+        {EndpointBucketId.ApiGetListOfRooms, new(240, 90, 120)},
+        {EndpointBucketId.ApiGetSingleRoom, new(240, 40, 120)},
         #endregion
 
         #region Playlists
@@ -116,6 +169,9 @@ public static class EndpointBucketDefaults
         // preview level icons, but they instead spam these level requests to get the icons instead of using the playlist property.
         {EndpointBucketId.Lbp3GetListOfPlaylists, new(240, 50, 180)},
         {EndpointBucketId.Lbp3GetPlaylistContents, new(240, 90, 180)},
+      
+        {EndpointBucketId.ApiGetListOfPlaylists, new(240, 50, 180)},
+        {EndpointBucketId.ApiGetSinglePlaylist, new(240, 50, 180)},
 
         {EndpointBucketId.CreatePlaylist, new(240, 30, 180)},
         {EndpointBucketId.UpdatePlaylistMetadata, new(240, 30, 180)},
@@ -126,10 +182,20 @@ public static class EndpointBucketDefaults
 
         #region Activity
         {EndpointBucketId.GameGetActivityPage, new(240, 50, 180)},
+        {EndpointBucketId.ApiGetActivityPage, new(240, 50, 180)},
+        #endregion
+
+        #region Contests
+        {EndpointBucketId.ApiGetListOfContests, new(240, 20, 180)},
+        {EndpointBucketId.ApiGetSingleContest, new(240, 20, 180)},
         #endregion
 
         #region Notifications
         {EndpointBucketId.GameGetListOfNotifications, new(240, 20, 180)},
+      
+        {EndpointBucketId.ApiGetListOfNotifications, new(240, 20, 180)},
+        {EndpointBucketId.ApiGetSingleNotification, new(240, 20, 180)},
+        {EndpointBucketId.ApiDeleteNotification, new(240, 20, 180)},
         #endregion
 
         #region Moderation

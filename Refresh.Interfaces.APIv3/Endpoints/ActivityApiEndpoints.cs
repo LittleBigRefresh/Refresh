@@ -1,10 +1,9 @@
 using AttribDoc.Attributes;
 using Bunkum.Core;
 using Bunkum.Core.Endpoints;
-using Bunkum.Core.RateLimit;
 using Bunkum.Core.Storage;
 using Refresh.Core.Configuration;
-using Refresh.Core.RateLimits.Activity;
+using Refresh.Core.RateLimits.EndpointRateLimiting;
 using Refresh.Core.Types.Data;
 using Refresh.Database;
 using Refresh.Database.Models.Activity;
@@ -27,8 +26,7 @@ public class ActivityApiEndpoints : EndpointGroup
     [DocUsesPageData, DocSummary("Fetch a list of recent happenings on the server.")]
     [DocQueryParam("timestamp", "A timestamp in unix seconds, used to search backwards.")]
     [DocError(typeof(ApiValidationError), ApiValidationError.NumberParseErrorWhen)]
-    [RateLimitSettings(ActivityPageEndpointLimits.TimeoutDuration, ActivityPageEndpointLimits.ApiRequestAmount, 
-                                ActivityPageEndpointLimits.BlockDuration, ActivityPageEndpointLimits.ApiRequestBucket)]
+    [EndpointRateLimit(EndpointBucketId.ApiGetActivityPage)]
     public ApiResponse<ApiActivityPageResponse> GetRecentActivity(RequestContext context, GameServerConfig config, GameDatabaseContext database,
         GameUser? user, IDataStore dataStore, DataContext dataContext)
     {
@@ -66,8 +64,7 @@ public class ActivityApiEndpoints : EndpointGroup
     [DocQueryParam("timestamp", "A timestamp in unix seconds, used to search backwards")]
     [DocError(typeof(ApiValidationError), ApiValidationError.NumberParseErrorWhen)]
     [DocError(typeof(ApiNotFoundError), "The level could not be found")]
-    [RateLimitSettings(ActivityPageEndpointLimits.TimeoutDuration, ActivityPageEndpointLimits.ApiRequestAmount, 
-                                ActivityPageEndpointLimits.BlockDuration, ActivityPageEndpointLimits.ApiRequestBucket)]
+    [EndpointRateLimit(EndpointBucketId.ApiGetActivityPage)]
     public ApiResponse<ApiActivityPageResponse> GetRecentActivityForLevel(RequestContext context,
         GameServerConfig config, GameDatabaseContext database, IDataStore dataStore, GameUser? user,
         [DocSummary("The ID of the level")] int id, DataContext dataContext)
@@ -109,8 +106,7 @@ public class ActivityApiEndpoints : EndpointGroup
     [DocQueryParam("timestamp", "A timestamp in unix seconds, used to search backwards")]
     [DocError(typeof(ApiValidationError), ApiValidationError.NumberParseErrorWhen)]
     [DocError(typeof(ApiNotFoundError), "The user could not be found")]
-    [RateLimitSettings(ActivityPageEndpointLimits.TimeoutDuration, ActivityPageEndpointLimits.ApiRequestAmount, 
-                                ActivityPageEndpointLimits.BlockDuration, ActivityPageEndpointLimits.ApiRequestBucket)]
+    [EndpointRateLimit(EndpointBucketId.ApiGetActivityPage)]
     public ApiResponse<ApiActivityPageResponse> GetRecentActivityForUser(RequestContext context,
         GameServerConfig config, GameDatabaseContext database, DataContext dataContext,
         [DocSummary(SharedParamDescriptions.UserIdParam)] string id, 
