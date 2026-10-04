@@ -1,7 +1,6 @@
 using System.Drawing;
 using Bunkum.Core;
 using Bunkum.Core.Endpoints;
-using Bunkum.Core.RateLimit;
 using Bunkum.Core.Responses;
 using Bunkum.Listener.Protocol;
 using Bunkum.Protocols.Http;
@@ -9,6 +8,7 @@ using Refresh.Common.Constants;
 using Refresh.Common.Time;
 using Refresh.Core.Authentication.Permission;
 using Refresh.Core.Configuration;
+using Refresh.Core.RateLimits.EndpointRateLimiting;
 using Refresh.Database;
 using Refresh.Database.Models.Authentication;
 using Refresh.Database.Models.Levels;
@@ -25,7 +25,7 @@ public class ReportingEndpoints : EndpointGroup
     // TODO: LBP1 beta builds upload all related assets after sending the report itself to this endpoint, handle that case
     [GameEndpoint("grief", HttpMethods.Post, ContentType.Xml)]
     [RequireEmailVerified]
-    [RateLimitSettings(600, 10, 300, "grief-report-upload")]
+    [EndpointRateLimit(EndpointBucketId.GameUploadGriefReport)]
     public Response UploadReport(RequestContext context, GameDatabaseContext database, GameReport body, GameUser user,
         IDateTimeProvider time, Token token, GameServerConfig config)
     {

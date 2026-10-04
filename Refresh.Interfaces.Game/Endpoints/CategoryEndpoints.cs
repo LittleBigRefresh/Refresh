@@ -1,11 +1,10 @@
 using Bunkum.Core;
 using Bunkum.Core.Endpoints;
-using Bunkum.Core.RateLimit;
 using Bunkum.Listener.Protocol;
+using Refresh.Common;
 using Refresh.Core.Authentication.Permission;
 using Refresh.Core.Configuration;
-using Refresh.Core.RateLimits.Levels;
-using Refresh.Core.RateLimits.Users;
+using Refresh.Core.RateLimits.EndpointRateLimiting;
 using Refresh.Core.Types.Categories;
 using Refresh.Core.Types.Categories.Levels;
 using Refresh.Core.Types.Data;
@@ -26,7 +25,7 @@ public class CategoryEndpoints : EndpointGroup
     [GameEndpoint("searches", ContentType.Xml)]
     [GameEndpoint("genres", ContentType.Xml)]
     [MinimumRole(GameUserRole.Restricted)]
-    [RateLimitSettings(420, 20, 300, "categories-game")]
+    [EndpointRateLimit(EndpointBucketId.GameGetListOfCategories)]
     public SerializedCategoryList GetModernCategories(RequestContext context, CategoryService categoryService, DataContext dataContext, GameServerConfig config)
     {
         (int skip, int count) = context.GetPageData();
@@ -58,33 +57,31 @@ public class CategoryEndpoints : EndpointGroup
     [GameEndpoint("searches/levels/{apiRoute}", ContentType.Xml)]
     [NullStatusCode(NotFound)]
     [MinimumRole(GameUserRole.Restricted)]
-    [RateLimitSettings(LevelListEndpointLimits.TimeoutDuration, LevelListEndpointLimits.RequestAmount, 
-                            LevelListEndpointLimits.BlockDuration, LevelListEndpointLimits.RequestBucket)]
+    [EndpointRateLimit(EndpointBucketId.GameGetListOfLevels)]
     public SerializedCategoryResultsList? GetLevelsFromCategory(RequestContext context, CategoryService categories, GameUser user, 
         string apiRoute, DataContext dataContext)
     {
         (int skip, int count) = context.GetPageData();
 
-        DatabaseList<GameLevel>? levels = categories.LevelCategories
+        DatabaseResultList? results = categories.LevelCategories
             .FirstOrDefault(c => c.ApiRoute.StartsWith(apiRoute))?
-            .Fetch(context, skip, count, dataContext, LevelFilterSettings.FromGameRequest(context, dataContext.Game, true), user)?
-            .Levels;
+            .Fetch(context, skip, count, dataContext, LevelFilterSettings.FromGameRequest(context, dataContext.Game, true), user);
         
-        if (levels == null) return null;
+        if (results == null) return null;
         
         return new SerializedCategoryResultsList
         (
-            levels.Items.ToArray().Select(l => GameMinimalLevelResponse.FromOld(l, dataContext))!,
-            levels.TotalItems,
-            levels.NextPageIndex
+            GameMinimalLevelResponse.FromOldList(results.Levels?.Items.ToArray() ?? [], dataContext),
+            GameUserResponse.FromOldList(results.Users?.Items.ToArray() ?? [], dataContext),
+            results.NextPageIndexMax,
+            results.TotalItemsSum
         );
     }
 
     [GameEndpoint("searches/users/{apiRoute}", ContentType.Xml)]
     [NullStatusCode(NotFound)]
     [MinimumRole(GameUserRole.Restricted)]
-    [RateLimitSettings(UserListEndpointLimits.TimeoutDuration, UserListEndpointLimits.RequestAmount, 
-                            UserListEndpointLimits.BlockDuration, UserListEndpointLimits.RequestBucket)]
+    [EndpointRateLimit(EndpointBucketId.GameGetListOfUsers)]
     public SerializedCategoryResultsList? GetUsersFromCategory(RequestContext context, CategoryService categories, GameUser user, 
         string apiRoute, DataContext dataContext, GameServerConfig config)
     {
@@ -99,6 +96,7 @@ public class CategoryEndpoints : EndpointGroup
         
         if (users == null) return null;
         
+        // No user categories which return levels or playlists yet.
         return new SerializedCategoryResultsList
         (
             users.Items.ToArray().Select(u => GameUserResponse.FromOld(u, dataContext))!,

@@ -1,5 +1,9 @@
 using Bunkum.Core;
 using Refresh.Core.Types.Data;
+using Refresh.Database;
+using Refresh.Database.Models.Authentication;
+using Refresh.Database.Models.Levels;
+using Refresh.Database.Models.Playlists;
 using Refresh.Database.Models.Users;
 using Refresh.Database.Query;
 
@@ -27,6 +31,19 @@ public class ByUserLevelCategory : GameCategory
 
         if (user == null) return null;
         
-        return new(dataContext.Database.GetLevelsByUser(user, count, skip, levelFilterSettings, dataContext.User));
+        DatabaseList<GameLevel>? levels = dataContext.Database.GetLevelsByUser(user, count, skip, levelFilterSettings, dataContext.User);
+        
+        // If this is LBP1 (or anything similar), inject the user's own playlists as well, but only those from their root playlist.
+        DatabaseList<GamePlaylist>? playlists = null;
+        if (dataContext.Game is TokenGame.LittleBigPlanet1 or TokenGame.BetaBuild)
+        {
+            GamePlaylist? rootPlaylist = dataContext.Database.GetUserRootPlaylist(user);
+            if (rootPlaylist != null)
+            {
+                playlists = dataContext.Database.GetPlaylistsInPlaylist(rootPlaylist, skip, count);
+            }
+        }
+        
+        return new(levels, null, playlists);
     }
 }

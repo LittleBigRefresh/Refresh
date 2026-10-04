@@ -48,6 +48,7 @@ public class ListTests : GameServerTest
         GameUser user = context.CreateUser();
         using HttpClient client = context.GetAuthenticatedClient(TokenType.Game, user);
 
+        // Exactly enough levels for 2 pages
         for (int i = 0; i < 20; i++)
         {
             context.CreateLevel(user, i.ToString());
@@ -55,6 +56,14 @@ public class ListTests : GameServerTest
         
         HttpResponseMessage message = await client.GetAsync("/lbp/slots/newest?pageStart=11&pageSize=10");
         string response = await message.Content.ReadAsStringAsync();
+        
+        Assert.That(response, Contains.Substring("hint_start=\"0\""));
+        
+        // Now one more for page 3
+        context.CreateLevel(user);
+        
+        message = await client.GetAsync("/lbp/slots/newest?pageStart=11&pageSize=10");
+        response = await message.Content.ReadAsStringAsync();
         
         Assert.That(response, Contains.Substring("hint_start=\"21\""));
     }

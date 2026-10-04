@@ -1,9 +1,9 @@
 using Bunkum.Core;
 using Bunkum.Core.Endpoints;
-using Bunkum.Core.RateLimit;
 using Bunkum.Listener.Protocol;
 using Bunkum.Protocols.Http;
 using Refresh.Core.Authentication.Permission;
+using Refresh.Core.RateLimits.EndpointRateLimiting;
 using Refresh.Core.Services;
 using Refresh.Core.Types.Commands;
 using Refresh.Core.Types.Data;
@@ -27,6 +27,7 @@ public class ModerationEndpoints : EndpointGroup
     }
 
     [GameEndpoint("showModerated", HttpMethods.Post, ContentType.Xml)]
+    [EndpointRateLimit(EndpointBucketId.GameFilterModeratedAssets)]
     public SerializedModeratedResourceList ModerateResources(RequestContext context, SerializedModeratedResourceList body, DataContext dataContext)
     {
         return new SerializedModeratedResourceList
@@ -47,7 +48,7 @@ public class ModerationEndpoints : EndpointGroup
     /// <returns>The string shown in-game.</returns>
     [GameEndpoint("filter", HttpMethods.Post)]
     [AllowEmptyBody]
-    [RateLimitSettings(180, 100, 120, "filter")]
+    [EndpointRateLimit(EndpointBucketId.GameFilterChatMessage)]
     public string Filter(RequestContext context, CommandService commandService, string body, GameUser user, Token token, GameDatabaseContext database)
     {
         // TODO: Add actual filtering/censoring

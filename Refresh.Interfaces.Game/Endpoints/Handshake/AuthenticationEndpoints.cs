@@ -2,7 +2,6 @@ using System.Diagnostics;
 using System.Xml.Serialization;
 using Bunkum.Core;
 using Bunkum.Core.Endpoints;
-using Bunkum.Core.RateLimit;
 using Bunkum.Core.Responses;
 using Bunkum.Listener.Protocol;
 using Bunkum.Protocols.Http;
@@ -14,6 +13,7 @@ using Refresh.Common.Verification;
 using Refresh.Core;
 using Refresh.Core.Authentication.Permission;
 using Refresh.Core.Configuration;
+using Refresh.Core.RateLimits.EndpointRateLimiting;
 using Refresh.Core.Services;
 using Refresh.Core.Types.Matching;
 using Refresh.Database;
@@ -26,7 +26,7 @@ public class AuthenticationEndpoints : EndpointGroup
 {
     [GameEndpoint("login", HttpMethods.Post, ContentType.Xml), Authentication(false), AllowDuringMaintenance]
     [NullStatusCode(Forbidden)]
-    [RateLimitSettings(300, 10, 300, "auth")]
+    [EndpointRateLimit(EndpointBucketId.GameLogin)]
     [MinimumRole(GameUserRole.Restricted)]
     public object? Authenticate(RequestContext context,
         GameDatabaseContext database,
