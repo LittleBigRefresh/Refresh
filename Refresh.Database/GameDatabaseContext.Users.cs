@@ -124,6 +124,21 @@ public partial class GameDatabaseContext // Users
         => new(this.GameUsersIncluded
             .Where(u => u.Statistics!.FavouriteCount > 0)
             .OrderByDescending(u => u.Statistics!.FavouriteCount), skip, count);
+    
+    public DatabaseList<GameUser> SearchForUsersByEmailAddress(int count, int skip, string query)
+    {
+        IQueryable<GameUser> validUsers = this.GameUsersIncluded;
+
+        // Allow inputting incomplete addresses (e.g. domains). This is why we return a list instead of a single user.
+        string dbQuery = $"%{query}%";
+        List<GameUser> matchingUsers = validUsers.Where(l =>
+            // TODO maybe also allow searching users with null email address?
+            l.EmailAddress != null &&
+            EF.Functions.ILike(l.EmailAddress, dbQuery)
+        ).ToList();
+
+        return new DatabaseList<GameUser>(matchingUsers.OrderByDescending(l => l.Role), skip, count);
+    }
 
     public DatabaseList<GameUser> SearchForUsers(int count, int skip, string query)
     {

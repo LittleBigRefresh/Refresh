@@ -49,9 +49,21 @@ public class CategoryService : EndpointService
         new SearchUserCategory(),
     ];
 
+    // User Categories which may only be accessed by mods/admins and only via API.
+    // These are the only ones they should use to receive extended user lists.
+    public readonly FrozenSet<GameCategory> AdminUserCategories;
+
+    // ReSharper disable once InconsistentNaming
+    private readonly List<GameCategory> _adminUserCategories =
+    [
+        new NewestUsersCategory(),
+        new SearchUserByEmailCategory(),
+    ];
+
     internal CategoryService(Logger logger) : base(logger)
     {
         this.LevelCategories = this._levelCategories.ToFrozenSet();
         this.UserCategories = this._userCategories.ToFrozenSet();
+        this.AdminUserCategories = this._adminUserCategories.ToFrozenSet();
     }
 }
