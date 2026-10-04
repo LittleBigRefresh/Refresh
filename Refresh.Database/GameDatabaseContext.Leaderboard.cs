@@ -110,6 +110,28 @@ public partial class GameDatabaseContext // Leaderboard
 
         return new(scores.ToArray().Select(s => new ScoreWithRank(s, s.Rank)), skip, count, user);
     }
+    
+    // TODO all these score-specific extra params should probably be passed in by a dedicated struct, like with level params.
+    public DatabaseList<ScoreWithRank> GetTopScoresByUser(GameUser user, int count, int skip, byte scoreType, uint minRank, uint maxRank, bool showDuplicates = false)
+    {
+        IEnumerable<GameScore> scores = this.GameScoresIncluded
+            .Where(s => s.PublisherId == user.UserId)
+            .OrderByDescending(s => s.Score);
+        
+        if (scoreType != 0)
+            scores = scores.Where(s => s.ScoreType == scoreType);
+
+        if (!showDuplicates)
+            scores = scores.Where(s => s.Rank != 0);
+        
+        if (minRank > 0)
+            scores = scores.Where(s => s.Rank >= minRank);
+        
+        if (maxRank > 0)
+            scores = scores.Where(s => s.Rank <= maxRank);
+
+        return new(scores.ToArray().Select(s => new ScoreWithRank(s, s.Rank)), skip, count);
+    }
 
     public DatabaseScoreList GetRankedScoresAroundScore(GameScore score, int count, GameUser? user = null)
     {
