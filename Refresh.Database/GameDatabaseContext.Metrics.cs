@@ -15,9 +15,10 @@ public partial class GameDatabaseContext // Metrics
         UserGameMetric? metric = this.UserGameMetricsIncluded
             .FirstOrDefault(m => m.UserId == user.UserId && m.Game == game && m.Platform == platform);
         
-        // If it doesn't exist yet, create it
+        // If it doesn't exist yet, create it. Timestamps will be properly set by their dedicated methods when needed.
         if (metric == null)
         {
+            this._logger.LogDebug(RefreshContext.UserMetrics, $"Creating new game metric for {user} for game {game}/platform {platform}.");
             metric = new()
             {
                 UserId = user.UserId,
@@ -56,7 +57,6 @@ public partial class GameDatabaseContext // Metrics
         return metric;
     }
     
-    // TODO should we also consider slot ID, or should we stick to just type for now?
     public UserGameMetric UpdatePlayTimeOnUserMetrics(GameUser user, TokenGame game, TokenPlatform platform)
     {
         UserGameMetric metric = this.GetGameMetric(user, game, platform);
@@ -65,7 +65,7 @@ public partial class GameDatabaseContext // Metrics
 
         // Don't count the time between login and first /match, only count the time between /match requests,
         // which we would consider to be actual playtime. Also, explicitly don't increment time if this metric
-        // hasn't been initialized yet. In that case LastLoginAt is also at MinValue, but it might be better to just
+        // hasn't been initialized yet. In that case LastLoginAt may also be at MinValue, but it might be better to just
         // check for it explicitly anyway.
         if (metric.LastRoomUpdateAt > metric.LastLoginAt && metric.LastRoomUpdateAt > DateTimeOffset.MinValue)
         {
@@ -74,7 +74,7 @@ public partial class GameDatabaseContext // Metrics
             metric.TotalPlayTimeMinutes += additionalMinutes;
         }
         
-        // Always update this, since we will use it to determine whether we should update other metrics the next time (see above).
+        // Always update this, since we will use it to determine whether we should update this metric the next time (see above).
         metric.LastRoomUpdateAt = now;
         
         this.UserGameMetrics.Update(metric);
