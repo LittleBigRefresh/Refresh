@@ -20,7 +20,8 @@ public class UserGameMetric
     public DateTimeOffset LastLoginAt { get; set; }
     public DateTimeOffset LastRoomUpdateAt { get; set; }
     
-    // total time the user has spent on this game, regardless of slot type. Not just a sum of all UserSlotMetrics,
-    // since those won't record time spent if it's below a configured threshold.
+    /// <summary>
+    ///  Total time the user has spent on this game, determined by the times inbetween their room update requests.
+    /// </summary>
     public long TotalPlayTimeMinutes { get; set; } 
 }
