@@ -77,16 +77,24 @@ public partial class GameDatabaseContext // Metrics
             long additionalMinutes = (now.ToUnixTimeSeconds() - metric.LastRoomUpdateAt.ToUnixTimeSeconds()) / 60;
             this._logger.LogDebug(RefreshContext.UserMetrics, $"Updating {user}'s playtime for game {game}/platform {platform}: {metric.TotalPlayTimeMinutes} min + {additionalMinutes} min");
 
-            metric.TotalPlayTimeMinutes += additionalMinutes;
+            this.WriteEnsuringStatistics(user, () =>
+            {
+                metric.LastRoomUpdateAt = now;
+                metric.TotalPlayTimeMinutes += additionalMinutes;
+                this.UserGameMetrics.Update(metric);
+
+                user.Statistics!.TotalPlayTimeMinutes += additionalMinutes;
+            });
         }
-        
-        this.WriteEnsuringStatistics(user, () =>
+        else
         {
             // Always update LastRoomUpdateAt, since we will use it to determine whether we should update this metric the next time (see above).
             metric.LastRoomUpdateAt = now;
             this.UserGameMetrics.Update(metric);
-        });
-        
+            this.TrackUserAsUnchanged(user);
+            this.SaveChanges();
+        }
+
         return metric;
     }
 }
