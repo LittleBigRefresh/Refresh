@@ -38,6 +38,9 @@ public partial class GameDatabaseContext // Metrics
         return metric;
     }
 
+    /// <summary>
+    /// Gets the user's playtime across all games and platforms.
+    /// </summary>
     public long GetTotalPlayTimeByUser(GameUser user)
     {
         return this.UserGameMetrics
@@ -53,6 +56,7 @@ public partial class GameDatabaseContext // Metrics
         this._logger.LogDebug(RefreshContext.UserMetrics, $"Updating {user}'s last login date for game {game}/platform {platform}: from {metric.LastLoginAt} to {now}.");
         metric.LastLoginAt = now;
         
+        this.UserGameMetrics.Update(metric);
         this.TrackUserAsUnchanged(user);
         this.SaveChanges();
         return metric;
@@ -72,15 +76,17 @@ public partial class GameDatabaseContext // Metrics
         {
             long additionalMinutes = (now.ToUnixTimeSeconds() - metric.LastRoomUpdateAt.ToUnixTimeSeconds()) / 60;
             this._logger.LogDebug(RefreshContext.UserMetrics, $"Updating {user}'s playtime for game {game}/platform {platform}: {metric.TotalPlayTimeMinutes} min + {additionalMinutes} min");
+
             metric.TotalPlayTimeMinutes += additionalMinutes;
         }
         
-        // Always update this, since we will use it to determine whether we should update this metric the next time (see above).
-        metric.LastRoomUpdateAt = now;
+        this.WriteEnsuringStatistics(user, () =>
+        {
+            // Always update LastRoomUpdateAt, since we will use it to determine whether we should update this metric the next time (see above).
+            metric.LastRoomUpdateAt = now;
+            this.UserGameMetrics.Update(metric);
+        });
         
-        this.UserGameMetrics.Update(metric);
-        this.TrackUserAsUnchanged(user);
-        this.SaveChanges();
         return metric;
     }
 }
