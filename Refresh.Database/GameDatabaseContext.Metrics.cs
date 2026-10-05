@@ -10,7 +10,7 @@ public partial class GameDatabaseContext // Metrics
     private IQueryable<UserGameMetric> UserGameMetricsIncluded => this.UserGameMetrics
         .Include(m => m.User);
 
-    public UserGameMetric GetGameMetric(GameUser user, TokenGame game, TokenPlatform platform)
+    public UserGameMetric GetGameMetricForUser(GameUser user, TokenGame game, TokenPlatform platform)
     {
         UserGameMetric? metric = this.UserGameMetricsIncluded
             .FirstOrDefault(m => m.UserId == user.UserId && m.Game == game && m.Platform == platform);
@@ -48,9 +48,9 @@ public partial class GameDatabaseContext // Metrics
             .Sum(m => m.TotalPlayTimeMinutes);
     }
     
-    public UserGameMetric UpdateLoginDateOnUserMetrics(GameUser user, TokenGame game, TokenPlatform platform)
+    public UserGameMetric UpdateLoginDateOnUserMetric(GameUser user, TokenGame game, TokenPlatform platform)
     {
-        UserGameMetric metric = this.GetGameMetric(user, game, platform);
+        UserGameMetric metric = this.GetGameMetricForUser(user, game, platform);
         DateTimeOffset now = this._time.Now;
         
         this._logger.LogDebug(RefreshContext.UserMetrics, $"Updating {user}'s last login date for game {game}/platform {platform}: from {metric.LastLoginAt} to {now}.");
@@ -62,9 +62,9 @@ public partial class GameDatabaseContext // Metrics
         return metric;
     }
     
-    public UserGameMetric UpdatePlayTimeOnUserMetrics(GameUser user, TokenGame game, TokenPlatform platform)
+    public UserGameMetric UpdatePlayTimeOnUserMetric(GameUser user, TokenGame game, TokenPlatform platform)
     {
-        UserGameMetric metric = this.GetGameMetric(user, game, platform);
+        UserGameMetric metric = this.GetGameMetricForUser(user, game, platform);
         DateTimeOffset now = this._time.Now;
         this._logger.LogDebug(RefreshContext.UserMetrics, $"Checking whether to update {user}'s playtime for game {game}/platform {platform}: last login at {metric.LastLoginAt}, last room update at {metric.LastRoomUpdateAt}.");
 

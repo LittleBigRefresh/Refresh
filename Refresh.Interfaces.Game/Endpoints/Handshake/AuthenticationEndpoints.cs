@@ -215,7 +215,7 @@ public class AuthenticationEndpoints : EndpointGroup
         
         // Let the metrics know that this user has started a new session, so the time between login and first room update
         // should be ignored.
-        database.UpdateLoginDateOnUserMetrics(user, game.Value, platform.Value);
+        database.UpdateLoginDateOnUserMetric(user, game.Value, platform.Value);
         
         // Clear the user's force match
         database.ClearForceMatch(user);
