@@ -30,7 +30,8 @@ public partial class GameDatabaseContext // Metrics
                 TotalPlayTimeMinutes = 0,
             };
             this.UserGameMetrics.Add(metric);
-            this.Entry(user).State = EntityState.Unchanged; // avoid inserting user
+
+            this.TrackUserAsUnchanged(user);
             this.SaveChanges();
         }
 
@@ -51,8 +52,8 @@ public partial class GameDatabaseContext // Metrics
         
         this._logger.LogDebug(RefreshContext.UserMetrics, $"Updating {user}'s last login date for game {game}/platform {platform}: from {metric.LastLoginAt} to {now}.");
         metric.LastLoginAt = now;
-        this.Entry(user).State = EntityState.Unchanged; // avoid inserting user
         
+        this.TrackUserAsUnchanged(user);
         this.SaveChanges();
         return metric;
     }
@@ -78,7 +79,7 @@ public partial class GameDatabaseContext // Metrics
         metric.LastRoomUpdateAt = now;
         
         this.UserGameMetrics.Update(metric);
-        this.Entry(user).State = EntityState.Unchanged; // avoid inserting user
+        this.TrackUserAsUnchanged(user);
         this.SaveChanges();
         return metric;
     }

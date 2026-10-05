@@ -22,6 +22,19 @@ public partial class GameDatabaseContext // Users
     private IQueryable<PreviousUsername> PreviousUsernamesIncluded => this.PreviousUsernames
         .Include(u => u.User)
         .Include(u => u.User.Statistics);
+
+    // TODO use this method in more DB methods where an entity referencing a user is updated/inserted without updating the user or any of the user's referenced entities,
+    // else there will be a high change that the user isn't actually tracked by Postgres yet, making it insert the user (and fail for obvious reasons).
+    // TODO also use such methods for levels and other commonly referenced entities for even more deduplication.
+    // public so tests could access this manually if necessary
+    public void TrackUserAsUnchanged(GameUser user)
+    {
+        this.Entry(user).State = EntityState.Unchanged;
+        if (user.Statistics != null)
+        {
+            this.Entry(user.Statistics).State = EntityState.Unchanged;
+        }
+    }
     
     [Pure]
     [ContractAnnotation("username:null => null; username:notnull => canbenull")]
