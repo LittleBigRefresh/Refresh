@@ -43,61 +43,85 @@ public class UserPlaytimeTests : GameServerTest
             },
         };
 
-        // Ensure that the first room update will not add these first 10 ms to the playtime, but last update timestamp will be set.
-        context.Time.TimestampMilliseconds += 10;
+        // All time increments here must be whole minutes because the playtime DB method will round (or floor idk) to minutes,
+        // since playtime is minutes.
+
+        // -- Send the requests --
+        // First room update.
+        context.Time.TimestampMilliseconds += 1000 * 60;
         match.ExecuteMethod("CreateRoom", roomData, this.GetDataContext(context.Database, token, match), config);
-        context.Database.Refresh();
 
         UserGameMetric metric = context.Database.GetGameMetricForUser(user, TokenGame.LittleBigPlanet1, TokenPlatform.PS3);
+        GameUser? updatedUser = context.Database.GetUserByObjectId(user.UserId);
+
+        context.Database.Refresh();
         Assert.That(metric.LastLoginAt, Is.EqualTo(DateTimeOffset.MinValue));
-        Assert.That(metric.LastRoomUpdateAt.ToUnixTimeMilliseconds(), Is.EqualTo(10));
+        Assert.That(metric.LastRoomUpdateAt.ToUnixTimeMilliseconds(), Is.EqualTo(1000 * 60));
         Assert.That(metric.TotalPlayTimeMinutes, Is.Zero);
 
-        // Send another room update, and ensure that this time, the playtime was incremented by the difference between the
-        // previous and current timestamps.
-        // Also, ensure the total playtime stat was incremented aswell.
-        context.Time.TimestampMilliseconds += 20;
+        // Second room update
+        context.Time.TimestampMilliseconds += 2000 * 60;
         match.ExecuteMethod("UpdateMyPlayerData", roomData, this.GetDataContext(context.Database, token, match), config);
-        context.Database.Refresh();
 
+        context.Database.Refresh();
         metric = context.Database.GetGameMetricForUser(user, TokenGame.LittleBigPlanet1, TokenPlatform.PS3);
+        updatedUser = context.Database.GetUserByObjectId(user.UserId);
+
+        context.Database.Refresh();
         Assert.That(metric.LastLoginAt, Is.EqualTo(DateTimeOffset.MinValue));
-        Assert.That(metric.LastRoomUpdateAt.ToUnixTimeMilliseconds(), Is.EqualTo(30));
-        Assert.That(metric.TotalPlayTimeMinutes, Is.EqualTo(10));
+        Assert.That(metric.LastRoomUpdateAt.ToUnixTimeMilliseconds(), Is.EqualTo(3000 * 60));
+        Assert.That(metric.TotalPlayTimeMinutes, Is.EqualTo(2));
 
-        GameUser? userUpdated = context.Database.GetUserByObjectId(user.UserId);
-        Assert.That(userUpdated?.Statistics, Is.Not.Null);
-        Assert.That(userUpdated!.Statistics!.TotalPlayTimeMinutes, Is.EqualTo(10));
+        Assert.That(updatedUser?.Statistics, Is.Not.Null);
+        Assert.That(updatedUser!.Statistics!.TotalPlayTimeMinutes, Is.EqualTo(2));
 
-        // Now let it update the login date, and ensure the login date has updated,
-        // but the room update date and the playtime have not.
-        context.Time.TimestampMilliseconds += 30;
+        // Update the login date
+        context.Time.TimestampMilliseconds += 3000 * 60;
         context.Database.UpdateLoginDateOnUserMetric(user, TokenGame.LittleBigPlanet1, TokenPlatform.PS3);
+
         context.Database.Refresh();
-
         metric = context.Database.GetGameMetricForUser(user, TokenGame.LittleBigPlanet1, TokenPlatform.PS3);
-        Assert.That(metric.LastLoginAt.ToUnixTimeMilliseconds(), Is.EqualTo(60)); // is now above 0
-        Assert.That(metric.LastRoomUpdateAt.ToUnixTimeMilliseconds(), Is.EqualTo(30)); // still the same as before
-        Assert.That(metric.TotalPlayTimeMinutes, Is.EqualTo(10)); // still the same as before
+        updatedUser = context.Database.GetUserByObjectId(user.UserId);
 
-        userUpdated = context.Database.GetUserByObjectId(user.UserId);
-        Assert.That(userUpdated?.Statistics, Is.Not.Null);
-        Assert.That(userUpdated!.Statistics!.TotalPlayTimeMinutes, Is.EqualTo(10)); // still the same as before
+        context.Database.Refresh();
+        Assert.That(metric.LastLoginAt.ToUnixTimeMilliseconds(), Is.EqualTo(6000 * 60)); // is now above 0
+        Assert.That(metric.LastRoomUpdateAt.ToUnixTimeMilliseconds(), Is.EqualTo(3000 * 60)); // still the same as before
+        Assert.That(metric.TotalPlayTimeMinutes, Is.EqualTo(2)); // still the same as before
 
-        // Ensure the next room update updates the last update timestamp, but not the playtime.
-        context.Time.TimestampMilliseconds += 40;
+        Assert.That(updatedUser?.Statistics, Is.Not.Null);
+        Assert.That(updatedUser!.Statistics!.TotalPlayTimeMinutes, Is.EqualTo(2)); // still the same as before
+
+        // First room update after new login
+        context.Time.TimestampMilliseconds += 4000 * 60;
         match.ExecuteMethod("UpdateMyPlayerData", roomData, this.GetDataContext(context.Database, token, match), config);
+
         context.Database.Refresh();
-
-        // Ensure both the total stat and the metric for this game/paltform are now above 0
         metric = context.Database.GetGameMetricForUser(user, TokenGame.LittleBigPlanet1, TokenPlatform.PS3);
-        Assert.That(metric.LastLoginAt.ToUnixTimeMilliseconds(), Is.EqualTo(60)); // The same as right now
-        Assert.That(metric.LastRoomUpdateAt.ToUnixTimeMilliseconds(), Is.EqualTo(100)); // timestamp has updated
-        Assert.That(metric.TotalPlayTimeMinutes, Is.EqualTo(50)); // new time difference was added
+        updatedUser = context.Database.GetUserByObjectId(user.UserId);
 
-        userUpdated = context.Database.GetUserByObjectId(user.UserId);
-        Assert.That(userUpdated?.Statistics, Is.Not.Null);
-        Assert.That(userUpdated!.Statistics!.TotalPlayTimeMinutes, Is.EqualTo(50)); // was also updated
+        context.Database.Refresh();
+        Assert.That(metric.LastLoginAt.ToUnixTimeMilliseconds(), Is.EqualTo(6000 * 60)); // The same as before
+        Assert.That(metric.LastRoomUpdateAt.ToUnixTimeMilliseconds(), Is.EqualTo(10000 * 60)); // timestamp has updated
+        Assert.That(metric.TotalPlayTimeMinutes, Is.EqualTo(2)); // nothing was added
+
+        Assert.That(updatedUser?.Statistics, Is.Not.Null);
+        Assert.That(updatedUser!.Statistics!.TotalPlayTimeMinutes, Is.EqualTo(2)); // was also not updated
+        
+        // Second room update after new login
+        context.Time.TimestampMilliseconds += 6000 * 60;
+        match.ExecuteMethod("UpdateMyPlayerData", roomData, this.GetDataContext(context.Database, token, match), config);
+
+        context.Database.Refresh();
+        metric = context.Database.GetGameMetricForUser(user, TokenGame.LittleBigPlanet1, TokenPlatform.PS3);
+        updatedUser = context.Database.GetUserByObjectId(user.UserId);
+
+        context.Database.Refresh();
+        Assert.That(metric.LastLoginAt.ToUnixTimeMilliseconds(), Is.EqualTo(6000 * 60)); // The same as before
+        Assert.That(metric.LastRoomUpdateAt.ToUnixTimeMilliseconds(), Is.EqualTo(16000 * 60)); // timestamp has updated
+        Assert.That(metric.TotalPlayTimeMinutes, Is.EqualTo(8)); // new minutes were added
+
+        Assert.That(updatedUser?.Statistics, Is.Not.Null);
+        Assert.That(updatedUser!.Statistics!.TotalPlayTimeMinutes, Is.EqualTo(8)); // was also updated
     }
 
     [Test]
@@ -125,57 +149,60 @@ public class UserPlaytimeTests : GameServerTest
             },
         };
 
+        // These 3 seconds should be ignored by the playtime itself, since it's rounded to whole minutes during calculation,
+        // however the dates should reflect the seconds.
+        context.Time.TimestampMilliseconds += 3000;
+
         // -- Set the times --
         // LBP1 PS3
-        context.Time.TimestampMilliseconds += 5;
         match.ExecuteMethod("CreateRoom", roomData, this.GetDataContext(context.Database, token1, match), config);
-        context.Time.TimestampMilliseconds += 10;
+        context.Time.TimestampMilliseconds += 1000 * 60;
         match.ExecuteMethod("UpdateMyPlayerData", roomData, this.GetDataContext(context.Database, token1, match), config);
         context.Database.Refresh();
 
         // LBP1 RPCS3
         match.ExecuteMethod("CreateRoom", roomData, this.GetDataContext(context.Database, token2, match), config);
-        context.Time.TimestampMilliseconds += 20;
+        context.Time.TimestampMilliseconds += 2000 * 60;
         match.ExecuteMethod("UpdateMyPlayerData", roomData, this.GetDataContext(context.Database, token2, match), config);
         context.Database.Refresh();
 
         // LBP2 PS3
         match.ExecuteMethod("CreateRoom", roomData, this.GetDataContext(context.Database, token3, match), config);
-        context.Time.TimestampMilliseconds += 60;
+        context.Time.TimestampMilliseconds += 6000 * 60;
         match.ExecuteMethod("UpdateMyPlayerData", roomData, this.GetDataContext(context.Database, token3, match), config);
         context.Database.Refresh();
 
         // LBPVita PSVita
         match.ExecuteMethod("CreateRoom", roomData, this.GetDataContext(context.Database, token4, match), config);
-        context.Time.TimestampMilliseconds += 50;
+        context.Time.TimestampMilliseconds += 5000 * 60;
         match.ExecuteMethod("UpdateMyPlayerData", roomData, this.GetDataContext(context.Database, token4, match), config);
         context.Database.Refresh();
 
         // -- Assertions --
         // LBP1 PS3
         UserGameMetric metric1 = context.Database.GetGameMetricForUser(user, TokenGame.LittleBigPlanet1, TokenPlatform.PS3);
-        Assert.That(metric1.TotalPlayTimeMinutes, Is.EqualTo(10));
-        Assert.That(metric1.LastRoomUpdateAt.ToUnixTimeMilliseconds(), Is.EqualTo(15));
+        Assert.That(metric1.TotalPlayTimeMinutes, Is.EqualTo(1));
+        Assert.That(metric1.LastRoomUpdateAt.ToUnixTimeMilliseconds(), Is.EqualTo(1000 * 60 + 3000));
         
         // LBP1 RPCS3
         UserGameMetric metric2 = context.Database.GetGameMetricForUser(user, TokenGame.LittleBigPlanet1, TokenPlatform.RPCS3);
-        Assert.That(metric1.TotalPlayTimeMinutes, Is.EqualTo(20));
-        Assert.That(metric1.LastRoomUpdateAt.ToUnixTimeMilliseconds(), Is.EqualTo(35));
+        Assert.That(metric2.TotalPlayTimeMinutes, Is.EqualTo(2));
+        Assert.That(metric2.LastRoomUpdateAt.ToUnixTimeMilliseconds(), Is.EqualTo(3000 * 60 + 3000));
         
         // LBP2 PS3
         UserGameMetric metric3 = context.Database.GetGameMetricForUser(user, TokenGame.LittleBigPlanet2, TokenPlatform.PS3);
-        Assert.That(metric1.TotalPlayTimeMinutes, Is.EqualTo(60));
-        Assert.That(metric1.LastRoomUpdateAt.ToUnixTimeMilliseconds(), Is.EqualTo(95));
+        Assert.That(metric3.TotalPlayTimeMinutes, Is.EqualTo(6));
+        Assert.That(metric3.LastRoomUpdateAt.ToUnixTimeMilliseconds(), Is.EqualTo(9000 * 60 + 3000));
         
         // LBPVita PSVita
         UserGameMetric metric4 = context.Database.GetGameMetricForUser(user, TokenGame.LittleBigPlanetVita, TokenPlatform.Vita);
-        Assert.That(metric1.TotalPlayTimeMinutes, Is.EqualTo(50));
-        Assert.That(metric1.LastRoomUpdateAt.ToUnixTimeMilliseconds(), Is.EqualTo(145));
+        Assert.That(metric4.TotalPlayTimeMinutes, Is.EqualTo(5));
+        Assert.That(metric4.LastRoomUpdateAt.ToUnixTimeMilliseconds(), Is.EqualTo(14000 * 60 + 3000));
 
         // Ensure the total playtime stat is actually a sum of all metric playtimes
         GameUser? userUpdated = context.Database.GetUserByObjectId(user.UserId);
         Assert.That(userUpdated?.Statistics, Is.Not.Null);
-        Assert.That(userUpdated!.Statistics!.TotalPlayTimeMinutes, Is.EqualTo(140));
+        Assert.That(userUpdated!.Statistics!.TotalPlayTimeMinutes, Is.EqualTo(14));
     }
 
     [Test]

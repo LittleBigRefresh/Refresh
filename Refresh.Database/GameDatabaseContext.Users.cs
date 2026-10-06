@@ -29,10 +29,10 @@ public partial class GameDatabaseContext // Users
     // public so tests could access this manually if necessary
     public void TrackUserAsUnchanged(GameUser user)
     {
-        this.Entry(user).State = EntityState.Unchanged;
+        this.GameUsers.Attach(user);
         if (user.Statistics != null)
         {
-            this.Entry(user.Statistics).State = EntityState.Unchanged;
+            this.GameUserStatistics.Attach(user.Statistics);
         }
     }
     

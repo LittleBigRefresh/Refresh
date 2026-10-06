@@ -18,7 +18,7 @@ public partial class GameDatabaseContext // Metrics
         // If it doesn't exist yet, create it. Timestamps will be properly set by their dedicated methods when needed.
         if (metric == null)
         {
-            this._logger.LogDebug(RefreshContext.UserMetrics, $"Creating new game metric for {user} for game {game}/platform {platform}.");
+            this._logger.LogDebug(RefreshContext.UserMetrics, $"Creating new game metric for {user} for {game}/{platform}.");
             metric = new()
             {
                 UserId = user.UserId,
@@ -30,7 +30,7 @@ public partial class GameDatabaseContext // Metrics
                 TotalPlayTimeMinutes = 0,
             };
             this.UserGameMetrics.Add(metric);
-
+            
             this.TrackUserAsUnchanged(user);
             this.SaveChanges();
         }
@@ -53,11 +53,10 @@ public partial class GameDatabaseContext // Metrics
         UserGameMetric metric = this.GetGameMetricForUser(user, game, platform);
         DateTimeOffset now = this._time.Now;
         
-        this._logger.LogDebug(RefreshContext.UserMetrics, $"Updating {user}'s last login date for game {game}/platform {platform}: from {metric.LastLoginAt} to {now}.");
+        this._logger.LogDebug(RefreshContext.UserMetrics, $"Updating {user}'s last login date for {game}/{platform}: from {metric.LastLoginAt} to {now}.");
+        this.UserGameMetrics.Update(metric);
         metric.LastLoginAt = now;
         
-        this.UserGameMetrics.Update(metric);
-        this.TrackUserAsUnchanged(user);
         this.SaveChanges();
         return metric;
     }
@@ -75,23 +74,22 @@ public partial class GameDatabaseContext // Metrics
         if (metric.LastRoomUpdateAt > metric.LastLoginAt && metric.LastRoomUpdateAt > DateTimeOffset.MinValue)
         {
             long additionalMinutes = (now.ToUnixTimeSeconds() - metric.LastRoomUpdateAt.ToUnixTimeSeconds()) / 60;
-            this._logger.LogDebug(RefreshContext.UserMetrics, $"Updating {user}'s playtime for game {game}/platform {platform}: {metric.TotalPlayTimeMinutes} min + {additionalMinutes} min");
+            this._logger.LogWarning(RefreshContext.UserMetrics, $"Updating {user}'s playtime for game {game}/platform {platform}: {metric.TotalPlayTimeMinutes} min + {additionalMinutes} min");
 
             this.WriteEnsuringStatistics(user, () =>
             {
+                this.UserGameMetrics.Update(metric);
                 metric.LastRoomUpdateAt = now;
                 metric.TotalPlayTimeMinutes += additionalMinutes;
-                this.UserGameMetrics.Update(metric);
 
                 user.Statistics!.TotalPlayTimeMinutes += additionalMinutes;
             });
         }
         else
         {
+            this.UserGameMetrics.Update(metric);
             // Always update LastRoomUpdateAt, since we will use it to determine whether we should update this metric the next time (see above).
             metric.LastRoomUpdateAt = now;
-            this.UserGameMetrics.Update(metric);
-            this.TrackUserAsUnchanged(user);
             this.SaveChanges();
         }
 
