@@ -326,6 +326,7 @@ public partial class GameDatabaseContext // Statistics
             this.CalculateUserStatisticsIfNotPresent(user);
             action();
             this.MarkUserStatisticsDirty(user);
+            this.GameUserStatistics.Update(user.Statistics!);
         });
     }
 
