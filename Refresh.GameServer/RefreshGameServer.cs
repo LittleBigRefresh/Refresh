@@ -169,6 +169,7 @@ public class RefreshGameServer : RefreshServer
         this.Server.AddService<CommandService>();
         this.Server.AddService<ChallengeGhostRateLimitService>();
         this.Server.AddService<DiscordStaffService>();
+        this.Server.AddService<OverrideStatusService>();
 
         if(this._configStore.Integration!.AipiEnabled)
             this.Server.AddService<AipiService>();
