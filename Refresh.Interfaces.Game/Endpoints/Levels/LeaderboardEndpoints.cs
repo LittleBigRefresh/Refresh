@@ -4,6 +4,7 @@ using Bunkum.Core.Responses;
 using Bunkum.Listener.Protocol;
 using Bunkum.Protocols.Http;
 using Refresh.Common.Time;
+using Refresh.Core.Attributes;
 using Refresh.Core.Authentication.Permission;
 using Refresh.Core.Configuration;
 using Refresh.Core.RateLimits.EndpointRateLimiting;
@@ -25,6 +26,7 @@ public class LeaderboardEndpoints : EndpointGroup
     // LBP1 doesn't send any requests to this endpoint if a user enters an online user level.
     [GameEndpoint("play/{slotType}/{id}", ContentType.Xml, HttpMethods.Post)]
     [MinimumRole(GameUserRole.Restricted)]
+    [OverrideStatusIfPsp]
     [EndpointRateLimit(EndpointBucketId.GamePlayLevel)]
     public Response PlayLevel(RequestContext context, GameUser user, GameDatabaseContext database, string slotType, int id, DataContext dataContext)
     {
@@ -58,6 +60,7 @@ public class LeaderboardEndpoints : EndpointGroup
     
     [GameEndpoint("scoreboard/{slotType}/{id}", HttpMethods.Get, ContentType.Xml)]
     [MinimumRole(GameUserRole.Restricted)]
+    [OverrideStatusIfPsp]
     [EndpointRateLimit(EndpointBucketId.GameGetListOfLevelScores)]
     public Response GetUserScores(RequestContext context, GameUser user, GameDatabaseContext database, string slotType,
         int id, Token token, DataContext dataContext)
@@ -92,6 +95,7 @@ public class LeaderboardEndpoints : EndpointGroup
     
     [GameEndpoint("scoreboard/{slotType}/{id}", ContentType.Xml, HttpMethods.Post)]
     [EndpointRateLimit(EndpointBucketId.GameUploadLevelScore)]
+    [OverrideStatusIfPsp] // Let's see whether this is enough, or if we should actually return a serialized score list
     [RequireEmailVerified]
     public Response SubmitScore(RequestContext context, GameUser user, GameServerConfig config,
         GameDatabaseContext database, string slotType, int id, SerializedScore body, Token token,

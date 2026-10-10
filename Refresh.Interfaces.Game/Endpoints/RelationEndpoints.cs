@@ -3,6 +3,7 @@ using Bunkum.Core.Endpoints;
 using Bunkum.Core.Responses;
 using Bunkum.Listener.Protocol;
 using Bunkum.Protocols.Http;
+using Refresh.Core.Attributes;
 using Refresh.Core.Authentication.Permission;
 using Refresh.Core.Configuration;
 using Refresh.Core.RateLimits.EndpointRateLimiting;
@@ -19,6 +20,7 @@ public class RelationEndpoints : EndpointGroup
 {
     [GameEndpoint("favourite/slot/{slotType}/{id}", HttpMethods.Post)]
     [RequireEmailVerified]
+    [OverrideStatusIfPsp]
     [EndpointRateLimit(EndpointBucketId.HeartLevel)]
     public Response FavouriteLevel(RequestContext context, GameDatabaseContext database, GameUser user, string slotType,
         int id, GameServerConfig config, DataContext dataContext)
@@ -37,6 +39,7 @@ public class RelationEndpoints : EndpointGroup
     
     [GameEndpoint("unfavourite/slot/{slotType}/{id}", HttpMethods.Post)]
     [RequireEmailVerified]
+    [OverrideStatusIfPsp]
     [EndpointRateLimit(EndpointBucketId.HeartLevel)]
     public Response UnfavouriteLevel(RequestContext context, GameDatabaseContext database, GameUser user,
         string slotType, int id, GameServerConfig config, DataContext dataContext)
@@ -55,6 +58,7 @@ public class RelationEndpoints : EndpointGroup
     
     [GameEndpoint("favourite/user/{username}", HttpMethods.Post)]
     [RequireEmailVerified]
+    [OverrideStatusIfPsp]
     [EndpointRateLimit(EndpointBucketId.HeartUser)]
     public Response FavouriteUser(RequestContext context, GameDatabaseContext database, GameUser user, string username,
         GameServerConfig config, DataContext dataContext)
@@ -73,6 +77,7 @@ public class RelationEndpoints : EndpointGroup
     
     [GameEndpoint("unfavourite/user/{username}", HttpMethods.Post)]
     [RequireEmailVerified]
+    [OverrideStatusIfPsp]
     [EndpointRateLimit(EndpointBucketId.HeartUser)]
     public Response UnfavouriteUser(RequestContext context, GameDatabaseContext database, GameUser user,
         string username, GameServerConfig config, DataContext dataContext)
@@ -140,6 +145,7 @@ public class RelationEndpoints : EndpointGroup
     
     [GameEndpoint("tag/{slotType}/{id}", HttpMethods.Post)]
     [RequireEmailVerified]
+    [OverrideStatusIfPsp]
     [EndpointRateLimit(EndpointBucketId.TagLevel)]
     public Response SubmitTagsForLevel(RequestContext context, GameDatabaseContext database, GameUser user, DataContext dataContext,
         string slotType, int id, string body, GameServerConfig config)

@@ -15,6 +15,7 @@ using Refresh.Database.Models.Levels;
 using Refresh.Database.Models.Users;
 using Refresh.Interfaces.Game.Types.Reviews;
 using Refresh.Core.RateLimits.EndpointRateLimiting;
+using Refresh.Core.Attributes;
 
 namespace Refresh.Interfaces.Game.Endpoints;
 
@@ -51,6 +52,7 @@ public class ReviewEndpoints : EndpointGroup
     [GameEndpoint("rate/{slotType}/{id}", ContentType.Xml, HttpMethods.Post)]
     [AllowEmptyBody]
     [RequireEmailVerified]
+    [OverrideStatusIfPsp]
     [EndpointRateLimit(EndpointBucketId.RateLevel)]
     public Response SubmitLevelStarRating(RequestContext context, GameDatabaseContext database, GameUser user, string slotType, int id, 
         DataContext dataContext, GameServerConfig config)
