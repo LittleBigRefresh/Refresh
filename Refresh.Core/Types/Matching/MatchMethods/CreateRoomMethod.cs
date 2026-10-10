@@ -45,6 +45,7 @@ public class CreateRoomMethod : IMatchMethod
         }
         
         dataContext.Match.RoomAccessor.UpdateRoom(room);
+        dataContext.Database.UpdatePlayTimeOnUserMetric(dataContext.User!, dataContext.Game!, dataContext.Platform!);
 
         return OK;
     }

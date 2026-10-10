@@ -262,7 +262,7 @@ public partial class GameDatabaseContext // Statistics
 
     #region Users
 
-    internal const int UserStatisticsVersion = 2;
+    internal const int UserStatisticsVersion = 3;
     
     public IEnumerable<GameUser> GetUsersWithStatisticsNeedingUpdates()
     {
@@ -326,6 +326,7 @@ public partial class GameDatabaseContext // Statistics
             this.CalculateUserStatisticsIfNotPresent(user);
             action();
             this.MarkUserStatisticsDirty(user);
+            this.GameUserStatistics.Update(user.Statistics!);
         });
     }
 
@@ -353,6 +354,7 @@ public partial class GameDatabaseContext // Statistics
         user.Statistics.FavouriteLevelCount = this.GetTotalLevelsFavouritedByUser(user);
         user.Statistics.FavouritePlaylistCount = this.GetTotalPlaylistsFavouritedByUser(user);
         user.Statistics.PlaylistCount = this.GetTotalPlaylistsByAuthor(user);
+        user.Statistics.TotalPlayTimeMinutes = this.GetTotalPlayTimeByUser(user);
 
         user.Statistics.RecalculateAt = null;
         user.Statistics.Version = UserStatisticsVersion;

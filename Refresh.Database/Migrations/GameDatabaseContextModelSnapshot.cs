@@ -621,6 +621,31 @@ namespace Refresh.Database.Migrations
                     b.ToTable("GameScores");
                 });
 
+            modelBuilder.Entity("Refresh.Database.Models.Metrics.UserGameMetric", b =>
+                {
+                    b.Property<string>("UserId")
+                        .HasColumnType("text");
+
+                    b.Property<int>("Game")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("Platform")
+                        .HasColumnType("integer");
+
+                    b.Property<DateTimeOffset>("LastLoginAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<DateTimeOffset>("LastRoomUpdateAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<long>("TotalPlayTimeMinutes")
+                        .HasColumnType("bigint");
+
+                    b.HasKey("UserId", "Game", "Platform");
+
+                    b.ToTable("UserGameMetrics");
+                });
+
             modelBuilder.Entity("Refresh.Database.Models.Moderation.ModerationAction", b =>
                 {
                     b.Property<string>("ActionId")
@@ -1503,6 +1528,9 @@ namespace Refresh.Database.Migrations
                     b.Property<int>("ReviewCount")
                         .HasColumnType("integer");
 
+                    b.Property<long>("TotalPlayTimeMinutes")
+                        .HasColumnType("bigint");
+
                     b.Property<int>("Version")
                         .HasColumnType("integer");
 
@@ -2072,6 +2100,17 @@ namespace Refresh.Database.Migrations
                     b.Navigation("Level");
 
                     b.Navigation("Publisher");
+                });
+
+            modelBuilder.Entity("Refresh.Database.Models.Metrics.UserGameMetric", b =>
+                {
+                    b.HasOne("Refresh.Database.Models.Users.GameUser", "User")
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("User");
                 });
 
             modelBuilder.Entity("Refresh.Database.Models.Moderation.ModerationAction", b =>
