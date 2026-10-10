@@ -4,7 +4,7 @@ using Bunkum.Core.Responses;
 using Bunkum.Core.Services;
 using Bunkum.Listener.Request;
 using NotEnoughLogs;
-using Refresh.Core.RateLimits.EndpointRateLimiting;
+using Refresh.Core.Attributes;
 
 namespace Refresh.Core.Services;
 

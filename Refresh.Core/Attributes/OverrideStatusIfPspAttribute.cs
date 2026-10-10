@@ -1,4 +1,4 @@
-namespace Refresh.Core.RateLimits.EndpointRateLimiting;
+namespace Refresh.Core.Attributes;
 
 [AttributeUsage(AttributeTargets.Method)]
 public class OverrideStatusIfPspAttribute : Attribute
