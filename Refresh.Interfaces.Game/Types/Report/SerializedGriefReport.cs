@@ -6,13 +6,13 @@ namespace Refresh.Interfaces.Game.Types.Report;
 #nullable disable
 
 [XmlRoot("griefReport")]
-public class GameReport
+public class SerializedGriefReport
 {
     [XmlIgnore]
-    private List<InfoBubble> InternalInfoBubble { get; } = [];
+    private List<SerializedReportInfoBubble> InternalInfoBubble { get; } = [];
     
     [XmlElement("infoBubble")]
-    public InfoBubble[] InfoBubble 
+    public SerializedReportInfoBubble[] InfoBubble 
     {
         get => this.InternalInfoBubble.ToArray();
         set 
@@ -24,7 +24,7 @@ public class GameReport
                 return;
             }
             
-            foreach (InfoBubble infoBubble in value)
+            foreach (SerializedReportInfoBubble infoBubble in value)
                 this.InternalInfoBubble.Add(infoBubble);
         }
     }
@@ -36,7 +36,7 @@ public class GameReport
     public int InternalType { get; set; }
 
     [XmlElement("marqee")]
-    public Marqee Marqee { get; set; }
+    public SerializedReportMarqee Marqee { get; set; }
 
     [XmlElement("levelOwner")]
     public string LevelOwner { get; set; }
@@ -60,10 +60,10 @@ public class GameReport
     public string JpegHash { get; set; }
 
     [XmlIgnore]
-    private List<Player> InternalPlayers { get; } = [];
+    private List<SerializedReportPlayer> InternalPlayers { get; } = [];
 
     [XmlElement("player")]
-    public Player[] Players 
+    public SerializedReportPlayer[] Players 
     {
         get => this.InternalPlayers.ToArray();
         set 
@@ -75,11 +75,11 @@ public class GameReport
                 return;
             }
             
-            foreach (Player player in value)
+            foreach (SerializedReportPlayer player in value)
                 this.InternalPlayers.Add(player);
         }
     }
 
     [XmlElement("screenElements")]
-    public ScreenElements ScreenElements { get; set; }
+    public SerializedReportScreenElements ScreenElements { get; set; }
 }

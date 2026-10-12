@@ -4,9 +4,9 @@ namespace Refresh.Interfaces.Game.Types.Report;
 
 #nullable disable
 
-[XmlRoot("screenRect")]
-public class ScreenRect
+[XmlRoot("marqee")]
+public class SerializedReportMarqee
 { 
     [XmlElement("rect")] 
-    public Rect Rect { get; set; } 
+    public SerializedReportRect Rect { get; set; } 
 }

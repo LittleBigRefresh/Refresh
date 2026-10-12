@@ -26,7 +26,7 @@ public class ReportingEndpoints : EndpointGroup
     [GameEndpoint("grief", HttpMethods.Post, ContentType.Xml)]
     [RequireEmailVerified]
     [EndpointRateLimit(EndpointBucketId.GameUploadGriefReport)]
-    public Response UploadReport(RequestContext context, GameDatabaseContext database, GameReport body, GameUser user,
+    public Response UploadReport(RequestContext context, GameDatabaseContext database, SerializedGriefReport body, GameUser user,
         IDateTimeProvider time, Token token, GameServerConfig config)
     {
         if (user.IsWriteBlocked(config))
@@ -138,7 +138,7 @@ public class ReportingEndpoints : EndpointGroup
         return OK;
     }
     
-    private static string NormalizeRectangle(Rect rect, Size imageSize)
+    private static string NormalizeRectangle(SerializedReportRect rect, Size imageSize)
     {
         float halfWidth = imageSize.Width / 2f;
         float halfHeight = imageSize.Height / 2f;

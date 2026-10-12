@@ -5,13 +5,13 @@ namespace Refresh.Interfaces.Game.Types.Report;
 #nullable disable
 
 [XmlRoot("screenElements")]
-public class ScreenElements
+public class SerializedReportScreenElements
 { 
     [XmlIgnore]
-    private List<Slot> InternalSlot { get; } = [];
+    private List<SerializedReportSlot> InternalSlot { get; } = [];
 
     [XmlElement("slot")] 
-    public Slot[] Slot 
+    public SerializedReportSlot[] Slot 
     {
         get => this.InternalSlot.ToArray();
         set 
@@ -23,16 +23,16 @@ public class ScreenElements
                 return;
             }
 
-            foreach (Slot slot in value)
+            foreach (SerializedReportSlot slot in value)
                 this.InternalSlot.Add(slot);
         }
     }
 
     [XmlIgnore]
-    private List<Player> InternalPlayer { get; } = []; 
+    private List<SerializedReportPlayer> InternalPlayer { get; } = []; 
     
     [XmlElement("player")] 
-    public Player[] Player 
+    public SerializedReportPlayer[] Player 
     {
         get => this.InternalPlayer.ToArray();
         set 
@@ -44,7 +44,7 @@ public class ScreenElements
                 return;
             }
             
-            foreach (Player player in value)
+            foreach (SerializedReportPlayer player in value)
                 this.InternalPlayer.Add(player);
         }
     }
