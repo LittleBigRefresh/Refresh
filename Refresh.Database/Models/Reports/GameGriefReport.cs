@@ -1,7 +1,6 @@
-﻿using System.Drawing;
+﻿using MongoDB.Bson;
 using Refresh.Database.Models.Authentication;
 using Refresh.Database.Models.Levels;
-using Refresh.Database.Models.Photos;
 using Refresh.Database.Models.Relations;
 using Refresh.Database.Models.Users;
 
@@ -11,14 +10,18 @@ public class GameGriefReport
 {
     [Key] public int ReportId { get; set; }
     
+    [Required, ForeignKey(nameof(ReporterUserId))]
     public GameUser Reporter { get; set; } = null!;
+    [Required] public ObjectId ReporterUserId { get; set; }
+
     public DateTimeOffset ReportDate { get; set; }
     public TokenGame GameVersion { get; set; }
     
     // Level data
     public int? LevelId { get; set; }
-    [ForeignKey("LevelId")]
+    [ForeignKey(nameof(LevelId))]
     public GameLevel? Level { get; set; } // Level reference only provided if it's an uploaded or story level
+    
     public string? LevelType { get; set; }
     public string InitialStateHash { get; set; } = "0"; // Hash for asset of initial level
     public string GriefStateHash { get; set; } = "0"; // Hash for asset of griefed level
@@ -33,7 +36,10 @@ public class GameGriefReport
     public string Description { get; set; } = string.Empty;
     
     // Moderation
+    [Required, ForeignKey(nameof(ReviewedByUserId))]
     public GameUser? ReviewedBy { get; set; }
+    [Required] public ObjectId? ReviewedByUserId { get; set; }
+
     public DateTimeOffset? ReviewedDate { get; set; }
     public string? ModeratorNotes { get; set; }
     public GriefReportStatus Status { get; set; } = GriefReportStatus.Pending; 

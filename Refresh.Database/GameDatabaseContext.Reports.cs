@@ -61,13 +61,13 @@ public partial class GameDatabaseContext // Reports
     [Pure]
     public DatabaseList<GameGriefReport> GetReportsByReporter(GameUser reporter, int count, int skip) =>
         new(this.GameGriefReportsIncluded
-            .Where(r => r.Reporter == reporter)
+            .Where(r => r.ReporterUserId == reporter.UserId)
             .OrderByDescending(r => r.ReportDate), skip, count);
     
     [Pure]
     public DatabaseList<GameGriefReport> GetReportsForLevel(GameLevel level, int count, int skip) =>
         new(this.GameGriefReportsIncluded
-            .Where(r => r.Level == level)
+            .Where(r => r.LevelId == level.LevelId)
             .OrderByDescending(r => r.ReportDate), skip, count);
     
     [Pure]
