@@ -5,7 +5,7 @@ namespace Refresh.Core.Configuration;
 
 public class EndpointRateLimitConfig : Config
 {
-    public override int CurrentConfigVersion => 1;
+    public override int CurrentConfigVersion => 2;
     public override int Version { get; set; }
     
     protected override void Migrate(int oldVer, dynamic oldConfig)
