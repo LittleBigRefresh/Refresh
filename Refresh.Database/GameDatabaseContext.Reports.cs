@@ -16,9 +16,8 @@ public partial class GameDatabaseContext // Reports
         .Include(r => r.ReviewedBy)
         .Include(r => r.ReviewedBy!.Statistics)
         .Include(r => r.Players)
-        .ThenInclude(p => p.User)
-        .Include(r => r.Players)
-        .ThenInclude(p => p.User.Statistics);
+        .ThenInclude(p => p.User!)
+        .ThenInclude(p => p.Statistics);
     
     public void CreateReport(GameGriefReport griefReport)
     {
