@@ -124,12 +124,12 @@ public class LbpPspExplosionPreventionTests : GameServerTest
         Assert.That(psp.PostAsync($"/lbp/rate/slot/user/22432?rating=1", null).Result.StatusCode, Is.EqualTo(OK));
 
         // Invalid rating
-        Assert.That(nonPsp.PostAsync($"/lbp/rate/slot/user/22432?rating=67", null).Result.StatusCode, Is.EqualTo(BadRequest));
-        Assert.That(psp.PostAsync($"/lbp/rate/slot/user/22432?rating=67", null).Result.StatusCode, Is.EqualTo(OK));
+        Assert.That(nonPsp.PostAsync($"/lbp/rate/slot/user/{level.LevelId}?rating=67", null).Result.StatusCode, Is.EqualTo(BadRequest));
+        Assert.That(psp.PostAsync($"/lbp/rate/slot/user/{level.LevelId}?rating=67", null).Result.StatusCode, Is.EqualTo(OK));
 
         // Missing rating
-        Assert.That(nonPsp.PostAsync($"/lbp/rate/slot/user/22432", null).Result.StatusCode, Is.EqualTo(BadRequest));
-        Assert.That(psp.PostAsync($"/lbp/rate/slot/user/22432", null).Result.StatusCode, Is.EqualTo(OK));
+        Assert.That(nonPsp.PostAsync($"/lbp/rate/slot/user/{level.LevelId}", null).Result.StatusCode, Is.EqualTo(BadRequest));
+        Assert.That(psp.PostAsync($"/lbp/rate/slot/user/{level.LevelId}", null).Result.StatusCode, Is.EqualTo(OK));
 
         // Blocked by read-only mode
         context.Server.Value.GameServerConfig.NewUserPermissions.ReadOnlyMode = true;
@@ -160,16 +160,16 @@ public class LbpPspExplosionPreventionTests : GameServerTest
         Assert.That(psp.PostAsync($"/lbp/tag/slot/user/22432", new StringContent("t=TAG_Weird")).Result.StatusCode, Is.EqualTo(OK));
 
         // Invalid tag
-        Assert.That(nonPsp.PostAsync($"/lbp/tag/slot/user/22432", new StringContent("t=TAG_ILOVEPSP")).Result.StatusCode, Is.EqualTo(BadRequest));
-        Assert.That(psp.PostAsync($"/lbp/tag/slot/user/22432", new StringContent("t=TAG_ILOVEPSP")).Result.StatusCode, Is.EqualTo(OK));
+        Assert.That(nonPsp.PostAsync($"/lbp/tag/slot/user/{level.LevelId}", new StringContent("t=TAG_ILOVEPSP")).Result.StatusCode, Is.EqualTo(BadRequest));
+        Assert.That(psp.PostAsync($"/lbp/tag/slot/user/{level.LevelId}", new StringContent("t=TAG_ILOVEPSP")).Result.StatusCode, Is.EqualTo(OK));
 
         // Missing tag
-        Assert.That(nonPsp.PostAsync($"/lbp/tag/slot/user/22432", new StringContent("t=")).Result.StatusCode, Is.EqualTo(BadRequest));
-        Assert.That(psp.PostAsync($"/lbp/tag/slot/user/22432", new StringContent("t=")).Result.StatusCode, Is.EqualTo(OK));
+        Assert.That(nonPsp.PostAsync($"/lbp/tag/slot/user/{level.LevelId}", new StringContent("t=")).Result.StatusCode, Is.EqualTo(BadRequest));
+        Assert.That(psp.PostAsync($"/lbp/tag/slot/user/{level.LevelId}", new StringContent("t=")).Result.StatusCode, Is.EqualTo(OK));
 
         // Missing body
-        Assert.That(nonPsp.PostAsync($"/lbp/tag/slot/user/22432", null).Result.StatusCode, Is.EqualTo(BadRequest));
-        Assert.That(psp.PostAsync($"/lbp/tag/slot/user/22432", null).Result.StatusCode, Is.EqualTo(OK));
+        Assert.That(nonPsp.PostAsync($"/lbp/tag/slot/user/{level.LevelId}", null).Result.StatusCode, Is.EqualTo(BadRequest));
+        Assert.That(psp.PostAsync($"/lbp/tag/slot/user/{level.LevelId}", null).Result.StatusCode, Is.EqualTo(OK));
 
         // Blocked by read-only mode
         context.Server.Value.GameServerConfig.NewUserPermissions.ReadOnlyMode = true;
