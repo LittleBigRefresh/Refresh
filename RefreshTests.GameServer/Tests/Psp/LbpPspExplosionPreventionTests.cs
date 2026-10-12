@@ -12,7 +12,7 @@ using RefreshTests.GameServer.Extensions;
 
 namespace RefreshTests.GameServer.Tests.Psp;
 
-public class LbpPspStatusOverrideTests : GameServerTest
+public class LbpPspExplosionPreventionTests : GameServerTest
 {
     private const string TEST_ASSET_HASH = "0ec63b140374ba704a58fa0c743cb357683313dd";
     private static readonly byte[] TestAsset = ResourceHelper.ReadResource("RefreshTests.GameServer.Resources.1x1.png", Assembly.GetExecutingAssembly());

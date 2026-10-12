@@ -1,10 +1,10 @@
+using System.Xml.Serialization;
 using Bunkum.Core;
 using Bunkum.Core.Endpoints;
 using Bunkum.Core.Responses;
 using Bunkum.Listener.Protocol;
 using Bunkum.Protocols.Http;
 using Refresh.Common.Time;
-using Refresh.Core.Attributes;
 using Refresh.Core.Authentication.Permission;
 using Refresh.Core.Configuration;
 using Refresh.Core.RateLimits.EndpointRateLimiting;
@@ -26,9 +26,22 @@ public class LeaderboardEndpoints : EndpointGroup
     // LBP1 doesn't send any requests to this endpoint if a user enters an online user level.
     [GameEndpoint("play/{slotType}/{id}", ContentType.Xml, HttpMethods.Post)]
     [MinimumRole(GameUserRole.Restricted)]
-    [OverrideStatusIfPsp]
     [EndpointRateLimit(EndpointBucketId.GamePlayLevel)]
-    public Response PlayLevel(RequestContext context, GameUser user, GameDatabaseContext database, string slotType, int id, DataContext dataContext)
+    public Response PlayLevel(RequestContext context, GameUser user, GameDatabaseContext database, string slotType, int id)
+    {
+        Response realResponse = this.PlayLevelInternal(context, user, database, slotType, id);
+
+        // PSP always wants OK, else it will cancel login during downloaded level play data uploads.
+        if (context.IsPSP())
+        {
+            context.Logger.LogTrace(BunkumCategory.Game, $"Actual response status is {realResponse.StatusCode}, but the client is LBP PSP, so we will return OK instead.");
+            return OK;
+        }
+
+        return realResponse;
+    }
+
+    private Response PlayLevelInternal(RequestContext context, GameUser user, GameDatabaseContext database, string slotType, int id)
     {
         GameLevel? level = database.GetLevelByIdAndType(slotType, id);
         if (level == null) return NotFound;
@@ -60,7 +73,6 @@ public class LeaderboardEndpoints : EndpointGroup
     
     [GameEndpoint("scoreboard/{slotType}/{id}", HttpMethods.Get, ContentType.Xml)]
     [MinimumRole(GameUserRole.Restricted)]
-    [OverrideStatusIfPsp]
     [EndpointRateLimit(EndpointBucketId.GameGetListOfLevelScores)]
     public Response GetUserScores(RequestContext context, GameUser user, GameDatabaseContext database, string slotType,
         int id, Token token, DataContext dataContext)
@@ -95,9 +107,41 @@ public class LeaderboardEndpoints : EndpointGroup
     
     [GameEndpoint("scoreboard/{slotType}/{id}", ContentType.Xml, HttpMethods.Post)]
     [EndpointRateLimit(EndpointBucketId.GameUploadLevelScore)]
-    [OverrideStatusIfPsp] // Let's see whether this is enough, or if we should actually return a serialized score list
     [RequireEmailVerified]
     public Response SubmitScore(RequestContext context, GameUser user, GameServerConfig config,
+        GameDatabaseContext database, string slotType, int id, string body, Token token,
+        DataContext dataContext)
+    {
+        // Parsing manually because we don't want unparseable requests from PSP to cause MainMiddleware to return BadRequest to it,
+        // else it will explode or something.
+        SerializedScore? score = null;
+        try
+        {
+            XmlSerializer serializer = new(typeof(SerializedScore));
+            object? obj = serializer.Deserialize(new StringReader(body)) ?? throw new Exception();
+            score = (SerializedScore)obj;
+        }
+        catch (Exception e)
+        {
+            context.Logger.LogError(BunkumCategory.UserContent, $"Failed to parse score upload: {e}\n\nXML: {body}");
+        }
+
+        Response realResponse = score == null 
+            ? BadRequest
+            : this.SubmitScoreInternal(context, user, config, database, slotType, id, score, token, dataContext);
+
+        // PSP always wants OK, else it will cancel login during downloaded level play data uploads.
+        // Maybe it also expects an actual score list, so return an empty one aswell. We will see whether we need to do more later.
+        if (context.IsPSP())
+        {
+            context.Logger.LogTrace(BunkumCategory.Game, $"Actual response status is {realResponse.StatusCode}, but the client is LBP PSP, so we will return OK instead.");
+            return new Response(new SerializedScoreLeaderboardList(), ContentType.Xml);
+        }
+
+        return realResponse;
+    }
+    
+    private Response SubmitScoreInternal(RequestContext context, GameUser user, GameServerConfig config,
         GameDatabaseContext database, string slotType, int id, SerializedScore body, Token token,
         DataContext dataContext)
     {
