@@ -14,7 +14,10 @@ public partial class ProfileCommentRelation : ICommentRelation<GameProfileCommen
     public GameUser User { get; set; }
     [Required] public ObjectId UserId { get; set; }
     
-    [Required] public GameProfileComment Comment { get; set; }
+    [Required, ForeignKey(nameof(CommentSequentialId))]
+    public GameProfileComment Comment { get; set; }
+    [Required] public int CommentSequentialId { get; set; }
+    
     public RatingType RatingType { get; set; }
     public DateTimeOffset Timestamp { get; set; }
 }
