@@ -114,8 +114,15 @@ public class LbpPspExplosionPreventionTests : GameServerTest
         HttpClient nonPsp = context.GetAuthenticatedClient(TokenType.Game, TokenGame.LittleBigPlanet1, TokenPlatform.PS3, user);
         HttpClient psp = context.GetAuthenticatedClient(TokenType.Game, TokenGame.LittleBigPlanetPSP, TokenPlatform.PSP, user);
         psp.DefaultRequestHeaders.UserAgent.TryParseAdd("LBPPSP CLIENT");
+        
+        // Didn't play the level yet
+        Assert.That(nonPsp.PostAsync($"/lbp/rate/user/{level.LevelId}?rating=1", null).Result.StatusCode, Is.EqualTo(Unauthorized));
+        Assert.That(psp.PostAsync($"/lbp/rate/user/{level.LevelId}?rating=1", null).Result.StatusCode, Is.EqualTo(OK));
 
-        // Ensure both get OK if everything is OK
+        // Ensure both get OK if the level is played, and everything else is OK
+        HttpResponseMessage message = nonPsp.PostAsync($"/lbp/play/user/{level.LevelId}", null).Result;
+        Assert.That(message.StatusCode, Is.EqualTo(OK));
+
         Assert.That(nonPsp.PostAsync($"/lbp/rate/user/{level.LevelId}?rating=1", null).Result.StatusCode, Is.EqualTo(OK));
         Assert.That(psp.PostAsync($"/lbp/rate/user/{level.LevelId}?rating=1", null).Result.StatusCode, Is.EqualTo(OK));
 
@@ -205,7 +212,7 @@ public class LbpPspExplosionPreventionTests : GameServerTest
         Assert.That(context.Database.GetTotalCompletionsForLevelByUser(level, user), Is.EqualTo(1));
 
         // Ensure both get OK if the level is played, and everything else is OK
-        HttpResponseMessage message = nonPsp.PostAsync($"/lbp/play/user/{level.LevelId}", new StringContent(score.AsXML())).Result;
+        HttpResponseMessage message = nonPsp.PostAsync($"/lbp/play/user/{level.LevelId}", null).Result;
         Assert.That(message.StatusCode, Is.EqualTo(OK));
 
         Assert.That(nonPsp.PostAsync($"/lbp/scoreboard/user/{level.LevelId}", new StringContent(score.AsXML())).Result.StatusCode, Is.EqualTo(OK));
