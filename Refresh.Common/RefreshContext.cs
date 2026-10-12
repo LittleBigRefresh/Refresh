@@ -14,4 +14,5 @@ public enum RefreshContext
     Database,
     CacheService,
     RateLimit,
+    UserMetrics,
 }

@@ -7,6 +7,7 @@ using Refresh.Core.Services;
 using Refresh.Core.Types.Data;
 using Refresh.Core.Types.Matching;
 using Refresh.Core.Types.Matching.Responses;
+using Refresh.Database;
 using Refresh.Database.Models.Authentication;
 using Refresh.Database.Models.Users;
 
@@ -14,6 +15,19 @@ namespace RefreshTests.GameServer.Tests.Matching;
 
 public class MatchingTests : GameServerTest
 {
+    private DataContext GetDataContext(GameDatabaseContext database, Token token, MatchService match)
+    {
+        return new DataContext
+        {
+            Database = database,
+            Logger = Logger,
+            DataStore = null!, //this isn't accessed by matching
+            Match = match,
+            GuidChecker = null!,
+            Token = token,
+        };
+    }
+
     [Test]
     public void CreatesRooms()
     {
@@ -509,8 +523,8 @@ public class MatchingTests : GameServerTest
         Token token1 = context.CreateToken(user1);
         Token token2 = context.CreateToken(user2);
 
-        match.ExecuteMethod("CreateRoom", roomData, context.GetDataContext(token1), config);
-        match.ExecuteMethod("CreateRoom", roomData, context.GetDataContext(token2), config);
+        match.ExecuteMethod("CreateRoom", roomData, this.GetDataContext(context.Database, token1, match), config);
+        match.ExecuteMethod("CreateRoom", roomData, this.GetDataContext(context.Database, token2, match), config);
         
         // Tell user2 to try to find a room
         Response response = match.ExecuteMethod("FindBestRoom", new SerializedRoomData
@@ -523,7 +537,7 @@ public class MatchingTests : GameServerTest
                 (int)RoomSlotType.Online,
                 1337,
             ],
-        }, context.GetDataContext(token2), config);
+        }, this.GetDataContext(context.Database, token2, match), config);
         Assert.That(response.StatusCode, Is.EqualTo(NotFound));
     }
 }
