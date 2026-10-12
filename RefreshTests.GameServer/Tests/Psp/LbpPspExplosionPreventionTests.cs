@@ -252,8 +252,8 @@ public class LbpPspExplosionPreventionTests : GameServerTest
         context.Server.Value.GameServerConfig.NormalUserPermissions.ReadOnlyMode = true;
         context.Server.Value.GameServerConfig.TrustedUserPermissions.ReadOnlyMode = true;
         
-        Assert.That(nonPsp.PostAsync($"/lbp/tag/slot/user/{level.LevelId}?t=TAG_Weird", null).Result.StatusCode, Is.EqualTo(Unauthorized));
-        Assert.That(psp.PostAsync($"/lbp/tag/slot/user/{level.LevelId}?t=TAG_Weird", null).Result.StatusCode, Is.EqualTo(OK));
+        Assert.That(nonPsp.PostAsync($"/lbp/scoreboard/user/{level.LevelId}", new StringContent(score.AsXML())).Result.StatusCode, Is.EqualTo(Unauthorized));
+        Assert.That(psp.PostAsync($"/lbp/scoreboard/user/{level.LevelId}", new StringContent(score.AsXML())).Result.StatusCode, Is.EqualTo(OK));
         Assert.That(context.Database.GetTotalCompletionsForLevelByUser(level, user), Is.EqualTo(7));
     }
 
