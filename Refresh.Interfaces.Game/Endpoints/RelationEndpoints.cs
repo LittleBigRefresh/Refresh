@@ -140,11 +140,12 @@ public class RelationEndpoints : EndpointGroup
     
     [GameEndpoint("tag/{slotType}/{id}", HttpMethods.Post)]
     [RequireEmailVerified]
+    [AllowEmptyBody]
     [EndpointRateLimit(EndpointBucketId.TagLevel)]
     public Response SubmitTagForLevel(RequestContext context, GameDatabaseContext database, GameUser user,
-        string slotType, int id, string body, GameServerConfig config)
+        string slotType, int id, string? body, GameServerConfig config)
     {
-        Response realResponse = this.SubmitTagForLevelInternal(context, database, user, slotType, id, body, config);
+        Response realResponse = this.SubmitTagForLevelInternal(context, database, user, slotType, id, body ?? "", config);
 
         // PSP always wants OK, else it will cancel login during downloaded level play data uploads.
         if (context.IsPSP())
@@ -171,13 +172,14 @@ public class RelationEndpoints : EndpointGroup
         if (!body.StartsWith("t="))
             return BadRequest;
 
-        Tag? tag = TagExtensions.FromLbpString(body[2..]);
+        Tag tag = TagExtensions.FromLbpString(body[2..]);
 
-        // If it was an invalid tag, return BadRequest
-        if (tag == null)
+        // If it was an invalid tag, return BadRequest.
+        // Cannot be null due to weird behaviour with GetValueOrDefault(), so do it like this instead.
+        if (tag == Tag.Invalid)
             return BadRequest;
         
-        database.AddTagRelation(user, level, tag.Value);
+        database.AddTagRelation(user, level, tag);
         
         return OK;
     }

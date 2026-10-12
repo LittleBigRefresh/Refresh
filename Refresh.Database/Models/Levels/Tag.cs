@@ -82,6 +82,9 @@ public enum Tag : byte
     Electric = 75,
     Frosty,
     Insane,
+    // This isn't in TagsMap on purpose, because this is only used as the default value by FromLbpString(),
+    // because GetValueOrDefault() will never return null in this case. "Invalid" tag uploads should be rejected.
+    Invalid,
 }
 
 public static class TagExtensions
@@ -193,5 +196,5 @@ public static class TagExtensions
 
     public static string? ToLbpString(this Tag tag) => StringMap.GetValueOrDefault(tag);
 
-    public static Tag? FromLbpString(string str) => TagsMap.GetValueOrDefault(str);
+    public static Tag FromLbpString(string str) => TagsMap.GetValueOrDefault(str, Tag.Invalid);
 }
