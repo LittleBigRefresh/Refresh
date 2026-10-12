@@ -147,7 +147,13 @@ public class RelationEndpoints : EndpointGroup
         Response realResponse = this.SubmitTagForLevelInternal(context, database, user, slotType, id, body, config);
 
         // PSP always wants OK, else it will cancel login during downloaded level play data uploads.
-        return context.IsPSP() ? OK : realResponse;
+        if (context.IsPSP())
+        {
+            context.Logger.LogTrace(BunkumCategory.Game, $"Actual response status is {realResponse.StatusCode}, but the client is LBP PSP, so we will return OK instead.");
+            return OK;
+        }
+
+        return realResponse;
     }
     
     private Response SubmitTagForLevelInternal(RequestContext context, GameDatabaseContext database, GameUser user,
