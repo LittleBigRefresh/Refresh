@@ -199,10 +199,10 @@ public class LbpPspExplosionPreventionTests : GameServerTest
             PlayerUsernames = [user.Username],
         };
 
-        // Didn't play the level yet
+        // Didn't play the level yet (PSP score is still saved)
         Assert.That(nonPsp.PostAsync($"/lbp/scoreboard/user/{level.LevelId}", new StringContent(score.AsXML())).Result.StatusCode, Is.EqualTo(Unauthorized));
         Assert.That(psp.PostAsync($"/lbp/scoreboard/user/{level.LevelId}", new StringContent(score.AsXML())).Result.StatusCode, Is.EqualTo(OK));
-        Assert.That(context.Database.GetTotalCompletionsForLevelByUser(level, user), Is.Zero);
+        Assert.That(context.Database.GetTotalCompletionsForLevelByUser(level, user), Is.EqualTo(1));
 
         // Ensure both get OK if the level is played, and everything else is OK
         HttpResponseMessage message = nonPsp.PostAsync($"/lbp/play/user/{level.LevelId}", new StringContent(score.AsXML())).Result;
@@ -210,7 +210,7 @@ public class LbpPspExplosionPreventionTests : GameServerTest
 
         Assert.That(nonPsp.PostAsync($"/lbp/scoreboard/user/{level.LevelId}", new StringContent(score.AsXML())).Result.StatusCode, Is.EqualTo(OK));
         Assert.That(psp.PostAsync($"/lbp/scoreboard/user/{level.LevelId}", new StringContent(score.AsXML())).Result.StatusCode, Is.EqualTo(OK));
-        Assert.That(context.Database.GetTotalCompletionsForLevelByUser(level, user), Is.EqualTo(2));
+        Assert.That(context.Database.GetTotalCompletionsForLevelByUser(level, user), Is.EqualTo(3));
 
         // Non-existent level
         Assert.That(nonPsp.PostAsync($"/lbp/scoreboard/user/67676", new StringContent(score.AsXML())).Result.StatusCode, Is.EqualTo(NotFound));
@@ -219,33 +219,33 @@ public class LbpPspExplosionPreventionTests : GameServerTest
         // Invalid XML in response
         Assert.That(nonPsp.PostAsync($"/lbp/scoreboard/user/{level.LevelId}", new StringContent("nut")).Result.StatusCode, Is.EqualTo(BadRequest));
         Assert.That(psp.PostAsync($"/lbp/scoreboard/user/{level.LevelId}", new StringContent("nut")).Result.StatusCode, Is.EqualTo(OK));
-        Assert.That(context.Database.GetTotalCompletionsForLevelByUser(level, user), Is.EqualTo(2));
+        Assert.That(context.Database.GetTotalCompletionsForLevelByUser(level, user), Is.EqualTo(3));
 
         // Score is negative (PSP score is still saved)
         score.Score = -420;
         Assert.That(nonPsp.PostAsync($"/lbp/scoreboard/user/{level.LevelId}", new StringContent(score.AsXML())).Result.StatusCode, Is.EqualTo(BadRequest));
         Assert.That(psp.PostAsync($"/lbp/scoreboard/user/{level.LevelId}", new StringContent(score.AsXML())).Result.StatusCode, Is.EqualTo(OK));
-        Assert.That(context.Database.GetTotalCompletionsForLevelByUser(level, user), Is.EqualTo(3));
+        Assert.That(context.Database.GetTotalCompletionsForLevelByUser(level, user), Is.EqualTo(4));
 
         // Score is too high (PSP score is still saved)
         score.Score = int.MaxValue;
         Assert.That(nonPsp.PostAsync($"/lbp/scoreboard/user/{level.LevelId}", new StringContent(score.AsXML())).Result.StatusCode, Is.EqualTo(BadRequest));
         Assert.That(psp.PostAsync($"/lbp/scoreboard/user/{level.LevelId}", new StringContent(score.AsXML())).Result.StatusCode, Is.EqualTo(OK));
-        Assert.That(context.Database.GetTotalCompletionsForLevelByUser(level, user), Is.EqualTo(4));
+        Assert.That(context.Database.GetTotalCompletionsForLevelByUser(level, user), Is.EqualTo(5));
 
         // Missing username in participant list (PSP score is still saved)
         score.Score = 5;
         score.PlayerUsernames = [];
         Assert.That(nonPsp.PostAsync($"/lbp/scoreboard/user/{level.LevelId}", new StringContent(score.AsXML())).Result.StatusCode, Is.EqualTo(BadRequest));
         Assert.That(psp.PostAsync($"/lbp/scoreboard/user/{level.LevelId}", new StringContent(score.AsXML())).Result.StatusCode, Is.EqualTo(OK));
-        Assert.That(context.Database.GetTotalCompletionsForLevelByUser(level, user), Is.EqualTo(5));
+        Assert.That(context.Database.GetTotalCompletionsForLevelByUser(level, user), Is.EqualTo(6));
 
         // Invalid score type (PSP score is still saved)
         score.ScoreType = 90;
         score.PlayerUsernames = [];
         Assert.That(nonPsp.PostAsync($"/lbp/scoreboard/user/{level.LevelId}", new StringContent(score.AsXML())).Result.StatusCode, Is.EqualTo(BadRequest));
         Assert.That(psp.PostAsync($"/lbp/scoreboard/user/{level.LevelId}", new StringContent(score.AsXML())).Result.StatusCode, Is.EqualTo(OK));
-        Assert.That(context.Database.GetTotalCompletionsForLevelByUser(level, user), Is.EqualTo(6));
+        Assert.That(context.Database.GetTotalCompletionsForLevelByUser(level, user), Is.EqualTo(7));
 
         // Blocked by read-only mode
         context.Server.Value.GameServerConfig.NewUserPermissions.ReadOnlyMode = true;
@@ -254,7 +254,7 @@ public class LbpPspExplosionPreventionTests : GameServerTest
         
         Assert.That(nonPsp.PostAsync($"/lbp/tag/slot/user/{level.LevelId}?t=TAG_Weird", null).Result.StatusCode, Is.EqualTo(Unauthorized));
         Assert.That(psp.PostAsync($"/lbp/tag/slot/user/{level.LevelId}?t=TAG_Weird", null).Result.StatusCode, Is.EqualTo(OK));
-        Assert.That(context.Database.GetTotalCompletionsForLevelByUser(level, user), Is.EqualTo(6));
+        Assert.That(context.Database.GetTotalCompletionsForLevelByUser(level, user), Is.EqualTo(7));
     }
 
     [Test]
