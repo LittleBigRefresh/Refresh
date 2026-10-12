@@ -116,28 +116,28 @@ public class LbpPspExplosionPreventionTests : GameServerTest
         psp.DefaultRequestHeaders.UserAgent.TryParseAdd("LBPPSP CLIENT");
 
         // Ensure both get OK if everything is OK
-        Assert.That(nonPsp.PostAsync($"/lbp/rate/slot/user/{level.LevelId}?rating=1", null).Result.StatusCode, Is.EqualTo(OK));
-        Assert.That(psp.PostAsync($"/lbp/rate/slot/user/{level.LevelId}?rating=1", null).Result.StatusCode, Is.EqualTo(OK));
+        Assert.That(nonPsp.PostAsync($"/lbp/rate/user/{level.LevelId}?rating=1", null).Result.StatusCode, Is.EqualTo(OK));
+        Assert.That(psp.PostAsync($"/lbp/rate/user/{level.LevelId}?rating=1", null).Result.StatusCode, Is.EqualTo(OK));
 
         // Non-existent level
-        Assert.That(nonPsp.PostAsync($"/lbp/rate/slot/user/22432?rating=1", null).Result.StatusCode, Is.EqualTo(NotFound));
-        Assert.That(psp.PostAsync($"/lbp/rate/slot/user/22432?rating=1", null).Result.StatusCode, Is.EqualTo(OK));
+        Assert.That(nonPsp.PostAsync($"/lbp/rate/user/22432?rating=1", null).Result.StatusCode, Is.EqualTo(NotFound));
+        Assert.That(psp.PostAsync($"/lbp/rate/user/22432?rating=1", null).Result.StatusCode, Is.EqualTo(OK));
 
         // Invalid rating
-        Assert.That(nonPsp.PostAsync($"/lbp/rate/slot/user/{level.LevelId}?rating=67", null).Result.StatusCode, Is.EqualTo(BadRequest));
-        Assert.That(psp.PostAsync($"/lbp/rate/slot/user/{level.LevelId}?rating=67", null).Result.StatusCode, Is.EqualTo(OK));
+        Assert.That(nonPsp.PostAsync($"/lbp/rate/user/{level.LevelId}?rating=67", null).Result.StatusCode, Is.EqualTo(BadRequest));
+        Assert.That(psp.PostAsync($"/lbp/rate/user/{level.LevelId}?rating=67", null).Result.StatusCode, Is.EqualTo(OK));
 
         // Missing rating
-        Assert.That(nonPsp.PostAsync($"/lbp/rate/slot/user/{level.LevelId}", null).Result.StatusCode, Is.EqualTo(BadRequest));
-        Assert.That(psp.PostAsync($"/lbp/rate/slot/user/{level.LevelId}", null).Result.StatusCode, Is.EqualTo(OK));
+        Assert.That(nonPsp.PostAsync($"/lbp/rate/user/{level.LevelId}", null).Result.StatusCode, Is.EqualTo(BadRequest));
+        Assert.That(psp.PostAsync($"/lbp/rate/user/{level.LevelId}", null).Result.StatusCode, Is.EqualTo(OK));
 
         // Blocked by read-only mode
         context.Server.Value.GameServerConfig.NewUserPermissions.ReadOnlyMode = true;
         context.Server.Value.GameServerConfig.NormalUserPermissions.ReadOnlyMode = true;
         context.Server.Value.GameServerConfig.TrustedUserPermissions.ReadOnlyMode = true;
         
-        Assert.That(nonPsp.PostAsync($"/lbp/rate/slot/user/{level.LevelId}?rating=1", null).Result.StatusCode, Is.EqualTo(Unauthorized));
-        Assert.That(psp.PostAsync($"/lbp/rate/slot/user/{level.LevelId}?rating=1", null).Result.StatusCode, Is.EqualTo(OK));
+        Assert.That(nonPsp.PostAsync($"/lbp/rate/user/{level.LevelId}?rating=1", null).Result.StatusCode, Is.EqualTo(Unauthorized));
+        Assert.That(psp.PostAsync($"/lbp/rate/user/{level.LevelId}?rating=1", null).Result.StatusCode, Is.EqualTo(OK));
     }
 
     [Test]
