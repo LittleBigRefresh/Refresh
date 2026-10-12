@@ -140,8 +140,24 @@ public class RelationEndpoints : EndpointGroup
     
     [GameEndpoint("tag/{slotType}/{id}", HttpMethods.Post)]
     [RequireEmailVerified]
+    [AllowEmptyBody]
     [EndpointRateLimit(EndpointBucketId.TagLevel)]
-    public Response SubmitTagsForLevel(RequestContext context, GameDatabaseContext database, GameUser user, DataContext dataContext,
+    public Response SubmitTagForLevel(RequestContext context, GameDatabaseContext database, GameUser user,
+        string slotType, int id, string? body, GameServerConfig config)
+    {
+        Response realResponse = this.SubmitTagForLevelInternal(context, database, user, slotType, id, body ?? "", config);
+
+        // PSP always wants OK, else it will cancel login during downloaded level play data uploads.
+        if (context.IsPSP())
+        {
+            context.Logger.LogTrace(BunkumCategory.Game, $"Actual response status is {realResponse.StatusCode}, but the client is LBP PSP, so we will return OK instead.");
+            return OK;
+        }
+
+        return realResponse;
+    }
+    
+    private Response SubmitTagForLevelInternal(RequestContext context, GameDatabaseContext database, GameUser user,
         string slotType, int id, string body, GameServerConfig config)
     {
         if (user.IsWriteBlocked(config))
@@ -156,13 +172,14 @@ public class RelationEndpoints : EndpointGroup
         if (!body.StartsWith("t="))
             return BadRequest;
 
-        Tag? tag = TagExtensions.FromLbpString(body[2..]);
+        Tag tag = TagExtensions.FromLbpString(body[2..]);
 
-        // If it was an invalid tag, return BadRequest
-        if (tag == null)
+        // If it was an invalid tag, return BadRequest.
+        // Cannot be null due to weird behaviour with GetValueOrDefault(), so do it like this instead.
+        if (tag == Tag.Invalid)
             return BadRequest;
         
-        database.AddTagRelation(user, level, tag.Value);
+        database.AddTagRelation(user, level, tag);
         
         return OK;
     }

@@ -1,4 +1,6 @@
 using System.Drawing;
+using System.Text;
+using System.Xml.Serialization;
 using Bunkum.Core;
 using Bunkum.Core.Endpoints;
 using Bunkum.Core.Responses;
@@ -26,7 +28,38 @@ public class ReportingEndpoints : EndpointGroup
     [GameEndpoint("grief", HttpMethods.Post, ContentType.Xml)]
     [RequireEmailVerified]
     [EndpointRateLimit(EndpointBucketId.GameUploadGriefReport)]
-    public Response UploadReport(RequestContext context, GameDatabaseContext database, GameReport body, GameUser user,
+    public Response UploadReport(RequestContext context, GameDatabaseContext database, string body, GameUser user,
+        IDateTimeProvider time, Token token, GameServerConfig config)
+    {
+        // Parsing manually because we don't want unparseable requests from PSP to cause MainMiddleware to return BadRequest to it,
+        // else it will explode or something.
+        GameReport? report = null;
+        try
+        {
+            XmlSerializer serializer = new(typeof(GameReport));
+            object? obj = serializer.Deserialize(new StringReader(body)) ?? throw new Exception();
+            report = (GameReport)obj;
+        }
+        catch (Exception e)
+        {
+            context.Logger.LogError(BunkumCategory.UserContent, $"Failed to parse grief report: {e}\n\nXML: {body}");
+        }
+
+        Response realResponse = report == null 
+            ? BadRequest
+            : this.UploadReportInternal(context, database, report, user, time, token, config);
+
+        // PSP always wants OK, else it will softlock the save for some stupid reason (according to the comment below atleast).
+        if (context.IsPSP())
+        {
+            context.Logger.LogTrace(BunkumCategory.Game, $"Actual response status is {realResponse.StatusCode}, but the client is LBP PSP, so we will return OK instead.");
+            return OK;
+        }
+
+        return realResponse;
+    }
+    
+    private Response UploadReportInternal(RequestContext context, GameDatabaseContext database, GameReport body, GameUser user,
         IDateTimeProvider time, Token token, GameServerConfig config)
     {
         if (user.IsWriteBlocked(config))
@@ -105,7 +138,7 @@ public class ReportingEndpoints : EndpointGroup
                 GameUser? playerUser = database.GetUserByUsername(player.Username); // what if user doesnt exist
                 return new ReportPlayerRelation
                 {
-                    User = playerUser, 
+                    User = playerUser,
                     IsReporter = player.Reporter,
                     IsInGameNow = player.IngameNow, 
                     PlayerNumber = player.PlayerNumber,
