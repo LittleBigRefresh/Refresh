@@ -54,7 +54,7 @@ public partial class GameDatabaseContext // Relations
             level.Statistics!.FavouriteCount++;
             user.Statistics!.FavouriteLevelCount++;
 
-            if (level.Publisher == user)
+            if (level.PublisherUserId == user.UserId)
                 level.Statistics!.FavouriteCountExcludingPublisher++;
         });
 
@@ -76,7 +76,7 @@ public partial class GameDatabaseContext // Relations
             level.Statistics!.FavouriteCount--;
             user.Statistics!.FavouriteLevelCount--;
 
-            if (level.Publisher == user)
+            if (level.PublisherUserId == user.UserId)
                 level.Statistics!.FavouriteCountExcludingPublisher--;
         });
 
@@ -329,7 +329,7 @@ public partial class GameDatabaseContext // Relations
     
     public DatabaseRating GetRatingForReview(GameReview review)
     {
-        IEnumerable<RateReviewRelation> relations = this.RateReviewRelations.Where(r => r.Review == review);
+        IEnumerable<RateReviewRelation> relations = this.RateReviewRelations.Where(r => r.ReviewId == review.ReviewId);
         DatabaseRating rating = new();
 
         foreach (RateReviewRelation relation in relations)
@@ -345,7 +345,7 @@ public partial class GameDatabaseContext // Relations
 
     public int GetRawRatingForReview(GameReview review)
     {
-        IQueryable<RateReviewRelation> relations = this.RateReviewRelations.Where(r => r.Review == review);
+        IQueryable<RateReviewRelation> relations = this.RateReviewRelations.Where(r => r.ReviewId == review.ReviewId);
         int rawRating = 0;
 
         foreach (RateReviewRelation relation in relations)
@@ -366,13 +366,13 @@ public partial class GameDatabaseContext // Relations
         => this.GameReviewsIncluded.FirstOrDefault(gameReview => gameReview.ReviewId == reviewId);
     
     public bool ReviewRatingExistsByUser(GameUser user, GameReview review)
-        => this.RateReviewRelations.Any(relation => relation.Review == review && relation.UserId == user.UserId);
+        => this.RateReviewRelations.Any(relation => relation.ReviewId == review.ReviewId && relation.UserId == user.UserId);
 
     public RateReviewRelation? GetRateReviewRelationForReview(GameUser user, GameReview review)
         => this.RateReviewRelationsIncluded.FirstOrDefault(r => r.UserId == user.UserId && r.ReviewId == review.ReviewId);
     
     public bool ReviewRatingExists(GameUser user, GameReview review, RatingType rating)
-        => this.RateReviewRelations.Any(r => r.Review == review && r.UserId == user.UserId && r.RatingType == rating);
+        => this.RateReviewRelations.Any(r => r.ReviewId == review.ReviewId && r.UserId == user.UserId && r.RatingType == rating);
 
     private RateLevelRelation? GetRateRelationByUser(GameLevel level, GameUser user)
         => this.RateLevelRelationsIncluded.FirstOrDefault(r => r.UserId == user.UserId && r.LevelId == level.LevelId);
@@ -485,7 +485,7 @@ public partial class GameDatabaseContext // Relations
             .Include(r => r.Level.Statistics)
             .Include(r => r.Publisher)
             .Include(r => r.Publisher.Statistics)
-            .Where(s => s.Publisher == user)
+            .Where(s => s.PublisherUserId == user.UserId)
             .ToList();
     
         foreach (GameReview review in reviews)
@@ -516,7 +516,7 @@ public partial class GameDatabaseContext // Relations
     {
         IEnumerable<GameProfileComment> comments = this.GameProfileComments
             .Include(c => c.Profile.Statistics)
-            .Where(c => c.Author == user)
+            .Where(c => c.AuthorUserId == user.UserId)
             .ToList();
     
         foreach (GameProfileComment comment in comments)
@@ -529,7 +529,7 @@ public partial class GameDatabaseContext // Relations
     {
         IEnumerable<GameLevelComment> comments = this.GameLevelComments
             .Include(c => c.Level.Statistics)
-            .Where(c => c.Author == user)
+            .Where(c => c.AuthorUserId == user.UserId)
             .ToList();
     
         foreach (GameLevelComment comment in comments)
@@ -540,11 +540,11 @@ public partial class GameDatabaseContext // Relations
 
     public DatabaseList<GameReview> GetReviewsByUser(GameUser user, int count, int skip)
         => new(this.GameReviewsIncluded
-            .Where(r => r.Publisher == user)
+            .Where(r => r.PublisherUserId == user.UserId)
             .OrderByDescending(r => r.PostedAt), skip, count);
 
     public int GetTotalReviewsByUser(GameUser user)
-        => this.GameReviews.Count(r => r.Publisher == user);
+        => this.GameReviews.Count(r => r.PublisherUserId == user.UserId);
     
     public GameReview? GetReviewByLevelAndUser(GameLevel level, GameUser user)
     {
