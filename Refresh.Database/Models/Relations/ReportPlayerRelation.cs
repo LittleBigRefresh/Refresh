@@ -10,7 +10,7 @@ public partial class ReportPlayerRelation
 {
     [Required]
     [ForeignKey(nameof(ReportId))]
-    public GriefReport GriefReport { get; set; }
+    public GameGriefReport GameGriefReport { get; set; }
     
     [Required]
     [ForeignKey(nameof(UserId))]

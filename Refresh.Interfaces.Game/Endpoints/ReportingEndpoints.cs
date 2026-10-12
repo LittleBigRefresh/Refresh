@@ -118,7 +118,7 @@ public class ReportingEndpoints : EndpointGroup
         if (body.Description != null && body.Description.Length > UgcLimits.DescriptionLimit)
             body.Description = body.Description[..UgcLimits.DescriptionLimit];
 
-        GriefReport griefReport = new()
+        GameGriefReport griefReport = new()
         {
             Reporter = user,
             GameVersion = token.TokenGame,

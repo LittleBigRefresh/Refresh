@@ -87,10 +87,10 @@ public class ReportingEndpointsTests : GameServerTest
 
         context.Database.Refresh();
 
-        DatabaseList<GriefReport> reports = context.Database.GetReportsByReporter(user, 10, 0);
+        DatabaseList<GameGriefReport> reports = context.Database.GetReportsByReporter(user, 10, 0);
         Assert.That(reports.TotalItems, Is.EqualTo(1));
     
-        GriefReport createdReport = reports.Items.First();
+        GameGriefReport createdReport = reports.Items.First();
         Assert.That(createdReport.Level?.LevelId, Is.EqualTo(level.LevelId));
         Assert.That(createdReport.Type, Is.EqualTo(GriefReportType.TermsOfService));
         Assert.That(createdReport.Description, Is.EqualTo("This is a description, sent by LBP3"));
@@ -122,7 +122,7 @@ public class ReportingEndpointsTests : GameServerTest
         
         context.Database.Refresh();
 
-        DatabaseList<GriefReport> reports = context.Database.GetReportsByReporter(user, 10, 0);
+        DatabaseList<GameGriefReport> reports = context.Database.GetReportsByReporter(user, 10, 0);
         Assert.That(reports.TotalItems, Is.EqualTo(1));
         
         Assert.That(reports.Items.First().Level, Is.Null);

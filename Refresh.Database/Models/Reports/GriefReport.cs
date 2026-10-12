@@ -7,7 +7,7 @@ using Refresh.Database.Models.Users;
 
 namespace Refresh.Database.Models.Reports; 
 
-public class GriefReport 
+public class GameGriefReport 
 {
     [Key] public int ReportId { get; set; }
     
