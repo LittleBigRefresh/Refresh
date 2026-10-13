@@ -46,7 +46,7 @@ public class SerializedGriefReport
 
     // Actually the slot type, but they named it this anyway...
     [XmlElement("levelType")]
-    public string SlotType { get; set; }
+    public string LevelType { get; set; }
 
     [XmlElement("levelId")]
     public int LevelId { get; set; }

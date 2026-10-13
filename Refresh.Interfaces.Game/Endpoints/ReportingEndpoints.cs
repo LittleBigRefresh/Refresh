@@ -32,7 +32,7 @@ public class ReportingEndpoints : EndpointGroup
         if (user.IsWriteBlocked(config))
             return Unauthorized;
         
-        GameLevel? level = database.GetLevelByIdAndType(body.SlotType, body.LevelId);
+        GameLevel? level = database.GetLevelByIdAndType(body.LevelType, body.LevelId);
         Size imageSize;
         switch (token.TokenGame)
         {
@@ -85,7 +85,7 @@ public class ReportingEndpoints : EndpointGroup
                 {
                     LevelId = body.LevelId,
                     Title = level?.Title ?? "",
-                    Type = body.SlotType
+                    Type = body.LevelType
                 },
                 PhotoSubjects = subjects,
             }, subjects, user, level);
@@ -132,7 +132,7 @@ public class ReportingEndpoints : EndpointGroup
             Reporter = user,
             GameVersion = token.TokenGame,
             Level = level,
-            SlotType = body.SlotType,
+            LevelType = body.LevelType,
             InitialStateHash = body.InitialStateHash ?? "0",
             GriefStateHash = body.GriefStateHash ?? "0", 
             PhotoAssetHash = jpegHash ?? "0",
