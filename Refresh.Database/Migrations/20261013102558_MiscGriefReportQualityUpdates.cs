@@ -17,6 +17,11 @@ namespace Refresh.Database.Migrations
                 name: "Reports",
                 newName: "GameGriefReports");
 
+            // thank you for this typo smh
+            migrationBuilder.RenameTable(
+                name: "ReportPlayersRelations",
+                newName: "ReportPlayerRelations");
+
             migrationBuilder.AlterColumn<string>(
                 name: "PlayerRect",
                 table: "ReportPlayersRelations",
@@ -71,6 +76,10 @@ namespace Refresh.Database.Migrations
             migrationBuilder.RenameTable(
                 name: "GameGriefReports",
                 newName: "Reports");
+                
+            migrationBuilder.RenameTable(
+                name: "ReportPlayerRelations",
+                newName: "ReportPlayersRelations");
 
             migrationBuilder.AlterColumn<string>(
                 name: "UserId",
@@ -99,7 +108,7 @@ namespace Refresh.Database.Migrations
                 DELETE FROM "ReportPlayersRelations"
                 WHERE "PlayerNumber" NOT IN (
                     SELECT "PlayerNumber"
-                    FROM "DisallowedEmailDomains"
+                    FROM "ReportPlayersRelations"
                     PARTITION BY "ReportId"
                     GROUP BY "UserId"
                     ORDER BY "PlayerNumber"

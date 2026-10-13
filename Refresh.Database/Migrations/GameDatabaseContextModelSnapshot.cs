@@ -1227,7 +1227,7 @@ namespace Refresh.Database.Migrations
 
                     b.HasIndex("UserId");
 
-                    b.ToTable("ReportPlayersRelations");
+                    b.ToTable("ReportPlayerRelations");
                 });
 
             modelBuilder.Entity("Refresh.Database.Models.Relations.SubPlaylistRelation", b =>
