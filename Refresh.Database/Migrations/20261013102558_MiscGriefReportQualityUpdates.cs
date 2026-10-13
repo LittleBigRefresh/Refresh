@@ -24,7 +24,7 @@ namespace Refresh.Database.Migrations
 
             migrationBuilder.AlterColumn<string>(
                 name: "PlayerRect",
-                table: "ReportPlayersRelations",
+                table: "ReportPlayerRelations",
                 type: "text",
                 nullable: false,
                 defaultValue: "",
@@ -34,7 +34,7 @@ namespace Refresh.Database.Migrations
 
             migrationBuilder.AlterColumn<string>(
                 name: "UserId",
-                table: "ReportPlayersRelations",
+                table: "ReportPlayerRelations",
                 type: "text",
                 nullable: true,
                 oldClrType: typeof(string),
@@ -42,7 +42,7 @@ namespace Refresh.Database.Migrations
 
             migrationBuilder.AddColumn<string>(
                 name: "Username",
-                table: "ReportPlayersRelations",
+                table: "ReportPlayerRelations",
                 type: "text",
                 nullable: false,
                 defaultValue: "");
@@ -61,12 +61,12 @@ namespace Refresh.Database.Migrations
             """);
 
             migrationBuilder.DropPrimaryKey(
-                name: "PK_ReportPlayersRelations",
-                table: "ReportPlayersRelations");
+                name: "PK_ReportPlayerRelations",
+                table: "ReportPlayerRelations");
 
             migrationBuilder.AddPrimaryKey(
-                name: "PK_ReportPlayersRelations",
-                table: "ReportPlayersRelations",
+                name: "PK_ReportPlayerRelations",
+                table: "ReportPlayerRelations",
                 columns: new[] { "ReportId", "PlayerNumber" });
         }
 
