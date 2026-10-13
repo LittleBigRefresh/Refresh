@@ -32,7 +32,7 @@ public class ReportingEndpoints : EndpointGroup
         if (user.IsWriteBlocked(config))
             return Unauthorized;
         
-        GameLevel? level = database.GetLevelByIdAndType(body.LevelType, body.LevelId);
+        GameLevel? level = database.GetLevelByIdAndType(body.SlotType, body.LevelId);
         Size imageSize;
         switch (token.TokenGame)
         {
@@ -85,7 +85,7 @@ public class ReportingEndpoints : EndpointGroup
                 {
                     LevelId = body.LevelId,
                     Title = level?.Title ?? "",
-                    Type = body.LevelType
+                    Type = body.SlotType
                 },
                 PhotoSubjects = subjects,
             }, subjects, user, level);
@@ -100,18 +100,27 @@ public class ReportingEndpoints : EndpointGroup
         List<ReportPlayerRelation> players = new();
         if (body.Players != null)
         {
-            players.AddRange(body.Players.Select(player => 
+            // We don't preserve player numbers since bugged or forged requests could cause issues otherwise,
+            // but we will still use them to preserve the player order, for our own player numbers.
+            int newPlayerNumber = 1;
+            foreach (SerializedReportPlayer player in body.Players.OrderBy(p => p.PlayerNumber))
             {
-                GameUser? playerUser = database.GetUserByUsername(player.Username); // what if user doesnt exist
-                return new ReportPlayerRelation
+                // Even if the user doesn't exist (local guest or user from another server),
+                // we should save their presence in this report anyway, just like with photos.
+                GameUser? playerUser = database.GetUserByUsername(player.Username);
+
+                players.Add(new ReportPlayerRelation
                 {
-                    User = playerUser, 
+                    User = playerUser,
+                    Username = player.Username,
+                    PlayerNumber = newPlayerNumber,
                     IsReporter = player.Reporter,
-                    IsInGameNow = player.IngameNow, 
-                    PlayerNumber = player.PlayerNumber,
+                    IsInGameNow = player.IngameNow,
                     PlayerRect = player.Rectangle == null ? string.Empty : NormalizeRectangle(player.Rectangle, imageSize)
-                };
-            }));
+                });
+
+                newPlayerNumber++;
+            }
         }
 
         // Trim description
@@ -123,7 +132,7 @@ public class ReportingEndpoints : EndpointGroup
             Reporter = user,
             GameVersion = token.TokenGame,
             Level = level,
-            LevelType = body.LevelType,
+            SlotType = body.SlotType,
             InitialStateHash = body.InitialStateHash ?? "0",
             GriefStateHash = body.GriefStateHash ?? "0", 
             PhotoAssetHash = jpegHash ?? "0",

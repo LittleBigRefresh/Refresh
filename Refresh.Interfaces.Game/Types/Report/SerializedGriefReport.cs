@@ -44,8 +44,9 @@ public class SerializedGriefReport
     [XmlElement("initialStateHash")]
     public string InitialStateHash { get; set; }
 
+    // Actually the slot type, but they named it this anyway...
     [XmlElement("levelType")]
-    public string LevelType { get; set; }
+    public string SlotType { get; set; }
 
     [XmlElement("levelId")]
     public int LevelId { get; set; }

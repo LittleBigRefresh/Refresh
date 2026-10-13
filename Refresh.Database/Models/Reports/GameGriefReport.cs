@@ -22,7 +22,7 @@ public class GameGriefReport
     [ForeignKey(nameof(LevelId))]
     public GameLevel? Level { get; set; } // Level reference only provided if it's an uploaded or story level
     
-    public string? LevelType { get; set; }
+    public string? SlotType { get; set; }
     public string InitialStateHash { get; set; } = "0"; // Hash for asset of initial level
     public string GriefStateHash { get; set; } = "0"; // Hash for asset of griefed level
     
