@@ -4,7 +4,7 @@ using Refresh.Database.Models.Users;
 
 namespace Refresh.Database.Models.Relations;
 
-[PrimaryKey(nameof(ReportId), nameof(UserId))]
+[PrimaryKey(nameof(ReportId), nameof(PlayerNumber))]
 public partial class ReportPlayerRelation
 {
     [Required]
@@ -15,7 +15,8 @@ public partial class ReportPlayerRelation
     [ForeignKey(nameof(UserId))]
     public GameUser? User { get; set; }
     public ObjectId? UserId { get; set; }
-    
+    public string Username { get; set; } = "";
+
     public bool IsReporter { get; set; }
     public bool IsInGameNow { get; set; } // i think something about whether the player left during the report, could rename it if confirmed
     public int PlayerNumber { get; set; }
