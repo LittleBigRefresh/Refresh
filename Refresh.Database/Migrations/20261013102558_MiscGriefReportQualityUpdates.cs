@@ -68,20 +68,6 @@ namespace Refresh.Database.Migrations
                 name: "PK_ReportPlayerRelations",
                 table: "ReportPlayerRelations",
                 columns: new[] { "ReportId", "PlayerNumber" });
-
-            // For some reason, all relations timestamps were set to -infinity on production,
-            // so just set them to when the reports they belong to were created.
-            migrationBuilder.Sql
-            ("""
-                UPDATE "ReportPlayerRelations" SET "Timestamp" = u."ReportDate"
-                FROM (
-                	SELECT g."ReportDate", g."ReportId"
-                	FROM "ReportPlayerRelations" as r
-                	INNER JOIN "GameGriefReports" as g
-                	ON r."ReportId" = g."ReportId"
-                ) AS u
-                WHERE "ReportPlayerRelations"."ReportId" = u."ReportId" AND u.Timestamp = '-infinity'
-            """);
         }
 
         /// <inheritdoc />
