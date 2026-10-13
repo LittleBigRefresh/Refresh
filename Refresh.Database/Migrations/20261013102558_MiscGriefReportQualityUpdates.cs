@@ -54,7 +54,7 @@ namespace Refresh.Database.Migrations
             ("""
                 UPDATE rpr SET rpr."PlayerNumber" = newNum
                 FROM (
-                    SELECT "ReportPlayerRelations".*, row_number()
+                    SELECT *, row_number()
                     OVER (PARTITION BY "ReportId" ORDER BY "ReportId") newNum
                     FROM "ReportPlayerRelations"
                 ) rpr
@@ -76,7 +76,7 @@ namespace Refresh.Database.Migrations
             migrationBuilder.RenameTable(
                 name: "GameGriefReports",
                 newName: "Reports");
-                
+
             migrationBuilder.RenameTable(
                 name: "ReportPlayerRelations",
                 newName: "ReportPlayersRelations");
