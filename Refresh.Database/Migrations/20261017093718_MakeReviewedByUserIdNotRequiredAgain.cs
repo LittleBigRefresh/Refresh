@@ -25,15 +25,7 @@ namespace Refresh.Database.Migrations
         /// <inheritdoc />
         protected override void Down(MigrationBuilder migrationBuilder)
         {
-            migrationBuilder.AlterColumn<string>(
-                name: "ReviewedByUserId",
-                table: "GameGriefReports",
-                type: "text",
-                nullable: false,
-                defaultValue: "",
-                oldClrType: typeof(string),
-                oldType: "text",
-                oldNullable: true);
+            // Nothing needed, just leave it at null since we already want it like that, else SQL exception
         }
     }
 }
