@@ -5,7 +5,7 @@ namespace Refresh.Interfaces.Game.Types.Report;
 #nullable disable
 
 [XmlRoot("slot")]
-public class Slot
+public class SerializedReportSlot
 { 
     [XmlElement("id")] 
     public int Id { get; set; } 
@@ -17,7 +17,7 @@ public class Slot
     public string Text { get; set; } 
 
     [XmlElement("screenRect")] 
-    public ScreenRect ScreenRect { get; set; } 
+    public SerializedReportScreenRect ScreenRect { get; set; } 
 
     [XmlElement("slotId")] 
     public string SlotId { get; set; } 

@@ -29,14 +29,14 @@ public class ReportingEndpointsTests : GameServerTest
         HttpResponseMessage message = client.PostAsync($"/lbp/upload/{TEST_ASSET_HASH}", new ReadOnlyMemoryContent(TestAsset)).Result;
         Assert.That(message.StatusCode, Is.EqualTo(OK));
 
-        GameReport report = new()
+        SerializedGriefReport report = new()
         {
-            InfoBubble = new InfoBubble[]
+            InfoBubble = new SerializedReportInfoBubble[]
                 {},
             Type = GriefReportType.TermsOfService,
-            Marqee = new Marqee
+            Marqee = new SerializedReportMarqee
             {
-                Rect = new Rect
+                Rect = new SerializedReportRect
                 {
                     Top = 10,
                     Left = 10,
@@ -51,12 +51,12 @@ public class ReportingEndpointsTests : GameServerTest
             Description = "This is a description, sent by LBP3",
             GriefStateHash = null,
             JpegHash = TEST_ASSET_HASH,
-            Players = new Player[]
+            Players = new SerializedReportPlayer[]
             {
                 new()
                 {
                     Username = user.Username,
-                    Rectangle = new Rect
+                    Rectangle = new SerializedReportRect
                     {
                         Top = 10,
                         Left = 10,
@@ -67,9 +67,9 @@ public class ReportingEndpointsTests : GameServerTest
                     IngameNow = true,
                     PlayerNumber = 0,
                     Text = "Some text",
-                    ScreenRect = new ScreenRect
+                    ScreenRect = new SerializedReportScreenRect
                     {
-                        Rect = new Rect
+                        Rect = new SerializedReportRect
                         {
                             Top = 10,
                             Left = 10,
@@ -79,7 +79,7 @@ public class ReportingEndpointsTests : GameServerTest
                     },
                 },
             },
-            ScreenElements = new ScreenElements(),
+            ScreenElements = new SerializedReportScreenElements(),
         };
         
         HttpResponseMessage response = client.PostAsync("/lbp/grief", new StringContent(report.AsXML())).Result;
@@ -87,10 +87,10 @@ public class ReportingEndpointsTests : GameServerTest
 
         context.Database.Refresh();
 
-        DatabaseList<GriefReport> reports = context.Database.GetReportsByReporter(user, 10, 0);
+        DatabaseList<GameGriefReport> reports = context.Database.GetReportsByReporter(user, 10, 0);
         Assert.That(reports.TotalItems, Is.EqualTo(1));
     
-        GriefReport createdReport = reports.Items.First();
+        GameGriefReport createdReport = reports.Items.First();
         Assert.That(createdReport.Level?.LevelId, Is.EqualTo(level.LevelId));
         Assert.That(createdReport.Type, Is.EqualTo(GriefReportType.TermsOfService));
         Assert.That(createdReport.Description, Is.EqualTo("This is a description, sent by LBP3"));
@@ -111,7 +111,7 @@ public class ReportingEndpointsTests : GameServerTest
         HttpResponseMessage message = client.PostAsync($"/lbp/upload/{TEST_ASSET_HASH}", new ReadOnlyMemoryContent(TestAsset)).Result;
         Assert.That(message.StatusCode, Is.EqualTo(OK));
 
-        GameReport report = new()
+        SerializedGriefReport report = new()
         {
             LevelId = int.MaxValue,
             JpegHash = TEST_ASSET_HASH,
@@ -122,7 +122,7 @@ public class ReportingEndpointsTests : GameServerTest
         
         context.Database.Refresh();
 
-        DatabaseList<GriefReport> reports = context.Database.GetReportsByReporter(user, 10, 0);
+        DatabaseList<GameGriefReport> reports = context.Database.GetReportsByReporter(user, 10, 0);
         Assert.That(reports.TotalItems, Is.EqualTo(1));
         
         Assert.That(reports.Items.First().Level, Is.Null);
@@ -142,36 +142,36 @@ public class ReportingEndpointsTests : GameServerTest
         HttpResponseMessage message = client.PostAsync($"/lbp/upload/{TEST_ASSET_HASH}", new ReadOnlyMemoryContent(TestAsset)).Result;
         Assert.That(message.StatusCode, Is.EqualTo(OK));
         
-        GameReport report = new()
+        SerializedGriefReport report = new()
         {
             LevelId = 0,
             JpegHash = TEST_ASSET_HASH,
-            Players = new Player[]
+            Players = new SerializedReportPlayer[]
             {
                 new()
                 {
                     Username = "hee",
-                    Rectangle = new Rect(),
+                    Rectangle = new SerializedReportRect(),
                 },
                 new()
                 {
                     Username = "hawk",
-                    Rectangle = new Rect(),
+                    Rectangle = new SerializedReportRect(),
                 },
                 new()
                 {
                     Username = "2uh",
-                    Rectangle = new Rect(),
+                    Rectangle = new SerializedReportRect(),
                 },
                 new()
                 {
                     Username = "burger",
-                    Rectangle = new Rect(),
+                    Rectangle = new SerializedReportRect(),
                 },
                 new()
                 {
                     Username = "er",
-                    Rectangle = new Rect(),
+                    Rectangle = new SerializedReportRect(),
                 },
             },
         };
@@ -194,38 +194,38 @@ public class ReportingEndpointsTests : GameServerTest
         HttpResponseMessage message = client.PostAsync($"/lbp/upload/{TEST_ASSET_HASH}", new ReadOnlyMemoryContent(TestAsset)).Result;
         Assert.That(message.StatusCode, Is.EqualTo(OK));
         
-        GameReport report = new()
+        SerializedGriefReport report = new()
         {
             LevelId = 0,
             JpegHash = TEST_ASSET_HASH,
-            ScreenElements = new ScreenElements
+            ScreenElements = new SerializedReportScreenElements
             {
-                Player = new Player[]
+                Player = new SerializedReportPlayer[]
                 {
                     new()
                     {
                         Username = "hee",
-                        Rectangle = new Rect(),
+                        Rectangle = new SerializedReportRect(),
                     },
                     new()
                     {
                         Username = "haw",
-                        Rectangle = new Rect(),
+                        Rectangle = new SerializedReportRect(),
                     },
                     new()
                     {
                         Username = "ham",
-                        Rectangle = new Rect(),
+                        Rectangle = new SerializedReportRect(),
                     },
                     new()
                     {
                         Username = "burg",
-                        Rectangle = new Rect(),
+                        Rectangle = new SerializedReportRect(),
                     },
                     new()
                     {
                         Username = "er",
-                        Rectangle = new Rect(),
+                        Rectangle = new SerializedReportRect(),
                     },
                 },
             },
@@ -255,14 +255,14 @@ public class ReportingEndpointsTests : GameServerTest
         HttpResponseMessage message = client.PostAsync($"/lbp/upload/{TEST_ASSET_HASH}", new ReadOnlyMemoryContent(TestAsset)).Result;
         Assert.That(message.StatusCode, Is.EqualTo(OK));
         
-        HttpResponseMessage response = client.PostAsync("/lbp/grief", new StringContent(new GameReport
+        HttpResponseMessage response = client.PostAsync("/lbp/grief", new StringContent(new SerializedGriefReport
         {
-            Players = new Player[]
+            Players = new SerializedReportPlayer[]
             {
                 new()
                 {
                     Username = user.Username,
-                    Rectangle = new Rect
+                    Rectangle = new SerializedReportRect
                     {
                         Top = 10,
                         Left = 10,
@@ -310,14 +310,14 @@ public class ReportingEndpointsTests : GameServerTest
         HttpResponseMessage message = client.PostAsync($"/lbp/upload/{TEST_ASSET_HASH}", new ReadOnlyMemoryContent(TestAsset)).Result;
         Assert.That(message.StatusCode, Is.EqualTo(OK));
         
-        HttpResponseMessage response = client.PostAsync("/lbp/grief", new StringContent(new GameReport
+        HttpResponseMessage response = client.PostAsync("/lbp/grief", new StringContent(new SerializedGriefReport
         {
-            Players = new Player[]
+            Players = new SerializedReportPlayer[]
             {
                 new()
                 {
                     Username = user.Username,
-                    Rectangle = new Rect
+                    Rectangle = new SerializedReportRect
                     {
                         Top = 10,
                         Left = 10,
@@ -364,14 +364,14 @@ public class ReportingEndpointsTests : GameServerTest
         HttpResponseMessage message = client.PostAsync($"/lbp/upload/{TEST_ASSET_HASH}", new ReadOnlyMemoryContent(TestAsset)).Result;
         Assert.That(message.StatusCode, Is.EqualTo(OK));
         
-        HttpResponseMessage response = client.PostAsync("/lbp/grief", new StringContent(new GameReport
+        HttpResponseMessage response = client.PostAsync("/lbp/grief", new StringContent(new SerializedGriefReport
         {
-            Players = new Player[]
+            Players = new SerializedReportPlayer[]
             {
                 new()
                 {
                     Username = user.Username,
-                    Rectangle = new Rect
+                    Rectangle = new SerializedReportRect
                     {
                         Top = 10,
                         Left = 10,
@@ -418,14 +418,14 @@ public class ReportingEndpointsTests : GameServerTest
         HttpResponseMessage message = client.PostAsync($"/lbp/upload/{TEST_ASSET_HASH}", new ReadOnlyMemoryContent(TestAsset)).Result;
         Assert.That(message.StatusCode, Is.EqualTo(OK));
         
-        HttpResponseMessage response = client.PostAsync("/lbp/grief", new StringContent(new GameReport
+        HttpResponseMessage response = client.PostAsync("/lbp/grief", new StringContent(new SerializedGriefReport
         {
-            Players = new Player[]
+            Players = new SerializedReportPlayer[]
             {
                 new()
                 {
                     Username = user.Username,
-                    Rectangle = new Rect
+                    Rectangle = new SerializedReportRect
                     {
                         Top = 10,
                         Left = 10,
@@ -463,14 +463,14 @@ public class ReportingEndpointsTests : GameServerTest
 
         using HttpClient client = context.GetAuthenticatedClient(TokenType.Game, TokenGame.Website, TokenPlatform.PS3, user);
 
-        HttpResponseMessage response = client.PostAsync("/lbp/grief", new StringContent(new GameReport
+        HttpResponseMessage response = client.PostAsync("/lbp/grief", new StringContent(new SerializedGriefReport
         {
-            Players = new Player[]
+            Players = new SerializedReportPlayer[]
             {
                 new()
                 {
                     Username = user.Username,
-                    Rectangle = new Rect
+                    Rectangle = new SerializedReportRect
                     {
                         Top = 10,
                         Left = 10,
