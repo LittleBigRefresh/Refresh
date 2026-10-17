@@ -102,19 +102,21 @@ namespace Refresh.Database.Migrations
                 oldType: "text");
 
             // Just remove all with duplicate user IDs. Usually we won't have duplicate IDs anyway,
-            // and this should be enough for a rollback. Better than dropping the whole table or something.
-            // We can just use PlayerNumber to uniquely identify rows per ReportId, since we've already made sure
-            // they're actually unique in the update (which we're coming from if we're downgrading).
+            // but we should ensure we don't anyway; also, this should be enough for a rollback on this,
+            // better than dropping the whole table or something.
+            // We can just use PlayerNumber to uniquely identify rows per ReportId, that and ReportId
+            // are the only PK attributes after the update above.
             migrationBuilder.Sql
             ("""
                 DELETE FROM "ReportPlayerRelations"
-                WHERE "PlayerNumber" NOT IN (
-                    SELECT "PlayerNumber"
+                USING (
+                    SELECT min ("PlayerNumber") as keepNumber, "ReportId", "UserId"
                     FROM "ReportPlayerRelations"
-                    PARTITION BY "ReportId"
-                    GROUP BY "UserId"
-                    ORDER BY "PlayerNumber"
-                )
+                    GROUP BY "UserId", "ReportId"
+                ) AS d
+                WHERE "PlayerNumber" != d.keepNumber
+                AND "ReportPlayerRelations"."ReportId" = d."ReportId"
+                AND "ReportPlayerRelations"."UserId" = d."UserId"
             """);
 
             migrationBuilder.DropPrimaryKey(
