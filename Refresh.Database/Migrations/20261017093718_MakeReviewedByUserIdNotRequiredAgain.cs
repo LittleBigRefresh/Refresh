@@ -13,10 +13,6 @@ namespace Refresh.Database.Migrations
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
         {
-            migrationBuilder.DropForeignKey(
-                name: "FK_GameGriefReports_GameUsers_ReviewedByUserId",
-                table: "GameGriefReports");
-
             migrationBuilder.AlterColumn<string>(
                 name: "ReviewedByUserId",
                 table: "GameGriefReports",
@@ -24,22 +20,11 @@ namespace Refresh.Database.Migrations
                 nullable: true,
                 oldClrType: typeof(string),
                 oldType: "text");
-
-            migrationBuilder.AddForeignKey(
-                name: "FK_GameGriefReports_GameUsers_ReviewedByUserId",
-                table: "GameGriefReports",
-                column: "ReviewedByUserId",
-                principalTable: "GameUsers",
-                principalColumn: "UserId");
         }
 
         /// <inheritdoc />
         protected override void Down(MigrationBuilder migrationBuilder)
         {
-            migrationBuilder.DropForeignKey(
-                name: "FK_GameGriefReports_GameUsers_ReviewedByUserId",
-                table: "GameGriefReports");
-
             migrationBuilder.AlterColumn<string>(
                 name: "ReviewedByUserId",
                 table: "GameGriefReports",
@@ -49,14 +34,6 @@ namespace Refresh.Database.Migrations
                 oldClrType: typeof(string),
                 oldType: "text",
                 oldNullable: true);
-
-            migrationBuilder.AddForeignKey(
-                name: "FK_GameGriefReports_GameUsers_ReviewedByUserId",
-                table: "GameGriefReports",
-                column: "ReviewedByUserId",
-                principalTable: "GameUsers",
-                principalColumn: "UserId",
-                onDelete: ReferentialAction.Cascade);
         }
     }
 }

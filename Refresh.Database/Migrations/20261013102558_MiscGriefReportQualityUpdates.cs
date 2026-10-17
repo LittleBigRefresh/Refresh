@@ -13,6 +13,58 @@ namespace Refresh.Database.Migrations
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
         {
+            migrationBuilder.AlterColumn<string>(
+                name: "PlayerRect",
+                table: "ReportPlayersRelations",
+                type: "text",
+                nullable: false,
+                defaultValue: "",
+                oldClrType: typeof(string),
+                oldType: "text",
+                oldNullable: true);
+
+            migrationBuilder.AddColumn<string>(
+                name: "Username",
+                table: "ReportPlayersRelations",
+                type: "text",
+                nullable: false,
+                defaultValue: "");
+
+            // ReportPlayerRelations PK changes (since we're altering UserId, which is part of PK at this point)
+
+            migrationBuilder.DropPrimaryKey(
+                name: "PK_ReportPlayersRelations",
+                table: "ReportPlayersRelations");
+
+            migrationBuilder.AlterColumn<string>(
+                name: "UserId",
+                table: "ReportPlayersRelations",
+                type: "text",
+                nullable: true,
+                oldClrType: typeof(string),
+                oldType: "text");
+
+            // (Re)init the player number column so we can ensure it only has unique values per report ID,
+            // so we can safely use it to replace UserId in the primary key
+            // https://stackoverflow.com/questions/65231516/add-and-update-a-column-with-sequential-numbering-based-on-grouping
+            migrationBuilder.Sql
+            ("""
+                UPDATE "ReportPlayersRelations" SET "PlayerNumber" = newNum
+                FROM (
+                    SELECT *, row_number()
+                    OVER (PARTITION BY "ReportId" ORDER BY "ReportId") newNum
+                    FROM "ReportPlayersRelations"
+                )
+            """);
+
+            migrationBuilder.AddPrimaryKey(
+                name: "PK_ReportPlayerRelations",
+                table: "ReportPlayersRelations",
+                columns: new[] { "ReportId", "PlayerNumber" });
+
+            // Doing this in the middle caused random issues with the following DB commands,
+            // so rename the tables after everything.
+
             migrationBuilder.RenameTable(
                 name: "Reports",
                 newName: "GameGriefReports");
@@ -21,69 +73,15 @@ namespace Refresh.Database.Migrations
             migrationBuilder.RenameTable(
                 name: "ReportPlayersRelations",
                 newName: "ReportPlayerRelations");
-
-            migrationBuilder.AlterColumn<string>(
-                name: "PlayerRect",
-                table: "ReportPlayerRelations",
-                type: "text",
-                nullable: false,
-                defaultValue: "",
-                oldClrType: typeof(string),
-                oldType: "text",
-                oldNullable: true);
-
-            migrationBuilder.AlterColumn<string>(
-                name: "UserId",
-                table: "ReportPlayerRelations",
-                type: "text",
-                nullable: true,
-                oldClrType: typeof(string),
-                oldType: "text");
-
-            migrationBuilder.AddColumn<string>(
-                name: "Username",
-                table: "ReportPlayerRelations",
-                type: "text",
-                nullable: false,
-                defaultValue: "");
-
-            // (Re)init the player number column so we can ensure it only has unique values per report ID,
-            // so we can safely use it to replace UserId in the primary key
-            // https://stackoverflow.com/questions/65231516/add-and-update-a-column-with-sequential-numbering-based-on-grouping
-            migrationBuilder.Sql
-            ("""
-                UPDATE r SET r."PlayerNumber" = newNum
-                FROM (
-                    SELECT *, row_number()
-                    OVER (PARTITION BY "ReportId" ORDER BY "ReportId") newNum
-                    FROM "ReportPlayerRelations"
-                ) r
-            """);
-
-            migrationBuilder.DropPrimaryKey(
-                name: "PK_ReportPlayerRelations",
-                table: "ReportPlayerRelations");
-
-            migrationBuilder.AddPrimaryKey(
-                name: "PK_ReportPlayerRelations",
-                table: "ReportPlayerRelations",
-                columns: new[] { "ReportId", "PlayerNumber" });
         }
 
         /// <inheritdoc />
         protected override void Down(MigrationBuilder migrationBuilder)
         {
-            migrationBuilder.RenameTable(
-                name: "GameGriefReports",
-                newName: "Reports");
-
-            migrationBuilder.RenameTable(
-                name: "ReportPlayerRelations",
-                newName: "ReportPlayersRelations");
 
             migrationBuilder.AlterColumn<string>(
                 name: "UserId",
-                table: "ReportPlayersRelations",
+                table: "ReportPlayerRelations",
                 type: "text",
                 nullable: false,
                 defaultValue: "",
@@ -93,7 +91,7 @@ namespace Refresh.Database.Migrations
 
             migrationBuilder.AlterColumn<string>(
                 name: "PlayerRect",
-                table: "ReportPlayersRelations",
+                table: "ReportPlayerRelations",
                 type: "text",
                 nullable: true,
                 oldClrType: typeof(string),
@@ -105,10 +103,10 @@ namespace Refresh.Database.Migrations
             // they're actually unique in the update (which we're coming from if we're downgrading).
             migrationBuilder.Sql
             ("""
-                DELETE FROM "ReportPlayersRelations"
+                DELETE FROM "ReportPlayerRelations"
                 WHERE "PlayerNumber" NOT IN (
                     SELECT "PlayerNumber"
-                    FROM "ReportPlayersRelations"
+                    FROM "ReportPlayerRelations"
                     PARTITION BY "ReportId"
                     GROUP BY "UserId"
                     ORDER BY "PlayerNumber"
@@ -116,13 +114,21 @@ namespace Refresh.Database.Migrations
             """);
 
             migrationBuilder.DropPrimaryKey(
-                name: "PK_ReportPlayersRelations",
-                table: "ReportPlayersRelations");
+                name: "PK_ReportPlayerRelations",
+                table: "ReportPlayerRelations");
 
             migrationBuilder.AddPrimaryKey(
                 name: "PK_ReportPlayersRelations",
-                table: "ReportPlayersRelations",
+                table: "ReportPlayerRelations",
                 columns: new[] { "ReportId", "UserId" });
+
+            migrationBuilder.RenameTable(
+                name: "GameGriefReports",
+                newName: "Reports");
+
+            migrationBuilder.RenameTable(
+                name: "ReportPlayerRelations",
+                newName: "ReportPlayersRelations");
         }
     }
 }
