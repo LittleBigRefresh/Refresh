@@ -1334,7 +1334,6 @@ namespace Refresh.Database.Migrations
                         .HasColumnType("text");
 
                     b.Property<string>("ReviewedByUserId")
-                        .IsRequired()
                         .HasColumnType("text");
 
                     b.Property<DateTimeOffset?>("ReviewedDate")
@@ -2515,9 +2514,7 @@ namespace Refresh.Database.Migrations
 
                     b.HasOne("Refresh.Database.Models.Users.GameUser", "ReviewedBy")
                         .WithMany()
-                        .HasForeignKey("ReviewedByUserId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                        .HasForeignKey("ReviewedByUserId");
 
                     b.Navigation("Level");
 

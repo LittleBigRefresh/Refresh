@@ -36,9 +36,9 @@ public class GameGriefReport
     public string Description { get; set; } = string.Empty;
     
     // Moderation
-    [Required, ForeignKey(nameof(ReviewedByUserId))]
+    [ForeignKey(nameof(ReviewedByUserId))]
     public GameUser? ReviewedBy { get; set; }
-    [Required] public ObjectId? ReviewedByUserId { get; set; }
+    public ObjectId? ReviewedByUserId { get; set; }
 
     public DateTimeOffset? ReviewedDate { get; set; }
     public string? ModeratorNotes { get; set; }
