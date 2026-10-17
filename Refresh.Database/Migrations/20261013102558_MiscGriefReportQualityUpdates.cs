@@ -49,12 +49,16 @@ namespace Refresh.Database.Migrations
             // https://stackoverflow.com/questions/65231516/add-and-update-a-column-with-sequential-numbering-based-on-grouping
             migrationBuilder.Sql
             ("""
-                UPDATE "ReportPlayersRelations" SET "PlayerNumber" = newNum
+                UPDATE "ReportPlayersRelations" SET "PlayerNumber" = u.newNum
                 FROM (
-                    SELECT *, row_number()
-                    OVER (PARTITION BY "ReportId" ORDER BY "ReportId") newNum
+                    SELECT *, row_number() OVER (
+                        PARTITION BY "ReportId"
+                        ORDER BY "ReportId"
+                    ) AS newNum
                     FROM "ReportPlayersRelations"
-                )
+                ) AS u
+                WHERE "ReportPlayersRelations"."ReportId" = u."ReportId"
+                AND "ReportPlayersRelations"."UserId" = u."UserId"
             """);
 
             migrationBuilder.AddPrimaryKey(
