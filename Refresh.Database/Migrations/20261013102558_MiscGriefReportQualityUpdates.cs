@@ -100,6 +100,10 @@ namespace Refresh.Database.Migrations
                 nullable: true,
                 oldClrType: typeof(string),
                 oldType: "text");
+                
+            migrationBuilder.DropColumn(
+                name: "Username",
+                table: "ReportPlayerRelations");
 
             // Just remove all with duplicate user IDs. Usually we won't have duplicate IDs anyway,
             // but we should ensure we don't anyway; also, this should be enough for a rollback on this,
