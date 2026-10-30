@@ -66,7 +66,7 @@ public partial class GameDatabaseContext // Photos
             this.WriteEnsuringStatistics(publisher, level, () =>
             {
                 level.Statistics!.PhotoInLevelCount++;
-                if (level.Publisher?.UserId == publisher.UserId)
+                if (level.PublisherUserId == publisher.UserId)
                 {
                     level.Statistics!.PhotoByPublisherCount++;
                 }
@@ -157,7 +157,7 @@ public partial class GameDatabaseContext // Photos
             this.WriteEnsuringStatistics(photo.Publisher, photo.Level, () =>
             {
                 photo.Level.Statistics!.PhotoInLevelCount--;
-                if (photo.Level.Publisher?.UserId == photo.PublisherId)
+                if (photo.Level.PublisherUserId == photo.PublisherId)
                 {
                     photo.Level.Statistics!.PhotoByPublisherCount--;
                 }

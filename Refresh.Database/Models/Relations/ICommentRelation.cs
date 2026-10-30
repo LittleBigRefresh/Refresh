@@ -8,7 +8,9 @@ public interface ICommentRelation<TComment> where TComment : IGameComment
 {
     ObjectId CommentRelationId { get; set; }
     [Required] GameUser User { get; set; }
+    [Required] ObjectId UserId { get; set; }
     [Required] TComment Comment { get; set; }
+    [Required] int CommentSequentialId { get; set; }
     RatingType RatingType { get; set; }
     DateTimeOffset Timestamp { get; set; }
 }

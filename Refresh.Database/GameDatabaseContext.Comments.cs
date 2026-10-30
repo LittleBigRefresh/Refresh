@@ -40,7 +40,7 @@ public partial class GameDatabaseContext // Comments
 
     public DatabaseList<GameProfileComment> GetProfileComments(GameUser profile, int count, int skip) =>
         new(this.GameProfileCommentsIncluded
-            .Where(c => c.Profile == profile)
+            .Where(c => c.ProfileUserId == profile.UserId)
             .OrderByDescending(c => c.Timestamp), skip, count);
     
     [Pure]
@@ -48,7 +48,7 @@ public partial class GameDatabaseContext // Comments
 
     public void DeleteProfileComment(GameProfileComment comment)
     {
-        Debug.Assert(comment.Profile != null);
+        comment.Profile ??= this.GetUserByObjectId(comment.ProfileUserId)!;
         this.WriteEnsuringStatistics(comment.Profile, () =>
         {
             comment.Profile.Statistics!.CommentCount--;
@@ -79,7 +79,7 @@ public partial class GameDatabaseContext // Comments
 
     public DatabaseList<GameLevelComment> GetLevelComments(GameLevel level, int count, int skip) =>
         new(this.GameLevelCommentsIncluded
-            .Where(c => c.Level == level)
+            .Where(c => c.LevelId == level.LevelId)
             .OrderByDescending(c => c.Timestamp), skip, count);
     
     [Pure]
@@ -87,7 +87,7 @@ public partial class GameDatabaseContext // Comments
 
     public void DeleteLevelComment(GameLevelComment comment)
     {
-        Debug.Assert(comment.Level != null);
+        comment.Level ??= this.GetLevelById(comment.LevelId)!;
         this.WriteEnsuringStatistics(comment.Level, () =>
         {
             comment.Level.Statistics!.CommentCount--;
