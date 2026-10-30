@@ -5,10 +5,10 @@ namespace Refresh.Interfaces.Game.Types.Report;
 #nullable disable
 
 [XmlRoot("infoBubble")]
-public class InfoBubble
+public class SerializedReportInfoBubble
 { 
     [XmlElement("slot")] 
-    public Slot Slot { get; set; } 
+    public SerializedReportSlot Slot { get; set; } 
 
     [XmlElement("name")] 
     public string Name { get; set; } 
