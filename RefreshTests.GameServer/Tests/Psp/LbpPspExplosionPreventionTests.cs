@@ -279,57 +279,9 @@ public class LbpPspExplosionPreventionTests : GameServerTest
         HttpResponseMessage message = nonPsp.PostAsync($"/lbp/upload/{TEST_ASSET_HASH}", new ReadOnlyMemoryContent(TestAsset)).Result;
         Assert.That(message.StatusCode, Is.EqualTo(OK));
 
-        GameReport report = new()
-        {
-            InfoBubble = [],
-            Type = GriefReportType.TermsOfService,
-            Marqee = new Marqee
-            {
-                Rect = new Rect
-                {
-                    Top = 10,
-                    Left = 10,
-                    Bottom = 20,
-                    Right = 20,
-                },
-            },
-            LevelOwner = level.Publisher!.Username,
-            InitialStateHash = null,
-            LevelType = "user",
-            LevelId = level.LevelId,
-            Description = "This is a description, sent by LBP3",
-            GriefStateHash = null,
-            JpegHash = TEST_ASSET_HASH,
-            Players =
-            [
-                new()
-                {
-                    Username = user.Username,
-                    Rectangle = new Rect
-                    {
-                        Top = 10,
-                        Left = 10,
-                        Bottom = 20,
-                        Right = 20,
-                    },
-                    Reporter = true,
-                    IngameNow = true,
-                    PlayerNumber = 0,
-                    Text = "Some text",
-                    ScreenRect = new ScreenRect
-                    {
-                        Rect = new Rect
-                        {
-                            Top = 10,
-                            Left = 10,
-                            Bottom = 20,
-                            Right = 20,
-                        },
-                    },
-                },
-            ],
-            ScreenElements = new ScreenElements(),
-        };
+        SerializedGriefReport report = context.CreateGriefReport(TEST_ASSET_HASH, level, [
+            context.CreateGriefReportPlayer(user.Username, 0)
+        ]);
 
         // Ensure both get OK if everything is OK
         Assert.That(nonPsp.PostAsync("/lbp/grief", new StringContent(report.AsXML())).Result.StatusCode, Is.EqualTo(OK));
@@ -338,31 +290,8 @@ public class LbpPspExplosionPreventionTests : GameServerTest
         // Insert too many players
         for (int i = 0; i < 7; i++)
         {
-            report.Players = report.Players.Append(new()
-                {
-                    Username = user.Username,
-                    Rectangle = new Rect
-                    {
-                        Top = 10,
-                        Left = 10,
-                        Bottom = 20,
-                        Right = 20,
-                    },
-                    Reporter = true,
-                    IngameNow = true,
-                    PlayerNumber = 0,
-                    Text = "Some text",
-                    ScreenRect = new ScreenRect
-                    {
-                        Rect = new Rect
-                        {
-                            Top = 10,
-                            Left = 10,
-                            Bottom = 20,
-                            Right = 20,
-                        },
-                    },
-                }
+            report.Players = report.Players.Append(
+                context.CreateGriefReportPlayer(user.Username, i + 1)
             ).ToArray();
         }
 

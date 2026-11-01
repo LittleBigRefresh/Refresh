@@ -18,6 +18,8 @@ using Refresh.Database.Models.Playlists;
 using Refresh.Interfaces.APIv3.Endpoints.DataTypes.Request;
 using Refresh.Database.Models.Photos;
 using Microsoft.EntityFrameworkCore;
+using Refresh.Interfaces.Game.Types.Report;
+using Refresh.Database.Models.Reports;
 
 namespace RefreshTests.GameServer;
 
@@ -241,6 +243,60 @@ public class TestContext : IDisposable
         };
 
         return this.Database.CreatePlaylist(author, playlist);
+    }
+
+    public SerializedReportPlayer CreateGriefReportPlayer(string username, int playerNum)
+    {
+        return new()
+        {
+            PlayerNumber = playerNum,
+            Username = username,
+            Rectangle = new SerializedReportRect
+            {
+                Top = 10,
+                Left = 10,
+                Bottom = 20,
+                Right = 20,
+            },
+            Reporter = true,
+            IngameNow = true,
+            Text = "Some text",
+            ScreenRect = new SerializedReportScreenRect
+            {
+                Rect = new SerializedReportRect
+                {
+                    Top = 10,
+                    Left = 10,
+                    Bottom = 20,
+                    Right = 20,
+                },
+            },
+        };
+    }
+
+    public SerializedGriefReport CreateGriefReport(string imageHash, GameLevel level, SerializedReportPlayer[] players)
+    {
+        return new()
+        {
+            InfoBubble = [],
+            Type = GriefReportType.TermsOfService,
+            Marqee = new SerializedReportMarqee
+            {
+                Rect = new SerializedReportRect
+                {
+                    Top = 10,
+                    Left = 10,
+                    Bottom = 20,
+                    Right = 20,
+                },
+            },
+            LevelOwner = level.Publisher!.Username,
+            LevelType = "user",
+            LevelId = level.LevelId,
+            JpegHash = imageHash,
+            Players = players,
+            ScreenElements = new SerializedReportScreenElements(),
+        };
     }
 
     [Pure]
