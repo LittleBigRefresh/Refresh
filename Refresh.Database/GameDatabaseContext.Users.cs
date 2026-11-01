@@ -340,6 +340,16 @@ public partial class GameDatabaseContext // Users
         this.SaveChanges();
     }
 
+    public void UpdateUserFaceIcons(GameUser user, string yayHash, string mehHash, string booHash)
+    {
+        user.YayFaceHash = yayHash;
+        user.MehFaceHash = mehHash;
+        user.BooFaceHash = booHash;
+
+        this.GameUsers.Update(user);
+        this.SaveChanges();
+    }
+
     public void UpdatePlanetModdedStatus(GameUser user)
     {
         user.AreLbp2PlanetsModded = this.GetPlanetModdedStatus(user.Lbp2PlanetsHash);
