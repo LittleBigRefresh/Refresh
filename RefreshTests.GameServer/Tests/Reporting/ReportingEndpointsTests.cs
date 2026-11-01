@@ -489,7 +489,7 @@ public class ReportingEndpointsTests : GameServerTest
     [TestCase(0, 1, 2, 3)] // what the game normally sends
     [TestCase(1, 2, 4, 8)] // too large
     [TestCase(1, 2, 2, 4)] // conflicting
-    public void DontKeepOriginalPlayerNumbersOnReport(int player1Num, int player2Num, int player3Num, int player4Num)
+    public void DontKeepOriginalPlayerNumbersOnReport(int playerNum1, int playerNum2, int playerNum3, int playerNum4)
     {
         using TestContext context = this.GetServer();
         GameUser player1 = context.CreateUser();
@@ -526,7 +526,7 @@ public class ReportingEndpointsTests : GameServerTest
             {
                 new()
                 {
-                    PlayerNumber = player1Num,
+                    PlayerNumber = playerNum1,
                     Username = player1.Username,
                     Rectangle = new SerializedReportRect
                     {
@@ -551,7 +551,7 @@ public class ReportingEndpointsTests : GameServerTest
                 },
                 new()
                 {
-                    PlayerNumber = 0,
+                    PlayerNumber = playerNum2,
                     Username = player2.Username,
                     Rectangle = new SerializedReportRect
                     {
@@ -576,7 +576,7 @@ public class ReportingEndpointsTests : GameServerTest
                 },
                 new()
                 {
-                    PlayerNumber = 1,
+                    PlayerNumber = playerNum3,
                     Username = player3.Username,
                     Rectangle = new SerializedReportRect
                     {
@@ -601,7 +601,7 @@ public class ReportingEndpointsTests : GameServerTest
                 },
                 new()
                 {
-                    PlayerNumber = 6,
+                    PlayerNumber = playerNum4,
                     Username = player4.Username,
                     Rectangle = new SerializedReportRect
                     {
