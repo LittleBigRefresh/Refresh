@@ -3,7 +3,7 @@ using System.Xml.Serialization;
 namespace Refresh.Interfaces.Game.Types.Report;
 
 [XmlRoot("rect")]
-public class Rect
+public class SerializedReportRect
 { 
     [XmlAttribute(AttributeName="t")] 
     public long Top { get; set; } 

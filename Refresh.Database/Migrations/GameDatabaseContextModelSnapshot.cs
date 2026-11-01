@@ -1200,8 +1200,8 @@ namespace Refresh.Database.Migrations
                     b.Property<int>("ReportId")
                         .HasColumnType("integer");
 
-                    b.Property<string>("UserId")
-                        .HasColumnType("text");
+                    b.Property<int>("PlayerNumber")
+                        .HasColumnType("integer");
 
                     b.Property<bool>("IsInGameNow")
                         .HasColumnType("boolean");
@@ -1209,20 +1209,22 @@ namespace Refresh.Database.Migrations
                     b.Property<bool>("IsReporter")
                         .HasColumnType("boolean");
 
-                    b.Property<int>("PlayerNumber")
-                        .HasColumnType("integer");
-
                     b.Property<string>("PlayerRect")
+                        .IsRequired()
                         .HasColumnType("text");
 
-                    b.Property<DateTimeOffset>("Timestamp")
-                        .HasColumnType("timestamp with time zone");
+                    b.Property<string>("UserId")
+                        .HasColumnType("text");
 
-                    b.HasKey("ReportId", "UserId");
+                    b.Property<string>("Username")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.HasKey("ReportId", "PlayerNumber");
 
                     b.HasIndex("UserId");
 
-                    b.ToTable("ReportPlayersRelations");
+                    b.ToTable("ReportPlayerRelations");
                 });
 
             modelBuilder.Entity("Refresh.Database.Models.Relations.SubPlaylistRelation", b =>
@@ -1284,7 +1286,7 @@ namespace Refresh.Database.Migrations
                     b.ToTable("UniquePlayLevelRelations");
                 });
 
-            modelBuilder.Entity("Refresh.Database.Models.Reports.GriefReport", b =>
+            modelBuilder.Entity("Refresh.Database.Models.Reports.GameGriefReport", b =>
                 {
                     b.Property<int>("ReportId")
                         .ValueGeneratedOnAdd()
@@ -1351,7 +1353,7 @@ namespace Refresh.Database.Migrations
 
                     b.HasIndex("ReviewedByUserId");
 
-                    b.ToTable("Reports");
+                    b.ToTable("GameGriefReports");
                 });
 
             modelBuilder.Entity("Refresh.Database.Models.Statistics.GameLevelStatistics", b =>
@@ -2426,7 +2428,7 @@ namespace Refresh.Database.Migrations
 
             modelBuilder.Entity("Refresh.Database.Models.Relations.ReportPlayerRelation", b =>
                 {
-                    b.HasOne("Refresh.Database.Models.Reports.GriefReport", "GriefReport")
+                    b.HasOne("Refresh.Database.Models.Reports.GameGriefReport", "GameGriefReport")
                         .WithMany("Players")
                         .HasForeignKey("ReportId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -2434,11 +2436,9 @@ namespace Refresh.Database.Migrations
 
                     b.HasOne("Refresh.Database.Models.Users.GameUser", "User")
                         .WithMany()
-                        .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                        .HasForeignKey("UserId");
 
-                    b.Navigation("GriefReport");
+                    b.Navigation("GameGriefReport");
 
                     b.Navigation("User");
                 });
@@ -2500,7 +2500,7 @@ namespace Refresh.Database.Migrations
                     b.Navigation("User");
                 });
 
-            modelBuilder.Entity("Refresh.Database.Models.Reports.GriefReport", b =>
+            modelBuilder.Entity("Refresh.Database.Models.Reports.GameGriefReport", b =>
                 {
                     b.HasOne("Refresh.Database.Models.Levels.GameLevel", "Level")
                         .WithMany()
@@ -2581,7 +2581,7 @@ namespace Refresh.Database.Migrations
                     b.Navigation("Subjects");
                 });
 
-            modelBuilder.Entity("Refresh.Database.Models.Reports.GriefReport", b =>
+            modelBuilder.Entity("Refresh.Database.Models.Reports.GameGriefReport", b =>
                 {
                     b.Navigation("Players");
                 });
