@@ -59,7 +59,7 @@ public class ReportingEndpoints : EndpointGroup
         return realResponse;
     }
     
-    private Response UploadReportInternal(RequestContext context, GameDatabaseContext database, GameReport body, GameUser user,
+    private Response UploadReportInternal(RequestContext context, GameDatabaseContext database, SerializedGriefReport body, GameUser user,
         IDateTimeProvider time, Token token, GameServerConfig config)
     {
         if (user.IsWriteBlocked(config))
