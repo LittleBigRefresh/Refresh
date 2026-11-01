@@ -112,8 +112,8 @@ public class LeaderboardEndpoints : EndpointGroup
         GameDatabaseContext database, string slotType, int id, string body, Token token,
         DataContext dataContext)
     {
-        // Parsing manually because we don't want unparseable requests from PSP to cause MainMiddleware to return BadRequest to it,
-        // else it will explode or something.
+        // Parsing manually because we don't want invalid XML from PSP to cause MainMiddleware to return BadRequest to it,
+        // else the game will explode or something.
         SerializedScore? score = null;
         try
         {
@@ -131,7 +131,7 @@ public class LeaderboardEndpoints : EndpointGroup
             : this.SubmitScoreInternal(context, user, config, database, slotType, id, score, token, dataContext);
 
         // PSP always wants OK, else it will cancel login during downloaded level play data uploads.
-        // Maybe it also expects an actual score list, so return an empty one aswell. We will see whether we need to do more later.
+        // Maybe it also expects an actual score list, so return an empty one. We will see whether we need to do more later.
         if (context.IsPSP())
         {
             context.Logger.LogTrace(BunkumCategory.Game, $"Actual response status is {realResponse.StatusCode}, but the client is LBP PSP, so we will return OK instead.");

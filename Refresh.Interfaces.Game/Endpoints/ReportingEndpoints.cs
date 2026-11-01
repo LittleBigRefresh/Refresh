@@ -31,8 +31,8 @@ public class ReportingEndpoints : EndpointGroup
     public Response UploadReport(RequestContext context, GameDatabaseContext database, string body, GameUser user,
         IDateTimeProvider time, Token token, GameServerConfig config)
     {
-        // Parsing manually because we don't want unparseable requests from PSP to cause MainMiddleware to return BadRequest to it,
-        // else it will explode or something.
+        // Parsing manually because we don't want invalid XML from PSP to cause MainMiddleware to return BadRequest to it,
+        // else the game will explode or something.
         GameReport? report = null;
         try
         {

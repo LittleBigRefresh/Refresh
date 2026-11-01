@@ -83,7 +83,7 @@ public enum Tag : byte
     Frosty,
     Insane,
     // This isn't in TagsMap on purpose, because this is only used as the default value by FromLbpString(),
-    // because GetValueOrDefault() will never return null in this case. "Invalid" tag uploads should be rejected.
+    // because GetValueOrDefault() doesn't return null for enums apparently. "Invalid" tag uploads should be rejected.
     Invalid,
 }
 
