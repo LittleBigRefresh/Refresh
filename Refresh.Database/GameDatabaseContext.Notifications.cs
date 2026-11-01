@@ -47,14 +47,14 @@ public partial class GameDatabaseContext // Notifications
     {
         this.Write(() =>
         {
-            this.GameNotifications.RemoveRange(n => n.User == user && n.Title == LoginFail);
+            this.GameNotifications.RemoveRange(n => n.UserId == user.UserId && n.Title == LoginFail);
         });
     }
 
     [Pure]
     public int GetNotificationCountByUser(GameUser user) => 
         this.GameNotifications
-            .Count(n => n.User == user);
+            .Count(n => n.UserId == user.UserId);
     
     [Pure]
     public DatabaseList<GameNotification> GetNotificationsByUser(GameUser user, int count, int skip)
@@ -65,13 +65,13 @@ public partial class GameDatabaseContext // Notifications
     [Pure]
     public GameNotification? GetNotificationByUuid(GameUser user, ObjectId id) 
         => this.GameNotifications
-            .FirstOrDefault(n => n.User == user && n.NotificationId == id);
+            .FirstOrDefault(n => n.UserId == user.UserId && n.NotificationId == id);
     
     public void DeleteNotificationsByUser(GameUser user)
     {
         this.Write(() =>
         {
-            this.GameNotifications.RemoveRange(n => n.User == user);
+            this.GameNotifications.RemoveRange(n => n.UserId == user.UserId);
         });
     }
     

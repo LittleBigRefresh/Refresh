@@ -111,11 +111,11 @@ public partial class GameDatabaseContext // Activity
             List<ObjectId?> userFriends = this.GetUsersMutuals(parameters.User).Select(u => (ObjectId?)u.UserId).ToList();
 
             query = query.Where(e =>
-                e.User?.UserId == parameters.User.UserId ||
+                e.UserId == parameters.User.UserId ||
                 e.StoredObjectId == parameters.User.UserId ||
-                favouriteUsers.Contains(e.User?.UserId) ||
+                favouriteUsers.Contains(e.UserId) ||
                 favouriteUsers.Contains(e.StoredObjectId) ||
-                userFriends.Contains(e.User?.UserId) ||
+                userFriends.Contains(e.UserId) ||
                 userFriends.Contains(e.StoredObjectId) ||
                 #if false // FIXME: double query
                 this.GetLevelById(e.StoredSequentialId ?? int.MaxValue)?.Publisher?.UserId == parameters.User.UserId ||
@@ -146,7 +146,7 @@ public partial class GameDatabaseContext // Activity
         Debug.Assert(parameters.User != null);
 
         IEnumerable<Event> events = this.GetEvents(parameters)
-            .Where(e => e.User?.UserId == parameters.User.UserId);
+            .Where(e => e.UserId == parameters.User.UserId);
         
         return GetRecentActivity(events, parameters);
     }

@@ -182,12 +182,12 @@ public partial class GameDatabaseContext // Registration
         this.Write(() =>
         {
             user.EmailAddressVerified = true;
-            this.EmailVerificationCodes.RemoveRange(c => c.User == user);
+            this.EmailVerificationCodes.RemoveRange(c => c.UserId == user.UserId);
         });
     }
 
     public bool VerificationCodeMatches(GameUser user, string code) => 
-        this.EmailVerificationCodes.Any(c => c.User == user && c.Code == code);
+        this.EmailVerificationCodes.Any(c => c.UserId == user.UserId && c.Code == code);
     
     public bool IsVerificationCodeExpired(EmailVerificationCode code) => code.ExpiryDate < this._time.Now;
 

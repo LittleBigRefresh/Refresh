@@ -17,8 +17,9 @@ public partial class GameLevelComment : IGameComment, ISequentialId
     /// <summary>
     /// The destination level this comment was posted to.
     /// </summary>
-    [Required]
+    [Required, ForeignKey(nameof(LevelId))]
     public GameLevel Level { get; set; } = null!;
+    [Required] public int LevelId { get; set; }
     
     /// <inheritdoc/>
     public string Content { get; set; } = string.Empty;

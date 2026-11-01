@@ -1,3 +1,4 @@
+using MongoDB.Bson;
 using Refresh.Database.Models.Users;
 
 namespace Refresh.Database.Models.Comments;
@@ -10,6 +11,7 @@ public interface IGameComment
     /// The user who originally posted the comment.
     /// </summary>
     GameUser Author { get; set; }
+    ObjectId AuthorUserId { get; set; }
     
     /// <summary>
     /// The text content of the comment.
