@@ -26,6 +26,8 @@ public class ResetInvalidFaceIconsMigration : MigrationJob<GameUser>
 
     protected override int Migrate(WorkContext context, GameUser[] batch)
     {
+        List<NewFaceHashes> pendingUpdates = [];
+
         AssetValidationParameters faceParams = new()
         {
             AssetRef = null!,
@@ -90,10 +92,32 @@ public class ResetInvalidFaceIconsMigration : MigrationJob<GameUser>
                 continue;
             }
 
-            // Always save regardless
+            pendingUpdates.Add(new()
+            {
+                User = user,
+                YayHash = yayResult.NewAssetRef,
+                MehHash = mehResult.NewAssetRef,
+                BooHash = booResult.NewAssetRef,
+            });
+
             context.Logger.LogDebug(RefreshContext.Worker, $"{user}'s face icons will be updated to: \n\t Yay '{user.YayFaceHash}' -> '{yayResult.NewAssetRef}' \n\t Meh '{user.MehFaceHash}' -> '{mehResult.NewAssetRef}' \n\t Boo '{user.BooFaceHash}' -> '{booResult.NewAssetRef}'");
-            context.Database.UpdateUserFaceIcons(user, yayResult.NewAssetRef, mehResult.NewAssetRef, booResult.NewAssetRef);
         }
+
+        // Save separately so we can do the writes in bulks while still using the same db context, so the cycle doesn't take too long
+        foreach (NewFaceHashes hashes in pendingUpdates)
+        {
+            context.Database.UpdateUserFaceIcons(hashes.User, hashes.YayHash, hashes.MehHash, hashes.BooHash, false);
+        }
+
+        context.Database.SaveChanges();
         return batch.Length;
+    }
+
+    internal struct NewFaceHashes
+    {
+        public GameUser User;
+        public string YayHash;
+        public string MehHash;
+        public string BooHash;
     }
 }
