@@ -16,8 +16,8 @@ public partial class GameProfileComment : IGameComment, ISequentialId
     /// <summary>
     /// The destination profile this comment was posted to.
     /// </summary>
-    [Required]
-    public GameUser Profile { get; set; } = null!;
+    [Required, ForeignKey(nameof(ProfileUserId))] public GameUser Profile { get; set; } = null!;
+    [Required] public ObjectId ProfileUserId { get; set; }
     
     /// <inheritdoc/>
     public string Content { get; set; } = string.Empty;

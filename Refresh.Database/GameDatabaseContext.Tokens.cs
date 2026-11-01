@@ -134,7 +134,7 @@ public partial class GameDatabaseContext // Tokens
     {
         this.Write(() =>
         {
-            this.Tokens.RemoveRange(t => t.User == user);
+            this.Tokens.RemoveRange(t => t.UserId == user.UserId);
         });
     }
     
@@ -142,7 +142,7 @@ public partial class GameDatabaseContext // Tokens
     {
         this.Write(() =>
         {
-            this.Tokens.RemoveRange(t => t.User == user && t.TokenType == type);
+            this.Tokens.RemoveRange(t => t.UserId == user.UserId && t.TokenType == type);
         });
     }
     
@@ -181,7 +181,7 @@ public partial class GameDatabaseContext // Tokens
     {
         const int maxVerifiedIps = 3;
         
-        int count = this.GameUserVerifiedIpRelations.Count(r => r.User == user);
+        int count = this.GameUserVerifiedIpRelations.Count(r => r.UserId == user.UserId);
         int toRemove = count >= maxVerifiedIps ? count - maxVerifiedIps + 1 : 0;
         
         this.Write(() =>
@@ -190,7 +190,7 @@ public partial class GameDatabaseContext // Tokens
             if (toRemove > 0)
                 this.GameUserVerifiedIpRelations.RemoveRange(
                     this.GameUserVerifiedIpRelations
-                        .Where(r => r.User == user)
+                        .Where(r => r.UserId == user.UserId)
                         .OrderBy(r => r.VerifiedAt)
                         .AsEnumerable()
                         .Take(toRemove));
@@ -202,14 +202,14 @@ public partial class GameDatabaseContext // Tokens
                 VerifiedAt = timeProvider.Now,
             });
             
-            this.GameIpVerificationRequests.RemoveRange(r => r.User == user && r.IpAddress == ipAddress);
+            this.GameIpVerificationRequests.RemoveRange(r => r.UserId == user.UserId && r.IpAddress == ipAddress);
         });
     }
 
     public bool RemoveVerifiedIp(GameUser user, string ipAddress)
     {
         GameUserVerifiedIpRelation? verifiedIp =
-            this.GameUserVerifiedIpRelations.FirstOrDefault(r => r.User == user && r.IpAddress == ipAddress);
+            this.GameUserVerifiedIpRelations.FirstOrDefault(r => r.UserId == user.UserId && r.IpAddress == ipAddress);
 
         if (verifiedIp == null)
             return false;
@@ -223,16 +223,16 @@ public partial class GameDatabaseContext // Tokens
     }
 
     public DatabaseList<GameUserVerifiedIpRelation> GetVerifiedIps(GameUser user, int skip, int count) 
-        => new(this.GameUserVerifiedIpRelations.Where(r => r.User == user), skip, count);
+        => new(this.GameUserVerifiedIpRelations.Where(r => r.UserId == user.UserId), skip, count);
 
     public bool IsIpVerified(GameUser user, string ipAddress) 
-        => this.GameUserVerifiedIpRelations.Any(r => r.User == user && r.IpAddress == ipAddress);
+        => this.GameUserVerifiedIpRelations.Any(r => r.UserId == user.UserId && r.IpAddress == ipAddress);
 
     public void DenyIpVerificationRequest(GameUser user, string ipAddress)
     {
         this.Write(() =>
         {
-            this.GameIpVerificationRequests.RemoveRange(r => r.IpAddress == ipAddress && r.User == user);
+            this.GameIpVerificationRequests.RemoveRange(r => r.IpAddress == ipAddress && r.UserId == user.UserId);
         });
     }
 
@@ -246,5 +246,5 @@ public partial class GameDatabaseContext // Tokens
     }
 
     public DatabaseList<GameIpVerificationRequest> GetIpVerificationRequestsForUser(GameUser user, int count, int skip) 
-        => new(this.GameIpVerificationRequests.Where(r => r.User == user), skip, count);
+        => new(this.GameIpVerificationRequests.Where(r => r.UserId == user.UserId), skip, count);
 }

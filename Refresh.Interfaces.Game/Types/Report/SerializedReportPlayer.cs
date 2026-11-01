@@ -5,13 +5,13 @@ namespace Refresh.Interfaces.Game.Types.Report;
 #nullable disable
 
 [XmlRoot("player")]
-public class Player
+public class SerializedReportPlayer
 { 
     [XmlElement("id")] 
     public string Username { get; set; } 
 
     [XmlElement("rect")] 
-    public Rect Rectangle { get; set; } 
+    public SerializedReportRect Rectangle { get; set; } 
 
     [XmlAttribute("reporter")] 
     public bool Reporter { get; set; } 
@@ -26,5 +26,5 @@ public class Player
     public string Text { get; set; } 
 
     [XmlElement("screenRect")] 
-    public ScreenRect ScreenRect { get; set; } 
+    public SerializedReportScreenRect ScreenRect { get; set; } 
 }

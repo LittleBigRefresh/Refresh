@@ -33,12 +33,12 @@ public class ReportingEndpoints : EndpointGroup
     {
         // Parsing manually because we don't want invalid XML from PSP to cause MainMiddleware to return BadRequest to it,
         // else the game will explode or something.
-        GameReport? report = null;
+        SerializedGriefReport? report = null;
         try
         {
-            XmlSerializer serializer = new(typeof(GameReport));
+            XmlSerializer serializer = new(typeof(SerializedGriefReport));
             object? obj = serializer.Deserialize(new StringReader(body)) ?? throw new Exception();
-            report = (GameReport)obj;
+            report = (SerializedGriefReport)obj;
         }
         catch (Exception e)
         {
@@ -133,25 +133,34 @@ public class ReportingEndpoints : EndpointGroup
         List<ReportPlayerRelation> players = new();
         if (body.Players != null)
         {
-            players.AddRange(body.Players.Select(player => 
+            // We don't preserve player numbers since bugged or forged requests could cause issues otherwise,
+            // but we will still use them to preserve the player order, for our own player numbers.
+            int newPlayerNumber = 1;
+            foreach (SerializedReportPlayer player in body.Players.OrderBy(p => p.PlayerNumber))
             {
-                GameUser? playerUser = database.GetUserByUsername(player.Username); // what if user doesnt exist
-                return new ReportPlayerRelation
+                // Even if the user doesn't exist (local guest or user from another server),
+                // we should save their presence in this report anyway, just like with photos.
+                GameUser? playerUser = database.GetUserByUsername(player.Username);
+
+                players.Add(new ReportPlayerRelation
                 {
                     User = playerUser,
+                    Username = player.Username,
+                    PlayerNumber = newPlayerNumber,
                     IsReporter = player.Reporter,
-                    IsInGameNow = player.IngameNow, 
-                    PlayerNumber = player.PlayerNumber,
+                    IsInGameNow = player.IngameNow,
                     PlayerRect = player.Rectangle == null ? string.Empty : NormalizeRectangle(player.Rectangle, imageSize)
-                };
-            }));
+                });
+
+                newPlayerNumber++;
+            }
         }
 
         // Trim description
         if (body.Description != null && body.Description.Length > UgcLimits.DescriptionLimit)
             body.Description = body.Description[..UgcLimits.DescriptionLimit];
 
-        GriefReport griefReport = new()
+        GameGriefReport griefReport = new()
         {
             Reporter = user,
             GameVersion = token.TokenGame,
@@ -171,7 +180,7 @@ public class ReportingEndpoints : EndpointGroup
         return OK;
     }
     
-    private static string NormalizeRectangle(Rect rect, Size imageSize)
+    private static string NormalizeRectangle(SerializedReportRect rect, Size imageSize)
     {
         float halfWidth = imageSize.Width / 2f;
         float halfHeight = imageSize.Height / 2f;
