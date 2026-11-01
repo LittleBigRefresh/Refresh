@@ -503,130 +503,13 @@ public class ReportingEndpointsTests : GameServerTest
         //Upload our """photo"""
         HttpResponseMessage message = client.PostAsync($"/lbp/upload/{TEST_ASSET_HASH}", new ReadOnlyMemoryContent(TestAsset)).Result;
         Assert.That(message.StatusCode, Is.EqualTo(OK));
-
-        SerializedGriefReport report = new()
-        {
-            InfoBubble = [],
-            Type = GriefReportType.TermsOfService,
-            Marqee = new SerializedReportMarqee
-            {
-                Rect = new SerializedReportRect
-                {
-                    Top = 10,
-                    Left = 10,
-                    Bottom = 20,
-                    Right = 20,
-                },
-            },
-            LevelOwner = level.Publisher!.Username,
-            LevelType = "user",
-            LevelId = level.LevelId,
-            JpegHash = TEST_ASSET_HASH,
-            Players = new SerializedReportPlayer[]
-            {
-                new()
-                {
-                    PlayerNumber = playerNum1,
-                    Username = player1.Username,
-                    Rectangle = new SerializedReportRect
-                    {
-                        Top = 10,
-                        Left = 10,
-                        Bottom = 20,
-                        Right = 20,
-                    },
-                    Reporter = true,
-                    IngameNow = true,
-                    Text = "Some text",
-                    ScreenRect = new SerializedReportScreenRect
-                    {
-                        Rect = new SerializedReportRect
-                        {
-                            Top = 10,
-                            Left = 10,
-                            Bottom = 20,
-                            Right = 20,
-                        },
-                    },
-                },
-                new()
-                {
-                    PlayerNumber = playerNum2,
-                    Username = player2.Username,
-                    Rectangle = new SerializedReportRect
-                    {
-                        Top = 10,
-                        Left = 10,
-                        Bottom = 20,
-                        Right = 20,
-                    },
-                    Reporter = true,
-                    IngameNow = true,
-                    Text = "Some text",
-                    ScreenRect = new SerializedReportScreenRect
-                    {
-                        Rect = new SerializedReportRect
-                        {
-                            Top = 10,
-                            Left = 10,
-                            Bottom = 20,
-                            Right = 20,
-                        },
-                    },
-                },
-                new()
-                {
-                    PlayerNumber = playerNum3,
-                    Username = player3.Username,
-                    Rectangle = new SerializedReportRect
-                    {
-                        Top = 10,
-                        Left = 10,
-                        Bottom = 20,
-                        Right = 20,
-                    },
-                    Reporter = true,
-                    IngameNow = true,
-                    Text = "Some text",
-                    ScreenRect = new SerializedReportScreenRect
-                    {
-                        Rect = new SerializedReportRect
-                        {
-                            Top = 10,
-                            Left = 10,
-                            Bottom = 20,
-                            Right = 20,
-                        },
-                    },
-                },
-                new()
-                {
-                    PlayerNumber = playerNum4,
-                    Username = player4.Username,
-                    Rectangle = new SerializedReportRect
-                    {
-                        Top = 10,
-                        Left = 10,
-                        Bottom = 20,
-                        Right = 20,
-                    },
-                    Reporter = true,
-                    IngameNow = true,
-                    Text = "Some text",
-                    ScreenRect = new SerializedReportScreenRect
-                    {
-                        Rect = new SerializedReportRect
-                        {
-                            Top = 10,
-                            Left = 10,
-                            Bottom = 20,
-                            Right = 20,
-                        },
-                    },
-                },
-            },
-            ScreenElements = new SerializedReportScreenElements(),
-        };
+        
+        SerializedGriefReport report = this.GetMinimalReport(level, [
+            this.GetPlayerWithNameAndNum(player1.Username, playerNum1),
+            this.GetPlayerWithNameAndNum(player2.Username, playerNum2),
+            this.GetPlayerWithNameAndNum(player3.Username, playerNum3),
+            this.GetPlayerWithNameAndNum(player4.Username, playerNum4),
+        ]);
         
         HttpResponseMessage response = client.PostAsync("/lbp/grief", new StringContent(report.AsXML())).Result;
         Assert.That(response.StatusCode, Is.EqualTo(OK));
@@ -673,129 +556,12 @@ public class ReportingEndpointsTests : GameServerTest
         HttpResponseMessage message = client.PostAsync($"/lbp/upload/{TEST_ASSET_HASH}", new ReadOnlyMemoryContent(TestAsset)).Result;
         Assert.That(message.StatusCode, Is.EqualTo(OK));
 
-        SerializedGriefReport report = new()
-        {
-            InfoBubble = [],
-            Type = GriefReportType.TermsOfService,
-            Marqee = new SerializedReportMarqee
-            {
-                Rect = new SerializedReportRect
-                {
-                    Top = 10,
-                    Left = 10,
-                    Bottom = 20,
-                    Right = 20,
-                },
-            },
-            LevelOwner = level.Publisher!.Username,
-            LevelType = "user",
-            LevelId = level.LevelId,
-            JpegHash = TEST_ASSET_HASH,
-            Players = new SerializedReportPlayer[]
-            {
-                new()
-                {
-                    PlayerNumber = 0,
-                    Username = existentUser.Username,
-                    Rectangle = new SerializedReportRect
-                    {
-                        Top = 10,
-                        Left = 10,
-                        Bottom = 20,
-                        Right = 20,
-                    },
-                    Reporter = true,
-                    IngameNow = true,
-                    Text = "Some text",
-                    ScreenRect = new SerializedReportScreenRect
-                    {
-                        Rect = new SerializedReportRect
-                        {
-                            Top = 10,
-                            Left = 10,
-                            Bottom = 20,
-                            Right = 20,
-                        },
-                    },
-                },
-                new()
-                {
-                    PlayerNumber = 0,
-                    Username = "fromBacon",
-                    Rectangle = new SerializedReportRect
-                    {
-                        Top = 10,
-                        Left = 10,
-                        Bottom = 20,
-                        Right = 20,
-                    },
-                    Reporter = true,
-                    IngameNow = true,
-                    Text = "Some text",
-                    ScreenRect = new SerializedReportScreenRect
-                    {
-                        Rect = new SerializedReportRect
-                        {
-                            Top = 10,
-                            Left = 10,
-                            Bottom = 20,
-                            Right = 20,
-                        },
-                    },
-                },
-                new()
-                {
-                    PlayerNumber = 1,
-                    Username = "localGuest",
-                    Rectangle = new SerializedReportRect
-                    {
-                        Top = 10,
-                        Left = 10,
-                        Bottom = 20,
-                        Right = 20,
-                    },
-                    Reporter = true,
-                    IngameNow = true,
-                    Text = "Some text",
-                    ScreenRect = new SerializedReportScreenRect
-                    {
-                        Rect = new SerializedReportRect
-                        {
-                            Top = 10,
-                            Left = 10,
-                            Bottom = 20,
-                            Right = 20,
-                        },
-                    },
-                },
-                new()
-                {
-                    PlayerNumber = 1,
-                    Username = "Xx_Marcell_Davis_xX",
-                    Rectangle = new SerializedReportRect
-                    {
-                        Top = 10,
-                        Left = 10,
-                        Bottom = 20,
-                        Right = 20,
-                    },
-                    Reporter = true,
-                    IngameNow = true,
-                    Text = "Some text",
-                    ScreenRect = new SerializedReportScreenRect
-                    {
-                        Rect = new SerializedReportRect
-                        {
-                            Top = 10,
-                            Left = 10,
-                            Bottom = 20,
-                            Right = 20,
-                        },
-                    },
-                },
-            },
-            ScreenElements = new SerializedReportScreenElements(),
-        };
+        SerializedGriefReport report = this.GetMinimalReport(level, [
+            this.GetPlayerWithNameAndNum(existentUser.Username, 0),
+            this.GetPlayerWithNameAndNum("fromBacon", 1),
+            this.GetPlayerWithNameAndNum("localGuest", 2),
+            this.GetPlayerWithNameAndNum("Xx_Marcell_Davis_xX", 3),
+        ]);
         
         HttpResponseMessage response = client.PostAsync("/lbp/grief", new StringContent(report.AsXML())).Result;
         Assert.That(response.StatusCode, Is.EqualTo(OK));
@@ -818,22 +584,76 @@ public class ReportingEndpointsTests : GameServerTest
         // relation exists with correct number and username, but no user ID (and no included user)
         ReportPlayerRelation? relation2 = createdReport.Players.FirstOrDefault(p => p.Username == "fromBacon");
         Assert.That(relation2, Is.Not.Null);
-        Assert.That(relation1.PlayerNumber, Is.EqualTo(2));
+        Assert.That(relation2.PlayerNumber, Is.EqualTo(2));
         Assert.That(relation2.UserId, Is.Null);
         Assert.That(relation2.User, Is.Null);
 
         // relation exists with correct number and username, but no user ID (and no included user)
         ReportPlayerRelation? relation3 = createdReport.Players.FirstOrDefault(p => p.Username == "localGuest");
         Assert.That(relation3, Is.Not.Null);
-        Assert.That(relation1.PlayerNumber, Is.EqualTo(3));
+        Assert.That(relation3.PlayerNumber, Is.EqualTo(3));
         Assert.That(relation3.UserId, Is.Null);
         Assert.That(relation3.User, Is.Null);
 
         // relation exists with correct number and username, but no user ID (and no included user)
         ReportPlayerRelation? relation4 = createdReport.Players.FirstOrDefault(p => p.Username == "Xx_Marcell_Davis_xX");
         Assert.That(relation4, Is.Not.Null);
-        Assert.That(relation1.PlayerNumber, Is.EqualTo(4));
+        Assert.That(relation4.PlayerNumber, Is.EqualTo(4));
         Assert.That(relation4.UserId, Is.Null);
         Assert.That(relation4.User, Is.Null);
+    }
+
+    private SerializedReportPlayer GetPlayerWithNameAndNum(string username, int playerNum)
+    {
+        return new()
+        {
+            PlayerNumber = playerNum,
+            Username = username,
+            Rectangle = new SerializedReportRect
+            {
+                Top = 10,
+                Left = 10,
+                Bottom = 20,
+                Right = 20,
+            },
+            Reporter = true,
+            IngameNow = true,
+            Text = "Some text",
+            ScreenRect = new SerializedReportScreenRect
+            {
+                Rect = new SerializedReportRect
+                {
+                    Top = 10,
+                    Left = 10,
+                    Bottom = 20,
+                    Right = 20,
+                },
+            },
+        };
+    }
+
+    private SerializedGriefReport GetMinimalReport(GameLevel level, SerializedReportPlayer[] players)
+    {
+        return new()
+        {
+            InfoBubble = [],
+            Type = GriefReportType.TermsOfService,
+            Marqee = new SerializedReportMarqee
+            {
+                Rect = new SerializedReportRect
+                {
+                    Top = 10,
+                    Left = 10,
+                    Bottom = 20,
+                    Right = 20,
+                },
+            },
+            LevelOwner = level.Publisher!.Username,
+            LevelType = "user",
+            LevelId = level.LevelId,
+            JpegHash = TEST_ASSET_HASH,
+            Players = players,
+            ScreenElements = new SerializedReportScreenElements(),
+        };
     }
 }
