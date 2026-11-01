@@ -15,6 +15,7 @@ using Refresh.Database.Models.Levels;
 using Refresh.Database.Models.Users;
 using Refresh.Interfaces.Game.Types.Reviews;
 using Refresh.Core.RateLimits.EndpointRateLimiting;
+using Refresh.Common;
 
 namespace Refresh.Interfaces.Game.Endpoints;
 
@@ -53,7 +54,22 @@ public class ReviewEndpoints : EndpointGroup
     [RequireEmailVerified]
     [EndpointRateLimit(EndpointBucketId.RateLevel)]
     public Response SubmitLevelStarRating(RequestContext context, GameDatabaseContext database, GameUser user, string slotType, int id, 
-        DataContext dataContext, GameServerConfig config)
+        GameServerConfig config)
+    {
+        Response realResponse = this.SubmitLevelStarRatingInternal(context, database, user, slotType, id, config);
+
+        // PSP always wants OK, else it will cancel login during downloaded level play data uploads.
+        if (context.IsPSP())
+        {
+            context.Logger.LogTrace(BunkumCategory.Game, $"Actual response status is {realResponse.StatusCode}, but the client is LBP PSP, so we will return OK instead.");
+            return OK;
+        }
+
+        return realResponse;
+    }
+
+    private Response SubmitLevelStarRatingInternal(RequestContext context, GameDatabaseContext database, GameUser user, string slotType, int id, 
+        GameServerConfig config)
     {
         if (user.IsWriteBlocked(config)) 
             return Unauthorized;

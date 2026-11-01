@@ -1,4 +1,6 @@
 using System.Drawing;
+using System.Text;
+using System.Xml.Serialization;
 using Bunkum.Core;
 using Bunkum.Core.Endpoints;
 using Bunkum.Core.Responses;
@@ -26,7 +28,38 @@ public class ReportingEndpoints : EndpointGroup
     [GameEndpoint("grief", HttpMethods.Post, ContentType.Xml)]
     [RequireEmailVerified]
     [EndpointRateLimit(EndpointBucketId.GameUploadGriefReport)]
-    public Response UploadReport(RequestContext context, GameDatabaseContext database, SerializedGriefReport body, GameUser user,
+    public Response UploadReport(RequestContext context, GameDatabaseContext database, string body, GameUser user,
+        IDateTimeProvider time, Token token, GameServerConfig config)
+    {
+        // Parsing manually because we don't want invalid XML from PSP to cause MainMiddleware to return BadRequest to it,
+        // else the game will explode or something.
+        SerializedGriefReport? report = null;
+        try
+        {
+            XmlSerializer serializer = new(typeof(SerializedGriefReport));
+            object? obj = serializer.Deserialize(new StringReader(body)) ?? throw new Exception();
+            report = (SerializedGriefReport)obj;
+        }
+        catch (Exception e)
+        {
+            context.Logger.LogError(BunkumCategory.UserContent, $"Failed to parse grief report: {e}\n\nXML: {body}");
+        }
+
+        Response realResponse = report == null 
+            ? BadRequest
+            : this.UploadReportInternal(context, database, report, user, time, token, config);
+
+        // PSP always wants OK, else it will softlock the save for some stupid reason (according to the comment below atleast).
+        if (context.IsPSP())
+        {
+            context.Logger.LogTrace(BunkumCategory.Game, $"Actual response status is {realResponse.StatusCode}, but the client is LBP PSP, so we will return OK instead.");
+            return OK;
+        }
+
+        return realResponse;
+    }
+    
+    private Response UploadReportInternal(RequestContext context, GameDatabaseContext database, SerializedGriefReport body, GameUser user,
         IDateTimeProvider time, Token token, GameServerConfig config)
     {
         if (user.IsWriteBlocked(config))

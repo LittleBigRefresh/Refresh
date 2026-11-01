@@ -690,10 +690,12 @@ public class ScoreLeaderboardTests : GameServerTest
         client.DefaultRequestHeaders.UserAgent.TryParseAdd("LBPPSP CLIENT");
 
         HttpResponseMessage message = client.PostAsync($"/lbp/play/user/{level.LevelId}?count=gtgnyegth", new ReadOnlyMemoryContent(Array.Empty<byte>())).Result;
-        Assert.That(message.StatusCode, Is.EqualTo(BadRequest));
+        Assert.That(message.StatusCode, Is.EqualTo(OK));
+        Assert.That(context.Database.GetTotalPlaysForLevelByUser(level, user), Is.Zero); // invalid play count wasn't saved despite OK response
         
         HttpResponseMessage message2 = client.PostAsync($"/lbp/play/user/{level.LevelId}?count=-5", new ReadOnlyMemoryContent(Array.Empty<byte>())).Result;
-        Assert.That(message2.StatusCode, Is.EqualTo(BadRequest));
+        Assert.That(message2.StatusCode, Is.EqualTo(OK));
+        Assert.That(context.Database.GetTotalPlaysForLevelByUser(level, user), Is.Zero); // invalid play count wasn't saved despite OK response
     }
     
     [Test]

@@ -504,11 +504,11 @@ public class ReportingEndpointsTests : GameServerTest
         HttpResponseMessage message = client.PostAsync($"/lbp/upload/{TEST_ASSET_HASH}", new ReadOnlyMemoryContent(TestAsset)).Result;
         Assert.That(message.StatusCode, Is.EqualTo(OK));
         
-        SerializedGriefReport report = this.GetMinimalReport(level, [
-            this.GetPlayerWithNameAndNum(player1.Username, playerNum1),
-            this.GetPlayerWithNameAndNum(player2.Username, playerNum2),
-            this.GetPlayerWithNameAndNum(player3.Username, playerNum3),
-            this.GetPlayerWithNameAndNum(player4.Username, playerNum4),
+        SerializedGriefReport report = context.CreateGriefReport(TEST_ASSET_HASH, level, [
+            context.CreateGriefReportPlayer(player1.Username, playerNum1),
+            context.CreateGriefReportPlayer(player2.Username, playerNum2),
+            context.CreateGriefReportPlayer(player3.Username, playerNum3),
+            context.CreateGriefReportPlayer(player4.Username, playerNum4),
         ]);
         
         HttpResponseMessage response = client.PostAsync("/lbp/grief", new StringContent(report.AsXML())).Result;
@@ -556,11 +556,11 @@ public class ReportingEndpointsTests : GameServerTest
         HttpResponseMessage message = client.PostAsync($"/lbp/upload/{TEST_ASSET_HASH}", new ReadOnlyMemoryContent(TestAsset)).Result;
         Assert.That(message.StatusCode, Is.EqualTo(OK));
 
-        SerializedGriefReport report = this.GetMinimalReport(level, [
-            this.GetPlayerWithNameAndNum(existentUser.Username, 0),
-            this.GetPlayerWithNameAndNum("fromBacon", 1),
-            this.GetPlayerWithNameAndNum("localGuest", 2),
-            this.GetPlayerWithNameAndNum("Xx_Marcell_Davis_xX", 3),
+        SerializedGriefReport report = context.CreateGriefReport(TEST_ASSET_HASH, level, [
+            context.CreateGriefReportPlayer(existentUser.Username, 0),
+            context.CreateGriefReportPlayer("fromBacon", 1),
+            context.CreateGriefReportPlayer("localGuest", 2),
+            context.CreateGriefReportPlayer("Xx_Marcell_Davis_xX", 3),
         ]);
         
         HttpResponseMessage response = client.PostAsync("/lbp/grief", new StringContent(report.AsXML())).Result;
@@ -603,57 +603,5 @@ public class ReportingEndpointsTests : GameServerTest
         Assert.That(relation4.User, Is.Null);
     }
 
-    private SerializedReportPlayer GetPlayerWithNameAndNum(string username, int playerNum)
-    {
-        return new()
-        {
-            PlayerNumber = playerNum,
-            Username = username,
-            Rectangle = new SerializedReportRect
-            {
-                Top = 10,
-                Left = 10,
-                Bottom = 20,
-                Right = 20,
-            },
-            Reporter = true,
-            IngameNow = true,
-            Text = "Some text",
-            ScreenRect = new SerializedReportScreenRect
-            {
-                Rect = new SerializedReportRect
-                {
-                    Top = 10,
-                    Left = 10,
-                    Bottom = 20,
-                    Right = 20,
-                },
-            },
-        };
-    }
-
-    private SerializedGriefReport GetMinimalReport(GameLevel level, SerializedReportPlayer[] players)
-    {
-        return new()
-        {
-            InfoBubble = [],
-            Type = GriefReportType.TermsOfService,
-            Marqee = new SerializedReportMarqee
-            {
-                Rect = new SerializedReportRect
-                {
-                    Top = 10,
-                    Left = 10,
-                    Bottom = 20,
-                    Right = 20,
-                },
-            },
-            LevelOwner = level.Publisher!.Username,
-            LevelType = "user",
-            LevelId = level.LevelId,
-            JpegHash = TEST_ASSET_HASH,
-            Players = players,
-            ScreenElements = new SerializedReportScreenElements(),
-        };
-    }
+    
 }
