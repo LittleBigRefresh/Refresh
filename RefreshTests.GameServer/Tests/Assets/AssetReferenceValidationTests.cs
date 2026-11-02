@@ -227,11 +227,12 @@ public class AssetReferenceValidationTests : GameServerTest
             MustBeInDataStoreIfHash = true,
         }, dataContext.Logger);
 
+        // Hash doesn't get reset by blank since we don't know whether it's invalid, but still receives an error.
         Assert.That(result.Status, Is.EqualTo(InternalServerError));
         Assert.That(result.AssetInfo, Is.Null);
         Assert.That(result.DisallowanceInfo, Is.Null);
         Assert.That(result.ExistsInDataStore, Is.True);
-        Assert.That(result.NewAssetRef, Is.EqualTo("0"));
+        Assert.That(result.NewAssetRef, Is.EqualTo(hash));
     }
 
     [Test]
