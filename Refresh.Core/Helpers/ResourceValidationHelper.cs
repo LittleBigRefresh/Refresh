@@ -30,15 +30,15 @@ public abstract class ResourceValidationHelper
         else if (parameters.AssetRef.StartsWith('g'))
         {
             if (!parameters.MayBeGuid) return new(BadRequest, null, $"The {assetTypeStr} may not be an in-game asset.");
-            if (parameters.AssetRef.Length < 2) return new(BadRequest, null, $"The used in-game {assetTypeStr} is invalid (empty GUID).");
+            if (parameters.AssetRef.Length < 2) return new(BadRequest, null, $"The in-game {assetTypeStr} is invalid (empty GUID).");
 
             // This should only happen if the user is messing with mods/the API/beta builds, so give them a more detailed response
             bool canParseGuid = long.TryParse(parameters.AssetRef[1..], out long guid);
             if (!canParseGuid)
-                return new(BadRequest, null, $"The used in-game {assetTypeStr} is invalid (badly formatted GUID).");
+                return new(BadRequest, null, $"The in-game {assetTypeStr} is invalid (badly formatted GUID).");
 
             if (parameters.MustBeTexture && !parameters.GuidChecker.IsTextureGuid(parameters.GameToUseIn, guid))
-                return new(BadRequest, null, $"The used in-game {assetTypeStr} was not a valid image (unknown GUID).");
+                return new(BadRequest, null, $"The in-game {assetTypeStr} was not a valid image (unknown GUID).");
         }
 
         // At this point the reference is a hash
@@ -50,7 +50,7 @@ public abstract class ResourceValidationHelper
         else if (!CommonPatterns.Sha1Regex().IsMatch(parameters.AssetRef))
         {
             // This should only happen if a player is messing with mods/the API, so give them a more detailed response
-            return new(BadRequest, null, $"The used {assetTypeStr} had an invalid hash.");
+            return new(BadRequest, null, $"The {assetTypeStr} had an invalid hash.");
         }
 
         else
@@ -67,7 +67,7 @@ public abstract class ResourceValidationHelper
 
             if (!existsInDataStore)
             {
-                logger.LogDebug(BunkumCategory.UserContent, $"{parameters.AssetContextTypeStr} '{filename}' could not be found in data store.");
+                logger.LogDebug(BunkumCategory.UserContent, $"The {parameters.AssetContextTypeStr} '{filename}' used by {parameters.User} could not be found in data store.");
 
                 if (parameters.MustBeInDataStoreIfHash)
                     return new(NotFound, null, $"The used {assetTypeStr} did not exist on the server.");
@@ -78,7 +78,7 @@ public abstract class ResourceValidationHelper
             // Only try to import if the asset exists in the data store
             if (existsInDataStore && asset == null)
             {
-                logger.LogInfo(BunkumCategory.UserContent, $"{parameters.AssetContextTypeStr} '{filename}' exists in data store but not in database, attempting to import automatically...");
+                logger.LogInfo(BunkumCategory.UserContent, $"The {parameters.AssetContextTypeStr} '{filename}' used by {parameters.User} exists in data store but not in database, attempting to import automatically...");
                 Stopwatch sw = new();
                 sw.Start();
 
@@ -90,7 +90,7 @@ public abstract class ResourceValidationHelper
                     // Since this is not a validation error, return the given asset ref incase the calling method needs it.
                     // Endpoint methods should stop processing the request and return our error status regardless, so they won't use it,
                     // but other methods might still need it (e.g. migrations).
-                    return new(InternalServerError, parameters.AssetRef, $"Failed to read {assetTypeStr} internally. Please report this to the server owner.", existsInDataStore: existsInDataStore);
+                    return new(InternalServerError, parameters.AssetRef, $"Failed to read the {assetTypeStr} internally. Please report this to the server owner.", existsInDataStore: existsInDataStore);
                 }
 
                 asset = parameters.AssetImporter.ReadAndVerifyAsset(parameters.AssetRef, assetData, parameters.PlatformToUseIn, parameters.Database);
@@ -98,7 +98,7 @@ public abstract class ResourceValidationHelper
                 {
                     sw.Stop();
                     logger.LogError(BunkumCategory.UserContent, $"Failed to import '{filename}' because it was corrupt (after {sw.ElapsedMilliseconds}ms)!");
-                    return new(BadRequest, null, $"The used {assetTypeStr} was invalid or corrupt.", existsInDataStore: existsInDataStore);
+                    return new(BadRequest, null, $"The {assetTypeStr} was invalid or corrupt.", existsInDataStore: existsInDataStore);
                 }
                 
                 // Assume that the user using this asset might also be the uploader. We should never trust that uploader = creator anyway.
@@ -115,12 +115,12 @@ public abstract class ResourceValidationHelper
                 bool isHashedTexture = (asset.AssetFlags & AssetFlags.Imagery) != 0;
 
                 if (parameters.MustBeTexture && !isHashedTexture)
-                    return new(BadRequest, null, $"The used {assetTypeStr} was not a valid custom image.", assetInfo: asset, existsInDataStore: existsInDataStore);
+                    return new(BadRequest, null, $"The {assetTypeStr} was not a valid custom image.", assetInfo: asset, existsInDataStore: existsInDataStore);
                 
                 if (isHashedTexture && parameters.Aipi != null)
                 {
                     // Since AIPI is available, we should use it to scan this image
-                    logger.LogDebug(BunkumCategory.UserContent, $"Sending {filename} ({parameters.AssetContextTypeStr}) to AIPI for image scanning...");
+                    logger.LogDebug(BunkumCategory.UserContent, $"Sending {filename} ({parameters.AssetContextTypeStr} used by {parameters.User}) to AIPI for image scanning...");
                     if (parameters.Aipi.ScanAndHandleAsset(parameters.Database, parameters.DataStore, asset, parameters.User!))
                     {
                         logger.LogWarning(BunkumCategory.UserContent, $"{parameters.User}'s usage of {parameters.AssetContextTypeStr} '{filename}' was blocked by AIPI scan!");

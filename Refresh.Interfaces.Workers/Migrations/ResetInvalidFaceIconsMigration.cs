@@ -1,5 +1,6 @@
 using System.Net;
 using Microsoft.EntityFrameworkCore;
+using NotEnoughLogs;
 using Refresh.Common;
 using Refresh.Core.Helpers;
 using Refresh.Core.Types.Assets.Validation;
@@ -52,61 +53,31 @@ public class ResetInvalidFaceIconsMigration : MigrationJob<GameUser>
         {
             faceParams.User = user;
 
-            // Reset yay icon if invalid
-            faceParams.AssetRef = user.YayFaceHash;
-            faceParams.AssetContextTypeStr = $"{user}'s Yay face icon";
-            ValidatedAssetResult yayResult = ResourceValidationHelper.ValidateReference(faceParams, context.Logger);
-
-            // an error on our side should not cause a false positive, so also ignore InternalServerError
-            if (yayResult.Status != HttpStatusCode.OK && yayResult.Status != HttpStatusCode.InternalServerError)
+            // Validate the hashes
+            NewFaceHashes newHashes = new()
             {
-                yayResult.ErrorMessage ??= yayResult.DisallowanceInfo != null ? "The icon is disallowed" : "Unknown reason";
-                context.Logger.LogInfo(RefreshContext.Worker, $"{user}'s yay face icon '{user.YayFaceHash}' will be reset because of the following reason: {yayResult.ErrorMessage}");
-            }
-
-            // Reset meh icon if invalid
-            faceParams.AssetRef = user.MehFaceHash;
-            faceParams.AssetContextTypeStr = $"{user}'s Meh face icon";
-            ValidatedAssetResult mehResult = ResourceValidationHelper.ValidateReference(faceParams, context.Logger);
-
-            // an error on our side should not cause a false positive, so also ignore InternalServerError
-            if (mehResult.Status != HttpStatusCode.OK && mehResult.Status != HttpStatusCode.InternalServerError)
-            {
-                mehResult.ErrorMessage ??= mehResult.DisallowanceInfo != null ? "The icon is disallowed" : "Unknown reason";
-                context.Logger.LogInfo(RefreshContext.Worker, $"{user}'s meh face icon '{user.MehFaceHash}' will be reset because of the following reason: {mehResult.ErrorMessage}");
-            }
-
-            // Reset boo icon if invalid
-            faceParams.AssetRef = user.BooFaceHash;
-            faceParams.AssetContextTypeStr = $"{user}'s Boo face icon";
-            ValidatedAssetResult booResult = ResourceValidationHelper.ValidateReference(faceParams, context.Logger);
-
-            // an error on our side should not cause a false positive, so also ignore InternalServerError
-            if (booResult.Status != HttpStatusCode.OK && booResult.Status != HttpStatusCode.InternalServerError)
-            {
-                booResult.ErrorMessage ??= booResult.DisallowanceInfo != null ? "The icon is disallowed" : "Unknown reason";
-                context.Logger.LogInfo(RefreshContext.Worker, $"{user}'s boo face icon '{user.BooFaceHash}' will be reset because of the following reason: {booResult.ErrorMessage}");
-            }
+                User = user,
+                YayHash = this.ValidateIcon(faceParams, user, user.YayFaceHash, "Yay", context.Logger),
+                MehHash = this.ValidateIcon(faceParams, user, user.MehFaceHash, "Meh", context.Logger),
+                BooHash = this.ValidateIcon(faceParams, user, user.BooFaceHash, "Boo", context.Logger),
+            };
 
             // Nothing to do if all icons are unchanged
-            if (user.YayFaceHash == yayResult.NewAssetRef && user.MehFaceHash == mehResult.NewAssetRef && user.BooFaceHash == booResult.NewAssetRef)
+            if (user.YayFaceHash == newHashes.YayHash && user.MehFaceHash == newHashes.MehHash && user.BooFaceHash == newHashes.BooHash)
             {
                 context.Logger.LogDebug(RefreshContext.Worker, $"{user}'s face icons haven't changed after validation, so they will not be updated.");
                 continue;
             }
 
-            pendingUpdates.Add(new()
-            {
-                User = user,
-                YayHash = yayResult.NewAssetRef,
-                MehHash = mehResult.NewAssetRef,
-                BooHash = booResult.NewAssetRef,
-            });
+            // Else queue the user and their new hashes to the bulk update after this loop
+            pendingUpdates.Add(newHashes);
 
-            context.Logger.LogDebug(RefreshContext.Worker, $"{user}'s face icons will be updated to: \n\t Yay '{user.YayFaceHash}' -> '{yayResult.NewAssetRef}' \n\t Meh '{user.MehFaceHash}' -> '{mehResult.NewAssetRef}' \n\t Boo '{user.BooFaceHash}' -> '{booResult.NewAssetRef}'");
+            context.Logger.LogDebug(RefreshContext.Worker, $"{user}'s face icons will be updated to:" +
+                $" \n\t Yay '{user.YayFaceHash}' -> '{newHashes.YayHash}' \n\t Meh '{user.MehFaceHash}' -> '{newHashes.MehHash}' \n\t Boo '{user.BooFaceHash}' -> '{newHashes.BooHash}'");
         }
 
-        // Save separately so we can do the writes in bulks while still using the same db context, so the cycle doesn't take too long
+        // Save separately in bulks, instead of individually sending writes for every user in the loop above,
+        // otherwise this will make work cycles slower. (This has been a major bottleneck in my testing).
         foreach (NewFaceHashes hashes in pendingUpdates)
         {
             context.Database.UpdateUserFaceIcons(hashes.User, hashes.YayHash, hashes.MehHash, hashes.BooHash, false);
@@ -114,6 +85,31 @@ public class ResetInvalidFaceIconsMigration : MigrationJob<GameUser>
 
         context.Database.SaveChanges();
         return batch.Length;
+    }
+
+    private string ValidateIcon(AssetValidationParameters parameters, GameUser user, string hash, string name, Logger logger)
+    {
+        parameters.AssetRef = hash;
+        parameters.AssetContextTypeStr = $"{name} face icon";
+        parameters.User = user; // just in case
+
+        ValidatedAssetResult result = ResourceValidationHelper.ValidateReference(parameters, logger);
+
+        // An error on our side should not cause a false positive, so also treat InternalServerError as success.
+        // Better than resetting many face icons because of issues on the operator's end, instead of the icons actually being invalid.
+        if (result.Status == HttpStatusCode.OK || result.Status == HttpStatusCode.InternalServerError)
+        {
+            // No need to log anything in this case.
+            // Don't just return the hash param value, incase e.g. it's a blank hash which we want to normalize to 0.
+            return result.NewAssetRef;
+        }
+
+        result.ErrorMessage ??= result.DisallowanceInfo != null ? "The icon is disallowed" : "Unknown reason";
+        logger.LogInfo(RefreshContext.Worker, $"{user}'s {name} face icon '{hash}' will be reset because of the following reason: {result.ErrorMessage}");
+
+        // At this point result.NewAssetRef should always already be 0, but incase it's somehow not, return 0 explicitly,
+        // since we've already told the operator that we're going to reset the icon.
+        return "0";
     }
 
     internal struct NewFaceHashes
