@@ -97,4 +97,56 @@ public class MigrateFaceIconTests : GameServerTest
         Assert.That(updatedUser!.MehFaceHash, Is.EqualTo("0"));
         Assert.That(updatedUser!.BooFaceHash, Is.EqualTo("0"));
     }
+
+    [Test]
+    public void ResetFaceIconsIfCorrupt()
+    {
+        using TestContext context = this.GetServer();
+        GameUser user = context.CreateUser();
+        IDataStore dataStore = context.GetDataStore();
+
+        // Hash actually corresponds to "TEX ", so the hash we give will be incorrect, which is what we test against here.
+        // We wan't the job to try and import the assets to DB itself here, so don't add them to DB ourselves here.
+        dataStore.WriteToStore(IconHash, "TEX ABC"u8); 
+
+        // Manually set to the incorrect hash
+        context.Database.UpdateUserFaceIcons(user, IconHash, IconHash, IconHash);
+        context.Database.Refresh();
+
+        // Migrate
+        this.RunMigrationJob(context);
+
+        // Assert that all icons were reset
+        GameUser? updatedUser = context.Database.GetUserByObjectId(user.UserId);
+        Assert.That(updatedUser, Is.Not.Null);
+        Assert.That(updatedUser!.YayFaceHash, Is.EqualTo("0"));
+        Assert.That(updatedUser!.MehFaceHash, Is.EqualTo("0"));
+        Assert.That(updatedUser!.BooFaceHash, Is.EqualTo("0"));
+    }
+
+    [Test]
+    public void DontResetFaceIconsIfDataStoreReadsFail()
+    {
+        using TestContext context = this.GetServer(true, new ReadFailingDataStore());
+        GameUser user = context.CreateUser();
+        IDataStore dataStore = context.GetDataStore();
+
+        // The asset will exist in the store, but ReadFailingDataStore will fail to read it.
+        // In this case, the validation method returns InternalServerError, which the job treats the same as if the icon was fine.
+        // This is so we don't end up resetting lots of perfectly fine icons because of filesystem issues on our end or something like that.
+        // We wan't the job to try and import the assets to DB itself here, so don't add them to DB ourselves here.
+        dataStore.WriteToStore(IconHash, "TEX "u8);
+        context.Database.UpdateUserFaceIcons(user, IconHash, IconHash, IconHash);
+        context.Database.Refresh();
+
+        // Migrate
+        this.RunMigrationJob(context);
+
+        // Assert that no icons were reset
+        GameUser? updatedUser = context.Database.GetUserByObjectId(user.UserId);
+        Assert.That(updatedUser, Is.Not.Null);
+        Assert.That(updatedUser!.YayFaceHash, Is.EqualTo(IconHash));
+        Assert.That(updatedUser!.MehFaceHash, Is.EqualTo(IconHash));
+        Assert.That(updatedUser!.BooFaceHash, Is.EqualTo(IconHash));
+    }
 }
