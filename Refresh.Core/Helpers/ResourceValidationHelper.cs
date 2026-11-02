@@ -86,7 +86,11 @@ public abstract class ResourceValidationHelper
                 {
                     sw.Stop();
                     logger.LogError(BunkumCategory.UserContent, $"Failed to read '{filename}' from data store (after {sw.ElapsedMilliseconds}ms)!");
-                    return new(InternalServerError, null, $"Failed to read {assetTypeStr} internally. Please report this to the server owner.", existsInDataStore: existsInDataStore);
+
+                    // Since this is not a validation error, return the given asset ref incase the calling method needs it.
+                    // Endpoint methods should stop processing the request and return our error status regardless, so they won't use it,
+                    // but other methods might still need it (e.g. migrations).
+                    return new(InternalServerError, parameters.AssetRef, $"Failed to read {assetTypeStr} internally. Please report this to the server owner.", existsInDataStore: existsInDataStore);
                 }
 
                 asset = parameters.AssetImporter.ReadAndVerifyAsset(parameters.AssetRef, assetData, parameters.PlatformToUseIn, parameters.Database);
