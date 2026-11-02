@@ -67,7 +67,7 @@ public abstract class ResourceValidationHelper
 
             if (!existsInDataStore)
             {
-                logger.LogDebug(BunkumCategory.UserContent, $"Referenced asset '{filename}' could not be found in data store.");
+                logger.LogDebug(BunkumCategory.UserContent, $"{parameters.AssetContextTypeStr} '{filename}' could not be found in data store.");
 
                 if (parameters.MustBeInDataStoreIfHash)
                     return new(NotFound, null, $"The used {assetTypeStr} did not exist on the server.");
@@ -78,15 +78,14 @@ public abstract class ResourceValidationHelper
             // Only try to import if the asset exists in the data store
             if (existsInDataStore && asset == null)
             {
-                logger.LogInfo(BunkumCategory.UserContent, $"Referenced asset '{filename}' exists in data store but not in database, attempting to import automatically...");
+                logger.LogInfo(BunkumCategory.UserContent, $"{parameters.AssetContextTypeStr} '{filename}' exists in data store but not in database, attempting to import automatically...");
                 Stopwatch sw = new();
                 sw.Start();
 
                 if (!parameters.DataStore.TryGetDataFromStore(filename, out byte[]? assetData) || assetData == null)
                 {
                     sw.Stop();
-                    logger.LogError(BunkumCategory.UserContent, $"Failed to read '{filename}' from data store!");
-                    logger.LogDebug(BunkumCategory.UserContent, $"Failed to get '{filename}' after {sw.ElapsedMilliseconds}ms.");
+                    logger.LogError(BunkumCategory.UserContent, $"Failed to read '{filename}' from data store (after {sw.ElapsedMilliseconds}ms)!");
                     return new(InternalServerError, null, $"Failed to read {assetTypeStr} internally. Please report this to the server owner.", existsInDataStore: existsInDataStore);
                 }
 
@@ -94,7 +93,7 @@ public abstract class ResourceValidationHelper
                 if (asset == null) 
                 {
                     sw.Stop();
-                    logger.LogDebug(BunkumCategory.UserContent, $"Failed to get '{filename}' after {sw.ElapsedMilliseconds}ms.");
+                    logger.LogError(BunkumCategory.UserContent, $"Failed to import '{filename}' because it was corrupt (after {sw.ElapsedMilliseconds}ms)!");
                     return new(BadRequest, null, $"The used {assetTypeStr} was invalid or corrupt.", existsInDataStore: existsInDataStore);
                 }
                 

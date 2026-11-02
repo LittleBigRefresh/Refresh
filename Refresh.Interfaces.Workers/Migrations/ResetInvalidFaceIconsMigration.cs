@@ -54,6 +54,7 @@ public class ResetInvalidFaceIconsMigration : MigrationJob<GameUser>
 
             // Reset yay icon if invalid
             faceParams.AssetRef = user.YayFaceHash;
+            faceParams.AssetContextTypeStr = $"{user}'s Yay face icon";
             ValidatedAssetResult yayResult = ResourceValidationHelper.ValidateReference(faceParams, context.Logger);
 
             // an error on our side should not cause a false positive, so also ignore InternalServerError
@@ -65,6 +66,7 @@ public class ResetInvalidFaceIconsMigration : MigrationJob<GameUser>
 
             // Reset meh icon if invalid
             faceParams.AssetRef = user.MehFaceHash;
+            faceParams.AssetContextTypeStr = $"{user}'s Meh face icon";
             ValidatedAssetResult mehResult = ResourceValidationHelper.ValidateReference(faceParams, context.Logger);
 
             // an error on our side should not cause a false positive, so also ignore InternalServerError
@@ -76,6 +78,7 @@ public class ResetInvalidFaceIconsMigration : MigrationJob<GameUser>
 
             // Reset boo icon if invalid
             faceParams.AssetRef = user.BooFaceHash;
+            faceParams.AssetContextTypeStr = $"{user}'s Boo face icon";
             ValidatedAssetResult booResult = ResourceValidationHelper.ValidateReference(faceParams, context.Logger);
 
             // an error on our side should not cause a false positive, so also ignore InternalServerError
