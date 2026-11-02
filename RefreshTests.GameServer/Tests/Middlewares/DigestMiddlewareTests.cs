@@ -1,4 +1,5 @@
 using System.Text;
+using Refresh.Database.Models.Authentication;
 using Refresh.GameServer.Middlewares;
 
 namespace RefreshTests.GameServer.Tests.Middlewares;
@@ -121,11 +122,11 @@ public class DigestMiddlewareTests : GameServerTest
             ? context.Server.Value.GameServerConfig.HmacDigestKeys[1]
             : context.Server.Value.GameServerConfig.Sha1DigestKeys[1];
         
-        string serverDigest = DigestMiddleware.CalculateDigest(digest, endpoint, Encoding.ASCII.GetBytes(expectedResultStr), "", null, false, isHmac);
-        
-        // TODO: once we model PS4 clients in our tokens, make the request come from an authenticated PS4 client.
-        if(isHmac)
-            context.Http.DefaultRequestHeaders.TryAddWithoutValidation("User-Agent", "MM CHTTPClient LBP3 01.26");
+        // Since we don't have a real way to test /login yet, create a token manually with IsPS4Token = isHmac
+        Token token = context.Database.GenerateTokenForUser(context.CreateUser(), TokenType.Game, TokenGame.LittleBigPlanet3, TokenPlatform.RPCS3, "lol", 999999, isHmac);
+        context.Http.DefaultRequestHeaders.Add("Cookie", "MM_AUTH=" + token.TokenData);
+
+        string serverDigest = DigestMiddleware.CalculateDigest(digest, endpoint, Encoding.ASCII.GetBytes(expectedResultStr), token.TokenData, null, false, isHmac);
 
         // send a blank digest to make it have to guess
         context.Http.DefaultRequestHeaders.Add("X-Digest-A", "");
@@ -157,14 +158,14 @@ public class DigestMiddlewareTests : GameServerTest
         string digest = isHmac
             ? context.Server.Value.GameServerConfig.HmacDigestKeys[0]
             : context.Server.Value.GameServerConfig.Sha1DigestKeys[0];
+        
+        // Since we don't have a real way to test /login yet, create a token manually with IsPS4Token = isHmac
+        Token token = context.Database.GenerateTokenForUser(context.CreateUser(), TokenType.Game, TokenGame.LittleBigPlanet3, TokenPlatform.RPCS3, "lol", 999999, isHmac);
+        context.Http.DefaultRequestHeaders.Add("Cookie", "MM_AUTH=" + token.TokenData);
 
         // Calculate the digest response as if the digest used was the first digest
         string serverDigest = DigestMiddleware.CalculateDigest(digest, endpoint,
-            Encoding.ASCII.GetBytes(expectedResultStr), "", null, false, isHmac);
-
-        // TODO: once we model PS4 clients in our tokens, make the request come from an authenticated PS4 client.
-        if(isHmac)
-            context.Http.DefaultRequestHeaders.TryAddWithoutValidation("User-Agent", "MM CHTTPClient LBP3 01.26");
+            Encoding.ASCII.GetBytes(expectedResultStr), token.TokenData, null, false, isHmac);
         
         context.Http.DefaultRequestHeaders.Add("X-Digest-A", "nonsense digest");
         HttpResponseMessage response = context.Http.GetAsync(endpoint).Result;
