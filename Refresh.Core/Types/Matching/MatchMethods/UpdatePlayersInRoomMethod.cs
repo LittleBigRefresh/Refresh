@@ -24,6 +24,7 @@ public class UpdatePlayersInRoomMethod : IMatchMethod
                 dataContext.Match.AddPlayerToRoom(playerUsername, room);
         }
 
+        dataContext.Database.UpdatePlayTimeOnUserMetric(dataContext.User!, dataContext.Game!, dataContext.Platform!);
         return OK;
     }
 }
