@@ -36,7 +36,7 @@ public partial class GameDatabaseContext // Tokens
         return Convert.ToBase64String(tokenData);
     }
     
-    public Token GenerateTokenForUser(GameUser user, TokenType type, TokenGame game, TokenPlatform platform, string ipAddress, int tokenExpirySeconds = DefaultTokenExpirySeconds)
+    public Token GenerateTokenForUser(GameUser user, TokenType type, TokenGame game, TokenPlatform platform, string ipAddress, int tokenExpirySeconds = DefaultTokenExpirySeconds, bool isPS4 = false)
     {
         // TODO: JWT (JSON Web Tokens) for TokenType.Api
         
@@ -52,6 +52,7 @@ public partial class GameDatabaseContext // Tokens
             ExpiresAt = this._time.Now.AddSeconds(tokenExpirySeconds),
             LoginDate = this._time.Now,
             IpAddress = ipAddress,
+            IsPS4Token = isPS4,
         };
         
         if (user.LastLoginDate == DateTimeOffset.MinValue)

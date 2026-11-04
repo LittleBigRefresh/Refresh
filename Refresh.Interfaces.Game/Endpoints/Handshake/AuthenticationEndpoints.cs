@@ -55,6 +55,11 @@ public class AuthenticationEndpoints : EndpointGroup
         string ipAddress = context.RemoteIp();
         
         TokenPlatform? platform = ticket.DeterminePlatform();
+
+        // This header is only sent by LBP3 (both PS3 and PS4), and it'll only be either 0 (has NP ticket, not PS4), or 1 (has oauth code, is PS4).
+        // TODO use this info to determine whether to actually parse the request body as oauth code instead of NP ticket.
+        // For now, we will only use this for digest calculation.
+        bool isPS4 = context.RequestHeaders.Get("oauth") == "1";
         
         GameUser? user = database.GetUserByUsername(ticket.Username);
         if (user == null)
@@ -211,7 +216,7 @@ public class AuthenticationEndpoints : EndpointGroup
         // Past this point, login is considered to be complete.
         // !!
 
-        Token token = database.GenerateTokenForUser(user, TokenType.Game, game.Value, platform.Value, ipAddress, GameDatabaseContext.GameTokenExpirySeconds); // 4 hours
+        Token token = database.GenerateTokenForUser(user, TokenType.Game, game.Value, platform.Value, ipAddress, GameDatabaseContext.GameTokenExpirySeconds, isPS4); // 4 hours
 
         // Clear the user's force match
         database.ClearForceMatch(user);

@@ -76,9 +76,6 @@ public class DigestMiddleware : IMiddleware
             next();
             return;
         }
-
-        // TODO: once we have PS4 support, check if the token is a PS4 token
-        bool isPs4 = context.RequestHeaders["User-Agent"]?.Contains("MM CHTTPClient LBP3 01.26") ?? false;
         
         PspVersionInfo? pspVersionInfo = null;
         // Try to acquire the exe and data version, this is only accounted for in the client digests, not the server digests
@@ -101,6 +98,7 @@ public class DigestMiddleware : IMiddleware
         GameDatabaseContext gameDatabase = (GameDatabaseContext)database.Value;
 
         Token? token = gameDatabase.GetTokenFromTokenData(auth, TokenType.Game);
+        bool isPS4 = token?.IsPS4Token ?? false;
         
         byte[] responseBody = context.ResponseStream.ToArray();
         byte[] requestBody = context.InputStream.ToArray();
@@ -125,14 +123,14 @@ public class DigestMiddleware : IMiddleware
             if (ps4DigestIndex >= this._config.HmacDigestKeys.Length)
                 ps4DigestIndex = 0;
             
-            string digest = isPs4
+            string digest = isPS4
                 ? this._config.HmacDigestKeys[ps4DigestIndex]
                 : this._config.Sha1DigestKeys[ps3DigestIndex];
             
-            SetDigestResponse(context, CalculateDigest(digest, route, responseBody, auth, null, isUpload, isPs4));
+            SetDigestResponse(context, CalculateDigest(digest, route, responseBody, auth, null, isUpload, isPS4));
             
             if(token != null)
-                gameDatabase.SetTokenDigestInfo(token, digest, isPs4);
+                gameDatabase.SetTokenDigestInfo(token, digest, isPS4);
         
             return;
         }
@@ -153,15 +151,15 @@ public class DigestMiddleware : IMiddleware
         else
         {
             // If we were unable to find any digests, just use the first one specified as a backup
-            string firstDigest = isPs4 ? this._config.HmacDigestKeys[0] : this._config.Sha1DigestKeys[0];
+            string firstDigest = isPS4 ? this._config.HmacDigestKeys[0] : this._config.Sha1DigestKeys[0];
         
-            SetDigestResponse(context, CalculateDigest(firstDigest, route, responseBody, auth, null, isUpload, isPs4));
+            SetDigestResponse(context, CalculateDigest(firstDigest, route, responseBody, auth, null, isUpload, isPS4));
         
             // If theres no token, or the client didnt provide any client digest, lock the token into the found digest
             // The second condition is to make sure that we dont lock in a digest for endpoints which send no client digest,
             // but expect a server digest.
             if(token != null && !string.IsNullOrEmpty(clientDigest))
-                gameDatabase.SetTokenDigestInfo(token, firstDigest, isPs4);
+                gameDatabase.SetTokenDigestInfo(token, firstDigest, isPS4);
         }
     }
 
