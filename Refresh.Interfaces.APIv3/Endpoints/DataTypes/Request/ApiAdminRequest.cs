@@ -9,4 +9,5 @@ namespace Refresh.Interfaces.APIv3.Endpoints.DataTypes.Request;
 public class ApiAdminRequest
 {
     public string? Reason { get; set; }
+    public bool? Force { get; set; }
 }
