@@ -250,7 +250,7 @@ public class AdminUserApiEndpoints : EndpointGroup
 
         database.UpdateUserData(targetUser, body);
         // TODO: In ApiV4, moderation actions should also provide reasons
-        database.CreateModerationAction(targetUser, ModerationActionType.UserModification, user, "");
+        database.CreateModerationAction(targetUser, ModerationActionType.UserModification, user, body.Reason ?? "");
 
         return ApiExtendedGameUserResponse.FromOld(targetUser, dataContext);
     }
