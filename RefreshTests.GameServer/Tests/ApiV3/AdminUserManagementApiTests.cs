@@ -395,16 +395,17 @@ public class AdminUserManagementApiTests : GameServerTest
 
         GameUser? updated = context.Database.GetUserByObjectId(user.UserId);
         Assert.That(updated, Is.Not.Null);
-        Assert.That(updated!.EmailAddress, Is.EqualTo(force ? "lol@lol.lol" : "init@real.real"));
+        Assert.That(updated!.EmailAddress, Is.EqualTo(force ? "malformed lol" : "init@real.real"));
 
         // false if forcefully changed, true if not forcefully changed (since update was rejected)
         Assert.That(updated!.EmailAddressVerified, Is.EqualTo(!force));
 
         // --- May only set to disallowed if forced ---
-        context.Database.DisallowEmailAddress("disallowed lol", "reason");
+        context.Database.DisallowEmailAddress("disallowed@real.real", "reason");
         request = new()
         {
             EmailAddress = "disallowed@real.real",
+            Force = force,
         };
         response = await client.PutAsync($"/api/v3/admin/users/uuid/{user.UserId}/emailAddress", new StringContent(request.AsJson()));
         Assert.That(response.IsSuccessStatusCode, Is.EqualTo(force));
@@ -422,6 +423,7 @@ public class AdminUserManagementApiTests : GameServerTest
         request = new()
         {
             EmailAddress = "taken@real.real",
+            Force = force,
         };
         response = await client.PutAsync($"/api/v3/admin/users/uuid/{user.UserId}/emailAddress", new StringContent(request.AsJson()));
         Assert.That(response.IsSuccessStatusCode, Is.EqualTo(force));
@@ -439,6 +441,7 @@ public class AdminUserManagementApiTests : GameServerTest
         request = new()
         {
             EmailAddress = "queue@real.real",
+            Force = force,
         };
         response = await client.PutAsync($"/api/v3/admin/users/uuid/{user.UserId}/emailAddress", new StringContent(request.AsJson()));
         Assert.That(response.IsSuccessStatusCode, Is.EqualTo(force));
@@ -456,8 +459,8 @@ public class AdminUserManagementApiTests : GameServerTest
     public async Task ModeratorsMayEditUsernames()
     {
         using TestContext context = this.GetServer();
-        GameUser mod = context.CreateUser("Init", role: GameUserRole.Moderator, verifyEmail: true);
-        GameUser user = context.CreateUser(role: GameUserRole.User);
+        GameUser mod = context.CreateUser(role: GameUserRole.Moderator, verifyEmail: true);
+        GameUser user = context.CreateUser("Init", role: GameUserRole.User);
         HttpClient client = context.GetAuthenticatedClient(TokenType.Api, mod);
         ApiAdminRenameUserRequest request = new()
         {
@@ -494,8 +497,8 @@ public class AdminUserManagementApiTests : GameServerTest
     public async Task TestInvalidUsernamesGivenByModerators(bool force)
     {
         using TestContext context = this.GetServer();
-        GameUser mod = context.CreateUser("Init", role: GameUserRole.Moderator, verifyEmail: true);
-        GameUser user = context.CreateUser(role: GameUserRole.User);
+        GameUser mod = context.CreateUser(role: GameUserRole.Moderator, verifyEmail: true);
+        GameUser user = context.CreateUser("Init", role: GameUserRole.User);
         HttpClient client = context.GetAuthenticatedClient(TokenType.Api, mod);
 
         // --- May only set to malformed if forced ---
@@ -518,6 +521,7 @@ public class AdminUserManagementApiTests : GameServerTest
         request = new()
         {
             Username = "SuperDisallowed",
+            Force = force,
         };
         response = await client.PutAsync($"/api/v3/admin/users/uuid/{user.UserId}/username", new StringContent(request.AsJson()));
         Assert.That(response.IsSuccessStatusCode, Is.EqualTo(force));
@@ -532,6 +536,7 @@ public class AdminUserManagementApiTests : GameServerTest
         request = new()
         {
             Username = "Taken",
+            Force = force,
         };
         response = await client.PutAsync($"/api/v3/admin/users/uuid/{user.UserId}/username", new StringContent(request.AsJson()));
         Assert.That(response.IsSuccessStatusCode, Is.EqualTo(force));
@@ -546,6 +551,7 @@ public class AdminUserManagementApiTests : GameServerTest
         request = new()
         {
             Username = "Queued",
+            Force = force,
         };
         response = await client.PutAsync($"/api/v3/admin/users/uuid/{user.UserId}/username", new StringContent(request.AsJson()));
         Assert.That(response.IsSuccessStatusCode, Is.EqualTo(force));

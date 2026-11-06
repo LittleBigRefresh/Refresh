@@ -192,7 +192,7 @@ public class AdminUserApiEndpoints : EndpointGroup
     [DocError(typeof(ApiValidationError), ApiValidationError.InvalidUsernameErrorWhen)]
     [DocError(typeof(ApiValidationError), ApiValidationError.UsernameTakenErrorWhen)]
     [DocRequestBody(typeof(ApiResetUserPasswordRequest))]
-    public ApiOkResponse EditUsernameDataForUser(RequestContext context, GameDatabaseContext database, ApiAdminRenameUserRequest body, GameUser user,
+    public ApiOkResponse RenameUser(RequestContext context, GameDatabaseContext database, ApiAdminRenameUserRequest body, GameUser user,
         [DocSummary(SharedParamDescriptions.UserIdParam)] string id, 
         [DocSummary(SharedParamDescriptions.UserIdTypeParam)] string idType)
     {
