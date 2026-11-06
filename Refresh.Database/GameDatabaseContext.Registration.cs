@@ -85,6 +85,11 @@ public partial class GameDatabaseContext // Registration
     {
         return CommonPatterns.UsernameRegex().IsMatch(username);
     }
+    
+    public bool IsEmailAddressValid(string emailAddress)
+    {
+        return CommonPatterns.EmailAddressRegex().IsMatch(emailAddress);
+    }
 
     public bool IsUsernameQueued(string username)
     {
@@ -112,8 +117,7 @@ public partial class GameDatabaseContext // Registration
     public bool IsEmailTaken(string emailAddress)
     {
         return this.GameUsers.Any(u => u.EmailAddress == emailAddress) ||
-               this.QueuedRegistrations.Any(r => r.EmailAddress == emailAddress) ||
-               this.IsEmailAddressDisallowed(emailAddress);
+               this.QueuedRegistrations.Any(r => r.EmailAddress == emailAddress);
     }
 
     public void AddRegistrationToQueue(string username, string emailAddress, string passwordBcrypt)

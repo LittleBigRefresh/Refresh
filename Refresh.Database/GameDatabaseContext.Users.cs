@@ -260,6 +260,36 @@ public partial class GameDatabaseContext // Users
                 user.MehFaceHash = data.MehFaceHash;
         });
     }
+
+    public void UpdateUserEmailAddressData(GameUser user, string? newEmailAddress, bool? markAsVerified, bool force)
+    {
+        if (newEmailAddress != null && newEmailAddress != user.EmailAddress)
+        {
+            if (!force)
+            {
+                if (!this.IsEmailAddressValid(newEmailAddress))
+                {
+                    throw new ArgumentException("Email address is invalid!", nameof(newEmailAddress));
+                }
+
+                if (this.IsEmailTaken(newEmailAddress))
+                {
+                    throw new ArgumentException("Email address is already taken!", nameof(newEmailAddress));
+                }
+            }
+
+            user.EmailAddress = newEmailAddress.ToLowerInvariant();
+            user.EmailAddressVerified = false; // will be overwritten below if wanted anyway
+        }
+
+        if (markAsVerified != null)
+        {
+            user.EmailAddressVerified = markAsVerified.Value;
+        }
+
+        this.GameUsers.Update(user);
+        this.SaveChanges();
+    }
     
     public void UpdateUserData(GameUser user, IApiEditUserRequest data)
     {
