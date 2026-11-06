@@ -1,3 +1,6 @@
+using Bunkum.Core;
+using NotEnoughLogs;
+using Refresh.Common.Exceptions;
 using Refresh.Database.Models.Playlists;
 
 namespace Refresh.Database.Extensions;
@@ -25,25 +28,22 @@ public static class GamePlaylistExtensions
         }
     }
 
-    // Limit to prevent getting stuck in infinite loops or recursions, incase our other conditions fail somehow.
-    private const int MaxTraversalCount = 150;
-
     /// <summary>
-    /// Returns true if adding the child playlist to the parent playlist will cause a loop.
-    /// This is checked by looking whether the parent and child are the same playlist,
-    /// whether the child playlist already has the parent playlist in its children somehwere,
-    /// or whether the parent is already a child of the child playlist.
+    /// Returns whether the child playlist appears in the root playlist's sub-playlist tree, even if it's not an immediate child.
+    /// Also returns true if the root and the child are the same playlist. Playlists are always compared by their IDs.
+    /// Throws if the maximum number of traversals has been reached, to prevent being stuck in an infinite loop
+    /// incase our conditions somehow fail, or the sub-playlist tree is too large.
     /// </summary>
     // TODO maybe cache a flattened tree in DB so we don't have to traverse, and therefore send potentially many
     // DB calls, every time.
-    public static bool DoPlaylistsContainEachOther(this GamePlaylist parent, GamePlaylist child, GameDatabaseContext database)
+    public static bool ContainsChildInTree(this GamePlaylist root, GamePlaylist child, GameDatabaseContext database, int maxTraversalCount = 150, Logger? logger = null)
     {
         // Probably already validated by the caller, but make sure anyway
-        if (parent.PlaylistId == child.PlaylistId)
+        if (root.PlaylistId == child.PlaylistId)
         {
+            logger?.LogDebug(BunkumCategory.UserContent, $"Root playlist {root.PlaylistId} is the same as child playlist, returning true.");
             return true;
         }
-        
 
         // Check whether children of child have the parent
         List<int> queuedIds = [child.PlaylistId];
@@ -54,9 +54,11 @@ public static class GamePlaylistExtensions
         {
             // End traversal, regardless of state, if fallback iteration limit has been reached.
             currentIterationCount++;
-            if (currentIterationCount >= MaxTraversalCount)
+            if (currentIterationCount >= maxTraversalCount)
             {
-                return true;
+                throw new TakingTooLongException($"[Traversal {currentIterationCount}/{maxTraversalCount}] "
+                    + $"Maximum number of traversals reached, forcefully stopping traversal! "
+                    + $"Either this traversal method has a bug causing it to not finish, or playlist #{child.PlaylistId} has too many sub-playlists!");
             }
 
             // Dequeue next ID
@@ -64,8 +66,10 @@ public static class GamePlaylistExtensions
             queuedIds.RemoveAt(0);
 
             // If we've found the parent in the child's sub-playlist tree, then adding will cause a loop.
-            if (currentId == parent.PlaylistId)
+            if (currentId == root.PlaylistId)
             {
+                logger?.LogDebug(BunkumCategory.UserContent, $"[Traversal {currentIterationCount}/{maxTraversalCount}] "
+                    + $"Root playlist #{root.PlaylistId} was found in child playlist #{child.PlaylistId}! Returning true");
                 return true;
             }
 
@@ -76,12 +80,18 @@ public static class GamePlaylistExtensions
             // keep track of this.
             if (alreadyTraversedIds.Contains(currentId))
             {
+                logger?.LogDebug(BunkumCategory.UserContent, $"[Traversal {currentIterationCount}/{maxTraversalCount}] "
+                    + $"Playlist #{currentId} has already been traversed, skipping.");
                 continue;
             }
 
             // Fetch and queue the child IDs. No need to cache since we already make sure we don't
             // traverse the same playlists multiple times (see above).
-            queuedIds.AddRange(database.GetIdsOfAllPlaylistsInPlaylist(currentId).ToArray());
+            int[] childIds = database.GetIdsOfAllPlaylistsInPlaylist(currentId).ToArray();
+            logger?.LogDebug(BunkumCategory.UserContent, $"[Traversal {currentIterationCount}/{maxTraversalCount}] "
+                + $"Adding {childIds.Length} child IDs from playlist #{currentId}, and marking #{currentId} as traversed.");
+
+            queuedIds.AddRange(childIds);
             alreadyTraversedIds.Add(currentId);
         }
 
