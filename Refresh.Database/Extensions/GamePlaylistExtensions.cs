@@ -8,15 +8,14 @@ namespace Refresh.Database.Extensions;
 public static class GamePlaylistExtensions
 {
     /// <summary>
-    /// Returns whether the child playlist appears in the root playlist's sub-playlist tree, even if it's not an immediate child.
+    /// Returns whether the root playlistis a sub-playlist of the child playlist, even if it's not an immediate child.
     /// Also returns true if the root and the child are the same playlist. Playlists are always compared by their IDs.
     /// </summary>
     /// <remarks>
-    /// Throws TakingTooLongException if the maximum number of traversals has been reached, to prevent being stuck in an infinite loop
-    /// incase our conditions somehow fail, or the sub-playlist tree is too large.
+    /// Throws TakingTooLongException if the maximum number of traversals has been reached, to prevent getting stuck in an infinite loop
+    /// incase our conditions somehow fail (or incase the sub-playlist tree is just too large).
     /// </remarks>
-    // TODO maybe cache a flattened tree in DB so we don't have to traverse, and therefore send potentially many
-    // DB calls, every time.
+    // TODO maybe cache a flattened tree in DB so we don't have to traverse, and therefore send potentially many DB calls, every time.
     public static bool ContainsChildInTree(this GamePlaylist root, GamePlaylist child, GameDatabaseContext database, Logger? logger = null, int maxTraversalCount = 150)
     {
         // Probably already validated by the caller, but make sure anyway
