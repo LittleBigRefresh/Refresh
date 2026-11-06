@@ -6,6 +6,7 @@ using Bunkum.Protocols.Http;
 using Refresh.Common.Constants;
 using Refresh.Common.Verification;
 using Refresh.Core.Authentication.Permission;
+using Refresh.Core.Services;
 using Refresh.Core.Types.Categories;
 using Refresh.Core.Types.Data;
 using Refresh.Database;
@@ -137,6 +138,105 @@ public class AdminUserApiEndpoints : EndpointGroup
         if (passwordBcrypt == null) return new ApiInternalError("Could not BCrypt the given password.");
         
         database.SetUserPassword(targetUser, passwordBcrypt, true);
+        return new ApiOkResponse();
+    }
+
+    [ApiV3Endpoint("admin/users/{idType}/{id}/emailAddress", HttpMethods.Put), MinimumRole(GameUserRole.Moderator)]
+    [DocSummary("Allows you to do actions related to a user's email address, such as changing it, manually marking it as (un)verified, or disallowing it.")]
+    [DocError(typeof(ApiNotFoundError), ApiNotFoundError.UserMissingErrorWhen)]
+    [DocError(typeof(ApiValidationError), ApiValidationError.MayNotModifyUserDueToLowRoleErrorWhen)]
+    [DocError(typeof(ApiValidationError), ApiValidationError.EmailFormattingInvalidErrorWhen)]
+    [DocError(typeof(ApiValidationError), ApiValidationError.EmailDoesNotActuallyExistErrorWhen)]
+    [DocRequestBody(typeof(ApiResetUserPasswordRequest))]
+    public ApiOkResponse EditEmailAddressDataForUser(RequestContext context, GameDatabaseContext database, ApiAdminUpdateEmailAddressRequest body, GameUser user,
+        SmtpService smtp,
+        [DocSummary(SharedParamDescriptions.UserIdParam)] string id, 
+        [DocSummary(SharedParamDescriptions.UserIdTypeParam)] string idType)
+    {
+        GameUser? targetUser = database.GetUserByIdAndType(idType, id);
+        if (targetUser == null) return ApiNotFoundError.UserMissingError;
+
+        if (!user.MayModifyUser(targetUser))
+            return ApiValidationError.MayNotModifyUserDueToLowRoleError;
+
+        string? oldEmailAddress = targetUser.EmailAddress;
+
+        // Skip if force is missing or explicitly false, or if address shouldn't be updated to begin with
+        if (body.EmailAddress != null && body.EmailAddress != user.EmailAddress && body.Force != true)
+        {
+            if (!CommonPatterns.EmailAddressRegex().IsMatch(body.EmailAddress))
+                return ApiValidationError.EmailFormattingInvalidError;
+
+            if (!smtp.CheckEmailDomainValidity(body.EmailAddress))
+                return ApiValidationError.EmailDoesNotActuallyExistError;
+
+            // TODO move all these messages to ApiValidationError
+            if (database.IsEmailTaken(body.EmailAddress))
+                return new ApiValidationError("The new email address is taken.");
+
+            if (database.IsEmailDomainDisallowed(body.EmailAddress))
+                return new ApiValidationError("The new email domain is disallowed.");
+
+            if (database.IsEmailAddressDisallowed(body.EmailAddress))
+                return new ApiValidationError("The new email address is disallowed.");
+        }
+        
+        database.UpdateUserEmailAddressData(targetUser, body.EmailAddress, body.MarkEmailAddressAsVerified, body.Force ?? false);
+
+        // Can't disallow address if it's null
+        if (body.DisallowOldEmailAddress == true && oldEmailAddress != null)
+        {
+            database.DisallowEmailAddress(oldEmailAddress, body.Reason ?? "");
+        }
+
+        // TODO mod log
+        return new ApiOkResponse();
+    }
+
+    [ApiV3Endpoint("admin/users/{idType}/{id}/username", HttpMethods.Put), MinimumRole(GameUserRole.Moderator)]
+    [DocSummary("Allows you to do actions related to a user's username, such as changing it, or disallowing it.")]
+    [DocError(typeof(ApiNotFoundError), ApiNotFoundError.UserMissingErrorWhen)]
+    [DocError(typeof(ApiValidationError), ApiValidationError.MayNotModifyUserDueToLowRoleErrorWhen)]
+    [DocError(typeof(ApiValidationError), ApiValidationError.InvalidUsernameErrorWhen)]
+    [DocError(typeof(ApiValidationError), ApiValidationError.UsernameTakenErrorWhen)]
+    [DocRequestBody(typeof(ApiResetUserPasswordRequest))]
+    public ApiOkResponse EditUsernameDataForUser(RequestContext context, GameDatabaseContext database, ApiAdminRenameUserRequest body, GameUser user,
+        [DocSummary(SharedParamDescriptions.UserIdParam)] string id, 
+        [DocSummary(SharedParamDescriptions.UserIdTypeParam)] string idType)
+    {
+        GameUser? targetUser = database.GetUserByIdAndType(idType, id);
+        if (targetUser == null) return ApiNotFoundError.UserMissingError;
+
+        if (!user.MayModifyUser(targetUser))
+            return ApiValidationError.MayNotModifyUserDueToLowRoleError;
+
+        string oldUsername = targetUser.Username;
+
+        // Skip if force is missing or explicitly false, or if username shouldn't be updated to begin with
+        if (body.Username != null && body.Username != targetUser.Username) 
+        {
+            if (body.Force != true)
+            {
+                if (!body.Username.StartsWith(SystemUsers.SystemPrefix) && !database.IsUsernameValid(body.Username))
+                    return new ApiValidationError(ApiValidationError.InvalidUsernameErrorWhen
+                        + " Are you sure you used a PSN/RPCN username, or prepended it with ! if it's a fake user?");
+
+                if (database.IsUsernameTaken(body.Username))
+                    return ApiValidationError.UsernameTakenError;
+
+                if (database.IsUserDisallowed(body.Username))
+                    return new ApiValidationError("The new username is disallowed.");
+            }
+
+            database.RenameUser(targetUser, body.Username, body.Force ?? false);
+        }
+
+        if (body.DisallowOldUsername == true)
+        {
+            database.DisallowUser(oldUsername, body.Reason ?? "");
+        }
+
+        // TODO mod log
         return new ApiOkResponse();
     }
     
