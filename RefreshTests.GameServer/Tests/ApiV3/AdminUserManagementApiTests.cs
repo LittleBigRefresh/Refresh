@@ -302,4 +302,257 @@ public class AdminUserManagementApiTests : GameServerTest
         Assert.That(updated, Is.Not.Null);
         Assert.That(updated!.ShouldResetPassword, Is.True);
     }
+
+    [Test]
+    public async Task ModeratorsMayEditUserEmailAddress()
+    {
+        using TestContext context = this.GetServer();
+        GameUser mod = context.CreateUser(role: GameUserRole.Moderator, verifyEmail: true);
+        GameUser user = context.CreateUser(role: GameUserRole.User);
+        HttpClient client = context.GetAuthenticatedClient(TokenType.Api, mod);
+        ApiAdminUpdateEmailAddressRequest request = new()
+        {
+            EmailAddress = "lol@lol.lol",
+        };
+
+        // --- Edit just the address ---
+        HttpResponseMessage response = await client.PutAsync($"/api/v3/admin/users/uuid/{user.UserId}/emailAddress", new StringContent(request.AsJson()));
+        Assert.That(response.IsSuccessStatusCode, Is.True);
+        context.Database.Refresh();
+
+        GameUser? updated = context.Database.GetUserByObjectId(user.UserId);
+        Assert.That(updated, Is.Not.Null);
+        Assert.That(updated!.EmailAddress, Is.EqualTo("lol@lol.lol"));
+        Assert.That(updated!.EmailAddressVerified, Is.False); // false again, even though we've explicitly set to true when creating
+
+        // --- Can verify manually ---
+        request = new()
+        {
+            MarkEmailAddressAsVerified = true
+        };
+        response = await client.PutAsync($"/api/v3/admin/users/uuid/{user.UserId}/emailAddress", new StringContent(request.AsJson()));
+        Assert.That(response.IsSuccessStatusCode, Is.True);
+        context.Database.Refresh();
+
+        updated = context.Database.GetUserByObjectId(user.UserId);
+        Assert.That(updated, Is.Not.Null);
+        Assert.That(updated!.EmailAddress, Is.EqualTo("lol@lol.lol"));
+        Assert.That(updated!.EmailAddressVerified, Is.True);
+
+        // --- Can also unverify manually ---
+        request = new()
+        {
+            MarkEmailAddressAsVerified = false,
+        };
+        response = await client.PutAsync($"/api/v3/admin/users/uuid/{user.UserId}/emailAddress", new StringContent(request.AsJson()));
+        Assert.That(response.IsSuccessStatusCode, Is.True);
+        context.Database.Refresh();
+
+        updated = context.Database.GetUserByObjectId(user.UserId);
+        Assert.That(updated, Is.Not.Null);
+        Assert.That(updated!.EmailAddress, Is.EqualTo("lol@lol.lol"));
+        Assert.That(updated!.EmailAddressVerified, Is.False);
+
+        // --- Can also do all of it ---
+        request = new()
+        {
+            EmailAddress = "lel@lel.lel",
+            MarkEmailAddressAsVerified = true,
+            Reason = "garbage email"
+        };
+        response = await client.PutAsync($"/api/v3/admin/users/uuid/{user.UserId}/emailAddress", new StringContent(request.AsJson()));
+        Assert.That(response.IsSuccessStatusCode, Is.True);
+        context.Database.Refresh();
+
+        updated = context.Database.GetUserByObjectId(user.UserId);
+        Assert.That(updated, Is.Not.Null);
+        Assert.That(updated!.EmailAddress, Is.EqualTo("lel@lel.lel"));
+        Assert.That(updated!.EmailAddressVerified, Is.True);
+    }
+
+    [Test]
+    [TestCase(true)]
+    [TestCase(false)]
+    public async Task TestInvalidEmailAddressesGivenByModerators(bool force)
+    {
+        using TestContext context = this.GetServer();
+        GameUser mod = context.CreateUser(role: GameUserRole.Moderator, verifyEmail: true);
+        GameUser user = context.CreateUser(role: GameUserRole.User);
+        HttpClient client = context.GetAuthenticatedClient(TokenType.Api, mod);
+
+        context.Database.UpdateUserEmailAddress(user, "init@real.real", true, true);
+
+        // --- May only set to malformed if forced ---
+        ApiAdminUpdateEmailAddressRequest request = new()
+        {
+            EmailAddress = "malformed lol",
+            Force = force,
+        };
+
+        HttpResponseMessage response = await client.PutAsync($"/api/v3/admin/users/uuid/{user.UserId}/emailAddress", new StringContent(request.AsJson()));
+        Assert.That(response.IsSuccessStatusCode, Is.EqualTo(force));
+        context.Database.Refresh();
+
+        GameUser? updated = context.Database.GetUserByObjectId(user.UserId);
+        Assert.That(updated, Is.Not.Null);
+        Assert.That(updated!.EmailAddress, Is.EqualTo(force ? "lol@lol.lol" : "init@real.real"));
+
+        // false if forcefully changed, true if not forcefully changed (since update was rejected)
+        Assert.That(updated!.EmailAddressVerified, Is.EqualTo(!force));
+
+        // --- May only set to disallowed if forced ---
+        context.Database.DisallowEmailAddress("disallowed lol", "reason");
+        request = new()
+        {
+            EmailAddress = "disallowed@real.real",
+        };
+        response = await client.PutAsync($"/api/v3/admin/users/uuid/{user.UserId}/emailAddress", new StringContent(request.AsJson()));
+        Assert.That(response.IsSuccessStatusCode, Is.EqualTo(force));
+        context.Database.Refresh();
+
+        updated = context.Database.GetUserByObjectId(user.UserId);
+        Assert.That(updated, Is.Not.Null);
+        Assert.That(updated!.EmailAddress, Is.EqualTo(force ? "disallowed@real.real" : "init@real.real"));
+
+        // false if forcefully changed, true if not forcefully changed (since update was rejected)
+        Assert.That(updated!.EmailAddressVerified, Is.EqualTo(!force));
+
+        // --- May only set to taken (existing user) if forced ---
+        context.Database.CreateUser("lol", "taken@real.real", true);
+        request = new()
+        {
+            EmailAddress = "taken@real.real",
+        };
+        response = await client.PutAsync($"/api/v3/admin/users/uuid/{user.UserId}/emailAddress", new StringContent(request.AsJson()));
+        Assert.That(response.IsSuccessStatusCode, Is.EqualTo(force));
+        context.Database.Refresh();
+
+        updated = context.Database.GetUserByObjectId(user.UserId);
+        Assert.That(updated, Is.Not.Null);
+        Assert.That(updated!.EmailAddress, Is.EqualTo(force ? "taken@real.real" : "init@real.real"));
+
+        // false if forcefully changed, true if not forcefully changed (since update was rejected)
+        Assert.That(updated!.EmailAddressVerified, Is.EqualTo(!force));
+
+        // --- May only set to taken (queued registration) if forced ---
+        context.Database.AddRegistrationToQueue("lel", "queue@real.real", "very secure");
+        request = new()
+        {
+            EmailAddress = "queue@real.real",
+        };
+        response = await client.PutAsync($"/api/v3/admin/users/uuid/{user.UserId}/emailAddress", new StringContent(request.AsJson()));
+        Assert.That(response.IsSuccessStatusCode, Is.EqualTo(force));
+        context.Database.Refresh();
+
+        updated = context.Database.GetUserByObjectId(user.UserId);
+        Assert.That(updated, Is.Not.Null);
+        Assert.That(updated!.EmailAddress, Is.EqualTo(force ? "queue@real.real" : "init@real.real"));
+
+        // false if forcefully changed, true if not forcefully changed (since update was rejected)
+        Assert.That(updated!.EmailAddressVerified, Is.EqualTo(!force));
+    }
+
+    [Test]
+    public async Task ModeratorsMayEditUsernames()
+    {
+        using TestContext context = this.GetServer();
+        GameUser mod = context.CreateUser("Init", role: GameUserRole.Moderator, verifyEmail: true);
+        GameUser user = context.CreateUser(role: GameUserRole.User);
+        HttpClient client = context.GetAuthenticatedClient(TokenType.Api, mod);
+        ApiAdminRenameUserRequest request = new()
+        {
+            Username = "Changed",
+        };
+
+        // --- Edit just the name ---
+        HttpResponseMessage response = await client.PutAsync($"/api/v3/admin/users/uuid/{user.UserId}/username", new StringContent(request.AsJson()));
+        Assert.That(response.IsSuccessStatusCode, Is.True);
+        context.Database.Refresh();
+
+        GameUser? updated = context.Database.GetUserByObjectId(user.UserId);
+        Assert.That(updated, Is.Not.Null);
+        Assert.That(updated!.Username, Is.EqualTo("Changed"));
+
+        // --- Rename and disallow old name ---
+        request = new()
+        {
+            Username = "Hidden",
+            Reason = "Cringe",
+        };
+        response = await client.PutAsync($"/api/v3/admin/users/uuid/{user.UserId}/username", new StringContent(request.AsJson()));
+        Assert.That(response.IsSuccessStatusCode, Is.True);
+        context.Database.Refresh();
+
+        updated = context.Database.GetUserByObjectId(user.UserId);
+        Assert.That(updated, Is.Not.Null);
+        Assert.That(updated!.Username, Is.EqualTo("Hidden"));
+    }
+
+    [Test]
+    [TestCase(true)]
+    [TestCase(false)]
+    public async Task TestInvalidUsernamesGivenByModerators(bool force)
+    {
+        using TestContext context = this.GetServer();
+        GameUser mod = context.CreateUser("Init", role: GameUserRole.Moderator, verifyEmail: true);
+        GameUser user = context.CreateUser(role: GameUserRole.User);
+        HttpClient client = context.GetAuthenticatedClient(TokenType.Api, mod);
+
+        // --- May only set to malformed if forced ---
+        ApiAdminRenameUserRequest request = new()
+        {
+            Username = "d",
+            Force = force,
+        };
+
+        HttpResponseMessage response = await client.PutAsync($"/api/v3/admin/users/uuid/{user.UserId}/username", new StringContent(request.AsJson()));
+        Assert.That(response.IsSuccessStatusCode, Is.EqualTo(force));
+        context.Database.Refresh();
+
+        GameUser? updated = context.Database.GetUserByObjectId(user.UserId);
+        Assert.That(updated, Is.Not.Null);
+        Assert.That(updated!.Username, Is.EqualTo(force ? "d" : "Init"));
+
+        // --- May only set to disallowed if forced ---
+        context.Database.DisallowUser("SuperDisallowed", "reason");
+        request = new()
+        {
+            Username = "SuperDisallowed",
+        };
+        response = await client.PutAsync($"/api/v3/admin/users/uuid/{user.UserId}/username", new StringContent(request.AsJson()));
+        Assert.That(response.IsSuccessStatusCode, Is.EqualTo(force));
+        context.Database.Refresh();
+
+        updated = context.Database.GetUserByObjectId(user.UserId);
+        Assert.That(updated, Is.Not.Null);
+        Assert.That(updated!.Username, Is.EqualTo(force ? "SuperDisallowed" : "Init"));
+
+        // --- May only set to taken (existing user) if forced ---
+        context.Database.CreateUser("Taken", "taken@real.real", true);
+        request = new()
+        {
+            Username = "Taken",
+        };
+        response = await client.PutAsync($"/api/v3/admin/users/uuid/{user.UserId}/username", new StringContent(request.AsJson()));
+        Assert.That(response.IsSuccessStatusCode, Is.EqualTo(force));
+        context.Database.Refresh();
+
+        updated = context.Database.GetUserByObjectId(user.UserId);
+        Assert.That(updated, Is.Not.Null);
+        Assert.That(updated!.Username, Is.EqualTo(force ? "Taken" : "Init"));
+
+        // --- May only set to taken (queued registration) if forced ---
+        context.Database.AddRegistrationToQueue("Queued", "queue@real.real", "very secure");
+        request = new()
+        {
+            Username = "Queued",
+        };
+        response = await client.PutAsync($"/api/v3/admin/users/uuid/{user.UserId}/username", new StringContent(request.AsJson()));
+        Assert.That(response.IsSuccessStatusCode, Is.EqualTo(force));
+        context.Database.Refresh();
+
+        updated = context.Database.GetUserByObjectId(user.UserId);
+        Assert.That(updated, Is.Not.Null);
+        Assert.That(updated!.Username, Is.EqualTo(force ? "Queued" : "Init"));
+    }
 }
