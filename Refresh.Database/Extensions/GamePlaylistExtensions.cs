@@ -31,12 +31,14 @@ public static class GamePlaylistExtensions
     /// <summary>
     /// Returns whether the child playlist appears in the root playlist's sub-playlist tree, even if it's not an immediate child.
     /// Also returns true if the root and the child are the same playlist. Playlists are always compared by their IDs.
-    /// Throws if the maximum number of traversals has been reached, to prevent being stuck in an infinite loop
-    /// incase our conditions somehow fail, or the sub-playlist tree is too large.
     /// </summary>
+    /// <remarks>
+    /// Throws TakingTooLongException if the maximum number of traversals has been reached, to prevent being stuck in an infinite loop
+    /// incase our conditions somehow fail, or the sub-playlist tree is too large.
+    /// </remarks>
     // TODO maybe cache a flattened tree in DB so we don't have to traverse, and therefore send potentially many
     // DB calls, every time.
-    public static bool ContainsChildInTree(this GamePlaylist root, GamePlaylist child, GameDatabaseContext database, int maxTraversalCount = 150, Logger? logger = null)
+    public static bool ContainsChildInTree(this GamePlaylist root, GamePlaylist child, GameDatabaseContext database, Logger? logger = null, int maxTraversalCount = 150)
     {
         // Probably already validated by the caller, but make sure anyway
         if (root.PlaylistId == child.PlaylistId)
