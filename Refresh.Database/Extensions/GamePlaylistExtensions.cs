@@ -25,8 +25,8 @@ public static class GamePlaylistExtensions
         }
     }
 
-    // Limit to prevent getting stuck in infinite loops or recursions
-    private static const int MaxTraversalCount = 150;
+    // Limit to prevent getting stuck in infinite loops or recursions, incase our other conditions fail somehow.
+    private const int MaxTraversalCount = 150;
 
     /// <summary>
     /// Returns true if adding the child playlist to the parent playlist will cause a loop.
@@ -40,16 +40,16 @@ public static class GamePlaylistExtensions
     {
         // Probably already validated by the caller, but make sure anyway
         if (parent.PlaylistId == child.PlaylistId)
+        {
             return true;
+        }
         
-        // Incase we encounter the same playlists multiple times per traversal, which is possible.
-        Dictionary<int, int[]> cachedChildren = [];
-        Dictionary<int, int[]> cachedParents = [];
+        List<int> alreadyTraversedIds = [];
 
         // Check whether children of child have the parent
         List<int> queuedIds = [child.PlaylistId];
         int currentIterationCount = 0;
-        while (queuedIds.Length > 0)
+        while (queuedIds.Count > 0)
         {
             currentIterationCount++;
             if (currentIterationCount >= MaxTraversalCount)
@@ -57,72 +57,31 @@ public static class GamePlaylistExtensions
                 return true;
             }
 
+            // Dequeue next ID
             int currentId = queuedIds[0];
+            queuedIds.Remove(currentId);
+
+            // If we've found the parent in the child's sub-playlist tree, then adding will cause a loop.
             if (currentId == parent.PlaylistId)
             {
                 return true;
             }
 
-            int[] childIds = cachedChildren.GetValueOrDefault(currentId)
-                ?? database.GetIdsOfAllPlaylistsInPlaylist(currentId).ToArray();
+            // No need to check already traversed playlists; their sub-playlist IDs have already been
+            // added to our queue (and processed) the first time we found and processed this playlist,
+            // so we don't need to do anything with it.
+            // The same playlists can appear multiple times in a playlist's child tree, so we should
+            // keep track of this.
+            if (alreadyTraversedIds.Contains(currentId))
+            {
+                continue;
+            }
 
-            cachedChildren.Add(currentId, childIds);
-            queuedIds.Concat(childIds);
-            queuedIds.Remove(0);
+            // Fetch and queue the child IDs. No need to cache since we already make sure we don't
+            // traverse the same playlists multiple times (see above).
+            queuedIds.AddRange(database.GetIdsOfAllPlaylistsInPlaylist(currentId).ToArray());
         }
 
-        // Check whether parent is a descendant of child
-        queuedIds = [child.PlaylistId];
-        currentIterationCount = 0;
-        while (queuedIds.Length > 0)
-        {
-            currentIterationCount++;
-            if (currentIterationCount >= maxIterationCount)
-            {
-                return true;
-            }
-
-            int currentId = queuedIds[0];
-            if (currentId == parent.PlaylistId)
-            {
-                return true;
-            }
-
-            int[]? childIds = cachedChildren.GetValueOrDefault(currentId);
-
-            // If we couldn't find in cache, get from DB and add to cache
-            if (childIds == null)
-            {
-                database.GetIdsOfAllPlaylistsInPlaylist(currentId).ToArray();
-                cachedChildren.Add(currentId, childIds);
-            }
-                
-            queuedIds.Concat(childIds);
-            queuedIds.Remove(0);
-        }
-
-        // If the parent contains the child in its parent tree, block the request to prevent recursive playlists
-            bool recursive = false;
-            IEnumerable<GamePlaylist> traversedPlaylists = [childPlaylist];
-            parentPlaylist.TraverseParentsRecursively(database, delegate(GamePlaylist playlist)
-            {
-                // If we have already traversed this playlist before, we have found a loop. Stop traversing in that case.
-                if (traversedPlaylists.Contains(playlist))
-                {
-                    recursive = true;
-                    return false;
-                }
-                else
-                {
-                    // Remember this playlist for loop detection
-                    traversedPlaylists = traversedPlaylists.Append(playlist);
-                    return true;
-                }
-            });
-            if (recursive) {
-                // If adding this playlist to its parent has caused a loop which was not there before, remove it from its parent
-                database.RemovePlaylistFromPlaylist(childPlaylist, parentPlaylist);
-                return BadRequest;
-            }
+        return false;
     }
 }
