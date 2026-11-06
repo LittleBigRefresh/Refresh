@@ -15,6 +15,7 @@ using Refresh.Interfaces.APIv3.Extensions;
 using Refresh.Core.Configuration;
 using Refresh.Core.RateLimits.EndpointRateLimiting;
 using Refresh.Database.Models;
+using Refresh.Common.Exceptions;
 
 namespace Refresh.Interfaces.APIv3.Endpoints;
 
@@ -219,6 +220,9 @@ public class PlaylistApiEndpoints : EndpointGroup
     [DocError(typeof(ApiNotFoundError), ApiNotFoundError.ParentPlaylistMissingErrorWhen)]
     [DocError(typeof(ApiValidationError), ApiValidationError.NoPlaylistEditPermissionErrorWhen)]
     [DocError(typeof(ApiNotFoundError), ApiNotFoundError.SubPlaylistMissingErrorWhen)]
+    [DocError(typeof(ApiValidationError), ApiValidationError.CannotAddPlaylistToItselfErrorWhen)]
+    [DocError(typeof(ApiValidationError), ApiValidationError.SubPlaylistContainsParentErrorWhen)]
+    [DocError(typeof(ApiInternalError), ApiInternalError.ValidationIsTakingTooLongErrorWhen)]
     [EndpointRateLimit(EndpointBucketId.UpdatePlaylistContents)]
     public ApiOkResponse AddPlaylistToPlaylist(RequestContext context, DataContext dataContext,
         GameUser user, int playlistId, int subPlaylistId, GameServerConfig config)
@@ -234,6 +238,22 @@ public class PlaylistApiEndpoints : EndpointGroup
 
         GamePlaylist? child = dataContext.Database.GetPlaylistById(subPlaylistId);
         if (child == null) return ApiNotFoundError.SubPlaylistMissingError;
+
+        // Dont allow a playlist to be a child of itself
+        if (child.PlaylistId == parent.PlaylistId)
+            return ApiValidationError.CannotAddPlaylistToItselfError;
+        
+        try
+        {
+            // If adding this child will cause an infinite loop/recursion, cancel the request.
+            if (parent.ContainsChildInTree(child, dataContext.Database, context.Logger))
+                return ApiValidationError.SubPlaylistContainsParentError;
+        }
+        catch (TakingTooLongException ex)
+        {
+            context.Logger.LogWarning(BunkumCategory.UserContent, $"{ex.GetType().Name} - {ex.Message}");
+            return ApiInternalError.ValidationIsTakingTooLongError;
+        }
 
         dataContext.Database.AddPlaylistToPlaylist(child, parent);
         return new ApiOkResponse();

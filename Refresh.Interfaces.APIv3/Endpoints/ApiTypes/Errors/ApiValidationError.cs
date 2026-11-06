@@ -110,6 +110,12 @@ public class ApiValidationError : ApiError
     public const string ScoreRanksInvalidErrorWhen = "The minRank or maxRank parameters were not numbers.";
     public static readonly ApiValidationError ScoreRanksInvalidError = new(ScoreRanksInvalidErrorWhen);
 
+    public const string CannotAddPlaylistToItselfErrorWhen = "Can't add a playlist to itself";
+    public static readonly ApiValidationError CannotAddPlaylistToItselfError = new(CannotAddPlaylistToItselfErrorWhen);
+
+    public const string SubPlaylistContainsParentErrorWhen = "Can't add a sub-playlist to a playlist which is already contained by the sub-playlist.";
+    public static readonly ApiValidationError SubPlaylistContainsParentError = new(SubPlaylistContainsParentErrorWhen);
+
     // TODO: Split off error messages which are actually 401 or anything else that isn't 400
     public ApiValidationError(string message) : base(message) {}
 }
