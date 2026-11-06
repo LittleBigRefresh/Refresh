@@ -285,34 +285,11 @@ public class Lbp1PlaylistEndpoints : EndpointGroup
             // Dont allow a playlist to be a child of itself
             if (childPlaylist.PlaylistId == parentPlaylist.PlaylistId)
                 return BadRequest;
-
-            // Add the child playlist to the parent before checking for recursive playlists below to catch cases where a loop would
-            // only happen once the child playlist is added to its new parent
-            database.AddPlaylistToPlaylist(childPlaylist, parentPlaylist);
-
-            // If the parent contains the child in its parent tree, block the request to prevent recursive playlists
-            bool recursive = false;
-            IEnumerable<GamePlaylist> traversedPlaylists = [childPlaylist];
-            parentPlaylist.TraverseParentsRecursively(database, delegate(GamePlaylist playlist)
-            {
-                // If we have already traversed this playlist before, we have found a loop. Stop traversing in that case.
-                if (traversedPlaylists.Contains(playlist))
-                {
-                    recursive = true;
-                    return false;
-                }
-                else
-                {
-                    // Remember this playlist for loop detection
-                    traversedPlaylists = traversedPlaylists.Append(playlist);
-                    return true;
-                }
-            });
-            if (recursive) {
-                // If adding this playlist to its parent has caused a loop which was not there before, remove it from its parent
-                database.RemovePlaylistFromPlaylist(childPlaylist, parentPlaylist);
+            
+            if (parentPlaylist.DoesSubPlaylistTreeContainParent(childPlaylist, database))
                 return BadRequest;
-            }
+
+            database.AddPlaylistToPlaylist(childPlaylist, parentPlaylist);
             
             // ReSharper disable once ExtractCommonBranchingCode see like 3 lines below (line count subject to change)
             return OK;
