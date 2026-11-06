@@ -142,7 +142,7 @@ public class AdminUserApiEndpoints : EndpointGroup
     }
 
     [ApiV3Endpoint("admin/users/{idType}/{id}/emailAddress", HttpMethods.Put), MinimumRole(GameUserRole.Moderator)]
-    [DocSummary("Allows you to do actions related to a user's email address, such as changing it, manually marking it as (un)verified, or disallowing it.")]
+    [DocSummary("Allows you to change the user's email address, and/or mark it as (un)verified.")]
     [DocError(typeof(ApiNotFoundError), ApiNotFoundError.UserMissingErrorWhen)]
     [DocError(typeof(ApiValidationError), ApiValidationError.MayNotModifyUserDueToLowRoleErrorWhen)]
     [DocError(typeof(ApiValidationError), ApiValidationError.EmailFormattingInvalidErrorWhen)]
@@ -186,7 +186,7 @@ public class AdminUserApiEndpoints : EndpointGroup
     }
 
     [ApiV3Endpoint("admin/users/{idType}/{id}/username", HttpMethods.Put), MinimumRole(GameUserRole.Moderator)]
-    [DocSummary("Allows you to do actions related to a user's username, such as changing it, or disallowing it.")]
+    [DocSummary("Allows you to change the user's username.")]
     [DocError(typeof(ApiNotFoundError), ApiNotFoundError.UserMissingErrorWhen)]
     [DocError(typeof(ApiValidationError), ApiValidationError.MayNotModifyUserDueToLowRoleErrorWhen)]
     [DocError(typeof(ApiValidationError), ApiValidationError.InvalidUsernameErrorWhen)]
