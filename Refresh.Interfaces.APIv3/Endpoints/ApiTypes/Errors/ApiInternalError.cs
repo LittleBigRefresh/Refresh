@@ -13,6 +13,9 @@ public class ApiInternalError : ApiError
 
     public const string HashNotFoundInDatabaseErrorWhen = "The hash was present on the server, but could not be found in the database.";
     public static readonly ApiInternalError HashNotFoundInDatabaseError = new(HashNotFoundInDatabaseErrorWhen);
+
+    public const string ValidationIsTakingTooLongErrorWhen = "Validation of this request was taking too long for some reason.";
+    public static readonly ApiInternalError ValidationIsTakingTooLongError = new(ValidationIsTakingTooLongErrorWhen);
     
     public ApiInternalError(string message) : base(message, InternalServerError)
     {}
