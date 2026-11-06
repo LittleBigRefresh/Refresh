@@ -44,13 +44,15 @@ public static class GamePlaylistExtensions
             return true;
         }
         
-        List<int> alreadyTraversedIds = [];
 
         // Check whether children of child have the parent
         List<int> queuedIds = [child.PlaylistId];
+        List<int> alreadyTraversedIds = [];
         int currentIterationCount = 0;
+
         while (queuedIds.Count > 0)
         {
+            // End traversal, regardless of state, if fallback iteration limit has been reached.
             currentIterationCount++;
             if (currentIterationCount >= MaxTraversalCount)
             {
@@ -59,7 +61,7 @@ public static class GamePlaylistExtensions
 
             // Dequeue next ID
             int currentId = queuedIds[0];
-            queuedIds.Remove(currentId);
+            queuedIds.RemoveAt(0);
 
             // If we've found the parent in the child's sub-playlist tree, then adding will cause a loop.
             if (currentId == parent.PlaylistId)
@@ -67,9 +69,9 @@ public static class GamePlaylistExtensions
                 return true;
             }
 
-            // No need to check already traversed playlists; their sub-playlist IDs have already been
-            // added to our queue (and processed) the first time we found and processed this playlist,
-            // so we don't need to do anything with it.
+            // No need to enqueue children of already traversed playlists;
+            // their sub-playlist IDs have already been added to our queue (and processed)
+            // the first time we found and processed this playlist, so we don't need to do anything with it.
             // The same playlists can appear multiple times in a playlist's child tree, so we should
             // keep track of this.
             if (alreadyTraversedIds.Contains(currentId))
@@ -80,6 +82,7 @@ public static class GamePlaylistExtensions
             // Fetch and queue the child IDs. No need to cache since we already make sure we don't
             // traverse the same playlists multiple times (see above).
             queuedIds.AddRange(database.GetIdsOfAllPlaylistsInPlaylist(currentId).ToArray());
+            alreadyTraversedIds.Add(currentId);
         }
 
         return false;
