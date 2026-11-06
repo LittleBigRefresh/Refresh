@@ -8,20 +8,22 @@ namespace Refresh.Database.Extensions;
 public static class GamePlaylistExtensions
 {
     /// <summary>
-    /// Returns whether the root playlistis a sub-playlist of the child playlist, even if it's not an immediate child.
-    /// Also returns true if the root and the child are the same playlist. Playlists are always compared by their IDs.
+    /// Returns whether adding the child as a sub-playlist to parent will cause an infinite loop.
+    /// We detect this by looking whether parent and child are the same playlist, otherwise by looking whether
+    /// the parent appears in the child's sub-playlist tree (whether child, its sub-playlists, and so on contain the parent playlist).
+    /// Playlists are always compared by their IDs.
     /// </summary>
     /// <remarks>
     /// Throws TakingTooLongException if the maximum number of traversals has been reached, to prevent getting stuck in an infinite loop
     /// incase our conditions somehow fail (or incase the sub-playlist tree is just too large).
     /// </remarks>
     // TODO maybe cache a flattened tree in DB so we don't have to traverse, and therefore send potentially many DB calls, every time.
-    public static bool ContainsChildInTree(this GamePlaylist root, GamePlaylist child, GameDatabaseContext database, Logger? logger = null, int maxTraversalCount = 150)
+    public static bool WillAddingChildCauseInfiniteLoop(this GamePlaylist parent, GamePlaylist child, GameDatabaseContext database, Logger? logger = null, int maxTraversalCount = 150)
     {
         // Probably already validated by the caller, but make sure anyway
-        if (root.PlaylistId == child.PlaylistId)
+        if (parent.PlaylistId == child.PlaylistId)
         {
-            logger?.LogDebug(BunkumCategory.UserContent, $"Root playlist {root.PlaylistId} is the same as child playlist, returning true.");
+            logger?.LogDebug(BunkumCategory.UserContent, $"Parent playlist {parent.PlaylistId} is the same as child playlist, returning true.");
             return true;
         }
 
@@ -46,10 +48,10 @@ public static class GamePlaylistExtensions
             queuedIds.RemoveAt(0);
 
             // If we've found the parent in the child's sub-playlist tree, then adding will cause a loop.
-            if (currentId == root.PlaylistId)
+            if (currentId == parent.PlaylistId)
             {
                 logger?.LogDebug(BunkumCategory.UserContent, $"[Traversal {currentIterationCount}/{maxTraversalCount}] "
-                    + $"Root playlist #{root.PlaylistId} was found in child playlist #{child.PlaylistId}! Returning true");
+                    + $"Parent playlist #{parent.PlaylistId} was found in child playlist #{child.PlaylistId}'s sub-playlist tree! Returning true");
                 return true;
             }
 

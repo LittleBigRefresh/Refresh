@@ -246,7 +246,7 @@ public class PlaylistApiEndpoints : EndpointGroup
         try
         {
             // If adding this child will cause an infinite loop/recursion, cancel the request.
-            if (parent.ContainsChildInTree(child, dataContext.Database, context.Logger))
+            if (parent.WillAddingChildCauseInfiniteLoop(child, dataContext.Database, context.Logger))
                 return ApiValidationError.SubPlaylistContainsParentError;
         }
         catch (TakingTooLongException ex)

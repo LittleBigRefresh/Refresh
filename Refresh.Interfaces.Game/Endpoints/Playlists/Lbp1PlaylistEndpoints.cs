@@ -290,7 +290,7 @@ public class Lbp1PlaylistEndpoints : EndpointGroup
             try
             {
                 // If adding this child will cause an infinite loop/recursion, cancel the request.
-                if (parentPlaylist.ContainsChildInTree(childPlaylist, database, context.Logger))
+                if (parentPlaylist.WillAddingChildCauseInfiniteLoop(childPlaylist, database, context.Logger))
                     return BadRequest;
             }
             catch (TakingTooLongException ex)
