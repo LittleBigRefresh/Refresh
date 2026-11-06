@@ -148,7 +148,7 @@ public class AdminUserApiEndpoints : EndpointGroup
     [DocError(typeof(ApiValidationError), ApiValidationError.EmailFormattingInvalidErrorWhen)]
     [DocError(typeof(ApiValidationError), ApiValidationError.EmailDoesNotActuallyExistErrorWhen)]
     [DocRequestBody(typeof(ApiResetUserPasswordRequest))]
-    public ApiOkResponse EditEmailAddressDataForUser(RequestContext context, GameDatabaseContext database, ApiAdminUpdateEmailAddressRequest body, GameUser user,
+    public ApiOkResponse UpdateUserEmailAddress(RequestContext context, GameDatabaseContext database, ApiAdminUpdateEmailAddressRequest body, GameUser user,
         SmtpService smtp,
         [DocSummary(SharedParamDescriptions.UserIdParam)] string id, 
         [DocSummary(SharedParamDescriptions.UserIdTypeParam)] string idType)
@@ -158,8 +158,6 @@ public class AdminUserApiEndpoints : EndpointGroup
 
         if (!user.MayModifyUser(targetUser))
             return ApiValidationError.MayNotModifyUserDueToLowRoleError;
-
-        string? oldEmailAddress = targetUser.EmailAddress;
 
         // Skip if force is missing or explicitly false, or if address shouldn't be updated to begin with
         if (body.EmailAddress != null && body.EmailAddress != user.EmailAddress && body.Force != true)
@@ -181,13 +179,7 @@ public class AdminUserApiEndpoints : EndpointGroup
                 return new ApiValidationError("The new email address is disallowed.");
         }
         
-        database.UpdateUserEmailAddressData(targetUser, body.EmailAddress, body.MarkEmailAddressAsVerified, body.Force ?? false);
-
-        // Can't disallow address if it's null
-        if (body.DisallowOldEmailAddress == true && oldEmailAddress != null)
-        {
-            database.DisallowEmailAddress(oldEmailAddress, body.Reason ?? "");
-        }
+        database.UpdateUserEmailAddress(targetUser, body.EmailAddress, body.MarkEmailAddressAsVerified, body.Force ?? false);
 
         // TODO mod log
         return new ApiOkResponse();
@@ -210,31 +202,21 @@ public class AdminUserApiEndpoints : EndpointGroup
         if (!user.MayModifyUser(targetUser))
             return ApiValidationError.MayNotModifyUserDueToLowRoleError;
 
-        string oldUsername = targetUser.Username;
-
         // Skip if force is missing or explicitly false, or if username shouldn't be updated to begin with
-        if (body.Username != null && body.Username != targetUser.Username) 
+        if (body.Username != targetUser.Username && body.Force != true) 
         {
-            if (body.Force != true)
-            {
-                if (!body.Username.StartsWith(SystemUsers.SystemPrefix) && !database.IsUsernameValid(body.Username))
-                    return new ApiValidationError(ApiValidationError.InvalidUsernameErrorWhen
-                        + " Are you sure you used a PSN/RPCN username, or prepended it with ! if it's a fake user?");
+            if (!body.Username.StartsWith(SystemUsers.SystemPrefix) && !database.IsUsernameValid(body.Username))
+                return new ApiValidationError(ApiValidationError.InvalidUsernameErrorWhen
+                    + " Are you sure you used a PSN/RPCN username, or prepended it with ! if it's a fake user?");
 
-                if (database.IsUsernameTaken(body.Username))
-                    return ApiValidationError.UsernameTakenError;
+            if (database.IsUsernameTaken(body.Username))
+                return ApiValidationError.UsernameTakenError;
 
-                if (database.IsUserDisallowed(body.Username))
-                    return new ApiValidationError("The new username is disallowed.");
-            }
-
-            database.RenameUser(targetUser, body.Username, body.Force ?? false);
+            if (database.IsUserDisallowed(body.Username))
+                return new ApiValidationError("The new username is disallowed.");
         }
 
-        if (body.DisallowOldUsername == true)
-        {
-            database.DisallowUser(oldUsername, body.Reason ?? "");
-        }
+        database.RenameUser(targetUser, body.Username, body.Force ?? false);
 
         // TODO mod log
         return new ApiOkResponse();

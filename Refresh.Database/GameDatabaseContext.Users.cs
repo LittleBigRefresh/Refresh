@@ -261,7 +261,7 @@ public partial class GameDatabaseContext // Users
         });
     }
 
-    public void UpdateUserEmailAddressData(GameUser user, string? newEmailAddress, bool? markAsVerified, bool force)
+    public void UpdateUserEmailAddress(GameUser user, string? newEmailAddress, bool? markAsVerified, bool force)
     {
         if (newEmailAddress != null && newEmailAddress != user.EmailAddress)
         {
