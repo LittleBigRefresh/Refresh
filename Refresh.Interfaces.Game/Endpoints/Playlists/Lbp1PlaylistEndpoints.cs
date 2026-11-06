@@ -4,6 +4,7 @@ using Bunkum.Core.Responses;
 using Bunkum.Listener.Protocol;
 using Bunkum.Protocols.Http;
 using Refresh.Common.Constants;
+using Refresh.Common.Exceptions;
 using Refresh.Core.Authentication.Permission;
 using Refresh.Core.Configuration;
 using Refresh.Core.RateLimits.EndpointRateLimiting;
@@ -285,9 +286,18 @@ public class Lbp1PlaylistEndpoints : EndpointGroup
             // Dont allow a playlist to be a child of itself
             if (childPlaylist.PlaylistId == parentPlaylist.PlaylistId)
                 return BadRequest;
-            
-            if (parentPlaylist.DoesSubPlaylistTreeContainParent(childPlaylist, database))
-                return BadRequest;
+
+            try
+            {
+                // If adding this child will cause an infinite loop/recursion, cancel the request.
+                if (parentPlaylist.ContainsChildInTree(childPlaylist, database, context.Logger))
+                    return BadRequest;
+            }
+            catch (TakingTooLongException ex)
+            {
+                context.Logger.LogWarning(BunkumCategory.UserContent, $"{ex.GetType().Name} - {ex.Message}");
+                return InternalServerError;
+            }
 
             database.AddPlaylistToPlaylist(childPlaylist, parentPlaylist);
             
