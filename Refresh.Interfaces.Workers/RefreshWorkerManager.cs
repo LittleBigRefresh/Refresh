@@ -30,6 +30,7 @@ public static class RefreshWorkerManager
         manager.AddJob<CalculateScoreRanksMigration>();
         manager.AddJob<MoveSubjectsOutOfGamePhotosMigration>();
         manager.AddJob<CorrectLevelModdedStatusMigration>();
+        manager.AddJob<ResetInvalidFaceIconsMigration>();
 
         return manager;
     }
