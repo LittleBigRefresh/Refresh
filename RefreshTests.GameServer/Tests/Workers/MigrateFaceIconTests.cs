@@ -106,7 +106,7 @@ public class MigrateFaceIconTests : GameServerTest
         IDataStore dataStore = context.GetDataStore();
 
         // Hash actually corresponds to "TEX ", so the hash we give will be incorrect, which is what we test against here.
-        // We wan't the job to try and import the assets to DB itself here, so don't add them to DB ourselves here.
+        // We want the job to try and import the assets to DB itself here, so don't add them to DB ourselves here.
         dataStore.WriteToStore(IconHash, "TEX ABC"u8); 
 
         // Manually set to the incorrect hash
@@ -134,7 +134,7 @@ public class MigrateFaceIconTests : GameServerTest
         // The asset will exist in the store, but ReadFailingDataStore will fail to read it.
         // In this case, the validation method returns InternalServerError, which the job treats the same as if the icon was fine.
         // This is so we don't end up resetting lots of perfectly fine icons because of filesystem issues on our end or something like that.
-        // We wan't the job to try and import the assets to DB itself here, so don't add them to DB ourselves here.
+        // We want the job to try and import the assets to DB itself here, so don't add them to DB ourselves here.
         dataStore.WriteToStore(IconHash, "TEX "u8);
         context.Database.UpdateUserFaceIcons(user, IconHash, IconHash, IconHash);
         context.Database.Refresh();
