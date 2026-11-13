@@ -15,41 +15,13 @@
       <DefineConstants>TRACE;DEBUG</DefineConstants>
       <DebugSymbols>true</DebugSymbols>
     </PropertyGroup>
-    
-    <ItemGroup Condition="'$(Configuration)'=='DebugLocalBunkum'">
-        <Reference Include="Bunkum.Core">
-            <HintPath>..\..\Bunkum\Bunkum.Core\bin\Debug\net8.0\Bunkum.Core.dll</HintPath>
-        </Reference>
-        <Reference Include="Bunkum.Listener">
-            <HintPath>..\..\Bunkum\Bunkum.Listener\bin\Debug\net8.0\Bunkum.Listener.dll</HintPath>
-        </Reference>
-        <Reference Include="Bunkum.Protocols.Http">
-            <HintPath>..\..\Bunkum\Bunkum.Protocols.Http\bin\Debug\net8.0\Bunkum.Protocols.Http.dll</HintPath>
-        </Reference>
-        <Reference Include="Bunkum.RealmDatabase">
-            <HintPath>..\..\Bunkum\Bunkum.RealmDatabase\bin\Debug\net8.0\Bunkum.RealmDatabase.dll</HintPath>
-        </Reference>
-        <Reference Include="Bunkum.AutoDiscover">
-            <HintPath>..\..\Bunkum\Bunkum.AutoDiscover\bin\Debug\net8.0\Bunkum.AutoDiscover.dll</HintPath>
-        </Reference>
-        <Reference Include="Bunkum.HealthChecks">
-            <HintPath>..\..\Bunkum\Bunkum.HealthChecks\bin\Debug\net8.0\Bunkum.HealthChecks.dll</HintPath>
-        </Reference>
-        <Reference Include="Bunkum.HealthChecks.RealmDatabase">
-            <HintPath>..\..\Bunkum\Bunkum.HealthChecks.RealmDatabase\bin\Debug\net8.0\Bunkum.HealthChecks.RealmDatabase.dll</HintPath>
-        </Reference>
 
-        <!-- Package references must match Bunkum.HttpServer's csproj -->
-        <PackageReference Include="JetBrains.Annotations" Version="2024.3.0" />
-        <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
-        <PackageReference Include="NotEnoughLogs" Version="2.0.3" />
-    </ItemGroup>
-
-    <ItemGroup Condition="'$(Configuration)'!='DebugLocalBunkum'">
-        <PackageReference Include="Bunkum" Version="4.9.0" />
-        <PackageReference Include="Bunkum.AutoDiscover" Version="4.9.0" />
-        <PackageReference Include="Bunkum.HealthChecks" Version="4.9.0" />
-        <PackageReference Include="Bunkum.Protocols.Http" Version="4.9.0" />
+    <ItemGroup>
+      <ProjectReference Include="..\External\Bunkum\Bunkum.Core\Bunkum.Core.csproj" />
+      <ProjectReference Include="..\External\Bunkum\Bunkum.Listener\Bunkum.Listener.csproj" />
+      <ProjectReference Include="..\External\Bunkum\Bunkum.Protocols.Http\Bunkum.Protocols.Http.csproj" />
+      <ProjectReference Include="..\External\Bunkum\Bunkum.AutoDiscover\Bunkum.AutoDiscover.csproj" />
+      <ProjectReference Include="..\External\Bunkum\Bunkum.HealthChecks\Bunkum.HealthChecks.csproj" />
     </ItemGroup>
 
     <ItemGroup>
