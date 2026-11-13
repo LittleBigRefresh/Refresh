@@ -33,7 +33,10 @@ jobs:
       
     - name: Print VERSION variable for debugging
       run: echo "$VERSION"
-        
+
+    - name: Print Bunkum submodule root directory content for debugging
+      run: ls External/Bunkum
+
     - name: Test
       run: dotnet test -c Release --verbosity normal
       
