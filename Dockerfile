@@ -8,7 +8,7 @@ WORKDIR /build
 COPY *.sln ./
 COPY **/*.csproj ./
 
-RUN dotnet sln list | grep ".csproj" \
+RUN dotnet sln Refresh.sln list | grep ".csproj" \
     | while read -r line; do \
     mkdir -p $(dirname $line); \
     mv $(basename $line) $(dirname $line); \
@@ -16,7 +16,7 @@ RUN dotnet sln list | grep ".csproj" \
 
 ARG BUILD_CONFIGURATION=Release
 
-RUN dotnet restore --use-current-runtime /p:Configuration=${BUILD_CONFIGURATION}
+RUN dotnet restore Refresh.sln --use-current-runtime /p:Configuration=${BUILD_CONFIGURATION}
 
 COPY . .
 
