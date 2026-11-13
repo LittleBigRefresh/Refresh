@@ -13,8 +13,7 @@ jobs:
     name: Build, Test, and Upload Builds
     runs-on: ubuntu-latest
     steps:
-    - name: Checkout repository
-      uses: actions/checkout@v4
+    - uses: actions/checkout@v4
       with:
         submodules: 'recursive'
 
@@ -33,6 +32,9 @@ jobs:
       
     - name: Print VERSION variable for debugging
       run: echo "$VERSION"
+
+    - name: Print current directory content for debugging
+      run: ls
 
     - name: Print Bunkum submodule root directory content for debugging
       run: ls External/Bunkum
