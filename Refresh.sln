@@ -46,11 +46,11 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Bunkum.Analyzers", "Externa
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Bunkum.Listener", "External\Bunkum\Bunkum.Listener\Bunkum.Listener.csproj", "{160844A2-C675-4344-A8DC-8772C224A04B}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Bunkum.Protocols.Http", "External\Bunkum.Protocols.Http\Bunkum.Protocols.Http.csproj", "{D3A3B625-13E8-4D95-977D-576050B0AFE4}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Bunkum.Protocols.Http", "External\Bunkum\Bunkum.Protocols.Http\Bunkum.Protocols.Http.csproj", "{D3A3B625-13E8-4D95-977D-576050B0AFE4}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Bunkum.HealthChecks", "External\Bunkum.HealthChecks\Bunkum.HealthChecks.csproj", "{8F3C4788-D310-48D7-9494-1ED1787D44C2}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Bunkum.HealthChecks", "External\Bunkum\Bunkum.HealthChecks\Bunkum.HealthChecks.csproj", "{8F3C4788-D310-48D7-9494-1ED1787D44C2}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Bunkum.AutoDiscover", "External\Bunkum.AutoDiscover\Bunkum.AutoDiscover.csproj", "{B6B9F1DD-7E85-402E-88A7-EF6B88E6CE9A}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Bunkum.AutoDiscover", "External\Bunkum\Bunkum.AutoDiscover\Bunkum.AutoDiscover.csproj", "{B6B9F1DD-7E85-402E-88A7-EF6B88E6CE9A}"
 EndProject
 
 Global
