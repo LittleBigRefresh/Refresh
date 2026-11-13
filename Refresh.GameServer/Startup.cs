@@ -3,11 +3,7 @@ using Refresh.GameServer;
 
 BunkumConsole.AllocateConsole();
 
-#if DEBUGLOCALBUNKUM
-Console.WriteLine("Starting Refresh with LOCAL Bunkum!");
-#elif DEBUG
-Console.WriteLine("Starting Refresh with NuGet Bunkum");
-#endif
+Console.WriteLine("Starting Refresh with Git-submodule Bunkum");
 
 using RefreshGameServer server = new();
 

@@ -4,14 +4,14 @@
         <TargetFramework>net9.0</TargetFramework>
         <ImplicitUsings>enable</ImplicitUsings>
         <Nullable>enable</Nullable>
-        <Configurations>Debug;Release;DebugLocalBunkum</Configurations>
+        <Configurations>Debug;Release</Configurations>
         <Platforms>AnyCPU</Platforms>
         <ServerGarbageCollection>true</ServerGarbageCollection>
         <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
         <WarningsNotAsErrors>612,618</WarningsNotAsErrors>
     </PropertyGroup>
     
-    <PropertyGroup Condition=" '$(Configuration)' == 'DebugLocalBunkum' ">
+    <PropertyGroup Condition=" '$(Configuration)' == 'Debug'">
       <DefineConstants>TRACE;DEBUG</DefineConstants>
       <DebugSymbols>true</DebugSymbols>
     </PropertyGroup>

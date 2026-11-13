@@ -6,7 +6,7 @@
         <Nullable>enable</Nullable>
         
         <IsTestProject>true</IsTestProject>
-        <Configurations>Debug;Release;DebugLocalBunkum</Configurations>
+        <Configurations>Debug;Release</Configurations>
         <Platforms>AnyCPU</Platforms>
         <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
         <WarningsNotAsErrors>612,618</WarningsNotAsErrors>
