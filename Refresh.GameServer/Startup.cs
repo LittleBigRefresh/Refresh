@@ -1,9 +1,14 @@
 ﻿using Bunkum.Core;
+using Refresh.Core;
 using Refresh.GameServer;
 
 BunkumConsole.AllocateConsole();
 
-Console.WriteLine("Starting Refresh with Git-submodule Bunkum");
+#if DEBUG
+Console.WriteLine($"Starting Refresh with Git-submodule Bunkum (DEBUG build, version {VersionInformation.Version})");
+#else
+Console.WriteLine($"Starting Refresh with Git-submodule Bunkum (RELEASE build, version {VersionInformation.Version})");
+#endif
 
 using RefreshGameServer server = new();
 
