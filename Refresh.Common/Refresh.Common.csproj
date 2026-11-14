@@ -11,6 +11,7 @@
     <ItemGroup>
       <PackageReference Include="FastAes" Version="1.0.1" />
       <PackageReference Include="IronCompress" Version="1.7.0" />
+      <PackageReference Include="JetBrains.Annotations" Version="2026.2.0" />
       <PackageReference Include="NPTicket" Version="3.1.1" />
     </ItemGroup>
 
