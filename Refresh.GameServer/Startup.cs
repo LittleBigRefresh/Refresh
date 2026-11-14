@@ -1,12 +1,13 @@
 ﻿using Bunkum.Core;
+using Refresh.Core;
 using Refresh.GameServer;
 
 BunkumConsole.AllocateConsole();
 
-#if DEBUGLOCALBUNKUM
-Console.WriteLine("Starting Refresh with LOCAL Bunkum!");
-#elif DEBUG
-Console.WriteLine("Starting Refresh with NuGet Bunkum");
+#if DEBUG
+Console.WriteLine($"Starting Refresh (DEBUG build, version {VersionInformation.Version})");
+#else
+Console.WriteLine($"Starting Refresh (RELEASE build, version {VersionInformation.Version})");
 #endif
 
 using RefreshGameServer server = new();
