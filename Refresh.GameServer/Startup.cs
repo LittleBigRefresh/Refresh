@@ -4,11 +4,13 @@ using Refresh.GameServer;
 
 BunkumConsole.AllocateConsole();
 
+string buildType
 #if DEBUG
-Console.WriteLine($"Starting Refresh (DEBUG build, version {VersionInformation.Version})");
+    = "DEBUG";
 #else
-Console.WriteLine($"Starting Refresh (RELEASE build, version {VersionInformation.Version})");
+    = "RELEASE";
 #endif
+Console.WriteLine($"Starting the Refresh Game server ({buildType} build, version {VersionInformation.Version})...");
 
 using RefreshGameServer server = new();
 

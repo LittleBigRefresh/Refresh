@@ -16,11 +16,13 @@ internal class Program
     
     public static async Task Main()
     {
-        #if DEBUG
-        Console.WriteLine($"Starting the Refresh Presence server (DEBUG build, version {VersionInformation.Version})");
-        #else
-        Console.WriteLine($"Starting the Refresh Presence server (RELEASE build, version {VersionInformation.Version})");
-        #endif
+        string buildType
+#if DEBUG
+            = "DEBUG";
+#else
+            = "RELEASE";
+#endif
+        Console.WriteLine($"Starting the Refresh Presence server ({buildType} build, version {VersionInformation.Version})...");
 
         LoggerConfiguration loggerConfiguration = new()
         {
