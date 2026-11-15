@@ -5,8 +5,12 @@ WORKDIR /build
 
 COPY . .
 
+# The same as what dotnet would use if nothing was specified at all. Refresh knows to ignore the version if it's 1.0.0.
+ARG VERSION=1.0.0
+RUN echo We will use the following semantic version for Refresh: ${VERSION}
+
 ARG BUILD_CONFIGURATION=Release
-RUN dotnet publish Refresh.GameServer -c ${BUILD_CONFIGURATION} --property:OutputPath=/build/publish/ --no-self-contained
+RUN dotnet publish Refresh.GameServer -c ${BUILD_CONFIGURATION} --property:OutputPath=/build/publish/ --no-self-contained /p:Version=${VERSION}
 
 # Final running container
 
