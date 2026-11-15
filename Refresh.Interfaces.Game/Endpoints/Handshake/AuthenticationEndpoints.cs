@@ -10,7 +10,7 @@ using NPTicket.Verification;
 using NPTicket.Verification.Keys;
 using Refresh.Common.Time;
 using Refresh.Common.Verification;
-using Refresh.Core;
+using Refresh.Common;
 using Refresh.Core.Authentication.Permission;
 using Refresh.Core.Configuration;
 using Refresh.Core.RateLimits.EndpointRateLimiting;

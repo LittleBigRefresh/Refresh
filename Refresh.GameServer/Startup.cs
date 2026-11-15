@@ -1,5 +1,5 @@
 ﻿using Bunkum.Core;
-using Refresh.Core;
+using Refresh.Common;
 using Refresh.GameServer;
 
 BunkumConsole.AllocateConsole();
