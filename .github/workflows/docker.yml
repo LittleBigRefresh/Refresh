@@ -20,22 +20,29 @@ jobs:
           - name: GameServer
             dockerfile: Dockerfile
             container_id: refresh
-            build_args: ""
           - name: PresenceServer
             dockerfile: PresenceServer.Dockerfile
             container_id: refresh-presenceserver
-            build_args: ""
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
         with:
           submodules: 'recursive'
+
+      - name: Set VERSION variable from tag (for tag pushes)
+        id: version_setter
+        run: echo "VERSION=${GITHUB_REF/refs\/tags\/v/}" >> $GITHUB_OUTPUT
+
+      - name: Print VERSION variable for debugging
+        run: echo ${{ steps.version_setter.outputs.VERSION }}
+
       - name: Log in to the Container registry
         uses: docker/login-action@v3.3.0
         with:
           registry: ghcr.io
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
+
       # This step below will fill in things like name, description, etc. from the repository.
       # It's helpful for us because it also fills in the version information automatically depending on how the job was invoked.
       # See https://github.com/docker/metadata-action#basic
@@ -44,8 +51,11 @@ jobs:
         uses: docker/metadata-action@v5.7.0
         with:
           images: ghcr.io/${{ github.repository_owner }}/${{ matrix.service.container_id }}
+
       - name: Build and push ${{ matrix.service.name }}
         uses: docker/build-push-action@v6.18.0
+        env:
+          VERSION: ${{ steps.version_setter.outputs.VERSION }}
         with:
           context: .
           file: ${{ matrix.service.dockerfile }}
@@ -53,4 +63,4 @@ jobs:
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
           build-args: |
-            ${{ matrix.service.build_args }}
+            VERSION=${{ steps.version_setter.outputs.VERSION }}
