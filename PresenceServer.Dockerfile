@@ -4,8 +4,12 @@ WORKDIR /build
 
 COPY . .
 
+# Default value which will be ignored by Presence itself
+ARG VERSION=0.0.0
+RUN echo We will use the following semantic version for Presence: ${VERSION}
+
 ARG BUILD_CONFIGURATION=Release
-RUN dotnet publish Refresh.PresenceServer -c ${BUILD_CONFIGURATION} --property:OutputPath=/build/publish/ --no-self-contained
+RUN dotnet publish Refresh.PresenceServer -c ${BUILD_CONFIGURATION} --property:OutputPath=/build/publish/ --no-self-contained /p:Version=${VERSION}
 
 # Final running container
 

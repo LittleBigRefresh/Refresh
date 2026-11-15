@@ -1,6 +1,6 @@
 using System.Reflection;
 
-namespace Refresh.Core;
+namespace Refresh.Common;
 
 public static class VersionInformation
 {

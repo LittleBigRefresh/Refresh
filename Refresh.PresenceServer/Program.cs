@@ -2,6 +2,7 @@ using Bunkum.Core.Configuration;
 using Bunkum.Protocols.Http;
 using NotEnoughLogs;
 using NotEnoughLogs.Behaviour;
+using Refresh.Common;
 using Refresh.PresenceServer.ApiClient;
 using Refresh.PresenceServer.ApiServer.Endpoints;
 using Refresh.PresenceServer.ApiServer.Middlewares;
@@ -15,6 +16,14 @@ internal class Program
     
     public static async Task Main()
     {
+        string buildType
+#if DEBUG
+            = "DEBUG";
+#else
+            = "RELEASE";
+#endif
+        Console.WriteLine($"Starting the Refresh Presence server ({buildType} build, version {VersionInformation.Version})...");
+
         LoggerConfiguration loggerConfiguration = new()
         {
             Behaviour = new QueueLoggingBehaviour(),
