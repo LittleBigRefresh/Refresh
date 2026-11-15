@@ -215,7 +215,8 @@ public class AssetReferenceValidationTests : GameServerTest
         GameUser user = context.CreateUser();
         HttpClient client = context.GetAuthenticatedClient(TokenType.Game, TokenGame.LittleBigPlanet1, TokenPlatform.PS3, out Token token, user);
 
-        // read-failing will unconditionally return true on key lookup, but will fail trying to read (null bytes/false return), which is what we want
+        // read-failing will unconditionally return true on key lookup, but will fail trying to read (will return false and null array),
+        // which is what we want here
         DataContext dataContext = context.GetDataContext(token, new ReadFailingDataStore());
         AssetImporter importer = new(dataContext.Logger, context.Time);
 
@@ -227,11 +228,12 @@ public class AssetReferenceValidationTests : GameServerTest
             MustBeInDataStoreIfHash = true,
         }, dataContext.Logger);
 
+        // Hash doesn't get reset to blank since we don't know whether it's invalid, but we do still receive an error from the validator.
         Assert.That(result.Status, Is.EqualTo(InternalServerError));
         Assert.That(result.AssetInfo, Is.Null);
         Assert.That(result.DisallowanceInfo, Is.Null);
         Assert.That(result.ExistsInDataStore, Is.True);
-        Assert.That(result.NewAssetRef, Is.EqualTo("0"));
+        Assert.That(result.NewAssetRef, Is.EqualTo(hash));
     }
 
     [Test]
