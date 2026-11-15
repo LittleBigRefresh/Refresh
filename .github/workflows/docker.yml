@@ -30,11 +30,15 @@ jobs:
           submodules: 'recursive'
 
       - name: Set VERSION variable from tag (for tag pushes)
-        id: version_setter
-        run: echo "VERSION=${GITHUB_REF/refs\/tags\/v/}" >> $GITHUB_OUTPUT
+        if: ${{ contains(github.ref, 'refs/tags') }}
+        run: echo "VERSION=${GITHUB_REF/refs\/tags\/v/}" >> $GITHUB_ENV
+
+      - name: Set VERSION variable from tag (for normal commits)
+        if: ${{ !contains(github.ref, 'refs/tags') }}
+        run: echo "VERSION=0.0.0" >> $GITHUB_ENV # default value, since we're not getting an actual version here
 
       - name: Print VERSION variable for debugging
-        run: echo ${{ steps.version_setter.outputs.VERSION }}
+        run: echo "${{ env.VERSION }}"
 
       - name: Log in to the Container registry
         uses: docker/login-action@v3.3.0
@@ -54,8 +58,6 @@ jobs:
 
       - name: Build and push ${{ matrix.service.name }}
         uses: docker/build-push-action@v6.18.0
-        env:
-          VERSION: ${{ steps.version_setter.outputs.VERSION }}
         with:
           context: .
           file: ${{ matrix.service.dockerfile }}
@@ -63,4 +65,4 @@ jobs:
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
           build-args: |
-            VERSION=${{ steps.version_setter.outputs.VERSION }}
+            VERSION=${{ env.VERSION }}
