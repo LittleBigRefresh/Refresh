@@ -11,7 +11,11 @@ jobs:
     name: Release Built Artifacts
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          submodules: 'recursive'
+
       - name: Setup .NET
         uses: actions/setup-dotnet@v4
         with:

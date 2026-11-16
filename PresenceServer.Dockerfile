@@ -2,20 +2,14 @@
 FROM mcr.microsoft.com/dotnet/sdk:9.0-alpine AS build
 WORKDIR /build
 
-COPY *.sln ./
-COPY **/*.csproj ./
-
-RUN dotnet sln list | grep ".csproj" \
-    | while read -r line; do \
-    mkdir -p $(dirname $line); \
-    mv $(basename $line) $(dirname $line); \
-    done;
-
-RUN dotnet restore --use-current-runtime
-
 COPY . .
 
-RUN dotnet publish Refresh.PresenceServer -c Release --property:OutputPath=/build/publish/ --no-restore --no-self-contained
+# Default value which will be ignored by Presence itself
+ARG VERSION=0.0.0
+RUN echo We will use the following semantic version for Presence: ${VERSION}
+
+ARG BUILD_CONFIGURATION=Release
+RUN dotnet publish Refresh.PresenceServer -c ${BUILD_CONFIGURATION} --property:OutputPath=/build/publish/ --no-self-contained /p:Version=${VERSION}
 
 # Final running container
 

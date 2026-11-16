@@ -13,7 +13,11 @@ jobs:
     name: Build, Test, and Upload Builds
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v4
+    - name: Checkout repository
+      uses: actions/checkout@v4
+      with:
+        submodules: 'recursive'
+
     - name: Setup .NET
       uses: actions/setup-dotnet@v4
       with:
@@ -29,7 +33,7 @@ jobs:
       
     - name: Print VERSION variable for debugging
       run: echo "$VERSION"
-        
+
     - name: Test
       run: dotnet test -c Release --verbosity normal
       

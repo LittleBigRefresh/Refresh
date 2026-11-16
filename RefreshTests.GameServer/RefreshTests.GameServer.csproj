@@ -6,7 +6,7 @@
         <Nullable>enable</Nullable>
         
         <IsTestProject>true</IsTestProject>
-        <Configurations>Debug;Release;DebugLocalBunkum</Configurations>
+        <Configurations>Debug;Release</Configurations>
         <Platforms>AnyCPU</Platforms>
         <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
         <WarningsNotAsErrors>612,618</WarningsNotAsErrors>
@@ -31,27 +31,12 @@
       <ProjectReference Include="..\Refresh.GameServer\Refresh.GameServer.csproj" />
     </ItemGroup>
 
-    <ItemGroup Condition="'$(Configuration)'=='DebugLocalBunkum'">
-        <Reference Include="Bunkum.Core">
-            <HintPath>..\..\Bunkum\Bunkum.Core\bin\Debug\net8.0\Bunkum.Core.dll</HintPath>
-        </Reference>
-        <Reference Include="Bunkum.Listener">
-            <HintPath>..\..\Bunkum\Bunkum.Listener\bin\Debug\net8.0\Bunkum.Listener.dll</HintPath>
-        </Reference>
-        <Reference Include="Bunkum.Protocols.Http">
-            <HintPath>..\..\Bunkum\Bunkum.Protocols.Http\bin\Debug\net8.0\Bunkum.Protocols.Http.dll</HintPath>
-        </Reference>
-        <Reference Include="Bunkum.RealmDatabase">
-            <HintPath>..\..\Bunkum\Bunkum.RealmDatabase\bin\Debug\net8.0\Bunkum.RealmDatabase.dll</HintPath>
-        </Reference>
-        <Reference Include="Bunkum.AutoDiscover">
-            <HintPath>..\..\Bunkum\Bunkum.AutoDiscover\bin\Debug\net8.0\Bunkum.AutoDiscover.dll</HintPath>
-        </Reference>
-
-        <!-- Package references must match Bunkum.HttpServer's csproj -->
-        <PackageReference Include="JetBrains.Annotations" Version="2024.3.0" />
-        <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
-        <PackageReference Include="NotEnoughLogs" Version="2.0.3" />
+    <ItemGroup>
+      <ProjectReference Include="..\External\Bunkum\Bunkum.Core\Bunkum.Core.csproj" />
+      <ProjectReference Include="..\External\Bunkum\Bunkum.Listener\Bunkum.Listener.csproj" />
+      <ProjectReference Include="..\External\Bunkum\Bunkum.Protocols.Http\Bunkum.Protocols.Http.csproj" />
+      <ProjectReference Include="..\External\Bunkum\Bunkum.AutoDiscover\Bunkum.AutoDiscover.csproj" />
+      <ProjectReference Include="..\External\Bunkum\Bunkum.HealthChecks\Bunkum.HealthChecks.csproj" />
     </ItemGroup>
 
     <ItemGroup>
