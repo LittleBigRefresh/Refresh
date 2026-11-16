@@ -3,8 +3,6 @@ using Bunkum.Core.Endpoints.Middlewares;
 using Refresh.Interfaces.Game;
 using Bunkum.Protocols.Http;
 using NotEnoughLogs;
-using Refresh.Common;
-using Bunkum.Core;
 
 namespace Refresh.GameServer.Middlewares;
 
@@ -23,25 +21,23 @@ public class PspStatusOverwriteMiddleware : IMiddleware
 
     private Logger _logger;
 
-    // Route prefix -> response body content to write, if there needs to be any
-    private static readonly Dictionary<string, string> _requiredRoutePrefixes = new()
-    {
+    private static readonly string[] _requiredRoutePrefixes = 
+    [
         // Trailing slash is enough, probably don't need to do extra effort to see whether
         // slot ID is actually a number
-        {"play/developer/", ""},
-        {"play/user/", ""},
-        {"favourite/slot/", ""},
-        {"unfavourite/slot/", ""},
-        {"favourite/user/", ""},
-        {"unfavourite/user/", ""},
-        // Incase the game also expects an actual score list, return an empty one
-        {"scoreboard/developer/", "<scoreboardSegment />"},
-        {"scoreboard/user/", "<scoreboardSegment />"},
+        "play/developer/",
+        "play/user/",
+        "favourite/slot/",
+        "unfavourite/slot/",
+        "favourite/user/",
+        "unfavourite/user/",
+        "scoreboard/developer/",
+        "scoreboard/user/",
         // no need for developer slot type, since it will probably never happen on unmodded clients
-        {"tag/user/", ""},
-        {"rate/user/", ""},
-        {"grief", ""},
-    };
+        "tag/user/",
+        "rate/user/",
+        "grief",
+    ];
 
     public void HandleRequest(ListenerContext context, Lazy<IDatabaseContext> database, Action next)
     {
@@ -52,7 +48,6 @@ public class PspStatusOverwriteMiddleware : IMiddleware
         // in that case)
         if (context.ResponseCode == OK || context.ResponseCode == Forbidden)
         {
-            this._logger.LogDebug(BunkumCategory.Middleware, $"PSP status overwrite: status is {context.ResponseCode} (not OK or Forbidden), no need to overwrite");
             return;
         }
 
@@ -60,14 +55,12 @@ public class PspStatusOverwriteMiddleware : IMiddleware
         // so hacking the user agent won't do much here.
         if (context.RequestHeaders.Get("User-Agent") != "LBPPSP CLIENT")
         {
-            this._logger.LogDebug(BunkumCategory.Middleware, $"PSP status overwrite: user agent is not PSP ({context.RequestHeaders.Get("User-Agent")}), no need to overwrite");
             return;
         }
 
         // For now, all endpoints we have to do this for happen to be POST endpoints
         if (context.Method != HttpProtocolMethods.Post)
         {
-            this._logger.LogDebug(BunkumCategory.Middleware, $"PSP status overwrite: method is {context.Method} (not POST), no need to overwrite");
             return;
         }
 
@@ -75,30 +68,18 @@ public class PspStatusOverwriteMiddleware : IMiddleware
         string fullRoute = context.Uri.AbsolutePath;
         if (fullRoute.Length <= GameEndpointAttribute.BaseRoute.Length || !fullRoute.StartsWith(GameEndpointAttribute.BaseRoute))
         {
-            this._logger.LogDebug(BunkumCategory.Middleware, $"Full route {fullRoute} doesn't start with /lbp/ or is too short");
             return;
         }
 
         // Remove base from endpoint, and compare with our set prefixes
         string endpointRoute = fullRoute[GameEndpointAttribute.BaseRoute.Length..];
-        foreach (KeyValuePair<string, string> prefix in _requiredRoutePrefixes)
+        foreach (string prefix in _requiredRoutePrefixes)
         {
-            if (endpointRoute.StartsWith(prefix.Key))
+            if (endpointRoute.StartsWith(prefix))
             {
-                // If we should also write something into the body, then do so.
-                if (prefix.Value != "")
-                {
-                    context.ResponseStream.Position = 0;
-                    context.ResponseStream.SetLength(0);
-                    context.Write(prefix.Value);
-                }
-
-                this._logger.LogDebug(BunkumCategory.Middleware, $"Prefix {prefix} matches endpoint route {endpointRoute}, overwriting");
                 context.ResponseCode = OK; // overwrite if found, and stop iterating
                 break;
             }
-            
-            this._logger.LogDebug(BunkumCategory.Middleware, $"Prefix {prefix} doesnt match endpoint route {endpointRoute}, skipping");
         }
     }
 }
