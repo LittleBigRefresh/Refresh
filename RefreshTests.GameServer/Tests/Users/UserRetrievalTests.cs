@@ -60,4 +60,31 @@ public class UserRetrievalTests : GameServerTest
     {
         Assert.That(this._db.GetTotalUserCount(), Is.EqualTo(1));
     }
+
+    // These ones don't use the shared contexts above
+
+    [Test]
+    [TestCase("SuperCasing", "supercasing")]
+    [TestCase("supercasing", "SuperCasing")] // swapped, so they'll hopefully be in different positions in the table
+    public void GetByExactUsernameEvenIfCaseInsensitive(string firstName, string secondName)
+    {
+        using TestContext context = this.GetServer();
+        GameUser firstUser = context.Database.CreateUser(firstName, "legit@real.lol");
+        GameUser secondUser = context.Database.CreateUser(secondName, "cool@real.lol");
+
+        GameUser? firstFetch = context.Database.GetUserByUsername(firstName, false);
+        GameUser? secondFetch = context.Database.GetUserByUsername(secondName, false);
+
+        Assert.Multiple(() =>
+        {
+            // Won't get the user with the wrong name on either one of those
+            Assert.That(firstFetch, Is.Not.Null);
+            Assert.That(firstFetch!.Username, Is.EqualTo(firstName));
+            Assert.That(firstFetch!.UserId, Is.EqualTo(firstUser.UserId));
+
+            Assert.That(secondFetch, Is.Not.Null);
+            Assert.That(secondFetch!.Username, Is.EqualTo(secondName));
+            Assert.That(secondFetch!.UserId, Is.EqualTo(secondUser.UserId));
+        });
+    }
 }
