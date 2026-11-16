@@ -24,35 +24,38 @@ namespace Refresh.Interfaces.APIv3.Endpoints;
 
 public class UserApiEndpoints : EndpointGroup
 {
-    [ApiV3Endpoint("users/{idType}/{id}"), Authentication(false)]
+    [ApiV3Endpoint("users/uuid/{uuid}")]
+    [ApiV3Endpoint("users/name/{username}")]
+    [ApiV3Endpoint("users/username/{username}")]
+    [Authentication(false)]
     [DocSummary("Tries to find a user by name or UUID")]
     [DocError(typeof(ApiNotFoundError), "The user cannot be found")]
     [EndpointRateLimit(EndpointBucketId.ApiGetSingleUser)]
     public ApiResponse<ApiGameUserResponse> GetUser(RequestContext context, GameDatabaseContext database,
-        [DocSummary(SharedParamDescriptions.UserIdParam)] string id, 
-        [DocSummary(SharedParamDescriptions.UserIdTypeParam)] string idType, DataContext dataContext)
+        string? uuid, string? username, DataContext dataContext)
     {
-        GameUser? user = database.GetUserByIdAndType(idType, id);
+        GameUser? user = database.GetUserByUuidOrUsername(uuid, username);
         if(user == null) return ApiNotFoundError.UserMissingError;
         
         return ApiGameUserResponse.FromOld(user, dataContext);
     }
 
-    [ApiV3Endpoint("users/{idType}/{id}/heart", HttpMethods.Post)]
+    [ApiV3Endpoint("users/uuid/{uuid}/heart", HttpMethods.Post)]
+    [ApiV3Endpoint("users/name/{username}/heart", HttpMethods.Post)]
+    [ApiV3Endpoint("users/username/{username}/heart", HttpMethods.Post)]
     [DocSummary("Hearts a user by their name or UUID")]
     [DocError(typeof(ApiNotFoundError), ApiNotFoundError.UserMissingErrorWhen)]
     [EndpointRateLimit(EndpointBucketId.HeartUser)]
     public ApiOkResponse HeartUser(RequestContext context, GameDatabaseContext database,
-        [DocSummary(SharedParamDescriptions.UserIdParam)] string id, 
-        [DocSummary(SharedParamDescriptions.UserIdTypeParam)] string idType, DataContext dataContext, GameUser user, GameServerConfig config)
+        string? uuid, string? username, GameUser user, GameServerConfig config)
     {
         if (user.IsWriteBlocked(config)) 
             return ApiAuthenticationError.ReadOnlyError;
 
-        GameUser? target = database.GetUserByIdAndType(idType, id);
-        if(target == null) return ApiNotFoundError.UserMissingError;
+        GameUser? targetUser = database.GetUserByUuidOrUsername(uuid, username);
+        if(targetUser == null) return ApiNotFoundError.UserMissingError;
         
-        bool success = database.FavouriteUser(target, user);
+        bool success = database.FavouriteUser(targetUser, user);
 
         // Only give pin if the user was hearted without having already been hearted.
         // Won't protect against spam, but this way the pin objective is more accurately implemented.
@@ -62,21 +65,22 @@ public class UserApiEndpoints : EndpointGroup
         return new ApiOkResponse();
     }
 
-    [ApiV3Endpoint("users/{idType}/{id}/unheart", HttpMethods.Post)]
+    [ApiV3Endpoint("users/uuid/{uuid}/unheart", HttpMethods.Post)]
+    [ApiV3Endpoint("users/name/{username}/unheart", HttpMethods.Post)]
+    [ApiV3Endpoint("users/username/{username}/unheart", HttpMethods.Post)]
     [DocSummary("Unhearts a user by their name or UUID")]
     [DocError(typeof(ApiNotFoundError), ApiNotFoundError.UserMissingErrorWhen)]
     [EndpointRateLimit(EndpointBucketId.HeartUser)]
     public ApiOkResponse UnheartUser(RequestContext context, GameDatabaseContext database,
-        [DocSummary(SharedParamDescriptions.UserIdParam)] string id, 
-        [DocSummary(SharedParamDescriptions.UserIdTypeParam)] string idType, DataContext dataContext, GameUser user, GameServerConfig config)
+        string? uuid, string? username, GameUser user, GameServerConfig config)
     {
         if (user.IsWriteBlocked(config)) 
             return ApiAuthenticationError.ReadOnlyError;
 
-        GameUser? target = database.GetUserByIdAndType(idType, id);
-        if(target == null) return ApiNotFoundError.UserMissingError;
+        GameUser? targetUser = database.GetUserByUuidOrUsername(uuid, username);
+        if(targetUser == null) return ApiNotFoundError.UserMissingError;
         
-        database.UnfavouriteUser(target, user);
+        database.UnfavouriteUser(targetUser, user);
         return new ApiOkResponse();
     }
     
