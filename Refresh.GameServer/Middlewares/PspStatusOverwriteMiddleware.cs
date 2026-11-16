@@ -14,13 +14,6 @@ namespace Refresh.GameServer.Middlewares;
 /// </summary>
 public class PspStatusOverwriteMiddleware : IMiddleware
 {
-    public PspStatusOverwriteMiddleware(Logger logger)
-    {
-        this._logger = logger;
-    }
-
-    private Logger _logger;
-
     private static readonly string[] _requiredRoutePrefixes = 
     [
         // Trailing slash is enough, probably don't need to do extra effort to see whether

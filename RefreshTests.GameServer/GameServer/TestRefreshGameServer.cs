@@ -61,7 +61,7 @@ public class TestRefreshGameServer : RefreshGameServer
 
     protected override void SetupMiddlewares()
     {
-        this.Server.AddMiddleware(new PspStatusOverwriteMiddleware(this.Logger));
+        this.Server.AddMiddleware<PspStatusOverwriteMiddleware>();
     }
 
     protected override void SetupServices()
