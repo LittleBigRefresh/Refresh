@@ -130,6 +130,7 @@ public class RefreshGameServer : RefreshServer
         this.Server.AddMiddleware(new DigestMiddleware(this._configStore.GameServer));
         this.Server.AddMiddleware<CrossOriginMiddleware>();
         this.Server.AddMiddleware<PspVersionMiddleware>();
+        this.Server.AddMiddleware(new PspStatusOverwriteMiddleware(this.Logger));
         this.Server.AddMiddleware(new PresenceAuthenticationMiddleware(this._configStore.Integration!));
         this.Server.AddMiddleware<RequestStatisticTrackingMiddleware>();
     }
