@@ -34,7 +34,8 @@ public class UserApiEndpoints : EndpointGroup
     public ApiResponse<ApiGameUserResponse> GetUser(RequestContext context, GameDatabaseContext database,
         string? uuid, string? username, DataContext dataContext)
     {
-        GameUser? user = database.GetUserByUuidOrUsername(uuid, username);
+        // Allow case-insensitive lookup for this endpoint specifically
+        GameUser? user = database.GetUserByUuidOrUsername(uuid, username, false);
         if(user == null) return ApiNotFoundError.UserMissingError;
         
         return ApiGameUserResponse.FromOld(user, dataContext);
