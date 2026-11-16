@@ -30,6 +30,10 @@ public class PspStatusOverwriteMiddleware : IMiddleware
         // slot ID is actually a number
         {"play/developer/", ""},
         {"play/user/", ""},
+        {"favourite/slot/", ""},
+        {"unfavourite/slot/", ""},
+        {"favourite/user/", ""},
+        {"unfavourite/user/", ""},
         // Incase the game also expects an actual score list, return an empty one
         {"scoreboard/developer/", "<scoreboardSegment />"},
         {"scoreboard/user/", "<scoreboardSegment />"},
@@ -46,7 +50,7 @@ public class PspStatusOverwriteMiddleware : IMiddleware
 
         // No need for anything if response is already OK, or if it's Forbidden (since the user already isn't authenticated
         // in that case)
-        if (context.ResponseCode != OK || context.ResponseCode != Forbidden)
+        if (context.ResponseCode == OK || context.ResponseCode == Forbidden)
         {
             this._logger.LogDebug(BunkumCategory.Middleware, $"PSP status overwrite: status is {context.ResponseCode} (not OK or Forbidden), no need to overwrite");
             return;
