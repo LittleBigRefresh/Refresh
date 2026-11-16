@@ -81,8 +81,8 @@ public class PspStatusOverwriteMiddleware : IMiddleware
         {
             if (endpointRoute.StartsWith(prefix.Key))
             {
-                // If it's a failed score upload request, return an empty XML score list just incase the game also expects that
-                if (endpointRoute.StartsWith("scoreboard"))
+                // If we should also write something into the body, then do so.
+                if (prefix.Value != "")
                 {
                     context.ResponseStream.Position = 0;
                     context.ResponseStream.SetLength(0);
