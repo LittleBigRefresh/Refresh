@@ -37,9 +37,9 @@ public class PhotoApiEndpoints : EndpointGroup
         return new ApiOkResponse();
     }
     
-    [ApiV3Endpoint("photos/by/{uuid}/{uuid}")]
-    [ApiV3Endpoint("photos/by/{name}/{username}")]
-    [ApiV3Endpoint("photos/by/{username}/{username}")]
+    [ApiV3Endpoint("photos/by/uuid/{uuid}")]
+    [ApiV3Endpoint("photos/by/name/{username}")]
+    [ApiV3Endpoint("photos/by/username/{username}")]
     [Authentication(false)]
     [DocUsesPageData, DocSummary("Gets photos uploaded by a user specified by their username or UUID")]
     [DocError(typeof(ApiNotFoundError), "The user cannot be found")]
@@ -57,9 +57,9 @@ public class PhotoApiEndpoints : EndpointGroup
         return photosResponse;
     }
     
-    [ApiV3Endpoint("photos/with/{uuid}/{uuid}")]
-    [ApiV3Endpoint("photos/with/{name}/{username}")]
-    [ApiV3Endpoint("photos/with/{username}/{username}")]
+    [ApiV3Endpoint("photos/with/uuid/{uuid}")]
+    [ApiV3Endpoint("photos/with/name/{username}")]
+    [ApiV3Endpoint("photos/with/username/{username}")]
     [Authentication(false)]
     [DocUsesPageData, DocSummary("Gets photos depicting a user specified by their username or UUID")]
     [DocError(typeof(ApiNotFoundError), "The user cannot be found")]

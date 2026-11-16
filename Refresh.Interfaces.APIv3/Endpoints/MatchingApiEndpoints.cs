@@ -18,9 +18,9 @@ namespace Refresh.Interfaces.APIv3.Endpoints;
 
 public class MatchingApiEndpoints : EndpointGroup
 {
-    [ApiV3Endpoint("rooms/{uuid}/{uuid}")]
-    [ApiV3Endpoint("rooms/{name}/{username}")]
-    [ApiV3Endpoint("rooms/{username}/{username}")]
+    [ApiV3Endpoint("rooms/uuid/{uuid}")]
+    [ApiV3Endpoint("rooms/name/{username}")]
+    [ApiV3Endpoint("rooms/username/{username}")]
     [Authentication(false)]
     [DocSummary("Finds a room by a player's username or UUID")]
     [DocError(typeof(ApiNotFoundError), ApiNotFoundError.UserMissingErrorWhen)]
