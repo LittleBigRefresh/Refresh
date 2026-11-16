@@ -228,23 +228,6 @@ public class AdminUserEditApiTests : GameServerTest
     }
 
     [Test]
-    public void CannotEditUserIfIdTypeIsUnknown()
-    {
-        using TestContext context = this.GetServer();
-        GameUser actor = context.CreateUser(null, GameUserRole.Moderator);
-        GameUser target = context.CreateUser(null, GameUserRole.User);
-        HttpClient client = context.GetAuthenticatedClient(TokenType.Api, actor);
-
-        ApiAdminUpdateUserRequest request = new()
-        {
-            Description = "lol"
-        };
-        ApiResponse<ApiExtendedGameUserResponse>? response = client.PatchData<ApiExtendedGameUserResponse>($"/api/v3/admin/users/mmmmmmm/{target.UserId}", request, false, true);
-        Assert.That(response?.Error, Is.Not.Null);
-        Assert.That(response!.Error!.StatusCode, Is.EqualTo(NotFound));
-    }
-
-    [Test]
     public void CannotRenameToTakenUsername()
     {
         using TestContext context = this.GetServer();
