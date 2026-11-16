@@ -1,4 +1,6 @@
+using Refresh.Common.Exceptions;
 using Refresh.Database;
+using Refresh.Database.Extensions;
 using Refresh.Database.Models.Authentication;
 using Refresh.Database.Models.Playlists;
 using Refresh.Database.Models.Users;
@@ -31,6 +33,11 @@ public class PlaylistAdditionTests : GameServerTest
         Assert.That(parentPlaylists.TotalItems, Is.EqualTo(1));
         Assert.That(parentPlaylists.Items.Count(), Is.EqualTo(1));
         Assert.That(parentPlaylists.Items.First().PlaylistId, Is.EqualTo(parent.PlaylistId));
+
+        // Trying to add again shouldn't cause any errors
+        message = client.PostAsync($"/lbp/addToPlaylist/{parent.PlaylistId}?slot_type=playlist&slot_id={child.PlaylistId}",
+            new ReadOnlyMemoryContent(Array.Empty<byte>())).Result;
+        Assert.That(message.StatusCode, Is.EqualTo(OK));
     }
 
     [Test]
@@ -90,5 +97,29 @@ public class PlaylistAdditionTests : GameServerTest
         DatabaseList<GamePlaylist> parentPlaylistsOfParent = context.Database.GetPlaylistsContainingPlaylist(parent, 0, 10);
         Assert.That(parentPlaylistsOfParent.TotalItems, Is.Zero);
         Assert.That(parentPlaylistsOfParent.Items.Count(), Is.Zero);
+    }
+
+    [Test]
+    public void LoopDetectorStopsWhenMaxTraversalReached()
+    {
+        using TestContext context = this.GetServer();
+        GameUser user = context.CreateUser();
+
+        GamePlaylist root = context.CreatePlaylist(user);
+        GamePlaylist inbetween = context.CreatePlaylist(user);
+        GamePlaylist leaf = context.CreatePlaylist(user);
+        GamePlaylist newRoot = context.CreatePlaylist(user);
+
+        context.Database.AddPlaylistToPlaylist(inbetween, root);
+        context.Database.AddPlaylistToPlaylist(leaf, inbetween);
+
+        // There are 3 playlists in root's tree in total: root itself, inbetween, and leaf, so 2 and below should trigger the exception,
+        // but 3 and above should be just enough for the method to not throw.
+        Assert.That(() => newRoot.WillAddingChildCauseInfiniteLoop(root, context.Database, context.GetDataContext().Logger, 2),
+            Throws.TypeOf<TakingTooLongException>());
+        
+        // Higher max count should allow the method to succeed normally
+        Assert.That(() => newRoot.WillAddingChildCauseInfiniteLoop(root, context.Database, context.GetDataContext().Logger, 3),
+            Throws.Nothing);
     }
 }
