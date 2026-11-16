@@ -393,6 +393,12 @@ public class PlaylistApiTests : GameServerTest
         Assert.That(context.Database.GetTotalPlaylistsInPlaylist(parent), Is.EqualTo(1));
         Assert.That(context.Database.GetTotalPlaylistsContainingPlaylist(child), Is.EqualTo(1));
 
+        // Trying to add again shouldn't cause any errors
+        response = await client.PostAsync($"/api/v3/playlists/id/{parent.PlaylistId}/addPlaylist/id/{child.PlaylistId}", null);
+        Assert.That(response.IsSuccessStatusCode, Is.True);
+        Assert.That(context.Database.GetTotalPlaylistsInPlaylist(parent), Is.EqualTo(1));
+        Assert.That(context.Database.GetTotalPlaylistsContainingPlaylist(child), Is.EqualTo(1));
+
         // Remove
         response = await client.PostAsync($"/api/v3/playlists/id/{parent.PlaylistId}/removePlaylist/id/{child.PlaylistId}", null);
         Assert.That(response.IsSuccessStatusCode, Is.True);
@@ -425,6 +431,45 @@ public class PlaylistApiTests : GameServerTest
         response = await client.PostAsync($"/api/v3/playlists/id/{parent.PlaylistId}/removePlaylist/id/{child.PlaylistId}", null);
         Assert.That(response.IsSuccessStatusCode, Is.False);
         Assert.That(context.Database.GetTotalPlaylistsInPlaylist(parent), Is.EqualTo(1));
+        Assert.That(context.Database.GetTotalPlaylistsContainingPlaylist(child), Is.EqualTo(1));
+    }
+
+    [Test]
+    public async Task CannotAddPlaylistToItself()
+    {
+        using TestContext context = this.GetServer();
+        GameUser user = context.CreateUser();
+        GamePlaylist parent = context.CreatePlaylist(user);
+
+        using HttpClient client = context.GetAuthenticatedClient(TokenType.Api, user);
+
+        // Add (fail)
+        HttpResponseMessage response = await client.PostAsync($"/api/v3/playlists/id/{parent.PlaylistId}/addPlaylist/id/{parent.PlaylistId}", null);
+        Assert.That(response.IsSuccessStatusCode, Is.False);
+        Assert.That(context.Database.GetTotalPlaylistsInPlaylist(parent), Is.Zero);
+        Assert.That(context.Database.GetTotalPlaylistsContainingPlaylist(parent), Is.Zero);
+    }
+
+    [Test]
+    public async Task CannotAddPlaylistToOwnChild()
+    {
+        using TestContext context = this.GetServer();
+        GameUser user = context.CreateUser();
+        GamePlaylist parent = context.CreatePlaylist(user);
+        GamePlaylist child = context.CreatePlaylist(user);
+        context.Database.AddPlaylistToPlaylist(child, parent);
+
+        using HttpClient client = context.GetAuthenticatedClient(TokenType.Api, user);
+
+        // Add (fail)
+        HttpResponseMessage response = await client.PostAsync($"/api/v3/playlists/id/{child.PlaylistId}/addPlaylist/id/{parent.PlaylistId}", null);
+        Assert.That(response.IsSuccessStatusCode, Is.False);
+
+        // Assert that parent still has 1 playlist, but child doesn't have any
+        Assert.That(context.Database.GetTotalPlaylistsInPlaylist(parent), Is.EqualTo(1));
+        Assert.That(context.Database.GetTotalPlaylistsContainingPlaylist(parent), Is.Zero);
+
+        Assert.That(context.Database.GetTotalPlaylistsInPlaylist(child), Is.Zero);
         Assert.That(context.Database.GetTotalPlaylistsContainingPlaylist(child), Is.EqualTo(1));
     }
 }
