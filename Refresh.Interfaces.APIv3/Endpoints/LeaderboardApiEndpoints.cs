@@ -48,7 +48,7 @@ public class LeaderboardApiEndpoints : EndpointGroup
         return ret;
     }
     
-    [ApiV3Endpoint("users/{idType}/{userId}/scores")]
+    [ApiV3Endpoint("users/uuid/{uuid}/scores")]
     [ApiV3Endpoint("users/name/{username}/scores")]
     [ApiV3Endpoint("users/username/{username}/scores")]
     [Authentication(false)]
