@@ -4,6 +4,7 @@ using Bunkum.Core.Responses;
 using Bunkum.Listener.Protocol;
 using Bunkum.Protocols.Http;
 using Refresh.Common.Constants;
+using Refresh.Common.Exceptions;
 using Refresh.Core.Authentication.Permission;
 using Refresh.Core.Configuration;
 using Refresh.Core.RateLimits.EndpointRateLimiting;
@@ -286,33 +287,19 @@ public class Lbp1PlaylistEndpoints : EndpointGroup
             if (childPlaylist.PlaylistId == parentPlaylist.PlaylistId)
                 return BadRequest;
 
-            // Add the child playlist to the parent before checking for recursive playlists below to catch cases where a loop would
-            // only happen once the child playlist is added to its new parent
-            database.AddPlaylistToPlaylist(childPlaylist, parentPlaylist);
-
-            // If the parent contains the child in its parent tree, block the request to prevent recursive playlists
-            bool recursive = false;
-            IEnumerable<GamePlaylist> traversedPlaylists = [childPlaylist];
-            parentPlaylist.TraverseParentsRecursively(database, delegate(GamePlaylist playlist)
+            try
             {
-                // If we have already traversed this playlist before, we have found a loop. Stop traversing in that case.
-                if (traversedPlaylists.Contains(playlist))
-                {
-                    recursive = true;
-                    return false;
-                }
-                else
-                {
-                    // Remember this playlist for loop detection
-                    traversedPlaylists = traversedPlaylists.Append(playlist);
-                    return true;
-                }
-            });
-            if (recursive) {
-                // If adding this playlist to its parent has caused a loop which was not there before, remove it from its parent
-                database.RemovePlaylistFromPlaylist(childPlaylist, parentPlaylist);
-                return BadRequest;
+                // If adding this child will cause an infinite loop/recursion, cancel the request.
+                if (parentPlaylist.WillAddingChildCauseInfiniteLoop(childPlaylist, database, context.Logger))
+                    return BadRequest;
             }
+            catch (TakingTooLongException ex)
+            {
+                context.Logger.LogWarning(BunkumCategory.UserContent, $"{ex.GetType().Name} - {ex.Message}");
+                return InternalServerError;
+            }
+
+            database.AddPlaylistToPlaylist(childPlaylist, parentPlaylist);
             
             // ReSharper disable once ExtractCommonBranchingCode see like 3 lines below (line count subject to change)
             return OK;
