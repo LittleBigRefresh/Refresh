@@ -23,7 +23,7 @@ public static class GamePlaylistExtensions
         // Probably already validated by the caller, but make sure anyway
         if (parent.PlaylistId == child.PlaylistId)
         {
-            logger?.LogDebug(BunkumCategory.UserContent, $"Parent playlist {parent.PlaylistId} is the same as child playlist, returning true.");
+            logger?.LogTrace(BunkumCategory.UserContent, $"Parent playlist {parent.PlaylistId} is the same as child playlist, returning true.");
             return true;
         }
 
@@ -50,7 +50,7 @@ public static class GamePlaylistExtensions
             // If we've found the parent in the child's sub-playlist tree, then adding will cause a loop.
             if (currentId == parent.PlaylistId)
             {
-                logger?.LogDebug(BunkumCategory.UserContent, $"[Traversal {currentIterationCount}/{maxTraversalCount}] "
+                logger?.LogTrace(BunkumCategory.UserContent, $"[Traversal {currentIterationCount}/{maxTraversalCount}] "
                     + $"Parent playlist #{parent.PlaylistId} was found in child playlist #{child.PlaylistId}'s sub-playlist tree! Returning true");
                 return true;
             }
@@ -62,7 +62,7 @@ public static class GamePlaylistExtensions
             // keep track of this.
             if (alreadyTraversedIds.Contains(currentId))
             {
-                logger?.LogDebug(BunkumCategory.UserContent, $"[Traversal {currentIterationCount}/{maxTraversalCount}] "
+                logger?.LogTrace(BunkumCategory.UserContent, $"[Traversal {currentIterationCount}/{maxTraversalCount}] "
                     + $"Playlist #{currentId} has already been traversed, skipping.");
                 continue;
             }
@@ -70,8 +70,8 @@ public static class GamePlaylistExtensions
             // Fetch and queue the child IDs. No need to cache since we already make sure we don't
             // traverse the same playlists multiple times (see above).
             int[] childIds = database.GetIdsOfAllPlaylistsInPlaylist(currentId).ToArray();
-            logger?.LogDebug(BunkumCategory.UserContent, $"[Traversal {currentIterationCount}/{maxTraversalCount}] "
-                + $"Adding {childIds.Length} child IDs from playlist #{currentId}, and marking #{currentId} as traversed.");
+            logger?.LogTrace(BunkumCategory.UserContent, $"[Traversal {currentIterationCount}/{maxTraversalCount}] "
+                + $"Adding {childIds.Length} child IDs from playlist #{currentId} to traversal queue, and marking #{currentId} as traversed.");
 
             queuedIds.AddRange(childIds);
             alreadyTraversedIds.Add(currentId);
