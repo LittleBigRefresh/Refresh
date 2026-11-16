@@ -36,7 +36,7 @@ public static class GamePlaylistExtensions
         {
             // End traversal, regardless of state, if fallback iteration limit has been reached.
             currentIterationCount++;
-            if (currentIterationCount >= maxTraversalCount)
+            if (currentIterationCount > maxTraversalCount)
             {
                 throw new TakingTooLongException($"[Traversal {currentIterationCount}/{maxTraversalCount}] "
                     + $"Maximum number of traversals reached, forcefully stopping traversal! "
