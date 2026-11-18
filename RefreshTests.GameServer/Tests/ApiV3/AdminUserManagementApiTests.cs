@@ -100,26 +100,28 @@ public class AdminUserManagementApiTests : GameServerTest
 
         context.Database.Refresh();
 
-        planetResponse = client.GetData<ApiAdminUserPlanetsResponse>($"/api/v3/admin/users/name/{updated.Username}/planets");
+        planetResponse = client.GetData<ApiAdminUserPlanetsResponse>($"/api/v3/admin/users/name/{player.Username}/planets");
         Assert.That(planetResponse?.Data, Is.Not.Null);
         Assert.That(planetResponse!.Data!.Lbp3PlanetsHash, Is.EqualTo("lel"));
 
-        resetResponse = await client.DeleteAsync($"/api/v3/admin/users/name/{updated.Username}/planets");
+        resetResponse = await client.DeleteAsync($"/api/v3/admin/users/name/{player.Username}/planets");
         Assert.That(resetResponse.IsSuccessStatusCode, Is.True);
 
         context.Database.Refresh();
 
-        updated = context.Database.GetUserByObjectId(updated.UserId);
+        updated = context.Database.GetUserByObjectId(player.UserId);
         Assert.That(updated, Is.Not.Null);
         Assert.That(updated!.Lbp3PlanetsHash.IsBlankHash(), Is.True);
 
-        // Wrong casing will fail
-        context.Database.UpdateUserData(player, new SerializedUpdateData()
+        // Wrong casing will fail (both get and delete requests)
+        context.Database.UpdateUserData(updated, new SerializedUpdateData()
         {
             PlanetsHash = "lul"
         }, TokenGame.LittleBigPlanetVita);
+
+        context.Database.Refresh();
         
-        planetResponse = client.GetData<ApiAdminUserPlanetsResponse>($"/api/v3/admin/users/uuid/caSing/planets");
+        planetResponse = client.GetData<ApiAdminUserPlanetsResponse>($"/api/v3/admin/users/uuid/caSing/planets", false, true);
         Assert.That(planetResponse?.Data, Is.Null);
         Assert.That(planetResponse!.Error, Is.Not.Null);
         Assert.That(planetResponse!.Error!.StatusCode, Is.EqualTo(NotFound));
@@ -130,7 +132,7 @@ public class AdminUserManagementApiTests : GameServerTest
 
         context.Database.Refresh();
 
-        updated = context.Database.GetUserByObjectId(updated.UserId);
+        updated = context.Database.GetUserByObjectId(player.UserId);
         Assert.That(updated, Is.Not.Null);
         Assert.That(updated!.VitaPlanetsHash, Is.EqualTo("lul")); // still set, not reset because request failed to find user
     }
