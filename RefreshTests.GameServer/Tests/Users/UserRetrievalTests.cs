@@ -89,4 +89,24 @@ public class UserRetrievalTests : GameServerTest
             Assert.That(WrongCasingDefaultUser, Is.Null);
         });
     }
+
+    [Test]
+    public void DoesNotLookUpByUsernameIfUuidDoesNotResolveToUser()
+    {
+        using TestContext context = this.GetServer();
+        GameUser user = context.Database.CreateUser("TheName", "legit@real.lol");
+
+        GameUser? notFoundUuidUser = context.Database.GetUserByUuidOrUsername("eee", "TheName", true);
+        GameUser? notGivenUuidUser = context.Database.GetUserByUuidOrUsername(null, "TheName", true);
+
+        Assert.Multiple(() =>
+        {
+            // Given UUID doesn't resolve to a user, but username does -> username is ignored and null is returned
+            Assert.That(notFoundUuidUser, Is.Null);
+
+            // No UUID given -> attempt to look up by username
+            Assert.That(notGivenUuidUser, Is.Not.Null);
+            Assert.That(notGivenUuidUser!.UserId, Is.EqualTo(user.UserId));
+        });
+    }
 }
