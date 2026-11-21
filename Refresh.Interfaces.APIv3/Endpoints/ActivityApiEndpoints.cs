@@ -101,7 +101,10 @@ public class ActivityApiEndpoints : EndpointGroup
         return ApiActivityPageResponse.FromOld(page, dataContext);
     }
     
-    [ApiV3Endpoint("users/{idType}/{id}/activity"), Authentication(false)]
+    [ApiV3Endpoint("users/uuid/{uuid}/activity")]
+    [ApiV3Endpoint("users/name/{username}/activity")]
+    [ApiV3Endpoint("users/username/{username}/activity")]
+    [Authentication(false)]
     [DocUsesPageData, DocSummary("Fetch a list of recent happenings for a particular user")]
     [DocQueryParam("timestamp", "A timestamp in unix seconds, used to search backwards")]
     [DocError(typeof(ApiValidationError), ApiValidationError.NumberParseErrorWhen)]
@@ -109,12 +112,12 @@ public class ActivityApiEndpoints : EndpointGroup
     [EndpointRateLimit(EndpointBucketId.ApiGetActivityPage)]
     public ApiResponse<ApiActivityPageResponse> GetRecentActivityForUser(RequestContext context,
         GameServerConfig config, GameDatabaseContext database, DataContext dataContext,
-        [DocSummary(SharedParamDescriptions.UserIdParam)] string id, 
-        [DocSummary(SharedParamDescriptions.UserIdTypeParam)] string idType)
+        string? uuid, string? username)
     {
         if (!config.PermitShowingOnlineUsers)
             return ApiActivityPageResponse.Empty;
 
+        // TODO dedupe
         long timestamp = 0;
         
         bool excludeMyLevels = bool.Parse(context.QueryString["excludeMyLevels"] ?? "false");
@@ -125,7 +128,7 @@ public class ActivityApiEndpoints : EndpointGroup
         string? tsStr = context.QueryString["timestamp"];
         if (tsStr != null && !long.TryParse(tsStr, out timestamp)) return ApiValidationError.NumberParseError;
         
-        GameUser? user = database.GetUserByIdAndType(idType, id);
+        GameUser? user = database.GetUserByUuidOrUsername(uuid, username);
         if (user == null) return ApiNotFoundError.Instance;
         
         (int skip, int count) = context.GetPageData();

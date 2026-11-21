@@ -108,18 +108,21 @@ public partial class GameDatabaseContext // Users
         return this.GameUsersIncluded.FirstOrDefault(u => u.UserId == objectId);
     }
 
-    public GameUser? GetUserByIdAndType(string idType, string id)
+    public GameUser? GetUserByUuidOrUsername(string? uuid, string? username, bool isNameCaseSensitive = true)
     {
-        switch (idType.ToLower())
+        // Prefer UUID over name; if UUID is given but doesn't resolve to a user,
+        // then don't bother looking for name instead.
+        if (!string.IsNullOrWhiteSpace(uuid))
         {
-            case "username":
-            case "name":
-                return this.GetUserByUsername(id, false);
-            case "uuid":
-                return this.GetUserByUuid(id);
-            default:
-                return null;
+            return this.GetUserByUuid(uuid);
         }
+
+        if (!string.IsNullOrWhiteSpace(username))
+        {
+            return this.GetUserByUsername(username, isNameCaseSensitive);
+        }
+
+        return null;
     }
 
     public DatabaseList<GameUser> GetUsers(int count, int skip)

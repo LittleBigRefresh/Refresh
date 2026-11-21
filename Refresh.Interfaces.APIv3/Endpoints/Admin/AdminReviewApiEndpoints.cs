@@ -56,45 +56,51 @@ public class AdminReviewApiEndpoints : EndpointGroup
         return new ApiOkResponse();
     }
     
-    [ApiV3Endpoint("admin/users/{idType}/{id}/comments/profile", HttpMethods.Delete), MinimumRole(GameUserRole.Moderator)]
+    [ApiV3Endpoint("admin/users/uuid/{uuid}/comments/profile", HttpMethods.Delete)]
+    [ApiV3Endpoint("admin/users/name/{username}/comments/profile", HttpMethods.Delete)]
+    [ApiV3Endpoint("admin/users/username/{username}/comments/profile", HttpMethods.Delete)]
+    [MinimumRole(GameUserRole.Moderator)]
     [DocSummary("Deletes all profile comments posted by a user. Gets user by their UUID or username.")]
     [DocError(typeof(ApiNotFoundError), ApiNotFoundError.UserMissingErrorWhen)]
     public ApiOkResponse DeleteProfileCommentsByUser(RequestContext context, GameDatabaseContext database,
-        [DocSummary(SharedParamDescriptions.UserIdParam)] string id, 
-        [DocSummary(SharedParamDescriptions.UserIdTypeParam)] string idType)
+        string? uuid, string? username)
     {
-        GameUser? user = database.GetUserByIdAndType(idType, id);
-        if (user == null) return ApiNotFoundError.UserMissingError;
+        GameUser? targetUser = database.GetUserByUuidOrUsername(uuid, username);
+        if (targetUser == null) return ApiNotFoundError.UserMissingError;
         
-        database.DeleteProfileCommentsPostedByUser(user);
+        database.DeleteProfileCommentsPostedByUser(targetUser);
         return new ApiOkResponse();
     }
     
-    [ApiV3Endpoint("admin/users/{idType}/{id}/comments/level", HttpMethods.Delete), MinimumRole(GameUserRole.Moderator)]
+    [ApiV3Endpoint("admin/users/uuid/{uuid}/comments/level", HttpMethods.Delete)]
+    [ApiV3Endpoint("admin/users/name/{username}/comments/level", HttpMethods.Delete)]
+    [ApiV3Endpoint("admin/users/username/{username}/comments/level", HttpMethods.Delete)]
+    [MinimumRole(GameUserRole.Moderator)]
     [DocSummary("Deletes all level comments posted by a user. Gets user by their UUID or username.")]
     [DocError(typeof(ApiNotFoundError), ApiNotFoundError.UserMissingErrorWhen)]
     public ApiOkResponse DeleteLevelCommentsByUser(RequestContext context, GameDatabaseContext database,
-        [DocSummary(SharedParamDescriptions.UserIdParam)] string id, 
-        [DocSummary(SharedParamDescriptions.UserIdTypeParam)] string idType)
+        string? uuid, string? username)
     {
-        GameUser? user = database.GetUserByIdAndType(idType, id);
-        if (user == null) return ApiNotFoundError.UserMissingError;
+        GameUser? targetUser = database.GetUserByUuidOrUsername(uuid, username);
+        if (targetUser == null) return ApiNotFoundError.UserMissingError;
 
-        database.DeleteLevelCommentsPostedByUser(user);
+        database.DeleteLevelCommentsPostedByUser(targetUser);
         return new ApiOkResponse();
     }
     
-    [ApiV3Endpoint("admin/users/{idType}/{id}/reviews", HttpMethods.Delete), MinimumRole(GameUserRole.Moderator)]
+    [ApiV3Endpoint("admin/users/uuid/{uuid}/reviews", HttpMethods.Delete)]
+    [ApiV3Endpoint("admin/users/name/{username}/reviews", HttpMethods.Delete)]
+    [ApiV3Endpoint("admin/users/username/{username}/reviews", HttpMethods.Delete)]
+    [MinimumRole(GameUserRole.Moderator)]
     [DocSummary("Deletes all reviews posted by a user. Gets user by their UUID or username.")]
     [DocError(typeof(ApiNotFoundError), ApiNotFoundError.UserMissingErrorWhen)]
     public ApiOkResponse DeleteReviewsPostedByUser(RequestContext context, GameDatabaseContext database,
-        [DocSummary(SharedParamDescriptions.UserIdParam)] string id, 
-        [DocSummary(SharedParamDescriptions.UserIdTypeParam)] string idType)
+        string? uuid, string? username)
     {
-        GameUser? user = database.GetUserByIdAndType(idType, id);
-        if (user == null) return ApiNotFoundError.UserMissingError;
+        GameUser? targetUser = database.GetUserByUuidOrUsername(uuid, username);
+        if (targetUser == null) return ApiNotFoundError.UserMissingError;
         
-        database.DeleteReviewsPostedByUser(user);
+        database.DeleteReviewsPostedByUser(targetUser);
         return new ApiOkResponse();
     }
 }

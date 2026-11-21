@@ -12,16 +12,19 @@ public class RefreshDocumentationGenerator : DocumentationGenerator
         => assembly.GetTypes()
             .Where(t => !t.IsAbstract && t.IsSubclassOf(typeof(EndpointGroup)))
             .SelectMany(t => t.GetMethods())
-            .Where(m => m.HasCustomAttribute<ApiV3EndpointAttribute>())
+            .Where(m => m.GetCustomAttributes<ApiV3EndpointAttribute>().Any())
             .ToList();
 
     protected override void DocumentRouteHook(MethodInfo method, Route route)
     {
-        ApiV3EndpointAttribute endpoint = method.GetCustomAttribute<ApiV3EndpointAttribute>()!;
+        IEnumerable<ApiV3EndpointAttribute> endpoints = method.GetCustomAttributes<ApiV3EndpointAttribute>();
         route.Summary = "No summary provided.";
 
-        route.Method = endpoint.Method.ToString().ToUpper();
-        route.RouteUri = endpoint.RouteWithParameters;
+        // TODO modify AttribDoc to actually show all routes associated with this method
+        // TODO also allow AttribDoc to group endpoints together by class, HTTP method, auth requirement etc.
+        // so they're not all over the place on the website.
+        route.Method = endpoints.First().Method.ToString().ToUpper();
+        route.RouteUri = endpoints.First().RouteWithParameters;
         
         AuthenticationAttribute? authentication = method.GetCustomAttribute<AuthenticationAttribute>();
         route.AuthenticationRequired = authentication == null || authentication.Required;
