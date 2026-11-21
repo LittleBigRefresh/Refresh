@@ -25,7 +25,7 @@ public class AdminUserManagementApiTests : GameServerTest
         GameUser player1 = context.CreateUser(role: GameUserRole.User);
         ApiResetPasswordRequest request = new()
         {
-            PasswordSha512 = HexHelper.BytesToHexString(SHA512.HashData("poo"u8))
+            PasswordSha512 = HexHelper.BytesToHexString(SHA512.HashData("pee"u8))
         };
         HttpResponseMessage response = await client.PutAsync($"/api/v3/admin/users/uuid/{player1.UserId}/resetPassword", new StringContent(request.AsJson()));
         Assert.That(response.IsSuccessStatusCode, Is.True);
@@ -48,6 +48,21 @@ public class AdminUserManagementApiTests : GameServerTest
         GameUser? updated2 = context.Database.GetUserByObjectId(player2.UserId);
         Assert.That(updated2, Is.Not.Null);
         Assert.That(updated2!.ShouldResetPassword, Is.True);
+
+        // Wrong casing will fail
+        GameUser player3 = context.CreateUser("Casing", role: GameUserRole.User);
+        request = new()
+        {
+            PasswordSha512 = HexHelper.BytesToHexString(SHA512.HashData("lmao"u8))
+        };
+        response = await client.PutAsync($"/api/v3/admin/users/name/caSing/resetPassword", new StringContent(request.AsJson()));
+        Assert.That(response.IsSuccessStatusCode, Is.False);
+        Assert.That(response.StatusCode, Is.EqualTo(NotFound));
+
+        context.Database.Refresh();
+        GameUser? updated3 = context.Database.GetUserByObjectId(player3.UserId);
+        Assert.That(updated3, Is.Not.Null);
+        Assert.That(updated3!.ShouldResetPassword, Is.False);
     }
 
     [Test]
@@ -56,7 +71,7 @@ public class AdminUserManagementApiTests : GameServerTest
         using TestContext context = this.GetServer();
         GameUser mod = context.CreateUser(role: GameUserRole.Moderator);
         HttpClient client = context.GetAuthenticatedClient(TokenType.Api, mod);
-        GameUser player = context.CreateUser(role: GameUserRole.User);
+        GameUser player = context.CreateUser("Casing", role: GameUserRole.User);
 
         // UUID
         context.Database.UpdateUserData(player, new SerializedUpdateData()
@@ -80,23 +95,46 @@ public class AdminUserManagementApiTests : GameServerTest
         // name
         context.Database.UpdateUserData(updated, new SerializedUpdateData()
         {
-            PlanetsHash = "lol"
+            PlanetsHash = "lel"
         }, TokenGame.LittleBigPlanet3);
 
         context.Database.Refresh();
 
-        planetResponse = client.GetData<ApiAdminUserPlanetsResponse>($"/api/v3/admin/users/name/{updated.Username}/planets");
+        planetResponse = client.GetData<ApiAdminUserPlanetsResponse>($"/api/v3/admin/users/name/{player.Username}/planets");
         Assert.That(planetResponse?.Data, Is.Not.Null);
-        Assert.That(planetResponse!.Data!.Lbp3PlanetsHash, Is.EqualTo("lol"));
+        Assert.That(planetResponse!.Data!.Lbp3PlanetsHash, Is.EqualTo("lel"));
 
-        resetResponse = await client.DeleteAsync($"/api/v3/admin/users/name/{updated.Username}/planets");
+        resetResponse = await client.DeleteAsync($"/api/v3/admin/users/name/{player.Username}/planets");
         Assert.That(resetResponse.IsSuccessStatusCode, Is.True);
 
         context.Database.Refresh();
 
-        updated = context.Database.GetUserByObjectId(updated.UserId);
+        updated = context.Database.GetUserByObjectId(player.UserId);
         Assert.That(updated, Is.Not.Null);
         Assert.That(updated!.Lbp3PlanetsHash.IsBlankHash(), Is.True);
+
+        // Wrong casing will fail (both get and delete requests)
+        context.Database.UpdateUserData(updated, new SerializedUpdateData()
+        {
+            PlanetsHash = "lul"
+        }, TokenGame.LittleBigPlanetVita);
+
+        context.Database.Refresh();
+        
+        planetResponse = client.GetData<ApiAdminUserPlanetsResponse>($"/api/v3/admin/users/uuid/caSing/planets", false, true);
+        Assert.That(planetResponse?.Data, Is.Null);
+        Assert.That(planetResponse!.Error, Is.Not.Null);
+        Assert.That(planetResponse!.Error!.StatusCode, Is.EqualTo(NotFound));
+
+        resetResponse = await client.DeleteAsync($"/api/v3/admin/users/uuid/caSing/planets");
+        Assert.That(resetResponse.IsSuccessStatusCode, Is.False);
+        Assert.That(resetResponse.StatusCode, Is.EqualTo(NotFound));
+
+        context.Database.Refresh();
+
+        updated = context.Database.GetUserByObjectId(player.UserId);
+        Assert.That(updated, Is.Not.Null);
+        Assert.That(updated!.VitaPlanetsHash, Is.EqualTo("lul")); // still set, not reset because request failed to find user
     }
 
     [Test]
@@ -233,6 +271,12 @@ public class AdminUserManagementApiTests : GameServerTest
         GameUser restricted = context.CreateUser(role: GameUserRole.Restricted);
         HttpClient client = context.GetAuthenticatedClient(TokenType.Api, mod);
 
+        ApiPunishUserRequest request = new()
+        {
+            Reason = "lol",
+            ExpiryDate = new(2036, 8, 12, 4, 20, 9, 213, new())
+        };
+
         // Admin
         HttpResponseMessage response = await client.PostAsync($"/api/v3/admin/users/uuid/{admin.UserId}/pardon", null);
         Assert.That(response.IsSuccessStatusCode, Is.False);
@@ -259,6 +303,64 @@ public class AdminUserManagementApiTests : GameServerTest
         updated = context.Database.GetUserByObjectId(restricted.UserId);
         Assert.That(updated, Is.Not.Null);
         Assert.That(updated!.Role, Is.EqualTo(GameUserRole.User));
+    }
+
+    [Test]
+    public async Task CannotPunishAndPardonUserByWrongNameCasing()
+    {
+        using TestContext context = this.GetServer();
+        GameUser mod = context.CreateUser(role: GameUserRole.Moderator);
+        GameUser user = context.CreateUser("Casing", role: GameUserRole.User);
+        GameUser restricted = context.CreateUser(role: GameUserRole.Restricted);
+        HttpClient client = context.GetAuthenticatedClient(TokenType.Api, mod);
+
+        ApiPunishUserRequest request = new()
+        {
+            Reason = "lol",
+            ExpiryDate = new(2036, 8, 12, 4, 20, 9, 213, new())
+        };
+
+        // Restrict user
+        // Wrong casing fails
+        HttpResponseMessage response = await client.PostAsync($"/api/v3/admin/users/name/caSing/restrict", new StringContent(request.AsJson()));
+        Assert.That(response.IsSuccessStatusCode, Is.False);
+        Assert.That(response.StatusCode, Is.EqualTo(NotFound));
+        context.Database.Refresh();
+        Assert.That(context.Database.GetUserByObjectId(user.UserId)?.Role, Is.EqualTo(GameUserRole.User));
+
+        // Correct casing succeeds
+        response = await client.PostAsync($"/api/v3/admin/users/name/Casing/restrict", new StringContent(request.AsJson()));
+        Assert.That(response.IsSuccessStatusCode, Is.True);
+        context.Database.Refresh();
+        Assert.That(context.Database.GetUserByObjectId(user.UserId)?.Role, Is.EqualTo(GameUserRole.Restricted));
+
+        // Ban user
+        // Wrong casing fails
+        response = await client.PostAsync($"/api/v3/admin/users/name/caSing/ban", new StringContent(request.AsJson()));
+        Assert.That(response.IsSuccessStatusCode, Is.False);
+        Assert.That(response.StatusCode, Is.EqualTo(NotFound));
+        context.Database.Refresh();
+        Assert.That(context.Database.GetUserByObjectId(user.UserId)?.Role, Is.EqualTo(GameUserRole.Restricted));
+
+        // Correct casing succeeds
+        response = await client.PostAsync($"/api/v3/admin/users/name/Casing/ban", new StringContent(request.AsJson()));
+        Assert.That(response.IsSuccessStatusCode, Is.True);
+        context.Database.Refresh();
+        Assert.That(context.Database.GetUserByObjectId(user.UserId)?.Role, Is.EqualTo(GameUserRole.Banned));
+
+        // Pardon user
+        // Wrong casing fails
+        response = await client.PostAsync($"/api/v3/admin/users/name/caSing/pardon", null);
+        Assert.That(response.IsSuccessStatusCode, Is.False);
+        Assert.That(response.StatusCode, Is.EqualTo(NotFound));
+        context.Database.Refresh();
+        Assert.That(context.Database.GetUserByObjectId(user.UserId)?.Role, Is.EqualTo(GameUserRole.Banned));
+
+        // Correct casing succeeds
+        response = await client.PostAsync($"/api/v3/admin/users/name/Casing/pardon", null);
+        Assert.That(response.IsSuccessStatusCode, Is.True);
+        context.Database.Refresh();
+        Assert.That(context.Database.GetUserByObjectId(user.UserId)?.Role, Is.EqualTo(GameUserRole.User));
     }
 
     [Test]

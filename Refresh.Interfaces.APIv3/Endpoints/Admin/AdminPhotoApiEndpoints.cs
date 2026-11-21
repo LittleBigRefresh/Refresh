@@ -15,17 +15,19 @@ namespace Refresh.Interfaces.APIv3.Endpoints.Admin;
 
 public class AdminPhotoApiEndpoints : EndpointGroup
 {
-    [ApiV3Endpoint("admin/users/{idType}/{id}/photos", HttpMethods.Delete), MinimumRole(GameUserRole.Moderator)]
+    [ApiV3Endpoint("admin/users/uuid/{uuid}/photos", HttpMethods.Delete)]
+    [ApiV3Endpoint("admin/users/name/{username}/photos", HttpMethods.Delete)]
+    [ApiV3Endpoint("admin/users/username/{username}/photos", HttpMethods.Delete)]
+    [MinimumRole(GameUserRole.Moderator)]
     [DocSummary("Deletes all photos posted by a user. Gets user by their UUID or username.")]
     [DocError(typeof(ApiNotFoundError), ApiNotFoundError.UserMissingErrorWhen)]
     public ApiOkResponse DeletePhotosPostedByUser(RequestContext context, GameDatabaseContext database, DataContext dataContext,
-        [DocSummary(SharedParamDescriptions.UserIdParam)] string id, 
-        [DocSummary(SharedParamDescriptions.UserIdTypeParam)] string idType)
+        string? uuid, string? username)
     {
-        GameUser? user = database.GetUserByIdAndType(idType, id);
-        if (user == null) return ApiNotFoundError.UserMissingError;
+        GameUser? targetUser = database.GetUserByUuidOrUsername(uuid, username);
+        if (targetUser == null) return ApiNotFoundError.UserMissingError;
         
-        database.DeletePhotosPostedByUser(user);
+        database.DeletePhotosPostedByUser(targetUser);
         return new ApiOkResponse();
     }
     

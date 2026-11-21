@@ -16,16 +16,18 @@ namespace Refresh.Interfaces.APIv3.Endpoints.Admin;
 
 public class AdminAssetApiEndpoints : EndpointGroup
 {
-    [ApiV3Endpoint("admin/users/{idType}/{id}/assets"), MinimumRole(GameUserRole.Moderator)]
+    [ApiV3Endpoint("admin/users/name/{username}/assets")]
+    [ApiV3Endpoint("admin/users/username/{username}/assets")]
+    [ApiV3Endpoint("admin/users/uuid/{uuid}/assets")]
     [DocSummary("Retrieves a list of assets uploaded by the user.")]
+    [MinimumRole(GameUserRole.Moderator)]
     [DocQueryParam("assetType", "The asset type to filter by. Can be excluded to list all types.")]
     [DocError(typeof(ApiNotFoundError), ApiNotFoundError.UserMissingErrorWhen)]
     [DocError(typeof(ApiValidationError), "The asset type could not be parsed.")]
     public ApiListResponse<ApiMinimalGameAssetResponse> GetAssetsByUser(RequestContext context, GameDatabaseContext database, DataContext dataContext,
-        [DocSummary(SharedParamDescriptions.UserIdParam)] string id, 
-        [DocSummary(SharedParamDescriptions.UserIdTypeParam)] string idType)
+        string? uuid, string? username)
     {
-        GameUser? user = database.GetUserByIdAndType(idType, id);
+        GameUser? user = database.GetUserByUuidOrUsername(uuid, username);
         if (user == null) return ApiNotFoundError.UserMissingError;
         
         (int skip, int count) = context.GetPageData(1000);
