@@ -14,16 +14,18 @@ namespace Refresh.Interfaces.APIv3.Endpoints.Admin;
 
 public class AdminUserPunishmentApiEndpoints : EndpointGroup
 {
-    [ApiV3Endpoint("admin/users/{idType}/{id}/ban", HttpMethods.Post), MinimumRole(GameUserRole.Moderator)]
+    [ApiV3Endpoint("admin/users/uuid/{uuid}/ban", HttpMethods.Post)]
+    [ApiV3Endpoint("admin/users/name/{username}/ban", HttpMethods.Post)]
+    [ApiV3Endpoint("admin/users/username/{username}/ban", HttpMethods.Post)]
+    [MinimumRole(GameUserRole.Moderator)]
     [DocSummary("Bans a user for the specified reason until the given date.")]
     [DocError(typeof(ApiNotFoundError), ApiNotFoundError.UserMissingErrorWhen)]
     [DocError(typeof(ApiValidationError), ApiValidationError.MayNotModifyUserDueToLowRoleErrorWhen)]
     [DocRequestBody(typeof(ApiPunishUserRequest))]
     public ApiOkResponse BanUser(RequestContext context, GameDatabaseContext database, ApiPunishUserRequest body, GameUser user,
-        [DocSummary(SharedParamDescriptions.UserIdParam)] string id, 
-        [DocSummary(SharedParamDescriptions.UserIdTypeParam)] string idType)
+        string? uuid, string? username)
     {
-        GameUser? targetUser = database.GetUserByIdAndType(idType, id);
+        GameUser? targetUser = database.GetUserByUuidOrUsername(uuid, username);
         if (targetUser == null) return ApiNotFoundError.UserMissingError;
         
         if (!user.MayModifyUser(targetUser))
@@ -33,16 +35,18 @@ public class AdminUserPunishmentApiEndpoints : EndpointGroup
         return new ApiOkResponse();
     }
     
-    [ApiV3Endpoint("admin/users/{idType}/{id}/restrict", HttpMethods.Post), MinimumRole(GameUserRole.Moderator)]
+    [ApiV3Endpoint("admin/users/uuid/{uuid}/restrict", HttpMethods.Post)]
+    [ApiV3Endpoint("admin/users/name/{username}/restrict", HttpMethods.Post)]
+    [ApiV3Endpoint("admin/users/username/{username}/restrict", HttpMethods.Post)]
+    [MinimumRole(GameUserRole.Moderator)]
     [DocSummary("Restricts a user for the specified reason until the given date.")]
     [DocError(typeof(ApiNotFoundError), ApiNotFoundError.UserMissingErrorWhen)]
     [DocError(typeof(ApiValidationError), ApiValidationError.MayNotModifyUserDueToLowRoleErrorWhen)]
     [DocRequestBody(typeof(ApiPunishUserRequest))]
     public ApiOkResponse RestrictUser(RequestContext context, GameDatabaseContext database, ApiPunishUserRequest body, GameUser user,
-        [DocSummary(SharedParamDescriptions.UserIdParam)] string id, 
-        [DocSummary(SharedParamDescriptions.UserIdTypeParam)] string idType)
+        string? uuid, string? username)
     {
-        GameUser? targetUser = database.GetUserByIdAndType(idType, id);
+        GameUser? targetUser = database.GetUserByUuidOrUsername(uuid, username);
         if (targetUser == null) return ApiNotFoundError.UserMissingError;
         
         if (!user.MayModifyUser(targetUser))
@@ -52,15 +56,17 @@ public class AdminUserPunishmentApiEndpoints : EndpointGroup
         return new ApiOkResponse();
     }
     
-    [ApiV3Endpoint("admin/users/{idType}/{id}/pardon", HttpMethods.Post), MinimumRole(GameUserRole.Moderator)]
+    [ApiV3Endpoint("admin/users/uuid/{uuid}/pardon", HttpMethods.Post)]
+    [ApiV3Endpoint("admin/users/name/{username}/pardon", HttpMethods.Post)]
+    [ApiV3Endpoint("admin/users/username/{username}/pardon", HttpMethods.Post)]
+    [MinimumRole(GameUserRole.Moderator)]
     [DocSummary("Pardons all punishments for the given user.")]
     [DocError(typeof(ApiNotFoundError), ApiNotFoundError.UserMissingErrorWhen)]
     [DocError(typeof(ApiValidationError), ApiValidationError.UserIsAlreadyPardonedErrorWhen)]
     public ApiOkResponse PardonUser(RequestContext context, GameDatabaseContext database, GameUser user,
-        [DocSummary(SharedParamDescriptions.UserIdParam)] string id, 
-        [DocSummary(SharedParamDescriptions.UserIdTypeParam)] string idType)
+        string? uuid, string? username)
     {
-        GameUser? targetUser = database.GetUserByIdAndType(idType, id);
+        GameUser? targetUser = database.GetUserByUuidOrUsername(uuid, username);
         if (targetUser == null) return ApiNotFoundError.UserMissingError;
 
         if (targetUser.Role > GameUserRole.Restricted)

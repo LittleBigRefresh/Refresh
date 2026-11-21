@@ -23,16 +23,18 @@ namespace Refresh.Interfaces.APIv3.Endpoints;
 public class CommentApiEndpoints : EndpointGroup
 {
     #region Profile
-    [ApiV3Endpoint("users/{idType}/{id}/comments"), Authentication(false)]
+    [ApiV3Endpoint("users/uuid/{uuid}/comments")]
+    [ApiV3Endpoint("users/name/{username}/comments")]
+    [ApiV3Endpoint("users/username/{username}/comments")]
+    [Authentication(false)]
     [DocSummary("Gets comments posted under the specified user's profile.")]
     [DocError(typeof(ApiNotFoundError), ApiNotFoundError.UserMissingErrorWhen)]
     [DocUsesPageData]
     [EndpointRateLimit(EndpointBucketId.ApiGetListOfComments)]
     public ApiListResponse<ApiProfileCommentResponse> GetCommentsOnProfile(RequestContext context, DataContext dataContext,
-        [DocSummary(SharedParamDescriptions.UserIdParam)] string id, 
-        [DocSummary(SharedParamDescriptions.UserIdTypeParam)] string idType)
+        string? uuid, string? username)
     {
-        GameUser? profile = dataContext.Database.GetUserByIdAndType(idType, id);
+        GameUser? profile = dataContext.Database.GetUserByUuidOrUsername(uuid, username);
         if (profile == null) return ApiNotFoundError.UserMissingError;
 
         (int skip, int count) = context.GetPageData();
@@ -41,19 +43,20 @@ public class CommentApiEndpoints : EndpointGroup
         return DatabaseListExtensions.FromOldList<ApiProfileCommentResponse, GameProfileComment>(comments, dataContext);
     }
 
-    [ApiV3Endpoint("users/{idType}/{id}/comments", HttpMethods.Post)]
+    [ApiV3Endpoint("users/uuid/{uuid}/comments", HttpMethods.Post)]
+    [ApiV3Endpoint("users/name/{username}/comments", HttpMethods.Post)]
+    [ApiV3Endpoint("users/username/{username}/comments", HttpMethods.Post)]
     [DocSummary("Posts the given comment under the specified user's profile.")]
     [DocError(typeof(ApiNotFoundError), ApiNotFoundError.UserMissingErrorWhen)]
     [EndpointRateLimit(EndpointBucketId.UploadComment)]
     public ApiResponse<ApiProfileCommentResponse> PostCommentOnProfile(RequestContext context,
         DataContext dataContext, GameUser user, ApiCommentPostRequest body,
-        [DocSummary(SharedParamDescriptions.UserIdParam)] string id, 
-        [DocSummary(SharedParamDescriptions.UserIdTypeParam)] string idType, GameServerConfig config)
+        string? uuid, string? username, GameServerConfig config)
     {
         if (user.IsWriteBlocked(config)) 
             return ApiAuthenticationError.ReadOnlyError;
         
-        GameUser? profile = dataContext.Database.GetUserByIdAndType(idType, id);
+        GameUser? profile = dataContext.Database.GetUserByUuidOrUsername(uuid, username);
         if (profile == null) return ApiNotFoundError.UserMissingError;
 
         // Trim content

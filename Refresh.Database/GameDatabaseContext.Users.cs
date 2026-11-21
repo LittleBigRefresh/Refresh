@@ -30,10 +30,14 @@ public partial class GameDatabaseContext // Users
         if (string.IsNullOrWhiteSpace(username)) 
             return null;
         
-        // Try the first pass to get the user
-        GameUser? user = caseSensitive
-            ? this.GameUsersIncluded.FirstOrDefault(u => u.Username == username)
-            : this.GameUsersIncluded.FirstOrDefault(u => u.UsernameLower == username.ToLower());
+        // Only fall back to insensitive casing if wanted and if we haven't found a user with exact casing already.
+        // This way we won't accidentally return the wrong user incase multiple ones with the same name, but different casing exist.
+        // For some reason, some users are just like this...
+        GameUser? user = this.GameUsersIncluded.FirstOrDefault(u => u.Username == username);
+        if (!caseSensitive && user == null)
+        {
+            user = this.GameUsersIncluded.FirstOrDefault(u => u.UsernameLower == username.ToLower());
+        } 
         
         // If that failed and the username is the deleted user, then we need to create the backing deleted user
         if (username == SystemUsers.DeletedUserName && user == null)
@@ -49,6 +53,7 @@ public partial class GameDatabaseContext // Users
             });
         } 
         // If that failed and the username is a fake re-upload user, then we need to create the backing fake user
+        // TODO only create if such a user is actually referenced as an original publisher by a level.
         else if (username.StartsWith(SystemUsers.SystemPrefix) && user == null)
         {
             this.Write(() =>
@@ -103,18 +108,21 @@ public partial class GameDatabaseContext // Users
         return this.GameUsersIncluded.FirstOrDefault(u => u.UserId == objectId);
     }
 
-    public GameUser? GetUserByIdAndType(string idType, string id)
+    public GameUser? GetUserByUuidOrUsername(string? uuid, string? username, bool isNameCaseSensitive = true)
     {
-        switch (idType.ToLower())
+        // Prefer UUID over name; if UUID is given but doesn't resolve to a user,
+        // then don't bother looking for name instead.
+        if (!string.IsNullOrWhiteSpace(uuid))
         {
-            case "username":
-            case "name":
-                return this.GetUserByUsername(id, false);
-            case "uuid":
-                return this.GetUserByUuid(id);
-            default:
-                return null;
+            return this.GetUserByUuid(uuid);
         }
+
+        if (!string.IsNullOrWhiteSpace(username))
+        {
+            return this.GetUserByUsername(username, isNameCaseSensitive);
+        }
+
+        return null;
     }
 
     public DatabaseList<GameUser> GetUsers(int count, int skip)
