@@ -16,6 +16,7 @@ using Refresh.GameServer;
 using Refresh.Database;
 using RefreshTests.GameServer.Logging;
 using RefreshTests.GameServer.Time;
+using Refresh.GameServer.Middlewares;
 
 namespace RefreshTests.GameServer.GameServer;
 
@@ -60,7 +61,7 @@ public class TestRefreshGameServer : RefreshGameServer
 
     protected override void SetupMiddlewares()
     {
-        
+        this.Server.AddMiddleware<PspStatusOverwriteMiddleware>();
     }
 
     protected override void SetupServices()

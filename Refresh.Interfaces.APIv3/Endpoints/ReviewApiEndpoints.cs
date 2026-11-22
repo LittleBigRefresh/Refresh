@@ -43,16 +43,18 @@ public class ReviewApiEndpoints : EndpointGroup
         return ret;
     }
 
-    [ApiV3Endpoint("users/{idType}/{id}/reviews"), Authentication(false)]
+    [ApiV3Endpoint("users/uuid/{uuid}/reviews")]
+    [ApiV3Endpoint("users/name/{username}/reviews")]
+    [ApiV3Endpoint("users/username/{username}/reviews")]
+    [Authentication(false)]
     [DocUsesPageData, DocSummary("Gets a list of the reviews posted by a user.")]
     [DocError(typeof(ApiNotFoundError), ApiNotFoundError.UserMissingErrorWhen)]
     [EndpointRateLimit(EndpointBucketId.ApiGetListOfReviews)]
     public ApiListResponse<ApiGameReviewResponse> GetReviewsByUser(RequestContext context,
         GameDatabaseContext database, DataContext dataContext,
-        [DocSummary(SharedParamDescriptions.UserIdParam)] string id, 
-        [DocSummary(SharedParamDescriptions.UserIdTypeParam)] string idType)
+        string? uuid, string? username)
     {
-        GameUser? user = database.GetUserByIdAndType(idType, id);
+        GameUser? user = database.GetUserByUuidOrUsername(uuid, username);
         if (user == null) return ApiNotFoundError.UserMissingError;
         
         (int skip, int count) = context.GetPageData();

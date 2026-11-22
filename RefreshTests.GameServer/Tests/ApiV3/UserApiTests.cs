@@ -20,11 +20,52 @@ public class UserApiTests : GameServerTest
         GameUser user = context.CreateUser();
         
         ApiResponse<ApiGameUserResponse>? response = context.Http.GetData<ApiGameUserResponse>($"/api/v3/users/name/{user.Username}");
-        Assert.That(response, Is.Not.Null);
+        Assert.That(response?.Data, Is.Not.Null);
+        Assert.That(response!.Data!.UserId, Is.EqualTo(user.UserId.ToString()));
         
-        response = context.Http.GetData<ApiGameUserResponse>($"/api/v3/users/uuid/{user.Username}", false, true);
+        // Also works with "username", not just "name"
+        response = context.Http.GetData<ApiGameUserResponse>($"/api/v3/users/username/{user.Username}");
+        Assert.That(response?.Data, Is.Not.Null);
+        Assert.That(response!.Data!.UserId, Is.EqualTo(user.UserId.ToString()));
+        
+        // Passing UUID when name is expected will not work
+        response = context.Http.GetData<ApiGameUserResponse>($"/api/v3/users/username/{user.UserId}", false, true);
         Assert.That(response, Is.Not.Null);
+        Assert.That(response!.Data, Is.Null);
         response!.AssertErrorIsEqual(ApiNotFoundError.UserMissingError);
+        
+        response = context.Http.GetData<ApiGameUserResponse>($"/api/v3/users/name/{user.UserId}", false, true);
+        Assert.That(response, Is.Not.Null);
+        Assert.That(response!.Data, Is.Null);
+        response!.AssertErrorIsEqual(ApiNotFoundError.UserMissingError);
+    }
+
+    [Test]
+    public void GetsUserByUuidOrUsername()
+    {
+        using TestContext context = this.GetServer();
+        GameUser user = context.CreateUser("Casing");
+        
+        ApiResponse<ApiGameUserResponse>? response = context.Http.GetData<ApiGameUserResponse>($"/api/v3/users/uuid/{user.UserId}");
+        Assert.That(response?.Data, Is.Not.Null);
+        Assert.That(response!.Data!.UserId, Is.EqualTo(user.UserId.ToString()));
+        
+        response = context.Http.GetData<ApiGameUserResponse>($"/api/v3/users/username/{user.Username}");
+        Assert.That(response?.Data, Is.Not.Null);
+        Assert.That(response!.Data!.UserId, Is.EqualTo(user.UserId.ToString()));
+        
+        response = context.Http.GetData<ApiGameUserResponse>($"/api/v3/users/name/{user.Username}");
+        Assert.That(response?.Data, Is.Not.Null);
+        Assert.That(response!.Data!.UserId, Is.EqualTo(user.UserId.ToString()));
+
+        // Can get by username even if wrong casing
+        response = context.Http.GetData<ApiGameUserResponse>($"/api/v3/users/username/caSing");
+        Assert.That(response?.Data, Is.Not.Null);
+        Assert.That(response!.Data!.UserId, Is.EqualTo(user.UserId.ToString()));
+        
+        response = context.Http.GetData<ApiGameUserResponse>($"/api/v3/users/name/caSing");
+        Assert.That(response?.Data, Is.Not.Null);
+        Assert.That(response!.Data!.UserId, Is.EqualTo(user.UserId.ToString()));
     }
 
     [Test]
@@ -131,11 +172,14 @@ public class UserApiTests : GameServerTest
         using TestContext context = this.GetServer();
         GameUser user = context.CreateUser();
         
-        ApiResponse<ApiGameUserResponse>? response = context.Http.GetData<ApiGameUserResponse>($"/api/v3/users/uuid/{user.UserId.ToString()}");
-        Assert.That(response, Is.Not.Null);
+        ApiResponse<ApiGameUserResponse>? response = context.Http.GetData<ApiGameUserResponse>($"/api/v3/users/uuid/{user.UserId}");
+        Assert.That(response?.Data, Is.Not.Null);
+        Assert.That(response!.Data!.UserId, Is.EqualTo(user.UserId.ToString()));
         
-        response = context.Http.GetData<ApiGameUserResponse>($"/api/v3/users/name/{user.UserId.ToString()}", false, true);
+        // Passing name when UUID is expected will not work
+        response = context.Http.GetData<ApiGameUserResponse>($"/api/v3/users/uuid/{user.Username}", false, true);
         Assert.That(response, Is.Not.Null);
+        Assert.That(response!.Data, Is.Null);
         response!.AssertErrorIsEqual(ApiNotFoundError.UserMissingError);
     }
     

@@ -62,6 +62,72 @@ public class AdminUserEditApiTests : GameServerTest
         using TestContext context = this.GetServer();
         GameUser mod = context.CreateUser(role: GameUserRole.Moderator);
         HttpClient client = context.GetAuthenticatedClient(TokenType.Api, mod);
+        GameUser player = context.CreateUser("Casing", role: GameUserRole.User);
+
+        // UUID
+        ApiAdminUpdateUserRequest request = new()
+        {
+            Description = "poo"
+        };
+        ApiResponse<ApiExtendedGameUserResponse>? response = client.PatchData<ApiExtendedGameUserResponse>($"/api/v3/admin/users/uuid/{player.UserId}", request);
+        Assert.That(response?.Data, Is.Not.Null);
+        Assert.That(response!.Data!.Description, Is.EqualTo(request.Description));
+
+        context.Database.Refresh();
+        GameUser? updated = context.Database.GetUserByObjectId(player.UserId);
+        Assert.That(updated, Is.Not.Null);
+        Assert.That(updated!.Description, Is.EqualTo("poo"));
+
+        // name
+        request = new()
+        {
+            Description = "lmao"
+        };
+        response = client.PatchData<ApiExtendedGameUserResponse>($"/api/v3/admin/users/name/{player.Username}", request);
+        Assert.That(response?.Data, Is.Not.Null);
+        Assert.That(response!.Data!.Description, Is.EqualTo(request.Description));
+
+        context.Database.Refresh();
+        updated = context.Database.GetUserByObjectId(player.UserId);
+        Assert.That(updated, Is.Not.Null);
+        Assert.That(updated!.Description, Is.EqualTo("lmao"));
+
+        // username
+        request = new()
+        {
+            Description = "funny"
+        };
+        response = client.PatchData<ApiExtendedGameUserResponse>($"/api/v3/admin/users/username/{player.Username}", request);
+        Assert.That(response?.Data, Is.Not.Null);
+        Assert.That(response!.Data!.Description, Is.EqualTo(request.Description));
+
+        context.Database.Refresh();
+        updated = context.Database.GetUserByObjectId(player.UserId);
+        Assert.That(updated, Is.Not.Null);
+        Assert.That(updated!.Description, Is.EqualTo("funny"));
+
+        // Cannot edit if name has wrong casing
+        request = new()
+        {
+            Description = "moment"
+        };
+        response = client.PatchData<ApiExtendedGameUserResponse>($"/api/v3/admin/users/name/caSing", request, false, true);
+        Assert.That(response?.Data, Is.Null);
+        Assert.That(response!.Error, Is.Not.Null);
+        Assert.That(response!.Error!.StatusCode, Is.EqualTo(NotFound));
+
+        context.Database.Refresh();
+        updated = context.Database.GetUserByObjectId(player.UserId);
+        Assert.That(updated, Is.Not.Null);
+        Assert.That(updated!.Description, Is.EqualTo("funny"));
+    }
+
+    [Test]
+    public void CannotEditUserIfWrongCasing()
+    {
+        using TestContext context = this.GetServer();
+        GameUser mod = context.CreateUser(role: GameUserRole.Moderator);
+        HttpClient client = context.GetAuthenticatedClient(TokenType.Api, mod);
         GameUser player = context.CreateUser(role: GameUserRole.User);
 
         // UUID
@@ -223,23 +289,6 @@ public class AdminUserEditApiTests : GameServerTest
             Description = "lol"
         };
         ApiResponse<ApiExtendedGameUserResponse>? response = client.PatchData<ApiExtendedGameUserResponse>($"/api/v3/admin/users/uuid/{ObjectId.GenerateNewId()}", request, false, true);
-        Assert.That(response?.Error, Is.Not.Null);
-        Assert.That(response!.Error!.StatusCode, Is.EqualTo(NotFound));
-    }
-
-    [Test]
-    public void CannotEditUserIfIdTypeIsUnknown()
-    {
-        using TestContext context = this.GetServer();
-        GameUser actor = context.CreateUser(null, GameUserRole.Moderator);
-        GameUser target = context.CreateUser(null, GameUserRole.User);
-        HttpClient client = context.GetAuthenticatedClient(TokenType.Api, actor);
-
-        ApiAdminUpdateUserRequest request = new()
-        {
-            Description = "lol"
-        };
-        ApiResponse<ApiExtendedGameUserResponse>? response = client.PatchData<ApiExtendedGameUserResponse>($"/api/v3/admin/users/mmmmmmm/{target.UserId}", request, false, true);
         Assert.That(response?.Error, Is.Not.Null);
         Assert.That(response!.Error!.StatusCode, Is.EqualTo(NotFound));
     }
