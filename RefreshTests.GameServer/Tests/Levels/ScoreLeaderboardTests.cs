@@ -690,10 +690,14 @@ public class ScoreLeaderboardTests : GameServerTest
         client.DefaultRequestHeaders.UserAgent.TryParseAdd("LBPPSP CLIENT");
 
         HttpResponseMessage message = client.PostAsync($"/lbp/play/user/{level.LevelId}?count=gtgnyegth", new ReadOnlyMemoryContent(Array.Empty<byte>())).Result;
-        Assert.That(message.StatusCode, Is.EqualTo(BadRequest));
+        Assert.That(message.StatusCode, Is.EqualTo(OK));
         
         HttpResponseMessage message2 = client.PostAsync($"/lbp/play/user/{level.LevelId}?count=-5", new ReadOnlyMemoryContent(Array.Empty<byte>())).Result;
-        Assert.That(message2.StatusCode, Is.EqualTo(BadRequest));
+        Assert.That(message2.StatusCode, Is.EqualTo(OK));
+
+        // Ensure the play count hasn't actually changed
+        Assert.That(context.Database.GetTotalPlaysForLevelByUser(level, user), Is.Zero);
+        Assert.That(context.Database.GetTotalPlaysForLevel(level), Is.Zero);
     }
     
     [Test]
