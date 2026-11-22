@@ -290,6 +290,13 @@ public partial class GameDatabaseContext // Playlists
     
     public int GetTotalPlaylistsInPlaylist(GamePlaylist playlist)
         => this.SubPlaylistRelations.Count(p => p.PlaylistId == playlist.PlaylistId);
+
+    // Since we only want the IDs here, and we don't want to paginate, it'll be good to only request IDs
+    public IQueryable<int> GetIdsOfAllPlaylistsInPlaylist(int parentPlaylistId)
+        => this.SubPlaylistRelations
+            .Where(p => p.PlaylistId == parentPlaylistId)
+            .OrderByDescending(p => p.Timestamp)
+            .Select(p => p.SubPlaylistId);
     
     // Playlists containing Playlists
     internal IQueryable<GamePlaylist> GetPlaylistsContainingPlaylistInternal(GamePlaylist playlist)
@@ -298,6 +305,13 @@ public partial class GameDatabaseContext // Playlists
             .OrderByDescending(r => r.Timestamp)
             .Select(r => this.GamePlaylistsIncluded.First(p => p.PlaylistId == r.PlaylistId))
             .Where(p => !p.IsRoot);
+
+    // Since we only want the IDs here, and we don't want to paginate, it'll be good to only request IDs
+    public IQueryable<int> GetIdsOfAllPlaylistsContainingPlaylist(int subPlaylistId)
+        => this.SubPlaylistRelations
+            .Where(p => p.SubPlaylistId == subPlaylistId)
+            .OrderByDescending(p => p.Timestamp)
+            .Select(p => p.PlaylistId);
 
     public DatabaseList<GamePlaylist> GetPlaylistsContainingPlaylist(GamePlaylist playlist, int skip, int count)
         => new(GetPlaylistsContainingPlaylistInternal(playlist), skip, count);

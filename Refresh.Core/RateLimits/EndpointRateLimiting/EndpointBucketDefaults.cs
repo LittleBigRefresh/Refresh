@@ -161,7 +161,7 @@ public static class EndpointBucketDefaults
 
         #region Playlists
         {EndpointBucketId.Lbp1GetListOfPlaylists, new(240, 50, 180)},
-        {EndpointBucketId.Lbp1GetPlaylistContents, new(240, 50, 180)},
+        {EndpointBucketId.Lbp1GetPlaylistContents, new(240, 100, 180)}, // turns out, LBP1 is sometimes terrible at caching these
         
         // LBP3 doesn't cache playlists or playlist levels, so it'll request these far more often than LBP1.
         // Also, it will spam the levels endpoint for every playlist from the playlist response for a particular user.
