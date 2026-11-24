@@ -136,6 +136,9 @@ namespace Refresh.Database.Migrations
                     b.Property<bool>("IsHmacDigest")
                         .HasColumnType("boolean");
 
+                    b.Property<bool>("IsPS4Token")
+                        .HasColumnType("boolean");
+
                     b.Property<DateTimeOffset>("LoginDate")
                         .HasColumnType("timestamp with time zone");
 

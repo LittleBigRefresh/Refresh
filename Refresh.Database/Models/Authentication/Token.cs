@@ -37,4 +37,10 @@ public partial class Token : IToken<GameUser>
     /// </summary>
     [CanBeNull] public string Digest { get; set; }
     public bool IsHmacDigest { get; set; }
+
+    /// <summary>
+    /// Determined based on whether the user tried to use oauth for game login,
+    /// for now only used by digest calculation.
+    /// </summary>
+    public bool IsPS4Token { get; set; }
 }
