@@ -134,12 +134,13 @@ public class UserEndpoints : EndpointGroup
             MayBeBlank = false,
             MayBeGuid = false,
             MustBeTexture = true,
-            AssetContextTypeStr = "image",
+            AssetContextTypeStr = "face icon",
         };
 
         if (data.YayFaceHash != null)
         {
             faceParams.AssetRef = data.YayFaceHash;
+            faceParams.AssetContextTypeStr = "Yay face icon";
             ValidatedAssetResult yayResult = ResourceValidationHelper.ValidateReference(faceParams, context.Logger);
             data.YayFaceHash = yayResult.NewAssetRef;
 
@@ -149,6 +150,7 @@ public class UserEndpoints : EndpointGroup
         if (data.MehFaceHash != null)
         {
             faceParams.AssetRef = data.MehFaceHash;
+            faceParams.AssetContextTypeStr = "Meh face icon";
             ValidatedAssetResult mehResult = ResourceValidationHelper.ValidateReference(faceParams, context.Logger);
             data.MehFaceHash = mehResult.NewAssetRef;
 
@@ -158,6 +160,7 @@ public class UserEndpoints : EndpointGroup
         if (data.BooFaceHash != null)
         {
             faceParams.AssetRef = data.BooFaceHash;
+            faceParams.AssetContextTypeStr = "Boo face icon";
             ValidatedAssetResult booResult = ResourceValidationHelper.ValidateReference(faceParams, context.Logger);
             data.BooFaceHash = booResult.NewAssetRef;
 
