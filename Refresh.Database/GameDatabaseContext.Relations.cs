@@ -21,12 +21,12 @@ public partial class GameDatabaseContext // Relations
     
     [Pure]
     public bool IsLevelFavouritedByUser(GameLevel level, GameUser user) => this.FavouriteLevelRelations
-        .FirstOrDefault(r => r.Level == level && r.User == user) != null;
+        .FirstOrDefault(r => r.LevelId == level.LevelId && r.UserId == user.UserId) != null;
 
     [Pure]
     public DatabaseList<GameLevel> GetLevelsFavouritedByUser(GameUser user, int count, int skip, LevelFilterSettings levelFilterSettings, GameUser? accessor) 
         => new(this.FavouriteLevelRelationsIncluded
-        .Where(r => r.User == user)
+        .Where(r => r.UserId == user.UserId)
         .OrderByDescending(r => r.Timestamp)
         .AsEnumerableIfRealm()
         .Select(r => r.Level)
@@ -35,7 +35,7 @@ public partial class GameDatabaseContext // Relations
     
     public int GetTotalLevelsFavouritedByUser(GameUser user) 
         => this.FavouriteLevelRelations
-            .Count(r => r.User == user);
+            .Count(r => r.UserId == user.UserId);
     
     public bool FavouriteLevel(GameLevel level, GameUser user)
     {
@@ -54,7 +54,7 @@ public partial class GameDatabaseContext // Relations
             level.Statistics!.FavouriteCount++;
             user.Statistics!.FavouriteLevelCount++;
 
-            if (level.Publisher == user)
+            if (level.PublisherUserId == user.UserId)
                 level.Statistics!.FavouriteCountExcludingPublisher++;
         });
 
@@ -66,7 +66,7 @@ public partial class GameDatabaseContext // Relations
     public bool UnfavouriteLevel(GameLevel level, GameUser user)
     {
         FavouriteLevelRelation? relation = this.FavouriteLevelRelations
-            .FirstOrDefault(r => r.Level == level && r.User == user);
+            .FirstOrDefault(r => r.LevelId == level.LevelId && r.UserId == user.UserId);
 
         if (relation == null) return false;
 
@@ -76,7 +76,7 @@ public partial class GameDatabaseContext // Relations
             level.Statistics!.FavouriteCount--;
             user.Statistics!.FavouriteLevelCount--;
 
-            if (level.Publisher == user)
+            if (level.PublisherUserId == user.UserId)
                 level.Statistics!.FavouriteCountExcludingPublisher--;
         });
 
@@ -84,7 +84,7 @@ public partial class GameDatabaseContext // Relations
     }
     
     public int GetTotalFavouritesForLevel(GameLevel level, bool includingAuthor = true) => this.FavouriteLevelRelations
-            .Count(r => r.Level == level && (includingAuthor || r.User != level.Publisher));
+            .Count(r => r.LevelId == level.LevelId && (includingAuthor || r.UserId != level.PublisherUserId));
 
     #endregion
 
@@ -98,7 +98,7 @@ public partial class GameDatabaseContext // Relations
 
     [Pure]
     public bool IsUserFavouritedByUser(GameUser userToFavourite, GameUser userFavouriting) => this.FavouriteUserRelations
-        .Any(r => r.UserToFavourite == userToFavourite && r.UserFavouriting == userFavouriting);
+        .Any(r => r.UserToFavouriteId == userToFavourite.UserId && r.UserFavouritingId == userFavouriting.UserId);
 
     [Pure]
     public bool AreUsersMutual(GameUser user1, GameUser user2) =>
@@ -116,14 +116,14 @@ public partial class GameDatabaseContext // Relations
     
     [Pure]
     public DatabaseList<GameUser> GetUsersFavouritedByUser(GameUser user, int skip, int count) => new(this.FavouriteUserRelationsIncluded
-        .Where(r => r.UserFavouriting == user)
+        .Where(r => r.UserFavouritingId == user.UserId)
         .OrderByDescending(r => r.Timestamp)
         .AsEnumerableIfRealm()
         .Select(r => r.UserToFavourite), skip, count);
     
     public int GetTotalUsersFavouritedByUser(GameUser user)
         => this.FavouriteUserRelations
-            .Count(r => r.UserFavouriting == user);
+            .Count(r => r.UserFavouritingId == user.UserId);
     
     public int GetTotalUsersFavouritingUser(GameUser user)
         => this.FavouriteUserRelations
@@ -169,7 +169,7 @@ public partial class GameDatabaseContext // Relations
     public bool UnfavouriteUser(GameUser userToFavourite, GameUser userFavouriting)
     {
         FavouriteUserRelation? relation = this.FavouriteUserRelations
-            .FirstOrDefault(r => r.UserToFavourite == userToFavourite && r.UserFavouriting == userFavouriting);
+            .FirstOrDefault(r => r.UserToFavouriteId == userToFavourite.UserId && r.UserFavouritingId == userFavouriting.UserId);
 
         if (relation == null) return false;
 
@@ -198,12 +198,12 @@ public partial class GameDatabaseContext // Relations
     
     [Pure]
     public bool IsLevelQueuedByUser(GameLevel level, GameUser user) => this.QueueLevelRelations
-        .FirstOrDefault(r => r.Level == level && r.User == user) != null;
+        .FirstOrDefault(r => r.LevelId == level.LevelId && r.UserId == user.UserId) != null;
 
     [Pure]
     public DatabaseList<GameLevel> GetLevelsQueuedByUser(GameUser user, int count, int skip, LevelFilterSettings levelFilterSettings, GameUser? accessor)
         => new(this.QueueLevelRelationsIncluded
-        .Where(r => r.User == user)
+        .Where(r => r.UserId == user.UserId)
         .OrderByDescending(r => r.Timestamp)
         .AsEnumerableIfRealm()
         .Select(r => r.Level)
@@ -213,7 +213,7 @@ public partial class GameDatabaseContext // Relations
     [Pure]
     public int GetTotalLevelsQueuedByUser(GameUser user) 
         => this.QueueLevelRelations
-            .Count(r => r.User == user);
+            .Count(r => r.UserId == user.UserId);
     
     public bool QueueLevel(GameLevel level, GameUser user)
     {
@@ -237,7 +237,7 @@ public partial class GameDatabaseContext // Relations
     public bool DequeueLevel(GameLevel level, GameUser user)
     {
         QueueLevelRelation? relation = this.QueueLevelRelations
-            .FirstOrDefault(r => r.Level == level && r.User == user);
+            .FirstOrDefault(r => r.LevelId == level.LevelId && r.UserId == user.UserId);
 
         if (relation == null) return false;
 
@@ -257,7 +257,7 @@ public partial class GameDatabaseContext // Relations
         this.WriteEnsuringStatistics(user, () =>
         {
             user.Statistics!.QueueCount = 0;
-            this.QueueLevelRelations.RemoveRange(r => r.User == user);
+            this.QueueLevelRelations.RemoveRange(r => r.UserId == user.UserId);
         });
     }
 
@@ -329,7 +329,7 @@ public partial class GameDatabaseContext // Relations
     
     public DatabaseRating GetRatingForReview(GameReview review)
     {
-        IEnumerable<RateReviewRelation> relations = this.RateReviewRelations.Where(r => r.Review == review);
+        IEnumerable<RateReviewRelation> relations = this.RateReviewRelations.Where(r => r.ReviewId == review.ReviewId);
         DatabaseRating rating = new();
 
         foreach (RateReviewRelation relation in relations)
@@ -345,7 +345,7 @@ public partial class GameDatabaseContext // Relations
 
     public int GetRawRatingForReview(GameReview review)
     {
-        IQueryable<RateReviewRelation> relations = this.RateReviewRelations.Where(r => r.Review == review);
+        IQueryable<RateReviewRelation> relations = this.RateReviewRelations.Where(r => r.ReviewId == review.ReviewId);
         int rawRating = 0;
 
         foreach (RateReviewRelation relation in relations)
@@ -366,16 +366,16 @@ public partial class GameDatabaseContext // Relations
         => this.GameReviewsIncluded.FirstOrDefault(gameReview => gameReview.ReviewId == reviewId);
     
     public bool ReviewRatingExistsByUser(GameUser user, GameReview review)
-        => this.RateReviewRelations.Any(relation => relation.Review == review && relation.User == user);
+        => this.RateReviewRelations.Any(relation => relation.ReviewId == review.ReviewId && relation.UserId == user.UserId);
 
     public RateReviewRelation? GetRateReviewRelationForReview(GameUser user, GameReview review)
         => this.RateReviewRelationsIncluded.FirstOrDefault(r => r.UserId == user.UserId && r.ReviewId == review.ReviewId);
     
     public bool ReviewRatingExists(GameUser user, GameReview review, RatingType rating)
-        => this.RateReviewRelations.Any(r => r.Review == review && r.User == user && r.RatingType == rating);
+        => this.RateReviewRelations.Any(r => r.ReviewId == review.ReviewId && r.UserId == user.UserId && r.RatingType == rating);
 
     private RateLevelRelation? GetRateRelationByUser(GameLevel level, GameUser user)
-        => this.RateLevelRelationsIncluded.FirstOrDefault(r => r.User == user && r.Level == level);
+        => this.RateLevelRelationsIncluded.FirstOrDefault(r => r.UserId == user.UserId && r.LevelId == level.LevelId);
 
     /// <summary>
     /// Get a user's rating on a particular level.
@@ -423,7 +423,7 @@ public partial class GameDatabaseContext // Relations
     
     public int GetTotalRatingsForLevel(GameLevel level, RatingType type, bool includingAuthor = true) =>
         this.RateLevelRelations.Count(r =>
-            r.Level == level &&
+            r.LevelId == level.LevelId &&
             r.RatingType == type && 
             (includingAuthor || r.User != level.Publisher));
     
@@ -485,7 +485,7 @@ public partial class GameDatabaseContext // Relations
             .Include(r => r.Level.Statistics)
             .Include(r => r.Publisher)
             .Include(r => r.Publisher.Statistics)
-            .Where(s => s.Publisher == user)
+            .Where(s => s.PublisherUserId == user.UserId)
             .ToList();
     
         foreach (GameReview review in reviews)
@@ -516,7 +516,7 @@ public partial class GameDatabaseContext // Relations
     {
         IEnumerable<GameProfileComment> comments = this.GameProfileComments
             .Include(c => c.Profile.Statistics)
-            .Where(c => c.Author == user)
+            .Where(c => c.AuthorUserId == user.UserId)
             .ToList();
     
         foreach (GameProfileComment comment in comments)
@@ -529,7 +529,7 @@ public partial class GameDatabaseContext // Relations
     {
         IEnumerable<GameLevelComment> comments = this.GameLevelComments
             .Include(c => c.Level.Statistics)
-            .Where(c => c.Author == user)
+            .Where(c => c.AuthorUserId == user.UserId)
             .ToList();
     
         foreach (GameLevelComment comment in comments)
@@ -540,29 +540,29 @@ public partial class GameDatabaseContext // Relations
 
     public DatabaseList<GameReview> GetReviewsByUser(GameUser user, int count, int skip)
         => new(this.GameReviewsIncluded
-            .Where(r => r.Publisher == user)
+            .Where(r => r.PublisherUserId == user.UserId)
             .OrderByDescending(r => r.PostedAt), skip, count);
 
     public int GetTotalReviewsByUser(GameUser user)
-        => this.GameReviews.Count(r => r.Publisher == user);
+        => this.GameReviews.Count(r => r.PublisherUserId == user.UserId);
     
     public GameReview? GetReviewByLevelAndUser(GameLevel level, GameUser user)
     {
         return this.GameReviewsIncluded
-            .Where(r => r.Level == level)
+            .Where(r => r.LevelId == level.LevelId)
             .AsEnumerableIfRealm()
             .FirstOrDefault(r => r.Publisher.UserId == user.UserId);
     }
 
     public DatabaseList<GameReview> GetReviewsForLevel(GameLevel level, int count, int skip)
         => new(this.GameReviewsIncluded
-            .Where(r => r.Level == level)
+            .Where(r => r.LevelId == level.LevelId)
             .AsEnumerable()
             // Sort reviews from most liked to most disliked
             .OrderByDescending(this.GetRawRatingForReview), skip, count);
     
     public int GetTotalReviewsForLevel(GameLevel level)
-        => this.GameReviews.Count(r => r.Level == level);
+        => this.GameReviews.Count(r => r.LevelId == level.LevelId);
 
     #endregion
 
@@ -591,7 +591,7 @@ public partial class GameDatabaseContext // Relations
         };
         
         UniquePlayLevelRelation? uniqueRelation = this.UniquePlayLevelRelations
-            .FirstOrDefault(r => r.Level == level && r.User == user);
+            .FirstOrDefault(r => r.LevelId == level.LevelId && r.UserId == user.UserId);
         
         this.WriteEnsuringStatistics(level, () =>
         {
@@ -619,13 +619,13 @@ public partial class GameDatabaseContext // Relations
 
     public bool HasUserPlayedLevel(GameLevel level, GameUser user) =>
         this.UniquePlayLevelRelations
-            .FirstOrDefault(r => r.Level == level && r.User == user) != null;
+            .FirstOrDefault(r => r.LevelId == level.LevelId && r.UserId == user.UserId) != null;
     
     public IEnumerable<PlayLevelRelation> GetAllPlaysForLevel(GameLevel level) =>
-        this.PlayLevelRelationsIncluded.Where(r => r.Level == level);
+        this.PlayLevelRelationsIncluded.Where(r => r.LevelId == level.LevelId);
     
     public IEnumerable<PlayLevelRelation> GetAllPlaysForLevelByUser(GameLevel level, GameUser user) =>
-        this.PlayLevelRelationsIncluded.Where(r => r.Level == level && r.User == user);
+        this.PlayLevelRelationsIncluded.Where(r => r.LevelId == level.LevelId && r.UserId == user.UserId);
     
     public int GetTotalPlaysForLevel(GameLevel level) =>
         this.GetAllPlaysForLevel(level).Sum(playLevelRelation => playLevelRelation.Count);
@@ -634,10 +634,10 @@ public partial class GameDatabaseContext // Relations
         this.GetAllPlaysForLevelByUser(level, user).Sum(playLevelRelation => playLevelRelation.Count);
     
     public int GetTotalUniquePlaysForLevel(GameLevel level, bool includingAuthor = true) =>
-        this.UniquePlayLevelRelations.Count(r => r.Level == level && (includingAuthor || r.User != level.Publisher));
+        this.UniquePlayLevelRelations.Count(r => r.LevelId == level.LevelId && (includingAuthor || r.User != level.Publisher));
 
     public int GetTotalCompletionsForLevel(GameLevel level) =>
-        this.GameScores.Count(s => s.Level == level);
+        this.GameScores.Count(s => s.LevelId == level.LevelId);
     
     public int GetTotalCompletionsForLevelByUser(GameLevel level, GameUser user) =>
         this.GameScores.Count(s => s.LevelId == level.LevelId && s.PublisherId == user.UserId);
@@ -659,10 +659,10 @@ public partial class GameDatabaseContext // Relations
         .Include(r => r.Comment.Level);
 
     private ProfileCommentRelation? GetProfileCommentRelationByUser(GameProfileComment comment, GameUser user) => this.ProfileCommentRelationsIncluded
-        .FirstOrDefault(r => r.Comment == comment && r.User == user);
+        .FirstOrDefault(r => r.CommentSequentialId == comment.SequentialId && r.UserId == user.UserId);
     
     private LevelCommentRelation? GetLevelCommentRelationByUser(GameLevelComment comment, GameUser user) => this.LevelCommentRelationsIncluded
-        .FirstOrDefault(r => r.Comment == comment && r.User == user);
+        .FirstOrDefault(r => r.CommentSequentialId == comment.SequentialId && r.UserId == user.UserId);
     
     /// <summary>
     /// Get a user's rating on a particular profile comment.
@@ -687,16 +687,16 @@ public partial class GameDatabaseContext // Relations
         => this.GetLevelCommentRelationByUser(comment, user)?.RatingType;
     
     public int GetTotalRatingsForProfileComment(GameProfileComment comment, RatingType type) =>
-        this.ProfileCommentRelations.Count(r => r.Comment == comment && r.RatingType == type);
+        this.ProfileCommentRelations.Count(r => r.CommentSequentialId == comment.SequentialId && r.RatingType == type);
     
     public int GetTotalRatingsForLevelComment(GameLevelComment comment, RatingType type) =>
-        this.LevelCommentRelations.Count(r => r.Comment == comment && r.RatingType == type);
+        this.LevelCommentRelations.Count(r => r.CommentSequentialId == comment.SequentialId && r.RatingType == type);
 
     private void RateComment<TComment, TCommentRelation>(GameUser user, TComment comment, RatingType ratingType, DbSet<TCommentRelation> list)
         where TComment : class, IGameComment
         where TCommentRelation : class, ICommentRelation<TComment>, new()
     {
-        TCommentRelation? relation = list.FirstOrDefault(r => r.Comment == comment && r.User == user);
+        TCommentRelation? relation = list.FirstOrDefault(r => r.CommentSequentialId == comment.SequentialId && r.UserId == user.UserId);
         
         if (relation == null)
         {
@@ -756,7 +756,7 @@ public partial class GameDatabaseContext // Relations
         this.Write(() =>
         {
             // Remove any old tags from this user on this level
-            this.TagLevelRelations.RemoveRange(this.TagLevelRelations.Where(t => t.User == user && t.Level == level));
+            this.TagLevelRelations.RemoveRange(this.TagLevelRelations.Where(t => t.UserId == user.UserId && t.LevelId == level.LevelId));
             
             this.TagLevelRelations.Add(new TagLevelRelation
             {

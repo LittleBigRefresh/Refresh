@@ -117,7 +117,7 @@ public partial class GameDatabaseContext // Levels
 
     public GameLevel UpdateLevelPublisher(GameLevel level, GameUser newAuthor)
     {
-        if (level.Publisher?.UserId == newAuthor.UserId)
+        if (level.PublisherUserId == newAuthor.UserId)
             return level;
 
         if (level.Publisher != null)
@@ -310,7 +310,7 @@ public partial class GameDatabaseContext // Levels
         {
             levels = this.GetLevelsByGameVersion(levelFilterSettings.GameVersion)
                 .FilterByLevelFilterSettings(accessor, levelFilterSettings)
-                .Where(l => l.Publisher == null);
+                .Where(l => l.PublisherUserId == null);
         }
         else if (user.Username == SystemUsers.UnknownUserName)
         {
@@ -329,7 +329,7 @@ public partial class GameDatabaseContext // Levels
         {
             levels = this.GetLevelsByGameVersion(levelFilterSettings.GameVersion)
                 .FilterByLevelFilterSettings(accessor, levelFilterSettings)
-                .Where(l => l.Publisher == user);
+                .Where(l => l.PublisherUserId == user.UserId);
         }
         
         return new(levels.OrderByDescending(l => l.UpdateDate), skip, count);
@@ -519,11 +519,11 @@ public partial class GameDatabaseContext // Levels
 
     public int GetTotalLevelsPublishedByUser(GameUser user)
         => this.GameLevels
-            .Count(r => r.Publisher == user);
+            .Count(r => r.PublisherUserId == user.UserId);
     
     public int GetTotalLevelsPublishedByUser(GameUser user, TokenGame game)
         => this.GameLevels
-            .Count(r => r.Publisher == user && r.GameVersion == game);
+            .Count(r => r.PublisherUserId == user.UserId && r.GameVersion == game);
     
     [Pure]
     public int GetTotalTeamPickCount(TokenGame game) => this.GameLevels.FilterByGameVersion(game).Count(l => l.DateTeamPicked != null);

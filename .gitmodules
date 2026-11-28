@@ -1,0 +1,4 @@
+[submodule "External/Bunkum"]
+	path = External/Bunkum
+	url = https://github.com/LittleBigRefresh/Bunkum.git
+	branch = main

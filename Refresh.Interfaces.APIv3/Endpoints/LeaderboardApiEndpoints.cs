@@ -48,7 +48,10 @@ public class LeaderboardApiEndpoints : EndpointGroup
         return ret;
     }
     
-    [ApiV3Endpoint("users/{idType}/{userId}/scores"), Authentication(false)]
+    [ApiV3Endpoint("users/uuid/{uuid}/scores")]
+    [ApiV3Endpoint("users/name/{username}/scores")]
+    [ApiV3Endpoint("users/username/{username}/scores")]
+    [Authentication(false)]
     [DocUsesPageData, DocSummary("Gets a list of the top scores on a level.")]
     // TODO i really can't wait to move all these strings to their own place, this looks really messy (like many other API endpoints)
     [DocQueryParam("showAll", "Whether or not to show all scores. If false, only the user's best scores per level/mode will be shown." +
@@ -66,11 +69,9 @@ public class LeaderboardApiEndpoints : EndpointGroup
     [DocError(typeof(ApiNotFoundError), ApiValidationError.ScoreModeInvalidErrorWhen)]
     [DocError(typeof(ApiNotFoundError), ApiValidationError.ScoreRanksInvalidErrorWhen)]
     public ApiListResponse<ApiGameScoreResponse> GetTopScoresByUser(RequestContext context,
-        [DocSummary(SharedParamDescriptions.UserIdParam)] string userId,
-        [DocSummary(SharedParamDescriptions.UserIdTypeParam)] string idType,
-        DataContext dataContext)
+        string? uuid, string? username, DataContext dataContext)
     {
-        GameUser? user = dataContext.Database.GetUserByIdAndType(idType, userId);
+        GameUser? user = dataContext.Database.GetUserByUuidOrUsername(uuid, username);
         if(user == null) return ApiNotFoundError.UserMissingError;
         
         (int skip, int count) = context.GetPageData();

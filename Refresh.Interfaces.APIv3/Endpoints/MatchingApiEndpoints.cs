@@ -18,17 +18,19 @@ namespace Refresh.Interfaces.APIv3.Endpoints;
 
 public class MatchingApiEndpoints : EndpointGroup
 {
-    [ApiV3Endpoint("rooms/{userIdType}/{id}"), Authentication(false)]
+    [ApiV3Endpoint("rooms/uuid/{uuid}")]
+    [ApiV3Endpoint("rooms/name/{username}")]
+    [ApiV3Endpoint("rooms/username/{username}")]
+    [Authentication(false)]
     [DocSummary("Finds a room by a player's username or UUID")]
     [DocError(typeof(ApiNotFoundError), ApiNotFoundError.UserMissingErrorWhen)]
     [DocError(typeof(ApiNotFoundError), "The room could not be found")]
     [EndpointRateLimit(EndpointBucketId.ApiGetSingleRoom)]
     public ApiResponse<ApiGameRoomResponse> GetRoomByUser(RequestContext context, MatchService service,
         GameDatabaseContext database, DataContext dataContext,
-        [DocSummary(SharedParamDescriptions.UserIdParam)] string id, 
-        [DocSummary(SharedParamDescriptions.UserIdTypeParam)] string userIdType)
+        string? uuid, string? username)
     {
-        GameUser? user = database.GetUserByIdAndType(userIdType, id);
+        GameUser? user = database.GetUserByUuidOrUsername(uuid, username);
         if (user == null) return ApiNotFoundError.UserMissingError;
 
         GameRoom? room = service.RoomAccessor.GetRoomByUser(user);
